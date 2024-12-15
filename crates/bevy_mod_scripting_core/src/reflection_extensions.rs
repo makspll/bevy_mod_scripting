@@ -375,6 +375,8 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
 }
 
 pub trait TypeInfoExtensions {
+    fn list_inner_type(&self) -> Option<TypeId>;
+    fn is_list(&self) -> bool;
     fn is_option(&self) -> bool;
     fn option_inner_type(&self) -> Option<TypeId>;
     fn is_type(&self, crate_name: Option<&str>, type_ident: &str) -> bool;
@@ -385,12 +387,23 @@ impl TypeInfoExtensions for TypeInfo {
         self.is_type(Some("core"), "Option")
     }
 
+    fn is_list(&self) -> bool {
+        match self {
+            TypeInfo::List(_) => true,
+            _ => false,
+        }
+    }
+
     fn option_inner_type(&self) -> Option<TypeId> {
         if self.is_option() {
             self.generics().first().map(|g| g.type_id())
         } else {
             None
         }
+    }
+
+    fn list_inner_type(&self) -> Option<TypeId> {
+        Some(self.as_list().ok()?.item_ty().id())
     }
 
     fn is_type(&self, crate_name: Option<&str>, type_ident: &str) -> bool {

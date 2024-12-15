@@ -24,8 +24,8 @@ use bevy::{
     ptr::Ptr,
     reflect::{
         func::{args::ArgInfo, ArgValue},
-        ParsedPath, PartialReflect, ReflectFromPtr, ReflectMut, ReflectPath, ReflectPathError,
-        ReflectRef, TypeData,
+        ParsedPath, PartialReflect, ReflectFromPtr, ReflectFromReflect, ReflectMut, ReflectPath,
+        ReflectPathError, ReflectRef, TypeData,
     },
 };
 use itertools::Either;
@@ -97,7 +97,7 @@ impl ReflectReference {
                     std::any::type_name::<T>()
                 )
             });
-        let (id, _) = allocator.allocate(value);
+        let id = allocator.allocate(value);
         ReflectReference {
             base: ReflectBaseType {
                 type_id,
@@ -120,7 +120,7 @@ impl ReflectReference {
                     std::any::type_name_of_val(value.as_ref())
                 )
             });
-        let (id, _) = allocator.allocate_boxed(value);
+        let id = allocator.allocate_boxed(value);
         ReflectReference {
             base: ReflectBaseType {
                 type_id,
@@ -174,12 +174,63 @@ impl ReflectReference {
         })?
     }
 
-    /// Reflects into the value of the reference, cloning it using [`PartialReflect::clone_value`] or if it's a world reference, cloning the world access.
-    pub fn clone_value(&self, world: WorldGuard) -> Result<Box<dyn PartialReflect>, InteropError> {
+    /// Attempts to create a [`Box<dyn PartialReflect>`] from the reference. This is possible using a few strategies:
+    /// - If the reference is to a world, a [`WorldCallbackAccess`] is created and boxed
+    /// - If the reference is to an allocation with no reflection path, the value is taken as is.
+    /// - If the reference has a [`bevy::reflect::ReflectFromReflect`] type data associated with it, the value is cloned using that impl.
+    /// - If all above fails, [`bevy::reflect::PartialReflect::clone_value`] is used to clone the value.
+    ///
+    pub fn to_owned_value(
+        &self,
+        world: WorldGuard,
+    ) -> Result<Box<dyn PartialReflect>, InteropError> {
         if matches!(self.base.base_id, ReflectBase::World) {
             return Ok(Box::new(WorldCallbackAccess::from_guard(world)));
         }
-        self.with_reflect(world, |r| r.clone_value())
+
+        if let ReflectBase::Owned(id) = &self.base.base_id {
+            if self.reflect_path.is_empty() && id.strong_count() == 0 {
+                println!(
+                    "Trying to access allocation in owned value {}",
+                    self.display_value_with_world(world.clone())
+                );
+                let allocator = world.allocator();
+                let mut allocator = allocator.write();
+                let arc = allocator
+                    .remove(id)
+                    .ok_or_else(|| InteropError::garbage_collected_allocation(self.clone()))?;
+
+                let access_id = ReflectAccessId::for_allocation(id.clone());
+                if world.claim_write_access(access_id) {
+                    // Safety: we claim write access, nobody else is accessing this
+                    if unsafe { &*arc.get_ptr() }.try_as_reflect().is_some() {
+                        // Safety: the only accesses exist in this function
+                        unsafe { world.release_access(access_id) };
+                        return Ok(unsafe { arc.take() });
+                    } else {
+                        unsafe { world.release_access(access_id) };
+                    }
+                }
+                allocator.insert(id.clone(), arc);
+            }
+        }
+
+        // try from reflect
+        let type_registry = world.type_registry();
+        let type_registry = type_registry.read();
+
+        let from_reflect: Option<&ReflectFromReflect> =
+            type_registry.get_type_data(self.base.type_id);
+
+        self.with_reflect(world, |r| {
+            if let Some(from_reflect) = from_reflect {
+                let from_reflect = from_reflect.from_reflect(r);
+                if let Some(from_reflect) = from_reflect {
+                    return from_reflect.into_partial_reflect();
+                }
+            }
+            r.clone_value()
+        })
     }
 
     /// The way to access the value of the reference, that is the pointed-to value.
@@ -261,79 +312,6 @@ impl ReflectReference {
         }
     }
 
-    /// Converts the reference into an argument that can be consumed by a dynamic function.
-    ///
-    /// In the case that the underlying value is dynamic, this will convert to an [`ArgValue::Owned`] Which notably will not be directly usable by the function.
-    /// To use the output you must make sure your calling mechanism is lenient enough to accept Owned variants in place of refs/muts.
-    ///
-    /// Or alternatively convert any non concrete types to concrete types using `from_reflect` before calling this function.
-    ///
-    /// # Safety
-    /// - The caller must ensure this reference has permission to access the underlying value
-    pub unsafe fn into_arg_value<'w>(
-        self,
-        world: WorldGuard<'w>,
-        arg_info: &ArgInfo,
-    ) -> Result<ArgValue<'w>, InteropError> {
-        if ReflectBase::World == self.base.base_id {
-            // Safety: we already have an Arc<WorldAccessGuard<'w>> so creating a new one from the existing one is safe
-            // as the caller of this function will make sure the Arc is dropped after the lifetime 'w is done.
-            let new_guard = WorldCallbackAccess::from_guard(world.clone());
-            new_guard.read().unwrap();
-            return Ok(ArgValue::Owned(Box::new(WorldCallbackAccess::from_guard(
-                world,
-            ))));
-        }
-
-        match arg_info.ownership() {
-            bevy::reflect::func::args::Ownership::Ref => {
-                let mut ref_ = unsafe { self.reflect_unsafe(world.clone())? };
-
-                if ref_.is_dynamic() {
-                    let allocator = world.allocator();
-                    let mut allocator = allocator.write();
-
-                    let boxed =
-                        <dyn PartialReflect as PartialReflectExt>::from_reflect(ref_, world)?
-                            .into_partial_reflect();
-                    let (_, allocation) = allocator.allocate_boxed(boxed);
-                    // Safety:
-                    // we are the only ones with this id, nobody else can touch this.
-                    // we only need to make sure this doesn't get dropped before we're done with it
-                    // the only time that will happen is when ReflectAllocator::clean_garbage_allocations is called
-                    // this will not happen while script event handlers are running
-                    ref_ = unsafe { &*allocation.get_ptr() };
-                }
-                Ok(ArgValue::Ref(ref_))
-            }
-            bevy::reflect::func::args::Ownership::Mut => {
-                let mut mut_ = unsafe { self.reflect_mut_unsafe(world.clone())? };
-
-                if mut_.is_dynamic() {
-                    let allocator = world.allocator();
-                    let mut allocator = allocator.write();
-
-                    let boxed =
-                        <dyn PartialReflect as PartialReflectExt>::from_reflect(mut_, world)?
-                            .into_partial_reflect();
-                    let (_, allocation) = allocator.allocate_boxed(boxed);
-                    // Safety:
-                    // same as the ref branch
-                    mut_ = unsafe { &mut *allocation.get_ptr() };
-                }
-
-                Ok(ArgValue::Mut(mut_))
-            }
-            _ => {
-                let ref_ = unsafe { self.reflect_unsafe(world.clone())? };
-                Ok(ArgValue::Owned(
-                    <dyn PartialReflect as PartialReflectExt>::from_reflect(ref_, world)?
-                        .into_partial_reflect(),
-                ))
-            }
-        }
-    }
-
     /// Retrieves a reference to the underlying `dyn PartialReflect` type valid for the 'w lifetime of the world cell
     /// # Safety
     ///
@@ -404,7 +382,7 @@ impl ReflectReference {
             let allocator = world.allocator();
             let allocator = allocator.read();
             let arc = allocator
-                .get_mut(id)
+                .get(id)
                 .ok_or_else(|| InteropError::garbage_collected_allocation(self.clone()))?;
 
             // Safety: caller promises this is fine :)

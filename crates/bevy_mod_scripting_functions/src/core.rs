@@ -34,6 +34,10 @@ impl Plugin for CoreFunctionsPlugin {
 
 fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRegistrationError> {
     NamespaceBuilder::<WorldCallbackAccess>::new(reg)
+        .overwrite(
+            "test_vec",
+            |s: WorldCallbackAccess, entities: Vec<Entity>| entities,
+        )
         .overwrite("spawn", |s: WorldCallbackAccess| s.spawn())
         .overwrite(
             "get_type_by_name",

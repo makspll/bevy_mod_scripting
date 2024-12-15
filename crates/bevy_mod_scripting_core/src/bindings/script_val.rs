@@ -6,8 +6,8 @@ use std::{
 };
 
 use bevy::reflect::{
-    Access, DynamicEnum, DynamicTuple, DynamicVariant, OffsetAccess, ParsedPath, PartialReflect,
-    Reflect,
+    Access, DynamicEnum, DynamicList, DynamicTuple, DynamicVariant, OffsetAccess, ParsedPath,
+    PartialReflect, Reflect, ReflectFromReflect, TypeData,
 };
 
 use crate::{
@@ -32,6 +32,8 @@ pub enum ScriptValue {
     Float(f64),
     /// Represents a string value.
     String(Cow<'static, str>),
+    /// Represents a list of other things passed by value
+    List(Vec<ScriptValue>),
     /// Represents a reference to a value.
     Reference(ReflectReference),
     /// Represents any error, will be thrown when returned to a script
@@ -75,6 +77,12 @@ impl From<String> for ScriptValue {
 impl From<Cow<'static, str>> for ScriptValue {
     fn from(value: Cow<'static, str>) -> Self {
         ScriptValue::String(value)
+    }
+}
+
+impl From<Vec<ScriptValue>> for ScriptValue {
+    fn from(value: Vec<ScriptValue>) -> Self {
+        ScriptValue::List(value)
     }
 }
 
@@ -301,6 +309,11 @@ impl IntoScriptValue for &dyn PartialReflect {
             return inner.into_script_value(world);
         }
 
+        if let Ok(list) = self.as_list() {
+            let list: Vec<_> = list.collect();
+            return list.into_script_value(world);
+        }
+
         // as a last resort we just allocate the value and return a reference to it
         let reflect_reference = self.allocate_cloned(world.clone());
         ReflectReference::into_script_value(reflect_reference, world)
@@ -313,6 +326,16 @@ impl IntoScriptValue for Option<&dyn PartialReflect> {
             Some(inner) => inner.into_script_value(world),
             None => Ok(ScriptValue::Unit),
         }
+    }
+}
+
+impl IntoScriptValue for Vec<&dyn PartialReflect> {
+    fn into_script_value(mut self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        let mut vec = Vec::with_capacity(self.len());
+        for v in self.iter_mut() {
+            vec.push(v.into_script_value(world.clone())?);
+        }
+        Ok(ScriptValue::List(vec))
     }
 }
 
@@ -418,6 +441,12 @@ impl FromScriptValue for dyn PartialReflect {
             target_type_id,
         ) {
             Some(opt)
+        } else if let Some(vec) = <Vec<&dyn PartialReflect>>::from_script_value(
+            value.clone(),
+            world.clone(),
+            target_type_id,
+        ) {
+            Some(vec)
         } else {
             ReflectReference::from_script_value(value, world.clone(), target_type_id)
         }
@@ -440,11 +469,11 @@ impl FromScriptValue for Option<&dyn PartialReflect> {
 
         let inner_type_id = type_info.option_inner_type().expect("invariant");
 
-        match value {
+        let dynamic = match value {
             ScriptValue::Unit => {
                 let mut dynamic_none = DynamicEnum::new("None", DynamicVariant::Unit);
                 dynamic_none.set_represented_type(Some(type_info));
-                Some(Ok(Box::new(dynamic_none)))
+                Box::new(dynamic_none)
             }
             v => {
                 let inner = match <dyn PartialReflect>::from_script_value(
@@ -462,8 +491,73 @@ impl FromScriptValue for Option<&dyn PartialReflect> {
                     DynamicVariant::Tuple(DynamicTuple::from_iter(vec![inner])),
                 );
                 dynamic_some.set_represented_type(Some(type_info));
-                Some(Ok(Box::new(dynamic_some)))
+                Box::new(dynamic_some)
             }
+        };
+
+        match type_registry.get_type_data::<ReflectFromReflect>(target_type_id) {
+            Some(from_reflect) => from_reflect
+                .from_reflect(dynamic.as_partial_reflect())
+                .map(|v| Ok(v.into_partial_reflect())),
+            None => Some(Err(InteropError::missing_type_data(
+                target_type_id,
+                "ReflectFromReflect".to_owned(),
+            ))),
+        }
+    }
+}
+
+impl FromScriptValue for Vec<&dyn PartialReflect> {
+    fn from_script_value(
+        value: ScriptValue,
+        world: WorldGuard,
+        target_type_id: TypeId,
+    ) -> Option<Result<Box<dyn PartialReflect>, InteropError>> {
+        let type_registry = world.type_registry();
+        let type_registry = type_registry.read();
+        let type_info = type_registry.get_type_info(target_type_id)?;
+
+        if !type_info.is_list() {
+            return None;
+        };
+
+        let inner_type_id = type_info.list_inner_type().expect("invariant");
+
+        let dynamic = match value {
+            ScriptValue::List(vec) => {
+                let mut dynamic_list = DynamicList::default();
+                dynamic_list.set_represented_type(Some(type_info));
+
+                for v in vec.into_iter() {
+                    let inner = match <dyn PartialReflect>::from_script_value(
+                        v,
+                        world.clone(),
+                        inner_type_id,
+                    ) {
+                        Some(Ok(inner)) => inner,
+                        Some(Err(e)) => return Some(Err(e)),
+                        None => return None,
+                    };
+
+                    dynamic_list.push_box(inner);
+                }
+                Box::new(dynamic_list)
+            }
+            ScriptValue::Reference(reflect_reference) => {
+                // for references we assume they point to a list already, we can safely
+                return Some(reflect_reference.to_owned_value(world));
+            }
+            _ => return Some(Err(InteropError::value_mismatch(target_type_id, value))),
+        };
+
+        match type_registry.get_type_data::<ReflectFromReflect>(target_type_id) {
+            Some(from_reflect) => from_reflect
+                .from_reflect(dynamic.as_partial_reflect())
+                .map(|v| Ok(v.into_partial_reflect())),
+            None => Some(Err(InteropError::missing_type_data(
+                target_type_id,
+                "ReflectFromReflect".to_owned(),
+            ))),
         }
     }
 }
@@ -475,7 +569,7 @@ impl FromScriptValue for ReflectReference {
         target_type: TypeId,
     ) -> Option<Result<Box<dyn PartialReflect>, InteropError>> {
         match value {
-            ScriptValue::Reference(ref_) => Some(ref_.clone_value(world)),
+            ScriptValue::Reference(ref_) => Some(ref_.to_owned_value(world)),
             _ => None,
         }
     }

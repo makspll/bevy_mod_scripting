@@ -293,10 +293,10 @@ impl ReflectReferencePrinter {
             ReflectRef::Function(f) => {
                 output.push_str("Function(");
                 output.push_str(
-                    &f.info()
+                    f.info()
                         .name()
                         .unwrap_or(&Cow::Borrowed("<unnamed function>"))
-                        .to_string(),
+                        .as_ref(),
                 );
                 output.push(')');
             }
@@ -327,7 +327,7 @@ macro_rules! impl_dummy_display (
     ($t:ty) => {
         impl std::fmt::Display for $t {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                write!(f, "Displaying {} without world access: {:#?}", stringify!($t), self);
+                write!(f, "Displaying {} without world access: {:#?}", stringify!($t), self)?;
                 Ok(())
             }
         }
@@ -399,6 +399,16 @@ impl DisplayWithWorld for ScriptValue {
             ScriptValue::String(cow) => cow.to_string(),
             ScriptValue::World => "World".to_owned(),
             ScriptValue::Error(script_error) => script_error.to_string(),
+            ScriptValue::List(vec) => {
+                let mut string = String::new();
+                ReflectReferencePrinter::pretty_print_key_values(
+                    BracketType::Square,
+                    vec.iter()
+                        .map(|v| (None::<String>, v.display_value_with_world(world.clone()))),
+                    &mut string,
+                );
+                string
+            }
         }
     }
 }

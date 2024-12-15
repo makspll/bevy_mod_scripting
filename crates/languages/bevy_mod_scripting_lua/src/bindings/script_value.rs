@@ -37,7 +37,14 @@ impl FromLua for LuaScriptValue {
             Value::Integer(i) => ScriptValue::Integer(i),
             Value::Number(n) => ScriptValue::Float(n),
             Value::String(s) => ScriptValue::String(s.to_str()?.to_owned().into()),
-            // Value::Table(table) => todo!(),
+            Value::Table(table) => {
+                let mut vec = Vec::with_capacity(table.len()? as usize);
+                for i in table.sequence_values() {
+                    let v: LuaScriptValue = i?;
+                    vec.push(v.into());
+                }
+                ScriptValue::List(vec)
+            }
             // Value::Function(function) => todo!(),
             // Value::Thread(thread) => todo!(),
             Value::UserData(ud) => {
@@ -74,6 +81,14 @@ impl IntoLua for LuaScriptValue {
             }
             ScriptValue::Reference(r) => LuaReflectReference::from(r).into_lua(lua)?,
             ScriptValue::Error(script_error) => return Err(mlua::Error::external(script_error)),
+            ScriptValue::List(vec) => {
+                let table = lua.create_table_from(
+                    vec.into_iter()
+                        .enumerate()
+                        .map(|(k, v)| (k + 1, LuaScriptValue::from(v))),
+                )?;
+                Value::Table(table)
+            }
         })
     }
 }

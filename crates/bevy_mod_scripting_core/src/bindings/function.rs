@@ -119,7 +119,7 @@ impl CallableWithAccess for DynamicFunction<'_> {
             Return::Ref(ref_) => ref_.into_script_value(world),
             Return::Mut(mut_ref) => mut_ref.into_script_value(world),
         })?
-        .map_err(|e| InteropError::function_interop_error(self.info(), None, e).into())
+        .map_err(|e| InteropError::function_interop_error(self.info(), None, e))
     }
 }
 
@@ -159,8 +159,12 @@ impl<I: Iterator<Item = ScriptValue>> IntoArgsListWithAccess for I {
             match value {
                 // TODO: I'd see the logic be a bit cleaner, this if is needed to support 'Raw' ScriptValue arguments
                 // as we do not want to claim any access since we're not using the value yet
+
+                // for owned values the from_script_value impl for ReflectReferences will deal with the case
+                // here we try to make an actual reference, or otherwise clone the value
                 ScriptValue::Reference(arg_ref)
-                    if argument_info.type_id() != TypeId::of::<ScriptValue>() =>
+                    if argument_info.type_id() != TypeId::of::<ScriptValue>()
+                        && matches!(argument_info.ownership(), Ownership::Mut | Ownership::Ref) =>
                 {
                     let access_id = ReflectAccessId::for_reference(arg_ref.base.base_id.clone())
                         .ok_or_else(|| {
@@ -171,30 +175,39 @@ impl<I: Iterator<Item = ScriptValue>> IntoArgsListWithAccess for I {
                             )
                         })?;
 
-                    let is_write = matches!(argument_info.ownership(), Ownership::Mut);
-
-                    let success = if is_write {
-                        world.claim_write_access(access_id)
-                    } else {
-                        world.claim_read_access(access_id)
+                    let arg = match argument_info.ownership() {
+                        Ownership::Ref => {
+                            if world.claim_read_access(access_id) {
+                                accesses.push((access_id, Ownership::Ref));
+                                let ref_ = unsafe { arg_ref.reflect_unsafe(world.clone()) };
+                                if let Ok(ref_) = ref_ {
+                                    Ok(ArgValue::Ref(ref_))
+                                } else {
+                                    Err(ref_.expect_err("invariant"))
+                                }
+                            } else {
+                                Err(InteropError::cannot_claim_access(arg_ref.base.clone()))
+                            }
+                        }
+                        Ownership::Mut => {
+                            if world.claim_write_access(access_id) {
+                                accesses.push((access_id, Ownership::Mut));
+                                let mut_ref = unsafe { arg_ref.reflect_mut_unsafe(world.clone()) };
+                                if let Ok(mut_ref) = mut_ref {
+                                    Ok(ArgValue::Mut(mut_ref))
+                                } else {
+                                    Err(mut_ref.expect_err("invariant"))
+                                }
+                            } else {
+                                Err(InteropError::cannot_claim_access(arg_ref.base.clone()))
+                            }
+                        }
+                        _ => unreachable!(),
                     };
 
-                    if !success {
-                        release_accesses(&mut accesses);
-                        return Err(InteropError::function_interop_error(
-                            function_info,
-                            Some(argument_info),
-                            InteropError::cannot_claim_access(arg_ref.base.clone()),
-                        )
-                        .into());
-                    }
+                    // TODO: check if the value is actually a `dyn Reflect` and not a dynamic
 
-                    accesses.push((access_id, argument_info.ownership()));
-
-                    let val =
-                        unsafe { arg_ref.clone().into_arg_value(world.clone(), argument_info) };
-                    let val = match val {
-                        Ok(v) => v,
+                    match arg {
                         Err(e) => {
                             release_accesses(&mut accesses);
                             return Err(InteropError::function_interop_error(
@@ -203,8 +216,8 @@ impl<I: Iterator<Item = ScriptValue>> IntoArgsListWithAccess for I {
                                 e,
                             ));
                         }
-                    };
-                    arg_list.push(val);
+                        Ok(arg) => arg_list.push(arg),
+                    }
                 }
                 ScriptValue::World => {
                     arg_list.push(ArgValue::Owned(Box::new(WorldCallbackAccess::from_guard(

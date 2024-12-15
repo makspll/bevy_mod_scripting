@@ -15,6 +15,8 @@ function on_event()
     print(script)
     print(world)
 
+    print(world:test_vec({entity, entity})[1])
+
 
     local my_component_type = world:get_type_by_name("MyComponent")
 

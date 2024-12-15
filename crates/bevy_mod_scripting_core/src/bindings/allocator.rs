@@ -5,6 +5,7 @@ use std::any::{Any, TypeId};
 use std::cell::UnsafeCell;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
+use std::io::Read;
 use std::sync::Arc;
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
@@ -17,6 +18,10 @@ impl ReflectAllocationId {
     /// Creates a new [`ReflectAllocationId`] from its id
     pub(crate) fn new(id: usize) -> Self {
         Self(Arc::new(id))
+    }
+
+    pub fn strong_count(&self) -> usize {
+        Arc::strong_count(&self.0)
     }
 }
 
@@ -45,29 +50,28 @@ impl<T: ?Sized> Drop for OwningPtr<T> {
 }
 
 // yikes, the indirection. I need this to store boxed values too though
-#[derive(Clone, Debug)]
-pub enum ReflectAllocation {
-    Double(Arc<OwningPtr<dyn PartialReflect>>),
-    Single(Arc<UnsafeCell<dyn PartialReflect>>),
-}
+#[derive(Debug)]
+pub struct ReflectAllocation(Box<UnsafeCell<dyn PartialReflect>>);
 
-unsafe impl Send for ReflectAllocation {}
+// unsafe impl Send for ReflectAllocation {}
 unsafe impl Sync for ReflectAllocation {}
 
 impl ReflectAllocation {
     pub fn get_ptr(&self) -> *mut dyn PartialReflect {
-        match self {
-            ReflectAllocation::Double(v) => v.ptr,
-            ReflectAllocation::Single(v) => v.get(),
-        }
-    }
-    pub fn new(value: Arc<UnsafeCell<dyn PartialReflect>>) -> Self {
-        Self::Single(value)
+        self.0.as_ref().get()
     }
 
-    pub fn new_boxed(value: Box<dyn PartialReflect>) -> Self {
-        let ptr = Box::leak::<'static>(value);
-        Self::Double(Arc::new(unsafe { OwningPtr::new(ptr) }))
+    pub fn new(value: Box<dyn PartialReflect>) -> Self {
+        let value: Box<UnsafeCell<dyn PartialReflect>> = unsafe { std::mem::transmute(value) };
+        Self(value)
+    }
+
+    /// Takes the value out of the allocation.
+    ///
+    /// # Safety
+    /// - Must only be done if no other references to this allocation exist at the same time
+    pub unsafe fn take(self) -> Box<dyn PartialReflect> {
+        std::mem::transmute(self.0)
     }
 }
 
@@ -113,36 +117,21 @@ pub struct ReflectAllocator {
 impl ReflectAllocator {
     /// Allocates a new [`Reflect`] value and returns an [`AllocationId`] which can be used to access it later.
     /// Use [`Self::allocate_boxed`] if you already have an allocated boxed value.
-    pub fn allocate<T: PartialReflect>(
-        &mut self,
-        value: T,
-    ) -> (ReflectAllocationId, ReflectAllocation) {
-        let type_id = value.get_represented_type_info().map(|i| i.type_id());
-
-        let id = ReflectAllocationId::new(self.allocations.len());
-        let index = id.id();
-        let value = ReflectAllocation::new(Arc::new(UnsafeCell::new(value)));
-        self.allocations.insert(id.clone(), value.clone());
-        if let Some(type_id) = type_id {
-            self.types.insert(index, type_id);
-        }
-        (id, value)
+    pub fn allocate<T: PartialReflect>(&mut self, value: T) -> ReflectAllocationId {
+        self.allocate_boxed(Box::new(value))
     }
 
-    pub fn allocate_boxed(
-        &mut self,
-        value: Box<dyn PartialReflect>,
-    ) -> (ReflectAllocationId, ReflectAllocation) {
+    pub fn allocate_boxed(&mut self, value: Box<dyn PartialReflect>) -> ReflectAllocationId {
         let type_id = value.get_represented_type_info().map(|i| i.type_id());
 
         let id = ReflectAllocationId::new(self.allocations.len());
         let index = id.id();
-        let value = ReflectAllocation::new_boxed(value);
-        self.allocations.insert(id.clone(), value.clone());
+        let value = ReflectAllocation::new(value);
+        self.allocations.insert(id.clone(), value);
         if let Some(type_id) = type_id {
             self.types.insert(index, type_id);
         }
-        (id, value)
+        id
     }
 
     // /// Moves the given boxed [`PartialReflect`] value into the allocator, returning an [`AllocationId`] which can be used to access it later
@@ -168,16 +157,33 @@ impl ReflectAllocator {
     //     (id, allocation)
     // }
 
-    pub fn get(&self, id: &ReflectAllocationId) -> Option<ReflectAllocation> {
-        self.allocations.get(id).cloned()
+    // pub fn get(&self, id: &ReflectAllocationId) -> Option<ReflectAllocation> {
+    //     self.allocations.get(id).cloned()
+    // }
+
+    pub fn insert(
+        &mut self,
+        id: ReflectAllocationId,
+        value: ReflectAllocation,
+    ) -> Option<ReflectAllocation> {
+        self.allocations.insert(id, value)
+    }
+
+    pub fn remove(&mut self, id: &ReflectAllocationId) -> Option<ReflectAllocation> {
+        println!("removing {:?}", id);
+        self.allocations.remove(id)
     }
 
     pub fn get_type_id(&self, id: &ReflectAllocationId) -> Option<TypeId> {
         self.types.get(&id.id()).cloned()
     }
 
-    pub fn get_mut(&self, id: &ReflectAllocationId) -> Option<ReflectAllocation> {
-        self.allocations.get(id).cloned()
+    pub fn get_mut(&mut self, id: &ReflectAllocationId) -> Option<&mut ReflectAllocation> {
+        self.allocations.get_mut(id)
+    }
+
+    pub fn get(&self, id: &ReflectAllocationId) -> Option<&ReflectAllocation> {
+        self.allocations.get(id)
     }
 
     /// Deallocates the [`PartialReflect`] value with the given [`AllocationId`]
@@ -199,7 +205,7 @@ mod test {
     #[test]
     fn test_reflect_allocator_garbage_clean() {
         let mut allocator = ReflectAllocator::default();
-        let (id, _) = allocator.allocate(0);
+        let id = allocator.allocate(0);
         assert_eq!(allocator.allocations.len(), 1);
         drop(id);
         allocator.clean_garbage_allocations();
@@ -209,7 +215,7 @@ mod test {
     #[test]
     fn test_reflect_allocator_garbage_clean_no_garbage() {
         let mut allocator = ReflectAllocator::default();
-        let (_id, _) = allocator.allocate(0);
+        let _id = allocator.allocate(0);
         assert_eq!(allocator.allocations.len(), 1);
         allocator.clean_garbage_allocations();
         assert_eq!(allocator.allocations.len(), 1);

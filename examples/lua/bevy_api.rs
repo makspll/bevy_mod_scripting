@@ -71,6 +71,9 @@ pub fn send_event(mut writer: EventWriter<ScriptCallbackEvent<()>>) {
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
+    app.register_type::<Vec<Entity>>();
+    app.register_type_data::<Vec<Entity>, ReflectFromReflect>();
+
     app.add_plugins(DefaultPlugins)
         .add_plugins(LuaScriptingPlugin::<()>::default())
         .add_plugins(BevyFunctionsPlugin)
