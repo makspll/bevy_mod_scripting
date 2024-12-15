@@ -15,10 +15,7 @@ use crate::{
     reflection_extensions::{PartialReflectExt, TypeIdExtensions, TypeInfoExtensions},
 };
 
-use super::{
-    pretty_print::DisplayWithWorld, ReflectReference, ReflectionPathElem, WorldAccessGuard,
-    WorldGuard,
-};
+use super::{pretty_print::DisplayWithWorld, ReflectReference, WorldGuard};
 
 /// An abstraction of values that can be passed to and from scripts.
 /// This allows us to re-use logic between scripting languages.
@@ -34,16 +31,14 @@ pub enum ScriptValue {
     World,
 }
 
-impl TryFrom<ScriptValue> for ReflectionPathElem {
+impl TryFrom<ScriptValue> for ParsedPath {
     type Error = ScriptError;
     fn try_from(value: ScriptValue) -> Result<Self, Self::Error> {
         Ok(match value {
-            ScriptValue::Integer(i) => {
-                ReflectionPathElem::Reflection(ParsedPath::from(vec![OffsetAccess {
-                    access: bevy::reflect::Access::ListIndex(i as usize),
-                    offset: Some(1),
-                }]))
-            }
+            ScriptValue::Integer(i) => ParsedPath::from(vec![OffsetAccess {
+                access: bevy::reflect::Access::ListIndex(i as usize),
+                offset: Some(1),
+            }]),
             ScriptValue::Float(v) => {
                 return Err(ValueConversionError::InvalidIndex {
                     index: v.to_string().into(),
@@ -58,11 +53,11 @@ impl TryFrom<ScriptValue> for ReflectionPathElem {
                             access: bevy::reflect::Access::TupleIndex(index),
                             offset: Some(1),
                         }]);
-                        return Ok(ReflectionPathElem::Reflection(parsed_path));
+                        return Ok(parsed_path);
                     }
                 }
 
-                let path = match cow {
+                match cow {
                     Cow::Borrowed(v) => ParsedPath::parse_static(v).map_err(|e| {
                         ValueConversionError::InvalidIndex {
                             index: v.into(),
@@ -77,9 +72,7 @@ impl TryFrom<ScriptValue> for ReflectionPathElem {
                             reason: Some(e.to_string().into()),
                         })?
                     }
-                };
-
-                ReflectionPathElem::new_reflection(path)
+                }
             }
             ScriptValue::Reference(reflect_reference) => {
                 return Err(ValueConversionError::InvalidIndex {
@@ -88,7 +81,7 @@ impl TryFrom<ScriptValue> for ReflectionPathElem {
                     reason: Some("References cannot be used as indices".into()),
                 })?
             }
-            _ => ReflectionPathElem::Identity,
+            _ => ParsedPath(vec![]),
         })
     }
 }
@@ -281,6 +274,10 @@ impl FromScriptValue for dyn PartialReflect {
             // TODO: if these types ever support reflect, we can uncomment these lines
             // For some of these we specifically require the borrowed static variant, this will never let you use a dynamically created string from the script
             // we should instead allocate and leak perhaps. then garbage collect later
+
+            // support for arbitrary arg types
+            t if t == TypeId::of::<ScriptValue>() => return Some(Ok(Box::new(value))),
+
             t if t == TypeId::of::<()>() => {
                 return <()>::from_script_value(value, world, target_type_id)
             }
@@ -486,77 +483,19 @@ impl IntoScriptValue for f64 {
     }
 }
 
-impl IntoScriptValue for i8 {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
-        Ok(ScriptValue::Integer(self as i64))
-    }
+macro_rules! into_script_value_integers {
+    ($($ty:ty),*) => {
+        $(
+            impl IntoScriptValue for $ty {
+                fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
+                    Ok(ScriptValue::Integer(self as i64))
+                }
+            }
+        )*
+    };
 }
 
-impl IntoScriptValue for i16 {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
-        Ok(ScriptValue::Integer(self as i64))
-    }
-}
-
-impl IntoScriptValue for i32 {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
-        Ok(ScriptValue::Integer(self as i64))
-    }
-}
-
-impl IntoScriptValue for i64 {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
-        Ok(ScriptValue::Integer(self))
-    }
-}
-
-impl IntoScriptValue for i128 {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
-        Ok(ScriptValue::Integer(self as i64))
-    }
-}
-
-impl IntoScriptValue for isize {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
-        Ok(ScriptValue::Integer(self as i64))
-    }
-}
-
-impl IntoScriptValue for u8 {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
-        Ok(ScriptValue::Integer(self as i64))
-    }
-}
-
-impl IntoScriptValue for u16 {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
-        Ok(ScriptValue::Integer(self as i64))
-    }
-}
-
-impl IntoScriptValue for u32 {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
-        Ok(ScriptValue::Integer(self as i64))
-    }
-}
-
-impl IntoScriptValue for u64 {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
-        Ok(ScriptValue::Integer(self as i64))
-    }
-}
-
-impl IntoScriptValue for u128 {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
-        Ok(ScriptValue::Integer(self as i64))
-    }
-}
-
-impl IntoScriptValue for usize {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
-        Ok(ScriptValue::Integer(self as i64))
-    }
-}
+into_script_value_integers!(i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize);
 
 impl IntoScriptValue for Box<str> {
     fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
@@ -1008,7 +947,7 @@ mod test {
         utils::HashMap,
     };
 
-    use crate::prelude::AppReflectAllocator;
+    use crate::{bindings::WorldAccessGuard, prelude::AppReflectAllocator};
 
     use super::*;
 

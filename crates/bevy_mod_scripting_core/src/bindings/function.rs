@@ -1,4 +1,4 @@
-use std::{borrow::Cow, ops::Deref, sync::Arc};
+use std::{any::TypeId, borrow::Cow, ops::Deref, sync::Arc};
 
 use bevy::reflect::{
     func::{
@@ -57,12 +57,24 @@ impl CallableWithAccess for DynamicFunction<'_> {
         // 4. Relinquish access to the caller for the return value
         // 5. Release the access for each argument
         // 6. Return the result
-        let arg_iter = args.into_iter();
+        let mut arg_iter = args.into_iter().peekable();
 
-        let (mut args_list, mut accesses) =
-            arg_iter.into_args_list_with_access(info, world.clone())?;
+        // we also want to add the world arg if it's required as the first arg but not present
+        let (mut args_list, mut accesses) = if self.first_arg_is_world()
+            && !arg_iter
+                .peek()
+                .map(|a| a == &ScriptValue::World)
+                .unwrap_or(false)
+        {
+            std::iter::once(ScriptValue::World)
+                .chain(arg_iter)
+                .into_args_list_with_access(info, world.clone())?
+        } else {
+            arg_iter.into_args_list_with_access(info, world.clone())?
+        };
 
         let mut final_args_list = ArgList::default();
+
         // we sometimes want to use the boxed value in the arg instead of allocating and refing to it.
         // for this reason let's be lenient in calling functions. Allow passing owned values as refs
         for (arg, info) in args_list.iter_mut().zip(info.iter()) {
@@ -137,7 +149,11 @@ impl<I: Iterator<Item = ScriptValue>> IntoArgsListWithAccess for I {
 
         for (value, arg_info) in self.zip(arg_info.iter()) {
             match value {
-                ScriptValue::Reference(arg_ref) => {
+                // TODO: I'd see the logic be a bit cleaner, this if is needed to support 'Raw' ScriptValue arguments
+                // as we do not want to claim any access since we're not using the value yet
+                ScriptValue::Reference(arg_ref)
+                    if arg_info.type_id() != TypeId::of::<ScriptValue>() =>
+                {
                     let access_id =
                     ReflectAccessId::for_reference(arg_ref.base.base_id.clone()).ok_or_else(|| {
                         ScriptError::new_reflection_error(format!(
@@ -210,6 +226,38 @@ impl<I: Iterator<Item = ScriptValue>> IntoArgsListWithAccess for I {
         }
 
         Ok((arg_list, accesses))
+    }
+}
+
+pub trait DynamicFunctionExt {
+    fn first_arg_is_world(&self) -> bool;
+}
+
+impl DynamicFunctionExt for DynamicFunction<'_> {
+    fn first_arg_is_world(&self) -> bool {
+        self.info().args().first().map_or(false, |arg| {
+            arg.type_id() == std::any::TypeId::of::<WorldCallbackAccess>()
+        })
+    }
+}
+
+pub trait ArgValueExt {
+    fn is_type_id(&self, type_id: std::any::TypeId) -> bool;
+}
+
+impl ArgValueExt for ArgValue<'_> {
+    fn is_type_id(&self, type_id: std::any::TypeId) -> bool {
+        match self {
+            ArgValue::Owned(r) => r
+                .get_represented_type_info()
+                .map_or(false, |t| t.type_id() == type_id),
+            ArgValue::Ref(r) => r
+                .get_represented_type_info()
+                .map_or(false, |t| t.type_id() == type_id),
+            ArgValue::Mut(r) => r
+                .get_represented_type_info()
+                .map_or(false, |t| t.type_id() == type_id),
+        }
     }
 }
 

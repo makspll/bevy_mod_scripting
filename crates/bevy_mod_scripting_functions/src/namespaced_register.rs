@@ -15,6 +15,16 @@ pub trait RegisterNamespacedFunction {
         N: Into<Cow<'static, str>>,
         S: IntoNamespace,
         F: IntoFunction<'static, M> + 'static;
+
+    fn overwrite_namespaced_function<S, N, F, M>(
+        &mut self,
+        name: N,
+        function: F,
+    ) -> Option<DynamicFunction<'static>>
+    where
+        N: Into<Cow<'static, str>>,
+        S: IntoNamespace,
+        F: IntoFunction<'static, M> + 'static;
 }
 
 pub trait GetNamespacedFunction {
@@ -81,6 +91,21 @@ impl RegisterNamespacedFunction for FunctionRegistry {
         self.register_with_name(function_name, function)?;
         Ok(())
     }
+
+    fn overwrite_namespaced_function<S, N, F, M>(
+        &mut self,
+        name: N,
+        function: F,
+    ) -> Option<DynamicFunction<'static>>
+    where
+        N: Into<Cow<'static, str>>,
+        S: IntoNamespace,
+        F: IntoFunction<'static, M> + 'static,
+    {
+        let cow: Cow<'static, str> = name.into();
+        let function_name = S::into_namespace().function_name(cow);
+        self.overwrite_registration_with_name(function_name, function)
+    }
 }
 
 impl GetNamespacedFunction for FunctionRegistry {
@@ -120,7 +145,7 @@ impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
         }
     }
 
-    pub fn register_function<N, F, M>(
+    pub fn register<N, F, M>(
         &mut self,
         name: N,
         function: F,
@@ -132,5 +157,15 @@ impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
         self.registry
             .register_namespaced_function::<S, _, F, M>(name, function)?;
         Ok(self)
+    }
+
+    pub fn overwrite<N, F, M>(&mut self, name: N, function: F) -> &mut Self
+    where
+        N: Into<Cow<'static, str>>,
+        F: IntoFunction<'static, M> + 'static,
+    {
+        self.registry
+            .overwrite_namespaced_function::<S, _, F, M>(name, function);
+        self
     }
 }

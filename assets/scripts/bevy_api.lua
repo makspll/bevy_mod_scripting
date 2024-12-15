@@ -8,6 +8,7 @@ end
 
     
 function on_event()
+    world:exit()
 
     print(entity) 
     print(script)
@@ -20,12 +21,12 @@ function on_event()
     print("Before script: ", comp:print_value())
 
     print("\noption")
+    -- print(comp:get("option_usize"))
     print(comp.option_usize)
     comp.option_usize = 69
     print(comp.option_usize)
     comp.option_usize = nil
     print(comp.option_usize)
-    world:exit()
     print("\nvec")
     -- print(table_to_string(comp.vec_of_usize))
     comp.vec_of_usize = {42,69,72}

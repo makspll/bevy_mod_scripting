@@ -44,7 +44,7 @@ pub struct ReflectReference {
     // TODO: experiment with Fixed capacity vec, boxed array etc, compromise between heap allocation and runtime cost
     // needs benchmarks first though
     /// The path from the top level type to the actual value we want to access
-    pub reflect_path: Vec<ReflectionPathElem>,
+    pub reflect_path: ParsedPath,
 }
 
 /// Specifies where we should source the type id from when reflecting a ReflectReference
@@ -90,7 +90,7 @@ impl ReflectReference {
                 type_id: TypeId::of::<WorldCallbackAccess>(),
                 base_id: ReflectBase::World,
             },
-            reflect_path: Vec::default(),
+            reflect_path: ParsedPath(Vec::default()),
         }
     }
 
@@ -105,7 +105,7 @@ impl ReflectReference {
                 type_id,
                 base_id: ReflectBase::Owned(id),
             },
-            reflect_path: Vec::default(),
+            reflect_path: ParsedPath(Vec::default()),
         }
     }
 
@@ -120,7 +120,7 @@ impl ReflectReference {
                 type_id,
                 base_id: ReflectBase::Owned(id),
             },
-            reflect_path: Vec::default(),
+            reflect_path: ParsedPath(Vec::default()),
         }
     }
 
@@ -131,7 +131,7 @@ impl ReflectReference {
                 type_id: TypeId::of::<T>(),
                 base_id: ReflectBase::Resource(reflect_id.into()),
             },
-            reflect_path: Vec::default(),
+            reflect_path: ParsedPath(Vec::default()),
         })
     }
 
@@ -145,15 +145,15 @@ impl ReflectReference {
                 type_id: TypeId::of::<T>(),
                 base_id: ReflectBase::Component(entity, reflect_id.into()),
             },
-            reflect_path: Vec::default(),
+            reflect_path: ParsedPath(Vec::default()),
         })
     }
 
     /// Indexes into the reflect path inside this reference.
     /// You can use [`Self::reflect`] and [`Self::reflect_mut`] to get the actual value.
-    pub fn index_path<T: Into<ReflectionPathElem>>(&mut self, index: T) {
+    pub fn index_path<T: Into<ParsedPath>>(&mut self, index: T) {
         debug_assert!(!matches!(self.base.base_id, ReflectBase::World), "Trying to index into a world reference. This will always fail");
-        self.reflect_path.push(index.into());
+        self.reflect_path.0.extend(index.into().0);
     }
 
 
@@ -457,26 +457,14 @@ impl ReflectReference {
     }
 
     fn walk_path<'a>(&self, root: &'a dyn PartialReflect) -> ScriptResult<&'a dyn PartialReflect> {
-        let mut current = root;
-        for elem in self.reflect_path.iter() {
-            current = elem
-                .reflect_element(current)
-                .map_err(|e| ScriptError::new_reflection_error(e.to_string()))?;
-        }
-        Ok(current)
+        self.reflect_path.reflect_element(root).map_err(|e| ScriptError::new_reflection_error(e.to_string()))
     }
 
     fn walk_path_mut<'a>(
         &self,
         root: &'a mut dyn PartialReflect,
     ) -> ScriptResult<&'a mut dyn PartialReflect> {
-        let mut current = root;
-        for elem in self.reflect_path.iter() {
-            current = elem
-                .reflect_element_mut(current)
-                .map_err(|e| ScriptError::new_reflection_error(e.to_string()))?;
-        }
-        Ok(current)
+        self.reflect_path.reflect_element_mut(root).map_err(|e| ScriptError::new_reflection_error(e.to_string()))
     }
 }
 
@@ -548,168 +536,35 @@ fn map_key_to_concrete(key: &str, key_type_id: TypeId) -> Option<Box<dyn Partial
 }
 
 
+pub trait ReflectionPathExt {
+    fn convert_to_0_indexed(&mut self);
 
-/// An element in the reflection path, the base reference included
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum ReflectionPathElem {
-    /// A standard reflection path, i.e. `.field_name[vec_index]`, pre-parsed since we construct once potentially use many times
-    Reflection(ParsedPath),
-    /// a deferred reflection
-    DeferredReflection(DeferredReflection),
-    /// a map access, i.e. a reference to the key in a map
-    MapAccess(String),
-    /// a no-op reflection, i.e. a reference to the base object, useful identity to have
-    Identity
+    fn is_empty(&self) -> bool;
+
+    fn iter(&self) -> impl Iterator<Item = &bevy::reflect::OffsetAccess>;
 }
 
-impl ReflectionPathElem {
-    pub fn new_reflection<I: Into<ParsedPath>>(path: I) -> Self {
-        Self::Reflection(path.into())
-    }
-
-    pub fn new_deferred<I: Into<DeferredReflection>>(defref: I) -> Self {
-        Self::DeferredReflection(defref.into())
-    }
+impl ReflectionPathExt for ParsedPath {
 
     /// Assumes the accesses are 1 indexed and converts them to 0 indexed
-    pub fn convert_to_0_indexed(&mut self){
-        match self {
-            ReflectionPathElem::Reflection(path) => {
-                path.0.iter_mut().for_each(|a| match a.access {
-                    bevy::reflect::Access::FieldIndex(ref mut i) => *i -= 1,
-                    bevy::reflect::Access::TupleIndex(ref mut i) => *i -= 1,
-                    bevy::reflect::Access::ListIndex(ref mut i) => *i -= 1,
-                    _ => {}
-                });
-            },
-            ReflectionPathElem::DeferredReflection(_) => {},
-            ReflectionPathElem::MapAccess(_) => {},
-            ReflectionPathElem::Identity => {},
-        };
-    }
-}
-
-impl<A: 'static, B: 'static> From<(A, B)> for DeferredReflection
-where
-    A: Fn(&dyn PartialReflect) -> Result<&dyn PartialReflect, ReflectPathError<'static>>
-        + Send
-        + Sync,
-    B: Fn(&mut dyn PartialReflect) -> Result<&mut dyn PartialReflect, ReflectPathError<'static>>
-        + Send
-        + Sync,
-{
-    fn from((get, get_mut): (A, B)) -> Self {
-        Self {
-            get: Arc::new(get),
-            get_mut: Arc::new(get_mut),
-        }
-    }
-}
-
-impl<T: Into<DeferredReflection>> From<T> for ReflectionPathElem {
-    fn from(value: T) -> Self {
-        Self::DeferredReflection(value.into())
-    }
-}
-
-impl From<ParsedPath> for ReflectionPathElem {
-    fn from(value: ParsedPath) -> Self {
-        Self::Reflection(value)
-    }
-}
-
-impl<'a> ReflectPath<'a> for &'a ReflectionPathElem {
-    fn reflect_element<'r>(
-        self,
-        root: &'r dyn PartialReflect,
-    ) -> Result<&'r dyn PartialReflect, ReflectPathError<'a>> {
-        match self {
-            ReflectionPathElem::Reflection(path) => path.reflect_element(root),
-            ReflectionPathElem::DeferredReflection(f) => (f.get)(root),
-            ReflectionPathElem::Identity => Ok(root),
-            ReflectionPathElem::MapAccess(key) => {
-                if let ReflectRef::Map(map) = root.reflect_ref() {
-                    let key_type_id = map.key_type_id().expect("Expected map keys to represent a type to be able to assign values");
-                    let key = map_key_to_concrete(key, key_type_id)
-                        .ok_or(ReflectPathError::InvalidDowncast)?;
-                    map.get(key.as_ref()).ok_or(ReflectPathError::InvalidDowncast)
-                } else {
-                    Err(ReflectPathError::InvalidDowncast)
-                }
-            },
-            
-        }
+    fn convert_to_0_indexed(&mut self){
+        self.0.iter_mut().for_each(|a| match a.access {
+            bevy::reflect::Access::FieldIndex(ref mut i) => *i -= 1,
+            bevy::reflect::Access::TupleIndex(ref mut i) => *i -= 1,
+            bevy::reflect::Access::ListIndex(ref mut i) => *i -= 1,
+            _ => {}
+        });
     }
 
-    fn reflect_element_mut<'r>(
-        self,
-        root: &'r mut dyn PartialReflect,
-    ) -> Result<&'r mut dyn PartialReflect, ReflectPathError<'a>> {
-        match self {
-            ReflectionPathElem::Reflection(path) => path.reflect_element_mut(root),
-            ReflectionPathElem::DeferredReflection(defref) => (defref.get_mut)(root),
-            ReflectionPathElem::Identity => Ok(root),
-            ReflectionPathElem::MapAccess(key) => {
-                if let ReflectMut::Map(map) = root.reflect_mut() {
-                    let key_type_id = map.key_type_id().expect("Expected map keys to represent a type to be able to assign values");
-                    let key = map_key_to_concrete(key, key_type_id)
-                        .ok_or(ReflectPathError::InvalidDowncast)?;
-                    map.get_mut(key.as_ref()).ok_or(ReflectPathError::InvalidDowncast)
-                } else {
-                    Err(ReflectPathError::InvalidDowncast)
-                }
-            },
-            
-        }
+    fn is_empty(&self) -> bool {
+        self.0.is_empty()
     }
-}
 
-/// A ReflectPath which can perform arbitrary operations on the root object to produce a sub-reference
-#[derive(Clone)]
-pub struct DeferredReflection {
-    pub get: Arc<
-        dyn Fn(&dyn PartialReflect) -> Result<&dyn PartialReflect, ReflectPathError<'static>>
-            + Send
-            + Sync,
-    >,
-    pub get_mut: Arc<
-        dyn Fn(
-                &mut dyn PartialReflect,
-            ) -> Result<&mut dyn PartialReflect, ReflectPathError<'static>>
-            + Send
-            + Sync,
-    >,
-}
-
-/// Given a function, repeats it with a mutable reference for the get_mut deferred variant
-#[macro_export]
-macro_rules! new_deferred_reflection {
-    (|$root:ident| {$($get:tt)*}) => {
-        $crate::bindings::reference::DeferredReflection::from((
-            |$root: &dyn PartialReflect| -> Result<&dyn PartialReflect, bevy::reflect::ReflectPathError<'static>> {
-                $($get)*
-            },
-            |$root: &mut dyn PartialReflect| -> Result<&mut dyn PartialReflect, bevy::reflect::ReflectPathError<'static>> {
-                $($get)*
-            },
-        ))
-    };
-}
-
-
-impl Debug for DeferredReflection {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("DeferredReflection")
+    fn iter(&self) -> impl Iterator<Item = &bevy::reflect::OffsetAccess> {
+        self.0.iter()
     }
+    
 }
-
-impl PartialEq for DeferredReflection {
-    fn eq(&self, other: &Self) -> bool {
-        Arc::ptr_eq(&self.get, &other.get) && Arc::ptr_eq(&self.get_mut, &other.get_mut)
-    }
-}
-
-impl Eq for DeferredReflection {}
 
 
 /// A generic iterator over any reflected value.
@@ -744,7 +599,7 @@ impl ReflectRefIter {
             IterationKey::Index(i) => {
                 let mut next = self.base.clone();
                 let parsed_path = ParsedPath::parse(&format!("[{}]", *i)).expect("invariant violated");
-                next.index_path(ReflectionPathElem::Reflection(parsed_path));
+                next.index_path(parsed_path);
                 *i += 1;
                 next
             }
@@ -762,7 +617,7 @@ impl Iterator for ReflectRefIter {
                 IterationKey::Index(i) => {
                     let mut next = self.base.clone();
                     let parsed_path = ParsedPath::parse(&i.to_string()).unwrap();
-                    next.index_path(ReflectionPathElem::Reflection(parsed_path));
+                    next.index_path(parsed_path);
                     *i += 1;
                     Ok(next)
                 }

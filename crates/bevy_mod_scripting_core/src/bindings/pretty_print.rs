@@ -1,8 +1,8 @@
 use crate::reflection_extensions::TypeIdExtensions;
 
 use super::{
-    script_val::ScriptValue, ReflectBase, ReflectBaseType, ReflectReference, ReflectionPathElem,
-    WorldAccessGuard, WorldGuard,
+    script_val::ScriptValue, ReflectBase, ReflectBaseType, ReflectReference, WorldAccessGuard,
+    WorldGuard,
 };
 use bevy::reflect::{PartialReflect, ReflectRef};
 use itertools::Itertools;
@@ -96,22 +96,7 @@ impl ReflectReferencePrinter {
 
         Self::pretty_print_base(&self.reference.base, world.clone(), &mut pretty_path);
 
-        for elem in self.reference.reflect_path.iter() {
-            match elem {
-                ReflectionPathElem::Reflection(path) => {
-                    pretty_path.push_str(&path.to_string());
-                }
-                ReflectionPathElem::DeferredReflection(_) => {
-                    pretty_path.push_str(".<Deferred>");
-                }
-                ReflectionPathElem::Identity => {
-                    pretty_path.push_str("");
-                }
-                ReflectionPathElem::MapAccess(key) => {
-                    pretty_path.push_str(&format!("[{}]", key));
-                }
-            }
-        }
+        pretty_path.push_str(&self.reference.reflect_path.to_string());
 
         if let Some(tail_type_id) = tail_type_id {
             let type_path = {

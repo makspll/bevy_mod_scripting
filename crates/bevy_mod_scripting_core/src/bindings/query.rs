@@ -7,7 +7,7 @@ use crate::{
 use bevy::{
     ecs::{component::ComponentId, entity::Entity},
     prelude::{EntityRef, QueryBuilder},
-    reflect::{Reflect, TypeRegistration},
+    reflect::{ParsedPath, Reflect, TypeRegistration},
 };
 use std::{any::TypeId, collections::VecDeque, sync::Arc};
 
@@ -144,7 +144,7 @@ impl<'w> WorldAccessGuard<'w> {
                                     c.component_id.unwrap(),
                                 ),
                             },
-                            reflect_path: vec![],
+                            reflect_path: ParsedPath(vec![]),
                         })
                         .collect();
                     ScriptQueryResult(r.id(), references)

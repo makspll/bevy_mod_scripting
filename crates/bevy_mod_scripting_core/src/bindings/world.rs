@@ -29,8 +29,8 @@ use bevy::{
     },
     hierarchy::{BuildChildren, Children, DespawnRecursiveExt, Parent},
     reflect::{
-        func::args::FromArg, std_traits::ReflectDefault, PartialReflect, Reflect, TypePath,
-        TypeRegistry, TypeRegistryArc,
+        func::args::FromArg, std_traits::ReflectDefault, ParsedPath, PartialReflect, Reflect,
+        TypePath, TypeRegistry, TypeRegistryArc,
     },
     utils::HashMap,
 };
@@ -698,7 +698,7 @@ impl<'w> WorldAccessGuard<'w> {
                         .expect("Component does not have type id"),
                     base_id: ReflectBase::Component(entity.id(), component_id),
                 },
-                reflect_path: Default::default(),
+                reflect_path: ParsedPath(vec![]),
             }))
         } else {
             Ok(None)
@@ -751,7 +751,7 @@ impl<'w> WorldAccessGuard<'w> {
                     .expect("Resource does not have type id"),
                 base_id: ReflectBase::Resource(resource_id),
             },
-            reflect_path: Default::default(),
+            reflect_path: ParsedPath(vec![]),
         }))
     }
 

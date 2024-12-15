@@ -10,23 +10,24 @@ use std::{
 use bevy::{
     ecs::{reflect::AppTypeRegistry, world::Mut},
     prelude::AppFunctionRegistry,
-    reflect::{OffsetAccess, ParsedPath, PartialReflect, ReflectFromReflect},
+    reflect::{
+        func::DynamicFunction, OffsetAccess, ParsedPath, PartialReflect, ReflectFromReflect,
+    },
 };
 use bevy_mod_scripting_core::{
     bindings::{
         function::CallableWithAccess,
         pretty_print::{DisplayWithWorld, ReflectReferencePrinter},
         script_val::{FromScriptValue, IntoScriptValue, ScriptValue},
-        DeferredReflection, ReflectAllocator, ReflectRefIter, ReflectReference, ReflectionPathElem,
-        TypeIdSource, WorldCallbackAccess,
+        ReflectAllocator, ReflectRefIter, ReflectReference, ReflectionPathExt, TypeIdSource,
+        WorldCallbackAccess,
     },
     error::{FunctionError, ScriptError, ScriptResult, ValueConversionError},
-    new_deferred_reflection,
     reflection_extensions::{PartialReflectExt, TypeIdExtensions},
     Either,
 };
 use bevy_mod_scripting_functions::namespaced_register::{GetNamespacedFunction, Namespace};
-use mlua::{IntoLua, Lua, MetaMethod, UserData, UserDataMethods, Value, Variadic};
+use mlua::{Function, IntoLua, Lua, MetaMethod, UserData, UserDataMethods, Value, Variadic};
 
 use super::{
     // proxy::{LuaProxied, LuaValProxy},
@@ -46,229 +47,6 @@ impl AsRef<ReflectReference> for LuaReflectReference {
     }
 }
 
-impl LuaReflectReference {
-    pub fn len(&self, lua: &Lua) -> Result<Option<usize>, mlua::Error> {
-        self.0.len(lua.get_world()).map_err(mlua::Error::external)
-    }
-
-    // pub fn concrete_from_value(
-    //     self,
-    //     value: Value,
-    //     lua: &Lua,
-    //     type_id_source: TypeIdSource,
-    // ) -> Result<Box<dyn PartialReflect>, mlua::Error> {
-    //     let world = lua.get_world();
-
-    //     let type_id = self.0.type_id_of(type_id_source, &world)?;
-
-    //     let o = ReflectReference::map_type_data(
-    //         type_id,
-    //         &world.clone(),
-    //         move |type_data: Option<Either<ReflectLuaValue, ReflectLuaProxied>>| {
-    //             let val = match type_data {
-    //                 Some(Either::Left(value_data)) => {
-    //                     bevy::log::debug!("Converting using ReflectLuaValue");
-    //                     (value_data.from_value)(value, lua)?
-    //                 }
-    //                 Some(Either::Right(proxy_data)) => {
-    //                     bevy::log::debug!("Converting using ReflectLuaProxied");
-    //                     let other = (proxy_data.from_proxy)(value, lua)?;
-    //                     other.with_reflect(&world, |r, _, _| r.clone_value())?
-    //                 }
-    //                 None => {
-    //                     bevy::log::debug!("No conversion type data found");
-    //                     return Err(ScriptError::new_runtime_error(format!(
-    //                         "Tried to convert lua value: '{value:?}', to {}: '{}'. but this type does not support conversion from lua.",
-    //                         match type_id_source {
-    //                             TypeIdSource::Key => "key type of",
-    //                             TypeIdSource::Element => "element type of",
-    //                             TypeIdSource::Tail => "",
-    //                         },
-    //                         ReflectReferencePrinter::new(self.0).pretty_print(&world),
-    //                     )));
-    //                 }
-    //             };
-    //             Ok(val)
-    //         },
-    //     )??;
-    //     Ok(o)
-    // }
-
-    // /// Queries the reflection system for a proxy registration for the underlying type.
-    // /// If found will convert to lua using this proxy
-    // /// If not found will use <Self as [`IntoLua`]>::into_lua to convert to lua
-    // pub fn to_lua_proxy(self, lua: &Lua) -> Result<Value<'_>, mlua::Error> {
-    //     // note we do not need to refer to LuaWorld here, it does not matter what the proxy is, that's pretty neat,
-    //     let world = lua.get_world();
-
-    //     let type_id = self.0.type_id_of(TypeIdSource::Tail, &world)?;
-
-    //     ReflectReference::map_type_data(
-    //         type_id,
-    //         &world,
-    //         |type_data: Option<Either<ReflectLuaValue, ReflectLuaProxied>>| match type_data {
-    //             Some(Either::Left(value_data)) => self
-    //                 .0
-    //                 .with_reflect(&world, |r| (value_data.into_value)(r, lua))?,
-    //             Some(Either::Right(proxy_data)) => Ok((proxy_data.into_proxy)(self.0, lua)?),
-    //             None => Ok(LuaReflectReference(self.0).into_lua(lua)?),
-    //         },
-    //     )?
-    // }
-
-    // pub fn set_with_lua_proxy(self, lua: &Lua, value: Value) -> Result<(), mlua::Error> {
-    //     bevy::log::debug!("Setting lua reflect reference with value: {:?}", value);
-
-    //     let world = lua.get_world();
-
-    //     let type_id = self.0.type_id_of(TypeIdSource::Tail, &world)?;
-
-    //     ReflectReference::map_type_data(
-    //         type_id,
-    //         &world.clone(),
-    //         move |type_data: Option<Either<ReflectLuaValue, ReflectLuaProxied>>| {
-    //             // let world = world.clone(); // move copy into closure
-    //             match type_data {
-    //                 Some(Either::Left(value_data)) => {
-    //                     let other = (value_data.from_value)(value, lua)?;
-    //                     self.0.with_reflect_mut(&world, |r| {
-    //                         r.try_apply(other.as_partial_reflect())
-    //                             .map_err(ScriptError::new_reflection_error)
-    //                     })?
-    //                 }
-    //                 Some(Either::Right(proxy_data)) => {
-    //                     let other = (proxy_data.from_proxy)(value, lua)?;
-    //                     let other = other.with_reflect(&world, |r, _, _| r.clone_value())?;
-    //                     // now we can set it
-    //                     self.0.with_reflect_mut(&world, |r| {
-    //                         if let Some(set) = proxy_data.opt_set {
-    //                             set(r, other)
-    //                         } else {
-    //                             r.try_apply(other.as_partial_reflect())
-    //                                 .map_err(ScriptError::new_reflection_error)?;
-    //                             Ok(())
-    //                         }
-    //                     })?
-    //                 }
-    //                 None => {
-    //                     Err(ScriptError::new_runtime_error(format!(
-    //                             "Invalid assignment `{}` = `{value:?}`. The left hand side does not support conversion from lua.",
-    //                             ReflectReferencePrinter::new(self.0).pretty_print(&world),
-    //                         )))
-    //                 }
-    //             }
-    //         },
-    //     )??;
-    //     Ok(())
-    // }
-
-    /// Adjusts all the numeric accesses in the path from 1-indexed to 0-indexed
-    pub fn to_host_index(path: &mut ParsedPath) {
-        path.0.iter_mut().for_each(|a| match a.access {
-            bevy::reflect::Access::FieldIndex(ref mut i) => *i -= 1,
-            bevy::reflect::Access::TupleIndex(ref mut i) => *i -= 1,
-            bevy::reflect::Access::ListIndex(ref mut i) => *i -= 1,
-            _ => {}
-        });
-    }
-
-    /// Adjusts all the numeric accesses in the path from 0-indexed to 1-indexed
-    pub fn from_host_index(path: &mut ParsedPath) {
-        path.0.iter_mut().for_each(|a| match a.access {
-            bevy::reflect::Access::FieldIndex(ref mut i) => *i += 1,
-            bevy::reflect::Access::TupleIndex(ref mut i) => *i += 1,
-            bevy::reflect::Access::ListIndex(ref mut i) => *i += 1,
-            _ => {}
-        });
-    }
-
-    pub fn parse_value_index(value: Value) -> Result<ParsedPath, mlua::Error> {
-        if let Some(num) = value.as_usize() {
-            Ok(vec![OffsetAccess {
-                access: bevy::reflect::Access::ListIndex(num),
-                offset: Some(1),
-            }]
-            .into())
-        } else if let Some(key) = value.as_str() {
-            if let Some(tuple_struct_index) = key.strip_prefix("_") {
-                if let Ok(index) = tuple_struct_index.parse::<usize>() {
-                    return Ok(vec![OffsetAccess {
-                        access: bevy::reflect::Access::TupleIndex(index),
-                        offset: Some(1),
-                    }]
-                    .into());
-                }
-            }
-
-            ParsedPath::parse(key).map_err(|e| mlua::Error::external(e.to_string()))
-        } else {
-            Err(mlua::Error::external("Invalid index"))
-        }
-    }
-}
-
-// impl<'lua> IntoLua<'lua> for LuaReflectReference {
-//     fn into_lua(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
-//         // if we are a primitive type, we can convert to lua directly
-//         let world = lua.get_world();
-
-//         let value = self.0.with_reflect(&world, |r| {
-//             let tail_type_id = r
-//                 .get_represented_type_info()
-//                 .map(|i| i.type_id())
-//                 .type_id_or_fake_id();
-
-//             if let Ok(v) = r.as_option() {
-//                 if let Some(v) = v {
-//                     return Ok(v);
-//                 }
-//             }
-
-//             into_lua_cases!(
-//                 lua,
-//                 world,
-//                 self,
-//                 r,
-//                 [
-//                     // TODO: after update to mlua 10, we can use the new `IntoLua` impls for these types
-//                     &'static str,
-//                     &'static CStr,
-//                     // &'static OsStr,
-//                     // &'static Path,
-//                     Cow<'static, str>,
-//                     Cow<'static, CStr>,
-//                     bool,
-//                     f32,
-//                     f64,
-//                     i8,
-//                     i16,
-//                     i32,
-//                     i64,
-//                     i128,
-//                     isize,
-//                     u8,
-//                     u16,
-//                     u32,
-//                     u64,
-//                     u128,
-//                     usize,
-//                     Box<str>,
-//                     CString,
-//                     String
-//                     // OsString,
-//                     // PathBuf
-//                 ]
-//             );
-//         });
-//     }
-// }
-
-// impl_userdata_from_lua!(LuaReflectReference);
-
-// impl LuaProxied for ReflectReference {
-//     type Proxy = LuaReflectReference;
-// }
-
 impl From<LuaReflectReference> for ReflectReference {
     fn from(value: LuaReflectReference) -> Self {
         value.0
@@ -281,87 +59,91 @@ impl From<ReflectReference> for LuaReflectReference {
     }
 }
 
+/// Looks up a function in the registry on the given type id
+fn lookup_function<'lua>(
+    lua: &'lua Lua,
+    key: &str,
+    type_id: TypeId,
+) -> Option<Result<Function<'lua>, mlua::Error>> {
+    let function = lookup_dynamic_function(lua, key, type_id);
+
+    function.map(|function| {
+        lua.create_function(move |lua, args: Variadic<LuaScriptValue>| {
+            let world = lua.get_world();
+            let out = function.dynamic_call(args.into_iter().map(Into::into), world)?;
+
+            Ok(LuaScriptValue::from(out))
+        })
+    })
+}
+
+fn lookup_dynamic_function<'lua>(
+    lua: &'lua Lua,
+    key: &str,
+    type_id: TypeId,
+) -> Option<DynamicFunction<'static>> {
+    let function_registry = lua
+        .get_world()
+        .with_resource(|registry: &AppFunctionRegistry| registry.clone());
+    let registry = function_registry.read();
+
+    registry
+        .get_namespaced_function(key.to_string(), Namespace::OnType(type_id))
+        .cloned()
+}
+
+fn lookup_dynamic_function_typed<'lua, T: 'static + ?Sized>(
+    lua: &'lua Lua,
+    key: &str,
+) -> Option<Result<DynamicFunction<'static>, mlua::Error>> {
+    let type_id = TypeId::of::<T>();
+    let function = lookup_dynamic_function(lua, key, type_id);
+
+    function.map(Ok)
+}
+
 impl UserData for LuaReflectReference {
     fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(m: &mut T) {
         m.add_meta_function(
             MetaMethod::Index,
             |lua, (self_, key): (LuaReflectReference, LuaScriptValue)| {
                 let world = lua.get_world();
-                let mut self_: ReflectReference = self_.into();
+                let self_: ReflectReference = self_.into();
                 let type_id = self_.tail_type_id(world.clone())?.type_id_or_fake_id();
 
                 let key: ScriptValue = key.into();
 
                 if let ScriptValue::String(ref key) = key {
-                    let function_registry =
-                        world.with_resource(|registry: &AppFunctionRegistry| registry.clone());
-                    let registry = function_registry.read();
-
-                    if let Some(func) =
-                        registry.get_namespaced_function(key.clone(), Namespace::OnType(type_id))
-                    {
-                        let func = func.clone();
-                        let func =
-                            lua.create_function(move |_, args: Variadic<LuaScriptValue>| {
-                                let out = func.dynamic_call(
-                                    args.into_iter().map(Into::into),
-                                    world.clone(),
-                                )?;
-
-                                Ok(LuaScriptValue::from(out))
-                            })?;
-
-                        return func.into_lua(lua);
+                    if let Some(func) = lookup_function(lua, key, type_id) {
+                        return func?.into_lua(lua);
                     }
                 };
 
-                let mut reflect_path: ReflectionPathElem = key.try_into()?;
-                reflect_path.convert_to_0_indexed();
-                self_.index_path(reflect_path);
-                let script_value = self_.with_reflect(world.clone(), |r| {
-                    <&dyn PartialReflect>::into_script_value(r, world.clone())
-                })??;
-                LuaScriptValue::from(script_value).into_lua(lua)
+                // lookup get function
+                let index_func =
+                    lookup_dynamic_function_typed::<ReflectReference>(lua, "get_1_indexed")
+                        .expect("No 'get' function registered for a ReflectReference")?;
+
+                // call the function with the key
+                let out = index_func
+                    .dynamic_call(vec![ScriptValue::Reference(self_), key], world.clone())?;
+                LuaScriptValue::from(out).into_lua(lua)
             },
         );
 
         m.add_meta_function(
             MetaMethod::NewIndex,
             |lua, (self_, key, value): (LuaReflectReference, LuaScriptValue, LuaScriptValue)| {
-                let mut self_: ReflectReference = self_.into();
+                let self_: ReflectReference = self_.into();
                 let key: ScriptValue = key.into();
                 let value: ScriptValue = value.into();
-                let mut reflect_path: ReflectionPathElem = key.try_into()?;
-                reflect_path.convert_to_0_indexed();
 
-                let world = lua.get_world();
-
-                self_.index_path(reflect_path);
-                self_.with_reflect_mut(world.clone(), |r| {
-                    let target_type_id = r
-                        .get_represented_type_info()
-                        .map(|i| i.type_id())
-                        .type_id_or_fake_id();
-                    let other = <dyn PartialReflect>::from_script_value(
-                        value,
-                        world.clone(),
-                        target_type_id,
-                    )
-                    .transpose()?
-                    .ok_or_else(|| ValueConversionError::TypeMismatch {
-                        expected_type: target_type_id.display_with_world(world.clone()).into(),
-                        actual_type: Some(
-                            r.get_represented_type_info()
-                                .map(|i| i.type_id())
-                                .type_id_or_fake_id()
-                                .display_with_world(world.clone())
-                                .into(),
-                        ),
-                    })?;
-
-                    r.try_apply(other.as_partial_reflect())?;
-                    Ok::<_, ScriptError>(())
-                })??;
+                lookup_dynamic_function_typed::<ReflectReference>(lua, "set_1_indexed")
+                    .expect("No 'set' function registered for a ReflectReference")?
+                    .dynamic_call(
+                        vec![ScriptValue::Reference(self_), key, value],
+                        lua.get_world(),
+                    )?;
 
                 Ok(())
             },
