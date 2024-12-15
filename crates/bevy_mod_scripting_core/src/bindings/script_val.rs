@@ -42,7 +42,11 @@ pub enum ScriptValue {
     World,
 }
 
-// impl Into<ScriptValue> for ScriptResult<>
+impl From<()> for ScriptValue {
+    fn from(_: ()) -> Self {
+        ScriptValue::Unit
+    }
+}
 
 impl From<bool> for ScriptValue {
     fn from(value: bool) -> Self {

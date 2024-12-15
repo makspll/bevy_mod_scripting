@@ -12,6 +12,7 @@ use bindings::{
     ReflectReference, ReflectionPathExt, ScriptTypeRegistration, WorldAccessGuard,
     WorldCallbackAccess,
 };
+use error::InteropError;
 use reflection_extensions::TypeIdExtensions;
 
 use crate::namespaced_register::NamespaceBuilder;
@@ -101,7 +102,7 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
                     let path: ParsedPath = key.try_into().unwrap();
 
                     self_.index_path(path);
-                    self_
+                    let r: ScriptValue = self_
                         .with_reflect_mut(world.clone(), |r| {
                             let target_type_id = r
                                 .get_represented_type_info()
@@ -112,14 +113,13 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
                                 world.clone(),
                                 target_type_id,
                             )
-                            .transpose()
-                            .unwrap()
-                            .unwrap();
+                            .ok_or_else(|| InteropError::impossible_conversion(target_type_id))??;
 
                             r.try_apply(other.as_partial_reflect()).unwrap();
-                            ScriptValue::Unit
+                            Ok::<_, InteropError>(())
                         })
-                        .unwrap();
+                        .into();
+                    return r;
                 }
                 ScriptValue::Unit
             },
@@ -134,9 +134,9 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
                     let world = world.read().expect("stale world");
                     let mut path: ParsedPath = key.try_into().unwrap();
                     path.convert_to_0_indexed();
-
                     self_.index_path(path);
-                    self_
+
+                    let r: ScriptValue = self_
                         .with_reflect_mut(world.clone(), |r| {
                             let target_type_id = r
                                 .get_represented_type_info()
@@ -147,14 +147,13 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
                                 world.clone(),
                                 target_type_id,
                             )
-                            .transpose()
-                            .unwrap()
-                            .unwrap();
+                            .ok_or_else(|| InteropError::impossible_conversion(target_type_id))??;
 
                             r.try_apply(other.as_partial_reflect()).unwrap();
-                            ScriptValue::Unit
+                            Ok::<_, InteropError>(())
                         })
-                        .unwrap();
+                        .into();
+                    return r;
                 }
                 ScriptValue::Unit
             },
