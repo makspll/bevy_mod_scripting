@@ -18,8 +18,8 @@ use thiserror::Error;
 
 use crate::{
     bindings::{
-        pretty_print::DisplayWithWorld, ReflectAllocationId, ReflectBase, ReflectBaseType,
-        ReflectReference,
+        pretty_print::{DisplayWithWorld, DisplayWithWorldAndDummy},
+        ReflectAllocationId, ReflectBase, ReflectBaseType, ReflectReference,
     },
     impl_dummy_display,
     prelude::ScriptValue,
@@ -27,24 +27,12 @@ use crate::{
 
 pub type ScriptResult<T> = Result<T, ScriptError>;
 
-#[derive(Error, Debug)]
-pub struct ScriptErrorWrapper(ScriptError);
-
-impl std::fmt::Display for ScriptErrorWrapper {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl From<ScriptError> for Box<dyn std::error::Error + Send + Sync + 'static> {
-    fn from(val: ScriptError) -> Self {
-        ScriptErrorWrapper(val).into()
-    }
-}
 /// An error with an optional script Context
 #[derive(Debug, Clone, PartialEq, Reflect)]
 #[reflect(opaque)]
 pub struct ScriptError(pub Arc<ScriptErrorInner>);
+
+impl std::error::Error for ScriptError {}
 
 impl Deref for ScriptError {
     type Target = ScriptErrorInner;
@@ -65,7 +53,7 @@ pub struct ScriptErrorInner {
 #[derive(Debug, Clone)]
 pub enum ErrorKind {
     Display(Arc<dyn std::error::Error + Send + Sync>),
-    WithWorld(Arc<dyn DisplayWithWorld + Send + Sync>),
+    WithWorld(Arc<dyn DisplayWithWorldAndDummy + Send + Sync>),
 }
 
 impl DisplayWithWorld for ErrorKind {
@@ -81,7 +69,7 @@ impl Display for ErrorKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ErrorKind::Display(e) => write!(f, "{}", e),
-            ErrorKind::WithWorld(e) => write!(f, "{:?}", e),
+            ErrorKind::WithWorld(e) => write!(f, "{}", e),
         }
     }
 }
@@ -92,31 +80,26 @@ impl PartialEq for ScriptErrorInner {
     }
 }
 
-// impl<T: std::error::Error + Send + Sync + 'static> From<T> for ErrorKind {
-//     fn from(value: T) -> Self {
-//         ErrorKind::Display(Arc::new(value))
-//     }
-// }
-
-// impl<T: DisplayWithWorld + Send + Sync + 'static> From<T> for ErrorKind {
-//     fn from(val: Box<dyn DisplayWithWorld + Send + Sync>) -> Self {
-//         ErrorKind::WithWorld(Arc::from(val))
-//     }
-// }
-
 impl ScriptError {
     #[cfg(feature = "mlua_impls")]
     /// Destructures mlua error into a script error, taking care to preserve as much information as possible
     pub fn from_mlua_error(error: mlua::Error) -> Self {
         match error {
-            mlua::Error::ExternalError(inner) => {
-                if let Some(script_error) = inner.downcast_ref::<InteropError>() {
-                    script_error.clone().into()
+            mlua::Error::CallbackError { traceback, cause }
+                if matches!(cause.as_ref(), mlua::Error::ExternalError(_)) =>
+            {
+                let inner = cause.deref().clone();
+                Self::from_mlua_error(inner).with_context(traceback)
+            }
+            e => {
+                if let Some(inner) = e.downcast_ref::<InteropError>() {
+                    Self::new(inner.clone())
+                } else if let Some(inner) = e.downcast_ref::<ScriptError>() {
+                    inner.clone()
                 } else {
-                    Self::new_external(inner)
+                    Self::new_external(e)
                 }
             }
-            e => Self::new_external(e),
         }
     }
 
@@ -128,7 +111,7 @@ impl ScriptError {
         }))
     }
 
-    pub fn new(reason: impl DisplayWithWorld + Send + Sync + 'static) -> Self {
+    pub fn new(reason: impl DisplayWithWorldAndDummy + Send + Sync + 'static) -> Self {
         Self(Arc::new(ScriptErrorInner {
             script: None,
             reason: ErrorKind::WithWorld(Arc::new(reason)),
@@ -144,6 +127,14 @@ impl ScriptError {
         }))
     }
 
+    pub fn with_script<S: ToString>(self, script: S) -> Self {
+        Self(Arc::new(ScriptErrorInner {
+            script: Some(script.to_string()),
+            context: self.0.context.clone(),
+            reason: self.0.reason.clone(),
+        }))
+    }
+
     pub fn with_appended_context<S: ToString>(self, context: S) -> Self {
         Self(Arc::new(ScriptErrorInner {
             script: self.0.script.clone(),
@@ -153,26 +144,16 @@ impl ScriptError {
     }
 }
 
-// impl<T: std::error::Error + Send + Sync + 'static> From<T> for ScriptError {
-//     fn from(value: T) -> Self {
-//         let error_kind = ErrorKind::from(value);
-//         Self::new_external(error_kind)
-//     }
-// }
-
-// impl<T: DisplayWithWorld + Send + Sync + 'static> From<T> for ScriptError {
-//     fn from(value: T) -> Self {
-//         let error_kind = ErrorKind::WithWorld(Arc::new(value));
-//         Self::new_error(error_kind)
-//     }
-// }
-
 impl std::fmt::Display for ScriptError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(script) = &self.0.script {
-            write!(f, "error in script `{}`: {}", script, self.0.reason)
+            write!(
+                f,
+                "error in script `{}`: {}.\n{}",
+                script, self.0.reason, self.0.context
+            )
         } else {
-            write!(f, "error: {}", self.0.reason)
+            write!(f, "error: {}.\n{}", self.0.reason, self.0.context)
         }
     }
 }
@@ -181,12 +162,17 @@ impl DisplayWithWorld for ScriptError {
     fn display_with_world(&self, world: crate::bindings::WorldGuard) -> String {
         if let Some(script) = &self.0.script {
             format!(
-                "error in script `{}`: {}",
+                "error in script `{}`: {}.\n{}",
                 script,
-                self.0.reason.display_with_world(world)
+                self.0.reason.display_with_world(world),
+                self.0.context
             )
         } else {
-            format!("error: {}", self.0.reason.display_with_world(world))
+            format!(
+                "error: {}.\n{}",
+                self.0.reason.display_with_world(world),
+                self.0.context
+            )
         }
     }
 }
@@ -350,8 +336,10 @@ impl InteropError {
     }
 }
 
-#[derive(Debug)]
+impl_dummy_display!(InteropErrorInner);
+
 /// For errors to do with reflection, type conversions or other interop issues
+#[derive(Debug)]
 pub enum InteropErrorInner {
     StaleWorldAccess,
     MissingWorld,

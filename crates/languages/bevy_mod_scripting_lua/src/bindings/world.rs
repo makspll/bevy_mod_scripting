@@ -5,7 +5,7 @@ use bevy::prelude::{AppFunctionRegistry, Entity, World};
 
 use bevy_mod_scripting_core::bindings::function::CallableWithAccess;
 use bevy_mod_scripting_core::bindings::WorldGuard;
-use bevy_mod_scripting_core::error::{FunctionError, InteropError};
+use bevy_mod_scripting_core::error::InteropError;
 use bevy_mod_scripting_core::{
     bindings::{ReflectReference, ScriptTypeRegistration, WorldAccessGuard, WorldCallbackAccess},
     error::ScriptError,

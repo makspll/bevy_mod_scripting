@@ -187,7 +187,8 @@ pub fn event_handler<L: IntoCallbackLabel, A: Args, C: Context, R: Runtime>(
                     world,
                 )
                 .map_err(|e| {
-                    e.with_appended_context(format!("Script: {}, Entity: {:?}", script.id, entity))
+                    // println!("{e:?}");
+                    e.with_script(script.id.clone())
                 });
 
                 push_err_and_continue!(errors, handler_result)

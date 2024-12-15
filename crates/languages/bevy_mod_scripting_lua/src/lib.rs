@@ -69,11 +69,17 @@ impl<A: LuaEventArg> Plugin for LuaScriptingPlugin<A> {
             //     let reflect_reference = ReflectReference::new_allocated(entity, &mut allocator);
             //     <Entity as LuaProxied>::Proxy::from(reflect_reference)
             // });
-            context.globals().set(
-                "entity",
-                LuaReflectReference(<Entity>::allocate(Box::new(entity), world)),
-            )?;
-            context.globals().set("script_id", script_id.clone())?;
+            context
+                .globals()
+                .set(
+                    "entity",
+                    LuaReflectReference(<Entity>::allocate(Box::new(entity), world)),
+                )
+                .map_err(ScriptError::from_mlua_error)?;
+            context
+                .globals()
+                .set("script_id", script_id.clone())
+                .map_err(ScriptError::from_mlua_error)?;
             // context.globals().set("entity", lua_entity)?;
             Ok(())
         });
@@ -110,7 +116,10 @@ pub fn lua_context_load(
             .iter()
             .try_for_each(|init| init(script_id, Entity::from_raw(0), context))?;
 
-        context.load(content).exec()?;
+        context
+            .load(content)
+            .exec()
+            .map_err(ScriptError::from_mlua_error)?;
         Ok(())
     })?;
 
@@ -159,7 +168,9 @@ pub fn lua_handler<A: Args + for<'l> IntoLuaMulti<'l>>(
             Err(_) => return Ok(()),
         };
 
-        handler.call::<_, ()>(args)?;
+        handler
+            .call::<_, ()>(args)
+            .map_err(ScriptError::from_mlua_error)?;
         Ok(())
     })
 }
@@ -173,7 +184,8 @@ pub fn with_world<F: FnOnce(&mut Lua) -> Result<(), ScriptError>>(
     WorldCallbackAccess::with_callback_access(world, |guard| {
         context
             .globals()
-            .set("world", LuaReflectReference(ReflectReference::new_world()))?;
+            .set("world", LuaReflectReference(ReflectReference::new_world()))
+            .map_err(ScriptError::from_mlua_error)?;
         context.set_app_data(guard.clone());
         f(context)
     })

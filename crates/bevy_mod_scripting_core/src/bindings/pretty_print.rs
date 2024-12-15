@@ -304,6 +304,10 @@ impl ReflectReferencePrinter {
     }
 }
 
+/// Alais for [`DisplayWithWorldAndDummy`] + [`std::fmt::Display`], ideally display should warn that it's not the full representation.
+pub trait DisplayWithWorldAndDummy: DisplayWithWorld + std::fmt::Display {}
+impl<T: DisplayWithWorld + std::fmt::Display> DisplayWithWorldAndDummy for T {}
+
 /// For types which can't be pretty printed without world access.
 /// Implementors should try to print the best value they can, and never panick.
 pub trait DisplayWithWorld: std::fmt::Debug {
@@ -330,6 +334,8 @@ macro_rules! impl_dummy_display (
     };
 );
 
+impl_dummy_display!(ReflectReference);
+
 impl DisplayWithWorld for ReflectReference {
     fn display_with_world(&self, world: WorldGuard) -> String {
         ReflectReferencePrinter::new(self.clone()).pretty_print(world)
@@ -339,6 +345,8 @@ impl DisplayWithWorld for ReflectReference {
         ReflectReferencePrinter::new(self.clone()).pretty_print_value(world)
     }
 }
+
+impl_dummy_display!(ReflectBaseType);
 
 impl DisplayWithWorld for ReflectBaseType {
     fn display_with_world(&self, world: WorldGuard) -> String {
@@ -370,6 +378,8 @@ impl DisplayWithWorld for TypeId {
         self.display_with_world(world)
     }
 }
+
+impl_dummy_display!(ScriptValue);
 
 impl DisplayWithWorld for ScriptValue {
     fn display_with_world(&self, world: WorldGuard) -> String {

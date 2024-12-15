@@ -22,7 +22,7 @@ use bevy_mod_scripting_core::{
         ReflectAllocator, ReflectRefIter, ReflectReference, ReflectionPathExt, TypeIdSource,
         WorldCallbackAccess,
     },
-    error::{FunctionError, ScriptError, ScriptResult, InteropError},
+    error::{InteropError, ScriptError, ScriptResult},
     reflection_extensions::{PartialReflectExt, TypeIdExtensions},
     Either,
 };
