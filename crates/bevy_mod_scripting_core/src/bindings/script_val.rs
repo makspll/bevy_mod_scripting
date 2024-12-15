@@ -11,7 +11,7 @@ use bevy::reflect::{
 };
 
 use crate::{
-    error::{ScriptError, ScriptResult, ValueConversionError},
+    error::{InteropError, ScriptError, ScriptResult},
     reflection_extensions::{PartialReflectExt, TypeIdExtensions, TypeInfoExtensions},
 };
 
@@ -22,17 +22,100 @@ use super::{pretty_print::DisplayWithWorld, ReflectReference, WorldGuard};
 #[derive(Debug, Clone, PartialEq, Reflect)]
 #[reflect(opaque)]
 pub enum ScriptValue {
+    /// Represents the absence of a value.
     Unit,
+    /// Represents a boolean value.
     Bool(bool),
+    /// Represents an integer value with at most 64 bits.
     Integer(i64),
+    /// Represents a floating point value with at most 64 bits.
     Float(f64),
+    /// Represents a string value.
     String(Cow<'static, str>),
+    /// Represents a reference to a value.
     Reference(ReflectReference),
+    /// Represents any error, will be thrown when returned to a script
+    Error(ScriptError),
+    /// A placeholder for a [`crate::bindings::WorldCallbackAccess`] value.
     World,
 }
 
+// impl Into<ScriptValue> for ScriptResult<>
+
+impl From<bool> for ScriptValue {
+    fn from(value: bool) -> Self {
+        ScriptValue::Bool(value)
+    }
+}
+
+impl From<i64> for ScriptValue {
+    fn from(value: i64) -> Self {
+        ScriptValue::Integer(value)
+    }
+}
+
+impl From<f64> for ScriptValue {
+    fn from(value: f64) -> Self {
+        ScriptValue::Float(value)
+    }
+}
+
+impl From<&'static str> for ScriptValue {
+    fn from(value: &'static str) -> Self {
+        ScriptValue::String(value.into())
+    }
+}
+
+impl From<String> for ScriptValue {
+    fn from(value: String) -> Self {
+        ScriptValue::String(value.into())
+    }
+}
+
+impl From<Cow<'static, str>> for ScriptValue {
+    fn from(value: Cow<'static, str>) -> Self {
+        ScriptValue::String(value)
+    }
+}
+
+impl From<ReflectReference> for ScriptValue {
+    fn from(value: ReflectReference) -> Self {
+        ScriptValue::Reference(value)
+    }
+}
+
+impl From<ScriptError> for ScriptValue {
+    fn from(value: ScriptError) -> Self {
+        ScriptValue::Error(value)
+    }
+}
+
+impl From<InteropError> for ScriptValue {
+    fn from(value: InteropError) -> Self {
+        ScriptValue::Error(ScriptError::new(value))
+    }
+}
+
+impl<T: Into<ScriptValue>> From<Option<T>> for ScriptValue {
+    fn from(value: Option<T>) -> Self {
+        match value {
+            Some(v) => v.into(),
+            None => ScriptValue::Unit,
+        }
+    }
+}
+
+impl<T: Into<ScriptValue>, E: Into<ScriptError>> From<Result<T, E>> for ScriptValue {
+    fn from(value: Result<T, E>) -> Self {
+        match value {
+            Ok(v) => v.into(),
+            Err(e) => ScriptValue::Error(e.into()),
+        }
+    }
+}
+
 impl TryFrom<ScriptValue> for ParsedPath {
-    type Error = ScriptError;
+    type Error = InteropError;
     fn try_from(value: ScriptValue) -> Result<Self, Self::Error> {
         Ok(match value {
             ScriptValue::Integer(i) => ParsedPath::from(vec![OffsetAccess {
@@ -40,11 +123,11 @@ impl TryFrom<ScriptValue> for ParsedPath {
                 offset: Some(1),
             }]),
             ScriptValue::Float(v) => {
-                return Err(ValueConversionError::InvalidIndex {
-                    index: v.to_string().into(),
-                    base: None,
-                    reason: Some("floating point numbers cannot be used as indices".into()),
-                })?
+                return Err(InteropError::invalid_index(
+                    value,
+                    "Floating point numbers cannot be used to index into reflected values"
+                        .to_owned(),
+                ))
             }
             ScriptValue::String(cow) => {
                 if let Some(tuple_struct_index) = cow.strip_prefix("_") {
@@ -58,28 +141,17 @@ impl TryFrom<ScriptValue> for ParsedPath {
                 }
 
                 match cow {
-                    Cow::Borrowed(v) => ParsedPath::parse_static(v).map_err(|e| {
-                        ValueConversionError::InvalidIndex {
-                            index: v.into(),
-                            base: None,
-                            reason: Some(e.to_string().into()),
-                        }
-                    })?,
-                    Cow::Owned(o) => {
-                        ParsedPath::parse(&o).map_err(|e| ValueConversionError::InvalidIndex {
-                            index: o.clone().into(),
-                            base: None,
-                            reason: Some(e.to_string().into()),
-                        })?
-                    }
+                    Cow::Borrowed(v) => ParsedPath::parse_static(v)
+                        .map_err(|e| InteropError::reflection_path_error(e.to_string(), None))?,
+                    Cow::Owned(o) => ParsedPath::parse(&o)
+                        .map_err(|e| InteropError::reflection_path_error(e.to_string(), None))?,
                 }
             }
             ScriptValue::Reference(reflect_reference) => {
-                return Err(ValueConversionError::InvalidIndex {
-                    index: format!("{:?}", reflect_reference).into(),
-                    base: None,
-                    reason: Some("References cannot be used as indices".into()),
-                })?
+                return Err(InteropError::invalid_index(
+                    ScriptValue::Reference(reflect_reference),
+                    "References cannot be used to index into reflected values".to_owned(),
+                ))
             }
             _ => ParsedPath(vec![]),
         })
@@ -88,7 +160,7 @@ impl TryFrom<ScriptValue> for ParsedPath {
 
 /// A trait for converting a value into a [`ScriptVal`].
 pub trait IntoScriptValue {
-    fn into_script_value(self, world: WorldGuard) -> ScriptResult<ScriptValue>;
+    fn into_script_value(self, world: WorldGuard) -> Result<ScriptValue, InteropError>;
 }
 
 /// Targeted conversion from a [`ScriptValue`] to a specific type. Can create dynamic types as well as concrete types depending on the implementation.
@@ -99,31 +171,26 @@ pub trait FromScriptValue {
         value: ScriptValue,
         world: WorldGuard,
         target_type_id: TypeId,
-    ) -> Option<ScriptResult<Box<dyn PartialReflect>>>;
+    ) -> Option<Result<Box<dyn PartialReflect>, InteropError>>;
 }
 
 macro_rules! into_script_value_downcast {
     ($self_:ident, $ty:ty, $world:ident $(, $($exp:tt)*)?) => {{
         $self_
             .try_downcast_ref::<$ty>()
-            .ok_or_else(|| ValueConversionError::TypeMismatch {
-                expected_type: Cow::Owned(stringify!($ty).into()),
-                actual_type: Some(
-                    $self_
+            .ok_or_else(|| InteropError::type_mismatch(
+                std::any::TypeId::of::<$ty>(),
+                $self_
                         .get_represented_type_info()
-                        .map(|ti| ti.type_id())
-                        .type_id_or_fake_id()
-                        .display_with_world($world.clone())
-                        .into(),
-                ),
-            })?
+                        .map(|ti| ti.type_id()),
+            ))?
             $($($exp)*)?
             .into_script_value($world.clone())
     }};
 }
 
 impl IntoScriptValue for &dyn PartialReflect {
-    fn into_script_value(self, world: WorldGuard) -> ScriptResult<ScriptValue> {
+    fn into_script_value(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
         let target_type_id = self
             .get_represented_type_info()
             .map(|ti| ti.type_id())
@@ -135,17 +202,10 @@ impl IntoScriptValue for &dyn PartialReflect {
                 match self.try_downcast_ref::<ScriptValue>() {
                     Some(script_val) => return Ok(script_val.clone()),
                     None => {
-                        return Err(ValueConversionError::TypeMismatch {
-                            expected_type: Cow::Owned("ScriptValue".into()),
-                            actual_type: Some(
-                                self.get_represented_type_info()
-                                    .map(|ti| ti.type_id())
-                                    .type_id_or_fake_id()
-                                    .display_with_world(world.clone())
-                                    .into(),
-                            ),
-                        }
-                        .into())
+                        return Err(InteropError::type_mismatch(
+                            TypeId::of::<ScriptValue>(),
+                            Some(target_type_id),
+                        ))
                     }
                 }
             }
@@ -248,7 +308,7 @@ impl IntoScriptValue for &dyn PartialReflect {
 }
 
 impl IntoScriptValue for Option<&dyn PartialReflect> {
-    fn into_script_value(self, world: WorldGuard) -> ScriptResult<ScriptValue> {
+    fn into_script_value(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
         match self {
             Some(inner) => inner.into_script_value(world),
             None => Ok(ScriptValue::Unit),
@@ -257,7 +317,7 @@ impl IntoScriptValue for Option<&dyn PartialReflect> {
 }
 
 impl IntoScriptValue for ReflectReference {
-    fn into_script_value(self, _world: WorldGuard) -> ScriptResult<ScriptValue> {
+    fn into_script_value(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::Reference(self))
     }
 }
@@ -269,7 +329,7 @@ impl FromScriptValue for dyn PartialReflect {
         value: ScriptValue,
         world: WorldGuard,
         target_type_id: TypeId,
-    ) -> Option<ScriptResult<Box<dyn PartialReflect>>> {
+    ) -> Option<Result<Box<dyn PartialReflect>, InteropError>> {
         match target_type_id {
             // TODO: if these types ever support reflect, we can uncomment these lines
             // For some of these we specifically require the borrowed static variant, this will never let you use a dynamically created string from the script
@@ -369,7 +429,7 @@ impl FromScriptValue for Option<&dyn PartialReflect> {
         value: ScriptValue,
         world: WorldGuard,
         target_type_id: TypeId,
-    ) -> Option<ScriptResult<Box<dyn PartialReflect>>> {
+    ) -> Option<Result<Box<dyn PartialReflect>, InteropError>> {
         let type_registry = world.type_registry();
         let type_registry = type_registry.read();
         let type_info = type_registry.get_type_info(target_type_id)?;
@@ -413,7 +473,7 @@ impl FromScriptValue for ReflectReference {
         value: ScriptValue,
         world: WorldGuard,
         target_type: TypeId,
-    ) -> Option<ScriptResult<Box<dyn PartialReflect>>> {
+    ) -> Option<Result<Box<dyn PartialReflect>, InteropError>> {
         match value {
             ScriptValue::Reference(ref_) => Some(ref_.clone_value(world)),
             _ => None,
@@ -422,43 +482,43 @@ impl FromScriptValue for ReflectReference {
 }
 
 impl IntoScriptValue for () {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
+    fn into_script_value(self, _: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::Unit)
     }
 }
 
 impl IntoScriptValue for &'static str {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
+    fn into_script_value(self, _: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::String(self.into()))
     }
 }
 
 impl IntoScriptValue for &'static CStr {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
+    fn into_script_value(self, _: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::String(self.to_string_lossy()))
     }
 }
 
 impl IntoScriptValue for &'static OsStr {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
+    fn into_script_value(self, _: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::String(self.to_string_lossy()))
     }
 }
 
 impl IntoScriptValue for &'static Path {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
+    fn into_script_value(self, _: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::String(self.to_string_lossy()))
     }
 }
 
 impl IntoScriptValue for Cow<'static, str> {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
+    fn into_script_value(self, _: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::String(self.into_owned().into()))
     }
 }
 
 impl IntoScriptValue for Cow<'static, CStr> {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
+    fn into_script_value(self, _: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::String(
             self.to_string_lossy().into_owned().into(),
         ))
@@ -466,19 +526,19 @@ impl IntoScriptValue for Cow<'static, CStr> {
 }
 
 impl IntoScriptValue for bool {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
+    fn into_script_value(self, _: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::Bool(self))
     }
 }
 
 impl IntoScriptValue for f32 {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
+    fn into_script_value(self, _: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::Float(self as f64))
     }
 }
 
 impl IntoScriptValue for f64 {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
+    fn into_script_value(self, _: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::Float(self))
     }
 }
@@ -487,7 +547,7 @@ macro_rules! into_script_value_integers {
     ($($ty:ty),*) => {
         $(
             impl IntoScriptValue for $ty {
-                fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
+                fn into_script_value(self, _: WorldGuard) -> Result<ScriptValue, InteropError> {
                     Ok(ScriptValue::Integer(self as i64))
                 }
             }
@@ -498,13 +558,13 @@ macro_rules! into_script_value_integers {
 into_script_value_integers!(i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize);
 
 impl IntoScriptValue for Box<str> {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
+    fn into_script_value(self, _: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::String(self.to_string().into()))
     }
 }
 
 impl IntoScriptValue for CString {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
+    fn into_script_value(self, _: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::String(
             self.to_string_lossy().into_owned().into(),
         ))
@@ -512,13 +572,13 @@ impl IntoScriptValue for CString {
 }
 
 impl IntoScriptValue for String {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
+    fn into_script_value(self, _: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::String(self.into()))
     }
 }
 
 impl IntoScriptValue for OsString {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
+    fn into_script_value(self, _: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::String(
             self.to_string_lossy().into_owned().into(),
         ))
@@ -526,7 +586,7 @@ impl IntoScriptValue for OsString {
 }
 
 impl IntoScriptValue for PathBuf {
-    fn into_script_value(self, _: WorldGuard) -> ScriptResult<ScriptValue> {
+    fn into_script_value(self, _: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::String(
             self.to_string_lossy().into_owned().into(),
         ))
@@ -538,19 +598,14 @@ impl FromScriptValue for () {
         value: ScriptValue,
         world: WorldGuard,
         target_type: TypeId,
-    ) -> Option<ScriptResult<Box<dyn PartialReflect>>> {
+    ) -> Option<Result<Box<dyn PartialReflect>, InteropError>> {
         if target_type == TypeId::of::<()>() {
             Some(match value {
                 ScriptValue::Unit => Ok(Box::new(())),
                 ScriptValue::Reference(ref_) => ref_
                     .downcast::<()>(world)
-                    .map(|v| Box::new(v) as Box<dyn PartialReflect>)
-                    .map_err(Into::into),
-                _ => Err(ValueConversionError::TypeMismatch {
-                    expected_type: Cow::Owned(target_type.display_with_world(world.clone())),
-                    actual_type: Some(Cow::Owned(value.display_with_world(world))),
-                }
-                .into()),
+                    .map(|v| Box::new(v) as Box<dyn PartialReflect>),
+                _ => Err(InteropError::value_mismatch(target_type, value)),
             })
         } else {
             None
@@ -563,19 +618,14 @@ impl FromScriptValue for bool {
         value: ScriptValue,
         world: WorldGuard,
         target_type: TypeId,
-    ) -> Option<ScriptResult<Box<dyn PartialReflect>>> {
+    ) -> Option<Result<Box<dyn PartialReflect>, InteropError>> {
         if target_type == TypeId::of::<bool>() {
             Some(match value {
                 ScriptValue::Bool(v) => Ok(Box::new(v)),
                 ScriptValue::Reference(ref_) => ref_
                     .downcast::<bool>(world)
-                    .map(|v| Box::new(v) as Box<dyn PartialReflect>)
-                    .map_err(Into::into),
-                _ => Err(ValueConversionError::TypeMismatch {
-                    expected_type: Cow::Owned(target_type.display_with_world(world.clone())),
-                    actual_type: Some(Cow::Owned(value.display_with_world(world))),
-                }
-                .into()),
+                    .map(|v| Box::new(v) as Box<dyn PartialReflect>),
+                _ => Err(InteropError::value_mismatch(target_type, value)),
             })
         } else {
             None
@@ -588,19 +638,14 @@ impl FromScriptValue for &'static str {
         value: ScriptValue,
         world: WorldGuard,
         target_type: TypeId,
-    ) -> Option<ScriptResult<Box<dyn PartialReflect>>> {
+    ) -> Option<Result<Box<dyn PartialReflect>, InteropError>> {
         if target_type == TypeId::of::<&'static str>() {
             Some(match value {
                 ScriptValue::String(Cow::Borrowed(s)) => Ok(Box::new(s)),
                 ScriptValue::Reference(ref_) => ref_
                     .downcast::<&'static str>(world)
-                    .map(|v| Box::new(v) as Box<dyn PartialReflect>)
-                    .map_err(Into::into),
-                _ => Err(ValueConversionError::TypeMismatch {
-                    expected_type: Cow::Owned(target_type.display_with_world(world.clone())),
-                    actual_type: Some(Cow::Owned(value.display_with_world(world))),
-                }
-                .into()),
+                    .map(|v| Box::new(v) as Box<dyn PartialReflect>),
+                _ => Err(InteropError::value_mismatch(target_type, value)).into(),
             })
         } else {
             None
@@ -613,19 +658,14 @@ impl FromScriptValue for Cow<'static, str> {
         value: ScriptValue,
         world: WorldGuard,
         target_type: TypeId,
-    ) -> Option<ScriptResult<Box<dyn PartialReflect>>> {
+    ) -> Option<Result<Box<dyn PartialReflect>, InteropError>> {
         if target_type == TypeId::of::<Cow<'static, str>>() {
             Some(match value {
                 ScriptValue::String(s) => Ok(Box::new(s)),
                 ScriptValue::Reference(ref_) => ref_
                     .downcast::<Cow<'static, str>>(world)
-                    .map(|v| Box::new(v) as Box<dyn PartialReflect>)
-                    .map_err(Into::into),
-                _ => Err(ValueConversionError::TypeMismatch {
-                    expected_type: Cow::Owned(target_type.display_with_world(world.clone())),
-                    actual_type: Some(Cow::Owned(value.display_with_world(world))),
-                }
-                .into()),
+                    .map(|v| Box::new(v) as Box<dyn PartialReflect>),
+                _ => Err(InteropError::value_mismatch(target_type, value)).into(),
             })
         } else {
             None
@@ -638,19 +678,14 @@ impl FromScriptValue for String {
         value: ScriptValue,
         world: WorldGuard,
         target_type: TypeId,
-    ) -> Option<ScriptResult<Box<dyn PartialReflect>>> {
+    ) -> Option<Result<Box<dyn PartialReflect>, InteropError>> {
         if target_type == TypeId::of::<String>() {
             Some(match value {
                 ScriptValue::String(s) => Ok(Box::new(s.into_owned())),
                 ScriptValue::Reference(ref_) => ref_
                     .downcast::<String>(world)
-                    .map(|v| Box::new(v) as Box<dyn PartialReflect>)
-                    .map_err(Into::into),
-                _ => Err(ValueConversionError::TypeMismatch {
-                    expected_type: Cow::Owned(target_type.display_with_world(world.clone())),
-                    actual_type: Some(Cow::Owned(value.display_with_world(world))),
-                }
-                .into()),
+                    .map(|v| Box::new(v) as Box<dyn PartialReflect>),
+                _ => Err(InteropError::value_mismatch(target_type, value)).into(),
             })
         } else {
             None
@@ -663,20 +698,15 @@ impl FromScriptValue for f32 {
         value: ScriptValue,
         world: WorldGuard,
         target_type: TypeId,
-    ) -> Option<ScriptResult<Box<dyn PartialReflect>>> {
+    ) -> Option<Result<Box<dyn PartialReflect>, InteropError>> {
         if target_type == TypeId::of::<f32>() {
             Some(match value {
                 ScriptValue::Float(v) => Ok(Box::new(v as f32)),
                 ScriptValue::Integer(v) => Ok(Box::new(v as f32)),
                 ScriptValue::Reference(ref_) => ref_
                     .downcast::<f32>(world)
-                    .map(|v| Box::new(v) as Box<dyn PartialReflect>)
-                    .map_err(Into::into),
-                _ => Err(ValueConversionError::TypeMismatch {
-                    expected_type: Cow::Owned(target_type.display_with_world(world.clone())),
-                    actual_type: Some(Cow::Owned(value.display_with_world(world))),
-                }
-                .into()),
+                    .map(|v| Box::new(v) as Box<dyn PartialReflect>),
+                _ => Err(InteropError::value_mismatch(target_type, value)).into(),
             })
         } else {
             None
@@ -689,20 +719,15 @@ impl FromScriptValue for f64 {
         value: ScriptValue,
         world: WorldGuard,
         target_type: TypeId,
-    ) -> Option<ScriptResult<Box<dyn PartialReflect>>> {
+    ) -> Option<Result<Box<dyn PartialReflect>, InteropError>> {
         if target_type == TypeId::of::<f64>() {
             Some(match value {
                 ScriptValue::Float(v) => Ok(Box::new(v)),
                 ScriptValue::Integer(v) => Ok(Box::new(v as f64)),
                 ScriptValue::Reference(ref_) => ref_
                     .downcast::<f64>(world)
-                    .map(|v| Box::new(v) as Box<dyn PartialReflect>)
-                    .map_err(Into::into),
-                _ => Err(ValueConversionError::TypeMismatch {
-                    expected_type: Cow::Owned(target_type.display_with_world(world.clone())),
-                    actual_type: Some(Cow::Owned(value.display_with_world(world))),
-                }
-                .into()),
+                    .map(|v| Box::new(v) as Box<dyn PartialReflect>),
+                _ => Err(InteropError::value_mismatch(target_type, value)).into(),
             })
         } else {
             None
@@ -719,20 +744,18 @@ macro_rules! impl_from_script_value_integer {
                     value: ScriptValue,
                     world: WorldGuard,
                     target_type: TypeId,
-                ) -> Option<ScriptResult<Box<dyn PartialReflect>>> {
+                ) -> Option<Result<Box<dyn PartialReflect>, InteropError>> {
                     if target_type == TypeId::of::<$t>() {
                         Some(match value {
                             ScriptValue::Integer(v) => Ok(Box::new(v as $t)),
                             ScriptValue::Float(v) => Ok(Box::new(v as $t)),
                             ScriptValue::Reference(ref_) => ref_
                                 .downcast::<$t>(world)
-                                .map(|v| Box::new(v) as Box<dyn PartialReflect>)
-                                .map_err(Into::into),
-                            _ => Err(ValueConversionError::TypeMismatch {
-                                expected_type: Cow::Owned(target_type.display_with_world(world.clone())),
-                                actual_type: Some(Cow::Owned(value.display_with_world(world))),
-                            }
-                            .into()),
+                                .map(|v| Box::new(v) as Box<dyn PartialReflect>),
+                            _ => Err(InteropError::value_mismatch(
+                                target_type,
+                                value,
+                            )),
                         })
                     } else {
                         None
@@ -751,15 +774,11 @@ impl FromScriptValue for &'static Path {
         value: ScriptValue,
         world: WorldGuard,
         target_type: TypeId,
-    ) -> Option<ScriptResult<Box<dyn PartialReflect>>> {
+    ) -> Option<Result<Box<dyn PartialReflect>, InteropError>> {
         if target_type == TypeId::of::<&'static Path>() {
             Some(match value {
                 ScriptValue::String(Cow::Borrowed(s)) => Ok(Box::new(Path::new(s))),
-                _ => Err(ValueConversionError::TypeMismatch {
-                    expected_type: Cow::Owned(target_type.display_with_world(world.clone())),
-                    actual_type: Some(Cow::Owned(value.display_with_world(world))),
-                }
-                .into()),
+                _ => Err(InteropError::value_mismatch(target_type, value)),
             })
         } else {
             None
@@ -772,19 +791,14 @@ impl FromScriptValue for PathBuf {
         value: ScriptValue,
         world: WorldGuard,
         target_type: TypeId,
-    ) -> Option<ScriptResult<Box<dyn PartialReflect>>> {
+    ) -> Option<Result<Box<dyn PartialReflect>, InteropError>> {
         if target_type == TypeId::of::<PathBuf>() {
             Some(match value {
                 ScriptValue::String(s) => Ok(Box::new(PathBuf::from(s.into_owned()))),
                 ScriptValue::Reference(ref_) => ref_
                     .downcast::<PathBuf>(world)
-                    .map(|v| Box::new(v) as Box<dyn PartialReflect>)
-                    .map_err(Into::into),
-                _ => Err(ValueConversionError::TypeMismatch {
-                    expected_type: Cow::Owned(target_type.display_with_world(world.clone())),
-                    actual_type: Some(Cow::Owned(value.display_with_world(world))),
-                }
-                .into()),
+                    .map(|v| Box::new(v) as Box<dyn PartialReflect>),
+                _ => Err(InteropError::value_mismatch(target_type, value)),
             })
         } else {
             None
@@ -803,14 +817,14 @@ impl FromScriptValue for PathBuf {
 //         if target_type == TypeId::of::<Box<str>>() {
 //             match value {
 //                 ScriptValue::String(s) => Ok(Box::new(s.into_owned().into_boxed_str())),
-//                 _ => Err(ValueConversionError::TypeMismatch {
+//                 _ => Err(InteropError::TypeMismatch {
 //                     expected_type: Cow::Owned(target_type.display_with_world(world)),
 //                     actual_type: Some(Cow::Owned(value.display_with_world(world))),
 //                 }
 //                 .into()),
 //             }
 //         } else {
-//             Err(ValueConversionError::TypeMismatch {
+//             Err(InteropError::TypeMismatch {
 //                 expected_type: Cow::Owned(target_type.display_with_world(world)),
 //                 actual_type: Some(Cow::Borrowed(type_name::<Box<str>>())),
 //             }
@@ -830,20 +844,20 @@ impl FromScriptValue for PathBuf {
 //                 ScriptValue::String(s) => CString::new(s.into_owned())
 //                     .map(|cstr| Box::new(cstr) as Box<dyn PartialReflect>)
 //                     .map_err(|e| {
-//                         ValueConversionError::TypeMismatch {
+//                         InteropError::TypeMismatch {
 //                             expected_type: Cow::Owned(target_type.display_with_world(world)),
 //                             actual_type: Some(Cow::Owned(e.to_string())),
 //                         }
 //                         .into()
 //                     }),
-//                 _ => Err(ValueConversionError::TypeMismatch {
+//                 _ => Err(InteropError::TypeMismatch {
 //                     expected_type: Cow::Owned(target_type.display_with_world(world)),
 //                     actual_type: Some(Cow::Owned(value.display_with_world(world))),
 //                 }
 //                 .into()),
 //             }
 //         } else {
-//             Err(ValueConversionError::TypeMismatch {
+//             Err(InteropError::TypeMismatch {
 //                 expected_type: Cow::Owned(target_type.display_with_world(world)),
 //                 actual_type: Some(Cow::Borrowed(type_name::<CString>())),
 //             }
@@ -857,19 +871,14 @@ impl FromScriptValue for OsString {
         value: ScriptValue,
         world: WorldGuard,
         target_type: TypeId,
-    ) -> Option<ScriptResult<Box<dyn PartialReflect>>> {
+    ) -> Option<Result<Box<dyn PartialReflect>, InteropError>> {
         if target_type == TypeId::of::<OsString>() {
             Some(match value {
                 ScriptValue::String(s) => Ok(Box::new(OsString::from(s.into_owned()))),
                 ScriptValue::Reference(ref_) => ref_
                     .downcast::<OsString>(world)
-                    .map(|v| Box::new(v) as Box<dyn PartialReflect>)
-                    .map_err(Into::into),
-                _ => Err(ValueConversionError::TypeMismatch {
-                    expected_type: Cow::Owned(target_type.display_with_world(world.clone())),
-                    actual_type: Some(Cow::Owned(value.display_with_world(world))),
-                }
-                .into()),
+                    .map(|v| Box::new(v) as Box<dyn PartialReflect>),
+                _ => Err(InteropError::value_mismatch(target_type, value)).into(),
             })
         } else {
             None
@@ -886,14 +895,14 @@ impl FromScriptValue for OsString {
 //         if target_type == TypeId::of::<&'static OsStr>() {
 //             match value {
 //                 ScriptValue::String(Cow::Borrowed(s)) => Ok(Box::new(OsStr::new(s))),
-//                 _ => Err(ValueConversionError::TypeMismatch {
+//                 _ => Err(InteropError::TypeMismatch {
 //                     expected_type: Cow::Owned(target_type.display_with_world(world)),
 //                     actual_type: Some(Cow::Owned(value.display_with_world(world))),
 //                 }
 //                 .into()),
 //             }
 //         } else {
-//             Err(ValueConversionError::TypeMismatch {
+//             Err(InteropError::TypeMismatch {
 //                 expected_type: Cow::Owned(target_type.display_with_world(world)),
 //                 actual_type: Some(Cow::Borrowed(type_name::<&'static OsStr>())),
 //             }
@@ -915,21 +924,21 @@ impl FromScriptValue for OsString {
 //                     CStr::from_bytes_with_nul(bytes)
 //                         .map(|cstr| Box::new(cstr) as Box<dyn PartialReflect>)
 //                         .map_err(|e| {
-//                             ValueConversionError::TypeMismatch {
+//                             InteropError::TypeMismatch {
 //                                 expected_type: Cow::Owned(target_type.display_with_world(world)),
 //                                 actual_type: Some(Cow::Owned(e.to_string())),
 //                             }
 //                             .into()
 //                         })
 //                 }
-//                 _ => Err(ValueConversionError::TypeMismatch {
+//                 _ => Err(InteropError::TypeMismatch {
 //                     expected_type: Cow::Owned(target_type.display_with_world(world)),
 //                     actual_type: Some(Cow::Owned(value.display_with_world(world))),
 //                 }
 //                 .into()),
 //             }
 //         } else {
-//             Err(ValueConversionError::TypeMismatch {
+//             Err(InteropError::TypeMismatch {
 //                 expected_type: Cow::Owned(target_type.display_with_world(world)),
 //                 actual_type: Some(Cow::Borrowed(type_name::<&'static CStr>())),
 //             }
@@ -1051,47 +1060,67 @@ mod test {
         let world = WorldGuard::new(world);
 
         assert_eq!(
-            usize_reference.clone().into_script_value(world.clone()),
-            Ok(ScriptValue::Integer(2))
+            usize_reference
+                .clone()
+                .into_script_value(world.clone())
+                .unwrap(),
+            ScriptValue::Integer(2)
         );
 
         assert_eq!(
-            string_reference.clone().into_script_value(world.clone()),
-            Ok(ScriptValue::String("hello".into()))
+            string_reference
+                .clone()
+                .into_script_value(world.clone())
+                .unwrap(),
+            ScriptValue::String("hello".into())
         );
 
         assert_eq!(
-            option_reference.clone().into_script_value(world.clone()),
-            Ok(ScriptValue::Integer(2))
+            option_reference
+                .clone()
+                .into_script_value(world.clone())
+                .unwrap(),
+            ScriptValue::Integer(2)
         );
 
         assert_eq!(
-            none_reference.clone().into_script_value(world.clone()),
-            Ok(ScriptValue::Unit)
+            none_reference
+                .clone()
+                .into_script_value(world.clone())
+                .unwrap(),
+            ScriptValue::Unit
         );
 
         assert_eq!(
             nested_option_reference
                 .clone()
-                .into_script_value(world.clone()),
-            Ok(ScriptValue::Integer(2))
+                .into_script_value(world.clone())
+                .unwrap(),
+            ScriptValue::Integer(2)
         );
 
         assert_eq!(
             nested_none_reference
                 .clone()
-                .into_script_value(world.clone()),
-            Ok(ScriptValue::Unit)
+                .into_script_value(world.clone())
+                .unwrap(),
+            ScriptValue::Unit
         );
 
         assert_eq!(
-            vec_reference.clone().into_script_value(world.clone()),
-            Ok(ScriptValue::Reference(vec_reference))
+            vec_reference
+                .clone()
+                .into_script_value(world.clone())
+                .unwrap(),
+            ScriptValue::Reference(vec_reference)
         );
 
         assert_eq!(
-            map_reference.clone().into_script_value(world.clone()),
-            Ok(ScriptValue::Reference(map_reference))
+            map_reference
+                .clone()
+                .into_script_value(world.clone())
+                .unwrap(),
+            ScriptValue::Reference(map_reference)
         );
     }
 

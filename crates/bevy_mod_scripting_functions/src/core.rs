@@ -41,11 +41,12 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
         )
         .overwrite(
             "get_component",
-            |s: WorldCallbackAccess, entity: Entity, registration: ScriptTypeRegistration| {
-                let c = s
-                    .get_component(entity, registration.component_id().unwrap())
-                    .unwrap();
-                c.map(ScriptValue::Reference).unwrap_or(ScriptValue::Unit)
+            |world: WorldCallbackAccess, entity: Entity, registration: ScriptTypeRegistration| {
+                let s: ScriptValue = registration
+                    .component_id()
+                    .and_then(|id| world.get_component(entity, id).transpose())
+                    .into();
+                s
             },
         )
         .overwrite("exit", |s: WorldCallbackAccess| s.exit());
@@ -58,12 +59,13 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
                     let path: ParsedPath = key.try_into().unwrap();
                     r.index_path(path);
                     let world = world.read().expect("Stale world");
-                    let script_val = r
-                        .with_reflect(world.clone(), |r| r.into_script_value(world).unwrap())
-                        .unwrap();
+                    let script_val: ScriptValue = r
+                        .with_reflect(world.clone(), |r| r.into_script_value(world))
+                        .into();
                     script_val
                 } else {
-                    ScriptValue::Unit
+                    // ScriptValue::Error()
+                    todo!()
                 }
             },
         )
@@ -76,8 +78,8 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
                     r.index_path(path);
                     let world = world.read().expect("Stale world");
                     let script_val = r
-                        .with_reflect(world.clone(), |r| r.into_script_value(world).unwrap())
-                        .unwrap();
+                        .with_reflect(world.clone(), |r| r.into_script_value(world))
+                        .into();
                     script_val
                 } else {
                     ScriptValue::Unit

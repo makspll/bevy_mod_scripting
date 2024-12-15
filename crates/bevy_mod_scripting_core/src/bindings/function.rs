@@ -3,12 +3,12 @@ use std::{any::TypeId, borrow::Cow, ops::Deref, sync::Arc};
 use bevy::reflect::{
     func::{
         args::{Arg, ArgInfo, Ownership},
-        ArgList, ArgValue, DynamicFunction, FunctionResult, Return,
+        ArgList, ArgValue, DynamicFunction, FunctionInfo, FunctionResult, Return,
     },
     PartialReflect,
 };
 
-use crate::error::{ScriptError, ScriptResult, ValueConversionError};
+use crate::error::{InteropError, ScriptError, ScriptResult};
 
 use super::{
     access_map::ReflectAccessId,
@@ -26,19 +26,13 @@ pub trait CallableWithAccess {
         args: I,
         world: Arc<WorldAccessGuard>,
         f: F,
-    ) -> ScriptResult<O>;
+    ) -> Result<O, InteropError>;
 
     fn dynamic_call<I: IntoIterator<Item = ScriptValue>>(
         &self,
         args: I,
         world: Arc<WorldAccessGuard>,
-    ) -> ScriptResult<ScriptValue> {
-        self.with_call(args, world.clone(), |r| match r {
-            Return::Owned(partial_reflect) => partial_reflect.as_ref().into_script_value(world),
-            Return::Ref(ref_) => ref_.into_script_value(world),
-            Return::Mut(mut_ref) => mut_ref.into_script_value(world),
-        })?
-    }
+    ) -> Result<ScriptValue, InteropError>;
 }
 
 impl CallableWithAccess for DynamicFunction<'_> {
@@ -47,7 +41,7 @@ impl CallableWithAccess for DynamicFunction<'_> {
         args: I,
         world: Arc<WorldAccessGuard>,
         f: F,
-    ) -> ScriptResult<O> {
+    ) -> Result<O, InteropError> {
         let info = self.info().args();
 
         // We need to:
@@ -68,9 +62,9 @@ impl CallableWithAccess for DynamicFunction<'_> {
         {
             std::iter::once(ScriptValue::World)
                 .chain(arg_iter)
-                .into_args_list_with_access(info, world.clone())?
+                .into_args_list_with_access(self.info(), world.clone())?
         } else {
-            arg_iter.into_args_list_with_access(info, world.clone())?
+            arg_iter.into_args_list_with_access(self.info(), world.clone())?
         };
 
         let mut final_args_list = ArgList::default();
@@ -101,7 +95,7 @@ impl CallableWithAccess for DynamicFunction<'_> {
                     unsafe { world.release_access(id) };
                 });
 
-                return Err(e.into());
+                return Err(InteropError::function_call_error(e));
             }
         };
 
@@ -114,6 +108,19 @@ impl CallableWithAccess for DynamicFunction<'_> {
 
         Ok(out)
     }
+
+    fn dynamic_call<I: IntoIterator<Item = ScriptValue>>(
+        &self,
+        args: I,
+        world: Arc<WorldAccessGuard>,
+    ) -> Result<ScriptValue, InteropError> {
+        self.with_call(args, world.clone(), |r| match r {
+            Return::Owned(partial_reflect) => partial_reflect.as_ref().into_script_value(world),
+            Return::Ref(ref_) => ref_.into_script_value(world),
+            Return::Mut(mut_ref) => mut_ref.into_script_value(world),
+        })?
+        .map_err(|e| InteropError::function_interop_error(self.info(), None, e).into())
+    }
 }
 
 /// Trait implementable by lists of things representing arguments which can be converted into an `ArgList`.
@@ -122,9 +129,9 @@ impl CallableWithAccess for DynamicFunction<'_> {
 pub trait IntoArgsListWithAccess {
     fn into_args_list_with_access<'w>(
         self,
-        arg_info: &[ArgInfo],
+        function_info: &FunctionInfo,
         world: WorldGuard<'w>,
-    ) -> ScriptResult<(Vec<ArgValue<'w>>, Vec<(ReflectAccessId, Ownership)>)>;
+    ) -> Result<(Vec<ArgValue<'w>>, Vec<(ReflectAccessId, Ownership)>), InteropError>;
 }
 
 impl<I: Iterator<Item = ScriptValue>> IntoArgsListWithAccess for I {
@@ -134,9 +141,10 @@ impl<I: Iterator<Item = ScriptValue>> IntoArgsListWithAccess for I {
     /// Meaning that only after releasing access is it possible to create unsafe aliases
     fn into_args_list_with_access<'w>(
         self,
-        arg_info: &[ArgInfo],
+        function_info: &FunctionInfo,
         world: WorldGuard<'w>,
-    ) -> ScriptResult<(Vec<ArgValue<'w>>, Vec<(ReflectAccessId, Ownership)>)> {
+    ) -> Result<(Vec<ArgValue<'w>>, Vec<(ReflectAccessId, Ownership)>), InteropError> {
+        let arg_info = function_info.args();
         let mut accesses = Vec::default();
         let mut arg_list = Vec::default();
 
@@ -147,23 +155,23 @@ impl<I: Iterator<Item = ScriptValue>> IntoArgsListWithAccess for I {
             });
         };
 
-        for (value, arg_info) in self.zip(arg_info.iter()) {
+        for (value, argument_info) in self.zip(arg_info.iter()) {
             match value {
                 // TODO: I'd see the logic be a bit cleaner, this if is needed to support 'Raw' ScriptValue arguments
                 // as we do not want to claim any access since we're not using the value yet
                 ScriptValue::Reference(arg_ref)
-                    if arg_info.type_id() != TypeId::of::<ScriptValue>() =>
+                    if argument_info.type_id() != TypeId::of::<ScriptValue>() =>
                 {
-                    let access_id =
-                    ReflectAccessId::for_reference(arg_ref.base.base_id.clone()).ok_or_else(|| {
-                        ScriptError::new_reflection_error(format!(
-                            "Could not call function, argument: {:?}, with type: {} is not a valid reference. Have you registered the type?",
-                            arg_info.name().map(str::to_owned).unwrap_or_else(|| arg_info.index().to_string()),
-                            arg_ref.display_with_world(world.clone())
-                        ))
-                    })?;
+                    let access_id = ReflectAccessId::for_reference(arg_ref.base.base_id.clone())
+                        .ok_or_else(|| {
+                            InteropError::function_interop_error(
+                                function_info,
+                                Some(argument_info),
+                                InteropError::unregistered_base(arg_ref.base.clone()),
+                            )
+                        })?;
 
-                    let is_write = matches!(arg_info.ownership(), Ownership::Mut);
+                    let is_write = matches!(argument_info.ownership(), Ownership::Mut);
 
                     let success = if is_write {
                         world.claim_write_access(access_id)
@@ -173,20 +181,27 @@ impl<I: Iterator<Item = ScriptValue>> IntoArgsListWithAccess for I {
 
                     if !success {
                         release_accesses(&mut accesses);
-                        return Err(ScriptError::new_reflection_error(format!(
-                            "Could not claim access for argument {}",
-                            arg_ref.display_with_world(world.clone())
-                        )));
+                        return Err(InteropError::function_interop_error(
+                            function_info,
+                            Some(argument_info),
+                            InteropError::cannot_claim_access(arg_ref.base.clone()),
+                        )
+                        .into());
                     }
 
-                    accesses.push((access_id, arg_info.ownership()));
+                    accesses.push((access_id, argument_info.ownership()));
 
-                    let val = unsafe { arg_ref.clone().into_arg_value(world.clone(), arg_info) };
+                    let val =
+                        unsafe { arg_ref.clone().into_arg_value(world.clone(), argument_info) };
                     let val = match val {
                         Ok(v) => v,
                         Err(e) => {
                             release_accesses(&mut accesses);
-                            return Err(e);
+                            return Err(InteropError::function_interop_error(
+                                function_info,
+                                Some(argument_info),
+                                e,
+                            ));
                         }
                     };
                     arg_list.push(val);
@@ -200,7 +215,7 @@ impl<I: Iterator<Item = ScriptValue>> IntoArgsListWithAccess for I {
                     let value = match <dyn PartialReflect>::from_script_value(
                         value,
                         world.clone(),
-                        arg_info.type_id(),
+                        argument_info.type_id(),
                     ) {
                         Some(Ok(v)) => v,
                         Some(Err(e)) => {
@@ -208,14 +223,19 @@ impl<I: Iterator<Item = ScriptValue>> IntoArgsListWithAccess for I {
                             accesses.iter().for_each(|(id, _)| {
                                 unsafe { world.release_access(*id) };
                             });
-                            return Err(e);
+                            return Err(InteropError::function_interop_error(
+                                function_info,
+                                Some(argument_info),
+                                e,
+                            ));
                         }
                         None => {
                             release_accesses(&mut accesses);
-                            return Err(ValueConversionError::TypeMismatch {
-                                expected_type: arg_info.type_path().into(),
-                                actual_type: None,
-                            }
+                            return Err(InteropError::function_interop_error(
+                                function_info,
+                                Some(argument_info),
+                                InteropError::impossible_conversion(argument_info.type_id()),
+                            )
                             .into());
                         }
                     };

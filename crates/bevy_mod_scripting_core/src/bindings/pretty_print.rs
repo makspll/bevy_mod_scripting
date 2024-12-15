@@ -1,9 +1,6 @@
 use crate::reflection_extensions::TypeIdExtensions;
 
-use super::{
-    script_val::ScriptValue, ReflectBase, ReflectBaseType, ReflectReference, WorldAccessGuard,
-    WorldGuard,
-};
+use super::{script_val::ScriptValue, ReflectBase, ReflectBaseType, ReflectReference, WorldGuard};
 use bevy::reflect::{PartialReflect, ReflectRef};
 use itertools::Itertools;
 use std::{any::TypeId, borrow::Cow};
@@ -309,15 +306,29 @@ impl ReflectReferencePrinter {
 
 /// For types which can't be pretty printed without world access.
 /// Implementors should try to print the best value they can, and never panick.
-pub trait DisplayWithWorld {
+pub trait DisplayWithWorld: std::fmt::Debug {
     /// Display the `shallowest` representation of the type using world access.
     /// For references this is the type path and the type of the value they are pointing to.
     fn display_with_world(&self, world: WorldGuard) -> String;
 
     /// Display the most literal representation of the type using world access.
     /// I.e. for references this would be the pointed to value itself.
-    fn display_value_with_world(&self, world: WorldGuard) -> String;
+    fn display_value_with_world(&self, world: WorldGuard) -> String {
+        self.display_with_world(world)
+    }
 }
+
+#[macro_export]
+macro_rules! impl_dummy_display (
+    ($t:ty) => {
+        impl std::fmt::Display for $t {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(f, "Displaying {} without world access: {:#?}", stringify!($t), self);
+                Ok(())
+            }
+        }
+    };
+);
 
 impl DisplayWithWorld for ReflectReference {
     fn display_with_world(&self, world: WorldGuard) -> String {
@@ -377,6 +388,7 @@ impl DisplayWithWorld for ScriptValue {
             ScriptValue::Float(f) => f.to_string(),
             ScriptValue::String(cow) => cow.to_string(),
             ScriptValue::World => "World".to_owned(),
+            ScriptValue::Error(script_error) => script_error.to_string(),
         }
     }
 }

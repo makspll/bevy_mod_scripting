@@ -22,7 +22,7 @@ function on_event()
 
     print("\noption")
     -- print(comp:get("option_usize"))
-    print(comp.option_usize)
+    print(comp.option_usie)
     comp.option_usize = 69
     print(comp.option_usize)
     comp.option_usize = nil

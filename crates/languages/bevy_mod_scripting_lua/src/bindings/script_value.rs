@@ -73,6 +73,7 @@ impl<'lua> IntoLua<'lua> for LuaScriptValue {
                 LuaReflectReference::from(ReflectReference::new_world()).into_lua(lua)?
             }
             ScriptValue::Reference(r) => LuaReflectReference::from(r).into_lua(lua)?,
+            ScriptValue::Error(script_error) => return Err(mlua::Error::external(script_error)),
         })
     }
 }

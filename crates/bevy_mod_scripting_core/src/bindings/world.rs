@@ -39,6 +39,7 @@ use smallvec::SmallVec;
 
 use crate::{
     bindings::ReflectAllocationId,
+    error::InteropError,
     prelude::{ReflectAllocator, ScriptError, ScriptResult},
     reflection_extensions::TypeIdExtensions,
     with_access_read, with_access_write, with_global_access,
@@ -74,9 +75,8 @@ impl WorldCallbackAccess {
     ) -> T {
         // - the world cannot be dropped before the world drops since we have mutable reference to it in this entire function
         // - nothing can alias inappropriately WorldAccessGuard since it's only instance is behind the raw Arc
-        let world_guard = Arc::new(WorldAccessGuard::new(world));
-        let world_guard = unsafe { WorldCallbackAccess::new(Arc::downgrade(&world_guard)) };
-
+        let world_guard_arc = Arc::new(WorldAccessGuard::new(world));
+        let world_guard = unsafe { WorldCallbackAccess::new(Arc::downgrade(&world_guard_arc)) };
         callback(&world_guard)
     }
 
@@ -135,7 +135,7 @@ impl WorldCallbackAccess {
         &self,
         entity: Entity,
         registration: ScriptTypeRegistration,
-    ) -> ScriptResult<()> {
+    ) -> Result<(), InteropError> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
         world.add_default_component(entity, registration)
     }
@@ -144,12 +144,16 @@ impl WorldCallbackAccess {
         &self,
         entity: Entity,
         component_id: ComponentId,
-    ) -> ScriptResult<Option<ReflectReference>> {
+    ) -> Result<Option<ReflectReference>, InteropError> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
         world.get_component(entity, component_id)
     }
 
-    pub fn has_component(&self, entity: Entity, component_id: ComponentId) -> ScriptResult<bool> {
+    pub fn has_component(
+        &self,
+        entity: Entity,
+        component_id: ComponentId,
+    ) -> Result<bool, InteropError> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
         world.has_component(entity, component_id)
     }
@@ -158,17 +162,23 @@ impl WorldCallbackAccess {
         &self,
         entity: Entity,
         registration: ScriptTypeRegistration,
-    ) -> ScriptResult<()> {
+    ) -> Result<(), InteropError> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
         world.remove_component(entity, registration)
     }
 
-    pub fn get_resource(&self, resource_id: ComponentId) -> ScriptResult<Option<ReflectReference>> {
+    pub fn get_resource(
+        &self,
+        resource_id: ComponentId,
+    ) -> Result<Option<ReflectReference>, InteropError> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
         world.get_resource(resource_id)
     }
 
-    pub fn remove_resource(&self, registration: ScriptTypeRegistration) -> ScriptResult<()> {
+    pub fn remove_resource(
+        &self,
+        registration: ScriptTypeRegistration,
+    ) -> Result<(), InteropError> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
         world.remove_resource(registration)
     }
@@ -183,22 +193,22 @@ impl WorldCallbackAccess {
         world.has_entity(entity)
     }
 
-    pub fn get_children(&self, entity: Entity) -> ScriptResult<Vec<Entity>> {
+    pub fn get_children(&self, entity: Entity) -> Result<Vec<Entity>, InteropError> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
         world.get_children(entity)
     }
 
-    pub fn get_parent(&self, entity: Entity) -> ScriptResult<Option<Entity>> {
+    pub fn get_parent(&self, entity: Entity) -> Result<Option<Entity>, InteropError> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
         world.get_parent(entity)
     }
 
-    pub fn push_children(&self, parent: Entity, children: &[Entity]) -> ScriptResult<()> {
+    pub fn push_children(&self, parent: Entity, children: &[Entity]) -> Result<(), InteropError> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
         world.push_children(parent, children)
     }
 
-    pub fn remove_children(&self, parent: Entity, children: &[Entity]) -> ScriptResult<()> {
+    pub fn remove_children(&self, parent: Entity, children: &[Entity]) -> Result<(), InteropError> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
         world.remove_children(parent, children)
     }
@@ -208,22 +218,22 @@ impl WorldCallbackAccess {
         parent: Entity,
         index: usize,
         children: &[Entity],
-    ) -> ScriptResult<()> {
+    ) -> Result<(), InteropError> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
         world.insert_children(parent, index, children)
     }
 
-    pub fn despawn_recursive(&self, entity: Entity) -> ScriptResult<()> {
+    pub fn despawn_recursive(&self, entity: Entity) -> Result<(), InteropError> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
         world.despawn_recursive(entity)
     }
 
-    pub fn despawn(&self, entity: Entity) -> ScriptResult<()> {
+    pub fn despawn(&self, entity: Entity) -> Result<(), InteropError> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
         world.despawn(entity)
     }
 
-    pub fn despawn_descendants(&self, entity: Entity) -> ScriptResult<()> {
+    pub fn despawn_descendants(&self, entity: Entity) -> Result<(), InteropError> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
         world.despawn_descendants(entity)
     }
@@ -628,11 +638,16 @@ impl<'w> WorldAccessGuard<'w> {
         &self,
         entity: Entity,
         registration: ScriptTypeRegistration,
-    ) -> ScriptResult<()> {
-        let component_data = registration.registration.data::<ReflectComponent>().ok_or_else(|| ScriptError::new_runtime_error(format!(
-            "Cannot add default component since type: `{}`, Does not have ReflectComponent data registered.",
-            registration.registration.type_info().type_path()
-        )))?;
+    ) -> Result<(), InteropError> {
+        let component_data = registration
+            .registration
+            .data::<ReflectComponent>()
+            .ok_or_else(|| {
+                InteropError::missing_type_data(
+                    registration.registration.type_id(),
+                    "ReflectComponent".to_owned(),
+                )
+            })?;
 
         // we look for ReflectDefault or ReflectFromWorld data then a ReflectComponent data
         let instance = if let Some(default_td) = registration.registration.data::<ReflectDefault>()
@@ -644,10 +659,10 @@ impl<'w> WorldAccessGuard<'w> {
                 from_world_td.from_world(world)
             })
         } else {
-            return Err(ScriptError::new_runtime_error(format!(
-                "Cannot add default component since type: `{}`, Does not have ReflectDefault or ReflectFromWorld data registered.",
-                registration.registration.type_info().type_path()
-            )));
+            return Err(InteropError::missing_type_data(
+                registration.registration.type_id(),
+                "ReflectDefault or ReflectFromWorld".to_owned(),
+            ));
         };
 
         //  TODO: this shouldn't need entire world access it feels
@@ -655,12 +670,9 @@ impl<'w> WorldAccessGuard<'w> {
             let type_registry = self.type_registry();
             let world = unsafe { self.0.cell.world_mut() };
 
-            let mut entity = world.get_entity_mut(entity).map_err(|e| {
-                ScriptError::new_runtime_error(format!(
-                    "Could not retrieve entity: {:?}. {e}",
-                    entity
-                ))
-            })?;
+            let mut entity = world
+                .get_entity_mut(entity)
+                .map_err(|e| InteropError::missing_entity(entity))?;
             {
                 let registry = type_registry.read();
                 component_data.insert(&mut entity, instance.as_partial_reflect(), &registry);
@@ -673,22 +685,19 @@ impl<'w> WorldAccessGuard<'w> {
         &self,
         entity: Entity,
         component_id: ComponentId,
-    ) -> ScriptResult<Option<ReflectReference>> {
-        let entity = self.0.cell.get_entity(entity).ok_or_else(|| {
-            ScriptError::new_runtime_error(format!("Entity does not exist: {:?}", entity))
-        })?;
+    ) -> Result<Option<ReflectReference>, InteropError> {
+        let entity = self
+            .0
+            .cell
+            .get_entity(entity)
+            .ok_or_else(|| InteropError::missing_entity(entity))?;
 
         let component_info = self
             .0
             .cell
             .components()
             .get_info(component_id)
-            .ok_or_else(|| {
-                ScriptError::new_runtime_error(format!(
-                    "Component does not exist: {:?}",
-                    component_id
-                ))
-            })?;
+            .ok_or_else(|| InteropError::invalid_component(component_id))?;
 
         if entity.contains_id(component_id) {
             Ok(Some(ReflectReference {
@@ -705,10 +714,16 @@ impl<'w> WorldAccessGuard<'w> {
         }
     }
 
-    pub fn has_component(&self, entity: Entity, component_id: ComponentId) -> ScriptResult<bool> {
-        let entity = self.0.cell.get_entity(entity).ok_or_else(|| {
-            ScriptError::new_runtime_error(format!("Entity does not exist: {:?}", entity))
-        })?;
+    pub fn has_component(
+        &self,
+        entity: Entity,
+        component_id: ComponentId,
+    ) -> Result<bool, InteropError> {
+        let entity = self
+            .0
+            .cell
+            .get_entity(entity)
+            .ok_or_else(|| InteropError::missing_entity(entity))?;
 
         Ok(entity.contains_id(component_id))
     }
@@ -717,28 +732,32 @@ impl<'w> WorldAccessGuard<'w> {
         &self,
         entity: Entity,
         registration: ScriptTypeRegistration,
-    ) -> ScriptResult<()> {
-        let component_data = registration.registration.data::<ReflectComponent>().ok_or_else(|| ScriptError::new_runtime_error(format!(
-            "Cannot remove component since type: `{}`, Does not have ReflectComponent data registered.",
-            registration.registration.type_info().type_path()
-        )))?;
+    ) -> Result<(), InteropError> {
+        let component_data = registration
+            .registration
+            .data::<ReflectComponent>()
+            .ok_or_else(|| {
+                InteropError::missing_type_data(
+                    registration.registration.type_id(),
+                    "ReflectComponent".to_owned(),
+                )
+            })?;
 
         //  TODO: this shouldn't need entire world access it feels
         with_global_access!(self.0.accesses, "Could not remove component", {
             let world = unsafe { self.0.cell.world_mut() };
-            let mut entity = world.get_entity_mut(entity).map_err(|e| {
-                ScriptError::new_runtime_error(format!(
-                    "Could not retrieve entity: {:?}. {e}",
-                    entity
-                ))
-            })?;
-
+            let mut entity = world
+                .get_entity_mut(entity)
+                .map_err(|e| InteropError::missing_entity(entity))?;
             component_data.remove(&mut entity);
             Ok(())
         })
     }
 
-    pub fn get_resource(&self, resource_id: ComponentId) -> ScriptResult<Option<ReflectReference>> {
+    pub fn get_resource(
+        &self,
+        resource_id: ComponentId,
+    ) -> Result<Option<ReflectReference>, InteropError> {
         let component_info = match self.0.cell.components().get_info(resource_id) {
             Some(info) => info,
             None => return Ok(None),
@@ -755,11 +774,19 @@ impl<'w> WorldAccessGuard<'w> {
         }))
     }
 
-    pub fn remove_resource(&self, registration: ScriptTypeRegistration) -> ScriptResult<()> {
-        let component_data = registration.registration.data::<ReflectResource>().ok_or_else(|| ScriptError::new_runtime_error(format!(
-            "Cannot remove resource since type: `{}`, Does not have ReflectResource data registered.",
-            registration.registration.type_info().type_path()
-        )))?;
+    pub fn remove_resource(
+        &self,
+        registration: ScriptTypeRegistration,
+    ) -> Result<(), InteropError> {
+        let component_data = registration
+            .registration
+            .data::<ReflectResource>()
+            .ok_or_else(|| {
+                InteropError::missing_type_data(
+                    registration.registration.type_id(),
+                    "ReflectResource".to_owned(),
+                )
+            })?;
 
         //  TODO: this shouldn't need entire world access it feels
         with_global_access!(self.0.accesses, "Could not remove resource", {
@@ -779,12 +806,9 @@ impl<'w> WorldAccessGuard<'w> {
         self.is_valid_entity(entity)
     }
 
-    pub fn get_children(&self, entity: Entity) -> ScriptResult<Vec<Entity>> {
+    pub fn get_children(&self, entity: Entity) -> Result<Vec<Entity>, InteropError> {
         if !self.is_valid_entity(entity) {
-            return Err(ScriptError::new_runtime_error(format!(
-                "Entity does not exist or is not valid: {:?}",
-                entity
-            )));
+            return Err(InteropError::missing_entity(entity));
         }
 
         self.with_component(entity, |c: Option<&Children>| {
@@ -792,31 +816,22 @@ impl<'w> WorldAccessGuard<'w> {
         })
     }
 
-    pub fn get_parent(&self, entity: Entity) -> ScriptResult<Option<Entity>> {
+    pub fn get_parent(&self, entity: Entity) -> Result<Option<Entity>, InteropError> {
         if !self.is_valid_entity(entity) {
-            return Err(ScriptError::new_runtime_error(format!(
-                "Entity does not exist or is not valid: {:?}",
-                entity
-            )));
+            return Err(InteropError::missing_entity(entity));
         }
 
         self.with_component(entity, |c: Option<&Parent>| Ok(c.map(|c| c.get())))
     }
 
-    pub fn push_children(&self, parent: Entity, children: &[Entity]) -> ScriptResult<()> {
+    pub fn push_children(&self, parent: Entity, children: &[Entity]) -> Result<(), InteropError> {
         // verify entities exist
         if !self.is_valid_entity(parent) {
-            return Err(ScriptError::new_runtime_error(format!(
-                "The parent Entity does not exist or is not valid: {:?}",
-                parent
-            )));
+            return Err(InteropError::missing_entity(parent));
         }
         for c in children {
             if !self.is_valid_entity(*c) {
-                return Err(ScriptError::new_runtime_error(format!(
-                    "the Entity does not exist or is not valid: {:?}",
-                    c
-                )));
+                return Err(InteropError::missing_entity(*c));
             }
         }
 
@@ -831,20 +846,14 @@ impl<'w> WorldAccessGuard<'w> {
         Ok(())
     }
 
-    pub fn remove_children(&self, parent: Entity, children: &[Entity]) -> ScriptResult<()> {
+    pub fn remove_children(&self, parent: Entity, children: &[Entity]) -> Result<(), InteropError> {
         if !self.is_valid_entity(parent) {
-            return Err(ScriptError::new_runtime_error(format!(
-                "The parent Entity does not exist or is not valid: {:?}",
-                parent
-            )));
+            return Err(InteropError::missing_entity(parent));
         }
 
         for c in children {
             if !self.is_valid_entity(*c) {
-                return Err(ScriptError::new_runtime_error(format!(
-                    "the Entity does not exist or is not valid: {:?}",
-                    c
-                )));
+                return Err(InteropError::missing_entity(*c));
             }
         }
 
@@ -864,20 +873,14 @@ impl<'w> WorldAccessGuard<'w> {
         parent: Entity,
         index: usize,
         children: &[Entity],
-    ) -> ScriptResult<()> {
+    ) -> Result<(), InteropError> {
         if !self.is_valid_entity(parent) {
-            return Err(ScriptError::new_runtime_error(format!(
-                "parent Entity does not exist or is not valid: {:?}",
-                parent
-            )));
+            return Err(InteropError::missing_entity(parent));
         }
 
         for c in children {
             if !self.is_valid_entity(*c) {
-                return Err(ScriptError::new_runtime_error(format!(
-                    "the Entity does not exist or is not valid: {:?}",
-                    c
-                )));
+                return Err(InteropError::missing_entity(*c));
             }
         }
 
@@ -892,12 +895,9 @@ impl<'w> WorldAccessGuard<'w> {
         Ok(())
     }
 
-    pub fn despawn_recursive(&self, parent: Entity) -> ScriptResult<()> {
+    pub fn despawn_recursive(&self, parent: Entity) -> Result<(), InteropError> {
         if !self.is_valid_entity(parent) {
-            return Err(ScriptError::new_runtime_error(format!(
-                "parent Entity does not exist or is not valid: {:?}",
-                parent
-            )));
+            return Err(InteropError::missing_entity(parent));
         }
 
         with_global_access!(self.0.accesses, "Could not despawn entity", {
@@ -911,12 +911,9 @@ impl<'w> WorldAccessGuard<'w> {
         Ok(())
     }
 
-    pub fn despawn(&self, entity: Entity) -> ScriptResult<()> {
+    pub fn despawn(&self, entity: Entity) -> Result<(), InteropError> {
         if !self.is_valid_entity(entity) {
-            return Err(ScriptError::new_runtime_error(format!(
-                "Entity does not exist or is not valid: {:?}",
-                entity
-            )));
+            return Err(InteropError::missing_entity(entity));
         }
 
         with_global_access!(self.0.accesses, "Could not despawn entity", {
@@ -930,12 +927,9 @@ impl<'w> WorldAccessGuard<'w> {
         Ok(())
     }
 
-    pub fn despawn_descendants(&self, parent: Entity) -> ScriptResult<()> {
+    pub fn despawn_descendants(&self, parent: Entity) -> Result<(), InteropError> {
         if !self.is_valid_entity(parent) {
-            return Err(ScriptError::new_runtime_error(format!(
-                "parent Entity does not exist or is not valid: {:?}",
-                parent
-            )));
+            return Err(InteropError::missing_entity(parent));
         }
 
         with_global_access!(self.0.accesses, "Could not despawn descendants", {

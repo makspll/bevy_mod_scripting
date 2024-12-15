@@ -5,7 +5,7 @@ use bevy::prelude::{AppFunctionRegistry, Entity, World};
 
 use bevy_mod_scripting_core::bindings::function::CallableWithAccess;
 use bevy_mod_scripting_core::bindings::WorldGuard;
-use bevy_mod_scripting_core::error::FunctionError;
+use bevy_mod_scripting_core::error::{FunctionError, InteropError};
 use bevy_mod_scripting_core::{
     bindings::{ReflectReference, ScriptTypeRegistration, WorldAccessGuard, WorldCallbackAccess},
     error::ScriptError,
@@ -432,22 +432,13 @@ pub trait GetWorld {
 
 impl GetWorld for mlua::Lua {
     fn try_get_world(&self) -> Result<Arc<WorldAccessGuard<'static>>, mlua::Error> {
-        // self.globals()
-        //     .get::<_, LuaWorld>("world")?
-        //     .0
-        //     .read()
-        //     .ok_or_else(|| ScriptError::new_reflection_error("Stale world access"))
-        //     .map_err(mlua::Error::external)
-        let access = self.app_data_ref::<WorldCallbackAccess>().ok_or_else(|| {
-            mlua::Error::external(ScriptError::new_reflection_error(
-                "World was not initialized",
-            ))
-        })?;
+        let access = self
+            .app_data_ref::<WorldCallbackAccess>()
+            .ok_or_else(InteropError::missing_world)?;
 
-        access.read().ok_or_else(|| {
-            mlua::Error::external(ScriptError::new_reflection_error("Stale world access"))
-        })
-        // todo!()
+        let world = access.read().ok_or_else(InteropError::stale_world_access)?;
+
+        Ok(world)
     }
 
     fn get_world(&self) -> WorldGuard<'static> {

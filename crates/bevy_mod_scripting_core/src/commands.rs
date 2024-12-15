@@ -116,7 +116,7 @@ impl<C: Context, R: Runtime> Command for CreateOrUpdateScript<C, R> {
                 match ctxt {
                     Ok(ctxt) => contexts.insert(ctxt),
                     Err(e) => {
-                        handle_script_errors(world, &format!("Failed to load context for script with id: {}. With runtime type: {} and context type: {}", self.id, type_name::<R>(), type_name::<C>()), [e]);
+                        handle_script_errors(world, &format!("Failed to load context for script with id: {}. With runtime type: {} and context type: {}", self.id, type_name::<R>(), type_name::<C>()), [e].into_iter());
                         return;
                     }
                 }

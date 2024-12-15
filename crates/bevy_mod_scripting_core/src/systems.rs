@@ -3,7 +3,7 @@ use std::any::type_name;
 
 use crate::{
     asset::{ScriptAsset, ScriptAssetSettings},
-    bindings::ReflectAllocator,
+    bindings::{pretty_print::DisplayWithWorld, ReflectAllocator, WorldAccessGuard, WorldGuard},
     commands::{CreateOrUpdateScript, DeleteScript},
     context::{Context, ContextLoadingSettings, ScriptContexts},
     error::{ScriptError, ScriptResult},
@@ -185,7 +185,10 @@ pub fn event_handler<L: IntoCallbackLabel, A: Args, C: Context, R: Runtime>(
                     &pre_handling_initializers,
                     runtime,
                     world,
-                );
+                )
+                .map_err(|e| {
+                    e.with_appended_context(format!("Script: {}, Entity: {:?}", script.id, entity))
+                });
 
                 push_err_and_continue!(errors, handler_result)
             }
@@ -203,12 +206,12 @@ pub fn event_handler<L: IntoCallbackLabel, A: Args, C: Context, R: Runtime>(
             type_name::<C>(),
             type_name::<A>()
         ),
-        errors,
+        errors.into_iter(),
     );
 }
 
 /// Handles errors caused by script execution and sends them to the error event channel
-pub(crate) fn handle_script_errors<I: IntoIterator<Item = ScriptError>>(
+pub(crate) fn handle_script_errors<I: Iterator<Item = ScriptError> + Clone>(
     world: &mut World,
     context: &str,
     errors: I,
@@ -217,9 +220,13 @@ pub(crate) fn handle_script_errors<I: IntoIterator<Item = ScriptError>>(
         .get_resource_mut::<Events<ScriptErrorEvent>>()
         .expect("Missing events resource");
 
-    for error in errors {
-        bevy::log::error!("{}. {}", context, error.to_string());
+    for error in errors.clone() {
         error_events.send(ScriptErrorEvent { error });
+    }
+
+    for error in errors {
+        let arc_world = WorldGuard::new(WorldAccessGuard::new(world));
+        bevy::log::error!("{}. {}", context, error.display_with_world(arc_world));
     }
 }
 

@@ -1,10 +1,27 @@
-use std::{any::{Any, TypeId}, borrow::Cow, cmp::max, ffi::{CStr, CString, OsStr, OsString}, os::unix::ffi::OsStrExt, path::{Path, PathBuf}, str::FromStr};
+use std::{
+    any::{Any, TypeId},
+    borrow::Cow,
+    cmp::max,
+    ffi::{CStr, CString, OsStr, OsString},
+    os::unix::ffi::OsStrExt,
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 
-use bevy::reflect::{FromType, List, PartialReflect, Reflect, ReflectFromReflect, TypeData, TypeInfo};
+use bevy::reflect::{
+    FromType, List, PartialReflect, Reflect, ReflectFromReflect, ReflectMut, TypeData, TypeInfo,
+};
 use itertools::Itertools;
 
-use crate::{bindings::{pretty_print::DisplayWithWorld, script_val::{IntoScriptValue, ScriptValue}, ReflectReference, WorldAccessGuard, WorldGuard}, error::{ScriptError, ScriptResult}};
 use crate::bindings::script_val::FromScriptValue;
+use crate::{
+    bindings::{
+        pretty_print::DisplayWithWorld,
+        script_val::{IntoScriptValue, ScriptValue},
+        ReflectReference, WorldAccessGuard, WorldGuard,
+    },
+    error::InteropError,
+};
 /// Extension trait for [`PartialReflect`] providing additional functionality for working with specific types.
 pub trait PartialReflectExt {
     fn allocate_cloned(&self, world: WorldGuard) -> ReflectReference;
@@ -15,48 +32,50 @@ pub trait PartialReflectExt {
     fn is_type(&self, crate_name: Option<&str>, type_ident: &str) -> bool;
 
     /// Equivalent to [`PartialReflectExt::is_type`] but returns an appropriate error if the type is not the expected one.  
-    fn expect_type(&self, crate_name: Option<&str>, type_ident: &str) -> Result<(), ScriptError>;
+    fn expect_type(&self, crate_name: Option<&str>, type_ident: &str) -> Result<(), InteropError>;
 
     /// If the type is an option, returns either the inner value or None if the option is None.
     /// Errors if the type is not an option.
-    fn as_option(&self) -> Result<Option<&dyn PartialReflect>, ScriptError>;
+    fn as_option(&self) -> Result<Option<&dyn PartialReflect>, InteropError>;
 
     /// Similar to [`PartialReflectExt::as_option`] but for mutable references.
-    fn as_option_mut(&mut self) -> Result<Option<&mut dyn PartialReflect>, ScriptError>;
+    fn as_option_mut(&mut self) -> Result<Option<&mut dyn PartialReflect>, InteropError>;
 
     /// If the type is an iterable list-like type, returns an iterator over the elements.
-    fn as_list(&self) -> Result<impl Iterator<Item = &dyn PartialReflect>, ScriptError>;
+    fn as_list(&self) -> Result<impl Iterator<Item = &dyn PartialReflect>, InteropError>;
 
     /// If the type is a usize, returns the value as a usize otherwise throws a convenient error
-    fn as_usize(&self) -> Result<usize, ScriptError>;
+    fn as_usize(&self) -> Result<usize, InteropError>;
 
     /// If the type is an iterable list-like type, sets the elements of the list to the elements of the other list-like type.
     /// This acts as a set operation, so the left list will have the same length as the right list after this operation.
     fn set_as_list<
-        F: Fn(&mut dyn PartialReflect, &dyn PartialReflect) -> Result<(), ScriptError>,
+        F: Fn(&mut dyn PartialReflect, &dyn PartialReflect) -> Result<(), InteropError>,
     >(
         &mut self,
         other: Box<dyn PartialReflect>,
         apply: F,
-        ) -> Result<(), ScriptError>;
-    
+    ) -> Result<(), InteropError>;
 
     /// Inserts into the type at the given key, if the type supports inserting with the given key
-    fn try_insert_boxed(&mut self, index: Box<dyn PartialReflect>, value: Box<dyn PartialReflect>) -> Result<(), ScriptError>;
+    fn try_insert_boxed(
+        &mut self,
+        index: Box<dyn PartialReflect>,
+        value: Box<dyn PartialReflect>,
+    ) -> Result<(), InteropError>;
 
-    /// Tries to insert the given value into the type, if the type is a container type. 
+    /// Tries to insert the given value into the type, if the type is a container type.
     /// The insertion will happen at the natural `end` of the container.
     /// For lists, this is the length of the list.
     /// For sets, this will simply insert the value into the set.
     /// For maps, there is no natural `end`, so the push will error out
-    fn try_push_boxed(&mut self, value: Box<dyn PartialReflect>) -> Result<(), ScriptError>;
-
+    fn try_push_boxed(&mut self, value: Box<dyn PartialReflect>) -> Result<(), InteropError>;
 
     // If the type has a natural last element to pop, pops the last element and returns it as a boxed value.
-    fn try_pop_boxed(&mut self) -> Result<Box<dyn PartialReflect>, ScriptError>;
+    fn try_pop_boxed(&mut self) -> Result<Box<dyn PartialReflect>, InteropError>;
 
     /// If the type is a container type, empties the contents
-    fn try_clear(&mut self) -> Result<(), ScriptError>;
+    fn try_clear(&mut self) -> Result<(), InteropError>;
 
     /// If the type is a container type, returns the type id of the elements in the container.
     /// For maps, this is the type id of the values.
@@ -68,7 +87,10 @@ pub trait PartialReflectExt {
     fn key_type_id(&self) -> Option<TypeId>;
 
     /// Tries to construct the concrete underlying type from a possibly untyped reference
-    fn from_reflect(reflect: &dyn PartialReflect, world: WorldGuard) -> ScriptResult<Box<dyn Reflect>>;
+    fn from_reflect(
+        reflect: &dyn PartialReflect,
+        world: WorldGuard,
+    ) -> Result<Box<dyn Reflect>, InteropError>;
 }
 pub trait TypeIdExtensions {
     fn type_id_or_fake_id(&self) -> TypeId;
@@ -92,23 +114,17 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
         })
     }
 
-    fn expect_type(&self, crate_name: Option<&str>, type_ident: &str) -> Result<(), ScriptError> {
+    fn expect_type(&self, crate_name: Option<&str>, type_ident: &str) -> Result<(), InteropError> {
         if !self.is_type(crate_name, type_ident) {
-            return Err(ScriptError::new_runtime_error(format!(
-                "Expected type {type_ident}{}, but got {}",
-                crate_name
-                    .map(|s| format!(" from crate {s}"))
-                    .unwrap_or_default(),
-                self.get_represented_type_info()
-                    .map(|ti| ti.type_path())
-                    .unwrap_or_else(|| "dynamic type with no type information")
-            )));
+            return Err(InteropError::string_type_mismatch(
+                type_ident.to_owned(),
+                self.get_represented_type_info().map(|ti| ti.type_id()),
+            ));
         }
         Ok(())
     }
 
-
-    fn as_option(&self) -> Result<Option<&dyn PartialReflect>, ScriptError> {
+    fn as_option(&self) -> Result<Option<&dyn PartialReflect>, InteropError> {
         if let bevy::reflect::ReflectRef::Enum(e) = self.reflect_ref() {
             if let Some(field) = e.field_at(0) {
                 return Ok(Some(field));
@@ -117,15 +133,13 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
             }
         }
 
-        Err(ScriptError::new_runtime_error(format!(
-            "Expected enum type, but got type which is not an enum: {}",
-            self.get_represented_type_info()
-                .map(|ti| ti.type_path())
-                .unwrap_or_else(|| "dynamic type with no type information")
-        )))
+        Err(InteropError::string_type_mismatch(
+            "Option<T>".to_owned(),
+            self.get_represented_type_info().map(|ti| ti.type_id()),
+        ))
     }
 
-    fn as_option_mut(&mut self) -> Result<Option<&mut dyn PartialReflect>, ScriptError> {
+    fn as_option_mut(&mut self) -> Result<Option<&mut dyn PartialReflect>, InteropError> {
         let type_info = self.get_represented_type_info().map(|ti| ti.type_path());
         match self.reflect_mut() {
             bevy::reflect::ReflectMut::Enum(e) => {
@@ -135,36 +149,33 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
                     Ok(None)
                 }
             }
-            _ => Err(ScriptError::new_runtime_error(format!(
-                "Expected enum type, but got type which is not an enum: {}",
-                type_info.unwrap_or("dynamic type with no type information")
-            ))),
+            _ => Err(InteropError::string_type_mismatch(
+                "Option<T>".to_owned(),
+                type_info.map(|t| t.type_id()),
+            )),
         }
     }
 
-    fn as_list(&self) -> Result<impl Iterator<Item = &dyn PartialReflect>, ScriptError> {
+    fn as_list(&self) -> Result<impl Iterator<Item = &dyn PartialReflect>, InteropError> {
         if let bevy::reflect::ReflectRef::List(l) = self.reflect_ref() {
             Ok(l.iter())
         } else {
-            Err(ScriptError::new_runtime_error(format!(
-                "Expected list-like type from crate core, but got {}",
-                self.get_represented_type_info()
-                    .map(|ti| ti.type_path())
-                    .unwrap_or_else(|| "dynamic type with no type information")
-            )))
+            Err(InteropError::string_type_mismatch(
+                "List<T>".to_owned(),
+                self.get_represented_type_info().map(|ti| ti.type_id()),
+            ))
         }
     }
 
     fn set_as_list<
-        F: Fn(&mut dyn PartialReflect, &dyn PartialReflect) -> Result<(), ScriptError>,
+        F: Fn(&mut dyn PartialReflect, &dyn PartialReflect) -> Result<(), InteropError>,
     >(
         &mut self,
         mut other: Box<dyn PartialReflect>,
         apply: F,
-    ) -> Result<(), ScriptError> {
+    ) -> Result<(), InteropError> {
         match (self.reflect_mut(), other.reflect_mut()) {
-            (bevy::reflect::ReflectMut::List(l), bevy::reflect::ReflectMut::List(r)) => {
-
+            (ReflectMut::List(l), ReflectMut::List(r)) => {
                 let to_be_inserted_elems = max(r.len() as isize - l.len() as isize, 0) as usize;
                 let apply_range = 0..(r.len() - to_be_inserted_elems);
 
@@ -174,9 +185,10 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
                 });
 
                 // pop then insert in reverse order of popping (last elem -> first elem to insert)
-                let to_insert = (0..to_be_inserted_elems).rev().map(|_| {
-                    r.pop().expect("invariant")
-                }).collect::<Vec<_>>();
+                let to_insert = (0..to_be_inserted_elems)
+                    .rev()
+                    .map(|_| r.pop().expect("invariant"))
+                    .collect::<Vec<_>>();
 
                 to_insert.into_iter().rev().for_each(|e| {
                     l.push(e);
@@ -186,100 +198,119 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
 
                 // apply to existing elements in the list
                 for i in apply_range {
-                    apply(l.get_mut(i).expect("invariant"), r.get(i).expect("invariant"))?;
-                };
-                
+                    apply(
+                        l.get_mut(i).expect("invariant"),
+                        r.get(i).expect("invariant"),
+                    )?;
+                }
+
                 Ok(())
             }
-            _ => Err(ScriptError::new_reflection_error(format!(
-                "Could not set {} with {}. Both need to reflect as list types, but at least one does not.",
-                self.reflect_type_path(),
-                other.reflect_type_path()
-            ))),
+            (ReflectMut::List(_), _) => Err(InteropError::string_type_mismatch(
+                "List<T>".to_owned(),
+                other.get_represented_type_info().map(|ti| ti.type_id()),
+            )),
+            (_, _) => Err(InteropError::string_type_mismatch(
+                "List<T>".to_owned(),
+                self.get_represented_type_info().map(|ti| ti.type_id()),
+            )),
         }
     }
 
-    fn as_usize(&self) -> Result<usize, ScriptError> {
-        self.as_partial_reflect().try_downcast_ref::<usize>().copied()
-            .ok_or_else(|| ScriptError::new_runtime_error(format!(
-                "Expected type usize, but got {}",
-                self.get_represented_type_info()
-                    .map(|ti| ti.type_path())
-                    .unwrap_or_else(|| "dynamic type with no type information")
-            )))
+    fn as_usize(&self) -> Result<usize, InteropError> {
+        self.as_partial_reflect()
+            .try_downcast_ref::<usize>()
+            .copied()
+            .ok_or_else(|| {
+                InteropError::type_mismatch(
+                    TypeId::of::<usize>(),
+                    self.get_represented_type_info().map(|ti| ti.type_id()),
+                )
+            })
     }
 
-    fn try_insert_boxed(&mut self, key: Box<dyn PartialReflect>, value: Box<dyn PartialReflect>) -> Result<(), ScriptError> {
+    fn try_insert_boxed(
+        &mut self,
+        key: Box<dyn PartialReflect>,
+        value: Box<dyn PartialReflect>,
+    ) -> Result<(), InteropError> {
         match self.reflect_mut() {
             bevy::reflect::ReflectMut::List(l) => {
                 l.insert(key.as_usize()?, value);
                 Ok(())
-            },
+            }
             bevy::reflect::ReflectMut::Map(m) => {
                 m.insert_boxed(key, value);
                 Ok(())
-            },
+            }
             bevy::reflect::ReflectMut::Set(s) => {
                 s.insert_boxed(value);
                 Ok(())
-            },
-            _ => Err(ScriptError::new_reflection_error(format!(
-                "Could not insert into {}. The type does not support insertion at a key.",
-                self.reflect_type_path()
-            ))),
+            }
+            _ => Err(InteropError::unsupported_operation(
+                self.get_represented_type_info().map(|ti| ti.type_id()),
+                Some(value),
+                "insert".to_owned(),
+            )),
         }
     }
 
-    fn try_push_boxed(&mut self, value: Box<dyn PartialReflect>) -> Result<(), ScriptError> {
+    fn try_push_boxed(&mut self, value: Box<dyn PartialReflect>) -> Result<(), InteropError> {
         match self.reflect_mut() {
             bevy::reflect::ReflectMut::List(l) => {
                 l.push(value);
                 Ok(())
-            },
+            }
             bevy::reflect::ReflectMut::Set(s) => {
                 s.insert_boxed(value);
                 Ok(())
-            },
-            _ => Err(ScriptError::new_reflection_error(format!(
-                "Could not push into {}. The type does not support pushing.",
-                self.reflect_type_path()
-            ))),
+            }
+            _ => Err(InteropError::unsupported_operation(
+                self.get_represented_type_info().map(|ti| ti.type_id()),
+                Some(value),
+                "push".to_owned(),
+            )),
         }
     }
 
-    fn try_clear(&mut self) -> Result<(), ScriptError> {
+    fn try_clear(&mut self) -> Result<(), InteropError> {
         match self.reflect_mut() {
             bevy::reflect::ReflectMut::List(l) => {
                 let _ = l.drain();
                 Ok(())
-            },
+            }
             bevy::reflect::ReflectMut::Map(m) => {
                 let _ = m.drain();
                 Ok(())
-            },
+            }
             bevy::reflect::ReflectMut::Set(s) => {
                 let _ = s.drain();
                 Ok(())
-            },
-            _ => Err(ScriptError::new_reflection_error(format!(
-                "Could not clear {}. The type does not support clearing.",
-                self.reflect_type_path()
-            ))),
+            }
+            _ => Err(InteropError::unsupported_operation(
+                self.get_represented_type_info().map(|ti| ti.type_id()),
+                None,
+                "clear".to_owned(),
+            )),
         }
     }
 
-    
-    fn try_pop_boxed(&mut self) -> Result<Box<dyn PartialReflect>, ScriptError> {
+    fn try_pop_boxed(&mut self) -> Result<Box<dyn PartialReflect>, InteropError> {
         match self.reflect_mut() {
-            bevy::reflect::ReflectMut::List(l) => {
-                l.pop().ok_or_else(|| ScriptError::new_runtime_error("Tried to pop from an empty list"))
-            },
-            _ => Err(ScriptError::new_reflection_error(format!(
-                "Could not pop from {}. The type does not support popping.",
-                self.reflect_type_path()
-            ))),
+            bevy::reflect::ReflectMut::List(l) => l.pop().ok_or_else(|| {
+                InteropError::unsupported_operation(
+                    self.get_represented_type_info().map(|ti| ti.type_id()),
+                    None,
+                    "pop from empty list".to_owned(),
+                )
+            }),
+            _ => Err(InteropError::unsupported_operation(
+                self.get_represented_type_info().map(|ti| ti.type_id()),
+                None,
+                "pop".to_owned(),
+            )),
         }
-    }    
+    }
 
     fn element_type_id(&self) -> Option<TypeId> {
         let elem: TypeId = match self.get_represented_type_info()? {
@@ -291,27 +322,44 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
         };
         Some(elem)
     }
-    
+
     fn key_type_id(&self) -> Option<TypeId> {
         let key: TypeId = match self.get_represented_type_info()? {
             bevy::reflect::TypeInfo::Map(map_info) => map_info.key_ty().id(),
-            bevy::reflect::TypeInfo::List(_) |  bevy::reflect::TypeInfo::Array(_) => TypeId::of::<usize>(),
+            bevy::reflect::TypeInfo::List(_) | bevy::reflect::TypeInfo::Array(_) => {
+                TypeId::of::<usize>()
+            }
             _ => return None,
         };
         Some(key)
     }
 
-    fn from_reflect(reflect: &dyn PartialReflect, world: WorldGuard) -> ScriptResult<Box<dyn Reflect>> {
-
-        let type_info = reflect.get_represented_type_info().ok_or_else(|| ScriptError::new_runtime_error("Could not construct concrete type as the reference does not contain type information."))?;
+    fn from_reflect(
+        reflect: &dyn PartialReflect,
+        world: WorldGuard,
+    ) -> Result<Box<dyn Reflect>, InteropError> {
+        let type_info = reflect.get_represented_type_info().ok_or_else(|| {
+            InteropError::failed_from_reflect(
+                None,
+                "tried to construct a concrete type from dynamic type with no type information"
+                    .to_owned(),
+            )
+        })?;
         let type_id = type_info.type_id();
 
         let type_registry = world.type_registry();
         let type_registry = type_registry.read();
-        
-        let from_reflect_type_data: &ReflectFromReflect = type_registry.get_type_data(type_id).ok_or_else(|| ScriptError::new_runtime_error(format!("Could not construct concrete type from type id {} as it does not have a FromReflect type data registered.", type_id.display_with_world(world.clone()))))?;
-        from_reflect_type_data.from_reflect(reflect)
-            .ok_or_else(|| ScriptError::new_runtime_error(format!("Could not construct concrete type from type: {}. From Reflect implementation failed", type_id.display_with_world(world.clone()))))
+
+        let from_reflect_type_data: &ReflectFromReflect =
+            type_registry.get_type_data(type_id).ok_or_else(|| {
+                InteropError::missing_type_data(type_id, "ReflectFromReflect".to_owned())
+            })?;
+        from_reflect_type_data.from_reflect(reflect).ok_or_else(|| {
+            InteropError::failed_from_reflect(
+                Some(type_id),
+                "from_reflect returned None".to_owned(),
+            )
+        })
     }
 
     fn allocate(boxed: Box<dyn PartialReflect>, world: WorldGuard) -> ReflectReference {
@@ -324,8 +372,6 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
         let boxed = self.clone_value();
         Self::allocate(boxed, world)
     }
-    
-
 }
 
 pub trait TypeInfoExtensions {
@@ -338,7 +384,7 @@ impl TypeInfoExtensions for TypeInfo {
     fn is_option(&self) -> bool {
         self.is_type(Some("core"), "Option")
     }
-    
+
     fn option_inner_type(&self) -> Option<TypeId> {
         if self.is_option() {
             self.generics().first().map(|g| g.type_id())
@@ -351,13 +397,14 @@ impl TypeInfoExtensions for TypeInfo {
         self.type_path_table().ident() == Some(type_ident)
             && self.type_path_table().crate_name() == crate_name
     }
-
 }
-
 
 #[cfg(test)]
 mod test {
-    use bevy::{prelude::{AppTypeRegistry, World}, reflect::{DynamicMap, Map}};
+    use bevy::{
+        prelude::{AppTypeRegistry, World},
+        reflect::{DynamicMap, Map},
+    };
 
     use crate::prelude::AppReflectAllocator;
 
@@ -442,27 +489,24 @@ mod test {
         let mut list = vec![1, 2, 3];
         let other = vec![4, 5, 6];
         let other_ref: Box<dyn PartialReflect> = Box::new(other.clone());
-        list
-            .set_as_list(other_ref, |l, r| {
-                *l.try_downcast_mut::<i32>().unwrap() = *r.try_downcast_ref::<i32>().unwrap();
-                Ok(())
-            })
-            .unwrap();
+        list.set_as_list(other_ref, |l, r| {
+            *l.try_downcast_mut::<i32>().unwrap() = *r.try_downcast_ref::<i32>().unwrap();
+            Ok(())
+        })
+        .unwrap();
         assert_eq!(other, list);
     }
 
-    
     #[test]
     fn test_set_as_list_shortening() {
         let mut list = vec![1, 2, 3];
         let other = vec![4, 5];
         let other_ref: Box<dyn PartialReflect> = Box::new(other.clone());
-        list
-            .set_as_list(other_ref, |l, r| {
-                *l.try_downcast_mut::<i32>().unwrap() = *r.try_downcast_ref::<i32>().unwrap();
-                Ok(())
-            })
-            .unwrap();
+        list.set_as_list(other_ref, |l, r| {
+            *l.try_downcast_mut::<i32>().unwrap() = *r.try_downcast_ref::<i32>().unwrap();
+            Ok(())
+        })
+        .unwrap();
         assert_eq!(other, list);
     }
 
@@ -471,42 +515,37 @@ mod test {
         let mut list = vec![1, 2];
         let other = vec![4, 5, 6];
         let other_ref: Box<dyn PartialReflect> = Box::new(other.clone());
-        list
-            .set_as_list(other_ref, |l, r| {
-                *l.try_downcast_mut::<i32>().unwrap() = *r.try_downcast_ref::<i32>().unwrap();
-                Ok(())
-            })
-            .unwrap();
+        list.set_as_list(other_ref, |l, r| {
+            *l.try_downcast_mut::<i32>().unwrap() = *r.try_downcast_ref::<i32>().unwrap();
+            Ok(())
+        })
+        .unwrap();
         assert_eq!(other, list);
     }
 
-    
     #[test]
     fn test_set_as_list_empty() {
         let mut list = vec![1, 2];
         let other = Vec::<i32>::default();
         let other_ref: Box<dyn PartialReflect> = Box::new(other.clone());
-        list
-            .set_as_list(other_ref, |l, r| {
-                *l.try_downcast_mut::<i32>().unwrap() = *r.try_downcast_ref::<i32>().unwrap();
-                Ok(())
-            })
-            .unwrap();
+        list.set_as_list(other_ref, |l, r| {
+            *l.try_downcast_mut::<i32>().unwrap() = *r.try_downcast_ref::<i32>().unwrap();
+            Ok(())
+        })
+        .unwrap();
         assert_eq!(other, list);
     }
 
-    
     #[test]
     fn test_set_as_list_targe_empty() {
         let mut list = Vec::<i32>::default();
         let other = vec![1];
         let other_ref: Box<dyn PartialReflect> = Box::new(other.clone());
-        list
-            .set_as_list(other_ref, |l, r| {
-                *l.try_downcast_mut::<i32>().unwrap() = *r.try_downcast_ref::<i32>().unwrap();
-                Ok(())
-            })
-            .unwrap();
+        list.set_as_list(other_ref, |l, r| {
+            *l.try_downcast_mut::<i32>().unwrap() = *r.try_downcast_ref::<i32>().unwrap();
+            Ok(())
+        })
+        .unwrap();
         assert_eq!(other, list);
     }
 
@@ -545,7 +584,8 @@ mod test {
 
     #[test]
     fn test_try_insert_dynamic_map_into_map_of_maps() {
-        let mut map = std::collections::HashMap::<i32, std::collections::HashMap<i32, i32>>::default();
+        let mut map =
+            std::collections::HashMap::<i32, std::collections::HashMap<i32, i32>>::default();
         let value = DynamicMap::from_iter(vec![(1, 2), (2, 3), (3, 4)]);
         let value_ref: Box<dyn PartialReflect> = Box::new(value.clone_dynamic());
         map.insert(1, std::collections::HashMap::<i32, i32>::default());
@@ -554,6 +594,4 @@ mod test {
         map.try_insert_boxed(Box::new(1), value_ref).unwrap();
         assert!(value.reflect_partial_eq(&map[&1]).unwrap());
     }
-
-
 }

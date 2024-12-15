@@ -44,9 +44,10 @@ impl AssetLoader for ScriptAssetLoader {
         load_context: &mut bevy::asset::LoadContext<'_>,
     ) -> Result<Self::Asset, Self::Error> {
         let mut content = Vec::new();
-        reader.read_to_end(&mut content).await.map_err(|e| {
-            ScriptError::new_lifecycle_error(e).with_context(load_context.asset_path())
-        })?;
+        reader
+            .read_to_end(&mut content)
+            .await
+            .map_err(|e| ScriptError::new_error(e).with_context(load_context.asset_path()))?;
         if let Some(processor) = &self.preprocessor {
             processor(&mut content)?;
         }
