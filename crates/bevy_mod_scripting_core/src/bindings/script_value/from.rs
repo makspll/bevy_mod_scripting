@@ -129,6 +129,7 @@ impl FromScriptValue for Option<&dyn PartialReflect> {
         world: WorldGuard,
         target_type_id: TypeId,
     ) -> Option<Result<Box<dyn PartialReflect>, InteropError>> {
+        println!("Option<&dyn PartialReflect>::from_script_value {:?}", value);
         let type_registry = world.type_registry();
         let type_registry = type_registry.read();
         let type_info = type_registry.get_type_info(target_type_id)?;

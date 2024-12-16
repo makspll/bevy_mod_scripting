@@ -34,6 +34,8 @@ macro_rules! into_script_value_downcast {
 
 impl IntoScriptValue for &dyn PartialReflect {
     fn into_script_value(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        bevy::log::trace!("Converting {:?} to ScriptValue", self);
+
         let target_type_id = self
             .get_represented_type_info()
             .map(|ti| ti.type_id())
@@ -43,6 +45,7 @@ impl IntoScriptValue for &dyn PartialReflect {
             // for arbitrary result types we support ScriptValue returns
             _ if TypeId::of::<ScriptValue>() == target_type_id => {
                 match self.try_downcast_ref::<ScriptValue>() {
+                    Some(ScriptValue::Error(e)) => return Err(e.clone()),
                     Some(script_val) => return Ok(script_val.clone()),
                     None => {
                         return Err(InteropError::type_mismatch(
@@ -144,19 +147,20 @@ impl IntoScriptValue for &dyn PartialReflect {
             return inner.into_script_value(world);
         }
 
-        if let Ok(list) = self.as_list() {
-            let list: Vec<_> = list.collect();
-            return list.into_script_value(world);
-        }
+        // if let Ok(list) = self.as_list() {
+        //     let list: Vec<_> = list.collect();
+        //     return list.into_script_value(world);
+        // }
 
-        // as a last resort we just allocate the value and return a reference to it
-        let reflect_reference = self.allocate_cloned(world.clone());
-        ReflectReference::into_script_value(reflect_reference, world)
+        // this is us saying, we cannot convert this into a nice script value
+        // you're gonna have to allocate and ref to it
+        Err(InteropError::better_conversion_exists::<Self>())
     }
 }
 
 impl IntoScriptValue for Option<&dyn PartialReflect> {
     fn into_script_value(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        bevy::log::trace!("Converting Option {:?} to ScriptValue", self);
         match self {
             Some(inner) => inner.into_script_value(world),
             None => Ok(ScriptValue::Unit),

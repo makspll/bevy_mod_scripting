@@ -8,7 +8,10 @@ use bevy::reflect::{
     PartialReflect,
 };
 
-use crate::error::{InteropError, ScriptError, ScriptResult};
+use crate::{
+    error::{FlattenError, InteropError, InteropErrorInner, ScriptError, ScriptResult},
+    reflection_extensions::{PartialReflectExt, ReturnValExt},
+};
 
 use super::{
     access_map::ReflectAccessId,
@@ -86,6 +89,12 @@ impl CallableWithAccess for DynamicFunction<'_> {
             final_args_list = final_args_list.push_arg(next_arg);
         }
 
+        bevy::log::trace!(
+            "Calling function: {:?} with args: {:?}",
+            self.info().name(),
+            final_args_list
+        );
+
         let return_val = match self.call(final_args_list) {
             Ok(return_val) => return_val,
             Err(e) => {
@@ -98,6 +107,12 @@ impl CallableWithAccess for DynamicFunction<'_> {
                 return Err(InteropError::function_call_error(e));
             }
         };
+
+        bevy::log::trace!(
+            "Function: {:?} returned: {:?}",
+            self.info().name(),
+            return_val
+        );
 
         let out = f(return_val);
         // Safety: we have not generated any unsafe aliases
@@ -114,11 +129,51 @@ impl CallableWithAccess for DynamicFunction<'_> {
         args: I,
         world: Arc<WorldAccessGuard>,
     ) -> Result<ScriptValue, InteropError> {
-        self.with_call(args, world.clone(), |r| match r {
-            Return::Owned(partial_reflect) => partial_reflect.as_ref().into_script_value(world),
-            Return::Ref(ref_) => ref_.into_script_value(world),
-            Return::Mut(mut_ref) => mut_ref.into_script_value(world),
-        })?
+        bevy::log::debug!("Dynamic call to function: {:?}", self.info().name());
+        self.with_call(args, world.clone(), |r| {
+            let conversion = match r {
+                Return::Owned(partial_reflect) => {
+                    match partial_reflect.as_ref().into_script_value(world.clone()) {
+                        Err(e)
+                            if matches!(
+                                e.inner(),
+                                InteropErrorInner::BetterConversionExists { .. }
+                            ) =>
+                        {
+                            let allocator = world.allocator();
+                            let mut allocator = allocator.write();
+                            ReflectReference::new_allocated_boxed(partial_reflect, &mut allocator)
+                                .into_script_value(world.clone())
+                        }
+                        e => e,
+                    }
+                }
+                v => {
+                    let ref_ = v.as_ref();
+
+                    match ref_.into_script_value(world.clone()) {
+                        Err(e)
+                            if matches!(
+                                e.inner(),
+                                InteropErrorInner::BetterConversionExists { .. }
+                            ) =>
+                        {
+                            let val =
+                                <dyn PartialReflect>::from_reflect_or_clone(ref_, world.clone());
+                            let allocator = world.allocator();
+                            let mut allocator = allocator.write();
+
+                            ReflectReference::new_allocated_boxed(val, &mut allocator)
+                                .into_script_value(world.clone())
+                        }
+                        e => e,
+                    }
+                }
+            };
+
+            conversion
+        })
+        .flatten_interop_error()
         .map_err(|e| InteropError::function_interop_error(self.info(), None, e))
     }
 }

@@ -12,7 +12,7 @@ use crate::{
     bindings::{pretty_print::DisplayWithWorld, ReflectAllocationId},
     error::InteropError,
     prelude::{ReflectAllocator, ScriptResult},
-    reflection_extensions::PartialReflectExt,
+    reflection_extensions::{PartialReflectExt, TypeIdExtensions},
     with_access_read, with_access_write,
 };
 use bevy::{
@@ -215,21 +215,8 @@ impl ReflectReference {
             }
         }
 
-        // try from reflect
-        let type_registry = world.type_registry();
-        let type_registry = type_registry.read();
-
-        let from_reflect: Option<&ReflectFromReflect> =
-            type_registry.get_type_data(self.base.type_id);
-
-        self.with_reflect(world, |r| {
-            if let Some(from_reflect) = from_reflect {
-                let from_reflect = from_reflect.from_reflect(r);
-                if let Some(from_reflect) = from_reflect {
-                    return from_reflect.into_partial_reflect();
-                }
-            }
-            r.clone_value()
+        self.with_reflect(world.clone(), |r| {
+            <dyn PartialReflect>::from_reflect_or_clone(r, world.clone())
         })
     }
 

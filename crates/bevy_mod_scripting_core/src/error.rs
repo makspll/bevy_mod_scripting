@@ -183,7 +183,7 @@ impl From<InteropError> for mlua::Error {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct InteropError(Arc<InteropErrorInner>);
 
 impl std::error::Error for InteropError {}
@@ -199,6 +199,20 @@ impl_dummy_display!(InteropError);
 impl From<InteropError> for ScriptError {
     fn from(val: InteropError) -> Self {
         ScriptError::new(val)
+    }
+}
+
+pub trait FlattenError<O,E> {
+    fn flatten_interop_error(self) -> Result<O, E>;
+}
+
+impl <O>FlattenError<O, InteropError> for Result<Result<O,InteropError>, InteropError> {
+    fn flatten_interop_error(self) -> Result<O, InteropError> {
+        match self {
+            Ok(Ok(o)) => Ok(o),
+            Ok(Err(e)) => Err(e),
+            Err(e) => Err(e)
+        }
     }
 }
 
@@ -249,6 +263,16 @@ impl InteropError {
     /// Should be thrown with context on the other type if possible.
     pub fn impossible_conversion(into: TypeId) -> Self {
         Self(Arc::new(InteropErrorInner::ImpossibleConversion { into }))
+    }
+
+    /// Thrown if a conversion was not fully completed, as a better conversion exists.
+    /// If a function might throw this error it should be handled by the caller.
+    /// 
+    /// A user seeing this error is evidence of unfinished logic.
+    pub fn better_conversion_exists<T>() -> Self {
+        Self(Arc::new(InteropErrorInner::BetterConversionExists{
+            context: std::any::type_name::<T>().to_string()
+        }))
     }
 
     /// Thrown if a value was expected to be of one type but was of another
@@ -354,6 +378,16 @@ impl InteropError {
     pub fn inner(&self) -> &InteropErrorInner {
         &self.0
     }
+
+    /// Unwraps the inner error
+    ///
+    /// # Panics
+    /// - if there are multiple references to the inner error
+    pub fn into_inner(self) -> InteropErrorInner {
+        Arc::try_unwrap(self.0).unwrap_or_else(|a| {
+            Arc::try_unwrap(a).expect("tried to unwrap interop error while a copy exists")
+        })
+    }
 }
 
 impl_dummy_display!(InteropErrorInner);
@@ -379,6 +413,9 @@ pub enum InteropErrorInner {
     },
     ImpossibleConversion {
         into: TypeId,
+    },
+    BetterConversionExists {
+        context: String
     },
     TypeMismatch {
         expected: TypeId,
@@ -428,9 +465,16 @@ pub enum InteropErrorInner {
     },
 }
 
+impl PartialEq for InteropErrorInner {
+    fn eq(&self, other: &Self) -> bool {
+        false
+    }
+}
+
 impl DisplayWithWorld for InteropErrorInner {
     fn display_with_world(&self, world: crate::bindings::WorldGuard) -> String {
         match self {
+            
             InteropErrorInner::UnregisteredBase { base } => {
                 format!("Unregistered base type: {}", base.display_with_world(world))
             }
@@ -548,6 +592,9 @@ impl DisplayWithWorld for InteropErrorInner {
             },
             InteropErrorInner::FunctionCallError { inner } => {
                 inner.to_string()
+            },
+            InteropErrorInner::BetterConversionExists{ context } => {
+                format!("Unfinished conversion in context of: {}. A better conversion exists but caller didn't handle the case.", context)
             },
         }
     }

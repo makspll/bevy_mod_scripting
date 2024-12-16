@@ -9,7 +9,8 @@ use std::{
 };
 
 use bevy::reflect::{
-    FromType, List, PartialReflect, Reflect, ReflectFromReflect, ReflectMut, TypeData, TypeInfo,
+    func::Return, FromType, List, PartialReflect, Reflect, ReflectFromReflect, ReflectMut,
+    TypeData, TypeInfo,
 };
 use itertools::Itertools;
 
@@ -24,6 +25,10 @@ use crate::{
 };
 /// Extension trait for [`PartialReflect`] providing additional functionality for working with specific types.
 pub trait PartialReflectExt {
+    fn from_reflect_or_clone(
+        reflect: &dyn PartialReflect,
+        world: WorldGuard,
+    ) -> Box<dyn PartialReflect>;
     fn allocate_cloned(&self, world: WorldGuard) -> ReflectReference;
     fn allocate(boxed: Box<dyn PartialReflect>, world: WorldGuard) -> ReflectReference;
 
@@ -362,6 +367,18 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
         })
     }
 
+    /// Try creating an owned partial reflect from a reference. Will try using [`ReflectFromReflect`] first, and if that fails, will clone the value using [`PartialReflect::clone_value`].
+    fn from_reflect_or_clone(
+        reflect: &dyn PartialReflect,
+        world: WorldGuard,
+    ) -> Box<dyn PartialReflect> {
+        // try from reflect
+        match <dyn PartialReflect>::from_reflect(reflect, world.clone()) {
+            Ok(v) => v.into_partial_reflect(),
+            Err(_) => reflect.clone_value(),
+        }
+    }
+
     fn allocate(boxed: Box<dyn PartialReflect>, world: WorldGuard) -> ReflectReference {
         let allocator = world.allocator();
         let mut allocator = allocator.write();
@@ -409,6 +426,20 @@ impl TypeInfoExtensions for TypeInfo {
     fn is_type(&self, crate_name: Option<&str>, type_ident: &str) -> bool {
         self.type_path_table().ident() == Some(type_ident)
             && self.type_path_table().crate_name() == crate_name
+    }
+}
+
+pub trait ReturnValExt<'a> {
+    fn as_ref(&'a self) -> &'a dyn PartialReflect;
+}
+
+impl<'a> ReturnValExt<'a> for Return<'a> {
+    fn as_ref(&'a self) -> &'a dyn PartialReflect {
+        match self {
+            Return::Owned(f) => f.as_partial_reflect(),
+            Return::Ref(r) => r.as_partial_reflect(),
+            Return::Mut(r) => r.as_partial_reflect(),
+        }
     }
 }
 

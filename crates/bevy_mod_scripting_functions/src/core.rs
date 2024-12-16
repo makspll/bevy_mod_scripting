@@ -64,13 +64,10 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
                     let path: ParsedPath = key.try_into().unwrap();
                     r.index_path(path);
                     let world = world.read().expect("Stale world");
-                    let script_val: ScriptValue = r
-                        .with_reflect(world.clone(), |r| r.into_script_value(world))
-                        .into();
-                    script_val
+                    let script_val = <&dyn PartialReflect>::reference_into_script_value(r, world);
+                    script_val.into()
                 } else {
-                    // ScriptValue::Error()
-                    todo!()
+                    ScriptValue::Unit
                 }
             },
         )
@@ -82,10 +79,8 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
                     path.convert_to_0_indexed();
                     r.index_path(path);
                     let world = world.read().expect("Stale world");
-                    let script_val = r
-                        .with_reflect(world.clone(), |r| r.into_script_value(world))
-                        .into();
-                    script_val
+                    let script_val = <&dyn PartialReflect>::reference_into_script_value(r, world);
+                    script_val.into()
                 } else {
                     ScriptValue::Unit
                 }

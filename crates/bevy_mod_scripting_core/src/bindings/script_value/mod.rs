@@ -11,7 +11,7 @@ use bevy::reflect::{
 };
 
 use crate::{
-    error::{InteropError, ScriptError, ScriptResult},
+    error::{InteropError, InteropErrorInner, ScriptError, ScriptResult},
     reflection_extensions::{PartialReflectExt, TypeIdExtensions, TypeInfoExtensions},
 };
 
@@ -41,7 +41,7 @@ pub enum ScriptValue {
     /// Represents a reference to a value.
     Reference(ReflectReference),
     /// Represents any error, will be thrown when returned to a script
-    Error(ScriptError),
+    Error(InteropError),
     /// A placeholder for a [`crate::bindings::WorldCallbackAccess`] value.
     World,
 }
@@ -100,15 +100,15 @@ impl From<ReflectReference> for ScriptValue {
     }
 }
 
-impl From<ScriptError> for ScriptValue {
-    fn from(value: ScriptError) -> Self {
-        ScriptValue::Error(value)
-    }
-}
+// impl From<ScriptError> for ScriptValue {
+//     fn from(value: ScriptError) -> Self {
+//         ScriptValue::Error(value)
+//     }
+// }
 
 impl From<InteropError> for ScriptValue {
     fn from(value: InteropError) -> Self {
-        ScriptValue::Error(ScriptError::new(value))
+        ScriptValue::Error(value)
     }
 }
 
@@ -121,7 +121,7 @@ impl<T: Into<ScriptValue>> From<Option<T>> for ScriptValue {
     }
 }
 
-impl<T: Into<ScriptValue>, E: Into<ScriptError>> From<Result<T, E>> for ScriptValue {
+impl<T: Into<ScriptValue>, E: Into<InteropError>> From<Result<T, E>> for ScriptValue {
     fn from(value: Result<T, E>) -> Self {
         match value {
             Ok(v) => v.into(),
@@ -174,9 +174,30 @@ impl TryFrom<ScriptValue> for ParsedPath {
     }
 }
 
-/// A trait for converting a value into a [`ScriptVal`].
+/// A trait for converting a value into a [`ScriptValue`].
+///
+/// If a [`crate::error::InteropError::better_conversion_exists`] is thrown, the conversion is not possible and you should treat this as a sign to try another method.
 pub trait IntoScriptValue {
+    /// Converts the value into a [`ScriptValue`]. This conversion should:
+    /// - Ideally convert to a concrete instance of [`Self`] or at least a concrete type representing [`Self`].
+    /// - If the value is not possible to convert nicely as a value throw a [`crate::error::InteropError::better_conversion_exists`] error so the caller can try another method.
     fn into_script_value(self, world: WorldGuard) -> Result<ScriptValue, InteropError>;
+
+    /// Some values are better represented as references returned to a script.
+    /// This method should be called when such values might be returned to a script.
+    /// By default this will call [`IntoScriptValue::into_script_value`] and convert the underlying [`&dyn PartialReflect`]
+    /// However if `into_script_value` throws a [`crate::error::InteropError::better_conversion_exists`] error, this method will directly return the reference instead.
+    fn reference_into_script_value(
+        self_ref: ReflectReference,
+        world: WorldGuard,
+    ) -> Result<ScriptValue, InteropError> {
+        match self_ref.with_reflect(world.clone(), |r| r.into_script_value(world))? {
+            Err(e) if matches!(e.inner(), InteropErrorInner::BetterConversionExists { .. }) => {
+                Ok(ScriptValue::Reference(self_ref))
+            }
+            e => e,
+        }
+    }
 }
 
 /// Targeted conversion from a [`ScriptValue`] to a specific type. Can create dynamic types as well as concrete types depending on the implementation.
