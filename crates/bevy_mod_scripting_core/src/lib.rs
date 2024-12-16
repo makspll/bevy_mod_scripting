@@ -4,7 +4,7 @@ use crate::event::ScriptErrorEvent;
 use asset::{ScriptAsset, ScriptAssetLoader, ScriptAssetSettings};
 use bevy::prelude::*;
 use bindings::{
-    script_val::ScriptValue, AppReflectAllocator, ReflectAllocator, ScriptTypeRegistration,
+    script_value::ScriptValue, AppReflectAllocator, ReflectAllocator, ScriptTypeRegistration,
     WorldCallbackAccess,
 };
 use context::{

@@ -13,7 +13,7 @@ use crate::error::{InteropError, ScriptError, ScriptResult};
 use super::{
     access_map::ReflectAccessId,
     pretty_print::DisplayWithWorld,
-    script_val::{FromScriptValue, IntoScriptValue, ScriptValue},
+    script_value::{FromScriptValue, IntoScriptValue, ScriptValue},
     ReflectBase, ReflectReference, WorldAccessGuard, WorldCallbackAccess, WorldGuard,
 };
 

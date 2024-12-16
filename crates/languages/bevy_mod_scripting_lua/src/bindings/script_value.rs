@@ -1,6 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
-use bevy_mod_scripting_core::bindings::{script_val::ScriptValue, ReflectBase, ReflectReference};
+use bevy_mod_scripting_core::bindings::{script_value::ScriptValue, ReflectBase, ReflectReference};
 use mlua::{FromLua, IntoLua, IntoLuaMulti, MultiValue, Value};
 
 use super::reference::LuaReflectReference;

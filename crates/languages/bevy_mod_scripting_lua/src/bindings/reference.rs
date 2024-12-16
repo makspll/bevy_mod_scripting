@@ -18,7 +18,7 @@ use bevy_mod_scripting_core::{
     bindings::{
         function::CallableWithAccess,
         pretty_print::{DisplayWithWorld, ReflectReferencePrinter},
-        script_val::{FromScriptValue, IntoScriptValue, ScriptValue},
+        script_value::{FromScriptValue, IntoScriptValue, ScriptValue},
         ReflectAllocator, ReflectRefIter, ReflectReference, ReflectionPathExt, TypeIdSource,
         WorldCallbackAccess,
     },

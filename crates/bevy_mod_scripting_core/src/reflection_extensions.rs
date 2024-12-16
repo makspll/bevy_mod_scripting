@@ -13,11 +13,11 @@ use bevy::reflect::{
 };
 use itertools::Itertools;
 
-use crate::bindings::script_val::FromScriptValue;
+use crate::bindings::script_value::FromScriptValue;
 use crate::{
     bindings::{
         pretty_print::DisplayWithWorld,
-        script_val::{IntoScriptValue, ScriptValue},
+        script_value::{IntoScriptValue, ScriptValue},
         ReflectReference, WorldAccessGuard, WorldGuard,
     },
     error::InteropError,

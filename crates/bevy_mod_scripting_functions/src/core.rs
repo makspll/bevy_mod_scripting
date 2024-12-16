@@ -8,7 +8,7 @@ use bevy::{
 };
 use bevy_mod_scripting_core::*;
 use bindings::{
-    script_val::{FromScriptValue, IntoScriptValue, ScriptValue},
+    script_value::{FromScriptValue, IntoScriptValue, ScriptValue},
     ReflectReference, ReflectionPathExt, ScriptTypeRegistration, WorldAccessGuard,
     WorldCallbackAccess,
 };

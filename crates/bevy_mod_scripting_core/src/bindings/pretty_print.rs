@@ -1,6 +1,8 @@
 use crate::reflection_extensions::TypeIdExtensions;
 
-use super::{script_val::ScriptValue, ReflectBase, ReflectBaseType, ReflectReference, WorldGuard};
+use super::{
+    script_value::ScriptValue, ReflectBase, ReflectBaseType, ReflectReference, WorldGuard,
+};
 use bevy::reflect::{PartialReflect, ReflectRef};
 use itertools::Itertools;
 use std::{any::TypeId, borrow::Cow};
