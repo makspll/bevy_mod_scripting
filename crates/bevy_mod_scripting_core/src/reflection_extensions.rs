@@ -98,11 +98,11 @@ pub trait PartialReflectExt {
     ) -> Result<Box<dyn Reflect>, InteropError>;
 }
 pub trait TypeIdExtensions {
-    fn type_id_or_fake_id(&self) -> TypeId;
+    fn or_fake_id(&self) -> TypeId;
 }
 
 impl TypeIdExtensions for Option<TypeId> {
-    fn type_id_or_fake_id(&self) -> TypeId {
+    fn or_fake_id(&self) -> TypeId {
         struct UknownType;
         match self {
             Some(t) => *t,

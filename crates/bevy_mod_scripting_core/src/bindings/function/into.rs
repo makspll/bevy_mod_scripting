@@ -29,6 +29,12 @@ impl IntoScript for () {
     }
 }
 
+impl IntoScript for bool {
+    fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        Ok(ScriptValue::Bool(self))
+    }
+}
+
 macro_rules! impl_into_with_downcast {
     ($variant:tt as $cast:ty [$($ty:ty),*]) => {
         $(
@@ -63,6 +69,7 @@ impl_into_stringlike!(
     s,
     [
         (String => s),
+        (char => s.to_string()),
         (PathBuf => s.to_string_lossy().to_string()),
         (OsString => s.into_string().map_err(|e| InteropError::unsupported_operation(None, Some(Box::new(e)), "Could not convert OsString to String".to_owned()))?)
     ]

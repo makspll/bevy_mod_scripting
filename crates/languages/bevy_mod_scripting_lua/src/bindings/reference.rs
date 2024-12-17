@@ -105,7 +105,7 @@ impl UserData for LuaReflectReference {
             |lua, (self_, key): (LuaReflectReference, LuaScriptValue)| {
                 let world = lua.get_world();
                 let self_: ReflectReference = self_.into();
-                let type_id = self_.tail_type_id(world.clone())?.type_id_or_fake_id();
+                let type_id = self_.tail_type_id(world.clone())?.or_fake_id();
 
                 let key: ScriptValue = key.into();
 

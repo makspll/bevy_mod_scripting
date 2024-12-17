@@ -49,6 +49,7 @@ macro_rules! impl_from_with_downcast {
                         ScriptValue::Integer(i) => Ok(i as $ty),
                         ScriptValue::Float(i) => Ok(i as $ty),
                         ScriptValue::Reference(r) => r.downcast::<Self>(world),
+                        ScriptValue::Bool(b) => Ok(b as usize as $ty),
                         _ => Err(InteropError::value_mismatch(std::any::TypeId::of::<Self>(), value)),
                     }
                 }

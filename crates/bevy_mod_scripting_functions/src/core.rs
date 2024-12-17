@@ -138,7 +138,7 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
                             let target_type_id = r
                                 .get_represented_type_info()
                                 .map(|i| i.type_id())
-                                .type_id_or_fake_id();
+                                .or_fake_id();
                             let other = <dyn PartialReflect>::from_script_value(
                                 value,
                                 world.clone(),
@@ -172,7 +172,7 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
                             let target_type_id = r
                                 .get_represented_type_info()
                                 .map(|i| i.type_id())
-                                .type_id_or_fake_id();
+                                .or_fake_id();
                             let other = <dyn PartialReflect>::from_script_value(
                                 value,
                                 world.clone(),

@@ -117,7 +117,7 @@ impl ReflectReferencePrinter {
         let type_id = v
             .get_represented_type_info()
             .map(|t| t.type_id())
-            .type_id_or_fake_id();
+            .or_fake_id();
 
         output.push_str("Reflect(");
         match type_id {
