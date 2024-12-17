@@ -46,6 +46,22 @@ pub enum ScriptValue {
     World,
 }
 
+impl ScriptValue {
+    pub fn type_name(&self) -> String {
+        match self {
+            ScriptValue::Unit => "Unit".to_owned(),
+            ScriptValue::Bool(_) => "Bool".to_owned(),
+            ScriptValue::Integer(_) => "Integer".to_owned(),
+            ScriptValue::Float(_) => "Float".to_owned(),
+            ScriptValue::String(_) => "String".to_owned(),
+            ScriptValue::List(_) => "List".to_owned(),
+            ScriptValue::Reference(_) => "Reference".to_owned(),
+            ScriptValue::Error(_) => "Error".to_owned(),
+            ScriptValue::World => "World".to_owned(),
+        }
+    }
+}
+
 impl From<()> for ScriptValue {
     fn from(_: ()) -> Self {
         ScriptValue::Unit
@@ -188,6 +204,7 @@ pub trait IntoScriptValue {
     /// By default this will call [`IntoScriptValue::into_script_value`] and convert the underlying [`&dyn PartialReflect`]
     /// However if `into_script_value` throws a [`crate::error::InteropError::better_conversion_exists`] error, this method will directly return the reference instead.
     fn reference_into_script_value(
+        // type_id: TypeId,
         self_ref: ReflectReference,
         world: WorldGuard,
     ) -> Result<ScriptValue, InteropError> {

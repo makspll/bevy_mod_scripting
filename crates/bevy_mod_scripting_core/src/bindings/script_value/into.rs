@@ -156,6 +156,14 @@ impl IntoScriptValue for &dyn PartialReflect {
         // you're gonna have to allocate and ref to it
         Err(InteropError::better_conversion_exists::<Self>())
     }
+
+    // fn reference_into_script_value(
+    //     type_id: TypeId,
+    //     self_ref: ReflectReference,
+    //     world: WorldGuard,
+    // ) -> Result<ScriptValue, InteropError> {
+
+    // }
 }
 
 impl IntoScriptValue for Option<&dyn PartialReflect> {

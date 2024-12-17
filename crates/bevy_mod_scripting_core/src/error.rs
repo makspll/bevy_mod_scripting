@@ -375,6 +375,10 @@ impl InteropError {
         Self(Arc::new(InteropErrorInner::FunctionCallError { inner }))
     }
 
+    pub fn external_error(error: Box<dyn std::error::Error + Send + Sync>) -> Self {
+        Self(Arc::new(InteropErrorInner::OtherError { error }))
+    }
+
     pub fn inner(&self) -> &InteropErrorInner {
         &self.0
     }
@@ -463,10 +467,13 @@ pub enum InteropErrorInner {
         argument: String,
         error: InteropError,
     },
+    OtherError {
+        error: Box<dyn std::error::Error + Send + Sync>,
+    },
 }
 
 impl PartialEq for InteropErrorInner {
-    fn eq(&self, other: &Self) -> bool {
+    fn eq(&self, _other: &Self) -> bool {
         false
     }
 }
@@ -596,6 +603,7 @@ impl DisplayWithWorld for InteropErrorInner {
             InteropErrorInner::BetterConversionExists{ context } => {
                 format!("Unfinished conversion in context of: {}. A better conversion exists but caller didn't handle the case.", context)
             },
+            InteropErrorInner::OtherError { error } => error.to_string(),
         }
     }
 }
