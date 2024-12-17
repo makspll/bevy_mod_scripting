@@ -32,6 +32,13 @@ impl FromScript for ScriptValue {
     }
 }
 
+impl FromScript for () {
+    type This<'w> = Self;
+    fn from_script(value: ScriptValue, _world: WorldGuard) -> Result<Self, InteropError> {
+        Ok(())
+    }
+}
+
 macro_rules! impl_from_with_downcast {
     ($($ty:ty),*) => {
         $(

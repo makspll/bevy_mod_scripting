@@ -23,6 +23,12 @@ impl IntoScript for ScriptValue {
     }
 }
 
+impl IntoScript for () {
+    fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        Ok(ScriptValue::Unit)
+    }
+}
+
 macro_rules! impl_into_with_downcast {
     ($variant:tt as $cast:ty [$($ty:ty),*]) => {
         $(

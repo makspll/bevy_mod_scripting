@@ -15,8 +15,8 @@ function on_event()
     print(script)
     print(world)
 
-    print(world:hello(entity, entity))
-    print(world:test_vec({entity, entity})[1])
+    -- print(world:hello(entity, entity))
+    -- print(world:test_vec({entity, entity})[1])
 
 
     local my_component_type = world:get_type_by_name("MyComponent")
@@ -34,6 +34,7 @@ function on_event()
     print(comp.option_usize)
     print("\nvec")
     -- print(table_to_string(comp.vec_of_usize))
+    print(comp.vec_of_usize)
     comp.vec_of_usize = {42,69,72}
     comp.vec_of_usize[1] = 612312312
     print(table_to_string(comp.vec_of_usize))

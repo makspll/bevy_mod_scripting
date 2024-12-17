@@ -66,30 +66,34 @@ impl Plugin for CoreFunctionsPlugin {
 
 fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRegistrationError> {
     NamespaceBuilder::<WorldCallbackAccess>::new(reg)
-        .overwrite_script_function("hello", |b: Ref<Entity>, c: Mut<Entity>| None::<usize>)
-        .overwrite(
-            "test_vec",
-            |s: WorldCallbackAccess, entities: Vec<Entity>| entities,
-        )
-        .overwrite("spawn", |s: WorldCallbackAccess| s.spawn())
-        .overwrite(
+        // .overwrite_script_function("hello", |b: Ref<Entity>, c: Mut<Entity>| None::<usize>)
+        // .overwrite(
+        //     "test_vec",
+        //     |s: WorldCallbackAccess, entities: Vec<Entity>| entities,
+        // )
+        .overwrite_script_function("spawn", |s: WorldCallbackAccess| Val(s.spawn()))
+        .overwrite_script_function(
             "get_type_by_name",
-            |world: WorldCallbackAccess, type_name: String| world.get_type_by_name(type_name),
+            |world: WorldCallbackAccess, type_name: String| {
+                world.get_type_by_name(type_name).map(Val)
+            },
         )
-        .overwrite(
+        .overwrite_script_function(
             "get_component",
-            |world: WorldCallbackAccess, entity: Entity, registration: ScriptTypeRegistration| {
+            |world: WorldCallbackAccess,
+             entity: Val<Entity>,
+             registration: Val<ScriptTypeRegistration>| {
                 let s: ScriptValue = registration
                     .component_id()
-                    .and_then(|id| world.get_component(entity, id).transpose())
+                    .and_then(|id| world.get_component(*entity, id).transpose())
                     .into();
                 s
             },
         )
-        .overwrite("exit", |s: WorldCallbackAccess| s.exit());
+        .overwrite_script_function("exit", |s: WorldCallbackAccess| s.exit());
 
     NamespaceBuilder::<ReflectReference>::new(reg)
-        .overwrite(
+        .overwrite_script_function(
             "get",
             |world: WorldCallbackAccess, self_: ScriptValue, key: ScriptValue| {
                 if let ScriptValue::Reference(mut r) = self_ {
@@ -103,7 +107,7 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
                 }
             },
         )
-        .overwrite(
+        .overwrite_script_function(
             "get_1_indexed",
             |world: WorldCallbackAccess, self_: ScriptValue, key: ScriptValue| {
                 if let ScriptValue::Reference(mut r) = self_ {
@@ -118,7 +122,7 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
                 }
             },
         )
-        .overwrite(
+        .overwrite_script_function(
             "set",
             |world: WorldCallbackAccess,
              self_: ScriptValue,
@@ -151,7 +155,7 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
                 ScriptValue::Unit
             },
         )
-        .overwrite(
+        .overwrite_script_function(
             "set_1_indexed",
             |world: WorldCallbackAccess,
              self_: ScriptValue,
