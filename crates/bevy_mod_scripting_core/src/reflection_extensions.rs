@@ -9,17 +9,15 @@ use std::{
 };
 
 use bevy::reflect::{
-    func::Return, FromType, List, PartialReflect, Reflect, ReflectFromReflect, ReflectMut,
-    TypeData, TypeInfo,
+    func::Return, FromReflect, FromType, List, PartialReflect, Reflect, ReflectFromReflect,
+    ReflectMut, TypeData, TypeInfo,
 };
 use itertools::Itertools;
 
-use crate::bindings::script_value::FromScriptValue;
 use crate::{
     bindings::{
-        pretty_print::DisplayWithWorld,
-        script_value::{IntoScriptValue, ScriptValue},
-        ReflectReference, WorldAccessGuard, WorldGuard,
+        pretty_print::DisplayWithWorld, script_value::ScriptValue, ReflectReference,
+        WorldAccessGuard, WorldGuard,
     },
     error::InteropError,
 };
@@ -430,6 +428,11 @@ impl TypeInfoExtensions for TypeInfo {
 }
 
 pub trait ReturnValExt<'a> {
+    fn try_into_or_boxed<T: PartialReflect + FromReflect>(
+        self,
+    ) -> Result<T, Box<dyn PartialReflect>>
+    where
+        T: PartialReflect;
     fn as_ref(&'a self) -> &'a dyn PartialReflect;
 }
 
@@ -439,6 +442,16 @@ impl<'a> ReturnValExt<'a> for Return<'a> {
             Return::Owned(f) => f.as_partial_reflect(),
             Return::Ref(r) => r.as_partial_reflect(),
             Return::Mut(r) => r.as_partial_reflect(),
+        }
+    }
+
+    fn try_into_or_boxed<T: PartialReflect + FromReflect>(
+        self,
+    ) -> Result<T, Box<dyn PartialReflect>> {
+        match self {
+            Return::Owned(partial_reflect) => partial_reflect.try_take::<T>(),
+            Return::Ref(r) => T::from_reflect(r).ok_or_else(|| r.clone_value()),
+            Return::Mut(r) => T::from_reflect(r).ok_or_else(|| r.clone_value()),
         }
     }
 }
