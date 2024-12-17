@@ -11,7 +11,7 @@ use bevy::{
 use bevy_mod_scripting_core::*;
 use bindings::{
     function::{
-        from::{Ref, Val},
+        from::{Mut, Ref, Val},
         script_function::ScriptFunction,
     },
     script_value::{FromScriptValue, IntoScriptValue, ScriptValue},
@@ -26,13 +26,21 @@ use crate::namespaced_register::NamespaceBuilder;
 pub struct CoreFunctionsPlugin;
 
 pub trait RegisterScriptFunction {
-    fn overwrite_script_function<M, N, F: ScriptFunction<M>>(&mut self, name: N, f: F) -> &mut Self
+    fn overwrite_script_function<M, N, F: ScriptFunction<'static, M>>(
+        &mut self,
+        name: N,
+        f: F,
+    ) -> &mut Self
     where
         N: Into<Cow<'static, str>>;
 }
 
 impl<S: 'static> RegisterScriptFunction for NamespaceBuilder<'_, S> {
-    fn overwrite_script_function<M, N, F: ScriptFunction<M>>(&mut self, name: N, f: F) -> &mut Self
+    fn overwrite_script_function<M, N, F: ScriptFunction<'static, M>>(
+        &mut self,
+        name: N,
+        f: F,
+    ) -> &mut Self
     where
         N: Into<Cow<'static, str>>,
     {
@@ -56,12 +64,9 @@ impl Plugin for CoreFunctionsPlugin {
     }
 }
 
-assert_impls_from_script!(Val<usize>);
-assert_is_script_function!(|a: Val<usize>| Ok(2));
-
 fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRegistrationError> {
     NamespaceBuilder::<WorldCallbackAccess>::new(reg)
-        .overwrite_script_function("hello", |b: Ref<Entity>| None::<usize>)
+        .overwrite_script_function("hello", |b: Ref<Entity>, c: Mut<Entity>| None::<usize>)
         .overwrite(
             "test_vec",
             |s: WorldCallbackAccess, entities: Vec<Entity>| entities,

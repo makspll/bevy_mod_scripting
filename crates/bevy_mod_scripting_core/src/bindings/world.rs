@@ -309,10 +309,14 @@ impl<'w> WorldAccessGuard<'w> {
         self.0.cell.components().get_resource_id(id)
     }
 
-    pub fn get_access_location(&self, raid: ReflectAccessId) -> Option<std::panic::Location<'w>> {
+    pub fn get_access_location(
+        &self,
+        raid: ReflectAccessId,
+    ) -> Option<std::panic::Location<'static>> {
         self.0.accesses.access_location(raid)
     }
 
+    #[track_caller]
     pub fn claim_read_access(&self, raid: ReflectAccessId) -> bool {
         self.0.accesses.claim_read_access(raid)
     }

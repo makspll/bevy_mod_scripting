@@ -15,7 +15,7 @@ function on_event()
     print(script)
     print(world)
 
-    print(world:hello(entity))
+    print(world:hello(entity, entity))
     print(world:test_vec({entity, entity})[1])
 
 

@@ -18,8 +18,7 @@ use thiserror::Error;
 
 use crate::{
     bindings::{
-        pretty_print::{DisplayWithWorld, DisplayWithWorldAndDummy},
-        ReflectAllocationId, ReflectBase, ReflectBaseType, ReflectReference,
+        access_map::DisplayCodeLocation, pretty_print::{DisplayWithWorld, DisplayWithWorldAndDummy}, ReflectAllocationId, ReflectBase, ReflectBaseType, ReflectReference
     },
     impl_dummy_display,
     prelude::ScriptValue,
@@ -255,8 +254,8 @@ impl InteropError {
 
     /// Thrown if access to the given reflection base is required but cannot be claimed.
     /// This is likely due to some other script already claiming access to the base.
-    pub fn cannot_claim_access(base: ReflectBaseType) -> Self {
-        Self(Arc::new(InteropErrorInner::CannotClaimAccess { base }))
+    pub fn cannot_claim_access(base: ReflectBaseType, location: Option<std::panic::Location<'static>>) -> Self {
+        Self(Arc::new(InteropErrorInner::CannotClaimAccess { base, location }))
     }
 
     /// Thrown if a conversion into the given type is impossible.
@@ -414,6 +413,7 @@ pub enum InteropErrorInner {
     },
     CannotClaimAccess {
         base: ReflectBaseType,
+        location: Option<std::panic::Location<'static>>,
     },
     ImpossibleConversion {
         into: TypeId,
@@ -485,10 +485,11 @@ impl DisplayWithWorld for InteropErrorInner {
             InteropErrorInner::UnregisteredBase { base } => {
                 format!("Unregistered base type: {}", base.display_with_world(world))
             }
-            InteropErrorInner::CannotClaimAccess { base } => {
+            InteropErrorInner::CannotClaimAccess { base, location } => {
                 format!(
-                    "Cannot claim access to base type: {}",
-                    base.display_with_world(world)
+                    "Cannot claim access to base type: {}. The base is already claimed by something else in a way which prevents safe access. Location: {}",
+                    base.display_with_world(world),
+                    location.display_location()
                 )
             }
             InteropErrorInner::ImpossibleConversion { into } => {

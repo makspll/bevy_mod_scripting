@@ -1,18 +1,29 @@
-use std::sync::atomic::{AtomicBool, AtomicUsize};
+use std::{
+    sync::atomic::{AtomicBool, AtomicUsize},
+    thread::ThreadId,
+};
 
 use bevy::{
     ecs::{component::ComponentId, world::unsafe_world_cell::UnsafeWorldCell},
     prelude::Resource,
 };
 use dashmap::{try_result::TryResult, DashMap, Entry, Map};
+use smallvec::SmallVec;
 
 use super::{ReflectAllocationId, ReflectBase};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ClaimOwner {
+    id: ThreadId,
+    location: std::panic::Location<'static>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AccessCount {
-    count: usize,
-    /// set if somebody is writing
-    written_by: Option<std::panic::Location<'static>>,
+    /// The number of readers including thread information
+    read_by: SmallVec<[ClaimOwner; 1]>,
+    /// If the current read is a write access, this will be set
+    written: bool,
 }
 
 impl Default for AccessCount {
@@ -24,25 +35,25 @@ impl Default for AccessCount {
 impl AccessCount {
     fn new() -> Self {
         Self {
-            count: 0,
-            written_by: None,
+            read_by: Default::default(),
+            written: false,
         }
     }
 
     fn can_read(&self) -> bool {
-        self.written_by.is_none()
+        !self.written
     }
 
     fn can_write(&self) -> bool {
-        self.count == 0 && self.written_by.is_none()
+        self.read_by.is_empty() && !self.written
     }
 
     fn as_location(&self) -> Option<std::panic::Location<'static>> {
-        self.written_by
+        self.read_by.first().map(|o| o.location.clone())
     }
 
     fn readers(&self) -> usize {
-        self.count
+        self.read_by.len()
     }
 }
 
@@ -174,6 +185,7 @@ pub struct AccessMap {
 
 impl AccessMap {
     /// Tries to claim read access, will return false if somebody else is writing to the same key, or holding a global lock
+    #[track_caller]
     pub fn claim_read_access<K: AccessMapKey>(&self, key: K) -> bool {
         if self.global_lock.load(std::sync::atomic::Ordering::Relaxed) {
             return false;
@@ -182,7 +194,10 @@ impl AccessMap {
         let access = self.individual_accesses.try_entry(key);
         match access.map(Entry::or_default) {
             Some(mut entry) if entry.can_read() => {
-                entry.count += 1;
+                entry.read_by.push(ClaimOwner {
+                    id: std::thread::current().id(),
+                    location: *std::panic::Location::caller(),
+                });
                 true
             }
             _ => false,
@@ -199,8 +214,11 @@ impl AccessMap {
         let access = self.individual_accesses.try_entry(key);
         match access.map(Entry::or_default) {
             Some(mut entry) if entry.can_write() => {
-                entry.count += 1;
-                entry.written_by = Some(*std::panic::Location::caller());
+                entry.read_by.push(ClaimOwner {
+                    id: std::thread::current().id(),
+                    location: *std::panic::Location::caller(),
+                });
+                entry.written = true;
                 true
             }
             _ => false,
@@ -210,7 +228,7 @@ impl AccessMap {
     /// Tries to claim global access. This type of access prevents any other access from happening simulatenously
     /// Will return false if anybody else is currently accessing any part of the map
     pub fn claim_global_access(&self) -> bool {
-        self.individual_accesses.len() == 0
+        self.individual_accesses.is_empty()
             && self
                 .global_lock
                 .compare_exchange(
@@ -222,17 +240,25 @@ impl AccessMap {
                 .is_ok()
     }
 
+    /// Releases an access
+    ///
+    /// # Panics
+    /// if the access is released from a different thread than it was claimed from
     pub fn release_access<K: AccessMapKey>(&self, key: K) {
         let key = key.as_usize();
         let access = self.individual_accesses.entry(key);
         match access {
             dashmap::mapref::entry::Entry::Occupied(mut entry) => {
                 let entry_mut = entry.get_mut();
-                if entry_mut.written_by.is_some() {
-                    entry_mut.written_by = None;
+                entry_mut.written = false;
+                if let Some(p) = entry_mut.read_by.pop() {
+                    assert!(
+                        p.id == std::thread::current().id(),
+                        "Access released from wrong thread, claimed at {}",
+                        p.location.display_location()
+                    );
                 }
-                entry_mut.count -= 1;
-                if entry_mut.count == 0 {
+                if entry_mut.readers() == 0 {
                     entry.remove();
                 }
             }
@@ -253,6 +279,18 @@ impl AccessMap {
             .collect()
     }
 
+    pub fn count_thread_acceesses(&self) -> usize {
+        self.individual_accesses
+            .iter()
+            .filter(|e| {
+                e.value()
+                    .read_by
+                    .iter()
+                    .any(|o| o.id == std::thread::current().id())
+            })
+            .count()
+    }
+
     pub fn access_location<K: AccessMapKey>(
         &self,
         key: K,
@@ -260,8 +298,13 @@ impl AccessMap {
         self.individual_accesses
             .try_get(&key.as_usize())
             .try_unwrap()
-            .map(|access| access.as_location())
-            .flatten()
+            .and_then(|access| access.as_location())
+    }
+
+    pub fn access_first_location(&self) -> Option<std::panic::Location<'static>> {
+        self.individual_accesses
+            .iter()
+            .find_map(|e| e.value().as_location())
     }
 }
 
@@ -325,8 +368,11 @@ macro_rules! with_global_access {
     ($access_map:expr, $msg:expr, $body:block) => {
         if !$access_map.claim_global_access() {
             panic!(
-                "{}. Another access is held somewhere else preventing locking the world",
-                $msg
+                "{}. Another access is held somewhere else preventing locking the world: {}",
+                $msg,
+                $crate::bindings::access_map::DisplayCodeLocation::display_location(
+                    $access_map.access_first_location()
+                )
             );
         } else {
             let result = (|| $body)();
@@ -355,8 +401,8 @@ mod test {
         assert_eq!(access_0.1.readers(), 1);
         assert_eq!(access_1.1.readers(), 1);
 
-        assert_eq!(access_0.1.written_by, None);
-        assert!(access_1.1.written_by.is_some());
+        assert!(!access_0.1.written);
+        assert!(access_1.1.written);
     }
 
     #[test]
@@ -402,5 +448,31 @@ mod test {
 
         assert!(access_map.claim_write_access(0));
         assert!(!access_map.claim_global_access());
+    }
+
+    #[test]
+    #[should_panic]
+    fn releasing_read_access_from_wrong_thread_panics() {
+        let access_map = AccessMap::default();
+
+        access_map.claim_read_access(0);
+        std::thread::spawn(move || {
+            access_map.release_access(0);
+        })
+        .join()
+        .unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn releasing_write_access_from_wrong_thread_panics() {
+        let access_map = AccessMap::default();
+
+        access_map.claim_write_access(0);
+        std::thread::spawn(move || {
+            access_map.release_access(0);
+        })
+        .join()
+        .unwrap();
     }
 }

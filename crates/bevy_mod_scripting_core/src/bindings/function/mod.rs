@@ -245,7 +245,10 @@ impl<I: Iterator<Item = ScriptValue>> IntoArgsListWithAccess for I {
                                     Err(ref_.expect_err("invariant"))
                                 }
                             } else {
-                                Err(InteropError::cannot_claim_access(arg_ref.base.clone()))
+                                Err(InteropError::cannot_claim_access(
+                                    arg_ref.base.clone(),
+                                    world.get_access_location(access_id),
+                                ))
                             }
                         }
                         Ownership::Mut => {
@@ -258,7 +261,10 @@ impl<I: Iterator<Item = ScriptValue>> IntoArgsListWithAccess for I {
                                     Err(mut_ref.expect_err("invariant"))
                                 }
                             } else {
-                                Err(InteropError::cannot_claim_access(arg_ref.base.clone()))
+                                Err(InteropError::cannot_claim_access(
+                                    arg_ref.base.clone(),
+                                    world.get_access_location(access_id),
+                                ))
                             }
                         }
                         _ => unreachable!(),

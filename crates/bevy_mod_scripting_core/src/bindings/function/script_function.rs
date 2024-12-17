@@ -14,7 +14,7 @@ use super::{from::FromScript, into::IntoScript};
     message = "Only functions with all arguments impplementing FromScript and return values supporting IntoScript are supported. use assert_impls_into_script!(MyArg) and assert_impls_from_script!(MyReturnType) to verify yours do.",
     note = "If you're trying to return a non-primitive type, you might need to use Val<T> Ref<T> or Mut<T> wrappers"
 )]
-pub trait ScriptFunction<Marker> {
+pub trait ScriptFunction<'env, Marker> {
     fn into_dynamic_function(self) -> DynamicFunction<'static>;
 }
 
@@ -34,23 +34,24 @@ macro_rules! impl_script_function {
     (@ $( $param:ident ),* : $(($callback:ident: $callbackty:ty))? -> O => $res:ty $(where $out:ident)?) => {
         #[allow(non_snake_case)]
         impl<
-            'l,
+            'env,
             $( $param: FromScript, )*
             O,
             F
-        > ScriptFunction<
+        > ScriptFunction<'env,
             fn( $( $callbackty, )? $($param ),* ) -> $res
         > for F
         where
             O: IntoScript,
             F: Fn( $( $callbackty, )? $($param ),* ) -> $res + Send + Sync + 'static,
-            $( $param::This<'l>: Into<$param>),*
+            $( $param::This<'env>: Into<$param>),*
         {
             fn into_dynamic_function(self) -> DynamicFunction<'static> {
                 (move |world: WorldCallbackAccess, $( $param: ScriptValue ),* | {
                     let res: Result<ScriptValue, InteropError> = (|| {
                         $( let $callback = world.clone(); )?
                         let world = world.read().ok_or_else(|| InteropError::stale_world_access())?;
+                        // TODO: snapshot the accesses and release them after
                         $( let $param = <$param>::from_script($param, world.clone())?; )*
                         let out = self( $( $callback, )? $( $param.into(), )* );
                         $(
@@ -95,7 +96,10 @@ macro_rules! assert_impls_from_script {
         trait Check: $crate::bindings::function::from::FromScript {}
         impl Check for $ty {}
     };
-    () => {};
+    ($l:lifetime $ty:ty) => {
+        trait Check: $crate::bindings::function::from::FromScript {}
+        impl<$l> Check for $ty {}
+    };
 }
 
 /// Utility for quickly checking your function can be used as a script function
@@ -107,7 +111,7 @@ macro_rules! assert_impls_from_script {
 #[macro_export]
 macro_rules! assert_is_script_function {
     ($($tt:tt)*) => {
-        fn _check<M,F: ScriptFunction<M>>(f: F) {
+        fn _check<'env,M,F: ScriptFunction<'env, M>>(f: F) {
 
         }
 

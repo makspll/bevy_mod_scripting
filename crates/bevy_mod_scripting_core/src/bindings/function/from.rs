@@ -170,7 +170,10 @@ impl<T: FromReflect> FromScript for Ref<'_, T> {
                     })?;
                     Ok(Ref(cast))
                 } else {
-                    Err(InteropError::cannot_claim_access(reflect_reference.base))
+                    Err(InteropError::cannot_claim_access(
+                        reflect_reference.base,
+                        world.get_access_location(raid),
+                    ))
                 }
             }
             _ => Err(InteropError::value_mismatch(
@@ -227,7 +230,10 @@ impl<T: FromReflect> FromScript for Mut<'_, T> {
                     })?;
                     Ok(Mut(cast))
                 } else {
-                    Err(InteropError::cannot_claim_access(reflect_reference.base))
+                    Err(InteropError::cannot_claim_access(
+                        reflect_reference.base,
+                        world.get_access_location(raid),
+                    ))
                 }
             }
             _ => Err(InteropError::value_mismatch(
