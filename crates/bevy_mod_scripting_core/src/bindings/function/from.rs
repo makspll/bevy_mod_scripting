@@ -146,7 +146,7 @@ impl<T> Deref for Ref<'_, T> {
 }
 
 impl<T: FromReflect> FromScript for Ref<'_, T> {
-    type This<'w> = Ref<'w, T>;
+    type This<'a> = Ref<'a, T>;
 
     fn from_script(
         value: ScriptValue,

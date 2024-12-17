@@ -34,6 +34,7 @@ macro_rules! impl_script_function {
     (@ $( $param:ident ),* : $(($callback:ident: $callbackty:ty))? -> O => $res:ty $(where $out:ident)?) => {
         #[allow(non_snake_case)]
         impl<
+            'l,
             $( $param: FromScript, )*
             O,
             F
@@ -43,7 +44,7 @@ macro_rules! impl_script_function {
         where
             O: IntoScript,
             F: Fn( $( $callbackty, )? $($param ),* ) -> $res + Send + Sync + 'static,
-            $( for<'a> $param::This<'a>: Into<$param>, )*
+            $( $param::This<'l>: Into<$param>),*
         {
             fn into_dynamic_function(self) -> DynamicFunction<'static> {
                 (move |world: WorldCallbackAccess, $( $param: ScriptValue ),* | {

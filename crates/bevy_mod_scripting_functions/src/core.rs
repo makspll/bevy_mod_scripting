@@ -10,7 +10,10 @@ use bevy::{
 };
 use bevy_mod_scripting_core::*;
 use bindings::{
-    function::{from::Val, script_function::ScriptFunction},
+    function::{
+        from::{Ref, Val},
+        script_function::ScriptFunction,
+    },
     script_value::{FromScriptValue, IntoScriptValue, ScriptValue},
     ReflectReference, ReflectionPathExt, ScriptTypeRegistration, WorldAccessGuard,
     WorldCallbackAccess,
@@ -58,7 +61,7 @@ assert_is_script_function!(|a: Val<usize>| Ok(2));
 
 fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRegistrationError> {
     NamespaceBuilder::<WorldCallbackAccess>::new(reg)
-        // .overwrite_script_function("hello", |a: Val<usize>| 2)
+        .overwrite_script_function("hello", |b: Ref<Entity>| None::<usize>)
         .overwrite(
             "test_vec",
             |s: WorldCallbackAccess, entities: Vec<Entity>| entities,
