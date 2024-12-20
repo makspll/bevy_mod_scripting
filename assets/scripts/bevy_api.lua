@@ -34,10 +34,11 @@ function on_event()
     print(comp.option_usize)
     print("\nvec")
     -- print(table_to_string(comp.vec_of_usize))
-    print(comp.vec_of_usize)
     comp.vec_of_usize = {42,69,72}
+    print(comp.vec_of_usize:print_value())
     comp.vec_of_usize[1] = 612312312
-    print(table_to_string(comp.vec_of_usize))
+    print(comp.vec_of_usize:print_value())
+    -- print(table_to_string(comp.vec_of_usize))
     -- comp.vec_of_usize[1] = 0
     -- print(comp.vec_of_usize[2])
     -- print(table_to_string(comp.vec_of_usize))
