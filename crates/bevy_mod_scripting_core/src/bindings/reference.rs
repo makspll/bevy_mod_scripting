@@ -190,10 +190,6 @@ impl ReflectReference {
 
         if let ReflectBase::Owned(id) = &self.base.base_id {
             if self.reflect_path.is_empty() && id.strong_count() == 0 {
-                println!(
-                    "Trying to access allocation in owned value {}",
-                    self.display_value_with_world(world.clone())
-                );
                 let allocator = world.allocator();
                 let mut allocator = allocator.write();
                 let arc = allocator

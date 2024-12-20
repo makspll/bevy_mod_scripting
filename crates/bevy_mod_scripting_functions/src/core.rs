@@ -167,7 +167,6 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
                             value,
                             world.clone(),
                         )?;
-                        println!("Applying {:?} to {:?}", other, r);
 
                         r.try_apply(other.as_partial_reflect()).unwrap();
                         Ok::<_, InteropError>(())

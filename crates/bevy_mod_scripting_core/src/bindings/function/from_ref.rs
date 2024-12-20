@@ -1,6 +1,6 @@
 use std::{any::TypeId, ffi::OsString, path::PathBuf};
 
-use bevy::reflect::{DynamicEnum, DynamicTuple, DynamicVariant, PartialReflect};
+use bevy::reflect::{DynamicEnum, DynamicList, DynamicTuple, DynamicVariant, PartialReflect};
 
 use crate::{
     bindings::{function::from::FromScript, ReflectReference, WorldGuard},
@@ -71,23 +71,33 @@ impl FromScriptRef for Box<dyn PartialReflect> {
         if type_info.is_option() {
             let inner_type = type_info.option_inner_type().expect("invariant");
             let mut dynamic_enum = match value {
-                ScriptValue::Unit => {
-                    // build none variant
-                    let mut dynamic_enum = DynamicEnum::new("None", DynamicVariant::Unit);
-                    dynamic_enum
-                }
+                ScriptValue::Unit => DynamicEnum::new("None", DynamicVariant::Unit),
                 _ => {
                     let inner = Self::from_script_ref(inner_type, value, world)?;
-                    let mut dynamic_enum = DynamicEnum::new(
+                    DynamicEnum::new(
                         "Some",
                         DynamicVariant::Tuple(DynamicTuple::from_iter(vec![inner])),
-                    );
-                    dynamic_enum
+                    )
                 }
             };
 
             dynamic_enum.set_represented_type(Some(type_info));
             return Ok(Box::new(dynamic_enum));
+        }
+
+        if type_info.is_list() {
+            let inner_type = type_info.list_inner_type().expect("invariant");
+
+            if let ScriptValue::List(vec) = value {
+                let mut dynamic_list = DynamicList::default();
+                for item in vec {
+                    let inner = Self::from_script_ref(inner_type, item, world.clone())?;
+                    dynamic_list.push_box(inner);
+                }
+
+                dynamic_list.set_represented_type(Some(type_info));
+                return Ok(Box::new(dynamic_list));
+            }
         }
 
         match value {

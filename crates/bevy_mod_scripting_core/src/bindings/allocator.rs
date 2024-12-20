@@ -170,7 +170,6 @@ impl ReflectAllocator {
     }
 
     pub fn remove(&mut self, id: &ReflectAllocationId) -> Option<ReflectAllocation> {
-        println!("removing {:?}", id);
         self.allocations.remove(id)
     }
 
