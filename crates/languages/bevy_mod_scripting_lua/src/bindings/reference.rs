@@ -16,9 +16,9 @@ use bevy::{
 };
 use bevy_mod_scripting_core::{
     bindings::{
-        function::CallAsScriptFunction,
+        function::CallScriptFunction,
         pretty_print::{DisplayWithWorld, ReflectReferencePrinter},
-        script_value::{FromScriptValue, IntoScriptValue, ScriptValue},
+        script_value::ScriptValue,
         ReflectAllocator, ReflectRefIter, ReflectReference, ReflectionPathExt, TypeIdSource,
         WorldCallbackAccess,
     },
@@ -66,7 +66,7 @@ fn lookup_function(lua: &Lua, key: &str, type_id: TypeId) -> Option<Result<Funct
     function.map(|function| {
         lua.create_function(move |lua, args: Variadic<LuaScriptValue>| {
             let world = lua.get_world();
-            let out = function.dynamic_call(args.into_iter().map(Into::into), world)?;
+            let out = function.call_script_function(args.into_iter().map(Into::into), world)?;
 
             Ok(LuaScriptValue::from(out))
         })
@@ -121,8 +121,10 @@ impl UserData for LuaReflectReference {
                         .expect("No 'get' function registered for a ReflectReference")?;
 
                 // call the function with the key
-                let out = index_func
-                    .dynamic_call(vec![ScriptValue::Reference(self_), key], world.clone())?;
+                let out = index_func.call_script_function(
+                    vec![ScriptValue::Reference(self_), key],
+                    world.clone(),
+                )?;
                 LuaScriptValue::from(out).into_lua(lua)
             },
         );
@@ -136,7 +138,7 @@ impl UserData for LuaReflectReference {
 
                 lookup_dynamic_function_typed::<ReflectReference>(lua, "set_1_indexed")
                     .expect("No 'set' function registered for a ReflectReference")?
-                    .dynamic_call(
+                    .call_script_function(
                         vec![ScriptValue::Reference(self_), key, value],
                         lua.get_world(),
                     )?;

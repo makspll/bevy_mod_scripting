@@ -176,7 +176,7 @@ impl ReflectReference {
 
     /// Attempts to create a [`Box<dyn PartialReflect>`] from the reference. This is possible using a few strategies:
     /// - If the reference is to a world, a [`WorldCallbackAccess`] is created and boxed
-    /// - If the reference is to an allocation with no reflection path, the value is taken as is.
+    /// - If the reference is to an allocation with no reflection path and references to it, the value is taken as is.
     /// - If the reference has a [`bevy::reflect::ReflectFromReflect`] type data associated with it, the value is cloned using that impl.
     /// - If all above fails, [`bevy::reflect::PartialReflect::clone_value`] is used to clone the value.
     ///

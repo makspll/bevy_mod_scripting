@@ -39,6 +39,27 @@ impl FromScript for () {
     }
 }
 
+impl FromScript for bool {
+    type This<'w> = Self;
+
+    fn from_script(
+        value: ScriptValue,
+        world: WorldGuard<'_>,
+    ) -> Result<Self::This<'_>, InteropError>
+    where
+        Self: Sized,
+    {
+        match value {
+            ScriptValue::Bool(b) => Ok(b),
+            ScriptValue::Reference(r) => r.downcast::<Self>(world),
+            _ => Err(InteropError::value_mismatch(
+                std::any::TypeId::of::<Self>(),
+                value,
+            )),
+        }
+    }
+}
+
 macro_rules! impl_from_with_downcast {
     ($($ty:ty),*) => {
         $(
@@ -78,6 +99,28 @@ macro_rules! impl_from_stringlike {
 }
 
 impl_from_stringlike!(String, PathBuf, OsString);
+
+impl FromScript for char {
+    type This<'w> = Self;
+
+    fn from_script(
+        value: ScriptValue,
+        world: WorldGuard<'_>,
+    ) -> Result<Self::This<'_>, InteropError>
+    where
+        Self: Sized,
+    {
+        match value {
+            ScriptValue::Integer(i) => Ok(i as u8 as char),
+            ScriptValue::String(c) if c.len() == 1 => Ok(c.chars().next().expect("invariant")),
+            ScriptValue::Reference(r) => r.downcast::<Self>(world),
+            _ => Err(InteropError::value_mismatch(
+                std::any::TypeId::of::<Self>(),
+                value,
+            )),
+        }
+    }
+}
 
 impl FromScript for ReflectReference {
     type This<'w> = Self;

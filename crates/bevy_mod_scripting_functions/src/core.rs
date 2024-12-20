@@ -12,10 +12,11 @@ use bevy_mod_scripting_core::*;
 use bindings::{
     function::{
         from::{Mut, Ref, Val},
+        from_ref::FromScriptRef,
         into_ref::IntoScriptRef,
         script_function::ScriptFunction,
     },
-    script_value::{FromScriptValue, IntoScriptValue, ScriptValue},
+    script_value::ScriptValue,
     ReflectReference, ReflectionPathExt, ScriptTypeRegistration, WorldAccessGuard,
     WorldCallbackAccess,
 };
@@ -96,7 +97,7 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
     NamespaceBuilder::<ReflectReference>::new(reg)
         .overwrite_script_function(
             "get",
-            |world: WorldCallbackAccess, self_: ReflectReference, key: ScriptValue| {
+            |world: WorldCallbackAccess, mut self_: ReflectReference, key: ScriptValue| {
                 let mut path: ParsedPath = key.try_into()?;
                 self_.index_path(path);
                 let world = world.read().expect("Stale world");
@@ -105,7 +106,7 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
         )
         .overwrite_script_function(
             "get_1_indexed",
-            |world: WorldCallbackAccess, self_: ReflectReference, key: ScriptValue| {
+            |world: WorldCallbackAccess, mut self_: ReflectReference, key: ScriptValue| {
                 let mut path: ParsedPath = key.try_into()?;
                 path.convert_to_0_indexed();
                 self_.index_path(path);
@@ -130,13 +131,11 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
                                 .get_represented_type_info()
                                 .map(|i| i.type_id())
                                 .or_fake_id();
-                            let other = <dyn PartialReflect>::from_script_value(
+                            let other = <Box<dyn PartialReflect>>::from_script_ref(
+                                target_type_id,
                                 value,
                                 world.clone(),
-                                target_type_id,
-                            )
-                            .ok_or_else(|| InteropError::impossible_conversion(target_type_id))??;
-
+                            )?;
                             r.try_apply(other.as_partial_reflect()).unwrap();
                             Ok::<_, InteropError>(())
                         })
@@ -149,7 +148,7 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
         .overwrite_script_function(
             "set_1_indexed",
             |world: WorldCallbackAccess,
-             self_: ReflectReference,
+             mut self_: ReflectReference,
              key: ScriptValue,
              value: ScriptValue| {
                 let world = world.read().expect("stale world");
@@ -163,12 +162,11 @@ fn register_world_functions(reg: &mut FunctionRegistry) -> Result<(), FunctionRe
                             .get_represented_type_info()
                             .map(|i| i.type_id())
                             .or_fake_id();
-                        let other = <dyn PartialReflect>::from_script_value(
+                        let other = <Box<dyn PartialReflect>>::from_script_ref(
+                            target_type_id,
                             value,
                             world.clone(),
-                            target_type_id,
-                        )
-                        .ok_or_else(|| InteropError::impossible_conversion(target_type_id))??;
+                        )?;
 
                         r.try_apply(other.as_partial_reflect()).unwrap();
                         Ok::<_, InteropError>(())

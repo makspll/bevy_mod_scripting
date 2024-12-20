@@ -1,9 +1,6 @@
 use std::{any::TypeId, ffi::OsString, path::PathBuf};
 
-use bevy::{
-    reflect::{ParsedPath, PartialReflect},
-    text::cosmic_text::rustybuzz::Script,
-};
+use bevy::reflect::{ParsedPath, PartialReflect};
 
 use crate::{
     bindings::{function::into::IntoScript, ReflectReference, WorldGuard},
@@ -26,6 +23,7 @@ pub trait IntoScriptRef {
     ) -> Result<ScriptValue, InteropError>;
 }
 
+#[macro_export]
 macro_rules! match_by_type {
     (match $on:ident {$($id:ident : $ty:ty => $conv:expr),*}) => {
         $(
@@ -42,6 +40,7 @@ macro_rules! match_by_type {
     };
 }
 
+#[macro_export]
 macro_rules! downcast_into_value {
     ($r:ident, $ty:ty) => {
         *$r.try_downcast_ref::<$ty>().ok_or_else(|| {

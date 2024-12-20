@@ -3,7 +3,6 @@ use std::sync::Arc;
 use bevy::ecs::{component::ComponentId, reflect::AppTypeRegistry, world::Mut};
 use bevy::prelude::{AppFunctionRegistry, Entity, World};
 
-use bevy_mod_scripting_core::bindings::function::CallAsScriptFunction;
 use bevy_mod_scripting_core::bindings::WorldGuard;
 use bevy_mod_scripting_core::error::InteropError;
 use bevy_mod_scripting_core::{

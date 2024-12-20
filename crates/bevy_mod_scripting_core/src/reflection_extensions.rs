@@ -3,7 +3,6 @@ use std::{
     borrow::Cow,
     cmp::max,
     ffi::{CStr, CString, OsStr, OsString},
-    os::unix::ffi::OsStrExt,
     path::{Path, PathBuf},
     str::FromStr,
 };
