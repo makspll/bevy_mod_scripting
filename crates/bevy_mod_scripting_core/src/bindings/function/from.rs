@@ -3,7 +3,7 @@ use crate::{
     error::InteropError,
     prelude::ScriptValue,
 };
-use bevy::reflect::FromReflect;
+use bevy::reflect::{FromReflect, GetTypeRegistration};
 use std::{
     any::TypeId,
     ffi::OsString,
@@ -141,6 +141,16 @@ impl FromScript for ReflectReference {
 /// You can also use this to return values from a script function to be allocated directly as a [`ScriptValue::Reference`].
 pub struct Val<T>(pub T);
 
+impl<T> Val<T> {
+    pub fn new(value: T) -> Self {
+        Val(value)
+    }
+
+    pub fn into_inner(self) -> T {
+        self.0
+    }
+}
+
 impl<T> Deref for Val<T> {
     type Target = T;
 
@@ -165,7 +175,7 @@ impl<T: FromReflect> FromScript for Val<T> {
                     T::from_reflect(r).ok_or_else(|| {
                         InteropError::failed_from_reflect(
                             Some(TypeId::of::<T>()),
-                            "from reflect failed to produce output when converting to Val<T>"
+                            format!("from reflect failed to produce output when converting to Val<T> from: {r:?}")
                                 .to_owned(),
                         )
                     })

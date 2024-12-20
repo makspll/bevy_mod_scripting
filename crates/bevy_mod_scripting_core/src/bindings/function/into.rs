@@ -1,9 +1,10 @@
 use std::{
+    borrow::Cow,
     ffi::OsString,
     path::{Path, PathBuf},
 };
 
-use bevy::reflect::{PartialReflect, ReflectRef};
+use bevy::reflect::{GetTypeRegistration, PartialReflect, ReflectRef};
 
 use crate::{
     bindings::{ReflectReference, WorldGuard},
@@ -74,6 +75,12 @@ impl_into_stringlike!(
         (OsString => s.into_string().map_err(|e| InteropError::unsupported_operation(None, Some(Box::new(e)), "Could not convert OsString to String".to_owned()))?)
     ]
 );
+
+impl IntoScript for &'static str {
+    fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        Ok(ScriptValue::String(Cow::Borrowed(self)))
+    }
+}
 
 impl IntoScript for ReflectReference {
     fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {

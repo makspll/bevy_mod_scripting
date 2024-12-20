@@ -435,7 +435,7 @@ impl GetWorld for mlua::Lua {
             .app_data_ref::<WorldCallbackAccess>()
             .ok_or_else(InteropError::missing_world)?;
 
-        let world = access.read().ok_or_else(InteropError::stale_world_access)?;
+        let world = access.try_read()?;
 
         Ok(world)
     }

@@ -106,8 +106,10 @@ impl WorldCallbackAccess {
     }
 
     /// Attempts to read the world access guard, if it still exists
-    pub fn read(&self) -> Option<WorldGuard<'static>> {
-        self.0.upgrade()
+    pub fn try_read(&self) -> Result<WorldGuard<'static>, InteropError> {
+        self.0
+            .upgrade()
+            .ok_or_else(|| InteropError::stale_world_access())
     }
 }
 
@@ -120,15 +122,18 @@ pub(crate) const CONCURRENT_ACCESS_MSG: &str =
 /// common world methods, see:
 /// - [`crate::bindings::query`] for query related functionality
 impl WorldCallbackAccess {
-    pub fn spawn(&self) -> Entity {
-        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-        world.spawn()
+    pub fn spawn(&self) -> Result<Entity, InteropError> {
+        let world = self.try_read()?;
+        Ok(world.spawn())
     }
 
     // TODO: uses `String` for type_name to avoid lifetime issues with types proxying this via macros
-    pub fn get_type_by_name(&self, type_name: String) -> Option<ScriptTypeRegistration> {
-        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-        world.get_type_by_name(type_name)
+    pub fn get_type_by_name(
+        &self,
+        type_name: String,
+    ) -> Result<Option<ScriptTypeRegistration>, InteropError> {
+        let world = self.try_read()?;
+        Ok(world.get_type_by_name(type_name))
     }
 
     pub fn add_default_component(
@@ -136,7 +141,7 @@ impl WorldCallbackAccess {
         entity: Entity,
         registration: ScriptTypeRegistration,
     ) -> Result<(), InteropError> {
-        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
+        let world = self.try_read()?;
         world.add_default_component(entity, registration)
     }
 
@@ -145,7 +150,7 @@ impl WorldCallbackAccess {
         entity: Entity,
         component_id: ComponentId,
     ) -> Result<Option<ReflectReference>, InteropError> {
-        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
+        let world = self.try_read()?;
         world.get_component(entity, component_id)
     }
 
@@ -154,7 +159,7 @@ impl WorldCallbackAccess {
         entity: Entity,
         component_id: ComponentId,
     ) -> Result<bool, InteropError> {
-        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
+        let world = self.try_read()?;
         world.has_component(entity, component_id)
     }
 
@@ -163,7 +168,7 @@ impl WorldCallbackAccess {
         entity: Entity,
         registration: ScriptTypeRegistration,
     ) -> Result<(), InteropError> {
-        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
+        let world = self.try_read()?;
         world.remove_component(entity, registration)
     }
 
@@ -171,7 +176,7 @@ impl WorldCallbackAccess {
         &self,
         resource_id: ComponentId,
     ) -> Result<Option<ReflectReference>, InteropError> {
-        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
+        let world = self.try_read()?;
         world.get_resource(resource_id)
     }
 
@@ -179,37 +184,37 @@ impl WorldCallbackAccess {
         &self,
         registration: ScriptTypeRegistration,
     ) -> Result<(), InteropError> {
-        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
+        let world = self.try_read()?;
         world.remove_resource(registration)
     }
 
-    pub fn has_resource(&self, resource_id: ComponentId) -> bool {
-        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-        world.has_resource(resource_id)
+    pub fn has_resource(&self, resource_id: ComponentId) -> Result<bool, InteropError> {
+        let world = self.try_read()?;
+        Ok(world.has_resource(resource_id))
     }
 
-    pub fn has_entity(&self, entity: Entity) -> bool {
-        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-        world.has_entity(entity)
+    pub fn has_entity(&self, entity: Entity) -> Result<bool, InteropError> {
+        let world = self.try_read()?;
+        Ok(world.has_entity(entity))
     }
 
     pub fn get_children(&self, entity: Entity) -> Result<Vec<Entity>, InteropError> {
-        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
+        let world = self.try_read()?;
         world.get_children(entity)
     }
 
     pub fn get_parent(&self, entity: Entity) -> Result<Option<Entity>, InteropError> {
-        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
+        let world = self.try_read()?;
         world.get_parent(entity)
     }
 
     pub fn push_children(&self, parent: Entity, children: &[Entity]) -> Result<(), InteropError> {
-        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
+        let world = self.try_read()?;
         world.push_children(parent, children)
     }
 
     pub fn remove_children(&self, parent: Entity, children: &[Entity]) -> Result<(), InteropError> {
-        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
+        let world = self.try_read()?;
         world.remove_children(parent, children)
     }
 
@@ -219,28 +224,29 @@ impl WorldCallbackAccess {
         index: usize,
         children: &[Entity],
     ) -> Result<(), InteropError> {
-        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
+        let world = self.try_read()?;
         world.insert_children(parent, index, children)
     }
 
     pub fn despawn_recursive(&self, entity: Entity) -> Result<(), InteropError> {
-        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
+        let world = self.try_read()?;
         world.despawn_recursive(entity)
     }
 
     pub fn despawn(&self, entity: Entity) -> Result<(), InteropError> {
-        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
+        let world = self.try_read()?;
         world.despawn(entity)
     }
 
     pub fn despawn_descendants(&self, entity: Entity) -> Result<(), InteropError> {
-        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
+        let world = self.try_read()?;
         world.despawn_descendants(entity)
     }
 
-    pub fn exit(&self) {
-        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-        world.exit()
+    pub fn exit(&self) -> Result<(), InteropError> {
+        let world = self.try_read()?;
+        world.exit();
+        Ok(())
     }
 }
 

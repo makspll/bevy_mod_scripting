@@ -20,7 +20,7 @@ function on_event()
 
 
     local my_component_type = world:get_type_by_name("MyComponent")
-    print("MyComponent type: ", my_component_type:print_value())
+    print("MyComponent type: ", my_component_type:short_name())
 
     local comp = world:get_component(entity, my_component_type)
     print("Before script: ", comp:print_value())

@@ -24,8 +24,8 @@ use bevy::{
     ptr::Ptr,
     reflect::{
         func::{args::ArgInfo, ArgValue},
-        ParsedPath, PartialReflect, ReflectFromPtr, ReflectFromReflect, ReflectMut, ReflectPath,
-        ReflectPathError, ReflectRef, TypeData,
+        ParsedPath, PartialReflect, Reflect, ReflectFromPtr, ReflectFromReflect, ReflectMut,
+        ReflectPath, ReflectPathError, ReflectRef, TypeData,
     },
 };
 use itertools::Either;
@@ -33,7 +33,8 @@ use std::{any::TypeId, fmt::Debug, sync::Arc};
 
 /// An accessor to a `dyn PartialReflect` struct, stores a base ID of the type and a reflection path
 /// safe to build but to reflect on the value inside you need to ensure aliasing rules are upheld
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Reflect)]
+#[reflect(opaque)]
 pub struct ReflectReference {
     pub base: ReflectBaseType,
     // TODO: experiment with Fixed capacity vec, boxed array etc, compromise between heap allocation and runtime cost

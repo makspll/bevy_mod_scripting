@@ -1,14 +1,20 @@
-use bevy::{
-    prelude::{AppFunctionRegistry, IntoFunction, World},
-    reflect::{func::DynamicFunction, PartialReflect},
-};
-
+use super::{from::FromScript, into::IntoScript};
 use crate::{
+    bindings::{
+        function::from::{Mut, Ref, Val},
+        ReflectReference,
+    },
     error::InteropError,
     prelude::{ScriptValue, WorldCallbackAccess},
 };
-
-use super::{from::FromScript, into::IntoScript};
+use bevy::{
+    prelude::{AppFunctionRegistry, IntoFunction, World},
+    reflect::{
+        func::{DynamicFunction, FunctionInfo},
+        GetTypeRegistration, PartialReflect, TypeRegistration, TypeRegistry,
+    },
+};
+use std::sync::Arc;
 
 #[diagnostic::on_unimplemented(
     message = "Only functions with all arguments impplementing FromScript and return values supporting IntoScript are supported. use assert_impls_into_script!(MyArg) and assert_impls_from_script!(MyReturnType) to verify yours do.",
@@ -16,6 +22,42 @@ use super::{from::FromScript, into::IntoScript};
 )]
 pub trait ScriptFunction<'env, Marker> {
     fn into_dynamic_function(self) -> DynamicFunction<'static>;
+}
+
+pub trait GetInnerTypeDependencies {
+    fn register_type_dependencies(registry: &mut TypeRegistry);
+}
+
+impl<T: GetTypeRegistration> GetInnerTypeDependencies for T {
+    fn register_type_dependencies(registry: &mut TypeRegistry) {
+        registry.register::<T>();
+    }
+}
+
+macro_rules! recursive_type_dependencies {
+    ($(T: $path:path),*) => {
+        $(
+            impl<T: GetInnerTypeDependencies> GetInnerTypeDependencies for $path {
+                fn register_type_dependencies(registry: &mut TypeRegistry) {
+                    T::register_type_dependencies(registry);
+                }
+            }
+        )*
+    };
+}
+
+recursive_type_dependencies!(T: Val<T>, T: Ref<'_, T>, T: Mut<'_, T>);
+
+pub trait GetFunctionTypeDependencies<Marker> {
+    fn register_type_dependencies(registry: &mut TypeRegistry);
+}
+
+/// The Script Function equivalent for dynamic functions
+/// TODO: have a separate function registry to avoid the need for boxing script args every time
+pub struct DynamicScriptFunction {
+    pub info: FunctionInfo,
+    pub func:
+        Arc<dyn Fn(WorldCallbackAccess, Vec<ScriptValue>) -> Result<ScriptValue, InteropError>>,
 }
 
 macro_rules! impl_script_function {
@@ -50,7 +92,7 @@ macro_rules! impl_script_function {
                 (move |world: WorldCallbackAccess, $( $param: ScriptValue ),* | {
                     let res: Result<ScriptValue, InteropError> = (|| {
                         $( let $callback = world.clone(); )?
-                        let world = world.read().ok_or_else(|| InteropError::stale_world_access())?;
+                        let world = world.try_read()?;
                         // TODO: snapshot the accesses and release them after
                         $( let $param = <$param>::from_script($param, world.clone())?; )*
                         let out = self( $( $callback, )? $( $param.into(), )* );
@@ -68,7 +110,24 @@ macro_rules! impl_script_function {
     };
 }
 
+macro_rules! impl_script_function_type_dependencies{
+    ($( $param:ident ),* ) => {
+        impl<F, $( $param: GetInnerTypeDependencies ,)* O: GetInnerTypeDependencies> GetFunctionTypeDependencies<fn($($param),*) -> O> for F
+            where F: Fn( $( $param ),* ) -> O
+        {
+            fn register_type_dependencies(registry: &mut TypeRegistry) {
+                $(
+                    $param::register_type_dependencies(registry);
+                )*
+
+                O::register_type_dependencies(registry);
+            }
+        }
+    };
+}
+
 bevy::utils::all_tuples!(impl_script_function, 0, 14, T);
+bevy::utils::all_tuples!(impl_script_function_type_dependencies, 0, 14, T);
 
 /// Utility for quickly checking your type can be used as an argument in a script function
 ///

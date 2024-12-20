@@ -65,10 +65,6 @@ impl<A: LuaEventArg> Plugin for LuaScriptingPlugin<A> {
         // register_lua_values(app);
         app.add_context_pre_handling_initializer::<()>(|script_id, entity, context: &mut Lua| {
             let world = context.get_world();
-            // let lua_entity = world.with_resource::<ReflectAllocator, _, _>(|_, mut allocator| {
-            //     let reflect_reference = ReflectReference::new_allocated(entity, &mut allocator);
-            //     <Entity as LuaProxied>::Proxy::from(reflect_reference)
-            // });
             context
                 .globals()
                 .set(
@@ -80,7 +76,6 @@ impl<A: LuaEventArg> Plugin for LuaScriptingPlugin<A> {
                 .globals()
                 .set("script_id", script_id.clone())
                 .map_err(ScriptError::from_mlua_error)?;
-            // context.globals().set("entity", lua_entity)?;
             Ok(())
         });
     }

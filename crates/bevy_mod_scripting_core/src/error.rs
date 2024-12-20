@@ -182,7 +182,8 @@ impl From<InteropError> for mlua::Error {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Reflect)]
+#[reflect(opaque)]
 pub struct InteropError(Arc<InteropErrorInner>);
 
 impl std::error::Error for InteropError {}

@@ -7,8 +7,8 @@ use bevy::{
 };
 use bevy_mod_scripting_core::{
     bindings::{
-        Proxy, ReflectAllocator, ReflectReference, ReflectValProxy, ScriptTypeRegistration,
-        WorldCallbackAccess,
+        pretty_print::DisplayWithWorld, ReflectAllocator, ReflectReference, ScriptTypeRegistration,
+        WorldAccessGuard, WorldCallbackAccess,
     },
     context::ContextLoadingSettings,
     error::ScriptError,
@@ -17,13 +17,11 @@ use bevy_mod_scripting_core::{
 };
 use bevy_mod_scripting_lua::{
     bindings::{
-        providers::bevy_ecs::LuaEntity,
-        proxy::{LuaProxied, LuaReflectValProxy},
+        reference::LuaReflectReference,
         world::{GetWorld, LuaWorld},
     },
     lua_context_load, lua_handler,
     prelude::{Lua, LuaFunction, LuaHookTriggers},
-    type_data::{register_lua_values, ReflectLuaValue},
     LuaScriptingPlugin,
 };
 use libtest_mimic::{Arguments, Failed, Trial};
@@ -49,7 +47,7 @@ fn init_app() -> App {
     app.add_plugins(AssetPlugin::default())
         .add_plugins(HierarchyPlugin)
         .add_plugins(LuaScriptingPlugin::<()>::default())
-        .add_plugins(bevy_mod_scripting_lua::bindings::providers::LuaBevyScriptingPlugin);
+        .add_plugins(bevy_mod_scripting_functions::BevyFunctionsPlugin);
 
     // for some reason hierarchy plugin doesn't register the children component
     app.world_mut().register_component::<Children>();
@@ -62,54 +60,57 @@ fn init_app() -> App {
 
 fn init_lua_test_utils(_script_name: &Cow<'static, str>, lua: &mut Lua) -> Result<(), ScriptError> {
     let _get_mock_type = lua
-        .create_function(|_, ()| {
+        .create_function(|l, ()| {
+            let world = l.get_world();
             #[derive(Reflect)]
             struct Dummy;
             let reg =
                 ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()), None, None);
-            Ok(<ScriptTypeRegistration as LuaProxied>::Proxy::from(reg))
+            let allocator = world.allocator();
+            let mut allocator = allocator.write();
+            let reference = ReflectReference::new_allocated(reg, &mut allocator);
+            Ok(LuaReflectReference::from(reference))
         })
         .unwrap();
 
     let _get_entity_with_test_component = lua
         .create_function(|l, s: String| {
             let world = l.get_world();
-            let opt_entity = world.with_resource::<ReflectAllocator, _, _>(|_, mut allocator| {
-                let a = World::enumerate_test_components()
-                    .iter()
-                    .find(|(name, _, _)| name.contains(&s))
-                    .map(|(_, _, c)| {
-                        let reference = ReflectReference::new_allocated(
-                            c.unwrap_or(Entity::from_raw(9999)),
-                            &mut allocator,
-                        );
-                        <<Entity as LuaProxied>::Proxy>::from(reference)
-                    });
 
-                a
-            });
+            Ok(World::enumerate_test_components()
+                .iter()
+                .find(|(name, _, _)| name.contains(&s))
+                .map(|(_, _, c)| {
+                    let allocator = world.allocator();
+                    let mut allocator = allocator.write();
 
-            Ok(opt_entity)
+                    let reference = ReflectReference::new_allocated(
+                        c.unwrap_or(Entity::from_raw(9999)),
+                        &mut allocator,
+                    );
+                    LuaReflectReference::from(reference)
+                }))
         })
         .unwrap();
 
     let assert_throws = lua
-        .create_function(|_, (f, regex): (LuaFunction, String)| {
-            let result = f.call::<(), ()>(());
+        .create_function(|lua, (f, regex): (LuaFunction, String)| {
+            let world = lua.get_world();
+            let result = f.call::<()>(());
             let err = match result {
                 Ok(_) => {
-                    return Err(tealr::mlu::mlua::Error::RuntimeError(
+                    return Err(mlua::Error::RuntimeError(
                         "Expected function to throw error, but it did not.".into(),
                     ))
                 }
-                Err(e) => e.to_string(),
+                Err(e) => ScriptError::from_mlua_error(e).display_with_world(world),
             };
 
             let regex = regex::Regex::new(&regex).unwrap();
             if regex.is_match(&err) {
                 Ok(())
             } else {
-                Err(tealr::mlu::mlua::Error::RuntimeError(format!(
+                Err(mlua::Error::RuntimeError(format!(
                     "Expected error message to match the regex: \n{}\n\nBut got:\n{}",
                     regex.as_str(),
                     err
@@ -157,7 +158,13 @@ impl Test {
             &context_settings.context_pre_handling_initializers,
             app.world_mut(),
             &mut (),
-        )?;
+        )
+        .map_err(|e| {
+            let world = app.world_mut();
+            let world = WorldAccessGuard::new(world);
+            let msg = e.display_with_world(Arc::new(world));
+            Failed::from(msg)
+        })?;
 
         lua_handler(
             (),
@@ -168,7 +175,13 @@ impl Test {
             &context_settings.context_pre_handling_initializers,
             &mut (),
             app.world_mut(),
-        )?;
+        )
+        .map_err(|e| {
+            let world = app.world_mut();
+            let world = WorldAccessGuard::new(world);
+            let msg = e.display_with_world(Arc::new(world));
+            Failed::from(msg)
+        })?;
 
         // WorldCallbackAccess::with_callback_access(app.world_mut(), |world| {
         //     lua.globals().set("world", LuaWorld(world.clone())).unwrap();

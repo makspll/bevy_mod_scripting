@@ -1,7 +1,7 @@
 use std::{any::TypeId, borrow::Cow, marker::PhantomData};
 
 use bevy::{
-    prelude::IntoFunction,
+    prelude::{AppFunctionRegistry, IntoFunction, World},
     reflect::func::{DynamicFunction, FunctionRegistrationError, FunctionRegistry},
 };
 
@@ -134,14 +134,14 @@ impl GetNamespacedFunction for FunctionRegistry {
 
 pub struct NamespaceBuilder<'a, N> {
     namespace: PhantomData<N>,
-    registry: &'a mut FunctionRegistry,
+    pub world: &'a mut World,
 }
 
 impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
-    pub fn new(registry: &'a mut FunctionRegistry) -> Self {
+    pub fn new(world: &'a mut World) -> Self {
         Self {
             namespace: Default::default(),
-            registry,
+            world,
         }
     }
 
@@ -154,8 +154,14 @@ impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
         N: Into<Cow<'static, str>>,
         F: IntoFunction<'static, M> + 'static,
     {
-        self.registry
-            .register_namespaced_function::<S, _, F, M>(name, function)?;
+        {
+            let registry = self
+                .world
+                .get_resource_mut::<AppFunctionRegistry>()
+                .expect("AppFunctionRegistry resource not found");
+            let mut registry = registry.write();
+            registry.register_namespaced_function::<S, _, F, M>(name, function)?;
+        }
         Ok(self)
     }
 
@@ -164,8 +170,14 @@ impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
         N: Into<Cow<'static, str>>,
         F: IntoFunction<'static, M> + 'static,
     {
-        self.registry
-            .overwrite_namespaced_function::<S, _, F, M>(name, function);
+        {
+            let registry = self
+                .world
+                .get_resource_mut::<AppFunctionRegistry>()
+                .expect("AppFunctionRegistry resource not found");
+            let mut registry = registry.write();
+            registry.overwrite_namespaced_function::<S, _, F, M>(name, function);
+        }
         self
     }
 }

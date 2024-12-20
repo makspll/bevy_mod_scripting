@@ -1,7 +1,7 @@
 use super::{ReflectReference, WorldAccessGuard, WorldCallbackAccess};
 use crate::{
     bindings::{CONCURRENT_WORLD_ACCESS_MSG, STALE_WORLD_MSG},
-    prelude::ScriptResult,
+    error::InteropError,
     with_global_access,
 };
 use bevy::{
@@ -36,7 +36,7 @@ impl ScriptTypeRegistration {
     }
 
     #[inline(always)]
-    pub fn short_name(&self) -> &str {
+    pub fn short_name(&self) -> &'static str {
         self.registration.type_info().type_path_table().short_path()
     }
 
@@ -50,10 +50,16 @@ impl ScriptTypeRegistration {
         self.registration.type_info().type_id()
     }
 
-    /// Returns the [`ComponentId`] for this type, if it is a component or a resource.
+    /// Returns the [`ComponentId`] for this type, if it is a component.
     #[inline(always)]
     pub fn component_id(&self) -> Option<ComponentId> {
         self.component_id
+    }
+
+    /// Returns the [`ComponentId`] for this type, if it is a resource.
+    #[inline(always)]
+    pub fn resource_id(&self) -> Option<ComponentId> {
+        self.resource_id
     }
 }
 
@@ -71,7 +77,8 @@ impl std::fmt::Display for ScriptTypeRegistration {
     }
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Reflect)]
+#[reflect(opaque)]
 pub struct ScriptQueryBuilder {
     components: Vec<ScriptTypeRegistration>,
     with: Vec<ScriptTypeRegistration>,
@@ -95,20 +102,25 @@ impl ScriptQueryBuilder {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Reflect)]
+#[reflect(opaque)]
 pub struct ScriptQueryResult(pub Entity, pub Vec<ReflectReference>);
 
 impl WorldCallbackAccess {
-    pub fn query(&self, query: ScriptQueryBuilder) -> ScriptResult<VecDeque<ScriptQueryResult>> {
+    pub fn query(
+        &self,
+        query: ScriptQueryBuilder,
+    ) -> Result<VecDeque<ScriptQueryResult>, InteropError> {
         // find the set of components
-        self.read()
-            .unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"))
-            .query(query)
+        self.try_read().and_then(|world| world.query(query))
     }
 }
 
 impl<'w> WorldAccessGuard<'w> {
-    pub fn query(&self, query: ScriptQueryBuilder) -> ScriptResult<VecDeque<ScriptQueryResult>> {
+    pub fn query(
+        &self,
+        query: ScriptQueryBuilder,
+    ) -> Result<VecDeque<ScriptQueryResult>, InteropError> {
         with_global_access!(self.0.accesses, "Could not query", {
             let world = unsafe { self.as_unsafe_world_cell().world_mut() };
             let mut dynamic_query = QueryBuilder::<EntityRef>::new(world);

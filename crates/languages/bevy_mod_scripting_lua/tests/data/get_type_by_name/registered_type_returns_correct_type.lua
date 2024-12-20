@@ -5,6 +5,11 @@ local expected = {
     short_name = 'TestComponent',
 }
 
+local received = {
+    type_name = type:type_name(),
+    short_name = type:short_name(),
+}
+
 assert(type ~= nil, 'Type not found')
-assert(type.type_name == expected.type_name, 'type_name mismatch, expected: ' .. expected.type_name .. ', got: ' .. type.type_name)
-assert(type.short_name == expected.short_name, 'short_name mismatch, expected: ' .. expected.short_name .. ', got: ' .. type.short_name)
+assert(received.type_name == expected.type_name, 'type_name mismatch, expected: ' .. expected.type_name .. ', got: ' .. received.type_name)
+assert(received.short_name == expected.short_name, 'short_name mismatch, expected: ' .. expected.short_name .. ', got: ' .. received.short_name)
