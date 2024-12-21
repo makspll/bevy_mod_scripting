@@ -3,7 +3,7 @@ use crate::{
     error::InteropError,
     prelude::ScriptValue,
 };
-use bevy::reflect::{FromReflect, GetTypeRegistration};
+use bevy::reflect::{FromReflect, GetTypeRegistration, Reflect};
 use std::{
     any::TypeId,
     ffi::OsString,
@@ -139,6 +139,7 @@ impl FromScript for ReflectReference {
 ///
 /// This can be used to retrieve a value out of a [`ScriptValue::Reference`] corresponding to the type `T`.
 /// You can also use this to return values from a script function to be allocated directly as a [`ScriptValue::Reference`].
+#[derive(Reflect)]
 pub struct Val<T>(pub T);
 
 impl<T> Val<T> {

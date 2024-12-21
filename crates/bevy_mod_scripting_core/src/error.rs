@@ -183,8 +183,7 @@ impl From<InteropError> for mlua::Error {
 }
 
 #[derive(Debug, Clone, PartialEq, Reflect)]
-#[reflect(opaque)]
-pub struct InteropError(Arc<InteropErrorInner>);
+pub struct InteropError(#[reflect(ignore)] Arc<InteropErrorInner>);
 
 impl std::error::Error for InteropError {}
 
@@ -607,5 +606,12 @@ impl DisplayWithWorld for InteropErrorInner {
             },
             InteropErrorInner::OtherError { error } => error.to_string(),
         }
+    }
+}
+
+/// Purely for purposes of the automatic [`GetTypeRegistration`] impl.
+impl Default for InteropErrorInner {
+    fn default() -> Self {
+        InteropErrorInner::StaleWorldAccess
     }
 }

@@ -57,22 +57,16 @@ impl<S: 'static> RegisterScriptFunction for NamespaceBuilder<'_, S> {
 
 impl Plugin for CoreFunctionsPlugin {
     fn build(&self, app: &mut App) {
-        let function_registry = app
-            .world_mut()
-            .get_resource_or_init::<AppFunctionRegistry>();
+        let world = app.world_mut();
+        register_world_functions(world).expect("Failed to register world functions");
 
-        let mut function_registry = function_registry.write();
-
-        register_world_functions(&mut function_registry)
-            .expect("Failed to register world functions");
-
-        register_reflect_reference_functions(&mut function_registry)
+        register_reflect_reference_functions(world)
             .expect("Failed to register reflect reference functions");
 
-        register_script_type_registration_functions(&mut function_registry)
+        register_script_type_registration_functions(world)
             .expect("Failed to register script type registration functions");
 
-        register_script_query_builder_functions(&mut function_registry)
+        register_script_query_builder_functions(world)
             .expect("Failed to register script query builder functions");
     }
 }
@@ -189,9 +183,7 @@ fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrationE
     Ok(())
 }
 
-fn register_reflect_reference_functions(
-    reg: &mut FunctionRegistry,
-) -> Result<(), FunctionRegistrationError> {
+fn register_reflect_reference_functions(reg: &mut World) -> Result<(), FunctionRegistrationError> {
     NamespaceBuilder::<ReflectReference>::new(reg)
         .overwrite_script_function(
             "display_ref",
@@ -285,7 +277,7 @@ fn register_reflect_reference_functions(
 }
 
 fn register_script_type_registration_functions(
-    registry: &mut FunctionRegistry,
+    registry: &mut World,
 ) -> Result<(), FunctionRegistrationError> {
     NamespaceBuilder::<ScriptTypeRegistration>::new(registry)
         .overwrite_script_function("type_name", |s: Ref<ScriptTypeRegistration>| s.type_name())
@@ -302,7 +294,7 @@ fn register_script_type_registration_functions(
 }
 
 fn register_script_query_builder_functions(
-    registry: &mut FunctionRegistry,
+    registry: &mut World,
 ) -> Result<(), FunctionRegistrationError> {
     NamespaceBuilder::<ScriptQueryBuilder>::new(registry)
         .overwrite_script_function(

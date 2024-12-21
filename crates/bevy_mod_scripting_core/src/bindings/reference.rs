@@ -20,7 +20,7 @@ use bevy::{
         change_detection::MutUntyped, component::ComponentId, entity::Entity,
         world::unsafe_world_cell::UnsafeWorldCell,
     },
-    prelude::{Component, Resource},
+    prelude::{Component, ReflectDefault, Resource},
     ptr::Ptr,
     reflect::{
         func::{args::ArgInfo, ArgValue},
@@ -34,13 +34,27 @@ use std::{any::TypeId, fmt::Debug, sync::Arc};
 /// An accessor to a `dyn PartialReflect` struct, stores a base ID of the type and a reflection path
 /// safe to build but to reflect on the value inside you need to ensure aliasing rules are upheld
 #[derive(Debug, Clone, PartialEq, Eq, Reflect)]
-#[reflect(opaque)]
+#[reflect(Default)]
 pub struct ReflectReference {
+    #[reflect(ignore)]
     pub base: ReflectBaseType,
     // TODO: experiment with Fixed capacity vec, boxed array etc, compromise between heap allocation and runtime cost
     // needs benchmarks first though
     /// The path from the top level type to the actual value we want to access
+    #[reflect(ignore)]
     pub reflect_path: ParsedPath,
+}
+
+impl Default for ReflectReference {
+    fn default() -> Self {
+        Self {
+            base: ReflectBaseType {
+                type_id: TypeId::of::<WorldCallbackAccess>(),
+                base_id: ReflectBase::World,
+            },
+            reflect_path: ParsedPath(vec![]),
+        }
+    }
 }
 
 /// Specifies where we should source the type id from when reflecting a ReflectReference

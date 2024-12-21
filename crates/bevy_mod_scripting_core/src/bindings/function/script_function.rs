@@ -14,6 +14,7 @@ use bevy::{
         GetTypeRegistration, PartialReflect, TypeRegistration, TypeRegistry,
     },
 };
+use std::collections::HashMap;
 use std::sync::Arc;
 
 #[diagnostic::on_unimplemented(
@@ -28,25 +29,59 @@ pub trait GetInnerTypeDependencies {
     fn register_type_dependencies(registry: &mut TypeRegistry);
 }
 
-impl<T: GetTypeRegistration> GetInnerTypeDependencies for T {
-    fn register_type_dependencies(registry: &mut TypeRegistry) {
-        registry.register::<T>();
-    }
+#[macro_export]
+macro_rules! no_type_dependencies {
+    ($($path:path),*) => {
+        $(
+            impl GetInnerTypeDependencies for $path {
+                fn register_type_dependencies(_registry: &mut TypeRegistry) {}
+            }
+        )*
+    };
 }
 
-macro_rules! recursive_type_dependencies {
-    ($(T: $path:path),*) => {
+#[macro_export]
+macro_rules! self_type_dependency_only {
+    ($($path:ty),*) => {
         $(
-            impl<T: GetInnerTypeDependencies> GetInnerTypeDependencies for $path {
-                fn register_type_dependencies(registry: &mut TypeRegistry) {
-                    T::register_type_dependencies(registry);
+            impl $crate::bindings::function::script_function::GetInnerTypeDependencies for $path {
+                fn register_type_dependencies(registry: &mut bevy::reflect::TypeRegistry) {
+                    registry.register::<$path>();
                 }
             }
         )*
     };
 }
 
-recursive_type_dependencies!(T: Val<T>, T: Ref<'_, T>, T: Mut<'_, T>);
+macro_rules! recursive_type_dependencies {
+    ($(($path:path where $($bound:ident : $bound_val:path),*)),*)  => {
+        $(
+            impl<$($bound : $bound_val),*> GetInnerTypeDependencies for $path {
+                fn register_type_dependencies(registry: &mut TypeRegistry) {
+                    $(
+                        registry.register::<$bound>();
+                    )*
+                }
+            }
+        )*
+    };
+}
+
+no_type_dependencies!(ReflectReference, InteropError);
+self_type_dependency_only!(WorldCallbackAccess);
+
+recursive_type_dependencies!(
+    (Val<T> where T: GetTypeRegistration),
+    (Ref<'_, T>  where T: GetTypeRegistration),
+    (Mut<'_, T>  where T: GetTypeRegistration),
+    (Result<T, InteropError>  where T: GetTypeRegistration),
+    (Option<T>  where T: GetTypeRegistration),
+    (Vec<T>  where T: GetTypeRegistration)
+);
+
+recursive_type_dependencies!(
+    (HashMap<K,V> where K: GetTypeRegistration, V: GetTypeRegistration)
+);
 
 pub trait GetFunctionTypeDependencies<Marker> {
     fn register_type_dependencies(registry: &mut TypeRegistry);

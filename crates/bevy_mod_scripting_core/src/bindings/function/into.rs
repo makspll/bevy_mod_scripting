@@ -10,6 +10,7 @@ use crate::{
     bindings::{ReflectReference, WorldGuard},
     error::InteropError,
     prelude::ScriptValue,
+    self_type_dependency_only,
 };
 
 use super::from::Val;
@@ -24,17 +25,22 @@ impl IntoScript for ScriptValue {
     }
 }
 
+self_type_dependency_only!(ScriptValue);
+
 impl IntoScript for () {
     fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::Unit)
     }
 }
 
+self_type_dependency_only!(());
+
 impl IntoScript for bool {
-    fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
+    fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::Bool(self))
     }
 }
+self_type_dependency_only!(bool);
 
 macro_rules! impl_into_with_downcast {
     ($variant:tt as $cast:ty [$($ty:ty),*]) => {
@@ -51,6 +57,9 @@ macro_rules! impl_into_with_downcast {
 
 impl_into_with_downcast!(Integer as i64 [i8, i16, i32, i64, i128, u8, u16, u32, u64, u128, usize, isize]);
 impl_into_with_downcast!(Float as f64 [f32, f64]);
+self_type_dependency_only!(
+    i8, i16, i32, i64, i128, u8, u16, u32, u64, u128, usize, isize, f32, f64
+);
 
 macro_rules! impl_into_stringlike {
     ($id:ident,[ $(($ty:ty => $conversion:expr)),*]) => {
@@ -76,11 +85,15 @@ impl_into_stringlike!(
     ]
 );
 
+self_type_dependency_only!(String, char, PathBuf, OsString);
+
 impl IntoScript for &'static str {
     fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::String(Cow::Borrowed(self)))
     }
 }
+
+self_type_dependency_only!(&'static str);
 
 impl IntoScript for ReflectReference {
     fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
