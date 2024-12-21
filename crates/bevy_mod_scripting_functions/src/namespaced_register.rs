@@ -155,10 +155,7 @@ impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
         F: IntoFunction<'static, M> + 'static,
     {
         {
-            let registry = self
-                .world
-                .get_resource_mut::<AppFunctionRegistry>()
-                .expect("AppFunctionRegistry resource not found");
+            let registry = self.world.get_resource_or_init::<AppFunctionRegistry>();
             let mut registry = registry.write();
             registry.register_namespaced_function::<S, _, F, M>(name, function)?;
         }
@@ -171,10 +168,8 @@ impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
         F: IntoFunction<'static, M> + 'static,
     {
         {
-            let registry = self
-                .world
-                .get_resource_mut::<AppFunctionRegistry>()
-                .expect("AppFunctionRegistry resource not found");
+            let registry = self.world.get_resource_or_init::<AppFunctionRegistry>();
+
             let mut registry = registry.write();
             registry.overwrite_namespaced_function::<S, _, F, M>(name, function);
         }

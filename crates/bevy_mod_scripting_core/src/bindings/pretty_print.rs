@@ -1,4 +1,4 @@
-use crate::reflection_extensions::TypeIdExtensions;
+use crate::reflection_extensions::{FakeType, TypeIdExtensions};
 
 use super::{
     script_value::ScriptValue, ReflectBase, ReflectBaseType, ReflectReference, WorldGuard,
@@ -364,6 +364,10 @@ impl DisplayWithWorld for ReflectBaseType {
 
 impl DisplayWithWorld for TypeId {
     fn display_with_world(&self, world: WorldGuard) -> String {
+        if *self == TypeId::of::<FakeType>() {
+            return "Dynamic Type".to_owned();
+        }
+
         let type_registry = world.type_registry();
         let type_registry = type_registry.read();
 

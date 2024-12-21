@@ -345,7 +345,6 @@ impl InteropError {
     /// Thrown when an error happens in a function call. The inner error provides details on the error.
     pub fn function_interop_error(
         function_info: &FunctionInfo,
-        argument_info: Option<&ArgInfo>,
         error: InteropError,
     ) -> Self {
         Self(Arc::new(InteropErrorInner::FunctionInteropError {
@@ -353,16 +352,6 @@ impl InteropError {
                 .name()
                 .map(|s| s.to_string())
                 .unwrap_or("<unnamed function>".to_owned()),
-            argument: argument_info
-                .map(|a| {
-                    format!(
-                        "{}({}) {}",
-                        a.index(),
-                        a.ownership(),
-                        a.name().unwrap_or("<no_name>")
-                    )
-                })
-                .unwrap_or("None".to_owned()),
             error,
         }))
     }
@@ -372,6 +361,13 @@ impl InteropError {
     /// I.e. mismatch in args, or invalid number of arguments
     pub fn function_call_error(inner: FunctionError) -> Self {
         Self(Arc::new(InteropErrorInner::FunctionCallError { inner }))
+    }
+
+    pub fn function_arg_conversion_error(argument: String, error: InteropError) -> Self {
+        Self(Arc::new(InteropErrorInner::FunctionArgConversionError {
+            argument,
+            error
+        }))
     }
 
     pub fn external_error(error: Box<dyn std::error::Error + Send + Sync>) -> Self {
@@ -464,8 +460,11 @@ pub enum InteropErrorInner {
     },
     FunctionInteropError {
         function_name: String,
-        argument: String,
         error: InteropError,
+    },
+    FunctionArgConversionError {
+        argument: String,
+        error: InteropError
     },
     OtherError {
         error: Box<dyn std::error::Error + Send + Sync>,
@@ -590,10 +589,16 @@ impl DisplayWithWorld for InteropErrorInner {
             InteropErrorInner::MissingWorld => {
                 "Missing world. The world was not initialized in the script context.".to_owned()
             },
-            InteropErrorInner::FunctionInteropError { function_name, argument, error } => {
+            InteropErrorInner::FunctionInteropError { function_name, error } => {
                 format!(
-                    "Error in function: {} argument: {} error: {}",
+                    "Error in function {}: {}",
                     function_name,
+                    error.display_with_world(world)
+                )
+            },
+            InteropErrorInner::FunctionArgConversionError { argument, error } => {
+                format!(
+                    "Error converting argument {}: {}",
                     argument,
                     error.display_with_world(world)
                 )

@@ -98,12 +98,13 @@ pub trait TypeIdExtensions {
     fn or_fake_id(&self) -> TypeId;
 }
 
+pub(crate) struct FakeType;
+
 impl TypeIdExtensions for Option<TypeId> {
     fn or_fake_id(&self) -> TypeId {
-        struct UknownType;
         match self {
             Some(t) => *t,
-            None => TypeId::of::<UknownType>(),
+            None => TypeId::of::<FakeType>(),
         }
     }
 }

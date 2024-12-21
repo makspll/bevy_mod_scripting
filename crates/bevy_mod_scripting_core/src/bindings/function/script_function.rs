@@ -11,14 +11,14 @@ use bevy::{
     prelude::{AppFunctionRegistry, IntoFunction, World},
     reflect::{
         func::{DynamicFunction, FunctionInfo},
-        GetTypeRegistration, PartialReflect, TypeRegistration, TypeRegistry,
+        FromReflect, GetTypeRegistration, PartialReflect, TypeRegistration, TypeRegistry, Typed,
     },
 };
 use std::collections::HashMap;
 use std::sync::Arc;
 
 #[diagnostic::on_unimplemented(
-    message = "Only functions with all arguments impplementing FromScript and return values supporting IntoScript are supported. use assert_impls_into_script!(MyArg) and assert_impls_from_script!(MyReturnType) to verify yours do.",
+    message = "Only functions with all arguments impplementing FromScript and return values supporting IntoScript are supported. Registering functions also requires they implement GetInnerTypeDependencies",
     note = "If you're trying to return a non-primitive type, you might need to use Val<T> Ref<T> or Mut<T> wrappers"
 )]
 pub trait ScriptFunction<'env, Marker> {
@@ -54,13 +54,16 @@ macro_rules! self_type_dependency_only {
 }
 
 macro_rules! recursive_type_dependencies {
-    ($(($path:path where $($bound:ident : $bound_val:path),*)),*)  => {
+    ($( ($path:path where $($bound:ident : $($bound_val:path);*),* $(=> with $self_:ident)?) ),* )  => {
         $(
-            impl<$($bound : $bound_val),*> GetInnerTypeDependencies for $path {
+            impl<$($bound : $($bound_val +)*),*> GetInnerTypeDependencies for $path {
                 fn register_type_dependencies(registry: &mut TypeRegistry) {
                     $(
                         registry.register::<$bound>();
                     )*
+                    $(
+                        registry.register::<$self_>();
+                    )?
                 }
             }
         )*
@@ -75,8 +78,8 @@ recursive_type_dependencies!(
     (Ref<'_, T>  where T: GetTypeRegistration),
     (Mut<'_, T>  where T: GetTypeRegistration),
     (Result<T, InteropError>  where T: GetTypeRegistration),
-    (Option<T>  where T: GetTypeRegistration),
-    (Vec<T>  where T: GetTypeRegistration)
+    (Option<T>  where T: GetTypeRegistration;FromReflect;Typed => with Self),
+    (Vec<T>  where T: GetTypeRegistration;FromReflect;Typed => with Self)
 );
 
 recursive_type_dependencies!(
@@ -129,13 +132,19 @@ macro_rules! impl_script_function {
                         $( let $callback = world.clone(); )?
                         let world = world.try_read()?;
                         // TODO: snapshot the accesses and release them after
-                        $( let $param = <$param>::from_script($param, world.clone())?; )*
+                        #[allow(unused_mut,unused_variables)]
+                        let mut current_arg = 0;
+                        $(
+                            current_arg += 1;
+                            let $param = <$param>::from_script($param, world.clone())
+                                .map_err(|e| InteropError::function_arg_conversion_error(current_arg.to_string(), e))?;
+                        )*
                         let out = self( $( $callback, )? $( $param.into(), )* );
                         $(
                             let $out = out?;
                             let out = $out;
                         )?
-                        out.into_script(world.clone())
+                        out.into_script(world.clone()).map_err(|e| InteropError::function_arg_conversion_error("return value".to_owned(), e))
                     })();
                     let script_value: ScriptValue = res.into();
                     script_value

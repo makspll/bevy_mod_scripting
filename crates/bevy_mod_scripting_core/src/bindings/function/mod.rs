@@ -68,9 +68,7 @@ impl CallScriptFunction for DynamicFunction<'_> {
             .map_err(InteropError::function_call_error)?;
 
         match return_val.try_into_or_boxed::<ScriptValue>() {
-            Ok(ScriptValue::Error(e)) => {
-                Err(InteropError::function_interop_error(self.info(), None, e))
-            }
+            Ok(ScriptValue::Error(e)) => Err(InteropError::function_interop_error(self.info(), e)),
             Ok(v) => Ok(v),
             Err(b) => {
                 let allocator = world.allocator();

@@ -42,10 +42,7 @@ impl<S: 'static> RegisterScriptFunction for NamespaceBuilder<'_, S> {
         F: ScriptFunction<'static, M> + GetFunctionTypeDependencies<M>,
     {
         {
-            let registry = self
-                .world
-                .get_resource_mut::<AppTypeRegistry>()
-                .expect("AppTypeRegistry resource not found");
+            let registry = self.world.get_resource_or_init::<AppTypeRegistry>();
             let mut registry = registry.write();
             F::register_type_dependencies(&mut registry);
         }
