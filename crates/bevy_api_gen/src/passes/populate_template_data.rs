@@ -5,7 +5,7 @@ use rustc_ast::Attribute;
 use rustc_hir::def_id::{DefId, LOCAL_CRATE};
 use rustc_middle::ty::{
     print::Print, AdtDef, FieldDef, GenericArg, GenericParamDefKind, ParamTy, TraitRef, Ty, TyKind,
-    TypeFoldable,
+    TypeFoldable, TypingEnv,
 };
 use rustc_span::Symbol;
 
@@ -148,9 +148,10 @@ pub(crate) fn process_functions(ctxt: &BevyCtxt, fns: &[FunctionContext]) -> Vec
                 .zip(fn_sig.inputs())
                 .enumerate()
                 .map(|(idx, (ident, ty))| {
-                    let normalized_ty = ctxt
-                        .tcx
-                        .normalize_erasing_regions(ctxt.tcx.param_env(fn_ctxt.def_id), *ty);
+                    let normalized_ty = ctxt.tcx.normalize_erasing_regions(
+                        TypingEnv::non_body_analysis(ctxt.tcx, fn_ctxt.def_id),
+                        *ty,
+                    );
                     Arg {
                         ident: ident.to_string(),
                         ty: ty_to_string(ctxt, normalized_ty, false),
@@ -160,9 +161,10 @@ pub(crate) fn process_functions(ctxt: &BevyCtxt, fns: &[FunctionContext]) -> Vec
                 })
                 .collect();
 
-            let out_ty = ctxt
-                .tcx
-                .normalize_erasing_regions(ctxt.tcx.param_env(fn_ctxt.def_id), fn_sig.output());
+            let out_ty = ctxt.tcx.normalize_erasing_regions(
+                TypingEnv::non_body_analysis(ctxt.tcx, fn_ctxt.def_id),
+                fn_sig.output(),
+            );
 
             let output = Output {
                 ty: ty_to_string(ctxt, out_ty, false),
@@ -288,16 +290,14 @@ pub(crate) enum ProxyType {
     Ref,
     RefMut,
     Val,
-    NonReflectVal,
 }
 
 impl ProxyType {
     pub fn to_ident_str(self) -> &'static str {
         match self {
-            ProxyType::Ref => "LuaReflectRefProxy",
-            ProxyType::RefMut => "LuaReflectRefMutProxy",
-            ProxyType::Val => "LuaReflectValProxy",
-            ProxyType::NonReflectVal => "LuaValProxy",
+            ProxyType::Ref => "Ref",
+            ProxyType::RefMut => "Mut",
+            ProxyType::Val => "Val",
         }
     }
 }

@@ -6,9 +6,9 @@ use rustc_infer::{
     infer::{InferCtxt, TyCtxtInferExt},
     traits::{Obligation, ObligationCause},
 };
-use rustc_middle::ty::{Ty, TypingMode};
+use rustc_middle::ty::{Ty, TypingEnv, TypingMode};
 use rustc_span::DUMMY_SP;
-use rustc_trait_selection::traits::ObligationCtxt;
+use rustc_trait_selection::{regions::InferCtxtRegionExt, traits::ObligationCtxt};
 
 use crate::{Args, BevyCtxt};
 
@@ -134,7 +134,10 @@ fn impl_matches<'tcx>(infcx: &InferCtxt<'tcx>, ty: Ty<'tcx>, impl_def_id: DefId)
 
     let impl_may_apply = |impl_def_id| {
         let ocx = ObligationCtxt::new(infcx);
-        let param_env = tcx.param_env_reveal_all_normalized(impl_def_id);
+        // let param_env = infcx.resolve_regions(impl_def_id);
+        // let param_env = tcx.param_env_reveal_all_normalized(impl_def_id);
+        let typing_env = TypingEnv::non_body_analysis(tcx, impl_def_id);
+        let param_env = typing_env.with_post_analysis_normalized(tcx).param_env;
         let impl_args = infcx.fresh_args_for_item(DUMMY_SP, impl_def_id);
 
         let impl_trait_ref = tcx

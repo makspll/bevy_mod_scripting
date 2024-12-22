@@ -7,7 +7,7 @@ use rustc_hir::{
 };
 use rustc_infer::infer::TyCtxtInferExt;
 use rustc_middle::ty::{
-    AdtKind, AssocKind, FieldDef, FnSig, ParamEnv, Ty, TyCtxt, TyKind, TypingMode,
+    AdtKind, AssocKind, FieldDef, FnSig, ParamEnv, Ty, TyCtxt, TyKind, TypingEnv, TypingMode,
 };
 use rustc_span::Symbol;
 use rustc_trait_selection::infer::InferCtxtExt;
@@ -36,8 +36,8 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                         info!("ignoring enum variant: {}::{} due to 'reflect(ignore)' attribute", ctxt.tcx.item_name(def_id), variant.name);
                         todo!();
                     }
-
-                    process_fields(ctxt.tcx, &ctxt.meta_loader, &ctxt.reflect_types, &ctxt.cached_traits, variant.fields.iter(), ctxt.tcx.param_env(variant.def_id))
+                    let param_env = TypingEnv::non_body_analysis(ctxt.tcx, variant.def_id);
+                    process_fields(ctxt.tcx, &ctxt.meta_loader, &ctxt.reflect_types, &ctxt.cached_traits, variant.fields.iter(), param_env)
                 }).collect::<Vec<_>>();
 
                 strats.iter().for_each(|(f_did, strat)| match strat {
@@ -52,7 +52,8 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
 
             },
             AdtKind::Struct => {
-                let fields = process_fields(ctxt.tcx, &ctxt.meta_loader, &ctxt.reflect_types,&ctxt.cached_traits, adt_def.all_fields(), ctxt.tcx.param_env(def_id));
+                let param_env = TypingEnv::non_body_analysis(ctxt.tcx, def_id);
+                let fields = process_fields(ctxt.tcx, &ctxt.meta_loader, &ctxt.reflect_types,&ctxt.cached_traits, adt_def.all_fields(), param_env);
                 fields.iter().for_each(|(f_did, strat)| match strat {
                     ReflectionStrategy::Reflection => report_field_not_supported(ctxt.tcx, *f_did, def_id, None, "type is neither a proxy nor a type expressible as lua primitive"),
                     ReflectionStrategy::Filtered => report_field_not_supported(ctxt.tcx, *f_did, def_id, None, "field has a 'reflect(ignore)' attribute"),
@@ -118,7 +119,8 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                         ctxt.tcx.item_name(def_id)
                     );
 
-                    let param_env = ctxt.tcx.param_env(fn_did);
+                    // let param_env = ctxt.tcx.param_env(fn_did);
+                    let param_env = TypingEnv::non_body_analysis(ctxt.tcx, def_id);
                     let sig: FnSig = ctxt.tcx.normalize_erasing_late_bound_regions(
                         param_env,
                         ctxt.tcx.fn_sig(fn_did).instantiate_identity(),
@@ -238,10 +240,9 @@ fn report_field_not_supported(
     variant_did: Option<DefId>,
     reason: &'static str,
 ) {
-    let normalised_ty = tcx.normalize_erasing_regions(
-        tcx.param_env(type_did),
-        tcx.type_of(f_did).instantiate_identity(),
-    );
+    let param_env = TypingEnv::non_body_analysis(tcx, type_did);
+    let normalised_ty =
+        tcx.normalize_erasing_regions(param_env, tcx.type_of(f_did).instantiate_identity());
     info!(
         "Ignoring field: `{}:{}` on type: `{}` in variant: `{}` as it is not supported: `{}`",
         tcx.item_name(f_did),
@@ -259,7 +260,7 @@ fn process_fields<'tcx, 'f, I: Iterator<Item = &'f FieldDef>>(
     reflect_types: &IndexMap<DefId, ReflectType<'tcx>>,
     cached_traits: &CachedTraits,
     fields: I,
-    param_env: ParamEnv<'tcx>,
+    param_env: TypingEnv<'tcx>,
 ) -> Vec<(DefId, ReflectionStrategy)> {
     fields
         .map(move |f| {
@@ -364,7 +365,7 @@ fn type_is_adt_and_reflectable<'tcx>(
 /// Checks if the type can be used directly as a lua function argument, by checking if it implements the FromLua trait
 fn type_is_supported_as_non_proxy_arg<'tcx>(
     tcx: TyCtxt<'tcx>,
-    param_env: ParamEnv<'tcx>,
+    param_env: TypingEnv<'tcx>,
     cached_traits: &CachedTraits,
     ty: Ty<'tcx>,
 ) -> bool {
@@ -380,7 +381,7 @@ fn type_is_supported_as_non_proxy_arg<'tcx>(
 /// Checks if the type can be used directly as a lua function output
 fn type_is_supported_as_non_proxy_return_val<'tcx>(
     tcx: TyCtxt<'tcx>,
-    param_env: ParamEnv<'tcx>,
+    param_env: TypingEnv<'tcx>,
     cached_traits: &CachedTraits,
     ty: Ty<'tcx>,
 ) -> bool {
@@ -401,12 +402,12 @@ fn type_is_supported_as_non_proxy_return_val<'tcx>(
 
 pub(crate) fn impls_trait<'tcx>(
     tcx: TyCtxt<'tcx>,
-    param_env: ParamEnv<'tcx>,
+    param_env: TypingEnv<'tcx>,
     ty: Ty<'tcx>,
     trait_did: DefId,
 ) -> bool {
     tcx.infer_ctxt()
-        .build(TypingMode::non_body_analysis())
-        .type_implements_trait(trait_did, [ty], param_env)
+        .build(param_env.typing_mode)
+        .type_implements_trait(trait_did, [ty], param_env.param_env)
         .must_apply_modulo_regions()
 }
