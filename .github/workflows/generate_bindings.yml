@@ -65,18 +65,26 @@ jobs:
     - name: Prune Output
       run: |
         find ${{ env.OUTPUT_PATH }} -type f ! -name "*.rs" -delete
+    - name: Check for changes
+      id: check_changes
+      run: |
+        if [[ -n $(git status --porcelain) ]]; then
+            echo "changes=true" >> "$GITHUB_OUTPUT"; 
+        fi
     - name: Commit Changes
+      if: steps.check_changes.outputs.changes
       run: |
         git checkout -b ${{ env.BRANCH_NAME }} || git checkout ${{ env.BRANCH_NAME }}
         git add -A
         git commit -m "chore(codegen): update bevy bindings"
         git push -u origin ${{ env.BRANCH_NAME }} --force
     - uses: jwalton/gh-find-current-pr@master
+      if: steps.check_changes.outputs.changes
       id: findPR
       with:
         state: all
     - name: Create Or Update PR
-      if: success() && steps.findPR.outputs.number
+      if: steps.check_changes.outputs.changes && success() && steps.findPR.outputs.number 
       run: |
         gh pr list --base feature/bevy-system-refactor --search "chore(codegen): update bevy bindings" --json number > prs.json
         if [ $(jq '. | length' prs.json) -eq 0 ]; then
