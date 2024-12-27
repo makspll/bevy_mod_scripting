@@ -62,6 +62,9 @@ jobs:
       run: |
         ls -la ${{ env.BEVY_PATH }}
         cd ${{ env.BEVY_PATH }} && cargo bevy-api-gen collect --output ${{ env.OUTPUT_PATH }} --template-args '{ "self_is_bms_lua": true}'
+    - name: Prune Output
+      run: |
+        find ${{ env.OUTPUT_PATH }} -type f ! -name "*.rs" -delete
     - name: Commit Changes
       run: |
         git checkout -b ${{ env.BRANCH_NAME }} || git checkout ${{ env.BRANCH_NAME }}
