@@ -1,0 +1,58 @@
+name: Generate Bindings (Bevy, Glam)
+
+on:
+  workflow_call:
+    # inputs:
+    #   config-path:
+    #     required: true
+    #     type: string
+    # secrets:
+    #   token:
+    #     required: true
+  workflow_dispatch:
+
+env:
+    RUST_TOOLCHAIN: nightly-2024-12-15
+    BEVY_API_GEN_PATH: ./crates/bevy_api_gen
+    CODEGEN_PATH: ./target/codegen
+    OUTPUT_PATH: ./crates/bevy_mod_scripting_functions/src/bevy/
+    BEVY_FEATURES: bevy_asset,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded
+jobs:
+  generate_bindings:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ env.RUST_TOOLCHAIN }}
+        components: rust-src, rustc-dev, llvm-tools-preview
+        override: true
+    - name: Install bevy_api_gen binaries
+      run: cargo install --path ${{ env.BEVY_API_GEN_PATH }}
+    - name: read bevy workspace version
+      uses: SebRollen/toml-action@v1.2.0
+      id: read_toml
+      with:
+        file: 'Cargo.toml'
+        field: 'workspace.dependencies.bevy.version'
+    - name: Clone Bevy
+      run: 
+        mkdir ${{ env.CODEGEN_PATH }} || true
+        git clone https://github.com/bevyengine/bevy --branch v${{ steps.read_toml.outputs.value }} --depth 1 ${{ env.CODEGEN_PATH }}/bevy
+        cd ${{ env.CODEGEN_PATH }}/bevy && git fetch --tags && git checkout v${{ steps.read_toml.outputs.value }}
+    - name: Generate bevy bindings
+      working-directory: ${{ env.CODEGEN_PATH }}/bevy
+      run: >
+        cargo bevy-api-gen generate --output ${{ env.OUTPUT_PATH }} --template-args '{ "self_is_bms_lua": true}' --features ${{ env.BEVY_FEATURES }} -vv
+        cargo bevy-api-gen collect --output ${{ env.OUTPUT_PATH }} --template-args '{ "self_is_bms_lua": true}'
+    - name: Commit changes
+      run: |
+        git checkout -b update-bevy-bindings-${{ github.run_id }}-$GITHUB_RUN_ATTEMPT 
+        git add -A
+        git commit -m "chore(codegen): update bevy bindings"
+        git push -u origin update-bevy-bindings-${{ github.run_id }}-$GITHUB_RUN_ATTEMPT
+    - name: Create PR
+      run: |
+        gh pr create --title "chore(codegen): update bevy bindings" --body "This PR updates the bevy bindings" --base ${{ github.ref }} --head update-bevy-bindings-${{ github.run_id }}-$GITHUB_RUN_ATTEMPT
