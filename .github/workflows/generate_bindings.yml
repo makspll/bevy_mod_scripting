@@ -20,6 +20,8 @@ env:
     BRANCH_NAME: update-bevy-bindings-${{ github.run_id }}
 jobs:
   generate_bindings:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
