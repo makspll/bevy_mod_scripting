@@ -17,19 +17,24 @@ env:
     BEVY_PATH: ${{ github.workspace }}/target/codegen/bevy
     OUTPUT_PATH: ${{ github.workspace }}/crates/bevy_mod_scripting_functions/src/bevy/
     BEVY_FEATURES: bevy_asset,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded
+    BRANCH_NAME: update-bevy-bindings-${{ github.run_id }}
 jobs:
   generate_bindings:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Install toolchain
+    - name: Setup Bot GitHub Credentials
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+    - name: Install Rust Toolchain
       uses: actions-rs/toolchain@v1
       with:
         toolchain: ${{ env.RUST_TOOLCHAIN }}
         components: rust-src, rustc-dev, llvm-tools-preview
         override: true
-    - name: Install bevy_api_gen binaries
+    - name: Install bevy_api_gen Binaries
       run: cargo install --path ${{ env.BEVY_API_GEN_PATH }}
     - name: read bevy workspace version
       uses: SebRollen/toml-action@v1.2.0
@@ -46,19 +51,19 @@ jobs:
         git clone https://github.com/bevyengine/bevy --branch v${{ steps.read_toml.outputs.value }} --depth 1 ${{ env.BEVY_PATH }}
         cd ${{ env.BEVY_PATH }} && git fetch --tags && git checkout v${{ steps.read_toml.outputs.value }}
         ls -la ${{ env.BEVY_PATH }}
-    - name: Generate bevy bindings
+    - name: Generate Bevy Bindings
       run: |
         cd ${{ env.BEVY_PATH }} && cargo bevy-api-gen generate --output ${{ env.OUTPUT_PATH }} --template-args '{ "self_is_bms_lua": true}' --features ${{ env.BEVY_FEATURES }} -vv
-    - name: Collect bevy bindings
+    - name: Collect Bevy Bindings
       run: |
         ls -la ${{ env.BEVY_PATH }}
         cd ${{ env.BEVY_PATH }} && cargo bevy-api-gen collect --output ${{ env.OUTPUT_PATH }} --template-args '{ "self_is_bms_lua": true}'
-    - name: Commit changes
+    - name: Commit Changes
       run: |
-        git checkout -b update-bevy-bindings-${{ github.run_id }}
+        git checkout -b ${{ env.BRANCH_NAME }} || git checkout ${{ env.BRANCH_NAME }}
         git add -A
         git commit -m "chore(codegen): update bevy bindings"
-        git push -u origin update-bevy-bindings-${{ github.run_id }}
-    - name: Create PR
+        git push -u origin ${{ env.BRANCH_NAME }} --force
+    - name: Create Or Update PR
       run: |
-        gh pr create --title "chore(codegen): update bevy bindings" --body "This PR updates the bevy bindings" --base ${{ github.ref }} --head update-bevy-bindings-${{ github.run_id }}-$GITHUB_RUN_ATTEMPT
+        gh pr create --title "chore(codegen): update bevy bindings" --body "This PR updates the bevy bindings" --base ${{ github.ref }} --head update-bevy-bindings-${{ github.run_id }}-$GITHUB_RUN_ATTEMPT || true
