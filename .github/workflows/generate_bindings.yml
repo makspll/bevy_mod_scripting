@@ -39,7 +39,7 @@ jobs:
         field: 'workspace.dependencies.bevy.version'
     - name: Clone Bevy
       run: 
-        mkdir -p ${{ env.CODEGEN_PATH }} || true
+        mkdir -p ${{ env.CODEGEN_PATH }}/bevy
         git clone https://github.com/bevyengine/bevy --branch v${{ steps.read_toml.outputs.value }} --depth 1 ${{ env.CODEGEN_PATH }}/bevy
         cd ${{ env.CODEGEN_PATH }}/bevy && git fetch --tags && git checkout v${{ steps.read_toml.outputs.value }}
     - name: Generate bevy bindings
