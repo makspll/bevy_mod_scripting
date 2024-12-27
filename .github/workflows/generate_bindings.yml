@@ -43,7 +43,7 @@ jobs:
         mkdir -p ${{ env.BEVY_PATH }}
     - name: Clone Bevy
       run: |
-        git clone https://github.com/bevyengine/bevy --branch v${{ steps.read_toml.outputs.value }} --depth 1 ${{ env.BEVY_PATH }} .
+        git clone https://github.com/bevyengine/bevy --branch v${{ steps.read_toml.outputs.value }} --depth 1 ${{ env.BEVY_PATH }}
         cd ${{ env.BEVY_PATH }} && git fetch --tags && git checkout v${{ steps.read_toml.outputs.value }}
         ls -la ${{ env.BEVY_PATH }}
     - name: Generate bevy bindings
