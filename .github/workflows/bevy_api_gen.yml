@@ -131,3 +131,7 @@ jobs:
         with:
           command: doc
           args: --profile=ephemeral-build
+  bindings:
+    name: Generate Bindings - bevy_api_gen
+    uses: ./.github/workflows/generate_bindings.yml
+    secrets: inherit
