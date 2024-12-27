@@ -45,11 +45,13 @@ jobs:
       run: |
         git clone https://github.com/bevyengine/bevy --branch v${{ steps.read_toml.outputs.value }} --depth 1 ${{ env.BEVY_PATH }} .
         cd ${{ env.BEVY_PATH }} && git fetch --tags && git checkout v${{ steps.read_toml.outputs.value }}
+        ls -la ${{ env.BEVY_PATH }}
     - name: Generate bevy bindings
       run: |
         cd ${{ env.BEVY_PATH }} && cargo bevy-api-gen generate --output ${{ env.OUTPUT_PATH }} --template-args '{ "self_is_bms_lua": true}' --features ${{ env.BEVY_FEATURES }} -vv
     - name: Collect bevy bindings
       run: |
+        ls -la ${{ env.BEVY_PATH }}
         cd ${{ env.BEVY_PATH }} && cargo bevy-api-gen collect --output ${{ env.OUTPUT_PATH }} --template-args '{ "self_is_bms_lua": true}'
     - name: Commit changes
       run: |
