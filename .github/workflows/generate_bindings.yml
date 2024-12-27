@@ -68,6 +68,11 @@ jobs:
         git add -A
         git commit -m "chore(codegen): update bevy bindings"
         git push -u origin ${{ env.BRANCH_NAME }} --force
+    - uses: jwalton/gh-find-current-pr@master
+      id: findPR
+      with:
+        state: all
     - name: Create Or Update PR
+      if: success() && steps.findPR.outputs.number
       run: |
-        gh pr create --title "chore(codegen): update bevy bindings" --body "This PR updates the bevy bindings. #${{ github.event.number }}" --base ${{ github.ref }} --head ${{ env.BRANCH_NAME }} || true
+        gh pr create --title "chore(codegen): update bevy bindings" --body "This PR updates the bevy bindings. #${{ steps.findPR.outputs.number }}" --base ${{ github.ref }} --head ${{ env.BRANCH_NAME }} || true
