@@ -17,7 +17,7 @@ env:
     BEVY_PATH: ${{ github.workspace }}/target/codegen/bevy
     OUTPUT_PATH: ${{ github.workspace }}/crates/bevy_mod_scripting_functions/src/bevy/
     BEVY_FEATURES: bevy_asset,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded
-    BRANCH_NAME: update-bevy-bindings-${{ github.run_id }}
+    BRANCH_NAME: __update-bevy-bindings-${{ github.head_ref || github.ref_name }} 
     GH_TOKEN: ${{ github.token }}
 jobs:
   generate_bindings:
@@ -78,4 +78,7 @@ jobs:
     - name: Create Or Update PR
       if: success() && steps.findPR.outputs.number
       run: |
-        gh pr create --title "chore(codegen): update bevy bindings" --body "This PR updates the bevy bindings. #${{ steps.findPR.outputs.number }}" --base ${{ github.ref }} --head ${{ env.BRANCH_NAME }} || true
+        gh pr list --base feature/bevy-system-refactor --search "chore(codegen): update bevy bindings" --json number > prs.json
+        if [ $(jq '. | length' prs.json) -eq 0 ]; then
+          gh pr create --title "chore(codegen): update bevy bindings" --body "This PR updates the bevy bindings. #${{ steps.findPR.outputs.number }}" --base ${{ github.ref }} --head ${{ env.BRANCH_NAME }} || true
+        fi
