@@ -136,6 +136,7 @@ jobs:
   bindings:
     permissions:
       contents: write
+      pull-requests: write
     name: Generate Bindings - bevy_api_gen
     uses: ./.github/workflows/generate_bindings.yml
     secrets: inherit
