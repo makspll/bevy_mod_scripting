@@ -13,9 +13,9 @@ on:
 
 env:
     RUST_TOOLCHAIN: nightly-2024-12-15
-    BEVY_API_GEN_PATH: ./crates/bevy_api_gen
-    BEVY_PATH: ./target/codegen/bevy
-    OUTPUT_PATH: ./crates/bevy_mod_scripting_functions/src/bevy/
+    BEVY_API_GEN_PATH: ${{ github.workspace }}/crates/bevy_api_gen
+    BEVY_PATH: ${{ github.workspace }}/target/codegen/bevy
+    OUTPUT_PATH: ${{ github.workspace }}/crates/bevy_mod_scripting_functions/src/bevy/
     BEVY_FEATURES: bevy_asset,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded
 jobs:
   generate_bindings:
