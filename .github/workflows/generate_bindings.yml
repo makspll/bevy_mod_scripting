@@ -37,15 +37,19 @@ jobs:
       with:
         file: 'Cargo.toml'
         field: 'workspace.dependencies.bevy.version'
+    - name: Prepare Directories
+      run: |
+        mkdir -p ${{ env.OUTPUT_PATH }}
+        mkdir -p ${{ env.BEVY_PATH }}
     - name: Clone Bevy
       run: |
-        mkdir -p ${{ env.BEVY_PATH }}
         git clone https://github.com/bevyengine/bevy --branch v${{ steps.read_toml.outputs.value }} --depth 1 ${{ env.BEVY_PATH }}
         cd ${{ env.BEVY_PATH }} && git fetch --tags && git checkout v${{ steps.read_toml.outputs.value }}
     - name: Generate bevy bindings
       run: |
-        mkdir -p ${{ env.OUTPUT_PATH }}
         cd ${{ env.BEVY_PATH }} && cargo bevy-api-gen generate --output ${{ env.OUTPUT_PATH }} --template-args '{ "self_is_bms_lua": true}' --features ${{ env.BEVY_FEATURES }} -vv
+    - name: Collect bevy bindings
+      run: |
         cd ${{ env.BEVY_PATH }} && cargo bevy-api-gen collect --output ${{ env.OUTPUT_PATH }} --template-args '{ "self_is_bms_lua": true}'
     - name: Commit changes
       run: |
