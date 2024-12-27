@@ -18,6 +18,7 @@ env:
     OUTPUT_PATH: ${{ github.workspace }}/crates/bevy_mod_scripting_functions/src/bevy/
     BEVY_FEATURES: bevy_asset,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded
     BRANCH_NAME: update-bevy-bindings-${{ github.run_id }}
+    GH_TOKEN: ${{ github.token }}
 jobs:
   generate_bindings:
     permissions:
@@ -68,4 +69,4 @@ jobs:
         git push -u origin ${{ env.BRANCH_NAME }} --force
     - name: Create Or Update PR
       run: |
-        gh pr create --title "chore(codegen): update bevy bindings" --body "This PR updates the bevy bindings" --base ${{ github.ref }} --head update-bevy-bindings-${{ github.run_id }}-$GITHUB_RUN_ATTEMPT || true
+        gh pr create --title "chore(codegen): update bevy bindings" --body "This PR updates the bevy bindings. #${{ github.event.number }}" --base ${{ github.ref }} --head ${{ env.BRANCH_NAME }} || true
