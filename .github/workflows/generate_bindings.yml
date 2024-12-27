@@ -45,6 +45,7 @@ jobs:
     - name: Generate bevy bindings
       working-directory: ${{ env.CODEGEN_PATH }}/bevy
       run: >
+        mkdir -p ${{ env.OUTPUT_PATH }}
         cargo bevy-api-gen generate --output ${{ env.OUTPUT_PATH }} --template-args '{ "self_is_bms_lua": true}' --features ${{ env.BEVY_FEATURES }} -vv
         cargo bevy-api-gen collect --output ${{ env.OUTPUT_PATH }} --template-args '{ "self_is_bms_lua": true}'
     - name: Commit changes
