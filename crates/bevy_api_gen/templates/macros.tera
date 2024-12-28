@@ -25,7 +25,7 @@ fn index(_self: Self, idx: usize, lua: &tealr::mlu::mlua::Lua) -> Result<tealr::
         _ => "unknown_axis"
     };
 
-    let parsed_path = bevy::reflect::ParsedPath::parse_static(path).expect("invariant");
+    let parsed_path = ::bevy::reflect::ParsedPath::parse_static(path).expect("invariant");
     curr_ref.index_path(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_reflection(parsed_path));
     crate::bindings::reference::LuaReflectReference(curr_ref).to_lua_proxy(lua)
 }
