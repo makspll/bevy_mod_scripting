@@ -11,8 +11,8 @@ pub mod bevy_hierarchy;
 pub mod bevy_ecs;
 pub mod bevy_time;
 pub struct LuaBevyScriptingPlugin;
-impl bevy::app::Plugin for LuaBevyScriptingPlugin {
-    fn build(&self, app: &mut bevy::prelude::App) {
+impl ::bevy::app::Plugin for LuaBevyScriptingPlugin {
+    fn build(&self, app: &mut ::bevy::prelude::App) {
         bevy_reflect::BevyReflectScriptingPlugin.build(app);
         bevy_math::BevyMathScriptingPlugin.build(app);
         bevy_input::BevyInputScriptingPlugin.build(app);

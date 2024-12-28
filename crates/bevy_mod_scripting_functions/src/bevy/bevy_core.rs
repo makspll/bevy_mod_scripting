@@ -10,8 +10,8 @@ use bevy_mod_scripting_core::{
 };
 use crate::*;
 pub struct BevyCoreScriptingPlugin;
-impl bevy::app::Plugin for BevyCoreScriptingPlugin {
-    fn build(&self, app: &mut bevy::prelude::App) {
+impl ::bevy::app::Plugin for BevyCoreScriptingPlugin {
+    fn build(&self, app: &mut ::bevy::prelude::App) {
         let mut world = app.world_mut();
         NamespaceBuilder::<::bevy::core::prelude::Name>::new(world)
             .overwrite_script_function(

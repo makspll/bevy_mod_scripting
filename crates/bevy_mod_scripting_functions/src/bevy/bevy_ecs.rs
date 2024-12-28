@@ -9,8 +9,8 @@ use bevy_mod_scripting_core::{
 };
 use crate::*;
 pub struct BevyEcsScriptingPlugin;
-impl bevy::app::Plugin for BevyEcsScriptingPlugin {
-    fn build(&self, app: &mut bevy::prelude::App) {
+impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
+    fn build(&self, app: &mut ::bevy::prelude::App) {
         let mut world = app.world_mut();
         NamespaceBuilder::<::bevy::ecs::entity::Entity>::new(world)
             .overwrite_script_function(

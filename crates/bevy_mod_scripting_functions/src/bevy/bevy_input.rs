@@ -12,8 +12,8 @@ use bevy_mod_scripting_core::{
 };
 use crate::*;
 pub struct BevyInputScriptingPlugin;
-impl bevy::app::Plugin for BevyInputScriptingPlugin {
-    fn build(&self, app: &mut bevy::prelude::App) {
+impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
+    fn build(&self, app: &mut ::bevy::prelude::App) {
         let mut world = app.world_mut();
         NamespaceBuilder::<::bevy::input::gamepad::Gamepad>::new(world)
             .overwrite_script_function(

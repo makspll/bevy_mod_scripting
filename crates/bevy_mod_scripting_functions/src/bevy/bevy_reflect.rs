@@ -8,8 +8,8 @@ use bevy_mod_scripting_core::{
 };
 use crate::*;
 pub struct BevyReflectScriptingPlugin;
-impl bevy::app::Plugin for BevyReflectScriptingPlugin {
-    fn build(&self, app: &mut bevy::prelude::App) {
+impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
+    fn build(&self, app: &mut ::bevy::prelude::App) {
         let mut world = app.world_mut();
         NamespaceBuilder::<::std::sync::atomic::AtomicBool>::new(world)
             .overwrite_script_function(
