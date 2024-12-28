@@ -44,7 +44,7 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 {
                     let output: bool = ::bevy::input::gamepad::Gamepad::pressed(
                             &_self,
-                            button_type.into(),
+                            button_type.into_inner(),
                         )
                         .into();
                     output
@@ -58,7 +58,7 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 {
                     let output: bool = ::bevy::input::gamepad::Gamepad::just_pressed(
                             &_self,
-                            button_type.into(),
+                            button_type.into_inner(),
                         )
                         .into();
                     output
@@ -72,7 +72,7 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 {
                     let output: bool = ::bevy::input::gamepad::Gamepad::just_released(
                             &_self,
-                            button_type.into(),
+                            button_type.into_inner(),
                         )
                         .into();
                     output

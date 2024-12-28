@@ -51,7 +51,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 |duration: f32, mode: Val<bevy::time::prelude::TimerMode>| {
                     let output: Val<bevy::time::prelude::Timer> = ::bevy::time::prelude::Timer::from_seconds(
                             duration,
-                            mode.into(),
+                            mode.into_inner(),
                         )
                         .into();
                     output
@@ -111,7 +111,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 {
                     let output: () = ::bevy::time::prelude::Timer::set_mode(
                             &mut _self,
-                            mode.into(),
+                            mode.into_inner(),
                         )
                         .into();
                     output

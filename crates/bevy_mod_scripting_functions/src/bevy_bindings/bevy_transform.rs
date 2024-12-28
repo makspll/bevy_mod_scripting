@@ -85,7 +85,7 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                 {
                     let output: Val<bevy::transform::components::GlobalTransform> = ::bevy::transform::components::GlobalTransform::mul_transform(
                             &_self,
-                            transform.into(),
+                            transform.into_inner(),
                         )
                         .into();
                     output
@@ -98,8 +98,8 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                     global_transform: Val<bevy::transform::components::GlobalTransform>|
                 {
                     let output: Val<bevy::transform::components::GlobalTransform> = ::bevy::transform::components::GlobalTransform::mul(
-                            _self.into(),
-                            global_transform.into(),
+                            _self.into_inner(),
+                            global_transform.into_inner(),
                         )
                         .into();
                     output
@@ -112,8 +112,8 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                     transform: Val<bevy::transform::components::Transform>|
                 {
                     let output: Val<bevy::transform::components::GlobalTransform> = ::bevy::transform::components::GlobalTransform::mul(
-                            _self.into(),
-                            transform.into(),
+                            _self.into_inner(),
+                            transform.into_inner(),
                         )
                         .into();
                     output
@@ -151,8 +151,8 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                     global_transform: Val<bevy::transform::components::GlobalTransform>|
                 {
                     let output: Val<bevy::transform::components::GlobalTransform> = ::bevy::transform::components::Transform::mul(
-                            _self.into(),
-                            global_transform.into(),
+                            _self.into_inner(),
+                            global_transform.into_inner(),
                         )
                         .into();
                     output
@@ -244,7 +244,7 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                 {
                     let output: Val<bevy::transform::components::Transform> = ::bevy::transform::components::Transform::mul_transform(
                             &_self,
-                            transform.into(),
+                            transform.into_inner(),
                         )
                         .into();
                     output
@@ -267,8 +267,8 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                     transform: Val<bevy::transform::components::Transform>|
                 {
                     let output: Val<bevy::transform::components::Transform> = ::bevy::transform::components::Transform::mul(
-                            _self.into(),
-                            transform.into(),
+                            _self.into_inner(),
+                            transform.into_inner(),
                         )
                         .into();
                     output
