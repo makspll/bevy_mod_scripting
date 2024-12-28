@@ -12,7 +12,7 @@ impl bevy::app::Plugin for {{ "ScriptingPlugin" | prefix_cratename | convert_cas
         let mut world = app.world_mut();
 
         {% for item in items %}
-        NamespaceBuilder::<{{ item.import_path }}>::new(world)
+        NamespaceBuilder::<::{{ item.import_path }}>::new(world)
         {%- for function in item.functions -%}
             .overwrite_script_function("{{ function.ident }}", |
             {%- for arg in function.args -%}
@@ -24,13 +24,13 @@ impl bevy::app::Plugin for {{ "ScriptingPlugin" | prefix_cratename | convert_cas
             : {{- arg.proxy_ty -}},
             {%- endfor -%}
             | {
-                let output: {{ function.output.proxy_ty }} = {{ item.import_path }}::{{ function.ident }}(
+                let output: {{ function.output.proxy_ty }} = {{ ::item.import_path }}::{{ function.ident }}(
                     {%- for arg in function.args -%}
                         {%- if arg.ident != "self" -%}
                             {{- arg.ident -}}
                         {%- else -%}
                             _{{- arg.ident -}}
-                        {%- endif -%}, 
+                        {%- endif -%}.into(), 
                     {%- endfor -%}
                 ).into();
                 output
