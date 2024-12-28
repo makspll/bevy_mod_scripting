@@ -6,7 +6,7 @@ use bevy_mod_scripting_core::{
     AddContextInitializer, StoreDocumentation,
     bindings::{ReflectReference, function::from::{Ref, Mut, Val}},
 };
-use crate::*;
+use crate::{*, namespaced_register::NamespaceBuilder};
 pub struct BevyReflectScriptingPlugin;
 impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
@@ -16,7 +16,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |v: bool| {
                     let output: Val<std::sync::atomic::AtomicBool> = ::std::sync::atomic::AtomicBool::new(
-                            v.into(),
+                            v,
                         )
                         .into();
                     output
@@ -37,7 +37,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |v: i16| {
                     let output: Val<std::sync::atomic::AtomicI16> = ::std::sync::atomic::AtomicI16::new(
-                            v.into(),
+                            v,
                         )
                         .into();
                     output
@@ -58,7 +58,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |v: i32| {
                     let output: Val<std::sync::atomic::AtomicI32> = ::std::sync::atomic::AtomicI32::new(
-                            v.into(),
+                            v,
                         )
                         .into();
                     output
@@ -79,7 +79,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |v: i64| {
                     let output: Val<std::sync::atomic::AtomicI64> = ::std::sync::atomic::AtomicI64::new(
-                            v.into(),
+                            v,
                         )
                         .into();
                     output
@@ -100,7 +100,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |v: i8| {
                     let output: Val<std::sync::atomic::AtomicI8> = ::std::sync::atomic::AtomicI8::new(
-                            v.into(),
+                            v,
                         )
                         .into();
                     output
@@ -121,7 +121,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |v: isize| {
                     let output: Val<std::sync::atomic::AtomicIsize> = ::std::sync::atomic::AtomicIsize::new(
-                            v.into(),
+                            v,
                         )
                         .into();
                     output
@@ -142,7 +142,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |v: u16| {
                     let output: Val<std::sync::atomic::AtomicU16> = ::std::sync::atomic::AtomicU16::new(
-                            v.into(),
+                            v,
                         )
                         .into();
                     output
@@ -163,7 +163,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |v: u32| {
                     let output: Val<std::sync::atomic::AtomicU32> = ::std::sync::atomic::AtomicU32::new(
-                            v.into(),
+                            v,
                         )
                         .into();
                     output
@@ -184,7 +184,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |v: u64| {
                     let output: Val<std::sync::atomic::AtomicU64> = ::std::sync::atomic::AtomicU64::new(
-                            v.into(),
+                            v,
                         )
                         .into();
                     output
@@ -205,7 +205,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |v: u8| {
                     let output: Val<std::sync::atomic::AtomicU8> = ::std::sync::atomic::AtomicU8::new(
-                            v.into(),
+                            v,
                         )
                         .into();
                     output
@@ -226,7 +226,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |v: usize| {
                     let output: Val<std::sync::atomic::AtomicUsize> = ::std::sync::atomic::AtomicUsize::new(
-                            v.into(),
+                            v,
                         )
                         .into();
                     output
@@ -248,7 +248,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::utils::Duration>, rhs: u32| {
                     let output: Val<bevy::utils::Duration> = ::bevy::utils::Duration::mul(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -258,7 +258,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::utils::Duration>| {
                     let output: () = ::bevy::utils::Duration::assert_receiver_is_total_eq(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -268,7 +268,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "clone",
                 |_self: Ref<bevy::utils::Duration>| {
                     let output: Val<bevy::utils::Duration> = ::bevy::utils::Duration::clone(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -299,10 +299,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "eq",
                 |_self: Ref<bevy::utils::Duration>, other: Ref<bevy::utils::Duration>| {
-                    let output: bool = ::bevy::utils::Duration::eq(
-                            _self.into(),
-                            other.into(),
-                        )
+                    let output: bool = ::bevy::utils::Duration::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -312,7 +309,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::utils::Duration>, rhs: u32| {
                     let output: Val<bevy::utils::Duration> = ::bevy::utils::Duration::div(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -322,8 +319,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |secs: u64, nanos: u32| {
                     let output: Val<bevy::utils::Duration> = ::bevy::utils::Duration::new(
-                            secs.into(),
-                            nanos.into(),
+                            secs,
+                            nanos,
                         )
                         .into();
                     output
@@ -333,7 +330,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_secs",
                 |secs: u64| {
                     let output: Val<bevy::utils::Duration> = ::bevy::utils::Duration::from_secs(
-                            secs.into(),
+                            secs,
                         )
                         .into();
                     output
@@ -343,7 +340,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_millis",
                 |millis: u64| {
                     let output: Val<bevy::utils::Duration> = ::bevy::utils::Duration::from_millis(
-                            millis.into(),
+                            millis,
                         )
                         .into();
                     output
@@ -353,7 +350,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_micros",
                 |micros: u64| {
                     let output: Val<bevy::utils::Duration> = ::bevy::utils::Duration::from_micros(
-                            micros.into(),
+                            micros,
                         )
                         .into();
                     output
@@ -363,7 +360,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_nanos",
                 |nanos: u64| {
                     let output: Val<bevy::utils::Duration> = ::bevy::utils::Duration::from_nanos(
-                            nanos.into(),
+                            nanos,
                         )
                         .into();
                     output
@@ -372,25 +369,21 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "is_zero",
                 |_self: Ref<bevy::utils::Duration>| {
-                    let output: bool = ::bevy::utils::Duration::is_zero(_self.into())
-                        .into();
+                    let output: bool = ::bevy::utils::Duration::is_zero(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "as_secs",
                 |_self: Ref<bevy::utils::Duration>| {
-                    let output: u64 = ::bevy::utils::Duration::as_secs(_self.into())
-                        .into();
+                    let output: u64 = ::bevy::utils::Duration::as_secs(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "subsec_millis",
                 |_self: Ref<bevy::utils::Duration>| {
-                    let output: u32 = ::bevy::utils::Duration::subsec_millis(
-                            _self.into(),
-                        )
+                    let output: u32 = ::bevy::utils::Duration::subsec_millis(&_self)
                         .into();
                     output
                 },
@@ -398,9 +391,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "subsec_micros",
                 |_self: Ref<bevy::utils::Duration>| {
-                    let output: u32 = ::bevy::utils::Duration::subsec_micros(
-                            _self.into(),
-                        )
+                    let output: u32 = ::bevy::utils::Duration::subsec_micros(&_self)
                         .into();
                     output
                 },
@@ -408,7 +399,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "subsec_nanos",
                 |_self: Ref<bevy::utils::Duration>| {
-                    let output: u32 = ::bevy::utils::Duration::subsec_nanos(_self.into())
+                    let output: u32 = ::bevy::utils::Duration::subsec_nanos(&_self)
                         .into();
                     output
                 },
@@ -416,24 +407,21 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "as_millis",
                 |_self: Ref<bevy::utils::Duration>| {
-                    let output: u128 = ::bevy::utils::Duration::as_millis(_self.into())
-                        .into();
+                    let output: u128 = ::bevy::utils::Duration::as_millis(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "as_micros",
                 |_self: Ref<bevy::utils::Duration>| {
-                    let output: u128 = ::bevy::utils::Duration::as_micros(_self.into())
-                        .into();
+                    let output: u128 = ::bevy::utils::Duration::as_micros(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "as_nanos",
                 |_self: Ref<bevy::utils::Duration>| {
-                    let output: u128 = ::bevy::utils::Duration::as_nanos(_self.into())
-                        .into();
+                    let output: u128 = ::bevy::utils::Duration::as_nanos(&_self).into();
                     output
                 },
             )
@@ -475,7 +463,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::utils::Duration>, rhs: u32| {
                     let output: Val<bevy::utils::Duration> = ::bevy::utils::Duration::saturating_mul(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -484,7 +472,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "as_secs_f64",
                 |_self: Ref<bevy::utils::Duration>| {
-                    let output: f64 = ::bevy::utils::Duration::as_secs_f64(_self.into())
+                    let output: f64 = ::bevy::utils::Duration::as_secs_f64(&_self)
                         .into();
                     output
                 },
@@ -492,7 +480,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "as_secs_f32",
                 |_self: Ref<bevy::utils::Duration>| {
-                    let output: f32 = ::bevy::utils::Duration::as_secs_f32(_self.into())
+                    let output: f32 = ::bevy::utils::Duration::as_secs_f32(&_self)
                         .into();
                     output
                 },
@@ -501,7 +489,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_secs_f64",
                 |secs: f64| {
                     let output: Val<bevy::utils::Duration> = ::bevy::utils::Duration::from_secs_f64(
-                            secs.into(),
+                            secs,
                         )
                         .into();
                     output
@@ -511,7 +499,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_secs_f32",
                 |secs: f32| {
                     let output: Val<bevy::utils::Duration> = ::bevy::utils::Duration::from_secs_f32(
-                            secs.into(),
+                            secs,
                         )
                         .into();
                     output
@@ -522,7 +510,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::utils::Duration>, rhs: f64| {
                     let output: Val<bevy::utils::Duration> = ::bevy::utils::Duration::mul_f64(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -533,7 +521,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::utils::Duration>, rhs: f32| {
                     let output: Val<bevy::utils::Duration> = ::bevy::utils::Duration::mul_f32(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -544,7 +532,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::utils::Duration>, rhs: f64| {
                     let output: Val<bevy::utils::Duration> = ::bevy::utils::Duration::div_f64(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -555,7 +543,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::utils::Duration>, rhs: f32| {
                     let output: Val<bevy::utils::Duration> = ::bevy::utils::Duration::div_f32(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -588,7 +576,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::utils::Instant>| {
                     let output: () = ::bevy::utils::Instant::assert_receiver_is_total_eq(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -597,11 +585,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "eq",
                 |_self: Ref<bevy::utils::Instant>, other: Ref<bevy::utils::Instant>| {
-                    let output: bool = ::bevy::utils::Instant::eq(
-                            _self.into(),
-                            other.into(),
-                        )
-                        .into();
+                    let output: bool = ::bevy::utils::Instant::eq(&_self, &other).into();
                     output
                 },
             )
@@ -639,7 +623,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "duration_since",
                 |_self: Ref<bevy::utils::Instant>, earlier: Val<bevy::utils::Instant>| {
                     let output: Val<bevy::utils::Duration> = ::bevy::utils::Instant::duration_since(
-                            _self.into(),
+                            &_self,
                             earlier.into(),
                         )
                         .into();
@@ -650,7 +634,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "saturating_duration_since",
                 |_self: Ref<bevy::utils::Instant>, earlier: Val<bevy::utils::Instant>| {
                     let output: Val<bevy::utils::Duration> = ::bevy::utils::Instant::saturating_duration_since(
-                            _self.into(),
+                            &_self,
                             earlier.into(),
                         )
                         .into();
@@ -661,7 +645,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "elapsed",
                 |_self: Ref<bevy::utils::Instant>| {
                     let output: Val<bevy::utils::Duration> = ::bevy::utils::Instant::elapsed(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -671,7 +655,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "clone",
                 |_self: Ref<bevy::utils::Instant>| {
                     let output: Val<bevy::utils::Instant> = ::bevy::utils::Instant::clone(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -693,7 +677,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "clone",
                 |_self: Ref<std::ops::RangeFull>| {
                     let output: Val<std::ops::RangeFull> = ::std::ops::RangeFull::clone(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -703,7 +687,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "assert_receiver_is_total_eq",
                 |_self: Ref<std::ops::RangeFull>| {
                     let output: () = ::std::ops::RangeFull::assert_receiver_is_total_eq(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -712,21 +696,65 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "eq",
                 |_self: Ref<std::ops::RangeFull>, other: Ref<std::ops::RangeFull>| {
-                    let output: bool = ::std::ops::RangeFull::eq(
-                            _self.into(),
-                            other.into(),
-                        )
-                        .into();
+                    let output: bool = ::std::ops::RangeFull::eq(&_self, &other).into();
                     output
                 },
             );
         NamespaceBuilder::<::bevy::math::Quat>::new(world)
             .overwrite_script_function(
                 "mul",
-                |_self: Val<bevy::math::Quat>, rhs: f32| {
+                |_self: Val<bevy::math::Quat>, rhs: Val<bevy::math::Vec3A>| {
+                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Quat::mul(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::Quat>, rhs: Val<bevy::math::Quat>| {
+                    let output: Val<bevy::math::Quat> = ::bevy::math::Quat::add(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::Quat>, rhs: Ref<bevy::math::Quat>| {
+                    let output: bool = ::bevy::math::Quat::eq(&_self, &rhs).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::Quat>| {
+                    let output: Val<bevy::math::Quat> = ::bevy::math::Quat::clone(&_self)
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::Quat>, rhs: Val<bevy::math::Quat>| {
                     let output: Val<bevy::math::Quat> = ::bevy::math::Quat::mul(
                             _self.into(),
                             rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::Quat>, rhs: f32| {
+                    let output: Val<bevy::math::Quat> = ::bevy::math::Quat::mul(
+                            _self.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -755,8 +783,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "mul",
-                |_self: Val<bevy::math::Quat>, rhs: Val<bevy::math::Vec3A>| {
-                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Quat::mul(
+                |_self: Val<bevy::math::Quat>, rhs: Val<bevy::math::Vec3>| {
+                    let output: Val<bevy::math::Vec3> = ::bevy::math::Quat::mul(
                             _self.into(),
                             rhs.into(),
                         )
@@ -765,10 +793,11 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::Quat>| {
-                    let output: Val<bevy::math::Quat> = ::bevy::math::Quat::clone(
+                "div",
+                |_self: Val<bevy::math::Quat>, rhs: f32| {
+                    let output: Val<bevy::math::Quat> = ::bevy::math::Quat::div(
                             _self.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -778,10 +807,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_xyzw",
                 |x: f32, y: f32, z: f32, w: f32| {
                     let output: Val<bevy::math::Quat> = ::bevy::math::Quat::from_xyzw(
-                            x.into(),
-                            y.into(),
-                            z.into(),
-                            w.into(),
+                            x,
+                            y,
+                            z,
+                            w,
                         )
                         .into();
                     output
@@ -790,9 +819,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "from_array",
                 |a: [f32; 4]| {
-                    let output: Val<bevy::math::Quat> = ::bevy::math::Quat::from_array(
-                            a.into(),
-                        )
+                    let output: Val<bevy::math::Quat> = ::bevy::math::Quat::from_array(a)
                         .into();
                     output
                 },
@@ -812,7 +839,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |axis: Val<bevy::math::Vec3>, angle: f32| {
                     let output: Val<bevy::math::Quat> = ::bevy::math::Quat::from_axis_angle(
                             axis.into(),
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -832,7 +859,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_x",
                 |angle: f32| {
                     let output: Val<bevy::math::Quat> = ::bevy::math::Quat::from_rotation_x(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -842,7 +869,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_y",
                 |angle: f32| {
                     let output: Val<bevy::math::Quat> = ::bevy::math::Quat::from_rotation_y(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -852,7 +879,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_z",
                 |angle: f32| {
                     let output: Val<bevy::math::Quat> = ::bevy::math::Quat::from_rotation_z(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -863,9 +890,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |euler: Val<bevy::math::EulerRot>, a: f32, b: f32, c: f32| {
                     let output: Val<bevy::math::Quat> = ::bevy::math::Quat::from_euler(
                             euler.into(),
-                            a.into(),
-                            b.into(),
-                            c.into(),
+                            a,
+                            b,
+                            c,
                         )
                         .into();
                     output
@@ -875,7 +902,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_mat3",
                 |mat: Ref<bevy::math::Mat3>| {
                     let output: Val<bevy::math::Quat> = ::bevy::math::Quat::from_mat3(
-                            mat.into(),
+                            &mat,
                         )
                         .into();
                     output
@@ -885,7 +912,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_mat3a",
                 |mat: Ref<bevy::math::Mat3A>| {
                     let output: Val<bevy::math::Quat> = ::bevy::math::Quat::from_mat3a(
-                            mat.into(),
+                            &mat,
                         )
                         .into();
                     output
@@ -895,7 +922,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_mat4",
                 |mat: Ref<bevy::math::Mat4>| {
                     let output: Val<bevy::math::Quat> = ::bevy::math::Quat::from_mat4(
-                            mat.into(),
+                            &mat,
                         )
                         .into();
                     output
@@ -958,8 +985,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::Quat>| {
-                    let output: [f32; 4] = ::bevy::math::Quat::to_array(_self.into())
-                        .into();
+                    let output: [f32; 4] = ::bevy::math::Quat::to_array(&_self).into();
                     output
                 },
             )
@@ -1084,9 +1110,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     max_angle: f32|
                 {
                     let output: Val<bevy::math::Quat> = ::bevy::math::Quat::rotate_towards(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            max_angle.into(),
+                            max_angle,
                         )
                         .into();
                     output
@@ -1102,7 +1128,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: bool = ::bevy::math::Quat::abs_diff_eq(
                             _self.into(),
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -1114,7 +1140,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::Quat> = ::bevy::math::Quat::lerp(
                             _self.into(),
                             end.into(),
-                            s.into(),
+                            s,
                         )
                         .into();
                     output
@@ -1126,7 +1152,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::Quat> = ::bevy::math::Quat::slerp(
                             _self.into(),
                             end.into(),
-                            s.into(),
+                            s,
                         )
                         .into();
                     output
@@ -1158,7 +1184,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_affine3",
                 |a: Ref<bevy::math::Affine3A>| {
                     let output: Val<bevy::math::Quat> = ::bevy::math::Quat::from_affine3(
-                            a.into(),
+                            &a,
                         )
                         .into();
                     output
@@ -1184,77 +1210,14 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::Quat>, rhs: Ref<bevy::math::Quat>| {
-                    let output: bool = ::bevy::math::Quat::eq(_self.into(), rhs.into())
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Quat>, rhs: Val<bevy::math::Vec3>| {
-                    let output: Val<bevy::math::Vec3> = ::bevy::math::Quat::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Quat>, rhs: Val<bevy::math::Quat>| {
-                    let output: Val<bevy::math::Quat> = ::bevy::math::Quat::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::Quat>, rhs: f32| {
-                    let output: Val<bevy::math::Quat> = ::bevy::math::Quat::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::Quat>, rhs: Val<bevy::math::Quat>| {
-                    let output: Val<bevy::math::Quat> = ::bevy::math::Quat::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::math::Vec3>::new(world)
             .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Vec3>, rhs: Ref<bevy::math::Vec3>| {
-                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::mul(
+                "sub",
+                |_self: Val<bevy::math::Vec3>, rhs: f32| {
+                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::sub(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::Vec3>, rhs: Ref<bevy::math::Vec3>| {
-                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::div(
-                            _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -1283,10 +1246,11 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::Vec3>| {
-                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::clone(
+                "rem",
+                |_self: Val<bevy::math::Vec3>, rhs: Ref<bevy::math::Vec3>| {
+                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::rem(
                             _self.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -1294,21 +1258,32 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "sub",
-                |_self: Val<bevy::math::Vec3>, rhs: f32| {
+                |_self: Val<bevy::math::Vec3>, rhs: Ref<bevy::math::Vec3>| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::sub(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::Vec3>, rhs: Val<bevy::math::Vec3>| {
-                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::rem(
+                "div",
+                |_self: Val<bevy::math::Vec3>, rhs: Ref<bevy::math::Vec3>| {
+                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::div(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::Vec3>, rhs: Ref<bevy::math::Vec3>| {
+                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::mul(
+                            _self.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -1325,77 +1300,11 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Vec3>, rhs: f32| {
-                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::Vec3>, rhs: Ref<bevy::math::Vec3>| {
-                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::Vec3>, rhs: Val<bevy::math::Vec3>| {
-                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
                 "add",
-                |_self: Val<bevy::math::Vec3>, rhs: Ref<bevy::math::Vec3>| {
+                |_self: Val<bevy::math::Vec3>, rhs: f32| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::add(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::Vec3>, rhs: Ref<bevy::math::Vec3>| {
-                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::Vec3>, rhs: f32| {
-                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::Vec3>, rhs: f32| {
-                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::div(
-                            _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -1404,11 +1313,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |x: f32, y: f32, z: f32| {
-                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::new(
-                            x.into(),
-                            y.into(),
-                            z.into(),
-                        )
+                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::new(x, y, z)
                         .into();
                     output
                 },
@@ -1416,9 +1321,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "splat",
                 |v: f32| {
-                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::splat(
-                            v.into(),
-                        )
+                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::splat(v)
                         .into();
                     output
                 },
@@ -1442,9 +1345,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "from_array",
                 |a: [f32; 3]| {
-                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::from_array(
-                            a.into(),
-                        )
+                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::from_array(a)
                         .into();
                     output
                 },
@@ -1452,8 +1353,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::Vec3>| {
-                    let output: [f32; 3] = ::bevy::math::Vec3::to_array(_self.into())
-                        .into();
+                    let output: [f32; 3] = ::bevy::math::Vec3::to_array(&_self).into();
                     output
                 },
             )
@@ -1462,7 +1362,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3>, w: f32| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::Vec3::extend(
                             _self.into(),
-                            w.into(),
+                            w,
                         )
                         .into();
                     output
@@ -1483,7 +1383,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3>, x: f32| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::with_x(
                             _self.into(),
-                            x.into(),
+                            x,
                         )
                         .into();
                     output
@@ -1494,7 +1394,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3>, y: f32| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::with_y(
                             _self.into(),
-                            y.into(),
+                            y,
                         )
                         .into();
                     output
@@ -1505,7 +1405,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3>, z: f32| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::with_z(
                             _self.into(),
-                            z.into(),
+                            z,
                         )
                         .into();
                     output
@@ -1978,7 +1878,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3>, n: f32| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::powf(
                             _self.into(),
-                            n.into(),
+                            n,
                         )
                         .into();
                     output
@@ -2000,7 +1900,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::lerp(
                             _self.into(),
                             rhs.into(),
-                            s.into(),
+                            s,
                         )
                         .into();
                     output
@@ -2010,9 +1910,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "move_towards",
                 |_self: Ref<bevy::math::Vec3>, rhs: Val<bevy::math::Vec3>, d: f32| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::move_towards(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            d.into(),
+                            d,
                         )
                         .into();
                     output
@@ -2039,7 +1939,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: bool = ::bevy::math::Vec3::abs_diff_eq(
                             _self.into(),
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -2050,8 +1950,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3>, min: f32, max: f32| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::clamp_length(
                             _self.into(),
-                            min.into(),
-                            max.into(),
+                            min,
+                            max,
                         )
                         .into();
                     output
@@ -2062,7 +1962,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3>, max: f32| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::clamp_length_max(
                             _self.into(),
-                            max.into(),
+                            max,
                         )
                         .into();
                     output
@@ -2073,7 +1973,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3>, min: f32| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::clamp_length_min(
                             _self.into(),
-                            min.into(),
+                            min,
                         )
                         .into();
                     output
@@ -2112,7 +2012,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::refract(
                             _self.into(),
                             normal.into(),
-                            eta.into(),
+                            eta,
                         )
                         .into();
                     output
@@ -2133,7 +2033,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "any_orthogonal_vector",
                 |_self: Ref<bevy::math::Vec3>| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::any_orthogonal_vector(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -2143,7 +2043,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "any_orthonormal_vector",
                 |_self: Ref<bevy::math::Vec3>| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::any_orthonormal_vector(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -2153,7 +2053,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dvec3",
                 |_self: Ref<bevy::math::Vec3>| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::Vec3::as_dvec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -2163,7 +2063,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_ivec3",
                 |_self: Ref<bevy::math::Vec3>| {
                     let output: Val<bevy::math::IVec3> = ::bevy::math::Vec3::as_ivec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -2173,7 +2073,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_uvec3",
                 |_self: Ref<bevy::math::Vec3>| {
                     let output: Val<bevy::math::UVec3> = ::bevy::math::Vec3::as_uvec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -2183,7 +2083,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_i64vec3",
                 |_self: Ref<bevy::math::Vec3>| {
                     let output: Val<bevy::math::I64Vec3> = ::bevy::math::Vec3::as_i64vec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -2193,26 +2093,26 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_u64vec3",
                 |_self: Ref<bevy::math::Vec3>| {
                     let output: Val<bevy::math::U64Vec3> = ::bevy::math::Vec3::as_u64vec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::Vec3>, other: Ref<bevy::math::Vec3>| {
-                    let output: bool = ::bevy::math::Vec3::eq(_self.into(), other.into())
+                "clone",
+                |_self: Ref<bevy::math::Vec3>| {
+                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::clone(&_self)
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "add",
-                |_self: Val<bevy::math::Vec3>, rhs: f32| {
+                |_self: Val<bevy::math::Vec3>, rhs: Ref<bevy::math::Vec3>| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::add(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -2228,102 +2128,13 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::IVec2>::new(world)
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::IVec2>, rhs: Ref<bevy::math::IVec2>| {
-                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
             )
             .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::IVec2>, rhs: Ref<bevy::math::IVec2>| {
-                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::add(
+                "div",
+                |_self: Val<bevy::math::Vec3>, rhs: f32| {
+                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::div(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::IVec2>, rhs: Val<bevy::math::IVec2>| {
-                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::IVec2>, rhs: i32| {
-                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::IVec2>, rhs: Val<bevy::math::IVec2>| {
-                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::IVec2>, rhs: Ref<bevy::math::IVec2>| {
-                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::IVec2>, rhs: i32| {
-                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::IVec2>, rhs: Val<bevy::math::IVec2>| {
-                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::IVec2>, rhs: Ref<bevy::math::IVec2>| {
-                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::rem(
-                            _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -2331,8 +2142,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "div",
-                |_self: Val<bevy::math::IVec2>, rhs: Val<bevy::math::IVec2>| {
-                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::div(
+                |_self: Val<bevy::math::Vec3>, rhs: Val<bevy::math::Vec3>| {
+                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::div(
                             _self.into(),
                             rhs.into(),
                         )
@@ -2341,10 +2152,11 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::math::IVec2>| {
-                    let output: () = ::bevy::math::IVec2::assert_receiver_is_total_eq(
+                "rem",
+                |_self: Val<bevy::math::Vec3>, rhs: f32| {
+                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::rem(
                             _self.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -2352,30 +2164,19 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "mul",
-                |_self: Val<bevy::math::IVec2>, rhs: i32| {
-                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::mul(
+                |_self: Val<bevy::math::Vec3>, rhs: f32| {
+                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::mul(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::IVec2>, rhs: Val<bevy::math::IVec2>| {
-                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::IVec2>, rhs: Ref<bevy::math::IVec2>| {
-                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::div(
+                "rem",
+                |_self: Val<bevy::math::Vec3>, rhs: Val<bevy::math::Vec3>| {
+                    let output: Val<bevy::math::Vec3> = ::bevy::math::Vec3::rem(
                             _self.into(),
                             rhs.into(),
                         )
@@ -2385,10 +2186,18 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "eq",
-                |_self: Ref<bevy::math::IVec2>, other: Ref<bevy::math::IVec2>| {
-                    let output: bool = ::bevy::math::IVec2::eq(
+                |_self: Ref<bevy::math::Vec3>, other: Ref<bevy::math::Vec3>| {
+                    let output: bool = ::bevy::math::Vec3::eq(&_self, &other).into();
+                    output
+                },
+            );
+        NamespaceBuilder::<::bevy::math::IVec2>::new(world)
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::IVec2>, rhs: i32| {
+                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::sub(
                             _self.into(),
-                            other.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -2396,19 +2205,19 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "div",
-                |_self: Val<bevy::math::IVec2>, rhs: i32| {
+                |_self: Val<bevy::math::IVec2>, rhs: Ref<bevy::math::IVec2>| {
                     let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::div(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::IVec2>, rhs: i32| {
-                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::sub(
+                "mul",
+                |_self: Val<bevy::math::IVec2>, rhs: Val<bevy::math::IVec2>| {
+                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::mul(
                             _self.into(),
                             rhs.into(),
                         )
@@ -2419,10 +2228,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |x: i32, y: i32| {
-                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::new(
-                            x.into(),
-                            y.into(),
-                        )
+                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::new(x, y)
                         .into();
                     output
                 },
@@ -2430,9 +2236,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "splat",
                 |v: i32| {
-                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::splat(
-                            v.into(),
-                        )
+                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::splat(v)
                         .into();
                     output
                 },
@@ -2457,7 +2261,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [i32; 2]| {
                     let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -2466,8 +2270,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::IVec2>| {
-                    let output: [i32; 2] = ::bevy::math::IVec2::to_array(_self.into())
-                        .into();
+                    let output: [i32; 2] = ::bevy::math::IVec2::to_array(&_self).into();
                     output
                 },
             )
@@ -2476,7 +2279,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::IVec2>, z: i32| {
                     let output: Val<bevy::math::IVec3> = ::bevy::math::IVec2::extend(
                             _self.into(),
-                            z.into(),
+                            z,
                         )
                         .into();
                     output
@@ -2487,7 +2290,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::IVec2>, x: i32| {
                     let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::with_x(
                             _self.into(),
-                            x.into(),
+                            x,
                         )
                         .into();
                     output
@@ -2498,7 +2301,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::IVec2>, y: i32| {
                     let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::with_y(
                             _self.into(),
-                            y.into(),
+                            y,
                         )
                         .into();
                     output
@@ -2766,7 +2569,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec2",
                 |_self: Ref<bevy::math::IVec2>| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::IVec2::as_vec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -2776,7 +2579,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dvec2",
                 |_self: Ref<bevy::math::IVec2>| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::IVec2::as_dvec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -2786,7 +2589,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_uvec2",
                 |_self: Ref<bevy::math::IVec2>| {
                     let output: Val<bevy::math::UVec2> = ::bevy::math::IVec2::as_uvec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -2796,7 +2599,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_i64vec2",
                 |_self: Ref<bevy::math::IVec2>| {
                     let output: Val<bevy::math::I64Vec2> = ::bevy::math::IVec2::as_i64vec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -2806,7 +2609,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_u64vec2",
                 |_self: Ref<bevy::math::IVec2>| {
                     let output: Val<bevy::math::U64Vec2> = ::bevy::math::IVec2::as_u64vec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -2945,6 +2748,39 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::IVec2>, rhs: Val<bevy::math::IVec2>| {
+                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::rem(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::IVec2>, rhs: Ref<bevy::math::IVec2>| {
+                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::mul(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::IVec2>, rhs: Ref<bevy::math::IVec2>| {
+                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::sub(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
                 "neg",
                 |_self: Val<bevy::math::IVec2>| {
                     let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::neg(
@@ -2955,22 +2791,11 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::IVec2>| {
-                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::clone(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            );
-        NamespaceBuilder::<::bevy::math::IVec3>::new(world)
-            .overwrite_script_function(
                 "rem",
-                |_self: Val<bevy::math::IVec3>, rhs: i32| {
-                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::rem(
+                |_self: Val<bevy::math::IVec2>, rhs: Ref<bevy::math::IVec2>| {
+                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::rem(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -2978,8 +2803,30 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "div",
-                |_self: Val<bevy::math::IVec3>, rhs: Val<bevy::math::IVec3>| {
-                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::div(
+                |_self: Val<bevy::math::IVec2>, rhs: i32| {
+                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::div(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::IVec2>, rhs: i32| {
+                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::mul(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::IVec2>, rhs: Val<bevy::math::IVec2>| {
+                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::sub(
                             _self.into(),
                             rhs.into(),
                         )
@@ -2988,19 +2835,136 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::math::IVec3>| {
-                    let output: () = ::bevy::math::IVec3::assert_receiver_is_total_eq(
+                "add",
+                |_self: Val<bevy::math::IVec2>, rhs: Ref<bevy::math::IVec2>| {
+                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::add(
                             _self.into(),
+                            &rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::IVec2>, rhs: i32| {
+                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::add(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::IVec2>, rhs: i32| {
+                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::rem(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::IVec2>, rhs: Val<bevy::math::IVec2>| {
+                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::add(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::IVec2>, other: Ref<bevy::math::IVec2>| {
+                    let output: bool = ::bevy::math::IVec2::eq(&_self, &other).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::IVec2>, rhs: Val<bevy::math::IVec2>| {
+                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::div(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::IVec2>| {
+                    let output: Val<bevy::math::IVec2> = ::bevy::math::IVec2::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::math::IVec2>| {
+                    let output: () = ::bevy::math::IVec2::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            );
+        NamespaceBuilder::<::bevy::math::IVec3>::new(world)
+            .overwrite_script_function(
                 "sub",
-                |_self: Val<bevy::math::IVec3>, rhs: Val<bevy::math::IVec3>| {
+                |_self: Val<bevy::math::IVec3>, rhs: Ref<bevy::math::IVec3>| {
                     let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::sub(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::IVec3>, rhs: i32| {
+                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::div(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::IVec3>, rhs: i32| {
+                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::rem(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::IVec3>, rhs: Val<bevy::math::IVec3>| {
+                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::mul(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::IVec3>, rhs: Val<bevy::math::IVec3>| {
+                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::rem(
                             _self.into(),
                             rhs.into(),
                         )
@@ -3012,9 +2976,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |x: i32, y: i32, z: i32| {
                     let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::new(
-                            x.into(),
-                            y.into(),
-                            z.into(),
+                            x,
+                            y,
+                            z,
                         )
                         .into();
                     output
@@ -3023,9 +2987,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "splat",
                 |v: i32| {
-                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::splat(
-                            v.into(),
-                        )
+                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::splat(v)
                         .into();
                     output
                 },
@@ -3050,7 +3012,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [i32; 3]| {
                     let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -3059,8 +3021,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::IVec3>| {
-                    let output: [i32; 3] = ::bevy::math::IVec3::to_array(_self.into())
-                        .into();
+                    let output: [i32; 3] = ::bevy::math::IVec3::to_array(&_self).into();
                     output
                 },
             )
@@ -3069,7 +3030,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::IVec3>, w: i32| {
                     let output: Val<bevy::math::IVec4> = ::bevy::math::IVec3::extend(
                             _self.into(),
-                            w.into(),
+                            w,
                         )
                         .into();
                     output
@@ -3090,7 +3051,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::IVec3>, x: i32| {
                     let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::with_x(
                             _self.into(),
-                            x.into(),
+                            x,
                         )
                         .into();
                     output
@@ -3101,7 +3062,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::IVec3>, y: i32| {
                     let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::with_y(
                             _self.into(),
-                            y.into(),
+                            y,
                         )
                         .into();
                     output
@@ -3112,7 +3073,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::IVec3>, z: i32| {
                     let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::with_z(
                             _self.into(),
-                            z.into(),
+                            z,
                         )
                         .into();
                     output
@@ -3359,7 +3320,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec3",
                 |_self: Ref<bevy::math::IVec3>| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::IVec3::as_vec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -3369,7 +3330,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec3a",
                 |_self: Ref<bevy::math::IVec3>| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::IVec3::as_vec3a(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -3379,7 +3340,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dvec3",
                 |_self: Ref<bevy::math::IVec3>| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::IVec3::as_dvec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -3389,7 +3350,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_uvec3",
                 |_self: Ref<bevy::math::IVec3>| {
                     let output: Val<bevy::math::UVec3> = ::bevy::math::IVec3::as_uvec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -3399,7 +3360,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_i64vec3",
                 |_self: Ref<bevy::math::IVec3>| {
                     let output: Val<bevy::math::I64Vec3> = ::bevy::math::IVec3::as_i64vec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -3409,7 +3370,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_u64vec3",
                 |_self: Ref<bevy::math::IVec3>| {
                     let output: Val<bevy::math::U64Vec3> = ::bevy::math::IVec3::as_u64vec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -3548,8 +3509,19 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::IVec3>, rhs: i32| {
+                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::mul(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
                 "div",
-                |_self: Val<bevy::math::IVec3>, rhs: Ref<bevy::math::IVec3>| {
+                |_self: Val<bevy::math::IVec3>, rhs: Val<bevy::math::IVec3>| {
                     let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::div(
                             _self.into(),
                             rhs.into(),
@@ -3559,11 +3531,72 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::IVec3>, rhs: i32| {
-                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::mul(
+                "rem",
+                |_self: Val<bevy::math::IVec3>, rhs: Ref<bevy::math::IVec3>| {
+                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::rem(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::IVec3>, rhs: Val<bevy::math::IVec3>| {
+                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::add(
                             _self.into(),
                             rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::IVec3>, rhs: i32| {
+                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::sub(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::IVec3>, rhs: Val<bevy::math::IVec3>| {
+                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::sub(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::IVec3>| {
+                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::IVec3>, other: Ref<bevy::math::IVec3>| {
+                    let output: bool = ::bevy::math::IVec3::eq(&_self, &other).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::IVec3>, rhs: i32| {
+                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::add(
+                            _self.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -3574,40 +3607,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::IVec3>, rhs: Ref<bevy::math::IVec3>| {
                     let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::add(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::IVec3>, rhs: i32| {
-                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::IVec3>, rhs: Ref<bevy::math::IVec3>| {
-                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::IVec3>, rhs: i32| {
-                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::add(
-                            _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -3624,87 +3624,32 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::IVec3>| {
-                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::clone(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::IVec3>, other: Ref<bevy::math::IVec3>| {
-                    let output: bool = ::bevy::math::IVec3::eq(
-                            _self.into(),
-                            other.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
                 "mul",
-                |_self: Val<bevy::math::IVec3>, rhs: Val<bevy::math::IVec3>| {
+                |_self: Val<bevy::math::IVec3>, rhs: Ref<bevy::math::IVec3>| {
                     let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::mul(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "sub",
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::math::IVec3>| {
+                    let output: () = ::bevy::math::IVec3::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
                 |_self: Val<bevy::math::IVec3>, rhs: Ref<bevy::math::IVec3>| {
-                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::sub(
+                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::div(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::IVec3>, rhs: Val<bevy::math::IVec3>| {
-                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::IVec3>, rhs: Ref<bevy::math::IVec3>| {
-                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::IVec3>, rhs: i32| {
-                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::IVec3>, rhs: Val<bevy::math::IVec3>| {
-                    let output: Val<bevy::math::IVec3> = ::bevy::math::IVec3::rem(
-                            _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -3712,44 +3657,21 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::IVec4>::new(world)
             .overwrite_script_function(
-                "add",
+                "rem",
                 |_self: Val<bevy::math::IVec4>, rhs: i32| {
-                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::add(
+                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::rem(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::IVec4>, rhs: Val<bevy::math::IVec4>| {
-                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::add(
+                "neg",
+                |_self: Val<bevy::math::IVec4>| {
+                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::neg(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::IVec4>, rhs: Ref<bevy::math::IVec4>| {
-                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::IVec4>, rhs: Ref<bevy::math::IVec4>| {
-                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::mul(
-                            _self.into(),
-                            rhs.into(),
                         )
                         .into();
                     output
@@ -3759,10 +3681,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |x: i32, y: i32, z: i32, w: i32| {
                     let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::new(
-                            x.into(),
-                            y.into(),
-                            z.into(),
-                            w.into(),
+                            x,
+                            y,
+                            z,
+                            w,
                         )
                         .into();
                     output
@@ -3771,9 +3693,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "splat",
                 |v: i32| {
-                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::splat(
-                            v.into(),
-                        )
+                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::splat(v)
                         .into();
                     output
                 },
@@ -3798,7 +3718,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [i32; 4]| {
                     let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -3807,8 +3727,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::IVec4>| {
-                    let output: [i32; 4] = ::bevy::math::IVec4::to_array(_self.into())
-                        .into();
+                    let output: [i32; 4] = ::bevy::math::IVec4::to_array(&_self).into();
                     output
                 },
             )
@@ -3827,7 +3746,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::IVec4>, x: i32| {
                     let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::with_x(
                             _self.into(),
-                            x.into(),
+                            x,
                         )
                         .into();
                     output
@@ -3838,7 +3757,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::IVec4>, y: i32| {
                     let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::with_y(
                             _self.into(),
-                            y.into(),
+                            y,
                         )
                         .into();
                     output
@@ -3849,7 +3768,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::IVec4>, z: i32| {
                     let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::with_z(
                             _self.into(),
-                            z.into(),
+                            z,
                         )
                         .into();
                     output
@@ -3860,7 +3779,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::IVec4>, w: i32| {
                     let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::with_w(
                             _self.into(),
-                            w.into(),
+                            w,
                         )
                         .into();
                     output
@@ -4096,7 +4015,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec4",
                 |_self: Ref<bevy::math::IVec4>| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::IVec4::as_vec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -4106,7 +4025,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dvec4",
                 |_self: Ref<bevy::math::IVec4>| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::IVec4::as_dvec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -4116,7 +4035,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_uvec4",
                 |_self: Ref<bevy::math::IVec4>| {
                     let output: Val<bevy::math::UVec4> = ::bevy::math::IVec4::as_uvec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -4126,7 +4045,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_i64vec4",
                 |_self: Ref<bevy::math::IVec4>| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::IVec4::as_i64vec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -4136,7 +4055,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_u64vec4",
                 |_self: Ref<bevy::math::IVec4>| {
                     let output: Val<bevy::math::U64Vec4> = ::bevy::math::IVec4::as_u64vec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -4275,141 +4194,11 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::IVec4>, rhs: Ref<bevy::math::IVec4>| {
-                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::IVec4>, rhs: i32| {
-                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::IVec4>, other: Ref<bevy::math::IVec4>| {
-                    let output: bool = ::bevy::math::IVec4::eq(
-                            _self.into(),
-                            other.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::IVec4>, rhs: Ref<bevy::math::IVec4>| {
-                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::IVec4>, rhs: Val<bevy::math::IVec4>| {
-                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::IVec4>, rhs: Ref<bevy::math::IVec4>| {
-                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::IVec4>, rhs: i32| {
-                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::IVec4>| {
-                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::clone(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::IVec4>, rhs: Val<bevy::math::IVec4>| {
-                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::IVec4>, rhs: Val<bevy::math::IVec4>| {
-                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
                 "sub",
                 |_self: Val<bevy::math::IVec4>, rhs: i32| {
                     let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::sub(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "neg",
-                |_self: Val<bevy::math::IVec4>| {
-                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::neg(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::IVec4>, rhs: Val<bevy::math::IVec4>| {
-                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::div(
-                            _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -4419,7 +4208,29 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::math::IVec4>| {
                     let output: () = ::bevy::math::IVec4::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::IVec4>, rhs: Ref<bevy::math::IVec4>| {
+                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::add(
                             _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::IVec4>, rhs: i32| {
+                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::div(
+                            _self.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -4427,8 +4238,135 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "rem",
-                |_self: Val<bevy::math::IVec4>, rhs: i32| {
+                |_self: Val<bevy::math::IVec4>, rhs: Val<bevy::math::IVec4>| {
                     let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::rem(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::IVec4>, rhs: Val<bevy::math::IVec4>| {
+                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::mul(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::IVec4>, rhs: Val<bevy::math::IVec4>| {
+                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::add(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::IVec4>, rhs: i32| {
+                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::mul(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::IVec4>| {
+                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::IVec4>, rhs: Ref<bevy::math::IVec4>| {
+                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::rem(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::IVec4>, other: Ref<bevy::math::IVec4>| {
+                    let output: bool = ::bevy::math::IVec4::eq(&_self, &other).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::IVec4>, rhs: Ref<bevy::math::IVec4>| {
+                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::mul(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::IVec4>, rhs: i32| {
+                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::add(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::IVec4>, rhs: Val<bevy::math::IVec4>| {
+                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::sub(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::IVec4>, rhs: Ref<bevy::math::IVec4>| {
+                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::div(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::IVec4>, rhs: Ref<bevy::math::IVec4>| {
+                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::sub(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::IVec4>, rhs: Val<bevy::math::IVec4>| {
+                    let output: Val<bevy::math::IVec4> = ::bevy::math::IVec4::div(
                             _self.into(),
                             rhs.into(),
                         )
@@ -4438,10 +4376,11 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::I64Vec2>::new(world)
             .overwrite_script_function(
-                "neg",
-                |_self: Val<bevy::math::I64Vec2>| {
-                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::neg(
+                "sub",
+                |_self: Val<bevy::math::I64Vec2>, rhs: i64| {
+                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::sub(
                             _self.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -4452,7 +4391,18 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::I64Vec2>, rhs: i64| {
                     let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::rem(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::I64Vec2>, rhs: Ref<bevy::math::I64Vec2>| {
+                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::add(
+                            _self.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -4474,18 +4424,50 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::I64Vec2>, rhs: Ref<bevy::math::I64Vec2>| {
                     let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::rem(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "sub",
+                "add",
                 |_self: Val<bevy::math::I64Vec2>, rhs: i64| {
-                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::sub(
+                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::add(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::I64Vec2>, rhs: Ref<bevy::math::I64Vec2>| {
+                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::mul(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::I64Vec2>, rhs: Ref<bevy::math::I64Vec2>| {
+                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::div(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "neg",
+                |_self: Val<bevy::math::I64Vec2>| {
+                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::neg(
+                            _self.into(),
                         )
                         .into();
                     output
@@ -4496,29 +4478,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::I64Vec2>, rhs: Ref<bevy::math::I64Vec2>| {
                     let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::sub(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::I64Vec2>, other: Ref<bevy::math::I64Vec2>| {
-                    let output: bool = ::bevy::math::I64Vec2::eq(
-                            _self.into(),
-                            other.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::I64Vec2>, rhs: Val<bevy::math::I64Vec2>| {
-                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::rem(
-                            _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -4528,59 +4488,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::math::I64Vec2>| {
                     let output: () = ::bevy::math::I64Vec2::assert_receiver_is_total_eq(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::I64Vec2>, rhs: Ref<bevy::math::I64Vec2>| {
-                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::I64Vec2>, rhs: i64| {
-                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::I64Vec2>| {
-                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::clone(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
+                "sub",
                 |_self: Val<bevy::math::I64Vec2>, rhs: Val<bevy::math::I64Vec2>| {
-                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::I64Vec2>, rhs: Val<bevy::math::I64Vec2>| {
-                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::mul(
+                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::sub(
                             _self.into(),
                             rhs.into(),
                         )
@@ -4592,8 +4509,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |x: i64, y: i64| {
                     let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::new(
-                            x.into(),
-                            y.into(),
+                            x,
+                            y,
                         )
                         .into();
                     output
@@ -4603,7 +4520,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "splat",
                 |v: i64| {
                     let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::splat(
-                            v.into(),
+                            v,
                         )
                         .into();
                     output
@@ -4629,7 +4546,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [i64; 2]| {
                     let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -4638,7 +4555,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::I64Vec2>| {
-                    let output: [i64; 2] = ::bevy::math::I64Vec2::to_array(_self.into())
+                    let output: [i64; 2] = ::bevy::math::I64Vec2::to_array(&_self)
                         .into();
                     output
                 },
@@ -4648,7 +4565,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::I64Vec2>, z: i64| {
                     let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec2::extend(
                             _self.into(),
-                            z.into(),
+                            z,
                         )
                         .into();
                     output
@@ -4659,7 +4576,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::I64Vec2>, x: i64| {
                     let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::with_x(
                             _self.into(),
-                            x.into(),
+                            x,
                         )
                         .into();
                     output
@@ -4670,7 +4587,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::I64Vec2>, y: i64| {
                     let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::with_y(
                             _self.into(),
-                            y.into(),
+                            y,
                         )
                         .into();
                     output
@@ -4943,7 +4860,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec2",
                 |_self: Ref<bevy::math::I64Vec2>| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::I64Vec2::as_vec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -4953,7 +4870,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dvec2",
                 |_self: Ref<bevy::math::I64Vec2>| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::I64Vec2::as_dvec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -4963,7 +4880,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_ivec2",
                 |_self: Ref<bevy::math::I64Vec2>| {
                     let output: Val<bevy::math::IVec2> = ::bevy::math::I64Vec2::as_ivec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -4973,7 +4890,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_uvec2",
                 |_self: Ref<bevy::math::I64Vec2>| {
                     let output: Val<bevy::math::UVec2> = ::bevy::math::I64Vec2::as_uvec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -4983,7 +4900,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_u64vec2",
                 |_self: Ref<bevy::math::I64Vec2>| {
                     let output: Val<bevy::math::U64Vec2> = ::bevy::math::I64Vec2::as_u64vec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -5122,42 +5039,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::I64Vec2>, rhs: i64| {
-                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::I64Vec2>, rhs: Ref<bevy::math::I64Vec2>| {
-                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::I64Vec2>, rhs: i64| {
-                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
+                "add",
                 |_self: Val<bevy::math::I64Vec2>, rhs: Val<bevy::math::I64Vec2>| {
-                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::sub(
+                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::add(
                             _self.into(),
                             rhs.into(),
                         )
@@ -5166,85 +5050,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::I64Vec2>, rhs: Ref<bevy::math::I64Vec2>| {
-                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            );
-        NamespaceBuilder::<::bevy::math::I64Vec3>::new(world)
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::I64Vec3>, rhs: Ref<bevy::math::I64Vec3>| {
-                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::I64Vec3>, rhs: Ref<bevy::math::I64Vec3>| {
-                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::I64Vec3>, rhs: Val<bevy::math::I64Vec3>| {
-                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::I64Vec3>, rhs: Val<bevy::math::I64Vec3>| {
-                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "neg",
-                |_self: Val<bevy::math::I64Vec3>| {
-                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::neg(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::math::I64Vec3>| {
-                    let output: () = ::bevy::math::I64Vec3::assert_receiver_is_total_eq(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::I64Vec3>, rhs: i64| {
-                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::mul(
+                "rem",
+                |_self: Val<bevy::math::I64Vec2>, rhs: Val<bevy::math::I64Vec2>| {
+                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::rem(
                             _self.into(),
                             rhs.into(),
                         )
@@ -5254,21 +5062,17 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "eq",
-                |_self: Ref<bevy::math::I64Vec3>, other: Ref<bevy::math::I64Vec3>| {
-                    let output: bool = ::bevy::math::I64Vec3::eq(
-                            _self.into(),
-                            other.into(),
-                        )
-                        .into();
+                |_self: Ref<bevy::math::I64Vec2>, other: Ref<bevy::math::I64Vec2>| {
+                    let output: bool = ::bevy::math::I64Vec2::eq(&_self, &other).into();
                     output
                 },
             )
             .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::I64Vec3>, rhs: Ref<bevy::math::I64Vec3>| {
-                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::rem(
+                "div",
+                |_self: Val<bevy::math::I64Vec2>, rhs: i64| {
+                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::div(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -5276,54 +5080,54 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "mul",
+                |_self: Val<bevy::math::I64Vec2>, rhs: i64| {
+                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::mul(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::I64Vec2>, rhs: Val<bevy::math::I64Vec2>| {
+                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::mul(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::I64Vec2>| {
+                    let output: Val<bevy::math::I64Vec2> = ::bevy::math::I64Vec2::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            );
+        NamespaceBuilder::<::bevy::math::I64Vec3>::new(world)
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::I64Vec3>, rhs: i64| {
+                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::rem(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
                 |_self: Val<bevy::math::I64Vec3>, rhs: Ref<bevy::math::I64Vec3>| {
-                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::I64Vec3>, rhs: Val<bevy::math::I64Vec3>| {
                     let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::sub(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::I64Vec3>, rhs: i64| {
-                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::I64Vec3>, rhs: Val<bevy::math::I64Vec3>| {
-                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::I64Vec3>, rhs: i64| {
-                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::add(
-                            _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -5334,7 +5138,28 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::I64Vec3>, rhs: i64| {
                     let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::sub(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::I64Vec3>, rhs: Ref<bevy::math::I64Vec3>| {
+                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::rem(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::I64Vec3>| {
+                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::clone(
+                            &_self,
                         )
                         .into();
                     output
@@ -5342,19 +5167,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "div",
-                |_self: Val<bevy::math::I64Vec3>, rhs: i64| {
-                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
                 |_self: Val<bevy::math::I64Vec3>, rhs: Val<bevy::math::I64Vec3>| {
-                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::mul(
+                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::div(
                             _self.into(),
                             rhs.into(),
                         )
@@ -5366,9 +5180,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |x: i64, y: i64, z: i64| {
                     let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::new(
-                            x.into(),
-                            y.into(),
-                            z.into(),
+                            x,
+                            y,
+                            z,
                         )
                         .into();
                     output
@@ -5378,7 +5192,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "splat",
                 |v: i64| {
                     let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::splat(
-                            v.into(),
+                            v,
                         )
                         .into();
                     output
@@ -5404,7 +5218,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [i64; 3]| {
                     let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -5413,7 +5227,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::I64Vec3>| {
-                    let output: [i64; 3] = ::bevy::math::I64Vec3::to_array(_self.into())
+                    let output: [i64; 3] = ::bevy::math::I64Vec3::to_array(&_self)
                         .into();
                     output
                 },
@@ -5423,7 +5237,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::I64Vec3>, w: i64| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec3::extend(
                             _self.into(),
-                            w.into(),
+                            w,
                         )
                         .into();
                     output
@@ -5444,7 +5258,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::I64Vec3>, x: i64| {
                     let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::with_x(
                             _self.into(),
-                            x.into(),
+                            x,
                         )
                         .into();
                     output
@@ -5455,7 +5269,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::I64Vec3>, y: i64| {
                     let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::with_y(
                             _self.into(),
-                            y.into(),
+                            y,
                         )
                         .into();
                     output
@@ -5466,7 +5280,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::I64Vec3>, z: i64| {
                     let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::with_z(
                             _self.into(),
-                            z.into(),
+                            z,
                         )
                         .into();
                     output
@@ -5718,7 +5532,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec3",
                 |_self: Ref<bevy::math::I64Vec3>| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::I64Vec3::as_vec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -5728,7 +5542,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec3a",
                 |_self: Ref<bevy::math::I64Vec3>| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::I64Vec3::as_vec3a(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -5738,7 +5552,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dvec3",
                 |_self: Ref<bevy::math::I64Vec3>| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::I64Vec3::as_dvec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -5748,7 +5562,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_ivec3",
                 |_self: Ref<bevy::math::I64Vec3>| {
                     let output: Val<bevy::math::IVec3> = ::bevy::math::I64Vec3::as_ivec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -5758,7 +5572,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_uvec3",
                 |_self: Ref<bevy::math::I64Vec3>| {
                     let output: Val<bevy::math::UVec3> = ::bevy::math::I64Vec3::as_uvec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -5768,7 +5582,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_u64vec3",
                 |_self: Ref<bevy::math::I64Vec3>| {
                     let output: Val<bevy::math::U64Vec3> = ::bevy::math::I64Vec3::as_u64vec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -5907,8 +5721,83 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "sub",
+                "add",
                 |_self: Val<bevy::math::I64Vec3>, rhs: Ref<bevy::math::I64Vec3>| {
+                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::add(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::I64Vec3>, rhs: i64| {
+                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::add(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::math::I64Vec3>| {
+                    let output: () = ::bevy::math::I64Vec3::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::I64Vec3>, rhs: Val<bevy::math::I64Vec3>| {
+                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::add(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::I64Vec3>, rhs: i64| {
+                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::div(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::I64Vec3>, rhs: Ref<bevy::math::I64Vec3>| {
+                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::div(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "neg",
+                |_self: Val<bevy::math::I64Vec3>| {
+                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::neg(
+                            _self.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::I64Vec3>, rhs: Val<bevy::math::I64Vec3>| {
                     let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::sub(
                             _self.into(),
                             rhs.into(),
@@ -5918,43 +5807,81 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::I64Vec3>| {
-                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::clone(
+                "mul",
+                |_self: Val<bevy::math::I64Vec3>, rhs: Ref<bevy::math::I64Vec3>| {
+                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::mul(
                             _self.into(),
+                            &rhs,
                         )
                         .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::I64Vec3>, rhs: Val<bevy::math::I64Vec3>| {
+                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::mul(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::I64Vec3>, rhs: Val<bevy::math::I64Vec3>| {
+                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::rem(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::I64Vec3>, rhs: i64| {
+                    let output: Val<bevy::math::I64Vec3> = ::bevy::math::I64Vec3::mul(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::I64Vec3>, other: Ref<bevy::math::I64Vec3>| {
+                    let output: bool = ::bevy::math::I64Vec3::eq(&_self, &other).into();
                     output
                 },
             );
         NamespaceBuilder::<::bevy::math::I64Vec4>::new(world)
             .overwrite_script_function(
-                "sub",
+                "eq",
+                |_self: Ref<bevy::math::I64Vec4>, other: Ref<bevy::math::I64Vec4>| {
+                    let output: bool = ::bevy::math::I64Vec4::eq(&_self, &other).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
                 |_self: Val<bevy::math::I64Vec4>, rhs: Ref<bevy::math::I64Vec4>| {
-                    let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::sub(
+                    let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::div(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::math::I64Vec4>| {
-                    let output: () = ::bevy::math::I64Vec4::assert_receiver_is_total_eq(
+                "div",
+                |_self: Val<bevy::math::I64Vec4>, rhs: i64| {
+                    let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::div(
                             _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::I64Vec4>, rhs: Ref<bevy::math::I64Vec4>| {
-                    let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::add(
-                            _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -5965,6 +5892,17 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::I64Vec4>, rhs: Ref<bevy::math::I64Vec4>| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::rem(
                             _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::I64Vec4>, rhs: Val<bevy::math::I64Vec4>| {
+                    let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::rem(
+                            _self.into(),
                             rhs.into(),
                         )
                         .into();
@@ -5973,10 +5911,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "add",
-                |_self: Val<bevy::math::I64Vec4>, rhs: Val<bevy::math::I64Vec4>| {
+                |_self: Val<bevy::math::I64Vec4>, rhs: i64| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::add(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -5986,18 +5924,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "clone",
                 |_self: Ref<bevy::math::I64Vec4>| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::clone(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::I64Vec4>, rhs: Ref<bevy::math::I64Vec4>| {
-                    let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::div(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -6005,10 +5932,21 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "sub",
-                |_self: Val<bevy::math::I64Vec4>, rhs: i64| {
+                |_self: Val<bevy::math::I64Vec4>, rhs: Val<bevy::math::I64Vec4>| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::sub(
                             _self.into(),
                             rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::I64Vec4>, rhs: i64| {
+                    let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::rem(
+                            _self.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -6027,7 +5965,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "add",
-                |_self: Val<bevy::math::I64Vec4>, rhs: i64| {
+                |_self: Val<bevy::math::I64Vec4>, rhs: Val<bevy::math::I64Vec4>| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::add(
                             _self.into(),
                             rhs.into(),
@@ -6037,11 +5975,44 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::I64Vec4>, other: Ref<bevy::math::I64Vec4>| {
-                    let output: bool = ::bevy::math::I64Vec4::eq(
+                "sub",
+                |_self: Val<bevy::math::I64Vec4>, rhs: i64| {
+                    let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::sub(
                             _self.into(),
-                            other.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::I64Vec4>, rhs: i64| {
+                    let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::mul(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::I64Vec4>, rhs: Ref<bevy::math::I64Vec4>| {
+                    let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::add(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::I64Vec4>, rhs: Ref<bevy::math::I64Vec4>| {
+                    let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::sub(
+                            _self.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -6052,51 +6023,17 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::I64Vec4>, rhs: Ref<bevy::math::I64Vec4>| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::mul(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::I64Vec4>, rhs: i64| {
-                    let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::I64Vec4>, rhs: Val<bevy::math::I64Vec4>| {
-                    let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::I64Vec4>, rhs: i64| {
-                    let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::I64Vec4>, rhs: Val<bevy::math::I64Vec4>| {
-                    let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::rem(
-                            _self.into(),
-                            rhs.into(),
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::math::I64Vec4>| {
+                    let output: () = ::bevy::math::I64Vec4::assert_receiver_is_total_eq(
+                            &_self,
                         )
                         .into();
                     output
@@ -6106,10 +6043,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |x: i64, y: i64, z: i64, w: i64| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::new(
-                            x.into(),
-                            y.into(),
-                            z.into(),
-                            w.into(),
+                            x,
+                            y,
+                            z,
+                            w,
                         )
                         .into();
                     output
@@ -6119,7 +6056,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "splat",
                 |v: i64| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::splat(
-                            v.into(),
+                            v,
                         )
                         .into();
                     output
@@ -6145,7 +6082,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [i64; 4]| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -6154,7 +6091,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::I64Vec4>| {
-                    let output: [i64; 4] = ::bevy::math::I64Vec4::to_array(_self.into())
+                    let output: [i64; 4] = ::bevy::math::I64Vec4::to_array(&_self)
                         .into();
                     output
                 },
@@ -6174,7 +6111,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::I64Vec4>, x: i64| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::with_x(
                             _self.into(),
-                            x.into(),
+                            x,
                         )
                         .into();
                     output
@@ -6185,7 +6122,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::I64Vec4>, y: i64| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::with_y(
                             _self.into(),
-                            y.into(),
+                            y,
                         )
                         .into();
                     output
@@ -6196,7 +6133,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::I64Vec4>, z: i64| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::with_z(
                             _self.into(),
-                            z.into(),
+                            z,
                         )
                         .into();
                     output
@@ -6207,7 +6144,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::I64Vec4>, w: i64| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::with_w(
                             _self.into(),
-                            w.into(),
+                            w,
                         )
                         .into();
                     output
@@ -6448,7 +6385,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec4",
                 |_self: Ref<bevy::math::I64Vec4>| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::I64Vec4::as_vec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -6458,7 +6395,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dvec4",
                 |_self: Ref<bevy::math::I64Vec4>| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::I64Vec4::as_dvec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -6468,7 +6405,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_ivec4",
                 |_self: Ref<bevy::math::I64Vec4>| {
                     let output: Val<bevy::math::IVec4> = ::bevy::math::I64Vec4::as_ivec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -6478,7 +6415,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_uvec4",
                 |_self: Ref<bevy::math::I64Vec4>| {
                     let output: Val<bevy::math::UVec4> = ::bevy::math::I64Vec4::as_uvec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -6488,7 +6425,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_u64vec4",
                 |_self: Ref<bevy::math::I64Vec4>| {
                     let output: Val<bevy::math::U64Vec4> = ::bevy::math::I64Vec4::as_u64vec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -6627,6 +6564,17 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::I64Vec4>, rhs: Val<bevy::math::I64Vec4>| {
+                    let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::mul(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
                 "neg",
                 |_self: Val<bevy::math::I64Vec4>| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::neg(
@@ -6635,49 +6583,12 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::I64Vec4>, rhs: Val<bevy::math::I64Vec4>| {
-                    let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::I64Vec4>, rhs: i64| {
-                    let output: Val<bevy::math::I64Vec4> = ::bevy::math::I64Vec4::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::math::UVec2>::new(world)
             .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::UVec2>, rhs: Val<bevy::math::UVec2>| {
-                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::UVec2>, rhs: Val<bevy::math::UVec2>| {
-                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
+                "eq",
+                |_self: Ref<bevy::math::UVec2>, other: Ref<bevy::math::UVec2>| {
+                    let output: bool = ::bevy::math::UVec2::eq(&_self, &other).into();
                     output
                 },
             )
@@ -6686,29 +6597,61 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::UVec2>, rhs: Ref<bevy::math::UVec2>| {
                     let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::div(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::UVec2>, rhs: Ref<bevy::math::UVec2>| {
-                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
+                "div",
                 |_self: Val<bevy::math::UVec2>, rhs: u32| {
-                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::add(
+                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::div(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::UVec2>| {
+                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::UVec2>, rhs: Val<bevy::math::UVec2>| {
+                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::div(
                             _self.into(),
                             rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::UVec2>, rhs: Ref<bevy::math::UVec2>| {
+                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::sub(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::UVec2>, rhs: Ref<bevy::math::UVec2>| {
+                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::rem(
+                            _self.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -6726,9 +6669,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::UVec2>, rhs: u32| {
-                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::rem(
+                "mul",
+                |_self: Val<bevy::math::UVec2>, rhs: Val<bevy::math::UVec2>| {
+                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::mul(
                             _self.into(),
                             rhs.into(),
                         )
@@ -6737,11 +6680,66 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "div",
+                "add",
+                |_self: Val<bevy::math::UVec2>, rhs: Ref<bevy::math::UVec2>| {
+                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::add(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
                 |_self: Val<bevy::math::UVec2>, rhs: u32| {
-                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::div(
+                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::mul(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::UVec2>, rhs: u32| {
+                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::rem(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::UVec2>, rhs: Val<bevy::math::UVec2>| {
+                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::add(
                             _self.into(),
                             rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::UVec2>, rhs: Ref<bevy::math::UVec2>| {
+                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::mul(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::UVec2>, rhs: u32| {
+                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::add(
+                            _self.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -6751,18 +6749,29 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::math::UVec2>| {
                     let output: () = ::bevy::math::UVec2::assert_receiver_is_total_eq(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::UVec2>, other: Ref<bevy::math::UVec2>| {
-                    let output: bool = ::bevy::math::UVec2::eq(
+                "sub",
+                |_self: Val<bevy::math::UVec2>, rhs: u32| {
+                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::sub(
                             _self.into(),
-                            other.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::UVec2>, rhs: Val<bevy::math::UVec2>| {
+                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::sub(
+                            _self.into(),
+                            rhs.into(),
                         )
                         .into();
                     output
@@ -6771,10 +6780,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |x: u32, y: u32| {
-                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::new(
-                            x.into(),
-                            y.into(),
-                        )
+                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::new(x, y)
                         .into();
                     output
                 },
@@ -6782,9 +6788,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "splat",
                 |v: u32| {
-                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::splat(
-                            v.into(),
-                        )
+                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::splat(v)
                         .into();
                     output
                 },
@@ -6809,7 +6813,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [u32; 2]| {
                     let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -6818,8 +6822,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::UVec2>| {
-                    let output: [u32; 2] = ::bevy::math::UVec2::to_array(_self.into())
-                        .into();
+                    let output: [u32; 2] = ::bevy::math::UVec2::to_array(&_self).into();
                     output
                 },
             )
@@ -6828,7 +6831,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::UVec2>, z: u32| {
                     let output: Val<bevy::math::UVec3> = ::bevy::math::UVec2::extend(
                             _self.into(),
-                            z.into(),
+                            z,
                         )
                         .into();
                     output
@@ -6839,7 +6842,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::UVec2>, x: u32| {
                     let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::with_x(
                             _self.into(),
-                            x.into(),
+                            x,
                         )
                         .into();
                     output
@@ -6850,7 +6853,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::UVec2>, y: u32| {
                     let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::with_y(
                             _self.into(),
-                            y.into(),
+                            y,
                         )
                         .into();
                     output
@@ -7023,7 +7026,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec2",
                 |_self: Ref<bevy::math::UVec2>| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::UVec2::as_vec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -7033,7 +7036,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dvec2",
                 |_self: Ref<bevy::math::UVec2>| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::UVec2::as_dvec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -7043,7 +7046,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_ivec2",
                 |_self: Ref<bevy::math::UVec2>| {
                     let output: Val<bevy::math::IVec2> = ::bevy::math::UVec2::as_ivec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -7053,7 +7056,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_i64vec2",
                 |_self: Ref<bevy::math::UVec2>| {
                     let output: Val<bevy::math::I64Vec2> = ::bevy::math::UVec2::as_i64vec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -7063,7 +7066,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_u64vec2",
                 |_self: Ref<bevy::math::UVec2>| {
                     let output: Val<bevy::math::U64Vec2> = ::bevy::math::UVec2::as_u64vec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -7178,110 +7181,33 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::UVec2>, rhs: Ref<bevy::math::UVec2>| {
-                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::UVec2>, rhs: Ref<bevy::math::UVec2>| {
-                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::UVec2>, rhs: u32| {
-                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::UVec2>| {
-                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::clone(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::UVec2>, rhs: Val<bevy::math::UVec2>| {
-                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::UVec2>, rhs: Ref<bevy::math::UVec2>| {
-                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::UVec2>, rhs: Val<bevy::math::UVec2>| {
-                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::UVec2>, rhs: u32| {
-                    let output: Val<bevy::math::UVec2> = ::bevy::math::UVec2::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::math::UVec3>::new(world)
             .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::UVec3>, rhs: u32| {
-                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::div(
+                "add",
+                |_self: Val<bevy::math::UVec3>, rhs: Ref<bevy::math::UVec3>| {
+                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::add(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::UVec3>, rhs: Ref<bevy::math::UVec3>| {
-                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::rem(
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::math::UVec3>| {
+                    let output: () = ::bevy::math::UVec3::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::UVec3>, rhs: Val<bevy::math::UVec3>| {
+                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::sub(
                             _self.into(),
                             rhs.into(),
                         )
@@ -7291,7 +7217,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "add",
-                |_self: Val<bevy::math::UVec3>, rhs: Ref<bevy::math::UVec3>| {
+                |_self: Val<bevy::math::UVec3>, rhs: Val<bevy::math::UVec3>| {
                     let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::add(
                             _self.into(),
                             rhs.into(),
@@ -7301,12 +7227,55 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::UVec3>| {
+                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::UVec3>, rhs: Val<bevy::math::UVec3>| {
+                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::mul(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::UVec3>, rhs: Ref<bevy::math::UVec3>| {
+                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::mul(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::UVec3>, rhs: u32| {
+                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::mul(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
                 "new",
                 |x: u32, y: u32, z: u32| {
                     let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::new(
-                            x.into(),
-                            y.into(),
-                            z.into(),
+                            x,
+                            y,
+                            z,
                         )
                         .into();
                     output
@@ -7315,9 +7284,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "splat",
                 |v: u32| {
-                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::splat(
-                            v.into(),
-                        )
+                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::splat(v)
                         .into();
                     output
                 },
@@ -7342,7 +7309,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [u32; 3]| {
                     let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -7351,8 +7318,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::UVec3>| {
-                    let output: [u32; 3] = ::bevy::math::UVec3::to_array(_self.into())
-                        .into();
+                    let output: [u32; 3] = ::bevy::math::UVec3::to_array(&_self).into();
                     output
                 },
             )
@@ -7361,7 +7327,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::UVec3>, w: u32| {
                     let output: Val<bevy::math::UVec4> = ::bevy::math::UVec3::extend(
                             _self.into(),
-                            w.into(),
+                            w,
                         )
                         .into();
                     output
@@ -7382,7 +7348,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::UVec3>, x: u32| {
                     let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::with_x(
                             _self.into(),
-                            x.into(),
+                            x,
                         )
                         .into();
                     output
@@ -7393,7 +7359,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::UVec3>, y: u32| {
                     let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::with_y(
                             _self.into(),
-                            y.into(),
+                            y,
                         )
                         .into();
                     output
@@ -7404,7 +7370,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::UVec3>, z: u32| {
                     let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::with_z(
                             _self.into(),
-                            z.into(),
+                            z,
                         )
                         .into();
                     output
@@ -7588,7 +7554,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec3",
                 |_self: Ref<bevy::math::UVec3>| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::UVec3::as_vec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -7598,7 +7564,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec3a",
                 |_self: Ref<bevy::math::UVec3>| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::UVec3::as_vec3a(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -7608,7 +7574,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dvec3",
                 |_self: Ref<bevy::math::UVec3>| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::UVec3::as_dvec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -7618,7 +7584,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_ivec3",
                 |_self: Ref<bevy::math::UVec3>| {
                     let output: Val<bevy::math::IVec3> = ::bevy::math::UVec3::as_ivec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -7628,7 +7594,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_i64vec3",
                 |_self: Ref<bevy::math::UVec3>| {
                     let output: Val<bevy::math::I64Vec3> = ::bevy::math::UVec3::as_i64vec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -7638,7 +7604,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_u64vec3",
                 |_self: Ref<bevy::math::UVec3>| {
                     let output: Val<bevy::math::U64Vec3> = ::bevy::math::UVec3::as_u64vec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -7755,130 +7721,11 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::UVec3>, rhs: Val<bevy::math::UVec3>| {
-                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::UVec3>, rhs: Ref<bevy::math::UVec3>| {
-                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::UVec3>, rhs: u32| {
-                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
                 "sub",
                 |_self: Val<bevy::math::UVec3>, rhs: u32| {
                     let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::sub(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::UVec3>, rhs: Val<bevy::math::UVec3>| {
-                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::UVec3>, rhs: Val<bevy::math::UVec3>| {
-                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::UVec3>, rhs: u32| {
-                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::UVec3>, rhs: Val<bevy::math::UVec3>| {
-                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::math::UVec3>| {
-                    let output: () = ::bevy::math::UVec3::assert_receiver_is_total_eq(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::UVec3>, rhs: u32| {
-                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::UVec3>, rhs: Ref<bevy::math::UVec3>| {
-                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::UVec3>| {
-                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::clone(
-                            _self.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -7890,6 +7737,17 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::rem(
                             _self.into(),
                             rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::UVec3>, rhs: Ref<bevy::math::UVec3>| {
+                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::rem(
+                            _self.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -7898,9 +7756,60 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "eq",
                 |_self: Ref<bevy::math::UVec3>, other: Ref<bevy::math::UVec3>| {
-                    let output: bool = ::bevy::math::UVec3::eq(
+                    let output: bool = ::bevy::math::UVec3::eq(&_self, &other).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::UVec3>, rhs: Val<bevy::math::UVec3>| {
+                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::div(
                             _self.into(),
-                            other.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::UVec3>, rhs: u32| {
+                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::div(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::UVec3>, rhs: u32| {
+                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::rem(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::UVec3>, rhs: Ref<bevy::math::UVec3>| {
+                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::sub(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::UVec3>, rhs: u32| {
+                    let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::add(
+                            _self.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -7911,7 +7820,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::UVec3>, rhs: Ref<bevy::math::UVec3>| {
                     let output: Val<bevy::math::UVec3> = ::bevy::math::UVec3::div(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -7919,10 +7828,76 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::UVec4>::new(world)
             .overwrite_script_function(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::math::UVec4>| {
-                    let output: () = ::bevy::math::UVec4::assert_receiver_is_total_eq(
+                "sub",
+                |_self: Val<bevy::math::UVec4>, rhs: Ref<bevy::math::UVec4>| {
+                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::sub(
                             _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::UVec4>, rhs: Val<bevy::math::UVec4>| {
+                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::sub(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::UVec4>, rhs: u32| {
+                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::div(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::UVec4>| {
+                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::UVec4>, rhs: Ref<bevy::math::UVec4>| {
+                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::add(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::UVec4>, rhs: Val<bevy::math::UVec4>| {
+                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::mul(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::UVec4>, rhs: Val<bevy::math::UVec4>| {
+                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::rem(
+                            _self.into(),
+                            rhs.into(),
                         )
                         .into();
                     output
@@ -7933,18 +7908,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::UVec4>, rhs: Ref<bevy::math::UVec4>| {
                     let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::mul(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::UVec4>, rhs: Val<bevy::math::UVec4>| {
-                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::add(
-                            _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -7954,10 +7918,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |x: u32, y: u32, z: u32, w: u32| {
                     let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::new(
-                            x.into(),
-                            y.into(),
-                            z.into(),
-                            w.into(),
+                            x,
+                            y,
+                            z,
+                            w,
                         )
                         .into();
                     output
@@ -7966,9 +7930,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "splat",
                 |v: u32| {
-                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::splat(
-                            v.into(),
-                        )
+                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::splat(v)
                         .into();
                     output
                 },
@@ -7993,7 +7955,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [u32; 4]| {
                     let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -8002,8 +7964,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::UVec4>| {
-                    let output: [u32; 4] = ::bevy::math::UVec4::to_array(_self.into())
-                        .into();
+                    let output: [u32; 4] = ::bevy::math::UVec4::to_array(&_self).into();
                     output
                 },
             )
@@ -8022,7 +7983,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::UVec4>, x: u32| {
                     let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::with_x(
                             _self.into(),
-                            x.into(),
+                            x,
                         )
                         .into();
                     output
@@ -8033,7 +7994,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::UVec4>, y: u32| {
                     let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::with_y(
                             _self.into(),
-                            y.into(),
+                            y,
                         )
                         .into();
                     output
@@ -8044,7 +8005,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::UVec4>, z: u32| {
                     let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::with_z(
                             _self.into(),
-                            z.into(),
+                            z,
                         )
                         .into();
                     output
@@ -8055,7 +8016,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::UVec4>, w: u32| {
                     let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::with_w(
                             _self.into(),
-                            w.into(),
+                            w,
                         )
                         .into();
                     output
@@ -8228,7 +8189,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec4",
                 |_self: Ref<bevy::math::UVec4>| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::UVec4::as_vec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -8238,7 +8199,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dvec4",
                 |_self: Ref<bevy::math::UVec4>| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::UVec4::as_dvec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -8248,7 +8209,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_ivec4",
                 |_self: Ref<bevy::math::UVec4>| {
                     let output: Val<bevy::math::IVec4> = ::bevy::math::UVec4::as_ivec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -8258,7 +8219,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_i64vec4",
                 |_self: Ref<bevy::math::UVec4>| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::UVec4::as_i64vec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -8268,7 +8229,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_u64vec4",
                 |_self: Ref<bevy::math::UVec4>| {
                     let output: Val<bevy::math::U64Vec4> = ::bevy::math::UVec4::as_u64vec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -8385,153 +8346,94 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::UVec4>| {
-                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::clone(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::UVec4>, rhs: Ref<bevy::math::UVec4>| {
-                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::UVec4>, rhs: Val<bevy::math::UVec4>| {
-                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::UVec4>, rhs: Val<bevy::math::UVec4>| {
-                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::UVec4>, rhs: u32| {
-                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::UVec4>, rhs: Ref<bevy::math::UVec4>| {
-                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::UVec4>, rhs: Val<bevy::math::UVec4>| {
-                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::UVec4>, rhs: u32| {
-                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::UVec4>, rhs: Val<bevy::math::UVec4>| {
-                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::UVec4>, rhs: Ref<bevy::math::UVec4>| {
-                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::UVec4>, rhs: Ref<bevy::math::UVec4>| {
-                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::UVec4>, rhs: u32| {
-                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::UVec4>, rhs: u32| {
-                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
                 "eq",
                 |_self: Ref<bevy::math::UVec4>, other: Ref<bevy::math::UVec4>| {
-                    let output: bool = ::bevy::math::UVec4::eq(
+                    let output: bool = ::bevy::math::UVec4::eq(&_self, &other).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::UVec4>, rhs: u32| {
+                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::sub(
                             _self.into(),
-                            other.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::UVec4>, rhs: Val<bevy::math::UVec4>| {
+                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::div(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::UVec4>, rhs: u32| {
+                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::mul(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::UVec4>, rhs: Ref<bevy::math::UVec4>| {
+                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::rem(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::UVec4>, rhs: Ref<bevy::math::UVec4>| {
+                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::div(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::math::UVec4>| {
+                    let output: () = ::bevy::math::UVec4::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::UVec4>, rhs: u32| {
+                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::rem(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::UVec4>, rhs: Val<bevy::math::UVec4>| {
+                    let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::add(
+                            _self.into(),
+                            rhs.into(),
                         )
                         .into();
                     output
@@ -8542,7 +8444,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::UVec4>, rhs: u32| {
                     let output: Val<bevy::math::UVec4> = ::bevy::math::UVec4::add(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -8550,19 +8452,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::U64Vec2>::new(world)
             .overwrite_script_function(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::math::U64Vec2>| {
-                    let output: () = ::bevy::math::U64Vec2::assert_receiver_is_total_eq(
+                "mul",
+                |_self: Val<bevy::math::U64Vec2>, rhs: u64| {
+                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::mul(
                             _self.into(),
+                            rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "sub",
+                "rem",
                 |_self: Val<bevy::math::U64Vec2>, rhs: Val<bevy::math::U64Vec2>| {
-                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::sub(
+                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::rem(
                             _self.into(),
                             rhs.into(),
                         )
@@ -8572,7 +8475,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "add",
-                |_self: Val<bevy::math::U64Vec2>, rhs: u64| {
+                |_self: Val<bevy::math::U64Vec2>, rhs: Val<bevy::math::U64Vec2>| {
                     let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::add(
                             _self.into(),
                             rhs.into(),
@@ -8582,77 +8485,11 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::U64Vec2>, rhs: u64| {
-                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
                 "sub",
                 |_self: Val<bevy::math::U64Vec2>, rhs: Ref<bevy::math::U64Vec2>| {
                     let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::sub(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::U64Vec2>, rhs: u64| {
-                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::U64Vec2>, rhs: Ref<bevy::math::U64Vec2>| {
-                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::U64Vec2>, rhs: Val<bevy::math::U64Vec2>| {
-                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::U64Vec2>, rhs: Ref<bevy::math::U64Vec2>| {
-                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::U64Vec2>, rhs: u64| {
-                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::sub(
-                            _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -8663,18 +8500,72 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::U64Vec2>, rhs: Ref<bevy::math::U64Vec2>| {
                     let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::mul(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::U64Vec2>, other: Ref<bevy::math::U64Vec2>| {
-                    let output: bool = ::bevy::math::U64Vec2::eq(
+                "div",
+                |_self: Val<bevy::math::U64Vec2>, rhs: u64| {
+                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::div(
                             _self.into(),
-                            other.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::U64Vec2>| {
+                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::U64Vec2>, rhs: u64| {
+                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::sub(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::U64Vec2>, rhs: Ref<bevy::math::U64Vec2>| {
+                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::rem(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::U64Vec2>, rhs: u64| {
+                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::add(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::U64Vec2>, rhs: Ref<bevy::math::U64Vec2>| {
+                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::div(
+                            _self.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -8684,8 +8575,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |x: u64, y: u64| {
                     let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::new(
-                            x.into(),
-                            y.into(),
+                            x,
+                            y,
                         )
                         .into();
                     output
@@ -8695,7 +8586,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "splat",
                 |v: u64| {
                     let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::splat(
-                            v.into(),
+                            v,
                         )
                         .into();
                     output
@@ -8721,7 +8612,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [u64; 2]| {
                     let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -8730,7 +8621,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::U64Vec2>| {
-                    let output: [u64; 2] = ::bevy::math::U64Vec2::to_array(_self.into())
+                    let output: [u64; 2] = ::bevy::math::U64Vec2::to_array(&_self)
                         .into();
                     output
                 },
@@ -8740,7 +8631,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::U64Vec2>, z: u64| {
                     let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec2::extend(
                             _self.into(),
-                            z.into(),
+                            z,
                         )
                         .into();
                     output
@@ -8751,7 +8642,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::U64Vec2>, x: u64| {
                     let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::with_x(
                             _self.into(),
-                            x.into(),
+                            x,
                         )
                         .into();
                     output
@@ -8762,7 +8653,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::U64Vec2>, y: u64| {
                     let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::with_y(
                             _self.into(),
-                            y.into(),
+                            y,
                         )
                         .into();
                     output
@@ -8940,7 +8831,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec2",
                 |_self: Ref<bevy::math::U64Vec2>| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::U64Vec2::as_vec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -8950,7 +8841,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dvec2",
                 |_self: Ref<bevy::math::U64Vec2>| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::U64Vec2::as_dvec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -8960,7 +8851,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_ivec2",
                 |_self: Ref<bevy::math::U64Vec2>| {
                     let output: Val<bevy::math::IVec2> = ::bevy::math::U64Vec2::as_ivec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -8970,7 +8861,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_uvec2",
                 |_self: Ref<bevy::math::U64Vec2>| {
                     let output: Val<bevy::math::UVec2> = ::bevy::math::U64Vec2::as_uvec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -8980,7 +8871,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_i64vec2",
                 |_self: Ref<bevy::math::U64Vec2>| {
                     let output: Val<bevy::math::I64Vec2> = ::bevy::math::U64Vec2::as_i64vec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -9097,52 +8988,49 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::U64Vec2>, rhs: u64| {
-                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::U64Vec2>| {
-                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::clone(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::U64Vec2>, rhs: Val<bevy::math::U64Vec2>| {
-                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
                 "add",
-                |_self: Val<bevy::math::U64Vec2>, rhs: Val<bevy::math::U64Vec2>| {
+                |_self: Val<bevy::math::U64Vec2>, rhs: Ref<bevy::math::U64Vec2>| {
                     let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::add(
                             _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::U64Vec2>, rhs: Val<bevy::math::U64Vec2>| {
+                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::div(
+                            _self.into(),
                             rhs.into(),
                         )
                         .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::U64Vec2>, other: Ref<bevy::math::U64Vec2>| {
+                    let output: bool = ::bevy::math::U64Vec2::eq(&_self, &other).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "rem",
-                |_self: Val<bevy::math::U64Vec2>, rhs: Val<bevy::math::U64Vec2>| {
+                |_self: Val<bevy::math::U64Vec2>, rhs: u64| {
                     let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::rem(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::U64Vec2>, rhs: Val<bevy::math::U64Vec2>| {
+                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::mul(
                             _self.into(),
                             rhs.into(),
                         )
@@ -9151,9 +9039,19 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::U64Vec2>, rhs: Ref<bevy::math::U64Vec2>| {
-                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::add(
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::math::U64Vec2>| {
+                    let output: () = ::bevy::math::U64Vec2::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::U64Vec2>, rhs: Val<bevy::math::U64Vec2>| {
+                    let output: Val<bevy::math::U64Vec2> = ::bevy::math::U64Vec2::sub(
                             _self.into(),
                             rhs.into(),
                         )
@@ -9164,131 +9062,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
         NamespaceBuilder::<::bevy::math::U64Vec3>::new(world)
             .overwrite_script_function(
                 "mul",
-                |_self: Val<bevy::math::U64Vec3>, rhs: Val<bevy::math::U64Vec3>| {
-                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::U64Vec3>, rhs: Ref<bevy::math::U64Vec3>| {
-                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::U64Vec3>, rhs: Ref<bevy::math::U64Vec3>| {
-                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::U64Vec3>, rhs: Val<bevy::math::U64Vec3>| {
-                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::U64Vec3>, rhs: Val<bevy::math::U64Vec3>| {
-                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::U64Vec3>, rhs: u64| {
-                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
                 |_self: Val<bevy::math::U64Vec3>, rhs: u64| {
                     let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::mul(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::U64Vec3>, rhs: Ref<bevy::math::U64Vec3>| {
-                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::U64Vec3>, rhs: Ref<bevy::math::U64Vec3>| {
-                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::U64Vec3>, rhs: Val<bevy::math::U64Vec3>| {
-                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::U64Vec3>, rhs: u64| {
-                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::U64Vec3>, rhs: Val<bevy::math::U64Vec3>| {
-                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::sub(
-                            _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -9299,7 +9076,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::U64Vec3>, rhs: u64| {
                     let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::sub(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -9309,9 +9086,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |x: u64, y: u64, z: u64| {
                     let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::new(
-                            x.into(),
-                            y.into(),
-                            z.into(),
+                            x,
+                            y,
+                            z,
                         )
                         .into();
                     output
@@ -9321,7 +9098,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "splat",
                 |v: u64| {
                     let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::splat(
-                            v.into(),
+                            v,
                         )
                         .into();
                     output
@@ -9347,7 +9124,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [u64; 3]| {
                     let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -9356,7 +9133,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::U64Vec3>| {
-                    let output: [u64; 3] = ::bevy::math::U64Vec3::to_array(_self.into())
+                    let output: [u64; 3] = ::bevy::math::U64Vec3::to_array(&_self)
                         .into();
                     output
                 },
@@ -9366,7 +9143,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::U64Vec3>, w: u64| {
                     let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec3::extend(
                             _self.into(),
-                            w.into(),
+                            w,
                         )
                         .into();
                     output
@@ -9387,7 +9164,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::U64Vec3>, x: u64| {
                     let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::with_x(
                             _self.into(),
-                            x.into(),
+                            x,
                         )
                         .into();
                     output
@@ -9398,7 +9175,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::U64Vec3>, y: u64| {
                     let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::with_y(
                             _self.into(),
-                            y.into(),
+                            y,
                         )
                         .into();
                     output
@@ -9409,7 +9186,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::U64Vec3>, z: u64| {
                     let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::with_z(
                             _self.into(),
-                            z.into(),
+                            z,
                         )
                         .into();
                     output
@@ -9598,7 +9375,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec3",
                 |_self: Ref<bevy::math::U64Vec3>| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::U64Vec3::as_vec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -9608,7 +9385,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec3a",
                 |_self: Ref<bevy::math::U64Vec3>| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::U64Vec3::as_vec3a(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -9618,7 +9395,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dvec3",
                 |_self: Ref<bevy::math::U64Vec3>| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::U64Vec3::as_dvec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -9628,7 +9405,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_ivec3",
                 |_self: Ref<bevy::math::U64Vec3>| {
                     let output: Val<bevy::math::IVec3> = ::bevy::math::U64Vec3::as_ivec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -9638,7 +9415,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_uvec3",
                 |_self: Ref<bevy::math::U64Vec3>| {
                     let output: Val<bevy::math::UVec3> = ::bevy::math::U64Vec3::as_uvec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -9648,7 +9425,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_i64vec3",
                 |_self: Ref<bevy::math::U64Vec3>| {
                     let output: Val<bevy::math::I64Vec3> = ::bevy::math::U64Vec3::as_i64vec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -9765,21 +9542,21 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::U64Vec3>, rhs: u64| {
-                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
                 "add",
                 |_self: Val<bevy::math::U64Vec3>, rhs: Ref<bevy::math::U64Vec3>| {
                     let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::add(
                             _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::U64Vec3>, rhs: Val<bevy::math::U64Vec3>| {
+                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::mul(
+                            _self.into(),
                             rhs.into(),
                         )
                         .into();
@@ -9787,11 +9564,22 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::U64Vec3>, other: Ref<bevy::math::U64Vec3>| {
-                    let output: bool = ::bevy::math::U64Vec3::eq(
+                "rem",
+                |_self: Val<bevy::math::U64Vec3>, rhs: Ref<bevy::math::U64Vec3>| {
+                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::rem(
                             _self.into(),
-                            other.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::U64Vec3>, rhs: u64| {
+                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::rem(
+                            _self.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -9801,7 +9589,40 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::math::U64Vec3>| {
                     let output: () = ::bevy::math::U64Vec3::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::U64Vec3>, rhs: Ref<bevy::math::U64Vec3>| {
+                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::div(
                             _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::U64Vec3>, rhs: Val<bevy::math::U64Vec3>| {
+                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::div(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::U64Vec3>, rhs: u64| {
+                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::div(
+                            _self.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -9811,17 +9632,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "clone",
                 |_self: Ref<bevy::math::U64Vec3>| {
                     let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::clone(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::U64Vec4>::new(world)
+            )
             .overwrite_script_function(
                 "rem",
-                |_self: Val<bevy::math::U64Vec4>, rhs: Val<bevy::math::U64Vec4>| {
-                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::rem(
+                |_self: Val<bevy::math::U64Vec3>, rhs: Val<bevy::math::U64Vec3>| {
+                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::rem(
                             _self.into(),
                             rhs.into(),
                         )
@@ -9830,11 +9650,73 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::U64Vec4>, rhs: Ref<bevy::math::U64Vec4>| {
-                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::mul(
+                "sub",
+                |_self: Val<bevy::math::U64Vec3>, rhs: Val<bevy::math::U64Vec3>| {
+                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::sub(
                             _self.into(),
                             rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::U64Vec3>, rhs: u64| {
+                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::add(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::U64Vec3>, other: Ref<bevy::math::U64Vec3>| {
+                    let output: bool = ::bevy::math::U64Vec3::eq(&_self, &other).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::U64Vec3>, rhs: Ref<bevy::math::U64Vec3>| {
+                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::mul(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::U64Vec3>, rhs: Val<bevy::math::U64Vec3>| {
+                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::add(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::U64Vec3>, rhs: Ref<bevy::math::U64Vec3>| {
+                    let output: Val<bevy::math::U64Vec3> = ::bevy::math::U64Vec3::sub(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            );
+        NamespaceBuilder::<::bevy::math::U64Vec4>::new(world)
+            .overwrite_script_function(
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::math::U64Vec4>| {
+                    let output: () = ::bevy::math::U64Vec4::assert_receiver_is_total_eq(
+                            &_self,
                         )
                         .into();
                     output
@@ -9856,6 +9738,39 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::U64Vec4>, rhs: Ref<bevy::math::U64Vec4>| {
                     let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::rem(
                             _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::U64Vec4>, rhs: u64| {
+                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::div(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::U64Vec4>, rhs: Ref<bevy::math::U64Vec4>| {
+                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::div(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::U64Vec4>, rhs: Val<bevy::math::U64Vec4>| {
+                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::mul(
+                            _self.into(),
                             rhs.into(),
                         )
                         .into();
@@ -9863,21 +9778,88 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::math::U64Vec4>| {
-                    let output: () = ::bevy::math::U64Vec4::assert_receiver_is_total_eq(
+                "add",
+                |_self: Val<bevy::math::U64Vec4>, rhs: Val<bevy::math::U64Vec4>| {
+                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::add(
                             _self.into(),
+                            rhs.into(),
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::U64Vec4>, other: Ref<bevy::math::U64Vec4>| {
-                    let output: bool = ::bevy::math::U64Vec4::eq(
+                "rem",
+                |_self: Val<bevy::math::U64Vec4>, rhs: Val<bevy::math::U64Vec4>| {
+                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::rem(
                             _self.into(),
-                            other.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::U64Vec4>, rhs: Ref<bevy::math::U64Vec4>| {
+                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::sub(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::U64Vec4>, rhs: u64| {
+                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::mul(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::U64Vec4>, rhs: u64| {
+                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::add(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::U64Vec4>, rhs: Ref<bevy::math::U64Vec4>| {
+                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::add(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::U64Vec4>, rhs: Ref<bevy::math::U64Vec4>| {
+                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::mul(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::U64Vec4>, rhs: Val<bevy::math::U64Vec4>| {
+                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::div(
+                            _self.into(),
+                            rhs.into(),
                         )
                         .into();
                     output
@@ -9887,106 +9869,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "clone",
                 |_self: Ref<bevy::math::U64Vec4>| {
                     let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::clone(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::U64Vec4>, rhs: Val<bevy::math::U64Vec4>| {
-                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::U64Vec4>, rhs: u64| {
-                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::U64Vec4>, rhs: Val<bevy::math::U64Vec4>| {
-                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::U64Vec4>, rhs: Val<bevy::math::U64Vec4>| {
-                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::U64Vec4>, rhs: u64| {
-                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::U64Vec4>, rhs: u64| {
-                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::U64Vec4>, rhs: Ref<bevy::math::U64Vec4>| {
-                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::U64Vec4>, rhs: Ref<bevy::math::U64Vec4>| {
-                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::U64Vec4>, rhs: Ref<bevy::math::U64Vec4>| {
-                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::div(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -9996,10 +9879,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |x: u64, y: u64, z: u64, w: u64| {
                     let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::new(
-                            x.into(),
-                            y.into(),
-                            z.into(),
-                            w.into(),
+                            x,
+                            y,
+                            z,
+                            w,
                         )
                         .into();
                     output
@@ -10009,7 +9892,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "splat",
                 |v: u64| {
                     let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::splat(
-                            v.into(),
+                            v,
                         )
                         .into();
                     output
@@ -10035,7 +9918,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [u64; 4]| {
                     let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -10044,7 +9927,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::U64Vec4>| {
-                    let output: [u64; 4] = ::bevy::math::U64Vec4::to_array(_self.into())
+                    let output: [u64; 4] = ::bevy::math::U64Vec4::to_array(&_self)
                         .into();
                     output
                 },
@@ -10064,7 +9947,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::U64Vec4>, x: u64| {
                     let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::with_x(
                             _self.into(),
-                            x.into(),
+                            x,
                         )
                         .into();
                     output
@@ -10075,7 +9958,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::U64Vec4>, y: u64| {
                     let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::with_y(
                             _self.into(),
-                            y.into(),
+                            y,
                         )
                         .into();
                     output
@@ -10086,7 +9969,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::U64Vec4>, z: u64| {
                     let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::with_z(
                             _self.into(),
-                            z.into(),
+                            z,
                         )
                         .into();
                     output
@@ -10097,7 +9980,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::U64Vec4>, w: u64| {
                     let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::with_w(
                             _self.into(),
-                            w.into(),
+                            w,
                         )
                         .into();
                     output
@@ -10275,7 +10158,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec4",
                 |_self: Ref<bevy::math::U64Vec4>| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::U64Vec4::as_vec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -10285,7 +10168,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dvec4",
                 |_self: Ref<bevy::math::U64Vec4>| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::U64Vec4::as_dvec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -10295,7 +10178,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_ivec4",
                 |_self: Ref<bevy::math::U64Vec4>| {
                     let output: Val<bevy::math::IVec4> = ::bevy::math::U64Vec4::as_ivec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -10305,7 +10188,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_uvec4",
                 |_self: Ref<bevy::math::U64Vec4>| {
                     let output: Val<bevy::math::UVec4> = ::bevy::math::U64Vec4::as_uvec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -10315,7 +10198,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_i64vec4",
                 |_self: Ref<bevy::math::U64Vec4>| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::U64Vec4::as_i64vec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -10432,22 +10315,29 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "sub",
+                "rem",
                 |_self: Val<bevy::math::U64Vec4>, rhs: u64| {
-                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::sub(
+                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::rem(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "add",
+                "eq",
+                |_self: Ref<bevy::math::U64Vec4>, other: Ref<bevy::math::U64Vec4>| {
+                    let output: bool = ::bevy::math::U64Vec4::eq(&_self, &other).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
                 |_self: Val<bevy::math::U64Vec4>, rhs: u64| {
-                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::add(
+                    let output: Val<bevy::math::U64Vec4> = ::bevy::math::U64Vec4::sub(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -10455,11 +10345,11 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::Vec2>::new(world)
             .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Vec2>, rhs: Val<bevy::math::Vec2>| {
-                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::mul(
+                "div",
+                |_self: Val<bevy::math::Vec2>, rhs: Ref<bevy::math::Vec2>| {
+                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::div(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -10481,7 +10371,35 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec2>, rhs: Ref<bevy::math::Vec2>| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::mul(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::Vec2>, rhs: Ref<bevy::math::Vec2>| {
+                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::sub(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::Vec2>, other: Ref<bevy::math::Vec2>| {
+                    let output: bool = ::bevy::math::Vec2::eq(&_self, &other).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "neg",
+                |_self: Val<bevy::math::Vec2>| {
+                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::neg(
+                            _self.into(),
                         )
                         .into();
                     output
@@ -10492,41 +10410,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec2>, rhs: f32| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::div(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::Vec2>, rhs: f32| {
-                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::Vec2>, rhs: Val<bevy::math::Vec2>| {
-                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::Vec2>, rhs: Val<bevy::math::Vec2>| {
-                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
+                "clone",
+                |_self: Ref<bevy::math::Vec2>| {
+                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::clone(&_self)
                         .into();
                     output
                 },
@@ -10534,10 +10427,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |x: f32, y: f32| {
-                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::new(
-                            x.into(),
-                            y.into(),
-                        )
+                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::new(x, y)
                         .into();
                     output
                 },
@@ -10545,9 +10435,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "splat",
                 |v: f32| {
-                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::splat(
-                            v.into(),
-                        )
+                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::splat(v)
                         .into();
                     output
                 },
@@ -10571,9 +10459,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "from_array",
                 |a: [f32; 2]| {
-                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::from_array(
-                            a.into(),
-                        )
+                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::from_array(a)
                         .into();
                     output
                 },
@@ -10581,8 +10467,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::Vec2>| {
-                    let output: [f32; 2] = ::bevy::math::Vec2::to_array(_self.into())
-                        .into();
+                    let output: [f32; 2] = ::bevy::math::Vec2::to_array(&_self).into();
                     output
                 },
             )
@@ -10591,7 +10476,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec2>, z: f32| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Vec2::extend(
                             _self.into(),
-                            z.into(),
+                            z,
                         )
                         .into();
                     output
@@ -10602,7 +10487,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec2>, x: f32| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::with_x(
                             _self.into(),
-                            x.into(),
+                            x,
                         )
                         .into();
                     output
@@ -10613,7 +10498,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec2>, y: f32| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::with_y(
                             _self.into(),
-                            y.into(),
+                            y,
                         )
                         .into();
                     output
@@ -11075,7 +10960,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec2>, n: f32| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::powf(
                             _self.into(),
-                            n.into(),
+                            n,
                         )
                         .into();
                     output
@@ -11097,7 +10982,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::lerp(
                             _self.into(),
                             rhs.into(),
-                            s.into(),
+                            s,
                         )
                         .into();
                     output
@@ -11107,9 +10992,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "move_towards",
                 |_self: Ref<bevy::math::Vec2>, rhs: Val<bevy::math::Vec2>, d: f32| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::move_towards(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            d.into(),
+                            d,
                         )
                         .into();
                     output
@@ -11136,7 +11021,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: bool = ::bevy::math::Vec2::abs_diff_eq(
                             _self.into(),
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -11147,8 +11032,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec2>, min: f32, max: f32| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::clamp_length(
                             _self.into(),
-                            min.into(),
-                            max.into(),
+                            min,
+                            max,
                         )
                         .into();
                     output
@@ -11159,7 +11044,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec2>, max: f32| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::clamp_length_max(
                             _self.into(),
-                            max.into(),
+                            max,
                         )
                         .into();
                     output
@@ -11170,7 +11055,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec2>, min: f32| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::clamp_length_min(
                             _self.into(),
-                            min.into(),
+                            min,
                         )
                         .into();
                     output
@@ -11209,7 +11094,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::refract(
                             _self.into(),
                             normal.into(),
-                            eta.into(),
+                            eta,
                         )
                         .into();
                     output
@@ -11219,7 +11104,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_angle",
                 |angle: f32| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::from_angle(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -11294,9 +11179,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     max_angle: f32|
                 {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::rotate_towards(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            max_angle.into(),
+                            max_angle,
                         )
                         .into();
                     output
@@ -11306,7 +11191,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dvec2",
                 |_self: Ref<bevy::math::Vec2>| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::Vec2::as_dvec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -11316,7 +11201,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_ivec2",
                 |_self: Ref<bevy::math::Vec2>| {
                     let output: Val<bevy::math::IVec2> = ::bevy::math::Vec2::as_ivec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -11326,7 +11211,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_uvec2",
                 |_self: Ref<bevy::math::Vec2>| {
                     let output: Val<bevy::math::UVec2> = ::bevy::math::Vec2::as_uvec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -11336,7 +11221,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_i64vec2",
                 |_self: Ref<bevy::math::Vec2>| {
                     let output: Val<bevy::math::I64Vec2> = ::bevy::math::Vec2::as_i64vec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -11346,25 +11231,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_u64vec2",
                 |_self: Ref<bevy::math::Vec2>| {
                     let output: Val<bevy::math::U64Vec2> = ::bevy::math::Vec2::as_u64vec2(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::Vec2>, other: Ref<bevy::math::Vec2>| {
-                    let output: bool = ::bevy::math::Vec2::eq(_self.into(), other.into())
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::Vec2>| {
-                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::clone(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -11372,7 +11239,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "sub",
-                |_self: Val<bevy::math::Vec2>, rhs: Ref<bevy::math::Vec2>| {
+                |_self: Val<bevy::math::Vec2>, rhs: Val<bevy::math::Vec2>| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::sub(
                             _self.into(),
                             rhs.into(),
@@ -11382,9 +11249,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::Vec2>, rhs: Ref<bevy::math::Vec2>| {
-                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::rem(
+                "mul",
+                |_self: Val<bevy::math::Vec2>, rhs: Val<bevy::math::Vec2>| {
+                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::mul(
                             _self.into(),
                             rhs.into(),
                         )
@@ -11397,7 +11264,18 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec2>, rhs: f32| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::rem(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::Vec2>, rhs: Ref<bevy::math::Vec2>| {
+                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::add(
+                            _self.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -11415,11 +11293,11 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "sub",
+                "add",
                 |_self: Val<bevy::math::Vec2>, rhs: f32| {
-                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::sub(
+                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::add(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -11430,82 +11308,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec2>, rhs: f32| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::mul(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
                 },
             )
-            .overwrite_script_function(
-                "neg",
-                |_self: Val<bevy::math::Vec2>| {
-                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::neg(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::Vec2>, rhs: Ref<bevy::math::Vec2>| {
-                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::Vec2>, rhs: Ref<bevy::math::Vec2>| {
-                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            );
-        NamespaceBuilder::<::bevy::math::Vec3A>::new(world)
             .overwrite_script_function(
                 "rem",
-                |_self: Val<bevy::math::Vec3A>, rhs: Ref<bevy::math::Vec3A>| {
-                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Vec3A>, rhs: Val<bevy::math::Vec3A>| {
-                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::Vec3A>, rhs: Ref<bevy::math::Vec3A>| {
-                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::Vec3A>, rhs: f32| {
-                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::div(
+                |_self: Val<bevy::math::Vec2>, rhs: Val<bevy::math::Vec2>| {
+                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::rem(
                             _self.into(),
                             rhs.into(),
                         )
@@ -11515,7 +11327,80 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "sub",
+                |_self: Val<bevy::math::Vec2>, rhs: f32| {
+                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::sub(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::Vec2>, rhs: Ref<bevy::math::Vec2>| {
+                    let output: Val<bevy::math::Vec2> = ::bevy::math::Vec2::rem(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            );
+        NamespaceBuilder::<::bevy::math::Vec3A>::new(world)
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::Vec3A>, rhs: Val<bevy::math::Vec3A>| {
+                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::add(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::Vec3A>, rhs: Ref<bevy::math::Vec3A>| {
+                    let output: bool = ::bevy::math::Vec3A::eq(&_self, &rhs).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
                 |_self: Val<bevy::math::Vec3A>, rhs: f32| {
+                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::sub(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::Vec3A>| {
+                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::Vec3A>, rhs: f32| {
+                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::rem(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::Vec3A>, rhs: Val<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::sub(
                             _self.into(),
                             rhs.into(),
@@ -11525,12 +11410,33 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::Vec3A>, rhs: Val<bevy::math::Vec3A>| {
+                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::div(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "neg",
+                |_self: Val<bevy::math::Vec3A>| {
+                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::neg(
+                            _self.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
                 "new",
                 |x: f32, y: f32, z: f32| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::new(
-                            x.into(),
-                            y.into(),
-                            z.into(),
+                            x,
+                            y,
+                            z,
                         )
                         .into();
                     output
@@ -11539,9 +11445,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "splat",
                 |v: f32| {
-                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::splat(
-                            v.into(),
-                        )
+                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::splat(v)
                         .into();
                     output
                 },
@@ -11566,7 +11470,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [f32; 3]| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -11575,8 +11479,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::Vec3A>| {
-                    let output: [f32; 3] = ::bevy::math::Vec3A::to_array(_self.into())
-                        .into();
+                    let output: [f32; 3] = ::bevy::math::Vec3A::to_array(&_self).into();
                     output
                 },
             )
@@ -11595,7 +11498,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3A>, w: f32| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::Vec3A::extend(
                             _self.into(),
-                            w.into(),
+                            w,
                         )
                         .into();
                     output
@@ -11616,7 +11519,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3A>, x: f32| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::with_x(
                             _self.into(),
-                            x.into(),
+                            x,
                         )
                         .into();
                     output
@@ -11627,7 +11530,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3A>, y: f32| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::with_y(
                             _self.into(),
-                            y.into(),
+                            y,
                         )
                         .into();
                     output
@@ -11638,7 +11541,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3A>, z: f32| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::with_z(
                             _self.into(),
-                            z.into(),
+                            z,
                         )
                         .into();
                     output
@@ -12111,7 +12014,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3A>, n: f32| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::powf(
                             _self.into(),
-                            n.into(),
+                            n,
                         )
                         .into();
                     output
@@ -12133,7 +12036,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::lerp(
                             _self.into(),
                             rhs.into(),
-                            s.into(),
+                            s,
                         )
                         .into();
                     output
@@ -12143,9 +12046,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "move_towards",
                 |_self: Ref<bevy::math::Vec3A>, rhs: Val<bevy::math::Vec3A>, d: f32| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::move_towards(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            d.into(),
+                            d,
                         )
                         .into();
                     output
@@ -12172,7 +12075,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: bool = ::bevy::math::Vec3A::abs_diff_eq(
                             _self.into(),
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -12183,8 +12086,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3A>, min: f32, max: f32| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::clamp_length(
                             _self.into(),
-                            min.into(),
-                            max.into(),
+                            min,
+                            max,
                         )
                         .into();
                     output
@@ -12195,7 +12098,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3A>, max: f32| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::clamp_length_max(
                             _self.into(),
-                            max.into(),
+                            max,
                         )
                         .into();
                     output
@@ -12206,7 +12109,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3A>, min: f32| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::clamp_length_min(
                             _self.into(),
-                            min.into(),
+                            min,
                         )
                         .into();
                     output
@@ -12249,7 +12152,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::refract(
                             _self.into(),
                             normal.into(),
-                            eta.into(),
+                            eta,
                         )
                         .into();
                     output
@@ -12270,7 +12173,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "any_orthogonal_vector",
                 |_self: Ref<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::any_orthogonal_vector(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -12280,7 +12183,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "any_orthonormal_vector",
                 |_self: Ref<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::any_orthonormal_vector(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -12290,7 +12193,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dvec3",
                 |_self: Ref<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::Vec3A::as_dvec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -12300,7 +12203,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_ivec3",
                 |_self: Ref<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::IVec3> = ::bevy::math::Vec3A::as_ivec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -12310,7 +12213,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_uvec3",
                 |_self: Ref<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::UVec3> = ::bevy::math::Vec3A::as_uvec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -12320,7 +12223,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_i64vec3",
                 |_self: Ref<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::I64Vec3> = ::bevy::math::Vec3A::as_i64vec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -12330,17 +12233,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_u64vec3",
                 |_self: Ref<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::U64Vec3> = ::bevy::math::Vec3A::as_u64vec3(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "neg",
-                |_self: Val<bevy::math::Vec3A>| {
-                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::neg(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -12351,17 +12244,18 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3A>, rhs: Ref<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::sub(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::Vec3A>| {
-                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::clone(
+                "mul",
+                |_self: Val<bevy::math::Vec3A>, rhs: f32| {
+                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::mul(
                             _self.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -12372,7 +12266,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3A>, rhs: Ref<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::add(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -12383,16 +12277,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3A>, rhs: f32| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::add(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "sub",
+                "mul",
                 |_self: Val<bevy::math::Vec3A>, rhs: Val<bevy::math::Vec3A>| {
-                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::sub(
+                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::mul(
                             _self.into(),
                             rhs.into(),
                         )
@@ -12402,30 +12296,11 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "div",
-                |_self: Val<bevy::math::Vec3A>, rhs: Val<bevy::math::Vec3A>| {
+                |_self: Val<bevy::math::Vec3A>, rhs: f32| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::div(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::Vec3A>, rhs: Val<bevy::math::Vec3A>| {
-                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::Vec3A>, rhs: Ref<bevy::math::Vec3A>| {
-                    let output: bool = ::bevy::math::Vec3A::eq(_self.into(), rhs.into())
                         .into();
                     output
                 },
@@ -12443,21 +12318,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "rem",
-                |_self: Val<bevy::math::Vec3A>, rhs: f32| {
+                |_self: Val<bevy::math::Vec3A>, rhs: Ref<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::rem(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Vec3A>, rhs: f32| {
-                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::mul(
-                            _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -12468,7 +12332,18 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec3A>, rhs: Ref<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::mul(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::Vec3A>, rhs: Ref<bevy::math::Vec3A>| {
+                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Vec3A::div(
+                            _self.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -12476,13 +12351,118 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::Vec4>::new(world)
             .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::Vec4>, rhs: Ref<bevy::math::Vec4>| {
+                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::rem(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::Vec4>, rhs: Ref<bevy::math::Vec4>| {
+                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::mul(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::Vec4>, rhs: Ref<bevy::math::Vec4>| {
+                    let output: bool = ::bevy::math::Vec4::eq(&_self, &rhs).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::Vec4>, rhs: Val<bevy::math::Vec4>| {
+                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::div(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::Vec4>, rhs: Ref<bevy::math::Vec4>| {
+                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::div(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "neg",
+                |_self: Val<bevy::math::Vec4>| {
+                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::neg(
+                            _self.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::Vec4>, rhs: Val<bevy::math::Vec4>| {
+                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::add(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::Vec4>, rhs: Ref<bevy::math::Vec4>| {
+                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::add(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::Vec4>, rhs: f32| {
+                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::add(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::Vec4>, rhs: f32| {
+                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::sub(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
                 "new",
                 |x: f32, y: f32, z: f32, w: f32| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::new(
-                            x.into(),
-                            y.into(),
-                            z.into(),
-                            w.into(),
+                            x,
+                            y,
+                            z,
+                            w,
                         )
                         .into();
                     output
@@ -12491,9 +12471,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "splat",
                 |v: f32| {
-                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::splat(
-                            v.into(),
-                        )
+                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::splat(v)
                         .into();
                     output
                 },
@@ -12517,9 +12495,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "from_array",
                 |a: [f32; 4]| {
-                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::from_array(
-                            a.into(),
-                        )
+                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::from_array(a)
                         .into();
                     output
                 },
@@ -12527,8 +12503,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::Vec4>| {
-                    let output: [f32; 4] = ::bevy::math::Vec4::to_array(_self.into())
-                        .into();
+                    let output: [f32; 4] = ::bevy::math::Vec4::to_array(&_self).into();
                     output
                 },
             )
@@ -12547,7 +12522,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec4>, x: f32| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::with_x(
                             _self.into(),
-                            x.into(),
+                            x,
                         )
                         .into();
                     output
@@ -12558,7 +12533,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec4>, y: f32| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::with_y(
                             _self.into(),
-                            y.into(),
+                            y,
                         )
                         .into();
                     output
@@ -12569,7 +12544,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec4>, z: f32| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::with_z(
                             _self.into(),
-                            z.into(),
+                            z,
                         )
                         .into();
                     output
@@ -12580,7 +12555,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec4>, w: f32| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::with_w(
                             _self.into(),
-                            w.into(),
+                            w,
                         )
                         .into();
                     output
@@ -13042,7 +13017,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec4>, n: f32| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::powf(
                             _self.into(),
-                            n.into(),
+                            n,
                         )
                         .into();
                     output
@@ -13064,7 +13039,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::lerp(
                             _self.into(),
                             rhs.into(),
-                            s.into(),
+                            s,
                         )
                         .into();
                     output
@@ -13074,9 +13049,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "move_towards",
                 |_self: Ref<bevy::math::Vec4>, rhs: Val<bevy::math::Vec4>, d: f32| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::move_towards(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            d.into(),
+                            d,
                         )
                         .into();
                     output
@@ -13103,7 +13078,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: bool = ::bevy::math::Vec4::abs_diff_eq(
                             _self.into(),
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -13114,8 +13089,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec4>, min: f32, max: f32| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::clamp_length(
                             _self.into(),
-                            min.into(),
-                            max.into(),
+                            min,
+                            max,
                         )
                         .into();
                     output
@@ -13126,7 +13101,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec4>, max: f32| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::clamp_length_max(
                             _self.into(),
-                            max.into(),
+                            max,
                         )
                         .into();
                     output
@@ -13137,7 +13112,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec4>, min: f32| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::clamp_length_min(
                             _self.into(),
-                            min.into(),
+                            min,
                         )
                         .into();
                     output
@@ -13176,7 +13151,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::refract(
                             _self.into(),
                             normal.into(),
-                            eta.into(),
+                            eta,
                         )
                         .into();
                     output
@@ -13186,7 +13161,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dvec4",
                 |_self: Ref<bevy::math::Vec4>| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::Vec4::as_dvec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -13196,7 +13171,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_ivec4",
                 |_self: Ref<bevy::math::Vec4>| {
                     let output: Val<bevy::math::IVec4> = ::bevy::math::Vec4::as_ivec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -13206,7 +13181,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_uvec4",
                 |_self: Ref<bevy::math::Vec4>| {
                     let output: Val<bevy::math::UVec4> = ::bevy::math::Vec4::as_uvec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -13216,7 +13191,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_i64vec4",
                 |_self: Ref<bevy::math::Vec4>| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::Vec4::as_i64vec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -13226,16 +13201,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_u64vec4",
                 |_self: Ref<bevy::math::Vec4>| {
                     let output: Val<bevy::math::U64Vec4> = ::bevy::math::Vec4::as_u64vec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "div",
+                "sub",
                 |_self: Val<bevy::math::Vec4>, rhs: Val<bevy::math::Vec4>| {
-                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::div(
+                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::sub(
                             _self.into(),
                             rhs.into(),
                         )
@@ -13244,33 +13219,11 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::Vec4>, rhs: Val<bevy::math::Vec4>| {
-                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::Vec4>, rhs: f32| {
-                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
+                "sub",
                 |_self: Val<bevy::math::Vec4>, rhs: Ref<bevy::math::Vec4>| {
-                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::add(
+                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::sub(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -13288,106 +13241,11 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::Vec4>, rhs: f32| {
-                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::Vec4>, rhs: Val<bevy::math::Vec4>| {
-                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
                 "rem",
-                |_self: Val<bevy::math::Vec4>, rhs: Ref<bevy::math::Vec4>| {
+                |_self: Val<bevy::math::Vec4>, rhs: f32| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::rem(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "neg",
-                |_self: Val<bevy::math::Vec4>| {
-                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::neg(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::Vec4>, rhs: f32| {
-                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::Vec4>, rhs: f32| {
-                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::Vec4>, rhs: Val<bevy::math::Vec4>| {
-                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::Vec4>, rhs: Ref<bevy::math::Vec4>| {
-                    let output: bool = ::bevy::math::Vec4::eq(_self.into(), rhs.into())
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::Vec4>, rhs: Ref<bevy::math::Vec4>| {
-                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::Vec4>, rhs: Ref<bevy::math::Vec4>| {
-                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::div(
-                            _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -13396,8 +13254,28 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::Vec4>| {
-                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::clone(
+                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::clone(&_self)
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::Vec4>, rhs: f32| {
+                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::div(
                             _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::Vec4>, rhs: Val<bevy::math::Vec4>| {
+                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::rem(
+                            _self.into(),
+                            rhs.into(),
                         )
                         .into();
                     output
@@ -13408,18 +13286,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Vec4>, rhs: f32| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::mul(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Vec4>, rhs: Ref<bevy::math::Vec4>| {
-                    let output: Val<bevy::math::Vec4> = ::bevy::math::Vec4::mul(
-                            _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -13430,19 +13297,23 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::math::BVec2>| {
                     let output: () = ::bevy::math::BVec2::assert_receiver_is_total_eq(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::BVec2>, other: Ref<bevy::math::BVec2>| {
+                    let output: bool = ::bevy::math::BVec2::eq(&_self, &other).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
                 "new",
                 |x: bool, y: bool| {
-                    let output: Val<bevy::math::BVec2> = ::bevy::math::BVec2::new(
-                            x.into(),
-                            y.into(),
-                        )
+                    let output: Val<bevy::math::BVec2> = ::bevy::math::BVec2::new(x, y)
                         .into();
                     output
                 },
@@ -13450,9 +13321,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "splat",
                 |v: bool| {
-                    let output: Val<bevy::math::BVec2> = ::bevy::math::BVec2::splat(
-                            v.into(),
-                        )
+                    let output: Val<bevy::math::BVec2> = ::bevy::math::BVec2::splat(v)
                         .into();
                     output
                 },
@@ -13461,7 +13330,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [bool; 2]| {
                     let output: Val<bevy::math::BVec2> = ::bevy::math::BVec2::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -13491,22 +13360,14 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "test",
                 |_self: Ref<bevy::math::BVec2>, index: usize| {
-                    let output: bool = ::bevy::math::BVec2::test(
-                            _self.into(),
-                            index.into(),
-                        )
-                        .into();
+                    let output: bool = ::bevy::math::BVec2::test(&_self, index).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "set",
                 |_self: Mut<bevy::math::BVec2>, index: usize, value: bool| {
-                    let output: () = ::bevy::math::BVec2::set(
-                            _self.into(),
-                            index.into(),
-                            value.into(),
-                        )
+                    let output: () = ::bevy::math::BVec2::set(&mut_self, index, value)
                         .into();
                     output
                 },
@@ -13515,18 +13376,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "clone",
                 |_self: Ref<bevy::math::BVec2>| {
                     let output: Val<bevy::math::BVec2> = ::bevy::math::BVec2::clone(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::BVec2>, other: Ref<bevy::math::BVec2>| {
-                    let output: bool = ::bevy::math::BVec2::eq(
-                            _self.into(),
-                            other.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -13534,22 +13384,12 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::BVec3>::new(world)
             .overwrite_script_function(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::math::BVec3>| {
-                    let output: () = ::bevy::math::BVec3::assert_receiver_is_total_eq(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
                 "new",
                 |x: bool, y: bool, z: bool| {
                     let output: Val<bevy::math::BVec3> = ::bevy::math::BVec3::new(
-                            x.into(),
-                            y.into(),
-                            z.into(),
+                            x,
+                            y,
+                            z,
                         )
                         .into();
                     output
@@ -13558,9 +13398,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "splat",
                 |v: bool| {
-                    let output: Val<bevy::math::BVec3> = ::bevy::math::BVec3::splat(
-                            v.into(),
-                        )
+                    let output: Val<bevy::math::BVec3> = ::bevy::math::BVec3::splat(v)
                         .into();
                     output
                 },
@@ -13569,7 +13407,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [bool; 3]| {
                     let output: Val<bevy::math::BVec3> = ::bevy::math::BVec3::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -13599,32 +13437,14 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "test",
                 |_self: Ref<bevy::math::BVec3>, index: usize| {
-                    let output: bool = ::bevy::math::BVec3::test(
-                            _self.into(),
-                            index.into(),
-                        )
-                        .into();
+                    let output: bool = ::bevy::math::BVec3::test(&_self, index).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "set",
                 |_self: Mut<bevy::math::BVec3>, index: usize, value: bool| {
-                    let output: () = ::bevy::math::BVec3::set(
-                            _self.into(),
-                            index.into(),
-                            value.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::BVec3>| {
-                    let output: Val<bevy::math::BVec3> = ::bevy::math::BVec3::clone(
-                            _self.into(),
-                        )
+                    let output: () = ::bevy::math::BVec3::set(&mut_self, index, value)
                         .into();
                     output
                 },
@@ -13632,31 +13452,15 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "eq",
                 |_self: Ref<bevy::math::BVec3>, other: Ref<bevy::math::BVec3>| {
-                    let output: bool = ::bevy::math::BVec3::eq(
-                            _self.into(),
-                            other.into(),
-                        )
-                        .into();
-                    output
-                },
-            );
-        NamespaceBuilder::<::bevy::math::BVec4>::new(world)
-            .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::BVec4>| {
-                    let output: Val<bevy::math::BVec4> = ::bevy::math::BVec4::clone(
-                            _self.into(),
-                        )
-                        .into();
+                    let output: bool = ::bevy::math::BVec3::eq(&_self, &other).into();
                     output
                 },
             )
             .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::BVec4>, other: Ref<bevy::math::BVec4>| {
-                    let output: bool = ::bevy::math::BVec4::eq(
-                            _self.into(),
-                            other.into(),
+                "clone",
+                |_self: Ref<bevy::math::BVec3>| {
+                    let output: Val<bevy::math::BVec3> = ::bevy::math::BVec3::clone(
+                            &_self,
                         )
                         .into();
                     output
@@ -13664,22 +13468,23 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::math::BVec4>| {
-                    let output: () = ::bevy::math::BVec4::assert_receiver_is_total_eq(
-                            _self.into(),
+                |_self: Ref<bevy::math::BVec3>| {
+                    let output: () = ::bevy::math::BVec3::assert_receiver_is_total_eq(
+                            &_self,
                         )
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::BVec4>::new(world)
             .overwrite_script_function(
                 "new",
                 |x: bool, y: bool, z: bool, w: bool| {
                     let output: Val<bevy::math::BVec4> = ::bevy::math::BVec4::new(
-                            x.into(),
-                            y.into(),
-                            z.into(),
-                            w.into(),
+                            x,
+                            y,
+                            z,
+                            w,
                         )
                         .into();
                     output
@@ -13688,9 +13493,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "splat",
                 |v: bool| {
-                    let output: Val<bevy::math::BVec4> = ::bevy::math::BVec4::splat(
-                            v.into(),
-                        )
+                    let output: Val<bevy::math::BVec4> = ::bevy::math::BVec4::splat(v)
                         .into();
                     output
                 },
@@ -13699,7 +13502,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [bool; 4]| {
                     let output: Val<bevy::math::BVec4> = ::bevy::math::BVec4::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -13729,27 +13532,56 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "test",
                 |_self: Ref<bevy::math::BVec4>, index: usize| {
-                    let output: bool = ::bevy::math::BVec4::test(
-                            _self.into(),
-                            index.into(),
-                        )
-                        .into();
+                    let output: bool = ::bevy::math::BVec4::test(&_self, index).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "set",
                 |_self: Mut<bevy::math::BVec4>, index: usize, value: bool| {
-                    let output: () = ::bevy::math::BVec4::set(
-                            _self.into(),
-                            index.into(),
-                            value.into(),
+                    let output: () = ::bevy::math::BVec4::set(&mut_self, index, value)
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::BVec4>| {
+                    let output: Val<bevy::math::BVec4> = ::bevy::math::BVec4::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::BVec4>, other: Ref<bevy::math::BVec4>| {
+                    let output: bool = ::bevy::math::BVec4::eq(&_self, &other).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::math::BVec4>| {
+                    let output: () = ::bevy::math::BVec4::assert_receiver_is_total_eq(
+                            &_self,
                         )
                         .into();
                     output
                 },
             );
         NamespaceBuilder::<::bevy::math::DVec2>::new(world)
+            .overwrite_script_function(
+                "neg",
+                |_self: Val<bevy::math::DVec2>| {
+                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::neg(
+                            _self.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
             .overwrite_script_function(
                 "mul",
                 |_self: Val<bevy::math::DVec2>, rhs: Val<bevy::math::DVec2>| {
@@ -13762,20 +13594,53 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "rem",
+                "sub",
                 |_self: Val<bevy::math::DVec2>, rhs: f64| {
-                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::rem(
+                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::sub(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "add",
+                "div",
+                |_self: Val<bevy::math::DVec2>, rhs: f64| {
+                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::div(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::DVec2>, rhs: Ref<bevy::math::DVec2>| {
+                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::div(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::DVec2>, rhs: Ref<bevy::math::DVec2>| {
+                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::rem(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
                 |_self: Val<bevy::math::DVec2>, rhs: Val<bevy::math::DVec2>| {
-                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::add(
+                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::div(
                             _self.into(),
                             rhs.into(),
                         )
@@ -13786,10 +13651,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |x: f64, y: f64| {
-                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::new(
-                            x.into(),
-                            y.into(),
-                        )
+                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::new(x, y)
                         .into();
                     output
                 },
@@ -13797,9 +13659,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "splat",
                 |v: f64| {
-                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::splat(
-                            v.into(),
-                        )
+                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::splat(v)
                         .into();
                     output
                 },
@@ -13824,7 +13684,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [f64; 2]| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -13833,8 +13693,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::DVec2>| {
-                    let output: [f64; 2] = ::bevy::math::DVec2::to_array(_self.into())
-                        .into();
+                    let output: [f64; 2] = ::bevy::math::DVec2::to_array(&_self).into();
                     output
                 },
             )
@@ -13843,7 +13702,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec2>, z: f64| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DVec2::extend(
                             _self.into(),
-                            z.into(),
+                            z,
                         )
                         .into();
                     output
@@ -13854,7 +13713,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec2>, x: f64| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::with_x(
                             _self.into(),
-                            x.into(),
+                            x,
                         )
                         .into();
                     output
@@ -13865,7 +13724,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec2>, y: f64| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::with_y(
                             _self.into(),
-                            y.into(),
+                            y,
                         )
                         .into();
                     output
@@ -14327,7 +14186,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec2>, n: f64| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::powf(
                             _self.into(),
-                            n.into(),
+                            n,
                         )
                         .into();
                     output
@@ -14349,7 +14208,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::lerp(
                             _self.into(),
                             rhs.into(),
-                            s.into(),
+                            s,
                         )
                         .into();
                     output
@@ -14359,9 +14218,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "move_towards",
                 |_self: Ref<bevy::math::DVec2>, rhs: Val<bevy::math::DVec2>, d: f64| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::move_towards(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            d.into(),
+                            d,
                         )
                         .into();
                     output
@@ -14388,7 +14247,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: bool = ::bevy::math::DVec2::abs_diff_eq(
                             _self.into(),
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -14399,8 +14258,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec2>, min: f64, max: f64| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::clamp_length(
                             _self.into(),
-                            min.into(),
-                            max.into(),
+                            min,
+                            max,
                         )
                         .into();
                     output
@@ -14411,7 +14270,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec2>, max: f64| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::clamp_length_max(
                             _self.into(),
-                            max.into(),
+                            max,
                         )
                         .into();
                     output
@@ -14422,7 +14281,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec2>, min: f64| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::clamp_length_min(
                             _self.into(),
-                            min.into(),
+                            min,
                         )
                         .into();
                     output
@@ -14465,7 +14324,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::refract(
                             _self.into(),
                             normal.into(),
-                            eta.into(),
+                            eta,
                         )
                         .into();
                     output
@@ -14475,7 +14334,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_angle",
                 |angle: f64| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::from_angle(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -14550,9 +14409,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     max_angle: f64|
                 {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::rotate_towards(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            max_angle.into(),
+                            max_angle,
                         )
                         .into();
                     output
@@ -14562,7 +14421,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec2",
                 |_self: Ref<bevy::math::DVec2>| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::DVec2::as_vec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -14572,7 +14431,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_ivec2",
                 |_self: Ref<bevy::math::DVec2>| {
                     let output: Val<bevy::math::IVec2> = ::bevy::math::DVec2::as_ivec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -14582,7 +14441,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_uvec2",
                 |_self: Ref<bevy::math::DVec2>| {
                     let output: Val<bevy::math::UVec2> = ::bevy::math::DVec2::as_uvec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -14592,7 +14451,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_i64vec2",
                 |_self: Ref<bevy::math::DVec2>| {
                     let output: Val<bevy::math::I64Vec2> = ::bevy::math::DVec2::as_i64vec2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -14602,29 +14461,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_u64vec2",
                 |_self: Ref<bevy::math::DVec2>| {
                     let output: Val<bevy::math::U64Vec2> = ::bevy::math::DVec2::as_u64vec2(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::DVec2>, rhs: Val<bevy::math::DVec2>| {
-                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::DVec2>, rhs: Ref<bevy::math::DVec2>| {
-                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::div(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -14635,18 +14472,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec2>, rhs: Ref<bevy::math::DVec2>| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::mul(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::DVec2>, rhs: Val<bevy::math::DVec2>| {
-                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::rem(
-                            _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -14654,29 +14480,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "sub",
-                |_self: Val<bevy::math::DVec2>, rhs: f64| {
+                |_self: Val<bevy::math::DVec2>, rhs: Val<bevy::math::DVec2>| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "neg",
-                |_self: Val<bevy::math::DVec2>| {
-                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::neg(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::DVec2>, rhs: f64| {
-                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::add(
                             _self.into(),
                             rhs.into(),
                         )
@@ -14687,17 +14492,13 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "eq",
                 |_self: Ref<bevy::math::DVec2>, other: Ref<bevy::math::DVec2>| {
-                    let output: bool = ::bevy::math::DVec2::eq(
-                            _self.into(),
-                            other.into(),
-                        )
-                        .into();
+                    let output: bool = ::bevy::math::DVec2::eq(&_self, &other).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "rem",
-                |_self: Val<bevy::math::DVec2>, rhs: Ref<bevy::math::DVec2>| {
+                |_self: Val<bevy::math::DVec2>, rhs: Val<bevy::math::DVec2>| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::rem(
                             _self.into(),
                             rhs.into(),
@@ -14707,20 +14508,41 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::DVec2>, rhs: Val<bevy::math::DVec2>| {
-                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::sub(
+                "add",
+                |_self: Val<bevy::math::DVec2>, rhs: f64| {
+                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::add(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::DVec2>, rhs: Ref<bevy::math::DVec2>| {
-                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::sub(
+                "clone",
+                |_self: Ref<bevy::math::DVec2>| {
+                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::DVec2>, rhs: f64| {
+                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::rem(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::DVec2>, rhs: Val<bevy::math::DVec2>| {
+                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::add(
                             _self.into(),
                             rhs.into(),
                         )
@@ -14733,7 +14555,18 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec2>, rhs: f64| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::mul(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::DVec2>, rhs: Ref<bevy::math::DVec2>| {
+                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::sub(
+                            _self.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -14744,28 +14577,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec2>, rhs: Ref<bevy::math::DVec2>| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::add(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::DVec2>| {
-                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::clone(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::DVec2>, rhs: f64| {
-                    let output: Val<bevy::math::DVec2> = ::bevy::math::DVec2::div(
-                            _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -14774,43 +14586,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
         NamespaceBuilder::<::bevy::math::DVec3>::new(world)
             .overwrite_script_function(
                 "div",
-                |_self: Val<bevy::math::DVec3>, rhs: f64| {
+                |_self: Val<bevy::math::DVec3>, rhs: Ref<bevy::math::DVec3>| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::div(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::DVec3>, rhs: f64| {
-                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::DVec3>, rhs: f64| {
-                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::DVec3>, rhs: Val<bevy::math::DVec3>| {
-                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::div(
-                            _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -14827,55 +14606,11 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::DVec3>, other: Ref<bevy::math::DVec3>| {
-                    let output: bool = ::bevy::math::DVec3::eq(
-                            _self.into(),
-                            other.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
+                "div",
                 |_self: Val<bevy::math::DVec3>, rhs: f64| {
-                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::rem(
+                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::div(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::DVec3>, rhs: Val<bevy::math::DVec3>| {
-                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::DVec3>, rhs: Ref<bevy::math::DVec3>| {
-                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::DVec3>, rhs: Ref<bevy::math::DVec3>| {
-                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::add(
-                            _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -14893,33 +14628,11 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "div",
+                "sub",
                 |_self: Val<bevy::math::DVec3>, rhs: Ref<bevy::math::DVec3>| {
-                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::div(
+                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::sub(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::DVec3>, rhs: Ref<bevy::math::DVec3>| {
-                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::DVec3>, rhs: Val<bevy::math::DVec3>| {
-                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::rem(
-                            _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -14929,9 +14642,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |x: f64, y: f64, z: f64| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::new(
-                            x.into(),
-                            y.into(),
-                            z.into(),
+                            x,
+                            y,
+                            z,
                         )
                         .into();
                     output
@@ -14940,9 +14653,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "splat",
                 |v: f64| {
-                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::splat(
-                            v.into(),
-                        )
+                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::splat(v)
                         .into();
                     output
                 },
@@ -14967,7 +14678,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [f64; 3]| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -14976,8 +14687,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::DVec3>| {
-                    let output: [f64; 3] = ::bevy::math::DVec3::to_array(_self.into())
-                        .into();
+                    let output: [f64; 3] = ::bevy::math::DVec3::to_array(&_self).into();
                     output
                 },
             )
@@ -14986,7 +14696,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec3>, w: f64| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DVec3::extend(
                             _self.into(),
-                            w.into(),
+                            w,
                         )
                         .into();
                     output
@@ -15007,7 +14717,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec3>, x: f64| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::with_x(
                             _self.into(),
-                            x.into(),
+                            x,
                         )
                         .into();
                     output
@@ -15018,7 +14728,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec3>, y: f64| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::with_y(
                             _self.into(),
-                            y.into(),
+                            y,
                         )
                         .into();
                     output
@@ -15029,7 +14739,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec3>, z: f64| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::with_z(
                             _self.into(),
-                            z.into(),
+                            z,
                         )
                         .into();
                     output
@@ -15502,7 +15212,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec3>, n: f64| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::powf(
                             _self.into(),
-                            n.into(),
+                            n,
                         )
                         .into();
                     output
@@ -15524,7 +15234,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::lerp(
                             _self.into(),
                             rhs.into(),
-                            s.into(),
+                            s,
                         )
                         .into();
                     output
@@ -15534,9 +15244,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "move_towards",
                 |_self: Ref<bevy::math::DVec3>, rhs: Val<bevy::math::DVec3>, d: f64| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::move_towards(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            d.into(),
+                            d,
                         )
                         .into();
                     output
@@ -15563,7 +15273,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: bool = ::bevy::math::DVec3::abs_diff_eq(
                             _self.into(),
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -15574,8 +15284,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec3>, min: f64, max: f64| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::clamp_length(
                             _self.into(),
-                            min.into(),
-                            max.into(),
+                            min,
+                            max,
                         )
                         .into();
                     output
@@ -15586,7 +15296,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec3>, max: f64| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::clamp_length_max(
                             _self.into(),
-                            max.into(),
+                            max,
                         )
                         .into();
                     output
@@ -15597,7 +15307,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec3>, min: f64| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::clamp_length_min(
                             _self.into(),
-                            min.into(),
+                            min,
                         )
                         .into();
                     output
@@ -15640,7 +15350,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::refract(
                             _self.into(),
                             normal.into(),
-                            eta.into(),
+                            eta,
                         )
                         .into();
                     output
@@ -15661,7 +15371,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "any_orthogonal_vector",
                 |_self: Ref<bevy::math::DVec3>| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::any_orthogonal_vector(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -15671,7 +15381,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "any_orthonormal_vector",
                 |_self: Ref<bevy::math::DVec3>| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::any_orthonormal_vector(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -15681,7 +15391,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec3",
                 |_self: Ref<bevy::math::DVec3>| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::DVec3::as_vec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -15691,7 +15401,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec3a",
                 |_self: Ref<bevy::math::DVec3>| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::DVec3::as_vec3a(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -15701,7 +15411,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_ivec3",
                 |_self: Ref<bevy::math::DVec3>| {
                     let output: Val<bevy::math::IVec3> = ::bevy::math::DVec3::as_ivec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -15711,7 +15421,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_uvec3",
                 |_self: Ref<bevy::math::DVec3>| {
                     let output: Val<bevy::math::UVec3> = ::bevy::math::DVec3::as_uvec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -15721,7 +15431,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_i64vec3",
                 |_self: Ref<bevy::math::DVec3>| {
                     let output: Val<bevy::math::I64Vec3> = ::bevy::math::DVec3::as_i64vec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -15731,16 +15441,38 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_u64vec3",
                 |_self: Ref<bevy::math::DVec3>| {
                     let output: Val<bevy::math::U64Vec3> = ::bevy::math::DVec3::as_u64vec3(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "mul",
+                "sub",
                 |_self: Val<bevy::math::DVec3>, rhs: f64| {
-                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::mul(
+                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::sub(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::DVec3>, rhs: f64| {
+                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::rem(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::DVec3>, rhs: Val<bevy::math::DVec3>| {
+                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::div(
                             _self.into(),
                             rhs.into(),
                         )
@@ -15749,21 +15481,18 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::DVec3>| {
-                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::clone(
-                            _self.into(),
-                        )
-                        .into();
+                "eq",
+                |_self: Ref<bevy::math::DVec3>, other: Ref<bevy::math::DVec3>| {
+                    let output: bool = ::bevy::math::DVec3::eq(&_self, &other).into();
                     output
                 },
             )
             .overwrite_script_function(
-                "mul",
+                "rem",
                 |_self: Val<bevy::math::DVec3>, rhs: Ref<bevy::math::DVec3>| {
-                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::mul(
+                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::rem(
                             _self.into(),
-                            rhs.into(),
+                            &rhs,
                         )
                         .into();
                     output
@@ -15779,12 +15508,194 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::DVec3>, rhs: f64| {
+                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::add(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::DVec3>, rhs: Ref<bevy::math::DVec3>| {
+                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::add(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::DVec3>, rhs: Ref<bevy::math::DVec3>| {
+                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::mul(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::DVec3>, rhs: f64| {
+                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::mul(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::DVec3>, rhs: Val<bevy::math::DVec3>| {
+                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::rem(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::DVec3>, rhs: Val<bevy::math::DVec3>| {
+                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::add(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::DVec3>| {
+                    let output: Val<bevy::math::DVec3> = ::bevy::math::DVec3::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::DVec4>::new(world)
+            .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::DVec4>, other: Ref<bevy::math::DVec4>| {
+                    let output: bool = ::bevy::math::DVec4::eq(&_self, &other).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::DVec4>, rhs: Ref<bevy::math::DVec4>| {
+                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::mul(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::DVec4>, rhs: Val<bevy::math::DVec4>| {
+                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::add(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::DVec4>, rhs: f64| {
+                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::sub(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::DVec4>, rhs: f64| {
+                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::div(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::DVec4>, rhs: Val<bevy::math::DVec4>| {
+                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::div(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
             .overwrite_script_function(
                 "rem",
                 |_self: Val<bevy::math::DVec4>, rhs: Ref<bevy::math::DVec4>| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::rem(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::DVec4>, rhs: f64| {
+                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::mul(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::DVec4>, rhs: f64| {
+                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::rem(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::DVec4>, rhs: Ref<bevy::math::DVec4>| {
+                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::add(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::DVec4>, rhs: Val<bevy::math::DVec4>| {
+                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::sub(
                             _self.into(),
                             rhs.into(),
                         )
@@ -15796,7 +15707,51 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "clone",
                 |_self: Ref<bevy::math::DVec4>| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::DVec4>, rhs: Ref<bevy::math::DVec4>| {
+                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::div(
                             _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "rem",
+                |_self: Val<bevy::math::DVec4>, rhs: Val<bevy::math::DVec4>| {
+                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::rem(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::DVec4>, rhs: Ref<bevy::math::DVec4>| {
+                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::sub(
+                            _self.into(),
+                            &rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::DVec4>, rhs: Val<bevy::math::DVec4>| {
+                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::mul(
+                            _self.into(),
+                            rhs.into(),
                         )
                         .into();
                     output
@@ -15816,10 +15771,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |x: f64, y: f64, z: f64, w: f64| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::new(
-                            x.into(),
-                            y.into(),
-                            z.into(),
-                            w.into(),
+                            x,
+                            y,
+                            z,
+                            w,
                         )
                         .into();
                     output
@@ -15828,9 +15783,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "splat",
                 |v: f64| {
-                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::splat(
-                            v.into(),
-                        )
+                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::splat(v)
                         .into();
                     output
                 },
@@ -15855,7 +15808,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [f64; 4]| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -15864,8 +15817,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::DVec4>| {
-                    let output: [f64; 4] = ::bevy::math::DVec4::to_array(_self.into())
-                        .into();
+                    let output: [f64; 4] = ::bevy::math::DVec4::to_array(&_self).into();
                     output
                 },
             )
@@ -15884,7 +15836,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec4>, x: f64| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::with_x(
                             _self.into(),
-                            x.into(),
+                            x,
                         )
                         .into();
                     output
@@ -15895,7 +15847,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec4>, y: f64| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::with_y(
                             _self.into(),
-                            y.into(),
+                            y,
                         )
                         .into();
                     output
@@ -15906,7 +15858,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec4>, z: f64| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::with_z(
                             _self.into(),
-                            z.into(),
+                            z,
                         )
                         .into();
                     output
@@ -15917,7 +15869,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec4>, w: f64| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::with_w(
                             _self.into(),
-                            w.into(),
+                            w,
                         )
                         .into();
                     output
@@ -16379,7 +16331,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec4>, n: f64| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::powf(
                             _self.into(),
-                            n.into(),
+                            n,
                         )
                         .into();
                     output
@@ -16401,7 +16353,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::lerp(
                             _self.into(),
                             rhs.into(),
-                            s.into(),
+                            s,
                         )
                         .into();
                     output
@@ -16411,9 +16363,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "move_towards",
                 |_self: Ref<bevy::math::DVec4>, rhs: Val<bevy::math::DVec4>, d: f64| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::move_towards(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            d.into(),
+                            d,
                         )
                         .into();
                     output
@@ -16440,7 +16392,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: bool = ::bevy::math::DVec4::abs_diff_eq(
                             _self.into(),
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -16451,8 +16403,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec4>, min: f64, max: f64| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::clamp_length(
                             _self.into(),
-                            min.into(),
-                            max.into(),
+                            min,
+                            max,
                         )
                         .into();
                     output
@@ -16463,7 +16415,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec4>, max: f64| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::clamp_length_max(
                             _self.into(),
-                            max.into(),
+                            max,
                         )
                         .into();
                     output
@@ -16474,7 +16426,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec4>, min: f64| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::clamp_length_min(
                             _self.into(),
-                            min.into(),
+                            min,
                         )
                         .into();
                     output
@@ -16517,7 +16469,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::refract(
                             _self.into(),
                             normal.into(),
-                            eta.into(),
+                            eta,
                         )
                         .into();
                     output
@@ -16527,7 +16479,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_vec4",
                 |_self: Ref<bevy::math::DVec4>| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::DVec4::as_vec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -16537,7 +16489,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_ivec4",
                 |_self: Ref<bevy::math::DVec4>| {
                     let output: Val<bevy::math::IVec4> = ::bevy::math::DVec4::as_ivec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -16547,7 +16499,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_uvec4",
                 |_self: Ref<bevy::math::DVec4>| {
                     let output: Val<bevy::math::UVec4> = ::bevy::math::DVec4::as_uvec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -16557,7 +16509,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_i64vec4",
                 |_self: Ref<bevy::math::DVec4>| {
                     let output: Val<bevy::math::I64Vec4> = ::bevy::math::DVec4::as_i64vec4(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -16567,117 +16519,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_u64vec4",
                 |_self: Ref<bevy::math::DVec4>| {
                     let output: Val<bevy::math::U64Vec4> = ::bevy::math::DVec4::as_u64vec4(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::DVec4>, other: Ref<bevy::math::DVec4>| {
-                    let output: bool = ::bevy::math::DVec4::eq(
-                            _self.into(),
-                            other.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::DVec4>, rhs: Val<bevy::math::DVec4>| {
-                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::DVec4>, rhs: f64| {
-                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::DVec4>, rhs: Ref<bevy::math::DVec4>| {
-                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::DVec4>, rhs: Ref<bevy::math::DVec4>| {
-                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::DVec4>, rhs: Ref<bevy::math::DVec4>| {
-                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::DVec4>, rhs: f64| {
-                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::DVec4>, rhs: Val<bevy::math::DVec4>| {
-                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::DVec4>, rhs: Val<bevy::math::DVec4>| {
-                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::DVec4>, rhs: f64| {
-                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::rem(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -16688,51 +16530,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DVec4>, rhs: f64| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::add(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::DVec4>, rhs: Val<bevy::math::DVec4>| {
-                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "rem",
-                |_self: Val<bevy::math::DVec4>, rhs: Val<bevy::math::DVec4>| {
-                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::rem(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::DVec4>, rhs: Ref<bevy::math::DVec4>| {
-                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::DVec4>, rhs: f64| {
-                    let output: Val<bevy::math::DVec4> = ::bevy::math::DVec4::mul(
-                            _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -16740,9 +16538,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::Mat2>::new(world)
             .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::Mat2>, rhs: f32| {
-                    let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::div(
+                "mul",
+                |_self: Val<bevy::math::Mat2>, rhs: Val<bevy::math::Vec2>| {
+                    let output: Val<bevy::math::Vec2> = ::bevy::math::Mat2::mul(
                             _self.into(),
                             rhs.into(),
                         )
@@ -16751,28 +16549,22 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::Mat2>, rhs: Ref<bevy::math::Mat2>| {
-                    let output: bool = ::bevy::math::Mat2::eq(_self.into(), rhs.into())
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "neg",
-                |_self: Val<bevy::math::Mat2>| {
-                    let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::neg(
+                "div",
+                |_self: Val<bevy::math::Mat2>, rhs: f32| {
+                    let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::div(
                             _self.into(),
+                            rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::Mat2>| {
-                    let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::clone(
+                "sub",
+                |_self: Val<bevy::math::Mat2>, rhs: Val<bevy::math::Mat2>| {
+                    let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::sub(
                             _self.into(),
+                            rhs.into(),
                         )
                         .into();
                     output
@@ -16792,9 +16584,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_cols_array",
                 |_self: Ref<bevy::math::Mat2>| {
-                    let output: [f32; 4] = ::bevy::math::Mat2::to_cols_array(
-                            _self.into(),
-                        )
+                    let output: [f32; 4] = ::bevy::math::Mat2::to_cols_array(&_self)
                         .into();
                     output
                 },
@@ -16803,7 +16593,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "to_cols_array_2d",
                 |_self: Ref<bevy::math::Mat2>| {
                     let output: [[f32; 2]; 2] = ::bevy::math::Mat2::to_cols_array_2d(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -16824,7 +16614,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |scale: Val<bevy::math::Vec2>, angle: f32| {
                     let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::from_scale_angle(
                             scale.into(),
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -16834,7 +16624,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_angle",
                 |angle: f32| {
                     let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::from_angle(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -16855,8 +16645,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |m: Val<bevy::math::Mat3>, i: usize, j: usize| {
                     let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::from_mat3_minor(
                             m.into(),
-                            i.into(),
-                            j.into(),
+                            i,
+                            j,
                         )
                         .into();
                     output
@@ -16877,8 +16667,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |m: Val<bevy::math::Mat3A>, i: usize, j: usize| {
                     let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::from_mat3a_minor(
                             m.into(),
-                            i.into(),
-                            j.into(),
+                            i,
+                            j,
                         )
                         .into();
                     output
@@ -16888,8 +16678,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "col",
                 |_self: Ref<bevy::math::Mat2>, index: usize| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Mat2::col(
-                            _self.into(),
-                            index.into(),
+                            &_self,
+                            index,
                         )
                         .into();
                     output
@@ -16899,8 +16689,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "row",
                 |_self: Ref<bevy::math::Mat2>, index: usize| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Mat2::row(
-                            _self.into(),
-                            index.into(),
+                            &_self,
+                            index,
                         )
                         .into();
                     output
@@ -16909,15 +16699,14 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "is_finite",
                 |_self: Ref<bevy::math::Mat2>| {
-                    let output: bool = ::bevy::math::Mat2::is_finite(_self.into())
-                        .into();
+                    let output: bool = ::bevy::math::Mat2::is_finite(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "is_nan",
                 |_self: Ref<bevy::math::Mat2>| {
-                    let output: bool = ::bevy::math::Mat2::is_nan(_self.into()).into();
+                    let output: bool = ::bevy::math::Mat2::is_nan(&_self).into();
                     output
                 },
             )
@@ -16925,7 +16714,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transpose",
                 |_self: Ref<bevy::math::Mat2>| {
                     let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::transpose(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -16934,8 +16723,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "determinant",
                 |_self: Ref<bevy::math::Mat2>| {
-                    let output: f32 = ::bevy::math::Mat2::determinant(_self.into())
-                        .into();
+                    let output: f32 = ::bevy::math::Mat2::determinant(&_self).into();
                     output
                 },
             )
@@ -16943,7 +16731,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "inverse",
                 |_self: Ref<bevy::math::Mat2>| {
                     let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::inverse(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -16953,7 +16741,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_vec2",
                 |_self: Ref<bevy::math::Mat2>, rhs: Val<bevy::math::Vec2>| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Mat2::mul_vec2(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -16964,8 +16752,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_mat2",
                 |_self: Ref<bevy::math::Mat2>, rhs: Ref<bevy::math::Mat2>| {
                     let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::mul_mat2(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -16975,8 +16763,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "add_mat2",
                 |_self: Ref<bevy::math::Mat2>, rhs: Ref<bevy::math::Mat2>| {
                     let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::add_mat2(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -16986,8 +16774,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "sub_mat2",
                 |_self: Ref<bevy::math::Mat2>, rhs: Ref<bevy::math::Mat2>| {
                     let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::sub_mat2(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -16997,8 +16785,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_scalar",
                 |_self: Ref<bevy::math::Mat2>, rhs: f32| {
                     let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::mul_scalar(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            rhs,
                         )
                         .into();
                     output
@@ -17008,8 +16796,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "div_scalar",
                 |_self: Ref<bevy::math::Mat2>, rhs: f32| {
                     let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::div_scalar(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            rhs,
                         )
                         .into();
                     output
@@ -17023,9 +16811,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     max_abs_diff: f32|
                 {
                     let output: bool = ::bevy::math::Mat2::abs_diff_eq(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -17034,9 +16822,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "abs",
                 |_self: Ref<bevy::math::Mat2>| {
-                    let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::abs(
-                            _self.into(),
-                        )
+                    let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::abs(&_self)
                         .into();
                     output
                 },
@@ -17045,53 +16831,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dmat2",
                 |_self: Ref<bevy::math::Mat2>| {
                     let output: Val<bevy::math::DMat2> = ::bevy::math::Mat2::as_dmat2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::Mat2>, rhs: Val<bevy::math::Mat2>| {
-                    let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Mat2>, rhs: Val<bevy::math::Vec2>| {
-                    let output: Val<bevy::math::Vec2> = ::bevy::math::Mat2::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Mat2>, rhs: Val<bevy::math::Mat2>| {
-                    let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Mat2>, rhs: f32| {
-                    let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
+                "eq",
+                |_self: Ref<bevy::math::Mat2>, rhs: Ref<bevy::math::Mat2>| {
+                    let output: bool = ::bevy::math::Mat2::eq(&_self, &rhs).into();
                     output
                 },
             )
@@ -17105,12 +16854,32 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::Mat3>::new(world)
+            )
+            .overwrite_script_function(
+                "neg",
+                |_self: Val<bevy::math::Mat2>| {
+                    let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::neg(
+                            _self.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
             .overwrite_script_function(
                 "mul",
-                |_self: Val<bevy::math::Mat3>, rhs: Val<bevy::math::Affine2>| {
-                    let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::mul(
+                |_self: Val<bevy::math::Mat2>, rhs: f32| {
+                    let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::mul(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::Mat2>, rhs: Val<bevy::math::Mat2>| {
+                    let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::mul(
                             _self.into(),
                             rhs.into(),
                         )
@@ -17118,44 +16887,21 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     output
                 },
             )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::Mat2>| {
+                    let output: Val<bevy::math::Mat2> = ::bevy::math::Mat2::clone(&_self)
+                        .into();
+                    output
+                },
+            );
+        NamespaceBuilder::<::bevy::math::Mat3>::new(world)
             .overwrite_script_function(
                 "mul",
                 |_self: Val<bevy::math::Mat3>, rhs: Val<bevy::math::Vec3>| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Mat3::mul(
                             _self.into(),
                             rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Mat3>, rhs: Val<bevy::math::Mat3>| {
-                    let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Mat3>, rhs: Val<bevy::math::Vec3A>| {
-                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Mat3::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "neg",
-                |_self: Val<bevy::math::Mat3>| {
-                    let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::neg(
-                            _self.into(),
                         )
                         .into();
                     output
@@ -17173,10 +16919,11 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::Mat3>| {
-                    let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::clone(
+                "mul",
+                |_self: Val<bevy::math::Mat3>, rhs: Val<bevy::math::Mat3>| {
+                    let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::mul(
                             _self.into(),
+                            rhs.into(),
                         )
                         .into();
                     output
@@ -17201,9 +16948,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_cols_array",
                 |_self: Ref<bevy::math::Mat3>| {
-                    let output: [f32; 9] = ::bevy::math::Mat3::to_cols_array(
-                            _self.into(),
-                        )
+                    let output: [f32; 9] = ::bevy::math::Mat3::to_cols_array(&_self)
                         .into();
                     output
                 },
@@ -17212,7 +16957,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "to_cols_array_2d",
                 |_self: Ref<bevy::math::Mat3>| {
                     let output: [[f32; 3]; 3] = ::bevy::math::Mat3::to_cols_array_2d(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -17243,8 +16988,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |m: Val<bevy::math::Mat4>, i: usize, j: usize| {
                     let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::from_mat4_minor(
                             m.into(),
-                            i.into(),
-                            j.into(),
+                            i,
+                            j,
                         )
                         .into();
                     output
@@ -17265,7 +17010,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |axis: Val<bevy::math::Vec3>, angle: f32| {
                     let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::from_axis_angle(
                             axis.into(),
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -17276,9 +17021,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |order: Val<bevy::math::EulerRot>, a: f32, b: f32, c: f32| {
                     let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::from_euler(
                             order.into(),
-                            a.into(),
-                            b.into(),
-                            c.into(),
+                            a,
+                            b,
+                            c,
                         )
                         .into();
                     output
@@ -17288,7 +17033,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "to_euler",
                 |_self: Ref<bevy::math::Mat3>, order: Val<bevy::math::EulerRot>| {
                     let output: (f32, f32, f32) = ::bevy::math::Mat3::to_euler(
-                            _self.into(),
+                            &_self,
                             order.into(),
                         )
                         .into();
@@ -17299,7 +17044,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_x",
                 |angle: f32| {
                     let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::from_rotation_x(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -17309,7 +17054,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_y",
                 |angle: f32| {
                     let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::from_rotation_y(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -17319,7 +17064,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_z",
                 |angle: f32| {
                     let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::from_rotation_z(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -17339,7 +17084,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_angle",
                 |angle: f32| {
                     let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::from_angle(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -17354,7 +17099,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 {
                     let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::from_scale_angle_translation(
                             scale.into(),
-                            angle.into(),
+                            angle,
                             translation.into(),
                         )
                         .into();
@@ -17385,8 +17130,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "col",
                 |_self: Ref<bevy::math::Mat3>, index: usize| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Mat3::col(
-                            _self.into(),
-                            index.into(),
+                            &_self,
+                            index,
                         )
                         .into();
                     output
@@ -17396,8 +17141,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "row",
                 |_self: Ref<bevy::math::Mat3>, index: usize| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Mat3::row(
-                            _self.into(),
-                            index.into(),
+                            &_self,
+                            index,
                         )
                         .into();
                     output
@@ -17406,15 +17151,14 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "is_finite",
                 |_self: Ref<bevy::math::Mat3>| {
-                    let output: bool = ::bevy::math::Mat3::is_finite(_self.into())
-                        .into();
+                    let output: bool = ::bevy::math::Mat3::is_finite(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "is_nan",
                 |_self: Ref<bevy::math::Mat3>| {
-                    let output: bool = ::bevy::math::Mat3::is_nan(_self.into()).into();
+                    let output: bool = ::bevy::math::Mat3::is_nan(&_self).into();
                     output
                 },
             )
@@ -17422,7 +17166,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transpose",
                 |_self: Ref<bevy::math::Mat3>| {
                     let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::transpose(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -17431,8 +17175,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "determinant",
                 |_self: Ref<bevy::math::Mat3>| {
-                    let output: f32 = ::bevy::math::Mat3::determinant(_self.into())
-                        .into();
+                    let output: f32 = ::bevy::math::Mat3::determinant(&_self).into();
                     output
                 },
             )
@@ -17440,7 +17183,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "inverse",
                 |_self: Ref<bevy::math::Mat3>| {
                     let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::inverse(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -17450,7 +17193,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_point2",
                 |_self: Ref<bevy::math::Mat3>, rhs: Val<bevy::math::Vec2>| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Mat3::transform_point2(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -17461,7 +17204,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_vector2",
                 |_self: Ref<bevy::math::Mat3>, rhs: Val<bevy::math::Vec2>| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Mat3::transform_vector2(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -17472,7 +17215,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_vec3",
                 |_self: Ref<bevy::math::Mat3>, rhs: Val<bevy::math::Vec3>| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Mat3::mul_vec3(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -17483,7 +17226,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_vec3a",
                 |_self: Ref<bevy::math::Mat3>, rhs: Val<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Mat3::mul_vec3a(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -17494,8 +17237,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_mat3",
                 |_self: Ref<bevy::math::Mat3>, rhs: Ref<bevy::math::Mat3>| {
                     let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::mul_mat3(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -17505,8 +17248,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "add_mat3",
                 |_self: Ref<bevy::math::Mat3>, rhs: Ref<bevy::math::Mat3>| {
                     let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::add_mat3(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -17516,8 +17259,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "sub_mat3",
                 |_self: Ref<bevy::math::Mat3>, rhs: Ref<bevy::math::Mat3>| {
                     let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::sub_mat3(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -17527,8 +17270,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_scalar",
                 |_self: Ref<bevy::math::Mat3>, rhs: f32| {
                     let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::mul_scalar(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            rhs,
                         )
                         .into();
                     output
@@ -17538,8 +17281,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "div_scalar",
                 |_self: Ref<bevy::math::Mat3>, rhs: f32| {
                     let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::div_scalar(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            rhs,
                         )
                         .into();
                     output
@@ -17553,9 +17296,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     max_abs_diff: f32|
                 {
                     let output: bool = ::bevy::math::Mat3::abs_diff_eq(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -17564,9 +17307,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "abs",
                 |_self: Ref<bevy::math::Mat3>| {
-                    let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::abs(
-                            _self.into(),
-                        )
+                    let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::abs(&_self)
                         .into();
                     output
                 },
@@ -17575,6 +17316,23 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dmat3",
                 |_self: Ref<bevy::math::Mat3>| {
                     let output: Val<bevy::math::DMat3> = ::bevy::math::Mat3::as_dmat3(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::Mat3>, rhs: Ref<bevy::math::Mat3>| {
+                    let output: bool = ::bevy::math::Mat3::eq(&_self, &rhs).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "neg",
+                |_self: Val<bevy::math::Mat3>| {
+                    let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::neg(
                             _self.into(),
                         )
                         .into();
@@ -17583,7 +17341,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "mul",
-                |_self: Val<bevy::math::Mat3>, rhs: f32| {
+                |_self: Val<bevy::math::Mat3>, rhs: Val<bevy::math::Affine2>| {
                     let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::mul(
                             _self.into(),
                             rhs.into(),
@@ -17593,20 +17351,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::Mat3>, rhs: Ref<bevy::math::Mat3>| {
-                    let output: bool = ::bevy::math::Mat3::eq(_self.into(), rhs.into())
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::Mat3>, rhs: f32| {
-                    let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
+                "clone",
+                |_self: Ref<bevy::math::Mat3>| {
+                    let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::clone(&_self)
                         .into();
                     output
                 },
@@ -17621,58 +17368,56 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::Mat3>, rhs: Val<bevy::math::Vec3A>| {
+                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Mat3::mul(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::Mat3>, rhs: f32| {
+                    let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::mul(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::Mat3>, rhs: f32| {
+                    let output: Val<bevy::math::Mat3> = ::bevy::math::Mat3::div(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::Mat3A>::new(world)
             .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Mat3A>, rhs: Val<bevy::math::Vec3A>| {
-                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Mat3A::mul(
+                "div",
+                |_self: Val<bevy::math::Mat3A>, rhs: f32| {
+                    let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::div(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::Mat3A>| {
-                    let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::clone(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Mat3A>, rhs: Val<bevy::math::Mat3A>| {
-                    let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "neg",
-                |_self: Val<bevy::math::Mat3A>| {
-                    let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::neg(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::Mat3A>, rhs: Val<bevy::math::Mat3A>| {
-                    let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
+                "eq",
+                |_self: Ref<bevy::math::Mat3A>, rhs: Ref<bevy::math::Mat3A>| {
+                    let output: bool = ::bevy::math::Mat3A::eq(&_self, &rhs).into();
                     output
                 },
             )
@@ -17688,52 +17433,21 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::Mat3A>, rhs: Ref<bevy::math::Mat3A>| {
-                    let output: bool = ::bevy::math::Mat3A::eq(_self.into(), rhs.into())
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Mat3A>, rhs: f32| {
-                    let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::Mat3A>, rhs: f32| {
-                    let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Mat3A>, rhs: Val<bevy::math::Vec3>| {
-                    let output: Val<bevy::math::Vec3> = ::bevy::math::Mat3A::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
                 "sub",
                 |_self: Val<bevy::math::Mat3A>, rhs: Val<bevy::math::Mat3A>| {
                     let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::sub(
                             _self.into(),
                             rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::Mat3A>| {
+                    let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::clone(
+                            &_self,
                         )
                         .into();
                     output
@@ -17758,9 +17472,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_cols_array",
                 |_self: Ref<bevy::math::Mat3A>| {
-                    let output: [f32; 9] = ::bevy::math::Mat3A::to_cols_array(
-                            _self.into(),
-                        )
+                    let output: [f32; 9] = ::bevy::math::Mat3A::to_cols_array(&_self)
                         .into();
                     output
                 },
@@ -17769,7 +17481,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "to_cols_array_2d",
                 |_self: Ref<bevy::math::Mat3A>| {
                     let output: [[f32; 3]; 3] = ::bevy::math::Mat3A::to_cols_array_2d(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -17800,8 +17512,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |m: Val<bevy::math::Mat4>, i: usize, j: usize| {
                     let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::from_mat4_minor(
                             m.into(),
-                            i.into(),
-                            j.into(),
+                            i,
+                            j,
                         )
                         .into();
                     output
@@ -17822,7 +17534,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |axis: Val<bevy::math::Vec3>, angle: f32| {
                     let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::from_axis_angle(
                             axis.into(),
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -17833,9 +17545,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |order: Val<bevy::math::EulerRot>, a: f32, b: f32, c: f32| {
                     let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::from_euler(
                             order.into(),
-                            a.into(),
-                            b.into(),
-                            c.into(),
+                            a,
+                            b,
+                            c,
                         )
                         .into();
                     output
@@ -17845,7 +17557,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "to_euler",
                 |_self: Ref<bevy::math::Mat3A>, order: Val<bevy::math::EulerRot>| {
                     let output: (f32, f32, f32) = ::bevy::math::Mat3A::to_euler(
-                            _self.into(),
+                            &_self,
                             order.into(),
                         )
                         .into();
@@ -17856,7 +17568,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_x",
                 |angle: f32| {
                     let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::from_rotation_x(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -17866,7 +17578,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_y",
                 |angle: f32| {
                     let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::from_rotation_y(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -17876,7 +17588,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_z",
                 |angle: f32| {
                     let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::from_rotation_z(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -17896,7 +17608,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_angle",
                 |angle: f32| {
                     let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::from_angle(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -17911,7 +17623,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 {
                     let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::from_scale_angle_translation(
                             scale.into(),
-                            angle.into(),
+                            angle,
                             translation.into(),
                         )
                         .into();
@@ -17942,8 +17654,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "col",
                 |_self: Ref<bevy::math::Mat3A>, index: usize| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Mat3A::col(
-                            _self.into(),
-                            index.into(),
+                            &_self,
+                            index,
                         )
                         .into();
                     output
@@ -17953,8 +17665,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "row",
                 |_self: Ref<bevy::math::Mat3A>, index: usize| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Mat3A::row(
-                            _self.into(),
-                            index.into(),
+                            &_self,
+                            index,
                         )
                         .into();
                     output
@@ -17963,15 +17675,14 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "is_finite",
                 |_self: Ref<bevy::math::Mat3A>| {
-                    let output: bool = ::bevy::math::Mat3A::is_finite(_self.into())
-                        .into();
+                    let output: bool = ::bevy::math::Mat3A::is_finite(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "is_nan",
                 |_self: Ref<bevy::math::Mat3A>| {
-                    let output: bool = ::bevy::math::Mat3A::is_nan(_self.into()).into();
+                    let output: bool = ::bevy::math::Mat3A::is_nan(&_self).into();
                     output
                 },
             )
@@ -17979,7 +17690,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transpose",
                 |_self: Ref<bevy::math::Mat3A>| {
                     let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::transpose(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -17988,8 +17699,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "determinant",
                 |_self: Ref<bevy::math::Mat3A>| {
-                    let output: f32 = ::bevy::math::Mat3A::determinant(_self.into())
-                        .into();
+                    let output: f32 = ::bevy::math::Mat3A::determinant(&_self).into();
                     output
                 },
             )
@@ -17997,7 +17707,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "inverse",
                 |_self: Ref<bevy::math::Mat3A>| {
                     let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::inverse(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -18007,7 +17717,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_point2",
                 |_self: Ref<bevy::math::Mat3A>, rhs: Val<bevy::math::Vec2>| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Mat3A::transform_point2(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -18018,7 +17728,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_vector2",
                 |_self: Ref<bevy::math::Mat3A>, rhs: Val<bevy::math::Vec2>| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Mat3A::transform_vector2(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -18029,7 +17739,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_vec3",
                 |_self: Ref<bevy::math::Mat3A>, rhs: Val<bevy::math::Vec3>| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Mat3A::mul_vec3(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -18040,7 +17750,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_vec3a",
                 |_self: Ref<bevy::math::Mat3A>, rhs: Val<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Mat3A::mul_vec3a(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -18051,8 +17761,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_mat3",
                 |_self: Ref<bevy::math::Mat3A>, rhs: Ref<bevy::math::Mat3A>| {
                     let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::mul_mat3(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -18062,8 +17772,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "add_mat3",
                 |_self: Ref<bevy::math::Mat3A>, rhs: Ref<bevy::math::Mat3A>| {
                     let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::add_mat3(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -18073,8 +17783,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "sub_mat3",
                 |_self: Ref<bevy::math::Mat3A>, rhs: Ref<bevy::math::Mat3A>| {
                     let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::sub_mat3(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -18084,8 +17794,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_scalar",
                 |_self: Ref<bevy::math::Mat3A>, rhs: f32| {
                     let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::mul_scalar(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            rhs,
                         )
                         .into();
                     output
@@ -18095,8 +17805,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "div_scalar",
                 |_self: Ref<bevy::math::Mat3A>, rhs: f32| {
                     let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::div_scalar(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            rhs,
                         )
                         .into();
                     output
@@ -18110,9 +17820,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     max_abs_diff: f32|
                 {
                     let output: bool = ::bevy::math::Mat3A::abs_diff_eq(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -18121,9 +17831,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "abs",
                 |_self: Ref<bevy::math::Mat3A>| {
-                    let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::abs(
-                            _self.into(),
-                        )
+                    let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::abs(&_self)
                         .into();
                     output
                 },
@@ -18132,27 +17840,49 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dmat3",
                 |_self: Ref<bevy::math::Mat3A>| {
                     let output: Val<bevy::math::DMat3> = ::bevy::math::Mat3A::as_dmat3(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            );
-        NamespaceBuilder::<::bevy::math::Mat4>::new(world)
-            .overwrite_script_function(
-                "neg",
-                |_self: Val<bevy::math::Mat4>| {
-                    let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::neg(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::Mat4>| {
-                    let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::clone(
+                "mul",
+                |_self: Val<bevy::math::Mat3A>, rhs: f32| {
+                    let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::mul(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::Mat3A>, rhs: Val<bevy::math::Vec3A>| {
+                    let output: Val<bevy::math::Vec3A> = ::bevy::math::Mat3A::mul(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::Mat3A>, rhs: Val<bevy::math::Mat3A>| {
+                    let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::add(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "neg",
+                |_self: Val<bevy::math::Mat3A>| {
+                    let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::neg(
                             _self.into(),
                         )
                         .into();
@@ -18161,12 +17891,31 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "mul",
-                |_self: Val<bevy::math::Mat4>, rhs: Val<bevy::math::Affine3A>| {
-                    let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::mul(
+                |_self: Val<bevy::math::Mat3A>, rhs: Val<bevy::math::Mat3A>| {
+                    let output: Val<bevy::math::Mat3A> = ::bevy::math::Mat3A::mul(
                             _self.into(),
                             rhs.into(),
                         )
                         .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::Mat3A>, rhs: Val<bevy::math::Vec3>| {
+                    let output: Val<bevy::math::Vec3> = ::bevy::math::Mat3A::mul(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            );
+        NamespaceBuilder::<::bevy::math::Mat4>::new(world)
+            .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::Mat4>, rhs: Ref<bevy::math::Mat4>| {
+                    let output: bool = ::bevy::math::Mat4::eq(&_self, &rhs).into();
                     output
                 },
             )
@@ -18182,31 +17931,12 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::Mat4>, rhs: Val<bevy::math::Mat4>| {
-                    let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
                 "mul",
-                |_self: Val<bevy::math::Mat4>, rhs: f32| {
+                |_self: Val<bevy::math::Mat4>, rhs: Val<bevy::math::Affine3A>| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::mul(
                             _self.into(),
                             rhs.into(),
                         )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::Mat4>, rhs: Ref<bevy::math::Mat4>| {
-                    let output: bool = ::bevy::math::Mat4::eq(_self.into(), rhs.into())
                         .into();
                     output
                 },
@@ -18227,8 +17957,37 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::Mat4>, rhs: f32| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::div(
                             _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "neg",
+                |_self: Val<bevy::math::Mat4>| {
+                    let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::neg(
+                            _self.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::Mat4>, rhs: Val<bevy::math::Mat4>| {
+                    let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::mul(
+                            _self.into(),
                             rhs.into(),
                         )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::Mat4>| {
+                    let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::clone(&_self)
                         .into();
                     output
                 },
@@ -18254,9 +18013,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_cols_array",
                 |_self: Ref<bevy::math::Mat4>| {
-                    let output: [f32; 16] = ::bevy::math::Mat4::to_cols_array(
-                            _self.into(),
-                        )
+                    let output: [f32; 16] = ::bevy::math::Mat4::to_cols_array(&_self)
                         .into();
                     output
                 },
@@ -18265,7 +18022,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "to_cols_array_2d",
                 |_self: Ref<bevy::math::Mat4>| {
                     let output: [[f32; 4]; 4] = ::bevy::math::Mat4::to_cols_array_2d(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -18353,7 +18110,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |axis: Val<bevy::math::Vec3>, angle: f32| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::from_axis_angle(
                             axis.into(),
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -18364,9 +18121,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |order: Val<bevy::math::EulerRot>, a: f32, b: f32, c: f32| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::from_euler(
                             order.into(),
-                            a.into(),
-                            b.into(),
-                            c.into(),
+                            a,
+                            b,
+                            c,
                         )
                         .into();
                     output
@@ -18376,7 +18133,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "to_euler",
                 |_self: Ref<bevy::math::Mat4>, order: Val<bevy::math::EulerRot>| {
                     let output: (f32, f32, f32) = ::bevy::math::Mat4::to_euler(
-                            _self.into(),
+                            &_self,
                             order.into(),
                         )
                         .into();
@@ -18387,7 +18144,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_x",
                 |angle: f32| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::from_rotation_x(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -18397,7 +18154,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_y",
                 |angle: f32| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::from_rotation_y(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -18407,7 +18164,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_z",
                 |angle: f32| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::from_rotation_z(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -18427,8 +18184,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "col",
                 |_self: Ref<bevy::math::Mat4>, index: usize| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::Mat4::col(
-                            _self.into(),
-                            index.into(),
+                            &_self,
+                            index,
                         )
                         .into();
                     output
@@ -18438,8 +18195,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "row",
                 |_self: Ref<bevy::math::Mat4>, index: usize| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::Mat4::row(
-                            _self.into(),
-                            index.into(),
+                            &_self,
+                            index,
                         )
                         .into();
                     output
@@ -18448,15 +18205,14 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "is_finite",
                 |_self: Ref<bevy::math::Mat4>| {
-                    let output: bool = ::bevy::math::Mat4::is_finite(_self.into())
-                        .into();
+                    let output: bool = ::bevy::math::Mat4::is_finite(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "is_nan",
                 |_self: Ref<bevy::math::Mat4>| {
-                    let output: bool = ::bevy::math::Mat4::is_nan(_self.into()).into();
+                    let output: bool = ::bevy::math::Mat4::is_nan(&_self).into();
                     output
                 },
             )
@@ -18464,7 +18220,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transpose",
                 |_self: Ref<bevy::math::Mat4>| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::transpose(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -18473,8 +18229,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "determinant",
                 |_self: Ref<bevy::math::Mat4>| {
-                    let output: f32 = ::bevy::math::Mat4::determinant(_self.into())
-                        .into();
+                    let output: f32 = ::bevy::math::Mat4::determinant(&_self).into();
                     output
                 },
             )
@@ -18482,7 +18237,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "inverse",
                 |_self: Ref<bevy::math::Mat4>| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::inverse(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -18556,10 +18311,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "perspective_rh_gl",
                 |fov_y_radians: f32, aspect_ratio: f32, z_near: f32, z_far: f32| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::perspective_rh_gl(
-                            fov_y_radians.into(),
-                            aspect_ratio.into(),
-                            z_near.into(),
-                            z_far.into(),
+                            fov_y_radians,
+                            aspect_ratio,
+                            z_near,
+                            z_far,
                         )
                         .into();
                     output
@@ -18569,10 +18324,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "perspective_lh",
                 |fov_y_radians: f32, aspect_ratio: f32, z_near: f32, z_far: f32| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::perspective_lh(
-                            fov_y_radians.into(),
-                            aspect_ratio.into(),
-                            z_near.into(),
-                            z_far.into(),
+                            fov_y_radians,
+                            aspect_ratio,
+                            z_near,
+                            z_far,
                         )
                         .into();
                     output
@@ -18582,10 +18337,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "perspective_rh",
                 |fov_y_radians: f32, aspect_ratio: f32, z_near: f32, z_far: f32| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::perspective_rh(
-                            fov_y_radians.into(),
-                            aspect_ratio.into(),
-                            z_near.into(),
-                            z_far.into(),
+                            fov_y_radians,
+                            aspect_ratio,
+                            z_near,
+                            z_far,
                         )
                         .into();
                     output
@@ -18595,9 +18350,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "perspective_infinite_lh",
                 |fov_y_radians: f32, aspect_ratio: f32, z_near: f32| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::perspective_infinite_lh(
-                            fov_y_radians.into(),
-                            aspect_ratio.into(),
-                            z_near.into(),
+                            fov_y_radians,
+                            aspect_ratio,
+                            z_near,
                         )
                         .into();
                     output
@@ -18607,9 +18362,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "perspective_infinite_reverse_lh",
                 |fov_y_radians: f32, aspect_ratio: f32, z_near: f32| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::perspective_infinite_reverse_lh(
-                            fov_y_radians.into(),
-                            aspect_ratio.into(),
-                            z_near.into(),
+                            fov_y_radians,
+                            aspect_ratio,
+                            z_near,
                         )
                         .into();
                     output
@@ -18619,9 +18374,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "perspective_infinite_rh",
                 |fov_y_radians: f32, aspect_ratio: f32, z_near: f32| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::perspective_infinite_rh(
-                            fov_y_radians.into(),
-                            aspect_ratio.into(),
-                            z_near.into(),
+                            fov_y_radians,
+                            aspect_ratio,
+                            z_near,
                         )
                         .into();
                     output
@@ -18631,9 +18386,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "perspective_infinite_reverse_rh",
                 |fov_y_radians: f32, aspect_ratio: f32, z_near: f32| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::perspective_infinite_reverse_rh(
-                            fov_y_radians.into(),
-                            aspect_ratio.into(),
-                            z_near.into(),
+                            fov_y_radians,
+                            aspect_ratio,
+                            z_near,
                         )
                         .into();
                     output
@@ -18643,12 +18398,12 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "orthographic_rh_gl",
                 |left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::orthographic_rh_gl(
-                            left.into(),
-                            right.into(),
-                            bottom.into(),
-                            top.into(),
-                            near.into(),
-                            far.into(),
+                            left,
+                            right,
+                            bottom,
+                            top,
+                            near,
+                            far,
                         )
                         .into();
                     output
@@ -18658,12 +18413,12 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "orthographic_lh",
                 |left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::orthographic_lh(
-                            left.into(),
-                            right.into(),
-                            bottom.into(),
-                            top.into(),
-                            near.into(),
-                            far.into(),
+                            left,
+                            right,
+                            bottom,
+                            top,
+                            near,
+                            far,
                         )
                         .into();
                     output
@@ -18673,12 +18428,12 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "orthographic_rh",
                 |left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::orthographic_rh(
-                            left.into(),
-                            right.into(),
-                            bottom.into(),
-                            top.into(),
-                            near.into(),
-                            far.into(),
+                            left,
+                            right,
+                            bottom,
+                            top,
+                            near,
+                            far,
                         )
                         .into();
                     output
@@ -18688,7 +18443,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "project_point3",
                 |_self: Ref<bevy::math::Mat4>, rhs: Val<bevy::math::Vec3>| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Mat4::project_point3(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -18699,7 +18454,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_point3",
                 |_self: Ref<bevy::math::Mat4>, rhs: Val<bevy::math::Vec3>| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Mat4::transform_point3(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -18710,7 +18465,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_vector3",
                 |_self: Ref<bevy::math::Mat4>, rhs: Val<bevy::math::Vec3>| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Mat4::transform_vector3(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -18721,7 +18476,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "project_point3a",
                 |_self: Ref<bevy::math::Mat4>, rhs: Val<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Mat4::project_point3a(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -18732,7 +18487,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_point3a",
                 |_self: Ref<bevy::math::Mat4>, rhs: Val<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Mat4::transform_point3a(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -18743,7 +18498,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_vector3a",
                 |_self: Ref<bevy::math::Mat4>, rhs: Val<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Mat4::transform_vector3a(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -18754,7 +18509,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_vec4",
                 |_self: Ref<bevy::math::Mat4>, rhs: Val<bevy::math::Vec4>| {
                     let output: Val<bevy::math::Vec4> = ::bevy::math::Mat4::mul_vec4(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -18765,8 +18520,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_mat4",
                 |_self: Ref<bevy::math::Mat4>, rhs: Ref<bevy::math::Mat4>| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::mul_mat4(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -18776,8 +18531,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "add_mat4",
                 |_self: Ref<bevy::math::Mat4>, rhs: Ref<bevy::math::Mat4>| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::add_mat4(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -18787,8 +18542,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "sub_mat4",
                 |_self: Ref<bevy::math::Mat4>, rhs: Ref<bevy::math::Mat4>| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::sub_mat4(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -18798,8 +18553,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_scalar",
                 |_self: Ref<bevy::math::Mat4>, rhs: f32| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::mul_scalar(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            rhs,
                         )
                         .into();
                     output
@@ -18809,8 +18564,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "div_scalar",
                 |_self: Ref<bevy::math::Mat4>, rhs: f32| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::div_scalar(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            rhs,
                         )
                         .into();
                     output
@@ -18824,9 +18579,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     max_abs_diff: f32|
                 {
                     let output: bool = ::bevy::math::Mat4::abs_diff_eq(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -18835,9 +18590,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "abs",
                 |_self: Ref<bevy::math::Mat4>| {
-                    let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::abs(
-                            _self.into(),
-                        )
+                    let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::abs(&_self)
                         .into();
                     output
                 },
@@ -18846,7 +18599,18 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_dmat4",
                 |_self: Ref<bevy::math::Mat4>| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::Mat4::as_dmat4(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::Mat4>, rhs: Val<bevy::math::Mat4>| {
+                    let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::add(
                             _self.into(),
+                            rhs.into(),
                         )
                         .into();
                     output
@@ -18854,10 +18618,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "mul",
-                |_self: Val<bevy::math::Mat4>, rhs: Val<bevy::math::Mat4>| {
+                |_self: Val<bevy::math::Mat4>, rhs: f32| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::Mat4::mul(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -18865,18 +18629,43 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::DMat2>::new(world)
             .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::DMat2>, rhs: Ref<bevy::math::DMat2>| {
-                    let output: bool = ::bevy::math::DMat2::eq(_self.into(), rhs.into())
+                "clone",
+                |_self: Ref<bevy::math::DMat2>| {
+                    let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::clone(
+                            &_self,
+                        )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::DMat2>| {
-                    let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::clone(
+                "mul",
+                |_self: Val<bevy::math::DMat2>, rhs: f64| {
+                    let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::mul(
                             _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::DMat2>, rhs: f64| {
+                    let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::div(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::DMat2>, rhs: Val<bevy::math::DVec2>| {
+                    let output: Val<bevy::math::DVec2> = ::bevy::math::DMat2::mul(
+                            _self.into(),
+                            rhs.into(),
                         )
                         .into();
                     output
@@ -18916,23 +18705,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "neg",
-                |_self: Val<bevy::math::DMat2>| {
-                    let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::neg(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::DMat2>, rhs: Val<bevy::math::DVec2>| {
-                    let output: Val<bevy::math::DVec2> = ::bevy::math::DMat2::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
+                "eq",
+                |_self: Ref<bevy::math::DMat2>, rhs: Ref<bevy::math::DMat2>| {
+                    let output: bool = ::bevy::math::DMat2::eq(&_self, &rhs).into();
                     output
                 },
             )
@@ -18950,9 +18725,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_cols_array",
                 |_self: Ref<bevy::math::DMat2>| {
-                    let output: [f64; 4] = ::bevy::math::DMat2::to_cols_array(
-                            _self.into(),
-                        )
+                    let output: [f64; 4] = ::bevy::math::DMat2::to_cols_array(&_self)
                         .into();
                     output
                 },
@@ -18961,7 +18734,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "to_cols_array_2d",
                 |_self: Ref<bevy::math::DMat2>| {
                     let output: [[f64; 2]; 2] = ::bevy::math::DMat2::to_cols_array_2d(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -18982,7 +18755,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |scale: Val<bevy::math::DVec2>, angle: f64| {
                     let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::from_scale_angle(
                             scale.into(),
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -18992,7 +18765,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_angle",
                 |angle: f64| {
                     let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::from_angle(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -19013,8 +18786,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |m: Val<bevy::math::DMat3>, i: usize, j: usize| {
                     let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::from_mat3_minor(
                             m.into(),
-                            i.into(),
-                            j.into(),
+                            i,
+                            j,
                         )
                         .into();
                     output
@@ -19024,8 +18797,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "col",
                 |_self: Ref<bevy::math::DMat2>, index: usize| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DMat2::col(
-                            _self.into(),
-                            index.into(),
+                            &_self,
+                            index,
                         )
                         .into();
                     output
@@ -19035,8 +18808,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "row",
                 |_self: Ref<bevy::math::DMat2>, index: usize| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DMat2::row(
-                            _self.into(),
-                            index.into(),
+                            &_self,
+                            index,
                         )
                         .into();
                     output
@@ -19045,15 +18818,14 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "is_finite",
                 |_self: Ref<bevy::math::DMat2>| {
-                    let output: bool = ::bevy::math::DMat2::is_finite(_self.into())
-                        .into();
+                    let output: bool = ::bevy::math::DMat2::is_finite(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "is_nan",
                 |_self: Ref<bevy::math::DMat2>| {
-                    let output: bool = ::bevy::math::DMat2::is_nan(_self.into()).into();
+                    let output: bool = ::bevy::math::DMat2::is_nan(&_self).into();
                     output
                 },
             )
@@ -19061,7 +18833,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transpose",
                 |_self: Ref<bevy::math::DMat2>| {
                     let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::transpose(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -19070,8 +18842,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "determinant",
                 |_self: Ref<bevy::math::DMat2>| {
-                    let output: f64 = ::bevy::math::DMat2::determinant(_self.into())
-                        .into();
+                    let output: f64 = ::bevy::math::DMat2::determinant(&_self).into();
                     output
                 },
             )
@@ -19079,7 +18850,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "inverse",
                 |_self: Ref<bevy::math::DMat2>| {
                     let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::inverse(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -19089,7 +18860,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_vec2",
                 |_self: Ref<bevy::math::DMat2>, rhs: Val<bevy::math::DVec2>| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DMat2::mul_vec2(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -19100,8 +18871,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_mat2",
                 |_self: Ref<bevy::math::DMat2>, rhs: Ref<bevy::math::DMat2>| {
                     let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::mul_mat2(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -19111,8 +18882,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "add_mat2",
                 |_self: Ref<bevy::math::DMat2>, rhs: Ref<bevy::math::DMat2>| {
                     let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::add_mat2(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -19122,8 +18893,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "sub_mat2",
                 |_self: Ref<bevy::math::DMat2>, rhs: Ref<bevy::math::DMat2>| {
                     let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::sub_mat2(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -19133,8 +18904,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_scalar",
                 |_self: Ref<bevy::math::DMat2>, rhs: f64| {
                     let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::mul_scalar(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            rhs,
                         )
                         .into();
                     output
@@ -19144,8 +18915,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "div_scalar",
                 |_self: Ref<bevy::math::DMat2>, rhs: f64| {
                     let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::div_scalar(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            rhs,
                         )
                         .into();
                     output
@@ -19159,9 +18930,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     max_abs_diff: f64|
                 {
                     let output: bool = ::bevy::math::DMat2::abs_diff_eq(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -19170,9 +18941,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "abs",
                 |_self: Ref<bevy::math::DMat2>| {
-                    let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::abs(
-                            _self.into(),
-                        )
+                    let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::abs(&_self)
                         .into();
                     output
                 },
@@ -19181,29 +18950,17 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_mat2",
                 |_self: Ref<bevy::math::DMat2>| {
                     let output: Val<bevy::math::Mat2> = ::bevy::math::DMat2::as_mat2(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::DMat2>, rhs: f64| {
-                    let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::mul(
+                "neg",
+                |_self: Val<bevy::math::DMat2>| {
+                    let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::neg(
                             _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::DMat2>, rhs: f64| {
-                    let output: Val<bevy::math::DMat2> = ::bevy::math::DMat2::div(
-                            _self.into(),
-                            rhs.into(),
                         )
                         .into();
                     output
@@ -19212,8 +18969,29 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
         NamespaceBuilder::<::bevy::math::DMat3>::new(world)
             .overwrite_script_function(
                 "mul",
-                |_self: Val<bevy::math::DMat3>, rhs: Val<bevy::math::DVec3>| {
-                    let output: Val<bevy::math::DVec3> = ::bevy::math::DMat3::mul(
+                |_self: Val<bevy::math::DMat3>, rhs: f64| {
+                    let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::mul(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::DMat3>| {
+                    let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::DMat3>, rhs: Val<bevy::math::DMat3>| {
+                    let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::add(
                             _self.into(),
                             rhs.into(),
                         )
@@ -19233,9 +19011,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "add",
+                "sub",
                 |_self: Val<bevy::math::DMat3>, rhs: Val<bevy::math::DMat3>| {
-                    let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::add(
+                    let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::sub(
                             _self.into(),
                             rhs.into(),
                         )
@@ -19262,9 +19040,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_cols_array",
                 |_self: Ref<bevy::math::DMat3>| {
-                    let output: [f64; 9] = ::bevy::math::DMat3::to_cols_array(
-                            _self.into(),
-                        )
+                    let output: [f64; 9] = ::bevy::math::DMat3::to_cols_array(&_self)
                         .into();
                     output
                 },
@@ -19273,7 +19049,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "to_cols_array_2d",
                 |_self: Ref<bevy::math::DMat3>| {
                     let output: [[f64; 3]; 3] = ::bevy::math::DMat3::to_cols_array_2d(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -19304,8 +19080,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |m: Val<bevy::math::DMat4>, i: usize, j: usize| {
                     let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::from_mat4_minor(
                             m.into(),
-                            i.into(),
-                            j.into(),
+                            i,
+                            j,
                         )
                         .into();
                     output
@@ -19326,7 +19102,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |axis: Val<bevy::math::DVec3>, angle: f64| {
                     let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::from_axis_angle(
                             axis.into(),
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -19337,9 +19113,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |order: Val<bevy::math::EulerRot>, a: f64, b: f64, c: f64| {
                     let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::from_euler(
                             order.into(),
-                            a.into(),
-                            b.into(),
-                            c.into(),
+                            a,
+                            b,
+                            c,
                         )
                         .into();
                     output
@@ -19349,7 +19125,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "to_euler",
                 |_self: Ref<bevy::math::DMat3>, order: Val<bevy::math::EulerRot>| {
                     let output: (f64, f64, f64) = ::bevy::math::DMat3::to_euler(
-                            _self.into(),
+                            &_self,
                             order.into(),
                         )
                         .into();
@@ -19360,7 +19136,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_x",
                 |angle: f64| {
                     let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::from_rotation_x(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -19370,7 +19146,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_y",
                 |angle: f64| {
                     let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::from_rotation_y(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -19380,7 +19156,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_z",
                 |angle: f64| {
                     let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::from_rotation_z(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -19400,7 +19176,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_angle",
                 |angle: f64| {
                     let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::from_angle(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -19415,7 +19191,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 {
                     let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::from_scale_angle_translation(
                             scale.into(),
-                            angle.into(),
+                            angle,
                             translation.into(),
                         )
                         .into();
@@ -19446,8 +19222,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "col",
                 |_self: Ref<bevy::math::DMat3>, index: usize| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DMat3::col(
-                            _self.into(),
-                            index.into(),
+                            &_self,
+                            index,
                         )
                         .into();
                     output
@@ -19457,8 +19233,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "row",
                 |_self: Ref<bevy::math::DMat3>, index: usize| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DMat3::row(
-                            _self.into(),
-                            index.into(),
+                            &_self,
+                            index,
                         )
                         .into();
                     output
@@ -19467,15 +19243,14 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "is_finite",
                 |_self: Ref<bevy::math::DMat3>| {
-                    let output: bool = ::bevy::math::DMat3::is_finite(_self.into())
-                        .into();
+                    let output: bool = ::bevy::math::DMat3::is_finite(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "is_nan",
                 |_self: Ref<bevy::math::DMat3>| {
-                    let output: bool = ::bevy::math::DMat3::is_nan(_self.into()).into();
+                    let output: bool = ::bevy::math::DMat3::is_nan(&_self).into();
                     output
                 },
             )
@@ -19483,7 +19258,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transpose",
                 |_self: Ref<bevy::math::DMat3>| {
                     let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::transpose(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -19492,8 +19267,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "determinant",
                 |_self: Ref<bevy::math::DMat3>| {
-                    let output: f64 = ::bevy::math::DMat3::determinant(_self.into())
-                        .into();
+                    let output: f64 = ::bevy::math::DMat3::determinant(&_self).into();
                     output
                 },
             )
@@ -19501,7 +19275,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "inverse",
                 |_self: Ref<bevy::math::DMat3>| {
                     let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::inverse(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -19511,7 +19285,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_point2",
                 |_self: Ref<bevy::math::DMat3>, rhs: Val<bevy::math::DVec2>| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DMat3::transform_point2(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -19522,7 +19296,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_vector2",
                 |_self: Ref<bevy::math::DMat3>, rhs: Val<bevy::math::DVec2>| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DMat3::transform_vector2(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -19533,7 +19307,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_vec3",
                 |_self: Ref<bevy::math::DMat3>, rhs: Val<bevy::math::DVec3>| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DMat3::mul_vec3(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -19544,8 +19318,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_mat3",
                 |_self: Ref<bevy::math::DMat3>, rhs: Ref<bevy::math::DMat3>| {
                     let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::mul_mat3(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -19555,8 +19329,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "add_mat3",
                 |_self: Ref<bevy::math::DMat3>, rhs: Ref<bevy::math::DMat3>| {
                     let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::add_mat3(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -19566,8 +19340,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "sub_mat3",
                 |_self: Ref<bevy::math::DMat3>, rhs: Ref<bevy::math::DMat3>| {
                     let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::sub_mat3(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -19577,8 +19351,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_scalar",
                 |_self: Ref<bevy::math::DMat3>, rhs: f64| {
                     let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::mul_scalar(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            rhs,
                         )
                         .into();
                     output
@@ -19588,8 +19362,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "div_scalar",
                 |_self: Ref<bevy::math::DMat3>, rhs: f64| {
                     let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::div_scalar(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            rhs,
                         )
                         .into();
                     output
@@ -19603,9 +19377,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     max_abs_diff: f64|
                 {
                     let output: bool = ::bevy::math::DMat3::abs_diff_eq(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -19614,9 +19388,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "abs",
                 |_self: Ref<bevy::math::DMat3>| {
-                    let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::abs(
-                            _self.into(),
-                        )
+                    let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::abs(&_self)
                         .into();
                     output
                 },
@@ -19625,7 +19397,40 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_mat3",
                 |_self: Ref<bevy::math::DMat3>| {
                     let output: Val<bevy::math::Mat3> = ::bevy::math::DMat3::as_mat3(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::DMat3>, rhs: f64| {
+                    let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::div(
                             _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::DMat3>, rhs: Val<bevy::math::DVec3>| {
+                    let output: Val<bevy::math::DVec3> = ::bevy::math::DMat3::mul(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::DMat3>, rhs: Val<bevy::math::DMat3>| {
+                    let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::mul(
+                            _self.into(),
+                            rhs.into(),
                         )
                         .into();
                     output
@@ -19634,29 +19439,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "eq",
                 |_self: Ref<bevy::math::DMat3>, rhs: Ref<bevy::math::DMat3>| {
-                    let output: bool = ::bevy::math::DMat3::eq(_self.into(), rhs.into())
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::DMat3>| {
-                    let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::clone(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::DMat3>, rhs: f64| {
-                    let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
+                    let output: bool = ::bevy::math::DMat3::eq(&_self, &rhs).into();
                     output
                 },
             )
@@ -19669,45 +19452,12 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::DMat3>, rhs: Val<bevy::math::DMat3>| {
-                    let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::DMat3>, rhs: Val<bevy::math::DMat3>| {
-                    let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::DMat3>, rhs: f64| {
-                    let output: Val<bevy::math::DMat3> = ::bevy::math::DMat3::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::math::DMat4>::new(world)
             .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::DMat4>, rhs: Val<bevy::math::DVec4>| {
-                    let output: Val<bevy::math::DVec4> = ::bevy::math::DMat4::mul(
+                "sub",
+                |_self: Val<bevy::math::DMat4>, rhs: Val<bevy::math::DMat4>| {
+                    let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::sub(
                             _self.into(),
                             rhs.into(),
                         )
@@ -19719,6 +19469,56 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul",
                 |_self: Val<bevy::math::DMat4>, rhs: Val<bevy::math::DAffine3>| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::mul(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::DMat4>, rhs: Val<bevy::math::DMat4>| {
+                    let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::mul(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::DMat4>| {
+                    let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::DMat4>, rhs: Ref<bevy::math::DMat4>| {
+                    let output: bool = ::bevy::math::DMat4::eq(&_self, &rhs).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::DMat4>, rhs: f64| {
+                    let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::mul(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::DMat4>, rhs: Val<bevy::math::DVec4>| {
+                    let output: Val<bevy::math::DVec4> = ::bevy::math::DMat4::mul(
                             _self.into(),
                             rhs.into(),
                         )
@@ -19747,9 +19547,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_cols_array",
                 |_self: Ref<bevy::math::DMat4>| {
-                    let output: [f64; 16] = ::bevy::math::DMat4::to_cols_array(
-                            _self.into(),
-                        )
+                    let output: [f64; 16] = ::bevy::math::DMat4::to_cols_array(&_self)
                         .into();
                     output
                 },
@@ -19758,7 +19556,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "to_cols_array_2d",
                 |_self: Ref<bevy::math::DMat4>| {
                     let output: [[f64; 4]; 4] = ::bevy::math::DMat4::to_cols_array_2d(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -19836,7 +19634,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |axis: Val<bevy::math::DVec3>, angle: f64| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::from_axis_angle(
                             axis.into(),
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -19847,9 +19645,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |order: Val<bevy::math::EulerRot>, a: f64, b: f64, c: f64| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::from_euler(
                             order.into(),
-                            a.into(),
-                            b.into(),
-                            c.into(),
+                            a,
+                            b,
+                            c,
                         )
                         .into();
                     output
@@ -19859,7 +19657,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "to_euler",
                 |_self: Ref<bevy::math::DMat4>, order: Val<bevy::math::EulerRot>| {
                     let output: (f64, f64, f64) = ::bevy::math::DMat4::to_euler(
-                            _self.into(),
+                            &_self,
                             order.into(),
                         )
                         .into();
@@ -19870,7 +19668,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_x",
                 |angle: f64| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::from_rotation_x(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -19880,7 +19678,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_y",
                 |angle: f64| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::from_rotation_y(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -19890,7 +19688,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_z",
                 |angle: f64| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::from_rotation_z(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -19910,8 +19708,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "col",
                 |_self: Ref<bevy::math::DMat4>, index: usize| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DMat4::col(
-                            _self.into(),
-                            index.into(),
+                            &_self,
+                            index,
                         )
                         .into();
                     output
@@ -19921,8 +19719,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "row",
                 |_self: Ref<bevy::math::DMat4>, index: usize| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DMat4::row(
-                            _self.into(),
-                            index.into(),
+                            &_self,
+                            index,
                         )
                         .into();
                     output
@@ -19931,15 +19729,14 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "is_finite",
                 |_self: Ref<bevy::math::DMat4>| {
-                    let output: bool = ::bevy::math::DMat4::is_finite(_self.into())
-                        .into();
+                    let output: bool = ::bevy::math::DMat4::is_finite(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "is_nan",
                 |_self: Ref<bevy::math::DMat4>| {
-                    let output: bool = ::bevy::math::DMat4::is_nan(_self.into()).into();
+                    let output: bool = ::bevy::math::DMat4::is_nan(&_self).into();
                     output
                 },
             )
@@ -19947,7 +19744,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transpose",
                 |_self: Ref<bevy::math::DMat4>| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::transpose(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -19956,8 +19753,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "determinant",
                 |_self: Ref<bevy::math::DMat4>| {
-                    let output: f64 = ::bevy::math::DMat4::determinant(_self.into())
-                        .into();
+                    let output: f64 = ::bevy::math::DMat4::determinant(&_self).into();
                     output
                 },
             )
@@ -19965,7 +19761,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "inverse",
                 |_self: Ref<bevy::math::DMat4>| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::inverse(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -20039,10 +19835,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "perspective_rh_gl",
                 |fov_y_radians: f64, aspect_ratio: f64, z_near: f64, z_far: f64| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::perspective_rh_gl(
-                            fov_y_radians.into(),
-                            aspect_ratio.into(),
-                            z_near.into(),
-                            z_far.into(),
+                            fov_y_radians,
+                            aspect_ratio,
+                            z_near,
+                            z_far,
                         )
                         .into();
                     output
@@ -20052,10 +19848,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "perspective_lh",
                 |fov_y_radians: f64, aspect_ratio: f64, z_near: f64, z_far: f64| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::perspective_lh(
-                            fov_y_radians.into(),
-                            aspect_ratio.into(),
-                            z_near.into(),
-                            z_far.into(),
+                            fov_y_radians,
+                            aspect_ratio,
+                            z_near,
+                            z_far,
                         )
                         .into();
                     output
@@ -20065,10 +19861,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "perspective_rh",
                 |fov_y_radians: f64, aspect_ratio: f64, z_near: f64, z_far: f64| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::perspective_rh(
-                            fov_y_radians.into(),
-                            aspect_ratio.into(),
-                            z_near.into(),
-                            z_far.into(),
+                            fov_y_radians,
+                            aspect_ratio,
+                            z_near,
+                            z_far,
                         )
                         .into();
                     output
@@ -20078,9 +19874,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "perspective_infinite_lh",
                 |fov_y_radians: f64, aspect_ratio: f64, z_near: f64| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::perspective_infinite_lh(
-                            fov_y_radians.into(),
-                            aspect_ratio.into(),
-                            z_near.into(),
+                            fov_y_radians,
+                            aspect_ratio,
+                            z_near,
                         )
                         .into();
                     output
@@ -20090,9 +19886,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "perspective_infinite_reverse_lh",
                 |fov_y_radians: f64, aspect_ratio: f64, z_near: f64| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::perspective_infinite_reverse_lh(
-                            fov_y_radians.into(),
-                            aspect_ratio.into(),
-                            z_near.into(),
+                            fov_y_radians,
+                            aspect_ratio,
+                            z_near,
                         )
                         .into();
                     output
@@ -20102,9 +19898,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "perspective_infinite_rh",
                 |fov_y_radians: f64, aspect_ratio: f64, z_near: f64| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::perspective_infinite_rh(
-                            fov_y_radians.into(),
-                            aspect_ratio.into(),
-                            z_near.into(),
+                            fov_y_radians,
+                            aspect_ratio,
+                            z_near,
                         )
                         .into();
                     output
@@ -20114,9 +19910,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "perspective_infinite_reverse_rh",
                 |fov_y_radians: f64, aspect_ratio: f64, z_near: f64| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::perspective_infinite_reverse_rh(
-                            fov_y_radians.into(),
-                            aspect_ratio.into(),
-                            z_near.into(),
+                            fov_y_radians,
+                            aspect_ratio,
+                            z_near,
                         )
                         .into();
                     output
@@ -20126,12 +19922,12 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "orthographic_rh_gl",
                 |left: f64, right: f64, bottom: f64, top: f64, near: f64, far: f64| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::orthographic_rh_gl(
-                            left.into(),
-                            right.into(),
-                            bottom.into(),
-                            top.into(),
-                            near.into(),
-                            far.into(),
+                            left,
+                            right,
+                            bottom,
+                            top,
+                            near,
+                            far,
                         )
                         .into();
                     output
@@ -20141,12 +19937,12 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "orthographic_lh",
                 |left: f64, right: f64, bottom: f64, top: f64, near: f64, far: f64| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::orthographic_lh(
-                            left.into(),
-                            right.into(),
-                            bottom.into(),
-                            top.into(),
-                            near.into(),
-                            far.into(),
+                            left,
+                            right,
+                            bottom,
+                            top,
+                            near,
+                            far,
                         )
                         .into();
                     output
@@ -20156,12 +19952,12 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "orthographic_rh",
                 |left: f64, right: f64, bottom: f64, top: f64, near: f64, far: f64| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::orthographic_rh(
-                            left.into(),
-                            right.into(),
-                            bottom.into(),
-                            top.into(),
-                            near.into(),
-                            far.into(),
+                            left,
+                            right,
+                            bottom,
+                            top,
+                            near,
+                            far,
                         )
                         .into();
                     output
@@ -20171,7 +19967,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "project_point3",
                 |_self: Ref<bevy::math::DMat4>, rhs: Val<bevy::math::DVec3>| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DMat4::project_point3(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -20182,7 +19978,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_point3",
                 |_self: Ref<bevy::math::DMat4>, rhs: Val<bevy::math::DVec3>| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DMat4::transform_point3(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -20193,7 +19989,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_vector3",
                 |_self: Ref<bevy::math::DMat4>, rhs: Val<bevy::math::DVec3>| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DMat4::transform_vector3(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -20204,7 +20000,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_vec4",
                 |_self: Ref<bevy::math::DMat4>, rhs: Val<bevy::math::DVec4>| {
                     let output: Val<bevy::math::DVec4> = ::bevy::math::DMat4::mul_vec4(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -20215,8 +20011,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_mat4",
                 |_self: Ref<bevy::math::DMat4>, rhs: Ref<bevy::math::DMat4>| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::mul_mat4(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -20226,8 +20022,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "add_mat4",
                 |_self: Ref<bevy::math::DMat4>, rhs: Ref<bevy::math::DMat4>| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::add_mat4(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -20237,8 +20033,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "sub_mat4",
                 |_self: Ref<bevy::math::DMat4>, rhs: Ref<bevy::math::DMat4>| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::sub_mat4(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            &rhs,
                         )
                         .into();
                     output
@@ -20248,8 +20044,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "mul_scalar",
                 |_self: Ref<bevy::math::DMat4>, rhs: f64| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::mul_scalar(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            rhs,
                         )
                         .into();
                     output
@@ -20259,8 +20055,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "div_scalar",
                 |_self: Ref<bevy::math::DMat4>, rhs: f64| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::div_scalar(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
+                            rhs,
                         )
                         .into();
                     output
@@ -20274,9 +20070,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     max_abs_diff: f64|
                 {
                     let output: bool = ::bevy::math::DMat4::abs_diff_eq(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -20285,9 +20081,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "abs",
                 |_self: Ref<bevy::math::DMat4>| {
-                    let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::abs(
-                            _self.into(),
-                        )
+                    let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::abs(&_self)
                         .into();
                     output
                 },
@@ -20296,7 +20090,18 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "as_mat4",
                 |_self: Ref<bevy::math::DMat4>| {
                     let output: Val<bevy::math::Mat4> = ::bevy::math::DMat4::as_mat4(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "div",
+                |_self: Val<bevy::math::DMat4>, rhs: f64| {
+                    let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::div(
                             _self.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -20313,46 +20118,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::DMat4>| {
-                    let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::clone(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::DMat4>, rhs: Val<bevy::math::DMat4>| {
-                    let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::DMat4>, rhs: f64| {
-                    let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::DMat4>, rhs: Ref<bevy::math::DMat4>| {
-                    let output: bool = ::bevy::math::DMat4::eq(_self.into(), rhs.into())
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
                 "add",
                 |_self: Val<bevy::math::DMat4>, rhs: Val<bevy::math::DMat4>| {
                     let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::add(
@@ -20362,62 +20127,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .overwrite_script_function(
-                "div",
-                |_self: Val<bevy::math::DMat4>, rhs: f64| {
-                    let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::div(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::DMat4>, rhs: Val<bevy::math::DMat4>| {
-                    let output: Val<bevy::math::DMat4> = ::bevy::math::DMat4::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::math::Affine2>::new(world)
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Affine2>, rhs: Val<bevy::math::Mat3>| {
-                    let output: Val<bevy::math::Mat3> = ::bevy::math::Affine2::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Affine2>, rhs: Val<bevy::math::Affine2>| {
-                    let output: Val<bevy::math::Affine2> = ::bevy::math::Affine2::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::Affine2>| {
-                    let output: Val<bevy::math::Affine2> = ::bevy::math::Affine2::clone(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
             .overwrite_script_function(
                 "from_cols",
                 |
@@ -20437,9 +20148,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_cols_array",
                 |_self: Ref<bevy::math::Affine2>| {
-                    let output: [f32; 6] = ::bevy::math::Affine2::to_cols_array(
-                            _self.into(),
-                        )
+                    let output: [f32; 6] = ::bevy::math::Affine2::to_cols_array(&_self)
                         .into();
                     output
                 },
@@ -20448,7 +20157,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "to_cols_array_2d",
                 |_self: Ref<bevy::math::Affine2>| {
                     let output: [[f32; 2]; 3] = ::bevy::math::Affine2::to_cols_array_2d(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -20468,7 +20177,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_angle",
                 |angle: f32| {
                     let output: Val<bevy::math::Affine2> = ::bevy::math::Affine2::from_angle(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -20514,7 +20223,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 {
                     let output: Val<bevy::math::Affine2> = ::bevy::math::Affine2::from_scale_angle_translation(
                             scale.into(),
-                            angle.into(),
+                            angle,
                             translation.into(),
                         )
                         .into();
@@ -20525,7 +20234,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_angle_translation",
                 |angle: f32, translation: Val<bevy::math::Vec2>| {
                     let output: Val<bevy::math::Affine2> = ::bevy::math::Affine2::from_angle_translation(
-                            angle.into(),
+                            angle,
                             translation.into(),
                         )
                         .into();
@@ -20556,7 +20265,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_point2",
                 |_self: Ref<bevy::math::Affine2>, rhs: Val<bevy::math::Vec2>| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Affine2::transform_point2(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -20567,7 +20276,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_vector2",
                 |_self: Ref<bevy::math::Affine2>, rhs: Val<bevy::math::Vec2>| {
                     let output: Val<bevy::math::Vec2> = ::bevy::math::Affine2::transform_vector2(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -20577,16 +20286,14 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "is_finite",
                 |_self: Ref<bevy::math::Affine2>| {
-                    let output: bool = ::bevy::math::Affine2::is_finite(_self.into())
-                        .into();
+                    let output: bool = ::bevy::math::Affine2::is_finite(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "is_nan",
                 |_self: Ref<bevy::math::Affine2>| {
-                    let output: bool = ::bevy::math::Affine2::is_nan(_self.into())
-                        .into();
+                    let output: bool = ::bevy::math::Affine2::is_nan(&_self).into();
                     output
                 },
             )
@@ -20598,9 +20305,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     max_abs_diff: f32|
                 {
                     let output: bool = ::bevy::math::Affine2::abs_diff_eq(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -20610,16 +20317,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "inverse",
                 |_self: Ref<bevy::math::Affine2>| {
                     let output: Val<bevy::math::Affine2> = ::bevy::math::Affine2::inverse(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
                 },
             )
             .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::Affine2>, rhs: Ref<bevy::math::Affine2>| {
-                    let output: bool = ::bevy::math::Affine2::eq(
+                "mul",
+                |_self: Val<bevy::math::Affine2>, rhs: Val<bevy::math::Affine2>| {
+                    let output: Val<bevy::math::Affine2> = ::bevy::math::Affine2::mul(
                             _self.into(),
                             rhs.into(),
                         )
@@ -20637,12 +20344,11 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::Affine3A>::new(world)
+            )
             .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::Affine3A>, rhs: Ref<bevy::math::Affine3A>| {
-                    let output: bool = ::bevy::math::Affine3A::eq(
+                "mul",
+                |_self: Val<bevy::math::Affine2>, rhs: Val<bevy::math::Mat3>| {
+                    let output: Val<bevy::math::Mat3> = ::bevy::math::Affine2::mul(
                             _self.into(),
                             rhs.into(),
                         )
@@ -20651,15 +20357,23 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::Affine2>, rhs: Ref<bevy::math::Affine2>| {
+                    let output: bool = ::bevy::math::Affine2::eq(&_self, &rhs).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
                 "clone",
-                |_self: Ref<bevy::math::Affine3A>| {
-                    let output: Val<bevy::math::Affine3A> = ::bevy::math::Affine3A::clone(
-                            _self.into(),
+                |_self: Ref<bevy::math::Affine2>| {
+                    let output: Val<bevy::math::Affine2> = ::bevy::math::Affine2::clone(
+                            &_self,
                         )
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::Affine3A>::new(world)
             .overwrite_script_function(
                 "from_cols",
                 |
@@ -20681,9 +20395,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_cols_array",
                 |_self: Ref<bevy::math::Affine3A>| {
-                    let output: [f32; 12] = ::bevy::math::Affine3A::to_cols_array(
-                            _self.into(),
-                        )
+                    let output: [f32; 12] = ::bevy::math::Affine3A::to_cols_array(&_self)
                         .into();
                     output
                 },
@@ -20692,7 +20404,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "to_cols_array_2d",
                 |_self: Ref<bevy::math::Affine3A>| {
                     let output: [[f32; 3]; 4] = ::bevy::math::Affine3A::to_cols_array_2d(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -20723,7 +20435,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |axis: Val<bevy::math::Vec3>, angle: f32| {
                     let output: Val<bevy::math::Affine3A> = ::bevy::math::Affine3A::from_axis_angle(
                             axis.into(),
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -20733,7 +20445,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_x",
                 |angle: f32| {
                     let output: Val<bevy::math::Affine3A> = ::bevy::math::Affine3A::from_rotation_x(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -20743,7 +20455,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_y",
                 |angle: f32| {
                     let output: Val<bevy::math::Affine3A> = ::bevy::math::Affine3A::from_rotation_y(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -20753,7 +20465,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_z",
                 |angle: f32| {
                     let output: Val<bevy::math::Affine3A> = ::bevy::math::Affine3A::from_rotation_z(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -20895,7 +20607,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_point3",
                 |_self: Ref<bevy::math::Affine3A>, rhs: Val<bevy::math::Vec3>| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Affine3A::transform_point3(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -20906,7 +20618,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_vector3",
                 |_self: Ref<bevy::math::Affine3A>, rhs: Val<bevy::math::Vec3>| {
                     let output: Val<bevy::math::Vec3> = ::bevy::math::Affine3A::transform_vector3(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -20917,7 +20629,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_point3a",
                 |_self: Ref<bevy::math::Affine3A>, rhs: Val<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Affine3A::transform_point3a(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -20928,7 +20640,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_vector3a",
                 |_self: Ref<bevy::math::Affine3A>, rhs: Val<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = ::bevy::math::Affine3A::transform_vector3a(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -20938,16 +20650,14 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "is_finite",
                 |_self: Ref<bevy::math::Affine3A>| {
-                    let output: bool = ::bevy::math::Affine3A::is_finite(_self.into())
-                        .into();
+                    let output: bool = ::bevy::math::Affine3A::is_finite(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "is_nan",
                 |_self: Ref<bevy::math::Affine3A>| {
-                    let output: bool = ::bevy::math::Affine3A::is_nan(_self.into())
-                        .into();
+                    let output: bool = ::bevy::math::Affine3A::is_nan(&_self).into();
                     output
                 },
             )
@@ -20959,9 +20669,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     max_abs_diff: f32|
                 {
                     let output: bool = ::bevy::math::Affine3A::abs_diff_eq(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -20971,18 +20681,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "inverse",
                 |_self: Ref<bevy::math::Affine3A>| {
                     let output: Val<bevy::math::Affine3A> = ::bevy::math::Affine3A::inverse(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::Affine3A>, rhs: Val<bevy::math::Affine3A>| {
-                    let output: Val<bevy::math::Affine3A> = ::bevy::math::Affine3A::mul(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -20998,14 +20697,59 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::Affine3A>, rhs: Ref<bevy::math::Affine3A>| {
+                    let output: bool = ::bevy::math::Affine3A::eq(&_self, &rhs).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "mul",
+                |_self: Val<bevy::math::Affine3A>, rhs: Val<bevy::math::Affine3A>| {
+                    let output: Val<bevy::math::Affine3A> = ::bevy::math::Affine3A::mul(
+                            _self.into(),
+                            rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::Affine3A>| {
+                    let output: Val<bevy::math::Affine3A> = ::bevy::math::Affine3A::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::DAffine2>::new(world)
             .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::DAffine2>, rhs: Ref<bevy::math::DAffine2>| {
-                    let output: bool = ::bevy::math::DAffine2::eq(
+                "mul",
+                |_self: Val<bevy::math::DAffine2>, rhs: Val<bevy::math::DAffine2>| {
+                    let output: Val<bevy::math::DAffine2> = ::bevy::math::DAffine2::mul(
                             _self.into(),
                             rhs.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::DAffine2>, rhs: Ref<bevy::math::DAffine2>| {
+                    let output: bool = ::bevy::math::DAffine2::eq(&_self, &rhs).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::DAffine2>| {
+                    let output: Val<bevy::math::DAffine2> = ::bevy::math::DAffine2::clone(
+                            &_self,
                         )
                         .into();
                     output
@@ -21030,9 +20774,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_cols_array",
                 |_self: Ref<bevy::math::DAffine2>| {
-                    let output: [f64; 6] = ::bevy::math::DAffine2::to_cols_array(
-                            _self.into(),
-                        )
+                    let output: [f64; 6] = ::bevy::math::DAffine2::to_cols_array(&_self)
                         .into();
                     output
                 },
@@ -21041,7 +20783,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "to_cols_array_2d",
                 |_self: Ref<bevy::math::DAffine2>| {
                     let output: [[f64; 2]; 3] = ::bevy::math::DAffine2::to_cols_array_2d(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -21061,7 +20803,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_angle",
                 |angle: f64| {
                     let output: Val<bevy::math::DAffine2> = ::bevy::math::DAffine2::from_angle(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -21107,7 +20849,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 {
                     let output: Val<bevy::math::DAffine2> = ::bevy::math::DAffine2::from_scale_angle_translation(
                             scale.into(),
-                            angle.into(),
+                            angle,
                             translation.into(),
                         )
                         .into();
@@ -21118,7 +20860,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_angle_translation",
                 |angle: f64, translation: Val<bevy::math::DVec2>| {
                     let output: Val<bevy::math::DAffine2> = ::bevy::math::DAffine2::from_angle_translation(
-                            angle.into(),
+                            angle,
                             translation.into(),
                         )
                         .into();
@@ -21139,7 +20881,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_point2",
                 |_self: Ref<bevy::math::DAffine2>, rhs: Val<bevy::math::DVec2>| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DAffine2::transform_point2(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -21150,7 +20892,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_vector2",
                 |_self: Ref<bevy::math::DAffine2>, rhs: Val<bevy::math::DVec2>| {
                     let output: Val<bevy::math::DVec2> = ::bevy::math::DAffine2::transform_vector2(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -21160,16 +20902,14 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "is_finite",
                 |_self: Ref<bevy::math::DAffine2>| {
-                    let output: bool = ::bevy::math::DAffine2::is_finite(_self.into())
-                        .into();
+                    let output: bool = ::bevy::math::DAffine2::is_finite(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "is_nan",
                 |_self: Ref<bevy::math::DAffine2>| {
-                    let output: bool = ::bevy::math::DAffine2::is_nan(_self.into())
-                        .into();
+                    let output: bool = ::bevy::math::DAffine2::is_nan(&_self).into();
                     output
                 },
             )
@@ -21181,9 +20921,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     max_abs_diff: f64|
                 {
                     let output: bool = ::bevy::math::DAffine2::abs_diff_eq(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -21193,7 +20933,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "inverse",
                 |_self: Ref<bevy::math::DAffine2>| {
                     let output: Val<bevy::math::DAffine2> = ::bevy::math::DAffine2::inverse(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -21209,11 +20949,12 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::DAffine3>::new(world)
             .overwrite_script_function(
                 "mul",
-                |_self: Val<bevy::math::DAffine2>, rhs: Val<bevy::math::DAffine2>| {
-                    let output: Val<bevy::math::DAffine2> = ::bevy::math::DAffine2::mul(
+                |_self: Val<bevy::math::DAffine3>, rhs: Val<bevy::math::DMat4>| {
+                    let output: Val<bevy::math::DMat4> = ::bevy::math::DAffine3::mul(
                             _self.into(),
                             rhs.into(),
                         )
@@ -21223,15 +20964,21 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "clone",
-                |_self: Ref<bevy::math::DAffine2>| {
-                    let output: Val<bevy::math::DAffine2> = ::bevy::math::DAffine2::clone(
-                            _self.into(),
+                |_self: Ref<bevy::math::DAffine3>| {
+                    let output: Val<bevy::math::DAffine3> = ::bevy::math::DAffine3::clone(
+                            &_self,
                         )
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::DAffine3>::new(world)
+            )
+            .overwrite_script_function(
+                "eq",
+                |_self: Ref<bevy::math::DAffine3>, rhs: Ref<bevy::math::DAffine3>| {
+                    let output: bool = ::bevy::math::DAffine3::eq(&_self, &rhs).into();
+                    output
+                },
+            )
             .overwrite_script_function(
                 "from_cols",
                 |
@@ -21253,9 +21000,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_cols_array",
                 |_self: Ref<bevy::math::DAffine3>| {
-                    let output: [f64; 12] = ::bevy::math::DAffine3::to_cols_array(
-                            _self.into(),
-                        )
+                    let output: [f64; 12] = ::bevy::math::DAffine3::to_cols_array(&_self)
                         .into();
                     output
                 },
@@ -21264,7 +21009,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "to_cols_array_2d",
                 |_self: Ref<bevy::math::DAffine3>| {
                     let output: [[f64; 3]; 4] = ::bevy::math::DAffine3::to_cols_array_2d(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -21295,7 +21040,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |axis: Val<bevy::math::DVec3>, angle: f64| {
                     let output: Val<bevy::math::DAffine3> = ::bevy::math::DAffine3::from_axis_angle(
                             axis.into(),
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -21305,7 +21050,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_x",
                 |angle: f64| {
                     let output: Val<bevy::math::DAffine3> = ::bevy::math::DAffine3::from_rotation_x(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -21315,7 +21060,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_y",
                 |angle: f64| {
                     let output: Val<bevy::math::DAffine3> = ::bevy::math::DAffine3::from_rotation_y(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -21325,7 +21070,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_z",
                 |angle: f64| {
                     let output: Val<bevy::math::DAffine3> = ::bevy::math::DAffine3::from_rotation_z(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -21467,7 +21212,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_point3",
                 |_self: Ref<bevy::math::DAffine3>, rhs: Val<bevy::math::DVec3>| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DAffine3::transform_point3(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -21478,7 +21223,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "transform_vector3",
                 |_self: Ref<bevy::math::DAffine3>, rhs: Val<bevy::math::DVec3>| {
                     let output: Val<bevy::math::DVec3> = ::bevy::math::DAffine3::transform_vector3(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
                         )
                         .into();
@@ -21488,16 +21233,14 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "is_finite",
                 |_self: Ref<bevy::math::DAffine3>| {
-                    let output: bool = ::bevy::math::DAffine3::is_finite(_self.into())
-                        .into();
+                    let output: bool = ::bevy::math::DAffine3::is_finite(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "is_nan",
                 |_self: Ref<bevy::math::DAffine3>| {
-                    let output: bool = ::bevy::math::DAffine3::is_nan(_self.into())
-                        .into();
+                    let output: bool = ::bevy::math::DAffine3::is_nan(&_self).into();
                     output
                 },
             )
@@ -21509,9 +21252,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     max_abs_diff: f64|
                 {
                     let output: bool = ::bevy::math::DAffine3::abs_diff_eq(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -21521,18 +21264,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "inverse",
                 |_self: Ref<bevy::math::DAffine3>| {
                     let output: Val<bevy::math::DAffine3> = ::bevy::math::DAffine3::inverse(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::DAffine3>, rhs: Ref<bevy::math::DAffine3>| {
-                    let output: bool = ::bevy::math::DAffine3::eq(
-                            _self.into(),
-                            rhs.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -21548,11 +21280,23 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::DQuat>::new(world)
             .overwrite_script_function(
                 "mul",
-                |_self: Val<bevy::math::DAffine3>, rhs: Val<bevy::math::DMat4>| {
-                    let output: Val<bevy::math::DMat4> = ::bevy::math::DAffine3::mul(
+                |_self: Val<bevy::math::DQuat>, rhs: f64| {
+                    let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::mul(
+                            _self.into(),
+                            rhs,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "add",
+                |_self: Val<bevy::math::DQuat>, rhs: Val<bevy::math::DQuat>| {
+                    let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::add(
                             _self.into(),
                             rhs.into(),
                         )
@@ -21561,20 +21305,28 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::DAffine3>| {
-                    let output: Val<bevy::math::DAffine3> = ::bevy::math::DAffine3::clone(
+                "eq",
+                |_self: Ref<bevy::math::DQuat>, rhs: Ref<bevy::math::DQuat>| {
+                    let output: bool = ::bevy::math::DQuat::eq(&_self, &rhs).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "neg",
+                |_self: Val<bevy::math::DQuat>| {
+                    let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::neg(
                             _self.into(),
                         )
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::DQuat>::new(world)
+            )
             .overwrite_script_function(
-                "eq",
-                |_self: Ref<bevy::math::DQuat>, rhs: Ref<bevy::math::DQuat>| {
-                    let output: bool = ::bevy::math::DQuat::eq(_self.into(), rhs.into())
+                "clone",
+                |_self: Ref<bevy::math::DQuat>| {
+                    let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::clone(
+                            &_self,
+                        )
                         .into();
                     output
                 },
@@ -21584,7 +21336,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DQuat>, rhs: f64| {
                     let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::div(
                             _self.into(),
-                            rhs.into(),
+                            rhs,
                         )
                         .into();
                     output
@@ -21594,10 +21346,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_xyzw",
                 |x: f64, y: f64, z: f64, w: f64| {
                     let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::from_xyzw(
-                            x.into(),
-                            y.into(),
-                            z.into(),
-                            w.into(),
+                            x,
+                            y,
+                            z,
+                            w,
                         )
                         .into();
                     output
@@ -21607,7 +21359,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [f64; 4]| {
                     let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -21628,7 +21380,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |axis: Val<bevy::math::DVec3>, angle: f64| {
                     let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::from_axis_angle(
                             axis.into(),
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -21648,7 +21400,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_x",
                 |angle: f64| {
                     let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::from_rotation_x(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -21658,7 +21410,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_y",
                 |angle: f64| {
                     let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::from_rotation_y(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -21668,7 +21420,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_rotation_z",
                 |angle: f64| {
                     let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::from_rotation_z(
-                            angle.into(),
+                            angle,
                         )
                         .into();
                     output
@@ -21679,9 +21431,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |euler: Val<bevy::math::EulerRot>, a: f64, b: f64, c: f64| {
                     let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::from_euler(
                             euler.into(),
-                            a.into(),
-                            b.into(),
-                            c.into(),
+                            a,
+                            b,
+                            c,
                         )
                         .into();
                     output
@@ -21691,7 +21443,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_mat3",
                 |mat: Ref<bevy::math::DMat3>| {
                     let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::from_mat3(
-                            mat.into(),
+                            &mat,
                         )
                         .into();
                     output
@@ -21701,7 +21453,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_mat4",
                 |mat: Ref<bevy::math::DMat4>| {
                     let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::from_mat4(
-                            mat.into(),
+                            &mat,
                         )
                         .into();
                     output
@@ -21764,8 +21516,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "to_array",
                 |_self: Ref<bevy::math::DQuat>| {
-                    let output: [f64; 4] = ::bevy::math::DQuat::to_array(_self.into())
-                        .into();
+                    let output: [f64; 4] = ::bevy::math::DQuat::to_array(&_self).into();
                     output
                 },
             )
@@ -21892,9 +21643,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     max_angle: f64|
                 {
                     let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::rotate_towards(
-                            _self.into(),
+                            &_self,
                             rhs.into(),
-                            max_angle.into(),
+                            max_angle,
                         )
                         .into();
                     output
@@ -21910,7 +21661,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: bool = ::bevy::math::DQuat::abs_diff_eq(
                             _self.into(),
                             rhs.into(),
-                            max_abs_diff.into(),
+                            max_abs_diff,
                         )
                         .into();
                     output
@@ -21922,7 +21673,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::lerp(
                             _self.into(),
                             end.into(),
-                            s.into(),
+                            s,
                         )
                         .into();
                     output
@@ -21934,7 +21685,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::slerp(
                             _self.into(),
                             end.into(),
-                            s.into(),
+                            s,
                         )
                         .into();
                     output
@@ -21966,7 +21717,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_affine3",
                 |a: Ref<bevy::math::DAffine3>| {
                     let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::from_affine3(
-                            a.into(),
+                            &a,
                         )
                         .into();
                     output
@@ -21977,6 +21728,17 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DQuat>| {
                     let output: Val<bevy::math::Quat> = ::bevy::math::DQuat::as_quat(
                             _self.into(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "sub",
+                |_self: Val<bevy::math::DQuat>, rhs: Val<bevy::math::DQuat>| {
+                    let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::sub(
+                            _self.into(),
+                            rhs.into(),
                         )
                         .into();
                     output
@@ -22003,79 +21765,12 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::DQuat>| {
-                    let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::clone(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "sub",
-                |_self: Val<bevy::math::DQuat>, rhs: Val<bevy::math::DQuat>| {
-                    let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::sub(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "mul",
-                |_self: Val<bevy::math::DQuat>, rhs: f64| {
-                    let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::mul(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "neg",
-                |_self: Val<bevy::math::DQuat>| {
-                    let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::neg(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "add",
-                |_self: Val<bevy::math::DQuat>, rhs: Val<bevy::math::DQuat>| {
-                    let output: Val<bevy::math::DQuat> = ::bevy::math::DQuat::add(
-                            _self.into(),
-                            rhs.into(),
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::math::EulerRot>::new(world)
             .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::EulerRot>| {
-                    let output: Val<bevy::math::EulerRot> = ::bevy::math::EulerRot::clone(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
                 "eq",
                 |_self: Ref<bevy::math::EulerRot>, other: Ref<bevy::math::EulerRot>| {
-                    let output: bool = ::bevy::math::EulerRot::eq(
-                            _self.into(),
-                            other.into(),
-                        )
-                        .into();
+                    let output: bool = ::bevy::math::EulerRot::eq(&_self, &other).into();
                     output
                 },
             )
@@ -22083,7 +21778,17 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::math::EulerRot>| {
                     let output: () = ::bevy::math::EulerRot::assert_receiver_is_total_eq(
-                            _self.into(),
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::EulerRot>| {
+                    let output: Val<bevy::math::EulerRot> = ::bevy::math::EulerRot::clone(
+                            &_self,
                         )
                         .into();
                     output
@@ -22094,9 +21799,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new",
                 |x: bool, y: bool, z: bool| {
                     let output: Val<bevy::math::BVec3A> = ::bevy::math::BVec3A::new(
-                            x.into(),
-                            y.into(),
-                            z.into(),
+                            x,
+                            y,
+                            z,
                         )
                         .into();
                     output
@@ -22105,9 +21810,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "splat",
                 |v: bool| {
-                    let output: Val<bevy::math::BVec3A> = ::bevy::math::BVec3A::splat(
-                            v.into(),
-                        )
+                    let output: Val<bevy::math::BVec3A> = ::bevy::math::BVec3A::splat(v)
                         .into();
                     output
                 },
@@ -22116,7 +21819,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [bool; 3]| {
                     let output: Val<bevy::math::BVec3A> = ::bevy::math::BVec3A::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -22146,22 +21849,14 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "test",
                 |_self: Ref<bevy::math::BVec3A>, index: usize| {
-                    let output: bool = ::bevy::math::BVec3A::test(
-                            _self.into(),
-                            index.into(),
-                        )
-                        .into();
+                    let output: bool = ::bevy::math::BVec3A::test(&_self, index).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "set",
                 |_self: Mut<bevy::math::BVec3A>, index: usize, value: bool| {
-                    let output: () = ::bevy::math::BVec3A::set(
-                            _self.into(),
-                            index.into(),
-                            value.into(),
-                        )
+                    let output: () = ::bevy::math::BVec3A::set(&mut_self, index, value)
                         .into();
                     output
                 },
@@ -22170,7 +21865,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "clone",
                 |_self: Ref<bevy::math::BVec3A>| {
                     let output: Val<bevy::math::BVec3A> = ::bevy::math::BVec3A::clone(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -22179,20 +21874,29 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "eq",
                 |_self: Ref<bevy::math::BVec3A>, rhs: Ref<bevy::math::BVec3A>| {
-                    let output: bool = ::bevy::math::BVec3A::eq(_self.into(), rhs.into())
-                        .into();
+                    let output: bool = ::bevy::math::BVec3A::eq(&_self, &rhs).into();
                     output
                 },
             );
         NamespaceBuilder::<::bevy::math::BVec4A>::new(world)
             .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::math::BVec4A>| {
+                    let output: Val<bevy::math::BVec4A> = ::bevy::math::BVec4A::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
                 "new",
                 |x: bool, y: bool, z: bool, w: bool| {
                     let output: Val<bevy::math::BVec4A> = ::bevy::math::BVec4A::new(
-                            x.into(),
-                            y.into(),
-                            z.into(),
-                            w.into(),
+                            x,
+                            y,
+                            z,
+                            w,
                         )
                         .into();
                     output
@@ -22201,9 +21905,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "splat",
                 |v: bool| {
-                    let output: Val<bevy::math::BVec4A> = ::bevy::math::BVec4A::splat(
-                            v.into(),
-                        )
+                    let output: Val<bevy::math::BVec4A> = ::bevy::math::BVec4A::splat(v)
                         .into();
                     output
                 },
@@ -22212,7 +21914,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_array",
                 |a: [bool; 4]| {
                     let output: Val<bevy::math::BVec4A> = ::bevy::math::BVec4A::from_array(
-                            a.into(),
+                            a,
                         )
                         .into();
                     output
@@ -22242,22 +21944,14 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "test",
                 |_self: Ref<bevy::math::BVec4A>, index: usize| {
-                    let output: bool = ::bevy::math::BVec4A::test(
-                            _self.into(),
-                            index.into(),
-                        )
-                        .into();
+                    let output: bool = ::bevy::math::BVec4A::test(&_self, index).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "set",
                 |_self: Mut<bevy::math::BVec4A>, index: usize, value: bool| {
-                    let output: () = ::bevy::math::BVec4A::set(
-                            _self.into(),
-                            index.into(),
-                            value.into(),
-                        )
+                    let output: () = ::bevy::math::BVec4A::set(&mut_self, index, value)
                         .into();
                     output
                 },
@@ -22265,48 +21959,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "eq",
                 |_self: Ref<bevy::math::BVec4A>, rhs: Ref<bevy::math::BVec4A>| {
-                    let output: bool = ::bevy::math::BVec4A::eq(_self.into(), rhs.into())
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::math::BVec4A>| {
-                    let output: Val<bevy::math::BVec4A> = ::bevy::math::BVec4A::clone(
-                            _self.into(),
-                        )
-                        .into();
+                    let output: bool = ::bevy::math::BVec4A::eq(&_self, &rhs).into();
                     output
                 },
             );
         NamespaceBuilder::<::smol_str::SmolStr>::new(world)
             .overwrite_script_function(
-                "clone",
-                |_self: Ref<smol_str::SmolStr>| {
-                    let output: Val<smol_str::SmolStr> = ::smol_str::SmolStr::clone(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "eq",
-                |_self: Ref<smol_str::SmolStr>, other: Ref<smol_str::SmolStr>| {
-                    let output: bool = ::smol_str::SmolStr::eq(
-                            _self.into(),
-                            other.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
                 "to_string",
                 |_self: Ref<smol_str::SmolStr>| {
                     let output: std::string::String = ::smol_str::SmolStr::to_string(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
@@ -22315,114 +21977,43 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "len",
                 |_self: Ref<smol_str::SmolStr>| {
-                    let output: usize = ::smol_str::SmolStr::len(_self.into()).into();
+                    let output: usize = ::smol_str::SmolStr::len(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "is_empty",
                 |_self: Ref<smol_str::SmolStr>| {
-                    let output: bool = ::smol_str::SmolStr::is_empty(_self.into())
-                        .into();
+                    let output: bool = ::smol_str::SmolStr::is_empty(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "is_heap_allocated",
                 |_self: Ref<smol_str::SmolStr>| {
-                    let output: bool = ::smol_str::SmolStr::is_heap_allocated(
-                            _self.into(),
+                    let output: bool = ::smol_str::SmolStr::is_heap_allocated(&_self)
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "eq",
+                |_self: Ref<smol_str::SmolStr>, other: Ref<smol_str::SmolStr>| {
+                    let output: bool = ::smol_str::SmolStr::eq(&_self, &other).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<smol_str::SmolStr>| {
+                    let output: Val<smol_str::SmolStr> = ::smol_str::SmolStr::clone(
+                            &_self,
                         )
                         .into();
                     output
                 },
             );
         NamespaceBuilder::<::uuid::Uuid>::new(world)
-            .overwrite_script_function(
-                "get_version_num",
-                |_self: Ref<uuid::Uuid>| {
-                    let output: usize = ::uuid::Uuid::get_version_num(_self.into())
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "as_u128",
-                |_self: Ref<uuid::Uuid>| {
-                    let output: u128 = ::uuid::Uuid::as_u128(_self.into()).into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "to_u128_le",
-                |_self: Ref<uuid::Uuid>| {
-                    let output: u128 = ::uuid::Uuid::to_u128_le(_self.into()).into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "as_u64_pair",
-                |_self: Ref<uuid::Uuid>| {
-                    let output: (u64, u64) = ::uuid::Uuid::as_u64_pair(_self.into())
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "into_bytes",
-                |_self: Val<uuid::Uuid>| {
-                    let output: [u8; 16] = ::uuid::Uuid::into_bytes(_self.into()).into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "to_bytes_le",
-                |_self: Ref<uuid::Uuid>| {
-                    let output: [u8; 16] = ::uuid::Uuid::to_bytes_le(_self.into())
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "is_nil",
-                |_self: Ref<uuid::Uuid>| {
-                    let output: bool = ::uuid::Uuid::is_nil(_self.into()).into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "is_max",
-                |_self: Ref<uuid::Uuid>| {
-                    let output: bool = ::uuid::Uuid::is_max(_self.into()).into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "encode_buffer",
-                || {
-                    let output: [u8; 45] = ::uuid::Uuid::encode_buffer().into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "get_node_id",
-                |_self: Ref<uuid::Uuid>| {
-                    let output: bevy::reflect::erased_serde::__private::serde::__private::Option<
-                        [u8; 6],
-                    > = ::uuid::Uuid::get_node_id(_self.into()).into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<uuid::Uuid>| {
-                    let output: () = ::uuid::Uuid::assert_receiver_is_total_eq(
-                            _self.into(),
-                        )
-                        .into();
-                    output
-                },
-            )
             .overwrite_script_function(
                 "nil",
                 || {
@@ -22440,16 +22031,14 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "from_u128",
                 |v: u128| {
-                    let output: Val<uuid::Uuid> = ::uuid::Uuid::from_u128(v.into())
-                        .into();
+                    let output: Val<uuid::Uuid> = ::uuid::Uuid::from_u128(v).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "from_u128_le",
                 |v: u128| {
-                    let output: Val<uuid::Uuid> = ::uuid::Uuid::from_u128_le(v.into())
-                        .into();
+                    let output: Val<uuid::Uuid> = ::uuid::Uuid::from_u128_le(v).into();
                     output
                 },
             )
@@ -22457,8 +22046,8 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "from_u64_pair",
                 |high_bits: u64, low_bits: u64| {
                     let output: Val<uuid::Uuid> = ::uuid::Uuid::from_u64_pair(
-                            high_bits.into(),
-                            low_bits.into(),
+                            high_bits,
+                            low_bits,
                         )
                         .into();
                     output
@@ -22467,32 +22056,101 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             .overwrite_script_function(
                 "from_bytes",
                 |bytes: [u8; 16]| {
-                    let output: Val<uuid::Uuid> = ::uuid::Uuid::from_bytes(bytes.into())
-                        .into();
+                    let output: Val<uuid::Uuid> = ::uuid::Uuid::from_bytes(bytes).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "from_bytes_le",
                 |b: [u8; 16]| {
-                    let output: Val<uuid::Uuid> = ::uuid::Uuid::from_bytes_le(b.into())
+                    let output: Val<uuid::Uuid> = ::uuid::Uuid::from_bytes_le(b).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "assert_receiver_is_total_eq",
+                |_self: Ref<uuid::Uuid>| {
+                    let output: () = ::uuid::Uuid::assert_receiver_is_total_eq(&_self)
                         .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "get_version_num",
+                |_self: Ref<uuid::Uuid>| {
+                    let output: usize = ::uuid::Uuid::get_version_num(&_self).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "as_u128",
+                |_self: Ref<uuid::Uuid>| {
+                    let output: u128 = ::uuid::Uuid::as_u128(&_self).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "to_u128_le",
+                |_self: Ref<uuid::Uuid>| {
+                    let output: u128 = ::uuid::Uuid::to_u128_le(&_self).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "as_u64_pair",
+                |_self: Ref<uuid::Uuid>| {
+                    let output: (u64, u64) = ::uuid::Uuid::as_u64_pair(&_self).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "into_bytes",
+                |_self: Val<uuid::Uuid>| {
+                    let output: [u8; 16] = ::uuid::Uuid::into_bytes(_self.into()).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "to_bytes_le",
+                |_self: Ref<uuid::Uuid>| {
+                    let output: [u8; 16] = ::uuid::Uuid::to_bytes_le(&_self).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "is_nil",
+                |_self: Ref<uuid::Uuid>| {
+                    let output: bool = ::uuid::Uuid::is_nil(&_self).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "is_max",
+                |_self: Ref<uuid::Uuid>| {
+                    let output: bool = ::uuid::Uuid::is_max(&_self).into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "encode_buffer",
+                || {
+                    let output: [u8; 45] = ::uuid::Uuid::encode_buffer().into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "get_node_id",
+                |_self: Ref<uuid::Uuid>| {
+                    let output: bevy::reflect::erased_serde::__private::serde::__private::Option<
+                        [u8; 6],
+                    > = ::uuid::Uuid::get_node_id(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "eq",
                 |_self: Ref<uuid::Uuid>, other: Ref<uuid::Uuid>| {
-                    let output: bool = ::uuid::Uuid::eq(_self.into(), other.into())
-                        .into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "clone",
-                |_self: Ref<uuid::Uuid>| {
-                    let output: Val<uuid::Uuid> = ::uuid::Uuid::clone(_self.into())
-                        .into();
+                    let output: bool = ::uuid::Uuid::eq(&_self, &other).into();
                     output
                 },
             )
@@ -22500,6 +22158,13 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 "new_v4",
                 || {
                     let output: Val<uuid::Uuid> = ::uuid::Uuid::new_v4().into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<uuid::Uuid>| {
+                    let output: Val<uuid::Uuid> = ::uuid::Uuid::clone(&_self).into();
                     output
                 },
             );
