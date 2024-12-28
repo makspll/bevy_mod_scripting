@@ -1,17 +1,16 @@
-use std::{any::Any, borrow::Cow, convert::identity};
+use std::{borrow::Cow, convert::identity};
 
 use log::{trace, warn};
 use rustc_ast::Attribute;
 use rustc_hir::def_id::{DefId, LOCAL_CRATE};
 use rustc_middle::ty::{
-    print::Print, AdtDef, FieldDef, GenericArg, GenericParamDefKind, ParamTy, TraitRef, Ty, TyKind,
-    TypeFoldable, TypingEnv,
+    AdtDef, FieldDef, GenericArg, GenericParamDefKind, TraitRef, Ty, TyKind, TypingEnv,
 };
 use rustc_span::Symbol;
 
 use crate::{
-    Arg, Args, BevyCtxt, Field, Function, FunctionContext, ImportPathFinder, Item, Output,
-    ReflectType, TemplateContext, Variant,
+    Arg, Args, BevyCtxt, Field, Function, FunctionContext, Item, Output, ReflectType,
+    TemplateContext, Variant,
 };
 /// Converts the BevyCtxt into simpler data that can be used in templates directly,
 /// Clears the BevyCtxt by clearing data structures after it uses them.

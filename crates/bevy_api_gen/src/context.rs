@@ -133,11 +133,11 @@ impl CachedTraits {
         self.bevy_reflect_reflect.is_some() && self.bevy_reflect_get_type_registration.is_some()
     }
 
-    pub(crate) fn has_all_std_source_traits(&self) -> bool {
-        STD_SOURCE_TRAITS
-            .iter()
-            .all(|t| self.std_source_traits.contains_key(*t))
-    }
+    // pub(crate) fn has_all_std_source_traits(&self) -> bool {
+    //     STD_SOURCE_TRAITS
+    //         .iter()
+    //         .all(|t| self.std_source_traits.contains_key(*t))
+    // }
 
     // pub(crate) fn missing_std_source_traits(&self) -> Vec<String> {
     //     STD_SOURCE_TRAITS

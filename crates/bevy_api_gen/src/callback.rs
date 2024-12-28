@@ -1,5 +1,4 @@
 use log::{info, trace};
-use rustc_errors::FatalError;
 use rustc_hir::def_id::LOCAL_CRATE;
 use tera::Context;
 
@@ -16,10 +15,10 @@ impl BevyAnalyzerCallbacks {
 }
 
 impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
-    fn after_expansion<'tcx>(
+    fn after_expansion(
         &mut self,
         compiler: &rustc_interface::interface::Compiler,
-        tcx: rustc_middle::ty::TyCtxt<'tcx>,
+        tcx: rustc_middle::ty::TyCtxt<'_>,
     ) -> rustc_driver::Compilation {
         trace!("After expansion callback");
 

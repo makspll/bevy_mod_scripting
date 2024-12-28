@@ -54,7 +54,7 @@ impl RustcPlugin for BevyAnalyzer {
         let mut callbacks = BevyAnalyzerCallbacks::new(plugin_args);
         let mut compiler = rustc_driver::RunCompiler::new(&compiler_args, &mut callbacks);
         compiler.set_file_loader(Some(Box::new(ModifyingFileLoader)));
-        let out = compiler.run();
+        compiler.run();
         log::trace!("Finished compiling with plugin");
         Ok(())
     }

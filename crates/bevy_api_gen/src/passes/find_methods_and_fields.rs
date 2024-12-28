@@ -6,9 +6,7 @@ use rustc_hir::{
     Safety,
 };
 use rustc_infer::infer::TyCtxtInferExt;
-use rustc_middle::ty::{
-    AdtKind, AssocKind, FieldDef, FnSig, ParamEnv, Ty, TyCtxt, TyKind, TypingEnv, TypingMode,
-};
+use rustc_middle::ty::{AdtKind, AssocKind, FieldDef, FnSig, Ty, TyCtxt, TyKind, TypingEnv};
 use rustc_span::Symbol;
 use rustc_trait_selection::infer::InferCtxtExt;
 

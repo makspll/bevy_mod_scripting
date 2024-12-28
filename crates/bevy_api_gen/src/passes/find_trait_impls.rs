@@ -8,7 +8,7 @@ use rustc_infer::{
 };
 use rustc_middle::ty::{Ty, TypingEnv, TypingMode};
 use rustc_span::DUMMY_SP;
-use rustc_trait_selection::{regions::InferCtxtRegionExt, traits::ObligationCtxt};
+use rustc_trait_selection::traits::ObligationCtxt;
 
 use crate::{Args, BevyCtxt};
 
