@@ -12,12 +12,12 @@ pub struct BevyEcsScriptingPlugin;
 impl bevy::app::Plugin for BevyEcsScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         let mut world = app.world_mut();
-        NamespaceBuilder::<bevy::ecs::entity::Entity>::new(world)
+        NamespaceBuilder::<::bevy::ecs::entity::Entity>::new(world)
             .overwrite_script_function(
                 "from_raw",
                 |index: u32| {
-                    let output: Val<bevy::ecs::entity::Entity> = bevy::ecs::entity::Entity::from_raw(
-                            index,
+                    let output: Val<bevy::ecs::entity::Entity> = ::bevy::ecs::entity::Entity::from_raw(
+                            index.into(),
                         )
                         .into();
                     output
@@ -26,15 +26,16 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "to_bits",
                 |_self: Val<bevy::ecs::entity::Entity>| {
-                    let output: u64 = bevy::ecs::entity::Entity::to_bits(_self).into();
+                    let output: u64 = ::bevy::ecs::entity::Entity::to_bits(_self.into())
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "from_bits",
                 |bits: u64| {
-                    let output: Val<bevy::ecs::entity::Entity> = bevy::ecs::entity::Entity::from_bits(
-                            bits,
+                    let output: Val<bevy::ecs::entity::Entity> = ::bevy::ecs::entity::Entity::from_bits(
+                            bits.into(),
                         )
                         .into();
                     output
@@ -43,14 +44,17 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "index",
                 |_self: Val<bevy::ecs::entity::Entity>| {
-                    let output: u32 = bevy::ecs::entity::Entity::index(_self).into();
+                    let output: u32 = ::bevy::ecs::entity::Entity::index(_self.into())
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "generation",
                 |_self: Val<bevy::ecs::entity::Entity>| {
-                    let output: u32 = bevy::ecs::entity::Entity::generation(_self)
+                    let output: u32 = ::bevy::ecs::entity::Entity::generation(
+                            _self.into(),
+                        )
                         .into();
                     output
                 },
@@ -61,7 +65,10 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
                     _self: Ref<bevy::ecs::entity::Entity>,
                     other: Ref<bevy::ecs::entity::Entity>|
                 {
-                    let output: bool = bevy::ecs::entity::Entity::eq(_self, other)
+                    let output: bool = ::bevy::ecs::entity::Entity::eq(
+                            _self.into(),
+                            other.into(),
+                        )
                         .into();
                     output
                 },
@@ -69,27 +76,27 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::ecs::entity::Entity>| {
-                    let output: Val<bevy::ecs::entity::Entity> = bevy::ecs::entity::Entity::clone(
-                            _self,
+                    let output: Val<bevy::ecs::entity::Entity> = ::bevy::ecs::entity::Entity::clone(
+                            _self.into(),
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<bevy::ecs::world::OnAdd>::new(world);
-        NamespaceBuilder::<bevy::ecs::world::OnInsert>::new(world);
-        NamespaceBuilder::<bevy::ecs::world::OnRemove>::new(world);
-        NamespaceBuilder::<bevy::ecs::world::OnReplace>::new(world);
-        NamespaceBuilder::<bevy::ecs::component::ComponentId>::new(world)
+        NamespaceBuilder::<::bevy::ecs::world::OnAdd>::new(world);
+        NamespaceBuilder::<::bevy::ecs::world::OnInsert>::new(world);
+        NamespaceBuilder::<::bevy::ecs::world::OnRemove>::new(world);
+        NamespaceBuilder::<::bevy::ecs::world::OnReplace>::new(world);
+        NamespaceBuilder::<::bevy::ecs::component::ComponentId>::new(world)
             .overwrite_script_function(
                 "eq",
                 |
                     _self: Ref<bevy::ecs::component::ComponentId>,
                     other: Ref<bevy::ecs::component::ComponentId>|
                 {
-                    let output: bool = bevy::ecs::component::ComponentId::eq(
-                            _self,
-                            other,
+                    let output: bool = ::bevy::ecs::component::ComponentId::eq(
+                            _self.into(),
+                            other.into(),
                         )
                         .into();
                     output
@@ -98,8 +105,8 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::ecs::component::ComponentId>| {
-                    let output: Val<bevy::ecs::component::ComponentId> = bevy::ecs::component::ComponentId::clone(
-                            _self,
+                    let output: Val<bevy::ecs::component::ComponentId> = ::bevy::ecs::component::ComponentId::clone(
+                            _self.into(),
                         )
                         .into();
                     output
@@ -108,8 +115,8 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |index: usize| {
-                    let output: Val<bevy::ecs::component::ComponentId> = bevy::ecs::component::ComponentId::new(
-                            index,
+                    let output: Val<bevy::ecs::component::ComponentId> = ::bevy::ecs::component::ComponentId::new(
+                            index.into(),
                         )
                         .into();
                     output
@@ -118,7 +125,9 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "index",
                 |_self: Val<bevy::ecs::component::ComponentId>| {
-                    let output: usize = bevy::ecs::component::ComponentId::index(_self)
+                    let output: usize = ::bevy::ecs::component::ComponentId::index(
+                            _self.into(),
+                        )
                         .into();
                     output
                 },
@@ -126,19 +135,19 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::ecs::component::ComponentId>| {
-                    let output: () = bevy::ecs::component::ComponentId::assert_receiver_is_total_eq(
-                            _self,
+                    let output: () = ::bevy::ecs::component::ComponentId::assert_receiver_is_total_eq(
+                            _self.into(),
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<bevy::ecs::component::Tick>::new(world)
+        NamespaceBuilder::<::bevy::ecs::component::Tick>::new(world)
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::ecs::component::Tick>| {
-                    let output: () = bevy::ecs::component::Tick::assert_receiver_is_total_eq(
-                            _self,
+                    let output: () = ::bevy::ecs::component::Tick::assert_receiver_is_total_eq(
+                            _self.into(),
                         )
                         .into();
                     output
@@ -150,7 +159,10 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
                     _self: Ref<bevy::ecs::component::Tick>,
                     other: Ref<bevy::ecs::component::Tick>|
                 {
-                    let output: bool = bevy::ecs::component::Tick::eq(_self, other)
+                    let output: bool = ::bevy::ecs::component::Tick::eq(
+                            _self.into(),
+                            other.into(),
+                        )
                         .into();
                     output
                 },
@@ -158,8 +170,8 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::ecs::component::Tick>| {
-                    let output: Val<bevy::ecs::component::Tick> = bevy::ecs::component::Tick::clone(
-                            _self,
+                    let output: Val<bevy::ecs::component::Tick> = ::bevy::ecs::component::Tick::clone(
+                            _self.into(),
                         )
                         .into();
                     output
@@ -168,8 +180,8 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |tick: u32| {
-                    let output: Val<bevy::ecs::component::Tick> = bevy::ecs::component::Tick::new(
-                            tick,
+                    let output: Val<bevy::ecs::component::Tick> = ::bevy::ecs::component::Tick::new(
+                            tick.into(),
                         )
                         .into();
                     output
@@ -178,14 +190,19 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "get",
                 |_self: Val<bevy::ecs::component::Tick>| {
-                    let output: u32 = bevy::ecs::component::Tick::get(_self).into();
+                    let output: u32 = ::bevy::ecs::component::Tick::get(_self.into())
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "set",
                 |_self: Mut<bevy::ecs::component::Tick>, tick: u32| {
-                    let output: () = bevy::ecs::component::Tick::set(_self, tick).into();
+                    let output: () = ::bevy::ecs::component::Tick::set(
+                            _self.into(),
+                            tick.into(),
+                        )
+                        .into();
                     output
                 },
             )
@@ -196,21 +213,21 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
                     last_run: Val<bevy::ecs::component::Tick>,
                     this_run: Val<bevy::ecs::component::Tick>|
                 {
-                    let output: bool = bevy::ecs::component::Tick::is_newer_than(
-                            _self,
-                            last_run,
-                            this_run,
+                    let output: bool = ::bevy::ecs::component::Tick::is_newer_than(
+                            _self.into(),
+                            last_run.into(),
+                            this_run.into(),
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<bevy::ecs::component::ComponentTicks>::new(world)
+        NamespaceBuilder::<::bevy::ecs::component::ComponentTicks>::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::ecs::component::ComponentTicks>| {
-                    let output: Val<bevy::ecs::component::ComponentTicks> = bevy::ecs::component::ComponentTicks::clone(
-                            _self,
+                    let output: Val<bevy::ecs::component::ComponentTicks> = ::bevy::ecs::component::ComponentTicks::clone(
+                            _self.into(),
                         )
                         .into();
                     output
@@ -223,10 +240,10 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
                     last_run: Val<bevy::ecs::component::Tick>,
                     this_run: Val<bevy::ecs::component::Tick>|
                 {
-                    let output: bool = bevy::ecs::component::ComponentTicks::is_added(
-                            _self,
-                            last_run,
-                            this_run,
+                    let output: bool = ::bevy::ecs::component::ComponentTicks::is_added(
+                            _self.into(),
+                            last_run.into(),
+                            this_run.into(),
                         )
                         .into();
                     output
@@ -239,10 +256,10 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
                     last_run: Val<bevy::ecs::component::Tick>,
                     this_run: Val<bevy::ecs::component::Tick>|
                 {
-                    let output: bool = bevy::ecs::component::ComponentTicks::is_changed(
-                            _self,
-                            last_run,
-                            this_run,
+                    let output: bool = ::bevy::ecs::component::ComponentTicks::is_changed(
+                            _self.into(),
+                            last_run.into(),
+                            this_run.into(),
                         )
                         .into();
                     output
@@ -251,8 +268,8 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |change_tick: Val<bevy::ecs::component::Tick>| {
-                    let output: Val<bevy::ecs::component::ComponentTicks> = bevy::ecs::component::ComponentTicks::new(
-                            change_tick,
+                    let output: Val<bevy::ecs::component::ComponentTicks> = ::bevy::ecs::component::ComponentTicks::new(
+                            change_tick.into(),
                         )
                         .into();
                     output
@@ -264,20 +281,20 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
                     _self: Mut<bevy::ecs::component::ComponentTicks>,
                     change_tick: Val<bevy::ecs::component::Tick>|
                 {
-                    let output: () = bevy::ecs::component::ComponentTicks::set_changed(
-                            _self,
-                            change_tick,
+                    let output: () = ::bevy::ecs::component::ComponentTicks::set_changed(
+                            _self.into(),
+                            change_tick.into(),
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<bevy::ecs::identifier::Identifier>::new(world)
+        NamespaceBuilder::<::bevy::ecs::identifier::Identifier>::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::ecs::identifier::Identifier>| {
-                    let output: Val<bevy::ecs::identifier::Identifier> = bevy::ecs::identifier::Identifier::clone(
-                            _self,
+                    let output: Val<bevy::ecs::identifier::Identifier> = ::bevy::ecs::identifier::Identifier::clone(
+                            _self.into(),
                         )
                         .into();
                     output
@@ -286,7 +303,9 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "low",
                 |_self: Val<bevy::ecs::identifier::Identifier>| {
-                    let output: u32 = bevy::ecs::identifier::Identifier::low(_self)
+                    let output: u32 = ::bevy::ecs::identifier::Identifier::low(
+                            _self.into(),
+                        )
                         .into();
                     output
                 },
@@ -294,8 +313,8 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "masked_high",
                 |_self: Val<bevy::ecs::identifier::Identifier>| {
-                    let output: u32 = bevy::ecs::identifier::Identifier::masked_high(
-                            _self,
+                    let output: u32 = ::bevy::ecs::identifier::Identifier::masked_high(
+                            _self.into(),
                         )
                         .into();
                     output
@@ -304,7 +323,9 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "to_bits",
                 |_self: Val<bevy::ecs::identifier::Identifier>| {
-                    let output: u64 = bevy::ecs::identifier::Identifier::to_bits(_self)
+                    let output: u64 = ::bevy::ecs::identifier::Identifier::to_bits(
+                            _self.into(),
+                        )
                         .into();
                     output
                 },
@@ -312,8 +333,8 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "from_bits",
                 |value: u64| {
-                    let output: Val<bevy::ecs::identifier::Identifier> = bevy::ecs::identifier::Identifier::from_bits(
-                            value,
+                    let output: Val<bevy::ecs::identifier::Identifier> = ::bevy::ecs::identifier::Identifier::from_bits(
+                            value.into(),
                         )
                         .into();
                     output
@@ -325,40 +346,40 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
                     _self: Ref<bevy::ecs::identifier::Identifier>,
                     other: Ref<bevy::ecs::identifier::Identifier>|
                 {
-                    let output: bool = bevy::ecs::identifier::Identifier::eq(
-                            _self,
-                            other,
+                    let output: bool = ::bevy::ecs::identifier::Identifier::eq(
+                            _self.into(),
+                            other.into(),
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<bevy::ecs::entity::EntityHash>::new(world)
+        NamespaceBuilder::<::bevy::ecs::entity::EntityHash>::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::ecs::entity::EntityHash>| {
-                    let output: Val<bevy::ecs::entity::EntityHash> = bevy::ecs::entity::EntityHash::clone(
-                            _self,
+                    let output: Val<bevy::ecs::entity::EntityHash> = ::bevy::ecs::entity::EntityHash::clone(
+                            _self.into(),
                         )
                         .into();
                     output
                 },
             );
         NamespaceBuilder::<
-            bevy::ecs::removal_detection::RemovedComponentEntity,
+            ::bevy::ecs::removal_detection::RemovedComponentEntity,
         >::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::ecs::removal_detection::RemovedComponentEntity>| {
                     let output: Val<
                         bevy::ecs::removal_detection::RemovedComponentEntity,
-                    > = bevy::ecs::removal_detection::RemovedComponentEntity::clone(
-                            _self,
+                    > = ::bevy::ecs::removal_detection::RemovedComponentEntity::clone(
+                            _self.into(),
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<bevy::ecs::system::SystemIdMarker>::new(world);
+        NamespaceBuilder::<::bevy::ecs::system::SystemIdMarker>::new(world);
     }
 }

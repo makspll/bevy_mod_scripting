@@ -13,14 +13,17 @@ pub struct BevyCoreScriptingPlugin;
 impl bevy::app::Plugin for BevyCoreScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         let mut world = app.world_mut();
-        NamespaceBuilder::<bevy::core::prelude::Name>::new(world)
+        NamespaceBuilder::<::bevy::core::prelude::Name>::new(world)
             .overwrite_script_function(
                 "eq",
                 |
                     _self: Ref<bevy::core::prelude::Name>,
                     other: Ref<bevy::core::prelude::Name>|
                 {
-                    let output: bool = bevy::core::prelude::Name::eq(_self, other)
+                    let output: bool = ::bevy::core::prelude::Name::eq(
+                            _self.into(),
+                            other.into(),
+                        )
                         .into();
                     output
                 },
@@ -28,8 +31,8 @@ impl bevy::app::Plugin for BevyCoreScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::core::prelude::Name>| {
-                    let output: Val<bevy::core::prelude::Name> = bevy::core::prelude::Name::clone(
-                            _self,
+                    let output: Val<bevy::core::prelude::Name> = ::bevy::core::prelude::Name::clone(
+                            _self.into(),
                         )
                         .into();
                     output

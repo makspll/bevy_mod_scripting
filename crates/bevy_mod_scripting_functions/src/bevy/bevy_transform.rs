@@ -16,12 +16,12 @@ pub struct BevyTransformScriptingPlugin;
 impl bevy::app::Plugin for BevyTransformScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         let mut world = app.world_mut();
-        NamespaceBuilder::<bevy::transform::components::GlobalTransform>::new(world)
+        NamespaceBuilder::<::bevy::transform::components::GlobalTransform>::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::transform::components::GlobalTransform>| {
-                    let output: Val<bevy::transform::components::GlobalTransform> = bevy::transform::components::GlobalTransform::clone(
-                            _self,
+                    let output: Val<bevy::transform::components::GlobalTransform> = ::bevy::transform::components::GlobalTransform::clone(
+                            _self.into(),
                         )
                         .into();
                     output
@@ -33,9 +33,9 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
                     _self: Val<bevy::transform::components::GlobalTransform>,
                     global_transform: Val<bevy::transform::components::GlobalTransform>|
                 {
-                    let output: Val<bevy::transform::components::GlobalTransform> = bevy::transform::components::GlobalTransform::mul(
-                            _self,
-                            global_transform,
+                    let output: Val<bevy::transform::components::GlobalTransform> = ::bevy::transform::components::GlobalTransform::mul(
+                            _self.into(),
+                            global_transform.into(),
                         )
                         .into();
                     output
@@ -47,9 +47,9 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
                     _self: Val<bevy::transform::components::GlobalTransform>,
                     transform: Val<bevy::transform::components::Transform>|
                 {
-                    let output: Val<bevy::transform::components::GlobalTransform> = bevy::transform::components::GlobalTransform::mul(
-                            _self,
-                            transform,
+                    let output: Val<bevy::transform::components::GlobalTransform> = ::bevy::transform::components::GlobalTransform::mul(
+                            _self.into(),
+                            transform.into(),
                         )
                         .into();
                     output
@@ -61,9 +61,9 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
                     _self: Ref<bevy::transform::components::GlobalTransform>,
                     other: Ref<bevy::transform::components::GlobalTransform>|
                 {
-                    let output: bool = bevy::transform::components::GlobalTransform::eq(
-                            _self,
-                            other,
+                    let output: bool = ::bevy::transform::components::GlobalTransform::eq(
+                            _self.into(),
+                            other.into(),
                         )
                         .into();
                     output
@@ -72,10 +72,10 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
             .overwrite_script_function(
                 "from_xyz",
                 |x: f32, y: f32, z: f32| {
-                    let output: Val<bevy::transform::components::GlobalTransform> = bevy::transform::components::GlobalTransform::from_xyz(
-                            x,
-                            y,
-                            z,
+                    let output: Val<bevy::transform::components::GlobalTransform> = ::bevy::transform::components::GlobalTransform::from_xyz(
+                            x.into(),
+                            y.into(),
+                            z.into(),
                         )
                         .into();
                     output
@@ -84,8 +84,8 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
             .overwrite_script_function(
                 "compute_transform",
                 |_self: Ref<bevy::transform::components::GlobalTransform>| {
-                    let output: Val<bevy::transform::components::Transform> = bevy::transform::components::GlobalTransform::compute_transform(
-                            _self,
+                    let output: Val<bevy::transform::components::Transform> = ::bevy::transform::components::GlobalTransform::compute_transform(
+                            _self.into(),
                         )
                         .into();
                     output
@@ -97,9 +97,9 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
                     _self: Ref<bevy::transform::components::GlobalTransform>,
                     parent: Ref<bevy::transform::components::GlobalTransform>|
                 {
-                    let output: Val<bevy::transform::components::Transform> = bevy::transform::components::GlobalTransform::reparented_to(
-                            _self,
-                            parent,
+                    let output: Val<bevy::transform::components::Transform> = ::bevy::transform::components::GlobalTransform::reparented_to(
+                            _self.into(),
+                            parent.into(),
                         )
                         .into();
                     output
@@ -111,22 +111,22 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
                     _self: Ref<bevy::transform::components::GlobalTransform>,
                     transform: Val<bevy::transform::components::Transform>|
                 {
-                    let output: Val<bevy::transform::components::GlobalTransform> = bevy::transform::components::GlobalTransform::mul_transform(
-                            _self,
-                            transform,
+                    let output: Val<bevy::transform::components::GlobalTransform> = ::bevy::transform::components::GlobalTransform::mul_transform(
+                            _self.into(),
+                            transform.into(),
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<bevy::transform::components::Transform>::new(world)
+        NamespaceBuilder::<::bevy::transform::components::Transform>::new(world)
             .overwrite_script_function(
                 "from_xyz",
                 |x: f32, y: f32, z: f32| {
-                    let output: Val<bevy::transform::components::Transform> = bevy::transform::components::Transform::from_xyz(
-                            x,
-                            y,
-                            z,
+                    let output: Val<bevy::transform::components::Transform> = ::bevy::transform::components::Transform::from_xyz(
+                            x.into(),
+                            y.into(),
+                            z.into(),
                         )
                         .into();
                     output
@@ -135,9 +135,9 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
             .overwrite_script_function(
                 "rotate_x",
                 |_self: Mut<bevy::transform::components::Transform>, angle: f32| {
-                    let output: () = bevy::transform::components::Transform::rotate_x(
-                            _self,
-                            angle,
+                    let output: () = ::bevy::transform::components::Transform::rotate_x(
+                            _self.into(),
+                            angle.into(),
                         )
                         .into();
                     output
@@ -146,9 +146,9 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
             .overwrite_script_function(
                 "rotate_y",
                 |_self: Mut<bevy::transform::components::Transform>, angle: f32| {
-                    let output: () = bevy::transform::components::Transform::rotate_y(
-                            _self,
-                            angle,
+                    let output: () = ::bevy::transform::components::Transform::rotate_y(
+                            _self.into(),
+                            angle.into(),
                         )
                         .into();
                     output
@@ -157,9 +157,9 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
             .overwrite_script_function(
                 "rotate_z",
                 |_self: Mut<bevy::transform::components::Transform>, angle: f32| {
-                    let output: () = bevy::transform::components::Transform::rotate_z(
-                            _self,
-                            angle,
+                    let output: () = ::bevy::transform::components::Transform::rotate_z(
+                            _self.into(),
+                            angle.into(),
                         )
                         .into();
                     output
@@ -168,9 +168,9 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
             .overwrite_script_function(
                 "rotate_local_x",
                 |_self: Mut<bevy::transform::components::Transform>, angle: f32| {
-                    let output: () = bevy::transform::components::Transform::rotate_local_x(
-                            _self,
-                            angle,
+                    let output: () = ::bevy::transform::components::Transform::rotate_local_x(
+                            _self.into(),
+                            angle.into(),
                         )
                         .into();
                     output
@@ -179,9 +179,9 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
             .overwrite_script_function(
                 "rotate_local_y",
                 |_self: Mut<bevy::transform::components::Transform>, angle: f32| {
-                    let output: () = bevy::transform::components::Transform::rotate_local_y(
-                            _self,
-                            angle,
+                    let output: () = ::bevy::transform::components::Transform::rotate_local_y(
+                            _self.into(),
+                            angle.into(),
                         )
                         .into();
                     output
@@ -190,9 +190,9 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
             .overwrite_script_function(
                 "rotate_local_z",
                 |_self: Mut<bevy::transform::components::Transform>, angle: f32| {
-                    let output: () = bevy::transform::components::Transform::rotate_local_z(
-                            _self,
-                            angle,
+                    let output: () = ::bevy::transform::components::Transform::rotate_local_z(
+                            _self.into(),
+                            angle.into(),
                         )
                         .into();
                     output
@@ -204,9 +204,9 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
                     _self: Ref<bevy::transform::components::Transform>,
                     transform: Val<bevy::transform::components::Transform>|
                 {
-                    let output: Val<bevy::transform::components::Transform> = bevy::transform::components::Transform::mul_transform(
-                            _self,
-                            transform,
+                    let output: Val<bevy::transform::components::Transform> = ::bevy::transform::components::Transform::mul_transform(
+                            _self.into(),
+                            transform.into(),
                         )
                         .into();
                     output
@@ -215,8 +215,8 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
             .overwrite_script_function(
                 "is_finite",
                 |_self: Ref<bevy::transform::components::Transform>| {
-                    let output: bool = bevy::transform::components::Transform::is_finite(
-                            _self,
+                    let output: bool = ::bevy::transform::components::Transform::is_finite(
+                            _self.into(),
                         )
                         .into();
                     output
@@ -228,9 +228,9 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
                     _self: Ref<bevy::transform::components::Transform>,
                     other: Ref<bevy::transform::components::Transform>|
                 {
-                    let output: bool = bevy::transform::components::Transform::eq(
-                            _self,
-                            other,
+                    let output: bool = ::bevy::transform::components::Transform::eq(
+                            _self.into(),
+                            other.into(),
                         )
                         .into();
                     output
@@ -242,9 +242,9 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
                     _self: Val<bevy::transform::components::Transform>,
                     transform: Val<bevy::transform::components::Transform>|
                 {
-                    let output: Val<bevy::transform::components::Transform> = bevy::transform::components::Transform::mul(
-                            _self,
-                            transform,
+                    let output: Val<bevy::transform::components::Transform> = ::bevy::transform::components::Transform::mul(
+                            _self.into(),
+                            transform.into(),
                         )
                         .into();
                     output
@@ -256,9 +256,9 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
                     _self: Val<bevy::transform::components::Transform>,
                     global_transform: Val<bevy::transform::components::GlobalTransform>|
                 {
-                    let output: Val<bevy::transform::components::GlobalTransform> = bevy::transform::components::Transform::mul(
-                            _self,
-                            global_transform,
+                    let output: Val<bevy::transform::components::GlobalTransform> = ::bevy::transform::components::Transform::mul(
+                            _self.into(),
+                            global_transform.into(),
                         )
                         .into();
                     output
@@ -267,8 +267,8 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::transform::components::Transform>| {
-                    let output: Val<bevy::transform::components::Transform> = bevy::transform::components::Transform::clone(
-                            _self,
+                    let output: Val<bevy::transform::components::Transform> = ::bevy::transform::components::Transform::clone(
+                            _self.into(),
                         )
                         .into();
                     output
