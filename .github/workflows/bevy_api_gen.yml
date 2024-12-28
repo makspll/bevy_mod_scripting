@@ -11,6 +11,9 @@ on:
 
 name: Check and Lint - bevy_api_gen
 
+env:
+  RUST_TOOLCHAIN: nightly-2024-12-15
+
 jobs:
   check:
     name: Check - bevy_api_gen
@@ -27,7 +30,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly-2024-11-05
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
           override: true
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
@@ -54,7 +57,7 @@ jobs:
         with:
           profile: minimal
           components: rustfmt
-          toolchain: nightly-2024-11-05
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
           override: true
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
@@ -77,7 +80,7 @@ jobs:
           rm -rf crates
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly-2024-11-05
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
           components: clippy
           override: true
       - name: Rust Cache
@@ -100,7 +103,7 @@ jobs:
           rm -rf crates
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly-2024-11-05
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
           override: true
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
@@ -122,7 +125,7 @@ jobs:
           rm -rf crates
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly-2024-11-05
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
           override: true
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
