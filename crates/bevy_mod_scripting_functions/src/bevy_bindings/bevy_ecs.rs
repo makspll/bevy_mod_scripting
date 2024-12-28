@@ -47,7 +47,9 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "to_bits",
                 |_self: Val<bevy::ecs::entity::Entity>| {
-                    let output: u64 = ::bevy::ecs::entity::Entity::to_bits(_self.into())
+                    let output: u64 = ::bevy::ecs::entity::Entity::to_bits(
+                            _self.into_inner(),
+                        )
                         .into();
                     output
                 },
@@ -65,7 +67,9 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "index",
                 |_self: Val<bevy::ecs::entity::Entity>| {
-                    let output: u32 = ::bevy::ecs::entity::Entity::index(_self.into())
+                    let output: u32 = ::bevy::ecs::entity::Entity::index(
+                            _self.into_inner(),
+                        )
                         .into();
                     output
                 },
@@ -74,7 +78,7 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                 "generation",
                 |_self: Val<bevy::ecs::entity::Entity>| {
                     let output: u32 = ::bevy::ecs::entity::Entity::generation(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -133,7 +137,7 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                 "index",
                 |_self: Val<bevy::ecs::component::ComponentId>| {
                     let output: usize = ::bevy::ecs::component::ComponentId::index(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -153,7 +157,9 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "get",
                 |_self: Val<bevy::ecs::component::Tick>| {
-                    let output: u32 = ::bevy::ecs::component::Tick::get(_self.into())
+                    let output: u32 = ::bevy::ecs::component::Tick::get(
+                            _self.into_inner(),
+                        )
                         .into();
                     output
                 },
@@ -174,9 +180,9 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                     this_run: Val<bevy::ecs::component::Tick>|
                 {
                     let output: bool = ::bevy::ecs::component::Tick::is_newer_than(
-                            _self.into(),
-                            last_run.into(),
-                            this_run.into(),
+                            _self.into_inner(),
+                            last_run.into_inner(),
+                            this_run.into_inner(),
                         )
                         .into();
                     output
@@ -223,8 +229,8 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                 {
                     let output: bool = ::bevy::ecs::component::ComponentTicks::is_added(
                             &_self,
-                            last_run.into(),
-                            this_run.into(),
+                            last_run.into_inner(),
+                            this_run.into_inner(),
                         )
                         .into();
                     output
@@ -239,8 +245,8 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                 {
                     let output: bool = ::bevy::ecs::component::ComponentTicks::is_changed(
                             &_self,
-                            last_run.into(),
-                            this_run.into(),
+                            last_run.into_inner(),
+                            this_run.into_inner(),
                         )
                         .into();
                     output
@@ -250,7 +256,7 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                 "new",
                 |change_tick: Val<bevy::ecs::component::Tick>| {
                     let output: Val<bevy::ecs::component::ComponentTicks> = ::bevy::ecs::component::ComponentTicks::new(
-                            change_tick.into(),
+                            change_tick.into_inner(),
                         )
                         .into();
                     output
@@ -264,7 +270,7 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                 {
                     let output: () = ::bevy::ecs::component::ComponentTicks::set_changed(
                             &mut _self,
-                            change_tick.into(),
+                            change_tick.into_inner(),
                         )
                         .into();
                     output
@@ -295,7 +301,7 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                 "low",
                 |_self: Val<bevy::ecs::identifier::Identifier>| {
                     let output: u32 = ::bevy::ecs::identifier::Identifier::low(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -305,7 +311,7 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                 "masked_high",
                 |_self: Val<bevy::ecs::identifier::Identifier>| {
                     let output: u32 = ::bevy::ecs::identifier::Identifier::masked_high(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -315,7 +321,7 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                 "to_bits",
                 |_self: Val<bevy::ecs::identifier::Identifier>| {
                     let output: u64 = ::bevy::ecs::identifier::Identifier::to_bits(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output

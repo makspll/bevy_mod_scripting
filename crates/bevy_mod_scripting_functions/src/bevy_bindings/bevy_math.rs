@@ -144,7 +144,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "from_rotation",
                 |rotation: Val<bevy::math::Rot2>| {
                     let output: Val<bevy::math::Isometry2d> = ::bevy::math::Isometry2d::from_rotation(
-                            rotation.into(),
+                            rotation.into_inner(),
                         )
                         .into();
                     output
@@ -176,7 +176,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 |_self: Ref<bevy::math::Isometry2d>, rhs: Val<bevy::math::Isometry2d>| {
                     let output: Val<bevy::math::Isometry2d> = ::bevy::math::Isometry2d::inverse_mul(
                             &_self,
-                            rhs.into(),
+                            rhs.into_inner(),
                         )
                         .into();
                     output
@@ -199,8 +199,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     rhs: Val<bevy::math::prelude::Dir2>|
                 {
                     let output: Val<bevy::math::prelude::Dir2> = ::bevy::math::Isometry2d::mul(
-                            _self.into(),
-                            rhs.into(),
+                            _self.into_inner(),
+                            rhs.into_inner(),
                         )
                         .into();
                     output
@@ -210,8 +210,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "mul",
                 |_self: Val<bevy::math::Isometry2d>, rhs: Val<bevy::math::Isometry2d>| {
                     let output: Val<bevy::math::Isometry2d> = ::bevy::math::Isometry2d::mul(
-                            _self.into(),
-                            rhs.into(),
+                            _self.into_inner(),
+                            rhs.into_inner(),
                         )
                         .into();
                     output
@@ -233,8 +233,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     rhs: Val<bevy::math::prelude::Dir3>|
                 {
                     let output: Val<bevy::math::prelude::Dir3> = ::bevy::math::Isometry3d::mul(
-                            _self.into(),
-                            rhs.into(),
+                            _self.into_inner(),
+                            rhs.into_inner(),
                         )
                         .into();
                     output
@@ -267,7 +267,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 |_self: Ref<bevy::math::Isometry3d>, rhs: Val<bevy::math::Isometry3d>| {
                     let output: Val<bevy::math::Isometry3d> = ::bevy::math::Isometry3d::inverse_mul(
                             &_self,
-                            rhs.into(),
+                            rhs.into_inner(),
                         )
                         .into();
                     output
@@ -287,8 +287,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "mul",
                 |_self: Val<bevy::math::Isometry3d>, rhs: Val<bevy::math::Isometry3d>| {
                     let output: Val<bevy::math::Isometry3d> = ::bevy::math::Isometry3d::mul(
-                            _self.into(),
-                            rhs.into(),
+                            _self.into_inner(),
+                            rhs.into_inner(),
                         )
                         .into();
                     output
@@ -353,8 +353,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     direction: Val<bevy::math::prelude::Dir2>|
                 {
                     let output: Val<bevy::math::prelude::Dir2> = ::bevy::math::Rot2::mul(
-                            _self.into(),
-                            direction.into(),
+                            _self.into_inner(),
+                            direction.into_inner(),
                         )
                         .into();
                     output
@@ -364,8 +364,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "mul",
                 |_self: Val<bevy::math::Rot2>, rhs: Val<bevy::math::Rot2>| {
                     let output: Val<bevy::math::Rot2> = ::bevy::math::Rot2::mul(
-                            _self.into(),
-                            rhs.into(),
+                            _self.into_inner(),
+                            rhs.into_inner(),
                         )
                         .into();
                     output
@@ -415,7 +415,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "as_radians",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: f32 = ::bevy::math::Rot2::as_radians(_self.into())
+                    let output: f32 = ::bevy::math::Rot2::as_radians(_self.into_inner())
                         .into();
                     output
                 },
@@ -423,7 +423,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "as_degrees",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: f32 = ::bevy::math::Rot2::as_degrees(_self.into())
+                    let output: f32 = ::bevy::math::Rot2::as_degrees(_self.into_inner())
                         .into();
                     output
                 },
@@ -431,7 +431,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "as_turn_fraction",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: f32 = ::bevy::math::Rot2::as_turn_fraction(_self.into())
+                    let output: f32 = ::bevy::math::Rot2::as_turn_fraction(
+                            _self.into_inner(),
+                        )
                         .into();
                     output
                 },
@@ -439,7 +441,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "sin_cos",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: (f32, f32) = ::bevy::math::Rot2::sin_cos(_self.into())
+                    let output: (f32, f32) = ::bevy::math::Rot2::sin_cos(
+                            _self.into_inner(),
+                        )
                         .into();
                     output
                 },
@@ -447,14 +451,17 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "length",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: f32 = ::bevy::math::Rot2::length(_self.into()).into();
+                    let output: f32 = ::bevy::math::Rot2::length(_self.into_inner())
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "length_squared",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: f32 = ::bevy::math::Rot2::length_squared(_self.into())
+                    let output: f32 = ::bevy::math::Rot2::length_squared(
+                            _self.into_inner(),
+                        )
                         .into();
                     output
                 },
@@ -462,7 +469,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "length_recip",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: f32 = ::bevy::math::Rot2::length_recip(_self.into())
+                    let output: f32 = ::bevy::math::Rot2::length_recip(
+                            _self.into_inner(),
+                        )
                         .into();
                     output
                 },
@@ -471,7 +480,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "normalize",
                 |_self: Val<bevy::math::Rot2>| {
                     let output: Val<bevy::math::Rot2> = ::bevy::math::Rot2::normalize(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -481,7 +490,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "fast_renormalize",
                 |_self: Val<bevy::math::Rot2>| {
                     let output: Val<bevy::math::Rot2> = ::bevy::math::Rot2::fast_renormalize(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -490,7 +499,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_finite",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: bool = ::bevy::math::Rot2::is_finite(_self.into())
+                    let output: bool = ::bevy::math::Rot2::is_finite(_self.into_inner())
                         .into();
                     output
                 },
@@ -498,14 +507,17 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_nan",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: bool = ::bevy::math::Rot2::is_nan(_self.into()).into();
+                    let output: bool = ::bevy::math::Rot2::is_nan(_self.into_inner())
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "is_normalized",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: bool = ::bevy::math::Rot2::is_normalized(_self.into())
+                    let output: bool = ::bevy::math::Rot2::is_normalized(
+                            _self.into_inner(),
+                        )
                         .into();
                     output
                 },
@@ -513,7 +525,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_near_identity",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: bool = ::bevy::math::Rot2::is_near_identity(_self.into())
+                    let output: bool = ::bevy::math::Rot2::is_near_identity(
+                            _self.into_inner(),
+                        )
                         .into();
                     output
                 },
@@ -522,8 +536,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "angle_between",
                 |_self: Val<bevy::math::Rot2>, other: Val<bevy::math::Rot2>| {
                     let output: f32 = ::bevy::math::Rot2::angle_between(
-                            _self.into(),
-                            other.into(),
+                            _self.into_inner(),
+                            other.into_inner(),
                         )
                         .into();
                     output
@@ -533,8 +547,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "angle_to",
                 |_self: Val<bevy::math::Rot2>, other: Val<bevy::math::Rot2>| {
                     let output: f32 = ::bevy::math::Rot2::angle_to(
-                            _self.into(),
-                            other.into(),
+                            _self.into_inner(),
+                            other.into_inner(),
                         )
                         .into();
                     output
@@ -544,7 +558,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "inverse",
                 |_self: Val<bevy::math::Rot2>| {
                     let output: Val<bevy::math::Rot2> = ::bevy::math::Rot2::inverse(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -554,8 +568,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "nlerp",
                 |_self: Val<bevy::math::Rot2>, end: Val<bevy::math::Rot2>, s: f32| {
                     let output: Val<bevy::math::Rot2> = ::bevy::math::Rot2::nlerp(
-                            _self.into(),
-                            end.into(),
+                            _self.into_inner(),
+                            end.into_inner(),
                             s,
                         )
                         .into();
@@ -566,8 +580,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "slerp",
                 |_self: Val<bevy::math::Rot2>, end: Val<bevy::math::Rot2>, s: f32| {
                     let output: Val<bevy::math::Rot2> = ::bevy::math::Rot2::slerp(
-                            _self.into(),
-                            end.into(),
+                            _self.into_inner(),
+                            end.into_inner(),
                             s,
                         )
                         .into();
@@ -587,7 +601,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "neg",
                 |_self: Val<bevy::math::prelude::Dir2>| {
                     let output: Val<bevy::math::prelude::Dir2> = ::bevy::math::prelude::Dir2::neg(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -633,8 +647,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     s: f32|
                 {
                     let output: Val<bevy::math::prelude::Dir2> = ::bevy::math::prelude::Dir2::slerp(
-                            _self.into(),
-                            rhs.into(),
+                            _self.into_inner(),
+                            rhs.into_inner(),
                             s,
                         )
                         .into();
@@ -648,8 +662,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     other: Val<bevy::math::prelude::Dir2>|
                 {
                     let output: Val<bevy::math::Rot2> = ::bevy::math::prelude::Dir2::rotation_to(
-                            _self.into(),
-                            other.into(),
+                            _self.into_inner(),
+                            other.into_inner(),
                         )
                         .into();
                     output
@@ -662,8 +676,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     other: Val<bevy::math::prelude::Dir2>|
                 {
                     let output: Val<bevy::math::Rot2> = ::bevy::math::prelude::Dir2::rotation_from(
-                            _self.into(),
-                            other.into(),
+                            _self.into_inner(),
+                            other.into_inner(),
                         )
                         .into();
                     output
@@ -673,7 +687,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "rotation_from_x",
                 |_self: Val<bevy::math::prelude::Dir2>| {
                     let output: Val<bevy::math::Rot2> = ::bevy::math::prelude::Dir2::rotation_from_x(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -683,7 +697,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "rotation_to_x",
                 |_self: Val<bevy::math::prelude::Dir2>| {
                     let output: Val<bevy::math::Rot2> = ::bevy::math::prelude::Dir2::rotation_to_x(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -693,7 +707,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "rotation_from_y",
                 |_self: Val<bevy::math::prelude::Dir2>| {
                     let output: Val<bevy::math::Rot2> = ::bevy::math::prelude::Dir2::rotation_from_y(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -703,7 +717,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "rotation_to_y",
                 |_self: Val<bevy::math::prelude::Dir2>| {
                     let output: Val<bevy::math::Rot2> = ::bevy::math::prelude::Dir2::rotation_to_y(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -713,7 +727,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "fast_renormalize",
                 |_self: Val<bevy::math::prelude::Dir2>| {
                     let output: Val<bevy::math::prelude::Dir2> = ::bevy::math::prelude::Dir2::fast_renormalize(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -734,7 +748,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "neg",
                 |_self: Val<bevy::math::prelude::Dir3>| {
                     let output: Val<bevy::math::prelude::Dir3> = ::bevy::math::prelude::Dir3::neg(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -771,8 +785,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     s: f32|
                 {
                     let output: Val<bevy::math::prelude::Dir3> = ::bevy::math::prelude::Dir3::slerp(
-                            _self.into(),
-                            rhs.into(),
+                            _self.into_inner(),
+                            rhs.into_inner(),
                             s,
                         )
                         .into();
@@ -783,7 +797,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "fast_renormalize",
                 |_self: Val<bevy::math::prelude::Dir3>| {
                     let output: Val<bevy::math::prelude::Dir3> = ::bevy::math::prelude::Dir3::fast_renormalize(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -794,7 +808,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "neg",
                 |_self: Val<bevy::math::prelude::Dir3A>| {
                     let output: Val<bevy::math::prelude::Dir3A> = ::bevy::math::prelude::Dir3A::neg(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -820,8 +834,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     s: f32|
                 {
                     let output: Val<bevy::math::prelude::Dir3A> = ::bevy::math::prelude::Dir3A::slerp(
-                            _self.into(),
-                            rhs.into(),
+                            _self.into_inner(),
+                            rhs.into_inner(),
                             s,
                         )
                         .into();
@@ -832,7 +846,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "fast_renormalize",
                 |_self: Val<bevy::math::prelude::Dir3A>| {
                     let output: Val<bevy::math::prelude::Dir3A> = ::bevy::math::prelude::Dir3A::fast_renormalize(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -925,7 +939,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 {
                     let output: Val<bevy::math::prelude::IRect> = ::bevy::math::prelude::IRect::union(
                             &_self,
-                            other.into(),
+                            other.into_inner(),
                         )
                         .into();
                     output
@@ -939,7 +953,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 {
                     let output: Val<bevy::math::prelude::IRect> = ::bevy::math::prelude::IRect::intersect(
                             &_self,
-                            other.into(),
+                            other.into_inner(),
                         )
                         .into();
                     output
@@ -1030,7 +1044,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 {
                     let output: Val<bevy::math::prelude::Rect> = ::bevy::math::prelude::Rect::union(
                             &_self,
-                            other.into(),
+                            other.into_inner(),
                         )
                         .into();
                     output
@@ -1044,7 +1058,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 {
                     let output: Val<bevy::math::prelude::Rect> = ::bevy::math::prelude::Rect::intersect(
                             &_self,
-                            other.into(),
+                            other.into_inner(),
                         )
                         .into();
                     output
@@ -1069,7 +1083,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 {
                     let output: Val<bevy::math::prelude::Rect> = ::bevy::math::prelude::Rect::normalize(
                             &_self,
-                            other.into(),
+                            other.into_inner(),
                         )
                         .into();
                     output
@@ -1161,7 +1175,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 {
                     let output: Val<bevy::math::prelude::URect> = ::bevy::math::prelude::URect::union(
                             &_self,
-                            other.into(),
+                            other.into_inner(),
                         )
                         .into();
                     output
@@ -1175,7 +1189,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 {
                     let output: Val<bevy::math::prelude::URect> = ::bevy::math::prelude::URect::intersect(
                             &_self,
-                            other.into(),
+                            other.into_inner(),
                         )
                         .into();
                     output
@@ -2263,7 +2277,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "new",
                 |direction: Val<bevy::math::prelude::Dir2>, length: f32| {
                     let output: Val<bevy::math::primitives::Segment2d> = ::bevy::math::primitives::Segment2d::new(
-                            direction.into(),
+                            direction.into_inner(),
                             length,
                         )
                         .into();
@@ -2339,7 +2353,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "reversed",
                 |_self: Val<bevy::math::primitives::Triangle2d>| {
                     let output: Val<bevy::math::primitives::Triangle2d> = ::bevy::math::primitives::Triangle2d::reversed(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -2750,7 +2764,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "new",
                 |direction: Val<bevy::math::prelude::Dir3>, length: f32| {
                     let output: Val<bevy::math::primitives::Segment3d> = ::bevy::math::primitives::Segment3d::new(
-                            direction.into(),
+                            direction.into_inner(),
                             length,
                         )
                         .into();
@@ -2882,7 +2896,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "reversed",
                 |_self: Val<bevy::math::primitives::Triangle3d>| {
                     let output: Val<bevy::math::primitives::Triangle3d> = ::bevy::math::primitives::Triangle3d::reversed(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -2917,7 +2931,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "from_ray",
                 |ray: Val<bevy::math::Ray2d>, max: f32| {
                     let output: Val<bevy::math::bounding::RayCast2d> = ::bevy::math::bounding::RayCast2d::from_ray(
-                            ray.into(),
+                            ray.into_inner(),
                             max,
                         )
                         .into();
@@ -2981,8 +2995,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     max: f32|
                 {
                     let output: Val<bevy::math::bounding::AabbCast2d> = ::bevy::math::bounding::AabbCast2d::from_ray(
-                            aabb.into(),
-                            ray.into(),
+                            aabb.into_inner(),
+                            ray.into_inner(),
                             max,
                         )
                         .into();
@@ -2997,7 +3011,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 {
                     let output: std::option::Option<f32> = ::bevy::math::bounding::AabbCast2d::aabb_collision_at(
                             &_self,
-                            aabb.into(),
+                            aabb.into_inner(),
                         )
                         .into();
                     output
@@ -3012,8 +3026,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     max: f32|
                 {
                     let output: Val<bevy::math::bounding::BoundingCircleCast> = ::bevy::math::bounding::BoundingCircleCast::from_ray(
-                            circle.into(),
-                            ray.into(),
+                            circle.into_inner(),
+                            ray.into_inner(),
                             max,
                         )
                         .into();
@@ -3028,7 +3042,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 {
                     let output: std::option::Option<f32> = ::bevy::math::bounding::BoundingCircleCast::circle_collision_at(
                             &_self,
-                            circle.into(),
+                            circle.into_inner(),
                         )
                         .into();
                     output
@@ -3049,7 +3063,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "from_ray",
                 |ray: Val<bevy::math::Ray3d>, max: f32| {
                     let output: Val<bevy::math::bounding::RayCast3d> = ::bevy::math::bounding::RayCast3d::from_ray(
-                            ray.into(),
+                            ray.into_inner(),
                             max,
                         )
                         .into();
@@ -3103,8 +3117,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     max: f32|
                 {
                     let output: Val<bevy::math::bounding::AabbCast3d> = ::bevy::math::bounding::AabbCast3d::from_ray(
-                            aabb.into(),
-                            ray.into(),
+                            aabb.into_inner(),
+                            ray.into_inner(),
                             max,
                         )
                         .into();
@@ -3119,7 +3133,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 {
                     let output: std::option::Option<f32> = ::bevy::math::bounding::AabbCast3d::aabb_collision_at(
                             &_self,
-                            aabb.into(),
+                            aabb.into_inner(),
                         )
                         .into();
                     output
@@ -3154,8 +3168,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     max: f32|
                 {
                     let output: Val<bevy::math::bounding::BoundingSphereCast> = ::bevy::math::bounding::BoundingSphereCast::from_ray(
-                            sphere.into(),
-                            ray.into(),
+                            sphere.into_inner(),
+                            ray.into_inner(),
                             max,
                         )
                         .into();
@@ -3170,7 +3184,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 {
                     let output: std::option::Option<f32> = ::bevy::math::bounding::BoundingSphereCast::sphere_collision_at(
                             &_self,
-                            sphere.into(),
+                            sphere.into_inner(),
                         )
                         .into();
                     output
@@ -3191,7 +3205,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "start",
                 |_self: Val<bevy::math::curve::interval::Interval>| {
                     let output: f32 = ::bevy::math::curve::interval::Interval::start(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -3201,7 +3215,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "end",
                 |_self: Val<bevy::math::curve::interval::Interval>| {
                     let output: f32 = ::bevy::math::curve::interval::Interval::end(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -3211,7 +3225,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "length",
                 |_self: Val<bevy::math::curve::interval::Interval>| {
                     let output: f32 = ::bevy::math::curve::interval::Interval::length(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -3221,7 +3235,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "is_bounded",
                 |_self: Val<bevy::math::curve::interval::Interval>| {
                     let output: bool = ::bevy::math::curve::interval::Interval::is_bounded(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -3231,7 +3245,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "has_finite_start",
                 |_self: Val<bevy::math::curve::interval::Interval>| {
                     let output: bool = ::bevy::math::curve::interval::Interval::has_finite_start(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -3241,7 +3255,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "has_finite_end",
                 |_self: Val<bevy::math::curve::interval::Interval>| {
                     let output: bool = ::bevy::math::curve::interval::Interval::has_finite_end(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -3251,7 +3265,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "contains",
                 |_self: Val<bevy::math::curve::interval::Interval>, item: f32| {
                     let output: bool = ::bevy::math::curve::interval::Interval::contains(
-                            _self.into(),
+                            _self.into_inner(),
                             item,
                         )
                         .into();
@@ -3265,8 +3279,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     other: Val<bevy::math::curve::interval::Interval>|
                 {
                     let output: bool = ::bevy::math::curve::interval::Interval::contains_interval(
-                            _self.into(),
-                            other.into(),
+                            _self.into_inner(),
+                            other.into_inner(),
                         )
                         .into();
                     output
@@ -3276,7 +3290,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "clamp",
                 |_self: Val<bevy::math::curve::interval::Interval>, value: f32| {
                     let output: f32 = ::bevy::math::curve::interval::Interval::clamp(
-                            _self.into(),
+                            _self.into_inner(),
                             value,
                         )
                         .into();
@@ -3340,7 +3354,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "neg",
                 |_self: Val<bevy::math::FloatOrd>| {
                     let output: Val<bevy::math::FloatOrd> = ::bevy::math::FloatOrd::neg(
-                            _self.into(),
+                            _self.into_inner(),
                         )
                         .into();
                     output
