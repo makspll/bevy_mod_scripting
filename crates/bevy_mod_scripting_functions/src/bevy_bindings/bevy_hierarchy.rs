@@ -9,7 +9,7 @@ use bevy_mod_scripting_core::{
     AddContextInitializer, StoreDocumentation,
     bindings::{ReflectReference, function::from::{Ref, Mut, Val}},
 };
-use crate::{*, namespaced_register::NamespaceBuilder};
+use crate::*;
 pub struct BevyHierarchyScriptingPlugin;
 impl ::bevy::app::Plugin for BevyHierarchyScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
@@ -23,7 +23,7 @@ impl ::bevy::app::Plugin for BevyHierarchyScriptingPlugin {
                     b_index: usize|
                 {
                     let output: () = ::bevy::hierarchy::prelude::Children::swap(
-                            &mut_self,
+                            &mut _self,
                             a_index,
                             b_index,
                         )

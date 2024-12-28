@@ -10,7 +10,7 @@ use bevy_mod_scripting_core::{
     AddContextInitializer, StoreDocumentation,
     bindings::{ReflectReference, function::from::{Ref, Mut, Val}},
 };
-use crate::{*, namespaced_register::NamespaceBuilder};
+use crate::*;
 pub struct BevyInputScriptingPlugin;
 impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
@@ -947,7 +947,7 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 "set_press_threshold",
                 |_self: Mut<bevy::input::gamepad::ButtonSettings>, value: f32| {
                     let output: f32 = ::bevy::input::gamepad::ButtonSettings::set_press_threshold(
-                            &mut_self,
+                            &mut _self,
                             value,
                         )
                         .into();
@@ -968,7 +968,7 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 "set_release_threshold",
                 |_self: Mut<bevy::input::gamepad::ButtonSettings>, value: f32| {
                     let output: f32 = ::bevy::input::gamepad::ButtonSettings::set_release_threshold(
-                            &mut_self,
+                            &mut _self,
                             value,
                         )
                         .into();
@@ -1014,7 +1014,7 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 "set_livezone_upperbound",
                 |_self: Mut<bevy::input::gamepad::AxisSettings>, value: f32| {
                     let output: f32 = ::bevy::input::gamepad::AxisSettings::set_livezone_upperbound(
-                            &mut_self,
+                            &mut _self,
                             value,
                         )
                         .into();
@@ -1035,7 +1035,7 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 "set_deadzone_upperbound",
                 |_self: Mut<bevy::input::gamepad::AxisSettings>, value: f32| {
                     let output: f32 = ::bevy::input::gamepad::AxisSettings::set_deadzone_upperbound(
-                            &mut_self,
+                            &mut _self,
                             value,
                         )
                         .into();
@@ -1056,7 +1056,7 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 "set_livezone_lowerbound",
                 |_self: Mut<bevy::input::gamepad::AxisSettings>, value: f32| {
                     let output: f32 = ::bevy::input::gamepad::AxisSettings::set_livezone_lowerbound(
-                            &mut_self,
+                            &mut _self,
                             value,
                         )
                         .into();
@@ -1077,7 +1077,7 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 "set_deadzone_lowerbound",
                 |_self: Mut<bevy::input::gamepad::AxisSettings>, value: f32| {
                     let output: f32 = ::bevy::input::gamepad::AxisSettings::set_deadzone_lowerbound(
-                            &mut_self,
+                            &mut _self,
                             value,
                         )
                         .into();
@@ -1098,7 +1098,7 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 "set_threshold",
                 |_self: Mut<bevy::input::gamepad::AxisSettings>, value: f32| {
                     let output: f32 = ::bevy::input::gamepad::AxisSettings::set_threshold(
-                            &mut_self,
+                            &mut _self,
                             value,
                         )
                         .into();
