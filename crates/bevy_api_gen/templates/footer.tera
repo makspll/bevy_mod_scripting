@@ -24,7 +24,7 @@ impl bevy::app::Plugin for {{ "ScriptingPlugin" | prefix_cratename | convert_cas
             : {{- arg.proxy_ty -}},
             {%- endfor -%}
             | {
-                let output: {{ function.output.proxy_ty }} = {{ ::item.import_path }}::{{ function.ident }}(
+                let output: {{ function.output.proxy_ty }} = ::{{ item.import_path }}::{{ function.ident }}(
                     {%- for arg in function.args -%}
                         {%- if arg.ident != "self" -%}
                             {{- arg.ident -}}
