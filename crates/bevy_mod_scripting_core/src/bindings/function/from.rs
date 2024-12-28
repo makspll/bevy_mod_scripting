@@ -166,6 +166,12 @@ impl<T> DerefMut for Val<T> {
     }
 }
 
+impl<T> From<T> for Val<T> {
+    fn from(value: T) -> Self {
+        Val(value)
+    }
+}
+
 impl<T: FromReflect> FromScript for Val<T> {
     type This<'w> = Self;
     fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
@@ -246,6 +252,12 @@ impl<T: FromReflect> FromScript for Ref<'_, T> {
     }
 }
 
+impl<'a, T> From<&'a T> for Ref<'a, T> {
+    fn from(value: &'a T) -> Self {
+        Ref(value)
+    }
+}
+
 /// A wrapper around a mutable reference to a value of type `T`.
 ///
 /// This can be used to retrieve a mutable reference out of a [`ScriptValue::Reference`] corresponding to the type `T`.
@@ -266,6 +278,12 @@ impl<T> Deref for Mut<'_, T> {
 impl<T> DerefMut for Mut<'_, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.0
+    }
+}
+
+impl<'a, T> From<&'a mut T> for Mut<'a, T> {
+    fn from(value: &'a mut T) -> Self {
+        Mut(value)
     }
 }
 

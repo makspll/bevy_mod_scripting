@@ -1,10 +1,13 @@
 use ::bevy::prelude::*;
 #[cfg(feature = "core_functions")]
-pub mod bevy;
+pub mod bevy_bindings;
 #[cfg(feature = "core_functions")]
 pub mod core;
 
 pub mod namespaced_register;
+
+pub use core::*;
+pub use namespaced_register::*;
 
 pub struct BevyFunctionsPlugin;
 
