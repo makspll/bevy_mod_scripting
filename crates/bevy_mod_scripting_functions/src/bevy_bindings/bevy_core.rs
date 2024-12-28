@@ -20,7 +20,9 @@ impl ::bevy::app::Plugin for BevyCoreScriptingPlugin {
                     _self: Ref<bevy::core::prelude::Name>,
                     other: Ref<bevy::core::prelude::Name>|
                 {
-                    let output: bool = ::bevy::core::prelude::Name::eq(&_self, &other)
+                    let output: bool = <bevy::core::prelude::Name as std::cmp::PartialEq<
+                        bevy::core::prelude::Name,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -28,7 +30,7 @@ impl ::bevy::app::Plugin for BevyCoreScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::core::prelude::Name>| {
-                    let output: Val<bevy::core::prelude::Name> = ::bevy::core::prelude::Name::clone(
+                    let output: Val<bevy::core::prelude::Name> = <bevy::core::prelude::Name as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();

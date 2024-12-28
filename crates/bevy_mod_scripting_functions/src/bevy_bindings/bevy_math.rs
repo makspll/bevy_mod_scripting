@@ -16,7 +16,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::AspectRatio>| {
-                    let output: Val<bevy::math::AspectRatio> = ::bevy::math::AspectRatio::clone(
+                    let output: Val<bevy::math::AspectRatio> = <bevy::math::AspectRatio as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -29,7 +29,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::AspectRatio>,
                     other: Ref<bevy::math::AspectRatio>|
                 {
-                    let output: bool = ::bevy::math::AspectRatio::eq(&_self, &other)
+                    let output: bool = <bevy::math::AspectRatio as std::cmp::PartialEq<
+                        bevy::math::AspectRatio,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -37,14 +39,14 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "ratio",
                 |_self: Ref<bevy::math::AspectRatio>| {
-                    let output: f32 = ::bevy::math::AspectRatio::ratio(&_self).into();
+                    let output: f32 = bevy::math::AspectRatio::ratio(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "inverse",
                 |_self: Ref<bevy::math::AspectRatio>| {
-                    let output: Val<bevy::math::AspectRatio> = ::bevy::math::AspectRatio::inverse(
+                    let output: Val<bevy::math::AspectRatio> = bevy::math::AspectRatio::inverse(
                             &_self,
                         )
                         .into();
@@ -54,7 +56,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_landscape",
                 |_self: Ref<bevy::math::AspectRatio>| {
-                    let output: bool = ::bevy::math::AspectRatio::is_landscape(&_self)
+                    let output: bool = bevy::math::AspectRatio::is_landscape(&_self)
                         .into();
                     output
                 },
@@ -62,7 +64,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_portrait",
                 |_self: Ref<bevy::math::AspectRatio>| {
-                    let output: bool = ::bevy::math::AspectRatio::is_portrait(&_self)
+                    let output: bool = bevy::math::AspectRatio::is_portrait(&_self)
                         .into();
                     output
                 },
@@ -70,8 +72,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_square",
                 |_self: Ref<bevy::math::AspectRatio>| {
-                    let output: bool = ::bevy::math::AspectRatio::is_square(&_self)
-                        .into();
+                    let output: bool = bevy::math::AspectRatio::is_square(&_self).into();
                     output
                 },
             );
@@ -79,7 +80,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::CompassOctant>| {
-                    let output: Val<bevy::math::CompassOctant> = ::bevy::math::CompassOctant::clone(
+                    let output: Val<bevy::math::CompassOctant> = <bevy::math::CompassOctant as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -92,7 +93,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::CompassOctant>,
                     other: Ref<bevy::math::CompassOctant>|
                 {
-                    let output: bool = ::bevy::math::CompassOctant::eq(&_self, &other)
+                    let output: bool = <bevy::math::CompassOctant as std::cmp::PartialEq<
+                        bevy::math::CompassOctant,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -100,7 +103,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::math::CompassOctant>| {
-                    let output: () = ::bevy::math::CompassOctant::assert_receiver_is_total_eq(
+                    let output: () = <bevy::math::CompassOctant as std::cmp::Eq>::assert_receiver_is_total_eq(
                             &_self,
                         )
                         .into();
@@ -114,7 +117,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::CompassQuadrant>,
                     other: Ref<bevy::math::CompassQuadrant>|
                 {
-                    let output: bool = ::bevy::math::CompassQuadrant::eq(&_self, &other)
+                    let output: bool = <bevy::math::CompassQuadrant as std::cmp::PartialEq<
+                        bevy::math::CompassQuadrant,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -122,7 +127,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::math::CompassQuadrant>| {
-                    let output: () = ::bevy::math::CompassQuadrant::assert_receiver_is_total_eq(
+                    let output: () = <bevy::math::CompassQuadrant as std::cmp::Eq>::assert_receiver_is_total_eq(
                             &_self,
                         )
                         .into();
@@ -132,7 +137,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::CompassQuadrant>| {
-                    let output: Val<bevy::math::CompassQuadrant> = ::bevy::math::CompassQuadrant::clone(
+                    let output: Val<bevy::math::CompassQuadrant> = <bevy::math::CompassQuadrant as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -143,7 +148,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_rotation",
                 |rotation: Val<bevy::math::Rot2>| {
-                    let output: Val<bevy::math::Isometry2d> = ::bevy::math::Isometry2d::from_rotation(
+                    let output: Val<bevy::math::Isometry2d> = bevy::math::Isometry2d::from_rotation(
                             rotation.into_inner(),
                         )
                         .into();
@@ -153,7 +158,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_xy",
                 |x: f32, y: f32| {
-                    let output: Val<bevy::math::Isometry2d> = ::bevy::math::Isometry2d::from_xy(
+                    let output: Val<bevy::math::Isometry2d> = bevy::math::Isometry2d::from_xy(
                             x,
                             y,
                         )
@@ -164,7 +169,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "inverse",
                 |_self: Ref<bevy::math::Isometry2d>| {
-                    let output: Val<bevy::math::Isometry2d> = ::bevy::math::Isometry2d::inverse(
+                    let output: Val<bevy::math::Isometry2d> = bevy::math::Isometry2d::inverse(
                             &_self,
                         )
                         .into();
@@ -174,7 +179,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "inverse_mul",
                 |_self: Ref<bevy::math::Isometry2d>, rhs: Val<bevy::math::Isometry2d>| {
-                    let output: Val<bevy::math::Isometry2d> = ::bevy::math::Isometry2d::inverse_mul(
+                    let output: Val<bevy::math::Isometry2d> = bevy::math::Isometry2d::inverse_mul(
                             &_self,
                             rhs.into_inner(),
                         )
@@ -185,7 +190,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::Isometry2d>| {
-                    let output: Val<bevy::math::Isometry2d> = ::bevy::math::Isometry2d::clone(
+                    let output: Val<bevy::math::Isometry2d> = <bevy::math::Isometry2d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -198,10 +203,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Val<bevy::math::Isometry2d>,
                     rhs: Val<bevy::math::prelude::Dir2>|
                 {
-                    let output: Val<bevy::math::prelude::Dir2> = ::bevy::math::Isometry2d::mul(
-                            _self.into_inner(),
-                            rhs.into_inner(),
-                        )
+                    let output: Val<bevy::math::prelude::Dir2> = <bevy::math::Isometry2d as std::ops::Mul<
+                        bevy::math::prelude::Dir2,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -209,10 +213,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "mul",
                 |_self: Val<bevy::math::Isometry2d>, rhs: Val<bevy::math::Isometry2d>| {
-                    let output: Val<bevy::math::Isometry2d> = ::bevy::math::Isometry2d::mul(
-                            _self.into_inner(),
-                            rhs.into_inner(),
-                        )
+                    let output: Val<bevy::math::Isometry2d> = <bevy::math::Isometry2d as std::ops::Mul<
+                        bevy::math::Isometry2d,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -220,7 +223,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "eq",
                 |_self: Ref<bevy::math::Isometry2d>, other: Ref<bevy::math::Isometry2d>| {
-                    let output: bool = ::bevy::math::Isometry2d::eq(&_self, &other)
+                    let output: bool = <bevy::math::Isometry2d as std::cmp::PartialEq<
+                        bevy::math::Isometry2d,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -232,10 +237,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Val<bevy::math::Isometry3d>,
                     rhs: Val<bevy::math::prelude::Dir3>|
                 {
-                    let output: Val<bevy::math::prelude::Dir3> = ::bevy::math::Isometry3d::mul(
-                            _self.into_inner(),
-                            rhs.into_inner(),
-                        )
+                    let output: Val<bevy::math::prelude::Dir3> = <bevy::math::Isometry3d as std::ops::Mul<
+                        bevy::math::prelude::Dir3,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -243,7 +247,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_xyz",
                 |x: f32, y: f32, z: f32| {
-                    let output: Val<bevy::math::Isometry3d> = ::bevy::math::Isometry3d::from_xyz(
+                    let output: Val<bevy::math::Isometry3d> = bevy::math::Isometry3d::from_xyz(
                             x,
                             y,
                             z,
@@ -255,7 +259,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "inverse",
                 |_self: Ref<bevy::math::Isometry3d>| {
-                    let output: Val<bevy::math::Isometry3d> = ::bevy::math::Isometry3d::inverse(
+                    let output: Val<bevy::math::Isometry3d> = bevy::math::Isometry3d::inverse(
                             &_self,
                         )
                         .into();
@@ -265,7 +269,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "inverse_mul",
                 |_self: Ref<bevy::math::Isometry3d>, rhs: Val<bevy::math::Isometry3d>| {
-                    let output: Val<bevy::math::Isometry3d> = ::bevy::math::Isometry3d::inverse_mul(
+                    let output: Val<bevy::math::Isometry3d> = bevy::math::Isometry3d::inverse_mul(
                             &_self,
                             rhs.into_inner(),
                         )
@@ -276,7 +280,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::Isometry3d>| {
-                    let output: Val<bevy::math::Isometry3d> = ::bevy::math::Isometry3d::clone(
+                    let output: Val<bevy::math::Isometry3d> = <bevy::math::Isometry3d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -286,10 +290,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "mul",
                 |_self: Val<bevy::math::Isometry3d>, rhs: Val<bevy::math::Isometry3d>| {
-                    let output: Val<bevy::math::Isometry3d> = ::bevy::math::Isometry3d::mul(
-                            _self.into_inner(),
-                            rhs.into_inner(),
-                        )
+                    let output: Val<bevy::math::Isometry3d> = <bevy::math::Isometry3d as std::ops::Mul<
+                        bevy::math::Isometry3d,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -297,7 +300,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "eq",
                 |_self: Ref<bevy::math::Isometry3d>, other: Ref<bevy::math::Isometry3d>| {
-                    let output: bool = ::bevy::math::Isometry3d::eq(&_self, &other)
+                    let output: bool = <bevy::math::Isometry3d as std::cmp::PartialEq<
+                        bevy::math::Isometry3d,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -306,14 +311,17 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "eq",
                 |_self: Ref<bevy::math::Ray2d>, other: Ref<bevy::math::Ray2d>| {
-                    let output: bool = ::bevy::math::Ray2d::eq(&_self, &other).into();
+                    let output: bool = <bevy::math::Ray2d as std::cmp::PartialEq<
+                        bevy::math::Ray2d,
+                    >>::eq(&_self, &other)
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::Ray2d>| {
-                    let output: Val<bevy::math::Ray2d> = ::bevy::math::Ray2d::clone(
+                    let output: Val<bevy::math::Ray2d> = <bevy::math::Ray2d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -324,14 +332,17 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "eq",
                 |_self: Ref<bevy::math::Ray3d>, other: Ref<bevy::math::Ray3d>| {
-                    let output: bool = ::bevy::math::Ray3d::eq(&_self, &other).into();
+                    let output: bool = <bevy::math::Ray3d as std::cmp::PartialEq<
+                        bevy::math::Ray3d,
+                    >>::eq(&_self, &other)
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::Ray3d>| {
-                    let output: Val<bevy::math::Ray3d> = ::bevy::math::Ray3d::clone(
+                    let output: Val<bevy::math::Ray3d> = <bevy::math::Ray3d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -342,7 +353,10 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "eq",
                 |_self: Ref<bevy::math::Rot2>, other: Ref<bevy::math::Rot2>| {
-                    let output: bool = ::bevy::math::Rot2::eq(&_self, &other).into();
+                    let output: bool = <bevy::math::Rot2 as std::cmp::PartialEq<
+                        bevy::math::Rot2,
+                    >>::eq(&_self, &other)
+                        .into();
                     output
                 },
             )
@@ -352,10 +366,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Val<bevy::math::Rot2>,
                     direction: Val<bevy::math::prelude::Dir2>|
                 {
-                    let output: Val<bevy::math::prelude::Dir2> = ::bevy::math::Rot2::mul(
-                            _self.into_inner(),
-                            direction.into_inner(),
-                        )
+                    let output: Val<bevy::math::prelude::Dir2> = <bevy::math::Rot2 as std::ops::Mul<
+                        bevy::math::prelude::Dir2,
+                    >>::mul(_self.into_inner(), direction.into_inner())
                         .into();
                     output
                 },
@@ -363,10 +376,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "mul",
                 |_self: Val<bevy::math::Rot2>, rhs: Val<bevy::math::Rot2>| {
-                    let output: Val<bevy::math::Rot2> = ::bevy::math::Rot2::mul(
-                            _self.into_inner(),
-                            rhs.into_inner(),
-                        )
+                    let output: Val<bevy::math::Rot2> = <bevy::math::Rot2 as std::ops::Mul<
+                        bevy::math::Rot2,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -374,7 +386,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "radians",
                 |radians: f32| {
-                    let output: Val<bevy::math::Rot2> = ::bevy::math::Rot2::radians(
+                    let output: Val<bevy::math::Rot2> = bevy::math::Rot2::radians(
                             radians,
                         )
                         .into();
@@ -384,7 +396,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "degrees",
                 |degrees: f32| {
-                    let output: Val<bevy::math::Rot2> = ::bevy::math::Rot2::degrees(
+                    let output: Val<bevy::math::Rot2> = bevy::math::Rot2::degrees(
                             degrees,
                         )
                         .into();
@@ -394,7 +406,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "turn_fraction",
                 |fraction: f32| {
-                    let output: Val<bevy::math::Rot2> = ::bevy::math::Rot2::turn_fraction(
+                    let output: Val<bevy::math::Rot2> = bevy::math::Rot2::turn_fraction(
                             fraction,
                         )
                         .into();
@@ -404,7 +416,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_sin_cos",
                 |sin: f32, cos: f32| {
-                    let output: Val<bevy::math::Rot2> = ::bevy::math::Rot2::from_sin_cos(
+                    let output: Val<bevy::math::Rot2> = bevy::math::Rot2::from_sin_cos(
                             sin,
                             cos,
                         )
@@ -415,7 +427,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "as_radians",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: f32 = ::bevy::math::Rot2::as_radians(_self.into_inner())
+                    let output: f32 = bevy::math::Rot2::as_radians(_self.into_inner())
                         .into();
                     output
                 },
@@ -423,7 +435,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "as_degrees",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: f32 = ::bevy::math::Rot2::as_degrees(_self.into_inner())
+                    let output: f32 = bevy::math::Rot2::as_degrees(_self.into_inner())
                         .into();
                     output
                 },
@@ -431,7 +443,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "as_turn_fraction",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: f32 = ::bevy::math::Rot2::as_turn_fraction(
+                    let output: f32 = bevy::math::Rot2::as_turn_fraction(
                             _self.into_inner(),
                         )
                         .into();
@@ -441,7 +453,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "sin_cos",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: (f32, f32) = ::bevy::math::Rot2::sin_cos(
+                    let output: (f32, f32) = bevy::math::Rot2::sin_cos(
                             _self.into_inner(),
                         )
                         .into();
@@ -451,7 +463,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "length",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: f32 = ::bevy::math::Rot2::length(_self.into_inner())
+                    let output: f32 = bevy::math::Rot2::length(_self.into_inner())
                         .into();
                     output
                 },
@@ -459,7 +471,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "length_squared",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: f32 = ::bevy::math::Rot2::length_squared(
+                    let output: f32 = bevy::math::Rot2::length_squared(
                             _self.into_inner(),
                         )
                         .into();
@@ -469,9 +481,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "length_recip",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: f32 = ::bevy::math::Rot2::length_recip(
-                            _self.into_inner(),
-                        )
+                    let output: f32 = bevy::math::Rot2::length_recip(_self.into_inner())
                         .into();
                     output
                 },
@@ -479,7 +489,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "normalize",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: Val<bevy::math::Rot2> = ::bevy::math::Rot2::normalize(
+                    let output: Val<bevy::math::Rot2> = bevy::math::Rot2::normalize(
                             _self.into_inner(),
                         )
                         .into();
@@ -489,7 +499,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "fast_renormalize",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: Val<bevy::math::Rot2> = ::bevy::math::Rot2::fast_renormalize(
+                    let output: Val<bevy::math::Rot2> = bevy::math::Rot2::fast_renormalize(
                             _self.into_inner(),
                         )
                         .into();
@@ -499,7 +509,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_finite",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: bool = ::bevy::math::Rot2::is_finite(_self.into_inner())
+                    let output: bool = bevy::math::Rot2::is_finite(_self.into_inner())
                         .into();
                     output
                 },
@@ -507,7 +517,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_nan",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: bool = ::bevy::math::Rot2::is_nan(_self.into_inner())
+                    let output: bool = bevy::math::Rot2::is_nan(_self.into_inner())
                         .into();
                     output
                 },
@@ -515,7 +525,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_normalized",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: bool = ::bevy::math::Rot2::is_normalized(
+                    let output: bool = bevy::math::Rot2::is_normalized(
                             _self.into_inner(),
                         )
                         .into();
@@ -525,7 +535,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_near_identity",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: bool = ::bevy::math::Rot2::is_near_identity(
+                    let output: bool = bevy::math::Rot2::is_near_identity(
                             _self.into_inner(),
                         )
                         .into();
@@ -535,7 +545,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "angle_between",
                 |_self: Val<bevy::math::Rot2>, other: Val<bevy::math::Rot2>| {
-                    let output: f32 = ::bevy::math::Rot2::angle_between(
+                    let output: f32 = bevy::math::Rot2::angle_between(
                             _self.into_inner(),
                             other.into_inner(),
                         )
@@ -546,7 +556,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "angle_to",
                 |_self: Val<bevy::math::Rot2>, other: Val<bevy::math::Rot2>| {
-                    let output: f32 = ::bevy::math::Rot2::angle_to(
+                    let output: f32 = bevy::math::Rot2::angle_to(
                             _self.into_inner(),
                             other.into_inner(),
                         )
@@ -557,7 +567,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "inverse",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: Val<bevy::math::Rot2> = ::bevy::math::Rot2::inverse(
+                    let output: Val<bevy::math::Rot2> = bevy::math::Rot2::inverse(
                             _self.into_inner(),
                         )
                         .into();
@@ -567,7 +577,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "nlerp",
                 |_self: Val<bevy::math::Rot2>, end: Val<bevy::math::Rot2>, s: f32| {
-                    let output: Val<bevy::math::Rot2> = ::bevy::math::Rot2::nlerp(
+                    let output: Val<bevy::math::Rot2> = bevy::math::Rot2::nlerp(
                             _self.into_inner(),
                             end.into_inner(),
                             s,
@@ -579,7 +589,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "slerp",
                 |_self: Val<bevy::math::Rot2>, end: Val<bevy::math::Rot2>, s: f32| {
-                    let output: Val<bevy::math::Rot2> = ::bevy::math::Rot2::slerp(
+                    let output: Val<bevy::math::Rot2> = bevy::math::Rot2::slerp(
                             _self.into_inner(),
                             end.into_inner(),
                             s,
@@ -591,7 +601,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::Rot2>| {
-                    let output: Val<bevy::math::Rot2> = ::bevy::math::Rot2::clone(&_self)
+                    let output: Val<bevy::math::Rot2> = <bevy::math::Rot2 as std::clone::Clone>::clone(
+                            &_self,
+                        )
                         .into();
                     output
                 },
@@ -600,7 +612,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "neg",
                 |_self: Val<bevy::math::prelude::Dir2>| {
-                    let output: Val<bevy::math::prelude::Dir2> = ::bevy::math::prelude::Dir2::neg(
+                    let output: Val<bevy::math::prelude::Dir2> = <bevy::math::prelude::Dir2 as std::ops::Neg>::neg(
                             _self.into_inner(),
                         )
                         .into();
@@ -610,7 +622,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::prelude::Dir2>| {
-                    let output: Val<bevy::math::prelude::Dir2> = ::bevy::math::prelude::Dir2::clone(
+                    let output: Val<bevy::math::prelude::Dir2> = <bevy::math::prelude::Dir2 as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -623,7 +635,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::prelude::Dir2>,
                     other: Ref<bevy::math::prelude::Dir2>|
                 {
-                    let output: bool = ::bevy::math::prelude::Dir2::eq(&_self, &other)
+                    let output: bool = <bevy::math::prelude::Dir2 as std::cmp::PartialEq<
+                        bevy::math::prelude::Dir2,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -631,7 +645,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_xy_unchecked",
                 |x: f32, y: f32| {
-                    let output: Val<bevy::math::prelude::Dir2> = ::bevy::math::prelude::Dir2::from_xy_unchecked(
+                    let output: Val<bevy::math::prelude::Dir2> = bevy::math::prelude::Dir2::from_xy_unchecked(
                             x,
                             y,
                         )
@@ -646,7 +660,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     rhs: Val<bevy::math::prelude::Dir2>,
                     s: f32|
                 {
-                    let output: Val<bevy::math::prelude::Dir2> = ::bevy::math::prelude::Dir2::slerp(
+                    let output: Val<bevy::math::prelude::Dir2> = bevy::math::prelude::Dir2::slerp(
                             _self.into_inner(),
                             rhs.into_inner(),
                             s,
@@ -661,7 +675,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Val<bevy::math::prelude::Dir2>,
                     other: Val<bevy::math::prelude::Dir2>|
                 {
-                    let output: Val<bevy::math::Rot2> = ::bevy::math::prelude::Dir2::rotation_to(
+                    let output: Val<bevy::math::Rot2> = bevy::math::prelude::Dir2::rotation_to(
                             _self.into_inner(),
                             other.into_inner(),
                         )
@@ -675,7 +689,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Val<bevy::math::prelude::Dir2>,
                     other: Val<bevy::math::prelude::Dir2>|
                 {
-                    let output: Val<bevy::math::Rot2> = ::bevy::math::prelude::Dir2::rotation_from(
+                    let output: Val<bevy::math::Rot2> = bevy::math::prelude::Dir2::rotation_from(
                             _self.into_inner(),
                             other.into_inner(),
                         )
@@ -686,7 +700,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "rotation_from_x",
                 |_self: Val<bevy::math::prelude::Dir2>| {
-                    let output: Val<bevy::math::Rot2> = ::bevy::math::prelude::Dir2::rotation_from_x(
+                    let output: Val<bevy::math::Rot2> = bevy::math::prelude::Dir2::rotation_from_x(
                             _self.into_inner(),
                         )
                         .into();
@@ -696,7 +710,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "rotation_to_x",
                 |_self: Val<bevy::math::prelude::Dir2>| {
-                    let output: Val<bevy::math::Rot2> = ::bevy::math::prelude::Dir2::rotation_to_x(
+                    let output: Val<bevy::math::Rot2> = bevy::math::prelude::Dir2::rotation_to_x(
                             _self.into_inner(),
                         )
                         .into();
@@ -706,7 +720,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "rotation_from_y",
                 |_self: Val<bevy::math::prelude::Dir2>| {
-                    let output: Val<bevy::math::Rot2> = ::bevy::math::prelude::Dir2::rotation_from_y(
+                    let output: Val<bevy::math::Rot2> = bevy::math::prelude::Dir2::rotation_from_y(
                             _self.into_inner(),
                         )
                         .into();
@@ -716,7 +730,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "rotation_to_y",
                 |_self: Val<bevy::math::prelude::Dir2>| {
-                    let output: Val<bevy::math::Rot2> = ::bevy::math::prelude::Dir2::rotation_to_y(
+                    let output: Val<bevy::math::Rot2> = bevy::math::prelude::Dir2::rotation_to_y(
                             _self.into_inner(),
                         )
                         .into();
@@ -726,7 +740,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "fast_renormalize",
                 |_self: Val<bevy::math::prelude::Dir2>| {
-                    let output: Val<bevy::math::prelude::Dir2> = ::bevy::math::prelude::Dir2::fast_renormalize(
+                    let output: Val<bevy::math::prelude::Dir2> = bevy::math::prelude::Dir2::fast_renormalize(
                             _self.into_inner(),
                         )
                         .into();
@@ -737,7 +751,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::prelude::Dir3>| {
-                    let output: Val<bevy::math::prelude::Dir3> = ::bevy::math::prelude::Dir3::clone(
+                    let output: Val<bevy::math::prelude::Dir3> = <bevy::math::prelude::Dir3 as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -747,7 +761,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "neg",
                 |_self: Val<bevy::math::prelude::Dir3>| {
-                    let output: Val<bevy::math::prelude::Dir3> = ::bevy::math::prelude::Dir3::neg(
+                    let output: Val<bevy::math::prelude::Dir3> = <bevy::math::prelude::Dir3 as std::ops::Neg>::neg(
                             _self.into_inner(),
                         )
                         .into();
@@ -760,7 +774,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::prelude::Dir3>,
                     other: Ref<bevy::math::prelude::Dir3>|
                 {
-                    let output: bool = ::bevy::math::prelude::Dir3::eq(&_self, &other)
+                    let output: bool = <bevy::math::prelude::Dir3 as std::cmp::PartialEq<
+                        bevy::math::prelude::Dir3,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -768,7 +784,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_xyz_unchecked",
                 |x: f32, y: f32, z: f32| {
-                    let output: Val<bevy::math::prelude::Dir3> = ::bevy::math::prelude::Dir3::from_xyz_unchecked(
+                    let output: Val<bevy::math::prelude::Dir3> = bevy::math::prelude::Dir3::from_xyz_unchecked(
                             x,
                             y,
                             z,
@@ -784,7 +800,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     rhs: Val<bevy::math::prelude::Dir3>,
                     s: f32|
                 {
-                    let output: Val<bevy::math::prelude::Dir3> = ::bevy::math::prelude::Dir3::slerp(
+                    let output: Val<bevy::math::prelude::Dir3> = bevy::math::prelude::Dir3::slerp(
                             _self.into_inner(),
                             rhs.into_inner(),
                             s,
@@ -796,7 +812,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "fast_renormalize",
                 |_self: Val<bevy::math::prelude::Dir3>| {
-                    let output: Val<bevy::math::prelude::Dir3> = ::bevy::math::prelude::Dir3::fast_renormalize(
+                    let output: Val<bevy::math::prelude::Dir3> = bevy::math::prelude::Dir3::fast_renormalize(
                             _self.into_inner(),
                         )
                         .into();
@@ -807,7 +823,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "neg",
                 |_self: Val<bevy::math::prelude::Dir3A>| {
-                    let output: Val<bevy::math::prelude::Dir3A> = ::bevy::math::prelude::Dir3A::neg(
+                    let output: Val<bevy::math::prelude::Dir3A> = <bevy::math::prelude::Dir3A as std::ops::Neg>::neg(
                             _self.into_inner(),
                         )
                         .into();
@@ -817,7 +833,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_xyz_unchecked",
                 |x: f32, y: f32, z: f32| {
-                    let output: Val<bevy::math::prelude::Dir3A> = ::bevy::math::prelude::Dir3A::from_xyz_unchecked(
+                    let output: Val<bevy::math::prelude::Dir3A> = bevy::math::prelude::Dir3A::from_xyz_unchecked(
                             x,
                             y,
                             z,
@@ -833,7 +849,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     rhs: Val<bevy::math::prelude::Dir3A>,
                     s: f32|
                 {
-                    let output: Val<bevy::math::prelude::Dir3A> = ::bevy::math::prelude::Dir3A::slerp(
+                    let output: Val<bevy::math::prelude::Dir3A> = bevy::math::prelude::Dir3A::slerp(
                             _self.into_inner(),
                             rhs.into_inner(),
                             s,
@@ -845,7 +861,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "fast_renormalize",
                 |_self: Val<bevy::math::prelude::Dir3A>| {
-                    let output: Val<bevy::math::prelude::Dir3A> = ::bevy::math::prelude::Dir3A::fast_renormalize(
+                    let output: Val<bevy::math::prelude::Dir3A> = bevy::math::prelude::Dir3A::fast_renormalize(
                             _self.into_inner(),
                         )
                         .into();
@@ -855,7 +871,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::prelude::Dir3A>| {
-                    let output: Val<bevy::math::prelude::Dir3A> = ::bevy::math::prelude::Dir3A::clone(
+                    let output: Val<bevy::math::prelude::Dir3A> = <bevy::math::prelude::Dir3A as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -868,7 +884,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::prelude::Dir3A>,
                     other: Ref<bevy::math::prelude::Dir3A>|
                 {
-                    let output: bool = ::bevy::math::prelude::Dir3A::eq(&_self, &other)
+                    let output: bool = <bevy::math::prelude::Dir3A as std::cmp::PartialEq<
+                        bevy::math::prelude::Dir3A,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -880,7 +898,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::prelude::IRect>,
                     other: Ref<bevy::math::prelude::IRect>|
                 {
-                    let output: bool = ::bevy::math::prelude::IRect::eq(&_self, &other)
+                    let output: bool = <bevy::math::prelude::IRect as std::cmp::PartialEq<
+                        bevy::math::prelude::IRect,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -888,7 +908,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::math::prelude::IRect>| {
-                    let output: () = ::bevy::math::prelude::IRect::assert_receiver_is_total_eq(
+                    let output: () = <bevy::math::prelude::IRect as std::cmp::Eq>::assert_receiver_is_total_eq(
                             &_self,
                         )
                         .into();
@@ -898,7 +918,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |x0: i32, y0: i32, x1: i32, y1: i32| {
-                    let output: Val<bevy::math::prelude::IRect> = ::bevy::math::prelude::IRect::new(
+                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::new(
                             x0,
                             y0,
                             x1,
@@ -911,7 +931,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_empty",
                 |_self: Ref<bevy::math::prelude::IRect>| {
-                    let output: bool = ::bevy::math::prelude::IRect::is_empty(&_self)
+                    let output: bool = bevy::math::prelude::IRect::is_empty(&_self)
                         .into();
                     output
                 },
@@ -919,15 +939,14 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "width",
                 |_self: Ref<bevy::math::prelude::IRect>| {
-                    let output: i32 = ::bevy::math::prelude::IRect::width(&_self).into();
+                    let output: i32 = bevy::math::prelude::IRect::width(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "height",
                 |_self: Ref<bevy::math::prelude::IRect>| {
-                    let output: i32 = ::bevy::math::prelude::IRect::height(&_self)
-                        .into();
+                    let output: i32 = bevy::math::prelude::IRect::height(&_self).into();
                     output
                 },
             )
@@ -937,7 +956,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::prelude::IRect>,
                     other: Val<bevy::math::prelude::IRect>|
                 {
-                    let output: Val<bevy::math::prelude::IRect> = ::bevy::math::prelude::IRect::union(
+                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::union(
                             &_self,
                             other.into_inner(),
                         )
@@ -951,7 +970,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::prelude::IRect>,
                     other: Val<bevy::math::prelude::IRect>|
                 {
-                    let output: Val<bevy::math::prelude::IRect> = ::bevy::math::prelude::IRect::intersect(
+                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::intersect(
                             &_self,
                             other.into_inner(),
                         )
@@ -962,7 +981,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "inflate",
                 |_self: Ref<bevy::math::prelude::IRect>, expansion: i32| {
-                    let output: Val<bevy::math::prelude::IRect> = ::bevy::math::prelude::IRect::inflate(
+                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::inflate(
                             &_self,
                             expansion,
                         )
@@ -973,7 +992,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "as_rect",
                 |_self: Ref<bevy::math::prelude::IRect>| {
-                    let output: Val<bevy::math::prelude::Rect> = ::bevy::math::prelude::IRect::as_rect(
+                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::IRect::as_rect(
                             &_self,
                         )
                         .into();
@@ -983,7 +1002,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "as_urect",
                 |_self: Ref<bevy::math::prelude::IRect>| {
-                    let output: Val<bevy::math::prelude::URect> = ::bevy::math::prelude::IRect::as_urect(
+                    let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::IRect::as_urect(
                             &_self,
                         )
                         .into();
@@ -993,7 +1012,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::prelude::IRect>| {
-                    let output: Val<bevy::math::prelude::IRect> = ::bevy::math::prelude::IRect::clone(
+                    let output: Val<bevy::math::prelude::IRect> = <bevy::math::prelude::IRect as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -1004,7 +1023,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |x0: f32, y0: f32, x1: f32, y1: f32| {
-                    let output: Val<bevy::math::prelude::Rect> = ::bevy::math::prelude::Rect::new(
+                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::new(
                             x0,
                             y0,
                             x1,
@@ -1017,7 +1036,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_empty",
                 |_self: Ref<bevy::math::prelude::Rect>| {
-                    let output: bool = ::bevy::math::prelude::Rect::is_empty(&_self)
+                    let output: bool = bevy::math::prelude::Rect::is_empty(&_self)
                         .into();
                     output
                 },
@@ -1025,14 +1044,14 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "width",
                 |_self: Ref<bevy::math::prelude::Rect>| {
-                    let output: f32 = ::bevy::math::prelude::Rect::width(&_self).into();
+                    let output: f32 = bevy::math::prelude::Rect::width(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "height",
                 |_self: Ref<bevy::math::prelude::Rect>| {
-                    let output: f32 = ::bevy::math::prelude::Rect::height(&_self).into();
+                    let output: f32 = bevy::math::prelude::Rect::height(&_self).into();
                     output
                 },
             )
@@ -1042,7 +1061,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::prelude::Rect>,
                     other: Val<bevy::math::prelude::Rect>|
                 {
-                    let output: Val<bevy::math::prelude::Rect> = ::bevy::math::prelude::Rect::union(
+                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::union(
                             &_self,
                             other.into_inner(),
                         )
@@ -1056,7 +1075,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::prelude::Rect>,
                     other: Val<bevy::math::prelude::Rect>|
                 {
-                    let output: Val<bevy::math::prelude::Rect> = ::bevy::math::prelude::Rect::intersect(
+                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::intersect(
                             &_self,
                             other.into_inner(),
                         )
@@ -1067,7 +1086,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "inflate",
                 |_self: Ref<bevy::math::prelude::Rect>, expansion: f32| {
-                    let output: Val<bevy::math::prelude::Rect> = ::bevy::math::prelude::Rect::inflate(
+                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::inflate(
                             &_self,
                             expansion,
                         )
@@ -1081,7 +1100,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::prelude::Rect>,
                     other: Val<bevy::math::prelude::Rect>|
                 {
-                    let output: Val<bevy::math::prelude::Rect> = ::bevy::math::prelude::Rect::normalize(
+                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::normalize(
                             &_self,
                             other.into_inner(),
                         )
@@ -1092,7 +1111,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "as_irect",
                 |_self: Ref<bevy::math::prelude::Rect>| {
-                    let output: Val<bevy::math::prelude::IRect> = ::bevy::math::prelude::Rect::as_irect(
+                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::Rect::as_irect(
                             &_self,
                         )
                         .into();
@@ -1102,7 +1121,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "as_urect",
                 |_self: Ref<bevy::math::prelude::Rect>| {
-                    let output: Val<bevy::math::prelude::URect> = ::bevy::math::prelude::Rect::as_urect(
+                    let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::Rect::as_urect(
                             &_self,
                         )
                         .into();
@@ -1112,7 +1131,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::prelude::Rect>| {
-                    let output: Val<bevy::math::prelude::Rect> = ::bevy::math::prelude::Rect::clone(
+                    let output: Val<bevy::math::prelude::Rect> = <bevy::math::prelude::Rect as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -1125,7 +1144,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::prelude::Rect>,
                     other: Ref<bevy::math::prelude::Rect>|
                 {
-                    let output: bool = ::bevy::math::prelude::Rect::eq(&_self, &other)
+                    let output: bool = <bevy::math::prelude::Rect as std::cmp::PartialEq<
+                        bevy::math::prelude::Rect,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -1134,7 +1155,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |x0: u32, y0: u32, x1: u32, y1: u32| {
-                    let output: Val<bevy::math::prelude::URect> = ::bevy::math::prelude::URect::new(
+                    let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::new(
                             x0,
                             y0,
                             x1,
@@ -1147,7 +1168,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_empty",
                 |_self: Ref<bevy::math::prelude::URect>| {
-                    let output: bool = ::bevy::math::prelude::URect::is_empty(&_self)
+                    let output: bool = bevy::math::prelude::URect::is_empty(&_self)
                         .into();
                     output
                 },
@@ -1155,15 +1176,14 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "width",
                 |_self: Ref<bevy::math::prelude::URect>| {
-                    let output: u32 = ::bevy::math::prelude::URect::width(&_self).into();
+                    let output: u32 = bevy::math::prelude::URect::width(&_self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "height",
                 |_self: Ref<bevy::math::prelude::URect>| {
-                    let output: u32 = ::bevy::math::prelude::URect::height(&_self)
-                        .into();
+                    let output: u32 = bevy::math::prelude::URect::height(&_self).into();
                     output
                 },
             )
@@ -1173,7 +1193,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::prelude::URect>,
                     other: Val<bevy::math::prelude::URect>|
                 {
-                    let output: Val<bevy::math::prelude::URect> = ::bevy::math::prelude::URect::union(
+                    let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::union(
                             &_self,
                             other.into_inner(),
                         )
@@ -1187,7 +1207,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::prelude::URect>,
                     other: Val<bevy::math::prelude::URect>|
                 {
-                    let output: Val<bevy::math::prelude::URect> = ::bevy::math::prelude::URect::intersect(
+                    let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::intersect(
                             &_self,
                             other.into_inner(),
                         )
@@ -1198,7 +1218,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "inflate",
                 |_self: Ref<bevy::math::prelude::URect>, expansion: i32| {
-                    let output: Val<bevy::math::prelude::URect> = ::bevy::math::prelude::URect::inflate(
+                    let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::inflate(
                             &_self,
                             expansion,
                         )
@@ -1209,7 +1229,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "as_rect",
                 |_self: Ref<bevy::math::prelude::URect>| {
-                    let output: Val<bevy::math::prelude::Rect> = ::bevy::math::prelude::URect::as_rect(
+                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::URect::as_rect(
                             &_self,
                         )
                         .into();
@@ -1219,7 +1239,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "as_irect",
                 |_self: Ref<bevy::math::prelude::URect>| {
-                    let output: Val<bevy::math::prelude::IRect> = ::bevy::math::prelude::URect::as_irect(
+                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::URect::as_irect(
                             &_self,
                         )
                         .into();
@@ -1229,7 +1249,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::math::prelude::URect>| {
-                    let output: () = ::bevy::math::prelude::URect::assert_receiver_is_total_eq(
+                    let output: () = <bevy::math::prelude::URect as std::cmp::Eq>::assert_receiver_is_total_eq(
                             &_self,
                         )
                         .into();
@@ -1242,7 +1262,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::prelude::URect>,
                     other: Ref<bevy::math::prelude::URect>|
                 {
-                    let output: bool = ::bevy::math::prelude::URect::eq(&_self, &other)
+                    let output: bool = <bevy::math::prelude::URect as std::cmp::PartialEq<
+                        bevy::math::prelude::URect,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -1250,7 +1272,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::prelude::URect>| {
-                    let output: Val<bevy::math::prelude::URect> = ::bevy::math::prelude::URect::clone(
+                    let output: Val<bevy::math::prelude::URect> = <bevy::math::prelude::URect as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -1262,7 +1284,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "bounding_circle",
                 |_self: Ref<bevy::math::bounding::Aabb2d>| {
-                    let output: Val<bevy::math::bounding::BoundingCircle> = ::bevy::math::bounding::Aabb2d::bounding_circle(
+                    let output: Val<bevy::math::bounding::BoundingCircle> = bevy::math::bounding::Aabb2d::bounding_circle(
                             &_self,
                         )
                         .into();
@@ -1272,7 +1294,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::bounding::Aabb2d>| {
-                    let output: Val<bevy::math::bounding::Aabb2d> = ::bevy::math::bounding::Aabb2d::clone(
+                    let output: Val<bevy::math::bounding::Aabb2d> = <bevy::math::bounding::Aabb2d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -1283,7 +1305,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::bounding::BoundingCircle>| {
-                    let output: Val<bevy::math::bounding::BoundingCircle> = ::bevy::math::bounding::BoundingCircle::clone(
+                    let output: Val<bevy::math::bounding::BoundingCircle> = <bevy::math::bounding::BoundingCircle as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -1293,7 +1315,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "radius",
                 |_self: Ref<bevy::math::bounding::BoundingCircle>| {
-                    let output: f32 = ::bevy::math::bounding::BoundingCircle::radius(
+                    let output: f32 = bevy::math::bounding::BoundingCircle::radius(
                             &_self,
                         )
                         .into();
@@ -1303,7 +1325,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "aabb_2d",
                 |_self: Ref<bevy::math::bounding::BoundingCircle>| {
-                    let output: Val<bevy::math::bounding::Aabb2d> = ::bevy::math::bounding::BoundingCircle::aabb_2d(
+                    let output: Val<bevy::math::bounding::Aabb2d> = bevy::math::bounding::BoundingCircle::aabb_2d(
                             &_self,
                         )
                         .into();
@@ -1314,7 +1336,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Circle>| {
-                    let output: Val<bevy::math::primitives::Circle> = ::bevy::math::primitives::Circle::clone(
+                    let output: Val<bevy::math::primitives::Circle> = <bevy::math::primitives::Circle as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -1327,10 +1349,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Circle>,
                     other: Ref<bevy::math::primitives::Circle>|
                 {
-                    let output: bool = ::bevy::math::primitives::Circle::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Circle as std::cmp::PartialEq<
+                        bevy::math::primitives::Circle,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -1338,7 +1359,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |radius: f32| {
-                    let output: Val<bevy::math::primitives::Circle> = ::bevy::math::primitives::Circle::new(
+                    let output: Val<bevy::math::primitives::Circle> = bevy::math::primitives::Circle::new(
                             radius,
                         )
                         .into();
@@ -1348,7 +1369,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "diameter",
                 |_self: Ref<bevy::math::primitives::Circle>| {
-                    let output: f32 = ::bevy::math::primitives::Circle::diameter(&_self)
+                    let output: f32 = bevy::math::primitives::Circle::diameter(&_self)
                         .into();
                     output
                 },
@@ -1357,7 +1378,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |inner_radius: f32, outer_radius: f32| {
-                    let output: Val<bevy::math::primitives::Annulus> = ::bevy::math::primitives::Annulus::new(
+                    let output: Val<bevy::math::primitives::Annulus> = bevy::math::primitives::Annulus::new(
                             inner_radius,
                             outer_radius,
                         )
@@ -1368,7 +1389,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "diameter",
                 |_self: Ref<bevy::math::primitives::Annulus>| {
-                    let output: f32 = ::bevy::math::primitives::Annulus::diameter(&_self)
+                    let output: f32 = bevy::math::primitives::Annulus::diameter(&_self)
                         .into();
                     output
                 },
@@ -1376,9 +1397,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "thickness",
                 |_self: Ref<bevy::math::primitives::Annulus>| {
-                    let output: f32 = ::bevy::math::primitives::Annulus::thickness(
-                            &_self,
-                        )
+                    let output: f32 = bevy::math::primitives::Annulus::thickness(&_self)
                         .into();
                     output
                 },
@@ -1386,7 +1405,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Annulus>| {
-                    let output: Val<bevy::math::primitives::Annulus> = ::bevy::math::primitives::Annulus::clone(
+                    let output: Val<bevy::math::primitives::Annulus> = <bevy::math::primitives::Annulus as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -1399,10 +1418,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Annulus>,
                     other: Ref<bevy::math::primitives::Annulus>|
                 {
-                    let output: bool = ::bevy::math::primitives::Annulus::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Annulus as std::cmp::PartialEq<
+                        bevy::math::primitives::Annulus,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -1411,7 +1429,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |radius: f32, half_angle: f32| {
-                    let output: Val<bevy::math::primitives::Arc2d> = ::bevy::math::primitives::Arc2d::new(
+                    let output: Val<bevy::math::primitives::Arc2d> = bevy::math::primitives::Arc2d::new(
                             radius,
                             half_angle,
                         )
@@ -1422,7 +1440,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_radians",
                 |radius: f32, angle: f32| {
-                    let output: Val<bevy::math::primitives::Arc2d> = ::bevy::math::primitives::Arc2d::from_radians(
+                    let output: Val<bevy::math::primitives::Arc2d> = bevy::math::primitives::Arc2d::from_radians(
                             radius,
                             angle,
                         )
@@ -1433,7 +1451,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_degrees",
                 |radius: f32, angle: f32| {
-                    let output: Val<bevy::math::primitives::Arc2d> = ::bevy::math::primitives::Arc2d::from_degrees(
+                    let output: Val<bevy::math::primitives::Arc2d> = bevy::math::primitives::Arc2d::from_degrees(
                             radius,
                             angle,
                         )
@@ -1444,7 +1462,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_turns",
                 |radius: f32, fraction: f32| {
-                    let output: Val<bevy::math::primitives::Arc2d> = ::bevy::math::primitives::Arc2d::from_turns(
+                    let output: Val<bevy::math::primitives::Arc2d> = bevy::math::primitives::Arc2d::from_turns(
                             radius,
                             fraction,
                         )
@@ -1455,7 +1473,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "angle",
                 |_self: Ref<bevy::math::primitives::Arc2d>| {
-                    let output: f32 = ::bevy::math::primitives::Arc2d::angle(&_self)
+                    let output: f32 = bevy::math::primitives::Arc2d::angle(&_self)
                         .into();
                     output
                 },
@@ -1463,7 +1481,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "length",
                 |_self: Ref<bevy::math::primitives::Arc2d>| {
-                    let output: f32 = ::bevy::math::primitives::Arc2d::length(&_self)
+                    let output: f32 = bevy::math::primitives::Arc2d::length(&_self)
                         .into();
                     output
                 },
@@ -1471,7 +1489,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "half_chord_length",
                 |_self: Ref<bevy::math::primitives::Arc2d>| {
-                    let output: f32 = ::bevy::math::primitives::Arc2d::half_chord_length(
+                    let output: f32 = bevy::math::primitives::Arc2d::half_chord_length(
                             &_self,
                         )
                         .into();
@@ -1481,9 +1499,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "chord_length",
                 |_self: Ref<bevy::math::primitives::Arc2d>| {
-                    let output: f32 = ::bevy::math::primitives::Arc2d::chord_length(
-                            &_self,
-                        )
+                    let output: f32 = bevy::math::primitives::Arc2d::chord_length(&_self)
                         .into();
                     output
                 },
@@ -1491,7 +1507,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "apothem",
                 |_self: Ref<bevy::math::primitives::Arc2d>| {
-                    let output: f32 = ::bevy::math::primitives::Arc2d::apothem(&_self)
+                    let output: f32 = bevy::math::primitives::Arc2d::apothem(&_self)
                         .into();
                     output
                 },
@@ -1499,7 +1515,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "sagitta",
                 |_self: Ref<bevy::math::primitives::Arc2d>| {
-                    let output: f32 = ::bevy::math::primitives::Arc2d::sagitta(&_self)
+                    let output: f32 = bevy::math::primitives::Arc2d::sagitta(&_self)
                         .into();
                     output
                 },
@@ -1507,7 +1523,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_minor",
                 |_self: Ref<bevy::math::primitives::Arc2d>| {
-                    let output: bool = ::bevy::math::primitives::Arc2d::is_minor(&_self)
+                    let output: bool = bevy::math::primitives::Arc2d::is_minor(&_self)
                         .into();
                     output
                 },
@@ -1515,7 +1531,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_major",
                 |_self: Ref<bevy::math::primitives::Arc2d>| {
-                    let output: bool = ::bevy::math::primitives::Arc2d::is_major(&_self)
+                    let output: bool = bevy::math::primitives::Arc2d::is_major(&_self)
                         .into();
                     output
                 },
@@ -1526,10 +1542,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Arc2d>,
                     other: Ref<bevy::math::primitives::Arc2d>|
                 {
-                    let output: bool = ::bevy::math::primitives::Arc2d::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Arc2d as std::cmp::PartialEq<
+                        bevy::math::primitives::Arc2d,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -1537,7 +1552,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Arc2d>| {
-                    let output: Val<bevy::math::primitives::Arc2d> = ::bevy::math::primitives::Arc2d::clone(
+                    let output: Val<bevy::math::primitives::Arc2d> = <bevy::math::primitives::Arc2d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -1548,7 +1563,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |radius: f32, length: f32| {
-                    let output: Val<bevy::math::primitives::Capsule2d> = ::bevy::math::primitives::Capsule2d::new(
+                    let output: Val<bevy::math::primitives::Capsule2d> = bevy::math::primitives::Capsule2d::new(
                             radius,
                             length,
                         )
@@ -1559,7 +1574,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "to_inner_rectangle",
                 |_self: Ref<bevy::math::primitives::Capsule2d>| {
-                    let output: Val<bevy::math::primitives::Rectangle> = ::bevy::math::primitives::Capsule2d::to_inner_rectangle(
+                    let output: Val<bevy::math::primitives::Rectangle> = bevy::math::primitives::Capsule2d::to_inner_rectangle(
                             &_self,
                         )
                         .into();
@@ -1572,10 +1587,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Capsule2d>,
                     other: Ref<bevy::math::primitives::Capsule2d>|
                 {
-                    let output: bool = ::bevy::math::primitives::Capsule2d::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Capsule2d as std::cmp::PartialEq<
+                        bevy::math::primitives::Capsule2d,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -1583,7 +1597,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Capsule2d>| {
-                    let output: Val<bevy::math::primitives::Capsule2d> = ::bevy::math::primitives::Capsule2d::clone(
+                    let output: Val<bevy::math::primitives::Capsule2d> = <bevy::math::primitives::Capsule2d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -1594,7 +1608,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::CircularSector>| {
-                    let output: Val<bevy::math::primitives::CircularSector> = ::bevy::math::primitives::CircularSector::clone(
+                    let output: Val<bevy::math::primitives::CircularSector> = <bevy::math::primitives::CircularSector as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -1607,10 +1621,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::CircularSector>,
                     other: Ref<bevy::math::primitives::CircularSector>|
                 {
-                    let output: bool = ::bevy::math::primitives::CircularSector::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::CircularSector as std::cmp::PartialEq<
+                        bevy::math::primitives::CircularSector,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -1618,7 +1631,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |radius: f32, angle: f32| {
-                    let output: Val<bevy::math::primitives::CircularSector> = ::bevy::math::primitives::CircularSector::new(
+                    let output: Val<bevy::math::primitives::CircularSector> = bevy::math::primitives::CircularSector::new(
                             radius,
                             angle,
                         )
@@ -1629,7 +1642,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_radians",
                 |radius: f32, angle: f32| {
-                    let output: Val<bevy::math::primitives::CircularSector> = ::bevy::math::primitives::CircularSector::from_radians(
+                    let output: Val<bevy::math::primitives::CircularSector> = bevy::math::primitives::CircularSector::from_radians(
                             radius,
                             angle,
                         )
@@ -1640,7 +1653,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_degrees",
                 |radius: f32, angle: f32| {
-                    let output: Val<bevy::math::primitives::CircularSector> = ::bevy::math::primitives::CircularSector::from_degrees(
+                    let output: Val<bevy::math::primitives::CircularSector> = bevy::math::primitives::CircularSector::from_degrees(
                             radius,
                             angle,
                         )
@@ -1651,7 +1664,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_turns",
                 |radius: f32, fraction: f32| {
-                    let output: Val<bevy::math::primitives::CircularSector> = ::bevy::math::primitives::CircularSector::from_turns(
+                    let output: Val<bevy::math::primitives::CircularSector> = bevy::math::primitives::CircularSector::from_turns(
                             radius,
                             fraction,
                         )
@@ -1662,7 +1675,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "half_angle",
                 |_self: Ref<bevy::math::primitives::CircularSector>| {
-                    let output: f32 = ::bevy::math::primitives::CircularSector::half_angle(
+                    let output: f32 = bevy::math::primitives::CircularSector::half_angle(
                             &_self,
                         )
                         .into();
@@ -1672,7 +1685,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "angle",
                 |_self: Ref<bevy::math::primitives::CircularSector>| {
-                    let output: f32 = ::bevy::math::primitives::CircularSector::angle(
+                    let output: f32 = bevy::math::primitives::CircularSector::angle(
                             &_self,
                         )
                         .into();
@@ -1682,7 +1695,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "radius",
                 |_self: Ref<bevy::math::primitives::CircularSector>| {
-                    let output: f32 = ::bevy::math::primitives::CircularSector::radius(
+                    let output: f32 = bevy::math::primitives::CircularSector::radius(
                             &_self,
                         )
                         .into();
@@ -1692,7 +1705,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "arc_length",
                 |_self: Ref<bevy::math::primitives::CircularSector>| {
-                    let output: f32 = ::bevy::math::primitives::CircularSector::arc_length(
+                    let output: f32 = bevy::math::primitives::CircularSector::arc_length(
                             &_self,
                         )
                         .into();
@@ -1702,7 +1715,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "half_chord_length",
                 |_self: Ref<bevy::math::primitives::CircularSector>| {
-                    let output: f32 = ::bevy::math::primitives::CircularSector::half_chord_length(
+                    let output: f32 = bevy::math::primitives::CircularSector::half_chord_length(
                             &_self,
                         )
                         .into();
@@ -1712,7 +1725,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "chord_length",
                 |_self: Ref<bevy::math::primitives::CircularSector>| {
-                    let output: f32 = ::bevy::math::primitives::CircularSector::chord_length(
+                    let output: f32 = bevy::math::primitives::CircularSector::chord_length(
                             &_self,
                         )
                         .into();
@@ -1722,7 +1735,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "apothem",
                 |_self: Ref<bevy::math::primitives::CircularSector>| {
-                    let output: f32 = ::bevy::math::primitives::CircularSector::apothem(
+                    let output: f32 = bevy::math::primitives::CircularSector::apothem(
                             &_self,
                         )
                         .into();
@@ -1732,7 +1745,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "sagitta",
                 |_self: Ref<bevy::math::primitives::CircularSector>| {
-                    let output: f32 = ::bevy::math::primitives::CircularSector::sagitta(
+                    let output: f32 = bevy::math::primitives::CircularSector::sagitta(
                             &_self,
                         )
                         .into();
@@ -1743,7 +1756,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::CircularSegment>| {
-                    let output: Val<bevy::math::primitives::CircularSegment> = ::bevy::math::primitives::CircularSegment::clone(
+                    let output: Val<bevy::math::primitives::CircularSegment> = <bevy::math::primitives::CircularSegment as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -1753,7 +1766,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |radius: f32, angle: f32| {
-                    let output: Val<bevy::math::primitives::CircularSegment> = ::bevy::math::primitives::CircularSegment::new(
+                    let output: Val<bevy::math::primitives::CircularSegment> = bevy::math::primitives::CircularSegment::new(
                             radius,
                             angle,
                         )
@@ -1764,7 +1777,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_radians",
                 |radius: f32, angle: f32| {
-                    let output: Val<bevy::math::primitives::CircularSegment> = ::bevy::math::primitives::CircularSegment::from_radians(
+                    let output: Val<bevy::math::primitives::CircularSegment> = bevy::math::primitives::CircularSegment::from_radians(
                             radius,
                             angle,
                         )
@@ -1775,7 +1788,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_degrees",
                 |radius: f32, angle: f32| {
-                    let output: Val<bevy::math::primitives::CircularSegment> = ::bevy::math::primitives::CircularSegment::from_degrees(
+                    let output: Val<bevy::math::primitives::CircularSegment> = bevy::math::primitives::CircularSegment::from_degrees(
                             radius,
                             angle,
                         )
@@ -1786,7 +1799,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_turns",
                 |radius: f32, fraction: f32| {
-                    let output: Val<bevy::math::primitives::CircularSegment> = ::bevy::math::primitives::CircularSegment::from_turns(
+                    let output: Val<bevy::math::primitives::CircularSegment> = bevy::math::primitives::CircularSegment::from_turns(
                             radius,
                             fraction,
                         )
@@ -1797,7 +1810,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "half_angle",
                 |_self: Ref<bevy::math::primitives::CircularSegment>| {
-                    let output: f32 = ::bevy::math::primitives::CircularSegment::half_angle(
+                    let output: f32 = bevy::math::primitives::CircularSegment::half_angle(
                             &_self,
                         )
                         .into();
@@ -1807,7 +1820,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "angle",
                 |_self: Ref<bevy::math::primitives::CircularSegment>| {
-                    let output: f32 = ::bevy::math::primitives::CircularSegment::angle(
+                    let output: f32 = bevy::math::primitives::CircularSegment::angle(
                             &_self,
                         )
                         .into();
@@ -1817,7 +1830,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "radius",
                 |_self: Ref<bevy::math::primitives::CircularSegment>| {
-                    let output: f32 = ::bevy::math::primitives::CircularSegment::radius(
+                    let output: f32 = bevy::math::primitives::CircularSegment::radius(
                             &_self,
                         )
                         .into();
@@ -1827,7 +1840,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "arc_length",
                 |_self: Ref<bevy::math::primitives::CircularSegment>| {
-                    let output: f32 = ::bevy::math::primitives::CircularSegment::arc_length(
+                    let output: f32 = bevy::math::primitives::CircularSegment::arc_length(
                             &_self,
                         )
                         .into();
@@ -1837,7 +1850,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "half_chord_length",
                 |_self: Ref<bevy::math::primitives::CircularSegment>| {
-                    let output: f32 = ::bevy::math::primitives::CircularSegment::half_chord_length(
+                    let output: f32 = bevy::math::primitives::CircularSegment::half_chord_length(
                             &_self,
                         )
                         .into();
@@ -1847,7 +1860,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "chord_length",
                 |_self: Ref<bevy::math::primitives::CircularSegment>| {
-                    let output: f32 = ::bevy::math::primitives::CircularSegment::chord_length(
+                    let output: f32 = bevy::math::primitives::CircularSegment::chord_length(
                             &_self,
                         )
                         .into();
@@ -1857,7 +1870,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "apothem",
                 |_self: Ref<bevy::math::primitives::CircularSegment>| {
-                    let output: f32 = ::bevy::math::primitives::CircularSegment::apothem(
+                    let output: f32 = bevy::math::primitives::CircularSegment::apothem(
                             &_self,
                         )
                         .into();
@@ -1867,7 +1880,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "sagitta",
                 |_self: Ref<bevy::math::primitives::CircularSegment>| {
-                    let output: f32 = ::bevy::math::primitives::CircularSegment::sagitta(
+                    let output: f32 = bevy::math::primitives::CircularSegment::sagitta(
                             &_self,
                         )
                         .into();
@@ -1880,10 +1893,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::CircularSegment>,
                     other: Ref<bevy::math::primitives::CircularSegment>|
                 {
-                    let output: bool = ::bevy::math::primitives::CircularSegment::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::CircularSegment as std::cmp::PartialEq<
+                        bevy::math::primitives::CircularSegment,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -1892,7 +1904,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Ellipse>| {
-                    let output: Val<bevy::math::primitives::Ellipse> = ::bevy::math::primitives::Ellipse::clone(
+                    let output: Val<bevy::math::primitives::Ellipse> = <bevy::math::primitives::Ellipse as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -1905,10 +1917,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Ellipse>,
                     other: Ref<bevy::math::primitives::Ellipse>|
                 {
-                    let output: bool = ::bevy::math::primitives::Ellipse::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Ellipse as std::cmp::PartialEq<
+                        bevy::math::primitives::Ellipse,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -1916,7 +1927,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |half_width: f32, half_height: f32| {
-                    let output: Val<bevy::math::primitives::Ellipse> = ::bevy::math::primitives::Ellipse::new(
+                    let output: Val<bevy::math::primitives::Ellipse> = bevy::math::primitives::Ellipse::new(
                             half_width,
                             half_height,
                         )
@@ -1927,7 +1938,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "eccentricity",
                 |_self: Ref<bevy::math::primitives::Ellipse>| {
-                    let output: f32 = ::bevy::math::primitives::Ellipse::eccentricity(
+                    let output: f32 = bevy::math::primitives::Ellipse::eccentricity(
                             &_self,
                         )
                         .into();
@@ -1937,7 +1948,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "focal_length",
                 |_self: Ref<bevy::math::primitives::Ellipse>| {
-                    let output: f32 = ::bevy::math::primitives::Ellipse::focal_length(
+                    let output: f32 = bevy::math::primitives::Ellipse::focal_length(
                             &_self,
                         )
                         .into();
@@ -1947,9 +1958,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "semi_major",
                 |_self: Ref<bevy::math::primitives::Ellipse>| {
-                    let output: f32 = ::bevy::math::primitives::Ellipse::semi_major(
-                            &_self,
-                        )
+                    let output: f32 = bevy::math::primitives::Ellipse::semi_major(&_self)
                         .into();
                     output
                 },
@@ -1957,9 +1966,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "semi_minor",
                 |_self: Ref<bevy::math::primitives::Ellipse>| {
-                    let output: f32 = ::bevy::math::primitives::Ellipse::semi_minor(
-                            &_self,
-                        )
+                    let output: f32 = bevy::math::primitives::Ellipse::semi_minor(&_self)
                         .into();
                     output
                 },
@@ -1971,10 +1978,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Line2d>,
                     other: Ref<bevy::math::primitives::Line2d>|
                 {
-                    let output: bool = ::bevy::math::primitives::Line2d::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Line2d as std::cmp::PartialEq<
+                        bevy::math::primitives::Line2d,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -1982,7 +1988,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Line2d>| {
-                    let output: Val<bevy::math::primitives::Line2d> = ::bevy::math::primitives::Line2d::clone(
+                    let output: Val<bevy::math::primitives::Line2d> = <bevy::math::primitives::Line2d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -1996,10 +2002,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Plane2d>,
                     other: Ref<bevy::math::primitives::Plane2d>|
                 {
-                    let output: bool = ::bevy::math::primitives::Plane2d::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Plane2d as std::cmp::PartialEq<
+                        bevy::math::primitives::Plane2d,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2007,7 +2012,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Plane2d>| {
-                    let output: Val<bevy::math::primitives::Plane2d> = ::bevy::math::primitives::Plane2d::clone(
+                    let output: Val<bevy::math::primitives::Plane2d> = <bevy::math::primitives::Plane2d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2021,10 +2026,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Rectangle>,
                     other: Ref<bevy::math::primitives::Rectangle>|
                 {
-                    let output: bool = ::bevy::math::primitives::Rectangle::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Rectangle as std::cmp::PartialEq<
+                        bevy::math::primitives::Rectangle,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2032,7 +2036,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |width: f32, height: f32| {
-                    let output: Val<bevy::math::primitives::Rectangle> = ::bevy::math::primitives::Rectangle::new(
+                    let output: Val<bevy::math::primitives::Rectangle> = bevy::math::primitives::Rectangle::new(
                             width,
                             height,
                         )
@@ -2043,7 +2047,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_length",
                 |length: f32| {
-                    let output: Val<bevy::math::primitives::Rectangle> = ::bevy::math::primitives::Rectangle::from_length(
+                    let output: Val<bevy::math::primitives::Rectangle> = bevy::math::primitives::Rectangle::from_length(
                             length,
                         )
                         .into();
@@ -2053,7 +2057,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Rectangle>| {
-                    let output: Val<bevy::math::primitives::Rectangle> = ::bevy::math::primitives::Rectangle::clone(
+                    let output: Val<bevy::math::primitives::Rectangle> = <bevy::math::primitives::Rectangle as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2067,10 +2071,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::RegularPolygon>,
                     other: Ref<bevy::math::primitives::RegularPolygon>|
                 {
-                    let output: bool = ::bevy::math::primitives::RegularPolygon::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::RegularPolygon as std::cmp::PartialEq<
+                        bevy::math::primitives::RegularPolygon,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2078,7 +2081,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |circumradius: f32, sides: u32| {
-                    let output: Val<bevy::math::primitives::RegularPolygon> = ::bevy::math::primitives::RegularPolygon::new(
+                    let output: Val<bevy::math::primitives::RegularPolygon> = bevy::math::primitives::RegularPolygon::new(
                             circumradius,
                             sides,
                         )
@@ -2089,7 +2092,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "circumradius",
                 |_self: Ref<bevy::math::primitives::RegularPolygon>| {
-                    let output: f32 = ::bevy::math::primitives::RegularPolygon::circumradius(
+                    let output: f32 = bevy::math::primitives::RegularPolygon::circumradius(
                             &_self,
                         )
                         .into();
@@ -2099,7 +2102,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "inradius",
                 |_self: Ref<bevy::math::primitives::RegularPolygon>| {
-                    let output: f32 = ::bevy::math::primitives::RegularPolygon::inradius(
+                    let output: f32 = bevy::math::primitives::RegularPolygon::inradius(
                             &_self,
                         )
                         .into();
@@ -2109,7 +2112,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "side_length",
                 |_self: Ref<bevy::math::primitives::RegularPolygon>| {
-                    let output: f32 = ::bevy::math::primitives::RegularPolygon::side_length(
+                    let output: f32 = bevy::math::primitives::RegularPolygon::side_length(
                             &_self,
                         )
                         .into();
@@ -2119,7 +2122,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "internal_angle_degrees",
                 |_self: Ref<bevy::math::primitives::RegularPolygon>| {
-                    let output: f32 = ::bevy::math::primitives::RegularPolygon::internal_angle_degrees(
+                    let output: f32 = bevy::math::primitives::RegularPolygon::internal_angle_degrees(
                             &_self,
                         )
                         .into();
@@ -2129,7 +2132,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "internal_angle_radians",
                 |_self: Ref<bevy::math::primitives::RegularPolygon>| {
-                    let output: f32 = ::bevy::math::primitives::RegularPolygon::internal_angle_radians(
+                    let output: f32 = bevy::math::primitives::RegularPolygon::internal_angle_radians(
                             &_self,
                         )
                         .into();
@@ -2139,7 +2142,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "external_angle_degrees",
                 |_self: Ref<bevy::math::primitives::RegularPolygon>| {
-                    let output: f32 = ::bevy::math::primitives::RegularPolygon::external_angle_degrees(
+                    let output: f32 = bevy::math::primitives::RegularPolygon::external_angle_degrees(
                             &_self,
                         )
                         .into();
@@ -2149,7 +2152,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "external_angle_radians",
                 |_self: Ref<bevy::math::primitives::RegularPolygon>| {
-                    let output: f32 = ::bevy::math::primitives::RegularPolygon::external_angle_radians(
+                    let output: f32 = bevy::math::primitives::RegularPolygon::external_angle_radians(
                             &_self,
                         )
                         .into();
@@ -2159,7 +2162,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::RegularPolygon>| {
-                    let output: Val<bevy::math::primitives::RegularPolygon> = ::bevy::math::primitives::RegularPolygon::clone(
+                    let output: Val<bevy::math::primitives::RegularPolygon> = <bevy::math::primitives::RegularPolygon as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2173,10 +2176,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Rhombus>,
                     other: Ref<bevy::math::primitives::Rhombus>|
                 {
-                    let output: bool = ::bevy::math::primitives::Rhombus::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Rhombus as std::cmp::PartialEq<
+                        bevy::math::primitives::Rhombus,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2184,7 +2186,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Rhombus>| {
-                    let output: Val<bevy::math::primitives::Rhombus> = ::bevy::math::primitives::Rhombus::clone(
+                    let output: Val<bevy::math::primitives::Rhombus> = <bevy::math::primitives::Rhombus as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2194,7 +2196,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |horizontal_diagonal: f32, vertical_diagonal: f32| {
-                    let output: Val<bevy::math::primitives::Rhombus> = ::bevy::math::primitives::Rhombus::new(
+                    let output: Val<bevy::math::primitives::Rhombus> = bevy::math::primitives::Rhombus::new(
                             horizontal_diagonal,
                             vertical_diagonal,
                         )
@@ -2205,7 +2207,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_side",
                 |side: f32| {
-                    let output: Val<bevy::math::primitives::Rhombus> = ::bevy::math::primitives::Rhombus::from_side(
+                    let output: Val<bevy::math::primitives::Rhombus> = bevy::math::primitives::Rhombus::from_side(
                             side,
                         )
                         .into();
@@ -2215,7 +2217,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_inradius",
                 |inradius: f32| {
-                    let output: Val<bevy::math::primitives::Rhombus> = ::bevy::math::primitives::Rhombus::from_inradius(
+                    let output: Val<bevy::math::primitives::Rhombus> = bevy::math::primitives::Rhombus::from_inradius(
                             inradius,
                         )
                         .into();
@@ -2225,7 +2227,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "side",
                 |_self: Ref<bevy::math::primitives::Rhombus>| {
-                    let output: f32 = ::bevy::math::primitives::Rhombus::side(&_self)
+                    let output: f32 = bevy::math::primitives::Rhombus::side(&_self)
                         .into();
                     output
                 },
@@ -2233,7 +2235,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "circumradius",
                 |_self: Ref<bevy::math::primitives::Rhombus>| {
-                    let output: f32 = ::bevy::math::primitives::Rhombus::circumradius(
+                    let output: f32 = bevy::math::primitives::Rhombus::circumradius(
                             &_self,
                         )
                         .into();
@@ -2243,7 +2245,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "inradius",
                 |_self: Ref<bevy::math::primitives::Rhombus>| {
-                    let output: f32 = ::bevy::math::primitives::Rhombus::inradius(&_self)
+                    let output: f32 = bevy::math::primitives::Rhombus::inradius(&_self)
                         .into();
                     output
                 },
@@ -2255,10 +2257,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Segment2d>,
                     other: Ref<bevy::math::primitives::Segment2d>|
                 {
-                    let output: bool = ::bevy::math::primitives::Segment2d::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Segment2d as std::cmp::PartialEq<
+                        bevy::math::primitives::Segment2d,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2266,7 +2267,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Segment2d>| {
-                    let output: Val<bevy::math::primitives::Segment2d> = ::bevy::math::primitives::Segment2d::clone(
+                    let output: Val<bevy::math::primitives::Segment2d> = <bevy::math::primitives::Segment2d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2276,7 +2277,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |direction: Val<bevy::math::prelude::Dir2>, length: f32| {
-                    let output: Val<bevy::math::primitives::Segment2d> = ::bevy::math::primitives::Segment2d::new(
+                    let output: Val<bevy::math::primitives::Segment2d> = bevy::math::primitives::Segment2d::new(
                             direction.into_inner(),
                             length,
                         )
@@ -2291,10 +2292,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Triangle2d>,
                     other: Ref<bevy::math::primitives::Triangle2d>|
                 {
-                    let output: bool = ::bevy::math::primitives::Triangle2d::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Triangle2d as std::cmp::PartialEq<
+                        bevy::math::primitives::Triangle2d,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2302,7 +2302,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Triangle2d>| {
-                    let output: Val<bevy::math::primitives::Triangle2d> = ::bevy::math::primitives::Triangle2d::clone(
+                    let output: Val<bevy::math::primitives::Triangle2d> = <bevy::math::primitives::Triangle2d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2312,7 +2312,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_degenerate",
                 |_self: Ref<bevy::math::primitives::Triangle2d>| {
-                    let output: bool = ::bevy::math::primitives::Triangle2d::is_degenerate(
+                    let output: bool = bevy::math::primitives::Triangle2d::is_degenerate(
                             &_self,
                         )
                         .into();
@@ -2322,7 +2322,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_acute",
                 |_self: Ref<bevy::math::primitives::Triangle2d>| {
-                    let output: bool = ::bevy::math::primitives::Triangle2d::is_acute(
+                    let output: bool = bevy::math::primitives::Triangle2d::is_acute(
                             &_self,
                         )
                         .into();
@@ -2332,7 +2332,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_obtuse",
                 |_self: Ref<bevy::math::primitives::Triangle2d>| {
-                    let output: bool = ::bevy::math::primitives::Triangle2d::is_obtuse(
+                    let output: bool = bevy::math::primitives::Triangle2d::is_obtuse(
                             &_self,
                         )
                         .into();
@@ -2342,7 +2342,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "reverse",
                 |mut _self: Mut<bevy::math::primitives::Triangle2d>| {
-                    let output: () = ::bevy::math::primitives::Triangle2d::reverse(
+                    let output: () = bevy::math::primitives::Triangle2d::reverse(
                             &mut _self,
                         )
                         .into();
@@ -2352,7 +2352,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "reversed",
                 |_self: Val<bevy::math::primitives::Triangle2d>| {
-                    let output: Val<bevy::math::primitives::Triangle2d> = ::bevy::math::primitives::Triangle2d::reversed(
+                    let output: Val<bevy::math::primitives::Triangle2d> = bevy::math::primitives::Triangle2d::reversed(
                             _self.into_inner(),
                         )
                         .into();
@@ -2363,7 +2363,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "bounding_sphere",
                 |_self: Ref<bevy::math::bounding::Aabb3d>| {
-                    let output: Val<bevy::math::bounding::BoundingSphere> = ::bevy::math::bounding::Aabb3d::bounding_sphere(
+                    let output: Val<bevy::math::bounding::BoundingSphere> = bevy::math::bounding::Aabb3d::bounding_sphere(
                             &_self,
                         )
                         .into();
@@ -2373,7 +2373,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::bounding::Aabb3d>| {
-                    let output: Val<bevy::math::bounding::Aabb3d> = ::bevy::math::bounding::Aabb3d::clone(
+                    let output: Val<bevy::math::bounding::Aabb3d> = <bevy::math::bounding::Aabb3d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2384,7 +2384,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "radius",
                 |_self: Ref<bevy::math::bounding::BoundingSphere>| {
-                    let output: f32 = ::bevy::math::bounding::BoundingSphere::radius(
+                    let output: f32 = bevy::math::bounding::BoundingSphere::radius(
                             &_self,
                         )
                         .into();
@@ -2394,7 +2394,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "aabb_3d",
                 |_self: Ref<bevy::math::bounding::BoundingSphere>| {
-                    let output: Val<bevy::math::bounding::Aabb3d> = ::bevy::math::bounding::BoundingSphere::aabb_3d(
+                    let output: Val<bevy::math::bounding::Aabb3d> = bevy::math::bounding::BoundingSphere::aabb_3d(
                             &_self,
                         )
                         .into();
@@ -2404,7 +2404,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::bounding::BoundingSphere>| {
-                    let output: Val<bevy::math::bounding::BoundingSphere> = ::bevy::math::bounding::BoundingSphere::clone(
+                    let output: Val<bevy::math::bounding::BoundingSphere> = <bevy::math::bounding::BoundingSphere as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2418,10 +2418,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Sphere>,
                     other: Ref<bevy::math::primitives::Sphere>|
                 {
-                    let output: bool = ::bevy::math::primitives::Sphere::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Sphere as std::cmp::PartialEq<
+                        bevy::math::primitives::Sphere,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2429,7 +2428,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |radius: f32| {
-                    let output: Val<bevy::math::primitives::Sphere> = ::bevy::math::primitives::Sphere::new(
+                    let output: Val<bevy::math::primitives::Sphere> = bevy::math::primitives::Sphere::new(
                             radius,
                         )
                         .into();
@@ -2439,7 +2438,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "diameter",
                 |_self: Ref<bevy::math::primitives::Sphere>| {
-                    let output: f32 = ::bevy::math::primitives::Sphere::diameter(&_self)
+                    let output: f32 = bevy::math::primitives::Sphere::diameter(&_self)
                         .into();
                     output
                 },
@@ -2447,7 +2446,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Sphere>| {
-                    let output: Val<bevy::math::primitives::Sphere> = ::bevy::math::primitives::Sphere::clone(
+                    let output: Val<bevy::math::primitives::Sphere> = <bevy::math::primitives::Sphere as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2458,7 +2457,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |x_length: f32, y_length: f32, z_length: f32| {
-                    let output: Val<bevy::math::primitives::Cuboid> = ::bevy::math::primitives::Cuboid::new(
+                    let output: Val<bevy::math::primitives::Cuboid> = bevy::math::primitives::Cuboid::new(
                             x_length,
                             y_length,
                             z_length,
@@ -2470,7 +2469,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_length",
                 |length: f32| {
-                    let output: Val<bevy::math::primitives::Cuboid> = ::bevy::math::primitives::Cuboid::from_length(
+                    let output: Val<bevy::math::primitives::Cuboid> = bevy::math::primitives::Cuboid::from_length(
                             length,
                         )
                         .into();
@@ -2483,10 +2482,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Cuboid>,
                     other: Ref<bevy::math::primitives::Cuboid>|
                 {
-                    let output: bool = ::bevy::math::primitives::Cuboid::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Cuboid as std::cmp::PartialEq<
+                        bevy::math::primitives::Cuboid,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2494,7 +2492,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Cuboid>| {
-                    let output: Val<bevy::math::primitives::Cuboid> = ::bevy::math::primitives::Cuboid::clone(
+                    let output: Val<bevy::math::primitives::Cuboid> = <bevy::math::primitives::Cuboid as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2505,7 +2503,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |radius: f32, height: f32| {
-                    let output: Val<bevy::math::primitives::Cylinder> = ::bevy::math::primitives::Cylinder::new(
+                    let output: Val<bevy::math::primitives::Cylinder> = bevy::math::primitives::Cylinder::new(
                             radius,
                             height,
                         )
@@ -2516,7 +2514,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "base",
                 |_self: Ref<bevy::math::primitives::Cylinder>| {
-                    let output: Val<bevy::math::primitives::Circle> = ::bevy::math::primitives::Cylinder::base(
+                    let output: Val<bevy::math::primitives::Circle> = bevy::math::primitives::Cylinder::base(
                             &_self,
                         )
                         .into();
@@ -2526,7 +2524,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "lateral_area",
                 |_self: Ref<bevy::math::primitives::Cylinder>| {
-                    let output: f32 = ::bevy::math::primitives::Cylinder::lateral_area(
+                    let output: f32 = bevy::math::primitives::Cylinder::lateral_area(
                             &_self,
                         )
                         .into();
@@ -2536,9 +2534,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "base_area",
                 |_self: Ref<bevy::math::primitives::Cylinder>| {
-                    let output: f32 = ::bevy::math::primitives::Cylinder::base_area(
-                            &_self,
-                        )
+                    let output: f32 = bevy::math::primitives::Cylinder::base_area(&_self)
                         .into();
                     output
                 },
@@ -2546,7 +2542,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Cylinder>| {
-                    let output: Val<bevy::math::primitives::Cylinder> = ::bevy::math::primitives::Cylinder::clone(
+                    let output: Val<bevy::math::primitives::Cylinder> = <bevy::math::primitives::Cylinder as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2559,10 +2555,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Cylinder>,
                     other: Ref<bevy::math::primitives::Cylinder>|
                 {
-                    let output: bool = ::bevy::math::primitives::Cylinder::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Cylinder as std::cmp::PartialEq<
+                        bevy::math::primitives::Cylinder,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2571,7 +2566,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |radius: f32, length: f32| {
-                    let output: Val<bevy::math::primitives::Capsule3d> = ::bevy::math::primitives::Capsule3d::new(
+                    let output: Val<bevy::math::primitives::Capsule3d> = bevy::math::primitives::Capsule3d::new(
                             radius,
                             length,
                         )
@@ -2582,7 +2577,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "to_cylinder",
                 |_self: Ref<bevy::math::primitives::Capsule3d>| {
-                    let output: Val<bevy::math::primitives::Cylinder> = ::bevy::math::primitives::Capsule3d::to_cylinder(
+                    let output: Val<bevy::math::primitives::Cylinder> = bevy::math::primitives::Capsule3d::to_cylinder(
                             &_self,
                         )
                         .into();
@@ -2595,10 +2590,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Capsule3d>,
                     other: Ref<bevy::math::primitives::Capsule3d>|
                 {
-                    let output: bool = ::bevy::math::primitives::Capsule3d::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Capsule3d as std::cmp::PartialEq<
+                        bevy::math::primitives::Capsule3d,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2606,7 +2600,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Capsule3d>| {
-                    let output: Val<bevy::math::primitives::Capsule3d> = ::bevy::math::primitives::Capsule3d::clone(
+                    let output: Val<bevy::math::primitives::Capsule3d> = <bevy::math::primitives::Capsule3d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2617,7 +2611,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |radius: f32, height: f32| {
-                    let output: Val<bevy::math::primitives::Cone> = ::bevy::math::primitives::Cone::new(
+                    let output: Val<bevy::math::primitives::Cone> = bevy::math::primitives::Cone::new(
                             radius,
                             height,
                         )
@@ -2628,7 +2622,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "base",
                 |_self: Ref<bevy::math::primitives::Cone>| {
-                    let output: Val<bevy::math::primitives::Circle> = ::bevy::math::primitives::Cone::base(
+                    let output: Val<bevy::math::primitives::Circle> = bevy::math::primitives::Cone::base(
                             &_self,
                         )
                         .into();
@@ -2638,9 +2632,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "slant_height",
                 |_self: Ref<bevy::math::primitives::Cone>| {
-                    let output: f32 = ::bevy::math::primitives::Cone::slant_height(
-                            &_self,
-                        )
+                    let output: f32 = bevy::math::primitives::Cone::slant_height(&_self)
                         .into();
                     output
                 },
@@ -2648,9 +2640,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "lateral_area",
                 |_self: Ref<bevy::math::primitives::Cone>| {
-                    let output: f32 = ::bevy::math::primitives::Cone::lateral_area(
-                            &_self,
-                        )
+                    let output: f32 = bevy::math::primitives::Cone::lateral_area(&_self)
                         .into();
                     output
                 },
@@ -2658,7 +2648,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "base_area",
                 |_self: Ref<bevy::math::primitives::Cone>| {
-                    let output: f32 = ::bevy::math::primitives::Cone::base_area(&_self)
+                    let output: f32 = bevy::math::primitives::Cone::base_area(&_self)
                         .into();
                     output
                 },
@@ -2666,7 +2656,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Cone>| {
-                    let output: Val<bevy::math::primitives::Cone> = ::bevy::math::primitives::Cone::clone(
+                    let output: Val<bevy::math::primitives::Cone> = <bevy::math::primitives::Cone as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2679,7 +2669,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Cone>,
                     other: Ref<bevy::math::primitives::Cone>|
                 {
-                    let output: bool = ::bevy::math::primitives::Cone::eq(&_self, &other)
+                    let output: bool = <bevy::math::primitives::Cone as std::cmp::PartialEq<
+                        bevy::math::primitives::Cone,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2688,7 +2680,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::ConicalFrustum>| {
-                    let output: Val<bevy::math::primitives::ConicalFrustum> = ::bevy::math::primitives::ConicalFrustum::clone(
+                    let output: Val<bevy::math::primitives::ConicalFrustum> = <bevy::math::primitives::ConicalFrustum as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2701,10 +2693,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::ConicalFrustum>,
                     other: Ref<bevy::math::primitives::ConicalFrustum>|
                 {
-                    let output: bool = ::bevy::math::primitives::ConicalFrustum::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::ConicalFrustum as std::cmp::PartialEq<
+                        bevy::math::primitives::ConicalFrustum,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2713,7 +2704,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::InfinitePlane3d>| {
-                    let output: Val<bevy::math::primitives::InfinitePlane3d> = ::bevy::math::primitives::InfinitePlane3d::clone(
+                    let output: Val<bevy::math::primitives::InfinitePlane3d> = <bevy::math::primitives::InfinitePlane3d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2726,10 +2717,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::InfinitePlane3d>,
                     other: Ref<bevy::math::primitives::InfinitePlane3d>|
                 {
-                    let output: bool = ::bevy::math::primitives::InfinitePlane3d::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::InfinitePlane3d as std::cmp::PartialEq<
+                        bevy::math::primitives::InfinitePlane3d,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2741,10 +2731,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Line3d>,
                     other: Ref<bevy::math::primitives::Line3d>|
                 {
-                    let output: bool = ::bevy::math::primitives::Line3d::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Line3d as std::cmp::PartialEq<
+                        bevy::math::primitives::Line3d,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2752,7 +2741,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Line3d>| {
-                    let output: Val<bevy::math::primitives::Line3d> = ::bevy::math::primitives::Line3d::clone(
+                    let output: Val<bevy::math::primitives::Line3d> = <bevy::math::primitives::Line3d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2763,7 +2752,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |direction: Val<bevy::math::prelude::Dir3>, length: f32| {
-                    let output: Val<bevy::math::primitives::Segment3d> = ::bevy::math::primitives::Segment3d::new(
+                    let output: Val<bevy::math::primitives::Segment3d> = bevy::math::primitives::Segment3d::new(
                             direction.into_inner(),
                             length,
                         )
@@ -2777,10 +2766,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Segment3d>,
                     other: Ref<bevy::math::primitives::Segment3d>|
                 {
-                    let output: bool = ::bevy::math::primitives::Segment3d::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Segment3d as std::cmp::PartialEq<
+                        bevy::math::primitives::Segment3d,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2788,7 +2776,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Segment3d>| {
-                    let output: Val<bevy::math::primitives::Segment3d> = ::bevy::math::primitives::Segment3d::clone(
+                    let output: Val<bevy::math::primitives::Segment3d> = <bevy::math::primitives::Segment3d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2799,7 +2787,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Torus>| {
-                    let output: Val<bevy::math::primitives::Torus> = ::bevy::math::primitives::Torus::clone(
+                    let output: Val<bevy::math::primitives::Torus> = <bevy::math::primitives::Torus as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2809,7 +2797,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "new",
                 |inner_radius: f32, outer_radius: f32| {
-                    let output: Val<bevy::math::primitives::Torus> = ::bevy::math::primitives::Torus::new(
+                    let output: Val<bevy::math::primitives::Torus> = bevy::math::primitives::Torus::new(
                             inner_radius,
                             outer_radius,
                         )
@@ -2820,9 +2808,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "inner_radius",
                 |_self: Ref<bevy::math::primitives::Torus>| {
-                    let output: f32 = ::bevy::math::primitives::Torus::inner_radius(
-                            &_self,
-                        )
+                    let output: f32 = bevy::math::primitives::Torus::inner_radius(&_self)
                         .into();
                     output
                 },
@@ -2830,9 +2816,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "outer_radius",
                 |_self: Ref<bevy::math::primitives::Torus>| {
-                    let output: f32 = ::bevy::math::primitives::Torus::outer_radius(
-                            &_self,
-                        )
+                    let output: f32 = bevy::math::primitives::Torus::outer_radius(&_self)
                         .into();
                     output
                 },
@@ -2843,10 +2827,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Torus>,
                     other: Ref<bevy::math::primitives::Torus>|
                 {
-                    let output: bool = ::bevy::math::primitives::Torus::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Torus as std::cmp::PartialEq<
+                        bevy::math::primitives::Torus,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2855,7 +2838,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_degenerate",
                 |_self: Ref<bevy::math::primitives::Triangle3d>| {
-                    let output: bool = ::bevy::math::primitives::Triangle3d::is_degenerate(
+                    let output: bool = bevy::math::primitives::Triangle3d::is_degenerate(
                             &_self,
                         )
                         .into();
@@ -2865,7 +2848,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_acute",
                 |_self: Ref<bevy::math::primitives::Triangle3d>| {
-                    let output: bool = ::bevy::math::primitives::Triangle3d::is_acute(
+                    let output: bool = bevy::math::primitives::Triangle3d::is_acute(
                             &_self,
                         )
                         .into();
@@ -2875,7 +2858,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_obtuse",
                 |_self: Ref<bevy::math::primitives::Triangle3d>| {
-                    let output: bool = ::bevy::math::primitives::Triangle3d::is_obtuse(
+                    let output: bool = bevy::math::primitives::Triangle3d::is_obtuse(
                             &_self,
                         )
                         .into();
@@ -2885,7 +2868,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "reverse",
                 |mut _self: Mut<bevy::math::primitives::Triangle3d>| {
-                    let output: () = ::bevy::math::primitives::Triangle3d::reverse(
+                    let output: () = bevy::math::primitives::Triangle3d::reverse(
                             &mut _self,
                         )
                         .into();
@@ -2895,7 +2878,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "reversed",
                 |_self: Val<bevy::math::primitives::Triangle3d>| {
-                    let output: Val<bevy::math::primitives::Triangle3d> = ::bevy::math::primitives::Triangle3d::reversed(
+                    let output: Val<bevy::math::primitives::Triangle3d> = bevy::math::primitives::Triangle3d::reversed(
                             _self.into_inner(),
                         )
                         .into();
@@ -2908,10 +2891,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Triangle3d>,
                     other: Ref<bevy::math::primitives::Triangle3d>|
                 {
-                    let output: bool = ::bevy::math::primitives::Triangle3d::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Triangle3d as std::cmp::PartialEq<
+                        bevy::math::primitives::Triangle3d,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2919,7 +2901,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Triangle3d>| {
-                    let output: Val<bevy::math::primitives::Triangle3d> = ::bevy::math::primitives::Triangle3d::clone(
+                    let output: Val<bevy::math::primitives::Triangle3d> = <bevy::math::primitives::Triangle3d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2930,7 +2912,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_ray",
                 |ray: Val<bevy::math::Ray2d>, max: f32| {
-                    let output: Val<bevy::math::bounding::RayCast2d> = ::bevy::math::bounding::RayCast2d::from_ray(
+                    let output: Val<bevy::math::bounding::RayCast2d> = bevy::math::bounding::RayCast2d::from_ray(
                             ray.into_inner(),
                             max,
                         )
@@ -2944,7 +2926,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::bounding::RayCast2d>,
                     aabb: Ref<bevy::math::bounding::Aabb2d>|
                 {
-                    let output: std::option::Option<f32> = ::bevy::math::bounding::RayCast2d::aabb_intersection_at(
+                    let output: std::option::Option<f32> = bevy::math::bounding::RayCast2d::aabb_intersection_at(
                             &_self,
                             &aabb,
                         )
@@ -2958,7 +2940,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::bounding::RayCast2d>,
                     circle: Ref<bevy::math::bounding::BoundingCircle>|
                 {
-                    let output: std::option::Option<f32> = ::bevy::math::bounding::RayCast2d::circle_intersection_at(
+                    let output: std::option::Option<f32> = bevy::math::bounding::RayCast2d::circle_intersection_at(
                             &_self,
                             &circle,
                         )
@@ -2969,7 +2951,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::bounding::RayCast2d>| {
-                    let output: Val<bevy::math::bounding::RayCast2d> = ::bevy::math::bounding::RayCast2d::clone(
+                    let output: Val<bevy::math::bounding::RayCast2d> = <bevy::math::bounding::RayCast2d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2980,7 +2962,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::bounding::AabbCast2d>| {
-                    let output: Val<bevy::math::bounding::AabbCast2d> = ::bevy::math::bounding::AabbCast2d::clone(
+                    let output: Val<bevy::math::bounding::AabbCast2d> = <bevy::math::bounding::AabbCast2d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2994,7 +2976,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     ray: Val<bevy::math::Ray2d>,
                     max: f32|
                 {
-                    let output: Val<bevy::math::bounding::AabbCast2d> = ::bevy::math::bounding::AabbCast2d::from_ray(
+                    let output: Val<bevy::math::bounding::AabbCast2d> = bevy::math::bounding::AabbCast2d::from_ray(
                             aabb.into_inner(),
                             ray.into_inner(),
                             max,
@@ -3009,7 +2991,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::bounding::AabbCast2d>,
                     aabb: Val<bevy::math::bounding::Aabb2d>|
                 {
-                    let output: std::option::Option<f32> = ::bevy::math::bounding::AabbCast2d::aabb_collision_at(
+                    let output: std::option::Option<f32> = bevy::math::bounding::AabbCast2d::aabb_collision_at(
                             &_self,
                             aabb.into_inner(),
                         )
@@ -3025,7 +3007,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     ray: Val<bevy::math::Ray2d>,
                     max: f32|
                 {
-                    let output: Val<bevy::math::bounding::BoundingCircleCast> = ::bevy::math::bounding::BoundingCircleCast::from_ray(
+                    let output: Val<bevy::math::bounding::BoundingCircleCast> = bevy::math::bounding::BoundingCircleCast::from_ray(
                             circle.into_inner(),
                             ray.into_inner(),
                             max,
@@ -3040,7 +3022,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::bounding::BoundingCircleCast>,
                     circle: Val<bevy::math::bounding::BoundingCircle>|
                 {
-                    let output: std::option::Option<f32> = ::bevy::math::bounding::BoundingCircleCast::circle_collision_at(
+                    let output: std::option::Option<f32> = bevy::math::bounding::BoundingCircleCast::circle_collision_at(
                             &_self,
                             circle.into_inner(),
                         )
@@ -3051,7 +3033,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::bounding::BoundingCircleCast>| {
-                    let output: Val<bevy::math::bounding::BoundingCircleCast> = ::bevy::math::bounding::BoundingCircleCast::clone(
+                    let output: Val<bevy::math::bounding::BoundingCircleCast> = <bevy::math::bounding::BoundingCircleCast as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -3062,7 +3044,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "from_ray",
                 |ray: Val<bevy::math::Ray3d>, max: f32| {
-                    let output: Val<bevy::math::bounding::RayCast3d> = ::bevy::math::bounding::RayCast3d::from_ray(
+                    let output: Val<bevy::math::bounding::RayCast3d> = bevy::math::bounding::RayCast3d::from_ray(
                             ray.into_inner(),
                             max,
                         )
@@ -3076,7 +3058,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::bounding::RayCast3d>,
                     aabb: Ref<bevy::math::bounding::Aabb3d>|
                 {
-                    let output: std::option::Option<f32> = ::bevy::math::bounding::RayCast3d::aabb_intersection_at(
+                    let output: std::option::Option<f32> = bevy::math::bounding::RayCast3d::aabb_intersection_at(
                             &_self,
                             &aabb,
                         )
@@ -3090,7 +3072,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::bounding::RayCast3d>,
                     sphere: Ref<bevy::math::bounding::BoundingSphere>|
                 {
-                    let output: std::option::Option<f32> = ::bevy::math::bounding::RayCast3d::sphere_intersection_at(
+                    let output: std::option::Option<f32> = bevy::math::bounding::RayCast3d::sphere_intersection_at(
                             &_self,
                             &sphere,
                         )
@@ -3101,7 +3083,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::bounding::RayCast3d>| {
-                    let output: Val<bevy::math::bounding::RayCast3d> = ::bevy::math::bounding::RayCast3d::clone(
+                    let output: Val<bevy::math::bounding::RayCast3d> = <bevy::math::bounding::RayCast3d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -3116,7 +3098,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     ray: Val<bevy::math::Ray3d>,
                     max: f32|
                 {
-                    let output: Val<bevy::math::bounding::AabbCast3d> = ::bevy::math::bounding::AabbCast3d::from_ray(
+                    let output: Val<bevy::math::bounding::AabbCast3d> = bevy::math::bounding::AabbCast3d::from_ray(
                             aabb.into_inner(),
                             ray.into_inner(),
                             max,
@@ -3131,7 +3113,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::bounding::AabbCast3d>,
                     aabb: Val<bevy::math::bounding::Aabb3d>|
                 {
-                    let output: std::option::Option<f32> = ::bevy::math::bounding::AabbCast3d::aabb_collision_at(
+                    let output: std::option::Option<f32> = bevy::math::bounding::AabbCast3d::aabb_collision_at(
                             &_self,
                             aabb.into_inner(),
                         )
@@ -3142,7 +3124,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::bounding::AabbCast3d>| {
-                    let output: Val<bevy::math::bounding::AabbCast3d> = ::bevy::math::bounding::AabbCast3d::clone(
+                    let output: Val<bevy::math::bounding::AabbCast3d> = <bevy::math::bounding::AabbCast3d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -3153,7 +3135,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::bounding::BoundingSphereCast>| {
-                    let output: Val<bevy::math::bounding::BoundingSphereCast> = ::bevy::math::bounding::BoundingSphereCast::clone(
+                    let output: Val<bevy::math::bounding::BoundingSphereCast> = <bevy::math::bounding::BoundingSphereCast as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -3167,7 +3149,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     ray: Val<bevy::math::Ray3d>,
                     max: f32|
                 {
-                    let output: Val<bevy::math::bounding::BoundingSphereCast> = ::bevy::math::bounding::BoundingSphereCast::from_ray(
+                    let output: Val<bevy::math::bounding::BoundingSphereCast> = bevy::math::bounding::BoundingSphereCast::from_ray(
                             sphere.into_inner(),
                             ray.into_inner(),
                             max,
@@ -3182,7 +3164,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::bounding::BoundingSphereCast>,
                     sphere: Val<bevy::math::bounding::BoundingSphere>|
                 {
-                    let output: std::option::Option<f32> = ::bevy::math::bounding::BoundingSphereCast::sphere_collision_at(
+                    let output: std::option::Option<f32> = bevy::math::bounding::BoundingSphereCast::sphere_collision_at(
                             &_self,
                             sphere.into_inner(),
                         )
@@ -3194,7 +3176,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::curve::interval::Interval>| {
-                    let output: Val<bevy::math::curve::interval::Interval> = ::bevy::math::curve::interval::Interval::clone(
+                    let output: Val<bevy::math::curve::interval::Interval> = <bevy::math::curve::interval::Interval as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -3204,7 +3186,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "start",
                 |_self: Val<bevy::math::curve::interval::Interval>| {
-                    let output: f32 = ::bevy::math::curve::interval::Interval::start(
+                    let output: f32 = bevy::math::curve::interval::Interval::start(
                             _self.into_inner(),
                         )
                         .into();
@@ -3214,7 +3196,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "end",
                 |_self: Val<bevy::math::curve::interval::Interval>| {
-                    let output: f32 = ::bevy::math::curve::interval::Interval::end(
+                    let output: f32 = bevy::math::curve::interval::Interval::end(
                             _self.into_inner(),
                         )
                         .into();
@@ -3224,7 +3206,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "length",
                 |_self: Val<bevy::math::curve::interval::Interval>| {
-                    let output: f32 = ::bevy::math::curve::interval::Interval::length(
+                    let output: f32 = bevy::math::curve::interval::Interval::length(
                             _self.into_inner(),
                         )
                         .into();
@@ -3234,7 +3216,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "is_bounded",
                 |_self: Val<bevy::math::curve::interval::Interval>| {
-                    let output: bool = ::bevy::math::curve::interval::Interval::is_bounded(
+                    let output: bool = bevy::math::curve::interval::Interval::is_bounded(
                             _self.into_inner(),
                         )
                         .into();
@@ -3244,7 +3226,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "has_finite_start",
                 |_self: Val<bevy::math::curve::interval::Interval>| {
-                    let output: bool = ::bevy::math::curve::interval::Interval::has_finite_start(
+                    let output: bool = bevy::math::curve::interval::Interval::has_finite_start(
                             _self.into_inner(),
                         )
                         .into();
@@ -3254,7 +3236,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "has_finite_end",
                 |_self: Val<bevy::math::curve::interval::Interval>| {
-                    let output: bool = ::bevy::math::curve::interval::Interval::has_finite_end(
+                    let output: bool = bevy::math::curve::interval::Interval::has_finite_end(
                             _self.into_inner(),
                         )
                         .into();
@@ -3264,7 +3246,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "contains",
                 |_self: Val<bevy::math::curve::interval::Interval>, item: f32| {
-                    let output: bool = ::bevy::math::curve::interval::Interval::contains(
+                    let output: bool = bevy::math::curve::interval::Interval::contains(
                             _self.into_inner(),
                             item,
                         )
@@ -3278,7 +3260,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Val<bevy::math::curve::interval::Interval>,
                     other: Val<bevy::math::curve::interval::Interval>|
                 {
-                    let output: bool = ::bevy::math::curve::interval::Interval::contains_interval(
+                    let output: bool = bevy::math::curve::interval::Interval::contains_interval(
                             _self.into_inner(),
                             other.into_inner(),
                         )
@@ -3289,7 +3271,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clamp",
                 |_self: Val<bevy::math::curve::interval::Interval>, value: f32| {
-                    let output: f32 = ::bevy::math::curve::interval::Interval::clamp(
+                    let output: f32 = bevy::math::curve::interval::Interval::clamp(
                             _self.into_inner(),
                             value,
                         )
@@ -3303,10 +3285,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::curve::interval::Interval>,
                     other: Ref<bevy::math::curve::interval::Interval>|
                 {
-                    let output: bool = ::bevy::math::curve::interval::Interval::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::curve::interval::Interval as std::cmp::PartialEq<
+                        bevy::math::curve::interval::Interval,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -3315,7 +3296,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::FloatOrd>| {
-                    let output: Val<bevy::math::FloatOrd> = ::bevy::math::FloatOrd::clone(
+                    let output: Val<bevy::math::FloatOrd> = <bevy::math::FloatOrd as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -3325,35 +3306,47 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "lt",
                 |_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>| {
-                    let output: bool = ::bevy::math::FloatOrd::lt(&_self, &other).into();
+                    let output: bool = <bevy::math::FloatOrd as std::cmp::PartialOrd<
+                        bevy::math::FloatOrd,
+                    >>::lt(&_self, &other)
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "le",
                 |_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>| {
-                    let output: bool = ::bevy::math::FloatOrd::le(&_self, &other).into();
+                    let output: bool = <bevy::math::FloatOrd as std::cmp::PartialOrd<
+                        bevy::math::FloatOrd,
+                    >>::le(&_self, &other)
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "gt",
                 |_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>| {
-                    let output: bool = ::bevy::math::FloatOrd::gt(&_self, &other).into();
+                    let output: bool = <bevy::math::FloatOrd as std::cmp::PartialOrd<
+                        bevy::math::FloatOrd,
+                    >>::gt(&_self, &other)
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "ge",
                 |_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>| {
-                    let output: bool = ::bevy::math::FloatOrd::ge(&_self, &other).into();
+                    let output: bool = <bevy::math::FloatOrd as std::cmp::PartialOrd<
+                        bevy::math::FloatOrd,
+                    >>::ge(&_self, &other)
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "neg",
                 |_self: Val<bevy::math::FloatOrd>| {
-                    let output: Val<bevy::math::FloatOrd> = ::bevy::math::FloatOrd::neg(
+                    let output: Val<bevy::math::FloatOrd> = <bevy::math::FloatOrd as std::ops::Neg>::neg(
                             _self.into_inner(),
                         )
                         .into();
@@ -3363,7 +3356,10 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "eq",
                 |_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>| {
-                    let output: bool = ::bevy::math::FloatOrd::eq(&_self, &other).into();
+                    let output: bool = <bevy::math::FloatOrd as std::cmp::PartialEq<
+                        bevy::math::FloatOrd,
+                    >>::eq(&_self, &other)
+                        .into();
                     output
                 },
             );
@@ -3371,7 +3367,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Plane3d>| {
-                    let output: Val<bevy::math::primitives::Plane3d> = ::bevy::math::primitives::Plane3d::clone(
+                    let output: Val<bevy::math::primitives::Plane3d> = <bevy::math::primitives::Plane3d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -3384,10 +3380,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Plane3d>,
                     other: Ref<bevy::math::primitives::Plane3d>|
                 {
-                    let output: bool = ::bevy::math::primitives::Plane3d::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Plane3d as std::cmp::PartialEq<
+                        bevy::math::primitives::Plane3d,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -3396,7 +3391,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "signed_volume",
                 |_self: Ref<bevy::math::primitives::Tetrahedron>| {
-                    let output: f32 = ::bevy::math::primitives::Tetrahedron::signed_volume(
+                    let output: f32 = bevy::math::primitives::Tetrahedron::signed_volume(
                             &_self,
                         )
                         .into();
@@ -3409,10 +3404,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::primitives::Tetrahedron>,
                     other: Ref<bevy::math::primitives::Tetrahedron>|
                 {
-                    let output: bool = ::bevy::math::primitives::Tetrahedron::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::primitives::Tetrahedron as std::cmp::PartialEq<
+                        bevy::math::primitives::Tetrahedron,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -3420,7 +3414,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Tetrahedron>| {
-                    let output: Val<bevy::math::primitives::Tetrahedron> = ::bevy::math::primitives::Tetrahedron::clone(
+                    let output: Val<bevy::math::primitives::Tetrahedron> = <bevy::math::primitives::Tetrahedron as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -3431,7 +3425,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::math::curve::easing::EaseFunction>| {
-                    let output: Val<bevy::math::curve::easing::EaseFunction> = ::bevy::math::curve::easing::EaseFunction::clone(
+                    let output: Val<bevy::math::curve::easing::EaseFunction> = <bevy::math::curve::easing::EaseFunction as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -3444,10 +3438,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     _self: Ref<bevy::math::curve::easing::EaseFunction>,
                     other: Ref<bevy::math::curve::easing::EaseFunction>|
                 {
-                    let output: bool = ::bevy::math::curve::easing::EaseFunction::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::math::curve::easing::EaseFunction as std::cmp::PartialEq<
+                        bevy::math::curve::easing::EaseFunction,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
