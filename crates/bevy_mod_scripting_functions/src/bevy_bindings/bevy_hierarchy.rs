@@ -22,7 +22,7 @@ impl ::bevy::app::Plugin for BevyHierarchyScriptingPlugin {
                     a_index: usize,
                     b_index: usize|
                 {
-                    let output: () = ::bevy::hierarchy::prelude::Children::swap(
+                    let output: () = bevy::hierarchy::prelude::Children::swap(
                             &mut _self,
                             a_index,
                             b_index,
@@ -35,7 +35,7 @@ impl ::bevy::app::Plugin for BevyHierarchyScriptingPlugin {
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::hierarchy::prelude::Parent>| {
-                    let output: () = ::bevy::hierarchy::prelude::Parent::assert_receiver_is_total_eq(
+                    let output: () = <bevy::hierarchy::prelude::Parent as std::cmp::Eq>::assert_receiver_is_total_eq(
                             &_self,
                         )
                         .into();
@@ -48,10 +48,9 @@ impl ::bevy::app::Plugin for BevyHierarchyScriptingPlugin {
                     _self: Ref<bevy::hierarchy::prelude::Parent>,
                     other: Ref<bevy::hierarchy::prelude::Parent>|
                 {
-                    let output: bool = ::bevy::hierarchy::prelude::Parent::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::hierarchy::prelude::Parent as std::cmp::PartialEq<
+                        bevy::hierarchy::prelude::Parent,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -63,10 +62,9 @@ impl ::bevy::app::Plugin for BevyHierarchyScriptingPlugin {
                     _self: Ref<bevy::hierarchy::HierarchyEvent>,
                     other: Ref<bevy::hierarchy::HierarchyEvent>|
                 {
-                    let output: bool = ::bevy::hierarchy::HierarchyEvent::eq(
-                            &_self,
-                            &other,
-                        )
+                    let output: bool = <bevy::hierarchy::HierarchyEvent as std::cmp::PartialEq<
+                        bevy::hierarchy::HierarchyEvent,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -74,7 +72,7 @@ impl ::bevy::app::Plugin for BevyHierarchyScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::hierarchy::HierarchyEvent>| {
-                    let output: Val<bevy::hierarchy::HierarchyEvent> = ::bevy::hierarchy::HierarchyEvent::clone(
+                    let output: Val<bevy::hierarchy::HierarchyEvent> = <bevy::hierarchy::HierarchyEvent as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -84,7 +82,7 @@ impl ::bevy::app::Plugin for BevyHierarchyScriptingPlugin {
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::hierarchy::HierarchyEvent>| {
-                    let output: () = ::bevy::hierarchy::HierarchyEvent::assert_receiver_is_total_eq(
+                    let output: () = <bevy::hierarchy::HierarchyEvent as std::cmp::Eq>::assert_receiver_is_total_eq(
                             &_self,
                         )
                         .into();
