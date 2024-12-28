@@ -18,25 +18,23 @@ impl ::bevy::app::Plugin for {{ "ScriptingPlugin" | prefix_cratename | convert_c
             {%- for arg in function.args -%}
                 {%- if arg.proxy_ty is matching("Mut.*")-%}
                 mut {% endif -%}
-                {%- if arg.ident != "self" -%}
-                    {{- arg.ident -}}
-                {%- else -%}
-                    _{{- arg.ident -}}
-                {%- endif -%} 
+                {{- arg.ident | to_arg_pattern() -}}
             : {{- arg.proxy_ty -}},
             {%- endfor -%}
             | {
-                let output: {{ function.output.proxy_ty }} = ::{{ item.import_path }}::{{ function.ident }}(
+                let output: {{ function.output.proxy_ty }} =
+                {%- if function.from_trait_path -%}
+                {{- function_call_expression(type=item.import_path, trait=function.from_trait_path, function=function.ident) -}}
+                {%- else -%}
+                {{- function_call_expression(type=item.import_path, function=function.ident) -}}
+                {%- endif -%}
+                (
                     {%- for arg in function.args -%}
                         {%- if arg.proxy_ty is matching("Ref.*")-%}
                         &{% endif -%}
                         {%- if arg.proxy_ty is matching ("Mut.*")-%}
                         &mut {% endif -%}
-                        {%- if arg.ident != "self" -%}
-                            {{- arg.ident -}}
-                        {%- else -%}
-                            _{{- arg.ident -}}
-                        {%- endif -%}
+                        {{- arg.ident | to_arg_pattern() -}}
                         {%- if arg.proxy_ty is matching("Val.*")-%}
                         .into_inner()
                         {%- endif -%}, 
