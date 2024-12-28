@@ -15,7 +15,7 @@ env:
     RUST_TOOLCHAIN: nightly-2024-12-15
     BEVY_API_GEN_PATH: ${{ github.workspace }}/crates/bevy_api_gen
     BEVY_PATH: ${{ github.workspace }}/target/codegen/bevy
-    OUTPUT_PATH: ${{ github.workspace }}/crates/bevy_mod_scripting_functions/src/bevy/
+    OUTPUT_PATH: ${{ github.workspace }}/crates/bevy_mod_scripting_functions/src/bevy_bindings/
     BEVY_FEATURES: bevy_asset,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded
     BRANCH_NAME: __update-bevy-bindings-${{ github.head_ref || github.ref_name }} 
     GH_TOKEN: ${{ github.token }}
