@@ -7,7 +7,6 @@ use bevy_mod_scripting_core::{
     AddContextInitializer, StoreDocumentation,
     bindings::{ReflectReference, function::from::{Ref, Mut, Val}},
 };
-use bevy_mod_scripting_functions::RegisterScriptFunction;
 use crate::*;
 pub struct BevyEcsScriptingPlugin;
 impl bevy::app::Plugin for BevyEcsScriptingPlugin {
