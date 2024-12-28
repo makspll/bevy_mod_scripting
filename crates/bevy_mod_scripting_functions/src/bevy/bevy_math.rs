@@ -9,8 +9,8 @@ use bevy_mod_scripting_core::{
 };
 use crate::*;
 pub struct BevyMathScriptingPlugin;
-impl bevy::app::Plugin for BevyMathScriptingPlugin {
-    fn build(&self, app: &mut bevy::prelude::App) {
+impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
+    fn build(&self, app: &mut ::bevy::prelude::App) {
         let mut world = app.world_mut();
         NamespaceBuilder::<::bevy::math::AspectRatio>::new(world)
             .overwrite_script_function(
