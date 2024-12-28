@@ -18,7 +18,7 @@ impl ::bevy::app::Plugin for BevyHierarchyScriptingPlugin {
             .overwrite_script_function(
                 "swap",
                 |
-                    _self: Mut<bevy::hierarchy::prelude::Children>,
+                    mut _self: Mut<bevy::hierarchy::prelude::Children>,
                     a_index: usize,
                     b_index: usize|
                 {

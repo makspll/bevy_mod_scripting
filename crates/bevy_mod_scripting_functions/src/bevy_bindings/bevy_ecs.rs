@@ -166,7 +166,7 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
             )
             .overwrite_script_function(
                 "set",
-                |_self: Mut<bevy::ecs::component::Tick>, tick: u32| {
+                |mut _self: Mut<bevy::ecs::component::Tick>, tick: u32| {
                     let output: () = ::bevy::ecs::component::Tick::set(&mut _self, tick)
                         .into();
                     output
@@ -265,7 +265,7 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "set_changed",
                 |
-                    _self: Mut<bevy::ecs::component::ComponentTicks>,
+                    mut _self: Mut<bevy::ecs::component::ComponentTicks>,
                     change_tick: Val<bevy::ecs::component::Tick>|
                 {
                     let output: () = ::bevy::ecs::component::ComponentTicks::set_changed(

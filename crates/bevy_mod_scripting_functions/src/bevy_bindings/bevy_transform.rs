@@ -172,7 +172,7 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
             )
             .overwrite_script_function(
                 "rotate_x",
-                |_self: Mut<bevy::transform::components::Transform>, angle: f32| {
+                |mut _self: Mut<bevy::transform::components::Transform>, angle: f32| {
                     let output: () = ::bevy::transform::components::Transform::rotate_x(
                             &mut _self,
                             angle,
@@ -183,7 +183,7 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
             )
             .overwrite_script_function(
                 "rotate_y",
-                |_self: Mut<bevy::transform::components::Transform>, angle: f32| {
+                |mut _self: Mut<bevy::transform::components::Transform>, angle: f32| {
                     let output: () = ::bevy::transform::components::Transform::rotate_y(
                             &mut _self,
                             angle,
@@ -194,7 +194,7 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
             )
             .overwrite_script_function(
                 "rotate_z",
-                |_self: Mut<bevy::transform::components::Transform>, angle: f32| {
+                |mut _self: Mut<bevy::transform::components::Transform>, angle: f32| {
                     let output: () = ::bevy::transform::components::Transform::rotate_z(
                             &mut _self,
                             angle,
@@ -205,7 +205,7 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
             )
             .overwrite_script_function(
                 "rotate_local_x",
-                |_self: Mut<bevy::transform::components::Transform>, angle: f32| {
+                |mut _self: Mut<bevy::transform::components::Transform>, angle: f32| {
                     let output: () = ::bevy::transform::components::Transform::rotate_local_x(
                             &mut _self,
                             angle,
@@ -216,7 +216,7 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
             )
             .overwrite_script_function(
                 "rotate_local_y",
-                |_self: Mut<bevy::transform::components::Transform>, angle: f32| {
+                |mut _self: Mut<bevy::transform::components::Transform>, angle: f32| {
                     let output: () = ::bevy::transform::components::Transform::rotate_local_y(
                             &mut _self,
                             angle,
@@ -227,7 +227,7 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
             )
             .overwrite_script_function(
                 "rotate_local_z",
-                |_self: Mut<bevy::transform::components::Transform>, angle: f32| {
+                |mut _self: Mut<bevy::transform::components::Transform>, angle: f32| {
                     let output: () = ::bevy::transform::components::Transform::rotate_local_z(
                             &mut _self,
                             angle,
