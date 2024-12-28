@@ -17,8 +17,6 @@ use bevy_mod_scripting_core::{
         function::from::{Ref, Mut, Val}
     }
 };
-use bevy_mod_scripting_functions::RegisterScriptFunction;
-
 {% if args.self_is_bms_lua %}
 use crate::*;
 {% else %}
