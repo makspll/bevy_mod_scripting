@@ -18,7 +18,7 @@ use bevy_mod_scripting_core::{
     }
 };
 {% if args.self_is_bms_lua %}
-use crate::*;
+use crate::{*, namespaced_register::NamespaceBuilder};
 {% else %}
-use bevy_mod_scripting_lua::*;
+use bevy_mod_scripting_lua::{*, namespaced_register::NamespaceBuilder};;
 {% endif %}
