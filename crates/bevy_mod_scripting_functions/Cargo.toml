@@ -17,7 +17,8 @@ core_functions = ["bevy_mod_scripting_core"]
 
 
 [dependencies]
-bevy = { workspace = true, default-features = false, features = [
+bevy = { workspace = true, features = [
     "reflect_functions",
 ] }
+uuid = "*"
 bevy_mod_scripting_core = { workspace = true, optional = true }

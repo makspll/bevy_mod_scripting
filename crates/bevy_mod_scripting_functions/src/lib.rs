@@ -1,5 +1,6 @@
-use bevy::prelude::*;
-
+use ::bevy::prelude::*;
+#[cfg(feature = "core_functions")]
+pub mod bevy;
 #[cfg(feature = "core_functions")]
 pub mod core;
 
