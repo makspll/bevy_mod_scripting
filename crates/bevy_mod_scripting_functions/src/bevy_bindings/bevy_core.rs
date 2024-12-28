@@ -8,7 +8,7 @@ use bevy_mod_scripting_core::{
     AddContextInitializer, StoreDocumentation,
     bindings::{ReflectReference, function::from::{Ref, Mut, Val}},
 };
-use crate::{*, namespaced_register::NamespaceBuilder};
+use crate::*;
 pub struct BevyCoreScriptingPlugin;
 impl ::bevy::app::Plugin for BevyCoreScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {

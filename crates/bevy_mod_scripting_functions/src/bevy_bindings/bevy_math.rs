@@ -7,7 +7,7 @@ use bevy_mod_scripting_core::{
     AddContextInitializer, StoreDocumentation,
     bindings::{ReflectReference, function::from::{Ref, Mut, Val}},
 };
-use crate::{*, namespaced_register::NamespaceBuilder};
+use crate::*;
 pub struct BevyMathScriptingPlugin;
 impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
@@ -2329,7 +2329,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "reverse",
                 |_self: Mut<bevy::math::primitives::Triangle2d>| {
                     let output: () = ::bevy::math::primitives::Triangle2d::reverse(
-                            &mut_self,
+                            &mut _self,
                         )
                         .into();
                     output
@@ -2872,7 +2872,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "reverse",
                 |_self: Mut<bevy::math::primitives::Triangle3d>| {
                     let output: () = ::bevy::math::primitives::Triangle3d::reverse(
-                            &mut_self,
+                            &mut _self,
                         )
                         .into();
                     output

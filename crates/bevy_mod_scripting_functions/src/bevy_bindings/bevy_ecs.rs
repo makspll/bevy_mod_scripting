@@ -7,7 +7,7 @@ use bevy_mod_scripting_core::{
     AddContextInitializer, StoreDocumentation,
     bindings::{ReflectReference, function::from::{Ref, Mut, Val}},
 };
-use crate::{*, namespaced_register::NamespaceBuilder};
+use crate::*;
 pub struct BevyEcsScriptingPlugin;
 impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
@@ -161,7 +161,7 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
             .overwrite_script_function(
                 "set",
                 |_self: Mut<bevy::ecs::component::Tick>, tick: u32| {
-                    let output: () = ::bevy::ecs::component::Tick::set(&mut_self, tick)
+                    let output: () = ::bevy::ecs::component::Tick::set(&mut _self, tick)
                         .into();
                     output
                 },
@@ -263,7 +263,7 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                     change_tick: Val<bevy::ecs::component::Tick>|
                 {
                     let output: () = ::bevy::ecs::component::ComponentTicks::set_changed(
-                            &mut_self,
+                            &mut _self,
                             change_tick.into(),
                         )
                         .into();

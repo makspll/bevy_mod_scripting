@@ -11,7 +11,7 @@ use bevy_mod_scripting_core::{
     AddContextInitializer, StoreDocumentation,
     bindings::{ReflectReference, function::from::{Ref, Mut, Val}},
 };
-use crate::{*, namespaced_register::NamespaceBuilder};
+use crate::*;
 pub struct BevyTransformScriptingPlugin;
 impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
@@ -174,7 +174,7 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                 "rotate_x",
                 |_self: Mut<bevy::transform::components::Transform>, angle: f32| {
                     let output: () = ::bevy::transform::components::Transform::rotate_x(
-                            &mut_self,
+                            &mut _self,
                             angle,
                         )
                         .into();
@@ -185,7 +185,7 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                 "rotate_y",
                 |_self: Mut<bevy::transform::components::Transform>, angle: f32| {
                     let output: () = ::bevy::transform::components::Transform::rotate_y(
-                            &mut_self,
+                            &mut _self,
                             angle,
                         )
                         .into();
@@ -196,7 +196,7 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                 "rotate_z",
                 |_self: Mut<bevy::transform::components::Transform>, angle: f32| {
                     let output: () = ::bevy::transform::components::Transform::rotate_z(
-                            &mut_self,
+                            &mut _self,
                             angle,
                         )
                         .into();
@@ -207,7 +207,7 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                 "rotate_local_x",
                 |_self: Mut<bevy::transform::components::Transform>, angle: f32| {
                     let output: () = ::bevy::transform::components::Transform::rotate_local_x(
-                            &mut_self,
+                            &mut _self,
                             angle,
                         )
                         .into();
@@ -218,7 +218,7 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                 "rotate_local_y",
                 |_self: Mut<bevy::transform::components::Transform>, angle: f32| {
                     let output: () = ::bevy::transform::components::Transform::rotate_local_y(
-                            &mut_self,
+                            &mut _self,
                             angle,
                         )
                         .into();
@@ -229,7 +229,7 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                 "rotate_local_z",
                 |_self: Mut<bevy::transform::components::Transform>, angle: f32| {
                     let output: () = ::bevy::transform::components::Transform::rotate_local_z(
-                            &mut_self,
+                            &mut _self,
                             angle,
                         )
                         .into();

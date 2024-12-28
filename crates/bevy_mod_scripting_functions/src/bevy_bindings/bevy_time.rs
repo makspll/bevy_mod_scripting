@@ -8,7 +8,7 @@ use bevy_mod_scripting_core::{
     AddContextInitializer, StoreDocumentation,
     bindings::{ReflectReference, function::from::{Ref, Mut, Val}},
 };
-use crate::{*, namespaced_register::NamespaceBuilder};
+use crate::*;
 pub struct BevyTimeScriptingPlugin;
 impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
@@ -110,7 +110,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     mode: Val<bevy::time::prelude::TimerMode>|
                 {
                     let output: () = ::bevy::time::prelude::Timer::set_mode(
-                            &mut_self,
+                            &mut _self,
                             mode.into(),
                         )
                         .into();
@@ -120,7 +120,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
             .overwrite_script_function(
                 "pause",
                 |_self: Mut<bevy::time::prelude::Timer>| {
-                    let output: () = ::bevy::time::prelude::Timer::pause(&mut_self)
+                    let output: () = ::bevy::time::prelude::Timer::pause(&mut _self)
                         .into();
                     output
                 },
@@ -128,7 +128,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
             .overwrite_script_function(
                 "unpause",
                 |_self: Mut<bevy::time::prelude::Timer>| {
-                    let output: () = ::bevy::time::prelude::Timer::unpause(&mut_self)
+                    let output: () = ::bevy::time::prelude::Timer::unpause(&mut _self)
                         .into();
                     output
                 },
@@ -144,7 +144,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
             .overwrite_script_function(
                 "reset",
                 |_self: Mut<bevy::time::prelude::Timer>| {
-                    let output: () = ::bevy::time::prelude::Timer::reset(&mut_self)
+                    let output: () = ::bevy::time::prelude::Timer::reset(&mut _self)
                         .into();
                     output
                 },
@@ -292,14 +292,14 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
             .overwrite_script_function(
                 "pause",
                 |_self: Mut<bevy::time::Stopwatch>| {
-                    let output: () = ::bevy::time::Stopwatch::pause(&mut_self).into();
+                    let output: () = ::bevy::time::Stopwatch::pause(&mut _self).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "unpause",
                 |_self: Mut<bevy::time::Stopwatch>| {
-                    let output: () = ::bevy::time::Stopwatch::unpause(&mut_self).into();
+                    let output: () = ::bevy::time::Stopwatch::unpause(&mut _self).into();
                     output
                 },
             )
@@ -313,7 +313,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
             .overwrite_script_function(
                 "reset",
                 |_self: Mut<bevy::time::Stopwatch>| {
-                    let output: () = ::bevy::time::Stopwatch::reset(&mut_self).into();
+                    let output: () = ::bevy::time::Stopwatch::reset(&mut _self).into();
                     output
                 },
             )
