@@ -8,7 +8,7 @@ use bevy_mod_scripting_core::{
     AddContextInitializer, StoreDocumentation,
     bindings::{ReflectReference, function::from::{Ref, Mut, Val}},
 };
-use crate::*;
+use crate::{*, namespaced_register::NamespaceBuilder};
 pub struct BevyCoreScriptingPlugin;
 impl ::bevy::app::Plugin for BevyCoreScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
@@ -20,10 +20,7 @@ impl ::bevy::app::Plugin for BevyCoreScriptingPlugin {
                     _self: Ref<bevy::core::prelude::Name>,
                     other: Ref<bevy::core::prelude::Name>|
                 {
-                    let output: bool = ::bevy::core::prelude::Name::eq(
-                            _self.into(),
-                            other.into(),
-                        )
+                    let output: bool = ::bevy::core::prelude::Name::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -32,7 +29,7 @@ impl ::bevy::app::Plugin for BevyCoreScriptingPlugin {
                 "clone",
                 |_self: Ref<bevy::core::prelude::Name>| {
                     let output: Val<bevy::core::prelude::Name> = ::bevy::core::prelude::Name::clone(
-                            _self.into(),
+                            &_self,
                         )
                         .into();
                     output
