@@ -30,7 +30,7 @@ impl bevy::app::Plugin for {{ "ScriptingPlugin" | prefix_cratename | convert_cas
                             {{- arg.ident -}}
                         {%- else -%}
                             _{{- arg.ident -}}
-                        {%- endif -%} 
+                        {%- endif -%}, 
                     {%- endfor -%}
                 ).into();
                 output
