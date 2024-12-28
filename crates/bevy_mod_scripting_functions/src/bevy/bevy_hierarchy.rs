@@ -14,7 +14,7 @@ pub struct BevyHierarchyScriptingPlugin;
 impl bevy::app::Plugin for BevyHierarchyScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         let mut world = app.world_mut();
-        NamespaceBuilder::<bevy::hierarchy::prelude::Children>::new(world)
+        NamespaceBuilder::<::bevy::hierarchy::prelude::Children>::new(world)
             .overwrite_script_function(
                 "swap",
                 |
@@ -22,21 +22,21 @@ impl bevy::app::Plugin for BevyHierarchyScriptingPlugin {
                     a_index: usize,
                     b_index: usize|
                 {
-                    let output: () = bevy::hierarchy::prelude::Children::swap(
-                            _self,
-                            a_index,
-                            b_index,
+                    let output: () = ::bevy::hierarchy::prelude::Children::swap(
+                            _self.into(),
+                            a_index.into(),
+                            b_index.into(),
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<bevy::hierarchy::prelude::Parent>::new(world)
+        NamespaceBuilder::<::bevy::hierarchy::prelude::Parent>::new(world)
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::hierarchy::prelude::Parent>| {
-                    let output: () = bevy::hierarchy::prelude::Parent::assert_receiver_is_total_eq(
-                            _self,
+                    let output: () = ::bevy::hierarchy::prelude::Parent::assert_receiver_is_total_eq(
+                            _self.into(),
                         )
                         .into();
                     output
@@ -48,17 +48,20 @@ impl bevy::app::Plugin for BevyHierarchyScriptingPlugin {
                     _self: Ref<bevy::hierarchy::prelude::Parent>,
                     other: Ref<bevy::hierarchy::prelude::Parent>|
                 {
-                    let output: bool = bevy::hierarchy::prelude::Parent::eq(_self, other)
+                    let output: bool = ::bevy::hierarchy::prelude::Parent::eq(
+                            _self.into(),
+                            other.into(),
+                        )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<bevy::hierarchy::HierarchyEvent>::new(world)
+        NamespaceBuilder::<::bevy::hierarchy::HierarchyEvent>::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::hierarchy::HierarchyEvent>| {
-                    let output: Val<bevy::hierarchy::HierarchyEvent> = bevy::hierarchy::HierarchyEvent::clone(
-                            _self,
+                    let output: Val<bevy::hierarchy::HierarchyEvent> = ::bevy::hierarchy::HierarchyEvent::clone(
+                            _self.into(),
                         )
                         .into();
                     output
@@ -70,7 +73,10 @@ impl bevy::app::Plugin for BevyHierarchyScriptingPlugin {
                     _self: Ref<bevy::hierarchy::HierarchyEvent>,
                     other: Ref<bevy::hierarchy::HierarchyEvent>|
                 {
-                    let output: bool = bevy::hierarchy::HierarchyEvent::eq(_self, other)
+                    let output: bool = ::bevy::hierarchy::HierarchyEvent::eq(
+                            _self.into(),
+                            other.into(),
+                        )
                         .into();
                     output
                 },
@@ -78,8 +84,8 @@ impl bevy::app::Plugin for BevyHierarchyScriptingPlugin {
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::hierarchy::HierarchyEvent>| {
-                    let output: () = bevy::hierarchy::HierarchyEvent::assert_receiver_is_total_eq(
-                            _self,
+                    let output: () = ::bevy::hierarchy::HierarchyEvent::assert_receiver_is_total_eq(
+                            _self.into(),
                         )
                         .into();
                     output
