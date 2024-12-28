@@ -4,50 +4,38 @@
 {% set bms_lua_path="bevy_mod_scripting::lua"%}
 {% endif %}
 
-#[derive(Default)]
-pub(crate) struct Globals;
-
-impl {{bms_lua_path}}::tealr::mlu::ExportInstances for Globals {
-    fn add_instances<'lua, T: {{bms_lua_path}}::tealr::mlu::InstanceCollector<'lua>>(
-        self,
-        instances: &mut T,
-    ) -> {{bms_lua_path}}::tealr::mlu::mlua::Result<()> {
-        {% for item in items %} 
-            {% if item.has_static_methods %}
-                instances.add_instance("{{ item.ident }}", 
-                                {{bms_lua_path}}::tealr::mlu::UserDataProxy::<{{item.ident | prefix_lua}}>::new)?;
-            {% endif %}
-        {% endfor %}
-        Ok(())
-    }
-}
-
-
-fn {{ "ContextInitializer" | prefix_cratename | convert_case(case="snake") }} (_: &bevy_mod_scripting_core::script::ScriptId, ctx: &mut {{bms_lua_path}}::prelude::Lua) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-    {{bms_lua_path}}::tealr::mlu::set_global_env(Globals, ctx)?;
-    Ok(())
-}
 
 pub struct {{ "ScriptingPlugin" | prefix_cratename | convert_case(case="upper_camel")}};
 
 impl bevy::app::Plugin for {{ "ScriptingPlugin" | prefix_cratename | convert_case(case="upper_camel")}} {
     fn build(&self, app: &mut bevy::prelude::App) {
+        let mut world = app.world_mut();
+
         {% for item in items %}
-        app.register_lua_proxy::<{{ item.import_path }}>();
+        NamespaceBuilder::<{{ item.ident }}>::new(world)
+        {%- for function in item.functions -%}
+            .overwrite_script_function("{{ function.ident }}", |
+            {%- for arg in function.args -%}
+                {%- if arg.ident != "self" -%}
+                    {{- arg.ident -}}
+                {%- else -%}
+                    _{{- arg.ident -}}
+                {%- endif -%} 
+            : {{- arg.proxy_ty -}},
+            {%- endfor -%}
+            | {
+                let output: {{ function.output.proxy_ty }} = {{ item.ident }}::{{ function.ident }}(
+                    {%- for arg in function.args -%}
+                        {%- if arg.ident != "self" -%}
+                            {{- arg.ident -}}
+                        {%- else -%}
+                            _{{- arg.ident -}}
+                        {%- endif -%} 
+                    {%- endfor -%}
+                ).into();
+                output
+            })
+        {%- endfor -%};     
         {% endfor %}
-        app.add_context_initializer::<()>({{ "ContextInitializer" | prefix_cratename | convert_case(case="snake") }});
-        app.add_documentation_fragment(
-                {{bms_lua_path}}::docs::LuaDocumentationFragment::new("{{ "A P I" | prefix_cratename | convert_case(case="upper_camel") }}", |tw| {
-                    tw
-                    .document_global_instance::<Globals>().expect("Something went wrong documenting globals")
-                    {% for item in items %}
-                        .process_type::<{{ item.ident | prefix_lua }}>()
-                        {% if item.has_static_methods %}
-                        .process_type::<{{bms_lua_path}}::tealr::mlu::UserDataProxy<{{ item.ident | prefix_lua }}>>()
-                        {% endif %}
-                    {% endfor %}
-                }
-            )
-        );
     }
 }
