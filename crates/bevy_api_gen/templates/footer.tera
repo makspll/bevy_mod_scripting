@@ -16,6 +16,8 @@ impl ::bevy::app::Plugin for {{ "ScriptingPlugin" | prefix_cratename | convert_c
         {%- for function in item.functions -%}
             .overwrite_script_function("{{ function.ident }}", |
             {%- for arg in function.args -%}
+                {%- if arg.proxy_ty is matching("Mut.*")-%}
+                mut {% endif -%}
                 {%- if arg.ident != "self" -%}
                     {{- arg.ident -}}
                 {%- else -%}
