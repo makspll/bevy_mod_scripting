@@ -5,7 +5,8 @@
 use super::bevy_ecs::*;
 use super::bevy_reflect::*;
 use bevy_mod_scripting_core::{
-    AddContextInitializer, StoreDocumentation, bindings::ReflectReference,
+    AddContextInitializer, StoreDocumentation,
+    bindings::{ReflectReference, function::from::{Ref, Mut, Val}},
 };
 use bevy_mod_scripting_functions::RegisterScriptFunction;
 use crate::*;
@@ -13,21 +14,24 @@ pub struct BevyCoreScriptingPlugin;
 impl bevy::app::Plugin for BevyCoreScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         let mut world = app.world_mut();
-        NamespaceBuilder::<Name>::new(world)
+        NamespaceBuilder::<bevy::core::prelude::Name>::new(world)
             .overwrite_script_function(
                 "eq",
                 |
                     _self: Ref<bevy::core::prelude::Name>,
                     other: Ref<bevy::core::prelude::Name>|
                 {
-                    let output: bool = Name::eq(_self, other).into();
+                    let output: bool = bevy::core::prelude::Name::eq(_self, other)
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::core::prelude::Name>| {
-                    let output: Val<bevy::core::prelude::Name> = Name::clone(_self)
+                    let output: Val<bevy::core::prelude::Name> = bevy::core::prelude::Name::clone(
+                            _self,
+                        )
                         .into();
                     output
                 },

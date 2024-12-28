@@ -7,7 +7,8 @@ use super::bevy_reflect::*;
 use super::bevy_core::*;
 use super::bevy_math::*;
 use bevy_mod_scripting_core::{
-    AddContextInitializer, StoreDocumentation, bindings::ReflectReference,
+    AddContextInitializer, StoreDocumentation,
+    bindings::{ReflectReference, function::from::{Ref, Mut, Val}},
 };
 use bevy_mod_scripting_functions::RegisterScriptFunction;
 use crate::*;
@@ -15,11 +16,13 @@ pub struct BevyInputScriptingPlugin;
 impl bevy::app::Plugin for BevyInputScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         let mut world = app.world_mut();
-        NamespaceBuilder::<Gamepad>::new(world)
+        NamespaceBuilder::<bevy::input::gamepad::Gamepad>::new(world)
             .overwrite_script_function(
                 "vendor_id",
                 |_self: Ref<bevy::input::gamepad::Gamepad>| {
-                    let output: std::option::Option<u16> = Gamepad::vendor_id(_self)
+                    let output: std::option::Option<u16> = bevy::input::gamepad::Gamepad::vendor_id(
+                            _self,
+                        )
                         .into();
                     output
                 },
@@ -27,7 +30,9 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "product_id",
                 |_self: Ref<bevy::input::gamepad::Gamepad>| {
-                    let output: std::option::Option<u16> = Gamepad::product_id(_self)
+                    let output: std::option::Option<u16> = bevy::input::gamepad::Gamepad::product_id(
+                            _self,
+                        )
                         .into();
                     output
                 },
@@ -38,7 +43,11 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::gamepad::Gamepad>,
                     button_type: Val<bevy::input::gamepad::GamepadButton>|
                 {
-                    let output: bool = Gamepad::pressed(_self, button_type).into();
+                    let output: bool = bevy::input::gamepad::Gamepad::pressed(
+                            _self,
+                            button_type,
+                        )
+                        .into();
                     output
                 },
             )
@@ -48,7 +57,11 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::gamepad::Gamepad>,
                     button_type: Val<bevy::input::gamepad::GamepadButton>|
                 {
-                    let output: bool = Gamepad::just_pressed(_self, button_type).into();
+                    let output: bool = bevy::input::gamepad::Gamepad::just_pressed(
+                            _self,
+                            button_type,
+                        )
+                        .into();
                     output
                 },
             )
@@ -58,15 +71,21 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::gamepad::Gamepad>,
                     button_type: Val<bevy::input::gamepad::GamepadButton>|
                 {
-                    let output: bool = Gamepad::just_released(_self, button_type).into();
+                    let output: bool = bevy::input::gamepad::Gamepad::just_released(
+                            _self,
+                            button_type,
+                        )
+                        .into();
                     output
                 },
             );
-        NamespaceBuilder::<GamepadAxis>::new(world)
+        NamespaceBuilder::<bevy::input::gamepad::GamepadAxis>::new(world)
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::gamepad::GamepadAxis>| {
-                    let output: () = GamepadAxis::assert_receiver_is_total_eq(_self)
+                    let output: () = bevy::input::gamepad::GamepadAxis::assert_receiver_is_total_eq(
+                            _self,
+                        )
                         .into();
                     output
                 },
@@ -77,35 +96,43 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::gamepad::GamepadAxis>,
                     other: Ref<bevy::input::gamepad::GamepadAxis>|
                 {
-                    let output: bool = GamepadAxis::eq(_self, other).into();
+                    let output: bool = bevy::input::gamepad::GamepadAxis::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gamepad::GamepadAxis>| {
-                    let output: Val<bevy::input::gamepad::GamepadAxis> = GamepadAxis::clone(
+                    let output: Val<bevy::input::gamepad::GamepadAxis> = bevy::input::gamepad::GamepadAxis::clone(
                             _self,
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<GamepadButton>::new(world)
+        NamespaceBuilder::<bevy::input::gamepad::GamepadButton>::new(world)
             .overwrite_script_function(
                 "eq",
                 |
                     _self: Ref<bevy::input::gamepad::GamepadButton>,
                     other: Ref<bevy::input::gamepad::GamepadButton>|
                 {
-                    let output: bool = GamepadButton::eq(_self, other).into();
+                    let output: bool = bevy::input::gamepad::GamepadButton::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gamepad::GamepadButton>| {
-                    let output: Val<bevy::input::gamepad::GamepadButton> = GamepadButton::clone(
+                    let output: Val<bevy::input::gamepad::GamepadButton> = bevy::input::gamepad::GamepadButton::clone(
                             _self,
                         )
                         .into();
@@ -115,37 +142,40 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::gamepad::GamepadButton>| {
-                    let output: () = GamepadButton::assert_receiver_is_total_eq(_self)
-                        .into();
-                    output
-                },
-            );
-        NamespaceBuilder::<GamepadSettings>::new(world)
-            .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::input::gamepad::GamepadSettings>| {
-                    let output: Val<bevy::input::gamepad::GamepadSettings> = GamepadSettings::clone(
+                    let output: () = bevy::input::gamepad::GamepadButton::assert_receiver_is_total_eq(
                             _self,
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<KeyCode>::new(world)
+        NamespaceBuilder::<bevy::input::gamepad::GamepadSettings>::new(world)
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::input::gamepad::GamepadSettings>| {
+                    let output: Val<bevy::input::gamepad::GamepadSettings> = bevy::input::gamepad::GamepadSettings::clone(
+                            _self,
+                        )
+                        .into();
+                    output
+                },
+            );
+        NamespaceBuilder::<bevy::input::keyboard::KeyCode>::new(world)
             .overwrite_script_function(
                 "eq",
                 |
                     _self: Ref<bevy::input::keyboard::KeyCode>,
                     other: Ref<bevy::input::keyboard::KeyCode>|
                 {
-                    let output: bool = KeyCode::eq(_self, other).into();
+                    let output: bool = bevy::input::keyboard::KeyCode::eq(_self, other)
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::keyboard::KeyCode>| {
-                    let output: Val<bevy::input::keyboard::KeyCode> = KeyCode::clone(
+                    let output: Val<bevy::input::keyboard::KeyCode> = bevy::input::keyboard::KeyCode::clone(
                             _self,
                         )
                         .into();
@@ -155,15 +185,20 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::keyboard::KeyCode>| {
-                    let output: () = KeyCode::assert_receiver_is_total_eq(_self).into();
+                    let output: () = bevy::input::keyboard::KeyCode::assert_receiver_is_total_eq(
+                            _self,
+                        )
+                        .into();
                     output
                 },
             );
-        NamespaceBuilder::<MouseButton>::new(world)
+        NamespaceBuilder::<bevy::input::mouse::MouseButton>::new(world)
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::mouse::MouseButton>| {
-                    let output: () = MouseButton::assert_receiver_is_total_eq(_self)
+                    let output: () = bevy::input::mouse::MouseButton::assert_receiver_is_total_eq(
+                            _self,
+                        )
                         .into();
                     output
                 },
@@ -174,25 +209,26 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::mouse::MouseButton>,
                     other: Ref<bevy::input::mouse::MouseButton>|
                 {
-                    let output: bool = MouseButton::eq(_self, other).into();
+                    let output: bool = bevy::input::mouse::MouseButton::eq(_self, other)
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::mouse::MouseButton>| {
-                    let output: Val<bevy::input::mouse::MouseButton> = MouseButton::clone(
+                    let output: Val<bevy::input::mouse::MouseButton> = bevy::input::mouse::MouseButton::clone(
                             _self,
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<TouchInput>::new(world)
+        NamespaceBuilder::<bevy::input::touch::TouchInput>::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::touch::TouchInput>| {
-                    let output: Val<bevy::input::touch::TouchInput> = TouchInput::clone(
+                    let output: Val<bevy::input::touch::TouchInput> = bevy::input::touch::TouchInput::clone(
                             _self,
                         )
                         .into();
@@ -205,15 +241,16 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::touch::TouchInput>,
                     other: Ref<bevy::input::touch::TouchInput>|
                 {
-                    let output: bool = TouchInput::eq(_self, other).into();
+                    let output: bool = bevy::input::touch::TouchInput::eq(_self, other)
+                        .into();
                     output
                 },
             );
-        NamespaceBuilder::<KeyboardFocusLost>::new(world)
+        NamespaceBuilder::<bevy::input::keyboard::KeyboardFocusLost>::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::keyboard::KeyboardFocusLost>| {
-                    let output: Val<bevy::input::keyboard::KeyboardFocusLost> = KeyboardFocusLost::clone(
+                    let output: Val<bevy::input::keyboard::KeyboardFocusLost> = bevy::input::keyboard::KeyboardFocusLost::clone(
                             _self,
                         )
                         .into();
@@ -223,7 +260,7 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::keyboard::KeyboardFocusLost>| {
-                    let output: () = KeyboardFocusLost::assert_receiver_is_total_eq(
+                    let output: () = bevy::input::keyboard::KeyboardFocusLost::assert_receiver_is_total_eq(
                             _self,
                         )
                         .into();
@@ -236,25 +273,33 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::keyboard::KeyboardFocusLost>,
                     other: Ref<bevy::input::keyboard::KeyboardFocusLost>|
                 {
-                    let output: bool = KeyboardFocusLost::eq(_self, other).into();
+                    let output: bool = bevy::input::keyboard::KeyboardFocusLost::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             );
-        NamespaceBuilder::<KeyboardInput>::new(world)
+        NamespaceBuilder::<bevy::input::keyboard::KeyboardInput>::new(world)
             .overwrite_script_function(
                 "eq",
                 |
                     _self: Ref<bevy::input::keyboard::KeyboardInput>,
                     other: Ref<bevy::input::keyboard::KeyboardInput>|
                 {
-                    let output: bool = KeyboardInput::eq(_self, other).into();
+                    let output: bool = bevy::input::keyboard::KeyboardInput::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::keyboard::KeyboardInput>| {
-                    let output: Val<bevy::input::keyboard::KeyboardInput> = KeyboardInput::clone(
+                    let output: Val<bevy::input::keyboard::KeyboardInput> = bevy::input::keyboard::KeyboardInput::clone(
                             _self,
                         )
                         .into();
@@ -264,37 +309,43 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::keyboard::KeyboardInput>| {
-                    let output: () = KeyboardInput::assert_receiver_is_total_eq(_self)
-                        .into();
-                    output
-                },
-            );
-        NamespaceBuilder::<AccumulatedMouseMotion>::new(world)
-            .overwrite_script_function(
-                "eq",
-                |
-                    _self: Ref<bevy::input::mouse::AccumulatedMouseMotion>,
-                    other: Ref<bevy::input::mouse::AccumulatedMouseMotion>|
-                {
-                    let output: bool = AccumulatedMouseMotion::eq(_self, other).into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::input::mouse::AccumulatedMouseMotion>| {
-                    let output: Val<bevy::input::mouse::AccumulatedMouseMotion> = AccumulatedMouseMotion::clone(
+                    let output: () = bevy::input::keyboard::KeyboardInput::assert_receiver_is_total_eq(
                             _self,
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<AccumulatedMouseScroll>::new(world)
+        NamespaceBuilder::<bevy::input::mouse::AccumulatedMouseMotion>::new(world)
+            .overwrite_script_function(
+                "eq",
+                |
+                    _self: Ref<bevy::input::mouse::AccumulatedMouseMotion>,
+                    other: Ref<bevy::input::mouse::AccumulatedMouseMotion>|
+                {
+                    let output: bool = bevy::input::mouse::AccumulatedMouseMotion::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::input::mouse::AccumulatedMouseMotion>| {
+                    let output: Val<bevy::input::mouse::AccumulatedMouseMotion> = bevy::input::mouse::AccumulatedMouseMotion::clone(
+                            _self,
+                        )
+                        .into();
+                    output
+                },
+            );
+        NamespaceBuilder::<bevy::input::mouse::AccumulatedMouseScroll>::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::mouse::AccumulatedMouseScroll>| {
-                    let output: Val<bevy::input::mouse::AccumulatedMouseScroll> = AccumulatedMouseScroll::clone(
+                    let output: Val<bevy::input::mouse::AccumulatedMouseScroll> = bevy::input::mouse::AccumulatedMouseScroll::clone(
                             _self,
                         )
                         .into();
@@ -307,25 +358,33 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::mouse::AccumulatedMouseScroll>,
                     other: Ref<bevy::input::mouse::AccumulatedMouseScroll>|
                 {
-                    let output: bool = AccumulatedMouseScroll::eq(_self, other).into();
+                    let output: bool = bevy::input::mouse::AccumulatedMouseScroll::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             );
-        NamespaceBuilder::<MouseButtonInput>::new(world)
+        NamespaceBuilder::<bevy::input::mouse::MouseButtonInput>::new(world)
             .overwrite_script_function(
                 "eq",
                 |
                     _self: Ref<bevy::input::mouse::MouseButtonInput>,
                     other: Ref<bevy::input::mouse::MouseButtonInput>|
                 {
-                    let output: bool = MouseButtonInput::eq(_self, other).into();
+                    let output: bool = bevy::input::mouse::MouseButtonInput::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::mouse::MouseButtonInput>| {
-                    let output: Val<bevy::input::mouse::MouseButtonInput> = MouseButtonInput::clone(
+                    let output: Val<bevy::input::mouse::MouseButtonInput> = bevy::input::mouse::MouseButtonInput::clone(
                             _self,
                         )
                         .into();
@@ -335,37 +394,40 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::mouse::MouseButtonInput>| {
-                    let output: () = MouseButtonInput::assert_receiver_is_total_eq(_self)
-                        .into();
-                    output
-                },
-            );
-        NamespaceBuilder::<MouseMotion>::new(world)
-            .overwrite_script_function(
-                "eq",
-                |
-                    _self: Ref<bevy::input::mouse::MouseMotion>,
-                    other: Ref<bevy::input::mouse::MouseMotion>|
-                {
-                    let output: bool = MouseMotion::eq(_self, other).into();
-                    output
-                },
-            )
-            .overwrite_script_function(
-                "clone",
-                |_self: Ref<bevy::input::mouse::MouseMotion>| {
-                    let output: Val<bevy::input::mouse::MouseMotion> = MouseMotion::clone(
+                    let output: () = bevy::input::mouse::MouseButtonInput::assert_receiver_is_total_eq(
                             _self,
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<MouseWheel>::new(world)
+        NamespaceBuilder::<bevy::input::mouse::MouseMotion>::new(world)
+            .overwrite_script_function(
+                "eq",
+                |
+                    _self: Ref<bevy::input::mouse::MouseMotion>,
+                    other: Ref<bevy::input::mouse::MouseMotion>|
+                {
+                    let output: bool = bevy::input::mouse::MouseMotion::eq(_self, other)
+                        .into();
+                    output
+                },
+            )
+            .overwrite_script_function(
+                "clone",
+                |_self: Ref<bevy::input::mouse::MouseMotion>| {
+                    let output: Val<bevy::input::mouse::MouseMotion> = bevy::input::mouse::MouseMotion::clone(
+                            _self,
+                        )
+                        .into();
+                    output
+                },
+            );
+        NamespaceBuilder::<bevy::input::mouse::MouseWheel>::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::mouse::MouseWheel>| {
-                    let output: Val<bevy::input::mouse::MouseWheel> = MouseWheel::clone(
+                    let output: Val<bevy::input::mouse::MouseWheel> = bevy::input::mouse::MouseWheel::clone(
                             _self,
                         )
                         .into();
@@ -378,15 +440,16 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::mouse::MouseWheel>,
                     other: Ref<bevy::input::mouse::MouseWheel>|
                 {
-                    let output: bool = MouseWheel::eq(_self, other).into();
+                    let output: bool = bevy::input::mouse::MouseWheel::eq(_self, other)
+                        .into();
                     output
                 },
             );
-        NamespaceBuilder::<GamepadAxisChangedEvent>::new(world)
+        NamespaceBuilder::<bevy::input::gamepad::GamepadAxisChangedEvent>::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gamepad::GamepadAxisChangedEvent>| {
-                    let output: Val<bevy::input::gamepad::GamepadAxisChangedEvent> = GamepadAxisChangedEvent::clone(
+                    let output: Val<bevy::input::gamepad::GamepadAxisChangedEvent> = bevy::input::gamepad::GamepadAxisChangedEvent::clone(
                             _self,
                         )
                         .into();
@@ -399,15 +462,19 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::gamepad::GamepadAxisChangedEvent>,
                     other: Ref<bevy::input::gamepad::GamepadAxisChangedEvent>|
                 {
-                    let output: bool = GamepadAxisChangedEvent::eq(_self, other).into();
+                    let output: bool = bevy::input::gamepad::GamepadAxisChangedEvent::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             );
-        NamespaceBuilder::<GamepadButtonChangedEvent>::new(world)
+        NamespaceBuilder::<bevy::input::gamepad::GamepadButtonChangedEvent>::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gamepad::GamepadButtonChangedEvent>| {
-                    let output: Val<bevy::input::gamepad::GamepadButtonChangedEvent> = GamepadButtonChangedEvent::clone(
+                    let output: Val<bevy::input::gamepad::GamepadButtonChangedEvent> = bevy::input::gamepad::GamepadButtonChangedEvent::clone(
                             _self,
                         )
                         .into();
@@ -420,18 +487,26 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::gamepad::GamepadButtonChangedEvent>,
                     other: Ref<bevy::input::gamepad::GamepadButtonChangedEvent>|
                 {
-                    let output: bool = GamepadButtonChangedEvent::eq(_self, other)
+                    let output: bool = bevy::input::gamepad::GamepadButtonChangedEvent::eq(
+                            _self,
+                            other,
+                        )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<GamepadButtonStateChangedEvent>::new(world)
+        NamespaceBuilder::<
+            bevy::input::gamepad::GamepadButtonStateChangedEvent,
+        >::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gamepad::GamepadButtonStateChangedEvent>| {
                     let output: Val<
                         bevy::input::gamepad::GamepadButtonStateChangedEvent,
-                    > = GamepadButtonStateChangedEvent::clone(_self).into();
+                    > = bevy::input::gamepad::GamepadButtonStateChangedEvent::clone(
+                            _self,
+                        )
+                        .into();
                     output
                 },
             )
@@ -441,7 +516,10 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::gamepad::GamepadButtonStateChangedEvent>,
                     other: Ref<bevy::input::gamepad::GamepadButtonStateChangedEvent>|
                 {
-                    let output: bool = GamepadButtonStateChangedEvent::eq(_self, other)
+                    let output: bool = bevy::input::gamepad::GamepadButtonStateChangedEvent::eq(
+                            _self,
+                            other,
+                        )
                         .into();
                     output
                 },
@@ -449,46 +527,55 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::gamepad::GamepadButtonStateChangedEvent>| {
-                    let output: () = GamepadButtonStateChangedEvent::assert_receiver_is_total_eq(
+                    let output: () = bevy::input::gamepad::GamepadButtonStateChangedEvent::assert_receiver_is_total_eq(
                             _self,
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<GamepadConnection>::new(world)
+        NamespaceBuilder::<bevy::input::gamepad::GamepadConnection>::new(world)
             .overwrite_script_function(
                 "eq",
                 |
                     _self: Ref<bevy::input::gamepad::GamepadConnection>,
                     other: Ref<bevy::input::gamepad::GamepadConnection>|
                 {
-                    let output: bool = GamepadConnection::eq(_self, other).into();
+                    let output: bool = bevy::input::gamepad::GamepadConnection::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gamepad::GamepadConnection>| {
-                    let output: Val<bevy::input::gamepad::GamepadConnection> = GamepadConnection::clone(
+                    let output: Val<bevy::input::gamepad::GamepadConnection> = bevy::input::gamepad::GamepadConnection::clone(
                             _self,
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<GamepadConnectionEvent>::new(world)
+        NamespaceBuilder::<bevy::input::gamepad::GamepadConnectionEvent>::new(world)
             .overwrite_script_function(
                 "connected",
                 |_self: Ref<bevy::input::gamepad::GamepadConnectionEvent>| {
-                    let output: bool = GamepadConnectionEvent::connected(_self).into();
+                    let output: bool = bevy::input::gamepad::GamepadConnectionEvent::connected(
+                            _self,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "disconnected",
                 |_self: Ref<bevy::input::gamepad::GamepadConnectionEvent>| {
-                    let output: bool = GamepadConnectionEvent::disconnected(_self)
+                    let output: bool = bevy::input::gamepad::GamepadConnectionEvent::disconnected(
+                            _self,
+                        )
                         .into();
                     output
                 },
@@ -499,46 +586,56 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::gamepad::GamepadConnectionEvent>,
                     other: Ref<bevy::input::gamepad::GamepadConnectionEvent>|
                 {
-                    let output: bool = GamepadConnectionEvent::eq(_self, other).into();
+                    let output: bool = bevy::input::gamepad::GamepadConnectionEvent::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gamepad::GamepadConnectionEvent>| {
-                    let output: Val<bevy::input::gamepad::GamepadConnectionEvent> = GamepadConnectionEvent::clone(
+                    let output: Val<bevy::input::gamepad::GamepadConnectionEvent> = bevy::input::gamepad::GamepadConnectionEvent::clone(
                             _self,
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<GamepadEvent>::new(world)
+        NamespaceBuilder::<bevy::input::gamepad::GamepadEvent>::new(world)
             .overwrite_script_function(
                 "eq",
                 |
                     _self: Ref<bevy::input::gamepad::GamepadEvent>,
                     other: Ref<bevy::input::gamepad::GamepadEvent>|
                 {
-                    let output: bool = GamepadEvent::eq(_self, other).into();
+                    let output: bool = bevy::input::gamepad::GamepadEvent::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gamepad::GamepadEvent>| {
-                    let output: Val<bevy::input::gamepad::GamepadEvent> = GamepadEvent::clone(
+                    let output: Val<bevy::input::gamepad::GamepadEvent> = bevy::input::gamepad::GamepadEvent::clone(
                             _self,
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<GamepadInput>::new(world)
+        NamespaceBuilder::<bevy::input::gamepad::GamepadInput>::new(world)
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::gamepad::GamepadInput>| {
-                    let output: () = GamepadInput::assert_receiver_is_total_eq(_self)
+                    let output: () = bevy::input::gamepad::GamepadInput::assert_receiver_is_total_eq(
+                            _self,
+                        )
                         .into();
                     output
                 },
@@ -546,7 +643,7 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gamepad::GamepadInput>| {
-                    let output: Val<bevy::input::gamepad::GamepadInput> = GamepadInput::clone(
+                    let output: Val<bevy::input::gamepad::GamepadInput> = bevy::input::gamepad::GamepadInput::clone(
                             _self,
                         )
                         .into();
@@ -559,29 +656,36 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::gamepad::GamepadInput>,
                     other: Ref<bevy::input::gamepad::GamepadInput>|
                 {
-                    let output: bool = GamepadInput::eq(_self, other).into();
+                    let output: bool = bevy::input::gamepad::GamepadInput::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             );
-        NamespaceBuilder::<GamepadRumbleRequest>::new(world)
+        NamespaceBuilder::<bevy::input::gamepad::GamepadRumbleRequest>::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gamepad::GamepadRumbleRequest>| {
-                    let output: Val<bevy::input::gamepad::GamepadRumbleRequest> = GamepadRumbleRequest::clone(
+                    let output: Val<bevy::input::gamepad::GamepadRumbleRequest> = bevy::input::gamepad::GamepadRumbleRequest::clone(
                             _self,
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<RawGamepadAxisChangedEvent>::new(world)
+        NamespaceBuilder::<bevy::input::gamepad::RawGamepadAxisChangedEvent>::new(world)
             .overwrite_script_function(
                 "eq",
                 |
                     _self: Ref<bevy::input::gamepad::RawGamepadAxisChangedEvent>,
                     other: Ref<bevy::input::gamepad::RawGamepadAxisChangedEvent>|
                 {
-                    let output: bool = RawGamepadAxisChangedEvent::eq(_self, other)
+                    let output: bool = bevy::input::gamepad::RawGamepadAxisChangedEvent::eq(
+                            _self,
+                            other,
+                        )
                         .into();
                     output
                 },
@@ -589,20 +693,23 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gamepad::RawGamepadAxisChangedEvent>| {
-                    let output: Val<bevy::input::gamepad::RawGamepadAxisChangedEvent> = RawGamepadAxisChangedEvent::clone(
+                    let output: Val<bevy::input::gamepad::RawGamepadAxisChangedEvent> = bevy::input::gamepad::RawGamepadAxisChangedEvent::clone(
                             _self,
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<RawGamepadButtonChangedEvent>::new(world)
+        NamespaceBuilder::<
+            bevy::input::gamepad::RawGamepadButtonChangedEvent,
+        >::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gamepad::RawGamepadButtonChangedEvent>| {
                     let output: Val<
                         bevy::input::gamepad::RawGamepadButtonChangedEvent,
-                    > = RawGamepadButtonChangedEvent::clone(_self).into();
+                    > = bevy::input::gamepad::RawGamepadButtonChangedEvent::clone(_self)
+                        .into();
                     output
                 },
             )
@@ -612,16 +719,19 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::gamepad::RawGamepadButtonChangedEvent>,
                     other: Ref<bevy::input::gamepad::RawGamepadButtonChangedEvent>|
                 {
-                    let output: bool = RawGamepadButtonChangedEvent::eq(_self, other)
+                    let output: bool = bevy::input::gamepad::RawGamepadButtonChangedEvent::eq(
+                            _self,
+                            other,
+                        )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<RawGamepadEvent>::new(world)
+        NamespaceBuilder::<bevy::input::gamepad::RawGamepadEvent>::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gamepad::RawGamepadEvent>| {
-                    let output: Val<bevy::input::gamepad::RawGamepadEvent> = RawGamepadEvent::clone(
+                    let output: Val<bevy::input::gamepad::RawGamepadEvent> = bevy::input::gamepad::RawGamepadEvent::clone(
                             _self,
                         )
                         .into();
@@ -634,15 +744,19 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::gamepad::RawGamepadEvent>,
                     other: Ref<bevy::input::gamepad::RawGamepadEvent>|
                 {
-                    let output: bool = RawGamepadEvent::eq(_self, other).into();
+                    let output: bool = bevy::input::gamepad::RawGamepadEvent::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             );
-        NamespaceBuilder::<PinchGesture>::new(world)
+        NamespaceBuilder::<bevy::input::gestures::PinchGesture>::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gestures::PinchGesture>| {
-                    let output: Val<bevy::input::gestures::PinchGesture> = PinchGesture::clone(
+                    let output: Val<bevy::input::gestures::PinchGesture> = bevy::input::gestures::PinchGesture::clone(
                             _self,
                         )
                         .into();
@@ -655,15 +769,19 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::gestures::PinchGesture>,
                     other: Ref<bevy::input::gestures::PinchGesture>|
                 {
-                    let output: bool = PinchGesture::eq(_self, other).into();
+                    let output: bool = bevy::input::gestures::PinchGesture::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             );
-        NamespaceBuilder::<RotationGesture>::new(world)
+        NamespaceBuilder::<bevy::input::gestures::RotationGesture>::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gestures::RotationGesture>| {
-                    let output: Val<bevy::input::gestures::RotationGesture> = RotationGesture::clone(
+                    let output: Val<bevy::input::gestures::RotationGesture> = bevy::input::gestures::RotationGesture::clone(
                             _self,
                         )
                         .into();
@@ -676,36 +794,44 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::gestures::RotationGesture>,
                     other: Ref<bevy::input::gestures::RotationGesture>|
                 {
-                    let output: bool = RotationGesture::eq(_self, other).into();
+                    let output: bool = bevy::input::gestures::RotationGesture::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             );
-        NamespaceBuilder::<DoubleTapGesture>::new(world)
+        NamespaceBuilder::<bevy::input::gestures::DoubleTapGesture>::new(world)
             .overwrite_script_function(
                 "eq",
                 |
                     _self: Ref<bevy::input::gestures::DoubleTapGesture>,
                     other: Ref<bevy::input::gestures::DoubleTapGesture>|
                 {
-                    let output: bool = DoubleTapGesture::eq(_self, other).into();
+                    let output: bool = bevy::input::gestures::DoubleTapGesture::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gestures::DoubleTapGesture>| {
-                    let output: Val<bevy::input::gestures::DoubleTapGesture> = DoubleTapGesture::clone(
+                    let output: Val<bevy::input::gestures::DoubleTapGesture> = bevy::input::gestures::DoubleTapGesture::clone(
                             _self,
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<PanGesture>::new(world)
+        NamespaceBuilder::<bevy::input::gestures::PanGesture>::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gestures::PanGesture>| {
-                    let output: Val<bevy::input::gestures::PanGesture> = PanGesture::clone(
+                    let output: Val<bevy::input::gestures::PanGesture> = bevy::input::gestures::PanGesture::clone(
                             _self,
                         )
                         .into();
@@ -718,32 +844,39 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::gestures::PanGesture>,
                     other: Ref<bevy::input::gestures::PanGesture>|
                 {
-                    let output: bool = PanGesture::eq(_self, other).into();
+                    let output: bool = bevy::input::gestures::PanGesture::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             );
-        NamespaceBuilder::<ButtonState>::new(world)
+        NamespaceBuilder::<bevy::input::ButtonState>::new(world)
             .overwrite_script_function(
                 "eq",
                 |
                     _self: Ref<bevy::input::ButtonState>,
                     other: Ref<bevy::input::ButtonState>|
                 {
-                    let output: bool = ButtonState::eq(_self, other).into();
+                    let output: bool = bevy::input::ButtonState::eq(_self, other).into();
                     output
                 },
             )
             .overwrite_script_function(
                 "is_pressed",
                 |_self: Ref<bevy::input::ButtonState>| {
-                    let output: bool = ButtonState::is_pressed(_self).into();
+                    let output: bool = bevy::input::ButtonState::is_pressed(_self)
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::ButtonState>| {
-                    let output: () = ButtonState::assert_receiver_is_total_eq(_self)
+                    let output: () = bevy::input::ButtonState::assert_receiver_is_total_eq(
+                            _self,
+                        )
                         .into();
                     output
                 },
@@ -751,26 +884,32 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::ButtonState>| {
-                    let output: Val<bevy::input::ButtonState> = ButtonState::clone(_self)
+                    let output: Val<bevy::input::ButtonState> = bevy::input::ButtonState::clone(
+                            _self,
+                        )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<ButtonSettings>::new(world)
+        NamespaceBuilder::<bevy::input::gamepad::ButtonSettings>::new(world)
             .overwrite_script_function(
                 "eq",
                 |
                     _self: Ref<bevy::input::gamepad::ButtonSettings>,
                     other: Ref<bevy::input::gamepad::ButtonSettings>|
                 {
-                    let output: bool = ButtonSettings::eq(_self, other).into();
+                    let output: bool = bevy::input::gamepad::ButtonSettings::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gamepad::ButtonSettings>| {
-                    let output: Val<bevy::input::gamepad::ButtonSettings> = ButtonSettings::clone(
+                    let output: Val<bevy::input::gamepad::ButtonSettings> = bevy::input::gamepad::ButtonSettings::clone(
                             _self,
                         )
                         .into();
@@ -780,28 +919,42 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "is_pressed",
                 |_self: Ref<bevy::input::gamepad::ButtonSettings>, value: f32| {
-                    let output: bool = ButtonSettings::is_pressed(_self, value).into();
+                    let output: bool = bevy::input::gamepad::ButtonSettings::is_pressed(
+                            _self,
+                            value,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "is_released",
                 |_self: Ref<bevy::input::gamepad::ButtonSettings>, value: f32| {
-                    let output: bool = ButtonSettings::is_released(_self, value).into();
+                    let output: bool = bevy::input::gamepad::ButtonSettings::is_released(
+                            _self,
+                            value,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "press_threshold",
                 |_self: Ref<bevy::input::gamepad::ButtonSettings>| {
-                    let output: f32 = ButtonSettings::press_threshold(_self).into();
+                    let output: f32 = bevy::input::gamepad::ButtonSettings::press_threshold(
+                            _self,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "set_press_threshold",
                 |_self: Mut<bevy::input::gamepad::ButtonSettings>, value: f32| {
-                    let output: f32 = ButtonSettings::set_press_threshold(_self, value)
+                    let output: f32 = bevy::input::gamepad::ButtonSettings::set_press_threshold(
+                            _self,
+                            value,
+                        )
                         .into();
                     output
                 },
@@ -809,40 +962,56 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "release_threshold",
                 |_self: Ref<bevy::input::gamepad::ButtonSettings>| {
-                    let output: f32 = ButtonSettings::release_threshold(_self).into();
+                    let output: f32 = bevy::input::gamepad::ButtonSettings::release_threshold(
+                            _self,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "set_release_threshold",
                 |_self: Mut<bevy::input::gamepad::ButtonSettings>, value: f32| {
-                    let output: f32 = ButtonSettings::set_release_threshold(_self, value)
+                    let output: f32 = bevy::input::gamepad::ButtonSettings::set_release_threshold(
+                            _self,
+                            value,
+                        )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<AxisSettings>::new(world)
+        NamespaceBuilder::<bevy::input::gamepad::AxisSettings>::new(world)
             .overwrite_script_function(
                 "eq",
                 |
                     _self: Ref<bevy::input::gamepad::AxisSettings>,
                     other: Ref<bevy::input::gamepad::AxisSettings>|
                 {
-                    let output: bool = AxisSettings::eq(_self, other).into();
+                    let output: bool = bevy::input::gamepad::AxisSettings::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "livezone_upperbound",
                 |_self: Ref<bevy::input::gamepad::AxisSettings>| {
-                    let output: f32 = AxisSettings::livezone_upperbound(_self).into();
+                    let output: f32 = bevy::input::gamepad::AxisSettings::livezone_upperbound(
+                            _self,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "set_livezone_upperbound",
                 |_self: Mut<bevy::input::gamepad::AxisSettings>, value: f32| {
-                    let output: f32 = AxisSettings::set_livezone_upperbound(_self, value)
+                    let output: f32 = bevy::input::gamepad::AxisSettings::set_livezone_upperbound(
+                            _self,
+                            value,
+                        )
                         .into();
                     output
                 },
@@ -850,14 +1019,20 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "deadzone_upperbound",
                 |_self: Ref<bevy::input::gamepad::AxisSettings>| {
-                    let output: f32 = AxisSettings::deadzone_upperbound(_self).into();
+                    let output: f32 = bevy::input::gamepad::AxisSettings::deadzone_upperbound(
+                            _self,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "set_deadzone_upperbound",
                 |_self: Mut<bevy::input::gamepad::AxisSettings>, value: f32| {
-                    let output: f32 = AxisSettings::set_deadzone_upperbound(_self, value)
+                    let output: f32 = bevy::input::gamepad::AxisSettings::set_deadzone_upperbound(
+                            _self,
+                            value,
+                        )
                         .into();
                     output
                 },
@@ -865,14 +1040,20 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "livezone_lowerbound",
                 |_self: Ref<bevy::input::gamepad::AxisSettings>| {
-                    let output: f32 = AxisSettings::livezone_lowerbound(_self).into();
+                    let output: f32 = bevy::input::gamepad::AxisSettings::livezone_lowerbound(
+                            _self,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "set_livezone_lowerbound",
                 |_self: Mut<bevy::input::gamepad::AxisSettings>, value: f32| {
-                    let output: f32 = AxisSettings::set_livezone_lowerbound(_self, value)
+                    let output: f32 = bevy::input::gamepad::AxisSettings::set_livezone_lowerbound(
+                            _self,
+                            value,
+                        )
                         .into();
                     output
                 },
@@ -880,14 +1061,20 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "deadzone_lowerbound",
                 |_self: Ref<bevy::input::gamepad::AxisSettings>| {
-                    let output: f32 = AxisSettings::deadzone_lowerbound(_self).into();
+                    let output: f32 = bevy::input::gamepad::AxisSettings::deadzone_lowerbound(
+                            _self,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "set_deadzone_lowerbound",
                 |_self: Mut<bevy::input::gamepad::AxisSettings>, value: f32| {
-                    let output: f32 = AxisSettings::set_deadzone_lowerbound(_self, value)
+                    let output: f32 = bevy::input::gamepad::AxisSettings::set_deadzone_lowerbound(
+                            _self,
+                            value,
+                        )
                         .into();
                     output
                 },
@@ -895,21 +1082,32 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "threshold",
                 |_self: Ref<bevy::input::gamepad::AxisSettings>| {
-                    let output: f32 = AxisSettings::threshold(_self).into();
+                    let output: f32 = bevy::input::gamepad::AxisSettings::threshold(
+                            _self,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "set_threshold",
                 |_self: Mut<bevy::input::gamepad::AxisSettings>, value: f32| {
-                    let output: f32 = AxisSettings::set_threshold(_self, value).into();
+                    let output: f32 = bevy::input::gamepad::AxisSettings::set_threshold(
+                            _self,
+                            value,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "clamp",
                 |_self: Ref<bevy::input::gamepad::AxisSettings>, new_value: f32| {
-                    let output: f32 = AxisSettings::clamp(_self, new_value).into();
+                    let output: f32 = bevy::input::gamepad::AxisSettings::clamp(
+                            _self,
+                            new_value,
+                        )
+                        .into();
                     output
                 },
             )
@@ -920,7 +1118,7 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     new_value: f32,
                     old_value: std::option::Option<f32>|
                 {
-                    let output: std::option::Option<f32> = AxisSettings::filter(
+                    let output: std::option::Option<f32> = bevy::input::gamepad::AxisSettings::filter(
                             _self,
                             new_value,
                             old_value,
@@ -932,14 +1130,14 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gamepad::AxisSettings>| {
-                    let output: Val<bevy::input::gamepad::AxisSettings> = AxisSettings::clone(
+                    let output: Val<bevy::input::gamepad::AxisSettings> = bevy::input::gamepad::AxisSettings::clone(
                             _self,
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<ButtonAxisSettings>::new(world)
+        NamespaceBuilder::<bevy::input::gamepad::ButtonAxisSettings>::new(world)
             .overwrite_script_function(
                 "filter",
                 |
@@ -947,7 +1145,7 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     new_value: f32,
                     old_value: std::option::Option<f32>|
                 {
-                    let output: std::option::Option<f32> = ButtonAxisSettings::filter(
+                    let output: std::option::Option<f32> = bevy::input::gamepad::ButtonAxisSettings::filter(
                             _self,
                             new_value,
                             old_value,
@@ -959,18 +1157,18 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gamepad::ButtonAxisSettings>| {
-                    let output: Val<bevy::input::gamepad::ButtonAxisSettings> = ButtonAxisSettings::clone(
+                    let output: Val<bevy::input::gamepad::ButtonAxisSettings> = bevy::input::gamepad::ButtonAxisSettings::clone(
                             _self,
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<GamepadRumbleIntensity>::new(world)
+        NamespaceBuilder::<bevy::input::gamepad::GamepadRumbleIntensity>::new(world)
             .overwrite_script_function(
                 "weak_motor",
                 |intensity: f32| {
-                    let output: Val<bevy::input::gamepad::GamepadRumbleIntensity> = GamepadRumbleIntensity::weak_motor(
+                    let output: Val<bevy::input::gamepad::GamepadRumbleIntensity> = bevy::input::gamepad::GamepadRumbleIntensity::weak_motor(
                             intensity,
                         )
                         .into();
@@ -980,7 +1178,7 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "strong_motor",
                 |intensity: f32| {
-                    let output: Val<bevy::input::gamepad::GamepadRumbleIntensity> = GamepadRumbleIntensity::strong_motor(
+                    let output: Val<bevy::input::gamepad::GamepadRumbleIntensity> = bevy::input::gamepad::GamepadRumbleIntensity::strong_motor(
                             intensity,
                         )
                         .into();
@@ -990,7 +1188,7 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::gamepad::GamepadRumbleIntensity>| {
-                    let output: Val<bevy::input::gamepad::GamepadRumbleIntensity> = GamepadRumbleIntensity::clone(
+                    let output: Val<bevy::input::gamepad::GamepadRumbleIntensity> = bevy::input::gamepad::GamepadRumbleIntensity::clone(
                             _self,
                         )
                         .into();
@@ -1003,22 +1201,31 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::gamepad::GamepadRumbleIntensity>,
                     other: Ref<bevy::input::gamepad::GamepadRumbleIntensity>|
                 {
-                    let output: bool = GamepadRumbleIntensity::eq(_self, other).into();
+                    let output: bool = bevy::input::gamepad::GamepadRumbleIntensity::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             );
-        NamespaceBuilder::<Key>::new(world)
+        NamespaceBuilder::<bevy::input::keyboard::Key>::new(world)
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::keyboard::Key>| {
-                    let output: () = Key::assert_receiver_is_total_eq(_self).into();
+                    let output: () = bevy::input::keyboard::Key::assert_receiver_is_total_eq(
+                            _self,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::keyboard::Key>| {
-                    let output: Val<bevy::input::keyboard::Key> = Key::clone(_self)
+                    let output: Val<bevy::input::keyboard::Key> = bevy::input::keyboard::Key::clone(
+                            _self,
+                        )
                         .into();
                     output
                 },
@@ -1029,25 +1236,30 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::keyboard::Key>,
                     other: Ref<bevy::input::keyboard::Key>|
                 {
-                    let output: bool = Key::eq(_self, other).into();
+                    let output: bool = bevy::input::keyboard::Key::eq(_self, other)
+                        .into();
                     output
                 },
             );
-        NamespaceBuilder::<NativeKeyCode>::new(world)
+        NamespaceBuilder::<bevy::input::keyboard::NativeKeyCode>::new(world)
             .overwrite_script_function(
                 "eq",
                 |
                     _self: Ref<bevy::input::keyboard::NativeKeyCode>,
                     other: Ref<bevy::input::keyboard::NativeKeyCode>|
                 {
-                    let output: bool = NativeKeyCode::eq(_self, other).into();
+                    let output: bool = bevy::input::keyboard::NativeKeyCode::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::keyboard::NativeKeyCode>| {
-                    let output: Val<bevy::input::keyboard::NativeKeyCode> = NativeKeyCode::clone(
+                    let output: Val<bevy::input::keyboard::NativeKeyCode> = bevy::input::keyboard::NativeKeyCode::clone(
                             _self,
                         )
                         .into();
@@ -1057,26 +1269,31 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::keyboard::NativeKeyCode>| {
-                    let output: () = NativeKeyCode::assert_receiver_is_total_eq(_self)
+                    let output: () = bevy::input::keyboard::NativeKeyCode::assert_receiver_is_total_eq(
+                            _self,
+                        )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<NativeKey>::new(world)
+        NamespaceBuilder::<bevy::input::keyboard::NativeKey>::new(world)
             .overwrite_script_function(
                 "eq",
                 |
                     _self: Ref<bevy::input::keyboard::NativeKey>,
                     other: Ref<bevy::input::keyboard::NativeKey>|
                 {
-                    let output: bool = NativeKey::eq(_self, other).into();
+                    let output: bool = bevy::input::keyboard::NativeKey::eq(_self, other)
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::keyboard::NativeKey>| {
-                    let output: () = NativeKey::assert_receiver_is_total_eq(_self)
+                    let output: () = bevy::input::keyboard::NativeKey::assert_receiver_is_total_eq(
+                            _self,
+                        )
                         .into();
                     output
                 },
@@ -1084,18 +1301,18 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::keyboard::NativeKey>| {
-                    let output: Val<bevy::input::keyboard::NativeKey> = NativeKey::clone(
+                    let output: Val<bevy::input::keyboard::NativeKey> = bevy::input::keyboard::NativeKey::clone(
                             _self,
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<MouseScrollUnit>::new(world)
+        NamespaceBuilder::<bevy::input::mouse::MouseScrollUnit>::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::mouse::MouseScrollUnit>| {
-                    let output: Val<bevy::input::mouse::MouseScrollUnit> = MouseScrollUnit::clone(
+                    let output: Val<bevy::input::mouse::MouseScrollUnit> = bevy::input::mouse::MouseScrollUnit::clone(
                             _self,
                         )
                         .into();
@@ -1105,7 +1322,9 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::mouse::MouseScrollUnit>| {
-                    let output: () = MouseScrollUnit::assert_receiver_is_total_eq(_self)
+                    let output: () = bevy::input::mouse::MouseScrollUnit::assert_receiver_is_total_eq(
+                            _self,
+                        )
                         .into();
                     output
                 },
@@ -1116,15 +1335,21 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::mouse::MouseScrollUnit>,
                     other: Ref<bevy::input::mouse::MouseScrollUnit>|
                 {
-                    let output: bool = MouseScrollUnit::eq(_self, other).into();
+                    let output: bool = bevy::input::mouse::MouseScrollUnit::eq(
+                            _self,
+                            other,
+                        )
+                        .into();
                     output
                 },
             );
-        NamespaceBuilder::<TouchPhase>::new(world)
+        NamespaceBuilder::<bevy::input::touch::TouchPhase>::new(world)
             .overwrite_script_function(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::touch::TouchPhase>| {
-                    let output: () = TouchPhase::assert_receiver_is_total_eq(_self)
+                    let output: () = bevy::input::touch::TouchPhase::assert_receiver_is_total_eq(
+                            _self,
+                        )
                         .into();
                     output
                 },
@@ -1135,25 +1360,26 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::touch::TouchPhase>,
                     other: Ref<bevy::input::touch::TouchPhase>|
                 {
-                    let output: bool = TouchPhase::eq(_self, other).into();
+                    let output: bool = bevy::input::touch::TouchPhase::eq(_self, other)
+                        .into();
                     output
                 },
             )
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::touch::TouchPhase>| {
-                    let output: Val<bevy::input::touch::TouchPhase> = TouchPhase::clone(
+                    let output: Val<bevy::input::touch::TouchPhase> = bevy::input::touch::TouchPhase::clone(
                             _self,
                         )
                         .into();
                     output
                 },
             );
-        NamespaceBuilder::<ForceTouch>::new(world)
+        NamespaceBuilder::<bevy::input::touch::ForceTouch>::new(world)
             .overwrite_script_function(
                 "clone",
                 |_self: Ref<bevy::input::touch::ForceTouch>| {
-                    let output: Val<bevy::input::touch::ForceTouch> = ForceTouch::clone(
+                    let output: Val<bevy::input::touch::ForceTouch> = bevy::input::touch::ForceTouch::clone(
                             _self,
                         )
                         .into();
@@ -1166,7 +1392,8 @@ impl bevy::app::Plugin for BevyInputScriptingPlugin {
                     _self: Ref<bevy::input::touch::ForceTouch>,
                     other: Ref<bevy::input::touch::ForceTouch>|
                 {
-                    let output: bool = ForceTouch::eq(_self, other).into();
+                    let output: bool = bevy::input::touch::ForceTouch::eq(_self, other)
+                        .into();
                     output
                 },
             );
