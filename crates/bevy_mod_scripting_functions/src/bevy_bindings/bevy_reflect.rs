@@ -13567,7 +13567,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "set",
-                |_self: Mut<bevy::math::BVec2>, index: usize, value: bool| {
+                |mut _self: Mut<bevy::math::BVec2>, index: usize, value: bool| {
                     let output: () = ::bevy::math::BVec2::set(&mut _self, index, value)
                         .into();
                     output
@@ -13647,7 +13647,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "set",
-                |_self: Mut<bevy::math::BVec3>, index: usize, value: bool| {
+                |mut _self: Mut<bevy::math::BVec3>, index: usize, value: bool| {
                     let output: () = ::bevy::math::BVec3::set(&mut _self, index, value)
                         .into();
                     output
@@ -13745,7 +13745,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "set",
-                |_self: Mut<bevy::math::BVec4>, index: usize, value: bool| {
+                |mut _self: Mut<bevy::math::BVec4>, index: usize, value: bool| {
                     let output: () = ::bevy::math::BVec4::set(&mut _self, index, value)
                         .into();
                     output
@@ -22134,7 +22134,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "set",
-                |_self: Mut<bevy::math::BVec3A>, index: usize, value: bool| {
+                |mut _self: Mut<bevy::math::BVec3A>, index: usize, value: bool| {
                     let output: () = ::bevy::math::BVec3A::set(&mut _self, index, value)
                         .into();
                     output
@@ -22232,7 +22232,7 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .overwrite_script_function(
                 "set",
-                |_self: Mut<bevy::math::BVec4A>, index: usize, value: bool| {
+                |mut _self: Mut<bevy::math::BVec4A>, index: usize, value: bool| {
                     let output: () = ::bevy::math::BVec4A::set(&mut _self, index, value)
                         .into();
                     output

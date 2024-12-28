@@ -2341,7 +2341,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             )
             .overwrite_script_function(
                 "reverse",
-                |_self: Mut<bevy::math::primitives::Triangle2d>| {
+                |mut _self: Mut<bevy::math::primitives::Triangle2d>| {
                     let output: () = ::bevy::math::primitives::Triangle2d::reverse(
                             &mut _self,
                         )
@@ -2884,7 +2884,7 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             )
             .overwrite_script_function(
                 "reverse",
-                |_self: Mut<bevy::math::primitives::Triangle3d>| {
+                |mut _self: Mut<bevy::math::primitives::Triangle3d>| {
                     let output: () = ::bevy::math::primitives::Triangle3d::reverse(
                             &mut _self,
                         )
