@@ -27,11 +27,9 @@ impl ::bevy::app::Plugin for {{ "ScriptingPlugin" | prefix_cratename | convert_c
                 let output: {{ function.output.proxy_ty }} = ::{{ item.import_path }}::{{ function.ident }}(
                     {%- for arg in function.args -%}
                         {%- if arg.proxy_ty is matching("Ref.*")-%}
-                        &
-                        {%- endif -%}
+                        &{% endif -%}
                         {%- if arg.proxy_ty is matching ("Mut.*")-%}
-                        &mut
-                        {%- endif -%}
+                        &mut {% endif -%}
                         {%- if arg.ident != "self" -%}
                             {{- arg.ident -}}
                         {%- else -%}
