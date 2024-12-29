@@ -79,12 +79,9 @@ members = [
     "crates/bevy_mod_scripting_core",
     "crates/bevy_event_priority",
     "crates/languages/bevy_mod_scripting_lua",
-    "crates/languages/bevy_mod_scripting_lua_derive",
     "crates/languages/bevy_mod_scripting_rhai",
-    "crates/languages/bevy_mod_scripting_rhai_derive",
     "crates/languages/bevy_mod_scripting_rune",
     "crates/bevy_mod_scripting_common",
-    "crates/bevy_mod_scripting_derive",
     "crates/test_utils",
     "crates/bevy_mod_scripting_functions",
 ]
