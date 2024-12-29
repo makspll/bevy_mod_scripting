@@ -369,7 +369,10 @@ impl InteropError {
             error
         }))
     }
-
+    pub fn length_mismatch(expected: usize, got: usize) -> Self {
+        Self(Arc::new(InteropErrorInner::LengthMismatch { expected, got }))
+    }
+    
     pub fn external_error(error: Box<dyn std::error::Error + Send + Sync>) -> Self {
         Self(Arc::new(InteropErrorInner::OtherError { error }))
     }
@@ -428,6 +431,10 @@ pub enum InteropErrorInner {
     ValueMismatch {
         expected: TypeId,
         got: ScriptValue,
+    },
+    LengthMismatch {
+        expected: usize,
+        got: usize,
     },
     CouldNotDowncast {
         from: ReflectReference,
@@ -610,6 +617,9 @@ impl DisplayWithWorld for InteropErrorInner {
                 format!("Unfinished conversion in context of: {}. A better conversion exists but caller didn't handle the case.", context)
             },
             InteropErrorInner::OtherError { error } => error.to_string(),
+            InteropErrorInner::LengthMismatch { expected, got } => {
+                format!("Array/List Length mismatch, expected: {}, got: {}", expected, got)
+            },
         }
     }
 }

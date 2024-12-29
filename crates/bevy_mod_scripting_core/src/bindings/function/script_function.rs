@@ -15,6 +15,7 @@ use bevy::{
     },
 };
 use std::collections::HashMap;
+use std::hash::Hash;
 use std::sync::Arc;
 
 #[diagnostic::on_unimplemented(
@@ -25,6 +26,7 @@ pub trait ScriptFunction<'env, Marker> {
     fn into_dynamic_function(self) -> DynamicFunction<'static>;
 }
 
+/// Functionally identical to [`GetTypeRegistration`] but without the 'static bound
 pub trait GetInnerTypeDependencies {
     fn register_type_dependencies(registry: &mut TypeRegistry);
 }
@@ -54,9 +56,9 @@ macro_rules! self_type_dependency_only {
 }
 
 macro_rules! recursive_type_dependencies {
-    ($( ($path:path where $($bound:ident : $($bound_val:path);*),* $(=> with $self_:ident)?) ),* )  => {
+    ($( ($path:ty where $($bound:ident : $($bound_val:path);*),* $(,,const $const:ident : $const_ty:ty)? $(=> with $self_:ident)?) ),* )  => {
         $(
-            impl<$($bound : $($bound_val +)*),*> GetInnerTypeDependencies for $path {
+            impl<$($bound : $($bound_val +)*),* , $(const $const : $const_ty )?> GetInnerTypeDependencies for $path {
                 fn register_type_dependencies(registry: &mut TypeRegistry) {
                     $(
                         registry.register::<$bound>();
@@ -70,6 +72,18 @@ macro_rules! recursive_type_dependencies {
     };
 }
 
+macro_rules! register_tuple_dependencies {
+    ($($ty:ident),*) => {
+        impl<$($ty: GetTypeRegistration + Typed),*> GetInnerTypeDependencies for ($($ty,)*) {
+            fn register_type_dependencies(registry: &mut TypeRegistry) {
+                $(
+                    registry.register::<$ty>();
+                )*
+            }
+        }
+    };
+}
+
 no_type_dependencies!(ReflectReference, InteropError);
 self_type_dependency_only!(WorldCallbackAccess);
 
@@ -78,14 +92,13 @@ recursive_type_dependencies!(
     (Ref<'_, T>  where T: GetTypeRegistration),
     (Mut<'_, T>  where T: GetTypeRegistration),
     (Result<T, InteropError>  where T: GetTypeRegistration),
+    ([T; N]  where T: GetTypeRegistration;Typed,, const N: usize => with Self),
     (Option<T>  where T: GetTypeRegistration;FromReflect;Typed => with Self),
-    (Vec<T>  where T: GetTypeRegistration;FromReflect;Typed => with Self)
+    (Vec<T>  where T: GetTypeRegistration;FromReflect;Typed => with Self),
+    (HashMap<K,V> where K: GetTypeRegistration;FromReflect;Typed;Hash;Eq, V: GetTypeRegistration;FromReflect;Typed => with Self)
 );
 
-recursive_type_dependencies!(
-    (HashMap<K,V> where K: GetTypeRegistration, V: GetTypeRegistration)
-);
-
+bevy::utils::all_tuples!(register_tuple_dependencies, 1, 14, T);
 pub trait GetFunctionTypeDependencies<Marker> {
     fn register_type_dependencies(registry: &mut TypeRegistry);
 }

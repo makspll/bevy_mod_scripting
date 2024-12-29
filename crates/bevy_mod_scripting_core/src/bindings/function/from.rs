@@ -360,3 +360,28 @@ where
         }
     }
 }
+
+impl<T: FromScript + 'static, const N: usize> FromScript for [T; N]
+where
+    for<'w> T::This<'w>: Into<T>,
+{
+    type This<'w> = Self;
+
+    fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
+        match value {
+            ScriptValue::List(list) if list.len() == N => {
+                let converted_list = list
+                    .into_iter()
+                    .map(|item| T::from_script(item, world.clone()).map(Into::into))
+                    .collect::<Result<Vec<T>, _>>()?
+                    .try_into()
+                    .map_err(|list: Vec<T>| InteropError::length_mismatch(N, list.len()))?;
+                Ok(converted_list)
+            }
+            _ => Err(InteropError::value_mismatch(
+                std::any::TypeId::of::<[T; N]>(),
+                value,
+            )),
+        }
+    }
+}

@@ -132,8 +132,32 @@ impl<T: IntoScript> IntoScript for Vec<T> {
     }
 }
 
+impl<T: IntoScript, const N: usize> IntoScript for [T; N] {
+    fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        let mut values = Vec::with_capacity(N);
+        for val in self {
+            values.push(val.into_script(world.clone())?);
+        }
+        Ok(ScriptValue::List(values))
+    }
+}
+
 impl IntoScript for InteropError {
     fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::Error(self))
     }
 }
+
+macro_rules! impl_into_script_tuple {
+    ($( $ty:ident ),* ) => {
+        #[allow(non_snake_case)]
+        impl<$($ty: IntoScript),*> IntoScript for ($($ty,)*) {
+        fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
+            let ($($ty,)*) = self;
+            Ok(ScriptValue::List(vec![$($ty.into_script(world.clone())?),*]))
+        }
+    }
+}
+}
+
+bevy::utils::all_tuples!(impl_into_script_tuple, 1, 14, T);

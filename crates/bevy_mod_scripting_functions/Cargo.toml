@@ -21,4 +21,5 @@ bevy = { workspace = true, features = [
     "reflect_functions",
 ] }
 uuid = "*"
+smol_str = "*"
 bevy_mod_scripting_core = { workspace = true, optional = true }
