@@ -392,6 +392,14 @@ impl InteropError {
         }))
     }
 
+    pub fn invalid_access_count(count: usize, expected: usize, context: String) -> Self {
+        Self(Arc::new(InteropErrorInner::InvalidAccessCount {
+            count,
+            expected,
+            context,
+        }))
+    }
+
     pub fn inner(&self) -> &InteropErrorInner {
         &self.0
     }
@@ -428,6 +436,11 @@ pub enum InteropErrorInner {
     CannotClaimAccess {
         base: ReflectBaseType,
         location: Option<std::panic::Location<'static>>,
+    },
+    InvalidAccessCount {
+        count: usize,
+        expected: usize,
+        context: String,
     },
     ImpossibleConversion {
         into: TypeId,
@@ -644,6 +657,9 @@ impl DisplayWithWorld for InteropErrorInner {
             InteropErrorInner::OtherError { error } => error.to_string(),
             InteropErrorInner::LengthMismatch { expected, got } => {
                 format!("Array/List Length mismatch, expected: {}, got: {}", expected, got)
+            },
+            InteropErrorInner::InvalidAccessCount { count, expected, context } => {
+                format!("Invalid access count, expected: {}, got: {}. {}", expected, count, context)
             },
         }
     }

@@ -279,16 +279,14 @@ impl AccessMap {
             .collect()
     }
 
-    pub fn count_thread_acceesses(&self) -> usize {
-        self.individual_accesses
-            .iter()
-            .filter(|e| {
-                e.value()
-                    .read_by
-                    .iter()
-                    .any(|o| o.id == std::thread::current().id())
-            })
-            .count()
+    pub fn count_accesses(&self) -> usize {
+        self.individual_accesses.len()
+    }
+
+    pub fn release_all_accesses(&self) {
+        self.individual_accesses.clear();
+        self.global_lock
+            .store(false, std::sync::atomic::Ordering::Relaxed);
     }
 
     pub fn access_location<K: AccessMapKey>(

@@ -144,20 +144,25 @@ macro_rules! impl_script_function {
                     let res: Result<ScriptValue, InteropError> = (|| {
                         $( let $callback = world.clone(); )?
                         let world = world.try_read()?;
-                        // TODO: snapshot the accesses and release them after
-                        #[allow(unused_mut,unused_variables)]
-                        let mut current_arg = 0;
-                        $(
-                            current_arg += 1;
-                            let $param = <$param>::from_script($param, world.clone())
-                                .map_err(|e| InteropError::function_arg_conversion_error(current_arg.to_string(), e))?;
-                        )*
-                        let out = self( $( $callback, )? $( $param.into(), )* );
-                        $(
-                            let $out = out?;
-                            let out = $out;
-                        )?
-                        out.into_script(world.clone()).map_err(|e| InteropError::function_arg_conversion_error("return value".to_owned(), e))
+                        world.begin_access_scope()?;
+                        let ret = {
+                            #[allow(unused_mut,unused_variables)]
+                            let mut current_arg = 0;
+                            $(
+                                current_arg += 1;
+                                let $param = <$param>::from_script($param, world.clone())
+                                    .map_err(|e| InteropError::function_arg_conversion_error(current_arg.to_string(), e))?;
+                            )*
+                            let out = self( $( $callback, )? $( $param.into(), )* );
+                            $(
+                                let $out = out?;
+                                let out = $out;
+                            )?
+                            out.into_script(world.clone()).map_err(|e| InteropError::function_arg_conversion_error("return value".to_owned(), e))
+                        };
+                        // Safety: we're not holding any references to the world, the arguments which might have aliased have been dropped
+                        unsafe { world.end_access_scope()? };
+                        ret
                     })();
                     let script_value: ScriptValue = res.into();
                     script_value

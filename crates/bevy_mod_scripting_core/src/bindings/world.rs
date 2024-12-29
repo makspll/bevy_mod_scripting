@@ -289,6 +289,22 @@ impl<'w> WorldAccessGuard<'w> {
         }))
     }
 
+    /// Begins a new access scope. Currently this simply throws an erorr if there are any accesses held. Should only be used in a single-threaded context
+    pub(crate) fn begin_access_scope(&self) -> Result<(), InteropError> {
+        if self.0.accesses.count_accesses() != 0 {
+            return Err(InteropError::invalid_access_count(self.0.accesses.count_accesses(), 0, "When beginning access scope, presumably for a function call, some accesses are still held".to_owned()));
+        }
+
+        Ok(())
+    }
+
+    /// Ends the access scope, releasing all accesses. Should only be used in a single-threaded context
+    pub(crate) unsafe fn end_access_scope(&self) -> Result<(), InteropError> {
+        self.0.accesses.release_all_accesses();
+
+        Ok(())
+    }
+
     /// Purely debugging utility to list all accesses currently held.
     pub fn list_accesses(&self) -> Vec<(ReflectAccessId, AccessCount)> {
         self.0.accesses.list_accesses()

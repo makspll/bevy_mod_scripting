@@ -7,8 +7,8 @@ use bevy::{
 };
 use bevy_mod_scripting_core::{
     bindings::{
-        pretty_print::DisplayWithWorld, ReflectAllocator, ReflectReference, ScriptTypeRegistration,
-        WorldAccessGuard, WorldCallbackAccess,
+        access_map::ReflectAccessId, pretty_print::DisplayWithWorld, ReflectAllocator,
+        ReflectReference, ScriptTypeRegistration, WorldAccessGuard, WorldCallbackAccess,
     },
     context::ContextLoadingSettings,
     error::ScriptError,
@@ -97,6 +97,16 @@ fn init_lua_test_utils(_script_name: &Cow<'static, str>, lua: &mut Lua) -> Resul
     let assert_throws = lua
         .create_function(|lua, (f, regex): (LuaFunction, String)| {
             let world = lua.get_world();
+
+            // let result = match std::panic::catch_unwind(|| ) {
+            //     Ok(e) => e,
+            //     Err(panic) => {
+            //         return Err(mlua::Error::RuntimeError(format!(
+            //             "Function panicked: {:?}",
+            //             panic
+            //         )))
+            //     }
+            // };
             let result = f.call::<()>(());
             let err = match result {
                 Ok(_) => {
@@ -120,6 +130,34 @@ fn init_lua_test_utils(_script_name: &Cow<'static, str>, lua: &mut Lua) -> Resul
         })
         .unwrap();
 
+    let set_write_access = lua
+        .create_function(|lua, val: LuaReflectReference| {
+            let world = lua.get_world();
+            let inner: ReflectReference = val.into();
+
+            world.claim_write_access(ReflectAccessId::for_reference(inner.base.base_id).unwrap());
+            Ok(())
+        })
+        .unwrap();
+
+    let set_read_access = lua
+        .create_function(|lua, val: LuaReflectReference| {
+            let world = lua.get_world();
+            let inner: ReflectReference = val.into();
+
+            world.claim_read_access(ReflectAccessId::for_reference(inner.base.base_id).unwrap());
+            Ok(())
+        })
+        .unwrap();
+
+    let claim_whole_world_access = lua
+        .create_function(|lua, ()| {
+            let world = lua.get_world();
+            world.claim_global_access();
+            Ok(())
+        })
+        .unwrap();
+
     let globals = lua.globals();
     globals
         .set(
@@ -131,6 +169,14 @@ fn init_lua_test_utils(_script_name: &Cow<'static, str>, lua: &mut Lua) -> Resul
     globals.set("assert_throws", assert_throws).unwrap();
 
     globals.set("_get_mock_type", _get_mock_type).unwrap();
+
+    globals
+        .set("_claim_write_access", set_write_access)
+        .unwrap();
+    globals.set("_claim_read_access", set_read_access).unwrap();
+    globals
+        .set("_claim_global_access", claim_whole_world_access)
+        .unwrap();
     Ok(())
 }
 
@@ -184,12 +230,6 @@ impl Test {
             Failed::from(msg)
         })?;
 
-        // WorldCallbackAccess::with_callback_access(app.world_mut(), |world| {
-        //     lua.globals().set("world", LuaWorld(world.clone())).unwrap();
-
-        //     let code = lua.load(self.code).set_name(self.path.to_string_lossy());
-        //     code.exec().map_err(|e| e.to_string())
-        // })?;
         Ok(())
     }
 
