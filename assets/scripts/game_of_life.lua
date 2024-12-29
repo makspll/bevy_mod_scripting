@@ -1,8 +1,8 @@
 math.randomseed(os.time())
 
 function init()
-    local LifeState = world:get_type_by_name("LifeState")
-    local life_state = world:get_component(entity,LifeState)
+    local LifeState = world.get_type_by_name("LifeState")
+    local life_state = world.get_component(entity,LifeState)
     local cells = life_state.cells
 
     -- set some cells alive
@@ -13,15 +13,15 @@ function init()
 end
 
 function on_update()
-    local LifeState = world:get_type_by_name("LifeState")
-    local Settings = world:get_type_by_name("Settings")
+    local LifeState = world.get_type_by_name("LifeState")
+    local Settings = world.get_type_by_name("Settings")
 
-    local life_state = world:get_component(entity,LifeState)
+    local life_state = world.get_component(entity,LifeState)
     -- note currently this is a copy of the cells, as of now the macro does not automatically support Vec<T> proxies by reference
     local cells = life_state.cells
 
     -- note that here we do not make use of LuaProxyable and just go off pure reflection
-    local settings = world:get_resource(Settings)
+    local settings = world.get_resource(Settings)
     local dimensions = settings.physical_grid_dimensions
 
     

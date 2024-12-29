@@ -49,8 +49,8 @@ impl Default for ReflectReference {
     fn default() -> Self {
         Self {
             base: ReflectBaseType {
-                type_id: TypeId::of::<WorldCallbackAccess>(),
-                base_id: ReflectBase::World,
+                type_id: None::<TypeId>.or_fake_id(),
+                base_id: ReflectBase::Owned(ReflectAllocationId::new(0)),
             },
             reflect_path: ParsedPath(vec![]),
         }
@@ -87,16 +87,6 @@ impl ReflectReference {
             bevy::reflect::ReflectRef::Enum(e) => Some(e.field_len()),
             _ => None,
         })
-    }
-
-    pub fn new_world() -> Self {
-        Self {
-            base: ReflectBaseType {
-                type_id: TypeId::of::<WorldCallbackAccess>(),
-                base_id: ReflectBase::World,
-            },
-            reflect_path: ParsedPath(Vec::default()),
-        }
     }
 
     pub fn new_allocated<T: PartialReflect>(
@@ -170,10 +160,6 @@ impl ReflectReference {
     /// Indexes into the reflect path inside this reference.
     /// You can use [`Self::reflect`] and [`Self::reflect_mut`] to get the actual value.
     pub fn index_path<T: Into<ParsedPath>>(&mut self, index: T) {
-        debug_assert!(
-            !matches!(self.base.base_id, ReflectBase::World),
-            "Trying to index into a world reference. This will always fail"
-        );
         self.reflect_path.0.extend(index.into().0);
     }
 
@@ -199,10 +185,6 @@ impl ReflectReference {
         &self,
         world: WorldGuard,
     ) -> Result<Box<dyn PartialReflect>, InteropError> {
-        if matches!(self.base.base_id, ReflectBase::World) {
-            return Ok(Box::new(WorldCallbackAccess::from_guard(world)));
-        }
-
         if let ReflectBase::Owned(id) = &self.base.base_id {
             if self.reflect_path.is_empty() && id.strong_count() == 0 {
                 let allocator = world.allocator();
@@ -241,11 +223,6 @@ impl ReflectReference {
         world: WorldGuard,
         f: F,
     ) -> Result<O, InteropError> {
-        debug_assert!(
-            !matches!(self.base.base_id, ReflectBase::World),
-            "Trying to access a world reference directly. This will always fail"
-        );
-
         let access_id = ReflectAccessId::for_reference(self.base.base_id.clone())
             .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
         with_access_read!(
@@ -266,11 +243,6 @@ impl ReflectReference {
         world: WorldGuard,
         f: F,
     ) -> Result<O, InteropError> {
-        debug_assert!(
-            !matches!(self.base.base_id, ReflectBase::World),
-            "Trying to access a world reference directly. This will always fail"
-        );
-
         let access_id = ReflectAccessId::for_reference(self.base.base_id.clone())
             .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
         with_access_write!(
@@ -448,7 +420,6 @@ pub enum ReflectBase {
     Component(Entity, ComponentId),
     Resource(ComponentId),
     Owned(ReflectAllocationId),
-    World,
 }
 
 impl ReflectBase {

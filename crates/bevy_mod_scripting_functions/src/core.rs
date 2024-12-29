@@ -14,7 +14,7 @@ use bindings::{
         from::{Mut, Ref, Val},
         from_ref::FromScriptRef,
         into_ref::IntoScriptRef,
-        script_function::{GetFunctionTypeDependencies, ScriptFunction},
+        script_function::{CallerContext, GetFunctionTypeDependencies, ScriptFunction},
     },
     pretty_print::DisplayWithWorld,
     script_value::ScriptValue,
@@ -122,7 +122,16 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
         )
         .overwrite_script_function(
             "insert_children",
-            |w: WorldCallbackAccess, e: Val<Entity>, index: usize, c: Vec<Val<Entity>>| {
+            |caller_context: CallerContext,
+             w: WorldCallbackAccess,
+             e: Val<Entity>,
+             index: usize,
+             c: Vec<Val<Entity>>| {
+                let index = if caller_context.convert_to_0_indexed {
+                    index - 1
+                } else {
+                    index
+                };
                 w.insert_children(*e, index, &c.into_iter().map(|v| *v).collect::<Vec<_>>())
             },
         )
@@ -179,18 +188,14 @@ pub fn register_reflect_reference_functions(
         )
         .overwrite_script_function(
             "get",
-            |world: WorldCallbackAccess, mut self_: ReflectReference, key: ScriptValue| {
-                let path: ParsedPath = key.try_into()?;
-                self_.index_path(path);
-                let world = world.try_read().expect("Stale world");
-                ReflectReference::into_script_ref(self_, world)
-            },
-        )
-        .overwrite_script_function(
-            "get_1_indexed",
-            |world: WorldCallbackAccess, mut self_: ReflectReference, key: ScriptValue| {
+            |caller_context: CallerContext,
+             world: WorldCallbackAccess,
+             mut self_: ReflectReference,
+             key: ScriptValue| {
                 let mut path: ParsedPath = key.try_into()?;
-                path.convert_to_0_indexed();
+                if caller_context.convert_to_0_indexed {
+                    path.convert_to_0_indexed();
+                }
                 self_.index_path(path);
                 let world = world.try_read().expect("Stale world");
                 ReflectReference::into_script_ref(self_, world)
@@ -198,14 +203,17 @@ pub fn register_reflect_reference_functions(
         )
         .overwrite_script_function(
             "set",
-            |world: WorldCallbackAccess,
+            |caller_context: CallerContext,
+             world: WorldCallbackAccess,
              self_: ScriptValue,
              key: ScriptValue,
              value: ScriptValue| {
                 if let ScriptValue::Reference(mut self_) = self_ {
                     let world = world.try_read().expect("stale world");
-                    let path: ParsedPath = key.try_into().unwrap();
-
+                    let mut path: ParsedPath = key.try_into().unwrap();
+                    if caller_context.convert_to_0_indexed {
+                        path.convert_to_0_indexed();
+                    }
                     self_.index_path(path);
                     let r: ScriptValue = self_
                         .with_reflect_mut(world.clone(), |r| {
@@ -225,36 +233,6 @@ pub fn register_reflect_reference_functions(
                     return r;
                 }
                 ScriptValue::Unit
-            },
-        )
-        .overwrite_script_function(
-            "set_1_indexed",
-            |world: WorldCallbackAccess,
-             mut self_: ReflectReference,
-             key: ScriptValue,
-             value: ScriptValue| {
-                let world = world.try_read().expect("stale world");
-                let mut path: ParsedPath = key.try_into()?;
-                path.convert_to_0_indexed();
-                self_.index_path(path);
-
-                let r: ScriptValue = self_
-                    .with_reflect_mut(world.clone(), |r| {
-                        let target_type_id = r
-                            .get_represented_type_info()
-                            .map(|i| i.type_id())
-                            .or_fake_id();
-                        let other = <Box<dyn PartialReflect>>::from_script_ref(
-                            target_type_id,
-                            value,
-                            world.clone(),
-                        )?;
-
-                        r.try_apply(other.as_partial_reflect()).unwrap();
-                        Ok::<_, InteropError>(())
-                    })
-                    .into();
-                Ok(r)
             },
         );
 

@@ -38,8 +38,6 @@ pub enum ScriptValue {
     Reference(ReflectReference),
     /// Represents any error, will be thrown when returned to a script
     Error(InteropError),
-    /// A placeholder for a [`crate::bindings::WorldCallbackAccess`] value.
-    World,
 }
 
 impl ScriptValue {
@@ -53,7 +51,6 @@ impl ScriptValue {
             ScriptValue::List(_) => "List".to_owned(),
             ScriptValue::Reference(_) => "Reference".to_owned(),
             ScriptValue::Error(_) => "Error".to_owned(),
-            ScriptValue::World => "World".to_owned(),
         }
     }
 }

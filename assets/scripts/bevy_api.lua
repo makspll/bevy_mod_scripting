@@ -9,20 +9,20 @@ end
 
 function on_event()
     -- send exit event, to finish after one call
-    world:exit()
+    world.exit()
 
     print(entity) 
     print(script)
     print(world)
 
-    -- print(world:hello(entity, entity))
-    -- print(world:test_vec({entity, entity})[1])
+    -- print(world.hello(entity, entity))
+    -- print(world.test_vec({entity, entity})[1])
 
 
-    local my_component_type = world:get_type_by_name("MyComponent")
+    local my_component_type = world.get_type_by_name("MyComponent")
     print("MyComponent type: ", my_component_type:short_name())
 
-    local comp = world:get_component(entity, my_component_type)
+    local comp = world.get_component(entity, my_component_type)
     print("Before script: ", comp:print_value())
 
     print("\noption")
@@ -142,7 +142,7 @@ function on_event()
     -- print("F")
 
 
-    -- world:exit()
+    -- world.exit()
     -- do return end
     -- print("============")
 
@@ -150,10 +150,10 @@ function on_event()
     -- comp.mat3[1][1] = 42
 
     -- -- now let's retrieve these again to see if we actually changed their values permanently
-    -- comp = world:get_component(entity,my_component_type)
+    -- comp = world.get_component(entity,my_component_type)
 
     -- print("After script:")
     -- print(comp)
 
-    -- world:exit()
+    -- world.exit()
 end

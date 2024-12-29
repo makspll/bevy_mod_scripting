@@ -77,7 +77,6 @@ impl ReflectReferencePrinter {
             ReflectBase::Component(e, _) => format!("Component on entity {}", e),
             ReflectBase::Resource(_) => "Resource".to_owned(),
             ReflectBase::Owned(_) => "Allocation".to_owned(),
-            ReflectBase::World => "World".to_owned(),
         };
 
         out.push_str(&format!("{}({})", base_kind, type_path));
@@ -403,7 +402,6 @@ impl DisplayWithWorld for ScriptValue {
             ScriptValue::Integer(i) => i.to_string(),
             ScriptValue::Float(f) => f.to_string(),
             ScriptValue::String(cow) => cow.to_string(),
-            ScriptValue::World => "World".to_owned(),
             ScriptValue::Error(script_error) => script_error.to_string(),
             ScriptValue::List(vec) => {
                 let mut string = String::new();

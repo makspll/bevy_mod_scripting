@@ -13,6 +13,7 @@ use bevy::reflect::{
     },
     PartialReflect,
 };
+use script_function::CallerContext;
 
 use crate::{
     error::{FlattenError, InteropError, InteropErrorInner, ScriptError, ScriptResult},
@@ -32,6 +33,7 @@ pub trait CallScriptFunction {
         &self,
         args: I,
         world: WorldGuard,
+        context: CallerContext,
     ) -> Result<ScriptValue, InteropError>;
 }
 
@@ -40,26 +42,22 @@ impl CallScriptFunction for DynamicFunction<'_> {
         &self,
         args: I,
         world: WorldGuard,
+        context: CallerContext,
     ) -> Result<ScriptValue, InteropError> {
-        let mut args = args.into_iter().peekable();
+        let args = args.into_iter();
 
-        let add_world =
-            self.first_arg_is_world() && args.peek().map_or(true, |a| a != &ScriptValue::World);
-
+        let add_context = self.has_caller_context_arg();
         let mut args_list = ArgList::new();
 
-        if add_world {
+        if add_context {
+            args_list = args_list.push_arg(ArgValue::Owned(Box::new(context)));
             args_list = args_list.push_arg(ArgValue::Owned(Box::new(
                 WorldCallbackAccess::from_guard(world.clone()),
             )));
         }
 
         for arg in args {
-            let arg_val = ArgValue::Owned(match arg {
-                ScriptValue::World => Box::new(WorldCallbackAccess::from_guard(world.clone())),
-                _ => Box::new(arg),
-            });
-
+            let arg_val = ArgValue::Owned(Box::new(arg));
             args_list = args_list.push_arg(arg_val);
         }
 
@@ -81,13 +79,13 @@ impl CallScriptFunction for DynamicFunction<'_> {
 }
 
 pub trait DynamicFunctionExt {
-    fn first_arg_is_world(&self) -> bool;
+    fn has_caller_context_arg(&self) -> bool;
 }
 
 impl DynamicFunctionExt for DynamicFunction<'_> {
-    fn first_arg_is_world(&self) -> bool {
+    fn has_caller_context_arg(&self) -> bool {
         self.info().args().first().map_or(false, |arg| {
-            arg.type_id() == std::any::TypeId::of::<WorldCallbackAccess>()
+            arg.type_id() == std::any::TypeId::of::<CallerContext>()
         })
     }
 }

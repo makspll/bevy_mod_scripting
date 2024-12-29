@@ -48,12 +48,14 @@ impl FromLua for LuaScriptValue {
             // Value::Function(function) => todo!(),
             // Value::Thread(thread) => todo!(),
             Value::UserData(ud) => {
-                let ud = ud.borrow::<LuaReflectReference>()?;
-                if ud.0.base.base_id == ReflectBase::World {
-                    ScriptValue::World
-                } else {
-                    ScriptValue::Reference(ud.clone().into())
-                }
+                let ud = ud.borrow::<LuaReflectReference>().map_err(|e| {
+                    mlua::Error::FromLuaConversionError {
+                        from: "UserData",
+                        to: "LuaReflectReference".to_owned(),
+                        message: Some(e.to_string()),
+                    }
+                })?;
+                ScriptValue::Reference(ud.clone().into())
             }
             // Value::Error(error) => todo!(),
             _ => {

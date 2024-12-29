@@ -1,5 +1,5 @@
-local entity = world:spawn()
+local entity = world.spawn()
 
-world:insert_children(entity,1 , {})
+world.insert_children(entity,1 , {})
 
-assert(#world:get_children(entity) == 0)
+assert(#world.get_children(entity) == 0)

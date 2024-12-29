@@ -8,7 +8,7 @@ use crate::{
     prelude::{ScriptValue, WorldCallbackAccess},
 };
 use bevy::{
-    prelude::{AppFunctionRegistry, IntoFunction, World},
+    prelude::{AppFunctionRegistry, IntoFunction, Reflect, World},
     reflect::{
         func::{DynamicFunction, FunctionInfo},
         FromReflect, GetTypeRegistration, PartialReflect, TypeRegistration, TypeRegistry, Typed,
@@ -85,7 +85,7 @@ macro_rules! register_tuple_dependencies {
 }
 
 no_type_dependencies!(ReflectReference, InteropError);
-self_type_dependency_only!(WorldCallbackAccess);
+self_type_dependency_only!(WorldCallbackAccess, CallerContext);
 
 recursive_type_dependencies!(
     (Val<T> where T: GetTypeRegistration),
@@ -103,12 +103,24 @@ pub trait GetFunctionTypeDependencies<Marker> {
     fn register_type_dependencies(registry: &mut TypeRegistry);
 }
 
-/// The Script Function equivalent for dynamic functions
+/// The caller context when calling a script function.
+/// Functions can choose to react to caller preferences such as converting 1-indexed numbers to 0-indexed numbers
+#[derive(Clone, Copy, Debug, Reflect)]
+pub struct CallerContext {
+    pub convert_to_0_indexed: bool,
+}
+
+/// The Script Function equivalent for dynamic functions. Currently unused
 /// TODO: have a separate function registry to avoid the need for boxing script args every time
 pub struct DynamicScriptFunction {
     pub info: FunctionInfo,
-    pub func:
-        Arc<dyn Fn(WorldCallbackAccess, Vec<ScriptValue>) -> Result<ScriptValue, InteropError>>,
+    pub func: Arc<
+        dyn Fn(
+            CallerContext,
+            WorldCallbackAccess,
+            Vec<ScriptValue>,
+        ) -> Result<ScriptValue, InteropError>,
+    >,
 }
 
 macro_rules! impl_script_function {
@@ -117,14 +129,20 @@ macro_rules! impl_script_function {
         // fn(T1...Tn) -> O
         impl_script_function!(@ $( $param ),* : -> O => O );
         // fn(WorldCallbackAccess, T1...Tn) -> O
-        impl_script_function!(@ $( $param ),* : (callback: WorldCallbackAccess) -> O => O);
+        impl_script_function!(@ $( $param ),* : ,(callback: WorldCallbackAccess) -> O => O);
+        // fn(CallerContext, WorldCallbackAccess, T1...Tn) -> O
+        impl_script_function!(@ $( $param ),* : (context: CallerContext),(callback: WorldCallbackAccess) -> O => O);
+
         // fn(T1...Tn) -> Result<O, InteropError>
         impl_script_function!(@ $( $param ),* : -> O => Result<O, InteropError> where s);
         // fn(WorldCallbackAccess, T1...Tn) -> Result<O, InteropError>
-        impl_script_function!(@ $( $param ),* : (callback: WorldCallbackAccess) -> O => Result<O, InteropError> where s);
+        impl_script_function!(@ $( $param ),* : ,(callback: WorldCallbackAccess) -> O => Result<O, InteropError> where s);
+        // fn(CallerContext, WorldCallbackAccess, T1...Tn) -> Result<O, InteropError>
+        impl_script_function!(@ $( $param ),* : (context: CallerContext),(callback: WorldCallbackAccess) -> O => Result<O, InteropError> where s);
+
     };
 
-    (@ $( $param:ident ),* : $(($callback:ident: $callbackty:ty))? -> O => $res:ty $(where $out:ident)?) => {
+    (@ $( $param:ident ),* :  $(($context:ident: $contextty:ty))? $(,($callback:ident: $callbackty:ty))? -> O => $res:ty $(where $out:ident)?) => {
         #[allow(non_snake_case)]
         impl<
             'env,
@@ -132,16 +150,18 @@ macro_rules! impl_script_function {
             O,
             F
         > ScriptFunction<'env,
-            fn( $( $callbackty, )? $($param ),* ) -> $res
+            fn( $($contextty,)? $( $callbackty, )? $($param ),* ) -> $res
         > for F
         where
             O: IntoScript,
-            F: Fn( $( $callbackty, )? $($param ),* ) -> $res + Send + Sync + 'static,
+            F: Fn(  $($contextty,)? $( $callbackty, )? $($param ),* ) -> $res + Send + Sync + 'static,
             $( $param::This<'env>: Into<$param>),*
         {
+            #[allow(unused_variables)]
             fn into_dynamic_function(self) -> DynamicFunction<'static> {
-                (move |world: WorldCallbackAccess, $( $param: ScriptValue ),* | {
+                (move |caller_context: CallerContext, world: WorldCallbackAccess, $( $param: ScriptValue ),* | {
                     let res: Result<ScriptValue, InteropError> = (|| {
+                        $( let $context = caller_context; )?
                         $( let $callback = world.clone(); )?
                         let world = world.try_read()?;
                         world.begin_access_scope()?;
@@ -153,7 +173,7 @@ macro_rules! impl_script_function {
                                 let $param = <$param>::from_script($param, world.clone())
                                     .map_err(|e| InteropError::function_arg_conversion_error(current_arg.to_string(), e))?;
                             )*
-                            let out = self( $( $callback, )? $( $param.into(), )* );
+                            let out = self( $( $context,)? $( $callback, )? $( $param.into(), )* );
                             $(
                                 let $out = out?;
                                 let out = $out;
@@ -188,8 +208,8 @@ macro_rules! impl_script_function_type_dependencies{
     };
 }
 
-bevy::utils::all_tuples!(impl_script_function, 0, 14, T);
-bevy::utils::all_tuples!(impl_script_function_type_dependencies, 0, 14, T);
+bevy::utils::all_tuples!(impl_script_function, 0, 13, T);
+bevy::utils::all_tuples!(impl_script_function_type_dependencies, 0, 13, T);
 
 /// Utility for quickly checking your type can be used as an argument in a script function
 ///

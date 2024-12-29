@@ -17,7 +17,7 @@ function on_update()
             coroutine.resume(my_routine)
         else
             print("Couroutine has finished, no longer running")
-            world:exit()
+            world.exit()
         end
     end
 end

@@ -148,7 +148,6 @@ impl ReflectAccessId {
             ReflectBase::Resource(id) => Some(Self::for_component_id(id)),
             ReflectBase::Component(_, id) => Some(Self::for_component_id(id)),
             ReflectBase::Owned(id) => Some(Self::for_allocation(id)),
-            ReflectBase::World => None,
         }
     }
 }
