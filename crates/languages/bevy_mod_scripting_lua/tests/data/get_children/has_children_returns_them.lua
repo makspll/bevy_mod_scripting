@@ -1,5 +1,5 @@
 local entity = world:spawn()
-local child = world:spawn(entity)
+local child = world:spawn()
 
 world:push_children(entity, {child})
 

@@ -1,6 +1,3 @@
-pub mod assets;
-pub mod docs;
-// pub mod type_data;
 pub mod util;
 use bevy::{
     app::{App, Plugin, Startup},
@@ -16,12 +13,12 @@ use bevy_mod_scripting_core::{
     handler::Args,
     reflection_extensions::PartialReflectExt,
     script::ScriptId,
-    AddContextPreHandlingInitializer, ScriptingPlugin,
+    AddContextInitializer, AddContextPreHandlingInitializer, ScriptingPlugin,
 };
 use bindings::{
     // providers::bevy_ecs::LuaEntity,
     // proxy::LuaProxied,
-    reference::LuaReflectReference,
+    reference::{LuaReflectReference, LuaStaticReflectReference},
     world::{GetWorld, LuaWorld},
 };
 pub use mlua;
@@ -81,6 +78,36 @@ impl<A: LuaEventArg> Plugin for LuaScriptingPlugin<A> {
     }
 
     fn cleanup(&self, app: &mut App) {
+        // find all registered types, and insert dummy for calls
+        // let mut type_registry = app.world_mut().get_resource_or_init::<AppTypeRegistry>();
+        // let mut type_registry = type_registry.read();
+
+        // type_registry.iter().map(|t| {
+        //     t.
+        // })
+        app.add_context_initializer::<()>(|_script_id, context: &mut Lua| {
+            let world = context.get_world();
+            let type_registry = world.type_registry();
+            let type_registry = type_registry.read();
+
+            for registration in type_registry.iter() {
+                // only do this for non generic types
+                // we don't want to see `Vec<Entity>:function()` in lua
+                if !registration.type_info().generics().is_empty() {
+                    continue;
+                }
+
+                if let Some(global_name) = registration.type_info().type_path_table().ident() {
+                    let ref_ = LuaStaticReflectReference(registration.type_id());
+                    context
+                        .globals()
+                        .set(global_name, ref_)
+                        .map_err(ScriptError::from_mlua_error)?;
+                }
+            }
+            Ok(())
+        });
+
         // let mut type_registry = app.world_mut().get_resource_mut().unwrap();
 
         // we register up to two levels of nesting, if more are needed, the user will have to do this manually

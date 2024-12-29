@@ -294,6 +294,34 @@ impl UserData for LuaReflectReference {
     }
 }
 
+/// A reference to just a type. This is used to provide a static call mechanism when we know the type we want to call a function on.
+///
+/// For example if we want `Entity::from_raw(usize)` to be callable as `Entity.from_raw(usize)` in lua, we can set the global `Entity` to a `LuaStaticReflectReference(Entity::type_id())`.
+
+#[derive(Debug, Clone, Copy, PartialEq, mlua::FromLua)]
+pub struct LuaStaticReflectReference(pub TypeId);
+
+impl UserData for LuaStaticReflectReference {
+    fn add_methods<T: UserDataMethods<Self>>(m: &mut T) {
+        m.add_meta_function(
+            MetaMethod::Index,
+            |lua, (self_, key): (LuaStaticReflectReference, LuaScriptValue)| {
+                let type_id = self_.0;
+
+                let key: ScriptValue = key.into();
+
+                if let ScriptValue::String(ref key) = key {
+                    if let Some(func) = lookup_function(lua, key, type_id) {
+                        return func?.into_lua(lua);
+                    }
+                };
+
+                Err(InteropError::missing_function(type_id, key.to_string()).into())
+            },
+        );
+    }
+}
+
 // #[cfg(test)]
 // mod test {
 

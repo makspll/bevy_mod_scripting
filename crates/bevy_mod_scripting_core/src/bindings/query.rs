@@ -104,7 +104,10 @@ impl ScriptQueryBuilder {
 
 #[derive(Clone, Reflect)]
 #[reflect(opaque)]
-pub struct ScriptQueryResult(pub Entity, pub Vec<ReflectReference>);
+pub struct ScriptQueryResult {
+    pub entity: Entity,
+    pub components: Vec<ReflectReference>,
+}
 
 impl WorldCallbackAccess {
     pub fn query(
@@ -159,7 +162,10 @@ impl<'w> WorldAccessGuard<'w> {
                             reflect_path: ParsedPath(vec![]),
                         })
                         .collect();
-                    ScriptQueryResult(r.id(), references)
+                    ScriptQueryResult {
+                        entity: r.id(),
+                        components: references,
+                    }
                 })
                 .collect())
         })

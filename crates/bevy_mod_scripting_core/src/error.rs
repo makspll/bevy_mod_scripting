@@ -18,7 +18,9 @@ use thiserror::Error;
 
 use crate::{
     bindings::{
-        access_map::DisplayCodeLocation, pretty_print::{DisplayWithWorld, DisplayWithWorldAndDummy}, ReflectAllocationId, ReflectBase, ReflectBaseType, ReflectReference
+        access_map::DisplayCodeLocation,
+        pretty_print::{DisplayWithWorld, DisplayWithWorldAndDummy},
+        ReflectAllocationId, ReflectBase, ReflectBaseType, ReflectReference,
     },
     impl_dummy_display,
     prelude::ScriptValue,
@@ -201,16 +203,16 @@ impl From<InteropError> for ScriptError {
     }
 }
 
-pub trait FlattenError<O,E> {
+pub trait FlattenError<O, E> {
     fn flatten_interop_error(self) -> Result<O, E>;
 }
 
-impl <O>FlattenError<O, InteropError> for Result<Result<O,InteropError>, InteropError> {
+impl<O> FlattenError<O, InteropError> for Result<Result<O, InteropError>, InteropError> {
     fn flatten_interop_error(self) -> Result<O, InteropError> {
         match self {
             Ok(Ok(o)) => Ok(o),
             Ok(Err(e)) => Err(e),
-            Err(e) => Err(e)
+            Err(e) => Err(e),
         }
     }
 }
@@ -254,8 +256,14 @@ impl InteropError {
 
     /// Thrown if access to the given reflection base is required but cannot be claimed.
     /// This is likely due to some other script already claiming access to the base.
-    pub fn cannot_claim_access(base: ReflectBaseType, location: Option<std::panic::Location<'static>>) -> Self {
-        Self(Arc::new(InteropErrorInner::CannotClaimAccess { base, location }))
+    pub fn cannot_claim_access(
+        base: ReflectBaseType,
+        location: Option<std::panic::Location<'static>>,
+    ) -> Self {
+        Self(Arc::new(InteropErrorInner::CannotClaimAccess {
+            base,
+            location,
+        }))
     }
 
     /// Thrown if a conversion into the given type is impossible.
@@ -266,11 +274,11 @@ impl InteropError {
 
     /// Thrown if a conversion was not fully completed, as a better conversion exists.
     /// If a function might throw this error it should be handled by the caller.
-    /// 
+    ///
     /// A user seeing this error is evidence of unfinished logic.
     pub fn better_conversion_exists<T>() -> Self {
-        Self(Arc::new(InteropErrorInner::BetterConversionExists{
-            context: std::any::type_name::<T>().to_string()
+        Self(Arc::new(InteropErrorInner::BetterConversionExists {
+            context: std::any::type_name::<T>().to_string(),
         }))
     }
 
@@ -343,10 +351,7 @@ impl InteropError {
     }
 
     /// Thrown when an error happens in a function call. The inner error provides details on the error.
-    pub fn function_interop_error(
-        function_info: &FunctionInfo,
-        error: InteropError,
-    ) -> Self {
+    pub fn function_interop_error(function_info: &FunctionInfo, error: InteropError) -> Self {
         Self(Arc::new(InteropErrorInner::FunctionInteropError {
             function_name: function_info
                 .name()
@@ -366,15 +371,25 @@ impl InteropError {
     pub fn function_arg_conversion_error(argument: String, error: InteropError) -> Self {
         Self(Arc::new(InteropErrorInner::FunctionArgConversionError {
             argument,
-            error
+            error,
         }))
     }
     pub fn length_mismatch(expected: usize, got: usize) -> Self {
-        Self(Arc::new(InteropErrorInner::LengthMismatch { expected, got }))
+        Self(Arc::new(InteropErrorInner::LengthMismatch {
+            expected,
+            got,
+        }))
     }
-    
+
     pub fn external_error(error: Box<dyn std::error::Error + Send + Sync>) -> Self {
         Self(Arc::new(InteropErrorInner::OtherError { error }))
+    }
+
+    pub fn missing_function(on: TypeId, function_name: String) -> Self {
+        Self(Arc::new(InteropErrorInner::MissingFunctionError {
+            on,
+            function_name,
+        }))
     }
 
     pub fn inner(&self) -> &InteropErrorInner {
@@ -418,7 +433,7 @@ pub enum InteropErrorInner {
         into: TypeId,
     },
     BetterConversionExists {
-        context: String
+        context: String,
     },
     TypeMismatch {
         expected: TypeId,
@@ -465,13 +480,17 @@ pub enum InteropErrorInner {
     FunctionCallError {
         inner: FunctionError,
     },
+    MissingFunctionError {
+        on: TypeId,
+        function_name: String,
+    },
     FunctionInteropError {
         function_name: String,
         error: InteropError,
     },
     FunctionArgConversionError {
         argument: String,
-        error: InteropError
+        error: InteropError,
     },
     OtherError {
         error: Box<dyn std::error::Error + Send + Sync>,
@@ -487,7 +506,13 @@ impl PartialEq for InteropErrorInner {
 impl DisplayWithWorld for InteropErrorInner {
     fn display_with_world(&self, world: crate::bindings::WorldGuard) -> String {
         match self {
-            
+            InteropErrorInner::MissingFunctionError { on, function_name } => {
+                format!(
+                    "Could not find function: {} for type: {}",
+                    function_name,
+                    on.display_with_world(world)
+                )
+            },
             InteropErrorInner::UnregisteredBase { base } => {
                 format!("Unregistered base type: {}", base.display_with_world(world))
             }

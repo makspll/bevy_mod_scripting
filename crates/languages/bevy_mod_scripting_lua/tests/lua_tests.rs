@@ -15,6 +15,7 @@ use bevy_mod_scripting_core::{
     event::CallbackLabel,
     script::ScriptId,
 };
+use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
 use bevy_mod_scripting_lua::{
     bindings::{
         reference::LuaReflectReference,
@@ -47,7 +48,7 @@ fn init_app() -> App {
     app.add_plugins(AssetPlugin::default())
         .add_plugins(HierarchyPlugin)
         .add_plugins(LuaScriptingPlugin::<()>::default())
-        .add_plugins(bevy_mod_scripting_functions::BevyFunctionsPlugin);
+        .add_plugins(ScriptFunctionsPlugin);
 
     // for some reason hierarchy plugin doesn't register the children component
     app.world_mut().register_component::<Children>();

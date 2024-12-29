@@ -1,7 +1,5 @@
 use ::bevy::prelude::*;
-#[cfg(feature = "core_functions")]
 pub mod bevy_bindings;
-#[cfg(feature = "core_functions")]
 pub mod core;
 
 pub mod namespaced_register;
@@ -9,11 +7,25 @@ pub mod namespaced_register;
 pub use core::*;
 pub use namespaced_register::*;
 
-pub struct BevyFunctionsPlugin;
+pub struct ScriptFunctionsPlugin;
 
-impl Plugin for BevyFunctionsPlugin {
+impl Plugin for ScriptFunctionsPlugin {
     fn build(&self, app: &mut App) {
-        #[cfg(feature = "core_functions")]
-        app.add_plugins(core::CoreFunctionsPlugin);
+        register_bevy_bindings(app);
+        let world = app.world_mut();
+
+        register_world_functions(world).expect("Failed to register world functions");
+
+        register_reflect_reference_functions(world)
+            .expect("Failed to register reflect reference functions");
+
+        register_script_type_registration_functions(world)
+            .expect("Failed to register script type registration functions");
+
+        register_script_query_builder_functions(world)
+            .expect("Failed to register script query builder functions");
+
+        register_script_query_result_functions(world)
+            .expect("Failed to register script query result functions");
     }
 }

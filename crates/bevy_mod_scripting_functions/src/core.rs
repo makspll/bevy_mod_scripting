@@ -24,9 +24,7 @@ use bindings::{
 use error::InteropError;
 use reflection_extensions::TypeIdExtensions;
 
-use crate::namespaced_register::NamespaceBuilder;
-
-pub struct CoreFunctionsPlugin;
+use crate::{bevy_bindings::LuaBevyScriptingPlugin, namespaced_register::NamespaceBuilder};
 
 pub trait RegisterScriptFunction {
     fn overwrite_script_function<M, N, F>(&mut self, name: N, f: F) -> &mut Self
@@ -52,23 +50,11 @@ impl<S: 'static> RegisterScriptFunction for NamespaceBuilder<'_, S> {
     }
 }
 
-impl Plugin for CoreFunctionsPlugin {
-    fn build(&self, app: &mut App) {
-        let world = app.world_mut();
-        register_world_functions(world).expect("Failed to register world functions");
-
-        register_reflect_reference_functions(world)
-            .expect("Failed to register reflect reference functions");
-
-        register_script_type_registration_functions(world)
-            .expect("Failed to register script type registration functions");
-
-        register_script_query_builder_functions(world)
-            .expect("Failed to register script query builder functions");
-    }
+pub fn register_bevy_bindings(app: &mut App) {
+    app.add_plugins(LuaBevyScriptingPlugin);
 }
 
-fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrationError> {
+pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrationError> {
     NamespaceBuilder::<WorldCallbackAccess>::new(reg)
         .overwrite_script_function("spawn", |s: WorldCallbackAccess| Ok(Val(s.spawn()?)))
         .overwrite_script_function(
@@ -180,7 +166,9 @@ fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrationE
     Ok(())
 }
 
-fn register_reflect_reference_functions(reg: &mut World) -> Result<(), FunctionRegistrationError> {
+pub fn register_reflect_reference_functions(
+    reg: &mut World,
+) -> Result<(), FunctionRegistrationError> {
     NamespaceBuilder::<ReflectReference>::new(reg)
         .overwrite_script_function(
             "display_ref",
@@ -273,7 +261,7 @@ fn register_reflect_reference_functions(reg: &mut World) -> Result<(), FunctionR
     Ok(())
 }
 
-fn register_script_type_registration_functions(
+pub fn register_script_type_registration_functions(
     registry: &mut World,
 ) -> Result<(), FunctionRegistrationError> {
     NamespaceBuilder::<ScriptTypeRegistration>::new(registry)
@@ -290,7 +278,7 @@ fn register_script_type_registration_functions(
     Ok(())
 }
 
-fn register_script_query_builder_functions(
+pub fn register_script_query_builder_functions(
     registry: &mut World,
 ) -> Result<(), FunctionRegistrationError> {
     NamespaceBuilder::<ScriptQueryBuilder>::new(registry)
@@ -322,11 +310,14 @@ fn register_script_query_builder_functions(
     Ok(())
 }
 
-// fn register_script_query_result_functions(
-//     registry: &mut FunctionRegistry,
-// ) -> Result<(), FunctionRegistrationError> {
-//     NamespaceBuilder::<ScriptQueryResult>::new(registry)
-//         .overwrite_script_function("entity", |s: Ref<ScriptQueryResult>| s.entity())
-//         .overwrite_script_function("components", |s: Ref<ScriptQueryResult>| s.components());
-//     Ok(())
-// }
+pub fn register_script_query_result_functions(
+    world: &mut World,
+) -> Result<(), FunctionRegistrationError> {
+    NamespaceBuilder::<ScriptQueryResult>::new(world)
+        .overwrite_script_function("entity", |s: Ref<ScriptQueryResult>| Val::new(s.entity))
+        .overwrite_script_function("components", |s: Ref<ScriptQueryResult>| {
+            let components = s.components.to_vec();
+            Val::new(components)
+        });
+    Ok(())
+}

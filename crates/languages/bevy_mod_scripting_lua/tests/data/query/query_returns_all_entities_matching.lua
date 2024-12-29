@@ -13,16 +13,16 @@ world:add_default_component(entity_c, component_with)
 world:add_default_component(entity_b, component_without)
 
 local found_entities = {}
-for entity, comp in pairs(world:query({component_with}):with(component_with):without(component_without):build()) do
-    table.insert(found_entities, entity)
+for i,result in pairs(world:query({component_with}):with(component_with):without(component_without):build()) do
+    table.insert(found_entities, result:entity())
 end
 
 assert(#found_entities == 3, "Expected 3 entities, got " .. #found_entities)
 
 expected_entities = {
+    entity_c,
     entity_d,
     entity_a,
-    entity_c,
 }
 
 for i, entity in ipairs(found_entities) do

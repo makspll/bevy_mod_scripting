@@ -12,8 +12,7 @@ categories = ["game-development"]
 readme = "readme.md"
 
 [features]
-default = ["core_functions"]
-core_functions = ["bevy_mod_scripting_core"]
+
 
 
 [dependencies]
@@ -22,4 +21,4 @@ bevy = { workspace = true, features = [
 ] }
 uuid = "*"
 smol_str = "*"
-bevy_mod_scripting_core = { workspace = true, optional = true }
+bevy_mod_scripting_core = { workspace = true }
