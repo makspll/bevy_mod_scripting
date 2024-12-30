@@ -208,7 +208,7 @@ pub fn with_world<F: FnOnce(&mut Lua) -> Result<(), ScriptError>>(
             .globals()
             .set(
                 "world",
-                LuaStaticReflectReference(std::any::TypeId::of::<WorldCallbackAccess>()),
+                LuaStaticReflectReference(std::any::TypeId::of::<World>()),
             )
             .map_err(ScriptError::from_mlua_error)?;
         context.set_app_data(guard.clone());

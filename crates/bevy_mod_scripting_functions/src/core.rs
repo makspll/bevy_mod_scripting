@@ -22,7 +22,7 @@ use bindings::{
     ScriptTypeRegistration, WorldAccessGuard, WorldCallbackAccess,
 };
 use error::InteropError;
-use reflection_extensions::TypeIdExtensions;
+use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
 
 use crate::{bevy_bindings::LuaBevyScriptingPlugin, namespaced_register::NamespaceBuilder};
 
@@ -55,7 +55,7 @@ pub fn register_bevy_bindings(app: &mut App) {
 }
 
 pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrationError> {
-    NamespaceBuilder::<WorldCallbackAccess>::new(reg)
+    NamespaceBuilder::<World>::new(reg)
         .overwrite_script_function("spawn", |s: WorldCallbackAccess| Ok(Val(s.spawn()?)))
         .overwrite_script_function(
             "get_type_by_name",
@@ -234,7 +234,96 @@ pub fn register_reflect_reference_functions(
                 }
                 ScriptValue::Unit
             },
-        );
+        )
+        .overwrite_script_function(
+            "push",
+            |w: WorldCallbackAccess, s: ReflectReference, v: ScriptValue| {
+                let world = w.try_read().expect("stale world");
+                let target_type_id = s.element_type_id(world.clone())?.ok_or_else(|| {
+                    InteropError::unsupported_operation(
+                        s.tail_type_id(world.clone()).unwrap_or_default(),
+                        Some(Box::new(v.clone())),
+                        "Could not get element type id. Are you trying to insert elements into a type that's not a list?".to_owned(),
+                    )
+                })?;
+                let other = <Box<dyn PartialReflect>>::from_script_ref(target_type_id, v, world.clone())?;
+                s.with_reflect_mut(world, |s| s.try_push_boxed(other))?
+            },
+        )
+        .overwrite_script_function("pop", |w: WorldCallbackAccess, s: ReflectReference| {
+            let world = w.try_read().expect("stale world");
+            let o = s.with_reflect_mut(world.clone(), |s| s.try_pop_boxed())??;
+            let reference = { 
+                let allocator = world.allocator();
+                let mut allocator = allocator.write();
+                ReflectReference::new_allocated_boxed(o, &mut allocator)
+            };
+
+            ReflectReference::into_script_ref(reference, world)
+        })
+        .overwrite_script_function("insert", |caller_context: CallerContext, w: WorldCallbackAccess, s: ReflectReference, k: ScriptValue, v: ScriptValue| {
+            let world = w.try_read().expect("stale world");
+            let key_type_id = s.key_type_id(world.clone())?.ok_or_else(|| {
+                InteropError::unsupported_operation(
+                    s.tail_type_id(world.clone()).unwrap_or_default(),
+                    Some(Box::new(k.clone())),
+                    "Could not get key type id. Are you trying to insert elements into a type that's not a map?".to_owned(),
+                )
+            })?;
+
+            let mut key = <Box<dyn PartialReflect>>::from_script_ref(key_type_id, k, world.clone())?;
+
+            if caller_context.convert_to_0_indexed {
+                key.convert_to_0_indexed_key();
+            }
+
+            let value_type_id = s.element_type_id(world.clone())?.ok_or_else(|| {
+                InteropError::unsupported_operation(
+                    s.tail_type_id(world.clone()).unwrap_or_default(),
+                    Some(Box::new(v.clone())),
+                    "Could not get element type id. Are you trying to insert elements into a type that's not a map?".to_owned(),
+                )
+            })?;
+
+            let value = <Box<dyn PartialReflect>>::from_script_ref(value_type_id, v, world.clone())?;
+
+            s.with_reflect_mut(world, |s| s.try_insert_boxed(key, value))?
+        })
+        .overwrite_script_function("clear", |w: WorldCallbackAccess, s: ReflectReference| {
+            let world = w.try_read().expect("stale world");
+            s.with_reflect_mut(world, |s| s.try_clear())?
+        })
+        .overwrite_script_function("len", |w: WorldCallbackAccess, s: ReflectReference| {
+            let world = w.try_read().expect("stale world");
+            s.len(world)
+        })
+        .overwrite_script_function("remove", |caller_context: CallerContext, w: WorldCallbackAccess, s: ReflectReference, k: ScriptValue| {
+            let world = w.try_read().expect("stale world");
+            let key_type_id = s.key_type_id(world.clone())?.ok_or_else(|| {
+                InteropError::unsupported_operation(
+                    s.tail_type_id(world.clone()).unwrap_or_default(),
+                    Some(Box::new(k.clone())),
+                    "Could not get key type id. Are you trying to remove elements from a type that's not a map?".to_owned(),
+                )
+            })?;
+
+            let mut key = <Box<dyn PartialReflect>>::from_script_ref(key_type_id, k, world.clone())?;
+
+            if caller_context.convert_to_0_indexed {
+                key.convert_to_0_indexed_key();
+            }
+
+            let removed = s.with_reflect_mut(world.clone(), |s| s.try_remove_boxed(key))??;
+
+            removed.map(|some| {
+                let reference = {
+                    let allocator = world.allocator();
+                    let mut allocator = allocator.write();
+                    ReflectReference::new_allocated_boxed(some, &mut allocator)
+                };
+                ReflectReference::into_script_ref(reference, world)
+            }).transpose()
+        });
 
     Ok(())
 }

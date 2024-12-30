@@ -649,7 +649,7 @@ impl DisplayWithWorld for InteropErrorInner {
                 )
             },
             InteropErrorInner::FunctionCallError { inner } => {
-                inner.to_string()
+                format!("Error in function call: {}", inner)
             },
             InteropErrorInner::BetterConversionExists{ context } => {
                 format!("Unfinished conversion in context of: {}. A better conversion exists but caller didn't handle the case.", context)

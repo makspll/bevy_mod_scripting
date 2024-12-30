@@ -46,7 +46,7 @@ impl CallScriptFunction for DynamicFunction<'_> {
     ) -> Result<ScriptValue, InteropError> {
         let args = args.into_iter();
 
-        let add_context = self.has_caller_context_arg();
+        let add_context = self.is_script_function();
         let mut args_list = ArgList::new();
 
         if add_context {
@@ -79,13 +79,14 @@ impl CallScriptFunction for DynamicFunction<'_> {
 }
 
 pub trait DynamicFunctionExt {
-    fn has_caller_context_arg(&self) -> bool;
+    fn is_script_function(&self) -> bool;
 }
 
 impl DynamicFunctionExt for DynamicFunction<'_> {
-    fn has_caller_context_arg(&self) -> bool {
+    fn is_script_function(&self) -> bool {
         self.info().args().first().map_or(false, |arg| {
             arg.type_id() == std::any::TypeId::of::<CallerContext>()
+                || arg.type_id() == std::any::TypeId::of::<WorldCallbackAccess>()
         })
     }
 }

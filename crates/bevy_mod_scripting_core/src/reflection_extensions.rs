@@ -3,6 +3,7 @@ use std::{
     borrow::Cow,
     cmp::max,
     ffi::{CStr, CString, OsStr, OsString},
+    ops::Sub,
     path::{Path, PathBuf},
     str::FromStr,
 };
@@ -22,6 +23,13 @@ use crate::{
 };
 /// Extension trait for [`PartialReflect`] providing additional functionality for working with specific types.
 pub trait PartialReflectExt {
+    fn try_remove_boxed(
+        &mut self,
+        key: Box<dyn PartialReflect>,
+    ) -> Result<Option<Box<dyn PartialReflect>>, InteropError>;
+
+    fn convert_to_0_indexed_key(&mut self);
+
     fn from_reflect_or_clone(
         reflect: &dyn PartialReflect,
         world: WorldGuard,
@@ -276,6 +284,19 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
         }
     }
 
+    fn convert_to_0_indexed_key(&mut self) {
+        if let Some(type_id) = self.get_represented_type_info().map(|ti| ti.type_id()) {
+            if type_id == TypeId::of::<usize>() {
+                let self_ = self
+                    .as_partial_reflect_mut()
+                    .try_downcast_mut::<usize>()
+                    .expect("invariant");
+
+                *self_ = self_.saturating_sub(1);
+            }
+        }
+    }
+
     fn try_clear(&mut self) -> Result<(), InteropError> {
         match self.reflect_mut() {
             bevy::reflect::ReflectMut::List(l) => {
@@ -311,6 +332,25 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
                 self.get_represented_type_info().map(|ti| ti.type_id()),
                 None,
                 "pop".to_owned(),
+            )),
+        }
+    }
+
+    fn try_remove_boxed(
+        &mut self,
+        key: Box<dyn PartialReflect>,
+    ) -> Result<Option<Box<dyn PartialReflect>>, InteropError> {
+        match self.reflect_mut() {
+            bevy::reflect::ReflectMut::List(l) => Ok(Some(l.remove(key.as_usize()?))),
+            bevy::reflect::ReflectMut::Map(m) => Ok(m.remove(key.as_partial_reflect())),
+            bevy::reflect::ReflectMut::Set(s) => {
+                let removed = s.remove(key.as_partial_reflect());
+                Ok(removed.then_some(key))
+            }
+            _ => Err(InteropError::unsupported_operation(
+                self.get_represented_type_info().map(|ti| ti.type_id()),
+                Some(key),
+                "remove".to_owned(),
             )),
         }
     }

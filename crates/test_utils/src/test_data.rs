@@ -123,6 +123,7 @@ pub struct TestResourceWithVariousFields {
     pub int: i32,
     pub float: f32,
     pub bool: bool,
+    pub vec_usize: Vec<usize>,
 }
 
 impl TestResourceWithVariousFields {
@@ -133,6 +134,7 @@ impl TestResourceWithVariousFields {
             int: 42,
             float: 69.0,
             bool: true,
+            vec_usize: vec![1, 2, 3, 4, 5],
         }
     }
 }

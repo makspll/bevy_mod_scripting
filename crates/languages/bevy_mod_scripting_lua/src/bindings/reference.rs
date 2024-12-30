@@ -83,6 +83,14 @@ fn lookup_function(lua: &Lua, key: &str, type_id: TypeId) -> Option<Result<Funct
     })
 }
 
+fn lookup_function_typed<T: 'static + ?Sized>(
+    lua: &Lua,
+    key: &str,
+) -> Option<Result<Function, mlua::Error>> {
+    let type_id = TypeId::of::<T>();
+    lookup_function(lua, key, type_id)
+}
+
 fn lookup_dynamic_function<'lua>(
     lua: &'lua Lua,
     key: &str,
@@ -101,11 +109,9 @@ fn lookup_dynamic_function<'lua>(
 fn lookup_dynamic_function_typed<'lua, T: 'static + ?Sized>(
     lua: &'lua Lua,
     key: &str,
-) -> Option<Result<DynamicFunction<'static>, mlua::Error>> {
+) -> Option<DynamicFunction<'static>> {
     let type_id = TypeId::of::<T>();
-    let function = lookup_dynamic_function(lua, key, type_id);
-
-    function.map(Ok)
+    lookup_dynamic_function(lua, key, type_id)
 }
 
 impl UserData for LuaReflectReference {
@@ -123,11 +129,15 @@ impl UserData for LuaReflectReference {
                     if let Some(func) = lookup_function(lua, key, type_id) {
                         return func?.into_lua(lua);
                     }
+                    // try look up the function under the reflect reference namespace as well
+                    if let Some(func) = lookup_function_typed::<ReflectReference>(lua, key) {
+                        return func?.into_lua(lua);
+                    }
                 };
 
-                // lookup get function
+                // lookup get index function
                 let index_func = lookup_dynamic_function_typed::<ReflectReference>(lua, "get")
-                    .expect("No 'get' function registered for a ReflectReference")?;
+                    .expect("No 'get' function registered for a ReflectReference");
 
                 // call the function with the key
                 let out = index_func.call_script_function(
@@ -147,7 +157,7 @@ impl UserData for LuaReflectReference {
                 let value: ScriptValue = value.into();
 
                 lookup_dynamic_function_typed::<ReflectReference>(lua, "set")
-                    .expect("No 'set' function registered for a ReflectReference")?
+                    .expect("No 'set' function registered for a ReflectReference")
                     .call_script_function(
                         vec![ScriptValue::Reference(self_), key, value],
                         lua.get_world(),
@@ -157,103 +167,6 @@ impl UserData for LuaReflectReference {
                 Ok(())
             },
         );
-
-        // m.add_meta_function(
-        //     MetaMethod::Index,
-        //     |l, (mut self_, key): (LuaReflectReference, Value)| {
-        //         bevy::log::debug!(
-        //             "ReflectReference::Index with key: {:?} and value: {:?}",
-        //             key,
-        //             self_
-        //         );
-        //         // catchall, parse the path
-        //         let mut elem = Self::parse_value_index(key)?;
-        //         Self::to_host_index(&mut elem);
-        //         self_.0.index_path(elem);
-        //         bevy::log::debug!("Target reflect reference after indexing key: {:?}", self_.0);
-        //         self_.to_lua_proxy(l)
-        //     },
-        // );
-        // m.add_meta_function(
-        //     MetaMethod::NewIndex,
-        //     |l, (mut self_, key, value): (LuaReflectReference, Value, Value)| {
-        //         bevy::log::debug!(
-        //             "ReflectReference::NewIndex with key: {:?} and value: {:?}",
-        //             key,
-        //             value
-        //         );
-
-        //         let mut elem = Self::parse_value_index(key)?;
-        //         Self::to_host_index(&mut elem);
-        //         self_.0.index_path(elem);
-        //         bevy::log::debug!("Target reflect reference after indexing key: {:?}", self_.0);
-        //         self_.set_with_lua_proxy(l, value)
-        //     },
-        // );
-
-        // m.add_function_mut(
-        //     "insert",
-        //     |l, (self_, key, value): (LuaReflectReference, Value, Value)| {
-        //         let world = l.get_world();
-        //         bevy::log::debug!(
-        //             "ReflectReference::insert with key: {:?} and value: {:?}",
-        //             key,
-        //             value
-        //         );
-        //         let key = self_
-        //             .clone()
-        //             .concrete_from_value(key, l, TypeIdSource::Key)?;
-        //         bevy::log::debug!("Key: {:?}", key);
-        //         let value = self_
-        //             .clone()
-        //             .concrete_from_value(value, l, TypeIdSource::Element)?;
-        //         bevy::log::debug!("Value: {:?}", value);
-        //         self_
-        //             .0
-        //             .with_reflect_mut(&world, |r| r.try_insert_boxed(key, value))??;
-        //         Ok(())
-        //     },
-        // );
-
-        // m.add_function_mut("push", |l, (self_, value): (LuaReflectReference, Value)| {
-        //     let world = l.get_world();
-        //     bevy::log::debug!("ReflectReference::push with value: {:?}", value);
-        //     let value = self_
-        //         .clone()
-        //         .concrete_from_value(value, l, TypeIdSource::Element)?;
-        //     self_
-        //         .0
-        //         .with_reflect_mut(&world, |r| r.try_push_boxed(value))??;
-        //     Ok(())
-        // });
-
-        // m.add_function_mut("pop", |l, self_: LuaReflectReference| {
-        //     let world = l.get_world();
-        //     bevy::log::debug!("ReflectReference::pop");
-        //     let ref_ = self_.0.with_reflect_mut(&world, |r| {
-        //         let last_elem = r.try_pop_boxed()?;
-        //         let allocator = world.allocator();
-        //         let mut allocator = allocator.write();
-        //         let reflect_ref = LuaReflectReference(ReflectReference::new_allocated_boxed(
-        //             last_elem,
-        //             &mut allocator,
-        //         ));
-        //         Ok::<_, ScriptError>(reflect_ref)
-        //     })??;
-
-        //     Ok(ref_)
-        // });
-
-        // m.add_function("clear", |l, self_: LuaReflectReference| {
-        //     let world = l.get_world();
-        //     bevy::log::debug!("ReflectReference::clear");
-        //     self_.0.with_reflect_mut(&world, |r| r.try_clear())??;
-        //     Ok(())
-        // });
-
-        // m.add_meta_function(MetaMethod::Len, |l, self_: LuaReflectReference| {
-        //     self_.len(l)
-        // });
 
         // #[cfg(any(
         //     feature = "lua54",
