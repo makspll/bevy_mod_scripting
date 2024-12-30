@@ -78,9 +78,6 @@ impl IntoLua for LuaScriptValue {
             ScriptValue::Integer(i) => Value::Integer(i),
             ScriptValue::Float(f) => Value::Number(f),
             ScriptValue::String(s) => Value::String(lua.create_string(s.as_ref())?),
-            ScriptValue::World => {
-                LuaReflectReference::from(ReflectReference::new_world()).into_lua(lua)?
-            }
             ScriptValue::Reference(r) => LuaReflectReference::from(r).into_lua(lua)?,
             ScriptValue::Error(script_error) => return Err(mlua::Error::external(script_error)),
             ScriptValue::List(vec) => {
