@@ -311,12 +311,8 @@ pub fn register_reflect_reference_functions(
                 }
 
                 let (next_ref, idx) = infinite_iter.next_ref();
-                let reference = {
-                    let allocator = world.allocator();
-                    let mut allocator = allocator.write();
-                    ReflectReference::new_allocated(next_ref, &mut allocator)
-                };
-                let converted = ReflectReference::into_script_ref(reference, world.clone());
+
+                let converted = ReflectReference::into_script_ref(next_ref, world.clone());
                 // println!("idx: {idx:?}, converted: {converted:?}");
                 len -= 1;
                 // we stop once the reflection path is invalid
