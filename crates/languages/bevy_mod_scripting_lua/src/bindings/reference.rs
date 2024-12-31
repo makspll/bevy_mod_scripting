@@ -310,10 +310,15 @@ impl UserData for LuaReflectReference {
             feature = "luajit52",
         ))]
         m.add_meta_function(MetaMethod::Pairs, |l, s: LuaReflectReference| {
-            let iter_func = lookup_function_typed::<ReflectReference>(l, "iter")
+            let mut iter_func = lookup_dynamic_function_typed::<ReflectReference>(l, "iter")
                 .expect("No iter function registered");
+            let world = l.get_world();
 
-            Ok(iter_func)
+            Ok(LuaScriptValue::from(iter_func.call_script_function(
+                vec![ScriptValue::Reference(s.into())],
+                world,
+                lua_caller_context(),
+            )?))
         });
 
         // #[cfg(any(

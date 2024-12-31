@@ -2,7 +2,7 @@ local res_type = world.get_type_by_name("TestResourceWithVariousFields")
 local res = world.get_resource(res_type)
 
 iterated_vals = {}
-for i,v in pairs(res.vec_usize)
+for i,v in pairs(res.vec_usize) do
     interated_vals[i] = v
 end
 

@@ -417,7 +417,7 @@ macro_rules! impl_script_function {
                 let func = (move |caller_context: CallerContext, world: WorldCallbackAccess, args: Vec<ScriptValue> | {
                     let res: Result<ScriptValue, InteropError> = (|| {
                         let expected_arg_count = count!($($param )*);
-                        if args.len() != expected_arg_count {
+                        if args.len() < expected_arg_count {
                             return Err(InteropError::function_call_error(FunctionError::ArgCountMismatch{
                                 expected: expected_arg_count,
                                 received: args.len()

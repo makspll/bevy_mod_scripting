@@ -304,7 +304,7 @@ pub fn register_reflect_reference_functions(
         .register("iter", |w: WorldCallbackAccess, s: ReflectReference| {
             let mut infinite_iter = s.into_iter_infinite();
             let world = w.try_read().expect("stale world");
-            let iter_function = move |w: WorldCallbackAccess| {
+            let iter_function = move || {
                 let (next_ref, idx) = infinite_iter.next_ref();
                 let allocator = world.allocator();
                 let mut allocator = allocator.write();
