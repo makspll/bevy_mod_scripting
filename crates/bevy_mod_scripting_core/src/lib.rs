@@ -4,8 +4,8 @@ use crate::event::ScriptErrorEvent;
 use asset::{ScriptAsset, ScriptAssetLoader, ScriptAssetSettings};
 use bevy::prelude::*;
 use bindings::{
-    script_value::ScriptValue, AppReflectAllocator, ReflectAllocator, ScriptTypeRegistration,
-    WorldCallbackAccess,
+    function::script_function::AppScriptFunctionRegistry, script_value::ScriptValue,
+    AppReflectAllocator, ReflectAllocator, ScriptTypeRegistration, WorldCallbackAccess,
 };
 use context::{
     Context, ContextAssigner, ContextBuilder, ContextInitializer, ContextLoadingSettings,
@@ -79,6 +79,7 @@ impl<A: Args, C: Context, R: Runtime> Plugin for ScriptingPlugin<A, C, R> {
                 preprocessor: None,
             })
             .insert_resource(self.runtime_settings.as_ref().cloned().unwrap_or_default())
+            .init_resource::<AppScriptFunctionRegistry>()
             .insert_non_send_resource::<RuntimeContainer<R>>(RuntimeContainer {
                 runtime: (self.runtime_builder)(),
             })

@@ -26,29 +26,6 @@ use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
 
 use crate::{bevy_bindings::LuaBevyScriptingPlugin, namespaced_register::NamespaceBuilder};
 
-pub trait RegisterScriptFunction {
-    fn overwrite_script_function<M, N, F>(&mut self, name: N, f: F) -> &mut Self
-    where
-        N: Into<Cow<'static, str>>,
-        F: ScriptFunction<'static, M> + GetFunctionTypeDependencies<M>;
-}
-
-impl<S: 'static> RegisterScriptFunction for NamespaceBuilder<'_, S> {
-    fn overwrite_script_function<M, N, F>(&mut self, name: N, f: F) -> &mut Self
-    where
-        N: Into<Cow<'static, str>>,
-        F: ScriptFunction<'static, M> + GetFunctionTypeDependencies<M>,
-    {
-        {
-            let registry = self.world.get_resource_or_init::<AppTypeRegistry>();
-            let mut registry = registry.write();
-            F::register_type_dependencies(&mut registry);
-        }
-        let dynamic_function = f.into_dynamic_function();
-        self.overwrite(name, dynamic_function);
-        self
-    }
-}
 
 pub fn register_bevy_bindings(app: &mut App) {
     app.add_plugins(LuaBevyScriptingPlugin);
@@ -56,15 +33,15 @@ pub fn register_bevy_bindings(app: &mut App) {
 
 pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrationError> {
     NamespaceBuilder::<World>::new(reg)
-        .overwrite_script_function("spawn", |s: WorldCallbackAccess| Ok(Val(s.spawn()?)))
-        .overwrite_script_function(
+        .register("spawn", |s: WorldCallbackAccess| Ok(Val(s.spawn()?)))
+        .register(
             "get_type_by_name",
             |world: WorldCallbackAccess, type_name: String| {
                 let val = world.get_type_by_name(type_name)?;
                 Ok(val.map(Val))
             },
         )
-        .overwrite_script_function(
+        .register(
             "get_component",
             |world: WorldCallbackAccess,
              entity: Val<Entity>,
@@ -75,7 +52,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
                     .transpose()
             },
         )
-        .overwrite_script_function(
+        .register(
             "has_component",
             |s: WorldCallbackAccess,
              entity: Val<Entity>,
@@ -86,13 +63,13 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
                 }
             },
         )
-        .overwrite_script_function(
+        .register(
             "remove_component",
             |s: WorldCallbackAccess, e: Val<Entity>, r: Val<ScriptTypeRegistration>| {
                 s.remove_component(*e, r.clone())
             },
         )
-        .overwrite_script_function(
+        .register(
             "get_resource",
             |world: WorldCallbackAccess, registration: Val<ScriptTypeRegistration>| {
                 match registration.resource_id() {
@@ -101,7 +78,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
                 }
             },
         )
-        .overwrite_script_function(
+        .register(
             "has_resource",
             |s: WorldCallbackAccess, registration: Val<ScriptTypeRegistration>| match registration
                 .resource_id()
@@ -110,17 +87,17 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
                 None => Ok(false),
             },
         )
-        .overwrite_script_function(
+        .register(
             "remove_resource",
             |s: WorldCallbackAccess, r: Val<ScriptTypeRegistration>| s.remove_resource(r.clone()),
         )
-        .overwrite_script_function(
+        .register(
             "add_default_component",
             |w: WorldCallbackAccess, e: Val<Entity>, r: Val<ScriptTypeRegistration>| {
                 w.add_default_component(*e, r.clone())
             },
         )
-        .overwrite_script_function(
+        .register(
             "insert_children",
             |caller_context: CallerContext,
              w: WorldCallbackAccess,
@@ -135,35 +112,35 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
                 w.insert_children(*e, index, &c.into_iter().map(|v| *v).collect::<Vec<_>>())
             },
         )
-        .overwrite_script_function(
+        .register(
             "push_children",
             |w: WorldCallbackAccess, e: Val<Entity>, c: Vec<Val<Entity>>| {
                 w.push_children(*e, &c.into_iter().map(|v| *v).collect::<Vec<_>>())
             },
         )
-        .overwrite_script_function("get_children", |w: WorldCallbackAccess, e: Val<Entity>| {
+        .register("get_children", |w: WorldCallbackAccess, e: Val<Entity>| {
             let children = w.get_children(*e)?;
             Ok(children.into_iter().map(Val).collect::<Vec<_>>())
         })
-        .overwrite_script_function("get_parent", |w: WorldCallbackAccess, e: Val<Entity>| {
+        .register("get_parent", |w: WorldCallbackAccess, e: Val<Entity>| {
             let parent = w.get_parent(*e)?;
             Ok(parent.map(Val))
         })
-        .overwrite_script_function("despawn", |s: WorldCallbackAccess, e: Val<Entity>| {
+        .register("despawn", |s: WorldCallbackAccess, e: Val<Entity>| {
             s.despawn(*e)
         })
-        .overwrite_script_function(
+        .register(
             "despawn_descendants",
             |s: WorldCallbackAccess, e: Val<Entity>| s.despawn_descendants(*e),
         )
-        .overwrite_script_function(
+        .register(
             "despawn_recursive",
             |s: WorldCallbackAccess, e: Val<Entity>| s.despawn_recursive(*e),
         )
-        .overwrite_script_function("has_entity", |s: WorldCallbackAccess, e: Val<Entity>| {
+        .register("has_entity", |s: WorldCallbackAccess, e: Val<Entity>| {
             s.has_entity(*e)
         })
-        .overwrite_script_function(
+        .register(
             "query",
             |s: WorldCallbackAccess, components: Vec<Val<ScriptTypeRegistration>>| {
                 let mut query_builder = ScriptQueryBuilder::default();
@@ -171,7 +148,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
                 Ok(Val(query_builder))
             },
         )
-        .overwrite_script_function("exit", |s: WorldCallbackAccess| s.exit());
+        .register("exit", |s: WorldCallbackAccess| s.exit());
     Ok(())
 }
 
@@ -179,14 +156,14 @@ pub fn register_reflect_reference_functions(
     reg: &mut World,
 ) -> Result<(), FunctionRegistrationError> {
     NamespaceBuilder::<ReflectReference>::new(reg)
-        .overwrite_script_function(
+        .register(
             "display_ref",
             |w: WorldCallbackAccess, s: ReflectReference| {
                 let world = w.try_read().expect("Stale world");
                 s.display_with_world(world)
             },
         )
-        .overwrite_script_function(
+        .register(
             "get",
             |caller_context: CallerContext,
              world: WorldCallbackAccess,
@@ -201,7 +178,7 @@ pub fn register_reflect_reference_functions(
                 ReflectReference::into_script_ref(self_, world)
             },
         )
-        .overwrite_script_function(
+        .register(
             "set",
             |caller_context: CallerContext,
              world: WorldCallbackAccess,
@@ -235,7 +212,7 @@ pub fn register_reflect_reference_functions(
                 ScriptValue::Unit
             },
         )
-        .overwrite_script_function(
+        .register(
             "push",
             |w: WorldCallbackAccess, s: ReflectReference, v: ScriptValue| {
                 let world = w.try_read().expect("stale world");
@@ -250,7 +227,7 @@ pub fn register_reflect_reference_functions(
                 s.with_reflect_mut(world, |s| s.try_push_boxed(other))?
             },
         )
-        .overwrite_script_function("pop", |w: WorldCallbackAccess, s: ReflectReference| {
+        .register("pop", |w: WorldCallbackAccess, s: ReflectReference| {
             let world = w.try_read().expect("stale world");
             let o = s.with_reflect_mut(world.clone(), |s| s.try_pop_boxed())??;
             let reference = { 
@@ -261,7 +238,7 @@ pub fn register_reflect_reference_functions(
 
             ReflectReference::into_script_ref(reference, world)
         })
-        .overwrite_script_function("insert", |caller_context: CallerContext, w: WorldCallbackAccess, s: ReflectReference, k: ScriptValue, v: ScriptValue| {
+        .register("insert", |caller_context: CallerContext, w: WorldCallbackAccess, s: ReflectReference, k: ScriptValue, v: ScriptValue| {
             let world = w.try_read().expect("stale world");
             let key_type_id = s.key_type_id(world.clone())?.ok_or_else(|| {
                 InteropError::unsupported_operation(
@@ -289,15 +266,15 @@ pub fn register_reflect_reference_functions(
 
             s.with_reflect_mut(world, |s| s.try_insert_boxed(key, value))?
         })
-        .overwrite_script_function("clear", |w: WorldCallbackAccess, s: ReflectReference| {
+        .register("clear", |w: WorldCallbackAccess, s: ReflectReference| {
             let world = w.try_read().expect("stale world");
             s.with_reflect_mut(world, |s| s.try_clear())?
         })
-        .overwrite_script_function("len", |w: WorldCallbackAccess, s: ReflectReference| {
+        .register("len", |w: WorldCallbackAccess, s: ReflectReference| {
             let world = w.try_read().expect("stale world");
             s.len(world)
         })
-        .overwrite_script_function("remove", |caller_context: CallerContext, w: WorldCallbackAccess, s: ReflectReference, k: ScriptValue| {
+        .register("remove", |caller_context: CallerContext, w: WorldCallbackAccess, s: ReflectReference, k: ScriptValue| {
             let world = w.try_read().expect("stale world");
             let key_type_id = s.key_type_id(world.clone())?.ok_or_else(|| {
                 InteropError::unsupported_operation(
@@ -332,14 +309,14 @@ pub fn register_script_type_registration_functions(
     registry: &mut World,
 ) -> Result<(), FunctionRegistrationError> {
     NamespaceBuilder::<ScriptTypeRegistration>::new(registry)
-        .overwrite_script_function("type_name", |s: Ref<ScriptTypeRegistration>| s.type_name())
-        .overwrite_script_function("short_name", |s: Ref<ScriptTypeRegistration>| {
+        .register("type_name", |s: Ref<ScriptTypeRegistration>| s.type_name())
+        .register("short_name", |s: Ref<ScriptTypeRegistration>| {
             s.short_name()
         })
-        .overwrite_script_function("is_resource", |s: Ref<ScriptTypeRegistration>| {
+        .register("is_resource", |s: Ref<ScriptTypeRegistration>| {
             s.resource_id().is_some()
         })
-        .overwrite_script_function("is_component", |s: Ref<ScriptTypeRegistration>| {
+        .register("is_component", |s: Ref<ScriptTypeRegistration>| {
             s.component_id().is_some()
         });
     Ok(())
@@ -349,7 +326,7 @@ pub fn register_script_query_builder_functions(
     registry: &mut World,
 ) -> Result<(), FunctionRegistrationError> {
     NamespaceBuilder::<ScriptQueryBuilder>::new(registry)
-        .overwrite_script_function(
+        .register(
             "with",
             |s: Val<ScriptQueryBuilder>, with: Val<ScriptTypeRegistration>| {
                 let mut builder = s.into_inner();
@@ -357,7 +334,7 @@ pub fn register_script_query_builder_functions(
                 Val(builder)
             },
         )
-        .overwrite_script_function(
+        .register(
             "without",
             |s: Val<ScriptQueryBuilder>, without: Val<ScriptTypeRegistration>| {
                 let mut builder = s.into_inner();
@@ -365,7 +342,7 @@ pub fn register_script_query_builder_functions(
                 Val(builder)
             },
         )
-        .overwrite_script_function(
+        .register(
             "build",
             |world: WorldCallbackAccess, s: Val<ScriptQueryBuilder>| {
                 let builder = s.into_inner();
@@ -381,8 +358,8 @@ pub fn register_script_query_result_functions(
     world: &mut World,
 ) -> Result<(), FunctionRegistrationError> {
     NamespaceBuilder::<ScriptQueryResult>::new(world)
-        .overwrite_script_function("entity", |s: Ref<ScriptQueryResult>| Val::new(s.entity))
-        .overwrite_script_function("components", |s: Ref<ScriptQueryResult>| {
+        .register("entity", |s: Ref<ScriptQueryResult>| Val::new(s.entity))
+        .register("components", |s: Ref<ScriptQueryResult>| {
             let components = s.components.to_vec();
             Val::new(components)
         });

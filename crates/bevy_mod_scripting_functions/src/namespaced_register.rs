@@ -4,27 +4,16 @@ use bevy::{
     prelude::{AppFunctionRegistry, IntoFunction, World},
     reflect::func::{DynamicFunction, FunctionRegistrationError, FunctionRegistry},
 };
+use bevy_mod_scripting_core::bindings::function::script_function::{
+    AppScriptFunctionRegistry, DynamicScriptFunction, ScriptFunction, ScriptFunctionRegistry,
+};
 
 pub trait RegisterNamespacedFunction {
-    fn register_namespaced_function<S, N, F, M>(
-        &mut self,
-        name: N,
-        function: F,
-    ) -> Result<(), FunctionRegistrationError>
+    fn register_namespaced_function<S, N, F, M>(&mut self, name: N, function: F)
     where
         N: Into<Cow<'static, str>>,
         S: IntoNamespace,
-        F: IntoFunction<'static, M> + 'static;
-
-    fn overwrite_namespaced_function<S, N, F, M>(
-        &mut self,
-        name: N,
-        function: F,
-    ) -> Option<DynamicFunction<'static>>
-    where
-        N: Into<Cow<'static, str>>,
-        S: IntoNamespace,
-        F: IntoFunction<'static, M> + 'static;
+        F: ScriptFunction<'static, M>;
 }
 
 pub trait GetNamespacedFunction {
@@ -32,7 +21,7 @@ pub trait GetNamespacedFunction {
         &self,
         name: N,
         namespace: Namespace,
-    ) -> Option<&DynamicFunction<'static>>
+    ) -> Option<&DynamicScriptFunction>
     where
         N: Into<Cow<'static, str>>;
 
@@ -75,51 +64,31 @@ impl Namespace {
     }
 }
 
-impl RegisterNamespacedFunction for FunctionRegistry {
-    fn register_namespaced_function<S, N, F, M>(
-        &mut self,
-        name: N,
-        function: F,
-    ) -> Result<(), FunctionRegistrationError>
+impl RegisterNamespacedFunction for ScriptFunctionRegistry {
+    fn register_namespaced_function<S, N, F, M>(&mut self, name: N, function: F)
     where
         N: Into<Cow<'static, str>>,
         S: IntoNamespace,
-        F: IntoFunction<'static, M> + 'static,
+        F: ScriptFunction<'static, M>,
     {
         let cow: Cow<'static, str> = name.into();
         let function_name = S::into_namespace().function_name(cow);
-        self.register_with_name(function_name, function)?;
-        Ok(())
-    }
-
-    fn overwrite_namespaced_function<S, N, F, M>(
-        &mut self,
-        name: N,
-        function: F,
-    ) -> Option<DynamicFunction<'static>>
-    where
-        N: Into<Cow<'static, str>>,
-        S: IntoNamespace,
-        F: IntoFunction<'static, M> + 'static,
-    {
-        let cow: Cow<'static, str> = name.into();
-        let function_name = S::into_namespace().function_name(cow);
-        self.overwrite_registration_with_name(function_name, function)
+        self.register(function_name, function);
     }
 }
 
-impl GetNamespacedFunction for FunctionRegistry {
+impl GetNamespacedFunction for ScriptFunctionRegistry {
     fn get_namespaced_function<N>(
         &self,
         name: N,
         namespace: Namespace,
-    ) -> Option<&DynamicFunction<'static>>
+    ) -> Option<&DynamicScriptFunction>
     where
         N: Into<Cow<'static, str>>,
     {
         let cow: Cow<'static, str> = name.into();
         let function_name = namespace.function_name(cow);
-        self.get(&function_name)
+        self.get_first(&function_name)
     }
 
     fn has_namespaced_function<N>(&self, name: N, namespace: Namespace) -> bool
@@ -145,33 +114,17 @@ impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
         }
     }
 
-    pub fn register<N, F, M>(
-        &mut self,
-        name: N,
-        function: F,
-    ) -> Result<&mut Self, FunctionRegistrationError>
+    pub fn register<N, F, M>(&mut self, name: N, function: F) -> &mut Self
     where
         N: Into<Cow<'static, str>>,
-        F: IntoFunction<'static, M> + 'static,
+        F: ScriptFunction<'static, M>,
     {
         {
-            let registry = self.world.get_resource_or_init::<AppFunctionRegistry>();
+            let mut registry = self
+                .world
+                .get_resource_or_init::<AppScriptFunctionRegistry>();
             let mut registry = registry.write();
-            registry.register_namespaced_function::<S, _, F, M>(name, function)?;
-        }
-        Ok(self)
-    }
-
-    pub fn overwrite<N, F, M>(&mut self, name: N, function: F) -> &mut Self
-    where
-        N: Into<Cow<'static, str>>,
-        F: IntoFunction<'static, M> + 'static,
-    {
-        {
-            let registry = self.world.get_resource_or_init::<AppFunctionRegistry>();
-
-            let mut registry = registry.write();
-            registry.overwrite_namespaced_function::<S, _, F, M>(name, function);
+            registry.register_namespaced_function::<S, _, F, M>(name, function);
         }
         self
     }

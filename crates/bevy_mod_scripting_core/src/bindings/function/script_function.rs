@@ -8,14 +8,18 @@ use crate::{
     prelude::{ScriptValue, WorldCallbackAccess},
 };
 use bevy::{
-    prelude::{AppFunctionRegistry, IntoFunction, Reflect, World},
+    prelude::{AppFunctionRegistry, IntoFunction, Reflect, Resource, World},
     reflect::{
-        func::{DynamicFunction, FunctionInfo},
-        FromReflect, GetTypeRegistration, PartialReflect, TypeRegistration, TypeRegistry, Typed,
+        func::{args::GetOwnership, DynamicFunction, FunctionError, FunctionInfo, TypedFunction},
+        FromReflect, GetTypeRegistration, PartialReflect, TypePath, TypeRegistration, TypeRegistry,
+        Typed,
     },
 };
+use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::hash::Hash;
+use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 
 #[diagnostic::on_unimplemented(
@@ -23,7 +27,7 @@ use std::sync::Arc;
     note = "If you're trying to return a non-primitive type, you might need to use Val<T> Ref<T> or Mut<T> wrappers"
 )]
 pub trait ScriptFunction<'env, Marker> {
-    fn into_dynamic_function(self) -> DynamicFunction<'static>;
+    fn into_dynamic_script_function(self) -> DynamicScriptFunction;
 }
 
 /// Functionally identical to [`GetTypeRegistration`] but without the 'static bound
@@ -111,16 +115,125 @@ pub struct CallerContext {
 }
 
 /// The Script Function equivalent for dynamic functions. Currently unused
-/// TODO: have a separate function registry to avoid the need for boxing script args every time
+#[derive(Clone)]
 pub struct DynamicScriptFunction {
-    pub info: FunctionInfo,
+    // TODO: info about the function, this is hard right now because of non 'static lifetimes in wrappers, we can't use TypePath etc
     pub func: Arc<
-        dyn Fn(
-            CallerContext,
-            WorldCallbackAccess,
-            Vec<ScriptValue>,
-        ) -> Result<ScriptValue, InteropError>,
+        dyn Fn(CallerContext, WorldCallbackAccess, Vec<ScriptValue>) -> ScriptValue
+            + Send
+            + Sync
+            + 'static,
     >,
+}
+
+impl std::fmt::Debug for DynamicScriptFunction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("DynamicScriptFunction").finish()
+    }
+}
+
+/// Equivalent to [`AppFunctionRegistry`] but stores functions with a more convenient signature for scripting to avoid boxing every argument.
+#[derive(Clone, Debug, Default, Resource)]
+pub struct AppScriptFunctionRegistry(ScriptFunctionRegistryArc);
+
+impl Deref for AppScriptFunctionRegistry {
+    type Target = ScriptFunctionRegistryArc;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for AppScriptFunctionRegistry {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct ScriptFunctionRegistryArc(pub Arc<RwLock<ScriptFunctionRegistry>>);
+
+impl ScriptFunctionRegistryArc {
+    pub fn read(&self) -> RwLockReadGuard<ScriptFunctionRegistry> {
+        self.0.read()
+    }
+
+    pub fn write(&mut self) -> RwLockWriteGuard<ScriptFunctionRegistry> {
+        self.0.write()
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct ScriptFunctionRegistry {
+    functions: HashMap<Cow<'static, str>, DynamicScriptFunction>,
+}
+
+impl ScriptFunctionRegistry {
+    /// Register a script function with the given name. If the name already exists,
+    /// the new function will be registered as an overload of the function.
+    pub fn register<F, M>(&mut self, name: impl Into<Cow<'static, str>>, func: F)
+    where
+        F: ScriptFunction<'static, M>,
+    {
+        self.register_overload(name, func);
+    }
+
+    pub fn register_overload<F, M>(&mut self, name: impl Into<Cow<'static, str>>, func: F)
+    where
+        F: ScriptFunction<'static, M>,
+    {
+        // always start with non-suffixed registration
+        let name = name.into().clone();
+
+        if !self.contains(&name) {
+            let func = func.into_dynamic_script_function();
+            self.functions.insert(name, func);
+            return;
+        }
+
+        for i in 1..16 {
+            let overload = format!("{name}-{i}");
+            if !self.contains(&overload) {
+                self.register(overload, func);
+                return;
+            }
+        }
+
+        panic!(
+            "Could not register overload for function {name}. Maximum number of overloads reached"
+        );
+    }
+
+    pub fn contains(&self, name: impl AsRef<str>) -> bool {
+        self.functions.contains_key(name.as_ref())
+    }
+
+    pub fn get_first(&self, name: impl AsRef<str>) -> Option<&DynamicScriptFunction> {
+        self.functions.get(name.as_ref())
+    }
+
+    pub fn iter_overloads(
+        &self,
+        name: impl Into<Cow<'static, str>>,
+    ) -> impl Iterator<Item = &DynamicScriptFunction> {
+        let name = name.into();
+        (0..16)
+            .map(move |i| {
+                if i == 0 {
+                    self.functions.get(&name)
+                } else {
+                    let name: Cow<'static, str> = format!("{}-{i}", name).into();
+                    self.functions.get(&name)
+                }
+            })
+            .take_while(|o| o.is_some())
+            .map(|o| o.unwrap())
+    }
+}
+
+macro_rules! count {
+    () => (0usize);
+    ( $x:tt $($xs:tt)* ) => (1usize + count!($($xs)*));
 }
 
 macro_rules! impl_script_function {
@@ -153,24 +266,31 @@ macro_rules! impl_script_function {
             fn( $($contextty,)? $( $callbackty, )? $($param ),* ) -> $res
         > for F
         where
-            O: IntoScript,
+            O: IntoScript + TypePath + GetOwnership,
             F: Fn(  $($contextty,)? $( $callbackty, )? $($param ),* ) -> $res + Send + Sync + 'static,
-            $( $param::This<'env>: Into<$param>),*
+            $( $param::This<'env>: Into<$param>,)*
         {
-            #[allow(unused_variables)]
-            fn into_dynamic_function(self) -> DynamicFunction<'static> {
-                (move |caller_context: CallerContext, world: WorldCallbackAccess, $( $param: ScriptValue ),* | {
+            #[allow(unused_mut,unused_variables)]
+            fn into_dynamic_script_function(self) -> DynamicScriptFunction {
+                let func = (move |caller_context: CallerContext, world: WorldCallbackAccess, args: Vec<ScriptValue> | {
                     let res: Result<ScriptValue, InteropError> = (|| {
+                        let expected_arg_count = count!($($param),*);
+                        if args.len() != expected_arg_count {
+                            return Err(InteropError::function_call_error(FunctionError::ArgCountMismatch{
+                                expected: expected_arg_count,
+                                received: args.len()
+                            }));
+                        }
                         $( let $context = caller_context; )?
                         $( let $callback = world.clone(); )?
                         let world = world.try_read()?;
                         world.begin_access_scope()?;
                         let ret = {
-                            #[allow(unused_mut,unused_variables)]
                             let mut current_arg = 0;
+                            let mut arg_iter = args.into_iter();
                             $(
                                 current_arg += 1;
-                                let $param = <$param>::from_script($param, world.clone())
+                                let $param = <$param>::from_script(arg_iter.next().expect("invariant"), world.clone())
                                     .map_err(|e| InteropError::function_arg_conversion_error(current_arg.to_string(), e))?;
                             )*
                             let out = self( $( $context,)? $( $callback, )? $( $param.into(), )* );
@@ -186,7 +306,9 @@ macro_rules! impl_script_function {
                     })();
                     let script_value: ScriptValue = res.into();
                     script_value
-                }).into_function()
+                });
+
+                DynamicScriptFunction { func: Arc::new(func) }
             }
         }
     };
@@ -264,9 +386,9 @@ macro_rules! assert_is_script_function {
 
 #[cfg(test)]
 mod test {
-    use crate::prelude::AppReflectAllocator;
-
     use super::*;
+    use crate::bindings::function::script_function::ScriptFunction;
+    use crate::prelude::AppReflectAllocator;
     use bevy::reflect::func::{ArgList, ArgValue, Return};
     use test_utils::test_data::*;
 
@@ -274,100 +396,37 @@ mod test {
         setup_world(|w, _| w.insert_resource(AppReflectAllocator::default()))
     }
 
-    macro_rules! call_script_function_with {
-        ($world:ident, $fun:expr, ($($args: expr),*)) => {
-            {
-                let f = $fun;
-                let f = f.into_dynamic_function();
-
-                let o = WorldCallbackAccess::with_callback_access(&mut $world, |world| {
-                    let mut arg_list = ArgList::new();
-                    arg_list = arg_list.push_arg(ArgValue::Owned(Box::new(world.clone())));
-                    $(
-                        arg_list = arg_list.push_arg($args);
-                    )*
-                    f.call(arg_list)
-                }).expect("Failed to call function");
-
-                match o {
-                    Return::Owned(v) => v.try_take().expect("Failed to convert to target type"),
-                    _ => panic!("Expected owned value")
-                }
-            }
-        };
+    fn assert_function_info_eq(a: &FunctionInfo, b: &FunctionInfo) {
+        assert_eq!(a.name(), b.name(), "Function names do not match");
+        assert_eq!(
+            a.args().len(),
+            b.args().len(),
+            "Function arg count does not match"
+        );
+        for (a, b) in a.args().iter().zip(b.args().iter()) {
+            assert_eq!(a.type_id(), b.type_id(), "Function arg types do not match");
+            assert_eq!(a.name(), b.name(), "Function arg names do not match");
+        }
     }
 
     #[test]
-    fn primitive_function_should_work() {
-        let mut world = test_setup_world();
-
-        let out: ScriptValue = call_script_function_with!(
-            world,
-            |a: usize, b: usize| a + b,
-            (
-                ArgValue::Owned(Box::new(ScriptValue::Integer(1))),
-                ArgValue::Owned(Box::new(ScriptValue::Integer(1)))
-            )
-        );
-        assert_eq!(out, ScriptValue::Integer(2));
+    fn test_register_script_function() {
+        let mut registry = ScriptFunctionRegistry::default();
+        let fn_ = |a: usize, b: usize| a + b;
+        registry.register("test", fn_);
+        registry.get_first("test").expect("Failed to get function");
     }
 
     #[test]
-    fn primitive_result_function_should_work() {
-        let mut world = test_setup_world();
+    fn test_overloaded_script_function() {
+        let mut registry = ScriptFunctionRegistry::default();
+        let fn_ = |a: usize, b: usize| a + b;
+        registry.register("test", fn_);
+        let fn_2 = |a: usize, b: i32| a + (b as usize);
+        registry.register("test", fn_2);
 
-        let out: ScriptValue = call_script_function_with!(
-            world,
-            |a: usize, b: usize| Ok(a + b),
-            (
-                ArgValue::Owned(Box::new(ScriptValue::Integer(1))),
-                ArgValue::Owned(Box::new(ScriptValue::Integer(1)))
-            )
-        );
-        assert_eq!(out, ScriptValue::Integer(2));
+        registry.get_first("test").expect("Failed to get function");
 
-        let out: ScriptValue = call_script_function_with!(
-            world,
-            || Err::<usize, _>(InteropError::missing_world()),
-            ()
-        );
-        assert!(matches!(out, ScriptValue::Error(_)));
-    }
-
-    #[test]
-    fn primitive_function_with_world_should_work() {
-        let mut world = test_setup_world();
-
-        let out: ScriptValue = call_script_function_with!(
-            world,
-            |_w: WorldCallbackAccess, a: usize, b: usize| a + b,
-            (
-                ArgValue::Owned(Box::new(ScriptValue::Integer(1))),
-                ArgValue::Owned(Box::new(ScriptValue::Integer(1)))
-            )
-        );
-        assert_eq!(out, ScriptValue::Integer(2));
-    }
-
-    #[test]
-    fn primitive_result_function_with_world_should_work() {
-        let mut world = test_setup_world();
-
-        let out: ScriptValue = call_script_function_with!(
-            world,
-            |_w: WorldCallbackAccess, a: usize, b: usize| Ok(a + b),
-            (
-                ArgValue::Owned(Box::new(ScriptValue::Integer(1))),
-                ArgValue::Owned(Box::new(ScriptValue::Integer(1)))
-            )
-        );
-        assert_eq!(out, ScriptValue::Integer(2));
-
-        let out: ScriptValue = call_script_function_with!(
-            world,
-            || Err::<usize, _>(InteropError::missing_world()),
-            ()
-        );
-        assert!(matches!(out, ScriptValue::Error(_)));
+        assert_eq!(registry.iter_overloads("test").collect::<Vec<_>>().len(), 2);
     }
 }
