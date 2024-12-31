@@ -14,7 +14,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
         let mut world = app.world_mut();
         NamespaceBuilder::<::bevy::time::prelude::Fixed>::new(world)
-            .overwrite_script_function(
+            .register(
                 "clone",
                 |_self: Ref<bevy::time::prelude::Fixed>| {
                     let output: Val<bevy::time::prelude::Fixed> = <bevy::time::prelude::Fixed as std::clone::Clone>::clone(
@@ -25,7 +25,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             );
         NamespaceBuilder::<::bevy::time::prelude::Real>::new(world)
-            .overwrite_script_function(
+            .register(
                 "clone",
                 |_self: Ref<bevy::time::prelude::Real>| {
                     let output: Val<bevy::time::prelude::Real> = <bevy::time::prelude::Real as std::clone::Clone>::clone(
@@ -36,7 +36,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             );
         NamespaceBuilder::<::bevy::time::prelude::Timer>::new(world)
-            .overwrite_script_function(
+            .register(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::time::prelude::Timer>| {
                     let output: () = <bevy::time::prelude::Timer as std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -46,7 +46,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "from_seconds",
                 |duration: f32, mode: Val<bevy::time::prelude::TimerMode>| {
                     let output: Val<bevy::time::prelude::Timer> = bevy::time::prelude::Timer::from_seconds(
@@ -57,7 +57,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "finished",
                 |_self: Ref<bevy::time::prelude::Timer>| {
                     let output: bool = bevy::time::prelude::Timer::finished(&_self)
@@ -65,7 +65,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "just_finished",
                 |_self: Ref<bevy::time::prelude::Timer>| {
                     let output: bool = bevy::time::prelude::Timer::just_finished(&_self)
@@ -73,7 +73,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "elapsed_secs",
                 |_self: Ref<bevy::time::prelude::Timer>| {
                     let output: f32 = bevy::time::prelude::Timer::elapsed_secs(&_self)
@@ -81,7 +81,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "elapsed_secs_f64",
                 |_self: Ref<bevy::time::prelude::Timer>| {
                     let output: f64 = bevy::time::prelude::Timer::elapsed_secs_f64(
@@ -91,7 +91,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "mode",
                 |_self: Ref<bevy::time::prelude::Timer>| {
                     let output: Val<bevy::time::prelude::TimerMode> = bevy::time::prelude::Timer::mode(
@@ -101,7 +101,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "set_mode",
                 |
                     mut _self: Mut<bevy::time::prelude::Timer>,
@@ -115,7 +115,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "pause",
                 |mut _self: Mut<bevy::time::prelude::Timer>| {
                     let output: () = bevy::time::prelude::Timer::pause(&mut _self)
@@ -123,7 +123,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "unpause",
                 |mut _self: Mut<bevy::time::prelude::Timer>| {
                     let output: () = bevy::time::prelude::Timer::unpause(&mut _self)
@@ -131,14 +131,14 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "paused",
                 |_self: Ref<bevy::time::prelude::Timer>| {
                     let output: bool = bevy::time::prelude::Timer::paused(&_self).into();
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "reset",
                 |mut _self: Mut<bevy::time::prelude::Timer>| {
                     let output: () = bevy::time::prelude::Timer::reset(&mut _self)
@@ -146,7 +146,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "fraction",
                 |_self: Ref<bevy::time::prelude::Timer>| {
                     let output: f32 = bevy::time::prelude::Timer::fraction(&_self)
@@ -154,7 +154,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "fraction_remaining",
                 |_self: Ref<bevy::time::prelude::Timer>| {
                     let output: f32 = bevy::time::prelude::Timer::fraction_remaining(
@@ -164,7 +164,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "remaining_secs",
                 |_self: Ref<bevy::time::prelude::Timer>| {
                     let output: f32 = bevy::time::prelude::Timer::remaining_secs(&_self)
@@ -172,7 +172,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "times_finished_this_tick",
                 |_self: Ref<bevy::time::prelude::Timer>| {
                     let output: u32 = bevy::time::prelude::Timer::times_finished_this_tick(
@@ -182,7 +182,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "clone",
                 |_self: Ref<bevy::time::prelude::Timer>| {
                     let output: Val<bevy::time::prelude::Timer> = <bevy::time::prelude::Timer as std::clone::Clone>::clone(
@@ -192,7 +192,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::time::prelude::Timer>,
@@ -206,7 +206,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             );
         NamespaceBuilder::<::bevy::time::prelude::TimerMode>::new(world)
-            .overwrite_script_function(
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::time::prelude::TimerMode>,
@@ -219,7 +219,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::time::prelude::TimerMode>| {
                     let output: () = <bevy::time::prelude::TimerMode as std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -229,7 +229,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "clone",
                 |_self: Ref<bevy::time::prelude::TimerMode>| {
                     let output: Val<bevy::time::prelude::TimerMode> = <bevy::time::prelude::TimerMode as std::clone::Clone>::clone(
@@ -240,7 +240,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             );
         NamespaceBuilder::<::bevy::time::prelude::Virtual>::new(world)
-            .overwrite_script_function(
+            .register(
                 "clone",
                 |_self: Ref<bevy::time::prelude::Virtual>| {
                     let output: Val<bevy::time::prelude::Virtual> = <bevy::time::prelude::Virtual as std::clone::Clone>::clone(
@@ -251,7 +251,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             );
         NamespaceBuilder::<::bevy::time::Stopwatch>::new(world)
-            .overwrite_script_function(
+            .register(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::time::Stopwatch>| {
                     let output: () = <bevy::time::Stopwatch as std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -261,7 +261,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "new",
                 || {
                     let output: Val<bevy::time::Stopwatch> = bevy::time::Stopwatch::new()
@@ -269,14 +269,14 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "elapsed_secs",
                 |_self: Ref<bevy::time::Stopwatch>| {
                     let output: f32 = bevy::time::Stopwatch::elapsed_secs(&_self).into();
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "elapsed_secs_f64",
                 |_self: Ref<bevy::time::Stopwatch>| {
                     let output: f64 = bevy::time::Stopwatch::elapsed_secs_f64(&_self)
@@ -284,35 +284,35 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "pause",
                 |mut _self: Mut<bevy::time::Stopwatch>| {
                     let output: () = bevy::time::Stopwatch::pause(&mut _self).into();
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "unpause",
                 |mut _self: Mut<bevy::time::Stopwatch>| {
                     let output: () = bevy::time::Stopwatch::unpause(&mut _self).into();
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "is_paused",
                 |_self: Ref<bevy::time::Stopwatch>| {
                     let output: bool = bevy::time::Stopwatch::is_paused(&_self).into();
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "reset",
                 |mut _self: Mut<bevy::time::Stopwatch>| {
                     let output: () = bevy::time::Stopwatch::reset(&mut _self).into();
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "eq",
                 |_self: Ref<bevy::time::Stopwatch>, other: Ref<bevy::time::Stopwatch>| {
                     let output: bool = <bevy::time::Stopwatch as std::cmp::PartialEq<
@@ -322,7 +322,7 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "clone",
                 |_self: Ref<bevy::time::Stopwatch>| {
                     let output: Val<bevy::time::Stopwatch> = <bevy::time::Stopwatch as std::clone::Clone>::clone(
