@@ -1,9 +1,13 @@
 use std::ops::{Deref, DerefMut};
 
-use bevy_mod_scripting_core::bindings::{script_value::ScriptValue, ReflectBase, ReflectReference};
-use mlua::{FromLua, IntoLua, IntoLuaMulti, MultiValue, Value};
+use bevy_mod_scripting_core::bindings::{
+    function::{script_function::CallerContext, CallScriptFunction},
+    script_value::ScriptValue,
+    ReflectBase, ReflectReference,
+};
+use mlua::{FromLua, IntoLua, IntoLuaMulti, MultiValue, Value, Variadic};
 
-use super::reference::LuaReflectReference;
+use super::{reference::LuaReflectReference, world::GetWorld};
 
 #[derive(Debug, Clone)]
 pub struct LuaScriptValue(ScriptValue);
@@ -70,6 +74,12 @@ impl FromLua for LuaScriptValue {
     }
 }
 
+pub fn lua_caller_context() -> CallerContext {
+    CallerContext {
+        convert_to_0_indexed: true,
+    }
+}
+
 impl IntoLua for LuaScriptValue {
     fn into_lua(self, lua: &mlua::Lua) -> mlua::Result<mlua::Value> {
         Ok(match self.0 {
@@ -80,6 +90,18 @@ impl IntoLua for LuaScriptValue {
             ScriptValue::String(s) => Value::String(lua.create_string(s.as_ref())?),
             ScriptValue::Reference(r) => LuaReflectReference::from(r).into_lua(lua)?,
             ScriptValue::Error(script_error) => return Err(mlua::Error::external(script_error)),
+            ScriptValue::Function(mut function) => lua
+                .create_function_mut(move |lua, args: Variadic<LuaScriptValue>| {
+                    let world = lua.get_world();
+                    let out = function.call_script_function(
+                        args.into_iter().map(Into::into),
+                        world,
+                        lua_caller_context(),
+                    )?;
+
+                    Ok(LuaScriptValue::from(out))
+                })?
+                .into_lua(lua)?,
             ScriptValue::List(vec) => {
                 let table = lua.create_table_from(
                     vec.into_iter()

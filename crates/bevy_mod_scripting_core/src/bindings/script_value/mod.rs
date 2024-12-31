@@ -15,7 +15,11 @@ use crate::{
     reflection_extensions::{PartialReflectExt, TypeIdExtensions, TypeInfoExtensions},
 };
 
-use super::{pretty_print::DisplayWithWorld, ReflectReference, WorldGuard};
+use super::{
+    function::script_function::{DynamicScriptFunction, DynamicScriptFunctionMut},
+    pretty_print::DisplayWithWorld,
+    ReflectReference, WorldGuard,
+};
 
 /// An abstraction of values that can be passed to and from scripts.
 /// This allows us to re-use logic between scripting languages.
@@ -36,6 +40,8 @@ pub enum ScriptValue {
     List(Vec<ScriptValue>),
     /// Represents a reference to a value.
     Reference(ReflectReference),
+    /// A dynamic script function
+    Function(DynamicScriptFunctionMut),
     /// Represents any error, will be thrown when returned to a script
     Error(InteropError),
 }
@@ -50,6 +56,7 @@ impl ScriptValue {
             ScriptValue::String(_) => "String".to_owned(),
             ScriptValue::List(_) => "List".to_owned(),
             ScriptValue::Reference(_) => "Reference".to_owned(),
+            ScriptValue::Function(_) => "Function".to_owned(),
             ScriptValue::Error(_) => "Error".to_owned(),
         }
     }
@@ -108,12 +115,6 @@ impl From<ReflectReference> for ScriptValue {
         ScriptValue::Reference(value)
     }
 }
-
-// impl From<ScriptError> for ScriptValue {
-//     fn from(value: ScriptError) -> Self {
-//         ScriptValue::Error(value)
-//     }
-// }
 
 impl From<InteropError> for ScriptValue {
     fn from(value: InteropError) -> Self {

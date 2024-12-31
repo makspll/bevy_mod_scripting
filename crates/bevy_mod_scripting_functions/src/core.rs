@@ -14,14 +14,14 @@ use bindings::{
         from::{Mut, Ref, Val},
         from_ref::FromScriptRef,
         into_ref::IntoScriptRef,
-        script_function::{CallerContext, GetFunctionTypeDependencies, ScriptFunction},
+        script_function::{CallerContext, GetFunctionTypeDependencies, ScriptFunction, ScriptFunctionMut},
     },
     pretty_print::DisplayWithWorld,
     script_value::ScriptValue,
     ReflectReference, ReflectionPathExt, ScriptQueryBuilder, ScriptQueryResult,
     ScriptTypeRegistration, WorldAccessGuard, WorldCallbackAccess,
 };
-use error::InteropError;
+use error::{InteropError, InteropErrorInner};
 use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
 
 use crate::{bevy_bindings::LuaBevyScriptingPlugin, namespaced_register::NamespaceBuilder};
@@ -300,6 +300,31 @@ pub fn register_reflect_reference_functions(
                 };
                 ReflectReference::into_script_ref(reference, world)
             }).transpose()
+        })
+        .register("iter", |w: WorldCallbackAccess, s: ReflectReference| {
+            let mut infinite_iter = s.into_iter_infinite();
+            let world = w.try_read().expect("stale world");
+            let iter_function = move |w: WorldCallbackAccess| {
+                let (next_ref, idx) = infinite_iter.next_ref();
+                let allocator = world.allocator();
+                let mut allocator = allocator.write();
+                let reference = ReflectReference::new_allocated(next_ref, &mut allocator);
+                let converted = ReflectReference::into_script_ref(reference, world.clone());
+                // we stop once the reflection path is invalid
+                match converted {
+                    Ok(v) => Ok(v),
+                    Err(e) => {
+                        match e.inner() {
+                            InteropErrorInner::ReflectionPathError { .. } => {
+                                Ok(ScriptValue::Unit)
+                            },
+                            _ => Err(e),
+                        }
+                    },
+                }
+            };
+
+            iter_function.into_dynamic_script_function_mut()
         });
 
     Ok(())

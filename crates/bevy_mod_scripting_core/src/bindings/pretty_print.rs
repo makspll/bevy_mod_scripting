@@ -397,6 +397,7 @@ impl DisplayWithWorld for ScriptValue {
     fn display_value_with_world(&self, world: WorldGuard) -> String {
         match self {
             ScriptValue::Reference(r) => r.display_value_with_world(world),
+            ScriptValue::Function(f) => format!("Function({})", f.name()),
             ScriptValue::Unit => "()".to_owned(),
             ScriptValue::Bool(b) => b.to_string(),
             ScriptValue::Integer(i) => i.to_string(),

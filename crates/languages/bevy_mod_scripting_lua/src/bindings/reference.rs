@@ -37,7 +37,7 @@ use super::{
     script_value::LuaScriptValue,
     world::GetWorld,
 };
-use crate::bindings::world::LuaWorld;
+use crate::bindings::{script_value::lua_caller_context, world::LuaWorld};
 
 /// Lua UserData wrapper for [`bevy_mod_scripting_core::bindings::ReflectReference`].
 /// Acts as a lua reflection interface. Any value which is registered in the type registry can be interacted with using this type.
@@ -62,18 +62,12 @@ impl From<ReflectReference> for LuaReflectReference {
     }
 }
 
-fn lua_caller_context() -> CallerContext {
-    CallerContext {
-        convert_to_0_indexed: true,
-    }
-}
-
 /// Looks up a function in the registry on the given type id
 fn lookup_function(lua: &Lua, key: &str, type_id: TypeId) -> Option<Result<Function, mlua::Error>> {
     let function = lookup_dynamic_function(lua, key, type_id);
 
-    function.map(|function| {
-        lua.create_function(move |lua, args: Variadic<LuaScriptValue>| {
+    function.map(|mut function| {
+        lua.create_function_mut(move |lua, args: Variadic<LuaScriptValue>| {
             let world = lua.get_world();
             let out = function.call_script_function(
                 args.into_iter().map(Into::into),
@@ -139,7 +133,7 @@ fn try_call_overloads(
 ) -> Result<LuaScriptValue, InteropError> {
     let overloads = iter_dynamic_function_overloads(lua, key, type_id);
     let mut last_error = None;
-    for overload in overloads {
+    for mut overload in overloads {
         match overload.call_script_function(args.clone(), world.clone(), lua_caller_context()) {
             Ok(out) => return Ok(out.into()),
             Err(e) => last_error = Some(e),
@@ -173,7 +167,7 @@ impl UserData for LuaReflectReference {
                 };
 
                 // lookup get index function
-                let index_func = lookup_dynamic_function_typed::<ReflectReference>(lua, "get")
+                let mut index_func = lookup_dynamic_function_typed::<ReflectReference>(lua, "get")
                     .expect("No 'get' function registered for a ReflectReference");
 
                 // call the function with the key
@@ -308,6 +302,19 @@ impl UserData for LuaReflectReference {
                 Ok(try_call_overloads(lua, "lt", target_type_id, args, world)?)
             },
         );
+
+        #[cfg(any(
+            feature = "lua54",
+            feature = "lua53",
+            feature = "lua52",
+            feature = "luajit52",
+        ))]
+        m.add_meta_function(MetaMethod::Pairs, |l, s: LuaReflectReference| {
+            let iter_func = lookup_function_typed::<ReflectReference>(l, "iter")
+                .expect("No iter function registered");
+
+            Ok(iter_func)
+        });
 
         // #[cfg(any(
         //     feature = "lua54",

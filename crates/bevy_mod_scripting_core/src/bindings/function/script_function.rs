@@ -30,6 +30,14 @@ pub trait ScriptFunction<'env, Marker> {
     fn into_dynamic_script_function(self) -> DynamicScriptFunction;
 }
 
+#[diagnostic::on_unimplemented(
+    message = "Only functions with all arguments impplementing FromScript and return values supporting IntoScript are supported. Registering functions also requires they implement GetInnerTypeDependencies",
+    note = "If you're trying to return a non-primitive type, you might need to use Val<T> Ref<T> or Mut<T> wrappers"
+)]
+pub trait ScriptFunctionMut<'env, Marker> {
+    fn into_dynamic_script_function_mut(self) -> DynamicScriptFunctionMut;
+}
+
 /// Functionally identical to [`GetTypeRegistration`] but without the 'static bound
 pub trait GetInnerTypeDependencies {
     fn register_type_dependencies(registry: &mut TypeRegistry);
@@ -39,8 +47,8 @@ pub trait GetInnerTypeDependencies {
 macro_rules! no_type_dependencies {
     ($($path:path),*) => {
         $(
-            impl GetInnerTypeDependencies for $path {
-                fn register_type_dependencies(_registry: &mut TypeRegistry) {}
+            impl $crate::bindings::function::script_function::GetInnerTypeDependencies for $path {
+                fn register_type_dependencies(_registry: &mut bevy::reflect::TypeRegistry) {}
             }
         )*
     };
@@ -115,7 +123,8 @@ pub struct CallerContext {
 }
 
 /// The Script Function equivalent for dynamic functions. Currently unused
-#[derive(Clone)]
+#[derive(Clone, Reflect)]
+#[reflect(opaque)]
 pub struct DynamicScriptFunction {
     name: Cow<'static, str>,
     // TODO: info about the function, this is hard right now because of non 'static lifetimes in wrappers, we can't use TypePath etc
@@ -126,6 +135,34 @@ pub struct DynamicScriptFunction {
             + 'static,
     >,
 }
+
+impl PartialEq for DynamicScriptFunction {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+    }
+}
+
+#[derive(Clone, Reflect)]
+#[reflect(opaque)]
+pub struct DynamicScriptFunctionMut {
+    name: Cow<'static, str>,
+    func: Arc<
+        RwLock<
+            // I'd rather consume an option or something instead of having the RWLock but I just wanna get this release out
+            dyn FnMut(CallerContext, WorldCallbackAccess, Vec<ScriptValue>) -> ScriptValue
+                + Send
+                + Sync
+                + 'static,
+        >,
+    >,
+}
+
+impl PartialEq for DynamicScriptFunctionMut {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+    }
+}
+
 impl DynamicScriptFunction {
     pub fn call(
         &self,
@@ -148,9 +185,72 @@ impl DynamicScriptFunction {
     }
 }
 
+impl DynamicScriptFunctionMut {
+    pub fn call(
+        &mut self,
+        context: CallerContext,
+        world: WorldCallbackAccess,
+        args: Vec<ScriptValue>,
+    ) -> ScriptValue {
+        let mut write = self.func.write();
+        write(context, world, args)
+    }
+
+    pub fn name(&self) -> &Cow<'static, str> {
+        &self.name
+    }
+
+    pub fn with_name<N: Into<Cow<'static, str>>>(self, name: N) -> Self {
+        Self {
+            name: name.into(),
+            func: self.func,
+        }
+    }
+}
+
 impl std::fmt::Debug for DynamicScriptFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("DynamicScriptFunction").finish()
+        f.debug_struct("DynamicScriptFunction")
+            .field("name", self.name())
+            .finish()
+    }
+}
+
+impl std::fmt::Debug for DynamicScriptFunctionMut {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("DynamicScriptFunctionMut")
+            .field("name", self.name())
+            .finish()
+    }
+}
+
+impl<F> From<F> for DynamicScriptFunction
+where
+    F: Fn(CallerContext, WorldCallbackAccess, Vec<ScriptValue>) -> ScriptValue
+        + Send
+        + Sync
+        + 'static,
+{
+    fn from(fn_: F) -> Self {
+        DynamicScriptFunction {
+            name: std::any::type_name::<F>().into(),
+            func: Arc::new(fn_),
+        }
+    }
+}
+
+impl<F> From<F> for DynamicScriptFunctionMut
+where
+    F: FnMut(CallerContext, WorldCallbackAccess, Vec<ScriptValue>) -> ScriptValue
+        + Send
+        + Sync
+        + 'static,
+{
+    fn from(fn_: F) -> Self {
+        DynamicScriptFunctionMut {
+            name: std::any::type_name::<F>().into(),
+            func: Arc::new(RwLock::new(fn_)),
+        }
     }
 }
 
@@ -261,39 +361,59 @@ macro_rules! count {
 macro_rules! impl_script_function {
 
     ($( $param:ident ),* ) => {
-        // fn(T1...Tn) -> O
-        impl_script_function!(@ $( $param ),* : -> O => O );
-        // fn(WorldCallbackAccess, T1...Tn) -> O
-        impl_script_function!(@ $( $param ),* : ,(callback: WorldCallbackAccess) -> O => O);
-        // fn(CallerContext, WorldCallbackAccess, T1...Tn) -> O
-        impl_script_function!(@ $( $param ),* : (context: CallerContext),(callback: WorldCallbackAccess) -> O => O);
+        // all of this is pretty heavy on the compile time.
+        // ideally we'd do less, but for now this will suffice
 
-        // fn(T1...Tn) -> Result<O, InteropError>
-        impl_script_function!(@ $( $param ),* : -> O => Result<O, InteropError> where s);
-        // fn(WorldCallbackAccess, T1...Tn) -> Result<O, InteropError>
-        impl_script_function!(@ $( $param ),* : ,(callback: WorldCallbackAccess) -> O => Result<O, InteropError> where s);
-        // fn(CallerContext, WorldCallbackAccess, T1...Tn) -> Result<O, InteropError>
-        impl_script_function!(@ $( $param ),* : (context: CallerContext),(callback: WorldCallbackAccess) -> O => Result<O, InteropError> where s);
+        // Fn(T1...Tn) -> O
+        impl_script_function!(@ ScriptFunction Fn DynamicScriptFunction into_dynamic_script_function $( $param ),* : -> O => O );
+        // FnMut(T1...Tn) -> O
+        impl_script_function!(@ ScriptFunctionMut FnMut DynamicScriptFunctionMut into_dynamic_script_function_mut $( $param ),* : -> O => O );
+
+        // Fn(WorldCallbackAccess, T1...Tn) -> O
+        impl_script_function!(@ ScriptFunction Fn DynamicScriptFunction into_dynamic_script_function $( $param ),* : ,(callback: WorldCallbackAccess) -> O => O);
+        // FnMut(WorldCallbackAccess, T1...Tn) -> O
+        impl_script_function!(@ ScriptFunctionMut FnMut DynamicScriptFunctionMut into_dynamic_script_function_mut $( $param ),* : ,(callback: WorldCallbackAccess) -> O => O);
+
+        // Fn(CallerContext, WorldCallbackAccess, T1...Tn) -> O
+        impl_script_function!(@ ScriptFunction Fn DynamicScriptFunction into_dynamic_script_function $( $param ),* : (context: CallerContext),(callback: WorldCallbackAccess) -> O => O);
+        // FnMut(CallerContext, WorldCallbackAccess, T1...Tn) -> O
+        impl_script_function!(@ ScriptFunctionMut FnMut DynamicScriptFunctionMut into_dynamic_script_function_mut $( $param ),* : (context: CallerContext),(callback: WorldCallbackAccess) -> O => O);
+
+        // Fn(T1...Tn) -> Result<O, InteropError>
+        impl_script_function!(@ ScriptFunction Fn DynamicScriptFunction into_dynamic_script_function $( $param ),* : -> O => Result<O, InteropError> where s);
+        // FnMut(T1...Tn) -> Result<O, InteropError>
+        impl_script_function!(@ ScriptFunctionMut FnMut DynamicScriptFunctionMut into_dynamic_script_function_mut $( $param ),* : -> O => Result<O, InteropError> where s);
+
+        // Fn(WorldCallbackAccess, T1...Tn) -> Result<O, InteropError>
+        impl_script_function!(@ ScriptFunction Fn DynamicScriptFunction into_dynamic_script_function $( $param ),* : ,(callback: WorldCallbackAccess) -> O => Result<O, InteropError> where s);
+        // FnMut(WorldCallbackAccess, T1...Tn) -> Result<O, InteropError>
+        impl_script_function!(@ ScriptFunctionMut FnMut DynamicScriptFunctionMut into_dynamic_script_function_mut $( $param ),* : ,(callback: WorldCallbackAccess) -> O => Result<O, InteropError> where s);
+
+        // Fn(CallerContext, WorldCallbackAccess, T1...Tn) -> Result<O, InteropError>
+        impl_script_function!(@ ScriptFunction Fn DynamicScriptFunction into_dynamic_script_function $( $param ),* : (context: CallerContext),(callback: WorldCallbackAccess) -> O => Result<O, InteropError> where s);
+        // FnMut(CallerContext, WorldCallbackAccess, T1...Tn) -> Result<O, InteropError>
+        impl_script_function!(@ ScriptFunctionMut FnMut DynamicScriptFunctionMut into_dynamic_script_function_mut $( $param ),* : (context: CallerContext),(callback: WorldCallbackAccess) -> O => Result<O, InteropError> where s);
+
 
     };
 
-    (@ $( $param:ident ),* :  $(($context:ident: $contextty:ty))? $(,($callback:ident: $callbackty:ty))? -> O => $res:ty $(where $out:ident)?) => {
+    (@ $trait_type:ident $fn_type:ident $dynamic_type:ident $trait_fn_name:ident $( $param:ident ),* :  $(($context:ident: $contextty:ty))? $(,($callback:ident: $callbackty:ty))? -> O => $res:ty $(where $out:ident)?) => {
         #[allow(non_snake_case)]
         impl<
             'env,
             $( $param: FromScript, )*
             O,
             F
-        > ScriptFunction<'env,
+        > $trait_type<'env,
             fn( $($contextty,)? $( $callbackty, )? $($param ),* ) -> $res
         > for F
         where
             O: IntoScript + TypePath + GetOwnership,
-            F: Fn(  $($contextty,)? $( $callbackty, )? $($param ),* ) -> $res + Send + Sync + 'static,
+            F: $fn_type(  $($contextty,)? $( $callbackty, )? $($param ),* ) -> $res + Send + Sync + 'static,
             $( $param::This<'env>: Into<$param>,)*
         {
             #[allow(unused_mut,unused_variables)]
-            fn into_dynamic_script_function(self) -> DynamicScriptFunction {
+            fn $trait_fn_name(mut self) -> $dynamic_type {
                 let func = (move |caller_context: CallerContext, world: WorldCallbackAccess, args: Vec<ScriptValue> | {
                     let res: Result<ScriptValue, InteropError> = (|| {
                         let expected_arg_count = count!($($param )*);
@@ -330,7 +450,7 @@ macro_rules! impl_script_function {
                     script_value
                 });
 
-                DynamicScriptFunction { func: Arc::new(func), name: core::any::type_name::<Self>().into() }
+                func.into()
             }
         }
     };

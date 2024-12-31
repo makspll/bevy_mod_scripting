@@ -13,7 +13,10 @@ use crate::{
     self_type_dependency_only,
 };
 
-use super::from::Val;
+use super::{
+    from::Val,
+    script_function::{DynamicScriptFunction, DynamicScriptFunctionMut},
+};
 
 pub trait IntoScript {
     fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError>;
@@ -32,8 +35,15 @@ impl IntoScript for () {
         Ok(ScriptValue::Unit)
     }
 }
-
 self_type_dependency_only!(());
+
+impl IntoScript for DynamicScriptFunctionMut {
+    fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        Ok(ScriptValue::Function(self))
+    }
+}
+
+self_type_dependency_only!(DynamicScriptFunctionMut, DynamicScriptFunction);
 
 impl IntoScript for bool {
     fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
