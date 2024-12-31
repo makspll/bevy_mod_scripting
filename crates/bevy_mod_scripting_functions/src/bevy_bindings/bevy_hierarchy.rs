@@ -15,7 +15,7 @@ impl ::bevy::app::Plugin for BevyHierarchyScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
         let mut world = app.world_mut();
         NamespaceBuilder::<::bevy::hierarchy::prelude::Children>::new(world)
-            .overwrite_script_function(
+            .register(
                 "swap",
                 |
                     mut _self: Mut<bevy::hierarchy::prelude::Children>,
@@ -32,7 +32,7 @@ impl ::bevy::app::Plugin for BevyHierarchyScriptingPlugin {
                 },
             );
         NamespaceBuilder::<::bevy::hierarchy::prelude::Parent>::new(world)
-            .overwrite_script_function(
+            .register(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::hierarchy::prelude::Parent>| {
                     let output: () = <bevy::hierarchy::prelude::Parent as std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -42,7 +42,7 @@ impl ::bevy::app::Plugin for BevyHierarchyScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::hierarchy::prelude::Parent>,
@@ -56,7 +56,7 @@ impl ::bevy::app::Plugin for BevyHierarchyScriptingPlugin {
                 },
             );
         NamespaceBuilder::<::bevy::hierarchy::HierarchyEvent>::new(world)
-            .overwrite_script_function(
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::hierarchy::HierarchyEvent>,
@@ -69,7 +69,7 @@ impl ::bevy::app::Plugin for BevyHierarchyScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "clone",
                 |_self: Ref<bevy::hierarchy::HierarchyEvent>| {
                     let output: Val<bevy::hierarchy::HierarchyEvent> = <bevy::hierarchy::HierarchyEvent as std::clone::Clone>::clone(
@@ -79,7 +79,7 @@ impl ::bevy::app::Plugin for BevyHierarchyScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::hierarchy::HierarchyEvent>| {
                     let output: () = <bevy::hierarchy::HierarchyEvent as std::cmp::Eq>::assert_receiver_is_total_eq(

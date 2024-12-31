@@ -14,7 +14,7 @@ impl ::bevy::app::Plugin for BevyCoreScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
         let mut world = app.world_mut();
         NamespaceBuilder::<::bevy::core::prelude::Name>::new(world)
-            .overwrite_script_function(
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::core::prelude::Name>,
@@ -27,7 +27,7 @@ impl ::bevy::app::Plugin for BevyCoreScriptingPlugin {
                     output
                 },
             )
-            .overwrite_script_function(
+            .register(
                 "clone",
                 |_self: Ref<bevy::core::prelude::Name>| {
                     let output: Val<bevy::core::prelude::Name> = <bevy::core::prelude::Name as std::clone::Clone>::clone(
