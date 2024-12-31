@@ -52,5 +52,9 @@ name = "bevy_mod_scripting_rune"
 version_group = "main"
 
 [[package]]
+name = "bevy_mod_scripting_functions"
+version_group = "main"
+
+[[package]]
 name = "bevy_event_priority"
 version_group = "main"
