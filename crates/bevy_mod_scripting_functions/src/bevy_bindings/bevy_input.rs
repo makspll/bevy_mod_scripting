@@ -80,16 +80,6 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::input::gamepad::GamepadAxis>::new(world)
             .register(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::input::gamepad::GamepadAxis>| {
-                    let output: () = <bevy::input::gamepad::GamepadAxis as std::cmp::Eq>::assert_receiver_is_total_eq(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "eq",
                 |
                     _self: Ref<bevy::input::gamepad::GamepadAxis>,
@@ -111,6 +101,16 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::input::gamepad::GamepadAxis>| {
+                    let output: () = <bevy::input::gamepad::GamepadAxis as std::cmp::Eq>::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::input::gamepad::GamepadButton>::new(world)
             .register(
@@ -127,9 +127,9 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 },
             )
             .register(
-                "assert_receiver_is_total_eq",
+                "clone",
                 |_self: Ref<bevy::input::gamepad::GamepadButton>| {
-                    let output: () = <bevy::input::gamepad::GamepadButton as std::cmp::Eq>::assert_receiver_is_total_eq(
+                    let output: Val<bevy::input::gamepad::GamepadButton> = <bevy::input::gamepad::GamepadButton as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -137,9 +137,9 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 },
             )
             .register(
-                "clone",
+                "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::gamepad::GamepadButton>| {
-                    let output: Val<bevy::input::gamepad::GamepadButton> = <bevy::input::gamepad::GamepadButton as std::clone::Clone>::clone(
+                    let output: () = <bevy::input::gamepad::GamepadButton as std::cmp::Eq>::assert_receiver_is_total_eq(
                             &_self,
                         )
                         .into();
@@ -159,9 +159,9 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::input::keyboard::KeyCode>::new(world)
             .register(
-                "assert_receiver_is_total_eq",
+                "clone",
                 |_self: Ref<bevy::input::keyboard::KeyCode>| {
-                    let output: () = <bevy::input::keyboard::KeyCode as std::cmp::Eq>::assert_receiver_is_total_eq(
+                    let output: Val<bevy::input::keyboard::KeyCode> = <bevy::input::keyboard::KeyCode as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -182,9 +182,9 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 },
             )
             .register(
-                "clone",
+                "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::keyboard::KeyCode>| {
-                    let output: Val<bevy::input::keyboard::KeyCode> = <bevy::input::keyboard::KeyCode as std::clone::Clone>::clone(
+                    let output: () = <bevy::input::keyboard::KeyCode as std::cmp::Eq>::assert_receiver_is_total_eq(
                             &_self,
                         )
                         .into();
@@ -203,16 +203,6 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 },
             )
             .register(
-                "clone",
-                |_self: Ref<bevy::input::mouse::MouseButton>| {
-                    let output: Val<bevy::input::mouse::MouseButton> = <bevy::input::mouse::MouseButton as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "eq",
                 |
                     _self: Ref<bevy::input::mouse::MouseButton>,
@@ -224,18 +214,18 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::input::touch::TouchInput>::new(world)
+            )
             .register(
                 "clone",
-                |_self: Ref<bevy::input::touch::TouchInput>| {
-                    let output: Val<bevy::input::touch::TouchInput> = <bevy::input::touch::TouchInput as std::clone::Clone>::clone(
+                |_self: Ref<bevy::input::mouse::MouseButton>| {
+                    let output: Val<bevy::input::mouse::MouseButton> = <bevy::input::mouse::MouseButton as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::input::touch::TouchInput>::new(world)
             .register(
                 "eq",
                 |
@@ -248,12 +238,22 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::input::touch::TouchInput>| {
+                    let output: Val<bevy::input::touch::TouchInput> = <bevy::input::touch::TouchInput as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::input::keyboard::KeyboardFocusLost>::new(world)
             .register(
-                "clone",
+                "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::keyboard::KeyboardFocusLost>| {
-                    let output: Val<bevy::input::keyboard::KeyboardFocusLost> = <bevy::input::keyboard::KeyboardFocusLost as std::clone::Clone>::clone(
+                    let output: () = <bevy::input::keyboard::KeyboardFocusLost as std::cmp::Eq>::assert_receiver_is_total_eq(
                             &_self,
                         )
                         .into();
@@ -261,9 +261,9 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 },
             )
             .register(
-                "assert_receiver_is_total_eq",
+                "clone",
                 |_self: Ref<bevy::input::keyboard::KeyboardFocusLost>| {
-                    let output: () = <bevy::input::keyboard::KeyboardFocusLost as std::cmp::Eq>::assert_receiver_is_total_eq(
+                    let output: Val<bevy::input::keyboard::KeyboardFocusLost> = <bevy::input::keyboard::KeyboardFocusLost as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -295,6 +295,16 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 },
             )
             .register(
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::input::keyboard::KeyboardInput>| {
+                    let output: () = <bevy::input::keyboard::KeyboardInput as std::cmp::Eq>::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::input::keyboard::KeyboardInput>,
@@ -306,28 +316,8 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::input::keyboard::KeyboardInput>| {
-                    let output: () = <bevy::input::keyboard::KeyboardInput as std::cmp::Eq>::assert_receiver_is_total_eq(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::input::mouse::AccumulatedMouseMotion>::new(world)
-            .register(
-                "clone",
-                |_self: Ref<bevy::input::mouse::AccumulatedMouseMotion>| {
-                    let output: Val<bevy::input::mouse::AccumulatedMouseMotion> = <bevy::input::mouse::AccumulatedMouseMotion as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
             .register(
                 "eq",
                 |
@@ -340,18 +330,18 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::input::mouse::AccumulatedMouseScroll>::new(world)
+            )
             .register(
                 "clone",
-                |_self: Ref<bevy::input::mouse::AccumulatedMouseScroll>| {
-                    let output: Val<bevy::input::mouse::AccumulatedMouseScroll> = <bevy::input::mouse::AccumulatedMouseScroll as std::clone::Clone>::clone(
+                |_self: Ref<bevy::input::mouse::AccumulatedMouseMotion>| {
+                    let output: Val<bevy::input::mouse::AccumulatedMouseMotion> = <bevy::input::mouse::AccumulatedMouseMotion as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::input::mouse::AccumulatedMouseScroll>::new(world)
             .register(
                 "eq",
                 |
@@ -361,6 +351,16 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                     let output: bool = <bevy::input::mouse::AccumulatedMouseScroll as std::cmp::PartialEq<
                         bevy::input::mouse::AccumulatedMouseScroll,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::input::mouse::AccumulatedMouseScroll>| {
+                    let output: Val<bevy::input::mouse::AccumulatedMouseScroll> = <bevy::input::mouse::AccumulatedMouseScroll as std::clone::Clone>::clone(
+                            &_self,
+                        )
                         .into();
                     output
                 },
@@ -401,6 +401,16 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::input::mouse::MouseMotion>::new(world)
             .register(
+                "clone",
+                |_self: Ref<bevy::input::mouse::MouseMotion>| {
+                    let output: Val<bevy::input::mouse::MouseMotion> = <bevy::input::mouse::MouseMotion as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::input::mouse::MouseMotion>,
@@ -409,16 +419,6 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                     let output: bool = <bevy::input::mouse::MouseMotion as std::cmp::PartialEq<
                         bevy::input::mouse::MouseMotion,
                     >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::input::mouse::MouseMotion>| {
-                    let output: Val<bevy::input::mouse::MouseMotion> = <bevy::input::mouse::MouseMotion as std::clone::Clone>::clone(
-                            &_self,
-                        )
                         .into();
                     output
                 },
@@ -449,16 +449,6 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::input::gamepad::GamepadAxisChangedEvent>::new(world)
             .register(
-                "clone",
-                |_self: Ref<bevy::input::gamepad::GamepadAxisChangedEvent>| {
-                    let output: Val<bevy::input::gamepad::GamepadAxisChangedEvent> = <bevy::input::gamepad::GamepadAxisChangedEvent as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "eq",
                 |
                     _self: Ref<bevy::input::gamepad::GamepadAxisChangedEvent>,
@@ -467,6 +457,16 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                     let output: bool = <bevy::input::gamepad::GamepadAxisChangedEvent as std::cmp::PartialEq<
                         bevy::input::gamepad::GamepadAxisChangedEvent,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::input::gamepad::GamepadAxisChangedEvent>| {
+                    let output: Val<bevy::input::gamepad::GamepadAxisChangedEvent> = <bevy::input::gamepad::GamepadAxisChangedEvent as std::clone::Clone>::clone(
+                            &_self,
+                        )
                         .into();
                     output
                 },
@@ -499,6 +499,16 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
             ::bevy::input::gamepad::GamepadButtonStateChangedEvent,
         >::new(world)
             .register(
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::input::gamepad::GamepadButtonStateChangedEvent>| {
+                    let output: () = <bevy::input::gamepad::GamepadButtonStateChangedEvent as std::cmp::Eq>::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::input::gamepad::GamepadButtonStateChangedEvent>,
@@ -507,16 +517,6 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                     let output: bool = <bevy::input::gamepad::GamepadButtonStateChangedEvent as std::cmp::PartialEq<
                         bevy::input::gamepad::GamepadButtonStateChangedEvent,
                     >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::input::gamepad::GamepadButtonStateChangedEvent>| {
-                    let output: () = <bevy::input::gamepad::GamepadButtonStateChangedEvent as std::cmp::Eq>::assert_receiver_is_total_eq(
-                            &_self,
-                        )
                         .into();
                     output
                 },
@@ -535,6 +535,16 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::input::gamepad::GamepadConnection>::new(world)
             .register(
+                "clone",
+                |_self: Ref<bevy::input::gamepad::GamepadConnection>| {
+                    let output: Val<bevy::input::gamepad::GamepadConnection> = <bevy::input::gamepad::GamepadConnection as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::input::gamepad::GamepadConnection>,
@@ -546,38 +556,8 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::input::gamepad::GamepadConnection>| {
-                    let output: Val<bevy::input::gamepad::GamepadConnection> = <bevy::input::gamepad::GamepadConnection as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::input::gamepad::GamepadConnectionEvent>::new(world)
-            .register(
-                "connected",
-                |_self: Ref<bevy::input::gamepad::GamepadConnectionEvent>| {
-                    let output: bool = bevy::input::gamepad::GamepadConnectionEvent::connected(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "disconnected",
-                |_self: Ref<bevy::input::gamepad::GamepadConnectionEvent>| {
-                    let output: bool = bevy::input::gamepad::GamepadConnectionEvent::disconnected(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
             .register(
                 "eq",
                 |
@@ -595,6 +575,26 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 "clone",
                 |_self: Ref<bevy::input::gamepad::GamepadConnectionEvent>| {
                     let output: Val<bevy::input::gamepad::GamepadConnectionEvent> = <bevy::input::gamepad::GamepadConnectionEvent as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "connected",
+                |_self: Ref<bevy::input::gamepad::GamepadConnectionEvent>| {
+                    let output: bool = bevy::input::gamepad::GamepadConnectionEvent::connected(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "disconnected",
+                |_self: Ref<bevy::input::gamepad::GamepadConnectionEvent>| {
+                    let output: bool = bevy::input::gamepad::GamepadConnectionEvent::disconnected(
                             &_self,
                         )
                         .into();
@@ -637,6 +637,16 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 },
             )
             .register(
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::input::gamepad::GamepadInput>| {
+                    let output: () = <bevy::input::gamepad::GamepadInput as std::cmp::Eq>::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::input::gamepad::GamepadInput>,
@@ -645,16 +655,6 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                     let output: bool = <bevy::input::gamepad::GamepadInput as std::cmp::PartialEq<
                         bevy::input::gamepad::GamepadInput,
                     >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::input::gamepad::GamepadInput>| {
-                    let output: () = <bevy::input::gamepad::GamepadInput as std::cmp::Eq>::assert_receiver_is_total_eq(
-                            &_self,
-                        )
                         .into();
                     output
                 },
@@ -674,6 +674,16 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
             ::bevy::input::gamepad::RawGamepadAxisChangedEvent,
         >::new(world)
             .register(
+                "clone",
+                |_self: Ref<bevy::input::gamepad::RawGamepadAxisChangedEvent>| {
+                    let output: Val<bevy::input::gamepad::RawGamepadAxisChangedEvent> = <bevy::input::gamepad::RawGamepadAxisChangedEvent as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::input::gamepad::RawGamepadAxisChangedEvent>,
@@ -685,32 +695,10 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::input::gamepad::RawGamepadAxisChangedEvent>| {
-                    let output: Val<bevy::input::gamepad::RawGamepadAxisChangedEvent> = <bevy::input::gamepad::RawGamepadAxisChangedEvent as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<
             ::bevy::input::gamepad::RawGamepadButtonChangedEvent,
         >::new(world)
-            .register(
-                "clone",
-                |_self: Ref<bevy::input::gamepad::RawGamepadButtonChangedEvent>| {
-                    let output: Val<
-                        bevy::input::gamepad::RawGamepadButtonChangedEvent,
-                    > = <bevy::input::gamepad::RawGamepadButtonChangedEvent as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
             .register(
                 "eq",
                 |
@@ -723,8 +711,30 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::input::gamepad::RawGamepadButtonChangedEvent>| {
+                    let output: Val<
+                        bevy::input::gamepad::RawGamepadButtonChangedEvent,
+                    > = <bevy::input::gamepad::RawGamepadButtonChangedEvent as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::input::gamepad::RawGamepadEvent>::new(world)
+            .register(
+                "clone",
+                |_self: Ref<bevy::input::gamepad::RawGamepadEvent>| {
+                    let output: Val<bevy::input::gamepad::RawGamepadEvent> = <bevy::input::gamepad::RawGamepadEvent as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
             .register(
                 "eq",
                 |
@@ -737,18 +747,18 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::input::gestures::PinchGesture>::new(world)
             .register(
                 "clone",
-                |_self: Ref<bevy::input::gamepad::RawGamepadEvent>| {
-                    let output: Val<bevy::input::gamepad::RawGamepadEvent> = <bevy::input::gamepad::RawGamepadEvent as std::clone::Clone>::clone(
+                |_self: Ref<bevy::input::gestures::PinchGesture>| {
+                    let output: Val<bevy::input::gestures::PinchGesture> = <bevy::input::gestures::PinchGesture as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::input::gestures::PinchGesture>::new(world)
+            )
             .register(
                 "eq",
                 |
@@ -761,28 +771,8 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::input::gestures::PinchGesture>| {
-                    let output: Val<bevy::input::gestures::PinchGesture> = <bevy::input::gestures::PinchGesture as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::input::gestures::RotationGesture>::new(world)
-            .register(
-                "clone",
-                |_self: Ref<bevy::input::gestures::RotationGesture>| {
-                    let output: Val<bevy::input::gestures::RotationGesture> = <bevy::input::gestures::RotationGesture as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
             .register(
                 "eq",
                 |
@@ -792,6 +782,16 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                     let output: bool = <bevy::input::gestures::RotationGesture as std::cmp::PartialEq<
                         bevy::input::gestures::RotationGesture,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::input::gestures::RotationGesture>| {
+                    let output: Val<bevy::input::gestures::RotationGesture> = <bevy::input::gestures::RotationGesture as std::clone::Clone>::clone(
+                            &_self,
+                        )
                         .into();
                     output
                 },
@@ -846,9 +846,9 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::input::ButtonState>::new(world)
             .register(
-                "clone",
+                "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::ButtonState>| {
-                    let output: Val<bevy::input::ButtonState> = <bevy::input::ButtonState as std::clone::Clone>::clone(
+                    let output: () = <bevy::input::ButtonState as std::cmp::Eq>::assert_receiver_is_total_eq(
                             &_self,
                         )
                         .into();
@@ -856,9 +856,17 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 },
             )
             .register(
-                "assert_receiver_is_total_eq",
+                "is_pressed",
                 |_self: Ref<bevy::input::ButtonState>| {
-                    let output: () = <bevy::input::ButtonState as std::cmp::Eq>::assert_receiver_is_total_eq(
+                    let output: bool = bevy::input::ButtonState::is_pressed(&_self)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::input::ButtonState>| {
+                    let output: Val<bevy::input::ButtonState> = <bevy::input::ButtonState as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -877,16 +885,31 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::input::gamepad::ButtonSettings>::new(world)
             .register(
-                "is_pressed",
-                |_self: Ref<bevy::input::ButtonState>| {
-                    let output: bool = bevy::input::ButtonState::is_pressed(&_self)
+                "eq",
+                |
+                    _self: Ref<bevy::input::gamepad::ButtonSettings>,
+                    other: Ref<bevy::input::gamepad::ButtonSettings>|
+                {
+                    let output: bool = <bevy::input::gamepad::ButtonSettings as std::cmp::PartialEq<
+                        bevy::input::gamepad::ButtonSettings,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::input::gamepad::ButtonSettings>::new(world)
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::input::gamepad::ButtonSettings>| {
+                    let output: Val<bevy::input::gamepad::ButtonSettings> = <bevy::input::gamepad::ButtonSettings as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
             .register(
                 "is_pressed",
                 |_self: Ref<bevy::input::gamepad::ButtonSettings>, value: f32| {
@@ -950,31 +973,18 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::input::gamepad::AxisSettings>::new(world)
             .register(
                 "clone",
-                |_self: Ref<bevy::input::gamepad::ButtonSettings>| {
-                    let output: Val<bevy::input::gamepad::ButtonSettings> = <bevy::input::gamepad::ButtonSettings as std::clone::Clone>::clone(
+                |_self: Ref<bevy::input::gamepad::AxisSettings>| {
+                    let output: Val<bevy::input::gamepad::AxisSettings> = <bevy::input::gamepad::AxisSettings as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
                     output
                 },
             )
-            .register(
-                "eq",
-                |
-                    _self: Ref<bevy::input::gamepad::ButtonSettings>,
-                    other: Ref<bevy::input::gamepad::ButtonSettings>|
-                {
-                    let output: bool = <bevy::input::gamepad::ButtonSettings as std::cmp::PartialEq<
-                        bevy::input::gamepad::ButtonSettings,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            );
-        NamespaceBuilder::<::bevy::input::gamepad::AxisSettings>::new(world)
             .register(
                 "livezone_upperbound",
                 |_self: Ref<bevy::input::gamepad::AxisSettings>| {
@@ -1108,16 +1118,6 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 },
             )
             .register(
-                "clone",
-                |_self: Ref<bevy::input::gamepad::AxisSettings>| {
-                    let output: Val<bevy::input::gamepad::AxisSettings> = <bevy::input::gamepad::AxisSettings as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "eq",
                 |
                     _self: Ref<bevy::input::gamepad::AxisSettings>,
@@ -1169,19 +1169,6 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 },
             )
             .register(
-                "eq",
-                |
-                    _self: Ref<bevy::input::gamepad::GamepadRumbleIntensity>,
-                    other: Ref<bevy::input::gamepad::GamepadRumbleIntensity>|
-                {
-                    let output: bool = <bevy::input::gamepad::GamepadRumbleIntensity as std::cmp::PartialEq<
-                        bevy::input::gamepad::GamepadRumbleIntensity,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "weak_motor",
                 |intensity: f32| {
                     let output: Val<bevy::input::gamepad::GamepadRumbleIntensity> = bevy::input::gamepad::GamepadRumbleIntensity::weak_motor(
@@ -1200,22 +1187,25 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "eq",
+                |
+                    _self: Ref<bevy::input::gamepad::GamepadRumbleIntensity>,
+                    other: Ref<bevy::input::gamepad::GamepadRumbleIntensity>|
+                {
+                    let output: bool = <bevy::input::gamepad::GamepadRumbleIntensity as std::cmp::PartialEq<
+                        bevy::input::gamepad::GamepadRumbleIntensity,
+                    >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::input::keyboard::Key>::new(world)
             .register(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::keyboard::Key>| {
                     let output: () = <bevy::input::keyboard::Key as std::cmp::Eq>::assert_receiver_is_total_eq(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::input::keyboard::Key>| {
-                    let output: Val<bevy::input::keyboard::Key> = <bevy::input::keyboard::Key as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -1234,22 +1224,22 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::input::keyboard::Key>| {
+                    let output: Val<bevy::input::keyboard::Key> = <bevy::input::keyboard::Key as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::input::keyboard::NativeKeyCode>::new(world)
             .register(
                 "clone",
                 |_self: Ref<bevy::input::keyboard::NativeKeyCode>| {
                     let output: Val<bevy::input::keyboard::NativeKeyCode> = <bevy::input::keyboard::NativeKeyCode as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::input::keyboard::NativeKeyCode>| {
-                    let output: () = <bevy::input::keyboard::NativeKeyCode as std::cmp::Eq>::assert_receiver_is_total_eq(
                             &_self,
                         )
                         .into();
@@ -1268,8 +1258,28 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::input::keyboard::NativeKeyCode>| {
+                    let output: () = <bevy::input::keyboard::NativeKeyCode as std::cmp::Eq>::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::input::keyboard::NativeKey>::new(world)
+            .register(
+                "clone",
+                |_self: Ref<bevy::input::keyboard::NativeKey>| {
+                    let output: Val<bevy::input::keyboard::NativeKey> = <bevy::input::keyboard::NativeKey as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
             .register(
                 "eq",
                 |
@@ -1287,16 +1297,6 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::keyboard::NativeKey>| {
                     let output: () = <bevy::input::keyboard::NativeKey as std::cmp::Eq>::assert_receiver_is_total_eq(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::input::keyboard::NativeKey>| {
-                    let output: Val<bevy::input::keyboard::NativeKey> = <bevy::input::keyboard::NativeKey as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -1339,9 +1339,9 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::input::touch::TouchPhase>::new(world)
             .register(
-                "clone",
+                "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::input::touch::TouchPhase>| {
-                    let output: Val<bevy::input::touch::TouchPhase> = <bevy::input::touch::TouchPhase as std::clone::Clone>::clone(
+                    let output: () = <bevy::input::touch::TouchPhase as std::cmp::Eq>::assert_receiver_is_total_eq(
                             &_self,
                         )
                         .into();
@@ -1349,9 +1349,9 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 },
             )
             .register(
-                "assert_receiver_is_total_eq",
+                "clone",
                 |_self: Ref<bevy::input::touch::TouchPhase>| {
-                    let output: () = <bevy::input::touch::TouchPhase as std::cmp::Eq>::assert_receiver_is_total_eq(
+                    let output: Val<bevy::input::touch::TouchPhase> = <bevy::input::touch::TouchPhase as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();

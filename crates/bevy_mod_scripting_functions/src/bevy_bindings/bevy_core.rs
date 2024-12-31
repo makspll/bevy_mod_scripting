@@ -15,6 +15,16 @@ impl ::bevy::app::Plugin for BevyCoreScriptingPlugin {
         let mut world = app.world_mut();
         NamespaceBuilder::<::bevy::core::prelude::Name>::new(world)
             .register(
+                "clone",
+                |_self: Ref<bevy::core::prelude::Name>| {
+                    let output: Val<bevy::core::prelude::Name> = <bevy::core::prelude::Name as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::core::prelude::Name>,
@@ -23,16 +33,6 @@ impl ::bevy::app::Plugin for BevyCoreScriptingPlugin {
                     let output: bool = <bevy::core::prelude::Name as std::cmp::PartialEq<
                         bevy::core::prelude::Name,
                     >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::core::prelude::Name>| {
-                    let output: Val<bevy::core::prelude::Name> = <bevy::core::prelude::Name as std::clone::Clone>::clone(
-                            &_self,
-                        )
                         .into();
                     output
                 },

@@ -14,16 +14,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
         let mut world = app.world_mut();
         NamespaceBuilder::<::bevy::math::AspectRatio>::new(world)
             .register(
-                "clone",
-                |_self: Ref<bevy::math::AspectRatio>| {
-                    let output: Val<bevy::math::AspectRatio> = <bevy::math::AspectRatio as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "eq",
                 |
                     _self: Ref<bevy::math::AspectRatio>,
@@ -75,12 +65,22 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = bevy::math::AspectRatio::is_square(&_self).into();
                     output
                 },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::AspectRatio>| {
+                    let output: Val<bevy::math::AspectRatio> = <bevy::math::AspectRatio as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::CompassOctant>::new(world)
             .register(
-                "clone",
+                "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::math::CompassOctant>| {
-                    let output: Val<bevy::math::CompassOctant> = <bevy::math::CompassOctant as std::clone::Clone>::clone(
+                    let output: () = <bevy::math::CompassOctant as std::cmp::Eq>::assert_receiver_is_total_eq(
                             &_self,
                         )
                         .into();
@@ -101,9 +101,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "assert_receiver_is_total_eq",
+                "clone",
                 |_self: Ref<bevy::math::CompassOctant>| {
-                    let output: () = <bevy::math::CompassOctant as std::cmp::Eq>::assert_receiver_is_total_eq(
+                    let output: Val<bevy::math::CompassOctant> = <bevy::math::CompassOctant as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -145,6 +145,39 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             );
         NamespaceBuilder::<::bevy::math::Isometry2d>::new(world)
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::Isometry2d>| {
+                    let output: Val<bevy::math::Isometry2d> = <bevy::math::Isometry2d as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
+                |
+                    _self: Val<bevy::math::Isometry2d>,
+                    rhs: Val<bevy::math::prelude::Dir2>|
+                {
+                    let output: Val<bevy::math::prelude::Dir2> = <bevy::math::Isometry2d as std::ops::Mul<
+                        bevy::math::prelude::Dir2,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
+                |_self: Val<bevy::math::Isometry2d>, rhs: Val<bevy::math::Isometry2d>| {
+                    let output: Val<bevy::math::Isometry2d> = <bevy::math::Isometry2d as std::ops::Mul<
+                        bevy::math::Isometry2d,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
             .register(
                 "from_rotation",
                 |rotation: Val<bevy::math::Rot2>| {
@@ -188,39 +221,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "clone",
-                |_self: Ref<bevy::math::Isometry2d>| {
-                    let output: Val<bevy::math::Isometry2d> = <bevy::math::Isometry2d as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul",
-                |
-                    _self: Val<bevy::math::Isometry2d>,
-                    rhs: Val<bevy::math::prelude::Dir2>|
-                {
-                    let output: Val<bevy::math::prelude::Dir2> = <bevy::math::Isometry2d as std::ops::Mul<
-                        bevy::math::prelude::Dir2,
-                    >>::mul(_self.into_inner(), rhs.into_inner())
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul",
-                |_self: Val<bevy::math::Isometry2d>, rhs: Val<bevy::math::Isometry2d>| {
-                    let output: Val<bevy::math::Isometry2d> = <bevy::math::Isometry2d as std::ops::Mul<
-                        bevy::math::Isometry2d,
-                    >>::mul(_self.into_inner(), rhs.into_inner())
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "eq",
                 |_self: Ref<bevy::math::Isometry2d>, other: Ref<bevy::math::Isometry2d>| {
                     let output: bool = <bevy::math::Isometry2d as std::cmp::PartialEq<
@@ -233,12 +233,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
         NamespaceBuilder::<::bevy::math::Isometry3d>::new(world)
             .register(
                 "mul",
-                |
-                    _self: Val<bevy::math::Isometry3d>,
-                    rhs: Val<bevy::math::prelude::Dir3>|
-                {
-                    let output: Val<bevy::math::prelude::Dir3> = <bevy::math::Isometry3d as std::ops::Mul<
-                        bevy::math::prelude::Dir3,
+                |_self: Val<bevy::math::Isometry3d>, rhs: Val<bevy::math::Isometry3d>| {
+                    let output: Val<bevy::math::Isometry3d> = <bevy::math::Isometry3d as std::ops::Mul<
+                        bevy::math::Isometry3d,
                     >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
@@ -278,31 +275,34 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "clone",
-                |_self: Ref<bevy::math::Isometry3d>| {
-                    let output: Val<bevy::math::Isometry3d> = <bevy::math::Isometry3d as std::clone::Clone>::clone(
-                            &_self,
-                        )
+                "eq",
+                |_self: Ref<bevy::math::Isometry3d>, other: Ref<bevy::math::Isometry3d>| {
+                    let output: bool = <bevy::math::Isometry3d as std::cmp::PartialEq<
+                        bevy::math::Isometry3d,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::Isometry3d>, rhs: Val<bevy::math::Isometry3d>| {
-                    let output: Val<bevy::math::Isometry3d> = <bevy::math::Isometry3d as std::ops::Mul<
-                        bevy::math::Isometry3d,
+                |
+                    _self: Val<bevy::math::Isometry3d>,
+                    rhs: Val<bevy::math::prelude::Dir3>|
+                {
+                    let output: Val<bevy::math::prelude::Dir3> = <bevy::math::Isometry3d as std::ops::Mul<
+                        bevy::math::prelude::Dir3,
                     >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
-                "eq",
-                |_self: Ref<bevy::math::Isometry3d>, other: Ref<bevy::math::Isometry3d>| {
-                    let output: bool = <bevy::math::Isometry3d as std::cmp::PartialEq<
-                        bevy::math::Isometry3d,
-                    >>::eq(&_self, &other)
+                "clone",
+                |_self: Ref<bevy::math::Isometry3d>| {
+                    let output: Val<bevy::math::Isometry3d> = <bevy::math::Isometry3d as std::clone::Clone>::clone(
+                            &_self,
+                        )
                         .into();
                     output
                 },
@@ -351,16 +351,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::Rot2>::new(world)
             .register(
-                "eq",
-                |_self: Ref<bevy::math::Rot2>, other: Ref<bevy::math::Rot2>| {
-                    let output: bool = <bevy::math::Rot2 as std::cmp::PartialEq<
-                        bevy::math::Rot2,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "mul",
                 |
                     _self: Val<bevy::math::Rot2>,
@@ -369,16 +359,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: Val<bevy::math::prelude::Dir2> = <bevy::math::Rot2 as std::ops::Mul<
                         bevy::math::prelude::Dir2,
                     >>::mul(_self.into_inner(), direction.into_inner())
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul",
-                |_self: Val<bevy::math::Rot2>, rhs: Val<bevy::math::Rot2>| {
-                    let output: Val<bevy::math::Rot2> = <bevy::math::Rot2 as std::ops::Mul<
-                        bevy::math::Rot2,
-                    >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -599,6 +579,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "mul",
+                |_self: Val<bevy::math::Rot2>, rhs: Val<bevy::math::Rot2>| {
+                    let output: Val<bevy::math::Rot2> = <bevy::math::Rot2 as std::ops::Mul<
+                        bevy::math::Rot2,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "clone",
                 |_self: Ref<bevy::math::Rot2>| {
                     let output: Val<bevy::math::Rot2> = <bevy::math::Rot2 as std::clone::Clone>::clone(
@@ -607,18 +597,18 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::prelude::Dir2>::new(world)
+            )
             .register(
-                "neg",
-                |_self: Val<bevy::math::prelude::Dir2>| {
-                    let output: Val<bevy::math::prelude::Dir2> = <bevy::math::prelude::Dir2 as std::ops::Neg>::neg(
-                            _self.into_inner(),
-                        )
+                "eq",
+                |_self: Ref<bevy::math::Rot2>, other: Ref<bevy::math::Rot2>| {
+                    let output: bool = <bevy::math::Rot2 as std::cmp::PartialEq<
+                        bevy::math::Rot2,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::prelude::Dir2>::new(world)
             .register(
                 "clone",
                 |_self: Ref<bevy::math::prelude::Dir2>| {
@@ -746,41 +736,18 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::prelude::Dir3>::new(world)
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::prelude::Dir3>| {
-                    let output: Val<bevy::math::prelude::Dir3> = <bevy::math::prelude::Dir3 as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
             )
             .register(
                 "neg",
-                |_self: Val<bevy::math::prelude::Dir3>| {
-                    let output: Val<bevy::math::prelude::Dir3> = <bevy::math::prelude::Dir3 as std::ops::Neg>::neg(
+                |_self: Val<bevy::math::prelude::Dir2>| {
+                    let output: Val<bevy::math::prelude::Dir2> = <bevy::math::prelude::Dir2 as std::ops::Neg>::neg(
                             _self.into_inner(),
                         )
                         .into();
                     output
                 },
-            )
-            .register(
-                "eq",
-                |
-                    _self: Ref<bevy::math::prelude::Dir3>,
-                    other: Ref<bevy::math::prelude::Dir3>|
-                {
-                    let output: bool = <bevy::math::prelude::Dir3 as std::cmp::PartialEq<
-                        bevy::math::prelude::Dir3,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::prelude::Dir3>::new(world)
             .register(
                 "from_xyz_unchecked",
                 |x: f32, y: f32, z: f32| {
@@ -815,6 +782,39 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: Val<bevy::math::prelude::Dir3> = bevy::math::prelude::Dir3::fast_renormalize(
                             _self.into_inner(),
                         )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "neg",
+                |_self: Val<bevy::math::prelude::Dir3>| {
+                    let output: Val<bevy::math::prelude::Dir3> = <bevy::math::prelude::Dir3 as std::ops::Neg>::neg(
+                            _self.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::prelude::Dir3>| {
+                    let output: Val<bevy::math::prelude::Dir3> = <bevy::math::prelude::Dir3 as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "eq",
+                |
+                    _self: Ref<bevy::math::prelude::Dir3>,
+                    other: Ref<bevy::math::prelude::Dir3>|
+                {
+                    let output: bool = <bevy::math::prelude::Dir3 as std::cmp::PartialEq<
+                        bevy::math::prelude::Dir3,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -892,29 +892,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             );
         NamespaceBuilder::<::bevy::math::prelude::IRect>::new(world)
-            .register(
-                "eq",
-                |
-                    _self: Ref<bevy::math::prelude::IRect>,
-                    other: Ref<bevy::math::prelude::IRect>|
-                {
-                    let output: bool = <bevy::math::prelude::IRect as std::cmp::PartialEq<
-                        bevy::math::prelude::IRect,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::math::prelude::IRect>| {
-                    let output: () = <bevy::math::prelude::IRect as std::cmp::Eq>::assert_receiver_is_total_eq(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
             .register(
                 "new",
                 |x0: i32, y0: i32, x1: i32, y1: i32| {
@@ -1010,6 +987,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::math::prelude::IRect>| {
+                    let output: () = <bevy::math::prelude::IRect as std::cmp::Eq>::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "clone",
                 |_self: Ref<bevy::math::prelude::IRect>| {
                     let output: Val<bevy::math::prelude::IRect> = <bevy::math::prelude::IRect as std::clone::Clone>::clone(
@@ -1018,8 +1005,31 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "eq",
+                |
+                    _self: Ref<bevy::math::prelude::IRect>,
+                    other: Ref<bevy::math::prelude::IRect>|
+                {
+                    let output: bool = <bevy::math::prelude::IRect as std::cmp::PartialEq<
+                        bevy::math::prelude::IRect,
+                    >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::prelude::Rect>::new(world)
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::prelude::Rect>| {
+                    let output: Val<bevy::math::prelude::Rect> = <bevy::math::prelude::Rect as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
             .register(
                 "new",
                 |x0: f32, y0: f32, x1: f32, y1: f32| {
@@ -1129,16 +1139,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "clone",
-                |_self: Ref<bevy::math::prelude::Rect>| {
-                    let output: Val<bevy::math::prelude::Rect> = <bevy::math::prelude::Rect as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "eq",
                 |
                     _self: Ref<bevy::math::prelude::Rect>,
@@ -1152,6 +1152,29 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             );
         NamespaceBuilder::<::bevy::math::prelude::URect>::new(world)
+            .register(
+                "eq",
+                |
+                    _self: Ref<bevy::math::prelude::URect>,
+                    other: Ref<bevy::math::prelude::URect>|
+                {
+                    let output: bool = <bevy::math::prelude::URect as std::cmp::PartialEq<
+                        bevy::math::prelude::URect,
+                    >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::prelude::URect>| {
+                    let output: Val<bevy::math::prelude::URect> = <bevy::math::prelude::URect as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
             .register(
                 "new",
                 |x0: u32, y0: u32, x1: u32, y1: u32| {
@@ -1255,29 +1278,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "eq",
-                |
-                    _self: Ref<bevy::math::prelude::URect>,
-                    other: Ref<bevy::math::prelude::URect>|
-                {
-                    let output: bool = <bevy::math::prelude::URect as std::cmp::PartialEq<
-                        bevy::math::prelude::URect,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::prelude::URect>| {
-                    let output: Val<bevy::math::prelude::URect> = <bevy::math::prelude::URect as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::math::Affine3>::new(world);
         NamespaceBuilder::<::bevy::math::bounding::Aabb2d>::new(world)
@@ -1303,16 +1303,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::bounding::BoundingCircle>::new(world)
             .register(
-                "clone",
-                |_self: Ref<bevy::math::bounding::BoundingCircle>| {
-                    let output: Val<bevy::math::bounding::BoundingCircle> = <bevy::math::bounding::BoundingCircle as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "radius",
                 |_self: Ref<bevy::math::bounding::BoundingCircle>| {
                     let output: f32 = bevy::math::bounding::BoundingCircle::radius(
@@ -1326,6 +1316,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "aabb_2d",
                 |_self: Ref<bevy::math::bounding::BoundingCircle>| {
                     let output: Val<bevy::math::bounding::Aabb2d> = bevy::math::bounding::BoundingCircle::aabb_2d(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::bounding::BoundingCircle>| {
+                    let output: Val<bevy::math::bounding::BoundingCircle> = <bevy::math::bounding::BoundingCircle as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -1403,16 +1403,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Annulus>| {
-                    let output: Val<bevy::math::primitives::Annulus> = <bevy::math::primitives::Annulus as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "eq",
                 |
                     _self: Ref<bevy::math::primitives::Annulus>,
@@ -1421,6 +1411,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::primitives::Annulus as std::cmp::PartialEq<
                         bevy::math::primitives::Annulus,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::primitives::Annulus>| {
+                    let output: Val<bevy::math::primitives::Annulus> = <bevy::math::primitives::Annulus as std::clone::Clone>::clone(
+                            &_self,
+                        )
                         .into();
                     output
                 },
@@ -1537,6 +1537,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "clone",
+                |_self: Ref<bevy::math::primitives::Arc2d>| {
+                    let output: Val<bevy::math::primitives::Arc2d> = <bevy::math::primitives::Arc2d as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::math::primitives::Arc2d>,
@@ -1548,33 +1558,12 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Arc2d>| {
-                    let output: Val<bevy::math::primitives::Arc2d> = <bevy::math::primitives::Arc2d as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::math::primitives::Capsule2d>::new(world)
             .register(
-                "new",
-                |radius: f32, length: f32| {
-                    let output: Val<bevy::math::primitives::Capsule2d> = bevy::math::primitives::Capsule2d::new(
-                            radius,
-                            length,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "to_inner_rectangle",
+                "clone",
                 |_self: Ref<bevy::math::primitives::Capsule2d>| {
-                    let output: Val<bevy::math::primitives::Rectangle> = bevy::math::primitives::Capsule2d::to_inner_rectangle(
+                    let output: Val<bevy::math::primitives::Capsule2d> = <bevy::math::primitives::Capsule2d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -1595,9 +1584,20 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "clone",
+                "new",
+                |radius: f32, length: f32| {
+                    let output: Val<bevy::math::primitives::Capsule2d> = bevy::math::primitives::Capsule2d::new(
+                            radius,
+                            length,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "to_inner_rectangle",
                 |_self: Ref<bevy::math::primitives::Capsule2d>| {
-                    let output: Val<bevy::math::primitives::Capsule2d> = <bevy::math::primitives::Capsule2d as std::clone::Clone>::clone(
+                    let output: Val<bevy::math::primitives::Rectangle> = bevy::math::primitives::Capsule2d::to_inner_rectangle(
                             &_self,
                         )
                         .into();
@@ -1605,16 +1605,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             );
         NamespaceBuilder::<::bevy::math::primitives::CircularSector>::new(world)
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::CircularSector>| {
-                    let output: Val<bevy::math::primitives::CircularSector> = <bevy::math::primitives::CircularSector as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
             .register(
                 "eq",
                 |
@@ -1624,6 +1614,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::primitives::CircularSector as std::cmp::PartialEq<
                         bevy::math::primitives::CircularSector,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::primitives::CircularSector>| {
+                    let output: Val<bevy::math::primitives::CircularSector> = <bevy::math::primitives::CircularSector as std::clone::Clone>::clone(
+                            &_self,
+                        )
                         .into();
                     output
                 },
@@ -1754,11 +1754,14 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::primitives::CircularSegment>::new(world)
             .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::CircularSegment>| {
-                    let output: Val<bevy::math::primitives::CircularSegment> = <bevy::math::primitives::CircularSegment as std::clone::Clone>::clone(
-                            &_self,
-                        )
+                "eq",
+                |
+                    _self: Ref<bevy::math::primitives::CircularSegment>,
+                    other: Ref<bevy::math::primitives::CircularSegment>|
+                {
+                    let output: bool = <bevy::math::primitives::CircularSegment as std::cmp::PartialEq<
+                        bevy::math::primitives::CircularSegment,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -1888,42 +1891,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "eq",
-                |
-                    _self: Ref<bevy::math::primitives::CircularSegment>,
-                    other: Ref<bevy::math::primitives::CircularSegment>|
-                {
-                    let output: bool = <bevy::math::primitives::CircularSegment as std::cmp::PartialEq<
-                        bevy::math::primitives::CircularSegment,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            );
-        NamespaceBuilder::<::bevy::math::primitives::Ellipse>::new(world)
-            .register(
                 "clone",
-                |_self: Ref<bevy::math::primitives::Ellipse>| {
-                    let output: Val<bevy::math::primitives::Ellipse> = <bevy::math::primitives::Ellipse as std::clone::Clone>::clone(
+                |_self: Ref<bevy::math::primitives::CircularSegment>| {
+                    let output: Val<bevy::math::primitives::CircularSegment> = <bevy::math::primitives::CircularSegment as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
                     output
                 },
-            )
-            .register(
-                "eq",
-                |
-                    _self: Ref<bevy::math::primitives::Ellipse>,
-                    other: Ref<bevy::math::primitives::Ellipse>|
-                {
-                    let output: bool = <bevy::math::primitives::Ellipse as std::cmp::PartialEq<
-                        bevy::math::primitives::Ellipse,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::primitives::Ellipse>::new(world)
             .register(
                 "new",
                 |half_width: f32, half_height: f32| {
@@ -1970,6 +1947,29 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::primitives::Ellipse>| {
+                    let output: Val<bevy::math::primitives::Ellipse> = <bevy::math::primitives::Ellipse as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "eq",
+                |
+                    _self: Ref<bevy::math::primitives::Ellipse>,
+                    other: Ref<bevy::math::primitives::Ellipse>|
+                {
+                    let output: bool = <bevy::math::primitives::Ellipse as std::cmp::PartialEq<
+                        bevy::math::primitives::Ellipse,
+                    >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::primitives::Line2d>::new(world)
             .register(
@@ -1997,6 +1997,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::primitives::Plane2d>::new(world)
             .register(
+                "clone",
+                |_self: Ref<bevy::math::primitives::Plane2d>| {
+                    let output: Val<bevy::math::primitives::Plane2d> = <bevy::math::primitives::Plane2d as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::math::primitives::Plane2d>,
@@ -2008,18 +2018,18 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::primitives::Rectangle>::new(world)
             .register(
                 "clone",
-                |_self: Ref<bevy::math::primitives::Plane2d>| {
-                    let output: Val<bevy::math::primitives::Plane2d> = <bevy::math::primitives::Plane2d as std::clone::Clone>::clone(
+                |_self: Ref<bevy::math::primitives::Rectangle>| {
+                    let output: Val<bevy::math::primitives::Rectangle> = <bevy::math::primitives::Rectangle as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::primitives::Rectangle>::new(world)
+            )
             .register(
                 "eq",
                 |
@@ -2053,18 +2063,18 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::primitives::RegularPolygon>::new(world)
             .register(
                 "clone",
-                |_self: Ref<bevy::math::primitives::Rectangle>| {
-                    let output: Val<bevy::math::primitives::Rectangle> = <bevy::math::primitives::Rectangle as std::clone::Clone>::clone(
+                |_self: Ref<bevy::math::primitives::RegularPolygon>| {
+                    let output: Val<bevy::math::primitives::RegularPolygon> = <bevy::math::primitives::RegularPolygon as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::primitives::RegularPolygon>::new(world)
+            )
             .register(
                 "eq",
                 |
@@ -2158,18 +2168,18 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::primitives::Rhombus>::new(world)
             .register(
                 "clone",
-                |_self: Ref<bevy::math::primitives::RegularPolygon>| {
-                    let output: Val<bevy::math::primitives::RegularPolygon> = <bevy::math::primitives::RegularPolygon as std::clone::Clone>::clone(
+                |_self: Ref<bevy::math::primitives::Rhombus>| {
+                    let output: Val<bevy::math::primitives::Rhombus> = <bevy::math::primitives::Rhombus as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::primitives::Rhombus>::new(world)
+            )
             .register(
                 "eq",
                 |
@@ -2179,16 +2189,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::primitives::Rhombus as std::cmp::PartialEq<
                         bevy::math::primitives::Rhombus,
                     >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Rhombus>| {
-                    let output: Val<bevy::math::primitives::Rhombus> = <bevy::math::primitives::Rhombus as std::clone::Clone>::clone(
-                            &_self,
-                        )
                         .into();
                     output
                 },
@@ -2252,14 +2252,12 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::primitives::Segment2d>::new(world)
             .register(
-                "eq",
-                |
-                    _self: Ref<bevy::math::primitives::Segment2d>,
-                    other: Ref<bevy::math::primitives::Segment2d>|
-                {
-                    let output: bool = <bevy::math::primitives::Segment2d as std::cmp::PartialEq<
-                        bevy::math::primitives::Segment2d,
-                    >>::eq(&_self, &other)
+                "new",
+                |direction: Val<bevy::math::prelude::Dir2>, length: f32| {
+                    let output: Val<bevy::math::primitives::Segment2d> = bevy::math::primitives::Segment2d::new(
+                            direction.into_inner(),
+                            length,
+                        )
                         .into();
                     output
                 },
@@ -2275,12 +2273,14 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "new",
-                |direction: Val<bevy::math::prelude::Dir2>, length: f32| {
-                    let output: Val<bevy::math::primitives::Segment2d> = bevy::math::primitives::Segment2d::new(
-                            direction.into_inner(),
-                            length,
-                        )
+                "eq",
+                |
+                    _self: Ref<bevy::math::primitives::Segment2d>,
+                    other: Ref<bevy::math::primitives::Segment2d>|
+                {
+                    let output: bool = <bevy::math::primitives::Segment2d as std::cmp::PartialEq<
+                        bevy::math::primitives::Segment2d,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2295,16 +2295,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::primitives::Triangle2d as std::cmp::PartialEq<
                         bevy::math::primitives::Triangle2d,
                     >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Triangle2d>| {
-                    let output: Val<bevy::math::primitives::Triangle2d> = <bevy::math::primitives::Triangle2d as std::clone::Clone>::clone(
-                            &_self,
-                        )
                         .into();
                     output
                 },
@@ -2358,6 +2348,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::primitives::Triangle2d>| {
+                    let output: Val<bevy::math::primitives::Triangle2d> = <bevy::math::primitives::Triangle2d as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::bounding::Aabb3d>::new(world)
             .register(
@@ -2382,6 +2382,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::bounding::BoundingSphere>::new(world)
             .register(
+                "clone",
+                |_self: Ref<bevy::math::bounding::BoundingSphere>| {
+                    let output: Val<bevy::math::bounding::BoundingSphere> = <bevy::math::bounding::BoundingSphere as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "radius",
                 |_self: Ref<bevy::math::bounding::BoundingSphere>| {
                     let output: f32 = bevy::math::bounding::BoundingSphere::radius(
@@ -2395,16 +2405,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "aabb_3d",
                 |_self: Ref<bevy::math::bounding::BoundingSphere>| {
                     let output: Val<bevy::math::bounding::Aabb3d> = bevy::math::bounding::BoundingSphere::aabb_3d(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::bounding::BoundingSphere>| {
-                    let output: Val<bevy::math::bounding::BoundingSphere> = <bevy::math::bounding::BoundingSphere as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2426,6 +2426,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "clone",
+                |_self: Ref<bevy::math::primitives::Sphere>| {
+                    let output: Val<bevy::math::primitives::Sphere> = <bevy::math::primitives::Sphere as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "new",
                 |radius: f32| {
                     let output: Val<bevy::math::primitives::Sphere> = bevy::math::primitives::Sphere::new(
@@ -2439,16 +2449,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "diameter",
                 |_self: Ref<bevy::math::primitives::Sphere>| {
                     let output: f32 = bevy::math::primitives::Sphere::diameter(&_self)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Sphere>| {
-                    let output: Val<bevy::math::primitives::Sphere> = <bevy::math::primitives::Sphere as std::clone::Clone>::clone(
-                            &_self,
-                        )
                         .into();
                     output
                 },
@@ -2477,6 +2477,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "clone",
+                |_self: Ref<bevy::math::primitives::Cuboid>| {
+                    let output: Val<bevy::math::primitives::Cuboid> = <bevy::math::primitives::Cuboid as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::math::primitives::Cuboid>,
@@ -2485,16 +2495,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::primitives::Cuboid as std::cmp::PartialEq<
                         bevy::math::primitives::Cuboid,
                     >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Cuboid>| {
-                    let output: Val<bevy::math::primitives::Cuboid> = <bevy::math::primitives::Cuboid as std::clone::Clone>::clone(
-                            &_self,
-                        )
                         .into();
                     output
                 },
@@ -2654,16 +2654,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Cone>| {
-                    let output: Val<bevy::math::primitives::Cone> = <bevy::math::primitives::Cone as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "eq",
                 |
                     _self: Ref<bevy::math::primitives::Cone>,
@@ -2675,18 +2665,18 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::primitives::ConicalFrustum>::new(world)
+            )
             .register(
                 "clone",
-                |_self: Ref<bevy::math::primitives::ConicalFrustum>| {
-                    let output: Val<bevy::math::primitives::ConicalFrustum> = <bevy::math::primitives::ConicalFrustum as std::clone::Clone>::clone(
+                |_self: Ref<bevy::math::primitives::Cone>| {
+                    let output: Val<bevy::math::primitives::Cone> = <bevy::math::primitives::Cone as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::primitives::ConicalFrustum>::new(world)
             .register(
                 "eq",
                 |
@@ -2699,18 +2689,18 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::primitives::InfinitePlane3d>::new(world)
+            )
             .register(
                 "clone",
-                |_self: Ref<bevy::math::primitives::InfinitePlane3d>| {
-                    let output: Val<bevy::math::primitives::InfinitePlane3d> = <bevy::math::primitives::InfinitePlane3d as std::clone::Clone>::clone(
+                |_self: Ref<bevy::math::primitives::ConicalFrustum>| {
+                    let output: Val<bevy::math::primitives::ConicalFrustum> = <bevy::math::primitives::ConicalFrustum as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::primitives::InfinitePlane3d>::new(world)
             .register(
                 "eq",
                 |
@@ -2720,6 +2710,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::primitives::InfinitePlane3d as std::cmp::PartialEq<
                         bevy::math::primitives::InfinitePlane3d,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::primitives::InfinitePlane3d>| {
+                    let output: Val<bevy::math::primitives::InfinitePlane3d> = <bevy::math::primitives::InfinitePlane3d as std::clone::Clone>::clone(
+                            &_self,
+                        )
                         .into();
                     output
                 },
@@ -2750,17 +2750,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::primitives::Segment3d>::new(world)
             .register(
-                "new",
-                |direction: Val<bevy::math::prelude::Dir3>, length: f32| {
-                    let output: Val<bevy::math::primitives::Segment3d> = bevy::math::primitives::Segment3d::new(
-                            direction.into_inner(),
-                            length,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "eq",
                 |
                     _self: Ref<bevy::math::primitives::Segment3d>,
@@ -2769,6 +2758,17 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::primitives::Segment3d as std::cmp::PartialEq<
                         bevy::math::primitives::Segment3d,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |direction: Val<bevy::math::prelude::Dir3>, length: f32| {
+                    let output: Val<bevy::math::primitives::Segment3d> = bevy::math::primitives::Segment3d::new(
+                            direction.into_inner(),
+                            length,
+                        )
                         .into();
                     output
                 },
@@ -2784,16 +2784,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             );
         NamespaceBuilder::<::bevy::math::primitives::Torus>::new(world)
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Torus>| {
-                    let output: Val<bevy::math::primitives::Torus> = <bevy::math::primitives::Torus as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
             .register(
                 "new",
                 |inner_radius: f32, outer_radius: f32| {
@@ -2822,6 +2812,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "clone",
+                |_self: Ref<bevy::math::primitives::Torus>| {
+                    let output: Val<bevy::math::primitives::Torus> = <bevy::math::primitives::Torus as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::math::primitives::Torus>,
@@ -2835,6 +2835,29 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             );
         NamespaceBuilder::<::bevy::math::primitives::Triangle3d>::new(world)
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::primitives::Triangle3d>| {
+                    let output: Val<bevy::math::primitives::Triangle3d> = <bevy::math::primitives::Triangle3d as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "eq",
+                |
+                    _self: Ref<bevy::math::primitives::Triangle3d>,
+                    other: Ref<bevy::math::primitives::Triangle3d>|
+                {
+                    let output: bool = <bevy::math::primitives::Triangle3d as std::cmp::PartialEq<
+                        bevy::math::primitives::Triangle3d,
+                    >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
             .register(
                 "is_degenerate",
                 |_self: Ref<bevy::math::primitives::Triangle3d>| {
@@ -2884,31 +2907,18 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "eq",
-                |
-                    _self: Ref<bevy::math::primitives::Triangle3d>,
-                    other: Ref<bevy::math::primitives::Triangle3d>|
-                {
-                    let output: bool = <bevy::math::primitives::Triangle3d as std::cmp::PartialEq<
-                        bevy::math::primitives::Triangle3d,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::bounding::RayCast2d>::new(world)
             .register(
                 "clone",
-                |_self: Ref<bevy::math::primitives::Triangle3d>| {
-                    let output: Val<bevy::math::primitives::Triangle3d> = <bevy::math::primitives::Triangle3d as std::clone::Clone>::clone(
+                |_self: Ref<bevy::math::bounding::RayCast2d>| {
+                    let output: Val<bevy::math::bounding::RayCast2d> = <bevy::math::bounding::RayCast2d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::bounding::RayCast2d>::new(world)
+            )
             .register(
                 "from_ray",
                 |ray: Val<bevy::math::Ray2d>, max: f32| {
@@ -2943,16 +2953,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: std::option::Option<f32> = bevy::math::bounding::RayCast2d::circle_intersection_at(
                             &_self,
                             &circle,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::bounding::RayCast2d>| {
-                    let output: Val<bevy::math::bounding::RayCast2d> = <bevy::math::bounding::RayCast2d as std::clone::Clone>::clone(
-                            &_self,
                         )
                         .into();
                     output
@@ -3042,6 +3042,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::bounding::RayCast3d>::new(world)
             .register(
+                "clone",
+                |_self: Ref<bevy::math::bounding::RayCast3d>| {
+                    let output: Val<bevy::math::bounding::RayCast3d> = <bevy::math::bounding::RayCast3d as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "from_ray",
                 |ray: Val<bevy::math::Ray3d>, max: f32| {
                     let output: Val<bevy::math::bounding::RayCast3d> = bevy::math::bounding::RayCast3d::from_ray(
@@ -3075,16 +3085,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: std::option::Option<f32> = bevy::math::bounding::RayCast3d::sphere_intersection_at(
                             &_self,
                             &sphere,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::bounding::RayCast3d>| {
-                    let output: Val<bevy::math::bounding::RayCast3d> = <bevy::math::bounding::RayCast3d as std::clone::Clone>::clone(
-                            &_self,
                         )
                         .into();
                     output
@@ -3173,16 +3173,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             );
         NamespaceBuilder::<::bevy::math::curve::interval::Interval>::new(world)
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::curve::interval::Interval>| {
-                    let output: Val<bevy::math::curve::interval::Interval> = <bevy::math::curve::interval::Interval as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
             .register(
                 "start",
                 |_self: Val<bevy::math::curve::interval::Interval>| {
@@ -3280,6 +3270,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "clone",
+                |_self: Ref<bevy::math::curve::interval::Interval>| {
+                    let output: Val<bevy::math::curve::interval::Interval> = <bevy::math::curve::interval::Interval as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::math::curve::interval::Interval>,
@@ -3299,6 +3299,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: Val<bevy::math::FloatOrd> = <bevy::math::FloatOrd as std::clone::Clone>::clone(
                             &_self,
                         )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "eq",
+                |_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>| {
+                    let output: bool = <bevy::math::FloatOrd as std::cmp::PartialEq<
+                        bevy::math::FloatOrd,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -3352,28 +3362,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "eq",
-                |_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>| {
-                    let output: bool = <bevy::math::FloatOrd as std::cmp::PartialEq<
-                        bevy::math::FloatOrd,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::math::primitives::Plane3d>::new(world)
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Plane3d>| {
-                    let output: Val<bevy::math::primitives::Plane3d> = <bevy::math::primitives::Plane3d as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
             .register(
                 "eq",
                 |
@@ -3386,12 +3376,22 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::primitives::Plane3d>| {
+                    let output: Val<bevy::math::primitives::Plane3d> = <bevy::math::primitives::Plane3d as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::primitives::Tetrahedron>::new(world)
             .register(
-                "signed_volume",
+                "clone",
                 |_self: Ref<bevy::math::primitives::Tetrahedron>| {
-                    let output: f32 = bevy::math::primitives::Tetrahedron::signed_volume(
+                    let output: Val<bevy::math::primitives::Tetrahedron> = <bevy::math::primitives::Tetrahedron as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -3412,9 +3412,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "clone",
+                "signed_volume",
                 |_self: Ref<bevy::math::primitives::Tetrahedron>| {
-                    let output: Val<bevy::math::primitives::Tetrahedron> = <bevy::math::primitives::Tetrahedron as std::clone::Clone>::clone(
+                    let output: f32 = bevy::math::primitives::Tetrahedron::signed_volume(
                             &_self,
                         )
                         .into();
