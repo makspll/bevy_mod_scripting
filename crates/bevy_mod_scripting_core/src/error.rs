@@ -351,12 +351,9 @@ impl InteropError {
     }
 
     /// Thrown when an error happens in a function call. The inner error provides details on the error.
-    pub fn function_interop_error(function_info: &FunctionInfo, error: InteropError) -> Self {
+    pub fn function_interop_error(function_name: &str, error: InteropError) -> Self {
         Self(Arc::new(InteropErrorInner::FunctionInteropError {
-            function_name: function_info
-                .name()
-                .map(|s| s.to_string())
-                .unwrap_or("<unnamed function>".to_owned()),
+            function_name: function_name.to_string(),
             error,
         }))
     }

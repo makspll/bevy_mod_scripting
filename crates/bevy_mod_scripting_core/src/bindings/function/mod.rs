@@ -13,7 +13,7 @@ use bevy::reflect::{
     },
     PartialReflect,
 };
-use script_function::CallerContext;
+use script_function::{CallerContext, DynamicScriptFunction};
 
 use crate::{
     error::{FlattenError, InteropError, InteropErrorInner, ScriptError, ScriptResult},
@@ -37,56 +37,20 @@ pub trait CallScriptFunction {
     ) -> Result<ScriptValue, InteropError>;
 }
 
-impl CallScriptFunction for DynamicFunction<'_> {
+impl CallScriptFunction for DynamicScriptFunction {
     fn call_script_function<I: IntoIterator<Item = ScriptValue>>(
         &self,
         args: I,
         world: WorldGuard,
         context: CallerContext,
     ) -> Result<ScriptValue, InteropError> {
-        let args = args.into_iter();
-
-        let add_context = self.is_script_function();
-        let mut args_list = ArgList::new();
-
-        if add_context {
-            args_list = args_list.push_arg(ArgValue::Owned(Box::new(context)));
-            args_list = args_list.push_arg(ArgValue::Owned(Box::new(
-                WorldCallbackAccess::from_guard(world.clone()),
-            )));
+        let args = args.into_iter().collect::<Vec<_>>();
+        let world_callback_access = WorldCallbackAccess::from_guard(world.clone());
+        // should we be inlining call errors into the return value?
+        let return_val = self.call(context, world_callback_access, args);
+        match return_val {
+            ScriptValue::Error(e) => Err(InteropError::function_interop_error(self.name(), e)),
+            v => Ok(v),
         }
-
-        for arg in args {
-            let arg_val = ArgValue::Owned(Box::new(arg));
-            args_list = args_list.push_arg(arg_val);
-        }
-
-        let return_val = self
-            .call(args_list)
-            .map_err(InteropError::function_call_error)?;
-
-        match return_val.try_into_or_boxed::<ScriptValue>() {
-            Ok(ScriptValue::Error(e)) => Err(InteropError::function_interop_error(self.info(), e)),
-            Ok(v) => Ok(v),
-            Err(b) => {
-                let allocator = world.allocator();
-                let mut allocator = allocator.write();
-
-                Ok(ReflectReference::new_allocated_boxed(b, &mut allocator).into())
-            }
-        }
-    }
-}
-
-pub trait DynamicFunctionExt {
-    fn is_script_function(&self) -> bool;
-}
-
-impl DynamicFunctionExt for DynamicFunction<'_> {
-    fn is_script_function(&self) -> bool {
-        self.info().args().first().map_or(false, |arg| {
-            arg.type_id() == std::any::TypeId::of::<CallerContext>()
-                || arg.type_id() == std::any::TypeId::of::<WorldCallbackAccess>()
-        })
     }
 }

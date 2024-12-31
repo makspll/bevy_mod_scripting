@@ -16,7 +16,10 @@ use bevy::{
 };
 use bevy_mod_scripting_core::{
     bindings::{
-        function::{script_function::CallerContext, CallScriptFunction},
+        function::{
+            script_function::{AppScriptFunctionRegistry, CallerContext, DynamicScriptFunction},
+            CallScriptFunction,
+        },
         pretty_print::{DisplayWithWorld, ReflectReferencePrinter},
         script_value::ScriptValue,
         ReflectAllocator, ReflectRefIter, ReflectReference, ReflectionPathExt, TypeIdSource,
@@ -91,14 +94,10 @@ fn lookup_function_typed<T: 'static + ?Sized>(
     lookup_function(lua, key, type_id)
 }
 
-fn lookup_dynamic_function<'lua>(
-    lua: &'lua Lua,
-    key: &str,
-    type_id: TypeId,
-) -> Option<DynamicFunction<'static>> {
+fn lookup_dynamic_function(lua: &Lua, key: &str, type_id: TypeId) -> Option<DynamicScriptFunction> {
     let function_registry = lua
         .get_world()
-        .with_resource(|registry: &AppFunctionRegistry| registry.clone());
+        .with_resource(|registry: &AppScriptFunctionRegistry| registry.clone());
     let registry = function_registry.read();
 
     registry
@@ -106,10 +105,10 @@ fn lookup_dynamic_function<'lua>(
         .cloned()
 }
 
-fn lookup_dynamic_function_typed<'lua, T: 'static + ?Sized>(
-    lua: &'lua Lua,
+fn lookup_dynamic_function_typed<T: 'static + ?Sized>(
+    lua: &Lua,
     key: &str,
-) -> Option<DynamicFunction<'static>> {
+) -> Option<DynamicScriptFunction> {
     let type_id = TypeId::of::<T>();
     lookup_dynamic_function(lua, key, type_id)
 }

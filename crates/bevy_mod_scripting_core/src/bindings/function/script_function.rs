@@ -117,13 +117,28 @@ pub struct CallerContext {
 /// The Script Function equivalent for dynamic functions. Currently unused
 #[derive(Clone)]
 pub struct DynamicScriptFunction {
+    name: Cow<'static, str>,
     // TODO: info about the function, this is hard right now because of non 'static lifetimes in wrappers, we can't use TypePath etc
-    pub func: Arc<
+    func: Arc<
         dyn Fn(CallerContext, WorldCallbackAccess, Vec<ScriptValue>) -> ScriptValue
             + Send
             + Sync
             + 'static,
     >,
+}
+impl DynamicScriptFunction {
+    pub fn call(
+        &self,
+        context: CallerContext,
+        world: WorldCallbackAccess,
+        args: Vec<ScriptValue>,
+    ) -> ScriptValue {
+        (self.func)(context, world, args)
+    }
+
+    pub fn name(&self) -> &Cow<'static, str> {
+        &self.name
+    }
 }
 
 impl std::fmt::Debug for DynamicScriptFunction {
@@ -274,7 +289,7 @@ macro_rules! impl_script_function {
             fn into_dynamic_script_function(self) -> DynamicScriptFunction {
                 let func = (move |caller_context: CallerContext, world: WorldCallbackAccess, args: Vec<ScriptValue> | {
                     let res: Result<ScriptValue, InteropError> = (|| {
-                        let expected_arg_count = count!($($param),*);
+                        let expected_arg_count = count!($($param )*);
                         if args.len() != expected_arg_count {
                             return Err(InteropError::function_call_error(FunctionError::ArgCountMismatch{
                                 expected: expected_arg_count,
@@ -308,7 +323,7 @@ macro_rules! impl_script_function {
                     script_value
                 });
 
-                DynamicScriptFunction { func: Arc::new(func) }
+                DynamicScriptFunction { func: Arc::new(func), name: core::any::type_name::<Self>().into() }
             }
         }
     };
