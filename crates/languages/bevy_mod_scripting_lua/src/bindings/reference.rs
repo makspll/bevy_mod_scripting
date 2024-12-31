@@ -23,7 +23,7 @@ use bevy_mod_scripting_core::{
         pretty_print::{DisplayWithWorld, ReflectReferencePrinter},
         script_value::ScriptValue,
         ReflectAllocator, ReflectRefIter, ReflectReference, ReflectionPathExt, TypeIdSource,
-        WorldCallbackAccess,
+        WorldCallbackAccess, WorldGuard,
     },
     error::{InteropError, ScriptError, ScriptResult},
     reflection_extensions::{PartialReflectExt, TypeIdExtensions},
@@ -130,6 +130,27 @@ fn iter_dynamic_function_overloads(
         .into_iter()
 }
 
+fn try_call_overloads(
+    lua: &Lua,
+    key: &str,
+    type_id: TypeId,
+    args: Vec<ScriptValue>,
+    world: WorldGuard,
+) -> Result<LuaScriptValue, InteropError> {
+    let overloads = iter_dynamic_function_overloads(lua, key, type_id);
+    let mut last_error = None;
+    for overload in overloads {
+        match overload.call_script_function(args.clone(), world.clone(), lua_caller_context()) {
+            Ok(out) => return Ok(out.into()),
+            Err(e) => last_error = Some(e),
+        }
+    }
+
+    Err(last_error
+        .unwrap_or_else(|| InteropError::missing_function(type_id, key.to_string()).into())
+        .into())
+}
+
 impl UserData for LuaReflectReference {
     fn add_methods<T: UserDataMethods<Self>>(m: &mut T) {
         m.add_meta_function(
@@ -190,28 +211,101 @@ impl UserData for LuaReflectReference {
                 let world = lua.get_world();
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
-
                 let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let args = vec![ScriptValue::Reference(self_), other];
+                Ok(try_call_overloads(lua, "sub", target_type_id, args, world)?)
+            },
+        );
 
-                let overloads = iter_dynamic_function_overloads(lua, "sub", target_type_id);
-                let mut last_error = None;
-                let call_args = vec![ScriptValue::Reference(self_), other];
-                for overload in overloads {
-                    match overload.call_script_function(
-                        call_args.clone(),
-                        world.clone(),
-                        lua_caller_context(),
-                    ) {
-                        Ok(out) => return LuaScriptValue::from(out).into_lua(lua),
-                        Err(e) => last_error = Some(e),
-                    }
-                }
+        m.add_meta_function(
+            MetaMethod::Add,
+            |lua, (self_, other): (LuaReflectReference, LuaScriptValue)| {
+                let world = lua.get_world();
+                let self_: ReflectReference = self_.into();
+                let other: ScriptValue = other.into();
+                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let args = vec![ScriptValue::Reference(self_), other];
+                Ok(try_call_overloads(lua, "add", target_type_id, args, world)?)
+            },
+        );
 
-                Err(last_error
-                    .unwrap_or_else(|| {
-                        InteropError::missing_function(target_type_id, "sub".to_string()).into()
-                    })
-                    .into())
+        m.add_meta_function(
+            MetaMethod::Mul,
+            |lua, (self_, other): (LuaReflectReference, LuaScriptValue)| {
+                let world = lua.get_world();
+                let self_: ReflectReference = self_.into();
+                let other: ScriptValue = other.into();
+                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let args = vec![ScriptValue::Reference(self_), other];
+                Ok(try_call_overloads(lua, "mul", target_type_id, args, world)?)
+            },
+        );
+
+        m.add_meta_function(
+            MetaMethod::Div,
+            |lua, (self_, other): (LuaReflectReference, LuaScriptValue)| {
+                let world = lua.get_world();
+                let self_: ReflectReference = self_.into();
+                let other: ScriptValue = other.into();
+                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let args = vec![ScriptValue::Reference(self_), other];
+                Ok(try_call_overloads(lua, "div", target_type_id, args, world)?)
+            },
+        );
+
+        m.add_meta_function(
+            MetaMethod::Mod,
+            |lua, (self_, other): (LuaReflectReference, LuaScriptValue)| {
+                let world = lua.get_world();
+                let self_: ReflectReference = self_.into();
+                let other: ScriptValue = other.into();
+                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let args = vec![ScriptValue::Reference(self_), other];
+                Ok(try_call_overloads(lua, "rem", target_type_id, args, world)?)
+            },
+        );
+
+        m.add_meta_function(MetaMethod::Unm, |lua, self_: LuaReflectReference| {
+            let world = lua.get_world();
+            let self_: ReflectReference = self_.into();
+            let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+            let args = vec![ScriptValue::Reference(self_)];
+            Ok(try_call_overloads(lua, "neg", target_type_id, args, world)?)
+        });
+
+        m.add_meta_function(
+            MetaMethod::Pow,
+            |lua, (self_, other): (LuaReflectReference, LuaScriptValue)| {
+                let world = lua.get_world();
+                let self_: ReflectReference = self_.into();
+                let other: ScriptValue = other.into();
+                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let args = vec![ScriptValue::Reference(self_), other];
+                Ok(try_call_overloads(lua, "pow", target_type_id, args, world)?)
+            },
+        );
+
+        m.add_meta_function(
+            MetaMethod::Eq,
+            |lua, (self_, other): (LuaReflectReference, LuaScriptValue)| {
+                let world = lua.get_world();
+                let self_: ReflectReference = self_.into();
+                let other: ScriptValue = other.into();
+                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let args = vec![ScriptValue::Reference(self_), other];
+                Ok(try_call_overloads(lua, "eq", target_type_id, args, world)?)
+            },
+        );
+
+        m.add_meta_function(
+            MetaMethod::Lt,
+            |lua, (self_, other): (LuaReflectReference, LuaScriptValue)| {
+                let world = lua.get_world();
+                let self_: ReflectReference = self_.into();
+                let other: ScriptValue = other.into();
+                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let args = vec![ScriptValue::Reference(self_), other];
+                Ok(try_call_overloads(lua, "lt", target_type_id, args, world)?)
             },
         );
 
