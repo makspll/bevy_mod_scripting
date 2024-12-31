@@ -5,9 +5,7 @@ iterated_vals = {}
 for v in pairs(res.vec_usize) do
     iterated_vals[#iterated_vals + 1] = v
 end
-print(iterated_vals[1])
 assert(#iterated_vals == 5, "Length is not 5")
-
 assert(iterated_vals[1] == 1, "First value is not 1")
 assert(iterated_vals[2] == 2, "Second value is not 2")
 assert(iterated_vals[3] == 3, "Third value is not 3")
