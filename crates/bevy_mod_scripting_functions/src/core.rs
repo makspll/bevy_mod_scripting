@@ -302,29 +302,28 @@ pub fn register_reflect_reference_functions(
             }).transpose()
         })
         .register("iter", |w: WorldCallbackAccess, s: ReflectReference| {
-            let mut infinite_iter = s.into_iter_infinite();
             let world = w.try_read().expect("stale world");
+            let mut len = s.len(world.clone())?.unwrap_or_default();
+            let mut infinite_iter = s.into_iter_infinite();
             let iter_function = move || {
-                let (next_ref, idx) = infinite_iter.next_ref();
-                let allocator = world.allocator();
-                let mut allocator = allocator.write();
-                let reference = ReflectReference::new_allocated(next_ref, &mut allocator);
-                let converted = ReflectReference::into_script_ref(reference, world.clone());
-                // we stop once the reflection path is invalid
-                match converted {
-                    Ok(v) => Ok(v),
-                    Err(e) => {
-                        match e.inner() {
-                            InteropErrorInner::ReflectionPathError { .. } => {
-                                Ok(ScriptValue::Unit)
-                            },
-                            _ => Err(e),
-                        }
-                    },
+                if len == 0 {
+                    return Ok(ScriptValue::Unit);
                 }
+
+                let (next_ref, idx) = infinite_iter.next_ref();
+                let reference = {
+                    let allocator = world.allocator();
+                    let mut allocator = allocator.write();
+                    ReflectReference::new_allocated(next_ref, &mut allocator)
+                };
+                let converted = ReflectReference::into_script_ref(reference, world.clone());
+                // println!("idx: {idx:?}, converted: {converted:?}");
+                len -= 1;
+                // we stop once the reflection path is invalid
+                converted
             };
 
-            iter_function.into_dynamic_script_function_mut()
+            Ok(iter_function.into_dynamic_script_function_mut())
         });
 
     Ok(())
