@@ -1,11 +1,12 @@
 use std::{any::TypeId, borrow::Cow, marker::PhantomData};
 
 use bevy::{
-    prelude::{AppFunctionRegistry, IntoFunction, World},
+    prelude::{AppFunctionRegistry, AppTypeRegistry, IntoFunction, World},
     reflect::func::{DynamicFunction, FunctionRegistrationError, FunctionRegistry},
 };
 use bevy_mod_scripting_core::bindings::function::script_function::{
-    AppScriptFunctionRegistry, DynamicScriptFunction, ScriptFunction, ScriptFunctionRegistry,
+    AppScriptFunctionRegistry, DynamicScriptFunction, GetFunctionTypeDependencies, ScriptFunction,
+    ScriptFunctionRegistry,
 };
 
 pub trait RegisterNamespacedFunction {
@@ -17,6 +18,13 @@ pub trait RegisterNamespacedFunction {
 }
 
 pub trait GetNamespacedFunction {
+    fn iter_overloads_namespaced<N>(
+        &self,
+        name: N,
+        namespace: Namespace,
+    ) -> impl Iterator<Item = &DynamicScriptFunction>
+    where
+        N: Into<Cow<'static, str>>;
     fn get_namespaced_function<N>(
         &self,
         name: N,
@@ -78,6 +86,19 @@ impl RegisterNamespacedFunction for ScriptFunctionRegistry {
 }
 
 impl GetNamespacedFunction for ScriptFunctionRegistry {
+    fn iter_overloads_namespaced<N>(
+        &self,
+        name: N,
+        namespace: Namespace,
+    ) -> impl Iterator<Item = &DynamicScriptFunction>
+    where
+        N: Into<Cow<'static, str>>,
+    {
+        let cow: Cow<'static, str> = name.into();
+        let function_name = namespace.function_name(cow);
+        self.iter_overloads(function_name)
+    }
+
     fn get_namespaced_function<N>(
         &self,
         name: N,
@@ -117,14 +138,21 @@ impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
     pub fn register<N, F, M>(&mut self, name: N, function: F) -> &mut Self
     where
         N: Into<Cow<'static, str>>,
-        F: ScriptFunction<'static, M>,
+        F: ScriptFunction<'static, M> + GetFunctionTypeDependencies<M>,
     {
         {
-            let mut registry = self
-                .world
-                .get_resource_or_init::<AppScriptFunctionRegistry>();
-            let mut registry = registry.write();
-            registry.register_namespaced_function::<S, _, F, M>(name, function);
+            {
+                let mut registry = self
+                    .world
+                    .get_resource_or_init::<AppScriptFunctionRegistry>();
+                let mut registry = registry.write();
+                registry.register_namespaced_function::<S, _, F, M>(name, function);
+            }
+            {
+                let mut type_registry = self.world.get_resource_or_init::<AppTypeRegistry>();
+                let mut type_registry = type_registry.write();
+                F::register_type_dependencies(&mut type_registry);
+            }
         }
         self
     }

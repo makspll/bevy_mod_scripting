@@ -113,6 +113,23 @@ fn lookup_dynamic_function_typed<T: 'static + ?Sized>(
     lookup_dynamic_function(lua, key, type_id)
 }
 
+fn iter_dynamic_function_overloads(
+    lua: &Lua,
+    key: &str,
+    type_id: TypeId,
+) -> impl Iterator<Item = DynamicScriptFunction> {
+    let registry = lua
+        .get_world()
+        .with_resource(|registry: &AppScriptFunctionRegistry| registry.clone());
+    let registry = registry.read();
+
+    registry
+        .iter_overloads_namespaced(key.to_string(), Namespace::OnType(type_id))
+        .cloned()
+        .collect::<Vec<_>>()
+        .into_iter()
+}
+
 impl UserData for LuaReflectReference {
     fn add_methods<T: UserDataMethods<Self>>(m: &mut T) {
         m.add_meta_function(
@@ -164,6 +181,37 @@ impl UserData for LuaReflectReference {
                     )?;
 
                 Ok(())
+            },
+        );
+
+        m.add_meta_function(
+            MetaMethod::Sub,
+            |lua, (self_, other): (LuaReflectReference, LuaScriptValue)| {
+                let world = lua.get_world();
+                let self_: ReflectReference = self_.into();
+                let other: ScriptValue = other.into();
+
+                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+
+                let overloads = iter_dynamic_function_overloads(lua, "sub", target_type_id);
+                let mut last_error = None;
+                let call_args = vec![ScriptValue::Reference(self_), other];
+                for overload in overloads {
+                    match overload.call_script_function(
+                        call_args.clone(),
+                        world.clone(),
+                        lua_caller_context(),
+                    ) {
+                        Ok(out) => return LuaScriptValue::from(out).into_lua(lua),
+                        Err(e) => last_error = Some(e),
+                    }
+                }
+
+                Err(last_error
+                    .unwrap_or_else(|| {
+                        InteropError::missing_function(target_type_id, "sub".to_string()).into()
+                    })
+                    .into())
             },
         );
 

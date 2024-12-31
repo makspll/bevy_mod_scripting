@@ -139,6 +139,13 @@ impl DynamicScriptFunction {
     pub fn name(&self) -> &Cow<'static, str> {
         &self.name
     }
+
+    pub fn with_name<N: Into<Cow<'static, str>>>(self, name: N) -> Self {
+        Self {
+            name: name.into(),
+            func: self.func,
+        }
+    }
 }
 
 impl std::fmt::Debug for DynamicScriptFunction {
@@ -201,7 +208,7 @@ impl ScriptFunctionRegistry {
         let name = name.into().clone();
 
         if !self.contains(&name) {
-            let func = func.into_dynamic_script_function();
+            let func = func.into_dynamic_script_function().with_name(name.clone());
             self.functions.insert(name, func);
             return;
         }
