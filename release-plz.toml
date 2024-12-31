@@ -27,6 +27,7 @@ changelog_include = [
     "bevy_mod_scripting_core",
     "bevy_mod_scripting_rhai",
     "bevy_mod_scripting_rune",
+    "bevy_mod_scripting_functions,
     "bevy_event_priority",
 ]
 
