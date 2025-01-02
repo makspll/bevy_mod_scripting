@@ -21,7 +21,7 @@ name = "bevy_mod_scripting"
 path = "src/lib.rs"
 
 [package.metadata."docs.rs"]
-features = ["lua", "lua54", "rhai", "teal", "rune"]
+features = ["lua", "lua54", "rhai", "rune"]
 
 [features]
 ## core
@@ -40,7 +40,6 @@ luau = ["bevy_mod_scripting_lua/luau", "lua"]
 
 # optional
 unsafe_lua_modules = ["bevy_mod_scripting_lua/unsafe_lua_modules"]
-teal = ["bevy_mod_scripting_lua/teal"]
 mlua_serialize = ["bevy_mod_scripting_lua/mlua_serialize"]
 mlua_macros = ["bevy_mod_scripting_lua/mlua_macros"]
 mlua_async = ["bevy_mod_scripting_lua/mlua_async"]
@@ -151,11 +150,6 @@ required-features = ["lua54"]
 name = "coroutines_lua"
 path = "examples/lua/coroutines.rs"
 required-features = ["lua54"]
-
-[[example]]
-name = "documentation_gen_lua"
-path = "examples/lua/documentation_gen.rs"
-required-features = ["lua54", "teal"]
 
 [[example]]
 name = "bevy_api_lua"

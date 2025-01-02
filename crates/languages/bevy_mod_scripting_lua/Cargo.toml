@@ -21,9 +21,6 @@ enable-features = ["lua54"]
 # enables loading possibly unsafe lua modules by lua scripts
 unsafe_lua_modules = []
 
-# enable teal utilities
-teal = []
-
 lua51 = ["mlua/lua51"]
 lua52 = ["mlua/lua52"]
 lua53 = ["mlua/lua53"]
