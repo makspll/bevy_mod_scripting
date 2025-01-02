@@ -48,4 +48,9 @@ By default all of the useful features are enabled, but you may disable them if y
 | ---- | ---- | 
 | core_functions | If enabled, will enable all core functions, i.e. bevy integrations which let you interact with Bevy via reflection |
 | bevy_bindings | If enabled, populates the function registry with additiona automatically generated bevy bindings. This includes functions on `glam` and `bevy::ecs` types. These are useful but will slow down compilation considerably. |
+| mlua_async | Enables `mlua/async`|
+| mlua_serialize | Enables `mlua/serialize` |
+| mlua_macros | Enables `mlua/macros` |
+| unsafe_lua_modules | Allows loading unsafe modules via `require` in lua |
+ 
 

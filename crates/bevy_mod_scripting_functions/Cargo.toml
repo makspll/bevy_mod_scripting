@@ -12,7 +12,8 @@ categories = ["game-development"]
 readme = "readme.md"
 
 [features]
-
+core_functions = []
+bevy_bindings = []
 
 
 [dependencies]

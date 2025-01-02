@@ -23,11 +23,12 @@ use bindings::{
 use error::{InteropError, InteropErrorInner};
 use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
 
-use crate::{bevy_bindings::LuaBevyScriptingPlugin, namespaced_register::NamespaceBuilder};
+use crate::{namespaced_register::NamespaceBuilder};
 
 
 pub fn register_bevy_bindings(app: &mut App) {
-    app.add_plugins(LuaBevyScriptingPlugin);
+    #[cfg(feature = "bevy_bindings")]
+    app.add_plugins(crate::bevy_bindings::LuaBevyScriptingPlugin);
 }
 
 pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrationError> {
@@ -325,10 +326,6 @@ pub fn register_reflect_reference_functions(
 }
 
 
-trait Test: GetTypeRegistration {}
-
-// impl Test for smol_str::SmolStr {}
-
 pub fn register_script_type_registration_functions(
     registry: &mut World,
 ) -> Result<(), FunctionRegistrationError> {
@@ -388,4 +385,30 @@ pub fn register_script_query_result_functions(
             Val::new(components)
         });
     Ok(())
+}
+
+pub fn register_core_functions(app: &mut App) {
+    let world = app.world_mut();
+    // we don't exclude from compilation here,
+    // since these are much smaller and still useful if not included initially
+    // perhaps people might want to include some but not all of these
+    
+    #[cfg(feature="core_functions")]
+    register_world_functions(world).expect("Failed to register world functions");
+
+    #[cfg(feature="core_functions")]
+    register_reflect_reference_functions(world)
+        .expect("Failed to register reflect reference functions");
+
+    #[cfg(feature="core_functions")]
+    register_script_type_registration_functions(world)
+        .expect("Failed to register script type registration functions");
+
+    #[cfg(feature="core_functions")]
+    register_script_query_builder_functions(world)
+        .expect("Failed to register script query builder functions");
+
+    #[cfg(feature="core_functions")]
+    register_script_query_result_functions(world)
+        .expect("Failed to register script query result functions");
 }
