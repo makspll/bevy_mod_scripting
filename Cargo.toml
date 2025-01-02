@@ -71,6 +71,7 @@ bevy_mod_scripting_common = { path = "crates/bevy_mod_scripting_common", version
 bevy_mod_scripting_functions = { path = "crates/bevy_mod_scripting_functions", version = "0.9.0-alpha.1"}
 test_utils = { path = "crates/test_utils" }
 mlua = { version = "0.10" }
+rhai = { version = "0.20" }
 
 [dev-dependencies]
 bevy = { workspace = true, default-features = true }

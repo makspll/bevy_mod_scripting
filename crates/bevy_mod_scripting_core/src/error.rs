@@ -184,6 +184,27 @@ impl From<InteropError> for mlua::Error {
     }
 }
 
+#[cfg(feature = "mlua_impls")]
+impl From<mlua::Error> for ScriptError {
+    fn from(value: mlua::Error) -> Self {
+        ScriptError::from_mlua_error(value)
+    }
+}
+
+#[cfg(feature = "rhai_impls")]
+impl From<rhai::ParseError> for ScriptError {
+    fn from(value: rhai::ParseError) -> Self {
+        ScriptError::new_external(value)
+    }
+}
+
+#[cfg(feature = "rhai_impls")]
+impl From<Box<rhai::EvalAltResult>> for ScriptError {
+    fn from(value: Box<rhai::EvalAltResult>) -> Self {
+        ScriptError::new_external(value)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Reflect)]
 pub struct InteropError(#[reflect(ignore)] Arc<InteropErrorInner>);
 
