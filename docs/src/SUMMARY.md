@@ -1,6 +1,6 @@
 # Summary
 
-- [Installation](./installation.md)
+[Installation](./installation.md)
 
 # Quick Start
 
