@@ -17,15 +17,11 @@ fn load_script(server: Res<AssetServer>, mut handle: Local<Handle<ScriptAsset>>)
 }
 ```
 
-In practice you will likely store this handle in a resource or component, when your load all the scripts necessary for your application. 
+In practice you will likely store this handle in a resource or component, when your load all the scripts necessary for your application.
 
+## Unloading 
+Scripts are automatically unloaded when the asset is dropped. This means that if you have a handle to a script and it goes out of scope, the script will be unloaded.
 
-## Deleting scripts
-In order to delete a previously loaded script, you will need to issue a `DeleteScript` command like so:
-
-```rust,ignore
-DeleteScript::new("my_script.lua".into())
-```
 
 This will delete references to the script and remove any internal handles to the asset. You will also need to clean up any handles to the asset you hold in your application in order for the asset to be unloaded.
 
@@ -41,5 +37,12 @@ In order to manually re-load or load a script you can issue the `CreateOrUpdateS
 CreateOrUpdateScript::new("my_script.lua".into(), "print(\"hello world from new script body\")".into(), asset_handle)
 ```
 
-## Loading timeframe
+## Manually Deleting scripts
+In order to delete a previously loaded script, you will need to issue a `DeleteScript` command like so:
+
+```rust,ignore
+DeleteScript::new("my_script.lua".into())
+```
+
+## Loading/Unloading timeframe
 Scripts are processed via commands, so any asset events will be processed at the next command execution point running after BMS internal asset systems.

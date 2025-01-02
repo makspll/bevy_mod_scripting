@@ -70,7 +70,7 @@ pub fn sync_script_data<C: Context, R: Runtime>(
             commands.queue(CreateOrUpdateScript::<C, R>::new(
                 script_id,
                 asset.content.clone(),
-                Some(script_assets.reserve_handle()),
+                Some(script_assets.reserve_handle().clone_weak()),
             ));
         } else {
             commands.queue(DeleteScript::<C, R>::new(script_id));
