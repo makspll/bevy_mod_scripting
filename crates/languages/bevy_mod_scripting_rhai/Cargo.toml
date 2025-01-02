@@ -17,6 +17,5 @@ path = "src/lib.rs"
 
 [dependencies]
 bevy = { workspace = true, default-features = false }
-rhai = { version = "1.16", features = ["sync"] }
+rhai = { version = "1.20.1", features = ["sync"] }
 bevy_mod_scripting_core = { workspace = true }
-anyhow = "1.0.75"

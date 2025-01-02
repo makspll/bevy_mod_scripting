@@ -4,8 +4,7 @@ use std::borrow::Cow;
 use bevy::{
     prelude::*,
     reflect::{
-        func::{FunctionRegistrationError, FunctionRegistry, FunctionRegistryArc},
-        ParsedPath,
+        func::{FunctionRegistrationError, FunctionRegistry, FunctionRegistryArc}, GetTypeRegistration, ParsedPath
     },
 };
 use bevy_mod_scripting_core::*;
@@ -324,6 +323,11 @@ pub fn register_reflect_reference_functions(
 
     Ok(())
 }
+
+
+trait Test: GetTypeRegistration {}
+
+// impl Test for smol_str::SmolStr {}
 
 pub fn register_script_type_registration_functions(
     registry: &mut World,

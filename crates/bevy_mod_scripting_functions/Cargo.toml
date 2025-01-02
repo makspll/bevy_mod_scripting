@@ -30,5 +30,5 @@ bevy = { workspace = true, features = [
     "multi_threaded"
 ] }
 uuid = "*"
-smol_str = "*"
+smol_str = "0.2.2"
 bevy_mod_scripting_core = { workspace = true }
