@@ -24,8 +24,10 @@ jobs:
       with:
         toolchain: stable
         override: true
+
     - name: Rust Cache
       uses: Swatinem/rust-cache@v2.7.3
+
     - name: Install mdBook
       run: cargo install mdbook
 
