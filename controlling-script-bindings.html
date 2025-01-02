@@ -155,7 +155,7 @@
                         <h1 id="controlling-script-bindings"><a class="header" href="#controlling-script-bindings">Controlling Script Bindings</a></h1>
 <p>In this book we reffer to anything accessible by a script, which allows it to communicate with your Rust code a <code>binding</code> (which in previous versions was more generically referred to as a script API).</p>
 <p>The "binding" here being used as in: binding <code>script</code> code to <code>rust</code> code.</p>
-<h2 id="function-registry"><a class="header" href="#function-registry">Function Registry</a></h2>
+<h2 id="dynamic-functions"><a class="header" href="#dynamic-functions">Dynamic Functions</a></h2>
 <p>Everything callable by scripts must first be registered in the dynamic function registry. Notably we do not make use of the normal bevy function registry to improve performance and usability. This means you cannot call just any function.</p>
 <p>In order for a function to be callable by a script it must adhere to a few requirements:</p>
 <ul>
@@ -168,6 +168,46 @@
 <p>Note these types are implemented for primitives, but if you want to interact with one of your <code>Reflect</code> implementing types, you will need to use one of <code>Ref&lt;T&gt;</code>, <code>Mut&lt;T&gt;</code> or <code>Val&lt;T&gt;</code> wrappers in place of <code>&amp;T</code>, <code>&amp;mut T</code> and <code>T</code> respectively.</p>
 <p>These wrappers enable us to safely interact with bevy, and claim any necessary mutex'es on <code>Resources</code>, <code>Components</code> or <code>Allocations</code>.</p>
 <p>The <code>GetInnerTypeDependencies</code>, trait is simply a local trait alias for <code>GetTypeRegistration</code> with less strict type requirements. It allows us to register all the types necessary for the function calls, so that you don't have to register anything manually. If your type implements <code>GetTypeRegistration</code> you should not face any issues on this front.</p>
+<h2 id="registering-script-functions"><a class="header" href="#registering-script-functions">Registering Script Functions</a></h2>
+<p>Registering functions can be done via the <code>NamespaceBuilder</code> like below:</p>
+<pre><code class="language-rust ignore">    NamespaceBuilder::&lt;ReflectReference&gt;::new(&amp;mut world)
+        .register(
+            "hello_world",
+            |s: String| {
+                println!(s)
+            },
+        );</code></pre>
+<p>This will allow you to call this function within lua like so:</p>
+<pre><code class="language-lua">hello_world("hi from lua!")
+</code></pre>
+<h2 id="context-arguments"><a class="header" href="#context-arguments">Context Arguments</a></h2>
+<p>Each script function call always receives 2 context arguments, namely:</p>
+<ul>
+<li><code>CallerContext</code></li>
+<li><code>WorldCallbackAccess</code></li>
+</ul>
+<p>The first one is configured by the caller, and contains requests from the caller to your function, such as "I am calling you from a 1-indexed array system, please convert the index first", This argument is only relevant if you're targeting multiple languages.</p>
+<p>The second argument gives you access to the world from your function.</p>
+<p>You can opt-in to receive these arguments by adding them to your closure arguments in the above order (either both or just one)</p>
+<h2 id="generic-arguments"><a class="header" href="#generic-arguments">Generic Arguments</a></h2>
+<p>Sometimes you might want to be generic over the type of argument you're accepting, you can do so by accepting <code>ScriptValue</code> arguments like so:</p>
+<pre><code class="language-rust ignore">    NamespaceBuilder::&lt;ReflectReference&gt;::new(&amp;mut world)
+        .register(
+            "is_integer",
+            |s: ScriptValue| {
+                match s {
+                    ScriptValue::Integer(i) =&gt; true,
+                    _ =&gt; false
+                }
+            },
+        );</code></pre>
+<p>You can treat return values similarly.</p>
+<h2 id="fallible-functions"><a class="header" href="#fallible-functions">Fallible functions</a></h2>
+<p>Your script functions can return errors either by:</p>
+<ul>
+<li>Returning <code>Result&lt;T: IntoScript, InteropError&gt;</code></li>
+<li>Returning <code>ScriptValue</code> and manually creating the <code>ScriptValue::Error(into_interop_erorr.into())</code> variant.</li>
+</ul>
 
                     </main>
 
