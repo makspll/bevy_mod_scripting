@@ -13,6 +13,8 @@ jobs:
   build:
     name: Build Book - mdbook
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
 
     - name: Checkout repository
@@ -31,7 +33,7 @@ jobs:
       run: cd docs && mdbook build
 
     - name: Deploy to GitHub Pages
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
