@@ -125,7 +125,7 @@ pub fn lua_context_load(
     _: &mut (),
 ) -> Result<Lua, ScriptError> {
     #[cfg(feature = "unsafe_lua_modules")]
-    let context = unsafe { Lua::unsafe_new() };
+    let mut context = unsafe { Lua::unsafe_new() };
     #[cfg(not(feature = "unsafe_lua_modules"))]
     let mut context = Lua::new();
 
