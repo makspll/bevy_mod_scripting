@@ -3,6 +3,7 @@ use std::{
     borrow::Cow,
     fmt::{Debug, Display},
     ops::{Deref, DerefMut},
+    str::Utf8Error,
     sync::Arc,
 };
 
@@ -221,6 +222,12 @@ impl_dummy_display!(InteropError);
 impl From<InteropError> for ScriptError {
     fn from(val: InteropError) -> Self {
         ScriptError::new(val)
+    }
+}
+
+impl From<Utf8Error> for ScriptError {
+    fn from(val: Utf8Error) -> Self {
+        ScriptError::new_external(val)
     }
 }
 
