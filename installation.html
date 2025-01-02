@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Chapter 1 - Bevy Scripting</title>
+        <title>Installation - Bevy Scripting</title>
 
 
         <!-- Custom HTML head -->
@@ -152,16 +152,46 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="chapter-1"><a class="header" href="#chapter-1">Chapter 1</a></h1>
-<h2 id="introduction"><a class="header" href="#introduction">Introduction</a></h2>
-<p>Welcome to the greatest documentation of all time WIP
-test</p>
-
+                        <h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
+<h2 id="cargo"><a class="header" href="#cargo">Cargo</a></h2>
+<p>First you need to install the crate by adding this entry to your <code>Cargo.toml</code> dependencies list:</p>
+<pre><code class="language-toml">bevy_mod_scripting = { version = "0.9.0", features = ["lua54"]}
+</code></pre>
+<p>Choose the language features you wish enabled and add them to the features block.</p>
+<h2 id="bevy-plugin"><a class="header" href="#bevy-plugin">Bevy Plugin</a></h2>
+<p>The next step is to add the BMS plugin to your application, on top of any other extras you want included in your app:</p>
+<pre><code class="language-rust ignore">app.add_plugins(LuaScriptingPlugin::&lt;()&gt;::default());</code></pre>
+<p>The above is how you'd setup BMS for Lua, if you want to use another language, simply use a corresponding plugin from the integration crate.</p>
+<h2 id="language-features"><a class="header" href="#language-features">Language Features</a></h2>
+<p>Each language supported by BMS can be switched-on via feature flag as below:</p>
+<div class="table-wrapper"><table><thead><tr><th>Language</th><th>Feature Flag</th></tr></thead><tbody>
+<tr><td>Lua51</td><td>lua51</td></tr>
+<tr><td>Lua52</td><td>lua54</td></tr>
+<tr><td>Lua53</td><td>lua53</td></tr>
+<tr><td>Lua54</td><td>lua54</td></tr>
+<tr><td>Luajit</td><td>luajit</td></tr>
+<tr><td>Luajit52</td><td>luajit52</td></tr>
+<tr><td>Luau</td><td>luau</td></tr>
+<tr><td>Rhai</td><td>rhai</td></tr>
+<tr><td>Rune</td><td>rune</td></tr>
+</tbody></table>
+</div>
+<h2 id="extra-features"><a class="header" href="#extra-features">Extra Features</a></h2>
+<p>In order to fit as many use cases as possible, BMS allows you to disable a lot of its functionality.</p>
+<p>By default all of the useful features are enabled, but you may disable them if you wish if you are only needing BMS for script lifecycle management, and want to populate the bindings yourself.</p>
+<div class="table-wrapper"><table><thead><tr><th>Feature</th><th>Description</th></tr></thead><tbody>
+<tr><td>core_functions</td><td>If enabled, will enable all core functions, i.e. bevy integrations which let you interact with Bevy via reflection</td></tr>
+<tr><td>bevy_bindings</td><td>If enabled, populates the function registry with additiona automatically generated bevy bindings. This includes functions on <code>glam</code> and <code>bevy::ecs</code> types. These are useful but will slow down compilation considerably.</td></tr>
+</tbody></table>
+</div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
 
+                            <a rel="next prefetch" href="managing-scripts.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -170,6 +200,9 @@ test</p>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
 
+                    <a rel="next prefetch" href="managing-scripts.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
             </nav>
 
         </div>
