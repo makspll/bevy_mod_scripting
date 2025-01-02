@@ -18,6 +18,7 @@ readme = "readme.md"
 [dependencies]
 bevy = { workspace = true, features = [
     "reflect_functions",
+    "bevy_input",
     "bevy_asset",
     "bevy_animation",
     "bevy_core_pipeline",
