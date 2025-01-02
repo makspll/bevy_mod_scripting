@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Managing Scripts - Bevy Scripting</title>
+        <title>Running Scripts - Bevy Scripting</title>
 
 
         <!-- Custom HTML head -->
@@ -152,45 +152,48 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="managing-scripts"><a class="header" href="#managing-scripts">Managing Scripts</a></h1>
-<p>Scripts live in the standard bevy <code>assets</code> directory. Loading a script means:</p>
-<ul>
-<li>Parsing the script body</li>
-<li>Creating or updating the resources which store script state</li>
-<li>Assigning a name/id to the script so it can be referred to by the rest of the application.</li>
-</ul>
-<h2 id="loading"><a class="header" href="#loading">Loading</a></h2>
-<p>BMS listens to <code>ScriptAsset</code> events and reacts accordingly. In order to load a script, all you need to do is request a handle to it via the asset server and store it somewhere.</p>
-<p>Below is an example system which loads a script called <code>assets/my_script.lua</code> and stores the handle in a local system parameter:</p>
-<pre><code class="language-rust ignore">fn load_script(server: Res&lt;AssetServer&gt;, mut handle: Local&lt;Handle&lt;ScriptAsset&gt;&gt;) {
-    let handle_ = server.load::&lt;ScriptAsset&gt;("my_script.lua");
-    *handle = handle_;
+                        <h1 id="attaching-scripts"><a class="header" href="#attaching-scripts">Attaching Scripts</a></h1>
+<p>Once you have scripts discovered and loaded, you'll want to run them. At the moment BMS supports one method of triggering scripts, and that is by attaching them to entities via <code>ScriptComponent</code>'s and then sending script event's which trigger callbacks on the scripts.</p>
+<p>In order to attach a script and make it runnable simply add a <code>ScriptComponent</code> to an entity</p>
+<pre><code class="language-rust ignore">    commands.entity(my_entity).insert(ScriptComponent::new(vec!["my_script.lua", "my_other_script.lua"]));</code></pre>
+<h1 id="running-scripts"><a class="header" href="#running-scripts">Running Scripts</a></h1>
+<p>Scripts can run logic either when loaded or when triggered by an event. For example the script:</p>
+<pre><code class="language-lua">print("hello from load time")
+function on_event()
+    print("hello from event time")
+end
+</code></pre>
+<p>Will print "hello from load time" when the script is loaded, and "hello from event time" when the script receives an event targeting the <code>on_event</code> callback with a receiver list including this script or entity.</p>
+<p>In order to trigger <code>on_event</code> you need to first define a label, then send an event containing the label:</p>
+<pre><code class="language-rust ignore">// define the label
+struct OnEventCallback;
+impl IntoCallbackLabel for OnEventCallback {
+    fn into_callback_label() -&gt; CallbackLabel {
+        "on_event".into()
+    }
+}
+
+// trigger the event
+fn send_event(mut writer: EventWriter&lt;ScriptCallbackEvent&lt;()&gt;&gt;) {
+    writer.send(ScriptCallbackEvent::new_for_all(
+        OnEventCallback::into_callback_label(),
+        (),
+    ));
 }</code></pre>
-<p>In practice you will likely store this handle in a resource or component, when your load all the scripts necessary for your application.</p>
-<h2 id="unloading"><a class="header" href="#unloading">Unloading</a></h2>
-<p>Scripts are automatically unloaded when the asset is dropped. This means that if you have a handle to a script and it goes out of scope, the script will be unloaded.</p>
-<p>This will delete references to the script and remove any internal handles to the asset. You will also need to clean up any handles to the asset you hold in your application in order for the asset to be unloaded.</p>
-<h2 id="hot-loading-scripts"><a class="header" href="#hot-loading-scripts">Hot-loading scripts</a></h2>
-<p>To enable hot-loading of assets, you need to enable the necessary bevy features as normal <a href="https://bevy-cheatbook.github.io/assets/hot-reload.html">see the bevy cheatbook for instructions</a>.</p>
-<p>Assuming that hot-reloading is enabled for your app, any changes to script assets will automatically be picked up and the scripts re-loaded.</p>
-<h2 id="manually-reloading-scripts"><a class="header" href="#manually-reloading-scripts">Manually (re)loading scripts</a></h2>
-<p>In order to manually re-load or load a script you can issue the <code>CreateOrUpdateScript</code> command:</p>
-<pre><code class="language-rust ignore">CreateOrUpdateScript::new("my_script.lua".into(), "print(\"hello world from new script body\")".into(), asset_handle)</code></pre>
-<h2 id="manually-deleting-scripts"><a class="header" href="#manually-deleting-scripts">Manually Deleting scripts</a></h2>
-<p>In order to delete a previously loaded script, you will need to issue a <code>DeleteScript</code> command like so:</p>
-<pre><code class="language-rust ignore">DeleteScript::new("my_script.lua".into())</code></pre>
-<h2 id="loadingunloading-timeframe"><a class="header" href="#loadingunloading-timeframe">Loading/Unloading timeframe</a></h2>
-<p>Scripts are processed via commands, so any asset events will be processed at the next command execution point running after BMS internal asset systems.</p>
+<p>Note the <code>()</code> corresponds to the payload for the event, i.e. in this case we are not sending any arguments.</p>
+<p>TODO: this should be replaced with <code>ScriptValue</code> before release</p>
+<pre><code>assert!(false, "TODO: replace with ScriptValue");
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="installation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="managing-scripts.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="running-scripts.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="controlling-script-bindings.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -200,11 +203,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="installation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="managing-scripts.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="running-scripts.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="controlling-script-bindings.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

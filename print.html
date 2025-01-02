@@ -203,9 +203,8 @@
     *handle = handle_;
 }</code></pre>
 <p>In practice you will likely store this handle in a resource or component, when your load all the scripts necessary for your application.</p>
-<h2 id="deleting-scripts"><a class="header" href="#deleting-scripts">Deleting scripts</a></h2>
-<p>In order to delete a previously loaded script, you will need to issue a <code>DeleteScript</code> command like so:</p>
-<pre><code class="language-rust ignore">DeleteScript::new("my_script.lua".into())</code></pre>
+<h2 id="unloading"><a class="header" href="#unloading">Unloading</a></h2>
+<p>Scripts are automatically unloaded when the asset is dropped. This means that if you have a handle to a script and it goes out of scope, the script will be unloaded.</p>
 <p>This will delete references to the script and remove any internal handles to the asset. You will also need to clean up any handles to the asset you hold in your application in order for the asset to be unloaded.</p>
 <h2 id="hot-loading-scripts"><a class="header" href="#hot-loading-scripts">Hot-loading scripts</a></h2>
 <p>To enable hot-loading of assets, you need to enable the necessary bevy features as normal <a href="https://bevy-cheatbook.github.io/assets/hot-reload.html">see the bevy cheatbook for instructions</a>.</p>
@@ -213,8 +212,43 @@
 <h2 id="manually-reloading-scripts"><a class="header" href="#manually-reloading-scripts">Manually (re)loading scripts</a></h2>
 <p>In order to manually re-load or load a script you can issue the <code>CreateOrUpdateScript</code> command:</p>
 <pre><code class="language-rust ignore">CreateOrUpdateScript::new("my_script.lua".into(), "print(\"hello world from new script body\")".into(), asset_handle)</code></pre>
-<h2 id="loading-timeframe"><a class="header" href="#loading-timeframe">Loading timeframe</a></h2>
+<h2 id="manually-deleting-scripts"><a class="header" href="#manually-deleting-scripts">Manually Deleting scripts</a></h2>
+<p>In order to delete a previously loaded script, you will need to issue a <code>DeleteScript</code> command like so:</p>
+<pre><code class="language-rust ignore">DeleteScript::new("my_script.lua".into())</code></pre>
+<h2 id="loadingunloading-timeframe"><a class="header" href="#loadingunloading-timeframe">Loading/Unloading timeframe</a></h2>
 <p>Scripts are processed via commands, so any asset events will be processed at the next command execution point running after BMS internal asset systems.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="attaching-scripts"><a class="header" href="#attaching-scripts">Attaching Scripts</a></h1>
+<p>Once you have scripts discovered and loaded, you'll want to run them. At the moment BMS supports one method of triggering scripts, and that is by attaching them to entities via <code>ScriptComponent</code>'s and then sending script event's which trigger callbacks on the scripts.</p>
+<p>In order to attach a script and make it runnable simply add a <code>ScriptComponent</code> to an entity</p>
+<pre><code class="language-rust ignore">    commands.entity(my_entity).insert(ScriptComponent::new(vec!["my_script.lua", "my_other_script.lua"]));</code></pre>
+<h1 id="running-scripts"><a class="header" href="#running-scripts">Running Scripts</a></h1>
+<p>Scripts can run logic either when loaded or when triggered by an event. For example the script:</p>
+<pre><code class="language-lua">print("hello from load time")
+function on_event()
+    print("hello from event time")
+end
+</code></pre>
+<p>Will print "hello from load time" when the script is loaded, and "hello from event time" when the script receives an event targeting the <code>on_event</code> callback with a receiver list including this script or entity.</p>
+<p>In order to trigger <code>on_event</code> you need to first define a label, then send an event containing the label:</p>
+<pre><code class="language-rust ignore">// define the label
+struct OnEventCallback;
+impl IntoCallbackLabel for OnEventCallback {
+    fn into_callback_label() -&gt; CallbackLabel {
+        "on_event".into()
+    }
+}
+
+// trigger the event
+fn send_event(mut writer: EventWriter&lt;ScriptCallbackEvent&lt;()&gt;&gt;) {
+    writer.send(ScriptCallbackEvent::new_for_all(
+        OnEventCallback::into_callback_label(),
+        (),
+    ));
+}</code></pre>
+<p>Note the <code>()</code> corresponds to the payload for the event, i.e. in this case we are not sending any arguments.</p>
+<p>TODO: this should be replaced with <code>ScriptValue</code> before release</p>
+<pre><code>assert!(false, "TODO: replace with ScriptValue");
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="controlling-script-bindings"><a class="header" href="#controlling-script-bindings">Controlling Script Bindings</a></h1>
 <p>In this book we reffer to anything accessible by a script, which allows it to communicate with your Rust code a <code>binding</code> (which in previous versions was more generically referred to as a script API).</p>
 <p>The "binding" here being used as in: binding <code>script</code> code to <code>rust</code> code.</p>
