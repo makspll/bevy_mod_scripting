@@ -40,20 +40,20 @@ pub mod prelude {
 }
 
 /// Bevy plugin enabling scripting within the bevy mod scripting framework
-pub struct ScriptingPlugin<A: Args, C: Context, R: Runtime> {
+pub struct ScriptingPlugin<C: Context, R: Runtime> {
     /// Callback for initiating the runtime
     pub runtime_builder: fn() -> R,
     /// Settings for the runtime
     pub runtime_settings: Option<RuntimeSettings<R>>,
     /// The handler used for executing callbacks in scripts
-    pub callback_handler: Option<HandlerFn<A, C, R>>,
+    pub callback_handler: Option<HandlerFn<C, R>>,
     /// The context builder for loading contexts
     pub context_builder: Option<ContextBuilder<C, R>>,
     /// The context assigner for assigning contexts to scripts, if not provided default strategy of keeping each script in its own context is used
     pub context_assigner: Option<ContextAssigner<C>>,
 }
 
-impl<A: Args, C: Context, R: Runtime + Default> Default for ScriptingPlugin<A, C, R> {
+impl<C: Context, R: Runtime + Default> Default for ScriptingPlugin<C, R> {
     fn default() -> Self {
         Self {
             runtime_builder: R::default,
@@ -65,10 +65,10 @@ impl<A: Args, C: Context, R: Runtime + Default> Default for ScriptingPlugin<A, C
     }
 }
 
-impl<A: Args, C: Context, R: Runtime> Plugin for ScriptingPlugin<A, C, R> {
+impl<C: Context, R: Runtime> Plugin for ScriptingPlugin<C, R> {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_event::<ScriptErrorEvent>()
-            .add_event::<ScriptCallbackEvent<A>>()
+            .add_event::<ScriptCallbackEvent>()
             .init_resource::<AppReflectAllocator>()
             .init_resource::<ScriptAssetSettings>()
             .init_resource::<Scripts>()
@@ -84,7 +84,7 @@ impl<A: Args, C: Context, R: Runtime> Plugin for ScriptingPlugin<A, C, R> {
                 runtime: (self.runtime_builder)(),
             })
             .init_non_send_resource::<ScriptContexts<C>>()
-            .insert_resource::<CallbackSettings<A, C, R>>(CallbackSettings {
+            .insert_resource::<CallbackSettings<C, R>>(CallbackSettings {
                 callback_handler: self.callback_handler,
             })
             .insert_resource::<ContextLoadingSettings<C, R>>(ContextLoadingSettings {
@@ -224,13 +224,13 @@ mod test {
         #[derive(Default, Clone)]
         struct R;
         app.add_plugins(AssetPlugin::default());
-        app.add_plugins(ScriptingPlugin::<A, C, R>::default());
+        app.add_plugins(ScriptingPlugin::<C, R>::default());
 
         assert!(app.world().contains_resource::<Scripts>());
         assert!(app.world().contains_resource::<AppTypeRegistry>());
         assert!(app.world().contains_resource::<ScriptAssetSettings>());
         assert!(app.world().contains_resource::<RuntimeSettings<R>>());
-        assert!(app.world().contains_resource::<CallbackSettings<A, C, R>>());
+        assert!(app.world().contains_resource::<CallbackSettings<C, R>>());
         assert!(app
             .world()
             .contains_resource::<ContextLoadingSettings<C, R>>());

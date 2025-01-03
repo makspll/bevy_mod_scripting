@@ -94,8 +94,8 @@ macro_rules! push_err_and_continue {
 pub fn event_handler<L: IntoCallbackLabel, A: Args, C: Context, R: Runtime>(
     world: &mut World,
     params: &mut SystemState<(
-        EventReader<ScriptCallbackEvent<A>>,
-        Res<CallbackSettings<A, C, R>>,
+        EventReader<ScriptCallbackEvent>,
+        Res<CallbackSettings<C, R>>,
         Res<ContextLoadingSettings<C, R>>,
         Res<Scripts>,
         Query<(Entity, Ref<ScriptComponent>)>,
@@ -232,6 +232,7 @@ mod test {
     use crate::{
         event::CallbackLabel,
         handler::HandlerFn,
+        prelude::ScriptValue,
         script::{Script, ScriptId},
     };
 
@@ -249,20 +250,20 @@ mod test {
     }
 
     struct TestContext {
-        pub invocations: Vec<String>,
+        pub invocations: Vec<ScriptValue>,
     }
 
     fn setup_app<L: IntoCallbackLabel + 'static, A: Args, C: Context, R: Runtime>(
-        handler_fn: HandlerFn<A, C, R>,
+        handler_fn: HandlerFn<C, R>,
         runtime: R,
         contexts: HashMap<u32, C>,
         scripts: HashMap<ScriptId, Script>,
     ) -> App {
         let mut app = App::new();
 
-        app.add_event::<ScriptCallbackEvent<A>>();
+        app.add_event::<ScriptCallbackEvent>();
         app.add_event::<ScriptErrorEvent>();
-        app.insert_resource::<CallbackSettings<A, C, R>>(CallbackSettings {
+        app.insert_resource::<CallbackSettings<C, R>>(CallbackSettings {
             callback_handler: Some(handler_fn),
         });
         app.add_systems(Update, event_handler::<L, A, C, R>);
@@ -301,7 +302,7 @@ mod test {
         };
         let mut app = setup_app::<OnTestCallback, String, TestContext, TestRuntime>(
             |args, entity, script, _, ctxt, _, runtime, _| {
-                ctxt.invocations.push(args);
+                ctxt.invocations.extend(args);
                 runtime.invocations.push((entity, script.clone()));
                 Ok(())
             },
@@ -314,11 +315,10 @@ mod test {
             .spawn(ScriptComponent(vec![test_script_id.clone()]))
             .id();
 
-        app.world_mut()
-            .send_event(ScriptCallbackEvent::<String>::new_for_all(
-                OnTestCallback::into_callback_label(),
-                "test_args".to_owned(),
-            ));
+        app.world_mut().send_event(ScriptCallbackEvent::new_for_all(
+            OnTestCallback::into_callback_label(),
+            vec![ScriptValue::String("test_args".into())],
+        ));
         app.update();
 
         let test_context = app
@@ -336,7 +336,7 @@ mod test {
                 .get(&test_ctxt_id)
                 .unwrap()
                 .invocations,
-            vec!["test_args"]
+            vec![ScriptValue::String("test_args".into())]
         );
 
         assert_eq!(
@@ -389,7 +389,7 @@ mod test {
         };
         let mut app = setup_app::<OnTestCallback, String, TestContext, TestRuntime>(
             |args, entity, script, _, ctxt, _, runtime, _| {
-                ctxt.invocations.push(args);
+                ctxt.invocations.extend(args);
                 runtime.invocations.push((entity, script.clone()));
                 Ok(())
             },
@@ -402,19 +402,17 @@ mod test {
             .spawn(ScriptComponent(vec![test_script_id.clone()]))
             .id();
 
-        app.world_mut()
-            .send_event(ScriptCallbackEvent::<String>::new(
-                OnTestCallback::into_callback_label(),
-                "test_args_script".to_owned(),
-                crate::event::Recipients::Script(test_script_id.clone()),
-            ));
+        app.world_mut().send_event(ScriptCallbackEvent::new(
+            OnTestCallback::into_callback_label(),
+            vec![ScriptValue::String("test_args_script".into())],
+            crate::event::Recipients::Script(test_script_id.clone()),
+        ));
 
-        app.world_mut()
-            .send_event(ScriptCallbackEvent::<String>::new(
-                OnTestCallback::into_callback_label(),
-                "test_args_entity".to_owned(),
-                crate::event::Recipients::Entity(test_entity_id),
-            ));
+        app.world_mut().send_event(ScriptCallbackEvent::new(
+            OnTestCallback::into_callback_label(),
+            vec![ScriptValue::String("test_args_entity".into())],
+            crate::event::Recipients::Entity(test_entity_id),
+        ));
 
         app.update();
 
@@ -433,7 +431,10 @@ mod test {
                 .get(&test_ctxt_id)
                 .unwrap()
                 .invocations,
-            vec!["test_args_script", "test_args_entity"]
+            vec![
+                ScriptValue::String("test_args_script".into()),
+                ScriptValue::String("test_args_entity".into())
+            ]
         );
 
         assert_eq!(

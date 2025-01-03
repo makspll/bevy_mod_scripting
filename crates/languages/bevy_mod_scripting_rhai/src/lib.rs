@@ -3,7 +3,7 @@ use bevy::{
     ecs::{entity::Entity, world::World},
 };
 use bevy_mod_scripting_core::{
-    bindings::WorldCallbackAccess,
+    bindings::{script_value::ScriptValue, WorldCallbackAccess},
     context::{ContextAssigner, ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
     event::CallbackLabel,
@@ -19,9 +19,6 @@ pub mod prelude {
     pub use rhai::FuncArgs;
 }
 
-pub trait RhaiEventArg: Args + FuncArgs {}
-impl<T: Args + FuncArgs> RhaiEventArg for T {}
-
 pub type RhaiRuntime = Engine;
 
 pub struct RhaiScriptContext {
@@ -29,17 +26,17 @@ pub struct RhaiScriptContext {
     pub scope: Scope<'static>,
 }
 
-pub struct RhaiScriptingPlugin<A: RhaiEventArg> {
-    pub scripting_plugin: ScriptingPlugin<A, RhaiScriptContext, RhaiRuntime>,
+pub struct RhaiScriptingPlugin {
+    pub scripting_plugin: ScriptingPlugin<RhaiScriptContext, RhaiRuntime>,
 }
 
-impl<A: RhaiEventArg> Default for RhaiScriptingPlugin<A> {
+impl Default for RhaiScriptingPlugin {
     fn default() -> Self {
         RhaiScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
                 runtime_builder: RhaiRuntime::new,
                 runtime_settings: None,
-                callback_handler: Some(rhai_callback_handler::<A>),
+                callback_handler: Some(rhai_callback_handler),
                 context_assigner: None,
                 context_builder: Some(ContextBuilder {
                     load: rhai_context_load,
@@ -50,7 +47,7 @@ impl<A: RhaiEventArg> Default for RhaiScriptingPlugin<A> {
     }
 }
 
-impl<A: RhaiEventArg> Plugin for RhaiScriptingPlugin<A> {
+impl Plugin for RhaiScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         self.scripting_plugin.build(app);
     }
@@ -71,7 +68,7 @@ pub fn rhai_context_load(
         ast,
         scope: Scope::new(),
     };
-    with_world(world, &mut context, |mut context| {
+    with_world(world, &mut context, |context| {
         initializers
             .iter()
             .try_for_each(|init| init(script, context))?;
@@ -110,8 +107,8 @@ pub fn rhai_context_reload(
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn rhai_callback_handler<A: RhaiEventArg>(
-    args: A,
+pub fn rhai_callback_handler(
+    args: Vec<ScriptValue>,
     entity: Entity,
     script_id: &ScriptId,
     callback: &CallbackLabel,

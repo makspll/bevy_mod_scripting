@@ -15,31 +15,10 @@ use bevy::{
 
 use bevy_mod_scripting::prelude::*;
 
-#[derive(Debug, Default, Clone, Reflect, Component, LuaProxy)]
-#[reflect(Component, LuaProxyable)]
+#[derive(Debug, Default, Clone, Reflect, Component)]
+#[reflect(Component)]
 pub struct LifeState {
     pub cells: Vec<u8>,
-}
-
-#[derive(Default)]
-pub struct LifeAPI;
-
-impl APIProvider for LifeAPI {
-    type APITarget = Mutex<Lua>;
-    type ScriptContext = Mutex<Lua>;
-    type DocTarget = LuaDocFragment;
-
-    fn attach_api(&mut self, _: &mut Self::APITarget) -> Result<(), ScriptError> {
-        // we don't actually provide anything global
-        Ok(())
-    }
-
-    fn register_with_app(&self, app: &mut App) {
-        // this will register the `LuaProxyable` typedata since we derived it
-        // this will resolve retrievals of this component to our custom lua object
-        app.register_type::<LifeState>();
-        app.register_type::<Settings>();
-    }
 }
 
 #[derive(Reflect, Resource)]

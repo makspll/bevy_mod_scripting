@@ -6,7 +6,9 @@ use bevy::{
     reflect::{impl_reflect, FromType, GetTypeRegistration, PartialReflect, Reflect, TypePath},
 };
 use bevy_mod_scripting_core::{
-    bindings::{ReflectAllocator, ReflectReference, WorldCallbackAccess},
+    bindings::{
+        script_value::ScriptValue, ReflectAllocator, ReflectReference, WorldCallbackAccess,
+    },
     context::{ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
     event::CallbackLabel,
@@ -19,6 +21,7 @@ use bindings::{
     // providers::bevy_ecs::LuaEntity,
     // proxy::LuaProxied,
     reference::{LuaReflectReference, LuaStaticReflectReference},
+    script_value::LuaScriptValue,
     world::{GetWorld, LuaWorld},
 };
 pub use mlua;
@@ -32,21 +35,18 @@ pub mod prelude {
     pub use crate::mlua::{self, prelude::*, Value};
 }
 
-pub trait LuaEventArg: Args + IntoLuaMulti {}
-impl<T: Args + IntoLuaMulti> LuaEventArg for T {}
-
-pub struct LuaScriptingPlugin<A: Args + IntoLuaMulti> {
-    pub scripting_plugin: ScriptingPlugin<A, Lua, ()>,
+pub struct LuaScriptingPlugin {
+    pub scripting_plugin: ScriptingPlugin<Lua, ()>,
 }
 
-impl<A: LuaEventArg> Default for LuaScriptingPlugin<A> {
+impl Default for LuaScriptingPlugin {
     fn default() -> Self {
         LuaScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
                 context_assigner: None,
                 runtime_builder: Default::default,
                 runtime_settings: None,
-                callback_handler: Some(lua_handler::<A>),
+                callback_handler: Some(lua_handler),
                 context_builder: Some(ContextBuilder::<Lua, ()> {
                     load: lua_context_load,
                     reload: lua_context_reload,
@@ -56,7 +56,7 @@ impl<A: LuaEventArg> Default for LuaScriptingPlugin<A> {
     }
 }
 
-impl<A: LuaEventArg> Plugin for LuaScriptingPlugin<A> {
+impl Plugin for LuaScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         self.scripting_plugin.build(app);
         // register_lua_values(app);
@@ -169,8 +169,8 @@ pub fn lua_context_reload(
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn lua_handler<A: Args + IntoLuaMulti>(
-    args: A,
+pub fn lua_handler(
+    args: Vec<ScriptValue>,
     entity: bevy::ecs::entity::Entity,
     script_id: &ScriptId,
     callback_label: &CallbackLabel,
@@ -191,7 +191,11 @@ pub fn lua_handler<A: Args + IntoLuaMulti>(
         };
 
         handler
-            .call::<()>(args)
+            .call::<()>(
+                args.into_iter()
+                    .map(LuaScriptValue::from)
+                    .collect::<Vec<_>>(),
+            )
             .map_err(ScriptError::from_mlua_error)?;
         Ok(())
     })

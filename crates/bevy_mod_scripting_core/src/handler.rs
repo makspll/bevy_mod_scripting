@@ -3,7 +3,7 @@ use bevy::ecs::{entity::Entity, system::Resource, world::World};
 use crate::{
     context::{Context, ContextPreHandlingInitializer},
     event::CallbackLabel,
-    prelude::ScriptError,
+    prelude::{ScriptError, ScriptValue},
     runtime::Runtime,
     script::ScriptId,
 };
@@ -11,8 +11,8 @@ use crate::{
 pub trait Args: Clone + Send + Sync + 'static {}
 impl<T: Clone + Send + Sync + 'static> Args for T {}
 
-pub type HandlerFn<A, C, R> = fn(
-    args: A,
+pub type HandlerFn<C, R> = fn(
+    args: Vec<ScriptValue>,
     entity: Entity,
     script_id: &ScriptId,
     callback: &CallbackLabel,
@@ -24,11 +24,11 @@ pub type HandlerFn<A, C, R> = fn(
 
 /// A resource that holds the settings for the callback handler for a specific combination of type parameters
 #[derive(Resource)]
-pub struct CallbackSettings<A: Args, C: Context, R: Runtime> {
-    pub callback_handler: Option<HandlerFn<A, C, R>>,
+pub struct CallbackSettings<C: Context, R: Runtime> {
+    pub callback_handler: Option<HandlerFn<C, R>>,
 }
 
-impl<A: Args, C: Context, R: Runtime> Default for CallbackSettings<A, C, R> {
+impl<C: Context, R: Runtime> Default for CallbackSettings<C, R> {
     fn default() -> Self {
         Self {
             callback_handler: None,

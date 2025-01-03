@@ -123,10 +123,6 @@ name = "console_integration_rhai"
 path = "examples/rhai/console_integration.rs"
 required-features = ["rhai", "bevy/file_watcher", "bevy/multi_threaded"]
 
-[[example]]
-name = "complex_game_loop_lua"
-path = "examples/lua/complex_game_loop.rs"
-required-features = ["lua54"]
 
 [[example]]
 name = "dynamic_queries_lua"
@@ -148,15 +144,6 @@ required-features = ["rhai", "bevy/file_watcher", "bevy/multi_threaded"]
 name = "game_of_life_rhai"
 path = "examples/rhai/game_of_life.rs"
 
-[[example]]
-name = "event_recipients_lua"
-path = "examples/lua/event_recipients.rs"
-required-features = ["lua54"]
-
-[[example]]
-name = "coroutines_lua"
-path = "examples/lua/coroutines.rs"
-required-features = ["lua54"]
 
 [[example]]
 name = "bevy_api_lua"
@@ -168,10 +155,6 @@ name = "bevy_api_rhai"
 path = "examples/rhai/bevy_api.rs"
 required-features = ["rhai"]
 
-[[example]]
-name = "wrappers"
-path = "examples/wrappers.rs"
-required-features = ["lua54"]
 
 [[example]]
 name = "minimal_rune"

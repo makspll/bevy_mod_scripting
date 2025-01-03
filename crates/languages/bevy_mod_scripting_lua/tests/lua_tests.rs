@@ -7,8 +7,9 @@ use bevy::{
 };
 use bevy_mod_scripting_core::{
     bindings::{
-        access_map::ReflectAccessId, pretty_print::DisplayWithWorld, ReflectAllocator,
-        ReflectReference, ScriptTypeRegistration, WorldAccessGuard, WorldCallbackAccess,
+        access_map::ReflectAccessId, pretty_print::DisplayWithWorld, script_value::ScriptValue,
+        ReflectAllocator, ReflectReference, ScriptTypeRegistration, WorldAccessGuard,
+        WorldCallbackAccess,
     },
     context::ContextLoadingSettings,
     error::ScriptError,
@@ -47,7 +48,7 @@ fn init_app() -> App {
     // we probably should cut down some fat in here, but it's fast enough so meh
     app.add_plugins(AssetPlugin::default())
         .add_plugins(HierarchyPlugin)
-        .add_plugins(LuaScriptingPlugin::<()>::default())
+        .add_plugins(LuaScriptingPlugin::default())
         .add_plugins(ScriptFunctionsPlugin);
 
     // for some reason hierarchy plugin doesn't register the children component
@@ -214,7 +215,7 @@ impl Test {
         })?;
 
         lua_handler(
-            (),
+            vec![ScriptValue::Unit],
             Entity::from_raw(1),
             &(self.name()).into(),
             &CallbackLabel::new("on_test").ok_or("invalid callback label")?,

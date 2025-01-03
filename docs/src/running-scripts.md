@@ -22,26 +22,16 @@ Will print "hello from load time" when the script is loaded, and "hello from eve
 
 In order to trigger `on_event` you need to first define a label, then send an event containing the label:
 ```rust,ignore
-// define the label
-struct OnEventCallback;
-impl IntoCallbackLabel for OnEventCallback {
-    fn into_callback_label() -> CallbackLabel {
-        "on_event".into()
-    }
-}
+// define the label, you can define as many as you like here
+callback_labels!(OnEvent => "on_event");
 
 // trigger the event
-fn send_event(mut writer: EventWriter<ScriptCallbackEvent<()>>) {
+fn send_event(mut writer: EventWriter<ScriptCallbackEvent>) {
     writer.send(ScriptCallbackEvent::new_for_all(
-        OnEventCallback::into_callback_label(),
-        (),
+        CallbackLabels::OnEvent,
+        vec![ScriptValue::Unit],
     ));
 }
 ```
 
-Note the `()` corresponds to the payload for the event, i.e. in this case we are not sending any arguments.
-
-TODO: this should be replaced with `ScriptValue` before release  
-```
-assert!(false, "TODO: replace with ScriptValue");
-```
+Note the second argument is the payload we are sending with the event, in this case we are sending an empty payload.

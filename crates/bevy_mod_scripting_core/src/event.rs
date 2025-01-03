@@ -1,6 +1,6 @@
 use bevy::{ecs::entity::Entity, prelude::Event};
 
-use crate::{error::ScriptError, handler::Args, script::ScriptId};
+use crate::{error::ScriptError, handler::Args, prelude::ScriptValue, script::ScriptId};
 
 /// An error coming from a script
 #[derive(Debug, Event)]
@@ -50,6 +50,23 @@ impl CallbackLabel {
     }
 }
 
+#[macro_export]
+macro_rules! callback_labels {
+    ($($name:ident => $label:expr),*) => {
+        pub enum CallbackLabels {
+            $($name),*
+        }
+
+        impl IntoCallbackLabel for CallbackLabels {
+            fn into_callback_label() -> CallbackLabel {
+                match self {
+                    $(CallbackLabels::$name => $label.into()),*
+                }
+            }
+        }
+    };
+}
+
 pub trait IntoCallbackLabel {
     fn into_callback_label() -> CallbackLabel;
 }
@@ -90,14 +107,18 @@ pub enum Recipients {
 
 /// A callback event meant to trigger a callback in a subset/set of scripts in the world with the given arguments
 #[derive(Clone, Event, Debug)]
-pub struct ScriptCallbackEvent<A: Args> {
+pub struct ScriptCallbackEvent {
     pub label: CallbackLabel,
     pub recipients: Recipients,
-    pub args: A,
+    pub args: Vec<ScriptValue>,
 }
 
-impl<A: Args> ScriptCallbackEvent<A> {
-    pub fn new<L: Into<CallbackLabel>>(label: L, args: A, recipients: Recipients) -> Self {
+impl ScriptCallbackEvent {
+    pub fn new<L: Into<CallbackLabel>>(
+        label: L,
+        args: Vec<ScriptValue>,
+        recipients: Recipients,
+    ) -> Self {
         Self {
             label: label.into(),
             args,
@@ -105,7 +126,7 @@ impl<A: Args> ScriptCallbackEvent<A> {
         }
     }
 
-    pub fn new_for_all<L: Into<CallbackLabel>>(label: L, args: A) -> Self {
+    pub fn new_for_all<L: Into<CallbackLabel>>(label: L, args: Vec<ScriptValue>) -> Self {
         Self::new(label, args, Recipients::All)
     }
 }
