@@ -161,7 +161,7 @@
 <p>Choose the language features you wish enabled and add them to the features block.</p>
 <h2 id="bevy-plugin"><a class="header" href="#bevy-plugin">Bevy Plugin</a></h2>
 <p>The next step is to add the BMS plugin to your application, on top of any other extras you want included in your app:</p>
-<pre><code class="language-rust ignore">app.add_plugins(LuaScriptingPlugin::&lt;()&gt;::default());</code></pre>
+<pre><code class="language-rust ignore">app.add_plugins(LuaScriptingPlugin::default());</code></pre>
 <p>The above is how you'd setup BMS for Lua, if you want to use another language, simply use a corresponding plugin from the integration crate.</p>
 <h2 id="language-features"><a class="header" href="#language-features">Language Features</a></h2>
 <p>Each language supported by BMS can be switched-on via feature flag as below:</p>
@@ -230,25 +230,17 @@ end
 </code></pre>
 <p>Will print "hello from load time" when the script is loaded, and "hello from event time" when the script receives an event targeting the <code>on_event</code> callback with a receiver list including this script or entity.</p>
 <p>In order to trigger <code>on_event</code> you need to first define a label, then send an event containing the label:</p>
-<pre><code class="language-rust ignore">// define the label
-struct OnEventCallback;
-impl IntoCallbackLabel for OnEventCallback {
-    fn into_callback_label() -&gt; CallbackLabel {
-        "on_event".into()
-    }
-}
+<pre><code class="language-rust ignore">// define the label, you can define as many as you like here
+callback_labels!(OnEvent =&gt; "on_event");
 
 // trigger the event
-fn send_event(mut writer: EventWriter&lt;ScriptCallbackEvent&lt;()&gt;&gt;) {
+fn send_event(mut writer: EventWriter&lt;ScriptCallbackEvent&gt;) {
     writer.send(ScriptCallbackEvent::new_for_all(
-        OnEventCallback::into_callback_label(),
-        (),
+        CallbackLabels::OnEvent,
+        vec![ScriptValue::Unit],
     ));
 }</code></pre>
-<p>Note the <code>()</code> corresponds to the payload for the event, i.e. in this case we are not sending any arguments.</p>
-<p>TODO: this should be replaced with <code>ScriptValue</code> before release</p>
-<pre><code>assert!(false, "TODO: replace with ScriptValue");
-</code></pre>
+<p>Note the second argument is the payload we are sending with the event, in this case we are sending an empty payload.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="controlling-script-bindings"><a class="header" href="#controlling-script-bindings">Controlling Script Bindings</a></h1>
 <p>In this book we reffer to anything accessible by a script, which allows it to communicate with your Rust code a <code>binding</code> (which in previous versions was more generically referred to as a script API).</p>
 <p>The "binding" here being used as in: binding <code>script</code> code to <code>rust</code> code.</p>
