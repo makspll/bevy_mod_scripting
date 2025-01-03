@@ -35,3 +35,16 @@ fn send_event(mut writer: EventWriter<ScriptCallbackEvent>) {
 ```
 
 Note the second argument is the payload we are sending with the event, in this case we are sending an empty payload.
+
+
+# Event Handlers
+
+In order for the events you send to actually be picked up, you need to inject special systems into your application. These systems will listen for the events and trigger the appropriate callbacks on the scripts:
+
+```rust,ignore
+app.add_systems(Update, event_handler::<OnEvent, LuaScriptingPlugin>);
+```
+
+Note the system is parameterized by the label we defined earlier, and the scripting plugin we are using. You can add as many of these systems as you like.
+
+The event handler will catch all events with the label `OnEvent` and trigger the `on_event` callback on all targeted scripts which have that callback defined.

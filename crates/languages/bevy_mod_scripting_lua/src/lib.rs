@@ -11,11 +11,13 @@ use bevy_mod_scripting_core::{
     },
     context::{ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
-    event::CallbackLabel,
+    event::{CallbackLabel, IntoCallbackLabel},
     handler::Args,
     reflection_extensions::PartialReflectExt,
     script::ScriptId,
-    AddContextInitializer, AddContextPreHandlingInitializer, ScriptingPlugin,
+    systems::event_handler,
+    AddContextInitializer, AddContextPreHandlingInitializer, IntoScriptPluginParams,
+    ScriptingPlugin,
 };
 use bindings::{
     // providers::bevy_ecs::LuaEntity,
@@ -27,16 +29,17 @@ use bindings::{
 pub use mlua;
 use mlua::{Function, IntoLuaMulti, Lua};
 pub mod bindings;
-// use type_data::{
-//     pre_register_common_containers, register_lua_values, ReflectLuaProxied, ReflectLuaValue,
-// };
-
 pub mod prelude {
     pub use crate::mlua::{self, prelude::*, Value};
 }
 
+impl IntoScriptPluginParams for LuaScriptingPlugin {
+    type C = Lua;
+    type R = ();
+}
+
 pub struct LuaScriptingPlugin {
-    pub scripting_plugin: ScriptingPlugin<Lua, ()>,
+    pub scripting_plugin: ScriptingPlugin<Self>,
 }
 
 impl Default for LuaScriptingPlugin {
@@ -47,7 +50,7 @@ impl Default for LuaScriptingPlugin {
                 runtime_builder: Default::default,
                 runtime_settings: None,
                 callback_handler: Some(lua_handler),
-                context_builder: Some(ContextBuilder::<Lua, ()> {
+                context_builder: Some(ContextBuilder::<LuaScriptingPlugin> {
                     load: lua_context_load,
                     reload: lua_context_reload,
                 }),
@@ -60,21 +63,23 @@ impl Plugin for LuaScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         self.scripting_plugin.build(app);
         // register_lua_values(app);
-        app.add_context_pre_handling_initializer::<()>(|script_id, entity, context: &mut Lua| {
-            let world = context.get_world();
-            context
-                .globals()
-                .set(
-                    "entity",
-                    LuaReflectReference(<Entity>::allocate(Box::new(entity), world)),
-                )
-                .map_err(ScriptError::from_mlua_error)?;
-            context
-                .globals()
-                .set("script_id", script_id.clone())
-                .map_err(ScriptError::from_mlua_error)?;
-            Ok(())
-        });
+        app.add_context_pre_handling_initializer::<LuaScriptingPlugin>(
+            |script_id, entity, context: &mut Lua| {
+                let world = context.get_world();
+                context
+                    .globals()
+                    .set(
+                        "entity",
+                        LuaReflectReference(<Entity>::allocate(Box::new(entity), world)),
+                    )
+                    .map_err(ScriptError::from_mlua_error)?;
+                context
+                    .globals()
+                    .set("script_id", script_id.clone())
+                    .map_err(ScriptError::from_mlua_error)?;
+                Ok(())
+            },
+        );
     }
 
     fn cleanup(&self, app: &mut App) {
@@ -85,7 +90,7 @@ impl Plugin for LuaScriptingPlugin {
         // type_registry.iter().map(|t| {
         //     t.
         // })
-        app.add_context_initializer::<()>(|_script_id, context: &mut Lua| {
+        app.add_context_initializer::<LuaScriptingPlugin>(|_script_id, context: &mut Lua| {
             let world = context.get_world();
             let type_registry = world.type_registry();
             let type_registry = type_registry.read();
@@ -119,8 +124,8 @@ impl Plugin for LuaScriptingPlugin {
 pub fn lua_context_load(
     script_id: &ScriptId,
     content: &[u8],
-    initializers: &[ContextInitializer<Lua>],
-    pre_handling_initializers: &[ContextPreHandlingInitializer<Lua>],
+    initializers: &[ContextInitializer<LuaScriptingPlugin>],
+    pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
     world: &mut World,
     _: &mut (),
 ) -> Result<Lua, ScriptError> {
@@ -152,8 +157,8 @@ pub fn lua_context_reload(
     script: &ScriptId,
     content: &[u8],
     old_ctxt: &mut Lua,
-    initializers: &[ContextInitializer<Lua>],
-    pre_handling_initializers: &[ContextPreHandlingInitializer<Lua>],
+    initializers: &[ContextInitializer<LuaScriptingPlugin>],
+    pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
     world: &mut World,
     _: &mut (),
 ) -> Result<(), ScriptError> {
@@ -175,7 +180,7 @@ pub fn lua_handler(
     script_id: &ScriptId,
     callback_label: &CallbackLabel,
     context: &mut Lua,
-    pre_handling_initializers: &[ContextPreHandlingInitializer<Lua>],
+    pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
     _: &mut (),
     world: &mut bevy::ecs::world::World,
 ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {

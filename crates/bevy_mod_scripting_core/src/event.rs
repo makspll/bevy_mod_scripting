@@ -53,17 +53,15 @@ impl CallbackLabel {
 #[macro_export]
 macro_rules! callback_labels {
     ($($name:ident => $label:expr),*) => {
-        pub enum CallbackLabels {
-            $($name),*
-        }
 
-        impl IntoCallbackLabel for CallbackLabels {
-            fn into_callback_label() -> CallbackLabel {
-                match self {
-                    $(CallbackLabels::$name => $label.into()),*
+        $(
+            pub struct $name;
+            impl IntoCallbackLabel for $name {
+                fn into_callback_label() -> CallbackLabel {
+                    $label.into()
                 }
             }
-        }
+        )*
     };
 }
 
@@ -71,11 +69,18 @@ pub trait IntoCallbackLabel {
     fn into_callback_label() -> CallbackLabel;
 }
 
+impl<T: IntoCallbackLabel> From<T> for CallbackLabel {
+    fn from(_: T) -> Self {
+        T::into_callback_label()
+    }
+}
+
 impl From<&str> for CallbackLabel {
     fn from(s: &str) -> Self {
         Self::new_lossy(s)
     }
 }
+
 impl From<String> for CallbackLabel {
     fn from(s: String) -> Self {
         Self::from(s.as_str())

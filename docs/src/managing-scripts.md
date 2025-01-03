@@ -34,15 +34,19 @@ Assuming that hot-reloading is enabled for your app, any changes to script asset
 In order to manually re-load or load a script you can issue the `CreateOrUpdateScript` command:
 
 ```rust,ignore
-CreateOrUpdateScript::new("my_script.lua".into(), "print(\"hello world from new script body\")".into(), asset_handle)
+CreateOrUpdateScript::<LuaScriptingPlugin>::new("my_script.lua".into(), "print(\"hello world from new script body\")".into(), asset_handle)
 ```
+
+replace `LuaScriptingPlugin` with the scripting plugin you are using.
 
 ## Manually Deleting scripts
 In order to delete a previously loaded script, you will need to issue a `DeleteScript` command like so:
 
 ```rust,ignore
-DeleteScript::new("my_script.lua".into())
+DeleteScript::<LuaScriptingPlugin>::new("my_script.lua".into())
 ```
+
+replace `LuaScriptingPlugin` with the scripting plugin you are using.
 
 ## Loading/Unloading timeframe
 Scripts are processed via commands, so any asset events will be processed at the next command execution point running after BMS internal asset systems.

@@ -3,17 +3,19 @@
 
 use bevy::ecs::system::Resource;
 
+use crate::IntoScriptPluginParams;
+
 pub trait Runtime: 'static {}
 impl<T: 'static> Runtime for T {}
 
-pub type RuntimeInitializer<R> = fn(&mut R);
+pub type RuntimeInitializer<P: IntoScriptPluginParams> = fn(&mut P::R);
 
 #[derive(Resource)]
-pub struct RuntimeSettings<R: Runtime> {
-    pub initializers: Vec<RuntimeInitializer<R>>,
+pub struct RuntimeSettings<P: IntoScriptPluginParams> {
+    pub initializers: Vec<RuntimeInitializer<P>>,
 }
 
-impl<R: Runtime> Default for RuntimeSettings<R> {
+impl<P: IntoScriptPluginParams> Default for RuntimeSettings<P> {
     fn default() -> Self {
         Self {
             initializers: Default::default(),
@@ -21,7 +23,7 @@ impl<R: Runtime> Default for RuntimeSettings<R> {
     }
 }
 
-impl<R: Runtime> Clone for RuntimeSettings<R> {
+impl<P: IntoScriptPluginParams> Clone for RuntimeSettings<P> {
     fn clone(&self) -> Self {
         Self {
             initializers: self.initializers.clone(),
@@ -31,6 +33,6 @@ impl<R: Runtime> Clone for RuntimeSettings<R> {
 
 /// Stores a particular runtime.
 #[derive(Resource)]
-pub struct RuntimeContainer<R: Runtime> {
-    pub runtime: R,
+pub struct RuntimeContainer<P: IntoScriptPluginParams> {
+    pub runtime: P::R,
 }

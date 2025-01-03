@@ -39,24 +39,34 @@ pub mod prelude {
     pub use {crate::docs::*, crate::error::*, crate::event::*, crate::systems::*, crate::*};
 }
 
-/// Bevy plugin enabling scripting within the bevy mod scripting framework
-pub struct ScriptingPlugin<C: Context, R: Runtime> {
-    /// Callback for initiating the runtime
-    pub runtime_builder: fn() -> R,
-    /// Settings for the runtime
-    pub runtime_settings: Option<RuntimeSettings<R>>,
-    /// The handler used for executing callbacks in scripts
-    pub callback_handler: Option<HandlerFn<C, R>>,
-    /// The context builder for loading contexts
-    pub context_builder: Option<ContextBuilder<C, R>>,
-    /// The context assigner for assigning contexts to scripts, if not provided default strategy of keeping each script in its own context is used
-    pub context_assigner: Option<ContextAssigner<C>>,
+/// Types which act like scripting plugins, by selecting a context and runtime
+/// Each individual combination of context and runtime has specific infrastructure built for it and does not interact with other scripting plugins
+pub trait IntoScriptPluginParams: 'static {
+    type C: Context;
+    type R: Runtime;
 }
 
-impl<C: Context, R: Runtime + Default> Default for ScriptingPlugin<C, R> {
+/// Bevy plugin enabling scripting within the bevy mod scripting framework
+pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
+    /// Callback for initiating the runtime
+    pub runtime_builder: fn() -> P::R,
+    /// Settings for the runtime
+    pub runtime_settings: Option<RuntimeSettings<P>>,
+    /// The handler used for executing callbacks in scripts
+    pub callback_handler: Option<HandlerFn<P>>,
+    /// The context builder for loading contexts
+    pub context_builder: Option<ContextBuilder<P>>,
+    /// The context assigner for assigning contexts to scripts, if not provided default strategy of keeping each script in its own context is used
+    pub context_assigner: Option<ContextAssigner<P>>,
+}
+
+impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P>
+where
+    P::R: Default,
+{
     fn default() -> Self {
         Self {
-            runtime_builder: R::default,
+            runtime_builder: P::R::default,
             runtime_settings: Default::default(),
             callback_handler: Default::default(),
             context_builder: Default::default(),
@@ -65,7 +75,7 @@ impl<C: Context, R: Runtime + Default> Default for ScriptingPlugin<C, R> {
     }
 }
 
-impl<C: Context, R: Runtime> Plugin for ScriptingPlugin<C, R> {
+impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_event::<ScriptErrorEvent>()
             .add_event::<ScriptCallbackEvent>()
@@ -80,21 +90,21 @@ impl<C: Context, R: Runtime> Plugin for ScriptingPlugin<C, R> {
             })
             .insert_resource(self.runtime_settings.as_ref().cloned().unwrap_or_default())
             .init_resource::<AppScriptFunctionRegistry>()
-            .insert_non_send_resource::<RuntimeContainer<R>>(RuntimeContainer {
+            .insert_non_send_resource::<RuntimeContainer<P>>(RuntimeContainer {
                 runtime: (self.runtime_builder)(),
             })
-            .init_non_send_resource::<ScriptContexts<C>>()
-            .insert_resource::<CallbackSettings<C, R>>(CallbackSettings {
+            .init_non_send_resource::<ScriptContexts<P>>()
+            .insert_resource::<CallbackSettings<P>>(CallbackSettings {
                 callback_handler: self.callback_handler,
             })
-            .insert_resource::<ContextLoadingSettings<C, R>>(ContextLoadingSettings {
+            .insert_resource::<ContextLoadingSettings<P>>(ContextLoadingSettings {
                 loader: self.context_builder.clone(),
                 assigner: Some(self.context_assigner.clone().unwrap_or_default()),
                 context_initializers: vec![],
                 context_pre_handling_initializers: vec![],
             })
-            .add_systems(PostUpdate, (garbage_collector, sync_script_data::<C, R>))
-            .add_systems(PostStartup, initialize_runtime::<R>);
+            .add_systems(PostUpdate, (garbage_collector, sync_script_data::<P>))
+            .add_systems(PostStartup, initialize_runtime::<P>);
 
         register_types(app);
     }
@@ -107,17 +117,23 @@ fn register_types(app: &mut App) {
     app.register_type::<ScriptTypeRegistration>();
 }
 
-pub trait AddRuntimeInitializer<R: Runtime> {
-    fn add_runtime_initializer(&mut self, initializer: RuntimeInitializer<R>) -> &mut Self;
+pub trait AddRuntimeInitializer {
+    fn add_runtime_initializer<P: IntoScriptPluginParams>(
+        &mut self,
+        initializer: RuntimeInitializer<P>,
+    ) -> &mut Self;
 }
 
-impl<R: Runtime> AddRuntimeInitializer<R> for App {
-    fn add_runtime_initializer(&mut self, initializer: RuntimeInitializer<R>) -> &mut Self {
-        if !self.world_mut().contains_resource::<RuntimeSettings<R>>() {
-            self.world_mut().init_resource::<RuntimeSettings<R>>();
+impl AddRuntimeInitializer for App {
+    fn add_runtime_initializer<P: IntoScriptPluginParams>(
+        &mut self,
+        initializer: RuntimeInitializer<P>,
+    ) -> &mut Self {
+        if !self.world_mut().contains_resource::<RuntimeSettings<P>>() {
+            self.world_mut().init_resource::<RuntimeSettings<P>>();
         }
         self.world_mut()
-            .resource_mut::<RuntimeSettings<R>>()
+            .resource_mut::<RuntimeSettings<P>>()
             .as_mut()
             .initializers
             .push(initializer);
@@ -125,22 +141,22 @@ impl<R: Runtime> AddRuntimeInitializer<R> for App {
     }
 }
 
-pub trait AddContextInitializer<C: Context> {
-    fn add_context_initializer<R: Runtime>(
+pub trait AddContextInitializer {
+    fn add_context_initializer<P: IntoScriptPluginParams>(
         &mut self,
-        initializer: ContextInitializer<C>,
+        initializer: ContextInitializer<P>,
     ) -> &mut Self;
 }
 
-impl<C: Context> AddContextInitializer<C> for App {
-    fn add_context_initializer<R: Runtime>(
+impl AddContextInitializer for App {
+    fn add_context_initializer<P: IntoScriptPluginParams>(
         &mut self,
-        initializer: ContextInitializer<C>,
+        initializer: ContextInitializer<P>,
     ) -> &mut Self {
         self.world_mut()
-            .init_resource::<ContextLoadingSettings<C, R>>();
+            .init_resource::<ContextLoadingSettings<P>>();
         self.world_mut()
-            .resource_mut::<ContextLoadingSettings<C, R>>()
+            .resource_mut::<ContextLoadingSettings<P>>()
             .as_mut()
             .context_initializers
             .push(initializer);
@@ -148,20 +164,20 @@ impl<C: Context> AddContextInitializer<C> for App {
     }
 }
 
-pub trait AddContextPreHandlingInitializer<C: Context> {
-    fn add_context_pre_handling_initializer<R: Runtime>(
+pub trait AddContextPreHandlingInitializer {
+    fn add_context_pre_handling_initializer<P: IntoScriptPluginParams>(
         &mut self,
-        initializer: ContextPreHandlingInitializer<C>,
+        initializer: ContextPreHandlingInitializer<P>,
     ) -> &mut Self;
 }
 
-impl<C: Context> AddContextPreHandlingInitializer<C> for App {
-    fn add_context_pre_handling_initializer<R: Runtime>(
+impl AddContextPreHandlingInitializer for App {
+    fn add_context_pre_handling_initializer<P: IntoScriptPluginParams>(
         &mut self,
-        initializer: ContextPreHandlingInitializer<C>,
+        initializer: ContextPreHandlingInitializer<P>,
     ) -> &mut Self {
         self.world_mut()
-            .resource_mut::<ContextLoadingSettings<C, R>>()
+            .resource_mut::<ContextLoadingSettings<P>>()
             .as_mut()
             .context_pre_handling_initializers
             .push(initializer);
@@ -217,24 +233,31 @@ mod test {
     #[test]
     fn test_default_scripting_plugin_initializes_all_resources_correctly() {
         let mut app = App::new();
-        #[derive(Default, Clone)]
-        struct A;
+
         #[derive(Default, Clone)]
         struct C;
         #[derive(Default, Clone)]
         struct R;
+
+        struct Plugin;
+
+        impl IntoScriptPluginParams for Plugin {
+            type C = C;
+            type R = R;
+        }
+
         app.add_plugins(AssetPlugin::default());
-        app.add_plugins(ScriptingPlugin::<C, R>::default());
+        app.add_plugins(ScriptingPlugin::<Plugin>::default());
 
         assert!(app.world().contains_resource::<Scripts>());
         assert!(app.world().contains_resource::<AppTypeRegistry>());
         assert!(app.world().contains_resource::<ScriptAssetSettings>());
-        assert!(app.world().contains_resource::<RuntimeSettings<R>>());
-        assert!(app.world().contains_resource::<CallbackSettings<C, R>>());
+        assert!(app.world().contains_resource::<RuntimeSettings<Plugin>>());
+        assert!(app.world().contains_resource::<CallbackSettings<Plugin>>());
         assert!(app
             .world()
-            .contains_resource::<ContextLoadingSettings<C, R>>());
-        assert!(app.world().contains_non_send::<RuntimeContainer<R>>());
-        assert!(app.world().contains_non_send::<ScriptContexts<C>>());
+            .contains_resource::<ContextLoadingSettings<Plugin>>());
+        assert!(app.world().contains_non_send::<RuntimeContainer<Plugin>>());
+        assert!(app.world().contains_non_send::<ScriptContexts<Plugin>>());
     }
 }

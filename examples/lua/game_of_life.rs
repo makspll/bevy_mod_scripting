@@ -14,6 +14,8 @@ use bevy::{
 };
 
 use bevy_mod_scripting::prelude::*;
+use bevy_mod_scripting_lua::LuaScriptingPlugin;
+use bindings::script_value::ScriptValue;
 
 #[derive(Debug, Default, Clone, Reflect, Component)]
 #[reflect(Component)]
@@ -43,10 +45,9 @@ impl Default for Settings {
     }
 }
 
-pub fn setup(
+pub fn init_game_of_life_state(
     mut commands: Commands,
     mut assets: ResMut<Assets<Image>>,
-    asset_server: Res<AssetServer>,
     settings: Res<Settings>,
 ) {
     let mut image = Image::new_fill(
@@ -62,8 +63,6 @@ pub fn setup(
     );
 
     image.sampler = ImageSampler::nearest();
-
-    let script_path = bevy_mod_scripting_lua::lua_path!("game_of_life");
 
     commands.spawn(Camera2d);
     commands
@@ -82,12 +81,6 @@ pub fn setup(
                 (settings.physical_grid_dimensions.0 * settings.physical_grid_dimensions.1)
                     as usize
             ],
-        })
-        .insert(ScriptCollection::<LuaFile> {
-            scripts: vec![Script::new(
-                script_path.to_owned(),
-                asset_server.load(script_path),
-            )],
         });
 }
 
@@ -143,28 +136,17 @@ pub fn update_rendered_state(
     }
 }
 
-/// Sends events allowing scripts to drive update logic
-pub fn send_on_update(mut events: PriorityEventWriter<LuaEvent<()>>) {
-    events.send(
-        LuaEvent {
-            hook_name: "on_update".to_owned(),
-            args: (),
-            recipients: Recipients::All,
-        },
-        1,
-    )
-}
+callback_labels!(
+    OnUpdate => "on_update",
+    Init => "init"
+);
 
-/// Sends initialization event
-pub fn send_init(mut events: PriorityEventWriter<LuaEvent<()>>) {
-    events.send(
-        LuaEvent {
-            hook_name: "init".to_owned(),
-            args: (),
-            recipients: Recipients::All,
-        },
-        0,
-    )
+/// Sends events allowing scripts to drive update logic
+pub fn send_on_update(mut events: EventWriter<ScriptCallbackEvent>) {
+    events.send(ScriptCallbackEvent::new_for_all(
+        OnUpdate,
+        vec![ScriptValue::Unit],
+    ));
 }
 
 const UPDATE_FREQUENCY: f32 = 1.0 / 60.0;
@@ -176,17 +158,13 @@ fn main() -> std::io::Result<()> {
         .insert_resource(Time::<Fixed>::from_seconds(UPDATE_FREQUENCY.into()))
         .add_plugins(LogDiagnosticsPlugin::default())
         .add_plugins(FrameTimeDiagnosticsPlugin)
-        .add_plugins(ScriptingPlugin)
+        .add_plugins(LuaScriptingPlugin::default())
         .init_resource::<Settings>()
-        .add_systems(Startup, setup)
-        .add_systems(Startup, send_init)
+        .add_systems(Startup, init_game_of_life_state)
         .add_systems(Update, sync_window_size)
         .add_systems(FixedUpdate, update_rendered_state.after(sync_window_size))
         .add_systems(FixedUpdate, send_on_update.after(update_rendered_state))
-        .add_systems(FixedUpdate, script_event_handler::<LuaScriptHost<()>, 0, 1>)
-        .add_script_host::<LuaScriptHost<()>>(PostUpdate)
-        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaCoreBevyAPIProvider))
-        .add_api_provider::<LuaScriptHost<()>>(Box::new(LifeAPI));
+        .add_systems(FixedUpdate, event_handler::<OnUpdate, LuaScriptingPlugin>);
 
     app.run();
 

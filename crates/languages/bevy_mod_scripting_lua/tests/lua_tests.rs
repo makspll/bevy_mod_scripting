@@ -191,7 +191,7 @@ impl Test {
         // let lua = Lua::new();
         // set file information
         let mut app = init_app();
-        let mut context_settings: ContextLoadingSettings<Lua, ()> = app
+        let mut context_settings: ContextLoadingSettings<LuaScriptingPlugin> = app
             .world_mut()
             .remove_resource()
             .ok_or("could not find context loading settings")?;

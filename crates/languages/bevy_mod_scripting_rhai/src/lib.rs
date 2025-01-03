@@ -9,7 +9,7 @@ use bevy_mod_scripting_core::{
     event::CallbackLabel,
     handler::Args,
     script::ScriptId,
-    ScriptingPlugin,
+    IntoScriptPluginParams, ScriptingPlugin,
 };
 use rhai::{CallFnOptions, Engine, FnPtr, FuncArgs, Scope, AST};
 
@@ -26,8 +26,13 @@ pub struct RhaiScriptContext {
     pub scope: Scope<'static>,
 }
 
+impl IntoScriptPluginParams for RhaiScriptingPlugin {
+    type C = RhaiScriptContext;
+    type R = RhaiRuntime;
+}
+
 pub struct RhaiScriptingPlugin {
-    pub scripting_plugin: ScriptingPlugin<RhaiScriptContext, RhaiRuntime>,
+    pub scripting_plugin: ScriptingPlugin<RhaiScriptingPlugin>,
 }
 
 impl Default for RhaiScriptingPlugin {
@@ -56,8 +61,8 @@ impl Plugin for RhaiScriptingPlugin {
 pub fn rhai_context_load(
     script: &ScriptId,
     content: &[u8],
-    initializers: &[ContextInitializer<RhaiScriptContext>],
-    pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptContext>],
+    initializers: &[ContextInitializer<RhaiScriptingPlugin>],
+    pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
     world: &mut World,
     runtime: &mut RhaiRuntime,
 ) -> Result<RhaiScriptContext, ScriptError> {
@@ -90,8 +95,8 @@ pub fn rhai_context_reload(
     script: &ScriptId,
     content: &[u8],
     context: &mut RhaiScriptContext,
-    initializers: &[ContextInitializer<RhaiScriptContext>],
-    pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptContext>],
+    initializers: &[ContextInitializer<RhaiScriptingPlugin>],
+    pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
     world: &mut World,
     runtime: &mut RhaiRuntime,
 ) -> Result<(), ScriptError> {
@@ -113,7 +118,7 @@ pub fn rhai_callback_handler(
     script_id: &ScriptId,
     callback: &CallbackLabel,
     context: &mut RhaiScriptContext,
-    pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptContext>],
+    pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
     runtime: &mut RhaiRuntime,
     world: &mut World,
 ) -> Result<(), ScriptError> {

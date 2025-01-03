@@ -12,6 +12,7 @@ use crate::{
     prelude::{AppReflectAllocator, RuntimeSettings},
     runtime::{Runtime, RuntimeContainer},
     script::{ScriptComponent, Scripts},
+    IntoScriptPluginParams,
 };
 
 /// Cleans up dangling script allocations
@@ -20,9 +21,9 @@ pub fn garbage_collector(allocator: ResMut<AppReflectAllocator>) {
     allocator.clean_garbage_allocations()
 }
 
-pub fn initialize_runtime<R: Runtime>(
-    mut runtime: NonSendMut<RuntimeContainer<R>>,
-    settings: Res<RuntimeSettings<R>>,
+pub fn initialize_runtime<P: IntoScriptPluginParams>(
+    mut runtime: NonSendMut<RuntimeContainer<P>>,
+    settings: Res<RuntimeSettings<P>>,
 ) {
     for initializer in settings.initializers.iter() {
         (initializer)(&mut runtime.runtime);
@@ -30,7 +31,7 @@ pub fn initialize_runtime<R: Runtime>(
 }
 
 /// Processes and reacts appropriately to script asset events, and queues commands to update the internal script state
-pub fn sync_script_data<C: Context, R: Runtime>(
+pub fn sync_script_data<P: IntoScriptPluginParams>(
     mut events: EventReader<AssetEvent<ScriptAsset>>,
     script_assets: Res<Assets<ScriptAsset>>,
     asset_settings: Res<ScriptAssetSettings>,
@@ -67,13 +68,13 @@ pub fn sync_script_data<C: Context, R: Runtime>(
         let script_id = converter(path);
 
         if !remove {
-            commands.queue(CreateOrUpdateScript::<C, R>::new(
+            commands.queue(CreateOrUpdateScript::<P>::new(
                 script_id,
                 asset.content.clone(),
                 Some(script_assets.reserve_handle().clone_weak()),
             ));
         } else {
-            commands.queue(DeleteScript::<C, R>::new(script_id));
+            commands.queue(DeleteScript::<P>::new(script_id));
         }
     }
 }
@@ -91,12 +92,12 @@ macro_rules! push_err_and_continue {
 }
 
 /// Passes events with the specified label to the script callback with the same name and runs the callback
-pub fn event_handler<L: IntoCallbackLabel, A: Args, C: Context, R: Runtime>(
+pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     world: &mut World,
     params: &mut SystemState<(
         EventReader<ScriptCallbackEvent>,
-        Res<CallbackSettings<C, R>>,
-        Res<ContextLoadingSettings<C, R>>,
+        Res<CallbackSettings<P>>,
+        Res<ContextLoadingSettings<P>>,
         Res<Scripts>,
         Query<(Entity, Ref<ScriptComponent>)>,
     )>,
@@ -104,17 +105,17 @@ pub fn event_handler<L: IntoCallbackLabel, A: Args, C: Context, R: Runtime>(
     debug!("Handling events with label `{}`", L::into_callback_label());
 
     let mut runtime_container = world
-        .remove_non_send_resource::<RuntimeContainer<R>>()
+        .remove_non_send_resource::<RuntimeContainer<P>>()
         .unwrap_or_else(|| {
             panic!(
                 "No runtime container for runtime {} found. Was the scripting plugin initialized correctly?",
-                type_name::<R>()
+                type_name::<P::R>()
             )
         });
     let runtime = &mut runtime_container.runtime;
     let mut script_contexts = world
-        .remove_non_send_resource::<ScriptContexts<C>>()
-        .unwrap_or_else(|| panic!("No script contexts found for context {}", type_name::<C>()));
+        .remove_non_send_resource::<ScriptContexts<P>>()
+        .unwrap_or_else(|| panic!("No script contexts found for context {}", type_name::<P>()));
 
     let (mut script_events, callback_settings, context_settings, scripts, entities) =
         params.get_mut(world);
@@ -124,10 +125,9 @@ pub fn event_handler<L: IntoCallbackLabel, A: Args, C: Context, R: Runtime>(
         .as_ref()
         .unwrap_or_else(|| {
             panic!(
-                "No handler registered for - Runtime: {}, Context: {}, Args: {}",
-                type_name::<R>(),
-                type_name::<C>(),
-                type_name::<A>()
+                "No handler registered for - Runtime: {}, Context: {}",
+                type_name::<P::R>(),
+                type_name::<P::C>()
             )
         });
     let pre_handling_initializers = context_settings.context_pre_handling_initializers.clone();
@@ -187,11 +187,10 @@ pub fn event_handler<L: IntoCallbackLabel, A: Args, C: Context, R: Runtime>(
                     world,
                 )
                 .map_err(|e| {
-                    e.with_script(script.id.clone()).with_context(&format!(
-                        "Event handling for: Runtime {}, Context: {}, Args: {}",
-                        type_name::<R>(),
-                        type_name::<C>(),
-                        type_name::<A>()
+                    e.with_script(script.id.clone()).with_context(format!(
+                        "Event handling for: Runtime {}, Context: {}",
+                        type_name::<P::R>(),
+                        type_name::<P::C>(),
                     ))
                 });
 
@@ -245,6 +244,13 @@ mod test {
         }
     }
 
+    struct TestPlugin;
+
+    impl IntoScriptPluginParams for TestPlugin {
+        type C = TestContext;
+        type R = TestRuntime;
+    }
+
     struct TestRuntime {
         pub invocations: Vec<(Entity, ScriptId)>,
     }
@@ -253,24 +259,24 @@ mod test {
         pub invocations: Vec<ScriptValue>,
     }
 
-    fn setup_app<L: IntoCallbackLabel + 'static, A: Args, C: Context, R: Runtime>(
-        handler_fn: HandlerFn<C, R>,
-        runtime: R,
-        contexts: HashMap<u32, C>,
+    fn setup_app<L: IntoCallbackLabel + 'static, P: IntoScriptPluginParams>(
+        handler_fn: HandlerFn<P>,
+        runtime: P::R,
+        contexts: HashMap<u32, P::C>,
         scripts: HashMap<ScriptId, Script>,
     ) -> App {
         let mut app = App::new();
 
         app.add_event::<ScriptCallbackEvent>();
         app.add_event::<ScriptErrorEvent>();
-        app.insert_resource::<CallbackSettings<C, R>>(CallbackSettings {
+        app.insert_resource::<CallbackSettings<P>>(CallbackSettings {
             callback_handler: Some(handler_fn),
         });
-        app.add_systems(Update, event_handler::<L, A, C, R>);
+        app.add_systems(Update, event_handler::<L, P>);
         app.insert_resource::<Scripts>(Scripts { scripts });
-        app.insert_non_send_resource::<RuntimeContainer<R>>(RuntimeContainer { runtime });
-        app.insert_non_send_resource::<ScriptContexts<C>>(ScriptContexts { contexts });
-        app.insert_resource(ContextLoadingSettings::<C, R> {
+        app.insert_non_send_resource(RuntimeContainer::<P> { runtime });
+        app.insert_non_send_resource(ScriptContexts::<P> { contexts });
+        app.insert_resource(ContextLoadingSettings::<P> {
             loader: None,
             assigner: None,
             context_initializers: vec![],
@@ -300,7 +306,7 @@ mod test {
         let runtime = TestRuntime {
             invocations: vec![],
         };
-        let mut app = setup_app::<OnTestCallback, String, TestContext, TestRuntime>(
+        let mut app = setup_app::<OnTestCallback, TestPlugin>(
             |args, entity, script, _, ctxt, _, runtime, _| {
                 ctxt.invocations.extend(args);
                 runtime.invocations.push((entity, script.clone()));
@@ -323,11 +329,11 @@ mod test {
 
         let test_context = app
             .world()
-            .get_non_send_resource::<ScriptContexts<TestContext>>()
+            .get_non_send_resource::<ScriptContexts<TestPlugin>>()
             .unwrap();
         let test_runtime = app
             .world()
-            .get_non_send_resource::<RuntimeContainer<TestRuntime>>()
+            .get_non_send_resource::<RuntimeContainer<TestPlugin>>()
             .unwrap();
 
         assert_eq!(
@@ -387,7 +393,7 @@ mod test {
         let runtime = TestRuntime {
             invocations: vec![],
         };
-        let mut app = setup_app::<OnTestCallback, String, TestContext, TestRuntime>(
+        let mut app = setup_app::<OnTestCallback, TestPlugin>(
             |args, entity, script, _, ctxt, _, runtime, _| {
                 ctxt.invocations.extend(args);
                 runtime.invocations.push((entity, script.clone()));
@@ -418,11 +424,11 @@ mod test {
 
         let test_context = app
             .world()
-            .get_non_send_resource::<ScriptContexts<TestContext>>()
+            .get_non_send_resource::<ScriptContexts<TestPlugin>>()
             .unwrap();
         let test_runtime = app
             .world()
-            .get_non_send_resource::<RuntimeContainer<TestRuntime>>()
+            .get_non_send_resource::<RuntimeContainer<TestPlugin>>()
             .unwrap();
 
         assert_eq!(

@@ -8,15 +8,16 @@ use crate::{
     prelude::{Runtime, RuntimeContainer},
     script::{Script, ScriptId, Scripts},
     systems::handle_script_errors,
+    IntoScriptPluginParams,
 };
 
-pub struct DeleteScript<C: Context, R: Runtime> {
+pub struct DeleteScript<P: IntoScriptPluginParams> {
     pub id: ScriptId,
     // hack to make this Send, C does not need to be Send since it is not stored in the command
-    pub _ph: PhantomData<fn(C, R)>,
+    pub _ph: PhantomData<fn(P::C, P::R)>,
 }
 
-impl<C: Context, R: Runtime> DeleteScript<C, R> {
+impl<P: IntoScriptPluginParams> DeleteScript<P> {
     pub fn new(id: ScriptId) -> Self {
         Self {
             id,
@@ -25,17 +26,17 @@ impl<C: Context, R: Runtime> DeleteScript<C, R> {
     }
 }
 
-impl<C: Context, R: Runtime> Command for DeleteScript<C, R> {
+impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
     fn apply(self, world: &mut bevy::prelude::World) {
         let settings = world
-            .get_resource::<ContextLoadingSettings<C, R>>()
+            .get_resource::<ContextLoadingSettings<P>>()
             .expect("No ScriptLoadingSettings resource found")
             .clone();
 
         world.resource_scope(|world, mut scripts: Mut<Scripts>| {
             if let Some(script) = scripts.scripts.remove(&self.id) {
                 debug!("Deleting script with id: {}", self.id);
-                let mut ctxts = world.get_non_send_resource_mut::<ScriptContexts<C>>();
+                let mut ctxts = world.get_non_send_resource_mut::<ScriptContexts<P>>();
                 let ctxts = ctxts.as_deref_mut().unwrap();
                 let assigner = settings
                     .assigner
@@ -58,15 +59,15 @@ impl<C: Context, R: Runtime> Command for DeleteScript<C, R> {
 /// Creates new script with the given ID, if a script with the given ID already exists, this is treated as an update
 ///
 /// If script comes from an asset, expects it to be loaded, otherwise this command will fail to process the script.
-pub struct CreateOrUpdateScript<C: Context, R: Runtime> {
+pub struct CreateOrUpdateScript<P: IntoScriptPluginParams> {
     id: ScriptId,
     content: Box<[u8]>,
     asset: Option<Handle<ScriptAsset>>,
     // Hack to make this Send, C does not need to be Send since it is not stored in the command
-    _ph: std::marker::PhantomData<fn(R, C)>,
+    _ph: std::marker::PhantomData<fn(P::R, P::C)>,
 }
 
-impl<C: Context, R: Runtime> CreateOrUpdateScript<C, R> {
+impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     pub fn new(id: ScriptId, content: Box<[u8]>, asset: Option<Handle<ScriptAsset>>) -> Self {
         Self {
             id,
@@ -77,17 +78,17 @@ impl<C: Context, R: Runtime> CreateOrUpdateScript<C, R> {
     }
 }
 
-impl<C: Context, R: Runtime> Command for CreateOrUpdateScript<C, R> {
+impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
     fn apply(self, world: &mut bevy::prelude::World) {
         let settings = world
-            .get_resource::<ContextLoadingSettings<C, R>>()
+            .get_resource::<ContextLoadingSettings<P>>()
             .unwrap()
             .clone();
         let mut contexts = world
-            .remove_non_send_resource::<ScriptContexts<C>>()
+            .remove_non_send_resource::<ScriptContexts<P>>()
             .unwrap();
         let mut runtime = world
-            .remove_non_send_resource::<RuntimeContainer<R>>()
+            .remove_non_send_resource::<RuntimeContainer<P>>()
             .unwrap();
         // assign context
         let assigner = settings.assigner.clone().expect("No context assigner set");
@@ -116,7 +117,7 @@ impl<C: Context, R: Runtime> Command for CreateOrUpdateScript<C, R> {
                 match ctxt {
                     Ok(ctxt) => contexts.insert(ctxt),
                     Err(e) => {
-                        handle_script_errors(world, [e.with_context(format!("Loading context for script with id: {}. With runtime type: {} and context type: {}", self.id, type_name::<R>(), type_name::<C>()))].into_iter());
+                        handle_script_errors(world, [e.with_context(format!("Loading context for script with id: {}. With runtime type: {} and context type: {}", self.id, type_name::<P::R>(), type_name::<P::C>()))].into_iter());
                         return;
                     }
                 }

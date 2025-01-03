@@ -5,6 +5,7 @@ use bevy::ecs::{entity::Entity, system::Resource, world::World};
 use crate::{
     prelude::{Runtime, ScriptError},
     script::{Script, ScriptId},
+    IntoScriptPluginParams,
 };
 
 pub trait Context: 'static {}
@@ -13,11 +14,11 @@ impl<T: 'static> Context for T {}
 pub type ContextId = u32;
 
 #[derive(Resource)]
-pub struct ScriptContexts<T: Context> {
-    pub(crate) contexts: HashMap<ContextId, T>,
+pub struct ScriptContexts<P: IntoScriptPluginParams> {
+    pub(crate) contexts: HashMap<ContextId, P::C>,
 }
 
-impl<T: Context> Default for ScriptContexts<T> {
+impl<P: IntoScriptPluginParams> Default for ScriptContexts<P> {
     fn default() -> Self {
         Self {
             contexts: Default::default(),
@@ -26,7 +27,7 @@ impl<T: Context> Default for ScriptContexts<T> {
 }
 
 static CONTEXT_ID_COUNTER: AtomicU32 = AtomicU32::new(0);
-impl<T: Context> ScriptContexts<T> {
+impl<P: IntoScriptPluginParams> ScriptContexts<P> {
     pub fn new() -> Self {
         Self {
             contexts: HashMap::new(),
@@ -34,7 +35,7 @@ impl<T: Context> ScriptContexts<T> {
     }
 
     /// Allocates a new ContextId and inserts the context into the map
-    pub fn insert(&mut self, ctxt: T) -> ContextId {
+    pub fn insert(&mut self, ctxt: P::C) -> ContextId {
         let id = CONTEXT_ID_COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         self.contexts.insert(id, ctxt);
         id
@@ -45,26 +46,27 @@ impl<T: Context> ScriptContexts<T> {
         CONTEXT_ID_COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
     }
 
-    pub fn remove(&mut self, id: ContextId) -> Option<T> {
+    pub fn remove(&mut self, id: ContextId) -> Option<P::C> {
         self.contexts.remove(&id)
     }
 }
 
 /// Initializer run once after creating a context but before executing it for the first time
-pub type ContextInitializer<C> = fn(&ScriptId, &mut C) -> Result<(), ScriptError>;
+pub type ContextInitializer<P: IntoScriptPluginParams> =
+    fn(&ScriptId, &mut P::C) -> Result<(), ScriptError>;
 /// Initializer run every time before executing or loading a script
-pub type ContextPreHandlingInitializer<C> =
-    fn(&ScriptId, Entity, &mut C) -> Result<(), ScriptError>;
+pub type ContextPreHandlingInitializer<P: IntoScriptPluginParams> =
+    fn(&ScriptId, Entity, &mut P::C) -> Result<(), ScriptError>;
 
 #[derive(Resource)]
-pub struct ContextLoadingSettings<C: Context, R: Runtime> {
-    pub loader: Option<ContextBuilder<C, R>>,
-    pub assigner: Option<ContextAssigner<C>>,
-    pub context_initializers: Vec<ContextInitializer<C>>,
-    pub context_pre_handling_initializers: Vec<ContextPreHandlingInitializer<C>>,
+pub struct ContextLoadingSettings<P: IntoScriptPluginParams> {
+    pub loader: Option<ContextBuilder<P>>,
+    pub assigner: Option<ContextAssigner<P>>,
+    pub context_initializers: Vec<ContextInitializer<P>>,
+    pub context_pre_handling_initializers: Vec<ContextPreHandlingInitializer<P>>,
 }
 
-impl<C: Context, R: Runtime> Default for ContextLoadingSettings<C, R> {
+impl<P: IntoScriptPluginParams> Default for ContextLoadingSettings<P> {
     fn default() -> Self {
         Self {
             loader: None,
@@ -75,7 +77,7 @@ impl<C: Context, R: Runtime> Default for ContextLoadingSettings<C, R> {
     }
 }
 
-impl<C: Context, R: Runtime> Clone for ContextLoadingSettings<C, R> {
+impl<P: IntoScriptPluginParams> Clone for ContextLoadingSettings<P> {
     fn clone(&self) -> Self {
         Self {
             loader: self.loader.clone(),
@@ -87,27 +89,27 @@ impl<C: Context, R: Runtime> Clone for ContextLoadingSettings<C, R> {
 }
 
 /// A strategy for loading and reloading contexts
-pub struct ContextBuilder<C: Context, R: Runtime> {
+pub struct ContextBuilder<P: IntoScriptPluginParams> {
     pub load: fn(
         script: &ScriptId,
         content: &[u8],
-        &[ContextInitializer<C>],
-        &[ContextPreHandlingInitializer<C>],
+        &[ContextInitializer<P>],
+        &[ContextPreHandlingInitializer<P>],
         &mut World,
-        runtime: &mut R,
-    ) -> Result<C, ScriptError>,
+        runtime: &mut P::R,
+    ) -> Result<P::C, ScriptError>,
     pub reload: fn(
         script: &ScriptId,
         new_content: &[u8],
-        context: &mut C,
-        &[ContextInitializer<C>],
-        &[ContextPreHandlingInitializer<C>],
+        context: &mut P::C,
+        &[ContextInitializer<P>],
+        &[ContextPreHandlingInitializer<P>],
         &mut World,
-        &mut R,
+        &mut P::R,
     ) -> Result<(), ScriptError>,
 }
 
-impl<C: Context, R: Runtime> Clone for ContextBuilder<C, R> {
+impl<P: IntoScriptPluginParams> Clone for ContextBuilder<P> {
     fn clone(&self) -> Self {
         Self {
             load: self.load,
@@ -117,23 +119,23 @@ impl<C: Context, R: Runtime> Clone for ContextBuilder<C, R> {
 }
 
 /// A strategy for assigning contexts to new and existing but re-loaded scripts as well as for managing old contexts
-pub struct ContextAssigner<C: Context> {
+pub struct ContextAssigner<P: IntoScriptPluginParams> {
     /// Assign a context to the script, if script is `None`, this is a new script, otherwise it is an existing script with a context inside `contexts`.
     /// Returning None means the script should be assigned a new context
     pub assign: fn(
         old_script: Option<&Script>,
         script_id: &ScriptId,
         new_content: &[u8],
-        contexts: &ScriptContexts<C>,
+        contexts: &ScriptContexts<P>,
     ) -> Option<ContextId>,
 
     /// Handle the removal of the script, if any clean up in contexts is necessary perform it here.
     /// This will also be called, when a script is assigned a contextId on reload different from the previous one
     /// the context_id in that case will be the old context_id and the one stored in the script will be the old one
-    pub remove: fn(context_id: ContextId, script: &Script, contexts: &mut ScriptContexts<C>),
+    pub remove: fn(context_id: ContextId, script: &Script, contexts: &mut ScriptContexts<P>),
 }
 
-impl<C: Context> Default for ContextAssigner<C> {
+impl<P: IntoScriptPluginParams> Default for ContextAssigner<P> {
     fn default() -> Self {
         Self {
             assign: |old, _, _, _| old.map(|s| s.context_id),
@@ -142,7 +144,7 @@ impl<C: Context> Default for ContextAssigner<C> {
     }
 }
 
-impl<C: Context> Clone for ContextAssigner<C> {
+impl<P: IntoScriptPluginParams> Clone for ContextAssigner<P> {
     fn clone(&self) -> Self {
         Self {
             assign: self.assign,
