@@ -16,11 +16,11 @@ pub struct RuneScriptContext {
 
 pub type RuneRuntime = Vm;
 
-pub struct RuneScriptingPlugin<A: RuneEventArg> {
-    pub scripting_plugin: ScriptingPlugin<A, RuneScriptContext, RuneRuntime>,
+pub struct RuneScriptingPlugin {
+    pub scripting_plugin: ScriptingPlugin<RuneScriptContext, RuneRuntime>,
 }
 
-impl<A: RuneEventArg> Default for RuneScriptingPlugin<A> {
+impl Default for RuneScriptingPlugin {
     fn default() -> Self {
         Self {
             scripting_plugin: ScriptingPlugin {
