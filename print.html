@@ -211,10 +211,12 @@
 <p>Assuming that hot-reloading is enabled for your app, any changes to script assets will automatically be picked up and the scripts re-loaded.</p>
 <h2 id="manually-reloading-scripts"><a class="header" href="#manually-reloading-scripts">Manually (re)loading scripts</a></h2>
 <p>In order to manually re-load or load a script you can issue the <code>CreateOrUpdateScript</code> command:</p>
-<pre><code class="language-rust ignore">CreateOrUpdateScript::new("my_script.lua".into(), "print(\"hello world from new script body\")".into(), asset_handle)</code></pre>
+<pre><code class="language-rust ignore">CreateOrUpdateScript::&lt;LuaScriptingPlugin&gt;::new("my_script.lua".into(), "print(\"hello world from new script body\")".into(), asset_handle)</code></pre>
+<p>replace <code>LuaScriptingPlugin</code> with the scripting plugin you are using.</p>
 <h2 id="manually-deleting-scripts"><a class="header" href="#manually-deleting-scripts">Manually Deleting scripts</a></h2>
 <p>In order to delete a previously loaded script, you will need to issue a <code>DeleteScript</code> command like so:</p>
-<pre><code class="language-rust ignore">DeleteScript::new("my_script.lua".into())</code></pre>
+<pre><code class="language-rust ignore">DeleteScript::&lt;LuaScriptingPlugin&gt;::new("my_script.lua".into())</code></pre>
+<p>replace <code>LuaScriptingPlugin</code> with the scripting plugin you are using.</p>
 <h2 id="loadingunloading-timeframe"><a class="header" href="#loadingunloading-timeframe">Loading/Unloading timeframe</a></h2>
 <p>Scripts are processed via commands, so any asset events will be processed at the next command execution point running after BMS internal asset systems.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="attaching-scripts"><a class="header" href="#attaching-scripts">Attaching Scripts</a></h1>
@@ -241,6 +243,11 @@ fn send_event(mut writer: EventWriter&lt;ScriptCallbackEvent&gt;) {
     ));
 }</code></pre>
 <p>Note the second argument is the payload we are sending with the event, in this case we are sending an empty payload.</p>
+<h1 id="event-handlers"><a class="header" href="#event-handlers">Event Handlers</a></h1>
+<p>In order for the events you send to actually be picked up, you need to inject special systems into your application. These systems will listen for the events and trigger the appropriate callbacks on the scripts:</p>
+<pre><code class="language-rust ignore">app.add_systems(Update, event_handler::&lt;OnEvent, LuaScriptingPlugin&gt;);</code></pre>
+<p>Note the system is parameterized by the label we defined earlier, and the scripting plugin we are using. You can add as many of these systems as you like.</p>
+<p>The event handler will catch all events with the label <code>OnEvent</code> and trigger the <code>on_event</code> callback on all targeted scripts which have that callback defined.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="controlling-script-bindings"><a class="header" href="#controlling-script-bindings">Controlling Script Bindings</a></h1>
 <p>In this book we reffer to anything accessible by a script, which allows it to communicate with your Rust code a <code>binding</code> (which in previous versions was more generically referred to as a script API).</p>
 <p>The "binding" here being used as in: binding <code>script</code> code to <code>rust</code> code.</p>
