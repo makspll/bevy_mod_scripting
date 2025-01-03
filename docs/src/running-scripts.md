@@ -28,7 +28,7 @@ callback_labels!(OnEvent => "on_event");
 // trigger the event
 fn send_event(mut writer: EventWriter<ScriptCallbackEvent>) {
     writer.send(ScriptCallbackEvent::new_for_all(
-        CallbackLabels::OnEvent,
+        OnEvent,
         vec![ScriptValue::Unit],
     ));
 }
