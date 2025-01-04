@@ -110,7 +110,7 @@ name = "game_of_life_lua"
 path = "examples/lua/game_of_life.rs"
 required-features = ["lua54", "bevy/file_watcher", "bevy/multi_threaded"]
 
-[[example]]
-required-features = ["rhai", "bevy/file_watcher", "bevy/multi_threaded"]
-name = "game_of_life_rhai"
-path = "examples/rhai/game_of_life.rs"
+# [[example]]
+# required-features = ["rhai", "bevy/file_watcher", "bevy/multi_threaded"]
+# name = "game_of_life_rhai"
+# path = "examples/rhai/game_of_life.rs"
