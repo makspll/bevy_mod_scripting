@@ -3,8 +3,7 @@ use std::{any::TypeId, ffi::OsString, path::PathBuf};
 use bevy::reflect::{DynamicEnum, DynamicList, DynamicTuple, DynamicVariant, PartialReflect};
 
 use crate::{
-    bindings::{function::from::FromScript, ReflectReference, WorldGuard},
-    downcast_into_value,
+    bindings::{function::from::FromScript, WorldGuard},
     error::InteropError,
     match_by_type,
     prelude::ScriptValue,

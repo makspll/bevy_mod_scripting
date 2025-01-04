@@ -3,7 +3,7 @@ use crate::{
     error::InteropError,
     prelude::ScriptValue,
 };
-use bevy::reflect::{FromReflect, GetTypeRegistration, Reflect};
+use bevy::reflect::{FromReflect, Reflect};
 use std::{
     any::TypeId,
     ffi::OsString,
