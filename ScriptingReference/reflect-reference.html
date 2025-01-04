@@ -161,10 +161,13 @@
 </ul>
 <p>Reflect references contain a standard interface which operates over the reflection layer exposed by <code>Bevy</code> and also provides a way to call various dynamic functions registered on the underlying pointed to data.</p>
 <h2 id="display_ref"><a class="header" href="#display_ref">display_ref</a></h2>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>s</code></td><td><code>ReflectReference</code></td><td>The reference to display</td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>String</code></td><td>The reference in string format</td></tr>
 </tbody></table>
 </div>
@@ -172,10 +175,13 @@
 print(ref)
 </code></pre>
 <h2 id="display_value"><a class="header" href="#display_value">display_value</a></h2>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>s</code></td><td><code>ReflectReference</code></td><td>The reference to display</td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>String</code></td><td>The value in string format</td></tr>
 </tbody></table>
 </div>
@@ -183,10 +189,13 @@ print(ref)
 </code></pre>
 <h2 id="get"><a class="header" href="#get">get</a></h2>
 <p>The index function, allows you to index into the reflect reference.</p>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>key</code></td><td><code>ScriptValue</code></td><td>The key to get the value for</td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>ScriptValue</code></td><td>The value</td></tr>
 </tbody></table>
 </div>
@@ -199,11 +208,14 @@ local value = ref["key"]
 local valye = ref._1
 </code></pre>
 <h2 id="set"><a class="header" href="#set">set</a></h2>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>key</code></td><td><code>ScriptValue</code></td><td>The key to set the value for</td></tr>
 <tr><td><code>value</code></td><td><code>ScriptValue</code></td><td>The value to set</td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>ScriptValue</code></td><td>The result</td></tr>
 </tbody></table>
 </div>
@@ -217,6 +229,7 @@ ref._1 = value
 </code></pre>
 <h2 id="push"><a class="header" href="#push">push</a></h2>
 <p>Generic push method, if the underlying type supports it, will push the value into the end of the reference.</p>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>value</code></td><td><code>ScriptValue</code></td><td>The value to push</td></tr>
 </tbody></table>
@@ -225,10 +238,13 @@ ref._1 = value
 </code></pre>
 <h2 id="pop"><a class="header" href="#pop">pop</a></h2>
 <p>Generic pop method, if the underlying type supports it, will pop the value from the end of the reference.</p>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>s</code></td><td><code>ReflectReference</code></td><td>The reference to pop from</td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>ScriptValue</code></td><td>The popped value</td></tr>
 </tbody></table>
 </div>
@@ -236,6 +252,7 @@ ref._1 = value
 </code></pre>
 <h2 id="insert"><a class="header" href="#insert">insert</a></h2>
 <p>Generic insert method, if the underlying type supports it, will insert the value at the key.</p>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>key</code></td><td><code>ScriptValue</code></td><td>The key to insert the value for</td></tr>
 <tr><td><code>value</code></td><td><code>ScriptValue</code></td><td>The value to insert</td></tr>
@@ -245,6 +262,7 @@ ref._1 = value
 </code></pre>
 <h2 id="clear"><a class="header" href="#clear">clear</a></h2>
 <p>Generic clear method, if the underlying type supports it, will clear the referenced container type.</p>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>s</code></td><td><code>ReflectReference</code></td><td>The reference to clear</td></tr>
 </tbody></table>
@@ -253,10 +271,13 @@ ref._1 = value
 </code></pre>
 <h2 id="len"><a class="header" href="#len">len</a></h2>
 <p>Generic length method, if the underlying type supports it, will return the length of the referenced container or length relevant to the type itself (number of fields etc.).</p>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>s</code></td><td><code>ReflectReference</code></td><td>The reference to get the length of</td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>usize</code></td><td>The length</td></tr>
 </tbody></table>
 </div>
@@ -264,10 +285,13 @@ ref._1 = value
 </code></pre>
 <h2 id="remove"><a class="header" href="#remove">remove</a></h2>
 <p>Generic remove method, if the underlying type supports it, will remove the value at the key.</p>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>key</code></td><td><code>ScriptValue</code></td><td>The key to remove the value for</td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>ScriptValue</code></td><td>The removed value</td></tr>
 </tbody></table>
 </div>
@@ -275,10 +299,13 @@ ref._1 = value
 </code></pre>
 <h2 id="iter"><a class="header" href="#iter">iter</a></h2>
 <p>The iterator function, returns a function which can be called to iterate over the reference.</p>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>s</code></td><td><code>ReflectReference</code></td><td>The reference to iterate over</td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>ScriptFunctionMut</code></td><td>The iterator function</td></tr>
 </tbody></table>
 </div>

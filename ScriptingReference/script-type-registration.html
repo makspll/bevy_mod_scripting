@@ -155,30 +155,39 @@
                         <h1 id="scripttyperegistration"><a class="header" href="#scripttyperegistration">ScriptTypeRegistration</a></h1>
 <p>A reference to a type registration, in general think of this as a handle to a type.</p>
 <h2 id="type_name"><a class="header" href="#type_name">type_name</a></h2>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>s</code></td><td><code>ScriptTypeRegistration</code></td><td>The type registration as returned by <code>get_type_by_name</code></td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>String</code></td><td>The type name</td></tr>
 </tbody></table>
 </div>
 <pre><code class="language-lua">local name = MyType:type_name()
 </code></pre>
 <h2 id="short_name"><a class="header" href="#short_name">short_name</a></h2>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>s</code></td><td><code>ScriptTypeRegistration</code></td><td>The type registration as returned by <code>get_type_by_name</code></td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>String</code></td><td>The short name</td></tr>
 </tbody></table>
 </div>
 <pre><code class="language-lua">local name = MyType:short_name()
 </code></pre>
 <h2 id="is_resource"><a class="header" href="#is_resource">is_resource</a></h2>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>s</code></td><td><code>ScriptTypeRegistration</code></td><td>The type registration as returned by <code>get_type_by_name</code></td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>bool</code></td><td><code>true</code> if the type is a resource, otherwise <code>false</code></td></tr>
 </tbody></table>
 </div>
@@ -187,10 +196,13 @@
 end
 </code></pre>
 <h2 id="is_component"><a class="header" href="#is_component">is_component</a></h2>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>s</code></td><td><code>ScriptTypeRegistration</code></td><td>The type registration as returned by <code>get_type_by_name</code></td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>bool</code></td><td><code>true</code> if the type is a component, otherwise <code>false</code></td></tr>
 </tbody></table>
 </div>

@@ -155,10 +155,13 @@
                         <h2 id="world"><a class="header" href="#world">World</a></h2>
 <p>The <code>World</code> is the entry point for interacting with <code>Bevy</code>. It is provided to scripts under either the <code>world</code> or <code>World</code> static variable.</p>
 <h3 id="get_type_by_name"><a class="header" href="#get_type_by_name">get_type_by_name</a></h3>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>type_name</code></td><td><code>String</code></td><td>The name of the type to get, this can be either the short type name, i.e. <code>my_type</code> or the long name i.e. <code>my_crate::my_module::my_type</code></td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>Option&lt;ScriptTypeRegistration&gt;</code></td><td>The type if it exists, otherwise <code>None</code></td></tr>
 </tbody></table>
 </div>
@@ -168,11 +171,14 @@ if MyType == nil then
 end
 </code></pre>
 <h3 id="get_component"><a class="header" href="#get_component">get_component</a></h3>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>entity</code></td><td><code>Entity</code></td><td>The entity to get the component from</td></tr>
 <tr><td><code>registration</code></td><td><code>ScriptTypeRegistration</code></td><td>The type registration as returned by <code>get_type_by_name</code> of the component</td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>Option&lt;ReflectReference&gt;</code></td><td>The reference to the component if it exists, otherwise <code>None</code></td></tr>
 </tbody></table>
 </div>
@@ -182,11 +188,14 @@ if component ~= nil then
 end
 </code></pre>
 <h3 id="has_component"><a class="header" href="#has_component">has_component</a></h3>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>entity</code></td><td><code>Entity</code></td><td>The entity to check the component for</td></tr>
 <tr><td><code>registration</code></td><td><code>ScriptTypeRegistration</code></td><td>The type registration as returned by <code>get_type_by_name</code> of the component</td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>bool</code></td><td><code>true</code> if the entity has the component, otherwise <code>false</code></td></tr>
 </tbody></table>
 </div>
@@ -195,6 +204,7 @@ end
 end
 </code></pre>
 <h3 id="remove_component"><a class="header" href="#remove_component">remove_component</a></h3>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>entity</code></td><td><code>Entity</code></td><td>The entity to remove the component from</td></tr>
 <tr><td><code>registration</code></td><td><code>ScriptTypeRegistration</code></td><td>The type registration as returned by <code>get_type_by_name</code> of the component</td></tr>
@@ -203,10 +213,13 @@ end
 <pre><code class="language-lua">world.remove_component(entity, MyType)
 </code></pre>
 <h3 id="get_resource"><a class="header" href="#get_resource">get_resource</a></h3>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>registration</code></td><td><code>ScriptTypeRegistration</code></td><td>The type registration as returned by <code>get_type_by_name</code> of the resource</td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>Option&lt;ReflectReference&gt;</code></td><td>The resource if it exists, otherwise <code>None</code></td></tr>
 </tbody></table>
 </div>
@@ -216,16 +229,20 @@ if resource ~= nil then
 end
 </code></pre>
 <h3 id="has_resource"><a class="header" href="#has_resource">has_resource</a></h3>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>registration</code></td><td><code>ScriptTypeRegistration</code></td><td>The type registration as returned by <code>get_type_by_name</code> of the resource</td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>bool</code></td><td><code>true</code> if the resource exists, otherwise <code>false</code></td></tr>
 </tbody></table>
 </div>
 <pre><code class="language-lua">local hasResource = world.has_resource(MyType)
 </code></pre>
 <h3 id="remove_resource"><a class="header" href="#remove_resource">remove_resource</a></h3>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>registration</code></td><td><code>ScriptTypeRegistration</code></td><td>The type registration as returned by <code>get_type_by_name</code> of the resource</td></tr>
 </tbody></table>
@@ -233,6 +250,7 @@ end
 <pre><code class="language-lua">world.remove_resource(MyType)
 </code></pre>
 <h3 id="add_default_component"><a class="header" href="#add_default_component">add_default_component</a></h3>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>entity</code></td><td><code>Entity</code></td><td>The entity to add the component to</td></tr>
 <tr><td><code>registration</code></td><td><code>ScriptTypeRegistration</code></td><td>The type registration as returned by <code>get_type_by_name</code> of the component</td></tr>
@@ -241,6 +259,7 @@ end
 <pre><code class="language-lua">world.add_default_component(entity, MyType)
 </code></pre>
 <h3 id="spawn"><a class="header" href="#spawn">spawn</a></h3>
+<p>Returns:</p>
 <div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>Entity</code></td><td>The spawned entity</td></tr>
 </tbody></table>
@@ -248,6 +267,7 @@ end
 <pre><code class="language-lua">local entity = world.spawn()
 </code></pre>
 <h3 id="insert_children"><a class="header" href="#insert_children">insert_children</a></h3>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>entity</code></td><td><code>Entity</code></td><td>The parent entity</td></tr>
 <tr><td><code>index</code></td><td><code>usize</code></td><td>The index to insert the children at</td></tr>
@@ -257,6 +277,7 @@ end
 <pre><code class="language-lua">world.insert_children(parent, 1, {child1, child2})
 </code></pre>
 <h3 id="push_children"><a class="header" href="#push_children">push_children</a></h3>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>entity</code></td><td><code>Entity</code></td><td>The parent entity</td></tr>
 <tr><td><code>children</code></td><td><code>Vec&lt;Entity&gt;</code></td><td>The children entities to push</td></tr>
@@ -265,10 +286,13 @@ end
 <pre><code class="language-lua">world.push_children(parent, {child1, child2})
 </code></pre>
 <h3 id="get_children"><a class="header" href="#get_children">get_children</a></h3>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>entity</code></td><td><code>Entity</code></td><td>The parent entity</td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>Vec&lt;Entity&gt;</code></td><td>The children entities</td></tr>
 </tbody></table>
 </div>
@@ -278,10 +302,13 @@ for _, child in pairs(children) do
 end
 </code></pre>
 <h3 id="get_parent"><a class="header" href="#get_parent">get_parent</a></h3>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>entity</code></td><td><code>Entity</code></td><td>The child entity</td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>Option&lt;Entity&gt;</code></td><td>The parent entity if it exists, otherwise <code>None</code></td></tr>
 </tbody></table>
 </div>
@@ -291,6 +318,7 @@ if parent ~= nil then
 end
 </code></pre>
 <h3 id="despawn"><a class="header" href="#despawn">despawn</a></h3>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>entity</code></td><td><code>Entity</code></td><td>The entity to despawn</td></tr>
 </tbody></table>
@@ -298,6 +326,7 @@ end
 <pre><code class="language-lua">world.despawn(entity)
 </code></pre>
 <h3 id="despawn_descendants"><a class="header" href="#despawn_descendants">despawn_descendants</a></h3>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>entity</code></td><td><code>Entity</code></td><td>The entity to despawn descendants of</td></tr>
 </tbody></table>
@@ -305,6 +334,7 @@ end
 <pre><code class="language-lua">world.despawn_descendants(entity)
 </code></pre>
 <h3 id="despawn_recursive"><a class="header" href="#despawn_recursive">despawn_recursive</a></h3>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>entity</code></td><td><code>Entity</code></td><td>The entity to despawn recursively</td></tr>
 </tbody></table>
@@ -312,10 +342,13 @@ end
 <pre><code class="language-lua">world.despawn_recursive(entity)
 </code></pre>
 <h3 id="has_entity"><a class="header" href="#has_entity">has_entity</a></h3>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>entity</code></td><td><code>Entity</code></td><td>The entity to check</td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>bool</code></td><td><code>true</code> if the entity exists, otherwise <code>false</code></td></tr>
 </tbody></table>
 </div>
@@ -325,10 +358,13 @@ if exists then
 end
 </code></pre>
 <h3 id="query"><a class="header" href="#query">query</a></h3>
+<p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>components</code></td><td><code>Vec&lt;ScriptTypeRegistration&gt;</code></td><td>The components to query for</td></tr>
 </tbody></table>
-</div><div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>ScriptQueryBuilder</code></td><td>The query builder</td></tr>
 </tbody></table>
 </div>
