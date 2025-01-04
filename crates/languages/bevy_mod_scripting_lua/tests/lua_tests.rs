@@ -7,7 +7,7 @@ use bevy::{
 use bevy_mod_scripting_core::{
     bindings::{
         access_map::ReflectAccessId, pretty_print::DisplayWithWorld, script_value::ScriptValue,
-        ScriptTypeRegistration, WorldAccessGuard,
+        ReflectReference, ScriptTypeRegistration, WorldAccessGuard,
     },
     context::ContextLoadingSettings,
     error::ScriptError,
@@ -22,7 +22,6 @@ use bevy_mod_scripting_lua::{
 };
 use libtest_mimic::{Arguments, Failed, Trial};
 use std::{
-    borrow::Cow,
     fs::{self, DirEntry},
     io, panic,
     path::{Path, PathBuf},
@@ -53,7 +52,7 @@ fn init_app() -> App {
     app
 }
 
-fn init_lua_test_utils(_script_name: &Cow<'static, str>, lua: &mut Lua) -> Result<(), ScriptError> {
+fn init_lua_test_utils(_script_name: &str, lua: &mut Lua) -> Result<(), ScriptError> {
     let _get_mock_type = lua
         .create_function(|l, ()| {
             let world = l.get_world();
@@ -92,15 +91,6 @@ fn init_lua_test_utils(_script_name: &Cow<'static, str>, lua: &mut Lua) -> Resul
         .create_function(|lua, (f, regex): (LuaFunction, String)| {
             let world = lua.get_world();
 
-            // let result = match std::panic::catch_unwind(|| ) {
-            //     Ok(e) => e,
-            //     Err(panic) => {
-            //         return Err(mlua::Error::RuntimeError(format!(
-            //             "Function panicked: {:?}",
-            //             panic
-            //         )))
-            //     }
-            // };
             let result = f.call::<()>(());
             let err = match result {
                 Ok(_) => {

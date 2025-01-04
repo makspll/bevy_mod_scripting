@@ -66,7 +66,7 @@ impl Plugin for LuaScriptingPlugin {
                     .map_err(ScriptError::from_mlua_error)?;
                 context
                     .globals()
-                    .set("script_id", script_id.clone())
+                    .set("script_id", script_id)
                     .map_err(ScriptError::from_mlua_error)?;
                 Ok(())
             },
