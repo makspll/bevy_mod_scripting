@@ -154,6 +154,21 @@
                     <main>
                         <h1 id="scriptquerybuilder"><a class="header" href="#scriptquerybuilder">ScriptQueryBuilder</a></h1>
 <p>The query builder is used to build queries for entities with specific components. Can be used to interact with arbitrary entities in the world.</p>
+<h2 id="component"><a class="header" href="#component">component</a></h2>
+<p>Adds a component to the query, this will be accessible in the query results under the index corresponding to the index of this component in the query.</p>
+<p>Arguments:</p>
+<div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>s</code></td><td><code>ScriptQueryBuilder</code></td><td>The query builder</td></tr>
+<tr><td><code>component</code></td><td><code>ScriptTypeRegistration</code></td><td>The component to query for</td></tr>
+</tbody></table>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ScriptQueryBuilder</code></td><td>The updated query builder</td></tr>
+</tbody></table>
+</div>
+<pre><code class="language-lua">query:component(MyType):component(MyOtherType)
+</code></pre>
 <h2 id="with"><a class="header" href="#with">with</a></h2>
 <p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>

@@ -358,17 +358,12 @@ if exists then
 end
 </code></pre>
 <h3 id="query"><a class="header" href="#query">query</a></h3>
-<p>Arguments:</p>
-<div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>components</code></td><td><code>Vec&lt;ScriptTypeRegistration&gt;</code></td><td>The components to query for</td></tr>
-</tbody></table>
-</div>
 <p>Returns:</p>
 <div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>ScriptQueryBuilder</code></td><td>The query builder</td></tr>
 </tbody></table>
 </div>
-<pre><code class="language-lua">query = world.query({MyType})
+<pre><code class="language-lua">local queryBuilder = world.query()
 </code></pre>
 <h3 id="exit"><a class="header" href="#exit">exit</a></h3>
 <p>Send the exit signal to the application, will gracefully shutdown the application.</p>
