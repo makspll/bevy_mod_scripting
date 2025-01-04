@@ -1,34 +1,27 @@
 use bevy::{
     app::App,
-    asset::{AssetPlugin, AssetServer},
-    prelude::{AppTypeRegistry, Children, Entity, HierarchyPlugin, Parent, World},
+    asset::AssetPlugin,
+    prelude::{Children, Entity, HierarchyPlugin, Parent, World},
     reflect::{Reflect, TypeRegistration},
-    MinimalPlugins,
 };
 use bevy_mod_scripting_core::{
     bindings::{
         access_map::ReflectAccessId, pretty_print::DisplayWithWorld, script_value::ScriptValue,
-        ReflectAllocator, ReflectReference, ScriptTypeRegistration, WorldAccessGuard,
-        WorldCallbackAccess,
+        ScriptTypeRegistration, WorldAccessGuard,
     },
     context::ContextLoadingSettings,
     error::ScriptError,
     event::CallbackLabel,
-    script::ScriptId,
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
 use bevy_mod_scripting_lua::{
-    bindings::{
-        reference::LuaReflectReference,
-        world::{GetWorld, LuaWorld},
-    },
+    bindings::{reference::LuaReflectReference, world::GetWorld},
     lua_context_load, lua_handler,
-    prelude::{Lua, LuaFunction, LuaHookTriggers},
+    prelude::{Lua, LuaFunction},
     LuaScriptingPlugin,
 };
 use libtest_mimic::{Arguments, Failed, Trial};
 use std::{
-    any::TypeId,
     borrow::Cow,
     fs::{self, DirEntry},
     io, panic,
