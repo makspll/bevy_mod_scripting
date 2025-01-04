@@ -6,14 +6,9 @@ world.info("Lua: The game_of_life.lua script just got loaded")
 math.randomseed(os.time())
 
 function fetch_life_state() 
-    -- find the entity with life state 
-    local life_state = nil
-
-    for i,result in pairs(world.query({LifeState}):build()) do 
-        life_state = result:components()[1]
-        break
-    end 
-    return life_state
+    -- find the first entity with life state 
+    local i,v = next(world.query():component(LifeState):build())
+    return v:components()[1]
 end  
 
 function on_script_loaded()
@@ -53,7 +48,28 @@ function on_click(x,y)
     local cell_y = math.floor(y / cell_height)
 
     local index = (cell_y * dimension_x) + cell_x
-    cells[index] = 255
+
+    -- toggle a bunch of cells around if they exist
+    local cell_offsets = {
+        {0,0},
+        {1,0},
+        {0,1},
+        {1,1},
+        {-1,0},
+        {0,-1},
+        {-1,-1},
+        {1,-1},
+        {-1,1}
+    }
+
+    for _,offset in pairs(cell_offsets) do 
+        local offset_x = offset[1]
+        local offset_y = offset[2]
+        local new_index = index + offset_x + offset_y * dimension_x
+        if new_index > 0 and new_index <= (dimension_x * dimension_y) then
+            cells[new_index] = 255
+        end
+    end
 end
 
 function on_update()

@@ -13,7 +13,7 @@ world.add_default_component(entity_c, component_with)
 world.add_default_component(entity_b, component_without)
 
 local found_entities = {}
-for i,result in pairs(world.query({component_with}):with(component_with):without(component_without):build()) do
+for i,result in pairs(world.query():component(component_with):without(component_without):build()) do
     table.insert(found_entities, result:entity())
 end
 

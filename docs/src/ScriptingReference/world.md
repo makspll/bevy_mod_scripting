@@ -284,12 +284,6 @@ end
 
 ### query
 
-Arguments:
-
-| Argument | Type | Description |
-| --- | --- | --- |
-| `components` | `Vec<ScriptTypeRegistration>` | The components to query for |
-
 Returns:
 
 | Return | Description |
@@ -297,7 +291,7 @@ Returns:
 | `ScriptQueryBuilder` | The query builder |
 
 ```lua
-query = world.query({MyType})
+local queryBuilder = world.query()
 ```
 
 ### exit

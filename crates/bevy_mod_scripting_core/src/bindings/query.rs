@@ -90,14 +90,28 @@ impl ScriptQueryBuilder {
         self.components.extend(components);
         self
     }
+    pub fn component(&mut self, component: ScriptTypeRegistration) -> &mut Self {
+        self.components.push(component);
+        self
+    }
 
-    pub fn with(&mut self, with: Vec<ScriptTypeRegistration>) -> &mut Self {
+    pub fn with_components(&mut self, with: Vec<ScriptTypeRegistration>) -> &mut Self {
         self.with.extend(with);
         self
     }
 
-    pub fn without(&mut self, without: Vec<ScriptTypeRegistration>) -> &mut Self {
+    pub fn with_component(&mut self, with: ScriptTypeRegistration) -> &mut Self {
+        self.with.push(with);
+        self
+    }
+
+    pub fn without_components(&mut self, without: Vec<ScriptTypeRegistration>) -> &mut Self {
         self.without.extend(without);
+        self
+    }
+
+    pub fn without_component(&mut self, without: ScriptTypeRegistration) -> &mut Self {
+        self.without.push(without);
         self
     }
 }

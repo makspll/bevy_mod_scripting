@@ -2,6 +2,27 @@
 
 The query builder is used to build queries for entities with specific components. Can be used to interact with arbitrary entities in the world.
 
+## component
+
+Adds a component to the query, this will be accessible in the query results under the index corresponding to the index of this component in the query.
+
+Arguments:
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `s` | `ScriptQueryBuilder` | The query builder |
+| `component` | `ScriptTypeRegistration` | The component to query for |
+
+Returns:
+
+| Return | Description |
+| ---  | --- |
+| `ScriptQueryBuilder` | The updated query builder |
+
+```lua
+query:component(MyType):component(MyOtherType)
+```
+
 ## with
 
 Arguments:

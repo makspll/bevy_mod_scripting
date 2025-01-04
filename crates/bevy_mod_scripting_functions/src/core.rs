@@ -138,9 +138,8 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
         })
         .register(
             "query",
-            |components: Vec<Val<ScriptTypeRegistration>>| {
-                let mut query_builder = ScriptQueryBuilder::default();
-                query_builder.components(components.into_iter().map(|v| v.into_inner()).collect());
+            || {
+                let query_builder = ScriptQueryBuilder::default();
                 Ok(Val(query_builder))
             },
         )
@@ -363,11 +362,16 @@ pub fn register_script_query_builder_functions(
     registry: &mut World,
 ) -> Result<(), FunctionRegistrationError> {
     NamespaceBuilder::<ScriptQueryBuilder>::new(registry)
+        .register("component", |s: Val<ScriptQueryBuilder>, components: Val<ScriptTypeRegistration>| {
+            let mut builder = s.into_inner();
+            builder.component(components.into_inner());
+            Val(builder)
+        })
         .register(
             "with",
             |s: Val<ScriptQueryBuilder>, with: Val<ScriptTypeRegistration>| {
                 let mut builder = s.into_inner();
-                builder.with(vec![with.into_inner()]);
+                builder.with_component(with.into_inner());
                 Val(builder)
             },
         )
@@ -375,7 +379,7 @@ pub fn register_script_query_builder_functions(
             "without",
             |s: Val<ScriptQueryBuilder>, without: Val<ScriptTypeRegistration>| {
                 let mut builder = s.into_inner();
-                builder.without(vec![without.into_inner()]);
+                builder.without_component(without.into_inner());
                 Val(builder)
             },
         )
