@@ -27,15 +27,16 @@ pub struct RuneScriptingPlugin {
 
 impl Default for RuneScriptingPlugin {
     fn default() -> Self {
-        Self {
-            scripting_plugin: ScriptingPlugin {
-                runtime_builder: todo!(),
-                runtime_settings: todo!(),
-                callback_handler: todo!(),
-                context_builder: todo!(),
-                context_assigner: todo!(),
-            },
-        }
+        todo!()
+        // Self {
+        //     scripting_plugin: ScriptingPlugin {
+        //         runtime_builder: todo!(),
+        //         runtime_settings: todo!(),
+        //         callback_handler: todo!(),
+        //         context_builder: todo!(),
+        //         context_assigner: todo!(),
+        //     },
+        // }
     }
 }
 

@@ -1,10 +1,8 @@
 //! Everything to do with the way scripts and their contexts are stored and handled.
 
-use std::{borrow::Cow, collections::HashMap, ops::Deref};
-
-use bevy::{asset::Handle, ecs::system::Resource, reflect::Reflect};
-
 use crate::{asset::ScriptAsset, context::ContextId};
+use bevy::{asset::Handle, ecs::system::Resource, reflect::Reflect};
+use std::{borrow::Cow, collections::HashMap, ops::Deref};
 
 pub type ScriptId = Cow<'static, str>;
 
