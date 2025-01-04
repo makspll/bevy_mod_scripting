@@ -3,9 +3,8 @@ use std::{borrow::Cow, ffi::OsString, path::PathBuf};
 use bevy::reflect::PartialReflect;
 
 use crate::{
-    bindings::{ReflectReference, WorldGuard},
+    bindings::{script_value::ScriptValue, ReflectReference, WorldGuard},
     error::InteropError,
-    prelude::ScriptValue,
     self_type_dependency_only,
 };
 

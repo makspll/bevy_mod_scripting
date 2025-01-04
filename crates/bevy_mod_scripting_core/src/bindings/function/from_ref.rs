@@ -6,8 +6,8 @@ use crate::{
     bindings::{function::from::FromScript, WorldGuard},
     error::InteropError,
     match_by_type,
-    prelude::ScriptValue,
     reflection_extensions::TypeInfoExtensions,
+    ScriptValue,
 };
 
 /// Converts from a [`ScriptValue`] to a value equivalent to the given [`TypeId`].

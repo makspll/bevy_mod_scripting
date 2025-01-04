@@ -1,13 +1,12 @@
 use crate::{
     asset::{AssetIdToScriptIdMap, ScriptAsset, ScriptAssetSettings},
-    bindings::{pretty_print::DisplayWithWorld, WorldAccessGuard, WorldGuard},
+    bindings::{pretty_print::DisplayWithWorld, AppReflectAllocator, WorldAccessGuard, WorldGuard},
     commands::{CreateOrUpdateScript, DeleteScript},
     context::{ContextLoadingSettings, ScriptContexts},
     error::ScriptError,
     event::{IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent},
     handler::CallbackSettings,
-    prelude::{AppReflectAllocator, RuntimeSettings},
-    runtime::RuntimeContainer,
+    runtime::{RuntimeContainer, RuntimeSettings},
     script::{ScriptComponent, Scripts},
     IntoScriptPluginParams,
 };
@@ -241,9 +240,9 @@ mod test {
     use std::{borrow::Cow, collections::HashMap};
 
     use crate::{
+        bindings::script_value::ScriptValue,
         event::CallbackLabel,
         handler::HandlerFn,
-        prelude::ScriptValue,
         script::{Script, ScriptId},
     };
 

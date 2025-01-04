@@ -12,16 +12,13 @@ use context::{
     Context, ContextAssigner, ContextBuilder, ContextInitializer, ContextLoadingSettings,
     ContextPreHandlingInitializer, ScriptContexts,
 };
+use docs::{Documentation, DocumentationFragment};
+use event::ScriptCallbackEvent;
 use handler::{CallbackSettings, HandlerFn};
-pub use itertools::Either;
-use prelude::{
-    initialize_runtime,
-    runtime::{RuntimeInitializer, RuntimeSettings},
-    sync_script_data, Documentation, DocumentationFragment, ScriptCallbackEvent,
-};
-use runtime::{Runtime, RuntimeContainer};
+
+use runtime::{Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
 use script::Scripts;
-use systems::garbage_collector;
+use systems::{garbage_collector, initialize_runtime, sync_script_data};
 
 pub mod asset;
 pub mod bindings;
@@ -36,9 +33,6 @@ pub mod runtime;
 pub mod script;
 pub mod systems;
 pub mod world;
-pub mod prelude {
-    pub use {crate::docs::*, crate::error::*, crate::event::*, crate::systems::*, crate::*};
-}
 
 /// Types which act like scripting plugins, by selecting a context and runtime
 /// Each individual combination of context and runtime has specific infrastructure built for it and does not interact with other scripting plugins

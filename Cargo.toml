@@ -76,7 +76,6 @@ ansi-parser = "0.9"
 [workspace]
 members = [
     "crates/bevy_mod_scripting_core",
-    "crates/bevy_event_priority",
     "crates/languages/bevy_mod_scripting_lua",
     "crates/languages/bevy_mod_scripting_rhai",
     "crates/languages/bevy_mod_scripting_rune",

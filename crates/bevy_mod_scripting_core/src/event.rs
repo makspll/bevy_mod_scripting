@@ -1,4 +1,4 @@
-use crate::{error::ScriptError, prelude::ScriptValue, script::ScriptId};
+use crate::{bindings::script_value::ScriptValue, error::ScriptError, script::ScriptId};
 use bevy::{ecs::entity::Entity, prelude::Event};
 
 /// An error coming from a script

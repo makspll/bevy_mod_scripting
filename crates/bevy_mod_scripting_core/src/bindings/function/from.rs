@@ -1,7 +1,7 @@
 use crate::{
     bindings::{access_map::ReflectAccessId, ReflectReference, WorldGuard},
     error::InteropError,
-    prelude::ScriptValue,
+    ScriptValue,
 };
 use bevy::reflect::{FromReflect, Reflect};
 use std::{

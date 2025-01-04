@@ -1,5 +1,5 @@
 use crate::{
-    prelude::ScriptError,
+    error::ScriptError,
     script::{Script, ScriptId},
     IntoScriptPluginParams,
 };

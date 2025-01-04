@@ -5,8 +5,8 @@ use bevy::reflect::{ParsedPath, PartialReflect};
 use crate::{
     bindings::{function::into::IntoScript, ReflectReference, WorldGuard},
     error::InteropError,
-    prelude::ScriptValue,
     reflection_extensions::{PartialReflectExt, TypeIdExtensions},
+    ScriptValue,
 };
 
 /// Converts a value represented by a reference into a [`crate::bindings::function::ScriptValue`].

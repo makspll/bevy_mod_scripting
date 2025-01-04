@@ -3,7 +3,7 @@ use crate::{
     context::{ContextLoadingSettings, ScriptContexts},
     event::{IntoCallbackLabel, OnScriptLoaded, OnScriptUnloaded},
     handler::CallbackSettings,
-    prelude::RuntimeContainer,
+    runtime::RuntimeContainer,
     script::{Script, ScriptId, Scripts},
     systems::handle_script_errors,
     IntoScriptPluginParams,

@@ -2,10 +2,10 @@ use crate::{
     bindings::{
         access_map::DisplayCodeLocation,
         pretty_print::{DisplayWithWorld, DisplayWithWorldAndDummy},
+        script_value::ScriptValue,
         ReflectBaseType, ReflectReference,
     },
     impl_dummy_display,
-    prelude::ScriptValue,
 };
 use bevy::{
     ecs::component::ComponentId,

@@ -1,9 +1,6 @@
 use crate::{
-    context::ContextPreHandlingInitializer,
-    event::CallbackLabel,
-    prelude::{ScriptError, ScriptValue},
-    script::ScriptId,
-    IntoScriptPluginParams,
+    bindings::script_value::ScriptValue, context::ContextPreHandlingInitializer,
+    error::ScriptError, event::CallbackLabel, script::ScriptId, IntoScriptPluginParams,
 };
 use bevy::ecs::{entity::Entity, system::Resource, world::World};
 

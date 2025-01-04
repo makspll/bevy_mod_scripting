@@ -27,7 +27,6 @@ changelog_include = [
     "bevy_mod_scripting_rhai",
     "bevy_mod_scripting_rune",
     "bevy_mod_scripting_functions",
-    "bevy_event_priority",
 ]
 
 [[package]]
@@ -49,8 +48,4 @@ version_group = "main"
 
 [[package]]
 name = "bevy_mod_scripting_functions"
-version_group = "main"
-
-[[package]]
-name = "bevy_event_priority"
 version_group = "main"

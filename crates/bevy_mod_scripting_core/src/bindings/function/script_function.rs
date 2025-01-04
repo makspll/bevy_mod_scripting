@@ -5,7 +5,7 @@ use crate::{
         ReflectReference,
     },
     error::InteropError,
-    prelude::{ScriptValue, WorldCallbackAccess},
+    ScriptValue, WorldCallbackAccess,
 };
 use bevy::{
     prelude::{Reflect, Resource},

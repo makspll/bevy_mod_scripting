@@ -19,17 +19,4 @@ pub mod rune {
     pub use bevy_mod_scripting_rune::*;
 }
 
-pub mod prelude {
-    pub use bevy_mod_scripting_core::prelude::*;
-
-    #[cfg(feature = "lua")]
-    pub use bevy_mod_scripting_lua::prelude::*;
-
-    #[cfg(feature = "rhai")]
-    pub use bevy_mod_scripting_rhai::prelude::*;
-
-    // #[cfg(feature = "rune")]
-    // pub use bevy_mod_scripting_rune::prelude::*;
-}
-
 pub use bevy_mod_scripting_functions::*;

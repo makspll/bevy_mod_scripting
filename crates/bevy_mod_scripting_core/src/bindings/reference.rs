@@ -8,9 +8,8 @@ use super::{access_map::ReflectAccessId, WorldGuard};
 use crate::{
     bindings::ReflectAllocationId,
     error::InteropError,
-    prelude::ReflectAllocator,
     reflection_extensions::{PartialReflectExt, TypeIdExtensions},
-    with_access_read, with_access_write,
+    with_access_read, with_access_write, ReflectAllocator,
 };
 use bevy::{
     ecs::{

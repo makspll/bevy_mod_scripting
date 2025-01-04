@@ -1,4 +1,4 @@
-use crate::{prelude::ScriptError, script::ScriptId};
+use crate::{error::ScriptError, script::ScriptId};
 use bevy::{
     asset::{Asset, AssetId, AssetLoader},
     ecs::system::Resource,

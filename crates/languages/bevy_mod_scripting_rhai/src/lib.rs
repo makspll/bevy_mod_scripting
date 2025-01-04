@@ -13,10 +13,6 @@ use bevy_mod_scripting_core::{
 use rhai::{CallFnOptions, Engine, FnPtr, Scope, AST};
 
 pub use rhai;
-pub mod prelude {
-    pub use rhai;
-    pub use rhai::FuncArgs;
-}
 
 pub type RhaiRuntime = Engine;
 

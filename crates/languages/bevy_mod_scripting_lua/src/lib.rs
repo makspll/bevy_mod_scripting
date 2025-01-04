@@ -20,9 +20,6 @@ use bindings::{
 pub use mlua;
 use mlua::{Function, IntoLua, Lua, MultiValue};
 pub mod bindings;
-pub mod prelude {
-    pub use crate::mlua::{self, prelude::*, Value};
-}
 
 impl IntoScriptPluginParams for LuaScriptingPlugin {
     type C = Lua;
