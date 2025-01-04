@@ -4,11 +4,14 @@ The query builder is used to build queries for entities with specific components
 
 ## with
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `s` | `ScriptQueryBuilder` | The query builder |
 | `with` | `ScriptTypeRegistration` | The component to include in the query |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -20,11 +23,14 @@ query:with(MyType):with(MyOtherType)
 
 ## without
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `s` | `ScriptQueryBuilder` | The query builder |
 | `without` | `ScriptTypeRegistration` | The component to exclude from the query |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -36,10 +42,13 @@ query:without(MyType):without(MyOtherType)
 
 ## build
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `s` | `ScriptQueryBuilder` | The query builder |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |

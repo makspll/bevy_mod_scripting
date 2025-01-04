@@ -4,10 +4,13 @@ The `World` is the entry point for interacting with `Bevy`. It is provided to sc
 
 ### get_type_by_name
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `type_name` | `String` | The name of the type to get, this can be either the short type name, i.e. `my_type` or the long name i.e. `my_crate::my_module::my_type` |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -22,11 +25,14 @@ end
 
 ### get_component
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `entity` | `Entity` | The entity to get the component from |
 | `registration` | `ScriptTypeRegistration` | The type registration as returned by `get_type_by_name` of the component |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -41,11 +47,14 @@ end
 
 ### has_component
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `entity` | `Entity` | The entity to check the component for |
 | `registration` | `ScriptTypeRegistration` | The type registration as returned by `get_type_by_name` of the component |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -59,6 +68,8 @@ end
 
 ### remove_component
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `entity` | `Entity` | The entity to remove the component from |
@@ -70,10 +81,13 @@ world.remove_component(entity, MyType)
 
 ### get_resource
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `registration` | `ScriptTypeRegistration` | The type registration as returned by `get_type_by_name` of the resource |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -88,10 +102,13 @@ end
 
 ### has_resource
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `registration` | `ScriptTypeRegistration` | The type registration as returned by `get_type_by_name` of the resource |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -103,6 +120,8 @@ local hasResource = world.has_resource(MyType)
 
 ### remove_resource
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `registration` | `ScriptTypeRegistration` | The type registration as returned by `get_type_by_name` of the resource |
@@ -112,6 +131,8 @@ world.remove_resource(MyType)
 ```
 
 ### add_default_component
+
+Arguments:
 
 | Argument | Type | Description |
 | --- | --- | --- |
@@ -124,6 +145,8 @@ world.add_default_component(entity, MyType)
 
 ### spawn
 
+Returns:
+
 | Return | Description |
 | ---  | --- |
 | `Entity` | The spawned entity |
@@ -133,6 +156,8 @@ local entity = world.spawn()
 ```
 
 ### insert_children
+
+Arguments:
 
 | Argument | Type | Description |
 | --- | --- | --- |
@@ -146,6 +171,8 @@ world.insert_children(parent, 1, {child1, child2})
 
 ### push_children
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `entity` | `Entity` | The parent entity |
@@ -158,10 +185,13 @@ world.push_children(parent, {child1, child2})
 
 ### get_children
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `entity` | `Entity` | The parent entity |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -176,10 +206,13 @@ end
 
 ### get_parent
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `entity` | `Entity` | The child entity |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -194,6 +227,8 @@ end
 
 ### despawn
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `entity` | `Entity` | The entity to despawn |
@@ -203,6 +238,8 @@ world.despawn(entity)
 ```
 
 ### despawn_descendants
+
+Arguments:
 
 | Argument | Type | Description |
 | --- | --- | --- |
@@ -214,6 +251,8 @@ world.despawn_descendants(entity)
 
 ### despawn_recursive
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `entity` | `Entity` | The entity to despawn recursively |
@@ -224,10 +263,13 @@ world.despawn_recursive(entity)
 
 ### has_entity
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `entity` | `Entity` | The entity to check |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -242,10 +284,13 @@ end
 
 ### query
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `components` | `Vec<ScriptTypeRegistration>` | The components to query for |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |

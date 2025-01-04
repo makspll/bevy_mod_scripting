@@ -4,10 +4,13 @@ The result of a query, built by the query builder.
 
 ## entity
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `s` | `ScriptQueryResult` | The query result |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -19,10 +22,13 @@ local entity = result:entity()
 
 ## components
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `s` | `ScriptQueryResult` | The query result |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |

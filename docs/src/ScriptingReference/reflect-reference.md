@@ -9,11 +9,13 @@ Reflect references contain a standard interface which operates over the reflecti
 
 ## display_ref
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `s` | `ReflectReference` | The reference to display |
 
-
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -26,10 +28,13 @@ print(ref)
 
 ## display_value
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `s` | `ReflectReference` | The reference to display |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -42,10 +47,13 @@ print(ref:display_value())
 ## get
 The index function, allows you to index into the reflect reference.
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `key` | `ScriptValue` | The key to get the value for |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -63,11 +71,14 @@ local valye = ref._1
 
 ## set
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `key` | `ScriptValue` | The key to set the value for |
 | `value` | `ScriptValue` | The value to set |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -86,6 +97,8 @@ ref._1 = value
 ## push
 Generic push method, if the underlying type supports it, will push the value into the end of the reference.
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `value` | `ScriptValue` | The value to push |
@@ -97,10 +110,13 @@ ref:push(value)
 ## pop
 Generic pop method, if the underlying type supports it, will pop the value from the end of the reference.
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `s` | `ReflectReference` | The reference to pop from |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -112,6 +128,8 @@ local value = ref:pop()
 
 ## insert
 Generic insert method, if the underlying type supports it, will insert the value at the key.
+
+Arguments:
 
 | Argument | Type | Description |
 | --- | --- | --- |
@@ -125,6 +143,8 @@ ref:insert(key, value)
 ## clear
 Generic clear method, if the underlying type supports it, will clear the referenced container type.
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `s` | `ReflectReference` | The reference to clear |
@@ -137,10 +157,13 @@ ref:clear()
 ## len
 Generic length method, if the underlying type supports it, will return the length of the referenced container or length relevant to the type itself (number of fields etc.).
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `s` | `ReflectReference` | The reference to get the length of |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -153,10 +176,13 @@ length = ref:len()
 ## remove
 Generic remove method, if the underlying type supports it, will remove the value at the key.
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `key` | `ScriptValue` | The key to remove the value for |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -169,10 +195,13 @@ local value = ref:remove(key)
 ## iter
 The iterator function, returns a function which can be called to iterate over the reference.
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `s` | `ReflectReference` | The reference to iterate over |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |

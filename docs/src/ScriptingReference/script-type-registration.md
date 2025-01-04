@@ -4,10 +4,13 @@ A reference to a type registration, in general think of this as a handle to a ty
 
 ## type_name
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `s` | `ScriptTypeRegistration` | The type registration as returned by `get_type_by_name` |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -19,10 +22,13 @@ local name = MyType:type_name()
 
 ## short_name
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `s` | `ScriptTypeRegistration` | The type registration as returned by `get_type_by_name` |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -34,10 +40,13 @@ local name = MyType:short_name()
 
 ## is_resource
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `s` | `ScriptTypeRegistration` | The type registration as returned by `get_type_by_name` |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
@@ -51,10 +60,13 @@ end
 
 ## is_component
 
+Arguments:
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `s` | `ScriptTypeRegistration` | The type registration as returned by `get_type_by_name` |
 
+Returns:
 
 | Return | Description |
 | ---  | --- |
