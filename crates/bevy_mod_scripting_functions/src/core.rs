@@ -1,24 +1,26 @@
 //! Contains functions defined by the [`bevy_mod_scripting_core`] crate
 
 use crate::NamespaceBuilder;
-use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
 use bevy::{
     prelude::*,
-    reflect::{
-        func::FunctionRegistrationError, ParsedPath
-    },
+    reflect::{func::FunctionRegistrationError, ParsedPath},
 };
 use bevy_mod_scripting_core::*;
 use bindings::{
-    access_map::ReflectAccessId, function::{
+    access_map::ReflectAccessId,
+    function::{
         from::{Ref, Val},
         from_ref::FromScriptRef,
         into_ref::IntoScriptRef,
         script_function::{CallerContext, ScriptFunctionMut},
-    }, pretty_print::DisplayWithWorld, script_value::ScriptValue, ReflectReference, ReflectionPathExt, ScriptQueryBuilder, ScriptQueryResult, ScriptTypeRegistration, WorldCallbackAccess
+    },
+    pretty_print::DisplayWithWorld,
+    script_value::ScriptValue,
+    ReflectReference, ReflectionPathExt, ScriptQueryBuilder, ScriptQueryResult,
+    ScriptTypeRegistration, WorldCallbackAccess,
 };
 use error::InteropError;
-
+use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
 
 pub fn register_bevy_bindings(app: &mut App) {
     #[cfg(feature = "bevy_bindings")]
@@ -134,19 +136,16 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
         .register("has_entity", |s: WorldCallbackAccess, e: Val<Entity>| {
             s.has_entity(*e)
         })
-        .register(
-            "query",
-            || {
-                let query_builder = ScriptQueryBuilder::default();
-                Ok(Val(query_builder))
-            },
-        )
+        .register("query", || {
+            let query_builder = ScriptQueryBuilder::default();
+            Ok(Val(query_builder))
+        })
         .register("exit", |s: WorldCallbackAccess| s.exit())
         .register("log_all_allocations", |s: WorldCallbackAccess| {
             let world = s.try_read().expect("stale world");
             let allocator = world.allocator();
             let allocator = allocator.read();
-            for (id,_) in allocator.iter_allocations() {
+            for (id, _) in allocator.iter_allocations() {
                 let raid = ReflectAccessId::for_allocation(id.clone());
                 if world.claim_read_access(raid) {
                     // Safety: ref released above
@@ -154,9 +153,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
                 } else {
                     panic!("Failed to claim read access for allocation id: {}", id.id());
                 }
-
             }
-
         });
     Ok(())
 }
@@ -338,7 +335,6 @@ pub fn register_reflect_reference_functions(
     Ok(())
 }
 
-
 pub fn register_script_type_registration_functions(
     registry: &mut World,
 ) -> Result<(), FunctionRegistrationError> {
@@ -360,11 +356,14 @@ pub fn register_script_query_builder_functions(
     registry: &mut World,
 ) -> Result<(), FunctionRegistrationError> {
     NamespaceBuilder::<ScriptQueryBuilder>::new(registry)
-        .register("component", |s: Val<ScriptQueryBuilder>, components: Val<ScriptTypeRegistration>| {
-            let mut builder = s.into_inner();
-            builder.component(components.into_inner());
-            Val(builder)
-        })
+        .register(
+            "component",
+            |s: Val<ScriptQueryBuilder>, components: Val<ScriptTypeRegistration>| {
+                let mut builder = s.into_inner();
+                builder.component(components.into_inner());
+                Val(builder)
+            },
+        )
         .register(
             "with",
             |s: Val<ScriptQueryBuilder>, with: Val<ScriptTypeRegistration>| {
@@ -409,23 +408,23 @@ pub fn register_core_functions(app: &mut App) {
     // we don't exclude from compilation here,
     // since these are much smaller and still useful if not included initially
     // perhaps people might want to include some but not all of these
-    
-    #[cfg(feature="core_functions")]
+
+    #[cfg(feature = "core_functions")]
     register_world_functions(world).expect("Failed to register world functions");
 
-    #[cfg(feature="core_functions")]
+    #[cfg(feature = "core_functions")]
     register_reflect_reference_functions(world)
         .expect("Failed to register reflect reference functions");
 
-    #[cfg(feature="core_functions")]
+    #[cfg(feature = "core_functions")]
     register_script_type_registration_functions(world)
         .expect("Failed to register script type registration functions");
 
-    #[cfg(feature="core_functions")]
+    #[cfg(feature = "core_functions")]
     register_script_query_builder_functions(world)
         .expect("Failed to register script query builder functions");
 
-    #[cfg(feature="core_functions")]
+    #[cfg(feature = "core_functions")]
     register_script_query_result_functions(world)
         .expect("Failed to register script query result functions");
 }

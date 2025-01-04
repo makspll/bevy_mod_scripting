@@ -1,8 +1,4 @@
-use std::{
-    borrow::Cow,
-    ffi::OsString,
-    path::PathBuf,
-};
+use std::{borrow::Cow, ffi::OsString, path::PathBuf};
 
 use bevy::reflect::PartialReflect;
 

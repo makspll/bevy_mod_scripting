@@ -1,11 +1,9 @@
 use std::sync::Arc;
 
-
 use bevy_mod_scripting_core::bindings::WorldGuard;
-use bevy_mod_scripting_core::error::InteropError;
 use bevy_mod_scripting_core::bindings::{WorldAccessGuard, WorldCallbackAccess};
+use bevy_mod_scripting_core::error::InteropError;
 use mlua::UserData;
-
 
 #[derive(Clone, Debug, mlua::FromLua)]
 pub struct LuaWorld(pub WorldCallbackAccess);
