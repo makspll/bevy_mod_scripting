@@ -12,10 +12,6 @@ categories = ["game-development"]
 readme = "readme.md"
 include = ["readme.md", "/src", "/examples", "/assets", "LICENSE"]
 
-[[bin]]
-name = "bevy_mod_scripting_doc_gen"
-path = "src/documentation/main.rs"
-
 [lib]
 name = "bevy_mod_scripting"
 path = "src/lib.rs"
@@ -25,9 +21,6 @@ features = ["lua", "lua54", "rhai", "rune"]
 
 [features]
 default = ["core_functions", "bevy_bindings", "unsafe_lua_modules"]
-
-## core
-doc_always = ["bevy_mod_scripting_core/doc_always"]
 
 ## lua
 lua = ["bevy_mod_scripting_lua"]
