@@ -17,3 +17,4 @@
     - [ScriptTypeRegistration](./ScriptingReference/script-type-registration.md)
     - [ScriptQueryBuilder](./ScriptingReference/script-query-builder.md)
     - [ScriptQueryResult](./ScriptingReference/script-query-result.md)
+- [Core Callbacks](./ScriptingReference/core-callbacks.md)
