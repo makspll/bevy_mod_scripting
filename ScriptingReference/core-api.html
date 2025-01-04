@@ -3,8 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Bevy Scripting</title>
-        <meta name="robots" content="noindex">
+        <title>Core Bindings - Bevy Scripting</title>
 
 
         <!-- Custom HTML head -->
@@ -13,32 +12,32 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="favicon.svg">
-        <link rel="shortcut icon" href="favicon.png">
-        <link rel="stylesheet" href="css/variables.css">
-        <link rel="stylesheet" href="css/general.css">
-        <link rel="stylesheet" href="css/chrome.css">
-        <link rel="stylesheet" href="css/print.css" media="print">
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
-        <link rel="stylesheet" href="fonts/fonts.css">
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" href="highlight.css">
-        <link rel="stylesheet" href="tomorrow-night.css">
-        <link rel="stylesheet" href="ayu-highlight.css">
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
 
 
         <!-- Provide site root to javascript -->
         <script>
-            var path_to_root = "";
+            var path_to_root = "../";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc.js"></script>
+        <script src="../toc.js"></script>
     </head>
     <body>
     <div id="body-container">
@@ -90,7 +89,7 @@
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
-                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
             </noscript>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -124,7 +123,7 @@
                     <h1 class="menu-title">Bevy Scripting</h1>
 
                     <div class="right-buttons">
-                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
 
@@ -153,158 +152,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
-<h2 id="cargo"><a class="header" href="#cargo">Cargo</a></h2>
-<p>First you need to install the crate by adding this entry to your <code>Cargo.toml</code> dependencies list:</p>
-<pre><code class="language-toml">bevy_mod_scripting = { version = "0.9.0", features = ["lua54"]}
-</code></pre>
-<p>Choose the language features you wish enabled and add them to the features block.</p>
-<h2 id="bevy-plugin"><a class="header" href="#bevy-plugin">Bevy Plugin</a></h2>
-<p>The next step is to add the BMS plugin to your application, on top of any other extras you want included in your app:</p>
-<pre><code class="language-rust ignore">app.add_plugins(LuaScriptingPlugin::default());</code></pre>
-<p>The above is how you'd setup BMS for Lua, if you want to use another language, simply use a corresponding plugin from the integration crate.</p>
-<h2 id="language-features"><a class="header" href="#language-features">Language Features</a></h2>
-<p>Each language supported by BMS can be switched-on via feature flag as below:</p>
-<div class="table-wrapper"><table><thead><tr><th>Language</th><th>Feature Flag</th></tr></thead><tbody>
-<tr><td>Lua51</td><td>lua51</td></tr>
-<tr><td>Lua52</td><td>lua54</td></tr>
-<tr><td>Lua53</td><td>lua53</td></tr>
-<tr><td>Lua54</td><td>lua54</td></tr>
-<tr><td>Luajit</td><td>luajit</td></tr>
-<tr><td>Luajit52</td><td>luajit52</td></tr>
-<tr><td>Luau</td><td>luau</td></tr>
-<tr><td>Rhai</td><td>rhai</td></tr>
-<tr><td>Rune</td><td>rune</td></tr>
-</tbody></table>
-</div>
-<h2 id="extra-features"><a class="header" href="#extra-features">Extra Features</a></h2>
-<p>In order to fit as many use cases as possible, BMS allows you to disable a lot of its functionality.</p>
-<p>By default all of the useful features are enabled, but you may disable them if you wish if you are only needing BMS for script lifecycle management, and want to populate the bindings yourself.</p>
-<div class="table-wrapper"><table><thead><tr><th>Feature</th><th>Description</th></tr></thead><tbody>
-<tr><td>core_functions</td><td>If enabled, will enable all core functions, i.e. bevy integrations which let you interact with Bevy via reflection</td></tr>
-<tr><td>bevy_bindings</td><td>If enabled, populates the function registry with additiona automatically generated bevy bindings. This includes functions on <code>glam</code> and <code>bevy::ecs</code> types. These are useful but will slow down compilation considerably.</td></tr>
-<tr><td>mlua_async</td><td>Enables <code>mlua/async</code></td></tr>
-<tr><td>mlua_serialize</td><td>Enables <code>mlua/serialize</code></td></tr>
-<tr><td>mlua_macros</td><td>Enables <code>mlua/macros</code></td></tr>
-<tr><td>unsafe_lua_modules</td><td>Allows loading unsafe modules via <code>require</code> in lua</td></tr>
-</tbody></table>
-</div><div style="break-before: page; page-break-before: always;"></div><h1 id="managing-scripts"><a class="header" href="#managing-scripts">Managing Scripts</a></h1>
-<p>Scripts live in the standard bevy <code>assets</code> directory. Loading a script means:</p>
-<ul>
-<li>Parsing the script body</li>
-<li>Creating or updating the resources which store script state</li>
-<li>Assigning a name/id to the script so it can be referred to by the rest of the application.</li>
-</ul>
-<h2 id="loading"><a class="header" href="#loading">Loading</a></h2>
-<p>BMS listens to <code>ScriptAsset</code> events and reacts accordingly. In order to load a script, all you need to do is request a handle to it via the asset server and store it somewhere.</p>
-<p>Below is an example system which loads a script called <code>assets/my_script.lua</code> and stores the handle in a local system parameter:</p>
-<pre><code class="language-rust ignore">fn load_script(server: Res&lt;AssetServer&gt;, mut handle: Local&lt;Handle&lt;ScriptAsset&gt;&gt;) {
-    let handle_ = server.load::&lt;ScriptAsset&gt;("my_script.lua");
-    *handle = handle_;
-}</code></pre>
-<p>In practice you will likely store this handle in a resource or component, when your load all the scripts necessary for your application.</p>
-<h2 id="unloading"><a class="header" href="#unloading">Unloading</a></h2>
-<p>Scripts are automatically unloaded when the asset is dropped. This means that if you have a handle to a script and it goes out of scope, the script will be unloaded.</p>
-<p>This will delete references to the script and remove any internal handles to the asset. You will also need to clean up any handles to the asset you hold in your application in order for the asset to be unloaded.</p>
-<h2 id="hot-loading-scripts"><a class="header" href="#hot-loading-scripts">Hot-loading scripts</a></h2>
-<p>To enable hot-loading of assets, you need to enable the necessary bevy features as normal <a href="https://bevy-cheatbook.github.io/assets/hot-reload.html">see the bevy cheatbook for instructions</a>.</p>
-<p>Assuming that hot-reloading is enabled for your app, any changes to script assets will automatically be picked up and the scripts re-loaded.</p>
-<h2 id="manually-reloading-scripts"><a class="header" href="#manually-reloading-scripts">Manually (re)loading scripts</a></h2>
-<p>In order to manually re-load or load a script you can issue the <code>CreateOrUpdateScript</code> command:</p>
-<pre><code class="language-rust ignore">CreateOrUpdateScript::&lt;LuaScriptingPlugin&gt;::new("my_script.lua".into(), "print(\"hello world from new script body\")".into(), asset_handle)</code></pre>
-<p>replace <code>LuaScriptingPlugin</code> with the scripting plugin you are using.</p>
-<h2 id="manually-deleting-scripts"><a class="header" href="#manually-deleting-scripts">Manually Deleting scripts</a></h2>
-<p>In order to delete a previously loaded script, you will need to issue a <code>DeleteScript</code> command like so:</p>
-<pre><code class="language-rust ignore">DeleteScript::&lt;LuaScriptingPlugin&gt;::new("my_script.lua".into())</code></pre>
-<p>replace <code>LuaScriptingPlugin</code> with the scripting plugin you are using.</p>
-<h2 id="loadingunloading-timeframe"><a class="header" href="#loadingunloading-timeframe">Loading/Unloading timeframe</a></h2>
-<p>Scripts are processed via commands, so any asset events will be processed at the next command execution point running after BMS internal asset systems.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="attaching-scripts"><a class="header" href="#attaching-scripts">Attaching Scripts</a></h1>
-<p>Once you have scripts discovered and loaded, you'll want to run them. At the moment BMS supports one method of triggering scripts, and that is by attaching them to entities via <code>ScriptComponent</code>'s and then sending script event's which trigger callbacks on the scripts.</p>
-<p>In order to attach a script and make it runnable simply add a <code>ScriptComponent</code> to an entity</p>
-<pre><code class="language-rust ignore">    commands.entity(my_entity).insert(ScriptComponent::new(vec!["my_script.lua", "my_other_script.lua"]));</code></pre>
-<h1 id="running-scripts"><a class="header" href="#running-scripts">Running Scripts</a></h1>
-<p>Scripts can run logic either when loaded or when triggered by an event. For example the script:</p>
-<pre><code class="language-lua">print("hello from load time")
-function on_event()
-    print("hello from event time")
-end
-</code></pre>
-<p>Will print "hello from load time" when the script is loaded, and "hello from event time" when the script receives an event targeting the <code>on_event</code> callback with a receiver list including this script or entity.</p>
-<p>In order to trigger <code>on_event</code> you need to first define a label, then send an event containing the label:</p>
-<pre><code class="language-rust ignore">// define the label, you can define as many as you like here
-callback_labels!(OnEvent =&gt; "on_event");
-
-// trigger the event
-fn send_event(mut writer: EventWriter&lt;ScriptCallbackEvent&gt;) {
-    writer.send(ScriptCallbackEvent::new_for_all(
-        OnEvent,
-        vec![ScriptValue::Unit],
-    ));
-}</code></pre>
-<p>Note the second argument is the payload we are sending with the event, in this case we are sending an empty payload.</p>
-<h1 id="event-handlers"><a class="header" href="#event-handlers">Event Handlers</a></h1>
-<p>In order for the events you send to actually be picked up, you need to inject special systems into your application. These systems will listen for the events and trigger the appropriate callbacks on the scripts:</p>
-<pre><code class="language-rust ignore">app.add_systems(Update, event_handler::&lt;OnEvent, LuaScriptingPlugin&gt;);</code></pre>
-<p>Note the system is parameterized by the label we defined earlier, and the scripting plugin we are using. You can add as many of these systems as you like.</p>
-<p>The event handler will catch all events with the label <code>OnEvent</code> and trigger the <code>on_event</code> callback on all targeted scripts which have that callback defined.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="controlling-script-bindings"><a class="header" href="#controlling-script-bindings">Controlling Script Bindings</a></h1>
-<p>In this book we reffer to anything accessible by a script, which allows it to communicate with your Rust code a <code>binding</code> (which in previous versions was more generically referred to as a script API).</p>
-<p>The "binding" here being used as in: binding <code>script</code> code to <code>rust</code> code.</p>
-<h2 id="dynamic-functions"><a class="header" href="#dynamic-functions">Dynamic Functions</a></h2>
-<p>Everything callable by scripts must first be registered in the dynamic function registry. Notably we do not make use of the normal bevy function registry to improve performance and usability. This means you cannot call just any function.</p>
-<p>In order for a function to be callable by a script it must adhere to a few requirements:</p>
-<ul>
-<li>Each argument must implement <code>FromScript</code>.</li>
-<li>Each return type must implement <code>IntoScript</code>.</li>
-<li>Each argument must also implement <code>GetInnerTypeDependencies</code></li>
-<li>Each return type must also implement <code>GetInnerTypeDependencies</code></li>
-</ul>
-<p>The into/from requirements allow us to convert these types to <code>ScriptValue</code>'s, and each supported scripting language can then marshall these into the script.</p>
-<p>Note these types are implemented for primitives, but if you want to interact with one of your <code>Reflect</code> implementing types, you will need to use one of <code>Ref&lt;T&gt;</code>, <code>Mut&lt;T&gt;</code> or <code>Val&lt;T&gt;</code> wrappers in place of <code>&amp;T</code>, <code>&amp;mut T</code> and <code>T</code> respectively.</p>
-<p>These wrappers enable us to safely interact with bevy, and claim any necessary mutex'es on <code>Resources</code>, <code>Components</code> or <code>Allocations</code>.</p>
-<p>The <code>GetInnerTypeDependencies</code>, trait is simply a local trait alias for <code>GetTypeRegistration</code> with less strict type requirements. It allows us to register all the types necessary for the function calls, so that you don't have to register anything manually. If your type implements <code>GetTypeRegistration</code> you should not face any issues on this front.</p>
-<h2 id="registering-script-functions"><a class="header" href="#registering-script-functions">Registering Script Functions</a></h2>
-<p>Registering functions can be done via the <code>NamespaceBuilder</code> like below:</p>
-<pre><code class="language-rust ignore">    NamespaceBuilder::&lt;ReflectReference&gt;::new(&amp;mut world)
-        .register(
-            "hello_world",
-            |s: String| {
-                println!(s)
-            },
-        );</code></pre>
-<p>This will allow you to call this function within lua like so:</p>
-<pre><code class="language-lua">hello_world("hi from lua!")
-</code></pre>
-<h2 id="context-arguments"><a class="header" href="#context-arguments">Context Arguments</a></h2>
-<p>Each script function call always receives 2 context arguments, namely:</p>
-<ul>
-<li><code>CallerContext</code></li>
-<li><code>WorldCallbackAccess</code></li>
-</ul>
-<p>The first one is configured by the caller, and contains requests from the caller to your function, such as "I am calling you from a 1-indexed array system, please convert the index first", This argument is only relevant if you're targeting multiple languages.</p>
-<p>The second argument gives you access to the world from your function.</p>
-<p>You can opt-in to receive these arguments by adding them to your closure arguments in the above order (either both or just one)</p>
-<h2 id="generic-arguments"><a class="header" href="#generic-arguments">Generic Arguments</a></h2>
-<p>Sometimes you might want to be generic over the type of argument you're accepting, you can do so by accepting <code>ScriptValue</code> arguments like so:</p>
-<pre><code class="language-rust ignore">    NamespaceBuilder::&lt;ReflectReference&gt;::new(&amp;mut world)
-        .register(
-            "is_integer",
-            |s: ScriptValue| {
-                match s {
-                    ScriptValue::Integer(i) =&gt; true,
-                    _ =&gt; false
-                }
-            },
-        );</code></pre>
-<p>You can treat return values similarly.</p>
-<h2 id="fallible-functions"><a class="header" href="#fallible-functions">Fallible functions</a></h2>
-<p>Your script functions can return errors either by:</p>
-<ul>
-<li>Returning <code>Result&lt;T: IntoScript, InteropError&gt;</code></li>
-<li>Returning <code>ScriptValue</code> and manually creating the <code>ScriptValue::Error(into_interop_erorr.into())</code> variant.</li>
-</ul>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="core-bindings"><a class="header" href="#core-bindings">Core Bindings</a></h1>
+                        <h1 id="core-bindings"><a class="header" href="#core-bindings">Core Bindings</a></h1>
 <p>The core bindings are manually written utilities for interacting with the <code>Bevy</code> world and everything contained within it. These bindings are used to create and manipulate entities, components, resources, and systems.</p>
 <p>Every language BMS supports will support these.</p>
 <h2 id="world"><a class="header" href="#world">World</a></h2>
@@ -747,6 +595,9 @@ end
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../Summary/controlling-script-bindings.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
 
 
                         <div style="clear: both"></div>
@@ -755,6 +606,9 @@ end
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../Summary/controlling-script-bindings.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
 
             </nav>
 
@@ -768,22 +622,17 @@ end
         </script>
 
 
-        <script src="elasticlunr.min.js"></script>
-        <script src="mark.min.js"></script>
-        <script src="searcher.js"></script>
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
 
-        <script src="clipboard.min.js"></script>
-        <script src="highlight.js"></script>
-        <script src="book.js"></script>
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="multi-code-block.js"></script>
+        <script src="../multi-code-block.js"></script>
 
-        <script>
-        window.addEventListener('load', function() {
-            window.setTimeout(window.print, 100);
-        });
-        </script>
 
     </div>
     </body>
