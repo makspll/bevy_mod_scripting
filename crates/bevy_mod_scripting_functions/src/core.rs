@@ -32,12 +32,13 @@ pub fn register_bevy_bindings(app: &mut App) {
 }
 
 pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrationError> {
-    NamespaceBuilder::<World>::new(reg)
-        .register("spawn", |s: WorldCallbackAccess| Ok(Val(s.spawn()?)))
+    NamespaceBuilder::<World>::new_unregistered(reg)
         .register(
             "get_type_by_name",
             |world: WorldCallbackAccess, type_name: String| {
+                println!("get_type_by_name in: {}", type_name);
                 let val = world.get_type_by_name(type_name)?;
+                println!("get_type_by_name out: {:?}", val);
                 Ok(val.map(Val))
             },
         )
@@ -97,6 +98,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
                 w.add_default_component(*e, r.clone())
             },
         )
+        .register("spawn", |s: WorldCallbackAccess| Ok(Val(s.spawn()?)))
         .register(
             "insert_children",
             |caller_context: CallerContext,
@@ -142,7 +144,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
         })
         .register(
             "query",
-            |s: WorldCallbackAccess, components: Vec<Val<ScriptTypeRegistration>>| {
+            |components: Vec<Val<ScriptTypeRegistration>>| {
                 let mut query_builder = ScriptQueryBuilder::default();
                 query_builder.components(components.into_iter().map(|v| v.into_inner()).collect());
                 Ok(Val(query_builder))
@@ -163,6 +165,10 @@ pub fn register_reflect_reference_functions(
                 s.display_with_world(world)
             },
         )
+        .register("display_value", |w: WorldCallbackAccess, s: ReflectReference| {
+            let world = w.try_read().expect("Stale world");
+            s.display_value_with_world(world)
+        })
         .register(
             "get",
             |caller_context: CallerContext,
@@ -381,8 +387,7 @@ pub fn register_script_query_result_functions(
     NamespaceBuilder::<ScriptQueryResult>::new(world)
         .register("entity", |s: Ref<ScriptQueryResult>| Val::new(s.entity))
         .register("components", |s: Ref<ScriptQueryResult>| {
-            let components = s.components.to_vec();
-            Val::new(components)
+            s.components.to_vec()
         });
     Ok(())
 }

@@ -132,15 +132,33 @@ impl<'w> WorldAccessGuard<'w> {
             // which entities match the query
             // so we might be being slightly overkill
             for c in &query.components {
-                dynamic_query.ref_id(c.component_id().unwrap());
+                dynamic_query.ref_id(c.component_id().ok_or_else(|| {
+                    InteropError::unsupported_operation(
+                        Some(c.type_id()),
+                        None,
+                        "query for component on non-component type".to_owned(),
+                    )
+                })?);
             }
 
             for w in query.with {
-                dynamic_query.with_id(w.component_id.unwrap());
+                dynamic_query.with_id(w.component_id.ok_or_else(|| {
+                    InteropError::unsupported_operation(
+                        Some(w.type_id()),
+                        None,
+                        "query for entity with component which is non-component type".to_owned(),
+                    )
+                })?);
             }
 
             for without_id in query.without {
-                dynamic_query.without_id(without_id.component_id.unwrap());
+                dynamic_query.without_id(without_id.component_id.ok_or_else(|| {
+                    InteropError::unsupported_operation(
+                        Some(without_id.type_id()),
+                        None,
+                        "query for entity without component which is non-component type".to_owned(),
+                    )
+                })?);
             }
 
             let mut built_query = dynamic_query.build();

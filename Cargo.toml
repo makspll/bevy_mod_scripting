@@ -79,6 +79,7 @@ clap = { version = "4.1", features = ["derive"] }
 rand = "0.8.5"
 bevy_console = "0.13"
 rhai-rand = "0.1"
+ansi-parser = "0.9"
 
 [workspace]
 members = [

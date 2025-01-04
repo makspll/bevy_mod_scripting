@@ -5,7 +5,8 @@ use asset::{ScriptAsset, ScriptAssetLoader, ScriptAssetSettings};
 use bevy::prelude::*;
 use bindings::{
     function::script_function::AppScriptFunctionRegistry, script_value::ScriptValue,
-    AppReflectAllocator, ReflectAllocator, ScriptTypeRegistration, WorldCallbackAccess,
+    AppReflectAllocator, ReflectAllocator, ReflectReference, ScriptTypeRegistration,
+    WorldCallbackAccess,
 };
 use context::{
     Context, ContextAssigner, ContextBuilder, ContextInitializer, ContextLoadingSettings,
@@ -115,6 +116,7 @@ fn register_types(app: &mut App) {
     app.register_type::<WorldCallbackAccess>();
     app.register_type::<ScriptValue>();
     app.register_type::<ScriptTypeRegistration>();
+    app.register_type::<ReflectReference>();
 }
 
 pub trait AddRuntimeInitializer {

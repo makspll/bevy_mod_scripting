@@ -1,4 +1,7 @@
-use std::ops::{Deref, DerefMut};
+use std::{
+    any::TypeId,
+    ops::{Deref, DerefMut},
+};
 
 use bevy_mod_scripting_core::bindings::{
     function::{script_function::CallerContext, CallScriptFunction},
@@ -29,6 +32,12 @@ impl DerefMut for LuaScriptValue {
 impl From<ScriptValue> for LuaScriptValue {
     fn from(value: ScriptValue) -> Self {
         LuaScriptValue(value)
+    }
+}
+
+impl From<LuaScriptValue> for ScriptValue {
+    fn from(value: LuaScriptValue) -> Self {
+        value.0
     }
 }
 
@@ -74,9 +83,10 @@ impl FromLua for LuaScriptValue {
     }
 }
 
-pub fn lua_caller_context() -> CallerContext {
+pub fn lua_caller_context(self_type: Option<TypeId>) -> CallerContext {
     CallerContext {
         convert_to_0_indexed: true,
+        self_type,
     }
 }
 
@@ -96,7 +106,7 @@ impl IntoLua for LuaScriptValue {
                     let out = function.call_script_function(
                         args.into_iter().map(Into::into),
                         world,
-                        lua_caller_context(),
+                        lua_caller_context(None),
                     )?;
 
                     Ok(LuaScriptValue::from(out))
@@ -111,11 +121,5 @@ impl IntoLua for LuaScriptValue {
                 Value::Table(table)
             }
         })
-    }
-}
-
-impl From<LuaScriptValue> for ScriptValue {
-    fn from(value: LuaScriptValue) -> Self {
-        value.0
     }
 }

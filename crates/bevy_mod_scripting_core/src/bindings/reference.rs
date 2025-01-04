@@ -218,6 +218,7 @@ impl ReflectReference {
     ///
     /// # Panics
     /// - if the value is aliased and the access is not allowed
+    #[track_caller]
     pub fn with_reflect<O, F: FnOnce(&dyn PartialReflect) -> O>(
         &self,
         world: WorldGuard,
@@ -238,6 +239,7 @@ impl ReflectReference {
     ///
     /// # Panics
     /// - if the value is aliased and the access is not allowed
+    #[track_caller]
     pub fn with_reflect_mut<O, F: FnOnce(&mut dyn PartialReflect) -> O>(
         &self,
         world: WorldGuard,

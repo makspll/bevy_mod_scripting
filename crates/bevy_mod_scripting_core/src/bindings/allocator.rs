@@ -3,12 +3,14 @@ use bevy::reflect::{PartialReflect, Reflect};
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::any::{Any, TypeId};
 use std::cell::UnsafeCell;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
+use std::hash::Hasher;
 use std::io::Read;
 use std::sync::Arc;
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
+#[derive(Clone, Debug)]
 pub struct ReflectAllocationId(pub(crate) Arc<usize>);
 impl ReflectAllocationId {
     pub fn id(&self) -> usize {
@@ -22,6 +24,32 @@ impl ReflectAllocationId {
 
     pub fn strong_count(&self) -> usize {
         Arc::strong_count(&self.0)
+    }
+}
+
+impl std::hash::Hash for ReflectAllocationId {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id().hash(state);
+    }
+}
+
+impl PartialEq for ReflectAllocationId {
+    fn eq(&self, other: &Self) -> bool {
+        self.id() == other.id()
+    }
+}
+
+impl Eq for ReflectAllocationId {}
+
+impl PartialOrd for ReflectAllocationId {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.id().cmp(&other.id()))
+    }
+}
+
+impl Ord for ReflectAllocationId {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.id().cmp(&other.id())
     }
 }
 
@@ -193,7 +221,15 @@ impl ReflectAllocator {
     /// Runs a garbage collection pass on the allocations, removing any allocations which have no more strong references
     /// Needs to be run periodically to prevent memory leaks
     pub fn clean_garbage_allocations(&mut self) {
-        self.allocations.retain(|k, _| Arc::strong_count(&k.0) > 1);
+        bevy::log::debug!("Cleaning garbage allocations");
+
+        self.allocations.retain(|k, _| {
+            let retain = Arc::strong_count(&k.0) > 1;
+            if !retain {
+                bevy::log::debug!("Deallocating allocation {:?}", k);
+            }
+            retain
+        });
     }
 }
 

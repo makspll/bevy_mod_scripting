@@ -379,9 +379,14 @@ impl InteropError {
     }
 
     /// Thrown when an error happens in a function call. The inner error provides details on the error.
-    pub fn function_interop_error(function_name: &str, error: InteropError) -> Self {
+    pub fn function_interop_error(
+        function_name: &str,
+        on: Option<TypeId>,
+        error: InteropError,
+    ) -> Self {
         Self(Arc::new(InteropErrorInner::FunctionInteropError {
             function_name: function_name.to_string(),
+            on,
             error,
         }))
     }
@@ -524,6 +529,7 @@ pub enum InteropErrorInner {
     },
     FunctionInteropError {
         function_name: String,
+        on: Option<TypeId>,
         error: InteropError,
     },
     FunctionArgConversionError {
@@ -659,11 +665,18 @@ impl DisplayWithWorld for InteropErrorInner {
             InteropErrorInner::MissingWorld => {
                 "Missing world. The world was not initialized in the script context.".to_owned()
             },
-            InteropErrorInner::FunctionInteropError { function_name, error } => {
+            InteropErrorInner::FunctionInteropError { function_name, on, error } => {
+                let opt_on = on.map(|t| format!("on type: {}", t.display_with_world(world.clone()))).unwrap_or_default();
+                let display_name = if function_name.starts_with("TypeId") {
+                    function_name.split("::").last().unwrap()
+                } else {
+                    function_name.as_str()
+                };
                 format!(
-                    "Error in function {}: {}",
-                    function_name,
-                    error.display_with_world(world)
+                    "Error in function {} {}: {}",
+                    display_name,
+                    opt_on,
+                    error.display_with_world(world),
                 )
             },
             InteropErrorInner::FunctionArgConversionError { argument, error } => {

@@ -72,7 +72,7 @@ fn lookup_function(lua: &Lua, key: &str, type_id: TypeId) -> Option<Result<Funct
             let out = function.call_script_function(
                 args.into_iter().map(Into::into),
                 world,
-                lua_caller_context(),
+                lua_caller_context(Some(type_id)),
             )?;
 
             Ok(LuaScriptValue::from(out))
@@ -134,7 +134,11 @@ fn try_call_overloads(
     let overloads = iter_dynamic_function_overloads(lua, key, type_id);
     let mut last_error = None;
     for mut overload in overloads {
-        match overload.call_script_function(args.clone(), world.clone(), lua_caller_context()) {
+        match overload.call_script_function(
+            args.clone(),
+            world.clone(),
+            lua_caller_context(Some(type_id)),
+        ) {
             Ok(out) => return Ok(out.into()),
             Err(e) => last_error = Some(e),
         }
@@ -174,7 +178,7 @@ impl UserData for LuaReflectReference {
                 let out = index_func.call_script_function(
                     vec![ScriptValue::Reference(self_), key],
                     world.clone(),
-                    lua_caller_context(),
+                    lua_caller_context(Some(std::any::TypeId::of::<ReflectReference>())),
                 )?;
                 LuaScriptValue::from(out).into_lua(lua)
             },
@@ -192,7 +196,7 @@ impl UserData for LuaReflectReference {
                     .call_script_function(
                         vec![ScriptValue::Reference(self_), key, value],
                         lua.get_world(),
-                        lua_caller_context(),
+                        lua_caller_context(Some(std::any::TypeId::of::<ReflectReference>())),
                     )?;
 
                 Ok(())
@@ -303,6 +307,16 @@ impl UserData for LuaReflectReference {
             },
         );
 
+        m.add_meta_function(MetaMethod::Len, |lua, self_: LuaScriptValue| {
+            let world = lua.get_world();
+            let script_value: ScriptValue = self_.into();
+            Ok(match script_value {
+                ScriptValue::Reference(r) => r.len(world)?,
+                ScriptValue::List(l) => Some(l.len()),
+                _ => None,
+            })
+        });
+
         #[cfg(any(
             feature = "lua54",
             feature = "lua53",
@@ -317,7 +331,7 @@ impl UserData for LuaReflectReference {
             Ok(LuaScriptValue::from(iter_func.call_script_function(
                 vec![ScriptValue::Reference(s.into())],
                 world,
-                lua_caller_context(),
+                lua_caller_context(Some(std::any::TypeId::of::<ReflectReference>())),
             )?))
         });
 
@@ -361,12 +375,36 @@ impl UserData for LuaReflectReference {
 
         m.add_meta_function(MetaMethod::ToString, |lua, self_: LuaReflectReference| {
             let world = lua.get_world();
-            Ok(self_.0.display_with_world(world))
+            let self_: ReflectReference = self_.into();
+
+            let mut display_func =
+                lookup_dynamic_function_typed::<ReflectReference>(lua, "display_ref")
+                    .expect("No 'display' function registered for a ReflectReference");
+
+            let out = display_func.call_script_function(
+                vec![ScriptValue::Reference(self_)],
+                world,
+                lua_caller_context(Some(std::any::TypeId::of::<ReflectReference>())),
+            )?;
+
+            Ok(LuaScriptValue::from(out))
         });
 
         m.add_function("print_value", |lua, self_: LuaReflectReference| {
             let world = lua.get_world();
-            Ok(self_.0.display_value_with_world(world))
+            let self_: ReflectReference = self_.into();
+
+            let mut display_func =
+                lookup_dynamic_function_typed::<ReflectReference>(lua, "display_value")
+                    .expect("No 'display_value' function registered for a ReflectReference");
+
+            let out = display_func.call_script_function(
+                vec![ScriptValue::Reference(self_)],
+                world,
+                lua_caller_context(Some(std::any::TypeId::of::<ReflectReference>())),
+            )?;
+
+            Ok(LuaScriptValue::from(out))
         });
     }
 }

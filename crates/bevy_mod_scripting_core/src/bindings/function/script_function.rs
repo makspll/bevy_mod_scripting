@@ -16,11 +16,11 @@ use bevy::{
     },
 };
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
-use std::borrow::Cow;
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
+use std::{any::TypeId, borrow::Cow};
 
 #[diagnostic::on_unimplemented(
     message = "Only functions with all arguments impplementing FromScript and return values supporting IntoScript are supported. Registering functions also requires they implement GetInnerTypeDependencies",
@@ -96,8 +96,8 @@ macro_rules! register_tuple_dependencies {
     };
 }
 
-no_type_dependencies!(ReflectReference, InteropError);
-self_type_dependency_only!(WorldCallbackAccess, CallerContext);
+no_type_dependencies!(InteropError);
+self_type_dependency_only!(WorldCallbackAccess, CallerContext, ReflectReference);
 
 recursive_type_dependencies!(
     (Val<T> where T: GetTypeRegistration),
@@ -118,8 +118,10 @@ pub trait GetFunctionTypeDependencies<Marker> {
 /// The caller context when calling a script function.
 /// Functions can choose to react to caller preferences such as converting 1-indexed numbers to 0-indexed numbers
 #[derive(Clone, Copy, Debug, Reflect)]
+#[reflect(opaque)]
 pub struct CallerContext {
     pub convert_to_0_indexed: bool,
+    pub self_type: Option<TypeId>,
 }
 
 /// The Script Function equivalent for dynamic functions. Currently unused

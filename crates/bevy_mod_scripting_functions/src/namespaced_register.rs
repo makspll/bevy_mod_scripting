@@ -2,11 +2,14 @@ use std::{any::TypeId, borrow::Cow, marker::PhantomData};
 
 use bevy::{
     prelude::{AppFunctionRegistry, AppTypeRegistry, IntoFunction, World},
-    reflect::func::{DynamicFunction, FunctionRegistrationError, FunctionRegistry},
+    reflect::{
+        func::{DynamicFunction, FunctionRegistrationError, FunctionRegistry},
+        GetTypeRegistration,
+    },
 };
 use bevy_mod_scripting_core::bindings::function::script_function::{
-    AppScriptFunctionRegistry, DynamicScriptFunction, GetFunctionTypeDependencies, ScriptFunction,
-    ScriptFunctionRegistry,
+    AppScriptFunctionRegistry, DynamicScriptFunction, GetFunctionTypeDependencies,
+    GetInnerTypeDependencies, ScriptFunction, ScriptFunctionRegistry,
 };
 
 pub trait RegisterNamespacedFunction {
@@ -33,9 +36,25 @@ pub trait GetNamespacedFunction {
     where
         N: Into<Cow<'static, str>>;
 
+    fn get_namespaced_function_typed<N, NS>(&self, name: N) -> Option<&DynamicScriptFunction>
+    where
+        N: Into<Cow<'static, str>>,
+        NS: IntoNamespace,
+    {
+        Self::get_namespaced_function(self, name, NS::into_namespace())
+    }
+
     fn has_namespaced_function<N>(&self, name: N, namespace: Namespace) -> bool
     where
         N: Into<Cow<'static, str>>;
+
+    fn has_namespaced_function_typed<N, NS>(&self, name: N) -> bool
+    where
+        N: Into<Cow<'static, str>>,
+        NS: IntoNamespace,
+    {
+        Self::has_namespaced_function(self, name, NS::into_namespace())
+    }
 }
 
 pub enum Namespace {
@@ -128,7 +147,25 @@ pub struct NamespaceBuilder<'a, N> {
 }
 
 impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
-    pub fn new(world: &'a mut World) -> Self {
+    /// Creates a new `NamespaceBuilder` that will register functions in the namespace corresponding to the given type
+    /// It will also register the type itself in the type registry.
+    pub fn new(world: &'a mut World) -> Self
+    where
+        S: GetTypeRegistration,
+    {
+        {
+            let registry = world.get_resource_or_init::<AppTypeRegistry>();
+            let mut registry = registry.write();
+            registry.register::<S>();
+        }
+        Self {
+            namespace: Default::default(),
+            world,
+        }
+    }
+
+    /// Prefer using the `register` method on the `NamespaceBuilder` instead
+    pub fn new_unregistered(world: &'a mut World) -> Self {
         Self {
             namespace: Default::default(),
             world,
@@ -149,7 +186,7 @@ impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
                 registry.register_namespaced_function::<S, _, F, M>(name, function);
             }
             {
-                let mut type_registry = self.world.get_resource_or_init::<AppTypeRegistry>();
+                let type_registry = self.world.get_resource_or_init::<AppTypeRegistry>();
                 let mut type_registry = type_registry.write();
                 F::register_type_dependencies(&mut type_registry);
             }

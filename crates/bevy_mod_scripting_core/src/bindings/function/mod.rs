@@ -46,10 +46,19 @@ impl CallScriptFunction for DynamicScriptFunction {
     ) -> Result<ScriptValue, InteropError> {
         let args = args.into_iter().collect::<Vec<_>>();
         let world_callback_access = WorldCallbackAccess::from_guard(world.clone());
+        bevy::log::debug!(
+            "Calling function {} with args {:?}",
+            self.name(),
+            args.display_with_world(world.clone())
+        );
         // should we be inlining call errors into the return value?
         let return_val = self.call(context, world_callback_access, args);
         match return_val {
-            ScriptValue::Error(e) => Err(InteropError::function_interop_error(self.name(), e)),
+            ScriptValue::Error(e) => Err(InteropError::function_interop_error(
+                self.name(),
+                context.self_type,
+                e,
+            )),
             v => Ok(v),
         }
     }
@@ -67,7 +76,11 @@ impl CallScriptFunction for DynamicScriptFunctionMut {
         // should we be inlining call errors into the return value?
         let return_val = self.call(context, world_callback_access, args);
         match return_val {
-            ScriptValue::Error(e) => Err(InteropError::function_interop_error(self.name(), e)),
+            ScriptValue::Error(e) => Err(InteropError::function_interop_error(
+                self.name(),
+                context.self_type,
+                e,
+            )),
             v => Ok(v),
         }
     }

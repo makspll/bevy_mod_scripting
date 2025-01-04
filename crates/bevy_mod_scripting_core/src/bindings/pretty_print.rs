@@ -76,7 +76,7 @@ impl ReflectReferencePrinter {
         let base_kind = match base.base_id {
             ReflectBase::Component(e, _) => format!("Component on entity {}", e),
             ReflectBase::Resource(_) => "Resource".to_owned(),
-            ReflectBase::Owned(_) => "Allocation".to_owned(),
+            ReflectBase::Owned(ref id) => format!("Allocation({})", id),
         };
 
         out.push_str(&format!("{}({})", base_kind, type_path));
@@ -328,7 +328,7 @@ macro_rules! impl_dummy_display (
     ($t:ty) => {
         impl std::fmt::Display for $t {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                write!(f, "Displaying {} without world access: {:#?}", stringify!($t), self)?;
+                write!(f, "<use display_with_world instead: {:#?}>", stringify!($t))?;
                 Ok(())
             }
         }
@@ -403,7 +403,7 @@ impl DisplayWithWorld for ScriptValue {
             ScriptValue::Integer(i) => i.to_string(),
             ScriptValue::Float(f) => f.to_string(),
             ScriptValue::String(cow) => cow.to_string(),
-            ScriptValue::Error(script_error) => script_error.to_string(),
+            ScriptValue::Error(script_error) => script_error.display_with_world(world),
             ScriptValue::List(vec) => {
                 let mut string = String::new();
                 ReflectReferencePrinter::pretty_print_key_values(
@@ -415,5 +415,33 @@ impl DisplayWithWorld for ScriptValue {
                 string
             }
         }
+    }
+}
+
+impl<T: DisplayWithWorld> DisplayWithWorld for Vec<T> {
+    fn display_with_world(&self, world: WorldGuard) -> String {
+        let mut string = String::new();
+        BracketType::Square.surrounded(&mut string, |string| {
+            for (i, v) in self.iter().enumerate() {
+                string.push_str(&v.display_with_world(world.clone()));
+                if i != self.len() - 1 {
+                    string.push_str(", ");
+                }
+            }
+        });
+        string
+    }
+
+    fn display_value_with_world(&self, world: WorldGuard) -> String {
+        let mut string = String::new();
+        BracketType::Square.surrounded(&mut string, |string| {
+            for (i, v) in self.iter().enumerate() {
+                string.push_str(&v.display_value_with_world(world.clone()));
+                if i != self.len() - 1 {
+                    string.push_str(", ");
+                }
+            }
+        });
+        string
     }
 }

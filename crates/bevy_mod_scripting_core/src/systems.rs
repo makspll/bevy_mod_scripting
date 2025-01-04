@@ -102,7 +102,7 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
         Query<(Entity, Ref<ScriptComponent>)>,
     )>,
 ) {
-    debug!("Handling events with label `{}`", L::into_callback_label());
+    trace!("Handling events with label `{}`", L::into_callback_label());
 
     let mut runtime_container = world
         .remove_non_send_resource::<RuntimeContainer<P>>()

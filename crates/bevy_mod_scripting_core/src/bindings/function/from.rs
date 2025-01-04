@@ -182,8 +182,10 @@ impl<T: FromReflect> FromScript for Val<T> {
                     T::from_reflect(r).ok_or_else(|| {
                         InteropError::failed_from_reflect(
                             Some(TypeId::of::<T>()),
-                            format!("from reflect failed to produce output when converting to Val<T> from: {r:?}")
-                                .to_owned(),
+                            format!(
+                                "Expected '{}' but receievd: {r:?}",
+                                std::any::type_name::<T>()
+                            ),
                         )
                     })
                 },
