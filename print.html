@@ -304,6 +304,9 @@ fn send_event(mut writer: EventWriter&lt;ScriptCallbackEvent&gt;) {
 <li>Returning <code>Result&lt;T: IntoScript, InteropError&gt;</code></li>
 <li>Returning <code>ScriptValue</code> and manually creating the <code>ScriptValue::Error(into_interop_erorr.into())</code> variant.</li>
 </ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="scripting-reference"><a class="header" href="#scripting-reference">Scripting Reference</a></h1>
+<p>This part of the book covers the user-facing API of the scripting languages supported by BMS. This will be where you will want to forward your script users to get started with scripting in BMS.</p>
+<p>If you are a modder, welcome! 👋, apologies for the rust-centricity of this guide, we are working on it!</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="core-bindings"><a class="header" href="#core-bindings">Core Bindings</a></h1>
 <p>The core bindings are manually written utilities for interacting with the <code>Bevy</code> world and everything contained within it. These bindings are used to create and manipulate entities, components, resources, and systems.</p>
 <p>Every language BMS supports will support these.</p>
