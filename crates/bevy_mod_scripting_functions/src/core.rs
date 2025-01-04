@@ -240,7 +240,7 @@ pub fn register_reflect_reference_functions(
         .register("pop", |w: WorldCallbackAccess, s: ReflectReference| {
             let world = w.try_read().expect("stale world");
             let o = s.with_reflect_mut(world.clone(), |s| s.try_pop_boxed())??;
-            let reference = { 
+            let reference = {
                 let allocator = world.allocator();
                 let mut allocator = allocator.write();
                 ReflectReference::new_allocated_boxed(o, &mut allocator)
