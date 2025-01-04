@@ -1,63 +1,61 @@
--- print("The game_of_life.lua script just got loaded")
--- print("Hello from Lua! I am initiating the game of life simulation state to a random state now")
+print("The game_of_life.lua script just got loaded")
+print("Hello from Lua! I am initiating the game of life simulation state to a random state now")
 
--- math.randomseed(os.time())
--- _LifeState = world.get_type_by_name("LifeState")
-_Settings = world.get_type_by_name("Settings")
+math.randomseed(os.time())
+LifeState = world.get_type_by_name("LifeState")
+Settings = world.get_type_by_name("Settings")
 
--- function fetch_life_state() 
---     -- find the entity with life state 
---     local life_state = nil
---     for i,result in pairs(world.query({_LifeState}):build()) do 
---         life_state = result:components()[1]
---         break
---     end 
---     return life_state
--- end    
+function fetch_life_state() 
+    -- find the entity with life state 
+    local life_state = nil
+    for i,result in pairs(world.query({LifeState}):build()) do 
+        life_state = result:components()[1]
+        break
+    end 
+    return life_state
+end    
 
-function on_init()
-    -- print("On init was called")
-    -- local life_state = fetch_life_state()
-    -- local cells = life_state.cells
+local life_state = fetch_life_state()
+local cells = life_state.cells
 
-    -- -- set some cells alive
-    -- for _=1,10000 do 
-    --     local index = math.random(#cells)
-    --     cells[index] = 255
-    -- end
+-- set some cells alive
+for _=1,10000 do 
+    local index = math.random(#cells)
+    cells[index] = 255
 end
 
 function on_update()
-    -- local cells = fetch_life_state().cells
-    local settings = world.get_resource(_Settings)
-    -- local dimensions = settings.physical_grid_dimensions
-    -- local dimension_x = dimensions._1
-    -- local dimension_y = dimensions._2
+    local cells = fetch_life_state().cells
+    world.log_all_allocations()
+    local settings = world.get_resource(Settings)
+    local dimensions = settings.physical_grid_dimensions
+    local dimension_x = dimensions._1
+    local dimension_y = dimensions._2
 
-    -- -- primitives are passed by value to lua, keep a hold of old state but turn 255's into 1's
-    -- local prev_state = {}
-    -- for k,v in pairs(cells) do 
-    --     prev_state[k] = (not(v == 0)) and 1 or 0
-    -- end
-    -- for i=1,(dimension_x * dimension_y) do 
-    --     local north = prev_state[i - dimension_x] or 1
-    --     local south = prev_state[i + dimension_x] or 1 
-    --     local east = prev_state[i + 1] or 1 
-    --     local west = prev_state[i - 1] or 1
-    --     local northeast = prev_state[i - dimension_x + 1] or 1
-    --     local southeast = prev_state[i + dimension_x + 1] or 1
-    --     local northwest = prev_state[i - dimension_x - 1] or 1
-    --     local southwest = prev_state[i + dimension_x - 1] or 1
+    -- primitives are passed by value to lua, keep a hold of old state but turn 255's into 1's
+    local prev_state = {}
+    for v in pairs(cells) do 
+        prev_state[#prev_state+1] = (not(v == 0)) and 1 or 0
+    end
+    for i=1,(dimension_x * dimension_y) do 
+        local north = prev_state[i - dimension_x] or 1
+        local south = prev_state[i + dimension_x] or 1 
+        local east = prev_state[i + 1] or 1 
+        local west = prev_state[i - 1] or 1
+        local northeast = prev_state[i - dimension_x + 1] or 1
+        local southeast = prev_state[i + dimension_x + 1] or 1
+        local northwest = prev_state[i - dimension_x - 1] or 1
+        local southwest = prev_state[i + dimension_x - 1] or 1
 
-    --     local neighbours = north + south + east + west 
-    --         + northeast + southeast + northwest + southwest
+        local neighbours = north + south + east + west 
+            + northeast + southeast + northwest + southwest
         
-    --     -- was dead and got 3 neighbours now
-    --     if prev_state[i] == 0 and neighbours == 3 then
-    --         cells[i] = 255
-    --     -- was alive and should die now
-    --     elseif prev_state[i] == 1 and ((neighbours < 2) or (neighbours > 3)) then
-    --         cells[i] = 0
-    --     end
-    -- end
+        -- was dead and got 3 neighbours now
+        if prev_state[i] == 0 and neighbours == 3 then
+            cells[i] = 255
+        -- was alive and should die now
+        elseif prev_state[i] == 1 and ((neighbours < 2) or (neighbours > 3)) then
+            cells[i] = 0
+        end
+    end
 end

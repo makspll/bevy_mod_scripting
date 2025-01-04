@@ -58,16 +58,16 @@ impl AccessCount {
 }
 
 pub trait AccessMapKey {
-    fn as_usize(&self) -> usize;
-    fn from_usize(value: usize) -> Self;
+    fn as_index(&self) -> u64;
+    fn from_index(value: u64) -> Self;
 }
 
-impl AccessMapKey for usize {
-    fn as_usize(&self) -> usize {
+impl AccessMapKey for u64 {
+    fn as_index(&self) -> u64 {
         *self
     }
 
-    fn from_usize(value: usize) -> Self {
+    fn from_index(value: u64) -> Self {
         value
     }
 }
@@ -84,11 +84,11 @@ pub enum ReflectAccessKind {
 #[derive(PartialEq, Eq, Copy, Clone, Hash, Debug)]
 pub struct ReflectAccessId {
     kind: ReflectAccessKind,
-    id: usize,
+    id: u64,
 }
 
 impl AccessMapKey for ReflectAccessId {
-    fn as_usize(&self) -> usize {
+    fn as_index(&self) -> u64 {
         // project two linear non-negative ranges to a single linear non-negative range
         // y1 = 2x - 0
         // y2 = 2x - 1
@@ -98,7 +98,7 @@ impl AccessMapKey for ReflectAccessId {
         }
     }
 
-    fn from_usize(value: usize) -> Self {
+    fn from_index(value: u64) -> Self {
         // retrieve the kind of range based on if the value is odd or even
         // y1 if even, y2 if odd
         // to retrieve value of x:
@@ -117,7 +117,7 @@ impl ReflectAccessId {
     pub fn for_resource<R: Resource>(cell: &UnsafeWorldCell) -> Option<Self> {
         Some(Self {
             kind: ReflectAccessKind::ComponentOrResource,
-            id: cell.components().resource_id::<R>()?.index(),
+            id: cell.components().resource_id::<R>()?.index() as u64,
         })
     }
 
@@ -139,7 +139,7 @@ impl ReflectAccessId {
     pub fn for_component_id(id: ComponentId) -> Self {
         Self {
             kind: ReflectAccessKind::ComponentOrResource,
-            id: id.index(),
+            id: id.index() as u64,
         }
     }
 
@@ -156,7 +156,7 @@ impl From<ComponentId> for ReflectAccessId {
     fn from(value: ComponentId) -> Self {
         Self {
             kind: ReflectAccessKind::ComponentOrResource,
-            id: value.index(),
+            id: value.index() as u64,
         }
     }
 }
@@ -172,13 +172,13 @@ impl From<ReflectAllocationId> for ReflectAccessId {
 
 impl From<ReflectAccessId> for ComponentId {
     fn from(val: ReflectAccessId) -> Self {
-        ComponentId::new(val.id)
+        ComponentId::new(val.id as usize)
     }
 }
 
 #[derive(Debug, Default)]
 pub struct AccessMap {
-    individual_accesses: DashMap<usize, AccessCount>,
+    individual_accesses: DashMap<u64, AccessCount>,
     global_lock: AtomicBool,
 }
 
@@ -189,7 +189,7 @@ impl AccessMap {
         if self.global_lock.load(std::sync::atomic::Ordering::Relaxed) {
             return false;
         }
-        let key = key.as_usize();
+        let key = key.as_index();
         let access = self.individual_accesses.try_entry(key);
         match access.map(Entry::or_default) {
             Some(mut entry) if entry.can_read() => {
@@ -209,7 +209,7 @@ impl AccessMap {
         if self.global_lock.load(std::sync::atomic::Ordering::Relaxed) {
             return false;
         }
-        let key = key.as_usize();
+        let key = key.as_index();
         let access = self.individual_accesses.try_entry(key);
         match access.map(Entry::or_default) {
             Some(mut entry) if entry.can_write() => {
@@ -244,7 +244,7 @@ impl AccessMap {
     /// # Panics
     /// if the access is released from a different thread than it was claimed from
     pub fn release_access<K: AccessMapKey>(&self, key: K) {
-        let key = key.as_usize();
+        let key = key.as_index();
         let access = self.individual_accesses.entry(key);
         match access {
             dashmap::mapref::entry::Entry::Occupied(mut entry) => {
@@ -274,7 +274,7 @@ impl AccessMap {
     pub fn list_accesses<K: AccessMapKey>(&self) -> Vec<(K, AccessCount)> {
         self.individual_accesses
             .iter()
-            .map(|e| (K::from_usize(*e.key()), e.value().clone()))
+            .map(|e| (K::from_index(*e.key()), e.value().clone()))
             .collect()
     }
 
@@ -293,7 +293,7 @@ impl AccessMap {
         key: K,
     ) -> Option<std::panic::Location<'static>> {
         self.individual_accesses
-            .try_get(&key.as_usize())
+            .try_get(&key.as_index())
             .try_unwrap()
             .and_then(|access| access.as_location())
     }
@@ -389,7 +389,7 @@ mod test {
         access_map.claim_read_access(0);
         access_map.claim_write_access(1);
 
-        let accesses = access_map.list_accesses::<usize>();
+        let accesses = access_map.list_accesses::<u64>();
 
         assert_eq!(accesses.len(), 2);
         let access_0 = accesses.iter().find(|(k, _)| *k == 0).unwrap();

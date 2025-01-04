@@ -9,16 +9,12 @@ use bevy::{
 };
 use bevy_mod_scripting_core::*;
 use bindings::{
-    function::{
+    access_map::ReflectAccessId, function::{
         from::{Mut, Ref, Val},
         from_ref::FromScriptRef,
         into_ref::IntoScriptRef,
         script_function::{CallerContext, GetFunctionTypeDependencies, ScriptFunction, ScriptFunctionMut},
-    },
-    pretty_print::DisplayWithWorld,
-    script_value::ScriptValue,
-    ReflectReference, ReflectionPathExt, ScriptQueryBuilder, ScriptQueryResult,
-    ScriptTypeRegistration, WorldAccessGuard, WorldCallbackAccess,
+    }, pretty_print::DisplayWithWorld, script_value::ScriptValue, ReflectAllocationId, ReflectReference, ReflectionPathExt, ScriptQueryBuilder, ScriptQueryResult, ScriptTypeRegistration, WorldAccessGuard, WorldCallbackAccess
 };
 use error::{InteropError, InteropErrorInner};
 use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
@@ -150,7 +146,28 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
                 Ok(Val(query_builder))
             },
         )
-        .register("exit", |s: WorldCallbackAccess| s.exit());
+        .register("exit", |s: WorldCallbackAccess| s.exit())
+        .register("log_all_allocations", |s: WorldCallbackAccess| {
+            let world = s.try_read().expect("stale world");
+            let allocator = world.allocator();
+            let allocator = allocator.read();
+            for (id,a) in allocator.iter_allocations() {
+                let raid = ReflectAccessId::for_allocation(id.clone());
+                if world.claim_read_access(raid) {
+                    {
+                        let ptr = a.get_ptr();
+                        let a = unsafe { &*ptr };
+                        bevy::log::info!("Allocation Id: {}, value: {:?}", id.id(), a);
+                    }
+                    // Safety: ref released above
+                    unsafe { world.release_access(raid) };
+                } else {
+                    panic!("Failed to claim read access for allocation id: {}", id.id());
+                }
+
+            }
+
+        });
     Ok(())
 }
 

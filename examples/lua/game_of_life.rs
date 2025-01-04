@@ -242,7 +242,6 @@ pub fn update_rendered_state(
         let old_rendered_state = assets
             .get_mut(&old_rendered_state.image)
             .expect("World is not setup correctly");
-
         old_rendered_state.data = new_state.cells.clone();
     }
 }

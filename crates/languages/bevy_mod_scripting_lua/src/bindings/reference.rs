@@ -335,44 +335,6 @@ impl UserData for LuaReflectReference {
             )?))
         });
 
-        // #[cfg(any(
-        //     feature = "lua54",
-        //     feature = "lua53",
-        //     feature = "lua52",
-        //     feature = "luajit52",
-        // ))]
-        // m.add_meta_function(MetaMethod::Pairs, |l, s: LuaReflectReference| {
-        //     bevy::log::debug!("ReflectReference::Pairs with value: {:?}", s);
-        //     let mut iterator_base = s.0.into_iter_infinite();
-        //     let iterator = TypedFunction::from_rust_mut(
-        //         move |l, ()| {
-        //             let (next_ref, idx) = iterator_base.next_ref();
-        //             bevy::log::debug!("iteration: {:?}", idx);
-        //             let next = LuaReflectReference(next_ref).to_lua_proxy(l);
-        //             let next = match next {
-        //                 Ok(n) => Some(n),
-        //                 Err(e) => {
-        //                     bevy::log::debug!("Error in iteration: {:?}", e);
-        //                     None
-        //                 }
-        //             };
-        //             bevy::log::debug!("next: {:?}", next);
-        //             // TODO: we should differentiate between no more values and an actual error
-        //             match (next, idx) {
-        //                 (None, bevy_mod_scripting_core::bindings::IterationKey::Index(_)) => {
-        //                     Ok((Value::Nil, Value::Nil))
-        //                 }
-        //                 (Some(n), bevy_mod_scripting_core::bindings::IterationKey::Index(i)) => {
-        //                     Ok((Value::Integer((i + 1) as i64), n))
-        //                 }
-        //             }
-        //         },
-        //         l,
-        //     )?;
-
-        //     Ok((iterator, Value::Nil, Value::Nil))
-        // });
-
         m.add_meta_function(MetaMethod::ToString, |lua, self_: LuaReflectReference| {
             let world = lua.get_world();
             let self_: ReflectReference = self_.into();
@@ -380,23 +342,6 @@ impl UserData for LuaReflectReference {
             let mut display_func =
                 lookup_dynamic_function_typed::<ReflectReference>(lua, "display_ref")
                     .expect("No 'display' function registered for a ReflectReference");
-
-            let out = display_func.call_script_function(
-                vec![ScriptValue::Reference(self_)],
-                world,
-                lua_caller_context(Some(std::any::TypeId::of::<ReflectReference>())),
-            )?;
-
-            Ok(LuaScriptValue::from(out))
-        });
-
-        m.add_function("print_value", |lua, self_: LuaReflectReference| {
-            let world = lua.get_world();
-            let self_: ReflectReference = self_.into();
-
-            let mut display_func =
-                lookup_dynamic_function_typed::<ReflectReference>(lua, "display_value")
-                    .expect("No 'display_value' function registered for a ReflectReference");
 
             let out = display_func.call_script_function(
                 vec![ScriptValue::Reference(self_)],
