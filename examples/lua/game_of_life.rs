@@ -54,14 +54,16 @@ fn run_script_cmd(
         match command {
             GameOfLifeCommand::Start => {
                 // create an entity with the script component
-                bevy::log::info!("Starting game of life!");
+                bevy::log::info!(
+                    "Starting game of life spawning entity with the game_of_life.lua script"
+                );
                 commands.spawn(ScriptComponent::new(
                     vec!["scripts/game_of_life.lua".into()],
                 ));
             }
             GameOfLifeCommand::Stop => {
                 // we can simply drop the handle, or manually delete, I'll just drop the handle
-                bevy::log::info!("Stopping game of life!");
+                bevy::log::info!("Stopping game of life by dropping the handle to the script");
 
                 // I am not mapping the handles to the script names, so I'll just clear the entire list
                 loaded_scripts.0.clear();
@@ -90,8 +92,6 @@ pub enum GameOfLifeCommand {
 fn game_of_life_app(app: &mut App) -> &mut App {
     app.insert_resource(Time::<Fixed>::from_seconds(UPDATE_FREQUENCY.into()))
         .add_plugins((
-            // for FPS counters
-            FrameTimeDiagnosticsPlugin,
             // for scripting
             LuaScriptingPlugin::default(),
             ScriptFunctionsPlugin,
@@ -205,6 +205,7 @@ pub fn init_game_of_life_state(
         });
 
     bevy::log::info!("Game of life was initialized. use `gol start` to start the game!");
+    bevy::log::info!("Type `help gol` for more commands.");
 }
 
 pub fn sync_window_size(
@@ -281,7 +282,6 @@ pub fn send_on_click(
         let pos = window.cursor_position().unwrap_or_default();
         let x = pos.x as u32;
         let y = pos.y as u32;
-        bevy::log::info!("Mouse clicked at: ({}, {})", x, y);
         events.send(ScriptCallbackEvent::new_for_all(
             OnClick,
             vec![

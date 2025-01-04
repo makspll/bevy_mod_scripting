@@ -2,32 +2,40 @@ LifeState = world.get_type_by_name("LifeState")
 Settings = world.get_type_by_name("Settings")
 
 world.info("Lua: The game_of_life.lua script just got loaded")
-world.info("Lua: Hello! I am initiating the game of life simulation state with randomness!")
 
 math.randomseed(os.time())
 
 function fetch_life_state() 
     -- find the entity with life state 
     local life_state = nil
+
     for i,result in pairs(world.query({LifeState}):build()) do 
         life_state = result:components()[1]
         break
     end 
     return life_state
-end    
+end  
 
-local life_state = fetch_life_state()
-local cells = life_state.cells
-
--- set some cells alive
-for _=1,1000 do 
-    local index = math.random(#cells)
-    cells[index] = 255
-end
+function on_script_loaded()
+    world.info("Lua: Hello! I am initiating the game of life simulation state with randomness!")
+    world.info("Lua: Click on the screen to set cells alive")
+    
+    local life_state = fetch_life_state()
+    local cells = life_state.cells
+    
+    -- set some cells alive
+    for _=1,1000 do 
+        local index = math.random(#cells)
+        cells[index] = 255
+    end
+end  
 
 function on_click(x,y)
     -- get the settings
     world.info("Lua: Clicked at x: " .. x .. " y: " .. y)
+    local life_state = fetch_life_state()
+    local cells = life_state.cells
+
     local settings = world.get_resource(Settings)
     local dimensions = settings.physical_grid_dimensions
     local screen = settings.display_grid_dimensions
@@ -82,5 +90,16 @@ function on_update()
         elseif prev_state[i] == 1 and ((neighbours < 2) or (neighbours > 3)) then
             cells[i] = 0
         end
+    end
+end
+
+function on_script_unloaded()
+    world.info("Lua: I am being unloaded, goodbye!")
+
+    -- set state to 0's
+    local life_state = fetch_life_state()
+    local cells = life_state.cells
+    for i=1,#cells do 
+        cells[i] = 0
     end
 end

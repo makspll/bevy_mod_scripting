@@ -65,6 +65,11 @@ macro_rules! callback_labels {
     };
 }
 
+callback_labels!(
+    OnScriptLoaded => "on_script_loaded",
+    OnScriptUnloaded => "on_script_unloaded"
+);
+
 pub trait IntoCallbackLabel {
     fn into_callback_label() -> CallbackLabel;
 }

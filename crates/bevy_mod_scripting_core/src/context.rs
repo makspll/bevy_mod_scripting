@@ -49,6 +49,14 @@ impl<P: IntoScriptPluginParams> ScriptContexts<P> {
     pub fn remove(&mut self, id: ContextId) -> Option<P::C> {
         self.contexts.remove(&id)
     }
+
+    pub fn get(&self, id: ContextId) -> Option<&P::C> {
+        self.contexts.get(&id)
+    }
+
+    pub fn get_mut(&mut self, id: ContextId) -> Option<&mut P::C> {
+        self.contexts.get_mut(&id)
+    }
 }
 
 /// Initializer run once after creating a context but before executing it for the first time
@@ -93,19 +101,19 @@ pub struct ContextBuilder<P: IntoScriptPluginParams> {
     pub load: fn(
         script: &ScriptId,
         content: &[u8],
-        &[ContextInitializer<P>],
-        &[ContextPreHandlingInitializer<P>],
-        &mut World,
+        context_initializers: &[ContextInitializer<P>],
+        pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
+        world: &mut World,
         runtime: &mut P::R,
     ) -> Result<P::C, ScriptError>,
     pub reload: fn(
         script: &ScriptId,
         new_content: &[u8],
         context: &mut P::C,
-        &[ContextInitializer<P>],
-        &[ContextPreHandlingInitializer<P>],
-        &mut World,
-        &mut P::R,
+        context_initializers: &[ContextInitializer<P>],
+        pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
+        world: &mut World,
+        runtime: &mut P::R,
     ) -> Result<(), ScriptError>,
 }
 

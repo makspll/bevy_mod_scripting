@@ -80,6 +80,7 @@ pub fn sync_script_data<P: IntoScriptPluginParams>(
                     continue;
                 }
             };
+            info!("Creating or updating script with id: {}", script_id);
             commands.queue(CreateOrUpdateScript::<P>::new(
                 script_id,
                 asset.content.clone(),
