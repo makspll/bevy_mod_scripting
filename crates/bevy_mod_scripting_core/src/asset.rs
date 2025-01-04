@@ -1,16 +1,14 @@
+use crate::{prelude::ScriptError, script::ScriptId};
+use bevy::{
+    asset::{Asset, AssetId, AssetLoader},
+    ecs::system::Resource,
+    reflect::TypePath,
+    utils::HashMap,
+};
 use std::{
     borrow::Cow,
     path::{Path, PathBuf},
 };
-
-use bevy::{
-    asset::{Asset, AssetId, AssetLoader, AsyncReadExt},
-    ecs::system::Resource,
-    reflect::TypePath,
-    utils::{BoxedFuture, HashMap},
-};
-
-use crate::{prelude::ScriptError, script::ScriptId};
 
 /// Represents a script loaded into memory as an asset
 #[derive(Asset, TypePath, Clone)]

@@ -1,19 +1,18 @@
-use bevy::{ecs::system::SystemState, prelude::*};
-use std::any::type_name;
-
 use crate::{
     asset::{AssetIdToScriptIdMap, ScriptAsset, ScriptAssetSettings},
-    bindings::{pretty_print::DisplayWithWorld, ReflectAllocator, WorldAccessGuard, WorldGuard},
+    bindings::{pretty_print::DisplayWithWorld, WorldAccessGuard, WorldGuard},
     commands::{CreateOrUpdateScript, DeleteScript},
-    context::{Context, ContextLoadingSettings, ScriptContexts},
-    error::{ScriptError, ScriptResult},
+    context::{ContextLoadingSettings, ScriptContexts},
+    error::ScriptError,
     event::{IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent},
-    handler::{Args, CallbackSettings},
+    handler::CallbackSettings,
     prelude::{AppReflectAllocator, RuntimeSettings},
-    runtime::{Runtime, RuntimeContainer},
+    runtime::RuntimeContainer,
     script::{ScriptComponent, Scripts},
     IntoScriptPluginParams,
 };
+use bevy::{ecs::system::SystemState, prelude::*};
+use std::any::type_name;
 
 /// Cleans up dangling script allocations
 pub fn garbage_collector(allocator: ResMut<AppReflectAllocator>) {

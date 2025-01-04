@@ -8,11 +8,10 @@ use crate::{
     prelude::{ScriptValue, WorldCallbackAccess},
 };
 use bevy::{
-    prelude::{AppFunctionRegistry, IntoFunction, Reflect, Resource, World},
+    prelude::{Reflect, Resource},
     reflect::{
-        func::{args::GetOwnership, DynamicFunction, FunctionError, FunctionInfo, TypedFunction},
-        FromReflect, GetTypeRegistration, PartialReflect, TypePath, TypeRegistration, TypeRegistry,
-        Typed,
+        func::{args::GetOwnership, FunctionError},
+        FromReflect, GetTypeRegistration, TypePath, TypeRegistry, Typed,
     },
 };
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
@@ -531,28 +530,6 @@ macro_rules! assert_is_script_function {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::bindings::function::script_function::ScriptFunction;
-    use crate::prelude::AppReflectAllocator;
-    use bevy::reflect::func::{ArgList, ArgValue, Return};
-    use test_utils::test_data::*;
-
-    fn test_setup_world() -> World {
-        setup_world(|w, _| w.insert_resource(AppReflectAllocator::default()))
-    }
-
-    fn assert_function_info_eq(a: &FunctionInfo, b: &FunctionInfo) {
-        assert_eq!(a.name(), b.name(), "Function names do not match");
-        assert_eq!(
-            a.args().len(),
-            b.args().len(),
-            "Function arg count does not match"
-        );
-        for (a, b) in a.args().iter().zip(b.args().iter()) {
-            assert_eq!(a.type_id(), b.type_id(), "Function arg types do not match");
-            assert_eq!(a.name(), b.name(), "Function arg names do not match");
-        }
-    }
-
     #[test]
     fn test_register_script_function() {
         let mut registry = ScriptFunctionRegistry::default();

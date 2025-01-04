@@ -4,14 +4,11 @@
 //! reflection gives us access to `dyn PartialReflect` objects via their type name,
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
-use super::{
-    access_map::{AccessMapKey, ReflectAccessId},
-    WorldAccessGuard, WorldCallbackAccess, WorldGuard,
-};
+use super::{access_map::ReflectAccessId, WorldGuard};
 use crate::{
-    bindings::{pretty_print::DisplayWithWorld, ReflectAllocationId},
+    bindings::ReflectAllocationId,
     error::InteropError,
-    prelude::{ReflectAllocator, ScriptResult},
+    prelude::ReflectAllocator,
     reflection_extensions::{PartialReflectExt, TypeIdExtensions},
     with_access_read, with_access_write,
 };
@@ -22,14 +19,9 @@ use bevy::{
     },
     prelude::{Component, ReflectDefault, Resource},
     ptr::Ptr,
-    reflect::{
-        func::{args::ArgInfo, ArgValue},
-        ParsedPath, PartialReflect, Reflect, ReflectFromPtr, ReflectFromReflect, ReflectMut,
-        ReflectPath, ReflectPathError, ReflectRef, TypeData,
-    },
+    reflect::{ParsedPath, PartialReflect, Reflect, ReflectFromPtr, ReflectPath},
 };
-use itertools::Either;
-use std::{any::TypeId, fmt::Debug, sync::Arc};
+use std::{any::TypeId, fmt::Debug};
 
 /// An accessor to a `dyn PartialReflect` struct, stores a base ID of the type and a reflection path
 /// safe to build but to reflect on the value inside you need to ensure aliasing rules are upheld
@@ -461,25 +453,6 @@ impl ReflectBase {
             }
             _ => None,
         }
-    }
-}
-
-fn map_key_to_concrete(key: &str, key_type_id: TypeId) -> Option<Box<dyn PartialReflect>> {
-    match key_type_id {
-        _ if key_type_id == std::any::TypeId::of::<String>() => Some(Box::new(key.to_owned())),
-        _ if key_type_id == std::any::TypeId::of::<usize>() => key
-            .parse::<usize>()
-            .ok()
-            .map(|u| Box::new(u) as Box<dyn PartialReflect>),
-        _ if key_type_id == std::any::TypeId::of::<f32>() => key
-            .parse::<f32>()
-            .ok()
-            .map(|f| Box::new(f) as Box<dyn PartialReflect>),
-        _ if key_type_id == std::any::TypeId::of::<bool>() => key
-            .parse::<bool>()
-            .ok()
-            .map(|b| Box::new(b) as Box<dyn PartialReflect>),
-        _ => None,
     }
 }
 

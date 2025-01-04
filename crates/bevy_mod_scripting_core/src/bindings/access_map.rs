@@ -1,13 +1,10 @@
-use std::{
-    sync::atomic::{AtomicBool, AtomicUsize},
-    thread::ThreadId,
-};
+use std::{sync::atomic::AtomicBool, thread::ThreadId};
 
 use bevy::{
     ecs::{component::ComponentId, world::unsafe_world_cell::UnsafeWorldCell},
     prelude::Resource,
 };
-use dashmap::{try_result::TryResult, DashMap, Entry, Map};
+use dashmap::{DashMap, Entry};
 use smallvec::SmallVec;
 
 use super::{ReflectAllocationId, ReflectBase};
@@ -49,7 +46,7 @@ impl AccessCount {
     }
 
     fn as_location(&self) -> Option<std::panic::Location<'static>> {
-        self.read_by.first().map(|o| o.location.clone())
+        self.read_by.first().map(|o| o.location)
     }
 
     fn readers(&self) -> usize {
@@ -372,6 +369,7 @@ macro_rules! with_global_access {
                 )
             );
         } else {
+            #[allow(clippy::redundant_closure_call)]
             let result = (|| $body)();
             $access_map.release_global_access();
             result

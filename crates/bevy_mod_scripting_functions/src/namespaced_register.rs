@@ -1,16 +1,12 @@
-use std::{any::TypeId, borrow::Cow, marker::PhantomData};
-
 use bevy::{
-    prelude::{AppFunctionRegistry, AppTypeRegistry, IntoFunction, World},
-    reflect::{
-        func::{DynamicFunction, FunctionRegistrationError, FunctionRegistry},
-        GetTypeRegistration,
-    },
+    prelude::{AppTypeRegistry, World},
+    reflect::GetTypeRegistration,
 };
 use bevy_mod_scripting_core::bindings::function::script_function::{
     AppScriptFunctionRegistry, DynamicScriptFunction, GetFunctionTypeDependencies,
     GetInnerTypeDependencies, ScriptFunction, ScriptFunctionRegistry,
 };
+use std::{any::TypeId, borrow::Cow, marker::PhantomData};
 
 pub trait RegisterNamespacedFunction {
     fn register_namespaced_function<S, N, F, M>(&mut self, name: N, function: F)

@@ -12,7 +12,7 @@ use context::{
     Context, ContextAssigner, ContextBuilder, ContextInitializer, ContextLoadingSettings,
     ContextPreHandlingInitializer, ScriptContexts,
 };
-use handler::{Args, CallbackSettings, HandlerFn};
+use handler::{CallbackSettings, HandlerFn};
 pub use itertools::Either;
 use prelude::{
     initialize_runtime,

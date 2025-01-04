@@ -1,12 +1,10 @@
-use std::{collections::HashMap, sync::atomic::AtomicU32};
-
-use bevy::ecs::{entity::Entity, system::Resource, world::World};
-
 use crate::{
-    prelude::{Runtime, ScriptError},
+    prelude::ScriptError,
     script::{Script, ScriptId},
     IntoScriptPluginParams,
 };
+use bevy::ecs::{entity::Entity, system::Resource, world::World};
+use std::{collections::HashMap, sync::atomic::AtomicU32};
 
 pub trait Context: 'static {}
 impl<T: 'static> Context for T {}
@@ -60,11 +58,11 @@ impl<P: IntoScriptPluginParams> ScriptContexts<P> {
 }
 
 /// Initializer run once after creating a context but before executing it for the first time
-pub type ContextInitializer<P: IntoScriptPluginParams> =
-    fn(&ScriptId, &mut P::C) -> Result<(), ScriptError>;
+pub type ContextInitializer<P> =
+    fn(&ScriptId, &mut <P as IntoScriptPluginParams>::C) -> Result<(), ScriptError>;
 /// Initializer run every time before executing or loading a script
-pub type ContextPreHandlingInitializer<P: IntoScriptPluginParams> =
-    fn(&ScriptId, Entity, &mut P::C) -> Result<(), ScriptError>;
+pub type ContextPreHandlingInitializer<P> =
+    fn(&ScriptId, Entity, &mut <P as IntoScriptPluginParams>::C) -> Result<(), ScriptError>;
 
 #[derive(Resource)]
 pub struct ContextLoadingSettings<P: IntoScriptPluginParams> {

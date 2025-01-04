@@ -6,9 +6,8 @@ use std::{
 use bevy_mod_scripting_core::bindings::{
     function::{script_function::CallerContext, CallScriptFunction},
     script_value::ScriptValue,
-    ReflectBase, ReflectReference,
 };
-use mlua::{FromLua, IntoLua, IntoLuaMulti, MultiValue, Value, Variadic};
+use mlua::{FromLua, IntoLua, Value, Variadic};
 
 use super::{reference::LuaReflectReference, world::GetWorld};
 

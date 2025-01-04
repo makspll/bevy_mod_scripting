@@ -1,25 +1,13 @@
+use crate::{
+    bindings::{ReflectReference, WorldGuard},
+    error::InteropError,
+};
+use bevy::reflect::{
+    func::Return, FromReflect, PartialReflect, Reflect, ReflectFromReflect, ReflectMut, TypeInfo,
+};
 use std::{
     any::{Any, TypeId},
-    borrow::Cow,
     cmp::max,
-    ffi::{CStr, CString, OsStr, OsString},
-    ops::Sub,
-    path::{Path, PathBuf},
-    str::FromStr,
-};
-
-use bevy::reflect::{
-    func::Return, FromReflect, FromType, List, PartialReflect, Reflect, ReflectFromReflect,
-    ReflectMut, TypeData, TypeInfo,
-};
-use itertools::Itertools;
-
-use crate::{
-    bindings::{
-        pretty_print::DisplayWithWorld, script_value::ScriptValue, ReflectReference,
-        WorldAccessGuard, WorldGuard,
-    },
-    error::InteropError,
 };
 /// Extension trait for [`PartialReflect`] providing additional functionality for working with specific types.
 pub trait PartialReflectExt {
@@ -443,10 +431,7 @@ impl TypeInfoExtensions for TypeInfo {
     }
 
     fn is_list(&self) -> bool {
-        match self {
-            TypeInfo::List(_) => true,
-            _ => false,
-        }
+        matches!(self, TypeInfo::List(_))
     }
 
     fn option_inner_type(&self) -> Option<TypeId> {
@@ -470,9 +455,7 @@ impl TypeInfoExtensions for TypeInfo {
 pub trait ReturnValExt<'a> {
     fn try_into_or_boxed<T: PartialReflect + FromReflect>(
         self,
-    ) -> Result<T, Box<dyn PartialReflect>>
-    where
-        T: PartialReflect;
+    ) -> Result<T, Box<dyn PartialReflect>>;
     fn as_ref(&'a self) -> &'a dyn PartialReflect;
 }
 
@@ -498,12 +481,7 @@ impl<'a> ReturnValExt<'a> for Return<'a> {
 
 #[cfg(test)]
 mod test {
-    use bevy::{
-        prelude::{AppTypeRegistry, World},
-        reflect::{DynamicMap, Map},
-    };
-
-    use crate::prelude::AppReflectAllocator;
+    use bevy::reflect::{DynamicMap, Map};
 
     use super::*;
 

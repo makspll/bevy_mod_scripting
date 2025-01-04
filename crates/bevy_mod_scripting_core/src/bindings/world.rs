@@ -5,19 +5,11 @@
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
 
-use std::{
-    any::TypeId,
-    fmt::Debug,
-    marker::PhantomData,
-    mem,
-    ops::Deref,
-    sync::{
-        atomic::{AtomicUsize, Ordering},
-        Arc, Weak,
-    },
-    time::Duration,
+use super::{
+    access_map::{AccessCount, AccessMap, ReflectAccessId},
+    AppReflectAllocator, ReflectBase, ReflectBaseType, ReflectReference, ScriptTypeRegistration,
 };
-
+use crate::{error::InteropError, with_access_read, with_access_write, with_global_access};
 use bevy::{
     app::AppExit,
     ecs::{
@@ -28,31 +20,13 @@ use bevy::{
         world::{unsafe_world_cell::UnsafeWorldCell, CommandQueue, Mut, World},
     },
     hierarchy::{BuildChildren, Children, DespawnRecursiveExt, Parent},
-    reflect::{
-        func::args::FromArg, std_traits::ReflectDefault, ParsedPath, PartialReflect, Reflect,
-        TypePath, TypeRegistry, TypeRegistryArc,
-    },
-    utils::HashMap,
+    reflect::{std_traits::ReflectDefault, ParsedPath, Reflect, TypeRegistryArc},
 };
-
-use smallvec::SmallVec;
-
-use crate::{
-    bindings::ReflectAllocationId,
-    error::InteropError,
-    prelude::{ReflectAllocator, ScriptError, ScriptResult},
-    reflection_extensions::TypeIdExtensions,
-    with_access_read, with_access_write, with_global_access,
-};
-
-use super::{
-    access_map::{AccessCount, AccessMap, ReflectAccessId},
-    // proxy::{Proxy, Unproxy},
-    AppReflectAllocator,
-    ReflectBase,
-    ReflectBaseType,
-    ReflectReference,
-    ScriptTypeRegistration,
+use std::{
+    any::TypeId,
+    fmt::Debug,
+    sync::{Arc, Weak},
+    time::Duration,
 };
 
 /// Prefer to directly using [`WorldAccessGuard`]. If the underlying type changes, this alias will be updated.
@@ -109,15 +83,9 @@ impl WorldCallbackAccess {
     pub fn try_read(&self) -> Result<WorldGuard<'static>, InteropError> {
         self.0
             .upgrade()
-            .ok_or_else(|| InteropError::stale_world_access())
+            .ok_or_else(InteropError::stale_world_access)
     }
 }
-
-pub(crate) const STALE_WORLD_MSG: &str = "Tried to access world via stale reference";
-pub(crate) const CONCURRENT_WORLD_ACCESS_MSG: &str =
-    "Something else is accessing the world right now!";
-pub(crate) const CONCURRENT_ACCESS_MSG: &str =
-    "Something else is accessing the resource/component/allocation right now!";
 
 /// common world methods, see:
 /// - [`crate::bindings::query`] for query related functionality
@@ -636,7 +604,7 @@ impl<'w> WorldAccessGuard<'w> {
 }
 
 /// Impl block for higher level world methods
-impl<'w> WorldAccessGuard<'w> {
+impl WorldAccessGuard<'_> {
     pub fn spawn(&self) -> Entity {
         with_global_access!(self.0.accesses, "Could not spawn entity", {
             // Safety we have global access
@@ -698,7 +666,7 @@ impl<'w> WorldAccessGuard<'w> {
 
             let mut entity = world
                 .get_entity_mut(entity)
-                .map_err(|e| InteropError::missing_entity(entity))?;
+                .map_err(|_| InteropError::missing_entity(entity))?;
             {
                 let registry = type_registry.read();
                 component_data.insert(&mut entity, instance.as_partial_reflect(), &registry);
@@ -774,7 +742,7 @@ impl<'w> WorldAccessGuard<'w> {
             let world = unsafe { self.0.cell.world_mut() };
             let mut entity = world
                 .get_entity_mut(entity)
-                .map_err(|e| InteropError::missing_entity(entity))?;
+                .map_err(|_| InteropError::missing_entity(entity))?;
             component_data.remove(&mut entity);
             Ok(())
         })

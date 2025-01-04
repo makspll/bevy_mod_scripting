@@ -34,7 +34,7 @@ impl FromScript for ScriptValue {
 
 impl FromScript for () {
     type This<'w> = Self;
-    fn from_script(value: ScriptValue, _world: WorldGuard) -> Result<Self, InteropError> {
+    fn from_script(_value: ScriptValue, _world: WorldGuard) -> Result<Self, InteropError> {
         Ok(())
     }
 }

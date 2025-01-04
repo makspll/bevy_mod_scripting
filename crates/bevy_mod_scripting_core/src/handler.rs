@@ -1,25 +1,23 @@
-use bevy::ecs::{entity::Entity, system::Resource, world::World};
-
 use crate::{
-    context::{Context, ContextPreHandlingInitializer},
+    context::ContextPreHandlingInitializer,
     event::CallbackLabel,
     prelude::{ScriptError, ScriptValue},
-    runtime::Runtime,
     script::ScriptId,
     IntoScriptPluginParams,
 };
+use bevy::ecs::{entity::Entity, system::Resource, world::World};
 
 pub trait Args: Clone + Send + Sync + 'static {}
 impl<T: Clone + Send + Sync + 'static> Args for T {}
 
-pub type HandlerFn<P: IntoScriptPluginParams> = fn(
+pub type HandlerFn<P> = fn(
     args: Vec<ScriptValue>,
     entity: Entity,
     script_id: &ScriptId,
     callback: &CallbackLabel,
-    context: &mut P::C,
+    context: &mut <P as IntoScriptPluginParams>::C,
     pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
-    runtime: &mut P::R,
+    runtime: &mut <P as IntoScriptPluginParams>::R,
     world: &mut World,
 ) -> Result<(), ScriptError>;
 

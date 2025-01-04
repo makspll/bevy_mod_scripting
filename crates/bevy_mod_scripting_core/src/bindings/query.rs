@@ -1,9 +1,5 @@
 use super::{ReflectReference, WorldAccessGuard, WorldCallbackAccess};
-use crate::{
-    bindings::{CONCURRENT_WORLD_ACCESS_MSG, STALE_WORLD_MSG},
-    error::InteropError,
-    with_global_access,
-};
+use crate::{error::InteropError, with_global_access};
 use bevy::{
     ecs::{component::ComponentId, entity::Entity},
     prelude::{EntityRef, QueryBuilder},
@@ -133,7 +129,7 @@ impl WorldCallbackAccess {
     }
 }
 
-impl<'w> WorldAccessGuard<'w> {
+impl WorldAccessGuard<'_> {
     pub fn query(
         &self,
         query: ScriptQueryBuilder,
@@ -202,19 +198,4 @@ impl<'w> WorldAccessGuard<'w> {
                 .collect())
         })
     }
-}
-
-#[cfg(test)]
-mod test {
-    use test_utils::test_data::setup_world;
-
-    use super::*;
-
-    // #[test]
-    // fn test_simple_query() {
-    //     let world = setup_world(|w,r|{
-    //         w.spawn(TestComponent::init())
-    //         w.spawn(Te)
-    //     })
-    // }
 }

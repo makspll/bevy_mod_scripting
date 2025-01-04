@@ -1,10 +1,10 @@
 use std::{
     borrow::Cow,
     ffi::OsString,
-    path::{Path, PathBuf},
+    path::PathBuf,
 };
 
-use bevy::reflect::{GetTypeRegistration, PartialReflect, ReflectRef};
+use bevy::reflect::PartialReflect;
 
 use crate::{
     bindings::{ReflectReference, WorldGuard},

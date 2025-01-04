@@ -1,18 +1,11 @@
 use std::sync::Arc;
 
-use bevy::ecs::{component::ComponentId, reflect::AppTypeRegistry, world::Mut};
-use bevy::prelude::{AppFunctionRegistry, Entity, World};
 
 use bevy_mod_scripting_core::bindings::WorldGuard;
 use bevy_mod_scripting_core::error::InteropError;
-use bevy_mod_scripting_core::{
-    bindings::{ReflectReference, ScriptTypeRegistration, WorldAccessGuard, WorldCallbackAccess},
-    error::ScriptError,
-};
-use bevy_mod_scripting_functions::namespaced_register::{GetNamespacedFunction, Namespace};
-use mlua::{MetaMethod, UserData, UserDataFields, UserDataMethods, Value, Variadic};
+use bevy_mod_scripting_core::bindings::{WorldAccessGuard, WorldCallbackAccess};
+use mlua::UserData;
 
-use super::script_value::LuaScriptValue;
 
 #[derive(Clone, Debug, mlua::FromLua)]
 pub struct LuaWorld(pub WorldCallbackAccess);

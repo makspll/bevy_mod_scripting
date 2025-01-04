@@ -1,15 +1,14 @@
-use bevy::ecs::system::Resource;
-use bevy::reflect::{PartialReflect, Reflect};
+use bevy::{ecs::system::Resource, reflect::PartialReflect};
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
-use std::any::{Any, TypeId};
-use std::cell::UnsafeCell;
-use std::cmp::Ordering;
-use std::collections::HashMap;
-use std::fmt::{Display, Formatter};
-use std::hash::Hasher;
-use std::io::Read;
-use std::sync::atomic::{AtomicU64, AtomicUsize};
-use std::sync::Arc;
+use std::{
+    any::TypeId,
+    cell::UnsafeCell,
+    cmp::Ordering,
+    collections::HashMap,
+    fmt::{Display, Formatter},
+    hash::Hasher,
+    sync::{atomic::AtomicU64, Arc},
+};
 
 #[derive(Clone, Debug)]
 pub struct ReflectAllocationId(pub(crate) Arc<u64>);

@@ -1,25 +1,23 @@
 //! Contains functions defined by the [`bevy_mod_scripting_core`] crate
-use std::borrow::Cow;
 
+use crate::NamespaceBuilder;
+use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
 use bevy::{
     prelude::*,
     reflect::{
-        func::{FunctionRegistrationError, FunctionRegistry, FunctionRegistryArc}, GetTypeRegistration, ParsedPath
+        func::FunctionRegistrationError, ParsedPath
     },
 };
 use bevy_mod_scripting_core::*;
 use bindings::{
     access_map::ReflectAccessId, function::{
-        from::{Mut, Ref, Val},
+        from::{Ref, Val},
         from_ref::FromScriptRef,
         into_ref::IntoScriptRef,
-        script_function::{CallerContext, GetFunctionTypeDependencies, ScriptFunction, ScriptFunctionMut},
-    }, pretty_print::DisplayWithWorld, script_value::ScriptValue, ReflectAllocationId, ReflectReference, ReflectionPathExt, ScriptQueryBuilder, ScriptQueryResult, ScriptTypeRegistration, WorldAccessGuard, WorldCallbackAccess
+        script_function::{CallerContext, ScriptFunctionMut},
+    }, pretty_print::DisplayWithWorld, script_value::ScriptValue, ReflectReference, ReflectionPathExt, ScriptQueryBuilder, ScriptQueryResult, ScriptTypeRegistration, WorldCallbackAccess
 };
-use error::{InteropError, InteropErrorInner};
-use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
-
-use crate::{namespaced_register::NamespaceBuilder};
+use error::InteropError;
 
 
 pub fn register_bevy_bindings(app: &mut App) {
@@ -325,7 +323,7 @@ pub fn register_reflect_reference_functions(
                     return Ok(ScriptValue::Unit);
                 }
 
-                let (next_ref, idx) = infinite_iter.next_ref();
+                let (next_ref, _) = infinite_iter.next_ref();
 
                 let converted = ReflectReference::into_script_ref(next_ref, world.clone());
                 // println!("idx: {idx:?}, converted: {converted:?}");

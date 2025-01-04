@@ -1,4 +1,4 @@
-use std::{any::TypeId, ffi::OsString, path::PathBuf};
+use std::{ffi::OsString, path::PathBuf};
 
 use bevy::reflect::{ParsedPath, PartialReflect};
 

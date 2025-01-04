@@ -1,22 +1,15 @@
-use std::{any::type_name, marker::PhantomData};
-
-use bevy::{
-    asset::Handle,
-    ecs::world::Mut,
-    log::{debug, info},
-    prelude::Command,
-};
-
 use crate::{
     asset::ScriptAsset,
-    context::{Context, ContextLoadingSettings, ScriptContexts},
+    context::{ContextLoadingSettings, ScriptContexts},
     event::{IntoCallbackLabel, OnScriptLoaded, OnScriptUnloaded},
     handler::CallbackSettings,
-    prelude::{Runtime, RuntimeContainer},
+    prelude::RuntimeContainer,
     script::{Script, ScriptId, Scripts},
     systems::handle_script_errors,
     IntoScriptPluginParams,
 };
+use bevy::{asset::Handle, ecs::world::Mut, log::debug, prelude::Command};
+use std::{any::type_name, marker::PhantomData};
 
 pub struct DeleteScript<P: IntoScriptPluginParams> {
     pub id: ScriptId,
@@ -134,7 +127,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
             .remove_non_send_resource::<RuntimeContainer<P>>()
             .unwrap();
 
-        let mut runner = world.get_resource::<CallbackSettings<P>>().unwrap();
+        let runner = world.get_resource::<CallbackSettings<P>>().unwrap();
         // assign context
         let assigner = settings.assigner.clone().expect("No context assigner set");
         let builder = settings.loader.clone().expect("No context loader set");

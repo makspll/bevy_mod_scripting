@@ -1,6 +1,5 @@
+use crate::{error::ScriptError, prelude::ScriptValue, script::ScriptId};
 use bevy::{ecs::entity::Entity, prelude::Event};
-
-use crate::{error::ScriptError, handler::Args, prelude::ScriptValue, script::ScriptId};
 
 /// An error coming from a script
 #[derive(Debug, Event)]

@@ -1,30 +1,23 @@
-use std::{
-    any::TypeId,
-    borrow::Cow,
-    fmt::{Debug, Display},
-    ops::{Deref, DerefMut},
-    str::Utf8Error,
-    sync::Arc,
-};
-
-use bevy::{
-    ecs::component::ComponentId,
-    prelude::Entity,
-    reflect::{
-        func::{args::ArgInfo, FunctionError, FunctionInfo},
-        ApplyError, PartialReflect, Reflect, ReflectPathError,
-    },
-};
-use thiserror::Error;
-
 use crate::{
     bindings::{
         access_map::DisplayCodeLocation,
         pretty_print::{DisplayWithWorld, DisplayWithWorldAndDummy},
-        ReflectAllocationId, ReflectBase, ReflectBaseType, ReflectReference,
+        ReflectBaseType, ReflectReference,
     },
     impl_dummy_display,
     prelude::ScriptValue,
+};
+use bevy::{
+    ecs::component::ComponentId,
+    prelude::Entity,
+    reflect::{func::FunctionError, PartialReflect, Reflect},
+};
+use std::{
+    any::TypeId,
+    fmt::{Debug, Display},
+    ops::Deref,
+    str::Utf8Error,
+    sync::Arc,
 };
 
 pub type ScriptResult<T> = Result<T, ScriptError>;

@@ -1,25 +1,10 @@
-use std::{
-    any::{type_name, TypeId},
-    borrow::Cow,
-    ffi::{CStr, CString, OsStr, OsString},
-    path::{Path, PathBuf},
-};
+use std::borrow::Cow;
 
-use bevy::reflect::{
-    Access, DynamicEnum, DynamicList, DynamicTuple, DynamicVariant, OffsetAccess, ParsedPath,
-    PartialReflect, Reflect, ReflectFromReflect, TypeData,
-};
+use bevy::reflect::{OffsetAccess, ParsedPath, Reflect};
 
-use crate::{
-    error::{InteropError, InteropErrorInner, ScriptError, ScriptResult},
-    reflection_extensions::{PartialReflectExt, TypeIdExtensions, TypeInfoExtensions},
-};
+use crate::error::InteropError;
 
-use super::{
-    function::script_function::{DynamicScriptFunction, DynamicScriptFunctionMut},
-    pretty_print::DisplayWithWorld,
-    ReflectReference, WorldGuard,
-};
+use super::{function::script_function::DynamicScriptFunctionMut, ReflectReference};
 
 /// An abstraction of values that can be passed to and from scripts.
 /// This allows us to re-use logic between scripting languages.
@@ -148,7 +133,7 @@ impl TryFrom<ScriptValue> for ParsedPath {
                 access: bevy::reflect::Access::ListIndex(i as usize),
                 offset: Some(1),
             }]),
-            ScriptValue::Float(v) => {
+            ScriptValue::Float(_) => {
                 return Err(InteropError::invalid_index(
                     value,
                     "Floating point numbers cannot be used to index into reflected values"

@@ -4,14 +4,13 @@ use bevy::{
 };
 use bevy_mod_scripting_core::{
     bindings::{script_value::ScriptValue, WorldCallbackAccess},
-    context::{ContextAssigner, ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
+    context::{ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
     event::CallbackLabel,
-    handler::Args,
     script::ScriptId,
     IntoScriptPluginParams, ScriptingPlugin,
 };
-use rhai::{CallFnOptions, Engine, FnPtr, FuncArgs, Scope, AST};
+use rhai::{CallFnOptions, Engine, FnPtr, Scope, AST};
 
 pub use rhai;
 pub mod prelude {

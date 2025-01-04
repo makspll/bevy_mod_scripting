@@ -1,33 +1,24 @@
-pub mod util;
 use bevy::{
-    app::{App, Plugin, Startup},
+    app::{App, Plugin},
     ecs::{entity::Entity, world::World},
-    prelude::{AppTypeRegistry, Mut},
-    reflect::{impl_reflect, FromType, GetTypeRegistration, PartialReflect, Reflect, TypePath},
 };
 use bevy_mod_scripting_core::{
-    bindings::{
-        script_value::ScriptValue, ReflectAllocator, ReflectReference, WorldCallbackAccess,
-    },
+    bindings::{script_value::ScriptValue, WorldCallbackAccess},
     context::{ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
-    event::{CallbackLabel, IntoCallbackLabel},
-    handler::Args,
+    event::CallbackLabel,
     reflection_extensions::PartialReflectExt,
     script::ScriptId,
-    systems::event_handler,
     AddContextInitializer, AddContextPreHandlingInitializer, IntoScriptPluginParams,
     ScriptingPlugin,
 };
 use bindings::{
-    // providers::bevy_ecs::LuaEntity,
-    // proxy::LuaProxied,
     reference::{LuaReflectReference, LuaStaticReflectReference},
     script_value::LuaScriptValue,
-    world::{GetWorld, LuaWorld},
+    world::GetWorld,
 };
 pub use mlua;
-use mlua::{Function, IntoLua, IntoLuaMulti, Lua, MultiValue};
+use mlua::{Function, IntoLua, Lua, MultiValue};
 pub mod bindings;
 pub mod prelude {
     pub use crate::mlua::{self, prelude::*, Value};

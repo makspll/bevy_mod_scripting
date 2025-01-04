@@ -1,43 +1,26 @@
-use std::{
-    any::{Any, TypeId},
-    borrow::Cow,
-    error::Error,
-    ffi::{CStr, CString, OsStr, OsString},
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::any::TypeId;
 
-use bevy::{
-    ecs::{reflect::AppTypeRegistry, world::Mut},
-    prelude::AppFunctionRegistry,
-    reflect::{
-        func::DynamicFunction, OffsetAccess, ParsedPath, PartialReflect, ReflectFromReflect,
-    },
-};
 use bevy_mod_scripting_core::{
     bindings::{
         function::{
-            script_function::{AppScriptFunctionRegistry, CallerContext, DynamicScriptFunction},
+            script_function::{AppScriptFunctionRegistry, DynamicScriptFunction},
             CallScriptFunction,
         },
-        pretty_print::{DisplayWithWorld, ReflectReferencePrinter},
-        script_value::ScriptValue,
-        ReflectAllocator, ReflectRefIter, ReflectReference, ReflectionPathExt, TypeIdSource,
-        WorldCallbackAccess, WorldGuard,
+        pretty_print::DisplayWithWorld,
+        script_value::ScriptValue, ReflectReference, WorldGuard,
     },
-    error::{InteropError, ScriptError, ScriptResult},
-    reflection_extensions::{PartialReflectExt, TypeIdExtensions},
-    Either,
+    error::InteropError,
+    reflection_extensions::TypeIdExtensions,
 };
 use bevy_mod_scripting_functions::namespaced_register::{GetNamespacedFunction, Namespace};
-use mlua::{Function, IntoLua, Lua, MetaMethod, UserData, UserDataMethods, Value, Variadic};
+use mlua::{Function, IntoLua, Lua, MetaMethod, UserData, UserDataMethods, Variadic};
 
 use super::{
     // proxy::{LuaProxied, LuaValProxy},
     script_value::LuaScriptValue,
     world::GetWorld,
 };
-use crate::bindings::{script_value::lua_caller_context, world::LuaWorld};
+use crate::bindings::script_value::lua_caller_context;
 
 /// Lua UserData wrapper for [`bevy_mod_scripting_core::bindings::ReflectReference`].
 /// Acts as a lua reflection interface. Any value which is registered in the type registry can be interacted with using this type.
