@@ -27,7 +27,7 @@ use bindings::{
     world::{GetWorld, LuaWorld},
 };
 pub use mlua;
-use mlua::{Function, IntoLuaMulti, Lua};
+use mlua::{Function, IntoLua, IntoLuaMulti, Lua, MultiValue};
 pub mod bindings;
 pub mod prelude {
     pub use crate::mlua::{self, prelude::*, Value};
@@ -195,13 +195,13 @@ pub fn lua_handler(
             Err(_) => return Ok(()),
         };
 
-        handler
-            .call::<()>(
-                args.into_iter()
-                    .map(LuaScriptValue::from)
-                    .collect::<Vec<_>>(),
-            )
-            .map_err(ScriptError::from_mlua_error)?;
+        let input = MultiValue::from_vec(
+            args.into_iter()
+                .map(|arg| LuaScriptValue::from(arg).into_lua(context))
+                .collect::<Result<_, _>>()?,
+        );
+
+        handler.call::<()>(input)?;
         Ok(())
     })
 }

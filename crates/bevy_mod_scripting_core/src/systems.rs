@@ -2,7 +2,7 @@ use bevy::{ecs::system::SystemState, prelude::*};
 use std::any::type_name;
 
 use crate::{
-    asset::{ScriptAsset, ScriptAssetSettings},
+    asset::{AssetIdToScriptIdMap, ScriptAsset, ScriptAssetSettings},
     bindings::{pretty_print::DisplayWithWorld, ReflectAllocator, WorldAccessGuard, WorldGuard},
     commands::{CreateOrUpdateScript, DeleteScript},
     context::{Context, ContextLoadingSettings, ScriptContexts},
@@ -35,39 +35,51 @@ pub fn sync_script_data<P: IntoScriptPluginParams>(
     mut events: EventReader<AssetEvent<ScriptAsset>>,
     script_assets: Res<Assets<ScriptAsset>>,
     asset_settings: Res<ScriptAssetSettings>,
+    mut asset_path_map: ResMut<AssetIdToScriptIdMap>,
     mut commands: Commands,
 ) {
     for event in events.read() {
-        debug!("Responding to script asset event: {:?}", event);
+        trace!("Received script asset event: {:?}", event);
         let (id, remove) = match event {
             // emitted when a new script asset is loaded for the first time
             AssetEvent::Added { id } => (id, false),
             AssetEvent::Modified { id } => (id, false),
-            AssetEvent::Removed { id } | AssetEvent::Unused { id } => (id, true),
+            AssetEvent::Removed { id } => (id, true),
             _ => continue,
         };
+        info!("Responding to script asset event: {:?}", event);
         // get the path
         let asset = script_assets.get(*id);
-        let asset = match asset.as_ref() {
-            Some(a) => a,
+
+        let script_id = match asset_path_map.get(*id) {
+            Some(id) => id.clone(),
             None => {
-                if remove {
-                    debug!(
-                        "Script presumably failed to load, no need to remove anything, ignoring."
-                    );
-                    continue;
-                } else {
-                    panic!("Asset was expected to be loaded!");
-                }
+                // we should only enter this branch for new assets
+                let asset = match asset {
+                    Some(asset) => asset,
+                    None => {
+                        // this can happen if an asset is loaded and immediately unloaded, we can ignore this
+                        continue;
+                    }
+                };
+
+                let path = &asset.asset_path;
+                let converter = asset_settings.script_id_mapper.map;
+                let script_id = converter(path);
+                asset_path_map.insert(*id, script_id.clone());
+
+                script_id
             }
         };
 
-        let path = &asset.asset_path;
-        // convert it to script id
-        let converter = asset_settings.script_id_mapper.map;
-        let script_id = converter(path);
-
         if !remove {
+            let asset = match asset {
+                Some(asset) => asset,
+                None => {
+                    // this can happen if an asset is loaded and immediately unloaded, we can ignore this
+                    continue;
+                }
+            };
             commands.queue(CreateOrUpdateScript::<P>::new(
                 script_id,
                 asset.content.clone(),
@@ -164,7 +176,7 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
                 let script = match scripts.scripts.get(script_id) {
                     Some(s) => s,
                     None => {
-                        info!(
+                        trace!(
                             "Script `{}` on entity `{:?}` is either still loading or doesn't exist, ignoring.",
                             script_id, entity
                         );

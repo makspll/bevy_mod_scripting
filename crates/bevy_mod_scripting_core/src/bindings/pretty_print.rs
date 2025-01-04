@@ -3,7 +3,10 @@ use crate::reflection_extensions::{FakeType, TypeIdExtensions};
 use super::{
     script_value::ScriptValue, ReflectBase, ReflectBaseType, ReflectReference, WorldGuard,
 };
-use bevy::reflect::{PartialReflect, ReflectRef};
+use bevy::{
+    prelude::World,
+    reflect::{PartialReflect, ReflectRef},
+};
 use itertools::Itertools;
 use std::{any::TypeId, borrow::Cow};
 
@@ -56,7 +59,7 @@ macro_rules! downcast_case {
 }
 
 impl ReflectReferencePrinter {
-    const UNREGISTERED_TYPE: &'static str = "Unregistered TypeId";
+    const UNREGISTERED_TYPE: &'static str = "Unregistered";
     const UNKNOWN_FIELD: &'static str = "<Unknown Field>";
 
     pub fn new(reference: ReflectReference) -> Self {
@@ -65,13 +68,7 @@ impl ReflectReferencePrinter {
 
     fn pretty_print_base(base: &ReflectBaseType, world: WorldGuard, out: &mut String) {
         let type_id = base.type_id;
-        let type_registry = world.type_registry();
-        let type_registry = type_registry.read();
-
-        let type_path = type_registry
-            .get_type_info(type_id)
-            .map(|t| t.type_path_table().short_path())
-            .unwrap_or_else(|| ReflectReferencePrinter::UNREGISTERED_TYPE);
+        let type_path = type_id.display_with_world(world.clone());
 
         let base_kind = match base.base_id {
             ReflectBase::Component(e, _) => format!("Component on entity {}", e),
@@ -365,6 +362,9 @@ impl DisplayWithWorld for TypeId {
     fn display_with_world(&self, world: WorldGuard) -> String {
         if *self == TypeId::of::<FakeType>() {
             return "Dynamic Type".to_owned();
+        } else if *self == TypeId::of::<World>() {
+            // does not implement Reflect, so we do this manually
+            return "World".to_owned();
         }
 
         let type_registry = world.type_registry();

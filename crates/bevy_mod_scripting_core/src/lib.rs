@@ -1,7 +1,7 @@
 #![allow(clippy::arc_with_non_send_sync)]
 
 use crate::event::ScriptErrorEvent;
-use asset::{ScriptAsset, ScriptAssetLoader, ScriptAssetSettings};
+use asset::{AssetIdToScriptIdMap, ScriptAsset, ScriptAssetLoader, ScriptAssetSettings};
 use bevy::prelude::*;
 use bindings::{
     function::script_function::AppScriptFunctionRegistry, script_value::ScriptValue,
@@ -83,6 +83,7 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
             .init_resource::<AppReflectAllocator>()
             .init_resource::<ScriptAssetSettings>()
             .init_resource::<Scripts>()
+            .init_resource::<AssetIdToScriptIdMap>()
             .init_asset::<ScriptAsset>()
             .register_asset_loader(ScriptAssetLoader {
                 language: "<>".into(),
@@ -230,6 +231,8 @@ impl<D: DocumentationFragment> StoreDocumentation<D> for App {
 
 #[cfg(test)]
 mod test {
+    use asset::AssetIdToScriptIdMap;
+
     use super::*;
 
     #[test]
@@ -261,5 +264,6 @@ mod test {
             .contains_resource::<ContextLoadingSettings<Plugin>>());
         assert!(app.world().contains_non_send::<RuntimeContainer<Plugin>>());
         assert!(app.world().contains_non_send::<ScriptContexts<Plugin>>());
+        assert!(app.world().contains_resource::<AssetIdToScriptIdMap>());
     }
 }

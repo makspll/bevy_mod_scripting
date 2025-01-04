@@ -4,10 +4,10 @@ use std::{
 };
 
 use bevy::{
-    asset::{Asset, AssetLoader, AsyncReadExt},
+    asset::{Asset, AssetId, AssetLoader, AsyncReadExt},
     ecs::system::Resource,
     reflect::TypePath,
-    utils::BoxedFuture,
+    utils::{BoxedFuture, HashMap},
 };
 
 use crate::{prelude::ScriptError, script::ScriptId};
@@ -83,4 +83,24 @@ impl Default for ScriptAssetSettings {
 #[derive(Clone, Copy)]
 pub struct AssetPathToScriptIdMapper {
     pub map: fn(&Path) -> ScriptId,
+}
+
+/// A cache of asset id's to their script id's. Necessary since when we drop an asset we won't have the ability to get the path from the asset.
+#[derive(Default, Debug, Resource)]
+pub struct AssetIdToScriptIdMap {
+    pub map: HashMap<AssetId<ScriptAsset>, ScriptId>,
+}
+
+impl AssetIdToScriptIdMap {
+    pub fn insert(&mut self, id: AssetId<ScriptAsset>, path: ScriptId) {
+        self.map.insert(id, path);
+    }
+
+    pub fn get(&self, id: AssetId<ScriptAsset>) -> Option<&ScriptId> {
+        self.map.get(&id)
+    }
+
+    pub fn remove(&mut self, id: AssetId<ScriptAsset>) -> Option<ScriptId> {
+        self.map.remove(&id)
+    }
 }

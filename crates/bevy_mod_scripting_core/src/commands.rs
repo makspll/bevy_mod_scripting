@@ -117,7 +117,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
                 match ctxt {
                     Ok(ctxt) => contexts.insert(ctxt),
                     Err(e) => {
-                        handle_script_errors(world, [e.with_context(format!("Loading context for script with id: {}. With runtime type: {} and context type: {}", self.id, type_name::<P::R>(), type_name::<P::C>()))].into_iter());
+                        handle_script_errors(world, [e.with_context(format!("Loading script with id: {}. Runtime type: {}, Context type: {}", self.id, type_name::<P::R>(), type_name::<P::C>()))].into_iter());
                         return;
                     }
                 }

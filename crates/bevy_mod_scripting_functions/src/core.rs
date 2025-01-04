@@ -32,9 +32,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
         .register(
             "get_type_by_name",
             |world: WorldCallbackAccess, type_name: String| {
-                println!("get_type_by_name in: {}", type_name);
                 let val = world.get_type_by_name(type_name)?;
-                println!("get_type_by_name out: {:?}", val);
                 Ok(val.map(Val))
             },
         )
@@ -151,14 +149,9 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
             let world = s.try_read().expect("stale world");
             let allocator = world.allocator();
             let allocator = allocator.read();
-            for (id,a) in allocator.iter_allocations() {
+            for (id,_) in allocator.iter_allocations() {
                 let raid = ReflectAccessId::for_allocation(id.clone());
                 if world.claim_read_access(raid) {
-                    {
-                        let ptr = a.get_ptr();
-                        let a = unsafe { &*ptr };
-                        bevy::log::info!("Allocation Id: {}, value: {:?}", id.id(), a);
-                    }
                     // Safety: ref released above
                     unsafe { world.release_access(raid) };
                 } else {

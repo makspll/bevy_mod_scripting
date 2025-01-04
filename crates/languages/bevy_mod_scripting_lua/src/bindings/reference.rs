@@ -144,9 +144,7 @@ fn try_call_overloads(
         }
     }
 
-    Err(last_error
-        .unwrap_or_else(|| InteropError::missing_function(type_id, key.to_string()).into())
-        .into())
+    Err(last_error.unwrap_or_else(|| InteropError::missing_function(type_id, key.to_string())))
 }
 
 impl UserData for LuaReflectReference {
@@ -375,8 +373,11 @@ impl UserData for LuaStaticReflectReference {
                         return func?.into_lua(lua);
                     }
                 };
-
-                Err(InteropError::missing_function(type_id, key.to_string()).into())
+                let world = lua.get_world();
+                Err(
+                    InteropError::missing_function(type_id, key.display_with_world(world.clone()))
+                        .into(),
+                )
             },
         );
     }

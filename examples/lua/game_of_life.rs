@@ -1,5 +1,5 @@
 #![allow(deprecated)]
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use ansi_parser::AnsiParser;
 use asset::ScriptAsset;
@@ -20,7 +20,7 @@ use bevy_console::{
     make_layer, send_log_buffer_to_console, AddConsoleCommand, ConsoleCommand,
     ConsoleConfiguration, ConsoleOpen, ConsolePlugin, PrintConsoleLine,
 };
-use bevy_mod_scripting::{prelude::*, ScriptFunctionsPlugin};
+use bevy_mod_scripting::{prelude::*, NamespaceBuilder, ScriptFunctionsPlugin};
 use bevy_mod_scripting_lua::LuaScriptingPlugin;
 use bindings::script_value::ScriptValue;
 use clap::Parser;
@@ -66,32 +66,31 @@ fn run_script_cmd(
                 // I am not mapping the handles to the script names, so I'll just clear the entire list
                 loaded_scripts.0.clear();
 
-                // you could also do:
+                // you could also do
                 // commands.queue(DeleteScript::<LuaScriptingPlugin>::new(
                 //     "scripts/game_of_life.lua".into(),
                 // ));
+                // as this will retain your script asset and handle
             }
         }
     }
 }
 
-// we use bevy-debug-console to demonstrate how this can fit in in the runtime of a game
-// note that using just the entity id instead of the full Entity has issues,
-// but since we aren't despawning/spawning entities this works in our case
 #[derive(Parser, ConsoleCommand)]
 #[command(name = "gol")]
-///Runs a Lua script from the `assets/scripts` directory
+/// Controls the game of life
 pub enum GameOfLifeCommand {
+    /// Start the game of life by spawning an entity with the game_of_life.lua script
     Start,
+    /// Stop the game of life by dropping a handle to the game_of_life.lua script
     Stop,
 }
 
-// GAME OF LIFE
+// ------------- GAME OF LIFE
 fn game_of_life_app(app: &mut App) -> &mut App {
     app.insert_resource(Time::<Fixed>::from_seconds(UPDATE_FREQUENCY.into()))
         .add_plugins((
             // for FPS counters
-            LogDiagnosticsPlugin::default(),
             FrameTimeDiagnosticsPlugin,
             // for scripting
             LuaScriptingPlugin::default(),
@@ -102,15 +101,20 @@ fn game_of_life_app(app: &mut App) -> &mut App {
         .init_resource::<Settings>()
         .init_resource::<LoadedScripts>()
         .add_systems(Startup, (init_game_of_life_state, load_script_assets))
-        .add_systems(Update, sync_window_size)
+        .add_systems(Update, (sync_window_size, send_on_click))
         .add_systems(
             FixedUpdate,
             (
                 update_rendered_state.after(sync_window_size),
                 send_on_update.after(update_rendered_state),
-                event_handler::<OnUpdate, LuaScriptingPlugin>,
+                (
+                    event_handler::<OnUpdate, LuaScriptingPlugin>,
+                    event_handler::<OnClick, LuaScriptingPlugin>,
+                )
+                    .after(send_on_update),
             ),
-        )
+        );
+    register_script_functions(app)
 }
 
 #[derive(Debug, Default, Clone, Reflect, Component)]
@@ -152,6 +156,14 @@ pub fn load_script_assets(
     loaded_scripts
         .0
         .push(asset_server.load("scripts/game_of_life.lua"));
+}
+
+pub fn register_script_functions(app: &mut App) -> &mut App {
+    let world = app.world_mut();
+    NamespaceBuilder::<World>::new_unregistered(world).register("info", |s: String| {
+        bevy::log::info!(s);
+    });
+    app
 }
 
 pub fn init_game_of_life_state(
@@ -248,7 +260,7 @@ pub fn update_rendered_state(
 
 callback_labels!(
     OnUpdate => "on_update",
-    Init => "init"
+    OnClick => "on_click"
 );
 
 /// Sends events allowing scripts to drive update logic
@@ -257,6 +269,27 @@ pub fn send_on_update(mut events: EventWriter<ScriptCallbackEvent>) {
         OnUpdate,
         vec![ScriptValue::Unit],
     ));
+}
+
+pub fn send_on_click(
+    buttons: Res<ButtonInput<MouseButton>>,
+    q_windows: Query<&Window, With<PrimaryWindow>>,
+    mut events: EventWriter<ScriptCallbackEvent>,
+) {
+    if buttons.just_pressed(MouseButton::Left) {
+        let window = q_windows.single();
+        let pos = window.cursor_position().unwrap_or_default();
+        let x = pos.x as u32;
+        let y = pos.y as u32;
+        bevy::log::info!("Mouse clicked at: ({}, {})", x, y);
+        events.send(ScriptCallbackEvent::new_for_all(
+            OnClick,
+            vec![
+                ScriptValue::Integer(x as i64),
+                ScriptValue::Integer(y as i64),
+            ],
+        ));
+    }
 }
 
 const UPDATE_FREQUENCY: f32 = 1.0 / 60.0;

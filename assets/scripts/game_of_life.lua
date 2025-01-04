@@ -1,9 +1,10 @@
-print("The game_of_life.lua script just got loaded")
-print("Hello from Lua! I am initiating the game of life simulation state to a random state now")
-
-math.randomseed(os.time())
 LifeState = world.get_type_by_name("LifeState")
 Settings = world.get_type_by_name("Settings")
+
+world.info("Lua: The game_of_life.lua script just got loaded")
+world.info("Lua: Hello! I am initiating the game of life simulation state with randomness!")
+
+math.randomseed(os.time())
 
 function fetch_life_state() 
     -- find the entity with life state 
@@ -19,8 +20,31 @@ local life_state = fetch_life_state()
 local cells = life_state.cells
 
 -- set some cells alive
-for _=1,10000 do 
+for _=1,1000 do 
     local index = math.random(#cells)
+    cells[index] = 255
+end
+
+function on_click(x,y)
+    -- get the settings
+    world.info("Lua: Clicked at x: " .. x .. " y: " .. y)
+    local settings = world.get_resource(Settings)
+    local dimensions = settings.physical_grid_dimensions
+    local screen = settings.display_grid_dimensions
+
+    local dimension_x = dimensions._1
+    local dimension_y = dimensions._2
+
+    local screen_x = screen._1
+    local screen_y = screen._2
+
+    local cell_width = screen_x / dimension_x
+    local cell_height = screen_y / dimension_y
+
+    local cell_x = math.floor(x / cell_width)
+    local cell_y = math.floor(y / cell_height)
+
+    local index = (cell_y * dimension_x) + cell_x
     cells[index] = 255
 end
 
@@ -38,14 +62,15 @@ function on_update()
         prev_state[#prev_state+1] = (not(v == 0)) and 1 or 0
     end
     for i=1,(dimension_x * dimension_y) do 
-        local north = prev_state[i - dimension_x] or 1
-        local south = prev_state[i + dimension_x] or 1 
-        local east = prev_state[i + 1] or 1 
-        local west = prev_state[i - 1] or 1
-        local northeast = prev_state[i - dimension_x + 1] or 1
-        local southeast = prev_state[i + dimension_x + 1] or 1
-        local northwest = prev_state[i - dimension_x - 1] or 1
-        local southwest = prev_state[i + dimension_x - 1] or 1
+        -- wrap around the north and south edges
+        local north = prev_state[i - dimension_x] or prev_state[i + dimension_x * (dimension_y - 1)]
+        local south = prev_state[i + dimension_x] or prev_state[i - dimension_x * (dimension_y - 1)]
+        local east = prev_state[i + 1] or 0
+        local west = prev_state[i - 1] or 0
+        local northeast = prev_state[i - dimension_x + 1] or 0
+        local southeast = prev_state[i + dimension_x + 1] or 0
+        local northwest = prev_state[i - dimension_x - 1] or 0
+        local southwest = prev_state[i + dimension_x - 1] or 0
 
         local neighbours = north + south + east + west 
             + northeast + southeast + northwest + southwest
