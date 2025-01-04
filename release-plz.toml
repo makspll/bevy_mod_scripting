@@ -23,7 +23,6 @@ git_release_body = """
 """
 changelog_include = [
     "bevy_mod_scripting_lua",
-    "bevy_mod_scripting_common",
     "bevy_mod_scripting_core",
     "bevy_mod_scripting_rhai",
     "bevy_mod_scripting_rune",
@@ -34,10 +33,6 @@ changelog_include = [
 [[package]]
 name = "bevy_mod_scripting_lua"
 publish_features = ["lua54"]
-version_group = "main"
-
-[[package]]
-name = "bevy_mod_scripting_common"
 version_group = "main"
 
 [[package]]

@@ -1,9 +1,11 @@
 [book]
-authors = ["makspll"]
+authors = ["Maksymilian Mozolewski"]
 language = "en"
 multilingual = false
 src = "src"
 title = "Bevy Scripting"
+description = "Documentation for the Bevy Scripting library"
 
 [output.html]
 additional-js = ["multi-code-block.js"]
+git-repository-url = "https://github.com/makspll/bevy_mod_scripting"
