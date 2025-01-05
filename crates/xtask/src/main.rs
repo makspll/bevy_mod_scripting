@@ -178,7 +178,12 @@ enum Xtasks {
     /// Build the main workspace, apply all prefferred lints
     Check,
     /// Build the rust crates.io docs as well as any other docs
-    Docs,
+    Docs {
+        /// Open in browser
+        /// This will open the generated docs in the default browser
+        #[clap(long, short)]
+        open: bool,
+    },
     /// Build the main workspace, and then run all tests
     Test,
     /// Perform a full check as it would be done in CI
@@ -190,7 +195,7 @@ impl Xtasks {
         match self {
             Xtasks::Build => Self::build(features),
             Xtasks::Check => Self::check(features),
-            Xtasks::Docs => Self::docs(),
+            Xtasks::Docs { open } => Self::docs(open),
             Xtasks::Test => Self::test(features),
             Xtasks::CiCheck => Self::cicd(),
             Xtasks::Init => Self::init(),
@@ -212,22 +217,35 @@ impl Xtasks {
         Ok(workspace_root.into())
     }
 
+    fn relative_workspace_dir<P: AsRef<Path>>(dir: P) -> Result<std::path::PathBuf> {
+        let workspace_dir = Self::workspace_dir()?;
+        Ok(workspace_dir.join(dir))
+    }
+
     fn run_system_command<I: IntoIterator<Item = impl AsRef<OsStr>>>(
         command: &str,
         context: &str,
         add_args: I,
+        dir: Option<&Path>,
     ) -> Result<()> {
         info!("Running system command: {}", command);
+
+        let working_dir = match dir {
+            Some(d) => Self::relative_workspace_dir(d)?,
+            None => Self::workspace_dir()?,
+        };
 
         let mut cmd = Command::new(command);
         cmd.args(add_args)
             .stdout(std::process::Stdio::inherit())
             .stderr(std::process::Stdio::inherit())
-            .current_dir(Self::workspace_dir()?);
+            .current_dir(working_dir);
 
         info!("Using command: {:?}", cmd);
 
-        let output = cmd.output().with_context(|| context.to_owned())?;
+        let output = cmd.output();
+        info!("Command output: {:?}", output);
+        let output = output.with_context(|| context.to_owned())?;
         match output.status.code() {
             Some(0) => Ok(()),
             _ => bail!(
@@ -257,17 +275,17 @@ impl Xtasks {
                 .expect("invalid command argument")
                 .to_owned()
         }));
-        let workspace_dir = Self::workspace_dir()?;
-        let workspace_dir = match dir {
-            Some(d) => workspace_dir.join(d),
-            None => workspace_dir,
+
+        let working_dir = match dir {
+            Some(d) => Self::relative_workspace_dir(d)?,
+            None => Self::workspace_dir()?,
         };
 
         let mut cmd = Command::new("cargo");
         cmd.args(args)
             .stdout(std::process::Stdio::inherit())
             .stderr(std::process::Stdio::inherit())
-            .current_dir(workspace_dir);
+            .current_dir(working_dir);
 
         info!("Using command: {:?}", cmd);
 
@@ -309,21 +327,37 @@ impl Xtasks {
             "cargo",
             "Failed to run cargo fmt",
             vec!["fmt", "--all", "--", "--check"],
+            None,
         )?;
 
         Ok(())
     }
 
-    fn docs() -> Result<()> {
+    fn docs(open: bool) -> Result<()> {
         // find [package.metadata."docs.rs"] key in Cargo.toml
         let metadata = Self::cargo_metadata()?;
-        let package = metadata.root_package().expect("no root package");
+
+        let package = metadata
+            .packages
+            .iter()
+            .find(|p| p.name == "bevy_mod_scripting")
+            .expect("Could not find bevy_mod_scripting package in metadata");
+
+        info!("Building with root package: {}", package.name);
+
         let docs_rs = package
             .metadata
             .get("docs.rs")
             .expect("no docs.rs metadata");
 
-        let string_list = docs_rs
+        let features = docs_rs
+            .as_object()
+            .expect("docs.rs metadata is not an object")
+            .get("features")
+            .expect("no 'features' in docs.rs metadata");
+
+        info!("Using docs.rs metadata: {:?}", docs_rs);
+        let string_list = features
             .as_array()
             .expect("docs.rs metadata is not an array")
             .iter()
@@ -333,22 +367,29 @@ impl Xtasks {
 
         let features = Features(string_list);
 
+        let mut args = Vec::default();
+        args.push("--all");
+        if open {
+            args.push("--open");
+        }
         Self::run_workspace_command(
             "doc",
             "Failed to build crates.io docs",
             features.clone(),
-            vec!["--all"],
+            args,
             None,
         )?;
 
         // build mdbook
-        Self::run_workspace_command(
+        let args = if open { vec!["build"] } else { vec!["serve"] };
+
+        Self::run_system_command(
             "mdbook",
-            "Failed to build mdbook docs",
-            features,
-            vec!["--all"],
+            "Failed to build or serve mdbook docs",
+            args,
             Some(Path::new("docs")),
         )?;
+
         Ok(())
     }
 
@@ -395,6 +436,7 @@ impl Xtasks {
                 "-o",
                 "target/coverage/html",
             ],
+            None,
         )?;
 
         Self::run_system_command(
@@ -417,6 +459,7 @@ impl Xtasks {
                 "-o",
                 "target/coverage/lcov.info",
             ],
+            None,
         )
     }
 
@@ -453,6 +496,9 @@ impl Xtasks {
         // run lints
         let all_features = Features::all_features();
         Self::check(all_features.clone())?;
+
+        // run docs
+        Self::docs(false)?;
 
         // run tests
         Self::test(all_features)?;
