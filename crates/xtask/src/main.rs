@@ -184,6 +184,10 @@ enum Xtasks {
         /// This will open the generated docs in the default browser
         #[clap(long, short)]
         open: bool,
+
+        /// Skip building rust docs
+        #[clap(long, short)]
+        no_rust_docs: bool,
     },
     /// Build the main workspace, and then run all tests
     Test,
@@ -196,7 +200,7 @@ impl Xtasks {
         match self {
             Xtasks::Build => Self::build(features),
             Xtasks::Check => Self::check(features),
-            Xtasks::Docs { open } => Self::docs(open),
+            Xtasks::Docs { open, no_rust_docs } => Self::docs(open, no_rust_docs),
             Xtasks::Test => Self::test(features),
             Xtasks::CiCheck => Self::cicd(),
             Xtasks::Init => Self::init(),
@@ -334,54 +338,58 @@ impl Xtasks {
         Ok(())
     }
 
-    fn docs(open: bool) -> Result<()> {
+    fn docs(open: bool, no_rust_docs: bool) -> Result<()> {
         // find [package.metadata."docs.rs"] key in Cargo.toml
-        let metadata = Self::cargo_metadata()?;
+        if !no_rust_docs {
+            info!("Building rust docs");
+            let metadata = Self::cargo_metadata()?;
 
-        let package = metadata
-            .packages
-            .iter()
-            .find(|p| p.name == "bevy_mod_scripting")
-            .expect("Could not find bevy_mod_scripting package in metadata");
+            let package = metadata
+                .packages
+                .iter()
+                .find(|p| p.name == "bevy_mod_scripting")
+                .expect("Could not find bevy_mod_scripting package in metadata");
 
-        info!("Building with root package: {}", package.name);
+            info!("Building with root package: {}", package.name);
 
-        let docs_rs = package
-            .metadata
-            .get("docs.rs")
-            .expect("no docs.rs metadata");
+            let docs_rs = package
+                .metadata
+                .get("docs.rs")
+                .expect("no docs.rs metadata");
 
-        let features = docs_rs
-            .as_object()
-            .expect("docs.rs metadata is not an object")
-            .get("features")
-            .expect("no 'features' in docs.rs metadata");
+            let features = docs_rs
+                .as_object()
+                .expect("docs.rs metadata is not an object")
+                .get("features")
+                .expect("no 'features' in docs.rs metadata");
 
-        info!("Using docs.rs metadata: {:?}", docs_rs);
-        let string_list = features
-            .as_array()
-            .expect("docs.rs metadata is not an array")
-            .iter()
-            .map(|v| v.as_str().expect("docs.rs metadata is not a string"))
-            .map(|s| Feature::from_str(s).expect("invalid feature"))
-            .collect::<Vec<_>>();
+            info!("Using docs.rs metadata: {:?}", docs_rs);
+            let string_list = features
+                .as_array()
+                .expect("docs.rs metadata is not an array")
+                .iter()
+                .map(|v| v.as_str().expect("docs.rs metadata is not a string"))
+                .map(|s| Feature::from_str(s).expect("invalid feature"))
+                .collect::<Vec<_>>();
 
-        let features = Features(string_list);
+            let features = Features(string_list);
 
-        let mut args = Vec::default();
-        args.push("--all");
-        if open {
-            args.push("--open");
+            let mut args = Vec::default();
+            args.push("--all");
+            if open {
+                args.push("--open");
+            }
+            Self::run_workspace_command(
+                "doc",
+                "Failed to build crates.io docs",
+                features.clone(),
+                args,
+                None,
+            )?;
         }
-        Self::run_workspace_command(
-            "doc",
-            "Failed to build crates.io docs",
-            features.clone(),
-            args,
-            None,
-        )?;
 
         // build mdbook
+        info!("Building mdbook docs");
         let args = if open { vec!["build"] } else { vec!["serve"] };
 
         Self::run_system_command(
@@ -507,7 +515,7 @@ impl Xtasks {
         Self::check(all_features.clone())?;
 
         // run docs
-        Self::docs(false)?;
+        Self::docs(false, false)?;
 
         // run tests
         Self::test(all_features)?;

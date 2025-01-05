@@ -46,12 +46,11 @@ jobs:
           override: true
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
-      - uses: actions-rs/cargo@v1
+      - uses: houseabsolute/actions-rust-cross@v0
         with:
           command: xtask
           target: ${{ matrix.run_args.cross }}
-          args: ci-check --target ${{ matrix.run_args.cross }}
-          use-cross: true
+          args: ci-check 
       - uses: romeovs/lcov-reporter-action@v0.2.16
         with:
           lcov-file: ./target/coverage/lcov.info
