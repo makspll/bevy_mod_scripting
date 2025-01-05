@@ -46,7 +46,8 @@ enum FeatureGroup {
     LuaExclusive,
     RhaiExclusive,
     RuneExclusive,
-    NonExclusiveOther,
+    ForExternalCrate,
+    BMSFeature,
 }
 
 impl FeatureGroup {
@@ -55,8 +56,15 @@ impl FeatureGroup {
             FeatureGroup::LuaExclusive => Feature::Lua54,
             FeatureGroup::RhaiExclusive => Feature::Rhai,
             FeatureGroup::RuneExclusive => Feature::Rune,
-            FeatureGroup::NonExclusiveOther => panic!("No default feature for non-exclusive group"),
+            _ => panic!("No default feature for non-exclusive group"),
         }
+    }
+
+    fn is_exclusive(self) -> bool {
+        matches!(
+            self,
+            FeatureGroup::LuaExclusive | FeatureGroup::RhaiExclusive | FeatureGroup::RuneExclusive
+        )
     }
 }
 
@@ -76,7 +84,11 @@ impl IntoFeatureGroup for Feature {
             | Feature::Luau => FeatureGroup::LuaExclusive,
             Feature::Rhai => FeatureGroup::RhaiExclusive,
             Feature::Rune => FeatureGroup::RuneExclusive,
-            _ => FeatureGroup::NonExclusiveOther,
+            Feature::MluaAsync
+            | Feature::MluaMacros
+            | Feature::MluaSerialize
+            | Feature::UnsafeLuaModules => FeatureGroup::ForExternalCrate,
+            _ => FeatureGroup::BMSFeature,
         }
     }
 }
@@ -93,7 +105,7 @@ impl Features {
                 .iter()
                 .filter(|f| {
                     let group = f.to_feature_group();
-                    (group == FeatureGroup::NonExclusiveOther) || (**f == group.default_feature())
+                    (!group.is_exclusive()) || (**f == group.default_feature())
                 })
                 .cloned()
                 .collect(),
@@ -507,13 +519,17 @@ impl Xtasks {
 
         let grouped = all_features.split_by_group();
 
-        let non_exclusive = grouped
-            .get(&FeatureGroup::NonExclusiveOther)
-            .unwrap_or(&vec![])
-            .clone();
+        let features_to_combine = grouped
+            .get(&FeatureGroup::BMSFeature)
+            .expect("no bms features were found at all, bms definitely has feature flags");
 
         // run powerset with all language features enabled without mutually exclusive
-        let mut powersets = non_exclusive.iter().cloned().powerset().collect::<Vec<_>>();
+        let mut powersets = features_to_combine
+            .iter()
+            .cloned()
+            .powerset()
+            .collect::<Vec<_>>();
+
         // start with longest to compile all first
         powersets.reverse();
         info!("Powerset: {:?}", powersets);
@@ -525,6 +541,7 @@ impl Xtasks {
                 i + 1,
                 feature_set
             );
+
             // choose language features
             for category in [
                 FeatureGroup::LuaExclusive,
@@ -532,6 +549,11 @@ impl Xtasks {
                 FeatureGroup::RuneExclusive,
             ] {
                 feature_set.0.push(category.default_feature());
+            }
+
+            // include all non-bms features
+            if let Some(f) = grouped.get(&FeatureGroup::ForExternalCrate) {
+                feature_set.0.extend(f.iter().cloned());
             }
 
             Self::build(feature_set)?;
