@@ -32,10 +32,6 @@ jobs:
         {label: Ubuntu,         os: ubuntu-latest,       cross: x86_64-unknown-linux-gnu  }, 
         {label: Ubuntu Aarch64, os: ubuntu-latest,       cross: aarch64-unknown-linux-gnu }
       ]
-
-  tests:
-    name: Tests
-    runs-on: {{ matrix.run_args.os }}
     steps:
       - name: Clear space
         run: sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
