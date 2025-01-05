@@ -27,10 +27,10 @@ jobs:
     strategy:
       matrix:
        run_args: [ 
-        {label: Windows,        os: windows-latest,      cross: x86_64-pc-windows-msvc    }, 
-        {label: MacOS,          os: macOS-latest,        cross: x86_64-apple-darwin       },
-        {label: Ubuntu,         os: ubuntu-latest,       cross: x86_64-unknown-linux-gnu  }, 
-        {label: Ubuntu Aarch64, os: ubuntu-latest,       cross: aarch64-unknown-linux-gnu }
+        {label: Windows,        os: windows-latest }, 
+        {label: MacOS,          os: macOS-latest },
+        {label: Ubuntu,         os: ubuntu-latest }, 
+        {label: Ubuntu Aarch64, os: ubuntu-latest }
       ]
     steps:
       - name: Checkout
@@ -46,11 +46,10 @@ jobs:
           override: true
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
-      - uses: houseabsolute/actions-rust-cross@v0
+      - uses: actions-rs/cargo@v1
         with:
           command: xtask
-          target: ${{ matrix.run_args.cross }}
-          args: ci-check 
+          args: ci-check
       - uses: romeovs/lcov-reporter-action@v0.2.16
         with:
           lcov-file: ./target/coverage/lcov.info
