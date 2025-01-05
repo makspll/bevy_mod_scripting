@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.9.0-alpha.2](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.0-alpha.1...v0.9.0-alpha.2) - 2025-01-05
+
+### Added
+
+- Dynamic function registry and dynamic function calls
+- `bevy_mod_scripting_functions` crate added, containing built-in dynamic functions callable from scripts
+- Lua dynamic function call mechanism
+- Dynamic functions automatically register their argument and return types with the type registry
+- Added set of `IntoScript`, `FromScript`, `IntoScriptRef`, and `FromScriptRef` traits 
+- Added `ScriptAllocator` to manage lifetimes of non-world stored types (such as `Vec2` created via scripts etc..)
+- Added `AccessMap` dynamic safety mechanism, every access is now small, and does not require mutexing the entire world
+
+### Changed
+- Complete plugin re-write, expect breakages everywhere
+- `prelude` imports removed
+- `ScriptValue` abstraction replacing the concept of a generic event argument type. Each event payload is a `ScriptValue`
+- `world` is now a static reference, `world:function` calls must be replaced with `world.function` calls
+- Documentation generation was temporarilly removed
+- `Teal` and `Tealr` was removed
+- `bevy_mod_scripting_derive`, `bevy_mod_scripting_common` and other derive crates as well as `bevy_event_priority` and `bevy_script_api` crates were removed
+- Temporarilly suspended full rhai and rune support until next non-alpha release
+- Removed Deferred reflection mechanism
+- Added `mdbook` documentation book
+- Removed `APIProvider` traits in favour of various configuration resources
+- Specific registration of `Vec<T>` and `Option<T>` via `register_lua_vec` etc.. is no longer necessary, reflection *just* works on all registered types
+- Expanded core library of `ReflectReference` functions
+- Removed `LuaProxyable` abstraction and all custom type data, everything is now driven via normal reflection
+- All references are now represented via either references to the world or to a `ScriptAllocator`
+- Accessing anything in the world requires claiming the appropriate `AccessMap` locks to do so safely (which is abstracted away with various utility functions)
+- And much more
+
 ## [0.8.0-alpha.2](https://github.com/makspll/bevy_mod_scripting/compare/v0.8.0-alpha.1...v0.8.0-alpha.2) - 2024-12-03
 
 ### Fixed
