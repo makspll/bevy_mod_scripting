@@ -20,7 +20,6 @@ use strum::VariantNames;
 #[strum(serialize_all = "snake_case")]
 enum Feature {
     // Lua
-    Lua,
     Lua51,
     Lua52,
     Lua53,
@@ -68,8 +67,7 @@ trait IntoFeatureGroup {
 impl IntoFeatureGroup for Feature {
     fn to_feature_group(self) -> FeatureGroup {
         match self {
-            Feature::Lua
-            | Feature::Lua51
+            Feature::Lua51
             | Feature::Lua52
             | Feature::Lua53
             | Feature::Lua54
@@ -413,7 +411,7 @@ impl Xtasks {
 
         // build mdbook
         info!("Building mdbook docs");
-        let args = if open { vec!["build"] } else { vec!["serve"] };
+        let args = if !open { vec!["build"] } else { vec!["serve"] };
 
         Self::run_system_command(
             "mdbook",
