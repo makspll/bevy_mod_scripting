@@ -1,7 +1,8 @@
 use anyhow::*;
 use clap::Parser;
+use itertools::Itertools;
 use log::*;
-use std::{process::Command, str::FromStr};
+use std::{collections::HashMap, ffi::OsStr, process::Command, str::FromStr};
 use strum::VariantNames;
 
 #[derive(
@@ -14,6 +15,7 @@ use strum::VariantNames;
     strum::EnumIter,
     strum::Display,
     strum::VariantNames,
+    strum::VariantArray,
 )]
 #[strum(serialize_all = "snake_case")]
 enum Feature {
@@ -40,10 +42,65 @@ enum Feature {
     Rune,
 }
 
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+enum FeatureGroup {
+    LuaExclusive,
+    RhaiExclusive,
+    RuneExclusive,
+    NonExclusiveOther,
+}
+
+impl FeatureGroup {
+    fn default_feature(self) -> Feature {
+        match self {
+            FeatureGroup::LuaExclusive => Feature::Lua54,
+            FeatureGroup::RhaiExclusive => Feature::Rhai,
+            FeatureGroup::RuneExclusive => Feature::Rune,
+            FeatureGroup::NonExclusiveOther => panic!("No default feature for non-exclusive group"),
+        }
+    }
+}
+
+trait IntoFeatureGroup {
+    fn to_feature_group(self) -> FeatureGroup;
+}
+
+impl IntoFeatureGroup for Feature {
+    fn to_feature_group(self) -> FeatureGroup {
+        match self {
+            Feature::Lua
+            | Feature::Lua51
+            | Feature::Lua52
+            | Feature::Lua53
+            | Feature::Lua54
+            | Feature::Luajit
+            | Feature::Luajit52
+            | Feature::Luau => FeatureGroup::LuaExclusive,
+            Feature::Rhai => FeatureGroup::RhaiExclusive,
+            Feature::Rune => FeatureGroup::RuneExclusive,
+            _ => FeatureGroup::NonExclusiveOther,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 struct Features(Vec<Feature>);
 
 impl Features {
+    fn all_features() -> Self {
+        // remove exclusive features which are not the default
+        Self(
+            <Feature as strum::VariantArray>::VARIANTS
+                .iter()
+                .filter(|f| {
+                    let group = f.to_feature_group();
+                    (group != FeatureGroup::NonExclusiveOther) || (**f == group.default_feature())
+                })
+                .cloned()
+                .collect(),
+        )
+    }
+
     fn to_cargo_args(&self) -> Vec<String> {
         if self.0.is_empty() {
             vec![]
@@ -54,6 +111,15 @@ impl Features {
 
     fn to_placeholder() -> clap::builder::Str {
         format!("[{}]", Feature::VARIANTS.join("|")).into()
+    }
+
+    fn split_by_group(&self) -> HashMap<FeatureGroup, Vec<Feature>> {
+        let mut groups = HashMap::new();
+        for feature in &self.0 {
+            let group = feature.to_feature_group();
+            groups.entry(group).or_insert_with(Vec::new).push(*feature);
+        }
+        groups
     }
 }
 
@@ -118,32 +184,43 @@ enum Xtasks {
 }
 
 impl Xtasks {
-    fn run(self, features: Features) -> Result<(), Error> {
+    fn run(self, features: Features) -> Result<()> {
         match self {
             Xtasks::Build => Self::build(features),
-            Xtasks::Check => self.check(),
-            Xtasks::Test => self.test(),
-            Xtasks::CiCheck => self.cicd(),
-            Xtasks::Init => self.init(),
+            Xtasks::Check => Self::check(features),
+            Xtasks::Test => Self::test(features),
+            Xtasks::CiCheck => Self::cicd(),
+            Xtasks::Init => Self::init(),
         }
     }
 
-    fn run_workspace_command(
+    fn cargo_metadata() -> Result<cargo_metadata::Metadata> {
+        let cargo_manifest_path = std::env::var("CARGO_MANIFEST_PATH").unwrap();
+
+        let mut cmd = cargo_metadata::MetadataCommand::new();
+        cmd.manifest_path(cargo_manifest_path);
+        let out = cmd.exec()?;
+        Ok(out)
+    }
+
+    fn workspace_dir() -> Result<std::path::PathBuf> {
+        let metadata = Self::cargo_metadata()?;
+        let workspace_root = metadata.workspace_root;
+        Ok(workspace_root.into())
+    }
+
+    fn run_system_command<I: IntoIterator<Item = impl AsRef<OsStr>>>(
         command: &str,
         context: &str,
-        features: Features,
-    ) -> Result<(), anyhow::Error> {
-        info!("Running workspace command: {}", command);
+        add_args: I,
+    ) -> Result<()> {
+        info!("Running system command: {}", command);
 
-        let mut args = vec![];
-        args.push(command.to_owned());
-        args.push("--workspace".to_owned());
-        args.extend(features.to_cargo_args());
-
-        let mut cmd = Command::new("cargo");
-        cmd.args(args)
+        let mut cmd = Command::new(command);
+        cmd.args(add_args)
             .stdout(std::process::Stdio::inherit())
-            .stderr(std::process::Stdio::inherit());
+            .stderr(std::process::Stdio::inherit())
+            .current_dir(Self::workspace_dir()?);
 
         info!("Using command: {:?}", cmd);
 
@@ -158,30 +235,183 @@ impl Xtasks {
         }
     }
 
-    fn build(features: Features) -> Result<(), anyhow::Error> {
+    fn run_workspace_command<I: IntoIterator<Item = impl AsRef<OsStr>>>(
+        command: &str,
+        context: &str,
+        features: Features,
+        add_args: I,
+    ) -> Result<()> {
+        info!("Running workspace command: {}", command);
+
+        let mut args = vec![];
+        args.push(command.to_owned());
+        args.push("--workspace".to_owned());
+        args.extend(features.to_cargo_args());
+        args.extend(add_args.into_iter().map(|s| {
+            s.as_ref()
+                .to_str()
+                .expect("invalid command argument")
+                .to_owned()
+        }));
+
+        let mut cmd = Command::new("cargo");
+        cmd.args(args)
+            .stdout(std::process::Stdio::inherit())
+            .stderr(std::process::Stdio::inherit())
+            .current_dir(Self::workspace_dir()?);
+
+        info!("Using command: {:?}", cmd);
+
+        let output = cmd.output().with_context(|| context.to_owned())?;
+        match output.status.code() {
+            Some(0) => Ok(()),
+            _ => bail!(
+                "{} failed with exit code: {}",
+                context,
+                output.status.code().unwrap_or(-1)
+            ),
+        }
+    }
+
+    fn build(features: Features) -> Result<()> {
         // build workspace using the given features
-        Self::run_workspace_command("build", "Failed to build workspace", features)?;
+        Self::run_workspace_command(
+            "build",
+            "Failed to build workspace",
+            features,
+            vec!["--all-targets"],
+        )?;
         Ok(())
     }
 
-    fn check(self) -> Result<(), anyhow::Error> {
-        todo!()
+    fn check(features: Features) -> Result<()> {
+        // start with cargo clippy
+        Self::run_workspace_command(
+            "clippy",
+            "Failed to run clippy",
+            features,
+            vec!["--all-targets", "--", "-D", "warnings"],
+        )?;
+
+        // run cargo fmt checks
+        Self::run_system_command(
+            "cargo",
+            "Failed to run cargo fmt",
+            vec!["fmt", "--all", "--", "--check"],
+        )?;
+
+        Ok(())
     }
 
-    fn test(self) -> Result<(), anyhow::Error> {
-        todo!()
+    fn test(features: Features) -> Result<()> {
+        // run cargo test with instrumentation
+        std::env::set_var("CARGO_INCREMENTAL", "0");
+        std::env::set_var("RUSTFLAGS", "-Cinstrument-coverage");
+        let target_dir = std::env::var("CARGO_TARGET_DIR").unwrap_or_else(|_| "target".to_owned());
+        let coverage_file = std::path::PathBuf::from(target_dir)
+            .join("coverage")
+            .join("cargo-test-%p-%m.profraw");
+        std::env::set_var("LLVM_PROFILE_FILE", coverage_file);
+
+        Self::run_workspace_command(
+            "test",
+            "Failed to run tests",
+            features,
+            Vec::<String>::default(),
+        )?;
+
+        // generate coverage report and lcov file
+        Self::run_system_command(
+            "grcov",
+            "Generating html coverage report",
+            vec![
+                ".",
+                "--binary-path",
+                "./target/debug/deps/",
+                "-s",
+                ".",
+                "-t",
+                "html",
+                "--branch",
+                "--ignore-not-existing",
+                "--ignore",
+                "../*",
+                "--ignore",
+                "/*",
+                "-o",
+                "target/coverage/html",
+            ],
+        )?;
+
+        Self::run_system_command(
+            "grcov",
+            "Failed to generate coverage report",
+            vec![
+                ".",
+                "--binary-path",
+                "./target/debug/deps/",
+                "-s",
+                ".",
+                "-t",
+                "lcov",
+                "--branch",
+                "--ignore-not-existing",
+                "--ignore",
+                "../*",
+                "--ignore",
+                "/*",
+                "-o",
+                "target/coverage/lcov.info",
+            ],
+        )
     }
 
-    fn cicd(self) -> Result<(), anyhow::Error> {
-        todo!()
+    fn cicd() -> Result<()> {
+        // run everything with the ephemereal profile
+        // first check everything compiles with every combination of features apart from mutually exclusive ones
+        let all_features = Features(<Feature as strum::VariantArray>::VARIANTS.into());
+
+        let grouped = all_features.split_by_group();
+
+        let non_exclusive = grouped
+            .get(&FeatureGroup::NonExclusiveOther)
+            .unwrap_or(&vec![])
+            .clone();
+
+        // run powerset with all language features enabled without mutually exclusive
+        let powersets = non_exclusive.iter().cloned().powerset().collect::<Vec<_>>();
+        info!("Powersets: {:?}", powersets);
+
+        for mut feature_set in powersets.into_iter().map(Features) {
+            info!("Running check with features: {}", feature_set);
+            // choose language features
+            for category in [
+                FeatureGroup::LuaExclusive,
+                FeatureGroup::RhaiExclusive,
+                FeatureGroup::RuneExclusive,
+            ] {
+                feature_set.0.push(category.default_feature());
+            }
+
+            Self::build(feature_set)?;
+        }
+
+        // run lints
+        let all_features = Features::all_features();
+        Self::check(all_features.clone())?;
+
+        // run tests
+        Self::test(all_features)?;
+
+        Ok(())
     }
 
-    fn init(self) -> Result<(), anyhow::Error> {
+    fn init() -> Result<()> {
         todo!()
     }
 }
 
-fn try_main() -> Result<(), anyhow::Error> {
+fn try_main() -> Result<()> {
     pretty_env_logger::formatted_builder()
         .filter_level(LevelFilter::Info)
         .init();

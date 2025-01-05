@@ -476,57 +476,6 @@ macro_rules! impl_script_function_type_dependencies{
 bevy::utils::all_tuples!(impl_script_function, 0, 13, T);
 bevy::utils::all_tuples!(impl_script_function_type_dependencies, 0, 13, T);
 
-/// Utility for quickly checking your type can be used as an argument in a script function
-///
-/// Usage:
-/// ```
-/// assert_impls_into_script!(i32);
-/// ```
-#[macro_export]
-macro_rules! assert_impls_into_script {
-    ($ty:ty) => {
-        trait Check: $crate::bindings::function::into::IntoScript {}
-        impl Check for $ty {}
-    };
-}
-
-/// Utility for quickly checking your type can be used as a return value in a script function
-///
-/// Usage:
-/// ```
-/// assert_impls_from_script!(i32);
-/// ```
-#[macro_export]
-macro_rules! assert_impls_from_script {
-    ($ty:ty) => {
-        trait Check: $crate::bindings::function::from::FromScript {}
-        impl Check for $ty {}
-    };
-    ($l:lifetime $ty:ty) => {
-        trait Check: $crate::bindings::function::from::FromScript {}
-        impl<$l> Check for $ty {}
-    };
-}
-
-/// Utility for quickly checking your function can be used as a script function
-///
-/// Usage:
-/// ```
-/// assert_is_script_function!(|a: i32, b: i32| a + b);
-/// ```
-#[macro_export]
-macro_rules! assert_is_script_function {
-    ($($tt:tt)*) => {
-        fn _check<'env,M,F: ScriptFunction<'env, M>>(f: F) {
-
-        }
-
-        fn test() {
-            _check($($tt)*);
-        }
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
