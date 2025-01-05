@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-alpha.2](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.0-alpha.1...bevy_mod_scripting_core-v0.9.0-alpha.2) - 2025-01-05
+
+### Fixed
+
+- fix test and small refactor
+
+### Other
+
+- Merge remote-tracking branch 'origin' into staging
+- improve xtasks and start integrating with ci
+- make display without world more sensible
+- further clean up
+- remove preludes, remove more crates
+- remove unused dependencies
+- fmt
+- more clippy
+- clippy fixes
+- clippy fixes
+- cleanup some imports
+- change query signature slightly
+- add on load and unload hooks
+- improve logs and things
+- finally
+- keep working on docs and fixing bugs
+- make the generics more tenable, and update docs
+- start cleaning up examples, use ScriptValue as argument for all things
+- add more conversions
+- change handle to weak so unloading strong handle is enough to delete script, and update docs
+- add error conversions for rhai
+
 ## [0.8.0-alpha.2](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.8.0-alpha.1...bevy_mod_scripting_core-v0.8.0-alpha.2) - 2024-12-03
 
 ### Other
