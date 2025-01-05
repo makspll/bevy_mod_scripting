@@ -266,7 +266,7 @@ impl Xtasks {
         match output.status.code() {
             Some(0) => Ok(()),
             _ => bail!(
-                "{} failed with exit code: {}",
+                "{} failed with exit code: {}. Features: {features}",
                 context,
                 output.status.code().unwrap_or(-1)
             ),
@@ -317,7 +317,7 @@ impl Xtasks {
             "test",
             "Failed to run tests",
             features,
-            Vec::<String>::default(),
+            vec!["--exclude", "xtask"],
         )?;
 
         // generate coverage report and lcov file
