@@ -300,6 +300,12 @@ impl Xtasks {
         let mut args = vec![];
         args.push(command.to_owned());
         args.push("--workspace".to_owned());
+        let profile = Self::get_cargo_profile();
+        if let Some(profile) = profile {
+            args.push("--profile".to_owned());
+            args.push(profile);
+        }
+
         args.extend(features.to_cargo_args());
         args.extend(add_args.into_iter().map(|s| {
             s.as_ref()
@@ -307,12 +313,6 @@ impl Xtasks {
                 .expect("invalid command argument")
                 .to_owned()
         }));
-
-        let profile = Self::get_cargo_profile();
-        if let Some(profile) = profile {
-            args.push("--profile".to_owned());
-            args.push(profile);
-        }
 
         let working_dir = match dir {
             Some(d) => Self::relative_workspace_dir(d)?,

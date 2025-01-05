@@ -21,7 +21,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
+  check:  
+    permissions:
+      pull-requests: write
     name: Check - ${{ matrix.run_args.label }}
     runs-on: ${{ matrix.run_args.os }}
     strategy:
