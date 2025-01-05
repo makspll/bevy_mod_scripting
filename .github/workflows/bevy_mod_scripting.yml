@@ -38,7 +38,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install alsa and udev
-        if: {{ matrix.run_args.os != 'windows-latest' }}
+      - if: runner.os == 'linux'
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
       - uses: actions-rs/toolchain@v1
         with:
@@ -49,6 +49,6 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: xtest ci-check
-          components: clippy, rustfmt, grcov
+          components: clippy, rustfmt, grcov, mdbook
           target: ${{ matrix.run_args.cross }}
           args: --workspace --features=lua54,rhai,rune --profile=ephemeral-build
