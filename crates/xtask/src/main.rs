@@ -207,6 +207,15 @@ impl Xtasks {
         }
     }
 
+    // TODO: have a global args struct instead of this
+    fn set_cargo_profile(profile: &str) {
+        std::env::set_var("BMS_CARGO_PROFILE", profile);
+    }
+
+    fn get_cargo_profile() -> Option<String> {
+        Some(std::env::var("BMS_CARGO_PROFILE").unwrap_or_default())
+    }
+
     fn cargo_metadata() -> Result<cargo_metadata::Metadata> {
         let cargo_manifest_path = std::env::var("CARGO_MANIFEST_PATH").unwrap();
 
@@ -225,6 +234,14 @@ impl Xtasks {
     fn relative_workspace_dir<P: AsRef<Path>>(dir: P) -> Result<std::path::PathBuf> {
         let workspace_dir = Self::workspace_dir()?;
         Ok(workspace_dir.join(dir))
+    }
+
+    fn append_rustflags(flag: &str) {
+        let rustflags = std::env::var("RUSTFLAGS").unwrap_or_default();
+        let mut flags = rustflags.split(' ').collect::<Vec<_>>();
+        flags.push(flag);
+        let flags = flags.join(" ");
+        std::env::set_var("RUSTFLAGS", flags);
     }
 
     fn run_system_command<I: IntoIterator<Item = impl AsRef<OsStr>>>(
@@ -280,6 +297,12 @@ impl Xtasks {
                 .expect("invalid command argument")
                 .to_owned()
         }));
+
+        let profile = Self::get_cargo_profile();
+        if let Some(profile) = profile {
+            args.push("--profile".to_owned());
+            args.push(profile);
+        }
 
         let working_dir = match dir {
             Some(d) => Self::relative_workspace_dir(d)?,
@@ -405,7 +428,8 @@ impl Xtasks {
     fn test(features: Features) -> Result<()> {
         // run cargo test with instrumentation
         std::env::set_var("CARGO_INCREMENTAL", "0");
-        std::env::set_var("RUSTFLAGS", "-Cinstrument-coverage");
+        Self::append_rustflags("-Cinstrument-coverage");
+
         let target_dir = std::env::var("CARGO_TARGET_DIR").unwrap_or_else(|_| "target".to_owned());
         let coverage_dir = std::path::PathBuf::from(target_dir).join("coverage");
         let coverage_file = coverage_dir.join("cargo-test-%p-%m.profraw");
@@ -473,6 +497,9 @@ impl Xtasks {
     }
 
     fn cicd() -> Result<()> {
+        // set profile
+        Self::set_cargo_profile("ephemeral-build");
+
         // setup the CI environment
         Self::init()?;
 
@@ -488,7 +515,9 @@ impl Xtasks {
             .clone();
 
         // run powerset with all language features enabled without mutually exclusive
-        let powersets = non_exclusive.iter().cloned().powerset().collect::<Vec<_>>();
+        let mut powersets = non_exclusive.iter().cloned().powerset().collect::<Vec<_>>();
+        // start with longest to compile all first
+        powersets.reverse();
         info!("Powerset: {:?}", powersets);
         let length = powersets.len();
 
