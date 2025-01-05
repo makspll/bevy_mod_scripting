@@ -50,4 +50,8 @@ jobs:
         with:
           command: xtask
           target: ${{ matrix.run_args.cross }}
-          args: ci-check
+          args: ci-check --target ${{ matrix.run_args.cross }}
+          use-cross: true
+      - uses: romeovs/lcov-reporter-action@v0.2.16
+        with:
+          lcov-file: ./target/coverage/lcov.info
