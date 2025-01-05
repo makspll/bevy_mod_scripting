@@ -16,11 +16,10 @@ use bevy_mod_scripting_core::{
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
 use bevy_mod_scripting_lua::{
     bindings::{reference::LuaReflectReference, world::GetWorld},
-    lua_context_load, lua_handler,
-    prelude::{Lua, LuaFunction},
-    LuaScriptingPlugin,
+    lua_context_load, lua_handler, LuaScriptingPlugin,
 };
 use libtest_mimic::{Arguments, Failed, Trial};
+use mlua::{Function, Lua};
 use std::{
     fs::{self, DirEntry},
     io, panic,
@@ -88,7 +87,7 @@ fn init_lua_test_utils(_script_name: &str, lua: &mut Lua) -> Result<(), ScriptEr
         .unwrap();
 
     let assert_throws = lua
-        .create_function(|lua, (f, regex): (LuaFunction, String)| {
+        .create_function(|lua, (f, regex): (Function, String)| {
             let world = lua.get_world();
 
             let result = f.call::<()>(());

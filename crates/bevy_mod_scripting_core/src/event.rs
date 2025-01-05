@@ -55,8 +55,8 @@ macro_rules! callback_labels {
 
         $(
             pub struct $name;
-            impl IntoCallbackLabel for $name {
-                fn into_callback_label() -> CallbackLabel {
+            impl $crate::event::IntoCallbackLabel for $name {
+                fn into_callback_label() -> $crate::event::CallbackLabel {
                     $label.into()
                 }
             }

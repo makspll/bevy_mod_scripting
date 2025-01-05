@@ -1,10 +1,6 @@
 #![allow(deprecated)]
-use std::sync::{Arc, Mutex};
 
-use ansi_parser::AnsiParser;
-use asset::ScriptAsset;
 use bevy::{
-    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     image::ImageSampler,
     log::LogPlugin,
     prelude::*,
@@ -15,17 +11,14 @@ use bevy::{
     },
     window::{PrimaryWindow, WindowResized},
 };
-
-use bevy_console::{
-    make_layer, send_log_buffer_to_console, AddConsoleCommand, ConsoleCommand,
-    ConsoleConfiguration, ConsoleOpen, ConsolePlugin, PrintConsoleLine,
+use bevy_console::{make_layer, AddConsoleCommand, ConsoleCommand, ConsoleOpen, ConsolePlugin};
+use bevy_mod_scripting::{NamespaceBuilder, ScriptFunctionsPlugin};
+use bevy_mod_scripting_core::{
+    asset::ScriptAsset, bindings::script_value::ScriptValue, callback_labels,
+    event::ScriptCallbackEvent, script::ScriptComponent, systems::event_handler,
 };
-use bevy_mod_scripting::{prelude::*, NamespaceBuilder, ScriptFunctionsPlugin};
 use bevy_mod_scripting_lua::LuaScriptingPlugin;
-use bindings::script_value::ScriptValue;
 use clap::Parser;
-use commands::DeleteScript;
-use script::ScriptComponent;
 
 // CONSOLE SETUP
 
