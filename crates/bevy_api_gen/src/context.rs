@@ -83,7 +83,8 @@ impl ReflectType<'_> {
 
 pub(crate) const DEF_PATHS_FROM_LUA: [&str; 2] = ["value::FromLuaMulti", "mlua::FromLuaMulti"];
 pub(crate) const DEF_PATHS_INTO_LUA: [&str; 2] = ["value::IntoLuaMulti", "mlua::IntoLuaMulti"];
-pub(crate) const DEF_PATHS_REFLECT: [&str; 2] = ["bevy_reflect::Reflect", "reflect::Reflect"];
+pub(crate) const DEF_PATHS_REFLECT: [&str; 2] =
+    ["bevy_reflect::PartialReflect", "reflect::PartialReflect"];
 pub(crate) const DEF_PATHS_GET_TYPE_REGISTRATION: [&str; 2] = [
     "bevy_reflect::GetTypeRegistration",
     "reflect::GetTypeRegistration",
@@ -132,11 +133,11 @@ impl CachedTraits {
         self.bevy_reflect_reflect.is_some() && self.bevy_reflect_get_type_registration.is_some()
     }
 
-    pub(crate) fn has_all_std_source_traits(&self) -> bool {
-        STD_SOURCE_TRAITS
-            .iter()
-            .all(|t| self.std_source_traits.contains_key(*t))
-    }
+    // pub(crate) fn has_all_std_source_traits(&self) -> bool {
+    //     STD_SOURCE_TRAITS
+    //         .iter()
+    //         .all(|t| self.std_source_traits.contains_key(*t))
+    // }
 
     // pub(crate) fn missing_std_source_traits(&self) -> Vec<String> {
     //     STD_SOURCE_TRAITS
@@ -152,7 +153,7 @@ pub(crate) struct FunctionContext {
     pub(crate) def_id: DefId,
     pub(crate) has_self: bool,
     pub(crate) is_unsafe: bool,
-    pub(crate) trait_did: Option<DefId>,
+    pub(crate) trait_and_impl_did: Option<(DefId, DefId)>,
     /// strategies for input and output (last element is the output)
     pub(crate) reflection_strategies: Vec<ReflectionStrategy>,
 }

@@ -1,0 +1,19 @@
+[package]
+name = "xtask"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+
+[[bin]]
+name = "xtask"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive", "string"] }
+strum = { version = "0.26", features = ["derive"] }
+anyhow = "1"
+pretty_env_logger = "0.5"
+log = "0.4"
+itertools = "0.14"
+cargo_metadata = "*"

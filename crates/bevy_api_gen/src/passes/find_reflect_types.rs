@@ -45,8 +45,7 @@ pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
                     generics.count() == 0 &&
                     self_ty.def().is_some_and(|did| {
                             let short_form = format!("{}::{}",ctxt.tcx.crate_name(LOCAL_CRATE),ctxt.tcx.item_name(did));
-                            if ignored_types.contains(&short_form) || ignored_types.contains(&tcx.def_path_str(did)) {
-                                info!("Ignoring type: {:?}", tcx.def_path_str(did));
+                            if ignored_types.contains(&short_form) || ignored_types.contains(&tcx.def_path_str(did)) {                                info!("Ignoring type: {:?}", tcx.def_path_str(did));
                                 return false;
                             };
                             let adt_generics = tcx.generics_of(did);

@@ -68,7 +68,7 @@ fn main() {
     let plugin_subdir = format!("plugin-{}", env!("RUSTC_CHANNEL"));
     let plugin_target_dir = metadata.target_directory.join(plugin_subdir);
 
-    info!("Computing wokrspace metadata");
+    info!("Computing workspace metadata");
 
     // inform the deps about the workspace crates, this is going to be useful when working with meta files as we will be able to
     // know when to panic if a crate is not found

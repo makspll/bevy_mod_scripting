@@ -1,8 +1,8 @@
+use std::env;
+
 use clap::Parser;
 use log::debug;
 use rustc_plugin::{CrateFilter, RustcPlugin, RustcPluginArgs, Utf8Path};
-
-use std::env;
 
 use crate::{modifying_file_loader::ModifyingFileLoader, BevyAnalyzerCallbacks, WorkspaceMeta};
 
@@ -47,13 +47,16 @@ impl RustcPlugin for BevyAnalyzer {
 
                 struct DefaultCallbacks;
                 impl rustc_driver::Callbacks for DefaultCallbacks {}
-                return rustc_driver::RunCompiler::new(&compiler_args, &mut DefaultCallbacks).run();
+                rustc_driver::RunCompiler::new(&compiler_args, &mut DefaultCallbacks).run();
+                return Ok(());
             }
         }
         let mut callbacks = BevyAnalyzerCallbacks::new(plugin_args);
         let mut compiler = rustc_driver::RunCompiler::new(&compiler_args, &mut callbacks);
         compiler.set_file_loader(Some(Box::new(ModifyingFileLoader)));
-        compiler.run()
+        compiler.run();
+        log::trace!("Finished compiling with plugin");
+        Ok(())
     }
 
     fn modify_cargo(&self, cmd: &mut std::process::Command, args: &Self::Args) {

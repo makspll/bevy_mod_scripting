@@ -111,17 +111,21 @@ pub(crate) struct Function {
 pub(crate) struct Arg {
     /// the name of the argument as in source code
     /// None if this is a receiver, in which case ty contains the ident
-    pub(crate) ident: Option<String>,
+    pub(crate) ident: String,
 
     /// the type of argument
     /// i.e. `&Vec<MyTy>`
     pub(crate) ty: String,
+    /// The proxied type of argument for use in Unproxy and Proxy targetted code
+    /// i.e. AppropriateRefProxy<MyTy> instead of &MyTy for a reference
+    pub(crate) proxy_ty: String,
     pub(crate) reflection_strategy: ReflectionStrategy,
 }
 
 #[derive(Serialize)]
 pub(crate) struct Output {
     pub(crate) ty: String,
+    pub(crate) proxy_ty: String,
     pub(crate) reflection_strategy: ReflectionStrategy,
 }
 
@@ -312,6 +316,34 @@ pub(crate) fn configure_tera_env(tera: &mut Tera, crate_name: &str) {
             let str = expect_str(val)?;
             let case = expect_str(expect_arg(args, "case")?)?;
             Ok(Value::String(str.to_case(case_from_str(case)?)))
+        },
+    );
+
+    tera.register_filter(
+        "to_arg_pattern",
+        |val: &Value, _args: &HashMap<String, Value>| {
+            let ty = expect_str(val)?;
+            if ty == "self" {
+                return Ok(Value::String("_self".to_owned()));
+            }
+            Ok(Value::String(ty.to_owned()))
+        },
+    );
+
+    tera.register_function(
+        "function_call_expression",
+        |args: &HashMap<String, Value>| {
+            let ident = expect_str(expect_arg(args, "type")?)?;
+            let function_name = expect_str(expect_arg(args, "function")?)?;
+            let trait_name: Option<&str> = args.get("trait").and_then(|v| v.as_str());
+
+            if let Some(trait_name) = trait_name {
+                Ok(Value::String(format!(
+                    "<{ident} as {trait_name}>::{function_name}"
+                )))
+            } else {
+                Ok(Value::String(format!("{ident}::{function_name}")))
+            }
         },
     )
 }

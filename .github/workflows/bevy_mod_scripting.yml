@@ -21,93 +21,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
+  check:  
+    permissions:
+      pull-requests: write
     name: Check - ${{ matrix.run_args.label }}
     runs-on: ${{ matrix.run_args.os }}
     strategy:
       matrix:
        run_args: [ 
-        {label: Windows - All Features,        os: windows-latest,      features: "lua54,rhai,teal,lua_script_api,rhai_script_api,rune",      cross: x86_64-pc-windows-msvc    }, 
-        {label: MacOS - All Features,          os: macOS-latest,        features: "lua54,rhai,teal,lua_script_api,rhai_script_api,rune",      cross: x86_64-apple-darwin       },
-        {label: Ubuntu - All Features,         os: ubuntu-latest,       features: "lua54,lua_script_api,rhai,teal,rhai_script_api,rune",      cross: x86_64-unknown-linux-gnu  }, 
-        {label: Ubuntu Aarch64 - All Features, os: ubuntu-latest,       features: "lua54,rhai,teal,lua_script_api,rhai_script_api,rune",      cross: aarch64-unknown-linux-gnu },
-        {label: Ubuntu - Lua51,                os: ubuntu-latest,       features: "lua51,lua_script_api",                                     cross: x86_64-unknown-linux-gnu  }, 
-        {label: Ubuntu - Lua52,                os: ubuntu-latest,       features: "lua52,lua_script_api",                                     cross: x86_64-unknown-linux-gnu  }, 
-        {label: Ubuntu - Lua53,                os: ubuntu-latest,       features: "lua53,lua_script_api",                                     cross: x86_64-unknown-linux-gnu  }, 
-        {label: Ubuntu - Luajit,               os: ubuntu-latest,       features: "luajit,lua_script_api",                                    cross: x86_64-unknown-linux-gnu  }, 
-        {label: Ubuntu - Luajit52,             os: ubuntu-latest,       features: "luajit52,lua_script_api",                                  cross: x86_64-unknown-linux-gnu  },
-        {label: Ubuntu - Luau,                 os: ubuntu-latest,       features: "luau,lua_script_api",                                      cross: x86_64-unknown-linux-gnu  }
-
+        {label: Windows,        os: windows-latest }, 
+        {label: MacOS,          os: macOS-latest },
+        {label: Ubuntu,         os: ubuntu-latest }, 
+        {label: Ubuntu Aarch64, os: ubuntu-latest }
       ]
     steps:
-      - if: runner.os == 'linux'
-        name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v2.7.3
-      - if: runner.os != 'windows'
-        name: Clear space
-        run: rm -rf /usr/share/dotnet; rm -rf /opt/ghc; rm -rf "/usr/local/share/boost"; rm -rf "$AGENT_TOOLSDIRECTORY"
-      - uses: houseabsolute/actions-rust-cross@v0
-        with:
-          command: check
-          target: ${{ matrix.run_args.cross }}
-          args: --workspace --features=${{ matrix.run_args.features }} --profile=ephemeral-build
-
-  fmt:
-    name: Rustfmt
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          components: rustfmt
-          toolchain: stable
-          override: true
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v2.7.3
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
-
-  clippy:
-    name: Clippy
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: clippy
-          override: true
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v2.7.3
-      - uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --features=lua54,rhai,teal,lua_script_api,rhai_script_api,rune --profile=ephemeral-build -- -D warnings 
-  tests:
-    name: Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clear space
-        run: sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+        if: runner.os == 'linux'
+        run: |
+          sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+          sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -116,25 +50,9 @@ jobs:
         uses: Swatinem/rust-cache@v2.7.3
       - uses: actions-rs/cargo@v1
         with:
-          command: test
-          args: --workspace --features=lua54,rhai,teal,lua_script_api,rhai_script_api,rune --profile=ephemeral-build
-  docs:
-    name: Docs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+          command: xtask
+          args: ci-check
+      - uses: romeovs/lcov-reporter-action@v0.2.16
+        continue-on-error: true
         with:
-          toolchain: stable
-          override: true
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v2.7.3
-      - name: Find docs.rs features
-        run: echo "DOCS_FEATURES=$(cargo metadata --no-deps | python -c "import sys,json; [print(','.join(x['metadata']['docs.rs']['features'])) for x in json.load(sys.stdin)['packages'] if x['name'] == 'bevy_mod_scripting']")" >> $GITHUB_OUTPUT
-        id: features
-      - uses: actions-rs/cargo@v1
-        with:
-          command: doc
-          args: --workspace --features=${{ steps.features.outputs.DOCS_FEATURES }} --profile=ephemeral-build
+          lcov-file: ./target/coverage/lcov.info

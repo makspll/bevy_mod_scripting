@@ -23,23 +23,15 @@ git_release_body = """
 """
 changelog_include = [
     "bevy_mod_scripting_lua",
-    "bevy_mod_scripting_common",
     "bevy_mod_scripting_core",
     "bevy_mod_scripting_rhai",
     "bevy_mod_scripting_rune",
-    "bevy_script_api",
-    "bevy_event_priority",
-    "bevy_mod_scripting_lua_derive",
-    "bevy_mod_scripting_rhai_derive",
+    "bevy_mod_scripting_functions",
 ]
 
 [[package]]
 name = "bevy_mod_scripting_lua"
 publish_features = ["lua54"]
-version_group = "main"
-
-[[package]]
-name = "bevy_mod_scripting_common"
 version_group = "main"
 
 [[package]]
@@ -55,17 +47,5 @@ name = "bevy_mod_scripting_rune"
 version_group = "main"
 
 [[package]]
-name = "bevy_script_api"
-version_group = "main"
-
-[[package]]
-name = "bevy_event_priority"
-version_group = "main"
-
-[[package]]
-name = "bevy_mod_scripting_lua_derive"
-version_group = "main"
-
-[[package]]
-name = "bevy_mod_scripting_rhai_derive"
+name = "bevy_mod_scripting_functions"
 version_group = "main"

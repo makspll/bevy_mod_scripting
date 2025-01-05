@@ -1,9 +1,8 @@
 #![allow(deprecated)]
-use std::sync::Mutex;
 
 use bevy::{
-    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     image::ImageSampler,
+    log::LogPlugin,
     prelude::*,
     reflect::Reflect,
     render::{
@@ -12,35 +11,113 @@ use bevy::{
     },
     window::{PrimaryWindow, WindowResized},
 };
+use bevy_console::{make_layer, AddConsoleCommand, ConsoleCommand, ConsoleOpen, ConsolePlugin};
+use bevy_mod_scripting::{NamespaceBuilder, ScriptFunctionsPlugin};
+use bevy_mod_scripting_core::{
+    asset::ScriptAsset, bindings::script_value::ScriptValue, callback_labels,
+    event::ScriptCallbackEvent, script::ScriptComponent, systems::event_handler,
+};
+use bevy_mod_scripting_lua::LuaScriptingPlugin;
+use clap::Parser;
 
-use bevy_mod_scripting::prelude::*;
+// CONSOLE SETUP
 
-#[derive(Debug, Default, Clone, Reflect, Component, LuaProxy)]
-#[reflect(Component, LuaProxyable)]
+fn console_app(app: &mut App) -> &mut App {
+    // forward logs to the console
+    app.add_plugins((
+        DefaultPlugins.set(LogPlugin {
+            level: bevy::log::Level::INFO,
+            filter: "error,game_of_life=info".to_owned(),
+            custom_layer: make_layer,
+        }),
+        ConsolePlugin,
+    ))
+    .add_console_command::<GameOfLifeCommand, _>(run_script_cmd)
+    .add_systems(Startup, |mut open: ResMut<ConsoleOpen>| {
+        open.open = true;
+    })
+}
+
+fn run_script_cmd(
+    mut log: ConsoleCommand<GameOfLifeCommand>,
+    mut commands: Commands,
+    mut loaded_scripts: ResMut<LoadedScripts>,
+) {
+    if let Some(Ok(command)) = log.take() {
+        match command {
+            GameOfLifeCommand::Start => {
+                // create an entity with the script component
+                bevy::log::info!(
+                    "Starting game of life spawning entity with the game_of_life.lua script"
+                );
+                commands.spawn(ScriptComponent::new(
+                    vec!["scripts/game_of_life.lua".into()],
+                ));
+            }
+            GameOfLifeCommand::Stop => {
+                // we can simply drop the handle, or manually delete, I'll just drop the handle
+                bevy::log::info!("Stopping game of life by dropping the handle to the script");
+
+                // I am not mapping the handles to the script names, so I'll just clear the entire list
+                loaded_scripts.0.clear();
+
+                // you could also do
+                // commands.queue(DeleteScript::<LuaScriptingPlugin>::new(
+                //     "scripts/game_of_life.lua".into(),
+                // ));
+                // as this will retain your script asset and handle
+            }
+        }
+    }
+}
+
+#[derive(Parser, ConsoleCommand)]
+#[command(name = "gol")]
+/// Controls the game of life
+pub enum GameOfLifeCommand {
+    /// Start the game of life by spawning an entity with the game_of_life.lua script
+    Start,
+    /// Stop the game of life by dropping a handle to the game_of_life.lua script
+    Stop,
+}
+
+// ------------- GAME OF LIFE
+fn game_of_life_app(app: &mut App) -> &mut App {
+    app.insert_resource(Time::<Fixed>::from_seconds(UPDATE_FREQUENCY.into()))
+        .add_plugins((
+            // for scripting
+            LuaScriptingPlugin::default(),
+            ScriptFunctionsPlugin,
+        ))
+        .register_type::<LifeState>()
+        .register_type::<Settings>()
+        .init_resource::<Settings>()
+        .init_resource::<LoadedScripts>()
+        .add_systems(Startup, (init_game_of_life_state, load_script_assets))
+        .add_systems(Update, (sync_window_size, send_on_click))
+        .add_systems(
+            FixedUpdate,
+            (
+                update_rendered_state.after(sync_window_size),
+                send_on_update.after(update_rendered_state),
+                (
+                    event_handler::<OnUpdate, LuaScriptingPlugin>,
+                    event_handler::<OnClick, LuaScriptingPlugin>,
+                )
+                    .after(send_on_update),
+            ),
+        );
+    register_script_functions(app)
+}
+
+#[derive(Debug, Default, Clone, Reflect, Component)]
+#[reflect(Component)]
 pub struct LifeState {
     pub cells: Vec<u8>,
 }
 
-#[derive(Default)]
-pub struct LifeAPI;
-
-impl APIProvider for LifeAPI {
-    type APITarget = Mutex<Lua>;
-    type ScriptContext = Mutex<Lua>;
-    type DocTarget = LuaDocFragment;
-
-    fn attach_api(&mut self, _: &mut Self::APITarget) -> Result<(), ScriptError> {
-        // we don't actually provide anything global
-        Ok(())
-    }
-
-    fn register_with_app(&self, app: &mut App) {
-        // this will register the `LuaProxyable` typedata since we derived it
-        // this will resolve retrievals of this component to our custom lua object
-        app.register_type::<LifeState>();
-        app.register_type::<Settings>();
-    }
-}
+#[derive(Debug, Resource, Default)]
+pub struct LoadedScripts(pub Vec<Handle<ScriptAsset>>);
 
 #[derive(Reflect, Resource)]
 #[reflect(Resource)]
@@ -64,10 +141,27 @@ impl Default for Settings {
     }
 }
 
-pub fn setup(
+/// Prepares any scripts by loading them and storing the handles.
+pub fn load_script_assets(
+    asset_server: Res<AssetServer>,
+    mut loaded_scripts: ResMut<LoadedScripts>,
+) {
+    loaded_scripts
+        .0
+        .push(asset_server.load("scripts/game_of_life.lua"));
+}
+
+pub fn register_script_functions(app: &mut App) -> &mut App {
+    let world = app.world_mut();
+    NamespaceBuilder::<World>::new_unregistered(world).register("info", |s: String| {
+        bevy::log::info!(s);
+    });
+    app
+}
+
+pub fn init_game_of_life_state(
     mut commands: Commands,
     mut assets: ResMut<Assets<Image>>,
-    asset_server: Res<AssetServer>,
     settings: Res<Settings>,
 ) {
     let mut image = Image::new_fill(
@@ -83,8 +177,6 @@ pub fn setup(
     );
 
     image.sampler = ImageSampler::nearest();
-
-    let script_path = bevy_mod_scripting_lua::lua_path!("game_of_life");
 
     commands.spawn(Camera2d);
     commands
@@ -103,13 +195,10 @@ pub fn setup(
                 (settings.physical_grid_dimensions.0 * settings.physical_grid_dimensions.1)
                     as usize
             ],
-        })
-        .insert(ScriptCollection::<LuaFile> {
-            scripts: vec![Script::new(
-                script_path.to_owned(),
-                asset_server.load(script_path),
-            )],
         });
+
+    bevy::log::info!("Game of life was initialized. use `gol start` to start the game!");
+    bevy::log::info!("Type `help gol` for more commands.");
 }
 
 pub fn sync_window_size(
@@ -159,55 +248,52 @@ pub fn update_rendered_state(
         let old_rendered_state = assets
             .get_mut(&old_rendered_state.image)
             .expect("World is not setup correctly");
-
         old_rendered_state.data = new_state.cells.clone();
     }
 }
 
+callback_labels!(
+    OnUpdate => "on_update",
+    OnClick => "on_click"
+);
+
 /// Sends events allowing scripts to drive update logic
-pub fn send_on_update(mut events: PriorityEventWriter<LuaEvent<()>>) {
-    events.send(
-        LuaEvent {
-            hook_name: "on_update".to_owned(),
-            args: (),
-            recipients: Recipients::All,
-        },
-        1,
-    )
+pub fn send_on_update(mut events: EventWriter<ScriptCallbackEvent>) {
+    events.send(ScriptCallbackEvent::new_for_all(
+        OnUpdate,
+        vec![ScriptValue::Unit],
+    ));
 }
 
-/// Sends initialization event
-pub fn send_init(mut events: PriorityEventWriter<LuaEvent<()>>) {
-    events.send(
-        LuaEvent {
-            hook_name: "init".to_owned(),
-            args: (),
-            recipients: Recipients::All,
-        },
-        0,
-    )
+pub fn send_on_click(
+    buttons: Res<ButtonInput<MouseButton>>,
+    q_windows: Query<&Window, With<PrimaryWindow>>,
+    mut events: EventWriter<ScriptCallbackEvent>,
+) {
+    if buttons.just_pressed(MouseButton::Left) {
+        let window = q_windows.single();
+        let pos = window.cursor_position().unwrap_or_default();
+        let x = pos.x as u32;
+        let y = pos.y as u32;
+        events.send(ScriptCallbackEvent::new_for_all(
+            OnClick,
+            vec![
+                ScriptValue::Integer(x as i64),
+                ScriptValue::Integer(y as i64),
+            ],
+        ));
+    }
 }
 
 const UPDATE_FREQUENCY: f32 = 1.0 / 60.0;
 
+// MAIN
+
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
-    app.add_plugins(DefaultPlugins)
-        .insert_resource(Time::<Fixed>::from_seconds(UPDATE_FREQUENCY.into()))
-        .add_plugins(LogDiagnosticsPlugin::default())
-        .add_plugins(FrameTimeDiagnosticsPlugin)
-        .add_plugins(ScriptingPlugin)
-        .init_resource::<Settings>()
-        .add_systems(Startup, setup)
-        .add_systems(Startup, send_init)
-        .add_systems(Update, sync_window_size)
-        .add_systems(FixedUpdate, update_rendered_state.after(sync_window_size))
-        .add_systems(FixedUpdate, send_on_update.after(update_rendered_state))
-        .add_systems(FixedUpdate, script_event_handler::<LuaScriptHost<()>, 0, 1>)
-        .add_script_host::<LuaScriptHost<()>>(PostUpdate)
-        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaCoreBevyAPIProvider))
-        .add_api_provider::<LuaScriptHost<()>>(Box::new(LifeAPI));
+    console_app(&mut app);
+    game_of_life_app(&mut app);
 
     app.run();
 

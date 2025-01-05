@@ -13,6 +13,8 @@ jobs:
   build:
     name: Build Book - mdbook
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
 
     - name: Checkout repository
@@ -22,8 +24,10 @@ jobs:
       with:
         toolchain: stable
         override: true
+
     - name: Rust Cache
       uses: Swatinem/rust-cache@v2.7.3
+
     - name: Install mdBook
       run: cargo install mdbook
 
@@ -31,7 +35,7 @@ jobs:
       run: cd docs && mdbook build
 
     - name: Deploy to GitHub Pages
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}

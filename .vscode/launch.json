@@ -25,7 +25,7 @@
                     "build",
                     "--example=game_of_life_lua",
                     "--package=bevy_mod_scripting",
-                    "--features=lua54,teal,lua_script_api",
+                    "--features=lua54,teal",
                 ],
                 "filter": {
                     "name": "game_of_life_lua",

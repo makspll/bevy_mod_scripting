@@ -5,9 +5,14 @@ on:
     paths: 
       - "crates/bevy_api_gen/**"
       - ".github/workflows/bevy_api_gen.yml"
+      - ".github/workflows/generate_bindings.yml"
+
 
 
 name: Check and Lint - bevy_api_gen
+
+env:
+  RUST_TOOLCHAIN: nightly-2024-12-15
 
 jobs:
   check:
@@ -25,7 +30,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly-2024-11-05
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
           override: true
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
@@ -52,7 +57,7 @@ jobs:
         with:
           profile: minimal
           components: rustfmt
-          toolchain: nightly-2024-11-05
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
           override: true
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
@@ -75,7 +80,7 @@ jobs:
           rm -rf crates
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly-2024-11-05
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
           components: clippy
           override: true
       - name: Rust Cache
@@ -98,7 +103,7 @@ jobs:
           rm -rf crates
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly-2024-11-05
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
           override: true
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
@@ -120,7 +125,7 @@ jobs:
           rm -rf crates
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly-2024-11-05
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
           override: true
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
@@ -131,3 +136,10 @@ jobs:
         with:
           command: doc
           args: --profile=ephemeral-build
+  bindings:
+    permissions:
+      contents: write
+      pull-requests: write
+    name: Generate Bindings - bevy_api_gen
+    uses: ./.github/workflows/generate_bindings.yml
+    secrets: inherit

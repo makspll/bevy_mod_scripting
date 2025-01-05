@@ -1,10 +1,9 @@
-use std::ops::Deref;
-use std::sync::Arc;
-
 use bevy::prelude::World;
 use parking_lot::{
     MappedRwLockReadGuard, MappedRwLockWriteGuard, RwLock, RwLockReadGuard, RwLockWriteGuard,
 };
+use std::ops::Deref;
+use std::sync::Arc;
 
 /// Pointer to a bevy world, safely allows multiple access via RwLock
 ///
