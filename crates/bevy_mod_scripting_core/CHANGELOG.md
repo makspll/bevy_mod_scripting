@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-alpha.2](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.0-alpha.1...bevy_mod_scripting_core-v0.9.0-alpha.2) - 2025-01-05
+
+### Added
+
+- complete plugin re-write
+
+### Other
+
+- ditch alpha pre-releases ([#162](https://github.com/makspll/bevy_mod_scripting/pull/162))
+
 ## [0.8.0-alpha.2](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.8.0-alpha.1...bevy_mod_scripting_core-v0.8.0-alpha.2) - 2024-12-03
 
 ### Other
