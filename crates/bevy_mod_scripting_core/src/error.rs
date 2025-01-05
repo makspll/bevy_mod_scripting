@@ -1,11 +1,6 @@
-use crate::{
-    bindings::{
-        access_map::DisplayCodeLocation,
-        pretty_print::{DisplayWithWorld, DisplayWithWorldAndDummy},
-        script_value::ScriptValue,
-        ReflectBaseType, ReflectReference,
-    },
-    impl_dummy_display,
+use crate::bindings::{
+    access_map::DisplayCodeLocation, pretty_print::DisplayWithWorld, script_value::ScriptValue,
+    ReflectBaseType, ReflectReference,
 };
 use bevy::{
     ecs::component::ComponentId,
@@ -48,7 +43,7 @@ pub struct ScriptErrorInner {
 #[derive(Debug, Clone)]
 pub enum ErrorKind {
     Display(Arc<dyn std::error::Error + Send + Sync>),
-    WithWorld(Arc<dyn DisplayWithWorldAndDummy + Send + Sync>),
+    WithWorld(Arc<dyn DisplayWithWorld + Send + Sync>),
 }
 
 impl DisplayWithWorld for ErrorKind {
@@ -58,14 +53,18 @@ impl DisplayWithWorld for ErrorKind {
             ErrorKind::WithWorld(e) => e.display_with_world(world),
         }
     }
+
+    fn display_without_world(&self) -> String {
+        match self {
+            ErrorKind::Display(e) => e.to_string(),
+            ErrorKind::WithWorld(e) => e.display_without_world(),
+        }
+    }
 }
 
 impl Display for ErrorKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ErrorKind::Display(e) => write!(f, "{}", e),
-            ErrorKind::WithWorld(e) => write!(f, "{}", e),
-        }
+        write!(f, "{}", self.display_without_world())
     }
 }
 
@@ -106,7 +105,7 @@ impl ScriptError {
         }))
     }
 
-    pub fn new(reason: impl DisplayWithWorldAndDummy + Send + Sync + 'static) -> Self {
+    pub fn new(reason: impl DisplayWithWorld + Send + Sync + 'static) -> Self {
         Self(Arc::new(ScriptErrorInner {
             script: None,
             reason: ErrorKind::WithWorld(Arc::new(reason)),
@@ -133,15 +132,7 @@ impl ScriptError {
 
 impl std::fmt::Display for ScriptError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if let Some(script) = &self.0.script {
-            write!(
-                f,
-                "error in script `{}`: {}.\nContext:{}",
-                script, self.0.reason, self.0.context
-            )
-        } else {
-            write!(f, "error: {}.\nContext:{}", self.0.reason, self.0.context)
-        }
+        write!(f, "{}", self.display_without_world())
     }
 }
 
@@ -160,6 +151,17 @@ impl DisplayWithWorld for ScriptError {
                 self.0.reason.display_with_world(world),
                 self.0.context
             )
+        }
+    }
+
+    fn display_without_world(&self) -> String {
+        if let Some(script) = &self.0.script {
+            format!(
+                "error in script `{}`: {}.\nContext:{}",
+                script, self.0.reason, self.0.context,
+            )
+        } else {
+            format!("error: {}.\nContext:{}", self.0.reason, self.0.context)
         }
     }
 }
@@ -208,9 +210,17 @@ impl DisplayWithWorld for InteropError {
     fn display_with_world(&self, world: crate::bindings::WorldGuard) -> String {
         self.0.display_with_world(world)
     }
+
+    fn display_without_world(&self) -> String {
+        self.0.display_without_world()
+    }
 }
 
-impl_dummy_display!(InteropError);
+impl Display for InteropError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.display_without_world())
+    }
+}
 
 impl From<InteropError> for ScriptError {
     fn from(val: InteropError) -> Self {
@@ -437,8 +447,6 @@ impl InteropError {
         })
     }
 }
-
-impl_dummy_display!(InteropErrorInner);
 
 /// For errors to do with reflection, type conversions or other interop issues
 #[derive(Debug)]
@@ -677,6 +685,161 @@ impl DisplayWithWorld for InteropErrorInner {
                     "Error converting argument {}: {}",
                     argument,
                     error.display_with_world(world)
+                )
+            },
+            InteropErrorInner::FunctionCallError { inner } => {
+                format!("Error in function call: {}", inner)
+            },
+            InteropErrorInner::BetterConversionExists{ context } => {
+                format!("Unfinished conversion in context of: {}. A better conversion exists but caller didn't handle the case.", context)
+            },
+            InteropErrorInner::OtherError { error } => error.to_string(),
+            InteropErrorInner::LengthMismatch { expected, got } => {
+                format!("Array/List Length mismatch, expected: {}, got: {}", expected, got)
+            },
+            InteropErrorInner::InvalidAccessCount { count, expected, context } => {
+                format!("Invalid access count, expected: {}, got: {}. {}", expected, count, context)
+            },
+        }
+    }
+
+    // todo macro this
+    fn display_without_world(&self) -> String {
+        match self {
+            InteropErrorInner::MissingFunctionError { on, function_name } => {
+                format!(
+                    "Could not find function: {} for type: {}",
+                    function_name,
+                    on.display_without_world()
+                )
+            },
+            InteropErrorInner::UnregisteredBase { base } => {
+                format!("Unregistered base type: {}", base.display_without_world())
+            }
+            InteropErrorInner::CannotClaimAccess { base, location } => {
+                format!(
+                    "Cannot claim access to base type: {}. The base is already claimed by something else in a way which prevents safe access. Location: {}",
+                    base.display_without_world(),
+                    location.display_location()
+                )
+            }
+            InteropErrorInner::ImpossibleConversion { into } => {
+                format!("Cannot convert to type: {}", into.display_without_world())
+            }
+            InteropErrorInner::TypeMismatch { expected, got } => {
+                format!(
+                    "Type mismatch, expected: {}, got: {}",
+                    expected.display_without_world(),
+                    got.map(|t| t.display_without_world())
+                        .unwrap_or("None".to_owned())
+                )
+            }
+            InteropErrorInner::StringTypeMismatch { expected, got } => {
+                format!(
+                    "Type mismatch, expected: {}, got: {}",
+                    expected,
+                    got.map(|t| t.display_without_world())
+                        .unwrap_or("None".to_owned())
+                )
+            }
+            InteropErrorInner::CouldNotDowncast { from, to } => {
+                format!(
+                    "Could not downcast from: {} to: {}",
+                    from.display_without_world(),
+                    to.display_without_world()
+                )
+            }
+            InteropErrorInner::GarbageCollectedAllocation { reference } => {
+                format!(
+                    "Allocation was garbage collected. Could not access reference: {} as a result.",
+                    reference.display_without_world(),
+                )
+            }
+            InteropErrorInner::ReflectionPathError { error, reference } => {
+                format!(
+                    "Error while reflecting path: {} on reference: {}",
+                    error,
+                    reference
+                        .as_ref()
+                        .map(|r| r.display_without_world())
+                        .unwrap_or("None".to_owned()),
+                )
+            }
+            InteropErrorInner::MissingTypeData { type_id, type_data } => {
+                format!(
+                    "Missing type data {} for type: {}. Did you register the type correctly?",
+                    type_data,
+                    type_id.display_without_world(),
+                )
+            }
+            InteropErrorInner::FailedFromReflect { type_id, reason } => {
+                format!(
+                    "Failed to convert from reflect for type: {} with reason: {}",
+                    type_id
+                        .map(|t| t.display_without_world())
+                        .unwrap_or("None".to_owned()),
+                    reason
+                )
+            }
+            InteropErrorInner::ValueMismatch { expected, got } => {
+                format!(
+                    "Value mismatch, expected: {}, got: {}",
+                    expected.display_without_world(),
+                    got.display_without_world()
+                )
+            }
+            InteropErrorInner::UnsupportedOperation {
+                base,
+                value,
+                operation,
+            } => {
+                format!(
+                    "Unsupported operation: {} on base: {} with value: {:?}",
+                    operation,
+                    base.map(|t| t.display_without_world())
+                        .unwrap_or("None".to_owned()),
+                    value
+                )
+            }
+            InteropErrorInner::InvalidIndex { value, reason } => {
+                format!(
+                    "Invalid index for value: {}: {}",
+                    value.display_without_world(),
+                    reason
+                )
+            }
+            InteropErrorInner::MissingEntity { entity } => {
+                format!("Missing or invalid entity: {}", entity)
+            }
+            InteropErrorInner::InvalidComponent { component_id } => {
+                format!("Invalid component: {:?}", component_id)
+            }
+            InteropErrorInner::StaleWorldAccess => {
+                "Stale world access. The world has been dropped and a script tried to access it. Do not try to store or copy the world."
+                    .to_owned()
+            }
+            InteropErrorInner::MissingWorld => {
+                "Missing world. The world was not initialized in the script context.".to_owned()
+            },
+            InteropErrorInner::FunctionInteropError { function_name, on, error } => {
+                let opt_on = on.map(|t| format!("on type: {}", t.display_without_world())).unwrap_or_default();
+                let display_name = if function_name.starts_with("TypeId") {
+                    function_name.split("::").last().unwrap()
+                } else {
+                    function_name.as_str()
+                };
+                format!(
+                    "Error in function {} {}: {}",
+                    display_name,
+                    opt_on,
+                    error.display_without_world(),
+                )
+            },
+            InteropErrorInner::FunctionArgConversionError { argument, error } => {
+                format!(
+                    "Error converting argument {}: {}",
+                    argument,
+                    error.display_without_world()
                 )
             },
             InteropErrorInner::FunctionCallError { inner } => {

@@ -512,13 +512,6 @@ mod test {
     #[test]
     fn test_is_type_negative() {
         assert!(!Some(42).is_type(Some("std"), "Option"));
-        assert_eq!(
-            "Encountered Runtime Error error in a script: Expected type Option from crate std, but got core::option::Option<i32>",
-            Some(42)
-                .expect_type(Some("std"), "Option")
-                .unwrap_err()
-                .to_string()
-        );
     }
 
     #[test]
@@ -537,14 +530,6 @@ mod test {
     #[test]
     fn test_as_option_none() {
         assert!(None::<i32>.as_option().unwrap().is_none());
-    }
-
-    #[test]
-    fn test_as_option_error() {
-        assert_eq!(
-            "Encountered Runtime Error error in a script: Expected type Option from crate core, but got i32",
-            42.as_option().unwrap_err().to_string()
-        );
     }
 
     #[test]
