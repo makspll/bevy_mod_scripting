@@ -14,29 +14,6 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
         let mut world = app.world_mut();
         NamespaceBuilder::<::bevy::ecs::entity::Entity>::new(world)
             .register(
-                "clone",
-                |_self: Ref<bevy::ecs::entity::Entity>| {
-                    let output: Val<bevy::ecs::entity::Entity> = <bevy::ecs::entity::Entity as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "eq",
-                |
-                    _self: Ref<bevy::ecs::entity::Entity>,
-                    other: Ref<bevy::ecs::entity::Entity>|
-                {
-                    let output: bool = <bevy::ecs::entity::Entity as std::cmp::PartialEq<
-                        bevy::ecs::entity::Entity,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "from_raw",
                 |index: u32| {
                     let output: Val<bevy::ecs::entity::Entity> = bevy::ecs::entity::Entity::from_raw(
@@ -85,6 +62,29 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "eq",
+                |
+                    _self: Ref<bevy::ecs::entity::Entity>,
+                    other: Ref<bevy::ecs::entity::Entity>|
+                {
+                    let output: bool = <bevy::ecs::entity::Entity as std::cmp::PartialEq<
+                        bevy::ecs::entity::Entity,
+                    >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::ecs::entity::Entity>| {
+                    let output: Val<bevy::ecs::entity::Entity> = <bevy::ecs::entity::Entity as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::ecs::world::OnAdd>::new(world);
         NamespaceBuilder::<::bevy::ecs::world::OnInsert>::new(world);
@@ -92,14 +92,21 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
         NamespaceBuilder::<::bevy::ecs::world::OnReplace>::new(world);
         NamespaceBuilder::<::bevy::ecs::component::ComponentId>::new(world)
             .register(
-                "eq",
-                |
-                    _self: Ref<bevy::ecs::component::ComponentId>,
-                    other: Ref<bevy::ecs::component::ComponentId>|
-                {
-                    let output: bool = <bevy::ecs::component::ComponentId as std::cmp::PartialEq<
-                        bevy::ecs::component::ComponentId,
-                    >>::eq(&_self, &other)
+                "new",
+                |index: usize| {
+                    let output: Val<bevy::ecs::component::ComponentId> = bevy::ecs::component::ComponentId::new(
+                            index,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "index",
+                |_self: Val<bevy::ecs::component::ComponentId>| {
+                    let output: usize = bevy::ecs::component::ComponentId::index(
+                            _self.into_inner(),
+                        )
                         .into();
                     output
                 },
@@ -125,26 +132,42 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                 },
             )
             .register(
-                "new",
-                |index: usize| {
-                    let output: Val<bevy::ecs::component::ComponentId> = bevy::ecs::component::ComponentId::new(
-                            index,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "index",
-                |_self: Val<bevy::ecs::component::ComponentId>| {
-                    let output: usize = bevy::ecs::component::ComponentId::index(
-                            _self.into_inner(),
-                        )
+                "eq",
+                |
+                    _self: Ref<bevy::ecs::component::ComponentId>,
+                    other: Ref<bevy::ecs::component::ComponentId>|
+                {
+                    let output: bool = <bevy::ecs::component::ComponentId as std::cmp::PartialEq<
+                        bevy::ecs::component::ComponentId,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
             );
         NamespaceBuilder::<::bevy::ecs::component::Tick>::new(world)
+            .register(
+                "eq",
+                |
+                    _self: Ref<bevy::ecs::component::Tick>,
+                    other: Ref<bevy::ecs::component::Tick>|
+                {
+                    let output: bool = <bevy::ecs::component::Tick as std::cmp::PartialEq<
+                        bevy::ecs::component::Tick,
+                    >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::ecs::component::Tick>| {
+                    let output: () = <bevy::ecs::component::Tick as std::cmp::Eq>::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
             .register(
                 "new",
                 |tick: u32| {
@@ -188,29 +211,6 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                 },
             )
             .register(
-                "eq",
-                |
-                    _self: Ref<bevy::ecs::component::Tick>,
-                    other: Ref<bevy::ecs::component::Tick>|
-                {
-                    let output: bool = <bevy::ecs::component::Tick as std::cmp::PartialEq<
-                        bevy::ecs::component::Tick,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::ecs::component::Tick>| {
-                    let output: () = <bevy::ecs::component::Tick as std::cmp::Eq>::assert_receiver_is_total_eq(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "clone",
                 |_self: Ref<bevy::ecs::component::Tick>| {
                     let output: Val<bevy::ecs::component::Tick> = <bevy::ecs::component::Tick as std::clone::Clone>::clone(
@@ -221,6 +221,16 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                 },
             );
         NamespaceBuilder::<::bevy::ecs::component::ComponentTicks>::new(world)
+            .register(
+                "clone",
+                |_self: Ref<bevy::ecs::component::ComponentTicks>| {
+                    let output: Val<bevy::ecs::component::ComponentTicks> = <bevy::ecs::component::ComponentTicks as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
             .register(
                 "is_added",
                 |
@@ -276,28 +286,8 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::ecs::component::ComponentTicks>| {
-                    let output: Val<bevy::ecs::component::ComponentTicks> = <bevy::ecs::component::ComponentTicks as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::ecs::identifier::Identifier>::new(world)
-            .register(
-                "clone",
-                |_self: Ref<bevy::ecs::identifier::Identifier>| {
-                    let output: Val<bevy::ecs::identifier::Identifier> = <bevy::ecs::identifier::Identifier as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
             .register(
                 "low",
                 |_self: Val<bevy::ecs::identifier::Identifier>| {
@@ -347,6 +337,16 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                     let output: bool = <bevy::ecs::identifier::Identifier as std::cmp::PartialEq<
                         bevy::ecs::identifier::Identifier,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::ecs::identifier::Identifier>| {
+                    let output: Val<bevy::ecs::identifier::Identifier> = <bevy::ecs::identifier::Identifier as std::clone::Clone>::clone(
+                            &_self,
+                        )
                         .into();
                     output
                 },
