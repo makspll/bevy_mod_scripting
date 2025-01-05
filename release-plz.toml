@@ -6,6 +6,7 @@ git_tag_enable = false
 
 [[package]]
 name = "bevy_mod_scripting"
+publish_features = ["lua54"]
 version_group = "main"
 git_release_latest = true
 git_release_enable = true
