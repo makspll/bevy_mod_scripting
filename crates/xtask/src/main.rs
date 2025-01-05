@@ -87,6 +87,7 @@ impl IntoFeatureGroup for Feature {
 struct Features(Vec<Feature>);
 
 impl Features {
+    /// Returns all features except the exclusive ones which are not the default
     fn all_features() -> Self {
         // remove exclusive features which are not the default
         Self(
@@ -94,7 +95,7 @@ impl Features {
                 .iter()
                 .filter(|f| {
                     let group = f.to_feature_group();
-                    (group != FeatureGroup::NonExclusiveOther) || (**f == group.default_feature())
+                    (group == FeatureGroup::NonExclusiveOther) || (**f == group.default_feature())
                 })
                 .cloned()
                 .collect(),
@@ -480,10 +481,15 @@ impl Xtasks {
 
         // run powerset with all language features enabled without mutually exclusive
         let powersets = non_exclusive.iter().cloned().powerset().collect::<Vec<_>>();
-        info!("Powersets: {:?}", powersets);
+        info!("Powerset: {:?}", powersets);
+        let length = powersets.len();
 
-        for mut feature_set in powersets.into_iter().map(Features) {
-            info!("Running check with features: {}", feature_set);
+        for (i, mut feature_set) in powersets.into_iter().map(Features).enumerate() {
+            info!(
+                "Running check {}/{length} with features: {}",
+                i + 1,
+                feature_set
+            );
             // choose language features
             for category in [
                 FeatureGroup::LuaExclusive,
