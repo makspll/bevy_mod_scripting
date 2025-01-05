@@ -33,13 +33,13 @@ jobs:
         {label: Ubuntu Aarch64, os: ubuntu-latest,       cross: aarch64-unknown-linux-gnu }
       ]
     steps:
-      - name: Clear space
-        run: sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install alsa and udev
         if: runner.os == 'linux'
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+        run: |
+          sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+          sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
