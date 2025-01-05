@@ -446,7 +446,7 @@ impl Xtasks {
 
         // clear coverage directory
         assert!(coverage_dir != std::path::Path::new("/"));
-        std::fs::remove_dir_all(coverage_dir)?;
+        let _ = std::fs::remove_dir_all(coverage_dir);
 
         std::env::set_var("LLVM_PROFILE_FILE", coverage_file);
 
@@ -565,6 +565,8 @@ impl Xtasks {
 
         // run docs
         Self::docs(false, false)?;
+
+        info!("All checks passed, running tests");
 
         // run tests
         Self::test(all_features)?;
