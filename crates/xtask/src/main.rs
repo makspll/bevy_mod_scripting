@@ -464,6 +464,9 @@ impl Xtasks {
     }
 
     fn cicd() -> Result<()> {
+        // setup the CI environment
+        Self::init()?;
+
         // run everything with the ephemereal profile
         // first check everything compiles with every combination of features apart from mutually exclusive ones
         let all_features = Features(<Feature as strum::VariantArray>::VARIANTS.into());
@@ -507,7 +510,38 @@ impl Xtasks {
     }
 
     fn init() -> Result<()> {
-        todo!()
+        // install cargo mdbook
+        Self::run_system_command(
+            "cargo",
+            "Failed to install mdbook",
+            vec!["install", "mdbook"],
+            None,
+        )?;
+
+        // install grcov
+        Self::run_system_command(
+            "cargo",
+            "Failed to install grcov",
+            vec!["install", "grcov"],
+            None,
+        )?;
+
+        // install llvm-tools and clippy
+        Self::run_system_command(
+            "rustup",
+            "Failed to install rust components",
+            vec![
+                "component",
+                "add",
+                "rust-src",
+                "rustc-dev",
+                "clippy",
+                "llvm-tools-preview",
+            ],
+            None,
+        )?;
+
+        Ok(())
     }
 }
 
