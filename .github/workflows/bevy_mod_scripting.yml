@@ -48,7 +48,7 @@ jobs:
         uses: Swatinem/rust-cache@v2.7.3
       - uses: actions-rs/cargo@v1
         with:
-          command: xtest ci-check
+          command: xtask ci-check
           components: clippy, rustfmt, grcov, mdbook
           target: ${{ matrix.run_args.cross }}
           args: --workspace --features=lua54,rhai,rune --profile=ephemeral-build
