@@ -13,7 +13,7 @@ end
 
 function on_script_loaded()
     world.info("Lua: Hello! I am initiating the game of life simulation state with randomness!")
-    world.info("Lua: Click on the screen to set cells alive")
+    world.info("Lua: Click on the screen to set cells alive after running the `gol start` command")
     
     local life_state = fetch_life_state()
     local cells = life_state.cells

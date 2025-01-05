@@ -74,20 +74,13 @@ impl ReflectReferencePrinter {
         pretty_path.push_str("<Reference to ");
         if let Some(world) = world {
             let tail_type_id = self.reference.tail_type_id(world.clone()).ok().flatten();
-            let type_registry = world.type_registry();
 
-            Self::pretty_print_base(&self.reference.base, Some(world), &mut pretty_path);
+            Self::pretty_print_base(&self.reference.base, Some(world.clone()), &mut pretty_path);
 
             pretty_path.push_str(&self.reference.reflect_path.to_string());
 
             if let Some(tail_type_id) = tail_type_id {
-                let type_path = {
-                    let type_registry = type_registry.read();
-                    type_registry
-                        .get_type_info(tail_type_id)
-                        .map(|t| t.type_path_table().short_path())
-                        .unwrap_or(Self::UNREGISTERED_TYPE)
-                };
+                let type_path = tail_type_id.display_with_world(world);
                 pretty_path.push_str(&format!(" -> {}", type_path));
             }
         } else {
@@ -125,7 +118,7 @@ impl ReflectReferencePrinter {
         let type_path = if let Some(world) = world {
             type_id.display_with_world(world.clone())
         } else {
-            format!("{:?}", type_id)
+            type_id.display_without_world()
         };
 
         let base_kind = match base.base_id {
