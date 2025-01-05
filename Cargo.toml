@@ -81,6 +81,7 @@ members = [
     "crates/languages/bevy_mod_scripting_rune",
     "crates/test_utils",
     "crates/bevy_mod_scripting_functions",
+    "crates/xtask",
 ]
 resolver = "2"
 exclude = ["crates/bevy_api_gen", "crates/macro_tests"]

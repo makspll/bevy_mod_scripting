@@ -1,2 +1,5 @@
 [env]
 TARGET_DIR = { value = "target", relative = true }
+
+[alias]
+xtask = "run --package xtask --"
