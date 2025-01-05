@@ -43,12 +43,12 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+          components: clippy, rustfmt, grcov, mdbook
           override: true
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
       - uses: actions-rs/cargo@v1
         with:
           command: xtask
-          components: clippy, rustfmt, grcov, mdbook
           target: ${{ matrix.run_args.cross }}
           args: ci-check
