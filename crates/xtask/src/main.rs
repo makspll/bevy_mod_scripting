@@ -2,7 +2,7 @@ use anyhow::*;
 use clap::Parser;
 use itertools::Itertools;
 use log::*;
-use std::{collections::HashMap, ffi::OsStr, process::Command, str::FromStr};
+use std::{collections::HashMap, ffi::OsStr, path::Path, process::Command, str::FromStr};
 use strum::VariantNames;
 
 #[derive(
@@ -177,6 +177,8 @@ enum Xtasks {
     Build,
     /// Build the main workspace, apply all prefferred lints
     Check,
+    /// Build the rust crates.io docs as well as any other docs
+    Docs,
     /// Build the main workspace, and then run all tests
     Test,
     /// Perform a full check as it would be done in CI
@@ -188,6 +190,7 @@ impl Xtasks {
         match self {
             Xtasks::Build => Self::build(features),
             Xtasks::Check => Self::check(features),
+            Xtasks::Docs => Self::docs(),
             Xtasks::Test => Self::test(features),
             Xtasks::CiCheck => Self::cicd(),
             Xtasks::Init => Self::init(),
@@ -240,6 +243,7 @@ impl Xtasks {
         context: &str,
         features: Features,
         add_args: I,
+        dir: Option<&Path>,
     ) -> Result<()> {
         info!("Running workspace command: {}", command);
 
@@ -253,12 +257,17 @@ impl Xtasks {
                 .expect("invalid command argument")
                 .to_owned()
         }));
+        let workspace_dir = Self::workspace_dir()?;
+        let workspace_dir = match dir {
+            Some(d) => workspace_dir.join(d),
+            None => workspace_dir,
+        };
 
         let mut cmd = Command::new("cargo");
         cmd.args(args)
             .stdout(std::process::Stdio::inherit())
             .stderr(std::process::Stdio::inherit())
-            .current_dir(Self::workspace_dir()?);
+            .current_dir(workspace_dir);
 
         info!("Using command: {:?}", cmd);
 
@@ -280,6 +289,7 @@ impl Xtasks {
             "Failed to build workspace",
             features,
             vec!["--all-targets"],
+            None,
         )?;
         Ok(())
     }
@@ -291,6 +301,7 @@ impl Xtasks {
             "Failed to run clippy",
             features,
             vec!["--all-targets", "--", "-D", "warnings"],
+            None,
         )?;
 
         // run cargo fmt checks
@@ -303,14 +314,56 @@ impl Xtasks {
         Ok(())
     }
 
+    fn docs() -> Result<()> {
+        // find [package.metadata."docs.rs"] key in Cargo.toml
+        let metadata = Self::cargo_metadata()?;
+        let package = metadata.root_package().expect("no root package");
+        let docs_rs = package
+            .metadata
+            .get("docs.rs")
+            .expect("no docs.rs metadata");
+
+        let string_list = docs_rs
+            .as_array()
+            .expect("docs.rs metadata is not an array")
+            .iter()
+            .map(|v| v.as_str().expect("docs.rs metadata is not a string"))
+            .map(|s| Feature::from_str(s).expect("invalid feature"))
+            .collect::<Vec<_>>();
+
+        let features = Features(string_list);
+
+        Self::run_workspace_command(
+            "doc",
+            "Failed to build crates.io docs",
+            features.clone(),
+            vec!["--all"],
+            None,
+        )?;
+
+        // build mdbook
+        Self::run_workspace_command(
+            "mdbook",
+            "Failed to build mdbook docs",
+            features,
+            vec!["--all"],
+            Some(Path::new("docs")),
+        )?;
+        Ok(())
+    }
+
     fn test(features: Features) -> Result<()> {
         // run cargo test with instrumentation
         std::env::set_var("CARGO_INCREMENTAL", "0");
         std::env::set_var("RUSTFLAGS", "-Cinstrument-coverage");
         let target_dir = std::env::var("CARGO_TARGET_DIR").unwrap_or_else(|_| "target".to_owned());
-        let coverage_file = std::path::PathBuf::from(target_dir)
-            .join("coverage")
-            .join("cargo-test-%p-%m.profraw");
+        let coverage_dir = std::path::PathBuf::from(target_dir).join("coverage");
+        let coverage_file = coverage_dir.join("cargo-test-%p-%m.profraw");
+
+        // clear coverage directory
+        assert!(coverage_dir != std::path::Path::new("/"));
+        std::fs::remove_dir_all(coverage_dir)?;
+
         std::env::set_var("LLVM_PROFILE_FILE", coverage_file);
 
         Self::run_workspace_command(
@@ -318,6 +371,7 @@ impl Xtasks {
             "Failed to run tests",
             features,
             vec!["--exclude", "xtask"],
+            None,
         )?;
 
         // generate coverage report and lcov file
