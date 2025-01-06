@@ -3,6 +3,7 @@ use bevy::{
     ecs::{entity::Entity, world::World},
 };
 use bevy_mod_scripting_core::{
+    asset::{AssetPathToLanguageMapper, Language},
     bindings::{script_value::ScriptValue, WorldCallbackAccess},
     context::{ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
@@ -24,6 +25,7 @@ pub mod bindings;
 impl IntoScriptPluginParams for LuaScriptingPlugin {
     type C = Lua;
     type R = ();
+    const LANGUAGE: Language = Language::Lua;
 }
 
 pub struct LuaScriptingPlugin {
@@ -42,8 +44,18 @@ impl Default for LuaScriptingPlugin {
                     load: lua_context_load,
                     reload: lua_context_reload,
                 }),
+                language_mapper: Some(AssetPathToLanguageMapper {
+                    map: lua_language_mapper,
+                }),
             },
         }
+    }
+}
+
+fn lua_language_mapper(path: &std::path::Path) -> Language {
+    match path.extension().and_then(|ext| ext.to_str()) {
+        Some("lua") => Language::Lua,
+        _ => Language::Unknown,
     }
 }
 
@@ -72,12 +84,7 @@ impl Plugin for LuaScriptingPlugin {
 
     fn cleanup(&self, app: &mut App) {
         // find all registered types, and insert dummy for calls
-        // let mut type_registry = app.world_mut().get_resource_or_init::<AppTypeRegistry>();
-        // let mut type_registry = type_registry.read();
 
-        // type_registry.iter().map(|t| {
-        //     t.
-        // })
         app.add_context_initializer::<LuaScriptingPlugin>(|_script_id, context: &mut Lua| {
             let world = context.get_world();
             let type_registry = world.type_registry();
@@ -100,12 +107,6 @@ impl Plugin for LuaScriptingPlugin {
             }
             Ok(())
         });
-
-        // let mut type_registry = app.world_mut().get_resource_mut().unwrap();
-
-        // we register up to two levels of nesting, if more are needed, the user will have to do this manually
-        // pre_register_common_containers(&mut type_registry);
-        // pre_register_common_containers(&mut type_registry);
     }
 }
 

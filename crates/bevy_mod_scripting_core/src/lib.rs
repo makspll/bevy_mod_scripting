@@ -1,7 +1,12 @@
 #![allow(clippy::arc_with_non_send_sync)]
 
+use std::sync::atomic::AtomicBool;
+
 use crate::event::ScriptErrorEvent;
-use asset::{AssetIdToScriptIdMap, ScriptAsset, ScriptAssetLoader, ScriptAssetSettings};
+use asset::{
+    AssetPathToLanguageMapper, Language, ScriptAsset, ScriptAssetLoader, ScriptAssetSettings,
+    ScriptMetadataStore,
+};
 use bevy::prelude::*;
 use bindings::{
     function::script_function::AppScriptFunctionRegistry, script_value::ScriptValue,
@@ -18,7 +23,10 @@ use handler::{CallbackSettings, HandlerFn};
 
 use runtime::{Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
 use script::Scripts;
-use systems::{garbage_collector, initialize_runtime, sync_script_data};
+use systems::{
+    garbage_collector, initialize_runtime, insert_script_metadata, remove_script_metadata,
+    sync_script_data, ScriptingSystemSet,
+};
 
 pub mod asset;
 pub mod bindings;
@@ -37,8 +45,11 @@ pub mod world;
 /// Types which act like scripting plugins, by selecting a context and runtime
 /// Each individual combination of context and runtime has specific infrastructure built for it and does not interact with other scripting plugins
 pub trait IntoScriptPluginParams: 'static {
+    const LANGUAGE: Language;
     type C: Context;
     type R: Runtime;
+
+    // fn supported_language() -> Language;
 }
 
 /// Bevy plugin enabling scripting within the bevy mod scripting framework
@@ -53,6 +64,7 @@ pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
     pub context_builder: Option<ContextBuilder<P>>,
     /// The context assigner for assigning contexts to scripts, if not provided default strategy of keeping each script in its own context is used
     pub context_assigner: Option<ContextAssigner<P>>,
+    pub language_mapper: Option<AssetPathToLanguageMapper>,
 }
 
 impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P>
@@ -66,6 +78,7 @@ where
             callback_handler: Default::default(),
             context_builder: Default::default(),
             context_assigner: Default::default(),
+            language_mapper: Default::default(),
         }
     }
 }
@@ -77,10 +90,9 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
             .init_resource::<AppReflectAllocator>()
             .init_resource::<ScriptAssetSettings>()
             .init_resource::<Scripts>()
-            .init_resource::<AssetIdToScriptIdMap>()
+            .init_resource::<ScriptMetadataStore>()
             .init_asset::<ScriptAsset>()
             .register_asset_loader(ScriptAssetLoader {
-                language: "<>".into(),
                 extensions: &[],
                 preprocessor: None,
             })
@@ -98,12 +110,60 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
                 assigner: Some(self.context_assigner.clone().unwrap_or_default()),
                 context_initializers: vec![],
                 context_pre_handling_initializers: vec![],
-            })
-            .add_systems(PostUpdate, (garbage_collector, sync_script_data::<P>))
-            .add_systems(PostStartup, initialize_runtime::<P>);
+            });
+
+        register_script_plugin_systems::<P>(app);
+        register_systems(app);
+
+        if let Some(language_mapper) = &self.language_mapper {
+            app.world_mut()
+                .resource_mut::<ScriptAssetSettings>()
+                .as_mut()
+                .script_language_mappers
+                .push(*language_mapper);
+        }
 
         register_types(app);
     }
+}
+
+// One of registration of systems per bevy application
+fn register_systems(app: &mut App) {
+    static INITIALIZED: AtomicBool = AtomicBool::new(false);
+
+    if INITIALIZED.fetch_or(true, std::sync::atomic::Ordering::Relaxed) {
+        return;
+    }
+
+    app.add_systems(
+        PostUpdate,
+        (
+            (garbage_collector).in_set(ScriptingSystemSet::GarbageCollection),
+            (insert_script_metadata).in_set(ScriptingSystemSet::ScriptMetadataInsertion),
+            (remove_script_metadata).in_set(ScriptingSystemSet::ScriptMetadataRemoval),
+        ),
+    )
+    .configure_sets(
+        PostUpdate,
+        (
+            ScriptingSystemSet::ScriptMetadataInsertion.after(bevy::asset::TrackAssets),
+            ScriptingSystemSet::ScriptCommandDispatch
+                .after(ScriptingSystemSet::ScriptMetadataInsertion)
+                .before(ScriptingSystemSet::ScriptMetadataRemoval),
+        ),
+    );
+}
+
+/// Systems registered per-language
+fn register_script_plugin_systems<P: IntoScriptPluginParams>(app: &mut App) {
+    app.add_systems(
+        PostStartup,
+        (initialize_runtime::<P>).in_set(ScriptingSystemSet::RuntimeInitialization),
+    )
+    .add_systems(
+        PostUpdate,
+        ((sync_script_data::<P>).in_set(ScriptingSystemSet::ScriptCommandDispatch),),
+    );
 }
 
 /// Register all types that need to be accessed via reflection
@@ -225,7 +285,7 @@ impl<D: DocumentationFragment> StoreDocumentation<D> for App {
 
 #[cfg(test)]
 mod test {
-    use asset::AssetIdToScriptIdMap;
+    use asset::ScriptMetadataStore;
 
     use super::*;
 
@@ -243,6 +303,7 @@ mod test {
         impl IntoScriptPluginParams for Plugin {
             type C = C;
             type R = R;
+            const LANGUAGE: Language = Language::Unset;
         }
 
         app.add_plugins(AssetPlugin::default());
@@ -258,6 +319,6 @@ mod test {
             .contains_resource::<ContextLoadingSettings<Plugin>>());
         assert!(app.world().contains_non_send::<RuntimeContainer<Plugin>>());
         assert!(app.world().contains_non_send::<ScriptContexts<Plugin>>());
-        assert!(app.world().contains_resource::<AssetIdToScriptIdMap>());
+        assert!(app.world().contains_resource::<ScriptMetadataStore>());
     }
 }

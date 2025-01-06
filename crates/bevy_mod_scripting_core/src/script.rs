@@ -1,5 +1,3 @@
-//! Everything to do with the way scripts and their contexts are stored and handled.
-
 use crate::{asset::ScriptAsset, context::ContextId};
 use bevy::{asset::Handle, ecs::system::Resource, reflect::Reflect};
 use std::{borrow::Cow, collections::HashMap, ops::Deref};

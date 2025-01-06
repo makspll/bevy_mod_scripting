@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use bevy_mod_scripting_core::{IntoScriptPluginParams, ScriptingPlugin};
+use bevy_mod_scripting_core::{asset::Language, IntoScriptPluginParams, ScriptingPlugin};
 use rune::{
     runtime::{Args, RuntimeContext},
     Unit, Vm,
@@ -19,6 +19,8 @@ pub type RuneRuntime = Vm;
 impl IntoScriptPluginParams for RuneScriptingPlugin {
     type C = RuneScriptContext;
     type R = RuneRuntime;
+
+    const LANGUAGE: Language = Language::Rune;
 }
 
 pub struct RuneScriptingPlugin {

@@ -3,6 +3,7 @@ use bevy::{
     ecs::{entity::Entity, world::World},
 };
 use bevy_mod_scripting_core::{
+    asset::{AssetPathToLanguageMapper, Language},
     bindings::{script_value::ScriptValue, WorldCallbackAccess},
     context::{ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
@@ -13,6 +14,7 @@ use bevy_mod_scripting_core::{
 use rhai::{CallFnOptions, Engine, FnPtr, Scope, AST};
 
 pub use rhai;
+pub mod bindings;
 
 pub type RhaiRuntime = Engine;
 
@@ -24,6 +26,8 @@ pub struct RhaiScriptContext {
 impl IntoScriptPluginParams for RhaiScriptingPlugin {
     type C = RhaiScriptContext;
     type R = RhaiRuntime;
+
+    const LANGUAGE: Language = Language::Rhai;
 }
 
 pub struct RhaiScriptingPlugin {
@@ -42,8 +46,18 @@ impl Default for RhaiScriptingPlugin {
                     load: rhai_context_load,
                     reload: rhai_context_reload,
                 }),
+                language_mapper: Some(AssetPathToLanguageMapper {
+                    map: rhai_language_mapper,
+                }),
             },
         }
+    }
+}
+
+fn rhai_language_mapper(path: &std::path::Path) -> Language {
+    match path.extension().and_then(|ext| ext.to_str()) {
+        Some("rhai") => Language::Rhai,
+        _ => Language::Unknown,
     }
 }
 
