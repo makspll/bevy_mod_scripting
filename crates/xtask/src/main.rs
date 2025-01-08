@@ -187,7 +187,15 @@ enum Xtasks {
     /// Build the main workspace only
     Build,
     /// Build the main workspace, apply all prefferred lints
-    Check,
+    Check {
+        #[clap(
+            long,
+            short,
+            default_value = "false",
+            help = "Run in the expected format for rust-analyzer's override check command"
+        )]
+        ide_mode: bool,
+    },
     /// Build the rust crates.io docs as well as any other docs
     Docs {
         /// Open in browser
@@ -209,7 +217,7 @@ impl Xtasks {
     fn run(self, features: Features) -> Result<()> {
         match self {
             Xtasks::Build => Self::build(features),
-            Xtasks::Check => Self::check(features),
+            Xtasks::Check { ide_mode } => Self::check(features, ide_mode),
             Xtasks::Docs { open, no_rust_docs } => Self::docs(open, no_rust_docs),
             Xtasks::Test => Self::test(features),
             Xtasks::CiCheck => Self::cicd(),
@@ -223,7 +231,8 @@ impl Xtasks {
     }
 
     fn get_cargo_profile() -> Option<String> {
-        Some(std::env::var("BMS_CARGO_PROFILE").unwrap_or_default())
+        let val = std::env::var("BMS_CARGO_PROFILE").ok();
+        val.filter(|v| !v.is_empty())
     }
 
     fn cargo_metadata() -> Result<cargo_metadata::Metadata> {
@@ -350,15 +359,25 @@ impl Xtasks {
         Ok(())
     }
 
-    fn check(features: Features) -> Result<()> {
+    fn check_main_workspace(features: Features, ide_mode: bool) -> Result<()> {
         // start with cargo clippy
+        let mut clippy_args = Vec::default();
+        if ide_mode {
+            clippy_args.push("--message-format=json");
+        }
+        clippy_args.extend(vec!["--all-targets", "--", "-D", "warnings"]);
+
         Self::run_workspace_command(
             "clippy",
             "Failed to run clippy",
             features,
-            vec!["--all-targets", "--", "-D", "warnings"],
+            clippy_args,
             None,
         )?;
+
+        if ide_mode {
+            return Ok(());
+        }
 
         // run cargo fmt checks
         Self::run_system_command(
@@ -368,6 +387,17 @@ impl Xtasks {
             None,
         )?;
 
+        Ok(())
+    }
+
+    fn check_codegen_crate(features: Features, ide_mode: bool) -> Result<()> {
+        // set the working directory to the codegen crate
+        let codegen_dir = Self::relative_workspace_dir(Path::join("crates", "bevy_api_gen"))?;
+        Ok(())
+    }
+
+    fn check(features: Features, ide_mode: bool) -> Result<()> {
+        check_main_workspace(features, ide_mode)?;
         Ok(())
     }
 
@@ -561,7 +591,7 @@ impl Xtasks {
 
         // run lints
         let all_features = Features::all_features();
-        Self::check(all_features.clone())?;
+        Self::check(all_features.clone(), false)?;
 
         // run docs
         Self::docs(false, false)?;

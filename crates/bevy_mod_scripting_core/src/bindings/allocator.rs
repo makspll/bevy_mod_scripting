@@ -195,7 +195,6 @@ impl ReflectAllocator {
     /// Runs a garbage collection pass on the allocations, removing any allocations which have no more strong references
     /// Needs to be run periodically to prevent memory leaks
     pub fn clean_garbage_allocations(&mut self) {
-        bevy::log::trace!("Cleaning garbage allocations");
         self.allocations.retain(|k, _| Arc::strong_count(&k.0) > 1);
     }
 

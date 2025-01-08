@@ -65,6 +65,11 @@ pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
     /// The context assigner for assigning contexts to scripts, if not provided default strategy of keeping each script in its own context is used
     pub context_assigner: Option<ContextAssigner<P>>,
     pub language_mapper: Option<AssetPathToLanguageMapper>,
+
+    /// initializers for the contexts, run when loading the script
+    pub context_initializers: Vec<ContextInitializer<P>>,
+    /// initializers for the contexts run every time before handling events
+    pub context_pre_handling_initializers: Vec<ContextPreHandlingInitializer<P>>,
 }
 
 impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P>
@@ -79,25 +84,15 @@ where
             context_builder: Default::default(),
             context_assigner: Default::default(),
             language_mapper: Default::default(),
+            context_initializers: Default::default(),
+            context_pre_handling_initializers: Default::default(),
         }
     }
 }
 
 impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_event::<ScriptErrorEvent>()
-            .add_event::<ScriptCallbackEvent>()
-            .init_resource::<AppReflectAllocator>()
-            .init_resource::<ScriptAssetSettings>()
-            .init_resource::<Scripts>()
-            .init_resource::<ScriptMetadataStore>()
-            .init_asset::<ScriptAsset>()
-            .register_asset_loader(ScriptAssetLoader {
-                extensions: &[],
-                preprocessor: None,
-            })
-            .insert_resource(self.runtime_settings.as_ref().cloned().unwrap_or_default())
-            .init_resource::<AppScriptFunctionRegistry>()
+        app.insert_resource(self.runtime_settings.as_ref().cloned().unwrap_or_default())
             .insert_non_send_resource::<RuntimeContainer<P>>(RuntimeContainer {
                 runtime: (self.runtime_builder)(),
             })
@@ -113,7 +108,7 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
             });
 
         register_script_plugin_systems::<P>(app);
-        register_systems(app);
+        once_per_app_init(app);
 
         if let Some(language_mapper) = &self.language_mapper {
             app.world_mut()
@@ -124,16 +119,54 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
         }
 
         register_types(app);
+
+        for initializer in self.context_initializers.iter() {
+            app.add_context_initializer::<P>(*initializer);
+        }
+
+        for initializer in self.context_pre_handling_initializers.iter() {
+            app.add_context_pre_handling_initializer::<P>(*initializer);
+        }
     }
 }
 
-// One of registration of systems per bevy application
-fn register_systems(app: &mut App) {
+impl<P: IntoScriptPluginParams> ScriptingPlugin<P> {
+    /// Adds a context initializer to the plugin
+    pub fn add_context_initializer(&mut self, initializer: ContextInitializer<P>) -> &mut Self {
+        self.context_initializers.push(initializer);
+        self
+    }
+
+    /// Adds a context pre-handling initializer to the plugin
+    pub fn add_context_pre_handling_initializer(
+        &mut self,
+        initializer: ContextPreHandlingInitializer<P>,
+    ) -> &mut Self {
+        self.context_pre_handling_initializers.push(initializer);
+        self
+    }
+}
+
+// One of registration of things that need to be done only once per app
+fn once_per_app_init(app: &mut App) {
     static INITIALIZED: AtomicBool = AtomicBool::new(false);
 
     if INITIALIZED.fetch_or(true, std::sync::atomic::Ordering::Relaxed) {
         return;
     }
+
+    app.add_event::<ScriptErrorEvent>()
+        .add_event::<ScriptCallbackEvent>()
+        .init_resource::<AppReflectAllocator>()
+        .init_resource::<ScriptAssetSettings>()
+        .init_resource::<Scripts>()
+        .init_resource::<ScriptMetadataStore>()
+        .init_asset::<ScriptAsset>()
+        .init_resource::<AppScriptFunctionRegistry>()
+        .register_asset_loader(ScriptAssetLoader {
+            extensions: &[],
+            preprocessor: None,
+        });
 
     app.add_systems(
         PostUpdate,
@@ -303,7 +336,7 @@ mod test {
         impl IntoScriptPluginParams for Plugin {
             type C = C;
             type R = R;
-            const LANGUAGE: Language = Language::Unset;
+            const LANGUAGE: Language = Language::Unknown;
         }
 
         app.add_plugins(AssetPlugin::default());

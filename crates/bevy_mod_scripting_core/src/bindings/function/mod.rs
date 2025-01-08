@@ -8,9 +8,7 @@ use script_function::{CallerContext, DynamicScriptFunction, DynamicScriptFunctio
 
 use crate::error::InteropError;
 
-use super::{
-    pretty_print::DisplayWithWorld, script_value::ScriptValue, WorldCallbackAccess, WorldGuard,
-};
+use super::{script_value::ScriptValue, WorldCallbackAccess, WorldGuard};
 
 /// Can be implemented for callables which require dynamic access to the world to be called.
 ///
@@ -33,11 +31,6 @@ impl CallScriptFunction for DynamicScriptFunction {
     ) -> Result<ScriptValue, InteropError> {
         let args = args.into_iter().collect::<Vec<_>>();
         let world_callback_access = WorldCallbackAccess::from_guard(world.clone());
-        bevy::log::debug!(
-            "Calling function {} with args {:?}",
-            self.name(),
-            args.display_with_world(world.clone())
-        );
         // should we be inlining call errors into the return value?
         let return_val = self.call(context, world_callback_access, args);
         match return_val {

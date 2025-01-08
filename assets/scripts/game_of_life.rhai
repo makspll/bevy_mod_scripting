@@ -1,13 +1,14 @@
-fn init() {
-    let LifeState = world.get_type_by_name("LifeState");
-    let life_state = world.get_component(entity,LifeState);
-    let cells = life_state.cells;
+fn on_script_loaded() {
+    world.info("Game of Life script loaded");
+    // let LifeState = world.get_type_by_name("LifeState");
+    // let life_state = world.get_component(entity,LifeState);
+    // let cells = life_state.cells;
 
-    // set some cells alive
-    for x in 1..10000 {
-        let index = rand(0..cells.len());
-        cells[index] = 255;
-    }
+    // // set some cells alive
+    // for x in 1..10000 {
+    //     let index = rand(0..cells.len());
+    //     cells[index] = 255;
+    // }
 }
 
 fn on_update() {

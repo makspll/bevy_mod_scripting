@@ -11,6 +11,8 @@ use std::{
     path::PathBuf,
 };
 
+use super::script_function::DynamicScriptFunctionMut;
+
 /// Describes the procedure for constructing a value of type `T` from a [`ScriptValue`].
 ///
 /// The [`FromScript::This`] associated type is used to allow for the implementation of this trait to return
@@ -382,6 +384,23 @@ where
             }
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<[T; N]>(),
+                value,
+            )),
+        }
+    }
+}
+
+impl FromScript for DynamicScriptFunctionMut {
+    type This<'w> = Self;
+
+    fn from_script(value: ScriptValue, _: WorldGuard<'_>) -> Result<Self::This<'_>, InteropError>
+    where
+        Self: Sized,
+    {
+        match value {
+            ScriptValue::Function(f) => Ok(f),
+            _ => Err(InteropError::value_mismatch(
+                std::any::TypeId::of::<Self>(),
                 value,
             )),
         }

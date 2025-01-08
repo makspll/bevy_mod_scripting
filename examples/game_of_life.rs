@@ -49,7 +49,8 @@ fn run_script_cmd(
             GameOfLifeCommand::Start { language } => {
                 // create an entity with the script component
                 bevy::log::info!(
-                    "Starting game of life spawning entity with the game_of_life.lua script"
+                    "Starting game of life spawning entity with the game_of_life.{} script",
+                    language
                 );
                 commands.spawn(ScriptComponent::new(vec![format!(
                     "scripts/game_of_life.{language}"

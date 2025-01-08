@@ -16,7 +16,7 @@ pub type HandlerFn<P> = fn(
     pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
     runtime: &mut <P as IntoScriptPluginParams>::R,
     world: &mut World,
-) -> Result<(), ScriptError>;
+) -> Result<ScriptValue, ScriptError>;
 
 /// A resource that holds the settings for the callback handler for a specific combination of type parameters
 #[derive(Resource)]

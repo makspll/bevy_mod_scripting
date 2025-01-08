@@ -3,6 +3,9 @@ use ::bevy::prelude::*;
 pub mod bevy_bindings;
 pub mod core;
 
+#[cfg(feature = "test_functions")]
+pub mod test_functions;
+
 pub mod namespaced_register;
 
 pub use core::*;

@@ -45,25 +45,23 @@ pub fn initialize_runtime<P: IntoScriptPluginParams>(
 /// Listens to `AssetEvent<ScriptAsset>::Added` events and populates the script metadata store
 pub fn insert_script_metadata(
     mut events: EventReader<AssetEvent<ScriptAsset>>,
-    mut script_assets: ResMut<Assets<ScriptAsset>>,
+    script_assets: Res<Assets<ScriptAsset>>,
     mut asset_path_map: ResMut<ScriptMetadataStore>,
     settings: Res<ScriptAssetSettings>,
 ) {
     for event in events.read() {
         if let AssetEvent::Added { id } = event {
-            let asset = script_assets.get_mut(*id);
+            let asset = script_assets.get(*id);
             if let Some(asset) = asset {
                 let path = &asset.asset_path;
                 let converter = settings.script_id_mapper.map;
                 let script_id = converter(path);
 
                 let language = settings.select_script_language(path);
-                asset.language = language.clone();
                 let metadata = ScriptMetadata {
                     script_id,
                     language,
                 };
-
                 info!("Populating script metadata for script: {:?}:", metadata);
                 asset_path_map.insert(*id, metadata);
             } else {
@@ -124,9 +122,10 @@ pub fn sync_script_data<P: IntoScriptPluginParams>(
                 }
 
                 info!(
-                    "{}: Dispatching Creation command for script: {:?}",
+                    "{}: Dispatching Creation/Modification command for script: {:?}. Asset Id: {}",
                     P::LANGUAGE,
-                    metadata
+                    metadata,
+                    id
                 );
 
                 if let Some(asset) = script_assets.get(*id) {
@@ -150,6 +149,12 @@ pub fn sync_script_data<P: IntoScriptPluginParams>(
                     }
                 };
 
+                info!(
+                    "{}: Dispatching Deletion command for script: {:?}. Asset Id: {}",
+                    P::LANGUAGE,
+                    metadata,
+                    id
+                );
                 commands.queue(DeleteScript::<P>::new(metadata.script_id.clone()));
             }
             _ => return,
@@ -180,8 +185,6 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
         Query<(Entity, Ref<ScriptComponent>)>,
     )>,
 ) {
-    trace!("Handling events with label `{}`", L::into_callback_label());
-
     let mut runtime_container = world
         .remove_non_send_resource::<RuntimeContainer<P>>()
         .unwrap_or_else(|| {
@@ -249,10 +252,16 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
                         continue;
                     }
                 };
-                let ctxt = script_contexts
-                    .contexts
-                    .get_mut(&script.context_id)
-                    .unwrap();
+
+                let ctxt = match script_contexts.contexts.get_mut(&script.context_id) {
+                    Some(ctxt) => ctxt,
+                    None => {
+                        // if we don't have a context for the script, it's either:
+                        // 1. a script for a different language, in which case we ignore it
+                        // 2. something went wrong. This should not happen though and it's best we ignore this
+                        continue;
+                    }
+                };
 
                 let handler_result = (handler)(
                     event.args.clone(),
@@ -269,7 +278,7 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
                         .with_context(format!("Event handling for: Language: {}", P::LANGUAGE))
                 });
 
-                push_err_and_continue!(errors, handler_result)
+                let _ = push_err_and_continue!(errors, handler_result);
             }
         }
     }
@@ -387,7 +396,7 @@ mod test {
             |args, entity, script, _, ctxt, _, runtime, _| {
                 ctxt.invocations.extend(args);
                 runtime.invocations.push((entity, script.clone()));
-                Ok(())
+                Ok(ScriptValue::Unit)
             },
             runtime,
             contexts,
@@ -474,7 +483,7 @@ mod test {
             |args, entity, script, _, ctxt, _, runtime, _| {
                 ctxt.invocations.extend(args);
                 runtime.invocations.push((entity, script.clone()));
-                Ok(())
+                Ok(ScriptValue::Unit)
             },
             runtime,
             contexts,

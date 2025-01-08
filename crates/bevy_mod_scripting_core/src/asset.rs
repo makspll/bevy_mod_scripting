@@ -17,8 +17,6 @@ pub enum Language {
     Lua,
     Rune,
     External(Cow<'static, str>),
-    /// Initial setting before being processed by the script synchronization systems
-    Unset,
     /// Set if none of the asset path to language mappers match
     Unknown,
 }
@@ -30,7 +28,6 @@ impl std::fmt::Display for Language {
             Language::Lua => "Lua".fmt(f),
             Language::Rune => "Rune".fmt(f),
             Language::External(cow) => cow.fmt(f),
-            Language::Unset => "Unset".fmt(f),
             Language::Unknown => "Unknown".fmt(f),
         }
     }
@@ -42,9 +39,9 @@ pub struct ScriptAsset {
     pub content: Box<[u8]>,
     /// The virtual filesystem path of the asset, used to map to the script Id for asset backed scripts
     pub asset_path: PathBuf,
-    pub language: Language,
 }
 
+#[derive(Default)]
 pub struct ScriptAssetLoader {
     /// The file extensions this loader should handle
     pub extensions: &'static [&'static str],
@@ -76,7 +73,6 @@ impl AssetLoader for ScriptAssetLoader {
         let asset = ScriptAsset {
             content: content.into_boxed_slice(),
             asset_path: load_context.path().to_owned(),
-            language: Language::Unset,
         };
         Ok(asset)
     }
@@ -97,7 +93,7 @@ impl ScriptAssetSettings {
         for mapper in &self.script_language_mappers {
             let language = (mapper.map)(path);
             match language {
-                Language::Unset | Language::Unknown => continue,
+                Language::Unknown => continue,
                 _ => return language,
             }
         }
@@ -112,9 +108,7 @@ impl Default for ScriptAssetSettings {
             script_id_mapper: AssetPathToScriptIdMapper {
                 map: (|path: &Path| path.to_string_lossy().into_owned().into()),
             },
-            script_language_mappers: vec![AssetPathToLanguageMapper {
-                map: (|_: &Path| Language::Unset),
-            }],
+            script_language_mappers: vec![],
         }
     }
 }
@@ -144,6 +138,7 @@ pub struct ScriptMetadata {
 
 impl ScriptMetadataStore {
     pub fn insert(&mut self, id: AssetId<ScriptAsset>, meta: ScriptMetadata) {
+        // TODO: new generations of assets are not going to have the same ID as the old one
         self.map.insert(id, meta);
     }
 

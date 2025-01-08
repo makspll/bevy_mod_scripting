@@ -47,6 +47,8 @@ impl Default for LuaScriptingPlugin {
                 language_mapper: Some(AssetPathToLanguageMapper {
                     map: lua_language_mapper,
                 }),
+                context_initializers: Default::default(),
+                context_pre_handling_initializers: Default::default(),
             },
         }
     }

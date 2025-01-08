@@ -49,6 +49,8 @@ impl Default for RhaiScriptingPlugin {
                 language_mapper: Some(AssetPathToLanguageMapper {
                     map: rhai_language_mapper,
                 }),
+                context_initializers: Default::default(),
+                context_pre_handling_initializers: Default::default(),
             },
         }
     }

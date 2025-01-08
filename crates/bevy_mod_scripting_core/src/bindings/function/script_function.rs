@@ -116,7 +116,7 @@ pub trait GetFunctionTypeDependencies<Marker> {
 
 /// The caller context when calling a script function.
 /// Functions can choose to react to caller preferences such as converting 1-indexed numbers to 0-indexed numbers
-#[derive(Clone, Copy, Debug, Reflect)]
+#[derive(Clone, Copy, Debug, Reflect, Default)]
 #[reflect(opaque)]
 pub struct CallerContext {
     pub convert_to_0_indexed: bool,
