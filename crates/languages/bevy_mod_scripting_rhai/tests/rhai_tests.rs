@@ -1,42 +1,26 @@
-use bevy::{
-    app::App,
-    asset::AssetPlugin,
-    prelude::{Children, Entity, HierarchyPlugin, Parent, World},
-    reflect::{Reflect, TypeRegistration},
-};
-use bevy_mod_scripting_core::{
-    bindings::{
-        access_map::ReflectAccessId, pretty_print::DisplayWithWorld, script_value::ScriptValue,
-        ReflectReference, ScriptTypeRegistration, WorldAccessGuard,
-    },
-    context::ContextLoadingSettings,
-    error::ScriptError,
-    event::CallbackLabel,
-};
-use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
-use bevy_mod_scripting_rhai::{RhaiScriptContext, RhaiScriptingPlugin};
+// use bevy::app::App;
+// use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
+// use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
 use libtest_mimic::{Arguments, Failed, Trial};
-use rhai::Engine;
 use std::{
     fs::{self, DirEntry},
     io, panic,
     path::{Path, PathBuf},
-    sync::Arc,
 };
-use test_utils::test_data::{setup_integration_test, setup_world, EnumerateTestComponents};
+// use test_utils::test_data::setup_integration_test;
 
-/// Initializes world for tests
-fn init_app() -> App {
-    let mut app = setup_integration_test(|_, _| {});
+// Initializes world for tests
+// fn init_app() -> App {
+//     let mut app = setup_integration_test(|_, _| {});
 
-    app.add_plugins(RhaiScriptingPlugin::default())
-        .add_plugins(ScriptFunctionsPlugin);
+//     app.add_plugins(RhaiScriptingPlugin::default())
+//         .add_plugins(ScriptFunctionsPlugin);
 
-    app.finish();
-    app.cleanup();
+//     app.finish();
+//     app.cleanup();
 
-    app
-}
+//     app
+// }
 
 struct Test {
     code: String,
@@ -45,10 +29,12 @@ struct Test {
 
 impl Test {
     fn execute(self) -> Result<(), Failed> {
+        println!("Running test: {}", self.name());
+        println!("Code: {}", self.code);
         // let lua = Lua::new();
         // set file information
-        let mut app = init_app();
-        app.add_systems(schedule, systems)
+        // let mut app = init_app();
+        // app.add_systems(schedule, systems);
 
         // let mut lua = lua_context_load(
         //     &(self.name()).into(),

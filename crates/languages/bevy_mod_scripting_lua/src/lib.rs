@@ -174,7 +174,7 @@ pub fn lua_handler(
     pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
     _: &mut (),
     world: &mut bevy::ecs::world::World,
-) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
+) -> Result<ScriptValue, bevy_mod_scripting_core::error::ScriptError> {
     with_world(world, context, |context| {
         pre_handling_initializers
             .iter()
@@ -183,7 +183,7 @@ pub fn lua_handler(
         let handler: Function = match context.globals().raw_get(callback_label.as_ref()) {
             Ok(handler) => handler,
             // not subscribed to this event type
-            Err(_) => return Ok(()),
+            Err(_) => return Ok(ScriptValue::Unit),
         };
 
         let input = MultiValue::from_vec(
@@ -192,17 +192,17 @@ pub fn lua_handler(
                 .collect::<Result<_, _>>()?,
         );
 
-        handler.call::<()>(input)?;
-        Ok(())
+        let out = handler.call::<LuaScriptValue>(input)?;
+        Ok(out.into())
     })
 }
 
 /// Safely scopes world access for a lua context to the given closure's scope
-pub fn with_world<F: FnOnce(&mut Lua) -> Result<(), ScriptError>>(
+pub fn with_world<O, F: FnOnce(&mut Lua) -> Result<O, ScriptError>>(
     world: &mut World,
     context: &mut Lua,
     f: F,
-) -> Result<(), ScriptError> {
+) -> Result<O, ScriptError> {
     WorldCallbackAccess::with_callback_access(world, |guard| {
         context
             .globals()

@@ -152,7 +152,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
             // If None assign new context ID, otherwise assign the old one
             // If re-loading and different from the previous one, the old one will be removed
             let current_context_id = (assigner.assign)(script.as_deref(), &self.id, &self.content, &mut contexts);
-            
+
             debug!("{}: New context assigned?: {:?}", P::LANGUAGE, current_context_id.is_none() || current_context_id != previous_context_id);
 
             let current_context_id = if let Some(id) = current_context_id {

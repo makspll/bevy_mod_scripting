@@ -175,6 +175,15 @@ struct App {
     subcmd: Xtasks,
 }
 
+#[derive(Debug, Clone, Default, strum::EnumString)]
+#[strum(serialize_all = "snake_case")]
+enum CheckKind {
+    #[default]
+    All,
+    Main,
+    Codegen,
+}
+
 #[derive(Debug, clap::Subcommand)]
 #[clap(
     name = "xtask",
@@ -195,6 +204,15 @@ enum Xtasks {
             help = "Run in the expected format for rust-analyzer's override check command"
         )]
         ide_mode: bool,
+
+        #[clap(
+            long,
+            short,
+            default_value = "all",
+            value_parser=clap::value_parser!(CheckKind),
+            help = "The kind of check to perform",
+        )]
+        kind: CheckKind,
     },
     /// Build the rust crates.io docs as well as any other docs
     Docs {
@@ -217,7 +235,7 @@ impl Xtasks {
     fn run(self, features: Features) -> Result<()> {
         match self {
             Xtasks::Build => Self::build(features),
-            Xtasks::Check { ide_mode } => Self::check(features, ide_mode),
+            Xtasks::Check { ide_mode, kind } => Self::check(features, ide_mode, kind),
             Xtasks::Docs { open, no_rust_docs } => Self::docs(open, no_rust_docs),
             Xtasks::Test => Self::test(features),
             Xtasks::CiCheck => Self::cicd(),
@@ -361,7 +379,7 @@ impl Xtasks {
 
     fn check_main_workspace(features: Features, ide_mode: bool) -> Result<()> {
         // start with cargo clippy
-        let mut clippy_args = Vec::default();
+        let mut clippy_args = vec![];
         if ide_mode {
             clippy_args.push("--message-format=json");
         }
@@ -390,14 +408,42 @@ impl Xtasks {
         Ok(())
     }
 
-    fn check_codegen_crate(features: Features, ide_mode: bool) -> Result<()> {
+    fn check_codegen_crate(_ide_mode: bool) -> Result<()> {
         // set the working directory to the codegen crate
-        let codegen_dir = Self::relative_workspace_dir(Path::join("crates", "bevy_api_gen"))?;
+        // let crates_path = Self::relative_workspace_dir(PathBuf::from("crates"))?;
+        // let codegen_crate_path = crates_path.join("bevy_api_gen");
+
+        // let mut clippy_args = vec!["+nightly-2024-12-15", "clippy"];
+        // if ide_mode {
+        //     clippy_args.push("--message-format=json");
+        // }
+        // clippy_args.extend(vec!["--all-targets", "--", "-D", "warnings"]);
+
+        // Self::run_system_command(
+        //     "cargo",
+        //     "Failed to run clippy on codegen crate",
+        //     clippy_args,
+        //     Some(&codegen_crate_path),
+        // )?;
+
+        // TODO: for now do nothing, it's difficult to get rust analyzer to accept the nightly version
+
         Ok(())
     }
 
-    fn check(features: Features, ide_mode: bool) -> Result<()> {
-        check_main_workspace(features, ide_mode)?;
+    fn check(features: Features, ide_mode: bool, kind: CheckKind) -> Result<()> {
+        match kind {
+            CheckKind::All => {
+                Self::check_main_workspace(features.clone(), ide_mode)?;
+                Self::check_codegen_crate(ide_mode)?;
+            }
+            CheckKind::Main => {
+                Self::check_main_workspace(features, ide_mode)?;
+            }
+            CheckKind::Codegen => {
+                Self::check_codegen_crate(ide_mode)?;
+            }
+        }
         Ok(())
     }
 
@@ -591,7 +637,7 @@ impl Xtasks {
 
         // run lints
         let all_features = Features::all_features();
-        Self::check(all_features.clone(), false)?;
+        Self::check(all_features.clone(), false, CheckKind::Main)?;
 
         // run docs
         Self::docs(false, false)?;
