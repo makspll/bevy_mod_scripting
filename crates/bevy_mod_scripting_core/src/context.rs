@@ -13,7 +13,7 @@ pub type ContextId = u32;
 
 #[derive(Resource)]
 pub struct ScriptContexts<P: IntoScriptPluginParams> {
-    pub(crate) contexts: HashMap<ContextId, P::C>,
+    pub contexts: HashMap<ContextId, P::C>,
 }
 
 impl<P: IntoScriptPluginParams> Default for ScriptContexts<P> {
