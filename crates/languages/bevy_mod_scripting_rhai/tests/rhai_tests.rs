@@ -1,5 +1,7 @@
+use bevy_mod_scripting_core::AddRuntimeInitializer;
 use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
 use libtest_mimic::{Arguments, Failed, Trial};
+use rhai::Dynamic;
 use script_integration_test_harness::execute_integration_test;
 use std::{
     fs::{self, DirEntry},
@@ -21,6 +23,28 @@ impl Test {
             },
             |app| {
                 app.add_plugins(RhaiScriptingPlugin::default());
+                app.add_runtime_initializer::<RhaiScriptingPlugin>(|runtime| {
+                    runtime.register_fn("assert", |a: Dynamic, b: &str| {
+                        if !a.is::<bool>() {
+                            panic!("Expected a boolean value, but got {:?}", a);
+                        }
+                        if !a.as_bool().unwrap() {
+                            panic!("Assertion failed. {}", b);
+                        }
+                    });
+                });
+
+                app.add_runtime_initializer::<RhaiScriptingPlugin>(|runtime| {
+                    runtime.register_fn("assert", |a: Dynamic| {
+                        if !a.is::<bool>() {
+                            panic!("Expected a boolean value, but got {:?}", a);
+                        }
+                        if !a.as_bool().unwrap() {
+                            panic!("Assertion failed");
+                        }
+                    });
+                });
+
                 // app.add_context_initializer::<LuaScriptingPlugin>(|_,ctxt: &mut Lua| {
                 //     let globals = ctxt.globals();
                 //     globals.set(
