@@ -1,7 +1,3 @@
-#![allow(clippy::arc_with_non_send_sync)]
-
-use std::sync::atomic::AtomicBool;
-
 use crate::event::ScriptErrorEvent;
 use asset::{
     AssetPathToLanguageMapper, Language, ScriptAsset, ScriptAssetLoader, ScriptAssetSettings,
@@ -49,13 +45,13 @@ pub trait IntoScriptPluginParams: 'static {
     type C: Context;
     type R: Runtime;
 
+    fn build_runtime() -> Self::R;
+
     // fn supported_language() -> Language;
 }
 
 /// Bevy plugin enabling scripting within the bevy mod scripting framework
 pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
-    /// Callback for initiating the runtime
-    pub runtime_builder: fn() -> P::R,
     /// Settings for the runtime
     pub runtime_settings: Option<RuntimeSettings<P>>,
     /// The handler used for executing callbacks in scripts
@@ -78,7 +74,6 @@ where
 {
     fn default() -> Self {
         Self {
-            runtime_builder: P::R::default,
             runtime_settings: Default::default(),
             callback_handler: Default::default(),
             context_builder: Default::default(),
@@ -94,7 +89,7 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.insert_resource(self.runtime_settings.as_ref().cloned().unwrap_or_default())
             .insert_non_send_resource::<RuntimeContainer<P>>(RuntimeContainer {
-                runtime: (self.runtime_builder)(),
+                runtime: P::build_runtime(),
             })
             .init_non_send_resource::<ScriptContexts<P>>()
             .insert_resource::<CallbackSettings<P>>(CallbackSettings {
@@ -149,11 +144,14 @@ impl<P: IntoScriptPluginParams> ScriptingPlugin<P> {
 
 // One of registration of things that need to be done only once per app
 fn once_per_app_init(app: &mut App) {
-    static INITIALIZED: AtomicBool = AtomicBool::new(false);
+    #[derive(Resource)]
+    struct BMSInitialized;
 
-    if INITIALIZED.fetch_or(true, std::sync::atomic::Ordering::Relaxed) {
+    if app.world().contains_resource::<BMSInitialized>() {
         return;
     }
+
+    app.insert_resource(BMSInitialized);
 
     app.add_event::<ScriptErrorEvent>()
         .add_event::<ScriptCallbackEvent>()
@@ -337,6 +335,10 @@ mod test {
             type C = C;
             type R = R;
             const LANGUAGE: Language = Language::Unknown;
+
+            fn build_runtime() -> Self::R {
+                R
+            }
         }
 
         app.add_plugins(AssetPlugin::default());

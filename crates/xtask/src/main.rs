@@ -175,13 +175,32 @@ struct App {
     subcmd: Xtasks,
 }
 
-#[derive(Debug, Clone, Default, strum::EnumString)]
+#[derive(Debug, Clone, Default, strum::EnumString, strum::VariantNames)]
 #[strum(serialize_all = "snake_case")]
 enum CheckKind {
     #[default]
     All,
     Main,
     Codegen,
+}
+
+impl CheckKind {
+    fn to_placeholder() -> clap::builder::Str {
+        format!("[{}]", CheckKind::VARIANTS.join("|")).into()
+    }
+}
+
+#[derive(Debug, Clone, strum::EnumString, strum::VariantNames)]
+#[strum(serialize_all = "snake_case")]
+enum Macro {
+    /// Integration tests for all script plugins
+    ScriptTests,
+}
+
+impl Macro {
+    pub fn to_placeholder() -> clap::builder::Str {
+        format!("[{}]", Macro::VARIANTS.join("|")).into()
+    }
 }
 
 #[derive(Debug, clap::Subcommand)]
@@ -191,6 +210,16 @@ enum CheckKind {
     about = "A set of xtasks for managing the project. Run 'cargo xtask init' to get started."
 )]
 enum Xtasks {
+    /// Set of tasks with predefined settings for running a combination of the other commands
+    Macros {
+        #[clap(
+            required = true,
+            value_parser=clap::value_parser!(Macro),
+            value_name=Macro::to_placeholder(),
+            help = "The macro to run"
+        )]
+        macro_name: Macro,
+    },
     /// Performs first time local-development environment setup
     Init,
     /// Build the main workspace only
@@ -210,6 +239,7 @@ enum Xtasks {
             short,
             default_value = "all",
             value_parser=clap::value_parser!(CheckKind),
+            value_name=CheckKind::to_placeholder(),
             help = "The kind of check to perform",
         )]
         kind: CheckKind,
@@ -226,7 +256,19 @@ enum Xtasks {
         no_rust_docs: bool,
     },
     /// Build the main workspace, and then run all tests
-    Test,
+    Test {
+        /// Run tests containing the given name only
+        #[clap(long, short)]
+        name: Option<String>,
+
+        /// Run tests in the given package only
+        #[clap(long, short)]
+        package: Option<String>,
+
+        /// Run tests without coverage
+        #[clap(long, short)]
+        no_coverage: bool,
+    },
     /// Perform a full check as it would be done in CI
     CiCheck,
 }
@@ -237,9 +279,21 @@ impl Xtasks {
             Xtasks::Build => Self::build(features),
             Xtasks::Check { ide_mode, kind } => Self::check(features, ide_mode, kind),
             Xtasks::Docs { open, no_rust_docs } => Self::docs(open, no_rust_docs),
-            Xtasks::Test => Self::test(features),
+            Xtasks::Test {
+                name,
+                package,
+                no_coverage,
+            } => Self::test(features, name, package, no_coverage),
             Xtasks::CiCheck => Self::cicd(),
             Xtasks::Init => Self::init(),
+            Xtasks::Macros { macro_name } => match macro_name {
+                Macro::ScriptTests => Self::test(
+                    Features::all_features(),
+                    Some("script_test".to_owned()),
+                    None,
+                    true,
+                ),
+            },
         }
     }
 
@@ -511,20 +565,39 @@ impl Xtasks {
         Ok(())
     }
 
-    fn test(features: Features) -> Result<()> {
+    fn test(
+        features: Features,
+        package: Option<String>,
+        name: Option<String>,
+        no_coverage: bool,
+    ) -> Result<()> {
         // run cargo test with instrumentation
-        std::env::set_var("CARGO_INCREMENTAL", "0");
-        Self::append_rustflags("-Cinstrument-coverage");
 
-        let target_dir = std::env::var("CARGO_TARGET_DIR").unwrap_or_else(|_| "target".to_owned());
-        let coverage_dir = std::path::PathBuf::from(target_dir).join("coverage");
-        let coverage_file = coverage_dir.join("cargo-test-%p-%m.profraw");
+        if !no_coverage {
+            std::env::set_var("CARGO_INCREMENTAL", "0");
+            Self::append_rustflags("-Cinstrument-coverage");
 
-        // clear coverage directory
-        assert!(coverage_dir != std::path::Path::new("/"));
-        let _ = std::fs::remove_dir_all(coverage_dir);
+            let target_dir =
+                std::env::var("CARGO_TARGET_DIR").unwrap_or_else(|_| "target".to_owned());
+            let coverage_dir = std::path::PathBuf::from(target_dir).join("coverage");
+            let coverage_file = coverage_dir.join("cargo-test-%p-%m.profraw");
 
-        std::env::set_var("LLVM_PROFILE_FILE", coverage_file);
+            // clear coverage directory
+            assert!(coverage_dir != std::path::Path::new("/"));
+            let _ = std::fs::remove_dir_all(coverage_dir);
+
+            std::env::set_var("LLVM_PROFILE_FILE", coverage_file);
+        }
+
+        let mut test_args = vec![];
+        if let Some(package) = package {
+            test_args.push("--package".to_owned());
+            test_args.push(package);
+        }
+
+        if let Some(name) = name {
+            test_args.push(name);
+        }
 
         Self::run_workspace_command(
             "test",
@@ -535,51 +608,54 @@ impl Xtasks {
         )?;
 
         // generate coverage report and lcov file
-        Self::run_system_command(
-            "grcov",
-            "Generating html coverage report",
-            vec![
-                ".",
-                "--binary-path",
-                "./target/debug/deps/",
-                "-s",
-                ".",
-                "-t",
-                "html",
-                "--branch",
-                "--ignore-not-existing",
-                "--ignore",
-                "../*",
-                "--ignore",
-                "/*",
-                "-o",
-                "target/coverage/html",
-            ],
-            None,
-        )?;
+        if !no_coverage {
+            Self::run_system_command(
+                "grcov",
+                "Generating html coverage report",
+                vec![
+                    ".",
+                    "--binary-path",
+                    "./target/debug/deps/",
+                    "-s",
+                    ".",
+                    "-t",
+                    "html",
+                    "--branch",
+                    "--ignore-not-existing",
+                    "--ignore",
+                    "../*",
+                    "--ignore",
+                    "/*",
+                    "-o",
+                    "target/coverage/html",
+                ],
+                None,
+            )?;
 
-        Self::run_system_command(
-            "grcov",
-            "Failed to generate coverage report",
-            vec![
-                ".",
-                "--binary-path",
-                "./target/debug/deps/",
-                "-s",
-                ".",
-                "-t",
-                "lcov",
-                "--branch",
-                "--ignore-not-existing",
-                "--ignore",
-                "../*",
-                "--ignore",
-                "/*",
-                "-o",
-                "target/coverage/lcov.info",
-            ],
-            None,
-        )
+            Self::run_system_command(
+                "grcov",
+                "Failed to generate coverage report",
+                vec![
+                    ".",
+                    "--binary-path",
+                    "./target/debug/deps/",
+                    "-s",
+                    ".",
+                    "-t",
+                    "lcov",
+                    "--branch",
+                    "--ignore-not-existing",
+                    "--ignore",
+                    "../*",
+                    "--ignore",
+                    "/*",
+                    "-o",
+                    "target/coverage/lcov.info",
+                ],
+                None,
+            )?;
+        }
+        Ok(())
     }
 
     fn cicd() -> Result<()> {
@@ -645,7 +721,7 @@ impl Xtasks {
         info!("All checks passed, running tests");
 
         // run tests
-        Self::test(all_features)?;
+        Self::test(all_features, None, None, false)?;
 
         Ok(())
     }

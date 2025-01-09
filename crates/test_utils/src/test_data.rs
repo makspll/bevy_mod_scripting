@@ -3,8 +3,6 @@ use std::alloc::Layout;
 use bevy::ecs::{component::*, world::World};
 use bevy::prelude::*;
 use bevy::reflect::*;
-use bevy::render::settings::{RenderCreation, WgpuSettings};
-use bevy::render::RenderPlugin;
 
 /// Test component with Reflect and ReflectComponent registered
 #[derive(Component, Reflect, PartialEq, Eq, Debug)]
@@ -264,13 +262,7 @@ pub fn setup_integration_test<F: FnOnce(&mut World, &mut TypeRegistry)>(init: F)
     // first setup all normal test components and resources
     let mut app = setup_app(init);
 
-    app.add_plugins(DefaultPlugins.set(RenderPlugin {
-        synchronous_pipeline_compilation: true,
-        render_creation: RenderCreation::Automatic(WgpuSettings {
-            backends: None,
-            ..default()
-        }),
-    }));
+    app.add_plugins((MinimalPlugins, AssetPlugin::default(), HierarchyPlugin));
     app
 }
 

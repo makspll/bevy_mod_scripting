@@ -57,7 +57,7 @@ impl FromLua for LuaScriptValue {
                 }
                 ScriptValue::List(vec)
             }
-            // Value::Function(function) => todo!(),
+            Value::Function(_) => todo!("Function FromLua is not implemented yet"),
             // Value::Thread(thread) => todo!(),
             Value::UserData(ud) => {
                 let ud = ud.borrow::<LuaReflectReference>().map_err(|e| {

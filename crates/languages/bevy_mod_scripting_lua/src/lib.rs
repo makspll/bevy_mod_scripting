@@ -26,6 +26,8 @@ impl IntoScriptPluginParams for LuaScriptingPlugin {
     type C = Lua;
     type R = ();
     const LANGUAGE: Language = Language::Lua;
+
+    fn build_runtime() -> Self::R {}
 }
 
 pub struct LuaScriptingPlugin {
@@ -37,7 +39,6 @@ impl Default for LuaScriptingPlugin {
         LuaScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
                 context_assigner: None,
-                runtime_builder: Default::default,
                 runtime_settings: None,
                 callback_handler: Some(lua_handler),
                 context_builder: Some(ContextBuilder::<LuaScriptingPlugin> {

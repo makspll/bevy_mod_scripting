@@ -335,6 +335,12 @@ mod test {
         type R = TestRuntime;
 
         const LANGUAGE: crate::asset::Language = crate::asset::Language::Unknown;
+
+        fn build_runtime() -> Self::R {
+            TestRuntime {
+                invocations: vec![],
+            }
+        }
     }
 
     struct TestRuntime {

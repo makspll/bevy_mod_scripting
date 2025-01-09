@@ -39,8 +39,7 @@ path = "src/lib.rs"
 [dependencies]
 bevy = { workspace = true, default-features = false }
 bevy_mod_scripting_core = { workspace = true, features = ["mlua_impls"] }
-bevy_mod_scripting_functions = { workspace = true, features = [
-], default-features = false }
+bevy_mod_scripting_functions = { workspace = true, features = [] }
 mlua = { workspace = true, features = ["vendored", "send", "macros"] }
 parking_lot = "0.12.1"
 uuid = "1.1"
@@ -48,7 +47,13 @@ smol_str = "0.2.2"
 smallvec = "1.13"
 
 [dev-dependencies]
-test_utils = { workspace = true }
+# test_utils = { workspace = true }
+script_integration_test_harness = { workspace = true }
+bevy_mod_scripting_functions = { workspace = true, features = [
+    "core_functions",
+    "bevy_bindings",
+    "test_functions",
+] }
 libtest-mimic = "0.8"
 regex = "1.11"
 

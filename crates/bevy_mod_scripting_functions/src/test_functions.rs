@@ -2,12 +2,12 @@ use std::sync::Arc;
 
 use crate::NamespaceBuilder;
 use bevy::{
+    app::App,
     prelude::{Entity, World},
     reflect::{Reflect, TypeRegistration},
 };
 use bevy_mod_scripting_core::{
     bindings::{
-        access_map::ReflectAccessId,
         function::{
             script_function::{CallerContext, DynamicScriptFunctionMut},
             CallScriptFunction,
@@ -19,7 +19,8 @@ use bevy_mod_scripting_core::{
 };
 use test_utils::test_data::EnumerateTestComponents;
 
-pub fn register_test_functions(world: &mut World) {
+pub fn register_test_functions(world: &mut App) {
+    let world = world.world_mut();
     NamespaceBuilder::<World>::new_unregistered(world)
         .register("_get_mock_type", |s: WorldCallbackAccess| {
             let world = s.try_read().unwrap();
@@ -79,27 +80,5 @@ pub fn register_test_functions(world: &mut World) {
                     ))
                 }
             },
-        )
-        .register(
-            "_set_write_access",
-            |s: WorldCallbackAccess, ref_: ReflectReference| {
-                let world = s.try_read().unwrap();
-
-                world
-                    .claim_write_access(ReflectAccessId::for_reference(ref_.base.base_id).unwrap());
-            },
-        )
-        .register(
-            "_set_read_access",
-            |s: WorldCallbackAccess, ref_: ReflectReference| {
-                let world = s.try_read().unwrap();
-
-                world.claim_read_access(ReflectAccessId::for_reference(ref_.base.base_id).unwrap());
-            },
-        )
-        .register("_claim_global_access", |s: WorldCallbackAccess| {
-            let world = s.try_read().unwrap();
-
-            world.claim_global_access();
-        });
+        );
 }

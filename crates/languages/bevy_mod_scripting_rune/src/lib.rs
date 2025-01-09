@@ -21,6 +21,10 @@ impl IntoScriptPluginParams for RuneScriptingPlugin {
     type R = RuneRuntime;
 
     const LANGUAGE: Language = Language::Rune;
+
+    fn build_runtime() -> Self::R {
+        todo!()
+    }
 }
 
 pub struct RuneScriptingPlugin {

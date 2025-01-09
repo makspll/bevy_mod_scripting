@@ -28,6 +28,10 @@ impl IntoScriptPluginParams for RhaiScriptingPlugin {
     type R = RhaiRuntime;
 
     const LANGUAGE: Language = Language::Rhai;
+
+    fn build_runtime() -> Self::R {
+        RhaiRuntime::new()
+    }
 }
 
 pub struct RhaiScriptingPlugin {
@@ -38,7 +42,6 @@ impl Default for RhaiScriptingPlugin {
     fn default() -> Self {
         RhaiScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
-                runtime_builder: RhaiRuntime::new,
                 runtime_settings: None,
                 callback_handler: Some(rhai_callback_handler),
                 context_assigner: None,
