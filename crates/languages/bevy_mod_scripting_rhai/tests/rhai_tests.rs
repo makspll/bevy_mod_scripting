@@ -1,26 +1,11 @@
-// use bevy::app::App;
-// use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
-// use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
+use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
 use libtest_mimic::{Arguments, Failed, Trial};
+use script_integration_test_harness::execute_integration_test;
 use std::{
     fs::{self, DirEntry},
     io, panic,
     path::{Path, PathBuf},
 };
-// use test_utils::test_data::setup_integration_test;
-
-// Initializes world for tests
-// fn init_app() -> App {
-//     let mut app = setup_integration_test(|_, _| {});
-
-//     app.add_plugins(RhaiScriptingPlugin::default())
-//         .add_plugins(ScriptFunctionsPlugin);
-
-//     app.finish();
-//     app.cleanup();
-
-//     app
-// }
 
 struct Test {
     code: String,
@@ -29,51 +14,57 @@ struct Test {
 
 impl Test {
     fn execute(self) -> Result<(), Failed> {
-        println!("Running test: {}", self.name());
-        println!("Code: {}", self.code);
-        // let lua = Lua::new();
-        // set file information
-        // let mut app = init_app();
-        // app.add_systems(schedule, systems);
+        execute_integration_test::<RhaiScriptingPlugin, _, _>(
+            |world, type_registry| {
+                let _ = world;
+                let _ = type_registry;
+            },
+            |app| {
+                app.add_plugins(RhaiScriptingPlugin::default());
+                // app.add_context_initializer::<LuaScriptingPlugin>(|_,ctxt: &mut Lua| {
+                //     let globals = ctxt.globals();
+                //     globals.set(
+                //         "assert_throws",
+                //         ctxt.create_function(|lua, (f, reg): (Function, String)| {
+                //             let world = lua.get_world();
+                //             let result = f.call::<()>(MultiValue::new());
+                //             let err = match result {
+                //                 Ok(_) => {
+                //                     return Err(mlua::Error::external(
+                //                         "Expected function to throw error, but it did not.",
+                //                     ))
+                //                 }
+                //                 Err(e) =>
+                //                     ScriptError::from_mlua_error(e).display_with_world(world)
+                //                 ,
+                //             };
 
-        // let mut lua = lua_context_load(
-        //     &(self.name()).into(),
-        //     self.code.as_bytes(),
-        //     &context_settings.context_initializers,
-        //     &context_settings.context_pre_handling_initializers,
-        //     app.world_mut(),
-        //     &mut (),
-        // )
-        // .map_err(|e| {
-        //     let world = app.world_mut();
-        //     let world = WorldAccessGuard::new(world);
-        //     let msg = e.display_with_world(Arc::new(world));
-        //     Failed::from(msg)
-        // })?;
-
-        // lua_handler(
-        //     vec![ScriptValue::Unit],
-        //     Entity::from_raw(1),
-        //     &(self.name()).into(),
-        //     &CallbackLabel::new("on_test").ok_or("invalid callback label")?,
-        //     &mut lua,
-        //     &context_settings.context_pre_handling_initializers,
-        //     &mut (),
-        //     app.world_mut(),
-        // )
-        // .map_err(|e| {
-        //     let world = app.world_mut();
-        //     let world = WorldAccessGuard::new(world);
-        //     let msg = e.display_with_world(Arc::new(world));
-        //     Failed::from(msg)
-        // })?;
-
-        Ok(())
+                //             let regex = regex::Regex::new(&reg).unwrap();
+                //             if regex.is_match(&err) {
+                //                 Ok(())
+                //             } else {
+                //                 Err(mlua::Error::external(
+                //                     format!(
+                //                         "Expected error message to match the regex: \n{}\n\nBut got:\n{}",
+                //                         regex.as_str(),
+                //                         err
+                //                     ),
+                //                 ))
+                //             }
+                //         })?,
+                //     )?;
+                //     Ok(())
+                // });
+            },
+            self.path.as_os_str().to_str().unwrap(),
+            self.code.as_bytes(),
+        )
+        .map_err(Failed::from)
     }
 
     fn name(&self) -> String {
         format!(
-            "lua_test - {}",
+            "script_test - lua - {}",
             self.path
                 .to_string_lossy()
                 .split(&format!("tests{}data", std::path::MAIN_SEPARATOR))
