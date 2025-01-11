@@ -395,13 +395,22 @@ impl UserData for LuaReflectReference {
             )?))
         });
 
-        m.add_meta_function(MetaMethod::ToString, |_, ()| {
+        m.add_meta_function(MetaMethod::ToString, |_, self_: LuaReflectReference| {
             let world = ThreadWorldContainer.get_world();
+            let reflect_reference: ReflectReference = self_.into();
 
-            let func = lookup_function(world, [TypeId::of::<ReflectReference>()], "display")
-                .expect("No 'display' function registered for a ReflectReference");
-
-            Ok(LuaScriptValue(ScriptValue::Function(func)))
+            let func = lookup_function(
+                world.clone(),
+                [TypeId::of::<ReflectReference>()],
+                "display_ref",
+            )
+            .expect("No 'display' function registered for a ReflectReference");
+            let out = func.call(
+                vec![ScriptValue::Reference(reflect_reference)],
+                world,
+                LUA_CALLER_CONTEXT,
+            )?;
+            Ok(LuaScriptValue(out))
             // let mut display_func =
             //     lookup_dynamic_function_typed::<ReflectReference>(lua, "display_ref")
             //         .expect("No 'display' function registered for a ReflectReference");
