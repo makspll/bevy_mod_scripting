@@ -1,8 +1,8 @@
-use super::{from::FromScript, into::IntoScript};
+use super::{from::FromScript, into::IntoScript, namespace::Namespace};
 use crate::{
     bindings::{
         function::from::{Mut, Ref, Val},
-        ReflectReference,
+        ReflectReference, WorldGuard,
     },
     error::InteropError,
     ScriptValue, WorldCallbackAccess,
@@ -15,11 +15,11 @@ use bevy::{
     },
 };
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
-use std::{any::TypeId, borrow::Cow};
 
 #[diagnostic::on_unimplemented(
     message = "Only functions with all arguments impplementing FromScript and return values supporting IntoScript are supported. Registering functions also requires they implement GetInnerTypeDependencies",
@@ -120,13 +120,12 @@ pub trait GetFunctionTypeDependencies<Marker> {
 #[reflect(opaque)]
 pub struct CallerContext {
     pub convert_to_0_indexed: bool,
-    pub self_type: Option<TypeId>,
 }
 
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct FunctionInfo {
     pub name: Cow<'static, str>,
-    pub on_type: Option<TypeId>,
+    pub namespace: Namespace,
 }
 
 impl FunctionInfo {
@@ -136,8 +135,8 @@ impl FunctionInfo {
     }
 
     /// If the function is namespaced to a specific type, this will return the type id of that type
-    pub fn on_type(&self) -> Option<TypeId> {
-        self.on_type
+    pub fn namespace(&self) -> Namespace {
+        self.namespace
     }
 }
 
@@ -183,13 +182,27 @@ impl PartialEq for DynamicScriptFunctionMut {
 }
 
 impl DynamicScriptFunction {
-    pub fn call(
+    /// Call the function with the given arguments and caller context.
+    ///
+    /// In the case of errors wraps the error in a [`InteropError::function_interop_error`] to provide more context.
+    pub fn call<I: IntoIterator<Item = ScriptValue>>(
         &self,
+        args: I,
+        world: WorldGuard,
         context: CallerContext,
-        world: WorldCallbackAccess,
-        args: Vec<ScriptValue>,
-    ) -> ScriptValue {
-        (self.func)(context, world, args)
+    ) -> Result<ScriptValue, InteropError> {
+        let args = args.into_iter().collect::<Vec<_>>();
+        let world_callback_access = WorldCallbackAccess::from_guard(world.clone());
+        // should we be inlining call errors into the return value?
+        let return_val = (self.func)(context, world_callback_access, args);
+        match return_val {
+            ScriptValue::Error(e) => Err(InteropError::function_interop_error(
+                self.name(),
+                self.info.namespace(),
+                e,
+            )),
+            v => Ok(v),
+        }
     }
 
     pub fn name(&self) -> &Cow<'static, str> {
@@ -206,10 +219,10 @@ impl DynamicScriptFunction {
         }
     }
 
-    pub fn with_on_type(self, on_type: Option<TypeId>) -> Self {
+    pub fn with_namespace(self, namespace: Namespace) -> Self {
         Self {
             info: FunctionInfo {
-                on_type,
+                namespace,
                 ..self.info
             },
             func: self.func,
@@ -218,16 +231,29 @@ impl DynamicScriptFunction {
 }
 
 impl DynamicScriptFunctionMut {
-    pub fn call(
+    /// Call the function with the given arguments and caller context.
+    ///
+    /// In the case of errors wraps the error in a [`InteropError::function_interop_error`] to provide more context.
+    pub fn call<I: IntoIterator<Item = ScriptValue>>(
         &self,
+        args: I,
+        world: WorldGuard,
         context: CallerContext,
-        world: WorldCallbackAccess,
-        args: Vec<ScriptValue>,
-    ) -> ScriptValue {
+    ) -> Result<ScriptValue, InteropError> {
+        let args = args.into_iter().collect::<Vec<_>>();
+        let world_callback_access = WorldCallbackAccess::from_guard(world.clone());
+        // should we be inlining call errors into the return value?
         let mut write = self.func.write();
-        write(context, world, args)
+        let return_val = (write)(context, world_callback_access, args);
+        match return_val {
+            ScriptValue::Error(e) => Err(InteropError::function_interop_error(
+                self.name(),
+                self.info.namespace(),
+                e,
+            )),
+            v => Ok(v),
+        }
     }
-
     pub fn name(&self) -> &Cow<'static, str> {
         &self.info.name
     }
@@ -242,10 +268,10 @@ impl DynamicScriptFunctionMut {
         }
     }
 
-    pub fn with_on_type(self, on_type: Option<TypeId>) -> Self {
+    pub fn with_namespace(self, namespace: Namespace) -> Self {
         Self {
             info: FunctionInfo {
-                on_type,
+                namespace,
                 ..self.info
             },
             func: self.func,
@@ -332,38 +358,55 @@ impl ScriptFunctionRegistryArc {
     }
 }
 
+#[derive(Debug, PartialEq, Eq, Hash)]
+struct FunctionKey {
+    name: Cow<'static, str>,
+    namespace: Namespace,
+}
+
 #[derive(Debug, Default)]
 pub struct ScriptFunctionRegistry {
-    functions: HashMap<Cow<'static, str>, DynamicScriptFunction>,
+    functions: HashMap<FunctionKey, DynamicScriptFunction>,
 }
 
 impl ScriptFunctionRegistry {
     /// Register a script function with the given name. If the name already exists,
     /// the new function will be registered as an overload of the function.
-    pub fn register<F, M>(&mut self, name: impl Into<Cow<'static, str>>, func: F)
-    where
+    pub fn register<F, M>(
+        &mut self,
+        namespace: Namespace,
+        name: impl Into<Cow<'static, str>>,
+        func: F,
+    ) where
         F: ScriptFunction<'static, M>,
     {
-        self.register_overload(name, func);
+        self.register_overload(namespace, name, func);
     }
 
-    fn register_overload<F, M>(&mut self, name: impl Into<Cow<'static, str>>, func: F)
-    where
+    fn register_overload<F, M>(
+        &mut self,
+        namespace: Namespace,
+        name: impl Into<Cow<'static, str>>,
+        func: F,
+    ) where
         F: ScriptFunction<'static, M>,
     {
         // always start with non-suffixed registration
-        let name = name.into().clone();
-
-        if !self.contains(&name) {
-            let func = func.into_dynamic_script_function().with_name(name.clone());
-            self.functions.insert(name, func);
+        // TODO: we do alot of string work, can we make this all more efficient?
+        let name: Cow<'static, str> = name.into();
+        if !self.contains(namespace, name.clone()) {
+            let func = func
+                .into_dynamic_script_function()
+                .with_name(name.clone())
+                .with_namespace(namespace);
+            self.functions.insert(FunctionKey { name, namespace }, func);
             return;
         }
 
         for i in 1..16 {
             let overload = format!("{name}-{i}");
-            if !self.contains(&overload) {
-                self.register(overload, func);
+            if !self.contains(namespace, overload.clone()) {
+                self.register(namespace, overload, func);
                 return;
             }
         }
@@ -373,30 +416,54 @@ impl ScriptFunctionRegistry {
         );
     }
 
-    pub fn contains(&self, name: impl AsRef<str>) -> bool {
-        self.functions.contains_key(name.as_ref())
+    pub fn contains(&self, namespace: Namespace, name: impl Into<Cow<'static, str>>) -> bool {
+        self.functions.contains_key(&FunctionKey {
+            name: name.into(),
+            namespace,
+        })
     }
 
-    pub fn get_first(&self, name: impl AsRef<str>) -> Option<&DynamicScriptFunction> {
-        self.functions.get(name.as_ref())
+    /// Get the first overload for the function with the given name and namespace
+    pub fn get_function(
+        &self,
+        namespace: Namespace,
+        name: impl Into<Cow<'static, str>>,
+    ) -> Result<&DynamicScriptFunction, Cow<'static, str>> {
+        let name = name.into();
+        let key = FunctionKey { name, namespace };
+        if let Some(func) = self.functions.get(&key) {
+            Ok(func)
+        } else {
+            Err(key.name)
+        }
     }
 
+    /// Iterate over all overloads for the function with the given name and namespace
+    /// If the iterator variant is returned it is guaranteed to contain at least one element
     pub fn iter_overloads(
         &self,
+        namespace: Namespace,
         name: impl Into<Cow<'static, str>>,
-    ) -> impl Iterator<Item = &DynamicScriptFunction> {
-        let name = name.into();
-        (0..16)
+    ) -> Result<impl Iterator<Item = &DynamicScriptFunction>, Cow<'static, str>> {
+        let name: Cow<'static, str> = name.into();
+        let seed = match self.get_function(namespace, name.clone()) {
+            Ok(func) => std::iter::once(func),
+            Err(name) => return Err(name),
+        };
+
+        let overloads = (1..16)
             .map(move |i| {
                 if i == 0 {
-                    self.functions.get(&name)
+                    self.get_function(namespace, name.clone())
                 } else {
                     let name: Cow<'static, str> = format!("{}-{i}", name).into();
-                    self.functions.get(&name)
+                    self.get_function(namespace, name)
                 }
             })
-            .take_while(|o| o.is_some())
-            .map(|o| o.unwrap())
+            .take_while(|o| o.is_ok())
+            .map(|o| o.unwrap());
+
+        Ok(seed.chain(overloads))
     }
 }
 
@@ -529,20 +596,39 @@ mod test {
     fn test_register_script_function() {
         let mut registry = ScriptFunctionRegistry::default();
         let fn_ = |a: usize, b: usize| a + b;
-        registry.register("test", fn_);
-        registry.get_first("test").expect("Failed to get function");
+        let namespace = Namespace::Global;
+        registry.register(namespace, "test", fn_);
+        let function = registry
+            .get_function(namespace, "test")
+            .expect("Failed to get function");
+
+        assert_eq!(function.info.name(), "test");
+        assert_eq!(function.info.namespace(), namespace);
     }
 
     #[test]
     fn test_overloaded_script_function() {
         let mut registry = ScriptFunctionRegistry::default();
         let fn_ = |a: usize, b: usize| a + b;
-        registry.register("test", fn_);
+        let namespace = Namespace::Global;
+        registry.register(namespace, "test", fn_);
         let fn_2 = |a: usize, b: i32| a + (b as usize);
-        registry.register("test", fn_2);
+        registry.register(namespace, "test", fn_2);
 
-        registry.get_first("test").expect("Failed to get function");
+        let first_function = registry
+            .get_function(namespace, "test")
+            .expect("Failed to get function");
 
-        assert_eq!(registry.iter_overloads("test").collect::<Vec<_>>().len(), 2);
+        assert_eq!(first_function.info.name(), "test");
+        assert_eq!(first_function.info.namespace(), namespace);
+
+        let all_functions = registry
+            .iter_overloads(namespace, "test")
+            .expect("Failed to get overloads")
+            .collect::<Vec<_>>();
+
+        assert_eq!(all_functions.len(), 2);
+        assert_eq!(all_functions[0].info.name(), "test");
+        assert_eq!(all_functions[1].info.name(), "test-1");
     }
 }

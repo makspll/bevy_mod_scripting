@@ -1,6 +1,5 @@
 use crate::bindings::function::script_function::{
     AppScriptFunctionRegistry, DynamicScriptFunction, GetFunctionTypeDependencies, ScriptFunction,
-    ScriptFunctionRegistry,
 };
 use bevy::{
     prelude::{AppTypeRegistry, World},
@@ -53,10 +52,14 @@ pub trait GetNamespacedFunction {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum Namespace {
-    /// The function is registered in the global namespace, i.e. with no namespace
+    /// The function is registered in the global namespace, i.e. with no namespace.
+    /// In practice functions in this namespace should be callable directly by their name, i.e. `my_function()`
+    #[default]
     Global,
-    /// The function is registered in the namespace corresponding to the given type
+    /// The function is registered in the namespace corresponding to the given type.
+    /// In practice functions in this namespace should be callable by their qualified name, i.e. `MyType.my_function()`
     OnType(TypeId),
 }
 
@@ -79,63 +82,61 @@ impl Namespace {
     }
 
     /// Returns the fully qualified name of a function in this namespace
-    pub fn function_name(self, name: Cow<'static, str>) -> Cow<'static, str> {
+    pub fn function_name<I: Into<Cow<'static, str>>>(self, name: I) -> Cow<'static, str> {
         match self {
-            Namespace::Global => name,
-            Namespace::OnType(type_id) => Cow::Owned(format!("{:?}::{}", type_id, name)),
+            Namespace::Global => name.into(),
+            Namespace::OnType(type_id) => Cow::Owned(format!("{:?}::{}", type_id, name.into())),
         }
     }
 }
 
-impl RegisterNamespacedFunction for ScriptFunctionRegistry {
-    fn register_namespaced_function<S, N, F, M>(&mut self, name: N, function: F)
-    where
-        N: Into<Cow<'static, str>>,
-        S: IntoNamespace,
-        F: ScriptFunction<'static, M>,
-    {
-        let cow: Cow<'static, str> = name.into();
-        let function_name = S::into_namespace().function_name(cow);
-        self.register(function_name, function);
-    }
-}
+// impl RegisterNamespacedFunction for ScriptFunctionRegistry {
+//     fn register_namespaced_function<S, N, F, M>(&mut self, name: N, function: F)
+//     where
+//         N: Into<Cow<'static, str>>,
+//         S: IntoNamespace,
+//         F: ScriptFunction<'static, M>,
+//     {
+//         self.register(S::into_namespace(), name, function);
+//     }
+// }
 
-impl GetNamespacedFunction for ScriptFunctionRegistry {
-    fn iter_overloads_namespaced<N>(
-        &self,
-        name: N,
-        namespace: Namespace,
-    ) -> impl Iterator<Item = &DynamicScriptFunction>
-    where
-        N: Into<Cow<'static, str>>,
-    {
-        let cow: Cow<'static, str> = name.into();
-        let function_name = namespace.function_name(cow);
-        self.iter_overloads(function_name)
-    }
+// impl GetNamespacedFunction for ScriptFunctionRegistry {
+//     fn iter_overloads_namespaced<N>(
+//         &self,
+//         name: N,
+//         namespace: Namespace,
+//     ) -> impl Iterator<Item = &DynamicScriptFunction>
+//     where
+//         N: Into<Cow<'static, str>>,
+//     {
+//         let cow: Cow<'static, str> = name.into();
+//         let function_name = namespace.function_name(cow);
+//         self.iter_overloads(function_name)
+//     }
 
-    fn get_namespaced_function<N>(
-        &self,
-        name: N,
-        namespace: Namespace,
-    ) -> Option<&DynamicScriptFunction>
-    where
-        N: Into<Cow<'static, str>>,
-    {
-        let cow: Cow<'static, str> = name.into();
-        let function_name = namespace.function_name(cow);
-        self.get_first(&function_name)
-    }
+//     fn get_namespaced_function<N>(
+//         &self,
+//         name: N,
+//         namespace: Namespace,
+//     ) -> Option<&DynamicScriptFunction>
+//     where
+//         N: Into<Cow<'static, str>>,
+//     {
+//         let cow: Cow<'static, str> = name.into();
+//         let function_name = namespace.function_name(cow);
+//         self.get_first(&function_name)
+//     }
 
-    fn has_namespaced_function<N>(&self, name: N, namespace: Namespace) -> bool
-    where
-        N: Into<Cow<'static, str>>,
-    {
-        let cow: Cow<'static, str> = name.into();
-        let function_name = namespace.function_name(cow);
-        self.contains(&function_name)
-    }
-}
+//     fn has_namespaced_function<N>(&self, name: N, namespace: Namespace) -> bool
+//     where
+//         N: Into<Cow<'static, str>>,
+//     {
+//         let cow: Cow<'static, str> = name.into();
+//         let function_name = namespace.function_name(cow);
+//         self.contains(&function_name)
+//     }
+// }
 
 pub struct NamespaceBuilder<'a, N> {
     namespace: PhantomData<N>,
@@ -179,7 +180,7 @@ impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
                     .world
                     .get_resource_or_init::<AppScriptFunctionRegistry>();
                 let mut registry = registry.write();
-                registry.register_namespaced_function::<S, _, F, M>(name, function);
+                registry.register(S::into_namespace(), name, function);
             }
             {
                 let type_registry = self.world.get_resource_or_init::<AppTypeRegistry>();

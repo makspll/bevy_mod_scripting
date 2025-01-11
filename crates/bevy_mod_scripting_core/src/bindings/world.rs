@@ -7,6 +7,7 @@
 
 use super::{
     access_map::{AccessCount, AccessMap, ReflectAccessId},
+    function::script_function::AppScriptFunctionRegistry,
     AppReflectAllocator, ReflectBase, ReflectBaseType, ReflectReference, ScriptTypeRegistration,
 };
 use crate::{error::InteropError, with_access_read, with_access_write, with_global_access};
@@ -234,6 +235,7 @@ pub(crate) struct WorldAccessGuardInner<'w> {
     /// Cached for convenience, since we need it for most operations, means we don't need to lock the type registry every time
     type_registry: TypeRegistryArc,
     allocator: AppReflectAllocator,
+    function_registry: AppScriptFunctionRegistry,
 }
 
 impl<'w> WorldAccessGuard<'w> {
@@ -250,11 +252,17 @@ impl<'w> WorldAccessGuard<'w> {
             .expect("Reflect allocator not present, cannot create world access guard")
             .clone();
 
+        let function_registry = world
+            .get_resource::<AppScriptFunctionRegistry>()
+            .expect("Function registry not present, cannot create world access guard")
+            .clone();
+
         Self(Arc::new(WorldAccessGuardInner {
             cell: world.as_unsafe_world_cell(),
             accesses: Default::default(),
             allocator,
             type_registry,
+            function_registry,
         }))
     }
 
@@ -339,63 +347,20 @@ impl<'w> WorldAccessGuard<'w> {
         self.0.accesses.release_global_access()
     }
 
+    /// Returns the type registry for the world
     pub fn type_registry(&self) -> TypeRegistryArc {
         self.0.type_registry.clone()
     }
 
+    /// Returns the script allocator for the world
     pub fn allocator(&self) -> AppReflectAllocator {
         self.0.allocator.clone()
     }
 
-    // #[track_caller]
-    // /// Call a function on a type which can be proxied, first by unproxying the input with world access,
-    // /// then calling the function and finally proxying the output with the allocator.
-    // pub fn proxy_call<'i, O: Proxy, T: Unproxy, F: Fn(T::Output<'_>) -> O::Input<'i>>(
-    //     &self,
-    //     proxied_input: T,
-    //     f: F,
-    // ) -> ScriptResult<O> {
-    //     self.try_proxy_call(proxied_input, |o| Ok::<_, ScriptError>(f(o)))
-    // }
-
-    // pub fn try_proxy_call<
-    //     'i,
-    //     O: Proxy,
-    //     E: Into<Box<dyn std::error::Error + Send + Sync>>,
-    //     T: Unproxy,
-    //     F: Fn(T::Output<'_>) -> Result<O::Input<'i>, E>,
-    // >(
-    //     &self,
-    //     mut proxied_input: T,
-    //     f: F,
-    // ) -> ScriptResult<O> {
-    //     let type_registry = self.type_registry();
-    //     let type_registry = type_registry.read();
-
-    //     let app_allocator = self.allocator();
-
-    //     let output = (|| {
-    //         let unproxied_input = {
-    //             let allocator = app_allocator.read();
-    //             proxied_input.collect_accesses(self)?;
-    //             unsafe { proxied_input.unproxy_with_world(self, &type_registry, &allocator) }?
-    //         };
-
-    //         let out = f(unproxied_input).map_err(|e| {
-    //             let e: Box<dyn std::error::Error + Send + Sync> = e.into();
-    //             ScriptError::new_generic_error(e)
-    //         })?;
-
-    //         let mut allocator = app_allocator.write();
-    //         let proxied_output = O::proxy_with_allocator(out, &mut allocator)?;
-    //         Ok(proxied_output)
-    //     })();
-
-    //     // make sure to release all accesses
-    //     proxied_input.release_accesses(self);
-
-    //     output
-    // }
+    /// Returns the function registry for the world
+    pub fn script_function_registry(&self) -> AppScriptFunctionRegistry {
+        self.0.function_registry.clone()
+    }
 
     /// Safely accesses the resource by claiming and releasing access to it.
     ///

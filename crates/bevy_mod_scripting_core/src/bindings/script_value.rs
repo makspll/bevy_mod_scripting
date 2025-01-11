@@ -4,7 +4,10 @@ use bevy::reflect::{OffsetAccess, ParsedPath, Reflect};
 
 use crate::error::InteropError;
 
-use super::{function::script_function::DynamicScriptFunctionMut, ReflectReference};
+use super::{
+    function::script_function::{DynamicScriptFunction, DynamicScriptFunctionMut},
+    ReflectReference,
+};
 
 /// An abstraction of values that can be passed to and from scripts.
 /// This allows us to re-use logic between scripting languages.
@@ -25,13 +28,23 @@ pub enum ScriptValue {
     List(Vec<ScriptValue>),
     /// Represents a reference to a value.
     Reference(ReflectReference),
-    /// A dynamic script function
-    Function(DynamicScriptFunctionMut),
+    /// A dynamic script function possibly storing state. Preffer using the [`ScriptValue::Function`] variant instead if possible.
+    FunctionMut(DynamicScriptFunctionMut),
+    /// A stateless dynamic script function
+    Function(DynamicScriptFunction),
     /// Represents any error, will be thrown when returned to a script
     Error(InteropError),
 }
 
 impl ScriptValue {
+    /// Returns the contained string if this is a string variant otherwise returns the original value.
+    pub fn as_string(self) -> Result<Cow<'static, str>, Self> {
+        match self {
+            ScriptValue::String(s) => Ok(s),
+            other => Err(other),
+        }
+    }
+
     pub fn type_name(&self) -> String {
         match self {
             ScriptValue::Unit => "Unit".to_owned(),
@@ -41,6 +54,7 @@ impl ScriptValue {
             ScriptValue::String(_) => "String".to_owned(),
             ScriptValue::List(_) => "List".to_owned(),
             ScriptValue::Reference(_) => "Reference".to_owned(),
+            ScriptValue::FunctionMut(_) => "FunctionMut".to_owned(),
             ScriptValue::Function(_) => "Function".to_owned(),
             ScriptValue::Error(_) => "Error".to_owned(),
         }

@@ -1,6 +1,6 @@
 use crate::bindings::{
-    access_map::DisplayCodeLocation, pretty_print::DisplayWithWorld, script_value::ScriptValue,
-    ReflectBaseType, ReflectReference,
+    access_map::DisplayCodeLocation, function::namespace::Namespace,
+    pretty_print::DisplayWithWorld, script_value::ScriptValue, ReflectBaseType, ReflectReference,
 };
 use bevy::{
     ecs::component::ComponentId,
@@ -382,11 +382,7 @@ impl InteropError {
     }
 
     /// Thrown when an error happens in a function call. The inner error provides details on the error.
-    pub fn function_interop_error(
-        function_name: &str,
-        on: Option<TypeId>,
-        error: InteropError,
-    ) -> Self {
+    pub fn function_interop_error(function_name: &str, on: Namespace, error: InteropError) -> Self {
         Self(Arc::new(InteropErrorInner::FunctionInteropError {
             function_name: function_name.to_string(),
             on,
@@ -530,7 +526,7 @@ pub enum InteropErrorInner {
     },
     FunctionInteropError {
         function_name: String,
-        on: Option<TypeId>,
+        on: Namespace,
         error: InteropError,
     },
     FunctionArgConversionError {
@@ -667,7 +663,10 @@ impl DisplayWithWorld for InteropErrorInner {
                 "Missing world. The world was not initialized in the script context.".to_owned()
             },
             InteropErrorInner::FunctionInteropError { function_name, on, error } => {
-                let opt_on = on.map(|t| format!("on type: {}", t.display_with_world(world.clone()))).unwrap_or_default();
+                let opt_on = match on {
+                    Namespace::Global => "".to_owned(),
+                    Namespace::OnType(type_id) => format!("on type: {}", type_id.display_with_world(world.clone())),
+                };
                 let display_name = if function_name.starts_with("TypeId") {
                     function_name.split("::").last().unwrap()
                 } else {
@@ -703,7 +702,7 @@ impl DisplayWithWorld for InteropErrorInner {
         }
     }
 
-    // todo macro this
+    // todo macro this, or use format strings to reduce duplication
     fn display_without_world(&self) -> String {
         match self {
             InteropErrorInner::MissingFunctionError { on, function_name } => {
@@ -822,8 +821,10 @@ impl DisplayWithWorld for InteropErrorInner {
                 "Missing world. The world was not initialized in the script context.".to_owned()
             },
             InteropErrorInner::FunctionInteropError { function_name, on, error } => {
-                let opt_on = on.map(|t| format!("on type: {}", t.display_without_world())).unwrap_or_default();
-                let display_name = if function_name.starts_with("TypeId") {
+                let opt_on = match on {
+                    Namespace::Global => "".to_owned(),
+                    Namespace::OnType(type_id) => format!("on type: {}", type_id.display_without_world()),
+                };                let display_name = if function_name.starts_with("TypeId") {
                     function_name.split("::").last().unwrap()
                 } else {
                     function_name.as_str()

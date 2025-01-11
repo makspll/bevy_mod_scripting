@@ -10,7 +10,6 @@ use bevy_mod_scripting_core::{
         function::{
             namespace::NamespaceBuilder,
             script_function::{CallerContext, DynamicScriptFunctionMut},
-            CallScriptFunction,
         },
         pretty_print::DisplayWithWorld,
         ReflectReference, ScriptTypeRegistration, WorldCallbackAccess,
@@ -52,11 +51,10 @@ pub fn register_test_functions(world: &mut App) {
         )
         .register(
             "_assert_throws",
-            |s: WorldCallbackAccess, mut f: DynamicScriptFunctionMut, reg: String| {
+            |s: WorldCallbackAccess, f: DynamicScriptFunctionMut, reg: String| {
                 let world = s.try_read().unwrap();
 
-                let result =
-                    f.call_script_function(vec![], world.clone(), CallerContext::default());
+                let result = f.call(vec![], world.clone(), CallerContext::default());
                 let err = match result {
                     Ok(_) => {
                         return Err(InteropError::external_error(

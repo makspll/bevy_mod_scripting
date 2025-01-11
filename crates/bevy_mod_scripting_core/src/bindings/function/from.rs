@@ -11,7 +11,7 @@ use std::{
     path::PathBuf,
 };
 
-use super::script_function::DynamicScriptFunctionMut;
+use super::script_function::{DynamicScriptFunction, DynamicScriptFunctionMut};
 
 /// Describes the procedure for constructing a value of type `T` from a [`ScriptValue`].
 ///
@@ -391,6 +391,23 @@ where
 }
 
 impl FromScript for DynamicScriptFunctionMut {
+    type This<'w> = Self;
+
+    fn from_script(value: ScriptValue, _: WorldGuard<'_>) -> Result<Self::This<'_>, InteropError>
+    where
+        Self: Sized,
+    {
+        match value {
+            ScriptValue::FunctionMut(f) => Ok(f),
+            _ => Err(InteropError::value_mismatch(
+                std::any::TypeId::of::<Self>(),
+                value,
+            )),
+        }
+    }
+}
+
+impl FromScript for DynamicScriptFunction {
     type This<'w> = Self;
 
     fn from_script(value: ScriptValue, _: WorldGuard<'_>) -> Result<Self::This<'_>, InteropError>

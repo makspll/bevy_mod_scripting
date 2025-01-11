@@ -12,10 +12,14 @@ use bevy::{
     window::{PrimaryWindow, WindowResized},
 };
 use bevy_console::{make_layer, AddConsoleCommand, ConsoleCommand, ConsoleOpen, ConsolePlugin};
-use bevy_mod_scripting::{NamespaceBuilder, ScriptFunctionsPlugin};
+use bevy_mod_scripting::ScriptFunctionsPlugin;
 use bevy_mod_scripting_core::{
-    asset::ScriptAsset, bindings::script_value::ScriptValue, callback_labels,
-    event::ScriptCallbackEvent, script::ScriptComponent, systems::event_handler,
+    asset::ScriptAsset,
+    bindings::{function::namespace::NamespaceBuilder, script_value::ScriptValue},
+    callback_labels,
+    event::ScriptCallbackEvent,
+    script::ScriptComponent,
+    systems::event_handler,
 };
 use bevy_mod_scripting_lua::LuaScriptingPlugin;
 use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
