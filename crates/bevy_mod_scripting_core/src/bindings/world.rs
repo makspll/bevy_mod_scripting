@@ -24,6 +24,7 @@ use bevy::{
 };
 use std::{
     any::TypeId,
+    cell::RefCell,
     fmt::Debug,
     sync::{Arc, Weak},
     time::Duration,
@@ -943,6 +944,51 @@ impl WorldAccessGuard<'_> {
             let world = unsafe { self.0.cell.world_mut() };
             world.send_event(AppExit::Success);
         });
+    }
+}
+
+/// Utility type for accessing the world in a callback
+pub trait WorldContainer {
+    type Error: Debug;
+    /// Sets the world to the given value
+    fn set_world(&mut self, world: WorldCallbackAccess) -> Result<(), Self::Error>;
+
+    /// Gets the world, use [`WorldContainer::try_get_world`] if you want to handle errors with retrieving the world
+    /// # Panics
+    /// - if the world has not been set
+    /// - if the world has been dropped
+    fn get_world(&self) -> WorldGuard<'static> {
+        self.try_get_world().expect("World not set, or expired")
+    }
+
+    /// Tries to get the world
+    fn try_get_world(&self) -> Result<Arc<WorldAccessGuard<'static>>, Self::Error>;
+}
+
+/// A world container that stores the world in a thread local
+pub struct ThreadWorldContainer;
+
+thread_local! {
+    static WORLD_CALLBACK_ACCESS: RefCell<Option<WorldCallbackAccess>> = const { RefCell::new(None) };
+}
+
+impl WorldContainer for ThreadWorldContainer {
+    type Error = InteropError;
+
+    fn set_world(&mut self, world: WorldCallbackAccess) -> Result<(), Self::Error> {
+        WORLD_CALLBACK_ACCESS.with(|w| {
+            w.replace(Some(world));
+        });
+        Ok(())
+    }
+
+    fn try_get_world(&self) -> Result<Arc<WorldAccessGuard<'static>>, Self::Error> {
+        WORLD_CALLBACK_ACCESS.with(|w| {
+            w.borrow()
+                .as_ref()
+                .map(|w| w.try_read())
+                .ok_or_else(InteropError::missing_world)
+        })?
     }
 }
 

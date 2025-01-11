@@ -4,19 +4,19 @@ use bevy::{
 };
 use bevy_mod_scripting_core::{
     asset::{AssetPathToLanguageMapper, Language},
-    bindings::{script_value::ScriptValue, WorldCallbackAccess},
+    bindings::{
+        script_value::ScriptValue, ThreadWorldContainer, WorldCallbackAccess, WorldContainer,
+    },
     context::{ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
     event::CallbackLabel,
     reflection_extensions::PartialReflectExt,
     script::ScriptId,
-    AddContextInitializer, AddContextPreHandlingInitializer, IntoScriptPluginParams,
-    ScriptingPlugin,
+    AddContextInitializer, IntoScriptPluginParams, ScriptingPlugin,
 };
 use bindings::{
     reference::{LuaReflectReference, LuaStaticReflectReference},
     script_value::LuaScriptValue,
-    world::GetWorld,
 };
 pub use mlua;
 use mlua::{Function, IntoLua, Lua, MultiValue};
@@ -48,8 +48,31 @@ impl Default for LuaScriptingPlugin {
                 language_mapper: Some(AssetPathToLanguageMapper {
                     map: lua_language_mapper,
                 }),
-                context_initializers: Default::default(),
-                context_pre_handling_initializers: Default::default(),
+                context_initializers: vec![|_script_id, context| {
+                    context
+                        .globals()
+                        .set(
+                            "world",
+                            LuaStaticReflectReference(std::any::TypeId::of::<World>()),
+                        )
+                        .map_err(ScriptError::from_mlua_error)?;
+                    Ok(())
+                }],
+                context_pre_handling_initializers: vec![|script_id, entity, context| {
+                    let world = ThreadWorldContainer.get_world();
+                    context
+                        .globals()
+                        .set(
+                            "entity",
+                            LuaReflectReference(<Entity>::allocate(Box::new(entity), world)),
+                        )
+                        .map_err(ScriptError::from_mlua_error)?;
+                    context
+                        .globals()
+                        .set("script_id", script_id)
+                        .map_err(ScriptError::from_mlua_error)?;
+                    Ok(())
+                }],
             },
         }
     }
@@ -65,31 +88,13 @@ fn lua_language_mapper(path: &std::path::Path) -> Language {
 impl Plugin for LuaScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         self.scripting_plugin.build(app);
-        // register_lua_values(app);
-        app.add_context_pre_handling_initializer::<LuaScriptingPlugin>(
-            |script_id, entity, context: &mut Lua| {
-                let world = context.get_world();
-                context
-                    .globals()
-                    .set(
-                        "entity",
-                        LuaReflectReference(<Entity>::allocate(Box::new(entity), world)),
-                    )
-                    .map_err(ScriptError::from_mlua_error)?;
-                context
-                    .globals()
-                    .set("script_id", script_id)
-                    .map_err(ScriptError::from_mlua_error)?;
-                Ok(())
-            },
-        );
     }
 
     fn cleanup(&self, app: &mut App) {
         // find all registered types, and insert dummy for calls
 
         app.add_context_initializer::<LuaScriptingPlugin>(|_script_id, context: &mut Lua| {
-            let world = context.get_world();
+            let world = ThreadWorldContainer.get_world();
             let type_registry = world.type_registry();
             let type_registry = type_registry.read();
 
@@ -205,14 +210,7 @@ pub fn with_world<O, F: FnOnce(&mut Lua) -> Result<O, ScriptError>>(
     f: F,
 ) -> Result<O, ScriptError> {
     WorldCallbackAccess::with_callback_access(world, |guard| {
-        context
-            .globals()
-            .set(
-                "world",
-                LuaStaticReflectReference(std::any::TypeId::of::<World>()),
-            )
-            .map_err(ScriptError::from_mlua_error)?;
-        context.set_app_data(guard.clone());
+        ThreadWorldContainer.set_world(guard.clone())?;
         f(context)
     })
 }

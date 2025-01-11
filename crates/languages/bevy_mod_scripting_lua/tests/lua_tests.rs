@@ -1,5 +1,5 @@
-use bevy_mod_scripting_core::{bindings::pretty_print::DisplayWithWorld, error::ScriptError, AddContextInitializer};
-use bevy_mod_scripting_lua::{bindings::world::GetWorld, LuaScriptingPlugin};
+use bevy_mod_scripting_core::{bindings::{pretty_print::DisplayWithWorld, ThreadWorldContainer, WorldContainer}, error::ScriptError, AddContextInitializer};
+use bevy_mod_scripting_lua::LuaScriptingPlugin;
 use libtest_mimic::{Arguments, Failed, Trial};
 use mlua::{Function, Lua, MultiValue};
 use script_integration_test_harness::execute_integration_test;
@@ -27,8 +27,8 @@ impl Test {
                     let globals = ctxt.globals();
                     globals.set(
                         "assert_throws",
-                        ctxt.create_function(|lua, (f, reg): (Function, String)| {
-                            let world = lua.get_world();
+                        ctxt.create_function(|_lua, (f, reg): (Function, String)| {
+                            let world =  ThreadWorldContainer.get_world();
                             let result = f.call::<()>(MultiValue::new());
                             let err = match result {
                                 Ok(_) => {

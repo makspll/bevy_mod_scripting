@@ -4,7 +4,9 @@ use bevy::{
 };
 use bevy_mod_scripting_core::{
     asset::{AssetPathToLanguageMapper, Language},
-    bindings::{script_value::ScriptValue, WorldCallbackAccess},
+    bindings::{
+        script_value::ScriptValue, ThreadWorldContainer, WorldCallbackAccess, WorldContainer,
+    },
     context::{ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
     event::CallbackLabel,
@@ -53,7 +55,11 @@ impl Default for RhaiScriptingPlugin {
                     map: rhai_language_mapper,
                 }),
                 context_initializers: Default::default(),
-                context_pre_handling_initializers: Default::default(),
+                context_pre_handling_initializers: vec![|_script, _entity, context| {
+                    let world = ThreadWorldContainer.get_world();
+                    context.scope.push("world", world);
+                    Ok(())
+                }],
             },
         }
     }
@@ -169,7 +175,7 @@ pub fn with_world<O, F: FnOnce(&mut RhaiScriptContext) -> Result<O, ScriptError>
     f: F,
 ) -> Result<O, ScriptError> {
     WorldCallbackAccess::with_callback_access(world, |guard| {
-        context.scope.push("world", guard.clone());
+        ThreadWorldContainer.set_world(guard.clone())?;
         f(context)
     })
 }

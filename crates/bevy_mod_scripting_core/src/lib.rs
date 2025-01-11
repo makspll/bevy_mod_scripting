@@ -36,7 +36,6 @@ pub mod reflection_extensions;
 pub mod runtime;
 pub mod script;
 pub mod systems;
-pub mod world;
 
 /// Types which act like scripting plugins, by selecting a context and runtime
 /// Each individual combination of context and runtime has specific infrastructure built for it and does not interact with other scripting plugins

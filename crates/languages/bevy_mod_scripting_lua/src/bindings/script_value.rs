@@ -6,10 +6,11 @@ use std::{
 use bevy_mod_scripting_core::bindings::{
     function::{script_function::CallerContext, CallScriptFunction},
     script_value::ScriptValue,
+    ThreadWorldContainer, WorldContainer,
 };
 use mlua::{FromLua, IntoLua, Value, Variadic};
 
-use super::{reference::LuaReflectReference, world::GetWorld};
+use super::reference::LuaReflectReference;
 
 #[derive(Debug, Clone)]
 pub struct LuaScriptValue(ScriptValue);
@@ -100,8 +101,8 @@ impl IntoLua for LuaScriptValue {
             ScriptValue::Reference(r) => LuaReflectReference::from(r).into_lua(lua)?,
             ScriptValue::Error(script_error) => return Err(mlua::Error::external(script_error)),
             ScriptValue::Function(mut function) => lua
-                .create_function_mut(move |lua, args: Variadic<LuaScriptValue>| {
-                    let world = lua.get_world();
+                .create_function_mut(move |_lua, args: Variadic<LuaScriptValue>| {
+                    let world = ThreadWorldContainer.get_world();
                     let out = function.call_script_function(
                         args.into_iter().map(Into::into),
                         world,
