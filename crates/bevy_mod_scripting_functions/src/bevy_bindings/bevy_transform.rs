@@ -9,7 +9,13 @@ use super::bevy_math::*;
 use super::bevy_hierarchy::*;
 use bevy_mod_scripting_core::{
     AddContextInitializer, StoreDocumentation,
-    bindings::{ReflectReference, function::from::{Ref, Mut, Val}},
+    bindings::{
+        ReflectReference,
+        function::{
+            from::{Ref, Mut, Val},
+            namespace::NamespaceBuilder,
+        },
+    },
 };
 use crate::*;
 pub struct BevyTransformScriptingPlugin;
@@ -17,29 +23,6 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
         let mut world = app.world_mut();
         NamespaceBuilder::<::bevy::transform::components::GlobalTransform>::new(world)
-            .register(
-                "clone",
-                |_self: Ref<bevy::transform::components::GlobalTransform>| {
-                    let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::GlobalTransform as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "eq",
-                |
-                    _self: Ref<bevy::transform::components::GlobalTransform>,
-                    other: Ref<bevy::transform::components::GlobalTransform>|
-                {
-                    let output: bool = <bevy::transform::components::GlobalTransform as std::cmp::PartialEq<
-                        bevy::transform::components::GlobalTransform,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
             .register(
                 "from_xyz",
                 |x: f32, y: f32, z: f32| {
@@ -91,14 +74,14 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                 },
             )
             .register(
-                "mul",
+                "eq",
                 |
-                    _self: Val<bevy::transform::components::GlobalTransform>,
-                    global_transform: Val<bevy::transform::components::GlobalTransform>|
+                    _self: Ref<bevy::transform::components::GlobalTransform>,
+                    other: Ref<bevy::transform::components::GlobalTransform>|
                 {
-                    let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::GlobalTransform as std::ops::Mul<
+                    let output: bool = <bevy::transform::components::GlobalTransform as std::cmp::PartialEq<
                         bevy::transform::components::GlobalTransform,
-                    >>::mul(_self.into_inner(), global_transform.into_inner())
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -115,18 +98,31 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::transform::components::Transform>::new(world)
+            )
             .register(
                 "clone",
-                |_self: Ref<bevy::transform::components::Transform>| {
-                    let output: Val<bevy::transform::components::Transform> = <bevy::transform::components::Transform as std::clone::Clone>::clone(
+                |_self: Ref<bevy::transform::components::GlobalTransform>| {
+                    let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::GlobalTransform as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
                     output
                 },
             )
+            .register(
+                "mul",
+                |
+                    _self: Val<bevy::transform::components::GlobalTransform>,
+                    global_transform: Val<bevy::transform::components::GlobalTransform>|
+                {
+                    let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::GlobalTransform as std::ops::Mul<
+                        bevy::transform::components::GlobalTransform,
+                    >>::mul(_self.into_inner(), global_transform.into_inner())
+                        .into();
+                    output
+                },
+            );
+        NamespaceBuilder::<::bevy::transform::components::Transform>::new(world)
             .register(
                 "eq",
                 |
@@ -136,19 +132,6 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                     let output: bool = <bevy::transform::components::Transform as std::cmp::PartialEq<
                         bevy::transform::components::Transform,
                     >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul",
-                |
-                    _self: Val<bevy::transform::components::Transform>,
-                    global_transform: Val<bevy::transform::components::GlobalTransform>|
-                {
-                    let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::Transform as std::ops::Mul<
-                        bevy::transform::components::GlobalTransform,
-                    >>::mul(_self.into_inner(), global_transform.into_inner())
                         .into();
                     output
                 },
@@ -256,6 +239,16 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                 },
             )
             .register(
+                "clone",
+                |_self: Ref<bevy::transform::components::Transform>| {
+                    let output: Val<bevy::transform::components::Transform> = <bevy::transform::components::Transform as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "mul",
                 |
                     _self: Val<bevy::transform::components::Transform>,
@@ -264,6 +257,19 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                     let output: Val<bevy::transform::components::Transform> = <bevy::transform::components::Transform as std::ops::Mul<
                         bevy::transform::components::Transform,
                     >>::mul(_self.into_inner(), transform.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
+                |
+                    _self: Val<bevy::transform::components::Transform>,
+                    global_transform: Val<bevy::transform::components::GlobalTransform>|
+                {
+                    let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::Transform as std::ops::Mul<
+                        bevy::transform::components::GlobalTransform,
+                    >>::mul(_self.into_inner(), global_transform.into_inner())
                         .into();
                     output
                 },
