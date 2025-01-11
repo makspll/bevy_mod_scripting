@@ -1,10 +1,10 @@
+use crate::bindings::function::script_function::{
+    AppScriptFunctionRegistry, DynamicScriptFunction, GetFunctionTypeDependencies, ScriptFunction,
+    ScriptFunctionRegistry,
+};
 use bevy::{
     prelude::{AppTypeRegistry, World},
     reflect::GetTypeRegistration,
-};
-use bevy_mod_scripting_core::bindings::function::script_function::{
-    AppScriptFunctionRegistry, DynamicScriptFunction, GetFunctionTypeDependencies, ScriptFunction,
-    ScriptFunctionRegistry,
 };
 use std::{any::TypeId, borrow::Cow, marker::PhantomData};
 

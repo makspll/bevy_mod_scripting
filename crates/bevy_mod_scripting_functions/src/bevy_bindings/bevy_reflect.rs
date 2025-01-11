@@ -4,7 +4,7 @@
 #![cfg_attr(rustfmt, rustfmt_skip)]
 use bevy_mod_scripting_core::{
     AddContextInitializer, StoreDocumentation,
-    bindings::{ReflectReference, function::from::{Ref, Mut, Val}},
+    bindings::{ReflectReference, function::{namespace::NamespaceBuilder,from::{Ref, Mut, Val}}},
 };
 use crate::*;
 pub struct BevyReflectScriptingPlugin;

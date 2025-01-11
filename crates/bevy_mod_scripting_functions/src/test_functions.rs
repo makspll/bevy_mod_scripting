@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use crate::NamespaceBuilder;
 use bevy::{
     app::App,
     prelude::{Entity, World},
@@ -9,6 +8,7 @@ use bevy::{
 use bevy_mod_scripting_core::{
     bindings::{
         function::{
+            namespace::NamespaceBuilder,
             script_function::{CallerContext, DynamicScriptFunctionMut},
             CallScriptFunction,
         },

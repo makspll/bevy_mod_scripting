@@ -1,7 +1,15 @@
-use std::ops::{Deref, DerefMut};
-
-use bevy_mod_scripting_core::bindings::{ReflectReference, ThreadWorldContainer, WorldContainer};
-use rhai::{CustomType, Dynamic};
+use super::script_value::FromDynamic;
+use bevy_mod_scripting_core::bindings::{
+    function::script_function::{AppScriptFunctionRegistry, DynamicScriptFunction},
+    script_value::ScriptValue,
+    ReflectReference, ThreadWorldContainer, WorldContainer, WorldGuard,
+};
+use bevy_mod_scripting_functions::{GetNamespacedFunction, Namespace};
+use rhai::{CustomType, Dynamic, EvalAltResult};
+use std::{
+    any::TypeId,
+    ops::{Deref, DerefMut},
+};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct RhaiReflectReference(pub ReflectReference);
@@ -38,12 +46,30 @@ impl DerefMut for RhaiReflectReference {
     }
 }
 
+fn lookup_dynamic_function(
+    world: WorldGuard,
+    name: &str,
+    on: TypeId,
+) -> Option<DynamicScriptFunction> {
+    let registry = world.with_resource(|registry: &AppScriptFunctionRegistry| registry.clone());
+    let registry = registry.read();
+
+    registry
+        .get_namespaced_function(name.to_string(), Namespace::OnType(on))
+        .cloned()
+}
+
 impl CustomType for RhaiReflectReference {
     fn build(mut builder: rhai::TypeBuilder<Self>) {
         builder
             .with_name(std::any::type_name::<ReflectReference>())
             .with_indexer_get(|_obj: &mut Self, _index: Dynamic| {
                 let _world = ThreadWorldContainer.get_world();
+                let key: ScriptValue = ScriptValue::from_dynamic(_index)?;
+                if let ScriptValue::String(key) = key {
+                    // lookup function
+                }
+                Ok::<_, Box<EvalAltResult>>(())
             });
     }
 }

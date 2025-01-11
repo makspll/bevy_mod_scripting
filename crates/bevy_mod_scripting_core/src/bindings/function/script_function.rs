@@ -123,11 +123,29 @@ pub struct CallerContext {
     pub self_type: Option<TypeId>,
 }
 
+#[derive(Clone, Debug, PartialEq, Default)]
+pub struct FunctionInfo {
+    pub name: Cow<'static, str>,
+    pub on_type: Option<TypeId>,
+}
+
+impl FunctionInfo {
+    /// The name of the function
+    pub fn name(&self) -> &Cow<'static, str> {
+        &self.name
+    }
+
+    /// If the function is namespaced to a specific type, this will return the type id of that type
+    pub fn on_type(&self) -> Option<TypeId> {
+        self.on_type
+    }
+}
+
 /// The Script Function equivalent for dynamic functions. Currently unused
 #[derive(Clone, Reflect)]
 #[reflect(opaque)]
 pub struct DynamicScriptFunction {
-    name: Cow<'static, str>,
+    pub info: FunctionInfo,
     // TODO: info about the function, this is hard right now because of non 'static lifetimes in wrappers, we can't use TypePath etc
     func: Arc<
         dyn Fn(CallerContext, WorldCallbackAccess, Vec<ScriptValue>) -> ScriptValue
@@ -139,14 +157,14 @@ pub struct DynamicScriptFunction {
 
 impl PartialEq for DynamicScriptFunction {
     fn eq(&self, other: &Self) -> bool {
-        self.name == other.name
+        self.info == other.info
     }
 }
 
 #[derive(Clone, Reflect)]
 #[reflect(opaque)]
 pub struct DynamicScriptFunctionMut {
-    name: Cow<'static, str>,
+    pub info: FunctionInfo,
     func: Arc<
         RwLock<
             // I'd rather consume an option or something instead of having the RWLock but I just wanna get this release out
@@ -160,7 +178,7 @@ pub struct DynamicScriptFunctionMut {
 
 impl PartialEq for DynamicScriptFunctionMut {
     fn eq(&self, other: &Self) -> bool {
-        self.name == other.name
+        self.info == other.info
     }
 }
 
@@ -175,12 +193,25 @@ impl DynamicScriptFunction {
     }
 
     pub fn name(&self) -> &Cow<'static, str> {
-        &self.name
+        &self.info.name
     }
 
     pub fn with_name<N: Into<Cow<'static, str>>>(self, name: N) -> Self {
         Self {
-            name: name.into(),
+            info: FunctionInfo {
+                name: name.into(),
+                ..self.info
+            },
+            func: self.func,
+        }
+    }
+
+    pub fn with_on_type(self, on_type: Option<TypeId>) -> Self {
+        Self {
+            info: FunctionInfo {
+                on_type,
+                ..self.info
+            },
             func: self.func,
         }
     }
@@ -188,7 +219,7 @@ impl DynamicScriptFunction {
 
 impl DynamicScriptFunctionMut {
     pub fn call(
-        &mut self,
+        &self,
         context: CallerContext,
         world: WorldCallbackAccess,
         args: Vec<ScriptValue>,
@@ -198,12 +229,25 @@ impl DynamicScriptFunctionMut {
     }
 
     pub fn name(&self) -> &Cow<'static, str> {
-        &self.name
+        &self.info.name
     }
 
     pub fn with_name<N: Into<Cow<'static, str>>>(self, name: N) -> Self {
         Self {
-            name: name.into(),
+            info: FunctionInfo {
+                name: name.into(),
+                ..self.info
+            },
+            func: self.func,
+        }
+    }
+
+    pub fn with_on_type(self, on_type: Option<TypeId>) -> Self {
+        Self {
+            info: FunctionInfo {
+                on_type,
+                ..self.info
+            },
             func: self.func,
         }
     }
@@ -234,9 +278,10 @@ where
 {
     fn from(fn_: F) -> Self {
         DynamicScriptFunction {
-            name: std::any::type_name::<F>().into(),
+            info: FunctionInfo::default(),
             func: Arc::new(fn_),
         }
+        .with_name(std::any::type_name::<F>())
     }
 }
 
@@ -249,9 +294,10 @@ where
 {
     fn from(fn_: F) -> Self {
         DynamicScriptFunctionMut {
-            name: std::any::type_name::<F>().into(),
+            info: FunctionInfo::default(),
             func: Arc::new(RwLock::new(fn_)),
         }
+        .with_name(std::any::type_name::<F>())
     }
 }
 
@@ -301,7 +347,7 @@ impl ScriptFunctionRegistry {
         self.register_overload(name, func);
     }
 
-    pub fn register_overload<F, M>(&mut self, name: impl Into<Cow<'static, str>>, func: F)
+    fn register_overload<F, M>(&mut self, name: impl Into<Cow<'static, str>>, func: F)
     where
         F: ScriptFunction<'static, M>,
     {
