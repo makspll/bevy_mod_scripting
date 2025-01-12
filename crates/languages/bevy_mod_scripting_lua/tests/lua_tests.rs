@@ -1,4 +1,8 @@
-use bevy_mod_scripting_core::{bindings::{pretty_print::DisplayWithWorld, ThreadWorldContainer, WorldContainer}, error::ScriptError, AddContextInitializer};
+use bevy_mod_scripting_core::{
+    bindings::{pretty_print::DisplayWithWorld, ThreadWorldContainer, WorldContainer},
+    error::ScriptError,
+    AddContextInitializer,
+};
 use bevy_mod_scripting_lua::LuaScriptingPlugin;
 use libtest_mimic::{Arguments, Failed, Trial};
 use mlua::{Function, Lua, MultiValue};
@@ -36,11 +40,11 @@ impl Test {
                                         "Expected function to throw error, but it did not.",
                                     ))
                                 }
-                                Err(e) => 
+                                Err(e) =>
                                     ScriptError::from_mlua_error(e).display_with_world(world)
                                 ,
                             };
-            
+
                             let regex = regex::Regex::new(&reg).unwrap();
                             if regex.is_match(&err) {
                                 Ok(())
