@@ -135,8 +135,7 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/makspl
 
 ### Your First Code Contribution
 
-This project uses xtask to manage the build and test process. You can run `cargo xtask` to see the available commands. Run `xtask init` to setup your local development environment.
-
+Before contributing see the [book](https://makspll.github.io/bevy_mod_scripting) for helpful guides on how to get started with the project.
 
 
 ### Improving The Documentation
