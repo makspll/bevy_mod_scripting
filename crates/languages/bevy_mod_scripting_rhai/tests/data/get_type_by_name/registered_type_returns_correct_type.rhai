@@ -1,4 +1,4 @@
-local type = world.get_type_by_name('TestComponent')
+let type = world.get_type_by_name("TestComponent");
 
 local expected = {
     type_name = 'test_utils::test_data::TestComponent',

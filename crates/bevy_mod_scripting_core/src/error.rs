@@ -33,17 +33,17 @@ impl Deref for ScriptError {
 }
 
 /// The innards are separated to reduce the size of this error
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ScriptErrorInner {
     pub script: Option<String>,
     pub context: String,
-    pub reason: ErrorKind,
+    pub reason: Arc<ErrorKind>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum ErrorKind {
-    Display(Arc<dyn std::error::Error + Send + Sync>),
-    WithWorld(Arc<dyn DisplayWithWorld + Send + Sync>),
+    Display(Box<dyn std::error::Error + Send + Sync>),
+    WithWorld(Box<dyn DisplayWithWorld + Send + Sync>),
 }
 
 impl DisplayWithWorld for ErrorKind {
@@ -97,10 +97,30 @@ impl ScriptError {
         }
     }
 
+    // #[cfg(feature = "rhai_impls")]
+    // pub fn from_rhai_error(error: rhai::EvalAltResult) -> Self {
+    //     match error {
+    //         rhai::EvalAltResult::ErrorSystem(message, error) => {
+    //             if let Some(inner) = error.downcast_ref::<InteropError>() {
+    //                 Self::new(inner.clone())
+    //             } else if let Some(inner) = error.downcast_ref::<ScriptError>() {
+    //                 inner.clone()
+    //             } else {
+    //                 Self::new_external_boxed(error).with_context(message)
+    //             }
+    //         }
+    //         _ => Self::new_external(error),
+    //     }
+    // }
+
     pub fn new_external(reason: impl std::error::Error + Send + Sync + 'static) -> Self {
+        Self::new_external_boxed(Box::new(reason))
+    }
+
+    pub fn new_external_boxed(reason: Box<dyn std::error::Error + Send + Sync + 'static>) -> Self {
         Self(Arc::new(ScriptErrorInner {
             script: None,
-            reason: ErrorKind::Display(Arc::new(reason)),
+            reason: Arc::new(ErrorKind::Display(reason)),
             context: Default::default(),
         }))
     }
@@ -108,7 +128,7 @@ impl ScriptError {
     pub fn new(reason: impl DisplayWithWorld + Send + Sync + 'static) -> Self {
         Self(Arc::new(ScriptErrorInner {
             script: None,
-            reason: ErrorKind::WithWorld(Arc::new(reason)),
+            reason: Arc::new(ErrorKind::WithWorld(Box::new(reason))),
             context: Default::default(),
         }))
     }
@@ -187,19 +207,39 @@ impl From<mlua::Error> for ScriptError {
     }
 }
 
-#[cfg(feature = "rhai_impls")]
-impl From<rhai::ParseError> for ScriptError {
-    fn from(value: rhai::ParseError) -> Self {
-        ScriptError::new_external(value)
-    }
-}
+// #[cfg(feature = "rhai_impls")]
+// impl From<rhai::ParseError> for ScriptError {
+//     fn from(value: rhai::ParseError) -> Self {
+//         ScriptError::new_external(value)
+//     }
+// }
 
-#[cfg(feature = "rhai_impls")]
-impl From<Box<rhai::EvalAltResult>> for ScriptError {
-    fn from(value: Box<rhai::EvalAltResult>) -> Self {
-        ScriptError::new_external(value)
-    }
-}
+// #[cfg(feature = "rhai_impls")]
+// impl From<Box<rhai::EvalAltResult>> for ScriptError {
+//     fn from(value: Box<rhai::EvalAltResult>) -> Self {
+//         ScriptError::from_rhai_error(*value)
+//     }
+// }
+
+// #[cfg(feature = "rhai_impls")]
+// impl From<ScriptError> for Box<rhai::EvalAltResult> {
+//     fn from(value: ScriptError) -> Self {
+//         Box::new(rhai::EvalAltResult::ErrorSystem(
+//             "ScriptError".to_owned(),
+//             Box::new(value),
+//         ))
+//     }
+// }
+
+// #[cfg(feature = "rhai_impls")]
+// impl From<InteropError> for Box<rhai::EvalAltResult> {
+//     fn from(value: InteropError) -> Self {
+//         Box::new(rhai::EvalAltResult::ErrorSystem(
+//             "InteropError".to_owned(),
+//             Box::new(value),
+//         ))
+//     }
+// }
 
 #[derive(Debug, Clone, PartialEq, Reflect)]
 pub struct InteropError(#[reflect(ignore)] Arc<InteropErrorInner>);

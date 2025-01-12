@@ -1,16 +1,14 @@
 use super::script_value::{LuaScriptValue, LUA_CALLER_CONTEXT};
 use bevy_mod_scripting_core::{
     bindings::{
-        function::{namespace::Namespace, script_function::DynamicScriptFunction},
-        pretty_print::DisplayWithWorld,
-        script_value::ScriptValue,
-        ReflectReference, ThreadWorldContainer, WorldContainer, WorldGuard,
+        pretty_print::DisplayWithWorld, script_value::ScriptValue, ReflectReference,
+        ThreadWorldContainer, WorldContainer,
     },
     error::InteropError,
     reflection_extensions::TypeIdExtensions,
 };
 use mlua::{MetaMethod, UserData, UserDataMethods};
-use std::{any::TypeId, borrow::Cow};
+use std::any::TypeId;
 
 /// Lua UserData wrapper for [`bevy_mod_scripting_core::bindings::ReflectReference`].
 /// Acts as a lua reflection interface. Any value which is registered in the type registry can be interacted with using this type.
@@ -35,52 +33,6 @@ impl From<ReflectReference> for LuaReflectReference {
     }
 }
 
-/// Look up a function on the given type ids
-fn lookup_function(
-    guard: WorldGuard,
-    type_ids: impl IntoIterator<Item = TypeId>,
-    name: impl Into<Cow<'static, str>>,
-) -> Result<DynamicScriptFunction, Cow<'static, str>> {
-    let registry = guard.script_function_registry();
-    let registry = registry.read();
-
-    let mut name = name.into();
-    for type_id in type_ids {
-        name = match registry.get_function(Namespace::OnType(type_id), name) {
-            Ok(func) => return Ok(func.clone()),
-            Err(name) => name,
-        };
-    }
-
-    Err(name)
-}
-
-fn try_call_overloads(
-    guard: WorldGuard,
-    type_id: TypeId,
-    name: impl Into<Cow<'static, str>>,
-    args: Vec<ScriptValue>,
-) -> Result<LuaScriptValue, InteropError> {
-    let registry = guard.script_function_registry();
-    let registry = registry.read();
-
-    let name = name.into();
-    let overload_iter = match registry.iter_overloads(Namespace::OnType(type_id), name) {
-        Ok(iter) => iter,
-        Err(name) => return Err(InteropError::missing_function(type_id, name.to_string())),
-    };
-
-    let mut last_error = None;
-    for overload in overload_iter {
-        match overload.call(args.clone(), guard.clone(), LUA_CALLER_CONTEXT) {
-            Ok(out) => return Ok(out.into()),
-            Err(e) => last_error = Some(e),
-        }
-    }
-
-    Err(last_error.expect("invariant, iterator should always return at least one item, and if the call fails it should return an error"))
-}
-
 impl UserData for LuaReflectReference {
     fn add_methods<T: UserDataMethods<Self>>(m: &mut T) {
         m.add_meta_function(
@@ -93,11 +45,9 @@ impl UserData for LuaReflectReference {
                 let key: ScriptValue = key.into();
                 let key = match key.as_string() {
                     Ok(string) => {
-                        match lookup_function(
-                            world.clone(),
-                            [type_id, TypeId::of::<ReflectReference>()],
-                            string,
-                        ) {
+                        match world
+                            .lookup_function([type_id, TypeId::of::<ReflectReference>()], string)
+                        {
                             Ok(func) => return Ok(LuaScriptValue(ScriptValue::Function(func))),
 
                             Err(e) => ScriptValue::String(e),
@@ -106,9 +56,9 @@ impl UserData for LuaReflectReference {
                     Err(key) => key,
                 };
 
-                let func =
-                    lookup_function(world.clone(), [TypeId::of::<ReflectReference>()], "get")
-                        .expect("No 'get' function registered for a ReflectReference");
+                let func = world
+                    .lookup_function([TypeId::of::<ReflectReference>()], "get")
+                    .expect("No 'get' function registered for a ReflectReference");
                 // call the function with the key
                 let out = func.call(
                     vec![ScriptValue::Reference(self_), key],
@@ -122,16 +72,14 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::NewIndex,
             |_, (self_, key, value): (LuaReflectReference, LuaScriptValue, LuaScriptValue)| {
+                let world = ThreadWorldContainer.get_world();
                 let self_: ReflectReference = self_.into();
                 let key: ScriptValue = key.into();
                 let value: ScriptValue = value.into();
 
-                let func = lookup_function(
-                    ThreadWorldContainer.get_world(),
-                    [TypeId::of::<ReflectReference>()],
-                    "set",
-                )
-                .expect("No 'set' function registered for a ReflectReference");
+                let func = world
+                    .lookup_function([TypeId::of::<ReflectReference>()], "set")
+                    .expect("No 'set' function registered for a ReflectReference");
 
                 let out = func.call(
                     vec![ScriptValue::Reference(self_), key, value],
@@ -146,104 +94,130 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::Sub,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
-                let world = ThreadWorldContainer.get_world();
+                let world = ThreadWorldContainer.get_callback_world();
+                let guard = world.try_read().expect("World is not set or expired");
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
-                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let target_type_id = self_.tail_type_id(guard)?.or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
-                Ok(try_call_overloads(world, target_type_id, "sub", args)?)
+                let out =
+                    world.try_call_overloads(target_type_id, "sub", args, LUA_CALLER_CONTEXT)?;
+                Ok(LuaScriptValue(out))
             },
         );
 
         m.add_meta_function(
             MetaMethod::Add,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
-                let world = ThreadWorldContainer.get_world();
+                let world = ThreadWorldContainer.get_callback_world();
+                let guard = world.try_read().expect("World is not set or expired");
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
-                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let target_type_id = self_.tail_type_id(guard)?.or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
-                Ok(try_call_overloads(world, target_type_id, "add", args)?)
+                let out =
+                    world.try_call_overloads(target_type_id, "add", args, LUA_CALLER_CONTEXT)?;
+                Ok(LuaScriptValue(out))
             },
         );
 
         m.add_meta_function(
             MetaMethod::Mul,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
-                let world = ThreadWorldContainer.get_world();
+                let world = ThreadWorldContainer.get_callback_world();
+                let guard = world.try_read().expect("World is not set or expired");
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
-                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let target_type_id = self_.tail_type_id(guard)?.or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
-                Ok(try_call_overloads(world, target_type_id, "mul", args)?)
+                let out =
+                    world.try_call_overloads(target_type_id, "mul", args, LUA_CALLER_CONTEXT)?;
+                Ok(LuaScriptValue(out))
             },
         );
 
         m.add_meta_function(
             MetaMethod::Div,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
-                let world = ThreadWorldContainer.get_world();
+                let world = ThreadWorldContainer.get_callback_world();
+                let guard = world.try_read().expect("World is not set or expired");
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
-                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let target_type_id = self_.tail_type_id(guard)?.or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
-                Ok(try_call_overloads(world, target_type_id, "div", args)?)
+                let out =
+                    world.try_call_overloads(target_type_id, "div", args, LUA_CALLER_CONTEXT)?;
+                Ok(LuaScriptValue(out))
             },
         );
 
         m.add_meta_function(
             MetaMethod::Mod,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
-                let world = ThreadWorldContainer.get_world();
+                let world = ThreadWorldContainer.get_callback_world();
+                let guard = world.try_read().expect("World is not set or expired");
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
-                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let target_type_id = self_.tail_type_id(guard)?.or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
-                Ok(try_call_overloads(world, target_type_id, "rem", args)?)
+                let out =
+                    world.try_call_overloads(target_type_id, "rem", args, LUA_CALLER_CONTEXT)?;
+                Ok(LuaScriptValue(out))
             },
         );
 
         m.add_meta_function(MetaMethod::Unm, |_, self_: LuaReflectReference| {
-            let world = ThreadWorldContainer.get_world();
+            let world = ThreadWorldContainer.get_callback_world();
+            let guard = world.try_read().expect("World is not set or expired");
             let self_: ReflectReference = self_.into();
-            let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+            let target_type_id = self_.tail_type_id(guard)?.or_fake_id();
             let args = vec![ScriptValue::Reference(self_)];
-            Ok(try_call_overloads(world, target_type_id, "neg", args)?)
+            let out = world.try_call_overloads(target_type_id, "neg", args, LUA_CALLER_CONTEXT)?;
+            Ok(LuaScriptValue(out))
         });
 
         m.add_meta_function(
             MetaMethod::Pow,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
-                let world = ThreadWorldContainer.get_world();
+                let world = ThreadWorldContainer.get_callback_world();
+                let guard = world.try_read().expect("World is not set or expired");
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
-                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let target_type_id = self_.tail_type_id(guard)?.or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
-                Ok(try_call_overloads(world, target_type_id, "pow", args)?)
+                let out =
+                    world.try_call_overloads(target_type_id, "pow", args, LUA_CALLER_CONTEXT)?;
+                Ok(LuaScriptValue(out))
             },
         );
 
         m.add_meta_function(
             MetaMethod::Eq,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
-                let world = ThreadWorldContainer.get_world();
+                let world = ThreadWorldContainer.get_callback_world();
+                let guard = world.try_read().expect("World is not set or expired");
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
-                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let target_type_id = self_.tail_type_id(guard)?.or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
-                Ok(try_call_overloads(world, target_type_id, "eq", args)?)
+                let out =
+                    world.try_call_overloads(target_type_id, "eq", args, LUA_CALLER_CONTEXT)?;
+                Ok(LuaScriptValue(out))
             },
         );
 
         m.add_meta_function(
             MetaMethod::Lt,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
-                let world = ThreadWorldContainer.get_world();
+                let world = ThreadWorldContainer.get_callback_world();
+                let guard = world.try_read().expect("World is not set or expired");
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
-                let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let target_type_id = self_.tail_type_id(guard)?.or_fake_id();
                 let args = vec![ScriptValue::Reference(self_), other];
-                Ok(try_call_overloads(world, target_type_id, "lt", args)?)
+                let out =
+                    world.try_call_overloads(target_type_id, "lt", args, LUA_CALLER_CONTEXT)?;
+                Ok(LuaScriptValue(out))
             },
         );
 
@@ -266,13 +240,11 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(MetaMethod::Pairs, |_, s: LuaReflectReference| {
             // let mut iter_func = lookup_dynamic_function_typed::<ReflectReference>(l, "iter")
             //     .expect("No iter function registered");
-            let iter_func = lookup_function(
-                ThreadWorldContainer.get_world(),
-                [TypeId::of::<ReflectReference>()],
-                "iter",
-            )
-            .expect("No iter function registered");
             let world = ThreadWorldContainer.get_world();
+
+            let iter_func = world
+                .lookup_function([TypeId::of::<ReflectReference>()], "iter")
+                .expect("No iter function registered");
 
             Ok(LuaScriptValue::from(iter_func.call(
                 vec![ScriptValue::Reference(s.into())],
@@ -285,12 +257,10 @@ impl UserData for LuaReflectReference {
             let world = ThreadWorldContainer.get_world();
             let reflect_reference: ReflectReference = self_.into();
 
-            let func = lookup_function(
-                world.clone(),
-                [TypeId::of::<ReflectReference>()],
-                "display_ref",
-            )
-            .expect("No 'display' function registered for a ReflectReference");
+            let func = world
+                .lookup_function([TypeId::of::<ReflectReference>()], "display_ref")
+                .expect("No 'display' function registered for a ReflectReference");
+
             let out = func.call(
                 vec![ScriptValue::Reference(reflect_reference)],
                 world,
@@ -313,6 +283,7 @@ impl UserData for LuaStaticReflectReference {
         m.add_meta_function(
             MetaMethod::Index,
             |_, (self_, key): (LuaStaticReflectReference, LuaScriptValue)| {
+                let world = ThreadWorldContainer.get_world();
                 let type_id = self_.0;
 
                 let key: ScriptValue = key.into();
@@ -323,12 +294,10 @@ impl UserData for LuaStaticReflectReference {
                 //     }
                 // };
                 let key = match key.as_string() {
-                    Ok(name) => {
-                        match lookup_function(ThreadWorldContainer.get_world(), [type_id], name) {
-                            Ok(func) => return Ok(LuaScriptValue(ScriptValue::Function(func))),
-                            Err(key) => ScriptValue::String(key),
-                        }
-                    }
+                    Ok(name) => match world.lookup_function([type_id], name) {
+                        Ok(func) => return Ok(LuaScriptValue(ScriptValue::Function(func))),
+                        Err(key) => ScriptValue::String(key),
+                    },
                     Err(key) => key,
                 };
 

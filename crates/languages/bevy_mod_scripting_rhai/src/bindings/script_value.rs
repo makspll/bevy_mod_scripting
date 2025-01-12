@@ -11,7 +11,7 @@ use bevy_mod_scripting_core::{
 };
 use rhai::{
     plugin::{PluginFunc, RhaiFunc},
-    Dynamic, EvalAltResult,
+    Dynamic, EvalAltResult, FnPtr, RhaiNativeFunc,
 };
 
 pub const RHAI_CALLER_CONTEXT: CallerContext = CallerContext {
@@ -24,72 +24,89 @@ struct FuncWrapper(DynamicScriptFunction);
 #[allow(dead_code)]
 struct FuncMutWrapper(DynamicScriptFunctionMut);
 
-impl PluginFunc for FuncWrapper {
-    fn call(
-        &self,
-        _context: Option<rhai::NativeCallContext>,
-        _args: &mut [&mut Dynamic],
-    ) -> rhai::plugin::RhaiResult {
-        // let convert_args = _args
-        //     .iter_mut()
-        //     .map(|arg| ScriptValue::from_dynamic(arg.clone()))
-        //     .collect::<Result<Vec<_>, _>>()?;
-
-        // let out = self.0.call(
-        //     rhai_caller_context(self.0.info.namespace()),
-        //     WorldCallbackAccess::from_guard(ThreadWorldContainer.get_world()),
-        //     convert_args,
-        // );
-
-        // out.into_dynamic()
+impl RhaiNativeFunc for FuncWrapper {
+    fn into_rhai_function(self, is_pure: bool, is_volatile: bool) -> RhaiFunc {
         todo!()
     }
 
-    fn is_method_call(&self) -> bool {
-        // TODO: is this correct? do we care if it's a method call?
-        false
-    }
-
-    fn has_context(&self) -> bool {
-        false
-    }
-}
-
-impl PluginFunc for FuncMutWrapper {
-    fn call(
-        &self,
-        _context: Option<rhai::NativeCallContext>,
-        _args: &mut [&mut Dynamic],
-    ) -> rhai::plugin::RhaiResult {
-        // let convert_args = _args
-        //     .iter_mut()
-        //     .map(|arg| ScriptValue::from_dynamic(arg.clone()))
-        //     .collect::<Result<Vec<_>, _>>()?;
-
-        // let out = self.0.call(
-        //     rhai_caller_context(self.0.info.namespace()),
-        //     WorldCallbackAccess::from_guard(ThreadWorldContainer.get_world()),
-        //     convert_args,
-        // );
-
-        // out.into_dynamic()
+    fn param_types() -> [std::any::TypeId; N] {
         todo!()
     }
-
-    fn is_method_call(&self) -> bool {
-        false
-    }
-
-    fn has_context(&self) -> bool {
-        false
-    }
 }
+
+// impl PluginFunc for FuncWrapper {
+//     fn call(
+//         &self,
+//         _context: Option<rhai::NativeCallContext>,
+//         _args: &mut [&mut Dynamic],
+//     ) -> rhai::plugin::RhaiResult {
+//         // let convert_args = _args
+//         //     .iter_mut()
+//         //     .map(|arg| ScriptValue::from_dynamic(arg.clone()))
+//         //     .collect::<Result<Vec<_>, _>>()?;
+
+//         // let out = self.0.call(
+//         //     rhai_caller_context(self.0.info.namespace()),
+//         //     WorldCallbackAccess::from_guard(ThreadWorldContainer.get_world()),
+//         //     convert_args,
+//         // );
+
+//         // out.into_dynamic()
+//         todo!()
+//     }
+
+//     fn is_method_call(&self) -> bool {
+//         // TODO: is this correct? do we care if it's a method call?
+//         false
+//     }
+
+//     fn has_context(&self) -> bool {
+//         false
+//     }
+// }
+
+// impl PluginFunc for FuncMutWrapper {
+//     fn call(
+//         &self,
+//         _context: Option<rhai::NativeCallContext>,
+//         _args: &mut [&mut Dynamic],
+//     ) -> rhai::plugin::RhaiResult {
+//         // let convert_args = _args
+//         //     .iter_mut()
+//         //     .map(|arg| ScriptValue::from_dynamic(arg.clone()))
+//         //     .collect::<Result<Vec<_>, _>>()?;
+
+//         // let out = self.0.call(
+//         //     rhai_caller_context(self.0.info.namespace()),
+//         //     WorldCallbackAccess::from_guard(ThreadWorldContainer.get_world()),
+//         //     convert_args,
+//         // );
+
+//         // out.into_dynamic()
+//         todo!()
+//     }
+
+//     fn is_method_call(&self) -> bool {
+//         false
+//     }
+
+//     fn has_context(&self) -> bool {
+//         false
+//     }
+// }
 
 #[allow(dead_code)]
 pub(crate) fn to_rhai_fn(func: DynamicScriptFunction) -> RhaiFunc {
     RhaiFunc::Plugin {
         func: Arc::new(FuncWrapper(func)),
     }
+    .into()
+    // FnPtr {
+    //     name: todo!(),
+    //     curry: todo!(),
+    //     environ: todo!(),
+    //     fn_def: todo!(),
+    // }
 }
 
 pub(crate) fn to_rhai_fn_mut(func: DynamicScriptFunctionMut) -> RhaiFunc {
@@ -123,8 +140,8 @@ impl IntoDynamic for ScriptValue {
             ScriptValue::List(_vec) => todo!(),
             ScriptValue::Reference(_reflect_reference) => todo!(),
             ScriptValue::FunctionMut(func) => Dynamic::from(to_rhai_fn_mut(func)),
+            ScriptValue::Function(func) => Dynamic::from(to_rhai_fn(func)),
             ScriptValue::Error(_interop_error) => todo!(),
-            ScriptValue::Function(_dynamic_script_function) => todo!(),
         })
     }
 }

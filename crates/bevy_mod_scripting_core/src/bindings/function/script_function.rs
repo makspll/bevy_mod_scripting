@@ -359,7 +359,7 @@ impl ScriptFunctionRegistryArc {
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]
-struct FunctionKey {
+pub struct FunctionKey {
     name: Cow<'static, str>,
     namespace: Namespace,
 }
@@ -464,6 +464,11 @@ impl ScriptFunctionRegistry {
             .map(|o| o.unwrap());
 
         Ok(seed.chain(overloads))
+    }
+
+    /// Iterates over all functions including overloads
+    pub fn iter_all(&self) -> impl Iterator<Item = (&FunctionKey, &DynamicScriptFunction)> {
+        self.functions.iter()
     }
 }
 

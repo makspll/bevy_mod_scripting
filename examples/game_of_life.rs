@@ -22,7 +22,7 @@ use bevy_mod_scripting_core::{
     systems::event_handler,
 };
 use bevy_mod_scripting_lua::LuaScriptingPlugin;
-use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
+// use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
 use clap::Parser;
 
 // CONSOLE SETUP
@@ -98,7 +98,7 @@ fn game_of_life_app(app: &mut App) -> &mut App {
         .add_plugins((
             // for scripting
             LuaScriptingPlugin::default(),
-            RhaiScriptingPlugin::default(),
+            // RhaiScriptingPlugin::default(),
             ScriptFunctionsPlugin,
         ))
         .register_type::<LifeState>()
@@ -114,9 +114,9 @@ fn game_of_life_app(app: &mut App) -> &mut App {
                 send_on_update.after(update_rendered_state),
                 (
                     event_handler::<OnUpdate, LuaScriptingPlugin>,
-                    event_handler::<OnUpdate, RhaiScriptingPlugin>,
+                    // event_handler::<OnUpdate, RhaiScriptingPlugin>,
                     event_handler::<OnClick, LuaScriptingPlugin>,
-                    event_handler::<OnClick, RhaiScriptingPlugin>,
+                    // event_handler::<OnClick, RhaiScriptingPlugin>,
                 )
                     .after(send_on_update),
             ),

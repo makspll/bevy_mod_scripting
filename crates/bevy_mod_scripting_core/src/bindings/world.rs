@@ -7,7 +7,11 @@
 
 use super::{
     access_map::{AccessCount, AccessMap, ReflectAccessId},
-    function::script_function::AppScriptFunctionRegistry,
+    function::{
+        namespace::Namespace,
+        script_function::{AppScriptFunctionRegistry, CallerContext, DynamicScriptFunction},
+    },
+    script_value::ScriptValue,
     AppReflectAllocator, ReflectBase, ReflectBaseType, ReflectReference, ScriptTypeRegistration,
 };
 use crate::{error::InteropError, with_access_read, with_access_write, with_global_access};
@@ -25,6 +29,7 @@ use bevy::{
 };
 use std::{
     any::TypeId,
+    borrow::Cow,
     cell::RefCell,
     fmt::Debug,
     sync::{Arc, Weak},
@@ -217,6 +222,36 @@ impl WorldCallbackAccess {
         let world = self.try_read()?;
         world.exit();
         Ok(())
+    }
+
+    /// Tries to call a fitting overload of the function with the given name and in the type id's namespace based on the arguments provided.
+    /// Currently does this by repeatedly trying each overload until one succeeds or all fail.
+    pub fn try_call_overloads(
+        &self,
+        type_id: TypeId,
+        name: impl Into<Cow<'static, str>>,
+        args: Vec<ScriptValue>,
+        context: CallerContext,
+    ) -> Result<ScriptValue, InteropError> {
+        let world = self.try_read()?;
+        let registry = world.script_function_registry();
+        let registry = registry.read();
+
+        let name = name.into();
+        let overload_iter = match registry.iter_overloads(Namespace::OnType(type_id), name) {
+            Ok(iter) => iter,
+            Err(name) => return Err(InteropError::missing_function(type_id, name.to_string())),
+        };
+
+        let mut last_error = None;
+        for overload in overload_iter {
+            match overload.call(args.clone(), world.clone(), context) {
+                Ok(out) => return Ok(out),
+                Err(e) => last_error = Some(e),
+            }
+        }
+
+        Err(last_error.expect("invariant, iterator should always return at least one item, and if the call fails it should return an error"))
     }
 }
 
@@ -459,109 +494,27 @@ impl<'w> WorldAccessGuard<'w> {
         )
     }
 
-    // #[track_caller]
-    // /// Get access to the given component, this is the only way to access a component/resource safely (in the context of the world access guard)
-    // pub fn get_component_with_access<T: Component>(
-    //     &self,
-    //     access: &WorldAccess,
-    //     entity: Entity,
-    // ) -> ScriptResult<Option<&T>> {
-    //     let component_id = match self.0.cell.components().component_id::<T>() {
-    //         Some(id) => id,
-    //         None => return Ok(None),
-    //     };
+    /// Try to lookup a function with the given name on the given type id's namespaces.
+    ///
+    /// Returns the function if found, otherwise returns the name of the function that was not found.
+    pub fn lookup_function(
+        &self,
+        type_ids: impl IntoIterator<Item = TypeId>,
+        name: impl Into<Cow<'static, str>>,
+    ) -> Result<DynamicScriptFunction, Cow<'static, str>> {
+        let registry = self.script_function_registry();
+        let registry = registry.read();
 
-    //     if access.can_read(ReflectAccessId {
-    //         kind: ReflectAccessKind::ComponentOrResource,
-    //         id: component_id.index(),
-    //     }) {
-    //         // Safety: we have the correct access id
-    //         unsafe { Ok(self.0.cell.get_entity(entity).and_then(|e| e.get::<T>())) }
-    //     } else {
-    //         Err(ScriptError::new_reflection_error(
-    //             "Cannot read component, received invalid access".to_string(),
-    //         ))
-    //     }
-    // }
+        let mut name = name.into();
+        for type_id in type_ids {
+            name = match registry.get_function(Namespace::OnType(type_id), name) {
+                Ok(func) => return Ok(func.clone()),
+                Err(name) => name,
+            };
+        }
 
-    // #[track_caller]
-    // /// Get access to the given component, this is the only way to access a component/resource safely (in the context of the world access guard)
-    // pub fn get_component_with_access_mut<T: Component>(
-    //     &self,
-    //     access: &mut WorldAccess,
-    //     entity: Entity,
-    // ) -> ScriptResult<Option<Mut<T>>> {
-    //     let component_id = match self.0.cell.components().component_id::<T>() {
-    //         Some(id) => id,
-    //         None => return Ok(None),
-    //     };
-
-    //     if access.can_write(ReflectAccessId {
-    //         kind: ReflectAccessKind::ComponentOrResource,
-    //         id: component_id.index(),
-    //     }) {
-    //         // Safety: we have the correct access id
-    //         unsafe {
-    //             Ok(self
-    //                 .0
-    //                 .cell
-    //                 .get_entity(entity)
-    //                 .and_then(|e| e.get_mut::<T>()))
-    //         }
-    //     } else {
-    //         Err(ScriptError::new_reflection_error(
-    //             "Cannot write component, received invalid access".to_string(),
-    //         ))
-    //     }
-    // }
-
-    // #[track_caller]
-    // /// Get access to the given resource
-    // pub fn get_resource_with_access<T: Resource>(
-    //     &self,
-    //     access: &WorldAccess,
-    // ) -> ScriptResult<Option<&T>> {
-    //     let resource_id = match self.0.cell.components().resource_id::<T>() {
-    //         Some(id) => id,
-    //         None => return Ok(None),
-    //     };
-
-    //     if access.can_read(ReflectAccessId {
-    //         kind: ReflectAccessKind::ComponentOrResource,
-    //         id: resource_id.index(),
-    //     }) {
-    //         // Safety: we have the correct access id
-    //         unsafe { Ok(self.0.cell.get_resource::<T>()) }
-    //     } else {
-    //         Err(ScriptError::new_reflection_error(
-    //             "Cannot read resource, received invalid access".to_string(),
-    //         ))
-    //     }
-    // }
-
-    // #[track_caller]
-    // /// Get access to the given resource, this is the only way to access a component/resource safely (in the context of the world access guard)
-    // pub fn get_resource_with_access_mut<T: Resource>(
-    //     &self,
-    //     access: &mut WorldAccess,
-    // ) -> ScriptResult<Option<Mut<T>>> {
-    //     let resource_id = match self.0.cell.components().resource_id::<T>() {
-    //         Some(id) => id,
-    //         None => return Ok(None),
-    //     };
-
-    //     if access.can_write(ReflectAccessId {
-    //         kind: ReflectAccessKind::ComponentOrResource,
-    //         id: resource_id.index(),
-    //     }) {
-    //         // Safety: we have the correct access id
-    //         unsafe { Ok(self.0.cell.get_resource_mut::<T>()) }
-    //     } else {
-    //         Err(ScriptError::new_reflection_error(
-    //             "Cannot write resource, received invalid access".to_string(),
-    //         ))
-    //     }
-    // }
+        Err(name)
+    }
 
     /// checks if a given entity exists and is valid
     pub fn is_valid_entity(&self, entity: Entity) -> bool {
@@ -926,8 +879,15 @@ pub trait WorldContainer {
         self.try_get_world().expect("World not set, or expired")
     }
 
+    fn get_callback_world(&self) -> WorldCallbackAccess {
+        self.try_get_callback_world()
+            .expect("World not set, or expired")
+    }
+
     /// Tries to get the world
     fn try_get_world(&self) -> Result<Arc<WorldAccessGuard<'static>>, Self::Error>;
+
+    fn try_get_callback_world(&self) -> Result<WorldCallbackAccess, Self::Error>;
 }
 
 /// A world container that stores the world in a thread local
@@ -954,6 +914,16 @@ impl WorldContainer for ThreadWorldContainer {
                 .map(|w| w.try_read())
                 .ok_or_else(InteropError::missing_world)
         })?
+    }
+
+    fn try_get_callback_world(&self) -> Result<WorldCallbackAccess, Self::Error> {
+        WORLD_CALLBACK_ACCESS.with(|w| {
+            w.borrow()
+                .as_ref()
+                .cloned()
+                // .map(|w| w.try_read())
+                .ok_or_else(InteropError::missing_world)
+        })
     }
 }
 

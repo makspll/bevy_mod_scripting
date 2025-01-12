@@ -17,7 +17,7 @@ name = "bevy_mod_scripting"
 path = "src/lib.rs"
 
 [package.metadata."docs.rs"]
-features = ["lua54", "rhai", "rune"]
+features = ["lua54"]
 
 [features]
 default = ["core_functions", "bevy_bindings", "unsafe_lua_modules"]
@@ -44,17 +44,17 @@ mlua_macros = ["bevy_mod_scripting_lua/mlua_macros"]
 mlua_async = ["bevy_mod_scripting_lua/mlua_async"]
 
 ## rhai
-rhai = ["bevy_mod_scripting_rhai"]
+# rhai = ["bevy_mod_scripting_rhai"]
 
 ## rune
-rune = ["bevy_mod_scripting_rune"]
+# rune = ["bevy_mod_scripting_rune"]
 
 [dependencies]
 bevy = { workspace = true }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", version = "0.9.0-alpha.2", optional = true }
-bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.9.0-alpha.2", optional = true }
-bevy_mod_scripting_rune = { path = "crates/languages/bevy_mod_scripting_rune", version = "0.9.0-alpha.2", optional = true }
+# bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.9.0-alpha.2", optional = true }
+# bevy_mod_scripting_rune = { path = "crates/languages/bevy_mod_scripting_rune", version = "0.9.0-alpha.2", optional = true }
 bevy_mod_scripting_functions = { workspace = true }
 
 [workspace.dependencies]
@@ -62,7 +62,7 @@ bevy = { version = "0.15.0", default-features = false }
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.9.0-alpha.2" }
 bevy_mod_scripting_functions = { path = "crates/bevy_mod_scripting_functions", version = "0.9.0-alpha.2", default-features = false }
 mlua = { version = "0.10" }
-rhai = { version = "1.20.1" }
+# rhai = { version = "1.20.1" }
 
 # test utilities
 script_integration_test_harness = { path = "crates/script_integration_test_harness" }
@@ -73,15 +73,15 @@ bevy = { workspace = true, default-features = true }
 clap = { version = "4.1", features = ["derive"] }
 rand = "0.8.5"
 bevy_console = "0.13"
-rhai-rand = "0.1"
+# rhai-rand = "0.1"
 ansi-parser = "0.9"
 
 [workspace]
 members = [
     "crates/bevy_mod_scripting_core",
     "crates/languages/bevy_mod_scripting_lua",
-    "crates/languages/bevy_mod_scripting_rhai",
-    "crates/languages/bevy_mod_scripting_rune",
+    # "crates/languages/bevy_mod_scripting_rhai",
+    # "crates/languages/bevy_mod_scripting_rune",
     "crates/test_utils",
     "crates/bevy_mod_scripting_functions",
     "crates/xtask",
@@ -112,9 +112,4 @@ debug = true
 [[example]]
 name = "game_of_life"
 path = "examples/game_of_life.rs"
-required-features = [
-    "lua54",
-    "rhai",
-    "bevy/file_watcher",
-    "bevy/multi_threaded",
-]
+required-features = ["lua54", "bevy/file_watcher", "bevy/multi_threaded"]
