@@ -3,7 +3,7 @@ use clap::Parser;
 use itertools::Itertools;
 use log::*;
 use std::{collections::HashMap, ffi::OsStr, path::Path, process::Command, str::FromStr};
-use strum::VariantNames;
+use strum::{IntoEnumIterator, VariantNames};
 
 #[derive(
     Clone,
@@ -33,19 +33,18 @@ enum Feature {
     MluaSerialize,
     MluaMacros,
     MluaAsync,
-
     // Rhai
-    Rhai,
+    // Rhai,
 
     // Rune
-    Rune,
+    // Rune,
 }
 
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, strum::EnumIter)]
 enum FeatureGroup {
     LuaExclusive,
-    RhaiExclusive,
-    RuneExclusive,
+    // RhaiExclusive,
+    // RuneExclusive,
     ForExternalCrate,
     BMSFeature,
 }
@@ -54,8 +53,8 @@ impl FeatureGroup {
     fn default_feature(self) -> Feature {
         match self {
             FeatureGroup::LuaExclusive => Feature::Lua54,
-            FeatureGroup::RhaiExclusive => Feature::Rhai,
-            FeatureGroup::RuneExclusive => Feature::Rune,
+            // FeatureGroup::RhaiExclusive => Feature::Rhai,
+            // FeatureGroup::RuneExclusive => Feature::Rune,
             _ => panic!("No default feature for non-exclusive group"),
         }
     }
@@ -63,7 +62,7 @@ impl FeatureGroup {
     fn is_exclusive(self) -> bool {
         matches!(
             self,
-            FeatureGroup::LuaExclusive | FeatureGroup::RhaiExclusive | FeatureGroup::RuneExclusive
+            FeatureGroup::LuaExclusive // | FeatureGroup::RhaiExclusive | FeatureGroup::RuneExclusive
         )
     }
 }
@@ -82,8 +81,8 @@ impl IntoFeatureGroup for Feature {
             | Feature::Luajit
             | Feature::Luajit52
             | Feature::Luau => FeatureGroup::LuaExclusive,
-            Feature::Rhai => FeatureGroup::RhaiExclusive,
-            Feature::Rune => FeatureGroup::RuneExclusive,
+            // Feature::Rhai => FeatureGroup::RhaiExclusive,
+            // Feature::Rune => FeatureGroup::RuneExclusive,
             Feature::MluaAsync
             | Feature::MluaMacros
             | Feature::MluaSerialize
@@ -695,12 +694,8 @@ impl Xtasks {
             );
 
             // choose language features
-            for category in [
-                FeatureGroup::LuaExclusive,
-                FeatureGroup::RhaiExclusive,
-                FeatureGroup::RuneExclusive,
-            ] {
-                feature_set.0.push(category.default_feature());
+            for exclusive_category in FeatureGroup::iter().filter(|g| g.is_exclusive()) {
+                feature_set.0.push(exclusive_category.default_feature());
             }
 
             // include all non-bms features
