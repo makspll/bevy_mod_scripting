@@ -31,7 +31,9 @@ jobs:
       - name: Generate matrix
         id: generate-matrix
         run: |
-          echo "matrix=$(cargo xtask ci-matrix)" >> $GITHUB_OUTPUT
+          cargo xtask ci-matrix > matrix.json
+          cat matrix.json
+          echo "matrix=$(cat matrix.json)" >> $GITHUB_OUTPUT
 
   check:  
     permissions:
