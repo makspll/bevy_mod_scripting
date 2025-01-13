@@ -53,19 +53,6 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             )
             .register(
-                "eq",
-                |
-                    _self: Ref<bevy::time::prelude::Timer>,
-                    other: Ref<bevy::time::prelude::Timer>|
-                {
-                    let output: bool = <bevy::time::prelude::Timer as std::cmp::PartialEq<
-                        bevy::time::prelude::Timer,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "from_seconds",
                 |duration: f32, mode: Val<bevy::time::prelude::TimerMode>| {
                     let output: Val<bevy::time::prelude::Timer> = bevy::time::prelude::Timer::from_seconds(
@@ -202,6 +189,19 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             )
             .register(
+                "eq",
+                |
+                    _self: Ref<bevy::time::prelude::Timer>,
+                    other: Ref<bevy::time::prelude::Timer>|
+                {
+                    let output: bool = <bevy::time::prelude::Timer as std::cmp::PartialEq<
+                        bevy::time::prelude::Timer,
+                    >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "clone",
                 |_self: Ref<bevy::time::prelude::Timer>| {
                     let output: Val<bevy::time::prelude::Timer> = <bevy::time::prelude::Timer as std::clone::Clone>::clone(
@@ -258,9 +258,19 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::time::Stopwatch>::new(world)
             .register(
-                "clone",
+                "eq",
+                |_self: Ref<bevy::time::Stopwatch>, other: Ref<bevy::time::Stopwatch>| {
+                    let output: bool = <bevy::time::Stopwatch as std::cmp::PartialEq<
+                        bevy::time::Stopwatch,
+                    >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::time::Stopwatch>| {
-                    let output: Val<bevy::time::Stopwatch> = <bevy::time::Stopwatch as std::clone::Clone>::clone(
+                    let output: () = <bevy::time::Stopwatch as std::cmp::Eq>::assert_receiver_is_total_eq(
                             &_self,
                         )
                         .into();
@@ -319,21 +329,11 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             )
             .register(
-                "assert_receiver_is_total_eq",
+                "clone",
                 |_self: Ref<bevy::time::Stopwatch>| {
-                    let output: () = <bevy::time::Stopwatch as std::cmp::Eq>::assert_receiver_is_total_eq(
+                    let output: Val<bevy::time::Stopwatch> = <bevy::time::Stopwatch as std::clone::Clone>::clone(
                             &_self,
                         )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "eq",
-                |_self: Ref<bevy::time::Stopwatch>, other: Ref<bevy::time::Stopwatch>| {
-                    let output: bool = <bevy::time::Stopwatch as std::cmp::PartialEq<
-                        bevy::time::Stopwatch,
-                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
