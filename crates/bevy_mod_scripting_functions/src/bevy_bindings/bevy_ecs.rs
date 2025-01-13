@@ -20,56 +20,6 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
         let mut world = app.world_mut();
         NamespaceBuilder::<::bevy::ecs::entity::Entity>::new(world)
             .register(
-                "from_raw",
-                |index: u32| {
-                    let output: Val<bevy::ecs::entity::Entity> = bevy::ecs::entity::Entity::from_raw(
-                            index,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "to_bits",
-                |_self: Val<bevy::ecs::entity::Entity>| {
-                    let output: u64 = bevy::ecs::entity::Entity::to_bits(
-                            _self.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "from_bits",
-                |bits: u64| {
-                    let output: Val<bevy::ecs::entity::Entity> = bevy::ecs::entity::Entity::from_bits(
-                            bits,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "index",
-                |_self: Val<bevy::ecs::entity::Entity>| {
-                    let output: u32 = bevy::ecs::entity::Entity::index(
-                            _self.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "generation",
-                |_self: Val<bevy::ecs::entity::Entity>| {
-                    let output: u32 = bevy::ecs::entity::Entity::generation(
-                            _self.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "clone",
                 |_self: Ref<bevy::ecs::entity::Entity>| {
                     let output: Val<bevy::ecs::entity::Entity> = <bevy::ecs::entity::Entity as std::clone::Clone>::clone(
@@ -91,6 +41,56 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "from_bits",
+                |bits: u64| {
+                    let output: Val<bevy::ecs::entity::Entity> = bevy::ecs::entity::Entity::from_bits(
+                            bits,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "from_raw",
+                |index: u32| {
+                    let output: Val<bevy::ecs::entity::Entity> = bevy::ecs::entity::Entity::from_raw(
+                            index,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "generation",
+                |_self: Val<bevy::ecs::entity::Entity>| {
+                    let output: u32 = bevy::ecs::entity::Entity::generation(
+                            _self.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "index",
+                |_self: Val<bevy::ecs::entity::Entity>| {
+                    let output: u32 = bevy::ecs::entity::Entity::index(
+                            _self.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "to_bits",
+                |_self: Val<bevy::ecs::entity::Entity>| {
+                    let output: u64 = bevy::ecs::entity::Entity::to_bits(
+                            _self.into_inner(),
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::ecs::world::OnAdd>::new(world);
         NamespaceBuilder::<::bevy::ecs::world::OnInsert>::new(world);
@@ -101,6 +101,16 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::ecs::component::ComponentId>| {
                     let output: () = <bevy::ecs::component::ComponentId as std::cmp::Eq>::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::ecs::component::ComponentId>| {
+                    let output: Val<bevy::ecs::component::ComponentId> = <bevy::ecs::component::ComponentId as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -121,10 +131,10 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                 },
             )
             .register(
-                "clone",
-                |_self: Ref<bevy::ecs::component::ComponentId>| {
-                    let output: Val<bevy::ecs::component::ComponentId> = <bevy::ecs::component::ComponentId as std::clone::Clone>::clone(
-                            &_self,
+                "index",
+                |_self: Val<bevy::ecs::component::ComponentId>| {
+                    let output: usize = bevy::ecs::component::ComponentId::index(
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -139,22 +149,22 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "index",
-                |_self: Val<bevy::ecs::component::ComponentId>| {
-                    let output: usize = bevy::ecs::component::ComponentId::index(
-                            _self.into_inner(),
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::ecs::component::Tick>::new(world)
             .register(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::ecs::component::Tick>| {
                     let output: () = <bevy::ecs::component::Tick as std::cmp::Eq>::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::ecs::component::Tick>| {
+                    let output: Val<bevy::ecs::component::Tick> = <bevy::ecs::component::Tick as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -175,27 +185,9 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                 },
             )
             .register(
-                "new",
-                |tick: u32| {
-                    let output: Val<bevy::ecs::component::Tick> = bevy::ecs::component::Tick::new(
-                            tick,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "get",
                 |_self: Val<bevy::ecs::component::Tick>| {
                     let output: u32 = bevy::ecs::component::Tick::get(_self.into_inner())
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "set",
-                |mut _self: Mut<bevy::ecs::component::Tick>, tick: u32| {
-                    let output: () = bevy::ecs::component::Tick::set(&mut _self, tick)
                         .into();
                     output
                 },
@@ -217,11 +209,19 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                 },
             )
             .register(
-                "clone",
-                |_self: Ref<bevy::ecs::component::Tick>| {
-                    let output: Val<bevy::ecs::component::Tick> = <bevy::ecs::component::Tick as std::clone::Clone>::clone(
-                            &_self,
+                "new",
+                |tick: u32| {
+                    let output: Val<bevy::ecs::component::Tick> = bevy::ecs::component::Tick::new(
+                            tick,
                         )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "set",
+                |mut _self: Mut<bevy::ecs::component::Tick>, tick: u32| {
+                    let output: () = bevy::ecs::component::Tick::set(&mut _self, tick)
                         .into();
                     output
                 },
@@ -295,6 +295,16 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::ecs::identifier::Identifier>::new(world)
             .register(
+                "clone",
+                |_self: Ref<bevy::ecs::identifier::Identifier>| {
+                    let output: Val<bevy::ecs::identifier::Identifier> = <bevy::ecs::identifier::Identifier as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::ecs::identifier::Identifier>,
@@ -308,10 +318,10 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                 },
             )
             .register(
-                "clone",
-                |_self: Ref<bevy::ecs::identifier::Identifier>| {
-                    let output: Val<bevy::ecs::identifier::Identifier> = <bevy::ecs::identifier::Identifier as std::clone::Clone>::clone(
-                            &_self,
+                "from_bits",
+                |value: u64| {
+                    let output: Val<bevy::ecs::identifier::Identifier> = bevy::ecs::identifier::Identifier::from_bits(
+                            value,
                         )
                         .into();
                     output
@@ -342,16 +352,6 @@ impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
                 |_self: Val<bevy::ecs::identifier::Identifier>| {
                     let output: u64 = bevy::ecs::identifier::Identifier::to_bits(
                             _self.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "from_bits",
-                |value: u64| {
-                    let output: Val<bevy::ecs::identifier::Identifier> = bevy::ecs::identifier::Identifier::from_bits(
-                            value,
                         )
                         .into();
                     output
