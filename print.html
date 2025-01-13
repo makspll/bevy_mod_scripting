@@ -868,6 +868,44 @@ end
     print("Goodbye world")
 end
 </code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="developing-bms"><a class="header" href="#developing-bms">Developing BMS</a></h1>
+<p>This section is for developers who want to contribute to the BMS project. It covers various topics necessary for understanding the project and contributing to it.</p>
+<h2 id="contributing"><a class="header" href="#contributing">Contributing</a></h2>
+<p>Please see the <a href="https://github.com/makspll/bevy_mod_scripting/blob/main/CODE_OF_CONDUCT.md">code of conduct</a> as well as the <a href="https://github.com/makspll/bevy_mod_scripting/blob/main/CONTRIBUTING.md">contributing guidelines</a> first.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="setup"><a class="header" href="#setup">Setup</a></h1>
+<p>this crate contains a work in progress <code>xtask</code> setup which in theory should allow you to setup everything you need for local development by running:</p>
+<pre><code class="language-sh">cargo xtask init
+</code></pre>
+<p>However at the moment it does not generate IDE specific files for you, so you will need to do that manually.</p>
+<h2 id="vscode"><a class="header" href="#vscode">VScode</a></h2>
+<p>For vscode you will want to enter the following into your <code>settings.json</code></p>
+<pre><code class="language-json">{
+    "rust-analyzer.rustc.source": "discover",
+    "rust-analyzer.linkedProjects": [
+        // "./crates/bevy_api_gen/Cargo.toml", uncommenting this is currently not fully supported with xtask + vscode, rust analyzer bugs out a lot sadly
+        "Cargo.toml",
+    ],
+    "rust-analyzer.check.invocationStrategy": "once",
+    "rust-analyzer.check.overrideCommand": [
+        "/absolute-path-to-this-project/bevy_mod_scripting/check.sh"
+    ],
+    "rust-analyzer.cargo.buildScripts.overrideCommand": [
+        "/absolute-path-to-this-project/bevy_mod_scripting/check.sh"
+    ],
+}
+</code></pre>
+<p>If you are on windows you might need to create an equivalent <code>check.exe</code> to run <code>cargo xtask check --ide-mode</code> in the root directory of this workspace.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="adding-new-languages-to-bms"><a class="header" href="#adding-new-languages-to-bms">Adding New Languages to BMS</a></h1>
+<p>If you are interested in adding a new language to BMS, please read this section first. Adding a new language is a non-trivial task depending on the language you want to add. It also requires a lot of effort and time to maintain a new language, so unless the language you want to add is widely used and has a large community, it might not be worth the effort.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="evaluating-feasibility"><a class="header" href="#evaluating-feasibility">Evaluating Feasibility</a></h1>
+<p>In order for a language to work well with BMS it's necessary it supports the following features:</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Interoperability with Rust. If you can't call it from Rust easilly and there is no existing crate that can do it for you, it's a no-go.</li>
+<li><input disabled="" type="checkbox"/>
+First class functions. Or at least the ability to call an arbitrary function with an arbitrary number of arguments from a script. Without this feature, you would need to separately generate code for the bevy bindings. This is painful and goes against the grain of the project.</li>
+</ul>
+<h2 id="first-classs-functions"><a class="header" href="#first-classs-functions">First Classs Functions</a></h2>
 
                     </main>
 

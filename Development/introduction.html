@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Core Callbacks - Bevy Scripting</title>
+        <title>Introduction - Bevy Scripting</title>
 
 
         <!-- Custom HTML head -->
@@ -155,36 +155,20 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="core-callbacks"><a class="header" href="#core-callbacks">Core Callbacks</a></h1>
-<p>On top of callbacks which are registered by your application, BMS provides a set of core callbacks which are always available.</p>
-<p>The two core callbacks are:</p>
-<ul>
-<li><code>on_script_loaded</code></li>
-<li><code>on_script_unloaded</code></li>
-</ul>
-<h2 id="on_script_loaded"><a class="header" href="#on_script_loaded"><code>on_script_loaded</code></a></h2>
-<p>This will be called right after a script has been loaded or reloaded. This is a good place to initialize your script. You should avoid placing a lot of logic into the global body of your script, and instead put it into this callback. Otherwise errors in the initialization will fail the loading of the script.</p>
-<pre><code class="language-lua">print("you can also use this space, but it's not recommended")
-function on_script_loaded()
-    print("Hello world")
-end
-</code></pre>
-<h2 id="on_script_unloaded"><a class="header" href="#on_script_unloaded"><code>on_script_unloaded</code></a></h2>
-<p>This will be called right before a script is unloaded. This is a good place to clean up any resources that your script has allocated. Note this is not called when a script is reloaded, only when it is being removed from the system.</p>
-<pre><code class="language-lua">function on_script_unloaded()
-    print("Goodbye world")
-end
-</code></pre>
+                        <h1 id="developing-bms"><a class="header" href="#developing-bms">Developing BMS</a></h1>
+<p>This section is for developers who want to contribute to the BMS project. It covers various topics necessary for understanding the project and contributing to it.</p>
+<h2 id="contributing"><a class="header" href="#contributing">Contributing</a></h2>
+<p>Please see the <a href="https://github.com/makspll/bevy_mod_scripting/blob/main/CODE_OF_CONDUCT.md">code of conduct</a> as well as the <a href="https://github.com/makspll/bevy_mod_scripting/blob/main/CONTRIBUTING.md">contributing guidelines</a> first.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../ScriptingReference/script-query-result.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../ScriptingReference/core-callbacks.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../Development/introduction.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../Development/setup.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -194,11 +178,11 @@ end
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../ScriptingReference/script-query-result.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../ScriptingReference/core-callbacks.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../Development/introduction.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../Development/setup.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

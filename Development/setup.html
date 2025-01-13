@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Core Callbacks - Bevy Scripting</title>
+        <title>Setup - Bevy Scripting</title>
 
 
         <!-- Custom HTML head -->
@@ -155,36 +155,39 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="core-callbacks"><a class="header" href="#core-callbacks">Core Callbacks</a></h1>
-<p>On top of callbacks which are registered by your application, BMS provides a set of core callbacks which are always available.</p>
-<p>The two core callbacks are:</p>
-<ul>
-<li><code>on_script_loaded</code></li>
-<li><code>on_script_unloaded</code></li>
-</ul>
-<h2 id="on_script_loaded"><a class="header" href="#on_script_loaded"><code>on_script_loaded</code></a></h2>
-<p>This will be called right after a script has been loaded or reloaded. This is a good place to initialize your script. You should avoid placing a lot of logic into the global body of your script, and instead put it into this callback. Otherwise errors in the initialization will fail the loading of the script.</p>
-<pre><code class="language-lua">print("you can also use this space, but it's not recommended")
-function on_script_loaded()
-    print("Hello world")
-end
+                        <h1 id="setup"><a class="header" href="#setup">Setup</a></h1>
+<p>this crate contains a work in progress <code>xtask</code> setup which in theory should allow you to setup everything you need for local development by running:</p>
+<pre><code class="language-sh">cargo xtask init
 </code></pre>
-<h2 id="on_script_unloaded"><a class="header" href="#on_script_unloaded"><code>on_script_unloaded</code></a></h2>
-<p>This will be called right before a script is unloaded. This is a good place to clean up any resources that your script has allocated. Note this is not called when a script is reloaded, only when it is being removed from the system.</p>
-<pre><code class="language-lua">function on_script_unloaded()
-    print("Goodbye world")
-end
+<p>However at the moment it does not generate IDE specific files for you, so you will need to do that manually.</p>
+<h2 id="vscode"><a class="header" href="#vscode">VScode</a></h2>
+<p>For vscode you will want to enter the following into your <code>settings.json</code></p>
+<pre><code class="language-json">{
+    "rust-analyzer.rustc.source": "discover",
+    "rust-analyzer.linkedProjects": [
+        // "./crates/bevy_api_gen/Cargo.toml", uncommenting this is currently not fully supported with xtask + vscode, rust analyzer bugs out a lot sadly
+        "Cargo.toml",
+    ],
+    "rust-analyzer.check.invocationStrategy": "once",
+    "rust-analyzer.check.overrideCommand": [
+        "/absolute-path-to-this-project/bevy_mod_scripting/check.sh"
+    ],
+    "rust-analyzer.cargo.buildScripts.overrideCommand": [
+        "/absolute-path-to-this-project/bevy_mod_scripting/check.sh"
+    ],
+}
 </code></pre>
+<p>If you are on windows you might need to create an equivalent <code>check.exe</code> to run <code>cargo xtask check --ide-mode</code> in the root directory of this workspace.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../ScriptingReference/script-query-result.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../Development/introduction.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../Development/introduction.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../Development/AddingLanguages/introduction.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -194,11 +197,11 @@ end
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../ScriptingReference/script-query-result.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../Development/introduction.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../Development/introduction.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../Development/AddingLanguages/introduction.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
