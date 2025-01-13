@@ -1,18 +1,19 @@
 use bevy::{
-    app::{App, Plugin},
+    app::Plugin,
     ecs::{entity::Entity, world::World},
 };
 use bevy_mod_scripting_core::{
     asset::{AssetPathToLanguageMapper, Language},
     bindings::{
-        script_value::ScriptValue, ThreadWorldContainer, WorldCallbackAccess, WorldContainer,
+        function::namespace::Namespace, script_value::ScriptValue, ThreadWorldContainer,
+        WorldCallbackAccess, WorldContainer,
     },
     context::{ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
     event::CallbackLabel,
     reflection_extensions::PartialReflectExt,
     script::ScriptId,
-    AddContextInitializer, IntoScriptPluginParams, ScriptingPlugin,
+    IntoScriptPluginParams, ScriptingPlugin,
 };
 use bindings::{
     reference::{LuaReflectReference, LuaStaticReflectReference},
@@ -48,16 +49,62 @@ impl Default for LuaScriptingPlugin {
                 language_mapper: Some(AssetPathToLanguageMapper {
                     map: lua_language_mapper,
                 }),
-                context_initializers: vec![|_script_id, context| {
-                    context
-                        .globals()
-                        .set(
-                            "world",
-                            LuaStaticReflectReference(std::any::TypeId::of::<World>()),
-                        )
-                        .map_err(ScriptError::from_mlua_error)?;
-                    Ok(())
-                }],
+                context_initializers: vec![
+                    |_script_id, context| {
+                        // set the world global
+                        context
+                            .globals()
+                            .set(
+                                "world",
+                                LuaStaticReflectReference(std::any::TypeId::of::<World>()),
+                            )
+                            .map_err(ScriptError::from_mlua_error)?;
+                        Ok(())
+                    },
+                    |_script_id, context: &mut Lua| {
+                        // set static globals
+                        let world = ThreadWorldContainer.get_world();
+                        let type_registry = world.type_registry();
+                        let type_registry = type_registry.read();
+
+                        for registration in type_registry.iter() {
+                            // only do this for non generic types
+                            // we don't want to see `Vec<Entity>:function()` in lua
+                            if !registration.type_info().generics().is_empty() {
+                                continue;
+                            }
+
+                            if let Some(global_name) =
+                                registration.type_info().type_path_table().ident()
+                            {
+                                let ref_ = LuaStaticReflectReference(registration.type_id());
+                                context
+                                    .globals()
+                                    .set(global_name, ref_)
+                                    .map_err(ScriptError::from_mlua_error)?;
+                            }
+                        }
+
+                        // go through functions in the global namespace and add them to the lua context
+                        let script_function_registry = world.script_function_registry();
+                        let script_function_registry = script_function_registry.read();
+
+                        for (key, function) in script_function_registry
+                            .iter_all()
+                            .filter(|(k, _)| k.namespace == Namespace::Global)
+                        {
+                            context
+                                .globals()
+                                .set(
+                                    key.name.to_string(),
+                                    LuaScriptValue::from(ScriptValue::Function(function.clone())),
+                                )
+                                .map_err(ScriptError::from_mlua_error)?;
+                        }
+
+                        Ok(())
+                    },
+                ],
                 context_pre_handling_initializers: vec![|script_id, entity, context| {
                     let world = ThreadWorldContainer.get_world();
                     context
@@ -88,33 +135,6 @@ fn lua_language_mapper(path: &std::path::Path) -> Language {
 impl Plugin for LuaScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         self.scripting_plugin.build(app);
-    }
-
-    fn cleanup(&self, app: &mut App) {
-        // find all registered types, and insert dummy for calls
-
-        app.add_context_initializer::<LuaScriptingPlugin>(|_script_id, context: &mut Lua| {
-            let world = ThreadWorldContainer.get_world();
-            let type_registry = world.type_registry();
-            let type_registry = type_registry.read();
-
-            for registration in type_registry.iter() {
-                // only do this for non generic types
-                // we don't want to see `Vec<Entity>:function()` in lua
-                if !registration.type_info().generics().is_empty() {
-                    continue;
-                }
-
-                if let Some(global_name) = registration.type_info().type_path_table().ident() {
-                    let ref_ = LuaStaticReflectReference(registration.type_id());
-                    context
-                        .globals()
-                        .set(global_name, ref_)
-                        .map_err(ScriptError::from_mlua_error)?;
-                }
-            }
-            Ok(())
-        });
     }
 }
 

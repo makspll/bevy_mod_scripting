@@ -360,8 +360,8 @@ impl ScriptFunctionRegistryArc {
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct FunctionKey {
-    name: Cow<'static, str>,
-    namespace: Namespace,
+    pub name: Cow<'static, str>,
+    pub namespace: Namespace,
 }
 
 #[derive(Debug, Default)]
@@ -372,6 +372,8 @@ pub struct ScriptFunctionRegistry {
 impl ScriptFunctionRegistry {
     /// Register a script function with the given name. If the name already exists,
     /// the new function will be registered as an overload of the function.
+    ///
+    /// If you want to overwrite an existing function, use [`ScriptFunctionRegistry::overwrite`]
     pub fn register<F, M>(
         &mut self,
         namespace: Namespace,
@@ -380,10 +382,11 @@ impl ScriptFunctionRegistry {
     ) where
         F: ScriptFunction<'static, M>,
     {
-        self.register_overload(namespace, name, func);
+        self.register_overload(namespace, name, func, false);
     }
 
-    fn register_overload<F, M>(
+    /// Overwrite a function with the given name. If the function does not exist, it will be registered as a new function.
+    pub fn overwrite<F, M>(
         &mut self,
         namespace: Namespace,
         name: impl Into<Cow<'static, str>>,
@@ -391,10 +394,32 @@ impl ScriptFunctionRegistry {
     ) where
         F: ScriptFunction<'static, M>,
     {
+        self.register_overload(namespace, name, func, true);
+    }
+
+    /// Remove a function from the registry if it exists. Returns the removed function if it was found.
+    pub fn remove(
+        &mut self,
+        namespace: Namespace,
+        name: impl Into<Cow<'static, str>>,
+    ) -> Option<DynamicScriptFunction> {
+        let name = name.into();
+        self.functions.remove(&FunctionKey { name, namespace })
+    }
+
+    fn register_overload<F, M>(
+        &mut self,
+        namespace: Namespace,
+        name: impl Into<Cow<'static, str>>,
+        func: F,
+        overwrite: bool,
+    ) where
+        F: ScriptFunction<'static, M>,
+    {
         // always start with non-suffixed registration
         // TODO: we do alot of string work, can we make this all more efficient?
         let name: Cow<'static, str> = name.into();
-        if !self.contains(namespace, name.clone()) {
+        if overwrite || !self.contains(namespace, name.clone()) {
             let func = func
                 .into_dynamic_script_function()
                 .with_name(name.clone())
@@ -635,5 +660,35 @@ mod test {
         assert_eq!(all_functions.len(), 2);
         assert_eq!(all_functions[0].info.name(), "test");
         assert_eq!(all_functions[1].info.name(), "test-1");
+    }
+
+    #[test]
+    fn test_overwrite_script_function() {
+        let mut registry = ScriptFunctionRegistry::default();
+        let fn_ = |a: usize, b: usize| a + b;
+        let namespace = Namespace::Global;
+        registry.register(namespace, "test", fn_);
+        let fn_2 = |a: usize, b: i32| a + (b as usize);
+        registry.overwrite(namespace, "test", fn_2);
+
+        let all_functions = registry
+            .iter_overloads(namespace, "test")
+            .expect("Failed to get overloads")
+            .collect::<Vec<_>>();
+
+        assert_eq!(all_functions.len(), 1);
+        assert_eq!(all_functions[0].info.name(), "test");
+    }
+
+    #[test]
+    fn test_remove_script_function() {
+        let mut registry = ScriptFunctionRegistry::default();
+        let fn_ = |a: usize, b: usize| a + b;
+        let namespace = Namespace::Global;
+        registry.register(namespace, "test", fn_);
+        let removed = registry.remove(namespace, "test");
+        assert!(removed.is_some());
+        let removed = registry.remove(namespace, "test");
+        assert!(removed.is_none());
     }
 }
