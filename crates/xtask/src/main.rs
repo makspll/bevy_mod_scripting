@@ -281,7 +281,12 @@ impl App {
     pub(crate) fn into_ci_row(self, os: String) -> CiMatrixRow {
         CiMatrixRow {
             command: self.clone().into_command_string().into_string().unwrap(),
-            name: format!("{} - {}", self.subcmd.as_ref(), self.global_args.features),
+            name: format!(
+                "{}({}) -  {}",
+                self.subcmd.as_ref(),
+                os,
+                self.global_args.features
+            ),
             os,
         }
     }
@@ -393,7 +398,7 @@ enum Xtasks {
         package: Option<String>,
 
         /// Run tests without coverage
-        #[clap(long, short)]
+        #[clap(long, short = "nc")]
         no_coverage: bool,
     },
     /// Perform a full check as it would be done in CI, except not parallelised
