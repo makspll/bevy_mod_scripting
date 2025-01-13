@@ -398,7 +398,7 @@ enum Xtasks {
         package: Option<String>,
 
         /// Run tests without coverage
-        #[clap(long, short = "nc")]
+        #[clap(long)]
         no_coverage: bool,
     },
     /// Perform a full check as it would be done in CI, except not parallelised
