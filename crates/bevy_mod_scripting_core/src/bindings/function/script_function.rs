@@ -360,8 +360,8 @@ impl ScriptFunctionRegistryArc {
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct FunctionKey {
-    name: Cow<'static, str>,
-    namespace: Namespace,
+    pub name: Cow<'static, str>,
+    pub namespace: Namespace,
 }
 
 #[derive(Debug, Default)]

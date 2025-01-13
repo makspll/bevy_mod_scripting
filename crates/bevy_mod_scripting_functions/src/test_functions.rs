@@ -8,7 +8,7 @@ use bevy::{
 use bevy_mod_scripting_core::{
     bindings::{
         function::{
-            namespace::NamespaceBuilder,
+            namespace::{GlobalNamespace, NamespaceBuilder},
             script_function::{CallerContext, DynamicScriptFunctionMut},
         },
         pretty_print::DisplayWithWorld,
@@ -79,4 +79,7 @@ pub fn register_test_functions(world: &mut App) {
                 }
             },
         );
+
+    NamespaceBuilder::<GlobalNamespace>::new_unregistered(world)
+        .register("global_hello_world", || Ok("hi!"));
 }
