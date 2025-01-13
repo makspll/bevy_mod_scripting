@@ -360,7 +360,6 @@ enum Xtasks {
     Check {
         #[clap(
             long,
-            short,
             default_value = "false",
             help = "Run in the expected format for rust-analyzer's override check command"
         )]
@@ -368,7 +367,6 @@ enum Xtasks {
 
         #[clap(
             long,
-            short,
             default_value = "all",
             value_parser=clap::value_parser!(CheckKind),
             value_name=CheckKind::to_placeholder(),
@@ -380,21 +378,21 @@ enum Xtasks {
     Docs {
         /// Open in browser
         /// This will open the generated docs in the default browser
-        #[clap(long, short)]
+        #[clap(long)]
         open: bool,
 
         /// Skip building rust docs
-        #[clap(long, short)]
+        #[clap(long)]
         no_rust_docs: bool,
     },
     /// Build the main workspace, and then run all tests
     Test {
         /// Run tests containing the given name only
-        #[clap(long, short)]
+        #[clap(long)]
         name: Option<String>,
 
         /// Run tests in the given package only
-        #[clap(long, short)]
+        #[clap(long)]
         package: Option<String>,
 
         /// Run tests without coverage
