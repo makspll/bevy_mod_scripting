@@ -26,6 +26,8 @@ jobs:
     outputs:
       matrix: ${{ steps.generate-matrix.outputs.matrix }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Generate matrix
         id: generate-matrix
         run: |
