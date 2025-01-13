@@ -36,9 +36,6 @@ jobs:
           echo "Convert to single line JSON"
           jq -c . matrix.json > matrix-one-line.json
           echo "matrix=$(cat matrix-one-line.json)" >> $GITHUB_OUTPUT
-      - name: Print uploaded matrix
-        run: |
-          echo "${{ steps.generate-matrix.outputs.matrix }}"
 
   check:  
     permissions:
