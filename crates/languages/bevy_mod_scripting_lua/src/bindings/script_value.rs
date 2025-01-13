@@ -41,7 +41,10 @@ impl FromLua for LuaScriptValue {
             Value::Nil => ScriptValue::Unit,
             Value::Boolean(b) => ScriptValue::Bool(b),
             // Value::LightUserData(light_user_data) => todo!(),
+            #[cfg(not(feature = "luau"))]
             Value::Integer(i) => ScriptValue::Integer(i),
+            #[cfg(feature = "luau")]
+            Value::Integer(i) => ScriptValue::Integer(i as i64),
             Value::Number(n) => ScriptValue::Float(n),
             Value::String(s) => ScriptValue::String(s.to_str()?.to_owned().into()),
             Value::Table(table) => {
