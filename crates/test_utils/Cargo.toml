@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-bevy = { workspace = true }
+bevy = { workspace = true, features = ["bevy_asset"] }
 
 [lib]
 path = "src/lib.rs"

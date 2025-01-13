@@ -1,5 +1,6 @@
 use std::alloc::Layout;
 
+use bevy::asset::AssetPlugin;
 use bevy::ecs::{component::*, world::World};
 use bevy::prelude::*;
 use bevy::reflect::*;
@@ -225,6 +226,9 @@ impl_test_component_ids!(
 );
 
 fn init_world<F: FnOnce(&mut World, &mut TypeRegistry)>(world: &mut World, init: F) {
+    let type_registry = world.get_resource_or_init::<AppTypeRegistry>().clone();
+    let mut type_registry_guard = type_registry.0.write();
+
     while world.components().len() < TEST_COMPONENT_ID_START {
         unsafe {
             world.register_component_with_descriptor(ComponentDescriptor::new_with_layout(
@@ -236,8 +240,6 @@ fn init_world<F: FnOnce(&mut World, &mut TypeRegistry)>(world: &mut World, init:
         };
     }
 
-    let type_registry = world.get_resource_or_init::<AppTypeRegistry>().clone();
-    let mut type_registry_guard = type_registry.0.write();
     init_all_components(world, &mut type_registry_guard);
     init(world, &mut type_registry_guard);
 }
