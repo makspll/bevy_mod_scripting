@@ -15,7 +15,6 @@ name: Check and Lint - bevy_mod_scripting
 
 
 env:
-
   REGISTRY: ghcr.io
   IMAGE_NAME: bevy-mod-scripting
   
@@ -27,8 +26,46 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  generate-job-matrix:
+  build-runner-image:
+    permissions:
+      contents: read
+      packages: write
     runs-on: ubuntu-latest
+      build-with-docker:
+    name: Build multi-platform Docker image
+    runs-on: ubuntu-20.04
+    outputs:
+      image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tags }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./crates/xtask/Dockerfile
+          platforms: linux/amd64,linux/arm64,windows/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  generate-job-matrix:
+    needs: build-runner-image
+    runs-on: ubuntu-latest
+    container: ${{ needs.build-runner-image.outputs.image }}
     outputs:
       matrix: ${{ steps.generate-matrix.outputs.matrix }}
     steps:
@@ -48,7 +85,10 @@ jobs:
       pull-requests: write
     name: Check - ${{ matrix.run_args.name }}
     runs-on: ${{ matrix.run_args.os }}
-    needs: generate-job-matrix
+    container: ${{ needs.build-runner-image.outputs.image }}
+    needs: 
+      - generate-job-matrix
+      - build-runner-image
     strategy:
       matrix:
        run_args: ${{fromJson(needs.generate-job-matrix.outputs.matrix)}}
