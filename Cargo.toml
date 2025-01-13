@@ -20,10 +20,10 @@ path = "src/lib.rs"
 features = ["lua54"]
 
 [features]
-default = ["core_functions", "bevy_bindings"]
+default = ["core_functions", "bevy_bindings", "unsafe_lua_modules"]
 
 ## lua
-lua = ["bevy_mod_scripting_lua", "unsafe_lua_modules"]
+lua = ["bevy_mod_scripting_lua"]
 # one of these must be selected
 lua51 = ["bevy_mod_scripting_lua/lua51", "lua"]
 lua52 = ["bevy_mod_scripting_lua/lua52", "lua"]
@@ -38,7 +38,7 @@ core_functions = ["bevy_mod_scripting_functions/core_functions"]
 bevy_bindings = ["bevy_mod_scripting_functions/bevy_bindings"]
 
 # optional
-unsafe_lua_modules = ["bevy_mod_scripting_lua/unsafe_lua_modules"]
+unsafe_lua_modules = ["bevy_mod_scripting_lua?/unsafe_lua_modules"]
 mlua_serialize = ["bevy_mod_scripting_lua/mlua_serialize"]
 mlua_macros = ["bevy_mod_scripting_lua/mlua_macros"]
 mlua_async = ["bevy_mod_scripting_lua/mlua_async"]

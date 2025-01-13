@@ -109,7 +109,12 @@ struct Features(HashSet<Feature>);
 
 impl Default for Features {
     fn default() -> Self {
-        Features::new(vec![Feature::Lua54])
+        // should be kept up to date with the default feature + lua54
+        Features::new(vec![
+            Feature::Lua54,
+            Feature::CoreFunctions,
+            Feature::BevyBindings,
+        ])
     }
 }
 
@@ -147,7 +152,11 @@ impl Features {
         if self.0.is_empty() {
             vec![]
         } else {
-            vec!["--features".to_owned(), self.to_string()]
+            vec![
+                "--no-default-features".to_owned(),
+                "--features".to_owned(),
+                self.to_string(),
+            ]
         }
     }
 
@@ -574,14 +583,21 @@ impl Xtasks {
 
         let mut args = vec![];
         args.push(command.to_owned());
-        args.push("--workspace".to_owned());
+
+        if command != "fmt" {
+            args.push("--workspace".to_owned());
+        }
 
         if let Some(profile) = app_settings.profile.as_ref() {
             args.push("--profile".to_owned());
             args.push(profile.clone());
         }
 
-        args.extend(app_settings.features.to_cargo_args());
+        if command != "fmt" {
+            // fmt doesn't care about features
+            args.extend(app_settings.features.to_cargo_args());
+        }
+
         args.extend(add_args.into_iter().map(|s| {
             s.as_ref()
                 .to_str()
@@ -647,10 +663,11 @@ impl Xtasks {
         }
 
         // run cargo fmt checks
-        Self::run_system_command(
-            "cargo",
+        Self::run_workspace_command(
+            &app_settings,
+            "fmt",
             "Failed to run cargo fmt",
-            vec!["fmt", "--all", "--", "--check"],
+            vec!["--all", "--", "--check"],
             None,
         )?;
 
@@ -730,7 +747,11 @@ impl Xtasks {
                 .map(|s| Feature::from_str(s).expect("invalid feature"))
                 .collect::<Vec<_>>();
 
-            let features = Features::new(string_list);
+            // include default features
+            let default_features = Features::default();
+            let mut features = Features::new(string_list);
+            features.0.extend(default_features.0);
+
             app_settings.features = features;
 
             let mut args = Vec::default();
