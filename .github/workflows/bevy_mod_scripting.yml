@@ -21,21 +21,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  generate-job-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.generate-matrix.outputs.matrix }}
+    steps:
+      - name: Generate matrix
+        id: generate-matrix
+        run: |
+          echo "matrix=$(cargo xtask ci-matrix)" >> $GITHUB_OUTPUT
+
   check:  
     permissions:
       pull-requests: write
-    name: Check - ${{ matrix.run_args.label }}
+    name: Check - ${{ matrix.run_args.name }}
     runs-on: ${{ matrix.run_args.os }}
+    needs: generate-job-matrix
     strategy:
       matrix:
-       run_args: [ 
-        {label: Windows,        os: windows-latest }, 
-        {label: MacOS,          os: macOS-latest },
-        {label: Ubuntu,         os: ubuntu-latest }, 
-      ]
+       run_args: ${{fromJson(needs.generate-job-matrix.outputs.matrix)}}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install alsa and udev
         if: runner.os == 'linux'
         run: |
@@ -49,9 +56,5 @@ jobs:
         uses: Swatinem/rust-cache@v2.7.3
       - uses: actions-rs/cargo@v1
         with:
-          command: xtask
+          command: ${{ matrix.run_args.command }}
           args: ci-check
-      - uses: romeovs/lcov-reporter-action@v0.2.16
-        continue-on-error: true
-        with:
-          lcov-file: ./target/coverage/lcov.info
