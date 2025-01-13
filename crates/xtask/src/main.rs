@@ -2,7 +2,15 @@ use anyhow::*;
 use clap::Parser;
 use itertools::Itertools;
 use log::*;
-use std::{collections::HashMap, ffi::OsStr, path::Path, process::Command, str::FromStr};
+use serde::Serialize;
+use std::{
+    collections::{HashMap, HashSet},
+    ffi::{OsStr, OsString},
+    io::Write,
+    path::Path,
+    process::Command,
+    str::FromStr,
+};
 use strum::{IntoEnumIterator, VariantNames};
 
 #[derive(
@@ -11,6 +19,9 @@ use strum::{IntoEnumIterator, VariantNames};
     Debug,
     PartialEq,
     Eq,
+    Hash,
+    PartialOrd,
+    Ord,
     strum::EnumString,
     strum::EnumIter,
     strum::Display,
@@ -87,15 +98,20 @@ impl IntoFeatureGroup for Feature {
             | Feature::MluaMacros
             | Feature::MluaSerialize
             | Feature::UnsafeLuaModules => FeatureGroup::ForExternalCrate,
-            _ => FeatureGroup::BMSFeature,
+            Feature::BevyBindings | Feature::CoreFunctions => FeatureGroup::BMSFeature,
+            // don't use wildcard here, we want to be explicit
         }
     }
 }
 
-#[derive(Debug, Clone)]
-struct Features(Vec<Feature>);
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct Features(HashSet<Feature>);
 
 impl Features {
+    fn new<I: IntoIterator<Item = Feature>>(features: I) -> Self {
+        Self(features.into_iter().collect())
+    }
+
     /// Returns all features except the exclusive ones which are not the default
     fn all_features() -> Self {
         // remove exclusive features which are not the default
@@ -106,6 +122,16 @@ impl Features {
                     let group = f.to_feature_group();
                     (!group.is_exclusive()) || (**f == group.default_feature())
                 })
+                .cloned()
+                .collect(),
+        )
+    }
+
+    fn non_exclusive_features() -> Self {
+        Self(
+            <Feature as strum::VariantArray>::VARIANTS
+                .iter()
+                .filter(|f| !f.to_feature_group().is_exclusive())
                 .cloned()
                 .collect(),
         )
@@ -135,7 +161,10 @@ impl Features {
 
 impl std::fmt::Display for Features {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for (i, feature) in self.0.iter().enumerate() {
+        if &Self::all_features() == self {
+            return write!(f, "all");
+        }
+        for (i, feature) in self.0.iter().sorted().enumerate() {
             if i > 0 {
                 write!(f, ",")?;
             }
@@ -148,7 +177,7 @@ impl std::fmt::Display for Features {
 impl From<String> for Features {
     fn from(s: String) -> Self {
         if s.is_empty() {
-            return Self(vec![]);
+            return Self::new(vec![]);
         }
 
         let features = s
@@ -165,16 +194,115 @@ impl From<String> for Features {
     }
 }
 
-#[derive(Debug, Parser)]
+#[derive(Debug, Clone, Parser)]
 struct App {
-    #[clap(long, short, global = true, value_parser=clap::value_parser!(Features), value_name=Features::to_placeholder(), default_value="lua54",required = false)]
-    features: Features,
+    #[clap(flatten)]
+    global_args: GlobalArgs,
 
     #[clap(subcommand)]
     subcmd: Xtasks,
 }
 
-#[derive(Debug, Clone, Default, strum::EnumString, strum::VariantNames)]
+impl App {
+    fn into_command(self) -> Command {
+        let mut cmd = Command::new("cargo");
+        cmd.arg("xtask");
+        match self.subcmd {
+            Xtasks::Macros { macro_name } => {
+                cmd.arg("macros").arg(macro_name.as_ref());
+            }
+            Xtasks::Init => {
+                cmd.arg("init");
+            }
+            Xtasks::Build => {
+                cmd.arg("build");
+            }
+            Xtasks::Check { ide_mode, kind } => {
+                cmd.arg("check");
+                if ide_mode {
+                    cmd.arg("--ide-mode");
+                }
+                cmd.arg("--kind").arg(kind.as_ref());
+            }
+            Xtasks::Docs { open, no_rust_docs } => {
+                cmd.arg("docs");
+                if open {
+                    cmd.arg("--open");
+                }
+                if no_rust_docs {
+                    cmd.arg("--no-rust-docs");
+                }
+            }
+            Xtasks::Test {
+                name,
+                package,
+                no_coverage,
+            } => {
+                cmd.arg("test");
+                if let Some(name) = name {
+                    cmd.arg("--name").arg(name);
+                }
+                if let Some(package) = package {
+                    cmd.arg("--package").arg(package);
+                }
+                if no_coverage {
+                    cmd.arg("--no-coverage");
+                }
+            }
+            Xtasks::CiCheck => {
+                cmd.arg("ci-check");
+            }
+            Xtasks::CiMatrix => {
+                cmd.arg("ci-matrix");
+            }
+        }
+
+        cmd
+    }
+
+    pub(crate) fn into_command_string(self) -> OsString {
+        let cmd = self.into_command();
+        let program = cmd.get_program();
+        let args = cmd.get_args();
+        let len = args.len();
+        let mut os_string = OsString::new();
+        os_string.push(program);
+        os_string.push(" ");
+        for (i, arg) in args.enumerate() {
+            os_string.push(arg);
+            if i < len - 1 {
+                os_string.push(" ");
+            }
+        }
+
+        os_string
+    }
+
+    pub(crate) fn into_ci_row(self, os: String) -> CiMatrixRow {
+        CiMatrixRow {
+            command: self.clone().into_command_string().into_string().unwrap(),
+            name: format!("{} - {}", self.subcmd.as_ref(), self.global_args.features),
+            os,
+        }
+    }
+}
+
+#[derive(Debug, Parser, Clone)]
+struct GlobalArgs {
+    #[clap(long, short, global = true, value_parser=clap::value_parser!(Features), value_name=Features::to_placeholder(), default_value="lua54",required = false)]
+    features: Features,
+
+    #[clap(
+        long,
+        short,
+        global = true,
+        value_name = "PROFILE",
+        help = "The cargo profile to use for commands that support it"
+    )]
+    profile: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, strum::EnumString, strum::VariantNames, strum::AsRefStr)]
 #[strum(serialize_all = "snake_case")]
 enum CheckKind {
     #[default]
@@ -189,7 +317,7 @@ impl CheckKind {
     }
 }
 
-#[derive(Debug, Clone, strum::EnumString, strum::VariantNames)]
+#[derive(Debug, Clone, strum::EnumString, strum::AsRefStr, strum::VariantNames)]
 #[strum(serialize_all = "snake_case")]
 enum Macro {
     /// Integration tests for all script plugins
@@ -202,7 +330,7 @@ impl Macro {
     }
 }
 
-#[derive(Debug, clap::Subcommand)]
+#[derive(Clone, Debug, clap::Subcommand, strum::AsRefStr)]
 #[clap(
     name = "xtask",
     bin_name = "cargo xtask",
@@ -268,42 +396,86 @@ enum Xtasks {
         #[clap(long, short)]
         no_coverage: bool,
     },
-    /// Perform a full check as it would be done in CI
+    /// Perform a full check as it would be done in CI, except not parallelised
     CiCheck,
+    /// Generate a json job matrix, containing, describing maximally parallelised jobs for running in CI/CD.
+    ///
+    /// The format of the output is:
+    ///
+    /// [
+    ///    {
+    ///       "command": "the command to run"
+    ///    }
+    /// ]
+    ///
+    CiMatrix,
+}
+
+#[derive(Serialize, Clone)]
+struct CiMatrixRow {
+    /// The command to run
+    command: String,
+    /// The display name of the job
+    name: String,
+    /// The os to run this on
+    os: String,
 }
 
 impl Xtasks {
-    fn run(self, features: Features) -> Result<()> {
+    fn run(self, app_settings: GlobalArgs) -> Result<String> {
         match self {
-            Xtasks::Build => Self::build(features),
-            Xtasks::Check { ide_mode, kind } => Self::check(features, ide_mode, kind),
-            Xtasks::Docs { open, no_rust_docs } => Self::docs(open, no_rust_docs),
+            Xtasks::Build => Self::build(app_settings),
+            Xtasks::Check { ide_mode, kind } => Self::check(app_settings, ide_mode, kind),
+            Xtasks::Docs { open, no_rust_docs } => Self::docs(app_settings, open, no_rust_docs),
             Xtasks::Test {
                 name,
                 package,
                 no_coverage,
-            } => Self::test(features, name, package, no_coverage),
-            Xtasks::CiCheck => Self::cicd(),
-            Xtasks::Init => Self::init(),
+            } => Self::test(app_settings, name, package, no_coverage),
+            Xtasks::CiCheck => Self::cicd(app_settings),
+            Xtasks::Init => Self::init(app_settings),
             Xtasks::Macros { macro_name } => match macro_name {
-                Macro::ScriptTests => Self::test(
-                    Features::all_features(),
-                    Some("script_test".to_owned()),
-                    None,
-                    true,
-                ),
+                Macro::ScriptTests => {
+                    let mut settings = app_settings.clone();
+                    settings.features = Features::all_features();
+                    Self::test(settings, Some("script_test".to_owned()), None, true)
+                }
             },
-        }
-    }
+            Xtasks::CiMatrix => {
+                let output = Self::ci_matrix(app_settings)?;
+                let mut matrix = output
+                    .into_iter()
+                    .map(|a| a.into_ci_row("ubuntu-latest".to_owned()))
+                    .collect::<Vec<_>>();
 
-    // TODO: have a global args struct instead of this
-    fn set_cargo_profile(profile: &str) {
-        std::env::set_var("BMS_CARGO_PROFILE", profile);
-    }
+                // clone for macos and windows for certain steps
+                let mut multi_os_steps = matrix.clone();
 
-    fn get_cargo_profile() -> Option<String> {
-        let val = std::env::var("BMS_CARGO_PROFILE").ok();
-        val.filter(|v| !v.is_empty())
+                // we don't need to verify all feature flags on all platforms, this is mostly a "does it compile" check
+                // for finding out missing compile time logic or bad imports
+                multi_os_steps
+                    .retain(|e| !e.command.contains("build") && !e.command.contains("docs"));
+
+                let mut macos_matrix = multi_os_steps.clone();
+                let mut windows_matrix = multi_os_steps.clone();
+
+                for row in macos_matrix.iter_mut() {
+                    row.os = "macos-latest".to_owned();
+                }
+
+                for row in windows_matrix.iter_mut() {
+                    row.os = "windows-latest".to_owned();
+                }
+
+                matrix.extend(macos_matrix);
+                matrix.extend(windows_matrix);
+
+                let json = serde_json::to_string_pretty(&matrix)?;
+                return Ok(json);
+            }
+        }?;
+
+        Ok("".into())
     }
 
     fn cargo_metadata() -> Result<cargo_metadata::Metadata> {
@@ -369,9 +541,9 @@ impl Xtasks {
     }
 
     fn run_workspace_command<I: IntoIterator<Item = impl AsRef<OsStr>>>(
+        app_settings: &GlobalArgs,
         command: &str,
         context: &str,
-        features: Features,
         add_args: I,
         dir: Option<&Path>,
     ) -> Result<()> {
@@ -380,13 +552,13 @@ impl Xtasks {
         let mut args = vec![];
         args.push(command.to_owned());
         args.push("--workspace".to_owned());
-        let profile = Self::get_cargo_profile();
-        if let Some(profile) = profile {
+
+        if let Some(profile) = app_settings.profile.as_ref() {
             args.push("--profile".to_owned());
-            args.push(profile);
+            args.push(profile.clone());
         }
 
-        args.extend(features.to_cargo_args());
+        args.extend(app_settings.features.to_cargo_args());
         args.extend(add_args.into_iter().map(|s| {
             s.as_ref()
                 .to_str()
@@ -411,26 +583,27 @@ impl Xtasks {
         match output.status.code() {
             Some(0) => Ok(()),
             _ => bail!(
-                "{} failed with exit code: {}. Features: {features}",
+                "{} failed with exit code: {}. Features: {}",
                 context,
-                output.status.code().unwrap_or(-1)
+                output.status.code().unwrap_or(-1),
+                app_settings.features
             ),
         }
     }
 
-    fn build(features: Features) -> Result<()> {
+    fn build(app_settings: GlobalArgs) -> Result<()> {
         // build workspace using the given features
         Self::run_workspace_command(
+            &app_settings,
             "build",
             "Failed to build workspace",
-            features,
             vec!["--all-targets"],
             None,
         )?;
         Ok(())
     }
 
-    fn check_main_workspace(features: Features, ide_mode: bool) -> Result<()> {
+    fn check_main_workspace(app_settings: GlobalArgs, ide_mode: bool) -> Result<()> {
         // start with cargo clippy
         let mut clippy_args = vec![];
         if ide_mode {
@@ -439,9 +612,9 @@ impl Xtasks {
         clippy_args.extend(vec!["--all-targets", "--", "-D", "warnings"]);
 
         Self::run_workspace_command(
+            &app_settings,
             "clippy",
             "Failed to run clippy",
-            features,
             clippy_args,
             None,
         )?;
@@ -461,7 +634,7 @@ impl Xtasks {
         Ok(())
     }
 
-    fn check_codegen_crate(_ide_mode: bool) -> Result<()> {
+    fn check_codegen_crate(_app_settings: GlobalArgs, _ide_mode: bool) -> Result<()> {
         // set the working directory to the codegen crate
         // let crates_path = Self::relative_workspace_dir(PathBuf::from("crates"))?;
         // let codegen_crate_path = crates_path.join("bevy_api_gen");
@@ -484,23 +657,23 @@ impl Xtasks {
         Ok(())
     }
 
-    fn check(features: Features, ide_mode: bool, kind: CheckKind) -> Result<()> {
+    fn check(app_settings: GlobalArgs, ide_mode: bool, kind: CheckKind) -> Result<()> {
         match kind {
             CheckKind::All => {
-                Self::check_main_workspace(features.clone(), ide_mode)?;
-                Self::check_codegen_crate(ide_mode)?;
+                Self::check_main_workspace(app_settings.clone(), ide_mode)?;
+                Self::check_codegen_crate(app_settings, ide_mode)?;
             }
             CheckKind::Main => {
-                Self::check_main_workspace(features, ide_mode)?;
+                Self::check_main_workspace(app_settings, ide_mode)?;
             }
             CheckKind::Codegen => {
-                Self::check_codegen_crate(ide_mode)?;
+                Self::check_codegen_crate(app_settings, ide_mode)?;
             }
         }
         Ok(())
     }
 
-    fn docs(open: bool, no_rust_docs: bool) -> Result<()> {
+    fn docs(mut app_settings: GlobalArgs, open: bool, no_rust_docs: bool) -> Result<()> {
         // find [package.metadata."docs.rs"] key in Cargo.toml
         if !no_rust_docs {
             info!("Building rust docs");
@@ -534,7 +707,8 @@ impl Xtasks {
                 .map(|s| Feature::from_str(s).expect("invalid feature"))
                 .collect::<Vec<_>>();
 
-            let features = Features(string_list);
+            let features = Features::new(string_list);
+            app_settings.features = features;
 
             let mut args = Vec::default();
             args.push("--all");
@@ -542,9 +716,9 @@ impl Xtasks {
                 args.push("--open");
             }
             Self::run_workspace_command(
+                &app_settings,
                 "doc",
                 "Failed to build crates.io docs",
-                features.clone(),
                 args,
                 None,
             )?;
@@ -565,7 +739,7 @@ impl Xtasks {
     }
 
     fn test(
-        features: Features,
+        app_settings: GlobalArgs,
         package: Option<String>,
         name: Option<String>,
         no_coverage: bool,
@@ -599,9 +773,9 @@ impl Xtasks {
         }
 
         Self::run_workspace_command(
+            &app_settings,
             "test",
             "Failed to run tests",
-            features,
             vec!["--exclude", "xtask"],
             None,
         )?;
@@ -657,18 +831,18 @@ impl Xtasks {
         Ok(())
     }
 
-    fn cicd() -> Result<()> {
-        // set profile
-        Self::set_cargo_profile("ephemeral-build");
+    fn ci_matrix(app_settings: GlobalArgs) -> Result<Vec<App>> {
+        // split up the tests we want to run into different jobs
+        // everything that can be parallelised should be
+        // each row in the output will correspond to a separate job in the matrix.
 
-        // setup the CI environment
-        Self::init()?;
+        let mut output = vec![];
 
-        // run everything with the ephemereal profile
-        // first check everything compiles with every combination of features apart from mutually exclusive ones
-        let all_features = Features(<Feature as strum::VariantArray>::VARIANTS.into());
+        // first of all we run a powerset of check commands with various features enabled. all of which can be run in parallel
+        let available_features =
+            Features::new(<Feature as strum::VariantArray>::VARIANTS.iter().cloned());
 
-        let grouped = all_features.split_by_group();
+        let grouped = available_features.split_by_group();
 
         let features_to_combine = grouped
             .get(&FeatureGroup::BMSFeature)
@@ -679,23 +853,19 @@ impl Xtasks {
             .iter()
             .cloned()
             .powerset()
+            .map(Features::new)
             .collect::<Vec<_>>();
 
         // start with longest to compile all first
         powersets.reverse();
         info!("Powerset: {:?}", powersets);
-        let length = powersets.len();
 
-        for (i, mut feature_set) in powersets.into_iter().map(Features).enumerate() {
-            info!(
-                "Running check {}/{length} with features: {}",
-                i + 1,
-                feature_set
-            );
+        let profile = app_settings.profile.or(Some("ephemeral-build".to_owned()));
 
+        for feature_set in powersets.iter_mut() {
             // choose language features
             for exclusive_category in FeatureGroup::iter().filter(|g| g.is_exclusive()) {
-                feature_set.0.push(exclusive_category.default_feature());
+                feature_set.0.insert(exclusive_category.default_feature());
             }
 
             // include all non-bms features
@@ -703,25 +873,89 @@ impl Xtasks {
                 feature_set.0.extend(f.iter().cloned());
             }
 
-            Self::build(feature_set)?;
+            output.push(App {
+                global_args: GlobalArgs {
+                    features: feature_set.clone(),
+                    profile: profile.clone(),
+                },
+                subcmd: Xtasks::Build,
+            })
         }
 
-        // run lints
-        let all_features = Features::all_features();
-        Self::check(all_features.clone(), false, CheckKind::Main)?;
+        // also run a all features + each exclusive feature by itself
+        for feature in available_features
+            .0
+            .iter()
+            .filter(|f| f.to_feature_group().is_exclusive())
+        {
+            // run with all features
+            let mut features = Features::non_exclusive_features();
+            features.0.insert(*feature);
 
-        // run docs
-        Self::docs(false, false)?;
+            // don't include if we already ran this combination
+            if powersets.iter().any(|f| f == &features) {
+                continue;
+            }
 
-        info!("All checks passed, running tests");
+            output.push(App {
+                global_args: GlobalArgs {
+                    features,
+                    profile: profile.clone(),
+                },
+                subcmd: Xtasks::Build,
+            });
+        }
 
-        // run tests
-        Self::test(all_features, None, None, false)?;
+        let global_args = GlobalArgs {
+            features: Features::all_features(),
+            profile: profile.clone(),
+        };
+
+        // next run a full lint check with all features
+        output.push(App {
+            global_args: global_args.clone(),
+            subcmd: Xtasks::Check {
+                ide_mode: false,
+                kind: CheckKind::All,
+            },
+        });
+
+        // then run docs
+        output.push(App {
+            global_args: global_args.clone(),
+
+            subcmd: Xtasks::Docs {
+                open: false,
+                no_rust_docs: false,
+            },
+        });
+
+        // and finally run tests with coverage
+        output.push(App {
+            global_args: global_args.clone(),
+            subcmd: Xtasks::Test {
+                name: None,
+                package: None,
+                no_coverage: false,
+            },
+        });
+
+        Ok(output)
+    }
+
+    fn cicd(app_settings: GlobalArgs) -> Result<()> {
+        // get the ci matrix
+        let matrix = Self::ci_matrix(app_settings.clone())?;
+        let length = matrix.len();
+        for (i, app) in matrix.into_iter().enumerate() {
+            info!("Running CI job {}/{}. {:?}", i + 1, length, app.subcmd);
+            app.subcmd.run(app_settings.clone())?;
+        }
 
         Ok(())
     }
 
-    fn init() -> Result<()> {
+    fn init(_app_settings: GlobalArgs) -> Result<()> {
         // install cargo mdbook
         Self::run_system_command(
             "cargo",
@@ -762,7 +996,13 @@ fn try_main() -> Result<()> {
         .filter_level(LevelFilter::Info)
         .init();
     let args = App::try_parse()?;
-    args.subcmd.run(args.features)
+    let out = args.subcmd.run(args.global_args)?;
+    // push any output to stdout
+    if !out.is_empty() {
+        std::io::stdout().write_all(out.as_bytes())?;
+        println!();
+    }
+    Ok(())
 }
 
 fn main() {
