@@ -39,6 +39,16 @@ impl ::bevy::app::Plugin for BevyHierarchyScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::hierarchy::prelude::Parent>::new(world)
             .register(
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::hierarchy::prelude::Parent>| {
+                    let output: () = <bevy::hierarchy::prelude::Parent as std::cmp::Eq>::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::hierarchy::prelude::Parent>,
@@ -50,27 +60,14 @@ impl ::bevy::app::Plugin for BevyHierarchyScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::hierarchy::prelude::Parent>| {
-                    let output: () = <bevy::hierarchy::prelude::Parent as std::cmp::Eq>::assert_receiver_is_total_eq(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::hierarchy::HierarchyEvent>::new(world)
             .register(
-                "eq",
-                |
-                    _self: Ref<bevy::hierarchy::HierarchyEvent>,
-                    other: Ref<bevy::hierarchy::HierarchyEvent>|
-                {
-                    let output: bool = <bevy::hierarchy::HierarchyEvent as std::cmp::PartialEq<
-                        bevy::hierarchy::HierarchyEvent,
-                    >>::eq(&_self, &other)
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::hierarchy::HierarchyEvent>| {
+                    let output: () = <bevy::hierarchy::HierarchyEvent as std::cmp::Eq>::assert_receiver_is_total_eq(
+                            &_self,
+                        )
                         .into();
                     output
                 },
@@ -86,11 +83,14 @@ impl ::bevy::app::Plugin for BevyHierarchyScriptingPlugin {
                 },
             )
             .register(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::hierarchy::HierarchyEvent>| {
-                    let output: () = <bevy::hierarchy::HierarchyEvent as std::cmp::Eq>::assert_receiver_is_total_eq(
-                            &_self,
-                        )
+                "eq",
+                |
+                    _self: Ref<bevy::hierarchy::HierarchyEvent>,
+                    other: Ref<bevy::hierarchy::HierarchyEvent>|
+                {
+                    let output: bool = <bevy::hierarchy::HierarchyEvent as std::cmp::PartialEq<
+                        bevy::hierarchy::HierarchyEvent,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },

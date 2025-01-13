@@ -24,12 +24,10 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
         let mut world = app.world_mut();
         NamespaceBuilder::<::bevy::transform::components::GlobalTransform>::new(world)
             .register(
-                "from_xyz",
-                |x: f32, y: f32, z: f32| {
-                    let output: Val<bevy::transform::components::GlobalTransform> = bevy::transform::components::GlobalTransform::from_xyz(
-                            x,
-                            y,
-                            z,
+                "clone",
+                |_self: Ref<bevy::transform::components::GlobalTransform>| {
+                    let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::GlobalTransform as std::clone::Clone>::clone(
+                            &_self,
                         )
                         .into();
                     output
@@ -40,34 +38,6 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                 |_self: Ref<bevy::transform::components::GlobalTransform>| {
                     let output: Val<bevy::transform::components::Transform> = bevy::transform::components::GlobalTransform::compute_transform(
                             &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "reparented_to",
-                |
-                    _self: Ref<bevy::transform::components::GlobalTransform>,
-                    parent: Ref<bevy::transform::components::GlobalTransform>|
-                {
-                    let output: Val<bevy::transform::components::Transform> = bevy::transform::components::GlobalTransform::reparented_to(
-                            &_self,
-                            &parent,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul_transform",
-                |
-                    _self: Ref<bevy::transform::components::GlobalTransform>,
-                    transform: Val<bevy::transform::components::Transform>|
-                {
-                    let output: Val<bevy::transform::components::GlobalTransform> = bevy::transform::components::GlobalTransform::mul_transform(
-                            &_self,
-                            transform.into_inner(),
                         )
                         .into();
                     output
@@ -87,6 +57,18 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                 },
             )
             .register(
+                "from_xyz",
+                |x: f32, y: f32, z: f32| {
+                    let output: Val<bevy::transform::components::GlobalTransform> = bevy::transform::components::GlobalTransform::from_xyz(
+                            x,
+                            y,
+                            z,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "mul",
                 |
                     _self: Val<bevy::transform::components::GlobalTransform>,
@@ -95,16 +77,6 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                     let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::GlobalTransform as std::ops::Mul<
                         bevy::transform::components::Transform,
                     >>::mul(_self.into_inner(), transform.into_inner())
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::transform::components::GlobalTransform>| {
-                    let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::GlobalTransform as std::clone::Clone>::clone(
-                            &_self,
-                        )
                         .into();
                     output
                 },
@@ -121,8 +93,46 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "mul_transform",
+                |
+                    _self: Ref<bevy::transform::components::GlobalTransform>,
+                    transform: Val<bevy::transform::components::Transform>|
+                {
+                    let output: Val<bevy::transform::components::GlobalTransform> = bevy::transform::components::GlobalTransform::mul_transform(
+                            &_self,
+                            transform.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "reparented_to",
+                |
+                    _self: Ref<bevy::transform::components::GlobalTransform>,
+                    parent: Ref<bevy::transform::components::GlobalTransform>|
+                {
+                    let output: Val<bevy::transform::components::Transform> = bevy::transform::components::GlobalTransform::reparented_to(
+                            &_self,
+                            &parent,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::transform::components::Transform>::new(world)
+            .register(
+                "clone",
+                |_self: Ref<bevy::transform::components::Transform>| {
+                    let output: Val<bevy::transform::components::Transform> = <bevy::transform::components::Transform as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
             .register(
                 "eq",
                 |
@@ -149,33 +159,50 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                 },
             )
             .register(
-                "rotate_x",
-                |mut _self: Mut<bevy::transform::components::Transform>, angle: f32| {
-                    let output: () = bevy::transform::components::Transform::rotate_x(
-                            &mut _self,
-                            angle,
+                "is_finite",
+                |_self: Ref<bevy::transform::components::Transform>| {
+                    let output: bool = bevy::transform::components::Transform::is_finite(
+                            &_self,
                         )
                         .into();
                     output
                 },
             )
             .register(
-                "rotate_y",
-                |mut _self: Mut<bevy::transform::components::Transform>, angle: f32| {
-                    let output: () = bevy::transform::components::Transform::rotate_y(
-                            &mut _self,
-                            angle,
-                        )
+                "mul",
+                |
+                    _self: Val<bevy::transform::components::Transform>,
+                    global_transform: Val<bevy::transform::components::GlobalTransform>|
+                {
+                    let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::Transform as std::ops::Mul<
+                        bevy::transform::components::GlobalTransform,
+                    >>::mul(_self.into_inner(), global_transform.into_inner())
                         .into();
                     output
                 },
             )
             .register(
-                "rotate_z",
-                |mut _self: Mut<bevy::transform::components::Transform>, angle: f32| {
-                    let output: () = bevy::transform::components::Transform::rotate_z(
-                            &mut _self,
-                            angle,
+                "mul",
+                |
+                    _self: Val<bevy::transform::components::Transform>,
+                    transform: Val<bevy::transform::components::Transform>|
+                {
+                    let output: Val<bevy::transform::components::Transform> = <bevy::transform::components::Transform as std::ops::Mul<
+                        bevy::transform::components::Transform,
+                    >>::mul(_self.into_inner(), transform.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul_transform",
+                |
+                    _self: Ref<bevy::transform::components::Transform>,
+                    transform: Val<bevy::transform::components::Transform>|
+                {
+                    let output: Val<bevy::transform::components::Transform> = bevy::transform::components::Transform::mul_transform(
+                            &_self,
+                            transform.into_inner(),
                         )
                         .into();
                     output
@@ -215,61 +242,34 @@ impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
                 },
             )
             .register(
-                "mul_transform",
-                |
-                    _self: Ref<bevy::transform::components::Transform>,
-                    transform: Val<bevy::transform::components::Transform>|
-                {
-                    let output: Val<bevy::transform::components::Transform> = bevy::transform::components::Transform::mul_transform(
-                            &_self,
-                            transform.into_inner(),
+                "rotate_x",
+                |mut _self: Mut<bevy::transform::components::Transform>, angle: f32| {
+                    let output: () = bevy::transform::components::Transform::rotate_x(
+                            &mut _self,
+                            angle,
                         )
                         .into();
                     output
                 },
             )
             .register(
-                "is_finite",
-                |_self: Ref<bevy::transform::components::Transform>| {
-                    let output: bool = bevy::transform::components::Transform::is_finite(
-                            &_self,
+                "rotate_y",
+                |mut _self: Mut<bevy::transform::components::Transform>, angle: f32| {
+                    let output: () = bevy::transform::components::Transform::rotate_y(
+                            &mut _self,
+                            angle,
                         )
                         .into();
                     output
                 },
             )
             .register(
-                "clone",
-                |_self: Ref<bevy::transform::components::Transform>| {
-                    let output: Val<bevy::transform::components::Transform> = <bevy::transform::components::Transform as std::clone::Clone>::clone(
-                            &_self,
+                "rotate_z",
+                |mut _self: Mut<bevy::transform::components::Transform>, angle: f32| {
+                    let output: () = bevy::transform::components::Transform::rotate_z(
+                            &mut _self,
+                            angle,
                         )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul",
-                |
-                    _self: Val<bevy::transform::components::Transform>,
-                    transform: Val<bevy::transform::components::Transform>|
-                {
-                    let output: Val<bevy::transform::components::Transform> = <bevy::transform::components::Transform as std::ops::Mul<
-                        bevy::transform::components::Transform,
-                    >>::mul(_self.into_inner(), transform.into_inner())
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul",
-                |
-                    _self: Val<bevy::transform::components::Transform>,
-                    global_transform: Val<bevy::transform::components::GlobalTransform>|
-                {
-                    let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::Transform as std::ops::Mul<
-                        bevy::transform::components::GlobalTransform,
-                    >>::mul(_self.into_inner(), global_transform.into_inner())
                         .into();
                     output
                 },
