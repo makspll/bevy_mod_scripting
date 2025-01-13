@@ -33,6 +33,8 @@ jobs:
         run: |
           cargo xtask ci-matrix > matrix.json
           cat matrix.json
+          echo "Convert to single line JSON"
+          jq -c . matrix.json > matrix.json
           echo "matrix=$(cat matrix.json)" >> $GITHUB_OUTPUT
 
   check:  
