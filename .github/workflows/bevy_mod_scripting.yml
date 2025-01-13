@@ -26,44 +26,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-runner-image:
-    permissions:
-      contents: read
-      packages: write
-    runs-on: ubuntu-latest
-    name: Build multi-platform Docker image
-    outputs:
-      image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tags }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./crates/xtask/Dockerfile
-          platforms: linux/amd64,linux/arm64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
   generate-job-matrix:
-    needs: build-runner-image
     runs-on: ubuntu-latest
-    container: ${{ needs.build-runner-image.outputs.image }}
+    # container: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
     outputs:
       matrix: ${{ steps.generate-matrix.outputs.matrix }}
     steps:
@@ -83,10 +48,9 @@ jobs:
       pull-requests: write
     name: Check - ${{ matrix.run_args.name }}
     runs-on: ${{ matrix.run_args.os }}
-    container: ${{ needs.build-runner-image.outputs.image }}
+    # container: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
     needs: 
       - generate-job-matrix
-      - build-runner-image
     strategy:
       matrix:
        run_args: ${{fromJson(needs.generate-job-matrix.outputs.matrix)}}
