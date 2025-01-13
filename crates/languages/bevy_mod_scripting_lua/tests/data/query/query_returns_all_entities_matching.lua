@@ -1,7 +1,7 @@
 local entity_a = world.spawn()
 local entity_b = world.spawn()
 local entity_c = world.spawn()
-local entity_d = _get_entity_with_test_component("CompWithFromWorldAndComponentData")
+local entity_d = world._get_entity_with_test_component("CompWithFromWorldAndComponentData")
 
 local component_with = world.get_type_by_name("CompWithFromWorldAndComponentData")
 local component_without = world.get_type_by_name("CompWithDefaultAndComponentData")

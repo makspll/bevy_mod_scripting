@@ -25,8 +25,8 @@ git_release_body = """
 changelog_include = [
     "bevy_mod_scripting_lua",
     "bevy_mod_scripting_core",
-    "bevy_mod_scripting_rhai",
-    "bevy_mod_scripting_rune",
+    # "bevy_mod_scripting_rhai",
+    # "bevy_mod_scripting_rune",
     "bevy_mod_scripting_functions",
 ]
 
@@ -39,13 +39,13 @@ version_group = "main"
 name = "bevy_mod_scripting_core"
 version_group = "main"
 
-[[package]]
-name = "bevy_mod_scripting_rhai"
-version_group = "main"
+# [[package]]
+# name = "bevy_mod_scripting_rhai"
+# version_group = "main"
 
-[[package]]
-name = "bevy_mod_scripting_rune"
-version_group = "main"
+# [[package]]
+# name = "bevy_mod_scripting_rune"
+# version_group = "main"
 
 [[package]]
 name = "bevy_mod_scripting_functions"

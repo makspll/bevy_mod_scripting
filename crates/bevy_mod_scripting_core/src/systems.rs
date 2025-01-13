@@ -1,5 +1,5 @@
 use crate::{
-    asset::{AssetIdToScriptIdMap, ScriptAsset, ScriptAssetSettings},
+    asset::{ScriptAsset, ScriptAssetSettings, ScriptMetadata, ScriptMetadataStore},
     bindings::{pretty_print::DisplayWithWorld, AppReflectAllocator, WorldAccessGuard, WorldGuard},
     commands::{CreateOrUpdateScript, DeleteScript},
     context::{ContextLoadingSettings, ScriptContexts},
@@ -12,6 +12,20 @@ use crate::{
 };
 use bevy::{ecs::system::SystemState, prelude::*};
 use std::any::type_name;
+
+#[derive(SystemSet, Hash, Debug, Eq, PartialEq, Clone)]
+/// Labels for various BMS systems
+pub enum ScriptingSystemSet {
+    // Post Setup processes
+    RuntimeInitialization,
+
+    // Post Update processes
+    GarbageCollection,
+
+    ScriptMetadataInsertion,
+    ScriptCommandDispatch,
+    ScriptMetadataRemoval,
+}
 
 /// Cleans up dangling script allocations
 pub fn garbage_collector(allocator: ResMut<AppReflectAllocator>) {
@@ -28,65 +42,123 @@ pub fn initialize_runtime<P: IntoScriptPluginParams>(
     }
 }
 
-/// Processes and reacts appropriately to script asset events, and queues commands to update the internal script state
+/// Listens to `AssetEvent<ScriptAsset>::Added` events and populates the script metadata store
+pub fn insert_script_metadata(
+    mut events: EventReader<AssetEvent<ScriptAsset>>,
+    script_assets: Res<Assets<ScriptAsset>>,
+    mut asset_path_map: ResMut<ScriptMetadataStore>,
+    settings: Res<ScriptAssetSettings>,
+) {
+    for event in events.read() {
+        if let AssetEvent::Added { id } = event {
+            let asset = script_assets.get(*id);
+            if let Some(asset) = asset {
+                let path = &asset.asset_path;
+                let converter = settings.script_id_mapper.map;
+                let script_id = converter(path);
+
+                let language = settings.select_script_language(path);
+                let metadata = ScriptMetadata {
+                    script_id,
+                    language,
+                };
+                info!("Populating script metadata for script: {:?}:", metadata);
+                asset_path_map.insert(*id, metadata);
+            } else {
+                error!("A script was added but it's asset was not found, failed to compute metadata. This script will not be loaded. {}", id);
+            }
+        }
+    }
+}
+
+/// Listens to [`AssetEvent<ScriptAsset>::Removed`] events and removes the corresponding script metadata
+pub fn remove_script_metadata(
+    mut events: EventReader<AssetEvent<ScriptAsset>>,
+    mut asset_path_map: ResMut<ScriptMetadataStore>,
+) {
+    for event in events.read() {
+        if let AssetEvent::Removed { id } = event {
+            let previous = asset_path_map.remove(*id);
+            if let Some(previous) = previous {
+                info!("Removed script metadata for removed script: {:?}", previous);
+            }
+        }
+    }
+}
+
+/// Listens to [`AssetEvent<ScriptAsset>`] events and dispatches [`CreateOrUpdateScript`] and [`DeleteScript`] commands accordingly.
+///
+/// Allows for hot-reloading of scripts.
 pub fn sync_script_data<P: IntoScriptPluginParams>(
     mut events: EventReader<AssetEvent<ScriptAsset>>,
     script_assets: Res<Assets<ScriptAsset>>,
-    asset_settings: Res<ScriptAssetSettings>,
-    mut asset_path_map: ResMut<AssetIdToScriptIdMap>,
+    script_metadata: Res<ScriptMetadataStore>,
     mut commands: Commands,
 ) {
     for event in events.read() {
-        trace!("Received script asset event: {:?}", event);
-        let (id, remove) = match event {
+        trace!("{}: Received script asset event: {:?}", P::LANGUAGE, event);
+        match event {
             // emitted when a new script asset is loaded for the first time
-            AssetEvent::Added { id } => (id, false),
-            AssetEvent::Modified { id } => (id, false),
-            AssetEvent::Removed { id } => (id, true),
-            _ => continue,
-        };
-        info!("Responding to script asset event: {:?}", event);
-        // get the path
-        let asset = script_assets.get(*id);
-
-        let script_id = match asset_path_map.get(*id) {
-            Some(id) => id.clone(),
-            None => {
-                // we should only enter this branch for new assets
-                let asset = match asset {
-                    Some(asset) => asset,
+            AssetEvent::Added { id } | AssetEvent::Modified { id } => {
+                let metadata = match script_metadata.get(*id) {
+                    Some(m) => m,
                     None => {
-                        // this can happen if an asset is loaded and immediately unloaded, we can ignore this
+                        error!(
+                            "{}: Script metadata not found for script asset with id: {}. Cannot load script.",
+                            P::LANGUAGE,
+                            id
+                        );
                         continue;
                     }
                 };
 
-                let path = &asset.asset_path;
-                let converter = asset_settings.script_id_mapper.map;
-                let script_id = converter(path);
-                asset_path_map.insert(*id, script_id.clone());
-
-                script_id
-            }
-        };
-
-        if !remove {
-            let asset = match asset {
-                Some(asset) => asset,
-                None => {
-                    // this can happen if an asset is loaded and immediately unloaded, we can ignore this
+                if metadata.language != P::LANGUAGE {
+                    trace!(
+                        "{}: Script asset with id: {} is for a different langauge than this sync system. Skipping.",
+                        P::LANGUAGE,
+                        metadata.script_id
+                    );
                     continue;
                 }
-            };
-            info!("Creating or updating script with id: {}", script_id);
-            commands.queue(CreateOrUpdateScript::<P>::new(
-                script_id,
-                asset.content.clone(),
-                Some(script_assets.reserve_handle().clone_weak()),
-            ));
-        } else {
-            commands.queue(DeleteScript::<P>::new(script_id));
-        }
+
+                info!(
+                    "{}: Dispatching Creation/Modification command for script: {:?}. Asset Id: {}",
+                    P::LANGUAGE,
+                    metadata,
+                    id
+                );
+
+                if let Some(asset) = script_assets.get(*id) {
+                    commands.queue(CreateOrUpdateScript::<P>::new(
+                        metadata.script_id.clone(),
+                        asset.content.clone(),
+                        Some(script_assets.reserve_handle().clone_weak()),
+                    ));
+                }
+            }
+            AssetEvent::Removed { id } => {
+                let metadata = match script_metadata.get(*id) {
+                    Some(m) => m,
+                    None => {
+                        error!(
+                            "{}: Script metadata not found for script asset with id: {}. Cannot delete script.",
+                            P::LANGUAGE,
+                            id
+                        );
+                        return;
+                    }
+                };
+
+                info!(
+                    "{}: Dispatching Deletion command for script: {:?}. Asset Id: {}",
+                    P::LANGUAGE,
+                    metadata,
+                    id
+                );
+                commands.queue(DeleteScript::<P>::new(metadata.script_id.clone()));
+            }
+            _ => return,
+        };
     }
 }
 
@@ -113,8 +185,6 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
         Query<(Entity, Ref<ScriptComponent>)>,
     )>,
 ) {
-    trace!("Handling events with label `{}`", L::into_callback_label());
-
     let mut runtime_container = world
         .remove_non_send_resource::<RuntimeContainer<P>>()
         .unwrap_or_else(|| {
@@ -182,10 +252,16 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
                         continue;
                     }
                 };
-                let ctxt = script_contexts
-                    .contexts
-                    .get_mut(&script.context_id)
-                    .unwrap();
+
+                let ctxt = match script_contexts.contexts.get_mut(&script.context_id) {
+                    Some(ctxt) => ctxt,
+                    None => {
+                        // if we don't have a context for the script, it's either:
+                        // 1. a script for a different language, in which case we ignore it
+                        // 2. something went wrong. This should not happen though and it's best we ignore this
+                        continue;
+                    }
+                };
 
                 let handler_result = (handler)(
                     event.args.clone(),
@@ -198,14 +274,11 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
                     world,
                 )
                 .map_err(|e| {
-                    e.with_script(script.id.clone()).with_context(format!(
-                        "Event handling for: Runtime {}, Context: {}",
-                        type_name::<P::R>(),
-                        type_name::<P::C>(),
-                    ))
+                    e.with_script(script.id.clone())
+                        .with_context(format!("Event handling for: Language: {}", P::LANGUAGE))
                 });
 
-                push_err_and_continue!(errors, handler_result)
+                let _ = push_err_and_continue!(errors, handler_result);
             }
         }
     }
@@ -260,6 +333,14 @@ mod test {
     impl IntoScriptPluginParams for TestPlugin {
         type C = TestContext;
         type R = TestRuntime;
+
+        const LANGUAGE: crate::asset::Language = crate::asset::Language::Unknown;
+
+        fn build_runtime() -> Self::R {
+            TestRuntime {
+                invocations: vec![],
+            }
+        }
     }
 
     struct TestRuntime {
@@ -321,7 +402,7 @@ mod test {
             |args, entity, script, _, ctxt, _, runtime, _| {
                 ctxt.invocations.extend(args);
                 runtime.invocations.push((entity, script.clone()));
-                Ok(())
+                Ok(ScriptValue::Unit)
             },
             runtime,
             contexts,
@@ -408,7 +489,7 @@ mod test {
             |args, entity, script, _, ctxt, _, runtime, _| {
                 ctxt.invocations.extend(args);
                 runtime.invocations.push((entity, script.clone()));
-                Ok(())
+                Ok(ScriptValue::Unit)
             },
             runtime,
             contexts,

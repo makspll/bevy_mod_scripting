@@ -1,6 +1,6 @@
 use crate::bindings::{
-    access_map::DisplayCodeLocation, pretty_print::DisplayWithWorld, script_value::ScriptValue,
-    ReflectBaseType, ReflectReference,
+    access_map::DisplayCodeLocation, function::namespace::Namespace,
+    pretty_print::DisplayWithWorld, script_value::ScriptValue, ReflectBaseType, ReflectReference,
 };
 use bevy::{
     ecs::component::ComponentId,
@@ -33,17 +33,17 @@ impl Deref for ScriptError {
 }
 
 /// The innards are separated to reduce the size of this error
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ScriptErrorInner {
     pub script: Option<String>,
     pub context: String,
-    pub reason: ErrorKind,
+    pub reason: Arc<ErrorKind>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum ErrorKind {
-    Display(Arc<dyn std::error::Error + Send + Sync>),
-    WithWorld(Arc<dyn DisplayWithWorld + Send + Sync>),
+    Display(Box<dyn std::error::Error + Send + Sync>),
+    WithWorld(Box<dyn DisplayWithWorld + Send + Sync>),
 }
 
 impl DisplayWithWorld for ErrorKind {
@@ -97,10 +97,30 @@ impl ScriptError {
         }
     }
 
+    // #[cfg(feature = "rhai_impls")]
+    // pub fn from_rhai_error(error: rhai::EvalAltResult) -> Self {
+    //     match error {
+    //         rhai::EvalAltResult::ErrorSystem(message, error) => {
+    //             if let Some(inner) = error.downcast_ref::<InteropError>() {
+    //                 Self::new(inner.clone())
+    //             } else if let Some(inner) = error.downcast_ref::<ScriptError>() {
+    //                 inner.clone()
+    //             } else {
+    //                 Self::new_external_boxed(error).with_context(message)
+    //             }
+    //         }
+    //         _ => Self::new_external(error),
+    //     }
+    // }
+
     pub fn new_external(reason: impl std::error::Error + Send + Sync + 'static) -> Self {
+        Self::new_external_boxed(Box::new(reason))
+    }
+
+    pub fn new_external_boxed(reason: Box<dyn std::error::Error + Send + Sync + 'static>) -> Self {
         Self(Arc::new(ScriptErrorInner {
             script: None,
-            reason: ErrorKind::Display(Arc::new(reason)),
+            reason: Arc::new(ErrorKind::Display(reason)),
             context: Default::default(),
         }))
     }
@@ -108,7 +128,7 @@ impl ScriptError {
     pub fn new(reason: impl DisplayWithWorld + Send + Sync + 'static) -> Self {
         Self(Arc::new(ScriptErrorInner {
             script: None,
-            reason: ErrorKind::WithWorld(Arc::new(reason)),
+            reason: Arc::new(ErrorKind::WithWorld(Box::new(reason))),
             context: Default::default(),
         }))
     }
@@ -187,19 +207,39 @@ impl From<mlua::Error> for ScriptError {
     }
 }
 
-#[cfg(feature = "rhai_impls")]
-impl From<rhai::ParseError> for ScriptError {
-    fn from(value: rhai::ParseError) -> Self {
-        ScriptError::new_external(value)
-    }
-}
+// #[cfg(feature = "rhai_impls")]
+// impl From<rhai::ParseError> for ScriptError {
+//     fn from(value: rhai::ParseError) -> Self {
+//         ScriptError::new_external(value)
+//     }
+// }
 
-#[cfg(feature = "rhai_impls")]
-impl From<Box<rhai::EvalAltResult>> for ScriptError {
-    fn from(value: Box<rhai::EvalAltResult>) -> Self {
-        ScriptError::new_external(value)
-    }
-}
+// #[cfg(feature = "rhai_impls")]
+// impl From<Box<rhai::EvalAltResult>> for ScriptError {
+//     fn from(value: Box<rhai::EvalAltResult>) -> Self {
+//         ScriptError::from_rhai_error(*value)
+//     }
+// }
+
+// #[cfg(feature = "rhai_impls")]
+// impl From<ScriptError> for Box<rhai::EvalAltResult> {
+//     fn from(value: ScriptError) -> Self {
+//         Box::new(rhai::EvalAltResult::ErrorSystem(
+//             "ScriptError".to_owned(),
+//             Box::new(value),
+//         ))
+//     }
+// }
+
+// #[cfg(feature = "rhai_impls")]
+// impl From<InteropError> for Box<rhai::EvalAltResult> {
+//     fn from(value: InteropError) -> Self {
+//         Box::new(rhai::EvalAltResult::ErrorSystem(
+//             "InteropError".to_owned(),
+//             Box::new(value),
+//         ))
+//     }
+// }
 
 #[derive(Debug, Clone, PartialEq, Reflect)]
 pub struct InteropError(#[reflect(ignore)] Arc<InteropErrorInner>);
@@ -382,11 +422,7 @@ impl InteropError {
     }
 
     /// Thrown when an error happens in a function call. The inner error provides details on the error.
-    pub fn function_interop_error(
-        function_name: &str,
-        on: Option<TypeId>,
-        error: InteropError,
-    ) -> Self {
+    pub fn function_interop_error(function_name: &str, on: Namespace, error: InteropError) -> Self {
         Self(Arc::new(InteropErrorInner::FunctionInteropError {
             function_name: function_name.to_string(),
             on,
@@ -530,7 +566,7 @@ pub enum InteropErrorInner {
     },
     FunctionInteropError {
         function_name: String,
-        on: Option<TypeId>,
+        on: Namespace,
         error: InteropError,
     },
     FunctionArgConversionError {
@@ -667,7 +703,10 @@ impl DisplayWithWorld for InteropErrorInner {
                 "Missing world. The world was not initialized in the script context.".to_owned()
             },
             InteropErrorInner::FunctionInteropError { function_name, on, error } => {
-                let opt_on = on.map(|t| format!("on type: {}", t.display_with_world(world.clone()))).unwrap_or_default();
+                let opt_on = match on {
+                    Namespace::Global => "".to_owned(),
+                    Namespace::OnType(type_id) => format!("on type: {}", type_id.display_with_world(world.clone())),
+                };
                 let display_name = if function_name.starts_with("TypeId") {
                     function_name.split("::").last().unwrap()
                 } else {
@@ -703,7 +742,7 @@ impl DisplayWithWorld for InteropErrorInner {
         }
     }
 
-    // todo macro this
+    // todo macro this, or use format strings to reduce duplication
     fn display_without_world(&self) -> String {
         match self {
             InteropErrorInner::MissingFunctionError { on, function_name } => {
@@ -822,8 +861,10 @@ impl DisplayWithWorld for InteropErrorInner {
                 "Missing world. The world was not initialized in the script context.".to_owned()
             },
             InteropErrorInner::FunctionInteropError { function_name, on, error } => {
-                let opt_on = on.map(|t| format!("on type: {}", t.display_without_world())).unwrap_or_default();
-                let display_name = if function_name.starts_with("TypeId") {
+                let opt_on = match on {
+                    Namespace::Global => "".to_owned(),
+                    Namespace::OnType(type_id) => format!("on type: {}", type_id.display_without_world()),
+                };                let display_name = if function_name.starts_with("TypeId") {
                     function_name.split("::").last().unwrap()
                 } else {
                     function_name.as_str()

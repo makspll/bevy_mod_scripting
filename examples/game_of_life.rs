@@ -12,12 +12,17 @@ use bevy::{
     window::{PrimaryWindow, WindowResized},
 };
 use bevy_console::{make_layer, AddConsoleCommand, ConsoleCommand, ConsoleOpen, ConsolePlugin};
-use bevy_mod_scripting::{NamespaceBuilder, ScriptFunctionsPlugin};
+use bevy_mod_scripting::ScriptFunctionsPlugin;
 use bevy_mod_scripting_core::{
-    asset::ScriptAsset, bindings::script_value::ScriptValue, callback_labels,
-    event::ScriptCallbackEvent, script::ScriptComponent, systems::event_handler,
+    asset::ScriptAsset,
+    bindings::{function::namespace::NamespaceBuilder, script_value::ScriptValue},
+    callback_labels,
+    event::ScriptCallbackEvent,
+    script::ScriptComponent,
+    systems::event_handler,
 };
 use bevy_mod_scripting_lua::LuaScriptingPlugin;
+// use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
 use clap::Parser;
 
 // CONSOLE SETUP
@@ -45,18 +50,20 @@ fn run_script_cmd(
 ) {
     if let Some(Ok(command)) = log.take() {
         match command {
-            GameOfLifeCommand::Start => {
+            GameOfLifeCommand::Start { language } => {
                 // create an entity with the script component
                 bevy::log::info!(
-                    "Starting game of life spawning entity with the game_of_life.lua script"
+                    "Starting game of life spawning entity with the game_of_life.{} script",
+                    language
                 );
-                commands.spawn(ScriptComponent::new(
-                    vec!["scripts/game_of_life.lua".into()],
-                ));
+                commands.spawn(ScriptComponent::new(vec![format!(
+                    "scripts/game_of_life.{language}"
+                )
+                .into()]));
             }
             GameOfLifeCommand::Stop => {
                 // we can simply drop the handle, or manually delete, I'll just drop the handle
-                bevy::log::info!("Stopping game of life by dropping the handle to the script");
+                bevy::log::info!("Stopping game of life by dropping the handles to all scripts");
 
                 // I am not mapping the handles to the script names, so I'll just clear the entire list
                 loaded_scripts.0.clear();
@@ -75,9 +82,13 @@ fn run_script_cmd(
 #[command(name = "gol")]
 /// Controls the game of life
 pub enum GameOfLifeCommand {
-    /// Start the game of life by spawning an entity with the game_of_life.lua script
-    Start,
-    /// Stop the game of life by dropping a handle to the game_of_life.lua script
+    /// Start the game of life by spawning an entity with the game_of_life.{language} script
+    Start {
+        /// The language to use for the script, i.e. "lua" or "rhai"
+        #[clap(short, long, default_value = "lua")]
+        language: String,
+    },
+    /// Stop the game of life by dropping a handle to the game_of_life script
     Stop,
 }
 
@@ -87,6 +98,7 @@ fn game_of_life_app(app: &mut App) -> &mut App {
         .add_plugins((
             // for scripting
             LuaScriptingPlugin::default(),
+            // RhaiScriptingPlugin::default(),
             ScriptFunctionsPlugin,
         ))
         .register_type::<LifeState>()
@@ -102,7 +114,9 @@ fn game_of_life_app(app: &mut App) -> &mut App {
                 send_on_update.after(update_rendered_state),
                 (
                     event_handler::<OnUpdate, LuaScriptingPlugin>,
+                    // event_handler::<OnUpdate, RhaiScriptingPlugin>,
                     event_handler::<OnClick, LuaScriptingPlugin>,
+                    // event_handler::<OnClick, RhaiScriptingPlugin>,
                 )
                     .after(send_on_update),
             ),
@@ -146,9 +160,10 @@ pub fn load_script_assets(
     asset_server: Res<AssetServer>,
     mut loaded_scripts: ResMut<LoadedScripts>,
 ) {
-    loaded_scripts
-        .0
-        .push(asset_server.load("scripts/game_of_life.lua"));
+    loaded_scripts.0.extend(vec![
+        asset_server.load("scripts/game_of_life.lua"),
+        asset_server.load("scripts/game_of_life.rhai"),
+    ]);
 }
 
 pub fn register_script_functions(app: &mut App) -> &mut App {

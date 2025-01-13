@@ -313,6 +313,11 @@ impl ReflectReferencePrinter {
 /// For types which can't be pretty printed without world access.
 /// Implementors should try to print the best value they can, and never panick.
 pub trait DisplayWithWorld: std::fmt::Debug {
+    /// # Warning
+    /// Display this type without world access. It is not recommended to use this method for anything other than debugging or necessary trait impl corners.
+    /// For many types this will just print type id's with no further information.
+    ///
+    /// Prefer using [`DisplayWithWorld::display_with_world`] or [`DisplayWithWorld::display_value_with_world`] instead.
     fn display_without_world(&self) -> String;
 
     /// Display the `shallowest` representation of the type using world access.
@@ -399,6 +404,7 @@ impl DisplayWithWorld for ScriptValue {
     fn display_value_with_world(&self, world: WorldGuard) -> String {
         match self {
             ScriptValue::Reference(r) => r.display_value_with_world(world),
+            ScriptValue::FunctionMut(f) => format!("FunctionMut({})", f.name()),
             ScriptValue::Function(f) => format!("Function({})", f.name()),
             ScriptValue::Unit => "()".to_owned(),
             ScriptValue::Bool(b) => b.to_string(),
@@ -428,8 +434,11 @@ impl DisplayWithWorld for ScriptValue {
                 string
             }
             ScriptValue::Reference(reflect_reference) => reflect_reference.display_without_world(),
-            ScriptValue::Function(dynamic_script_function_mut) => {
+            ScriptValue::FunctionMut(dynamic_script_function_mut) => {
                 format!("Function({})", dynamic_script_function_mut.name())
+            }
+            ScriptValue::Function(dynamic_script_function) => {
+                format!("Function({})", dynamic_script_function.name())
             }
             ScriptValue::Error(interop_error) => interop_error.display_without_world(),
         }

@@ -1,7 +1,8 @@
-#![allow(clippy::arc_with_non_send_sync)]
-
 use crate::event::ScriptErrorEvent;
-use asset::{AssetIdToScriptIdMap, ScriptAsset, ScriptAssetLoader, ScriptAssetSettings};
+use asset::{
+    AssetPathToLanguageMapper, Language, ScriptAsset, ScriptAssetLoader, ScriptAssetSettings,
+    ScriptMetadataStore,
+};
 use bevy::prelude::*;
 use bindings::{
     function::script_function::AppScriptFunctionRegistry, script_value::ScriptValue,
@@ -18,7 +19,10 @@ use handler::{CallbackSettings, HandlerFn};
 
 use runtime::{Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
 use script::Scripts;
-use systems::{garbage_collector, initialize_runtime, sync_script_data};
+use systems::{
+    garbage_collector, initialize_runtime, insert_script_metadata, remove_script_metadata,
+    sync_script_data, ScriptingSystemSet,
+};
 
 pub mod asset;
 pub mod bindings;
@@ -32,19 +36,21 @@ pub mod reflection_extensions;
 pub mod runtime;
 pub mod script;
 pub mod systems;
-pub mod world;
 
 /// Types which act like scripting plugins, by selecting a context and runtime
 /// Each individual combination of context and runtime has specific infrastructure built for it and does not interact with other scripting plugins
 pub trait IntoScriptPluginParams: 'static {
+    const LANGUAGE: Language;
     type C: Context;
     type R: Runtime;
+
+    fn build_runtime() -> Self::R;
+
+    // fn supported_language() -> Language;
 }
 
 /// Bevy plugin enabling scripting within the bevy mod scripting framework
 pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
-    /// Callback for initiating the runtime
-    pub runtime_builder: fn() -> P::R,
     /// Settings for the runtime
     pub runtime_settings: Option<RuntimeSettings<P>>,
     /// The handler used for executing callbacks in scripts
@@ -53,6 +59,12 @@ pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
     pub context_builder: Option<ContextBuilder<P>>,
     /// The context assigner for assigning contexts to scripts, if not provided default strategy of keeping each script in its own context is used
     pub context_assigner: Option<ContextAssigner<P>>,
+    pub language_mapper: Option<AssetPathToLanguageMapper>,
+
+    /// initializers for the contexts, run when loading the script
+    pub context_initializers: Vec<ContextInitializer<P>>,
+    /// initializers for the contexts run every time before handling events
+    pub context_pre_handling_initializers: Vec<ContextPreHandlingInitializer<P>>,
 }
 
 impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P>
@@ -61,33 +73,22 @@ where
 {
     fn default() -> Self {
         Self {
-            runtime_builder: P::R::default,
             runtime_settings: Default::default(),
             callback_handler: Default::default(),
             context_builder: Default::default(),
             context_assigner: Default::default(),
+            language_mapper: Default::default(),
+            context_initializers: Default::default(),
+            context_pre_handling_initializers: Default::default(),
         }
     }
 }
 
 impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_event::<ScriptErrorEvent>()
-            .add_event::<ScriptCallbackEvent>()
-            .init_resource::<AppReflectAllocator>()
-            .init_resource::<ScriptAssetSettings>()
-            .init_resource::<Scripts>()
-            .init_resource::<AssetIdToScriptIdMap>()
-            .init_asset::<ScriptAsset>()
-            .register_asset_loader(ScriptAssetLoader {
-                language: "<>".into(),
-                extensions: &[],
-                preprocessor: None,
-            })
-            .insert_resource(self.runtime_settings.as_ref().cloned().unwrap_or_default())
-            .init_resource::<AppScriptFunctionRegistry>()
+        app.insert_resource(self.runtime_settings.as_ref().cloned().unwrap_or_default())
             .insert_non_send_resource::<RuntimeContainer<P>>(RuntimeContainer {
-                runtime: (self.runtime_builder)(),
+                runtime: P::build_runtime(),
             })
             .init_non_send_resource::<ScriptContexts<P>>()
             .insert_resource::<CallbackSettings<P>>(CallbackSettings {
@@ -98,12 +99,101 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
                 assigner: Some(self.context_assigner.clone().unwrap_or_default()),
                 context_initializers: vec![],
                 context_pre_handling_initializers: vec![],
-            })
-            .add_systems(PostUpdate, (garbage_collector, sync_script_data::<P>))
-            .add_systems(PostStartup, initialize_runtime::<P>);
+            });
+
+        register_script_plugin_systems::<P>(app);
+        once_per_app_init(app);
+
+        if let Some(language_mapper) = &self.language_mapper {
+            app.world_mut()
+                .resource_mut::<ScriptAssetSettings>()
+                .as_mut()
+                .script_language_mappers
+                .push(*language_mapper);
+        }
 
         register_types(app);
+
+        for initializer in self.context_initializers.iter() {
+            app.add_context_initializer::<P>(*initializer);
+        }
+
+        for initializer in self.context_pre_handling_initializers.iter() {
+            app.add_context_pre_handling_initializer::<P>(*initializer);
+        }
     }
+}
+
+impl<P: IntoScriptPluginParams> ScriptingPlugin<P> {
+    /// Adds a context initializer to the plugin
+    pub fn add_context_initializer(&mut self, initializer: ContextInitializer<P>) -> &mut Self {
+        self.context_initializers.push(initializer);
+        self
+    }
+
+    /// Adds a context pre-handling initializer to the plugin
+    pub fn add_context_pre_handling_initializer(
+        &mut self,
+        initializer: ContextPreHandlingInitializer<P>,
+    ) -> &mut Self {
+        self.context_pre_handling_initializers.push(initializer);
+        self
+    }
+}
+
+// One of registration of things that need to be done only once per app
+fn once_per_app_init(app: &mut App) {
+    #[derive(Resource)]
+    struct BMSInitialized;
+
+    if app.world().contains_resource::<BMSInitialized>() {
+        return;
+    }
+
+    app.insert_resource(BMSInitialized);
+
+    app.add_event::<ScriptErrorEvent>()
+        .add_event::<ScriptCallbackEvent>()
+        .init_resource::<AppReflectAllocator>()
+        .init_resource::<ScriptAssetSettings>()
+        .init_resource::<Scripts>()
+        .init_resource::<ScriptMetadataStore>()
+        .init_asset::<ScriptAsset>()
+        .init_resource::<AppScriptFunctionRegistry>()
+        .register_asset_loader(ScriptAssetLoader {
+            extensions: &[],
+            preprocessor: None,
+        });
+
+    app.add_systems(
+        PostUpdate,
+        (
+            (garbage_collector).in_set(ScriptingSystemSet::GarbageCollection),
+            (insert_script_metadata).in_set(ScriptingSystemSet::ScriptMetadataInsertion),
+            (remove_script_metadata).in_set(ScriptingSystemSet::ScriptMetadataRemoval),
+        ),
+    )
+    .configure_sets(
+        PostUpdate,
+        (
+            ScriptingSystemSet::ScriptMetadataInsertion.after(bevy::asset::TrackAssets),
+            ScriptingSystemSet::ScriptCommandDispatch
+                .after(ScriptingSystemSet::ScriptMetadataInsertion)
+                .before(ScriptingSystemSet::ScriptMetadataRemoval),
+        ),
+    );
+}
+
+/// Systems registered per-language
+fn register_script_plugin_systems<P: IntoScriptPluginParams>(app: &mut App) {
+    app.add_systems(
+        PostStartup,
+        (initialize_runtime::<P>).in_set(ScriptingSystemSet::RuntimeInitialization),
+    )
+    .add_systems(
+        PostUpdate,
+        ((sync_script_data::<P>).in_set(ScriptingSystemSet::ScriptCommandDispatch),),
+    );
 }
 
 /// Register all types that need to be accessed via reflection
@@ -225,7 +315,7 @@ impl<D: DocumentationFragment> StoreDocumentation<D> for App {
 
 #[cfg(test)]
 mod test {
-    use asset::AssetIdToScriptIdMap;
+    use asset::ScriptMetadataStore;
 
     use super::*;
 
@@ -243,6 +333,11 @@ mod test {
         impl IntoScriptPluginParams for Plugin {
             type C = C;
             type R = R;
+            const LANGUAGE: Language = Language::Unknown;
+
+            fn build_runtime() -> Self::R {
+                R
+            }
         }
 
         app.add_plugins(AssetPlugin::default());
@@ -258,6 +353,6 @@ mod test {
             .contains_resource::<ContextLoadingSettings<Plugin>>());
         assert!(app.world().contains_non_send::<RuntimeContainer<Plugin>>());
         assert!(app.world().contains_non_send::<ScriptContexts<Plugin>>());
-        assert!(app.world().contains_resource::<AssetIdToScriptIdMap>());
+        assert!(app.world().contains_resource::<ScriptMetadataStore>());
     }
 }

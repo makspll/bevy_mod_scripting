@@ -1,6 +1,6 @@
 use std::alloc::Layout;
-use std::sync::{Arc, RwLock};
 
+use bevy::asset::AssetPlugin;
 use bevy::ecs::{component::*, world::World};
 use bevy::prelude::*;
 use bevy::reflect::*;
@@ -225,11 +225,10 @@ impl_test_component_ids!(
     ]
 );
 
-/// Initializes a default world with a set of test components and resources with various properties and implemantations.
-pub fn setup_world<F: FnOnce(&mut World, &mut TypeRegistry)>(init: F) -> World {
-    let mut world = World::default();
+fn init_world<F: FnOnce(&mut World, &mut TypeRegistry)>(world: &mut World, init: F) {
+    let type_registry = world.get_resource_or_init::<AppTypeRegistry>().clone();
+    let mut type_registry_guard = type_registry.0.write();
 
-    // find the number of ComponentId's registered, fill it up until we hit the offset
     while world.components().len() < TEST_COMPONENT_ID_START {
         unsafe {
             world.register_component_with_descriptor(ComponentDescriptor::new_with_layout(
@@ -241,16 +240,32 @@ pub fn setup_world<F: FnOnce(&mut World, &mut TypeRegistry)>(init: F) -> World {
         };
     }
 
-    let mut type_registry = TypeRegistry::new();
-    init_all_components(&mut world, &mut type_registry);
+    init_all_components(world, &mut type_registry_guard);
+    init(world, &mut type_registry_guard);
+}
 
-    init(&mut world, &mut type_registry);
+fn setup_app<F: FnOnce(&mut World, &mut TypeRegistry)>(init: F) -> App {
+    let mut app = App::new();
+    let world = app.world_mut();
 
-    world.insert_resource(AppTypeRegistry(TypeRegistryArc {
-        internal: Arc::new(RwLock::new(type_registry)),
-    }));
+    init_world(world, init);
+    app
+}
 
+/// Initializes a default world with a set of test components and resources with various properties and implemantations.
+pub fn setup_world<F: FnOnce(&mut World, &mut TypeRegistry)>(init: F) -> World {
+    let mut world = World::default();
+    init_world(&mut world, init);
     world
+}
+
+/// Initializes a headless app with the standard testing setup and the given plugin.
+pub fn setup_integration_test<F: FnOnce(&mut World, &mut TypeRegistry)>(init: F) -> App {
+    // first setup all normal test components and resources
+    let mut app = setup_app(init);
+
+    app.add_plugins((MinimalPlugins, AssetPlugin::default(), HierarchyPlugin));
+    app
 }
 
 #[cfg(test)]

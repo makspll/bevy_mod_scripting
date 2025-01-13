@@ -9,7 +9,7 @@ use crate::{
     IntoScriptPluginParams,
 };
 use bevy::{asset::Handle, ecs::world::Mut, log::debug, prelude::Command};
-use std::{any::type_name, marker::PhantomData};
+use std::marker::PhantomData;
 
 pub struct DeleteScript<P: IntoScriptPluginParams> {
     pub id: ScriptId,
@@ -62,9 +62,17 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
                     &mut runtime_container.runtime,
                     world,
                 ) {
-                    Ok(_) => {},
+                    Ok(_) => {}
                     Err(e) => {
-                        handle_script_errors(world, [e.with_context(format!("Running unload hook for script with id: {}. Runtime type: {}, Context type: {}", self.id, type_name::<P::R>(), type_name::<P::C>()))].into_iter());
+                        handle_script_errors(
+                            world,
+                            [e.with_context(format!(
+                                "Running unload hook for script with id: {}. Language: {}",
+                                self.id,
+                                P::LANGUAGE
+                            ))]
+                            .into_iter(),
+                        );
                     }
                 }
 
@@ -112,10 +120,6 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
 
 impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
     fn apply(self, world: &mut bevy::prelude::World) {
-        debug!(
-            "CreateOrUpdateScript command applying to script_id: {}",
-            self.id
-        );
         let settings = world
             .get_resource::<ContextLoadingSettings<P>>()
             .unwrap()
@@ -140,32 +144,28 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
             let mut script = scripts.scripts.get_mut(&self.id);
             let previous_context_id = script.as_ref().map(|s| s.context_id);
             debug!(
-                "CreateOrUpdateScript command applying with to (script_id: {}, previous_context_id: {:?})",
+                "{}: CreateOrUpdateScript command applying (script_id: {}, previous_context_id: {:?})",
+                P::LANGUAGE,
                 self.id, previous_context_id
             );
 
             // If None assign new context ID, otherwise assign the old one
             // If re-loading and different from the previous one, the old one will be removed
             let current_context_id = (assigner.assign)(script.as_deref(), &self.id, &self.content, &mut contexts);
-            debug!("Context assigned: {:?}", current_context_id);
+
+            debug!("{}: New context assigned?: {:?}", P::LANGUAGE, current_context_id.is_none() || current_context_id != previous_context_id);
 
             let current_context_id = if let Some(id) = current_context_id {
                 // reload existing context
-                let current_context = contexts.get_mut(id).unwrap();
-                match (builder.reload)(&self.id, &self.content, current_context, &settings.context_initializers, &settings.context_pre_handling_initializers, world, &mut runtime.runtime) {
-                    Ok(_) => {},
-                    Err(e) => {
-                        handle_script_errors(world, [e.with_context(format!("Reloading script with id: {}. Runtime type: {}, Context type: {}", self.id, type_name::<P::R>(), type_name::<P::C>()))].into_iter());
-                        return;
-                    }
-                };
                 id
             } else {
+                let log_context = format!("{}: Loading script: {}", P::LANGUAGE, self.id);
+                bevy::log::info!("{}", log_context);
                 let ctxt = (builder.load)(&self.id, &self.content, &settings.context_initializers, &settings.context_pre_handling_initializers, world, &mut runtime.runtime);
                 match ctxt {
                     Ok(ctxt) => contexts.insert(ctxt),
                     Err(e) => {
-                        handle_script_errors(world, [e.with_context(format!("Loading script with id: {}. Runtime type: {}, Context type: {}", self.id, type_name::<P::R>(), type_name::<P::C>()))].into_iter());
+                        handle_script_errors(world, [e.with_context(log_context)].into_iter());
                         return;
                     }
                 }
@@ -173,35 +173,47 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
 
 
             if let Some(previous) = previous_context_id {
+                if let Some(previous_context_id) = contexts.get_mut(previous) {
+                    let log_context = format!("{}: Reloading script: {}.", P::LANGUAGE, self.id);
+                    bevy::log::info!("{}", log_context);
+                    match (builder.reload)(&self.id, &self.content, previous_context_id, &settings.context_initializers, &settings.context_pre_handling_initializers, world, &mut runtime.runtime) {
+                        Ok(_) => {},
+                        Err(e) => {
+                            handle_script_errors(world, [e.with_context(log_context)].into_iter());
+                            return;
+                        }
+                    };
+                } else {
+                    bevy::log::error!("{}: Could not find previous context with id: {}. Could not reload script: {}", P::LANGUAGE, previous, self.id);
+                }
+
                 if previous != current_context_id {
-                    debug!(
-                        "Script is being moved to a new context with id: {}, removing up old context.",
-                        current_context_id
-                    );
+                    bevy::log::info!("{}: Unloading script with id: {}. As it was assigned to a new context", P::LANGUAGE, self.id);
                     script.as_deref_mut().unwrap().context_id = current_context_id;
                     (assigner.remove)(previous, script.unwrap(), &mut contexts);
                 }
             }
 
-            let context = contexts.get_mut(current_context_id).expect("Context not found");
-            match (runner)(vec![], bevy::ecs::entity::Entity::from_raw(0), &self.id, &OnScriptLoaded::into_callback_label(), context, &settings.context_pre_handling_initializers, &mut runtime.runtime, world) {
-                Ok(_) => {},
-                Err(e) => {
-                    handle_script_errors(world, [e.with_context(format!("Running initialization hook for script with id: {}. Runtime type: {}, Context type: {}", self.id, type_name::<P::R>(), type_name::<P::C>()))].into_iter());
-                },
+            if let Some(context) = contexts.get_mut(current_context_id) {
+                match (runner)(vec![], bevy::ecs::entity::Entity::from_raw(0), &self.id, &OnScriptLoaded::into_callback_label(), context, &settings.context_pre_handling_initializers, &mut runtime.runtime, world) {
+                    Ok(_) => {},
+                    Err(e) => {
+                        handle_script_errors(world, [e.with_context(format!("{}: Running initialization hook for script with id: {}", P::LANGUAGE, self.id))].into_iter());
+                    },
+                }
+
+                // we only want to insert the script if a context is present, otherwise something went wrong
+                scripts.scripts.insert(
+                    self.id.clone(),
+                    Script {
+                        id: self.id,
+                        asset: self.asset,
+                        context_id: current_context_id,
+                    },
+                );
+            } else {
+                bevy::log::error!("{}: Context loading failed for script: {}. Did not run on_script_loaded hook",P::LANGUAGE ,self.id);
             }
-
-            // now we can insert the actual script
-            scripts.scripts.insert(
-                self.id.clone(),
-                Script {
-                    id: self.id,
-                    asset: self.asset,
-                    context_id: current_context_id,
-                },
-            );
-
-            // finally we trigger on_script_loaded
         });
         world.insert_resource(settings);
         world.insert_non_send_resource(runtime);

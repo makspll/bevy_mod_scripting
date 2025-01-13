@@ -19,3 +19,19 @@ path = "src/lib.rs"
 bevy = { workspace = true, default-features = false }
 rhai = { workspace = true, features = ["sync"] }
 bevy_mod_scripting_core = { workspace = true, features = ["rhai_impls"] }
+bevy_mod_scripting_functions = { workspace = true, features = [
+], default-features = false }
+
+[dev-dependencies]
+script_integration_test_harness = { workspace = true }
+bevy_mod_scripting_functions = { workspace = true, features = [
+    "core_functions",
+    "bevy_bindings",
+    "test_functions",
+] }
+libtest-mimic = "0.8"
+regex = "1.11"
+
+[[test]]
+name = "rhai_tests"
+harness = false

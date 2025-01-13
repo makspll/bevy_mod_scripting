@@ -3,19 +3,20 @@ use bevy::{
     ecs::{entity::Entity, world::World},
 };
 use bevy_mod_scripting_core::{
-    bindings::{script_value::ScriptValue, WorldCallbackAccess},
+    asset::{AssetPathToLanguageMapper, Language},
+    bindings::{
+        script_value::ScriptValue, ThreadWorldContainer, WorldCallbackAccess, WorldContainer,
+    },
     context::{ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
     event::CallbackLabel,
     reflection_extensions::PartialReflectExt,
     script::ScriptId,
-    AddContextInitializer, AddContextPreHandlingInitializer, IntoScriptPluginParams,
-    ScriptingPlugin,
+    AddContextInitializer, IntoScriptPluginParams, ScriptingPlugin,
 };
 use bindings::{
     reference::{LuaReflectReference, LuaStaticReflectReference},
     script_value::LuaScriptValue,
-    world::GetWorld,
 };
 pub use mlua;
 use mlua::{Function, IntoLua, Lua, MultiValue};
@@ -24,6 +25,9 @@ pub mod bindings;
 impl IntoScriptPluginParams for LuaScriptingPlugin {
     type C = Lua;
     type R = ();
+    const LANGUAGE: Language = Language::Lua;
+
+    fn build_runtime() -> Self::R {}
 }
 
 pub struct LuaScriptingPlugin {
@@ -35,51 +39,62 @@ impl Default for LuaScriptingPlugin {
         LuaScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
                 context_assigner: None,
-                runtime_builder: Default::default,
                 runtime_settings: None,
                 callback_handler: Some(lua_handler),
                 context_builder: Some(ContextBuilder::<LuaScriptingPlugin> {
                     load: lua_context_load,
                     reload: lua_context_reload,
                 }),
+                language_mapper: Some(AssetPathToLanguageMapper {
+                    map: lua_language_mapper,
+                }),
+                context_initializers: vec![|_script_id, context| {
+                    context
+                        .globals()
+                        .set(
+                            "world",
+                            LuaStaticReflectReference(std::any::TypeId::of::<World>()),
+                        )
+                        .map_err(ScriptError::from_mlua_error)?;
+                    Ok(())
+                }],
+                context_pre_handling_initializers: vec![|script_id, entity, context| {
+                    let world = ThreadWorldContainer.get_world();
+                    context
+                        .globals()
+                        .set(
+                            "entity",
+                            LuaReflectReference(<Entity>::allocate(Box::new(entity), world)),
+                        )
+                        .map_err(ScriptError::from_mlua_error)?;
+                    context
+                        .globals()
+                        .set("script_id", script_id)
+                        .map_err(ScriptError::from_mlua_error)?;
+                    Ok(())
+                }],
             },
         }
+    }
+}
+
+fn lua_language_mapper(path: &std::path::Path) -> Language {
+    match path.extension().and_then(|ext| ext.to_str()) {
+        Some("lua") => Language::Lua,
+        _ => Language::Unknown,
     }
 }
 
 impl Plugin for LuaScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         self.scripting_plugin.build(app);
-        // register_lua_values(app);
-        app.add_context_pre_handling_initializer::<LuaScriptingPlugin>(
-            |script_id, entity, context: &mut Lua| {
-                let world = context.get_world();
-                context
-                    .globals()
-                    .set(
-                        "entity",
-                        LuaReflectReference(<Entity>::allocate(Box::new(entity), world)),
-                    )
-                    .map_err(ScriptError::from_mlua_error)?;
-                context
-                    .globals()
-                    .set("script_id", script_id)
-                    .map_err(ScriptError::from_mlua_error)?;
-                Ok(())
-            },
-        );
     }
 
     fn cleanup(&self, app: &mut App) {
         // find all registered types, and insert dummy for calls
-        // let mut type_registry = app.world_mut().get_resource_or_init::<AppTypeRegistry>();
-        // let mut type_registry = type_registry.read();
 
-        // type_registry.iter().map(|t| {
-        //     t.
-        // })
         app.add_context_initializer::<LuaScriptingPlugin>(|_script_id, context: &mut Lua| {
-            let world = context.get_world();
+            let world = ThreadWorldContainer.get_world();
             let type_registry = world.type_registry();
             let type_registry = type_registry.read();
 
@@ -100,12 +115,6 @@ impl Plugin for LuaScriptingPlugin {
             }
             Ok(())
         });
-
-        // let mut type_registry = app.world_mut().get_resource_mut().unwrap();
-
-        // we register up to two levels of nesting, if more are needed, the user will have to do this manually
-        // pre_register_common_containers(&mut type_registry);
-        // pre_register_common_containers(&mut type_registry);
     }
 }
 
@@ -171,7 +180,7 @@ pub fn lua_handler(
     pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
     _: &mut (),
     world: &mut bevy::ecs::world::World,
-) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
+) -> Result<ScriptValue, bevy_mod_scripting_core::error::ScriptError> {
     with_world(world, context, |context| {
         pre_handling_initializers
             .iter()
@@ -180,7 +189,7 @@ pub fn lua_handler(
         let handler: Function = match context.globals().raw_get(callback_label.as_ref()) {
             Ok(handler) => handler,
             // not subscribed to this event type
-            Err(_) => return Ok(()),
+            Err(_) => return Ok(ScriptValue::Unit),
         };
 
         let input = MultiValue::from_vec(
@@ -189,26 +198,19 @@ pub fn lua_handler(
                 .collect::<Result<_, _>>()?,
         );
 
-        handler.call::<()>(input)?;
-        Ok(())
+        let out = handler.call::<LuaScriptValue>(input)?;
+        Ok(out.into())
     })
 }
 
 /// Safely scopes world access for a lua context to the given closure's scope
-pub fn with_world<F: FnOnce(&mut Lua) -> Result<(), ScriptError>>(
+pub fn with_world<O, F: FnOnce(&mut Lua) -> Result<O, ScriptError>>(
     world: &mut World,
     context: &mut Lua,
     f: F,
-) -> Result<(), ScriptError> {
+) -> Result<O, ScriptError> {
     WorldCallbackAccess::with_callback_access(world, |guard| {
-        context
-            .globals()
-            .set(
-                "world",
-                LuaStaticReflectReference(std::any::TypeId::of::<World>()),
-            )
-            .map_err(ScriptError::from_mlua_error)?;
-        context.set_app_data(guard.clone());
+        ThreadWorldContainer.set_world(guard.clone())?;
         f(context)
     })
 }

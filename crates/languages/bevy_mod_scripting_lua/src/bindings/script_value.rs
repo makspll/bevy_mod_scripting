@@ -1,18 +1,13 @@
-use std::{
-    any::TypeId,
-    ops::{Deref, DerefMut},
-};
-
+use super::reference::LuaReflectReference;
 use bevy_mod_scripting_core::bindings::{
-    function::{script_function::CallerContext, CallScriptFunction},
-    script_value::ScriptValue,
+    function::script_function::CallerContext, script_value::ScriptValue, ThreadWorldContainer,
+    WorldContainer,
 };
 use mlua::{FromLua, IntoLua, Value, Variadic};
-
-use super::{reference::LuaReflectReference, world::GetWorld};
+use std::ops::{Deref, DerefMut};
 
 #[derive(Debug, Clone)]
-pub struct LuaScriptValue(ScriptValue);
+pub struct LuaScriptValue(pub ScriptValue);
 
 impl Deref for LuaScriptValue {
     type Target = ScriptValue;
@@ -57,7 +52,7 @@ impl FromLua for LuaScriptValue {
                 }
                 ScriptValue::List(vec)
             }
-            // Value::Function(function) => todo!(),
+            Value::Function(_) => todo!("Function FromLua is not implemented yet"),
             // Value::Thread(thread) => todo!(),
             Value::UserData(ud) => {
                 let ud = ud.borrow::<LuaReflectReference>().map_err(|e| {
@@ -82,12 +77,9 @@ impl FromLua for LuaScriptValue {
     }
 }
 
-pub fn lua_caller_context(self_type: Option<TypeId>) -> CallerContext {
-    CallerContext {
-        convert_to_0_indexed: true,
-        self_type,
-    }
-}
+pub const LUA_CALLER_CONTEXT: CallerContext = CallerContext {
+    convert_to_0_indexed: true,
+};
 
 impl IntoLua for LuaScriptValue {
     fn into_lua(self, lua: &mlua::Lua) -> mlua::Result<mlua::Value> {
@@ -99,13 +91,25 @@ impl IntoLua for LuaScriptValue {
             ScriptValue::String(s) => Value::String(lua.create_string(s.as_ref())?),
             ScriptValue::Reference(r) => LuaReflectReference::from(r).into_lua(lua)?,
             ScriptValue::Error(script_error) => return Err(mlua::Error::external(script_error)),
-            ScriptValue::Function(mut function) => lua
-                .create_function_mut(move |lua, args: Variadic<LuaScriptValue>| {
-                    let world = lua.get_world();
-                    let out = function.call_script_function(
+            ScriptValue::Function(function) => lua
+                .create_function(move |_lua, args: Variadic<LuaScriptValue>| {
+                    let world = ThreadWorldContainer.get_world();
+                    let out = function.call(
                         args.into_iter().map(Into::into),
                         world,
-                        lua_caller_context(None),
+                        LUA_CALLER_CONTEXT,
+                    )?;
+
+                    Ok(LuaScriptValue::from(out))
+                })?
+                .into_lua(lua)?,
+            ScriptValue::FunctionMut(function) => lua
+                .create_function(move |_lua, args: Variadic<LuaScriptValue>| {
+                    let world = ThreadWorldContainer.get_world();
+                    let out = function.call(
+                        args.into_iter().map(Into::into),
+                        world,
+                        LUA_CALLER_CONTEXT,
                     )?;
 
                     Ok(LuaScriptValue::from(out))

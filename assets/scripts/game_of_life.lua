@@ -28,6 +28,7 @@ end
 function on_click(x,y)
     -- get the settings
     world.info("Lua: Clicked at x: " .. x .. " y: " .. y)
+    print(entity)
     local life_state = fetch_life_state()
     local cells = life_state.cells
 

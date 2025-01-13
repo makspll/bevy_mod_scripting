@@ -1,6 +1,5 @@
 //! Contains functions defined by the [`bevy_mod_scripting_core`] crate
 
-use crate::NamespaceBuilder;
 use bevy::{
     prelude::*,
     reflect::{func::FunctionRegistrationError, ParsedPath},
@@ -12,6 +11,7 @@ use bindings::{
         from::{Ref, Val},
         from_ref::FromScriptRef,
         into_ref::IntoScriptRef,
+        namespace::NamespaceBuilder,
         script_function::{CallerContext, ScriptFunctionMut},
     },
     pretty_print::DisplayWithWorld,

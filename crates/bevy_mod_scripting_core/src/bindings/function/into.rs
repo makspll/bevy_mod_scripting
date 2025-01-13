@@ -34,6 +34,12 @@ self_type_dependency_only!(());
 
 impl IntoScript for DynamicScriptFunctionMut {
     fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        Ok(ScriptValue::FunctionMut(self))
+    }
+}
+
+impl IntoScript for DynamicScriptFunction {
+    fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
         Ok(ScriptValue::Function(self))
     }
 }

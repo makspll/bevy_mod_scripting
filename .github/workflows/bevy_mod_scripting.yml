@@ -32,7 +32,6 @@ jobs:
         {label: Windows,        os: windows-latest }, 
         {label: MacOS,          os: macOS-latest },
         {label: Ubuntu,         os: ubuntu-latest }, 
-        {label: Ubuntu Aarch64, os: ubuntu-latest }
       ]
     steps:
       - name: Checkout

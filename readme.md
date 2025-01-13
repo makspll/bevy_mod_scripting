@@ -20,7 +20,7 @@ Although Bevy doesn't directly support scripting, efforts are underway to incorp
 - All script bindings managed in one place (`ScriptDynamicFunctionRegistry`)
 - Customizable event driven communication between bevy and scripts (`on_update`, `on_init` etc..)
 - Automatically generated bevy bindings
-- ~Documentation generation~ temporarilly on hold
+- ~Documentation generation~ temporarilly on hold[^1]
 
 ## Support
 
@@ -35,9 +35,13 @@ The languages currently supported are as follows:
 |Luajit|
 |Luajit52|
 |Luau|
-|Rhai|
-|Rune|
+|~~Rhai~~ temporarilly on hold[^1]|
+|~~Rune~~ temporarilly on hold[^1]|
 
 ## Documentation
 
 For examples, installation and usage instructions see our shiny new [book](https://makspll.github.io/bevy_mod_scripting)
+
+## Footnotes
+
+[^1]: Due to the recent re-write of the crate, documentation generation as well as rhai and rune support are temporarilly on hold. They will likely be re-implemented in the future. `Rhai` in particualar is difficult to re-implement due to a lack of support for first-class-functions.

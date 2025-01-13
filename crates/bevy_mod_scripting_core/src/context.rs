@@ -66,9 +66,13 @@ pub type ContextPreHandlingInitializer<P> =
 
 #[derive(Resource)]
 pub struct ContextLoadingSettings<P: IntoScriptPluginParams> {
+    /// Defines the strategy used to load and reload contexts
     pub loader: Option<ContextBuilder<P>>,
+    /// Defines the strategy used to assign contexts to scripts
     pub assigner: Option<ContextAssigner<P>>,
+    /// Initializers run once after creating a context but before executing it for the first time
     pub context_initializers: Vec<ContextInitializer<P>>,
+    /// Initializers run every time before executing or loading a script
     pub context_pre_handling_initializers: Vec<ContextPreHandlingInitializer<P>>,
 }
 
