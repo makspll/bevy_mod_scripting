@@ -31,9 +31,7 @@ jobs:
       contents: read
       packages: write
     runs-on: ubuntu-latest
-      build-with-docker:
     name: Build multi-platform Docker image
-    runs-on: ubuntu-20.04
     outputs:
       image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tags }}
     steps:
