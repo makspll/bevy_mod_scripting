@@ -107,6 +107,12 @@ impl IntoFeatureGroup for Feature {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Features(HashSet<Feature>);
 
+impl Default for Features {
+    fn default() -> Self {
+        Features::new(vec![Feature::Lua54])
+    }
+}
+
 impl Features {
     fn new<I: IntoIterator<Item = Feature>>(features: I) -> Self {
         Self(features.into_iter().collect())
@@ -207,6 +213,16 @@ impl App {
     fn into_command(self) -> Command {
         let mut cmd = Command::new("cargo");
         cmd.arg("xtask");
+
+        if self.global_args.features != Features::default() {
+            cmd.arg("--features")
+                .arg(self.global_args.features.to_string());
+        }
+
+        if let Some(profile) = self.global_args.profile {
+            cmd.arg("--profile").arg(profile);
+        }
+
         match self.subcmd {
             Xtasks::Macros { macro_name } => {
                 cmd.arg("macros").arg(macro_name.as_ref());
@@ -294,7 +310,7 @@ impl App {
 
 #[derive(Debug, Parser, Clone)]
 struct GlobalArgs {
-    #[clap(long, short, global = true, value_parser=clap::value_parser!(Features), value_name=Features::to_placeholder(), default_value="lua54",required = false)]
+    #[clap(long, short, global = true, value_parser=clap::value_parser!(Features), value_name=Features::to_placeholder(), default_value=Features::default().to_string(),required = false)]
     features: Features,
 
     #[clap(
