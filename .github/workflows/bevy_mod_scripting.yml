@@ -34,8 +34,8 @@ jobs:
           cargo xtask ci-matrix > matrix.json
           cat matrix.json
           echo "Convert to single line JSON"
-          jq -c . matrix.json > matrix.json
-          echo "matrix=$(cat matrix.json)" >> $GITHUB_OUTPUT
+          jq -c . matrix.json > matrix-one-line.json
+          echo "matrix=$(cat matrix-one-line.json)" >> $GITHUB_OUTPUT
       - name: Print uploaded matrix
         run: |
           echo "${{ steps.generate-matrix.outputs.matrix }}"
