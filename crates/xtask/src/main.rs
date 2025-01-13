@@ -167,9 +167,6 @@ impl Features {
 
 impl std::fmt::Display for Features {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if &Self::all_features() == self {
-            return write!(f, "all");
-        }
         for (i, feature) in self.0.iter().sorted().enumerate() {
             if i > 0 {
                 write!(f, ",")?;
@@ -298,10 +295,14 @@ impl App {
         CiMatrixRow {
             command: self.clone().into_command_string().into_string().unwrap(),
             name: format!(
-                "{}({}) -  {}",
+                "{}({}) - {}",
                 self.subcmd.as_ref(),
                 os,
-                self.global_args.features
+                if self.global_args.features == Features::all_features() {
+                    "all features".to_owned()
+                } else {
+                    self.global_args.features.to_string()
+                }
             ),
             os,
         }
@@ -473,22 +474,25 @@ impl Xtasks {
                 // we don't need to verify all feature flags on all platforms, this is mostly a "does it compile" check
                 // for finding out missing compile time logic or bad imports
                 multi_os_steps
-                    .retain(|e| !e.command.contains("build") && !e.command.contains("docs"));
+                    .retain(|e| !e.command.contains(" build") && !e.command.contains(" docs"));
 
                 let mut macos_matrix = multi_os_steps.clone();
                 let mut windows_matrix = multi_os_steps.clone();
 
                 for row in macos_matrix.iter_mut() {
                     row.os = "macos-latest".to_owned();
+                    row.name = row.name.replace("ubuntu-latest", "macos-latest");
                 }
 
                 for row in windows_matrix.iter_mut() {
                     row.os = "windows-latest".to_owned();
+                    row.name = row.name.replace("ubuntu-latest", "windows-latest");
                 }
 
                 matrix.extend(macos_matrix);
                 matrix.extend(windows_matrix);
 
+                matrix.sort_by_key(|e| e.name.to_owned());
                 let json = serde_json::to_string_pretty(&matrix)?;
                 return Ok(json);
             }
