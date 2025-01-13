@@ -41,7 +41,10 @@ impl FromLua for LuaScriptValue {
             Value::Nil => ScriptValue::Unit,
             Value::Boolean(b) => ScriptValue::Bool(b),
             // Value::LightUserData(light_user_data) => todo!(),
+            #[cfg(not(feature = "luau"))]
             Value::Integer(i) => ScriptValue::Integer(i),
+            #[cfg(feature = "luau")]
+            Value::Integer(i) => ScriptValue::Integer(i as i64),
             Value::Number(n) => ScriptValue::Float(n),
             Value::String(s) => ScriptValue::String(s.to_str()?.to_owned().into()),
             Value::Table(table) => {
@@ -86,7 +89,10 @@ impl IntoLua for LuaScriptValue {
         Ok(match self.0 {
             ScriptValue::Unit => Value::Nil,
             ScriptValue::Bool(b) => Value::Boolean(b),
+            #[cfg(not(feature = "luau"))]
             ScriptValue::Integer(i) => Value::Integer(i),
+            #[cfg(feature = "luau")]
+            ScriptValue::Integer(i) => Value::Integer(i as i32),
             ScriptValue::Float(f) => Value::Number(f),
             ScriptValue::String(s) => Value::String(lua.create_string(s.as_ref())?),
             ScriptValue::Reference(r) => LuaReflectReference::from(r).into_lua(lua)?,

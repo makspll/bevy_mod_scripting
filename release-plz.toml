@@ -3,6 +3,16 @@ dependencies_update = false
 publish_timeout = "30m"
 git_release_enable = false
 git_tag_enable = false
+commit_parsers = [
+    { message = "^feat", group = "added" },
+    { message = "^changed", group = "changed" },
+    { message = "^deprecated", group = "deprecated" },
+    { message = "^fix", group = "fixed" },
+    { message = "^security", group = "security" },
+    { message = "^.*", group = "other" },
+    # dont include chore changes in changelog
+    { message = "^chore.*", skip = true },
+]
 
 [[package]]
 name = "bevy_mod_scripting"

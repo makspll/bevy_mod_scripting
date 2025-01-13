@@ -20,10 +20,10 @@ path = "src/lib.rs"
 features = ["lua54"]
 
 [features]
-default = ["core_functions", "bevy_bindings", "unsafe_lua_modules"]
+default = ["core_functions", "bevy_bindings"]
 
 ## lua
-lua = ["bevy_mod_scripting_lua"]
+lua = ["bevy_mod_scripting_lua", "unsafe_lua_modules"]
 # one of these must be selected
 lua51 = ["bevy_mod_scripting_lua/lua51", "lua"]
 lua52 = ["bevy_mod_scripting_lua/lua52", "lua"]

@@ -13,6 +13,11 @@ on:
 
 name: Check and Lint - bevy_mod_scripting
 
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: bevy-mod-scripting
+  
 concurrency:
   # Use github.run_id on main branch
   # Use github.event.pull_request.number on pull requests, so it's unique per pull request
@@ -23,20 +28,29 @@ concurrency:
 jobs:
   generate-job-matrix:
     runs-on: ubuntu-latest
+    # container: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
     outputs:
       matrix: ${{ steps.generate-matrix.outputs.matrix }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Generate matrix
         id: generate-matrix
         run: |
-          echo "matrix=$(cargo xtask ci-matrix)" >> $GITHUB_OUTPUT
+          cargo xtask ci-matrix > matrix.json
+          cat matrix.json
+          echo "Convert to single line JSON"
+          jq -c . matrix.json > matrix-one-line.json
+          echo "matrix=$(cat matrix-one-line.json)" >> $GITHUB_OUTPUT
 
   check:  
     permissions:
       pull-requests: write
     name: Check - ${{ matrix.run_args.name }}
     runs-on: ${{ matrix.run_args.os }}
-    needs: generate-job-matrix
+    # container: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+    needs: 
+      - generate-job-matrix
     strategy:
       matrix:
        run_args: ${{fromJson(needs.generate-job-matrix.outputs.matrix)}}
@@ -54,7 +68,9 @@ jobs:
           override: true
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
-      - uses: actions-rs/cargo@v1
-        with:
-          command: ${{ matrix.run_args.command }}
-          args: ci-check
+      - name: Setup
+        run: |
+          cargo xtask init
+      - name: Check
+        run: |
+          ${{ matrix.run_args.command }}

@@ -107,6 +107,12 @@ impl IntoFeatureGroup for Feature {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Features(HashSet<Feature>);
 
+impl Default for Features {
+    fn default() -> Self {
+        Features::new(vec![Feature::Lua54])
+    }
+}
+
 impl Features {
     fn new<I: IntoIterator<Item = Feature>>(features: I) -> Self {
         Self(features.into_iter().collect())
@@ -161,9 +167,6 @@ impl Features {
 
 impl std::fmt::Display for Features {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if &Self::all_features() == self {
-            return write!(f, "all");
-        }
         for (i, feature) in self.0.iter().sorted().enumerate() {
             if i > 0 {
                 write!(f, ",")?;
@@ -207,6 +210,16 @@ impl App {
     fn into_command(self) -> Command {
         let mut cmd = Command::new("cargo");
         cmd.arg("xtask");
+
+        if self.global_args.features != Features::default() {
+            cmd.arg("--features")
+                .arg(self.global_args.features.to_string());
+        }
+
+        if let Some(profile) = self.global_args.profile {
+            cmd.arg("--profile").arg(profile);
+        }
+
         match self.subcmd {
             Xtasks::Macros { macro_name } => {
                 cmd.arg("macros").arg(macro_name.as_ref());
@@ -281,7 +294,16 @@ impl App {
     pub(crate) fn into_ci_row(self, os: String) -> CiMatrixRow {
         CiMatrixRow {
             command: self.clone().into_command_string().into_string().unwrap(),
-            name: format!("{} - {}", self.subcmd.as_ref(), self.global_args.features),
+            name: format!(
+                "{}({}) - {}",
+                self.subcmd.as_ref(),
+                os,
+                if self.global_args.features == Features::all_features() {
+                    "all features".to_owned()
+                } else {
+                    self.global_args.features.to_string()
+                }
+            ),
             os,
         }
     }
@@ -289,7 +311,7 @@ impl App {
 
 #[derive(Debug, Parser, Clone)]
 struct GlobalArgs {
-    #[clap(long, short, global = true, value_parser=clap::value_parser!(Features), value_name=Features::to_placeholder(), default_value="lua54",required = false)]
+    #[clap(long, short, global = true, value_parser=clap::value_parser!(Features), value_name=Features::to_placeholder(), default_value=Features::default().to_string(),required = false)]
     features: Features,
 
     #[clap(
@@ -355,7 +377,6 @@ enum Xtasks {
     Check {
         #[clap(
             long,
-            short,
             default_value = "false",
             help = "Run in the expected format for rust-analyzer's override check command"
         )]
@@ -363,7 +384,6 @@ enum Xtasks {
 
         #[clap(
             long,
-            short,
             default_value = "all",
             value_parser=clap::value_parser!(CheckKind),
             value_name=CheckKind::to_placeholder(),
@@ -375,25 +395,25 @@ enum Xtasks {
     Docs {
         /// Open in browser
         /// This will open the generated docs in the default browser
-        #[clap(long, short)]
+        #[clap(long)]
         open: bool,
 
         /// Skip building rust docs
-        #[clap(long, short)]
+        #[clap(long)]
         no_rust_docs: bool,
     },
     /// Build the main workspace, and then run all tests
     Test {
         /// Run tests containing the given name only
-        #[clap(long, short)]
+        #[clap(long)]
         name: Option<String>,
 
         /// Run tests in the given package only
-        #[clap(long, short)]
+        #[clap(long)]
         package: Option<String>,
 
         /// Run tests without coverage
-        #[clap(long, short)]
+        #[clap(long)]
         no_coverage: bool,
     },
     /// Perform a full check as it would be done in CI, except not parallelised
@@ -454,22 +474,25 @@ impl Xtasks {
                 // we don't need to verify all feature flags on all platforms, this is mostly a "does it compile" check
                 // for finding out missing compile time logic or bad imports
                 multi_os_steps
-                    .retain(|e| !e.command.contains("build") && !e.command.contains("docs"));
+                    .retain(|e| !e.command.contains(" build") && !e.command.contains(" docs"));
 
                 let mut macos_matrix = multi_os_steps.clone();
                 let mut windows_matrix = multi_os_steps.clone();
 
                 for row in macos_matrix.iter_mut() {
                     row.os = "macos-latest".to_owned();
+                    row.name = row.name.replace("ubuntu-latest", "macos-latest");
                 }
 
                 for row in windows_matrix.iter_mut() {
                     row.os = "windows-latest".to_owned();
+                    row.name = row.name.replace("ubuntu-latest", "windows-latest");
                 }
 
                 matrix.extend(macos_matrix);
                 matrix.extend(windows_matrix);
 
+                matrix.sort_by_key(|e| e.name.to_owned());
                 let json = serde_json::to_string_pretty(&matrix)?;
                 return Ok(json);
             }
