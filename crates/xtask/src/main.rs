@@ -585,18 +585,15 @@ impl Xtasks {
         args.push(command.to_owned());
 
         if command != "fmt" {
-            args.push("--workspace".to_owned());
-        }
+            // fmt doesn't care about features, workspaces or profiles
 
-        if let Some(profile) = app_settings.profile.as_ref() {
-            if command != "fmt" {
+            args.push("--workspace".to_owned());
+
+            if let Some(profile) = app_settings.profile.as_ref() {
                 args.push("--profile".to_owned());
                 args.push(profile.clone());
             }
-        }
 
-        if command != "fmt" {
-            // fmt doesn't care about features
             args.extend(app_settings.features.to_cargo_args());
         }
 
