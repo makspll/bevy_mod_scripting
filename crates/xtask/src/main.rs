@@ -589,8 +589,10 @@ impl Xtasks {
         }
 
         if let Some(profile) = app_settings.profile.as_ref() {
-            args.push("--profile".to_owned());
-            args.push(profile.clone());
+            if command != "fmt" {
+                args.push("--profile".to_owned());
+                args.push(profile.clone());
+            }
         }
 
         if command != "fmt" {
