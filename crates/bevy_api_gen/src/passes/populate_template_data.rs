@@ -31,7 +31,9 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
 
         let has_static_methods = fn_ctxts.iter().any(|fn_ctxt| !fn_ctxt.has_self);
 
-        let functions = process_functions(ctxt, fn_ctxts);
+        let mut functions = process_functions(ctxt, fn_ctxts);
+        functions.sort_by(|a, b| a.ident.cmp(&b.ident));
+
         let variant = ty_ctxt.variant_data.as_ref().unwrap();
 
         let is_tuple_struct = variant.is_struct()

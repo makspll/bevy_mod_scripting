@@ -20,19 +20,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
         let mut world = app.world_mut();
         NamespaceBuilder::<::bevy::math::AspectRatio>::new(world)
             .register(
-                "eq",
-                |
-                    _self: Ref<bevy::math::AspectRatio>,
-                    other: Ref<bevy::math::AspectRatio>|
-                {
-                    let output: bool = <bevy::math::AspectRatio as std::cmp::PartialEq<
-                        bevy::math::AspectRatio,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "clone",
                 |_self: Ref<bevy::math::AspectRatio>| {
                     let output: Val<bevy::math::AspectRatio> = <bevy::math::AspectRatio as std::clone::Clone>::clone(
@@ -43,9 +30,15 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "ratio",
-                |_self: Ref<bevy::math::AspectRatio>| {
-                    let output: f32 = bevy::math::AspectRatio::ratio(&_self).into();
+                "eq",
+                |
+                    _self: Ref<bevy::math::AspectRatio>,
+                    other: Ref<bevy::math::AspectRatio>|
+                {
+                    let output: bool = <bevy::math::AspectRatio as std::cmp::PartialEq<
+                        bevy::math::AspectRatio,
+                    >>::eq(&_self, &other)
+                        .into();
                     output
                 },
             )
@@ -81,12 +74,29 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = bevy::math::AspectRatio::is_square(&_self).into();
                     output
                 },
+            )
+            .register(
+                "ratio",
+                |_self: Ref<bevy::math::AspectRatio>| {
+                    let output: f32 = bevy::math::AspectRatio::ratio(&_self).into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::CompassOctant>::new(world)
             .register(
                 "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::math::CompassOctant>| {
                     let output: () = <bevy::math::CompassOctant as std::cmp::Eq>::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::CompassOctant>| {
+                    let output: Val<bevy::math::CompassOctant> = <bevy::math::CompassOctant as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -105,18 +115,18 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::CompassQuadrant>::new(world)
             .register(
-                "clone",
-                |_self: Ref<bevy::math::CompassOctant>| {
-                    let output: Val<bevy::math::CompassOctant> = <bevy::math::CompassOctant as std::clone::Clone>::clone(
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::math::CompassQuadrant>| {
+                    let output: () = <bevy::math::CompassQuadrant as std::cmp::Eq>::assert_receiver_is_total_eq(
                             &_self,
                         )
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::CompassQuadrant>::new(world)
+            )
             .register(
                 "clone",
                 |_self: Ref<bevy::math::CompassQuadrant>| {
@@ -139,18 +149,28 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::Isometry2d>::new(world)
             .register(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::math::CompassQuadrant>| {
-                    let output: () = <bevy::math::CompassQuadrant as std::cmp::Eq>::assert_receiver_is_total_eq(
+                "clone",
+                |_self: Ref<bevy::math::Isometry2d>| {
+                    let output: Val<bevy::math::Isometry2d> = <bevy::math::Isometry2d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::Isometry2d>::new(world)
+            )
+            .register(
+                "eq",
+                |_self: Ref<bevy::math::Isometry2d>, other: Ref<bevy::math::Isometry2d>| {
+                    let output: bool = <bevy::math::Isometry2d as std::cmp::PartialEq<
+                        bevy::math::Isometry2d,
+                    >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
             .register(
                 "from_rotation",
                 |rotation: Val<bevy::math::Rot2>| {
@@ -204,16 +224,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "clone",
-                |_self: Ref<bevy::math::Isometry2d>| {
-                    let output: Val<bevy::math::Isometry2d> = <bevy::math::Isometry2d as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "mul",
                 |
                     _self: Val<bevy::math::Isometry2d>,
@@ -225,28 +235,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "eq",
-                |_self: Ref<bevy::math::Isometry2d>, other: Ref<bevy::math::Isometry2d>| {
-                    let output: bool = <bevy::math::Isometry2d as std::cmp::PartialEq<
-                        bevy::math::Isometry2d,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::math::Isometry3d>::new(world)
-            .register(
-                "eq",
-                |_self: Ref<bevy::math::Isometry3d>, other: Ref<bevy::math::Isometry3d>| {
-                    let output: bool = <bevy::math::Isometry3d as std::cmp::PartialEq<
-                        bevy::math::Isometry3d,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
             .register(
                 "clone",
                 |_self: Ref<bevy::math::Isometry3d>| {
@@ -258,24 +248,11 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "mul",
-                |
-                    _self: Val<bevy::math::Isometry3d>,
-                    rhs: Val<bevy::math::prelude::Dir3>|
-                {
-                    let output: Val<bevy::math::prelude::Dir3> = <bevy::math::Isometry3d as std::ops::Mul<
-                        bevy::math::prelude::Dir3,
-                    >>::mul(_self.into_inner(), rhs.into_inner())
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul",
-                |_self: Val<bevy::math::Isometry3d>, rhs: Val<bevy::math::Isometry3d>| {
-                    let output: Val<bevy::math::Isometry3d> = <bevy::math::Isometry3d as std::ops::Mul<
+                "eq",
+                |_self: Ref<bevy::math::Isometry3d>, other: Ref<bevy::math::Isometry3d>| {
+                    let output: bool = <bevy::math::Isometry3d as std::cmp::PartialEq<
                         bevy::math::Isometry3d,
-                    >>::mul(_self.into_inner(), rhs.into_inner())
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -309,6 +286,29 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                             &_self,
                             rhs.into_inner(),
                         )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
+                |
+                    _self: Val<bevy::math::Isometry3d>,
+                    rhs: Val<bevy::math::prelude::Dir3>|
+                {
+                    let output: Val<bevy::math::prelude::Dir3> = <bevy::math::Isometry3d as std::ops::Mul<
+                        bevy::math::prelude::Dir3,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
+                |_self: Val<bevy::math::Isometry3d>, rhs: Val<bevy::math::Isometry3d>| {
+                    let output: Val<bevy::math::Isometry3d> = <bevy::math::Isometry3d as std::ops::Mul<
+                        bevy::math::Isometry3d,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -357,20 +357,58 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::Rot2>::new(world)
             .register(
-                "mul",
-                |_self: Val<bevy::math::Rot2>, rhs: Val<bevy::math::Rot2>| {
-                    let output: Val<bevy::math::Rot2> = <bevy::math::Rot2 as std::ops::Mul<
-                        bevy::math::Rot2,
-                    >>::mul(_self.into_inner(), rhs.into_inner())
+                "angle_between",
+                |_self: Val<bevy::math::Rot2>, other: Val<bevy::math::Rot2>| {
+                    let output: f32 = bevy::math::Rot2::angle_between(
+                            _self.into_inner(),
+                            other.into_inner(),
+                        )
                         .into();
                     output
                 },
             )
             .register(
-                "radians",
-                |radians: f32| {
-                    let output: Val<bevy::math::Rot2> = bevy::math::Rot2::radians(
-                            radians,
+                "angle_to",
+                |_self: Val<bevy::math::Rot2>, other: Val<bevy::math::Rot2>| {
+                    let output: f32 = bevy::math::Rot2::angle_to(
+                            _self.into_inner(),
+                            other.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "as_degrees",
+                |_self: Val<bevy::math::Rot2>| {
+                    let output: f32 = bevy::math::Rot2::as_degrees(_self.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "as_radians",
+                |_self: Val<bevy::math::Rot2>| {
+                    let output: f32 = bevy::math::Rot2::as_radians(_self.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "as_turn_fraction",
+                |_self: Val<bevy::math::Rot2>| {
+                    let output: f32 = bevy::math::Rot2::as_turn_fraction(
+                            _self.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::Rot2>| {
+                    let output: Val<bevy::math::Rot2> = <bevy::math::Rot2 as std::clone::Clone>::clone(
+                            &_self,
                         )
                         .into();
                     output
@@ -387,10 +425,20 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "turn_fraction",
-                |fraction: f32| {
-                    let output: Val<bevy::math::Rot2> = bevy::math::Rot2::turn_fraction(
-                            fraction,
+                "eq",
+                |_self: Ref<bevy::math::Rot2>, other: Ref<bevy::math::Rot2>| {
+                    let output: bool = <bevy::math::Rot2 as std::cmp::PartialEq<
+                        bevy::math::Rot2,
+                    >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "fast_renormalize",
+                |_self: Val<bevy::math::Rot2>| {
+                    let output: Val<bevy::math::Rot2> = bevy::math::Rot2::fast_renormalize(
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -408,81 +456,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "as_radians",
+                "inverse",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: f32 = bevy::math::Rot2::as_radians(_self.into_inner())
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "as_degrees",
-                |_self: Val<bevy::math::Rot2>| {
-                    let output: f32 = bevy::math::Rot2::as_degrees(_self.into_inner())
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "as_turn_fraction",
-                |_self: Val<bevy::math::Rot2>| {
-                    let output: f32 = bevy::math::Rot2::as_turn_fraction(
-                            _self.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "sin_cos",
-                |_self: Val<bevy::math::Rot2>| {
-                    let output: (f32, f32) = bevy::math::Rot2::sin_cos(
-                            _self.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "length",
-                |_self: Val<bevy::math::Rot2>| {
-                    let output: f32 = bevy::math::Rot2::length(_self.into_inner())
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "length_squared",
-                |_self: Val<bevy::math::Rot2>| {
-                    let output: f32 = bevy::math::Rot2::length_squared(
-                            _self.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "length_recip",
-                |_self: Val<bevy::math::Rot2>| {
-                    let output: f32 = bevy::math::Rot2::length_recip(_self.into_inner())
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "normalize",
-                |_self: Val<bevy::math::Rot2>| {
-                    let output: Val<bevy::math::Rot2> = bevy::math::Rot2::normalize(
-                            _self.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "fast_renormalize",
-                |_self: Val<bevy::math::Rot2>| {
-                    let output: Val<bevy::math::Rot2> = bevy::math::Rot2::fast_renormalize(
+                    let output: Val<bevy::math::Rot2> = bevy::math::Rot2::inverse(
                             _self.into_inner(),
                         )
                         .into();
@@ -506,16 +482,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "is_normalized",
-                |_self: Val<bevy::math::Rot2>| {
-                    let output: bool = bevy::math::Rot2::is_normalized(
-                            _self.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "is_near_identity",
                 |_self: Val<bevy::math::Rot2>| {
                     let output: bool = bevy::math::Rot2::is_near_identity(
@@ -526,33 +492,60 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "angle_between",
-                |_self: Val<bevy::math::Rot2>, other: Val<bevy::math::Rot2>| {
-                    let output: f32 = bevy::math::Rot2::angle_between(
-                            _self.into_inner(),
-                            other.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "angle_to",
-                |_self: Val<bevy::math::Rot2>, other: Val<bevy::math::Rot2>| {
-                    let output: f32 = bevy::math::Rot2::angle_to(
-                            _self.into_inner(),
-                            other.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "inverse",
+                "is_normalized",
                 |_self: Val<bevy::math::Rot2>| {
-                    let output: Val<bevy::math::Rot2> = bevy::math::Rot2::inverse(
+                    let output: bool = bevy::math::Rot2::is_normalized(
                             _self.into_inner(),
                         )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "length",
+                |_self: Val<bevy::math::Rot2>| {
+                    let output: f32 = bevy::math::Rot2::length(_self.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "length_recip",
+                |_self: Val<bevy::math::Rot2>| {
+                    let output: f32 = bevy::math::Rot2::length_recip(_self.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "length_squared",
+                |_self: Val<bevy::math::Rot2>| {
+                    let output: f32 = bevy::math::Rot2::length_squared(
+                            _self.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
+                |_self: Val<bevy::math::Rot2>, rhs: Val<bevy::math::Rot2>| {
+                    let output: Val<bevy::math::Rot2> = <bevy::math::Rot2 as std::ops::Mul<
+                        bevy::math::Rot2,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
+                |
+                    _self: Val<bevy::math::Rot2>,
+                    direction: Val<bevy::math::prelude::Dir2>|
+                {
+                    let output: Val<bevy::math::prelude::Dir2> = <bevy::math::Rot2 as std::ops::Mul<
+                        bevy::math::prelude::Dir2,
+                    >>::mul(_self.into_inner(), direction.into_inner())
                         .into();
                     output
                 },
@@ -564,6 +557,36 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                             _self.into_inner(),
                             end.into_inner(),
                             s,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "normalize",
+                |_self: Val<bevy::math::Rot2>| {
+                    let output: Val<bevy::math::Rot2> = bevy::math::Rot2::normalize(
+                            _self.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "radians",
+                |radians: f32| {
+                    let output: Val<bevy::math::Rot2> = bevy::math::Rot2::radians(
+                            radians,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "sin_cos",
+                |_self: Val<bevy::math::Rot2>| {
+                    let output: (f32, f32) = bevy::math::Rot2::sin_cos(
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -582,44 +605,21 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "eq",
-                |_self: Ref<bevy::math::Rot2>, other: Ref<bevy::math::Rot2>| {
-                    let output: bool = <bevy::math::Rot2 as std::cmp::PartialEq<
-                        bevy::math::Rot2,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::Rot2>| {
-                    let output: Val<bevy::math::Rot2> = <bevy::math::Rot2 as std::clone::Clone>::clone(
-                            &_self,
+                "turn_fraction",
+                |fraction: f32| {
+                    let output: Val<bevy::math::Rot2> = bevy::math::Rot2::turn_fraction(
+                            fraction,
                         )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul",
-                |
-                    _self: Val<bevy::math::Rot2>,
-                    direction: Val<bevy::math::prelude::Dir2>|
-                {
-                    let output: Val<bevy::math::prelude::Dir2> = <bevy::math::Rot2 as std::ops::Mul<
-                        bevy::math::prelude::Dir2,
-                    >>::mul(_self.into_inner(), direction.into_inner())
                         .into();
                     output
                 },
             );
         NamespaceBuilder::<::bevy::math::prelude::Dir2>::new(world)
             .register(
-                "neg",
-                |_self: Val<bevy::math::prelude::Dir2>| {
-                    let output: Val<bevy::math::prelude::Dir2> = <bevy::math::prelude::Dir2 as std::ops::Neg>::neg(
-                            _self.into_inner(),
+                "clone",
+                |_self: Ref<bevy::math::prelude::Dir2>| {
+                    let output: Val<bevy::math::prelude::Dir2> = <bevy::math::prelude::Dir2 as std::clone::Clone>::clone(
+                            &_self,
                         )
                         .into();
                     output
@@ -639,6 +639,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "fast_renormalize",
+                |_self: Val<bevy::math::prelude::Dir2>| {
+                    let output: Val<bevy::math::prelude::Dir2> = bevy::math::prelude::Dir2::fast_renormalize(
+                            _self.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "from_xy_unchecked",
                 |x: f32, y: f32| {
                     let output: Val<bevy::math::prelude::Dir2> = bevy::math::prelude::Dir2::from_xy_unchecked(
@@ -650,30 +660,10 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "slerp",
-                |
-                    _self: Val<bevy::math::prelude::Dir2>,
-                    rhs: Val<bevy::math::prelude::Dir2>,
-                    s: f32|
-                {
-                    let output: Val<bevy::math::prelude::Dir2> = bevy::math::prelude::Dir2::slerp(
+                "neg",
+                |_self: Val<bevy::math::prelude::Dir2>| {
+                    let output: Val<bevy::math::prelude::Dir2> = <bevy::math::prelude::Dir2 as std::ops::Neg>::neg(
                             _self.into_inner(),
-                            rhs.into_inner(),
-                            s,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "rotation_to",
-                |
-                    _self: Val<bevy::math::prelude::Dir2>,
-                    other: Val<bevy::math::prelude::Dir2>|
-                {
-                    let output: Val<bevy::math::Rot2> = bevy::math::prelude::Dir2::rotation_to(
-                            _self.into_inner(),
-                            other.into_inner(),
                         )
                         .into();
                     output
@@ -704,9 +694,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "rotation_to_x",
+                "rotation_from_y",
                 |_self: Val<bevy::math::prelude::Dir2>| {
-                    let output: Val<bevy::math::Rot2> = bevy::math::prelude::Dir2::rotation_to_x(
+                    let output: Val<bevy::math::Rot2> = bevy::math::prelude::Dir2::rotation_from_y(
                             _self.into_inner(),
                         )
                         .into();
@@ -714,9 +704,23 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "rotation_from_y",
+                "rotation_to",
+                |
+                    _self: Val<bevy::math::prelude::Dir2>,
+                    other: Val<bevy::math::prelude::Dir2>|
+                {
+                    let output: Val<bevy::math::Rot2> = bevy::math::prelude::Dir2::rotation_to(
+                            _self.into_inner(),
+                            other.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "rotation_to_x",
                 |_self: Val<bevy::math::prelude::Dir2>| {
-                    let output: Val<bevy::math::Rot2> = bevy::math::prelude::Dir2::rotation_from_y(
+                    let output: Val<bevy::math::Rot2> = bevy::math::prelude::Dir2::rotation_to_x(
                             _self.into_inner(),
                         )
                         .into();
@@ -734,26 +738,32 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "fast_renormalize",
-                |_self: Val<bevy::math::prelude::Dir2>| {
-                    let output: Val<bevy::math::prelude::Dir2> = bevy::math::prelude::Dir2::fast_renormalize(
+                "slerp",
+                |
+                    _self: Val<bevy::math::prelude::Dir2>,
+                    rhs: Val<bevy::math::prelude::Dir2>,
+                    s: f32|
+                {
+                    let output: Val<bevy::math::prelude::Dir2> = bevy::math::prelude::Dir2::slerp(
                             _self.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::prelude::Dir2>| {
-                    let output: Val<bevy::math::prelude::Dir2> = <bevy::math::prelude::Dir2 as std::clone::Clone>::clone(
-                            &_self,
+                            rhs.into_inner(),
+                            s,
                         )
                         .into();
                     output
                 },
             );
         NamespaceBuilder::<::bevy::math::prelude::Dir3>::new(world)
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::prelude::Dir3>| {
+                    let output: Val<bevy::math::prelude::Dir3> = <bevy::math::prelude::Dir3 as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
             .register(
                 "eq",
                 |
@@ -763,6 +773,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::prelude::Dir3 as std::cmp::PartialEq<
                         bevy::math::prelude::Dir3,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "fast_renormalize",
+                |_self: Val<bevy::math::prelude::Dir3>| {
+                    let output: Val<bevy::math::prelude::Dir3> = bevy::math::prelude::Dir3::fast_renormalize(
+                            _self.into_inner(),
+                        )
                         .into();
                     output
                 },
@@ -780,6 +800,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "neg",
+                |_self: Val<bevy::math::prelude::Dir3>| {
+                    let output: Val<bevy::math::prelude::Dir3> = <bevy::math::prelude::Dir3 as std::ops::Neg>::neg(
+                            _self.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "slerp",
                 |
                     _self: Val<bevy::math::prelude::Dir3>,
@@ -790,36 +820,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                             _self.into_inner(),
                             rhs.into_inner(),
                             s,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "fast_renormalize",
-                |_self: Val<bevy::math::prelude::Dir3>| {
-                    let output: Val<bevy::math::prelude::Dir3> = bevy::math::prelude::Dir3::fast_renormalize(
-                            _self.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::prelude::Dir3>| {
-                    let output: Val<bevy::math::prelude::Dir3> = <bevy::math::prelude::Dir3 as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "neg",
-                |_self: Val<bevy::math::prelude::Dir3>| {
-                    let output: Val<bevy::math::prelude::Dir3> = <bevy::math::prelude::Dir3 as std::ops::Neg>::neg(
-                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -850,12 +850,32 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "fast_renormalize",
+                |_self: Val<bevy::math::prelude::Dir3A>| {
+                    let output: Val<bevy::math::prelude::Dir3A> = bevy::math::prelude::Dir3A::fast_renormalize(
+                            _self.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "from_xyz_unchecked",
                 |x: f32, y: f32, z: f32| {
                     let output: Val<bevy::math::prelude::Dir3A> = bevy::math::prelude::Dir3A::from_xyz_unchecked(
                             x,
                             y,
                             z,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "neg",
+                |_self: Val<bevy::math::prelude::Dir3A>| {
+                    let output: Val<bevy::math::prelude::Dir3A> = <bevy::math::prelude::Dir3A as std::ops::Neg>::neg(
+                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -876,102 +896,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "fast_renormalize",
-                |_self: Val<bevy::math::prelude::Dir3A>| {
-                    let output: Val<bevy::math::prelude::Dir3A> = bevy::math::prelude::Dir3A::fast_renormalize(
-                            _self.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "neg",
-                |_self: Val<bevy::math::prelude::Dir3A>| {
-                    let output: Val<bevy::math::prelude::Dir3A> = <bevy::math::prelude::Dir3A as std::ops::Neg>::neg(
-                            _self.into_inner(),
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::math::prelude::IRect>::new(world)
-            .register(
-                "new",
-                |x0: i32, y0: i32, x1: i32, y1: i32| {
-                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::new(
-                            x0,
-                            y0,
-                            x1,
-                            y1,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "is_empty",
-                |_self: Ref<bevy::math::prelude::IRect>| {
-                    let output: bool = bevy::math::prelude::IRect::is_empty(&_self)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "width",
-                |_self: Ref<bevy::math::prelude::IRect>| {
-                    let output: i32 = bevy::math::prelude::IRect::width(&_self).into();
-                    output
-                },
-            )
-            .register(
-                "height",
-                |_self: Ref<bevy::math::prelude::IRect>| {
-                    let output: i32 = bevy::math::prelude::IRect::height(&_self).into();
-                    output
-                },
-            )
-            .register(
-                "union",
-                |
-                    _self: Ref<bevy::math::prelude::IRect>,
-                    other: Val<bevy::math::prelude::IRect>|
-                {
-                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::union(
-                            &_self,
-                            other.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "intersect",
-                |
-                    _self: Ref<bevy::math::prelude::IRect>,
-                    other: Val<bevy::math::prelude::IRect>|
-                {
-                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::intersect(
-                            &_self,
-                            other.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "inflate",
-                |_self: Ref<bevy::math::prelude::IRect>, expansion: i32| {
-                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::inflate(
-                            &_self,
-                            expansion,
-                        )
-                        .into();
-                    output
-                },
-            )
             .register(
                 "as_rect",
                 |_self: Ref<bevy::math::prelude::IRect>| {
@@ -993,9 +919,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "clone",
+                "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::math::prelude::IRect>| {
-                    let output: Val<bevy::math::prelude::IRect> = <bevy::math::prelude::IRect as std::clone::Clone>::clone(
+                    let output: () = <bevy::math::prelude::IRect as std::cmp::Eq>::assert_receiver_is_total_eq(
                             &_self,
                         )
                         .into();
@@ -1003,9 +929,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "assert_receiver_is_total_eq",
+                "clone",
                 |_self: Ref<bevy::math::prelude::IRect>| {
-                    let output: () = <bevy::math::prelude::IRect as std::cmp::Eq>::assert_receiver_is_total_eq(
+                    let output: Val<bevy::math::prelude::IRect> = <bevy::math::prelude::IRect as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -1024,12 +950,51 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::prelude::Rect>::new(world)
+            )
+            .register(
+                "height",
+                |_self: Ref<bevy::math::prelude::IRect>| {
+                    let output: i32 = bevy::math::prelude::IRect::height(&_self).into();
+                    output
+                },
+            )
+            .register(
+                "inflate",
+                |_self: Ref<bevy::math::prelude::IRect>, expansion: i32| {
+                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::inflate(
+                            &_self,
+                            expansion,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "intersect",
+                |
+                    _self: Ref<bevy::math::prelude::IRect>,
+                    other: Val<bevy::math::prelude::IRect>|
+                {
+                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::intersect(
+                            &_self,
+                            other.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "is_empty",
+                |_self: Ref<bevy::math::prelude::IRect>| {
+                    let output: bool = bevy::math::prelude::IRect::is_empty(&_self)
+                        .into();
+                    output
+                },
+            )
             .register(
                 "new",
-                |x0: f32, y0: f32, x1: f32, y1: f32| {
-                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::new(
+                |x0: i32, y0: i32, x1: i32, y1: i32| {
+                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::new(
                             x0,
                             y0,
                             x1,
@@ -1040,80 +1005,27 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "is_empty",
-                |_self: Ref<bevy::math::prelude::Rect>| {
-                    let output: bool = bevy::math::prelude::Rect::is_empty(&_self)
+                "union",
+                |
+                    _self: Ref<bevy::math::prelude::IRect>,
+                    other: Val<bevy::math::prelude::IRect>|
+                {
+                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::union(
+                            &_self,
+                            other.into_inner(),
+                        )
                         .into();
                     output
                 },
             )
             .register(
                 "width",
-                |_self: Ref<bevy::math::prelude::Rect>| {
-                    let output: f32 = bevy::math::prelude::Rect::width(&_self).into();
+                |_self: Ref<bevy::math::prelude::IRect>| {
+                    let output: i32 = bevy::math::prelude::IRect::width(&_self).into();
                     output
                 },
-            )
-            .register(
-                "height",
-                |_self: Ref<bevy::math::prelude::Rect>| {
-                    let output: f32 = bevy::math::prelude::Rect::height(&_self).into();
-                    output
-                },
-            )
-            .register(
-                "union",
-                |
-                    _self: Ref<bevy::math::prelude::Rect>,
-                    other: Val<bevy::math::prelude::Rect>|
-                {
-                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::union(
-                            &_self,
-                            other.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "intersect",
-                |
-                    _self: Ref<bevy::math::prelude::Rect>,
-                    other: Val<bevy::math::prelude::Rect>|
-                {
-                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::intersect(
-                            &_self,
-                            other.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "inflate",
-                |_self: Ref<bevy::math::prelude::Rect>, expansion: f32| {
-                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::inflate(
-                            &_self,
-                            expansion,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "normalize",
-                |
-                    _self: Ref<bevy::math::prelude::Rect>,
-                    other: Val<bevy::math::prelude::Rect>|
-                {
-                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::normalize(
-                            &_self,
-                            other.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::prelude::Rect>::new(world)
             .register(
                 "as_irect",
                 |_self: Ref<bevy::math::prelude::Rect>| {
@@ -1156,22 +1068,51 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::prelude::URect>::new(world)
+            )
             .register(
-                "clone",
-                |_self: Ref<bevy::math::prelude::URect>| {
-                    let output: Val<bevy::math::prelude::URect> = <bevy::math::prelude::URect as std::clone::Clone>::clone(
+                "height",
+                |_self: Ref<bevy::math::prelude::Rect>| {
+                    let output: f32 = bevy::math::prelude::Rect::height(&_self).into();
+                    output
+                },
+            )
+            .register(
+                "inflate",
+                |_self: Ref<bevy::math::prelude::Rect>, expansion: f32| {
+                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::inflate(
                             &_self,
+                            expansion,
                         )
                         .into();
                     output
                 },
             )
             .register(
+                "intersect",
+                |
+                    _self: Ref<bevy::math::prelude::Rect>,
+                    other: Val<bevy::math::prelude::Rect>|
+                {
+                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::intersect(
+                            &_self,
+                            other.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "is_empty",
+                |_self: Ref<bevy::math::prelude::Rect>| {
+                    let output: bool = bevy::math::prelude::Rect::is_empty(&_self)
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "new",
-                |x0: u32, y0: u32, x1: u32, y1: u32| {
-                    let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::new(
+                |x0: f32, y0: f32, x1: f32, y1: f32| {
+                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::new(
                             x0,
                             y0,
                             x1,
@@ -1182,34 +1123,26 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "is_empty",
-                |_self: Ref<bevy::math::prelude::URect>| {
-                    let output: bool = bevy::math::prelude::URect::is_empty(&_self)
+                "normalize",
+                |
+                    _self: Ref<bevy::math::prelude::Rect>,
+                    other: Val<bevy::math::prelude::Rect>|
+                {
+                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::normalize(
+                            &_self,
+                            other.into_inner(),
+                        )
                         .into();
-                    output
-                },
-            )
-            .register(
-                "width",
-                |_self: Ref<bevy::math::prelude::URect>| {
-                    let output: u32 = bevy::math::prelude::URect::width(&_self).into();
-                    output
-                },
-            )
-            .register(
-                "height",
-                |_self: Ref<bevy::math::prelude::URect>| {
-                    let output: u32 = bevy::math::prelude::URect::height(&_self).into();
                     output
                 },
             )
             .register(
                 "union",
                 |
-                    _self: Ref<bevy::math::prelude::URect>,
-                    other: Val<bevy::math::prelude::URect>|
+                    _self: Ref<bevy::math::prelude::Rect>,
+                    other: Val<bevy::math::prelude::Rect>|
                 {
-                    let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::union(
+                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::union(
                             &_self,
                             other.into_inner(),
                         )
@@ -1218,25 +1151,18 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "intersect",
-                |
-                    _self: Ref<bevy::math::prelude::URect>,
-                    other: Val<bevy::math::prelude::URect>|
-                {
-                    let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::intersect(
-                            &_self,
-                            other.into_inner(),
-                        )
-                        .into();
+                "width",
+                |_self: Ref<bevy::math::prelude::Rect>| {
+                    let output: f32 = bevy::math::prelude::Rect::width(&_self).into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::prelude::URect>::new(world)
             .register(
-                "inflate",
-                |_self: Ref<bevy::math::prelude::URect>, expansion: i32| {
-                    let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::inflate(
+                "as_irect",
+                |_self: Ref<bevy::math::prelude::URect>| {
+                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::URect::as_irect(
                             &_self,
-                            expansion,
                         )
                         .into();
                     output
@@ -1253,9 +1179,19 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "as_irect",
+                "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::math::prelude::URect>| {
-                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::URect::as_irect(
+                    let output: () = <bevy::math::prelude::URect as std::cmp::Eq>::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::prelude::URect>| {
+                    let output: Val<bevy::math::prelude::URect> = <bevy::math::prelude::URect as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -1276,27 +1212,81 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "assert_receiver_is_total_eq",
+                "height",
                 |_self: Ref<bevy::math::prelude::URect>| {
-                    let output: () = <bevy::math::prelude::URect as std::cmp::Eq>::assert_receiver_is_total_eq(
-                            &_self,
-                        )
-                        .into();
+                    let output: u32 = bevy::math::prelude::URect::height(&_self).into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::Affine3>::new(world);
-        NamespaceBuilder::<::bevy::math::bounding::Aabb2d>::new(world)
+            )
             .register(
-                "clone",
-                |_self: Ref<bevy::math::bounding::Aabb2d>| {
-                    let output: Val<bevy::math::bounding::Aabb2d> = <bevy::math::bounding::Aabb2d as std::clone::Clone>::clone(
+                "inflate",
+                |_self: Ref<bevy::math::prelude::URect>, expansion: i32| {
+                    let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::inflate(
                             &_self,
+                            expansion,
                         )
                         .into();
                     output
                 },
             )
+            .register(
+                "intersect",
+                |
+                    _self: Ref<bevy::math::prelude::URect>,
+                    other: Val<bevy::math::prelude::URect>|
+                {
+                    let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::intersect(
+                            &_self,
+                            other.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "is_empty",
+                |_self: Ref<bevy::math::prelude::URect>| {
+                    let output: bool = bevy::math::prelude::URect::is_empty(&_self)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |x0: u32, y0: u32, x1: u32, y1: u32| {
+                    let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::new(
+                            x0,
+                            y0,
+                            x1,
+                            y1,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "union",
+                |
+                    _self: Ref<bevy::math::prelude::URect>,
+                    other: Val<bevy::math::prelude::URect>|
+                {
+                    let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::union(
+                            &_self,
+                            other.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "width",
+                |_self: Ref<bevy::math::prelude::URect>| {
+                    let output: u32 = bevy::math::prelude::URect::width(&_self).into();
+                    output
+                },
+            );
+        NamespaceBuilder::<::bevy::math::Affine3>::new(world);
+        NamespaceBuilder::<::bevy::math::bounding::Aabb2d>::new(world)
             .register(
                 "bounding_circle",
                 |_self: Ref<bevy::math::bounding::Aabb2d>| {
@@ -1306,18 +1296,18 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::bounding::BoundingCircle>::new(world)
+            )
             .register(
-                "radius",
-                |_self: Ref<bevy::math::bounding::BoundingCircle>| {
-                    let output: f32 = bevy::math::bounding::BoundingCircle::radius(
+                "clone",
+                |_self: Ref<bevy::math::bounding::Aabb2d>| {
+                    let output: Val<bevy::math::bounding::Aabb2d> = <bevy::math::bounding::Aabb2d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::bounding::BoundingCircle>::new(world)
             .register(
                 "aabb_2d",
                 |_self: Ref<bevy::math::bounding::BoundingCircle>| {
@@ -1337,8 +1327,36 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "radius",
+                |_self: Ref<bevy::math::bounding::BoundingCircle>| {
+                    let output: f32 = bevy::math::bounding::BoundingCircle::radius(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::primitives::Circle>::new(world)
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::primitives::Circle>| {
+                    let output: Val<bevy::math::primitives::Circle> = <bevy::math::primitives::Circle as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "diameter",
+                |_self: Ref<bevy::math::primitives::Circle>| {
+                    let output: f32 = bevy::math::primitives::Circle::diameter(&_self)
+                        .into();
+                    output
+                },
+            )
             .register(
                 "eq",
                 |
@@ -1361,32 +1379,13 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "diameter",
-                |_self: Ref<bevy::math::primitives::Circle>| {
-                    let output: f32 = bevy::math::primitives::Circle::diameter(&_self)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Circle>| {
-                    let output: Val<bevy::math::primitives::Circle> = <bevy::math::primitives::Circle as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::math::primitives::Annulus>::new(world)
             .register(
-                "new",
-                |inner_radius: f32, outer_radius: f32| {
-                    let output: Val<bevy::math::primitives::Annulus> = bevy::math::primitives::Annulus::new(
-                            inner_radius,
-                            outer_radius,
+                "clone",
+                |_self: Ref<bevy::math::primitives::Annulus>| {
+                    let output: Val<bevy::math::primitives::Annulus> = <bevy::math::primitives::Annulus as std::clone::Clone>::clone(
+                            &_self,
                         )
                         .into();
                     output
@@ -1396,24 +1395,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "diameter",
                 |_self: Ref<bevy::math::primitives::Annulus>| {
                     let output: f32 = bevy::math::primitives::Annulus::diameter(&_self)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "thickness",
-                |_self: Ref<bevy::math::primitives::Annulus>| {
-                    let output: f32 = bevy::math::primitives::Annulus::thickness(&_self)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Annulus>| {
-                    let output: Val<bevy::math::primitives::Annulus> = <bevy::math::primitives::Annulus as std::clone::Clone>::clone(
-                            &_self,
-                        )
                         .into();
                     output
                 },
@@ -1430,8 +1411,51 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "new",
+                |inner_radius: f32, outer_radius: f32| {
+                    let output: Val<bevy::math::primitives::Annulus> = bevy::math::primitives::Annulus::new(
+                            inner_radius,
+                            outer_radius,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "thickness",
+                |_self: Ref<bevy::math::primitives::Annulus>| {
+                    let output: f32 = bevy::math::primitives::Annulus::thickness(&_self)
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::primitives::Arc2d>::new(world)
+            .register(
+                "angle",
+                |_self: Ref<bevy::math::primitives::Arc2d>| {
+                    let output: f32 = bevy::math::primitives::Arc2d::angle(&_self)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "apothem",
+                |_self: Ref<bevy::math::primitives::Arc2d>| {
+                    let output: f32 = bevy::math::primitives::Arc2d::apothem(&_self)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "chord_length",
+                |_self: Ref<bevy::math::primitives::Arc2d>| {
+                    let output: f32 = bevy::math::primitives::Arc2d::chord_length(&_self)
+                        .into();
+                    output
+                },
+            )
             .register(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Arc2d>| {
@@ -1443,11 +1467,24 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "new",
-                |radius: f32, half_angle: f32| {
-                    let output: Val<bevy::math::primitives::Arc2d> = bevy::math::primitives::Arc2d::new(
+                "eq",
+                |
+                    _self: Ref<bevy::math::primitives::Arc2d>,
+                    other: Ref<bevy::math::primitives::Arc2d>|
+                {
+                    let output: bool = <bevy::math::primitives::Arc2d as std::cmp::PartialEq<
+                        bevy::math::primitives::Arc2d,
+                    >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "from_degrees",
+                |radius: f32, angle: f32| {
+                    let output: Val<bevy::math::primitives::Arc2d> = bevy::math::primitives::Arc2d::from_degrees(
                             radius,
-                            half_angle,
+                            angle,
                         )
                         .into();
                     output
@@ -1457,17 +1494,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "from_radians",
                 |radius: f32, angle: f32| {
                     let output: Val<bevy::math::primitives::Arc2d> = bevy::math::primitives::Arc2d::from_radians(
-                            radius,
-                            angle,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "from_degrees",
-                |radius: f32, angle: f32| {
-                    let output: Val<bevy::math::primitives::Arc2d> = bevy::math::primitives::Arc2d::from_degrees(
                             radius,
                             angle,
                         )
@@ -1487,59 +1513,11 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "angle",
-                |_self: Ref<bevy::math::primitives::Arc2d>| {
-                    let output: f32 = bevy::math::primitives::Arc2d::angle(&_self)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "length",
-                |_self: Ref<bevy::math::primitives::Arc2d>| {
-                    let output: f32 = bevy::math::primitives::Arc2d::length(&_self)
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "half_chord_length",
                 |_self: Ref<bevy::math::primitives::Arc2d>| {
                     let output: f32 = bevy::math::primitives::Arc2d::half_chord_length(
                             &_self,
                         )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "chord_length",
-                |_self: Ref<bevy::math::primitives::Arc2d>| {
-                    let output: f32 = bevy::math::primitives::Arc2d::chord_length(&_self)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "apothem",
-                |_self: Ref<bevy::math::primitives::Arc2d>| {
-                    let output: f32 = bevy::math::primitives::Arc2d::apothem(&_self)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "sagitta",
-                |_self: Ref<bevy::math::primitives::Arc2d>| {
-                    let output: f32 = bevy::math::primitives::Arc2d::sagitta(&_self)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "is_minor",
-                |_self: Ref<bevy::math::primitives::Arc2d>| {
-                    let output: bool = bevy::math::primitives::Arc2d::is_minor(&_self)
                         .into();
                     output
                 },
@@ -1553,19 +1531,51 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "eq",
-                |
-                    _self: Ref<bevy::math::primitives::Arc2d>,
-                    other: Ref<bevy::math::primitives::Arc2d>|
-                {
-                    let output: bool = <bevy::math::primitives::Arc2d as std::cmp::PartialEq<
-                        bevy::math::primitives::Arc2d,
-                    >>::eq(&_self, &other)
+                "is_minor",
+                |_self: Ref<bevy::math::primitives::Arc2d>| {
+                    let output: bool = bevy::math::primitives::Arc2d::is_minor(&_self)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "length",
+                |_self: Ref<bevy::math::primitives::Arc2d>| {
+                    let output: f32 = bevy::math::primitives::Arc2d::length(&_self)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |radius: f32, half_angle: f32| {
+                    let output: Val<bevy::math::primitives::Arc2d> = bevy::math::primitives::Arc2d::new(
+                            radius,
+                            half_angle,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "sagitta",
+                |_self: Ref<bevy::math::primitives::Arc2d>| {
+                    let output: f32 = bevy::math::primitives::Arc2d::sagitta(&_self)
                         .into();
                     output
                 },
             );
         NamespaceBuilder::<::bevy::math::primitives::Capsule2d>::new(world)
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::primitives::Capsule2d>| {
+                    let output: Val<bevy::math::primitives::Capsule2d> = <bevy::math::primitives::Capsule2d as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
             .register(
                 "eq",
                 |
@@ -1575,16 +1585,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::primitives::Capsule2d as std::cmp::PartialEq<
                         bevy::math::primitives::Capsule2d,
                     >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Capsule2d>| {
-                    let output: Val<bevy::math::primitives::Capsule2d> = <bevy::math::primitives::Capsule2d as std::clone::Clone>::clone(
-                            &_self,
-                        )
                         .into();
                     output
                 },
@@ -1612,14 +1612,41 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::primitives::CircularSector>::new(world)
             .register(
-                "eq",
-                |
-                    _self: Ref<bevy::math::primitives::CircularSector>,
-                    other: Ref<bevy::math::primitives::CircularSector>|
-                {
-                    let output: bool = <bevy::math::primitives::CircularSector as std::cmp::PartialEq<
-                        bevy::math::primitives::CircularSector,
-                    >>::eq(&_self, &other)
+                "angle",
+                |_self: Ref<bevy::math::primitives::CircularSector>| {
+                    let output: f32 = bevy::math::primitives::CircularSector::angle(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "apothem",
+                |_self: Ref<bevy::math::primitives::CircularSector>| {
+                    let output: f32 = bevy::math::primitives::CircularSector::apothem(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "arc_length",
+                |_self: Ref<bevy::math::primitives::CircularSector>| {
+                    let output: f32 = bevy::math::primitives::CircularSector::arc_length(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "chord_length",
+                |_self: Ref<bevy::math::primitives::CircularSector>| {
+                    let output: f32 = bevy::math::primitives::CircularSector::chord_length(
+                            &_self,
+                        )
                         .into();
                     output
                 },
@@ -1635,9 +1662,22 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "new",
+                "eq",
+                |
+                    _self: Ref<bevy::math::primitives::CircularSector>,
+                    other: Ref<bevy::math::primitives::CircularSector>|
+                {
+                    let output: bool = <bevy::math::primitives::CircularSector as std::cmp::PartialEq<
+                        bevy::math::primitives::CircularSector,
+                    >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "from_degrees",
                 |radius: f32, angle: f32| {
-                    let output: Val<bevy::math::primitives::CircularSector> = bevy::math::primitives::CircularSector::new(
+                    let output: Val<bevy::math::primitives::CircularSector> = bevy::math::primitives::CircularSector::from_degrees(
                             radius,
                             angle,
                         )
@@ -1649,17 +1689,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "from_radians",
                 |radius: f32, angle: f32| {
                     let output: Val<bevy::math::primitives::CircularSector> = bevy::math::primitives::CircularSector::from_radians(
-                            radius,
-                            angle,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "from_degrees",
-                |radius: f32, angle: f32| {
-                    let output: Val<bevy::math::primitives::CircularSector> = bevy::math::primitives::CircularSector::from_degrees(
                             radius,
                             angle,
                         )
@@ -1689,36 +1718,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "angle",
-                |_self: Ref<bevy::math::primitives::CircularSector>| {
-                    let output: f32 = bevy::math::primitives::CircularSector::angle(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "radius",
-                |_self: Ref<bevy::math::primitives::CircularSector>| {
-                    let output: f32 = bevy::math::primitives::CircularSector::radius(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "arc_length",
-                |_self: Ref<bevy::math::primitives::CircularSector>| {
-                    let output: f32 = bevy::math::primitives::CircularSector::arc_length(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "half_chord_length",
                 |_self: Ref<bevy::math::primitives::CircularSector>| {
                     let output: f32 = bevy::math::primitives::CircularSector::half_chord_length(
@@ -1729,19 +1728,20 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "chord_length",
-                |_self: Ref<bevy::math::primitives::CircularSector>| {
-                    let output: f32 = bevy::math::primitives::CircularSector::chord_length(
-                            &_self,
+                "new",
+                |radius: f32, angle: f32| {
+                    let output: Val<bevy::math::primitives::CircularSector> = bevy::math::primitives::CircularSector::new(
+                            radius,
+                            angle,
                         )
                         .into();
                     output
                 },
             )
             .register(
-                "apothem",
+                "radius",
                 |_self: Ref<bevy::math::primitives::CircularSector>| {
-                    let output: f32 = bevy::math::primitives::CircularSector::apothem(
+                    let output: f32 = bevy::math::primitives::CircularSector::radius(
                             &_self,
                         )
                         .into();
@@ -1760,6 +1760,56 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::primitives::CircularSegment>::new(world)
             .register(
+                "angle",
+                |_self: Ref<bevy::math::primitives::CircularSegment>| {
+                    let output: f32 = bevy::math::primitives::CircularSegment::angle(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "apothem",
+                |_self: Ref<bevy::math::primitives::CircularSegment>| {
+                    let output: f32 = bevy::math::primitives::CircularSegment::apothem(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "arc_length",
+                |_self: Ref<bevy::math::primitives::CircularSegment>| {
+                    let output: f32 = bevy::math::primitives::CircularSegment::arc_length(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "chord_length",
+                |_self: Ref<bevy::math::primitives::CircularSegment>| {
+                    let output: f32 = bevy::math::primitives::CircularSegment::chord_length(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::primitives::CircularSegment>| {
+                    let output: Val<bevy::math::primitives::CircularSegment> = <bevy::math::primitives::CircularSegment as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::math::primitives::CircularSegment>,
@@ -1773,9 +1823,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "new",
+                "from_degrees",
                 |radius: f32, angle: f32| {
-                    let output: Val<bevy::math::primitives::CircularSegment> = bevy::math::primitives::CircularSegment::new(
+                    let output: Val<bevy::math::primitives::CircularSegment> = bevy::math::primitives::CircularSegment::from_degrees(
                             radius,
                             angle,
                         )
@@ -1787,17 +1837,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "from_radians",
                 |radius: f32, angle: f32| {
                     let output: Val<bevy::math::primitives::CircularSegment> = bevy::math::primitives::CircularSegment::from_radians(
-                            radius,
-                            angle,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "from_degrees",
-                |radius: f32, angle: f32| {
-                    let output: Val<bevy::math::primitives::CircularSegment> = bevy::math::primitives::CircularSegment::from_degrees(
                             radius,
                             angle,
                         )
@@ -1827,10 +1866,21 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "angle",
+                "half_chord_length",
                 |_self: Ref<bevy::math::primitives::CircularSegment>| {
-                    let output: f32 = bevy::math::primitives::CircularSegment::angle(
+                    let output: f32 = bevy::math::primitives::CircularSegment::half_chord_length(
                             &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |radius: f32, angle: f32| {
+                    let output: Val<bevy::math::primitives::CircularSegment> = bevy::math::primitives::CircularSegment::new(
+                            radius,
+                            angle,
                         )
                         .into();
                     output
@@ -1847,46 +1897,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "arc_length",
-                |_self: Ref<bevy::math::primitives::CircularSegment>| {
-                    let output: f32 = bevy::math::primitives::CircularSegment::arc_length(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "half_chord_length",
-                |_self: Ref<bevy::math::primitives::CircularSegment>| {
-                    let output: f32 = bevy::math::primitives::CircularSegment::half_chord_length(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "chord_length",
-                |_self: Ref<bevy::math::primitives::CircularSegment>| {
-                    let output: f32 = bevy::math::primitives::CircularSegment::chord_length(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "apothem",
-                |_self: Ref<bevy::math::primitives::CircularSegment>| {
-                    let output: f32 = bevy::math::primitives::CircularSegment::apothem(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "sagitta",
                 |_self: Ref<bevy::math::primitives::CircularSegment>| {
                     let output: f32 = bevy::math::primitives::CircularSegment::sagitta(
@@ -1895,24 +1905,13 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::CircularSegment>| {
-                    let output: Val<bevy::math::primitives::CircularSegment> = <bevy::math::primitives::CircularSegment as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::math::primitives::Ellipse>::new(world)
             .register(
-                "new",
-                |half_width: f32, half_height: f32| {
-                    let output: Val<bevy::math::primitives::Ellipse> = bevy::math::primitives::Ellipse::new(
-                            half_width,
-                            half_height,
+                "clone",
+                |_self: Ref<bevy::math::primitives::Ellipse>| {
+                    let output: Val<bevy::math::primitives::Ellipse> = <bevy::math::primitives::Ellipse as std::clone::Clone>::clone(
+                            &_self,
                         )
                         .into();
                     output
@@ -1929,10 +1928,34 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "eq",
+                |
+                    _self: Ref<bevy::math::primitives::Ellipse>,
+                    other: Ref<bevy::math::primitives::Ellipse>|
+                {
+                    let output: bool = <bevy::math::primitives::Ellipse as std::cmp::PartialEq<
+                        bevy::math::primitives::Ellipse,
+                    >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "focal_length",
                 |_self: Ref<bevy::math::primitives::Ellipse>| {
                     let output: f32 = bevy::math::primitives::Ellipse::focal_length(
                             &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |half_width: f32, half_height: f32| {
+                    let output: Val<bevy::math::primitives::Ellipse> = bevy::math::primitives::Ellipse::new(
+                            half_width,
+                            half_height,
                         )
                         .into();
                     output
@@ -1953,31 +1976,18 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::primitives::Line2d>::new(world)
             .register(
                 "clone",
-                |_self: Ref<bevy::math::primitives::Ellipse>| {
-                    let output: Val<bevy::math::primitives::Ellipse> = <bevy::math::primitives::Ellipse as std::clone::Clone>::clone(
+                |_self: Ref<bevy::math::primitives::Line2d>| {
+                    let output: Val<bevy::math::primitives::Line2d> = <bevy::math::primitives::Line2d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
                     output
                 },
             )
-            .register(
-                "eq",
-                |
-                    _self: Ref<bevy::math::primitives::Ellipse>,
-                    other: Ref<bevy::math::primitives::Ellipse>|
-                {
-                    let output: bool = <bevy::math::primitives::Ellipse as std::cmp::PartialEq<
-                        bevy::math::primitives::Ellipse,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            );
-        NamespaceBuilder::<::bevy::math::primitives::Line2d>::new(world)
             .register(
                 "eq",
                 |
@@ -1987,16 +1997,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::primitives::Line2d as std::cmp::PartialEq<
                         bevy::math::primitives::Line2d,
                     >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Line2d>| {
-                    let output: Val<bevy::math::primitives::Line2d> = <bevy::math::primitives::Line2d as std::clone::Clone>::clone(
-                            &_self,
-                        )
                         .into();
                     output
                 },
@@ -2037,12 +2037,14 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "new",
-                |width: f32, height: f32| {
-                    let output: Val<bevy::math::primitives::Rectangle> = bevy::math::primitives::Rectangle::new(
-                            width,
-                            height,
-                        )
+                "eq",
+                |
+                    _self: Ref<bevy::math::primitives::Rectangle>,
+                    other: Ref<bevy::math::primitives::Rectangle>|
+                {
+                    let output: bool = <bevy::math::primitives::Rectangle as std::cmp::PartialEq<
+                        bevy::math::primitives::Rectangle,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2058,30 +2060,17 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "eq",
-                |
-                    _self: Ref<bevy::math::primitives::Rectangle>,
-                    other: Ref<bevy::math::primitives::Rectangle>|
-                {
-                    let output: bool = <bevy::math::primitives::Rectangle as std::cmp::PartialEq<
-                        bevy::math::primitives::Rectangle,
-                    >>::eq(&_self, &other)
+                "new",
+                |width: f32, height: f32| {
+                    let output: Val<bevy::math::primitives::Rectangle> = bevy::math::primitives::Rectangle::new(
+                            width,
+                            height,
+                        )
                         .into();
                     output
                 },
             );
         NamespaceBuilder::<::bevy::math::primitives::RegularPolygon>::new(world)
-            .register(
-                "new",
-                |circumradius: f32, sides: u32| {
-                    let output: Val<bevy::math::primitives::RegularPolygon> = bevy::math::primitives::RegularPolygon::new(
-                            circumradius,
-                            sides,
-                        )
-                        .into();
-                    output
-                },
-            )
             .register(
                 "circumradius",
                 |_self: Ref<bevy::math::primitives::RegularPolygon>| {
@@ -2093,9 +2082,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "inradius",
+                "clone",
                 |_self: Ref<bevy::math::primitives::RegularPolygon>| {
-                    let output: f32 = bevy::math::primitives::RegularPolygon::inradius(
+                    let output: Val<bevy::math::primitives::RegularPolygon> = <bevy::math::primitives::RegularPolygon as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -2103,9 +2092,42 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "side_length",
+                "eq",
+                |
+                    _self: Ref<bevy::math::primitives::RegularPolygon>,
+                    other: Ref<bevy::math::primitives::RegularPolygon>|
+                {
+                    let output: bool = <bevy::math::primitives::RegularPolygon as std::cmp::PartialEq<
+                        bevy::math::primitives::RegularPolygon,
+                    >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "external_angle_degrees",
                 |_self: Ref<bevy::math::primitives::RegularPolygon>| {
-                    let output: f32 = bevy::math::primitives::RegularPolygon::side_length(
+                    let output: f32 = bevy::math::primitives::RegularPolygon::external_angle_degrees(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "external_angle_radians",
+                |_self: Ref<bevy::math::primitives::RegularPolygon>| {
+                    let output: f32 = bevy::math::primitives::RegularPolygon::external_angle_radians(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "inradius",
+                |_self: Ref<bevy::math::primitives::RegularPolygon>| {
+                    let output: f32 = bevy::math::primitives::RegularPolygon::inradius(
                             &_self,
                         )
                         .into();
@@ -2133,42 +2155,20 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "external_angle_degrees",
-                |_self: Ref<bevy::math::primitives::RegularPolygon>| {
-                    let output: f32 = bevy::math::primitives::RegularPolygon::external_angle_degrees(
-                            &_self,
+                "new",
+                |circumradius: f32, sides: u32| {
+                    let output: Val<bevy::math::primitives::RegularPolygon> = bevy::math::primitives::RegularPolygon::new(
+                            circumradius,
+                            sides,
                         )
                         .into();
                     output
                 },
             )
             .register(
-                "external_angle_radians",
+                "side_length",
                 |_self: Ref<bevy::math::primitives::RegularPolygon>| {
-                    let output: f32 = bevy::math::primitives::RegularPolygon::external_angle_radians(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "eq",
-                |
-                    _self: Ref<bevy::math::primitives::RegularPolygon>,
-                    other: Ref<bevy::math::primitives::RegularPolygon>|
-                {
-                    let output: bool = <bevy::math::primitives::RegularPolygon as std::cmp::PartialEq<
-                        bevy::math::primitives::RegularPolygon,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::RegularPolygon>| {
-                    let output: Val<bevy::math::primitives::RegularPolygon> = <bevy::math::primitives::RegularPolygon as std::clone::Clone>::clone(
+                    let output: f32 = bevy::math::primitives::RegularPolygon::side_length(
                             &_self,
                         )
                         .into();
@@ -2176,6 +2176,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             );
         NamespaceBuilder::<::bevy::math::primitives::Rhombus>::new(world)
+            .register(
+                "circumradius",
+                |_self: Ref<bevy::math::primitives::Rhombus>| {
+                    let output: f32 = bevy::math::primitives::Rhombus::circumradius(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
             .register(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Rhombus>| {
@@ -2200,11 +2210,10 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "new",
-                |horizontal_diagonal: f32, vertical_diagonal: f32| {
-                    let output: Val<bevy::math::primitives::Rhombus> = bevy::math::primitives::Rhombus::new(
-                            horizontal_diagonal,
-                            vertical_diagonal,
+                "from_inradius",
+                |inradius: f32| {
+                    let output: Val<bevy::math::primitives::Rhombus> = bevy::math::primitives::Rhombus::from_inradius(
+                            inradius,
                         )
                         .into();
                     output
@@ -2221,10 +2230,19 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "from_inradius",
-                |inradius: f32| {
-                    let output: Val<bevy::math::primitives::Rhombus> = bevy::math::primitives::Rhombus::from_inradius(
-                            inradius,
+                "inradius",
+                |_self: Ref<bevy::math::primitives::Rhombus>| {
+                    let output: f32 = bevy::math::primitives::Rhombus::inradius(&_self)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |horizontal_diagonal: f32, vertical_diagonal: f32| {
+                    let output: Val<bevy::math::primitives::Rhombus> = bevy::math::primitives::Rhombus::new(
+                            horizontal_diagonal,
+                            vertical_diagonal,
                         )
                         .into();
                     output
@@ -2237,26 +2255,18 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::primitives::Segment2d>::new(world)
             .register(
-                "circumradius",
-                |_self: Ref<bevy::math::primitives::Rhombus>| {
-                    let output: f32 = bevy::math::primitives::Rhombus::circumradius(
+                "clone",
+                |_self: Ref<bevy::math::primitives::Segment2d>| {
+                    let output: Val<bevy::math::primitives::Segment2d> = <bevy::math::primitives::Segment2d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
                     output
                 },
             )
-            .register(
-                "inradius",
-                |_self: Ref<bevy::math::primitives::Rhombus>| {
-                    let output: f32 = bevy::math::primitives::Rhombus::inradius(&_self)
-                        .into();
-                    output
-                },
-            );
-        NamespaceBuilder::<::bevy::math::primitives::Segment2d>::new(world)
             .register(
                 "eq",
                 |
@@ -2280,16 +2290,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Segment2d>| {
-                    let output: Val<bevy::math::primitives::Segment2d> = <bevy::math::primitives::Segment2d as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::math::primitives::Triangle2d>::new(world)
             .register(
@@ -2303,11 +2303,14 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "is_degenerate",
-                |_self: Ref<bevy::math::primitives::Triangle2d>| {
-                    let output: bool = bevy::math::primitives::Triangle2d::is_degenerate(
-                            &_self,
-                        )
+                "eq",
+                |
+                    _self: Ref<bevy::math::primitives::Triangle2d>,
+                    other: Ref<bevy::math::primitives::Triangle2d>|
+                {
+                    let output: bool = <bevy::math::primitives::Triangle2d as std::cmp::PartialEq<
+                        bevy::math::primitives::Triangle2d,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2316,6 +2319,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "is_acute",
                 |_self: Ref<bevy::math::primitives::Triangle2d>| {
                     let output: bool = bevy::math::primitives::Triangle2d::is_acute(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "is_degenerate",
+                |_self: Ref<bevy::math::primitives::Triangle2d>| {
+                    let output: bool = bevy::math::primitives::Triangle2d::is_degenerate(
                             &_self,
                         )
                         .into();
@@ -2351,31 +2364,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "eq",
-                |
-                    _self: Ref<bevy::math::primitives::Triangle2d>,
-                    other: Ref<bevy::math::primitives::Triangle2d>|
-                {
-                    let output: bool = <bevy::math::primitives::Triangle2d as std::cmp::PartialEq<
-                        bevy::math::primitives::Triangle2d,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::math::bounding::Aabb3d>::new(world)
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::bounding::Aabb3d>| {
-                    let output: Val<bevy::math::bounding::Aabb3d> = <bevy::math::bounding::Aabb3d as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
             .register(
                 "bounding_sphere",
                 |_self: Ref<bevy::math::bounding::Aabb3d>| {
@@ -2385,8 +2375,28 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::bounding::Aabb3d>| {
+                    let output: Val<bevy::math::bounding::Aabb3d> = <bevy::math::bounding::Aabb3d as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::bounding::BoundingSphere>::new(world)
+            .register(
+                "aabb_3d",
+                |_self: Ref<bevy::math::bounding::BoundingSphere>| {
+                    let output: Val<bevy::math::bounding::Aabb3d> = bevy::math::bounding::BoundingSphere::aabb_3d(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
             .register(
                 "clone",
                 |_self: Ref<bevy::math::bounding::BoundingSphere>| {
@@ -2406,18 +2416,26 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::primitives::Sphere>::new(world)
             .register(
-                "aabb_3d",
-                |_self: Ref<bevy::math::bounding::BoundingSphere>| {
-                    let output: Val<bevy::math::bounding::Aabb3d> = bevy::math::bounding::BoundingSphere::aabb_3d(
+                "clone",
+                |_self: Ref<bevy::math::primitives::Sphere>| {
+                    let output: Val<bevy::math::primitives::Sphere> = <bevy::math::primitives::Sphere as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::primitives::Sphere>::new(world)
+            )
+            .register(
+                "diameter",
+                |_self: Ref<bevy::math::primitives::Sphere>| {
+                    let output: f32 = bevy::math::primitives::Sphere::diameter(&_self)
+                        .into();
+                    output
+                },
+            )
             .register(
                 "eq",
                 |
@@ -2432,16 +2450,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Sphere>| {
-                    let output: Val<bevy::math::primitives::Sphere> = <bevy::math::primitives::Sphere as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "new",
                 |radius: f32| {
                     let output: Val<bevy::math::primitives::Sphere> = bevy::math::primitives::Sphere::new(
@@ -2450,16 +2458,18 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::primitives::Cuboid>::new(world)
             .register(
-                "diameter",
-                |_self: Ref<bevy::math::primitives::Sphere>| {
-                    let output: f32 = bevy::math::primitives::Sphere::diameter(&_self)
+                "clone",
+                |_self: Ref<bevy::math::primitives::Cuboid>| {
+                    let output: Val<bevy::math::primitives::Cuboid> = <bevy::math::primitives::Cuboid as std::clone::Clone>::clone(
+                            &_self,
+                        )
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::primitives::Cuboid>::new(world)
+            )
             .register(
                 "eq",
                 |
@@ -2469,18 +2479,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::primitives::Cuboid as std::cmp::PartialEq<
                         bevy::math::primitives::Cuboid,
                     >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "new",
-                |x_length: f32, y_length: f32, z_length: f32| {
-                    let output: Val<bevy::math::primitives::Cuboid> = bevy::math::primitives::Cuboid::new(
-                            x_length,
-                            y_length,
-                            z_length,
-                        )
                         .into();
                     output
                 },
@@ -2496,37 +2494,18 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Cuboid>| {
-                    let output: Val<bevy::math::primitives::Cuboid> = <bevy::math::primitives::Cuboid as std::clone::Clone>::clone(
-                            &_self,
+                "new",
+                |x_length: f32, y_length: f32, z_length: f32| {
+                    let output: Val<bevy::math::primitives::Cuboid> = bevy::math::primitives::Cuboid::new(
+                            x_length,
+                            y_length,
+                            z_length,
                         )
                         .into();
                     output
                 },
             );
         NamespaceBuilder::<::bevy::math::primitives::Cylinder>::new(world)
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Cylinder>| {
-                    let output: Val<bevy::math::primitives::Cylinder> = <bevy::math::primitives::Cylinder as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "new",
-                |radius: f32, height: f32| {
-                    let output: Val<bevy::math::primitives::Cylinder> = bevy::math::primitives::Cylinder::new(
-                            radius,
-                            height,
-                        )
-                        .into();
-                    output
-                },
-            )
             .register(
                 "base",
                 |_self: Ref<bevy::math::primitives::Cylinder>| {
@@ -2538,19 +2517,19 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "lateral_area",
+                "base_area",
                 |_self: Ref<bevy::math::primitives::Cylinder>| {
-                    let output: f32 = bevy::math::primitives::Cylinder::lateral_area(
-                            &_self,
-                        )
+                    let output: f32 = bevy::math::primitives::Cylinder::base_area(&_self)
                         .into();
                     output
                 },
             )
             .register(
-                "base_area",
+                "clone",
                 |_self: Ref<bevy::math::primitives::Cylinder>| {
-                    let output: f32 = bevy::math::primitives::Cylinder::base_area(&_self)
+                    let output: Val<bevy::math::primitives::Cylinder> = <bevy::math::primitives::Cylinder as std::clone::Clone>::clone(
+                            &_self,
+                        )
                         .into();
                     output
                 },
@@ -2567,8 +2546,39 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "lateral_area",
+                |_self: Ref<bevy::math::primitives::Cylinder>| {
+                    let output: f32 = bevy::math::primitives::Cylinder::lateral_area(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |radius: f32, height: f32| {
+                    let output: Val<bevy::math::primitives::Cylinder> = bevy::math::primitives::Cylinder::new(
+                            radius,
+                            height,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::primitives::Capsule3d>::new(world)
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::primitives::Capsule3d>| {
+                    let output: Val<bevy::math::primitives::Capsule3d> = <bevy::math::primitives::Capsule3d as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
             .register(
                 "eq",
                 |
@@ -2578,16 +2588,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::primitives::Capsule3d as std::cmp::PartialEq<
                         bevy::math::primitives::Capsule3d,
                     >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Capsule3d>| {
-                    let output: Val<bevy::math::primitives::Capsule3d> = <bevy::math::primitives::Capsule3d as std::clone::Clone>::clone(
-                            &_self,
-                        )
                         .into();
                     output
                 },
@@ -2615,27 +2615,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::primitives::Cone>::new(world)
             .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Cone>| {
-                    let output: Val<bevy::math::primitives::Cone> = <bevy::math::primitives::Cone as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "new",
-                |radius: f32, height: f32| {
-                    let output: Val<bevy::math::primitives::Cone> = bevy::math::primitives::Cone::new(
-                            radius,
-                            height,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "base",
                 |_self: Ref<bevy::math::primitives::Cone>| {
                     let output: Val<bevy::math::primitives::Circle> = bevy::math::primitives::Cone::base(
@@ -2646,25 +2625,19 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "slant_height",
-                |_self: Ref<bevy::math::primitives::Cone>| {
-                    let output: f32 = bevy::math::primitives::Cone::slant_height(&_self)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "lateral_area",
-                |_self: Ref<bevy::math::primitives::Cone>| {
-                    let output: f32 = bevy::math::primitives::Cone::lateral_area(&_self)
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "base_area",
                 |_self: Ref<bevy::math::primitives::Cone>| {
                     let output: f32 = bevy::math::primitives::Cone::base_area(&_self)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::primitives::Cone>| {
+                    let output: Val<bevy::math::primitives::Cone> = <bevy::math::primitives::Cone as std::clone::Clone>::clone(
+                            &_self,
+                        )
                         .into();
                     output
                 },
@@ -2681,8 +2654,45 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "lateral_area",
+                |_self: Ref<bevy::math::primitives::Cone>| {
+                    let output: f32 = bevy::math::primitives::Cone::lateral_area(&_self)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |radius: f32, height: f32| {
+                    let output: Val<bevy::math::primitives::Cone> = bevy::math::primitives::Cone::new(
+                            radius,
+                            height,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "slant_height",
+                |_self: Ref<bevy::math::primitives::Cone>| {
+                    let output: f32 = bevy::math::primitives::Cone::slant_height(&_self)
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::primitives::ConicalFrustum>::new(world)
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::primitives::ConicalFrustum>| {
+                    let output: Val<bevy::math::primitives::ConicalFrustum> = <bevy::math::primitives::ConicalFrustum as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
             .register(
                 "eq",
                 |
@@ -2695,18 +2705,18 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::primitives::InfinitePlane3d>::new(world)
             .register(
                 "clone",
-                |_self: Ref<bevy::math::primitives::ConicalFrustum>| {
-                    let output: Val<bevy::math::primitives::ConicalFrustum> = <bevy::math::primitives::ConicalFrustum as std::clone::Clone>::clone(
+                |_self: Ref<bevy::math::primitives::InfinitePlane3d>| {
+                    let output: Val<bevy::math::primitives::InfinitePlane3d> = <bevy::math::primitives::InfinitePlane3d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::primitives::InfinitePlane3d>::new(world)
+            )
             .register(
                 "eq",
                 |
@@ -2719,18 +2729,18 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::primitives::Line3d>::new(world)
             .register(
                 "clone",
-                |_self: Ref<bevy::math::primitives::InfinitePlane3d>| {
-                    let output: Val<bevy::math::primitives::InfinitePlane3d> = <bevy::math::primitives::InfinitePlane3d as std::clone::Clone>::clone(
+                |_self: Ref<bevy::math::primitives::Line3d>| {
+                    let output: Val<bevy::math::primitives::Line3d> = <bevy::math::primitives::Line3d as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::primitives::Line3d>::new(world)
+            )
             .register(
                 "eq",
                 |
@@ -2743,16 +2753,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Line3d>| {
-                    let output: Val<bevy::math::primitives::Line3d> = <bevy::math::primitives::Line3d as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::math::primitives::Segment3d>::new(world)
             .register(
@@ -2760,17 +2760,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 |_self: Ref<bevy::math::primitives::Segment3d>| {
                     let output: Val<bevy::math::primitives::Segment3d> = <bevy::math::primitives::Segment3d as std::clone::Clone>::clone(
                             &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "new",
-                |direction: Val<bevy::math::prelude::Dir3>, length: f32| {
-                    let output: Val<bevy::math::primitives::Segment3d> = bevy::math::primitives::Segment3d::new(
-                            direction.into_inner(),
-                            length,
                         )
                         .into();
                     output
@@ -2788,35 +2777,19 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::primitives::Torus>::new(world)
+            )
             .register(
                 "new",
-                |inner_radius: f32, outer_radius: f32| {
-                    let output: Val<bevy::math::primitives::Torus> = bevy::math::primitives::Torus::new(
-                            inner_radius,
-                            outer_radius,
+                |direction: Val<bevy::math::prelude::Dir3>, length: f32| {
+                    let output: Val<bevy::math::primitives::Segment3d> = bevy::math::primitives::Segment3d::new(
+                            direction.into_inner(),
+                            length,
                         )
                         .into();
                     output
                 },
-            )
-            .register(
-                "inner_radius",
-                |_self: Ref<bevy::math::primitives::Torus>| {
-                    let output: f32 = bevy::math::primitives::Torus::inner_radius(&_self)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "outer_radius",
-                |_self: Ref<bevy::math::primitives::Torus>| {
-                    let output: f32 = bevy::math::primitives::Torus::outer_radius(&_self)
-                        .into();
-                    output
-                },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::primitives::Torus>::new(world)
             .register(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Torus>| {
@@ -2839,14 +2812,54 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "inner_radius",
+                |_self: Ref<bevy::math::primitives::Torus>| {
+                    let output: f32 = bevy::math::primitives::Torus::inner_radius(&_self)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |inner_radius: f32, outer_radius: f32| {
+                    let output: Val<bevy::math::primitives::Torus> = bevy::math::primitives::Torus::new(
+                            inner_radius,
+                            outer_radius,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "outer_radius",
+                |_self: Ref<bevy::math::primitives::Torus>| {
+                    let output: f32 = bevy::math::primitives::Torus::outer_radius(&_self)
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::primitives::Triangle3d>::new(world)
             .register(
-                "is_degenerate",
+                "clone",
                 |_self: Ref<bevy::math::primitives::Triangle3d>| {
-                    let output: bool = bevy::math::primitives::Triangle3d::is_degenerate(
+                    let output: Val<bevy::math::primitives::Triangle3d> = <bevy::math::primitives::Triangle3d as std::clone::Clone>::clone(
                             &_self,
                         )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "eq",
+                |
+                    _self: Ref<bevy::math::primitives::Triangle3d>,
+                    other: Ref<bevy::math::primitives::Triangle3d>|
+                {
+                    let output: bool = <bevy::math::primitives::Triangle3d as std::cmp::PartialEq<
+                        bevy::math::primitives::Triangle3d,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
@@ -2855,6 +2868,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "is_acute",
                 |_self: Ref<bevy::math::primitives::Triangle3d>| {
                     let output: bool = bevy::math::primitives::Triangle3d::is_acute(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "is_degenerate",
+                |_self: Ref<bevy::math::primitives::Triangle3d>| {
+                    let output: bool = bevy::math::primitives::Triangle3d::is_degenerate(
                             &_self,
                         )
                         .into();
@@ -2890,52 +2913,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::primitives::Triangle3d>| {
-                    let output: Val<bevy::math::primitives::Triangle3d> = <bevy::math::primitives::Triangle3d as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "eq",
-                |
-                    _self: Ref<bevy::math::primitives::Triangle3d>,
-                    other: Ref<bevy::math::primitives::Triangle3d>|
-                {
-                    let output: bool = <bevy::math::primitives::Triangle3d as std::cmp::PartialEq<
-                        bevy::math::primitives::Triangle3d,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::math::bounding::RayCast2d>::new(world)
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::bounding::RayCast2d>| {
-                    let output: Val<bevy::math::bounding::RayCast2d> = <bevy::math::bounding::RayCast2d as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "from_ray",
-                |ray: Val<bevy::math::Ray2d>, max: f32| {
-                    let output: Val<bevy::math::bounding::RayCast2d> = bevy::math::bounding::RayCast2d::from_ray(
-                            ray.into_inner(),
-                            max,
-                        )
-                        .into();
-                    output
-                },
-            )
             .register(
                 "aabb_intersection_at",
                 |
@@ -2963,24 +2942,29 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::bounding::AabbCast2d>::new(world)
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::bounding::RayCast2d>| {
+                    let output: Val<bevy::math::bounding::RayCast2d> = <bevy::math::bounding::RayCast2d as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
             .register(
                 "from_ray",
-                |
-                    aabb: Val<bevy::math::bounding::Aabb2d>,
-                    ray: Val<bevy::math::Ray2d>,
-                    max: f32|
-                {
-                    let output: Val<bevy::math::bounding::AabbCast2d> = bevy::math::bounding::AabbCast2d::from_ray(
-                            aabb.into_inner(),
+                |ray: Val<bevy::math::Ray2d>, max: f32| {
+                    let output: Val<bevy::math::bounding::RayCast2d> = bevy::math::bounding::RayCast2d::from_ray(
                             ray.into_inner(),
                             max,
                         )
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::bounding::AabbCast2d>::new(world)
             .register(
                 "aabb_collision_at",
                 |
@@ -3004,24 +2988,24 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::bounding::BoundingCircleCast>::new(world)
+            )
             .register(
                 "from_ray",
                 |
-                    circle: Val<bevy::math::bounding::BoundingCircle>,
+                    aabb: Val<bevy::math::bounding::Aabb2d>,
                     ray: Val<bevy::math::Ray2d>,
                     max: f32|
                 {
-                    let output: Val<bevy::math::bounding::BoundingCircleCast> = bevy::math::bounding::BoundingCircleCast::from_ray(
-                            circle.into_inner(),
+                    let output: Val<bevy::math::bounding::AabbCast2d> = bevy::math::bounding::AabbCast2d::from_ray(
+                            aabb.into_inner(),
                             ray.into_inner(),
                             max,
                         )
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::bounding::BoundingCircleCast>::new(world)
             .register(
                 "circle_collision_at",
                 |
@@ -3045,19 +3029,24 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            );
-        NamespaceBuilder::<::bevy::math::bounding::RayCast3d>::new(world)
+            )
             .register(
                 "from_ray",
-                |ray: Val<bevy::math::Ray3d>, max: f32| {
-                    let output: Val<bevy::math::bounding::RayCast3d> = bevy::math::bounding::RayCast3d::from_ray(
+                |
+                    circle: Val<bevy::math::bounding::BoundingCircle>,
+                    ray: Val<bevy::math::Ray2d>,
+                    max: f32|
+                {
+                    let output: Val<bevy::math::bounding::BoundingCircleCast> = bevy::math::bounding::BoundingCircleCast::from_ray(
+                            circle.into_inner(),
                             ray.into_inner(),
                             max,
                         )
                         .into();
                     output
                 },
-            )
+            );
+        NamespaceBuilder::<::bevy::math::bounding::RayCast3d>::new(world)
             .register(
                 "aabb_intersection_at",
                 |
@@ -3067,6 +3056,27 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: std::option::Option<f32> = bevy::math::bounding::RayCast3d::aabb_intersection_at(
                             &_self,
                             &aabb,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::bounding::RayCast3d>| {
+                    let output: Val<bevy::math::bounding::RayCast3d> = <bevy::math::bounding::RayCast3d as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "from_ray",
+                |ray: Val<bevy::math::Ray3d>, max: f32| {
+                    let output: Val<bevy::math::bounding::RayCast3d> = bevy::math::bounding::RayCast3d::from_ray(
+                            ray.into_inner(),
+                            max,
                         )
                         .into();
                     output
@@ -3085,34 +3095,8 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::bounding::RayCast3d>| {
-                    let output: Val<bevy::math::bounding::RayCast3d> = <bevy::math::bounding::RayCast3d as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::math::bounding::AabbCast3d>::new(world)
-            .register(
-                "from_ray",
-                |
-                    aabb: Val<bevy::math::bounding::Aabb3d>,
-                    ray: Val<bevy::math::Ray3d>,
-                    max: f32|
-                {
-                    let output: Val<bevy::math::bounding::AabbCast3d> = bevy::math::bounding::AabbCast3d::from_ray(
-                            aabb.into_inner(),
-                            ray.into_inner(),
-                            max,
-                        )
-                        .into();
-                    output
-                },
-            )
             .register(
                 "aabb_collision_at",
                 |
@@ -3132,6 +3116,22 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 |_self: Ref<bevy::math::bounding::AabbCast3d>| {
                     let output: Val<bevy::math::bounding::AabbCast3d> = <bevy::math::bounding::AabbCast3d as std::clone::Clone>::clone(
                             &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "from_ray",
+                |
+                    aabb: Val<bevy::math::bounding::Aabb3d>,
+                    ray: Val<bevy::math::Ray3d>,
+                    max: f32|
+                {
+                    let output: Val<bevy::math::bounding::AabbCast3d> = bevy::math::bounding::AabbCast3d::from_ray(
+                            aabb.into_inner(),
+                            ray.into_inner(),
+                            max,
                         )
                         .into();
                     output
@@ -3180,83 +3180,21 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::curve::interval::Interval>::new(world)
             .register(
+                "clamp",
+                |_self: Val<bevy::math::curve::interval::Interval>, value: f32| {
+                    let output: f32 = bevy::math::curve::interval::Interval::clamp(
+                            _self.into_inner(),
+                            value,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "clone",
                 |_self: Ref<bevy::math::curve::interval::Interval>| {
                     let output: Val<bevy::math::curve::interval::Interval> = <bevy::math::curve::interval::Interval as std::clone::Clone>::clone(
                             &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "eq",
-                |
-                    _self: Ref<bevy::math::curve::interval::Interval>,
-                    other: Ref<bevy::math::curve::interval::Interval>|
-                {
-                    let output: bool = <bevy::math::curve::interval::Interval as std::cmp::PartialEq<
-                        bevy::math::curve::interval::Interval,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "start",
-                |_self: Val<bevy::math::curve::interval::Interval>| {
-                    let output: f32 = bevy::math::curve::interval::Interval::start(
-                            _self.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "end",
-                |_self: Val<bevy::math::curve::interval::Interval>| {
-                    let output: f32 = bevy::math::curve::interval::Interval::end(
-                            _self.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "length",
-                |_self: Val<bevy::math::curve::interval::Interval>| {
-                    let output: f32 = bevy::math::curve::interval::Interval::length(
-                            _self.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "is_bounded",
-                |_self: Val<bevy::math::curve::interval::Interval>| {
-                    let output: bool = bevy::math::curve::interval::Interval::is_bounded(
-                            _self.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "has_finite_start",
-                |_self: Val<bevy::math::curve::interval::Interval>| {
-                    let output: bool = bevy::math::curve::interval::Interval::has_finite_start(
-                            _self.into_inner(),
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "has_finite_end",
-                |_self: Val<bevy::math::curve::interval::Interval>| {
-                    let output: bool = bevy::math::curve::interval::Interval::has_finite_end(
-                            _self.into_inner(),
                         )
                         .into();
                     output
@@ -3288,27 +3226,79 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "clamp",
-                |_self: Val<bevy::math::curve::interval::Interval>, value: f32| {
-                    let output: f32 = bevy::math::curve::interval::Interval::clamp(
+                "end",
+                |_self: Val<bevy::math::curve::interval::Interval>| {
+                    let output: f32 = bevy::math::curve::interval::Interval::end(
                             _self.into_inner(),
-                            value,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "eq",
+                |
+                    _self: Ref<bevy::math::curve::interval::Interval>,
+                    other: Ref<bevy::math::curve::interval::Interval>|
+                {
+                    let output: bool = <bevy::math::curve::interval::Interval as std::cmp::PartialEq<
+                        bevy::math::curve::interval::Interval,
+                    >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "has_finite_end",
+                |_self: Val<bevy::math::curve::interval::Interval>| {
+                    let output: bool = bevy::math::curve::interval::Interval::has_finite_end(
+                            _self.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "has_finite_start",
+                |_self: Val<bevy::math::curve::interval::Interval>| {
+                    let output: bool = bevy::math::curve::interval::Interval::has_finite_start(
+                            _self.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "is_bounded",
+                |_self: Val<bevy::math::curve::interval::Interval>| {
+                    let output: bool = bevy::math::curve::interval::Interval::is_bounded(
+                            _self.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "length",
+                |_self: Val<bevy::math::curve::interval::Interval>| {
+                    let output: f32 = bevy::math::curve::interval::Interval::length(
+                            _self.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "start",
+                |_self: Val<bevy::math::curve::interval::Interval>| {
+                    let output: f32 = bevy::math::curve::interval::Interval::start(
+                            _self.into_inner(),
                         )
                         .into();
                     output
                 },
             );
         NamespaceBuilder::<::bevy::math::FloatOrd>::new(world)
-            .register(
-                "eq",
-                |_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>| {
-                    let output: bool = <bevy::math::FloatOrd as std::cmp::PartialEq<
-                        bevy::math::FloatOrd,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
             .register(
                 "clone",
                 |_self: Ref<bevy::math::FloatOrd>| {
@@ -3320,21 +3310,21 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "lt",
+                "eq",
                 |_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>| {
-                    let output: bool = <bevy::math::FloatOrd as std::cmp::PartialOrd<
+                    let output: bool = <bevy::math::FloatOrd as std::cmp::PartialEq<
                         bevy::math::FloatOrd,
-                    >>::lt(&_self, &other)
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
             )
             .register(
-                "le",
+                "ge",
                 |_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>| {
                     let output: bool = <bevy::math::FloatOrd as std::cmp::PartialOrd<
                         bevy::math::FloatOrd,
-                    >>::le(&_self, &other)
+                    >>::ge(&_self, &other)
                         .into();
                     output
                 },
@@ -3350,11 +3340,21 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "ge",
+                "le",
                 |_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>| {
                     let output: bool = <bevy::math::FloatOrd as std::cmp::PartialOrd<
                         bevy::math::FloatOrd,
-                    >>::ge(&_self, &other)
+                    >>::le(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "lt",
+                |_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>| {
+                    let output: bool = <bevy::math::FloatOrd as std::cmp::PartialOrd<
+                        bevy::math::FloatOrd,
+                    >>::lt(&_self, &other)
                         .into();
                     output
                 },
@@ -3395,9 +3395,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::primitives::Tetrahedron>::new(world)
             .register(
-                "signed_volume",
+                "clone",
                 |_self: Ref<bevy::math::primitives::Tetrahedron>| {
-                    let output: f32 = bevy::math::primitives::Tetrahedron::signed_volume(
+                    let output: Val<bevy::math::primitives::Tetrahedron> = <bevy::math::primitives::Tetrahedron as std::clone::Clone>::clone(
                             &_self,
                         )
                         .into();
@@ -3418,9 +3418,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
-                "clone",
+                "signed_volume",
                 |_self: Ref<bevy::math::primitives::Tetrahedron>| {
-                    let output: Val<bevy::math::primitives::Tetrahedron> = <bevy::math::primitives::Tetrahedron as std::clone::Clone>::clone(
+                    let output: f32 = bevy::math::primitives::Tetrahedron::signed_volume(
                             &_self,
                         )
                         .into();
@@ -3428,6 +3428,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             );
         NamespaceBuilder::<::bevy::math::curve::easing::EaseFunction>::new(world)
+            .register(
+                "clone",
+                |_self: Ref<bevy::math::curve::easing::EaseFunction>| {
+                    let output: Val<bevy::math::curve::easing::EaseFunction> = <bevy::math::curve::easing::EaseFunction as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
             .register(
                 "eq",
                 |
@@ -3437,16 +3447,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::curve::easing::EaseFunction as std::cmp::PartialEq<
                         bevy::math::curve::easing::EaseFunction,
                     >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "clone",
-                |_self: Ref<bevy::math::curve::easing::EaseFunction>| {
-                    let output: Val<bevy::math::curve::easing::EaseFunction> = <bevy::math::curve::easing::EaseFunction as std::clone::Clone>::clone(
-                            &_self,
-                        )
                         .into();
                     output
                 },

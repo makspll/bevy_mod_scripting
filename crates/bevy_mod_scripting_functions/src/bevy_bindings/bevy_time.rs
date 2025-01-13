@@ -53,41 +53,11 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             )
             .register(
-                "eq",
-                |
-                    _self: Ref<bevy::time::prelude::Timer>,
-                    other: Ref<bevy::time::prelude::Timer>|
-                {
-                    let output: bool = <bevy::time::prelude::Timer as std::cmp::PartialEq<
-                        bevy::time::prelude::Timer,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "from_seconds",
-                |duration: f32, mode: Val<bevy::time::prelude::TimerMode>| {
-                    let output: Val<bevy::time::prelude::Timer> = bevy::time::prelude::Timer::from_seconds(
-                            duration,
-                            mode.into_inner(),
+                "clone",
+                |_self: Ref<bevy::time::prelude::Timer>| {
+                    let output: Val<bevy::time::prelude::Timer> = <bevy::time::prelude::Timer as std::clone::Clone>::clone(
+                            &_self,
                         )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "finished",
-                |_self: Ref<bevy::time::prelude::Timer>| {
-                    let output: bool = bevy::time::prelude::Timer::finished(&_self)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "just_finished",
-                |_self: Ref<bevy::time::prelude::Timer>| {
-                    let output: bool = bevy::time::prelude::Timer::just_finished(&_self)
                         .into();
                     output
                 },
@@ -111,56 +81,22 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             )
             .register(
-                "mode",
-                |_self: Ref<bevy::time::prelude::Timer>| {
-                    let output: Val<bevy::time::prelude::TimerMode> = bevy::time::prelude::Timer::mode(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "set_mode",
+                "eq",
                 |
-                    mut _self: Mut<bevy::time::prelude::Timer>,
-                    mode: Val<bevy::time::prelude::TimerMode>|
+                    _self: Ref<bevy::time::prelude::Timer>,
+                    other: Ref<bevy::time::prelude::Timer>|
                 {
-                    let output: () = bevy::time::prelude::Timer::set_mode(
-                            &mut _self,
-                            mode.into_inner(),
-                        )
+                    let output: bool = <bevy::time::prelude::Timer as std::cmp::PartialEq<
+                        bevy::time::prelude::Timer,
+                    >>::eq(&_self, &other)
                         .into();
                     output
                 },
             )
             .register(
-                "pause",
-                |mut _self: Mut<bevy::time::prelude::Timer>| {
-                    let output: () = bevy::time::prelude::Timer::pause(&mut _self)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "unpause",
-                |mut _self: Mut<bevy::time::prelude::Timer>| {
-                    let output: () = bevy::time::prelude::Timer::unpause(&mut _self)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "paused",
+                "finished",
                 |_self: Ref<bevy::time::prelude::Timer>| {
-                    let output: bool = bevy::time::prelude::Timer::paused(&_self).into();
-                    output
-                },
-            )
-            .register(
-                "reset",
-                |mut _self: Mut<bevy::time::prelude::Timer>| {
-                    let output: () = bevy::time::prelude::Timer::reset(&mut _self)
+                    let output: bool = bevy::time::prelude::Timer::finished(&_self)
                         .into();
                     output
                 },
@@ -184,9 +120,75 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             )
             .register(
+                "from_seconds",
+                |duration: f32, mode: Val<bevy::time::prelude::TimerMode>| {
+                    let output: Val<bevy::time::prelude::Timer> = bevy::time::prelude::Timer::from_seconds(
+                            duration,
+                            mode.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "just_finished",
+                |_self: Ref<bevy::time::prelude::Timer>| {
+                    let output: bool = bevy::time::prelude::Timer::just_finished(&_self)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mode",
+                |_self: Ref<bevy::time::prelude::Timer>| {
+                    let output: Val<bevy::time::prelude::TimerMode> = bevy::time::prelude::Timer::mode(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "pause",
+                |mut _self: Mut<bevy::time::prelude::Timer>| {
+                    let output: () = bevy::time::prelude::Timer::pause(&mut _self)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "paused",
+                |_self: Ref<bevy::time::prelude::Timer>| {
+                    let output: bool = bevy::time::prelude::Timer::paused(&_self).into();
+                    output
+                },
+            )
+            .register(
                 "remaining_secs",
                 |_self: Ref<bevy::time::prelude::Timer>| {
                     let output: f32 = bevy::time::prelude::Timer::remaining_secs(&_self)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "reset",
+                |mut _self: Mut<bevy::time::prelude::Timer>| {
+                    let output: () = bevy::time::prelude::Timer::reset(&mut _self)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "set_mode",
+                |
+                    mut _self: Mut<bevy::time::prelude::Timer>,
+                    mode: Val<bevy::time::prelude::TimerMode>|
+                {
+                    let output: () = bevy::time::prelude::Timer::set_mode(
+                            &mut _self,
+                            mode.into_inner(),
+                        )
                         .into();
                     output
                 },
@@ -202,16 +204,24 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             )
             .register(
-                "clone",
-                |_self: Ref<bevy::time::prelude::Timer>| {
-                    let output: Val<bevy::time::prelude::Timer> = <bevy::time::prelude::Timer as std::clone::Clone>::clone(
-                            &_self,
-                        )
+                "unpause",
+                |mut _self: Mut<bevy::time::prelude::Timer>| {
+                    let output: () = bevy::time::prelude::Timer::unpause(&mut _self)
                         .into();
                     output
                 },
             );
         NamespaceBuilder::<::bevy::time::prelude::TimerMode>::new(world)
+            .register(
+                "assert_receiver_is_total_eq",
+                |_self: Ref<bevy::time::prelude::TimerMode>| {
+                    let output: () = <bevy::time::prelude::TimerMode as std::cmp::Eq>::assert_receiver_is_total_eq(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
             .register(
                 "clone",
                 |_self: Ref<bevy::time::prelude::TimerMode>| {
@@ -234,16 +244,6 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                         .into();
                     output
                 },
-            )
-            .register(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::time::prelude::TimerMode>| {
-                    let output: () = <bevy::time::prelude::TimerMode as std::cmp::Eq>::assert_receiver_is_total_eq(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
             );
         NamespaceBuilder::<::bevy::time::prelude::Virtual>::new(world)
             .register(
@@ -258,9 +258,9 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::time::Stopwatch>::new(world)
             .register(
-                "clone",
+                "assert_receiver_is_total_eq",
                 |_self: Ref<bevy::time::Stopwatch>| {
-                    let output: Val<bevy::time::Stopwatch> = <bevy::time::Stopwatch as std::clone::Clone>::clone(
+                    let output: () = <bevy::time::Stopwatch as std::cmp::Eq>::assert_receiver_is_total_eq(
                             &_self,
                         )
                         .into();
@@ -268,9 +268,11 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             )
             .register(
-                "new",
-                || {
-                    let output: Val<bevy::time::Stopwatch> = bevy::time::Stopwatch::new()
+                "clone",
+                |_self: Ref<bevy::time::Stopwatch>| {
+                    let output: Val<bevy::time::Stopwatch> = <bevy::time::Stopwatch as std::clone::Clone>::clone(
+                            &_self,
+                        )
                         .into();
                     output
                 },
@@ -291,16 +293,12 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             )
             .register(
-                "pause",
-                |mut _self: Mut<bevy::time::Stopwatch>| {
-                    let output: () = bevy::time::Stopwatch::pause(&mut _self).into();
-                    output
-                },
-            )
-            .register(
-                "unpause",
-                |mut _self: Mut<bevy::time::Stopwatch>| {
-                    let output: () = bevy::time::Stopwatch::unpause(&mut _self).into();
+                "eq",
+                |_self: Ref<bevy::time::Stopwatch>, other: Ref<bevy::time::Stopwatch>| {
+                    let output: bool = <bevy::time::Stopwatch as std::cmp::PartialEq<
+                        bevy::time::Stopwatch,
+                    >>::eq(&_self, &other)
+                        .into();
                     output
                 },
             )
@@ -312,6 +310,21 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             )
             .register(
+                "new",
+                || {
+                    let output: Val<bevy::time::Stopwatch> = bevy::time::Stopwatch::new()
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "pause",
+                |mut _self: Mut<bevy::time::Stopwatch>| {
+                    let output: () = bevy::time::Stopwatch::pause(&mut _self).into();
+                    output
+                },
+            )
+            .register(
                 "reset",
                 |mut _self: Mut<bevy::time::Stopwatch>| {
                     let output: () = bevy::time::Stopwatch::reset(&mut _self).into();
@@ -319,22 +332,9 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             )
             .register(
-                "assert_receiver_is_total_eq",
-                |_self: Ref<bevy::time::Stopwatch>| {
-                    let output: () = <bevy::time::Stopwatch as std::cmp::Eq>::assert_receiver_is_total_eq(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "eq",
-                |_self: Ref<bevy::time::Stopwatch>, other: Ref<bevy::time::Stopwatch>| {
-                    let output: bool = <bevy::time::Stopwatch as std::cmp::PartialEq<
-                        bevy::time::Stopwatch,
-                    >>::eq(&_self, &other)
-                        .into();
+                "unpause",
+                |mut _self: Mut<bevy::time::Stopwatch>| {
+                    let output: () = bevy::time::Stopwatch::unpause(&mut _self).into();
                     output
                 },
             );
