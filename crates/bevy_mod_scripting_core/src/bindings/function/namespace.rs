@@ -63,13 +63,20 @@ pub enum Namespace {
     OnType(TypeId),
 }
 
+/// A type which implements [`IntoNamespace`] by always converting to the global namespace
+pub struct GlobalNamespace;
+
 pub trait IntoNamespace {
     fn into_namespace() -> Namespace;
 }
 
 impl<T: ?Sized + 'static> IntoNamespace for T {
     fn into_namespace() -> Namespace {
-        Namespace::OnType(TypeId::of::<T>())
+        if TypeId::of::<T>() == TypeId::of::<GlobalNamespace>() {
+            Namespace::Global
+        } else {
+            Namespace::OnType(TypeId::of::<T>())
+        }
     }
 }
 
