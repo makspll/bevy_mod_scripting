@@ -63,7 +63,9 @@ jobs:
           override: true
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
-      - uses: actions-rs/cargo@v1
-        with:
-          command: ${{ matrix.run_args.command }}
-          args: ci-check
+      - name: Setup
+        run: |
+          cargo xtask init
+      - name: Check
+        run: |
+          ${{ matrix.run_args.command }}
