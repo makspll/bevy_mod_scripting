@@ -9,4 +9,4 @@ description = "Documentation for the Bevy Scripting library"
 [output.html]
 additional-js = ["multi-code-block.js"]
 git-repository-url = "https://github.com/makspll/bevy_mod_scripting"
-edit-url-template = "https://github.com/makspll/bevy_mod_scripting/edit/main/{path}"
+edit-url-template = "https://github.com/makspll/bevy_mod_scripting/edit/main/docs/{path}"
