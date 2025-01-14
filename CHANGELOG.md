@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.0-alpha.3](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.0-alpha.2...v0.9.0-alpha.3) - 2025-01-14
+
+### Added
+
+- Improvements to BMS in multi-language context (#194)
+- Implement global namespace registration (#202)
+- make script contexts public (#193)
+
 ## [0.9.0-alpha.2](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.0-alpha.1...v0.9.0-alpha.2) - 2025-01-05
 
 ### Added
