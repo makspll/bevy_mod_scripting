@@ -126,17 +126,32 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
 
 impl<P: IntoScriptPluginParams> ScriptingPlugin<P> {
     /// Adds a context initializer to the plugin
+    ///
+    /// Initializers will be run every time a context is loaded or re-loaded
     pub fn add_context_initializer(&mut self, initializer: ContextInitializer<P>) -> &mut Self {
         self.context_initializers.push(initializer);
         self
     }
 
-    /// Adds a context pre-handling initializer to the plugin
+    /// Adds a context pre-handling initializer to the plugin.
+    ///
+    /// Initializers will be run every time before handling events.
     pub fn add_context_pre_handling_initializer(
         &mut self,
         initializer: ContextPreHandlingInitializer<P>,
     ) -> &mut Self {
         self.context_pre_handling_initializers.push(initializer);
+        self
+    }
+
+    /// Adds a runtime initializer to the plugin.
+    ///
+    /// Initializers will be run after the runtime is created, but before any contexts are loaded.
+    pub fn add_runtime_initializer(&mut self, initializer: RuntimeInitializer<P>) -> &mut Self {
+        self.runtime_settings
+            .get_or_insert_with(Default::default)
+            .initializers
+            .push(initializer);
         self
     }
 }
