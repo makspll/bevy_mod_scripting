@@ -307,6 +307,47 @@ fn send_event(mut writer: EventWriter&lt;ScriptCallbackEvent&gt;) {
 <li>Returning <code>Result&lt;T: IntoScript, InteropError&gt;</code></li>
 <li>Returning <code>ScriptValue</code> and manually creating the <code>ScriptValue::Error(into_interop_erorr.into())</code> variant.</li>
 </ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="modifying-script-contexts"><a class="header" href="#modifying-script-contexts">Modifying Script Contexts</a></h1>
+<p>You should be able to achieve what you need by registering script functions in most cases. However sometimes you might want to override the way contexts are loaded, or how the runtime is initialized.</p>
+<p>This is possible using <code>Context Initializers</code> and <code>Context Pre Handling Initializers</code> as well as <code>Runtime Initializers</code>.</p>
+<h2 id="context-initializers"><a class="header" href="#context-initializers">Context Initializers</a></h2>
+<p>For example, let's say you want to set a dynamic amount of globals in your script, depending on some setting in your app.</p>
+<p>You could do this by customizing the scripting plugin:</p>
+<pre><code class="language-rust ignore">let plugin = LuaScriptingPlugin::default();
+plugin.add_context_initializer(|script_id: &amp;str, context: &amp;mut Lua| {
+    let globals = context.globals();
+    for i in 0..10 {
+        globals.set(i, i);
+    }
+    Ok(())
+});
+
+app.add_plugins(plugin)</code></pre>
+<p>The above will run every time the script is loaded or re-loaded.</p>
+<h2 id="context-pre-handling-initializers"><a class="header" href="#context-pre-handling-initializers">Context Pre Handling Initializers</a></h2>
+<p>If you want to customize your context before every time it's about to handle events, you can use <code>Context Pre Handling Initializers</code>:</p>
+<pre><code class="language-rust ignore">let plugin = LuaScriptingPlugin::default();
+plugin.add_context_pre_handling_initializer(|script_id: &amp;str, entity: Entity, context: &amp;mut Lua| {
+    let globals = context.globals();
+    globals.set("script_name", script_id.to_owned());
+    Ok(())
+});</code></pre>
+<h2 id="runtime-initializers"><a class="header" href="#runtime-initializers">Runtime Initializers</a></h2>
+<p>Some scripting languages, have the concept of a <code>runtime</code>. This is a global object which is shared between all contexts. You can customize this object using <code>Runtime Initializers</code>:</p>
+<pre><code class="language-rust ignore">let plugin = SomeScriptingPlugin::default();
+plugin.add_runtime_initializer(|runtime: &amp;mut Runtime| {
+    runtime.set_max_stack_size(1000);
+    Ok(())
+});</code></pre>
+<h2 id="accessing-the-world-in-initializers"><a class="header" href="#accessing-the-world-in-initializers">Accessing the World in Initializers</a></h2>
+<p>You can access the world in these initializers by using the thread local: <code>ThreadWorldContainer</code>:</p>
+<pre><code class="language-rust ignore">
+let plugin = LuaScriptingPlugin::default();
+plugin.add_context_initializer(|script_id: &amp;str, context: &amp;mut Lua| {
+    let world = ThreadWorldContainer::get_world();
+    world.with_resource::&lt;MyResource&gt;(|res| println!("My resource: {:?}", res));
+    Ok(())
+});</code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="scripting-reference"><a class="header" href="#scripting-reference">Scripting Reference</a></h1>
 <p>This part of the book covers the user-facing API of the scripting languages supported by BMS. This will be where you will want to forward your script users to get started with scripting in BMS.</p>
 <p>If you are a modder, welcome! 👋, apologies for the rust-centricity of this guide, we are working on it!</p>
@@ -903,9 +944,80 @@ end
 <li><input disabled="" type="checkbox"/>
 Interoperability with Rust. If you can't call it from Rust easilly and there is no existing crate that can do it for you, it's a no-go.</li>
 <li><input disabled="" type="checkbox"/>
-First class functions. Or at least the ability to call an arbitrary function with an arbitrary number of arguments from a script. Without this feature, you would need to separately generate code for the bevy bindings. This is painful and goes against the grain of the project.</li>
+First class functions. Or at least the ability to call an arbitrary function with an arbitrary number of arguments from a script. Without this feature, you would need to separately generate code for the bevy bindings which is painful and goes against the grain of BMS.</li>
 </ul>
 <h2 id="first-classs-functions"><a class="header" href="#first-classs-functions">First Classs Functions</a></h2>
+<p>They don't necessarily have to be first class from the script POV, but they need to be first class from the POV of the host language. This means that the host language needs to be able to call a function with an arbitrary number of arguments.</p>
+<h3 id="examples"><a class="header" href="#examples">Examples</a></h3>
+<p>Let's say your language supports a <code>Value</code> type which can be returned to the script. And it has a <code>Value::Function</code> variant. The type on the Rust side would look something like this:</p>
+<pre><code class="language-rust ignore">pub enum Value {
+    Function(Arc&lt;Fn(&amp;[Value]) -&gt; Value&gt;),
+    // other variants
+}</code></pre>
+<p>This is fine, and can be integrated with BMS. Since an Fn function can be a closure capturing a <code>DynamicScriptFunction</code>. If there is no support for <code>FnMut</code> closures though, you might face issues in the implementation. Iterators in <code>bevy_mod_scripting_functions</code> for example use <code>DynamicScriptFunctionMut</code> which cannot work with <code>Fn</code> closures.</p>
+<p>Now let's imagine instead another language with a similar enum, supports this type instead:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum Value {
+    Function(Arc&lt;dyn Function&gt;),
+    // other variants
+}
+
+pub trait Function {
+    fn call(&amp;self, args: Vec&lt;Value&gt;) -&gt; Value;
+
+    fn num_params() -&gt; usize;
+}
+<span class="boring">}</span></code></pre></pre>
+<p>This implies that to call this function, you need to be able to know the amount of arguments it expects at COMPILE time. This is not compatibile with dynamic functions, and would require a lot of code generation to make work with BMS.
+Languages with no support for dynamic functions are not compatible with BMS.</p>
+<h2 id="interoperability-with-rust"><a class="header" href="#interoperability-with-rust">Interoperability with Rust</a></h2>
+<p>Not all languages can easilly be called from Rust. Lua has a wonderful crate which works out the ffi and safety issues for us. But not all languages have this luxury. If you can't call it from Rust easilly and there is no existing crate that can do it for you, integrating with BMS might not be the best idea.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="necessary-features"><a class="header" href="#necessary-features">Necessary Features</a></h1>
+<p>In order for a language to be called "implemented" in BMS, it needs to support the following features:</p>
+<ul>
+<li>Every script function which is registered on a type's namespace must:
+<ul>
+<li>Be callable on a <code>ReflectReference</code> representing object of that type in the script</li>
+</ul>
+<pre><code class="language-lua">local my_reference = ...
+my_reference:my_Registered_function()
+</code></pre>
+<ul>
+<li>If it's static it must be callable from a global proxy object for that type, i.e.</li>
+</ul>
+<pre><code class="language-lua">MyType.my_static_function()
+</code></pre>
+</li>
+<li><code>ReflectReferences</code> must support a set of basic features:
+<ul>
+<li>Access to fields via reflection i.e.:</li>
+</ul>
+<pre><code class="language-lua">local my_reference = ...
+my_reference.my_field = 5
+print(my_reference.my_field)
+</code></pre>
+<ul>
+<li>Basic operators and standard operations are overloaded with the appropriate standard dynamic function registered:
+<ul>
+<li>Addition: dispatches to the <code>add</code> binary function on the type</li>
+<li>Multiplication: dispatches to the <code>mul</code> binary function on the type</li>
+<li>Division: dispatches to the <code>div</code> binary function on the type</li>
+<li>Subtraction: dispatches to the <code>sub</code> binary function on the type</li>
+<li>Modulo: dispatches to the <code>rem</code> binary function on the type</li>
+<li>Negation: dispatches to the <code>neg</code> unary function on the type</li>
+<li>Exponentiation: dispatches to the <code>pow</code> binary function on the type</li>
+<li>Equality: dispatches to the <code>eq</code> binary function on the type</li>
+<li>Less than: dispatches to the <code>lt</code> binary function on the type</li>
+<li>Length: calls the <code>len</code> method on <code>ReflectReference</code> or on the table if the value is one.</li>
+<li>Iteration: dispatches to the <code>iter</code> method on <code>ReflectReference</code> which returns an iterator function, this can be repeatedly called until it returns <code>ScriptValue::Unit</code> to signal the end of the iteration.</li>
+<li>Print: calls the <code>display_ref</code> method on <code>ReflectReference</code> or on the table if the value is one.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Script handlers, loaders etc. must be implemented such that the <code>ThreadWorldContainer</code> is set for every interaction with script contexts, or anywhere else it might be needed.</li>
+</ul>
 
                     </main>
 

@@ -129,6 +129,9 @@
                         <a href="https://github.com/makspll/bevy_mod_scripting" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
+                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/src/Development/AddingLanguages/evaluating-feasibility.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
 
                     </div>
                 </div>
@@ -161,9 +164,35 @@
 <li><input disabled="" type="checkbox"/>
 Interoperability with Rust. If you can't call it from Rust easilly and there is no existing crate that can do it for you, it's a no-go.</li>
 <li><input disabled="" type="checkbox"/>
-First class functions. Or at least the ability to call an arbitrary function with an arbitrary number of arguments from a script. Without this feature, you would need to separately generate code for the bevy bindings. This is painful and goes against the grain of the project.</li>
+First class functions. Or at least the ability to call an arbitrary function with an arbitrary number of arguments from a script. Without this feature, you would need to separately generate code for the bevy bindings which is painful and goes against the grain of BMS.</li>
 </ul>
 <h2 id="first-classs-functions"><a class="header" href="#first-classs-functions">First Classs Functions</a></h2>
+<p>They don't necessarily have to be first class from the script POV, but they need to be first class from the POV of the host language. This means that the host language needs to be able to call a function with an arbitrary number of arguments.</p>
+<h3 id="examples"><a class="header" href="#examples">Examples</a></h3>
+<p>Let's say your language supports a <code>Value</code> type which can be returned to the script. And it has a <code>Value::Function</code> variant. The type on the Rust side would look something like this:</p>
+<pre><code class="language-rust ignore">pub enum Value {
+    Function(Arc&lt;Fn(&amp;[Value]) -&gt; Value&gt;),
+    // other variants
+}</code></pre>
+<p>This is fine, and can be integrated with BMS. Since an Fn function can be a closure capturing a <code>DynamicScriptFunction</code>. If there is no support for <code>FnMut</code> closures though, you might face issues in the implementation. Iterators in <code>bevy_mod_scripting_functions</code> for example use <code>DynamicScriptFunctionMut</code> which cannot work with <code>Fn</code> closures.</p>
+<p>Now let's imagine instead another language with a similar enum, supports this type instead:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum Value {
+    Function(Arc&lt;dyn Function&gt;),
+    // other variants
+}
+
+pub trait Function {
+    fn call(&amp;self, args: Vec&lt;Value&gt;) -&gt; Value;
+
+    fn num_params() -&gt; usize;
+}
+<span class="boring">}</span></code></pre></pre>
+<p>This implies that to call this function, you need to be able to know the amount of arguments it expects at COMPILE time. This is not compatibile with dynamic functions, and would require a lot of code generation to make work with BMS.
+Languages with no support for dynamic functions are not compatible with BMS.</p>
+<h2 id="interoperability-with-rust"><a class="header" href="#interoperability-with-rust">Interoperability with Rust</a></h2>
+<p>Not all languages can easilly be called from Rust. Lua has a wonderful crate which works out the ffi and safety issues for us. But not all languages have this luxury. If you can't call it from Rust easilly and there is no existing crate that can do it for you, integrating with BMS might not be the best idea.</p>
 
                     </main>
 
@@ -173,6 +202,9 @@ First class functions. Or at least the ability to call an arbitrary function wit
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
+                            <a rel="next prefetch" href="../../Development/AddingLanguages/necessary-features.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -184,6 +216,9 @@ First class functions. Or at least the ability to call an arbitrary function wit
                         <i class="fa fa-angle-left"></i>
                     </a>
 
+                    <a rel="next prefetch" href="../../Development/AddingLanguages/necessary-features.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
             </nav>
 
         </div>

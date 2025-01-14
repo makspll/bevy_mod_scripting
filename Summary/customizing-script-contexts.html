@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>ScriptQueryBuilder - Bevy Scripting</title>
+        <title>Modifying Script Contexts - Bevy Scripting</title>
 
 
         <!-- Custom HTML head -->
@@ -129,7 +129,7 @@
                         <a href="https://github.com/makspll/bevy_mod_scripting" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/src/ScriptingReference/script-query-builder.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/src/Summary/customizing-script-contexts.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -158,77 +158,57 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="scriptquerybuilder"><a class="header" href="#scriptquerybuilder">ScriptQueryBuilder</a></h1>
-<p>The query builder is used to build queries for entities with specific components. Can be used to interact with arbitrary entities in the world.</p>
-<h2 id="component"><a class="header" href="#component">component</a></h2>
-<p>Adds a component to the query, this will be accessible in the query results under the index corresponding to the index of this component in the query.</p>
-<p>Arguments:</p>
-<div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>s</code></td><td><code>ScriptQueryBuilder</code></td><td>The query builder</td></tr>
-<tr><td><code>component</code></td><td><code>ScriptTypeRegistration</code></td><td>The component to query for</td></tr>
-</tbody></table>
-</div>
-<p>Returns:</p>
-<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>ScriptQueryBuilder</code></td><td>The updated query builder</td></tr>
-</tbody></table>
-</div>
-<pre><code class="language-lua">query:component(MyType):component(MyOtherType)
-</code></pre>
-<h2 id="with"><a class="header" href="#with">with</a></h2>
-<p>Arguments:</p>
-<div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>s</code></td><td><code>ScriptQueryBuilder</code></td><td>The query builder</td></tr>
-<tr><td><code>with</code></td><td><code>ScriptTypeRegistration</code></td><td>The component to include in the query</td></tr>
-</tbody></table>
-</div>
-<p>Returns:</p>
-<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>ScriptQueryBuilder</code></td><td>The updated query builder</td></tr>
-</tbody></table>
-</div>
-<pre><code class="language-lua">query:with(MyType):with(MyOtherType)
-</code></pre>
-<h2 id="without"><a class="header" href="#without">without</a></h2>
-<p>Arguments:</p>
-<div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>s</code></td><td><code>ScriptQueryBuilder</code></td><td>The query builder</td></tr>
-<tr><td><code>without</code></td><td><code>ScriptTypeRegistration</code></td><td>The component to exclude from the query</td></tr>
-</tbody></table>
-</div>
-<p>Returns:</p>
-<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>ScriptQueryBuilder</code></td><td>The updated query builder</td></tr>
-</tbody></table>
-</div>
-<pre><code class="language-lua">query:without(MyType):without(MyOtherType)
-</code></pre>
-<h2 id="build"><a class="header" href="#build">build</a></h2>
-<p>Arguments:</p>
-<div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>s</code></td><td><code>ScriptQueryBuilder</code></td><td>The query builder</td></tr>
-</tbody></table>
-</div>
-<p>Returns:</p>
-<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>Vec&lt;ScriptQueryResult&gt;</code></td><td>The query results</td></tr>
-</tbody></table>
-</div>
-<pre><code class="language-lua">local results = query:build()
-for _, result in pairs(results) do
-    print(result)
-end
-</code></pre>
+                        <h1 id="modifying-script-contexts"><a class="header" href="#modifying-script-contexts">Modifying Script Contexts</a></h1>
+<p>You should be able to achieve what you need by registering script functions in most cases. However sometimes you might want to override the way contexts are loaded, or how the runtime is initialized.</p>
+<p>This is possible using <code>Context Initializers</code> and <code>Context Pre Handling Initializers</code> as well as <code>Runtime Initializers</code>.</p>
+<h2 id="context-initializers"><a class="header" href="#context-initializers">Context Initializers</a></h2>
+<p>For example, let's say you want to set a dynamic amount of globals in your script, depending on some setting in your app.</p>
+<p>You could do this by customizing the scripting plugin:</p>
+<pre><code class="language-rust ignore">let plugin = LuaScriptingPlugin::default();
+plugin.add_context_initializer(|script_id: &amp;str, context: &amp;mut Lua| {
+    let globals = context.globals();
+    for i in 0..10 {
+        globals.set(i, i);
+    }
+    Ok(())
+});
+
+app.add_plugins(plugin)</code></pre>
+<p>The above will run every time the script is loaded or re-loaded.</p>
+<h2 id="context-pre-handling-initializers"><a class="header" href="#context-pre-handling-initializers">Context Pre Handling Initializers</a></h2>
+<p>If you want to customize your context before every time it's about to handle events, you can use <code>Context Pre Handling Initializers</code>:</p>
+<pre><code class="language-rust ignore">let plugin = LuaScriptingPlugin::default();
+plugin.add_context_pre_handling_initializer(|script_id: &amp;str, entity: Entity, context: &amp;mut Lua| {
+    let globals = context.globals();
+    globals.set("script_name", script_id.to_owned());
+    Ok(())
+});</code></pre>
+<h2 id="runtime-initializers"><a class="header" href="#runtime-initializers">Runtime Initializers</a></h2>
+<p>Some scripting languages, have the concept of a <code>runtime</code>. This is a global object which is shared between all contexts. You can customize this object using <code>Runtime Initializers</code>:</p>
+<pre><code class="language-rust ignore">let plugin = SomeScriptingPlugin::default();
+plugin.add_runtime_initializer(|runtime: &amp;mut Runtime| {
+    runtime.set_max_stack_size(1000);
+    Ok(())
+});</code></pre>
+<h2 id="accessing-the-world-in-initializers"><a class="header" href="#accessing-the-world-in-initializers">Accessing the World in Initializers</a></h2>
+<p>You can access the world in these initializers by using the thread local: <code>ThreadWorldContainer</code>:</p>
+<pre><code class="language-rust ignore">
+let plugin = LuaScriptingPlugin::default();
+plugin.add_context_initializer(|script_id: &amp;str, context: &amp;mut Lua| {
+    let world = ThreadWorldContainer::get_world();
+    world.with_resource::&lt;MyResource&gt;(|res| println!("My resource: {:?}", res));
+    Ok(())
+});</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../ScriptingReference/script-type-registration.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../Summary/controlling-script-bindings.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../ScriptingReference/script-query-result.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../ScriptingReference/introduction.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -238,11 +218,11 @@ end
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../ScriptingReference/script-type-registration.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../Summary/controlling-script-bindings.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../ScriptingReference/script-query-result.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../ScriptingReference/introduction.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
