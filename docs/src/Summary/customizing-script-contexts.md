@@ -17,6 +17,7 @@ plugin.add_context_initializer(|script_id: &str, context: &mut Lua| {
     for i in 0..10 {
         globals.set(i, i);
     }
+    Ok(())
 });
 
 app.add_plugins(plugin)
@@ -32,6 +33,7 @@ let plugin = LuaScriptingPlugin::default();
 plugin.add_context_pre_handling_initializer(|script_id: &str, entity: Entity, context: &mut Lua| {
     let globals = context.globals();
     globals.set("script_name", script_id.to_owned());
+    Ok(())
 });
 ```
 ## Runtime Initializers
@@ -41,5 +43,19 @@ Some scripting languages, have the concept of a `runtime`. This is a global obje
 let plugin = SomeScriptingPlugin::default();
 plugin.add_runtime_initializer(|runtime: &mut Runtime| {
     runtime.set_max_stack_size(1000);
+    Ok(())
+});
+```
+
+## Accessing the World in Initializers
+
+You can access the world in these initializers by using the thread local: `ThreadWorldContainer`:
+```rust,ignore
+
+let plugin = LuaScriptingPlugin::default();
+plugin.add_context_initializer(|script_id: &str, context: &mut Lua| {
+    let world = ThreadWorldContainer::get_world();
+    world.with_resource::<MyResource>(|res| println!("My resource: {:?}", res));
+    Ok(())
 });
 ```
