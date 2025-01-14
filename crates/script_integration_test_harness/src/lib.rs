@@ -1,3 +1,5 @@
+pub mod test_functions;
+
 use bevy::{
     app::App,
     prelude::{Entity, World},
@@ -14,6 +16,7 @@ use bevy_mod_scripting_core::{
     IntoScriptPluginParams,
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
+use test_functions::register_test_functions;
 use test_utils::test_data::setup_integration_test;
 
 pub fn execute_integration_test<
@@ -29,6 +32,8 @@ pub fn execute_integration_test<
     let mut app = setup_integration_test(init);
 
     app.add_plugins(ScriptFunctionsPlugin);
+    register_test_functions(&mut app);
+
     init_app(&mut app);
 
     app.cleanup();
