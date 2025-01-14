@@ -2,10 +2,9 @@ use crate::{
     asset::ScriptAsset,
     context::{ContextLoadingSettings, ScriptContexts},
     event::{IntoCallbackLabel, OnScriptLoaded, OnScriptUnloaded},
-    handler::CallbackSettings,
+    handler::{handle_script_errors, CallbackSettings},
     runtime::RuntimeContainer,
     script::{Script, ScriptId, Scripts},
-    systems::handle_script_errors,
     IntoScriptPluginParams,
 };
 use bevy::{asset::Handle, ecs::world::Mut, log::debug, prelude::Command};
@@ -76,12 +75,8 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
                     }
                 }
 
-                let assigner = settings
-                    .assigner
-                    .as_ref()
-                    .expect("Could not find context assigner in settings");
                 debug!("Removing script with id: {}", self.id);
-                (assigner.remove)(script.context_id, &script, &mut ctxts)
+                (settings.assigner.remove)(script.context_id, &script, &mut ctxts)
             } else {
                 bevy::log::error!(
                     "Attempted to delete script with id: {} but it does not exist, doing nothing!",
@@ -122,19 +117,21 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
     fn apply(self, world: &mut bevy::prelude::World) {
         let settings = world
             .get_resource::<ContextLoadingSettings<P>>()
-            .unwrap()
+            .expect(
+                "Missing ContextLoadingSettings resource. Was the plugin initialized correctly?",
+            )
             .clone();
         let mut contexts = world
             .remove_non_send_resource::<ScriptContexts<P>>()
-            .unwrap();
+            .expect("No ScriptContexts resource found. Was the plugin initialized correctly?");
         let mut runtime = world
             .remove_non_send_resource::<RuntimeContainer<P>>()
-            .unwrap();
+            .expect("No RuntimeContainer resource found. Was the plugin initialized correctly?");
 
         let runner = world.get_resource::<CallbackSettings<P>>().unwrap();
         // assign context
-        let assigner = settings.assigner.clone().expect("No context assigner set");
-        let builder = settings.loader.clone().expect("No context loader set");
+        let assigner = settings.assigner.clone();
+        let builder = settings.loader.clone();
         let runner = runner.callback_handler.expect("No callback handler set");
 
         world.resource_scope(|world, mut scripts: Mut<Scripts>| {

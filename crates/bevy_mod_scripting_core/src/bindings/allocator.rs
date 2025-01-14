@@ -1,4 +1,4 @@
-use bevy::{ecs::system::Resource, reflect::PartialReflect};
+use bevy::{ecs::system::Resource, prelude::ResMut, reflect::PartialReflect};
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::{
     any::TypeId,
@@ -203,6 +203,12 @@ impl ReflectAllocator {
     ) -> impl Iterator<Item = (&ReflectAllocationId, &ReflectAllocation)> {
         self.allocations.iter()
     }
+}
+
+/// Cleans up dangling script allocations
+pub fn garbage_collector(allocator: ResMut<AppReflectAllocator>) {
+    let mut allocator = allocator.write();
+    allocator.clean_garbage_allocations()
 }
 
 #[cfg(test)]
