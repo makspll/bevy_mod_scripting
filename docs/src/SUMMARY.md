@@ -7,6 +7,7 @@
 - [Managing Scripts](./Summary/managing-scripts.md)
 - [Running Scripts](./Summary/running-scripts.md)
 - [Controlling Script Bindings](./Summary/controlling-script-bindings.md)
+- [Modifying Script Contexts](./Summary/customizing-script-contexts.md)
 
 # Scripting Reference
 
@@ -25,3 +26,4 @@
     - [Setup](./Development/setup.md) 
 - [New Languages](./Development/AddingLanguages/introduction.md)
     - [Evaluating Feasibility](./Development/AddingLanguages/evaluating-feasibility.md)
+    - [Necessary Features](./Development/AddingLanguages/necessary-features.md)
