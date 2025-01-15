@@ -85,6 +85,8 @@ jobs:
           if-no-files-found: ignore
 
   report-coverage:
+    runs-on: ubuntu-latest
+    continue-on-error: true
     permissions:
       pull-requests: write
     steps:
