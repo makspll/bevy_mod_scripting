@@ -96,6 +96,9 @@ jobs:
           merge-multiple: true
           pattern: lcov-*
           download-path: coverage
+      - name: Install genhtml
+        run: |
+          sudo apt-get install lcov -y
       - name: Report code coverage
         uses: dethereum/github-actions-report-lcov@v1.0.0
         with:
