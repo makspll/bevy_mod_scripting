@@ -74,9 +74,8 @@ jobs:
       - name: Check
         run: |
           ${{ matrix.run_args.command }}
-          - name: Report code coverage
-      uses: dethereum/github-actions-report-lcov@v1.0.0
-      - name: Upload existing lcov files if any exist
+
+      - name: Upload lcov files if any exist
         uses: actions/upload-artifact@v2
         with:
           name: lcov-${{ matrix.run_args.os }}-${{ matrix.run_args.name }}
