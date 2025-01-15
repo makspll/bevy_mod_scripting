@@ -76,7 +76,7 @@ jobs:
           ${{ matrix.run_args.command }}
 
       - name: Upload lcov files if any exist
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: lcov-${{ matrix.run_args.os }}-${{ matrix.run_args.name }}
           path: | 
@@ -84,13 +84,14 @@ jobs:
           if-no-files-found: ignore
 
   report-coverage:
+    needs: check
     runs-on: ubuntu-latest
     continue-on-error: true
     permissions:
       pull-requests: write
     steps:
       - name: Download all lcov files
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           merge-multiple: true
           pattern: lcov-*
