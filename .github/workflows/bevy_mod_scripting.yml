@@ -83,24 +83,12 @@ jobs:
           path: | 
             **/lcov.*
           if-no-files-found: ignore
-
-  report-coverage:
-    needs: check
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    permissions:
-      pull-requests: write
-    steps:
-      - name: Download all lcov files
-        uses: actions/download-artifact@v4
-        with:
-          merge-multiple: true
-          pattern: lcov-*
-          download-path: coverage
-      - name: Install genhtml
+      - name: Install lcov/genhtml
+        if: ${{ matrix.run_args.os == 'ubuntu-latest' }}
         run: |
           sudo apt-get install lcov -y
       - name: Report code coverage
+        if: ${{ matrix.run_args.os == 'ubuntu-latest' }}
         uses: zgosalvez/github-actions-report-lcov@v3        
         with:
           coverage-files: |
