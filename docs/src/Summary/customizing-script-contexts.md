@@ -22,11 +22,11 @@ let plugin = LuaScriptingPlugin::default().add_context_initializer(|script_id: &
 app.add_plugins(plugin)
 ```
 
-The above will run every time the script is loaded or re-loaded.
+The above will run every time the script is loaded or re-loaded and before it handles any callbacks.
 
 ## Context Pre Handling Initializers
 
-If you want to customize your context before every time it's about to handle events, you can use `Context Pre Handling Initializers`:
+If you want to customize your context before every time it's about to handle events (and when it's loaded + reloaded), you can use `Context Pre Handling Initializers`:
 ```rust,ignore
 let plugin = LuaScriptingPlugin::default().add_context_pre_handling_initializer(|script_id: &str, entity: Entity, context: &mut Lua| {
     let globals = context.globals();

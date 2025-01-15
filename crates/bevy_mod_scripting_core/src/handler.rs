@@ -248,7 +248,7 @@ mod test {
                 reload: |_, _, _, _, _, _, _| todo!(),
             },
             assigner: ContextAssigner {
-                assign: |_, _, _, _| todo!(),
+                assign: |_, _, _| todo!(),
                 remove: |_, _, _| todo!(),
             },
             context_initializers: vec![],
