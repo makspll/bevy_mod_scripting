@@ -341,7 +341,7 @@ struct GlobalArgs {
 impl GlobalArgs {
     pub fn with_coverage(self) -> Self {
         Self {
-            coverage: false,
+            coverage: true,
             ..self
         }
     }
