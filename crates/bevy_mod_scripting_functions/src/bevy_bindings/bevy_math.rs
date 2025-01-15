@@ -3,14 +3,11 @@
 #![allow(unused, deprecated, dead_code)]
 #![cfg_attr(rustfmt, rustfmt_skip)]
 use super::bevy_reflect::*;
-use bevy_mod_scripting_core::{
-    AddContextInitializer, StoreDocumentation,
-    bindings::{
-        ReflectReference,
-        function::{
-            from::{Ref, Mut, Val},
-            namespace::NamespaceBuilder,
-        },
+use bevy_mod_scripting_core::bindings::{
+    ReflectReference,
+    function::{
+        from::{Ref, Mut, Val},
+        namespace::NamespaceBuilder,
     },
 };
 use crate::*;
@@ -292,12 +289,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             )
             .register(
                 "mul",
-                |
-                    _self: Val<bevy::math::Isometry3d>,
-                    rhs: Val<bevy::math::prelude::Dir3>|
-                {
-                    let output: Val<bevy::math::prelude::Dir3> = <bevy::math::Isometry3d as std::ops::Mul<
-                        bevy::math::prelude::Dir3,
+                |_self: Val<bevy::math::Isometry3d>, rhs: Val<bevy::math::Isometry3d>| {
+                    let output: Val<bevy::math::Isometry3d> = <bevy::math::Isometry3d as std::ops::Mul<
+                        bevy::math::Isometry3d,
                     >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
@@ -305,9 +299,12 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::Isometry3d>, rhs: Val<bevy::math::Isometry3d>| {
-                    let output: Val<bevy::math::Isometry3d> = <bevy::math::Isometry3d as std::ops::Mul<
-                        bevy::math::Isometry3d,
+                |
+                    _self: Val<bevy::math::Isometry3d>,
+                    rhs: Val<bevy::math::prelude::Dir3>|
+                {
+                    let output: Val<bevy::math::prelude::Dir3> = <bevy::math::Isometry3d as std::ops::Mul<
+                        bevy::math::prelude::Dir3,
                     >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
