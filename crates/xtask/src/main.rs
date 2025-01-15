@@ -355,7 +355,18 @@ impl GlobalArgs {
     }
 }
 
-#[derive(Debug, Clone, Default, strum::EnumString, strum::VariantNames, strum::AsRefStr)]
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Default,
+    strum::EnumString,
+    strum::VariantNames,
+    strum::AsRefStr,
+)]
 #[strum(serialize_all = "snake_case")]
 enum CheckKind {
     #[default]
@@ -370,7 +381,17 @@ impl CheckKind {
     }
 }
 
-#[derive(Debug, Clone, strum::EnumString, strum::AsRefStr, strum::VariantNames)]
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    strum::EnumString,
+    strum::AsRefStr,
+    strum::VariantNames,
+)]
 #[strum(serialize_all = "snake_case")]
 enum Macro {
     /// Integration tests for all script plugins
@@ -383,7 +404,7 @@ impl Macro {
     }
 }
 
-#[derive(Clone, Debug, clap::Subcommand, strum::AsRefStr)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, clap::Subcommand, strum::AsRefStr)]
 #[clap(
     name = "xtask",
     bin_name = "cargo xtask",
@@ -489,38 +510,31 @@ impl Xtasks {
                 }
             },
             Xtasks::CiMatrix => {
-                let output = Self::ci_matrix(app_settings)?;
-                let mut matrix = output
-                    .into_iter()
-                    .map(|a| a.into_ci_row("ubuntu-latest".to_owned()))
-                    .collect::<Vec<_>>();
+                let mut output = Self::ci_matrix(app_settings)?;
+                output.sort_by(|e1, e2| e1.subcmd.cmp(&e2.subcmd));
+                let mut rows = Vec::default();
+                for os in &["ubuntu-latest", "macos-latest", "windows-latest"] {
+                    for row in output.iter_mut() {
+                        let is_main_os = os == &"ubuntu-latest";
+                        let step_should_run_on_main_os =
+                            matches!(row.subcmd, Xtasks::Build | Xtasks::Docs { .. });
+                        let is_coverage_step = row.global_args.coverage;
 
-                // clone for macos and windows for certain steps
-                let mut multi_os_steps = matrix.clone();
+                        if !is_main_os && step_should_run_on_main_os {
+                            continue;
+                        }
 
-                // we don't need to verify all feature flags on all platforms, this is mostly a "does it compile" check
-                // for finding out missing compile time logic or bad imports
-                multi_os_steps
-                    .retain(|e| !e.command.contains(" build") && !e.command.contains(" docs"));
+                        // we only need one source of coverage + windows is slow with this setting
+                        if !is_main_os && is_coverage_step {
+                            row.global_args.coverage = false;
+                        }
 
-                let mut macos_matrix = multi_os_steps.clone();
-                let mut windows_matrix = multi_os_steps.clone();
-
-                for row in macos_matrix.iter_mut() {
-                    row.os = "macos-latest".to_owned();
-                    row.name = row.name.replace("ubuntu-latest", "macos-latest");
+                        let row = row.clone().into_ci_row(os.to_string());
+                        rows.push(row);
+                    }
                 }
 
-                for row in windows_matrix.iter_mut() {
-                    row.os = "windows-latest".to_owned();
-                    row.name = row.name.replace("ubuntu-latest", "windows-latest");
-                }
-
-                matrix.extend(macos_matrix);
-                matrix.extend(windows_matrix);
-
-                matrix.sort_by_key(|e| e.name.to_owned());
-                let json = serde_json::to_string_pretty(&matrix)?;
+                let json = serde_json::to_string_pretty(&rows)?;
                 return Ok(json);
             }
         }?;
