@@ -346,6 +346,13 @@ impl GlobalArgs {
         }
     }
 
+    pub fn without_coverage(self) -> Self {
+        Self {
+            coverage: false,
+            ..self
+        }
+    }
+
     pub fn with_features(self, features: Features) -> Self {
         Self { features, ..self }
     }
@@ -514,7 +521,7 @@ impl Xtasks {
                 output.sort_by(|e1, e2| e1.subcmd.cmp(&e2.subcmd));
                 let mut rows = Vec::default();
                 for os in &["ubuntu-latest", "macos-latest", "windows-latest"] {
-                    for row in output.iter_mut() {
+                    for row in output.iter() {
                         let is_main_os = os == &"ubuntu-latest";
                         let step_should_run_on_main_os =
                             matches!(row.subcmd, Xtasks::Build | Xtasks::Docs { .. });
@@ -525,11 +532,17 @@ impl Xtasks {
                         }
 
                         // we only need one source of coverage + windows is slow with this setting
-                        if !is_main_os && is_coverage_step {
-                            row.global_args.coverage = false;
-                        }
+                        let row = if !is_main_os && is_coverage_step {
+                            let new_args = row.global_args.clone().without_coverage();
+                            App {
+                                global_args: new_args,
+                                ..row.clone()
+                            }
+                            .into_ci_row(os.to_string())
+                        } else {
+                            row.clone().into_ci_row(os.to_string())
+                        };
 
-                        let row = row.clone().into_ci_row(os.to_string());
                         rows.push(row);
                     }
                 }
@@ -611,7 +624,12 @@ impl Xtasks {
         add_args: I,
         dir: Option<&Path>,
     ) -> Result<()> {
-        info!("Running workspace command: {}", command);
+        let coverage_mode = app_settings
+            .coverage
+            .then_some("with coverage")
+            .unwrap_or_default();
+
+        info!("Running workspace command {coverage_mode}: {command}");
 
         let mut args = vec![];
         args.push(command.to_owned());
@@ -622,8 +640,18 @@ impl Xtasks {
             args.push("--workspace".to_owned());
 
             if let Some(profile) = app_settings.profile.as_ref() {
-                args.push("--profile".to_owned());
-                args.push(profile.clone());
+                let use_profile = if profile == "ephemeral-build" && app_settings.coverage {
+                    // use special profile for coverage as it needs debug information
+                    // but also don't want it too slow
+                    "ephemeral-coverage"
+                } else {
+                    profile
+                };
+
+                if !app_settings.coverage {
+                    args.push("--profile".to_owned());
+                    args.push(use_profile.to_owned());
+                }
             }
 
             args.extend(app_settings.features.to_cargo_args());
