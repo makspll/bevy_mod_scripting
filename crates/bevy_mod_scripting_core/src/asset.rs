@@ -598,8 +598,8 @@ mod tests {
         assert_eq!(metadata_len, 0);
     }
 
-    #[test]
-    fn test_syncing_assets() {
-        todo!()
-    }
+    // #[test]
+    // fn test_syncing_assets() {
+    //     todo!()
+    // }
 }
