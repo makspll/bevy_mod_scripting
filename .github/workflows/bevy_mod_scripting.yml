@@ -74,3 +74,30 @@ jobs:
       - name: Check
         run: |
           ${{ matrix.run_args.command }}
+          - name: Report code coverage
+      uses: dethereum/github-actions-report-lcov@v1.0.0
+      - name: Upload existing lcov files if any exist
+        uses: actions/upload-artifact@v2
+        with:
+          name: lcov-${{ matrix.run_args.os }}-${{ matrix.run_args.name }}
+          path: | 
+            **/lcov.*
+          if-no-files-found: ignore
+
+  report-coverage:
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Download all lcov files
+        uses: actions/download-artifact@v2
+        with:
+          merge-multiple: true
+          pattern: lcov-*
+          download-path: coverage
+      - name: Report code coverage
+        uses: dethereum/github-actions-report-lcov@v1.0.0
+        with:
+          coverage-files: coverage/lcov.*
+          minimum-coverage: 50
+          artifact-name: code-coverage-report
+          github-token: ${{ secrets.GITHUB_TOKEN }}
