@@ -206,6 +206,32 @@ impl From<String> for Features {
     }
 }
 
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    strum::EnumString,
+    strum::AsRefStr,
+    strum::Display,
+    strum::VariantArray,
+)]
+enum CiOs {
+    #[strum(serialize = "windows-latest")]
+    Windows,
+    #[strum(serialize = "macos-latest")]
+    Macos,
+    #[strum(serialize = "ubuntu-latest")]
+    Ubuntu,
+}
+
+impl CiOs {
+    fn is_main_os(&self) -> bool {
+        matches!(self, CiOs::Ubuntu)
+    }
+}
+
 #[derive(Debug, Clone, Parser)]
 struct App {
     #[clap(flatten)]
@@ -297,7 +323,7 @@ impl App {
         os_string
     }
 
-    pub(crate) fn into_ci_row(self, os: String) -> CiMatrixRow {
+    pub(crate) fn into_ci_row(self, os: CiOs) -> CiMatrixRow {
         CiMatrixRow {
             command: self.clone().into_command_string().into_string().unwrap(),
             name: format!(
@@ -310,7 +336,8 @@ impl App {
                     self.global_args.features.to_string()
                 }
             ),
-            os,
+            os: os.to_string(),
+            generates_coverage: self.global_args.coverage,
         }
     }
 }
@@ -494,6 +521,8 @@ struct CiMatrixRow {
     name: String,
     /// The os to run this on
     os: String,
+    /// If this run produces lcov files
+    generates_coverage: bool,
 }
 
 impl Xtasks {
@@ -520,27 +549,26 @@ impl Xtasks {
                 let mut output = Self::ci_matrix(app_settings)?;
                 output.sort_by(|e1, e2| e1.subcmd.cmp(&e2.subcmd));
                 let mut rows = Vec::default();
-                for os in &["ubuntu-latest", "macos-latest", "windows-latest"] {
+                for os in <CiOs as strum::VariantArray>::VARIANTS {
                     for row in output.iter() {
-                        let is_main_os = os == &"ubuntu-latest";
                         let step_should_run_on_main_os =
                             matches!(row.subcmd, Xtasks::Build | Xtasks::Docs { .. });
                         let is_coverage_step = row.global_args.coverage;
 
-                        if !is_main_os && step_should_run_on_main_os {
+                        if !os.is_main_os() && step_should_run_on_main_os {
                             continue;
                         }
 
                         // we only need one source of coverage + windows is slow with this setting
-                        let row = if !is_main_os && is_coverage_step {
+                        let row = if !os.is_main_os() && is_coverage_step {
                             let new_args = row.global_args.clone().without_coverage();
                             App {
                                 global_args: new_args,
                                 ..row.clone()
                             }
-                            .into_ci_row(os.to_string())
+                            .into_ci_row(*os)
                         } else {
-                            row.clone().into_ci_row(os.to_string())
+                            row.clone().into_ci_row(*os)
                         };
 
                         rows.push(row);

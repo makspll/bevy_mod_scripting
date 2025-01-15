@@ -74,21 +74,12 @@ jobs:
       - name: Check
         run: |
           ${{ matrix.run_args.command }}
-
-      - name: Upload lcov files if any exist
-        if: ${{ matrix.run_args.os == 'ubuntu-latest' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: lcov-${{ matrix.run_args.os }}-${{ matrix.run_args.name }}
-          path: | 
-            **/lcov.*
-          if-no-files-found: ignore
       - name: Install lcov/genhtml
-        if: ${{ matrix.run_args.os == 'ubuntu-latest' }}
+        if: ${{ matrix.run_args.generates_coverage }}
         run: |
           sudo apt-get install lcov -y
       - name: Report code coverage
-        if: ${{ matrix.run_args.os == 'ubuntu-latest' }}
+        if: ${{ matrix.run_args.generates_coverage }}
         uses: zgosalvez/github-actions-report-lcov@v3        
         with:
           coverage-files: |
