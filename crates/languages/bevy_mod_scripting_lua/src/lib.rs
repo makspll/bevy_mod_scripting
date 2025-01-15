@@ -12,6 +12,7 @@ use bevy_mod_scripting_core::{
     error::ScriptError,
     event::CallbackLabel,
     reflection_extensions::PartialReflectExt,
+    runtime::RuntimeSettings,
     script::ScriptId,
     IntoScriptPluginParams, ScriptingPlugin,
 };
@@ -47,15 +48,15 @@ impl Default for LuaScriptingPlugin {
         LuaScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
                 context_assigner: Default::default(),
-                runtime_settings: None,
-                callback_handler: Some(lua_handler),
+                runtime_settings: RuntimeSettings::default(),
+                callback_handler: lua_handler,
                 context_builder: ContextBuilder::<LuaScriptingPlugin> {
                     load: lua_context_load,
                     reload: lua_context_reload,
                 },
-                language_mapper: Some(AssetPathToLanguageMapper {
+                language_mapper: AssetPathToLanguageMapper {
                     map: lua_language_mapper,
-                }),
+                },
                 context_initializers: vec![
                     |_script_id, context| {
                         // set the world global

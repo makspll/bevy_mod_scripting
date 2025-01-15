@@ -53,21 +53,20 @@ pub trait IntoScriptPluginParams: 'static {
     type R: Runtime;
 
     fn build_runtime() -> Self::R;
-
-    // fn supported_language() -> Language;
 }
 
 /// Bevy plugin enabling scripting within the bevy mod scripting framework
 pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
     /// Settings for the runtime
-    pub runtime_settings: Option<RuntimeSettings<P>>,
+    pub runtime_settings: RuntimeSettings<P>,
     /// The handler used for executing callbacks in scripts
-    pub callback_handler: Option<HandlerFn<P>>,
+    pub callback_handler: HandlerFn<P>,
     /// The context builder for loading contexts
     pub context_builder: ContextBuilder<P>,
     /// The context assigner for assigning contexts to scripts.
     pub context_assigner: ContextAssigner<P>,
-    pub language_mapper: Option<AssetPathToLanguageMapper>,
+
+    pub language_mapper: AssetPathToLanguageMapper,
 
     /// initializers for the contexts, run when loading the script
     pub context_initializers: Vec<ContextInitializer<P>>,
@@ -77,7 +76,7 @@ pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
 
 impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.insert_resource(self.runtime_settings.as_ref().cloned().unwrap_or_default())
+        app.insert_resource(self.runtime_settings.clone())
             .insert_non_send_resource::<RuntimeContainer<P>>(RuntimeContainer {
                 runtime: P::build_runtime(),
             })
@@ -95,13 +94,11 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
         register_script_plugin_systems::<P>(app);
         once_per_app_init(app);
 
-        if let Some(language_mapper) = &self.language_mapper {
-            app.world_mut()
-                .resource_mut::<ScriptAssetSettings>()
-                .as_mut()
-                .script_language_mappers
-                .push(*language_mapper);
-        }
+        app.world_mut()
+            .resource_mut::<ScriptAssetSettings>()
+            .as_mut()
+            .script_language_mappers
+            .push(self.language_mapper);
 
         register_types(app);
     }
@@ -131,10 +128,7 @@ impl<P: IntoScriptPluginParams> ScriptingPlugin<P> {
     ///
     /// Initializers will be run after the runtime is created, but before any contexts are loaded.
     pub fn add_runtime_initializer(&mut self, initializer: RuntimeInitializer<P>) -> &mut Self {
-        self.runtime_settings
-            .get_or_insert_with(Default::default)
-            .initializers
-            .push(initializer);
+        self.runtime_settings.initializers.push(initializer);
         self
     }
 }

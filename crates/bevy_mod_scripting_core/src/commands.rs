@@ -35,8 +35,7 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
         let runner = world
             .get_resource::<CallbackSettings<P>>()
             .expect("No CallbackSettings resource found")
-            .callback_handler
-            .expect("No callback handler set");
+            .callback_handler;
 
         let mut ctxts = world
             .remove_non_send_resource::<ScriptContexts<P>>()
@@ -132,7 +131,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
         // assign context
         let assigner = settings.assigner.clone();
         let builder = settings.loader.clone();
-        let runner = runner.callback_handler.expect("No callback handler set");
+        let runner = runner.callback_handler;
 
         world.resource_scope(|world, mut scripts: Mut<Scripts>| {
 

@@ -38,15 +38,7 @@ pub type HandlerFn<P> = fn(
 /// A resource that holds the settings for the callback handler for a specific combination of type parameters
 #[derive(Resource)]
 pub struct CallbackSettings<P: IntoScriptPluginParams> {
-    pub callback_handler: Option<HandlerFn<P>>,
-}
-
-impl<P: IntoScriptPluginParams> Default for CallbackSettings<P> {
-    fn default() -> Self {
-        Self {
-            callback_handler: None,
-        }
-    }
+    pub callback_handler: HandlerFn<P>,
 }
 
 macro_rules! push_err_and_continue {
@@ -88,16 +80,7 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     let (mut script_events, callback_settings, context_settings, scripts, entities) =
         params.get_mut(world);
 
-    let handler = *callback_settings
-        .callback_handler
-        .as_ref()
-        .unwrap_or_else(|| {
-            panic!(
-                "No handler registered for - Runtime: {}, Context: {}",
-                type_name::<P::R>(),
-                type_name::<P::C>()
-            )
-        });
+    let handler = callback_settings.callback_handler;
     let pre_handling_initializers = context_settings.context_pre_handling_initializers.clone();
     let scripts = scripts.clone();
     let mut errors = Vec::default();
@@ -253,7 +236,7 @@ mod test {
         app.add_event::<ScriptCallbackEvent>();
         app.add_event::<ScriptErrorEvent>();
         app.insert_resource::<CallbackSettings<P>>(CallbackSettings {
-            callback_handler: Some(handler_fn),
+            callback_handler: handler_fn,
         });
         app.add_systems(Update, event_handler::<L, P>);
         app.insert_resource::<Scripts>(Scripts { scripts });
