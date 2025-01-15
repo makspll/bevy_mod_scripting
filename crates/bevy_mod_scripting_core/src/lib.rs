@@ -65,7 +65,7 @@ pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
     pub callback_handler: Option<HandlerFn<P>>,
     /// The context builder for loading contexts
     pub context_builder: ContextBuilder<P>,
-    /// The context assigner for assigning contexts to scripts, if not provided default strategy of keeping each script in its own context is used
+    /// The context assigner for assigning contexts to scripts.
     pub context_assigner: ContextAssigner<P>,
     pub language_mapper: Option<AssetPathToLanguageMapper>,
 
@@ -135,6 +135,40 @@ impl<P: IntoScriptPluginParams> ScriptingPlugin<P> {
             .get_or_insert_with(Default::default)
             .initializers
             .push(initializer);
+        self
+    }
+}
+
+/// Utility trait for configuring all scripting plugins.
+pub trait ConfigureScriptPlugin {
+    type P: IntoScriptPluginParams;
+    fn add_context_initializer(self, initializer: ContextInitializer<Self::P>) -> Self;
+    fn add_context_pre_handling_initializer(
+        self,
+        initializer: ContextPreHandlingInitializer<Self::P>,
+    ) -> Self;
+    fn add_runtime_initializer(self, initializer: RuntimeInitializer<Self::P>) -> Self;
+}
+
+impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugin for P {
+    type P = P;
+
+    fn add_context_initializer(mut self, initializer: ContextInitializer<Self::P>) -> Self {
+        self.as_mut().add_context_initializer(initializer);
+        self
+    }
+
+    fn add_context_pre_handling_initializer(
+        mut self,
+        initializer: ContextPreHandlingInitializer<Self::P>,
+    ) -> Self {
+        self.as_mut()
+            .add_context_pre_handling_initializer(initializer);
+        self
+    }
+
+    fn add_runtime_initializer(mut self, initializer: RuntimeInitializer<Self::P>) -> Self {
+        self.as_mut().add_runtime_initializer(initializer);
         self
     }
 }

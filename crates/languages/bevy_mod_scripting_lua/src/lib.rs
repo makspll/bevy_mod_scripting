@@ -31,6 +31,13 @@ impl IntoScriptPluginParams for LuaScriptingPlugin {
     fn build_runtime() -> Self::R {}
 }
 
+// necessary for automatic config goodies
+impl AsMut<ScriptingPlugin<Self>> for LuaScriptingPlugin {
+    fn as_mut(&mut self) -> &mut ScriptingPlugin<LuaScriptingPlugin> {
+        &mut self.scripting_plugin
+    }
+}
+
 pub struct LuaScriptingPlugin {
     pub scripting_plugin: ScriptingPlugin<Self>,
 }
@@ -39,13 +46,13 @@ impl Default for LuaScriptingPlugin {
     fn default() -> Self {
         LuaScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
-                context_assigner: None,
+                context_assigner: Default::default(),
                 runtime_settings: None,
                 callback_handler: Some(lua_handler),
-                context_builder: Some(ContextBuilder::<LuaScriptingPlugin> {
+                context_builder: ContextBuilder::<LuaScriptingPlugin> {
                     load: lua_context_load,
                     reload: lua_context_reload,
-                }),
+                },
                 language_mapper: Some(AssetPathToLanguageMapper {
                     map: lua_language_mapper,
                 }),

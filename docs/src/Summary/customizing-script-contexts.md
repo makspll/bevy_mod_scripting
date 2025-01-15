@@ -11,8 +11,7 @@ For example, let's say you want to set a dynamic amount of globals in your scrip
 
 You could do this by customizing the scripting plugin:
 ```rust,ignore
-let plugin = LuaScriptingPlugin::default();
-plugin.add_context_initializer(|script_id: &str, context: &mut Lua| {
+let plugin = LuaScriptingPlugin::default().add_context_initializer(|script_id: &str, context: &mut Lua| {
     let globals = context.globals();
     for i in 0..10 {
         globals.set(i, i);
@@ -29,8 +28,7 @@ The above will run every time the script is loaded or re-loaded.
 
 If you want to customize your context before every time it's about to handle events, you can use `Context Pre Handling Initializers`:
 ```rust,ignore
-let plugin = LuaScriptingPlugin::default();
-plugin.add_context_pre_handling_initializer(|script_id: &str, entity: Entity, context: &mut Lua| {
+let plugin = LuaScriptingPlugin::default().add_context_pre_handling_initializer(|script_id: &str, entity: Entity, context: &mut Lua| {
     let globals = context.globals();
     globals.set("script_name", script_id.to_owned());
     Ok(())
@@ -40,8 +38,7 @@ plugin.add_context_pre_handling_initializer(|script_id: &str, entity: Entity, co
 
 Some scripting languages, have the concept of a `runtime`. This is a global object which is shared between all contexts. You can customize this object using `Runtime Initializers`:
 ```rust,ignore
-let plugin = SomeScriptingPlugin::default();
-plugin.add_runtime_initializer(|runtime: &mut Runtime| {
+let plugin = SomeScriptingPlugin::default().add_runtime_initializer(|runtime: &mut Runtime| {
     runtime.set_max_stack_size(1000);
     Ok(())
 });

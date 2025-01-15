@@ -66,7 +66,7 @@ pub fn execute_integration_test<
         });
 
     // load the context as normal
-    let mut loaded_context = (context_settings.loader.unwrap().load)(
+    let mut loaded_context = (context_settings.loader.load)(
         &(script_id.to_owned()).into(),
         code,
         &context_settings.context_initializers,
