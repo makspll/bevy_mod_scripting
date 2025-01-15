@@ -9,6 +9,7 @@ commit_parsers = [
     # dont include chore changes in changelog
     { message = "^chore.*", skip = true },
     { message = "^test.*", skip = true },
+    { message = "^docs.*", skip = true },
     { message = "^feat", group = "added" },
     { message = "^changed", group = "changed" },
     { message = "^deprecated", group = "deprecated" },
