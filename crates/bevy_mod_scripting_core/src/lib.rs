@@ -34,15 +34,18 @@ pub mod script;
 #[derive(SystemSet, Hash, Debug, Eq, PartialEq, Clone)]
 /// Labels for various BMS systems
 pub enum ScriptingSystemSet {
-    // Post Setup processes
+    /// Systems which handle the processing of asset events for script assets, and dispatching internal script asset events
+    ScriptAssetDispatch,
+    /// Systems which read incoming internal script asset events and produce script lifecycle commands
+    ScriptCommandDispatch,
+    /// Systems which read incoming script asset events and remove metadata for removed assets
+    ScriptMetadataRemoval,
+
+    /// One time runtime initialization systems
     RuntimeInitialization,
 
-    // Post Update processes
+    /// Systems which handle the garbage collection of allocated values
     GarbageCollection,
-
-    ScriptMetadataInsertion,
-    ScriptCommandDispatch,
-    ScriptMetadataRemoval,
 }
 
 /// Types which act like scripting plugins, by selecting a context and runtime

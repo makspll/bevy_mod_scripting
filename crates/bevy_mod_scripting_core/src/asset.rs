@@ -8,8 +8,11 @@ use bevy::{
     app::{App, PreUpdate},
     asset::{Asset, AssetEvent, AssetId, AssetLoader, Assets},
     ecs::system::Resource,
-    log::{error, info, trace},
-    prelude::{Commands, EventReader, IntoSystemConfigs, IntoSystemSetConfigs, Res, ResMut},
+    log::{debug, error, info, trace},
+    prelude::{
+        Commands, Event, EventReader, EventWriter, IntoSystemConfigs, IntoSystemSetConfigs, Res,
+        ResMut,
+    },
     reflect::TypePath,
     utils::HashMap,
 };
@@ -47,6 +50,13 @@ pub struct ScriptAsset {
     pub content: Box<[u8]>,
     /// The virtual filesystem path of the asset, used to map to the script Id for asset backed scripts
     pub asset_path: PathBuf,
+}
+
+#[derive(Event, Debug, Clone)]
+pub(crate) enum ScriptAssetEvent {
+    Added(ScriptMetadata),
+    Removed(ScriptMetadata),
+    Modified(ScriptMetadata),
 }
 
 #[derive(Default)]
@@ -140,6 +150,7 @@ pub struct ScriptMetadataStore {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ScriptMetadata {
+    pub asset_id: AssetId<ScriptAsset>,
     pub script_id: ScriptId,
     pub language: Language,
 }
@@ -157,78 +168,94 @@ impl ScriptMetadataStore {
     pub fn remove(&mut self, id: AssetId<ScriptAsset>) -> Option<ScriptMetadata> {
         self.map.remove(&id)
     }
+
+    pub fn contains(&self, id: AssetId<ScriptAsset>) -> bool {
+        self.map.contains_key(&id)
+    }
 }
 
-/// Listens to `AssetEvent<ScriptAsset>::Added` events and populates the script metadata store
-pub fn insert_script_metadata(
+/// Converts incoming asset events, into internal script asset events, also loads and inserts metadata for newly added scripts
+pub(crate) fn dispatch_script_asset_events(
     mut events: EventReader<AssetEvent<ScriptAsset>>,
-    script_assets: Res<Assets<ScriptAsset>>,
-    mut asset_path_map: ResMut<ScriptMetadataStore>,
+    mut script_asset_events: EventWriter<ScriptAssetEvent>,
+    assets: Res<Assets<ScriptAsset>>,
+    mut metadata_store: ResMut<ScriptMetadataStore>,
     settings: Res<ScriptAssetSettings>,
 ) {
     for event in events.read() {
-        if let AssetEvent::LoadedWithDependencies { id } = event {
-            let asset = script_assets.get(*id);
-            if let Some(asset) = asset {
-                let path = &asset.asset_path;
-                let converter = settings.script_id_mapper.map;
-                let script_id = converter(path);
+        match event {
+            AssetEvent::LoadedWithDependencies { id } | AssetEvent::Added { id } => {
+                // these can occur multiple times, we only send one added event though
+                if !metadata_store.contains(*id) {
+                    let asset = assets.get(*id);
+                    if let Some(asset) = asset {
+                        let path = &asset.asset_path;
+                        let converter = settings.script_id_mapper.map;
+                        let script_id = converter(path);
 
-                let language = settings.select_script_language(path);
-                let metadata = ScriptMetadata {
-                    script_id,
-                    language,
-                };
-                info!("Populating script metadata for script: {:?}:", metadata);
-                asset_path_map.insert(*id, metadata);
-            } else {
-                error!("A script was added but it's asset was not found, failed to compute metadata. This script will not be loaded. {}", id);
+                        let language = settings.select_script_language(path);
+                        let metadata = ScriptMetadata {
+                            asset_id: *id,
+                            script_id,
+                            language,
+                        };
+                        debug!("Script loaded, populating metadata: {:?}:", metadata);
+                        script_asset_events.send(ScriptAssetEvent::Added(metadata.clone()));
+                        metadata_store.insert(*id, metadata);
+                    } else {
+                        error!("A script was added but it's asset was not found, failed to compute metadata. This script will not be loaded. {}", id);
+                    }
+                }
             }
+            AssetEvent::Removed { id } => {
+                if let Some(metadata) = metadata_store.get(*id) {
+                    debug!("Script removed: {:?}", metadata);
+                    script_asset_events.send(ScriptAssetEvent::Removed(metadata.clone()));
+                } else {
+                    error!("Script metadata not found for removed script asset: {}. Cannot properly clean up script", id);
+                }
+            }
+            AssetEvent::Modified { id } => {
+                if let Some(metadata) = metadata_store.get(*id) {
+                    debug!("Script modified: {:?}", metadata);
+                    script_asset_events.send(ScriptAssetEvent::Modified(metadata.clone()));
+                } else {
+                    error!("Script metadata not found for modified script asset: {}. Cannot properly update script", id);
+                }
+            }
+            _ => {}
         }
     }
 }
 
-/// Listens to [`AssetEvent<ScriptAsset>::Removed`] events and removes the corresponding script metadata
-pub fn remove_script_metadata(
-    mut events: EventReader<AssetEvent<ScriptAsset>>,
+/// Listens to [`ScriptAssetEvent::Removed`] events and removes the corresponding script metadata
+pub(crate) fn remove_script_metadata(
+    mut events: EventReader<ScriptAssetEvent>,
     mut asset_path_map: ResMut<ScriptMetadataStore>,
 ) {
     for event in events.read() {
-        if let AssetEvent::Removed { id } = event {
-            let previous = asset_path_map.remove(*id);
+        if let ScriptAssetEvent::Removed(metadata) = event {
+            let previous = asset_path_map.remove(metadata.asset_id);
             if let Some(previous) = previous {
-                info!("Removed script metadata for removed script: {:?}", previous);
+                debug!("Removed script metadata: {:?}", previous);
             }
         }
     }
 }
 
-/// Listens to [`AssetEvent<ScriptAsset>`] events and dispatches [`CreateOrUpdateScript`] and [`DeleteScript`] commands accordingly.
+/// Listens to [`ScriptAssetEvent`] events and dispatches [`CreateOrUpdateScript`] and [`DeleteScript`] commands accordingly.
 ///
 /// Allows for hot-reloading of scripts.
-pub fn sync_script_data<P: IntoScriptPluginParams>(
-    mut events: EventReader<AssetEvent<ScriptAsset>>,
+pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
+    mut events: EventReader<ScriptAssetEvent>,
     script_assets: Res<Assets<ScriptAsset>>,
-    script_metadata: Res<ScriptMetadataStore>,
     mut commands: Commands,
 ) {
     for event in events.read() {
         trace!("{}: Received script asset event: {:?}", P::LANGUAGE, event);
         match event {
             // emitted when a new script asset is loaded for the first time
-            AssetEvent::LoadedWithDependencies { id } | AssetEvent::Modified { id } => {
-                let metadata = match script_metadata.get(*id) {
-                    Some(m) => m,
-                    None => {
-                        error!(
-                            "{}: Script metadata not found for script asset with id: {}. Cannot load script.",
-                            P::LANGUAGE,
-                            id
-                        );
-                        continue;
-                    }
-                };
-
+            ScriptAssetEvent::Added(metadata) | ScriptAssetEvent::Modified(metadata) => {
                 if metadata.language != P::LANGUAGE {
                     trace!(
                         "{}: Script asset with id: {} is for a different langauge than this sync system. Skipping.",
@@ -238,14 +265,9 @@ pub fn sync_script_data<P: IntoScriptPluginParams>(
                     continue;
                 }
 
-                info!(
-                    "{}: Dispatching Creation/Modification command for script: {:?}. Asset Id: {}",
-                    P::LANGUAGE,
-                    metadata,
-                    id
-                );
+                info!("{}: Loading Script: {:?}", P::LANGUAGE, metadata.script_id,);
 
-                if let Some(asset) = script_assets.get(*id) {
+                if let Some(asset) = script_assets.get(metadata.asset_id) {
                     commands.queue(CreateOrUpdateScript::<P>::new(
                         metadata.script_id.clone(),
                         asset.content.clone(),
@@ -253,28 +275,10 @@ pub fn sync_script_data<P: IntoScriptPluginParams>(
                     ));
                 }
             }
-            AssetEvent::Removed { id } => {
-                let metadata = match script_metadata.get(*id) {
-                    Some(m) => m,
-                    None => {
-                        error!(
-                            "{}: Script metadata not found for script asset with id: {}. Cannot delete script.",
-                            P::LANGUAGE,
-                            id
-                        );
-                        return;
-                    }
-                };
-
-                info!(
-                    "{}: Dispatching Deletion command for script: {:?}. Asset Id: {}",
-                    P::LANGUAGE,
-                    metadata,
-                    id
-                );
+            ScriptAssetEvent::Removed(metadata) => {
+                info!("{}: Deleting Script: {:?}", P::LANGUAGE, metadata.script_id,);
                 commands.queue(DeleteScript::<P>::new(metadata.script_id.clone()));
             }
-            _ => return,
         };
     }
 }
@@ -286,21 +290,22 @@ pub(crate) fn configure_asset_systems(app: &mut App) -> &mut App {
     app.add_systems(
         PreUpdate,
         (
-            insert_script_metadata.in_set(ScriptingSystemSet::ScriptMetadataInsertion),
+            dispatch_script_asset_events.in_set(ScriptingSystemSet::ScriptAssetDispatch),
             remove_script_metadata.in_set(ScriptingSystemSet::ScriptMetadataRemoval),
         ),
     )
     .configure_sets(
         PreUpdate,
         (
-            ScriptingSystemSet::ScriptMetadataInsertion.after(bevy::asset::TrackAssets),
+            ScriptingSystemSet::ScriptAssetDispatch.after(bevy::asset::TrackAssets),
             ScriptingSystemSet::ScriptCommandDispatch
-                .after(ScriptingSystemSet::ScriptMetadataInsertion)
+                .after(ScriptingSystemSet::ScriptAssetDispatch)
                 .before(ScriptingSystemSet::ScriptMetadataRemoval),
         ),
     )
     .init_resource::<ScriptMetadataStore>()
-    .init_resource::<ScriptAssetSettings>();
+    .init_resource::<ScriptAssetSettings>()
+    .add_event::<ScriptAssetEvent>();
 
     app
 }
@@ -455,6 +460,7 @@ mod tests {
         let mut store = ScriptMetadataStore::default();
         let id = AssetId::invalid();
         let meta = ScriptMetadata {
+            asset_id: AssetId::invalid(),
             script_id: "test".into(),
             language: Language::Lua,
         };
@@ -544,7 +550,7 @@ mod tests {
     }
 
     #[test]
-    fn test_asset_metadata_insert_remove_systems() {
+    fn test_asset_metadata_systems() {
         // test metadata flow
         let mut app = init_loader_test(ScriptAssetLoader {
             extensions: &[],

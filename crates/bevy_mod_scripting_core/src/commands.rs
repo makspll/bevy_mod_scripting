@@ -144,6 +144,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         }
     }
 
+    #[inline(always)]
     fn reload_context(
         &self,
         world: &mut bevy::prelude::World,
@@ -188,7 +189,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
             Some(previous_context_id) => {
                 if let Some(previous_context) = contexts.get_mut(previous_context_id) {
                     let log_context = format!("{}: Reloading script: {}.", P::LANGUAGE, self.id);
-                    bevy::log::info!("{}", log_context);
+                    bevy::log::debug!("{}", log_context);
                     if !self.reload_context(
                         world,
                         settings,
@@ -225,7 +226,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
                     self.run_on_load_callback(settings, runtime, runner, world, existing_context);
                 } else {
                     // load new context
-                    bevy::log::info!("{}", log_context);
+                    bevy::log::debug!("{}", log_context);
                     let ctxt = (builder.load)(
                         &self.id,
                         &self.content,
