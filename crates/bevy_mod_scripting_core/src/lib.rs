@@ -13,7 +13,6 @@ use context::{
     Context, ContextAssigner, ContextBuilder, ContextInitializer, ContextLoadingSettings,
     ContextPreHandlingInitializer, ScriptContexts,
 };
-use docs::{Documentation, DocumentationFragment};
 use event::ScriptCallbackEvent;
 use handler::{CallbackSettings, HandlerFn};
 use runtime::{initialize_runtime, Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
@@ -23,7 +22,6 @@ pub mod asset;
 pub mod bindings;
 pub mod commands;
 pub mod context;
-pub mod docs;
 pub mod error;
 pub mod event;
 pub mod handler;
@@ -239,46 +237,5 @@ impl AddRuntimeInitializer for App {
             .initializers
             .push(initializer);
         self
-    }
-}
-
-pub trait StoreDocumentation<D: DocumentationFragment> {
-    /// Adds a documentation fragment to the documentation store.
-    fn add_documentation_fragment(&mut self, fragment: D) -> &mut Self;
-    /// Consumes all the stored documentation fragments, and merges them into one, then generates the documentation.
-    fn generate_docs(&mut self) -> Result<(), Box<dyn std::error::Error>>;
-}
-
-impl<D: DocumentationFragment> StoreDocumentation<D> for App {
-    fn add_documentation_fragment(&mut self, fragment: D) -> &mut Self {
-        self.world_mut()
-            .init_non_send_resource::<Documentation<D>>();
-        self.world_mut()
-            .non_send_resource_mut::<Documentation<D>>()
-            .as_mut()
-            .fragments
-            .push(fragment);
-        self
-    }
-
-    fn generate_docs(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-        let mut docs = match self
-            .world_mut()
-            .remove_non_send_resource::<Documentation<D>>()
-        {
-            Some(docs) => docs,
-            None => return Ok(()),
-        };
-
-        let mut top_fragment = match docs.fragments.pop() {
-            Some(fragment) => fragment,
-            None => return Ok(()),
-        };
-
-        for fragment in docs.fragments.into_iter() {
-            top_fragment = top_fragment.merge(fragment);
-        }
-
-        top_fragment.gen_docs()
     }
 }
