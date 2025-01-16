@@ -48,3 +48,6 @@ app.add_systems(Update, event_handler::<OnEvent, LuaScriptingPlugin>);
 Note the system is parameterized by the label we defined earlier, and the scripting plugin we are using. You can add as many of these systems as you like.
 
 The event handler will catch all events with the label `OnEvent` and trigger the `on_event` callback on all targeted scripts which have that callback defined.
+
+In order to handle events in the same frame and not accidentally have events "spill over" into the next frame, you should make sure to order any systems which produce these events *before* the event handler systems.
+
