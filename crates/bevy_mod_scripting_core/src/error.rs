@@ -584,78 +584,220 @@ impl PartialEq for InteropErrorInner {
     }
 }
 
+macro_rules! missing_function_error {
+    ($function_name:expr, $on:expr) => {
+        format!(
+            "Could not find function: {} for type: {}",
+            $function_name, $on
+        )
+    };
+}
+
+macro_rules! unregistered_base {
+    ($base:expr) => {
+        format!("Unregistered base type: {}", $base)
+    };
+}
+
+macro_rules! cannot_claim_access {
+    ($base:expr, $location:expr) => {
+        format!(
+            "Cannot claim access to base type: {}. The base is already claimed by something else in a way which prevents safe access. Location: {}",
+            $base, $location
+        )
+    };
+}
+
+macro_rules! impossible_conversion {
+    ($into:expr) => {
+        format!("Cannot convert to type: {}", $into)
+    };
+}
+
+macro_rules! type_mismatch {
+    ($expected:expr, $got:expr) => {
+        format!("Type mismatch, expected: {}, got: {}", $expected, $got)
+    };
+}
+
+macro_rules! string_type_mismatch {
+    ($expected:expr, $got:expr) => {
+        format!("Type mismatch, expected: {}, got: {}", $expected, $got)
+    };
+}
+
+macro_rules! could_not_downcast {
+    ($from:expr, $to:expr) => {
+        format!("Could not downcast from: {} to: {}", $from, $to)
+    };
+}
+
+macro_rules! garbage_collected_allocation {
+    ($reference:expr) => {
+        format!(
+            "Allocation was garbage collected. Could not access reference: {} as a result.",
+            $reference
+        )
+    };
+}
+
+macro_rules! reflection_path_error {
+    ($error:expr, $reference:expr) => {
+        format!(
+            "Error while reflecting path: {} on reference: {}",
+            $error, $reference
+        )
+    };
+}
+
+macro_rules! missing_type_data {
+    ($type_data:expr, $type_id:expr) => {
+        format!(
+            "Missing type data {} for type: {}. Did you register the type correctly?",
+            $type_data, $type_id
+        )
+    };
+}
+
+macro_rules! failed_from_reflect {
+    ($type_id:expr, $reason:expr) => {
+        format!(
+            "Failed to convert from reflect for type: {} with reason: {}",
+            $type_id, $reason
+        )
+    };
+}
+
+macro_rules! value_mismatch {
+    ($expected:expr, $got:expr) => {
+        format!("Value mismatch, expected: {}, got: {}", $expected, $got)
+    };
+}
+
+macro_rules! unsupported_operation {
+    ($operation:expr, $base:expr, $value:expr) => {
+        format!(
+            "Unsupported operation: {} on base: {} with value: {:?}",
+            $operation, $base, $value
+        )
+    };
+}
+
+macro_rules! invalid_index {
+    ($value:expr, $reason:expr) => {
+        format!("Invalid index for value: {}: {}", $value, $reason)
+    };
+}
+
+macro_rules! missing_entity {
+    ($entity:expr) => {
+        format!("Missing or invalid entity: {}", $entity)
+    };
+}
+
+macro_rules! invalid_component {
+    ($component_id:expr) => {
+        format!("Invalid component: {:?}", $component_id)
+    };
+}
+
+macro_rules! function_interop_error {
+    ($display_name:expr, $opt_on:expr, $error:expr) => {
+        format!(
+            "Error in function {} {}: {}",
+            $display_name, $opt_on, $error
+        )
+    };
+}
+
+macro_rules! function_arg_conversion_error {
+    ($argument:expr, $error:expr) => {
+        format!("Error converting argument {}: {}", $argument, $error)
+    };
+}
+
+macro_rules! function_call_error {
+    ($inner:expr) => {
+        format!("Error in function call: {}", $inner)
+    };
+}
+
+macro_rules! better_conversion_exists {
+    ($context:expr) => {
+        format!("Unfinished conversion in context of: {}. A better conversion exists but caller didn't handle the case.", $context)
+    };
+}
+
+macro_rules! length_mismatch {
+    ($expected:expr, $got:expr) => {
+        format!(
+            "Array/List Length mismatch, expected: {}, got: {}",
+            $expected, $got
+        )
+    };
+}
+
+macro_rules! invalid_access_count {
+    ($expected:expr, $count:expr, $context:expr) => {
+        format!(
+            "Invalid access count, expected: {}, got: {}. {}",
+            $expected, $count, $context
+        )
+    };
+}
+
 impl DisplayWithWorld for InteropErrorInner {
     fn display_with_world(&self, world: crate::bindings::WorldGuard) -> String {
         match self {
             InteropErrorInner::MissingFunctionError { on, function_name } => {
-                format!(
-                    "Could not find function: {} for type: {}",
-                    function_name,
-                    on.display_with_world(world)
-                )
+                missing_function_error!(function_name, on.display_with_world(world))
             },
             InteropErrorInner::UnregisteredBase { base } => {
-                format!("Unregistered base type: {}", base.display_with_world(world))
+                unregistered_base!(base.display_with_world(world))
             }
             InteropErrorInner::CannotClaimAccess { base, location } => {
-                format!(
-                    "Cannot claim access to base type: {}. The base is already claimed by something else in a way which prevents safe access. Location: {}",
-                    base.display_with_world(world),
-                    location.display_location()
-                )
+                cannot_claim_access!(base.display_with_world(world), location.display_location())
             }
             InteropErrorInner::ImpossibleConversion { into } => {
-                format!("Cannot convert to type: {}", into.display_with_world(world))
+                impossible_conversion!(into.display_with_world(world))
             }
             InteropErrorInner::TypeMismatch { expected, got } => {
-                format!(
-                    "Type mismatch, expected: {}, got: {}",
+                type_mismatch!(
                     expected.display_with_world(world.clone()),
                     got.map(|t| t.display_with_world(world))
                         .unwrap_or("None".to_owned())
                 )
             }
             InteropErrorInner::StringTypeMismatch { expected, got } => {
-                format!(
-                    "Type mismatch, expected: {}, got: {}",
+                string_type_mismatch!(
                     expected,
                     got.map(|t| t.display_with_world(world))
                         .unwrap_or("None".to_owned())
                 )
             }
             InteropErrorInner::CouldNotDowncast { from, to } => {
-                format!(
-                    "Could not downcast from: {} to: {}",
+                could_not_downcast!(
                     from.display_with_world(world.clone()),
                     to.display_with_world(world)
                 )
             }
             InteropErrorInner::GarbageCollectedAllocation { reference } => {
-                format!(
-                    "Allocation was garbage collected. Could not access reference: {} as a result.",
-                    reference.display_with_world(world),
-                )
+                garbage_collected_allocation!(reference.display_with_world(world))
             }
             InteropErrorInner::ReflectionPathError { error, reference } => {
-                format!(
-                    "Error while reflecting path: {} on reference: {}",
+                reflection_path_error!(
                     error,
                     reference
                         .as_ref()
                         .map(|r| r.display_with_world(world))
-                        .unwrap_or("None".to_owned()),
+                        .unwrap_or("None".to_owned())
                 )
             }
             InteropErrorInner::MissingTypeData { type_id, type_data } => {
-                format!(
-                    "Missing type data {} for type: {}. Did you register the type correctly?",
-                    type_data,
-                    type_id.display_with_world(world),
-                )
+                missing_type_data!(type_data, type_id.display_with_world(world))
             }
             InteropErrorInner::FailedFromReflect { type_id, reason } => {
-                format!(
-                    "Failed to convert from reflect for type: {} with reason: {}",
+                failed_from_reflect!(
                     type_id
                         .map(|t| t.display_with_world(world))
                         .unwrap_or("None".to_owned()),
@@ -663,8 +805,7 @@ impl DisplayWithWorld for InteropErrorInner {
                 )
             }
             InteropErrorInner::ValueMismatch { expected, got } => {
-                format!(
-                    "Value mismatch, expected: {}, got: {}",
+                value_mismatch!(
                     expected.display_with_world(world.clone()),
                     got.display_with_world(world)
                 )
@@ -674,8 +815,7 @@ impl DisplayWithWorld for InteropErrorInner {
                 value,
                 operation,
             } => {
-                format!(
-                    "Unsupported operation: {} on base: {} with value: {:?}",
+                unsupported_operation!(
                     operation,
                     base.map(|t| t.display_with_world(world))
                         .unwrap_or("None".to_owned()),
@@ -683,17 +823,13 @@ impl DisplayWithWorld for InteropErrorInner {
                 )
             }
             InteropErrorInner::InvalidIndex { value, reason } => {
-                format!(
-                    "Invalid index for value: {}: {}",
-                    value.display_with_world(world),
-                    reason
-                )
+                invalid_index!(value.display_with_world(world), reason)
             }
             InteropErrorInner::MissingEntity { entity } => {
-                format!("Missing or invalid entity: {}", entity)
+                missing_entity!(entity)
             }
             InteropErrorInner::InvalidComponent { component_id } => {
-                format!("Invalid component: {:?}", component_id)
+                invalid_component!(component_id)
             }
             InteropErrorInner::StaleWorldAccess => {
                 "Stale world access. The world has been dropped and a script tried to access it. Do not try to store or copy the world."
@@ -712,32 +848,23 @@ impl DisplayWithWorld for InteropErrorInner {
                 } else {
                     function_name.as_str()
                 };
-                format!(
-                    "Error in function {} {}: {}",
-                    display_name,
-                    opt_on,
-                    error.display_with_world(world),
-                )
+                function_interop_error!(display_name, opt_on, error.display_with_world(world))
             },
             InteropErrorInner::FunctionArgConversionError { argument, error } => {
-                format!(
-                    "Error converting argument {}: {}",
-                    argument,
-                    error.display_with_world(world)
-                )
+                function_arg_conversion_error!(argument, error.display_with_world(world))
             },
             InteropErrorInner::FunctionCallError { inner } => {
-                format!("Error in function call: {}", inner)
+                function_call_error!(inner)
             },
             InteropErrorInner::BetterConversionExists{ context } => {
-                format!("Unfinished conversion in context of: {}. A better conversion exists but caller didn't handle the case.", context)
+                better_conversion_exists!(context)
             },
             InteropErrorInner::OtherError { error } => error.to_string(),
             InteropErrorInner::LengthMismatch { expected, got } => {
-                format!("Array/List Length mismatch, expected: {}, got: {}", expected, got)
+                length_mismatch!(expected, got)
             },
             InteropErrorInner::InvalidAccessCount { count, expected, context } => {
-                format!("Invalid access count, expected: {}, got: {}. {}", expected, count, context)
+                invalid_access_count!(expected, count, context)
             },
         }
     }
@@ -746,74 +873,54 @@ impl DisplayWithWorld for InteropErrorInner {
     fn display_without_world(&self) -> String {
         match self {
             InteropErrorInner::MissingFunctionError { on, function_name } => {
-                format!(
-                    "Could not find function: {} for type: {}",
-                    function_name,
-                    on.display_without_world()
-                )
+                missing_function_error!(function_name, on.display_without_world())
             },
             InteropErrorInner::UnregisteredBase { base } => {
-                format!("Unregistered base type: {}", base.display_without_world())
+                unregistered_base!(base.display_without_world())
             }
             InteropErrorInner::CannotClaimAccess { base, location } => {
-                format!(
-                    "Cannot claim access to base type: {}. The base is already claimed by something else in a way which prevents safe access. Location: {}",
-                    base.display_without_world(),
-                    location.display_location()
-                )
+                cannot_claim_access!(base.display_without_world(), location.display_location())
             }
             InteropErrorInner::ImpossibleConversion { into } => {
-                format!("Cannot convert to type: {}", into.display_without_world())
+                impossible_conversion!(into.display_without_world())
             }
             InteropErrorInner::TypeMismatch { expected, got } => {
-                format!(
-                    "Type mismatch, expected: {}, got: {}",
+                type_mismatch!(
                     expected.display_without_world(),
                     got.map(|t| t.display_without_world())
                         .unwrap_or("None".to_owned())
                 )
             }
             InteropErrorInner::StringTypeMismatch { expected, got } => {
-                format!(
-                    "Type mismatch, expected: {}, got: {}",
+                string_type_mismatch!(
                     expected,
                     got.map(|t| t.display_without_world())
                         .unwrap_or("None".to_owned())
                 )
             }
             InteropErrorInner::CouldNotDowncast { from, to } => {
-                format!(
-                    "Could not downcast from: {} to: {}",
+                could_not_downcast!(
                     from.display_without_world(),
                     to.display_without_world()
                 )
             }
             InteropErrorInner::GarbageCollectedAllocation { reference } => {
-                format!(
-                    "Allocation was garbage collected. Could not access reference: {} as a result.",
-                    reference.display_without_world(),
-                )
+                garbage_collected_allocation!(reference.display_without_world())
             }
             InteropErrorInner::ReflectionPathError { error, reference } => {
-                format!(
-                    "Error while reflecting path: {} on reference: {}",
+                reflection_path_error!(
                     error,
                     reference
                         .as_ref()
                         .map(|r| r.display_without_world())
-                        .unwrap_or("None".to_owned()),
+                        .unwrap_or("None".to_owned())
                 )
             }
             InteropErrorInner::MissingTypeData { type_id, type_data } => {
-                format!(
-                    "Missing type data {} for type: {}. Did you register the type correctly?",
-                    type_data,
-                    type_id.display_without_world(),
-                )
+                missing_type_data!(type_data, type_id.display_without_world())
             }
             InteropErrorInner::FailedFromReflect { type_id, reason } => {
-                format!(
-                    "Failed to convert from reflect for type: {} with reason: {}",
+                failed_from_reflect!(
                     type_id
                         .map(|t| t.display_without_world())
                         .unwrap_or("None".to_owned()),
@@ -821,8 +928,7 @@ impl DisplayWithWorld for InteropErrorInner {
                 )
             }
             InteropErrorInner::ValueMismatch { expected, got } => {
-                format!(
-                    "Value mismatch, expected: {}, got: {}",
+                value_mismatch!(
                     expected.display_without_world(),
                     got.display_without_world()
                 )
@@ -832,8 +938,7 @@ impl DisplayWithWorld for InteropErrorInner {
                 value,
                 operation,
             } => {
-                format!(
-                    "Unsupported operation: {} on base: {} with value: {:?}",
+                unsupported_operation!(
                     operation,
                     base.map(|t| t.display_without_world())
                         .unwrap_or("None".to_owned()),
@@ -841,17 +946,13 @@ impl DisplayWithWorld for InteropErrorInner {
                 )
             }
             InteropErrorInner::InvalidIndex { value, reason } => {
-                format!(
-                    "Invalid index for value: {}: {}",
-                    value.display_without_world(),
-                    reason
-                )
+                invalid_index!(value.display_without_world(), reason)
             }
             InteropErrorInner::MissingEntity { entity } => {
-                format!("Missing or invalid entity: {}", entity)
+                missing_entity!(entity)
             }
             InteropErrorInner::InvalidComponent { component_id } => {
-                format!("Invalid component: {:?}", component_id)
+                invalid_component!(component_id)
             }
             InteropErrorInner::StaleWorldAccess => {
                 "Stale world access. The world has been dropped and a script tried to access it. Do not try to store or copy the world."
@@ -864,37 +965,29 @@ impl DisplayWithWorld for InteropErrorInner {
                 let opt_on = match on {
                     Namespace::Global => "".to_owned(),
                     Namespace::OnType(type_id) => format!("on type: {}", type_id.display_without_world()),
-                };                let display_name = if function_name.starts_with("TypeId") {
+                };
+                let display_name = if function_name.starts_with("TypeId") {
                     function_name.split("::").last().unwrap()
                 } else {
                     function_name.as_str()
                 };
-                format!(
-                    "Error in function {} {}: {}",
-                    display_name,
-                    opt_on,
-                    error.display_without_world(),
-                )
+                function_interop_error!(display_name, opt_on, error.display_without_world())
             },
             InteropErrorInner::FunctionArgConversionError { argument, error } => {
-                format!(
-                    "Error converting argument {}: {}",
-                    argument,
-                    error.display_without_world()
-                )
+                function_arg_conversion_error!(argument, error.display_without_world())
             },
             InteropErrorInner::FunctionCallError { inner } => {
-                format!("Error in function call: {}", inner)
+                function_call_error!(inner)
             },
             InteropErrorInner::BetterConversionExists{ context } => {
-                format!("Unfinished conversion in context of: {}. A better conversion exists but caller didn't handle the case.", context)
+                better_conversion_exists!(context)
             },
             InteropErrorInner::OtherError { error } => error.to_string(),
             InteropErrorInner::LengthMismatch { expected, got } => {
-                format!("Array/List Length mismatch, expected: {}, got: {}", expected, got)
+                length_mismatch!(expected, got)
             },
             InteropErrorInner::InvalidAccessCount { count, expected, context } => {
-                format!("Invalid access count, expected: {}, got: {}. {}", expected, count, context)
+                invalid_access_count!(expected, count, context)
             },
         }
     }
@@ -904,5 +997,49 @@ impl DisplayWithWorld for InteropErrorInner {
 impl Default for InteropErrorInner {
     fn default() -> Self {
         InteropErrorInner::StaleWorldAccess
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use bevy::prelude::{AppTypeRegistry, World};
+
+    use crate::bindings::{
+        function::script_function::AppScriptFunctionRegistry, AppReflectAllocator,
+        WorldAccessGuard, WorldGuard,
+    };
+
+    use super::*;
+
+    #[test]
+    fn test_error_display() {
+        let error =
+            InteropError::failed_from_reflect(Some(TypeId::of::<String>()), "reason".to_owned());
+        let mut world = World::default();
+        let type_registry = AppTypeRegistry::default();
+        world.insert_resource(type_registry);
+
+        let script_allocator = AppReflectAllocator::default();
+        world.insert_resource(script_allocator);
+
+        let script_function_registry = AppScriptFunctionRegistry::default();
+        world.insert_resource(script_function_registry);
+
+        let world_guard = WorldGuard::new(WorldAccessGuard::new(&mut world));
+        assert_eq!(
+            error.display_with_world(world_guard),
+            format!(
+                "Failed to convert from reflect for type: {} with reason: reason",
+                std::any::type_name::<String>()
+            )
+        );
+
+        assert_eq!(
+            error.display_without_world(),
+            format!(
+                "Failed to convert from reflect for type: {:?} with reason: reason",
+                TypeId::of::<String>()
+            )
+        );
     }
 }
