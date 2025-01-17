@@ -366,7 +366,7 @@ impl DisplayWithWorld for ReflectBaseType {
 impl DisplayWithWorld for TypeId {
     fn display_with_world(&self, world: WorldGuard) -> String {
         if *self == TypeId::of::<FakeType>() {
-            return "Dynamic Type".to_owned();
+            return "Unknown Type".to_owned();
         } else if *self == TypeId::of::<World>() {
             // does not implement Reflect, so we do this manually
             return "World".to_owned();
@@ -483,5 +483,115 @@ impl<T: DisplayWithWorld> DisplayWithWorld for Vec<T> {
             }
         });
         string
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use bevy::prelude::AppTypeRegistry;
+
+    use crate::bindings::{
+        function::script_function::AppScriptFunctionRegistry, AppReflectAllocator,
+        ReflectAllocationId, WorldAccessGuard,
+    };
+
+    use super::*;
+
+    fn setup_world() -> World {
+        let mut world = World::default();
+
+        let type_registry = AppTypeRegistry::default();
+        world.insert_resource(type_registry);
+
+        let allocator = AppReflectAllocator::default();
+        world.insert_resource(allocator);
+
+        let script_function_registry = AppScriptFunctionRegistry::default();
+        world.insert_resource(script_function_registry);
+
+        world
+    }
+
+    #[test]
+    fn test_type_id() {
+        let mut world = setup_world();
+        let world = WorldGuard::new(WorldAccessGuard::new(&mut world));
+
+        let type_id = TypeId::of::<usize>();
+        assert_eq!(type_id.display_with_world(world.clone()), "usize");
+        assert_eq!(type_id.display_value_with_world(world.clone()), "usize");
+        assert_eq!(type_id.display_without_world(), format!("{:?}", type_id));
+
+        let type_id = TypeId::of::<FakeType>();
+        assert_eq!(type_id.display_with_world(world.clone()), "Unknown Type");
+        assert_eq!(
+            type_id.display_value_with_world(world.clone()),
+            "Unknown Type"
+        );
+        assert_eq!(type_id.display_without_world(), format!("{:?}", type_id));
+    }
+
+    #[test]
+    fn test_reflect_base_type() {
+        let mut world = setup_world();
+        let world = WorldGuard::new(WorldAccessGuard::new(&mut world));
+
+        let type_id = TypeId::of::<usize>();
+
+        assert_eq!(
+            ReflectBaseType {
+                base_id: ReflectBase::Owned(ReflectAllocationId::new(0)),
+                type_id,
+            }
+            .display_with_world(world.clone()),
+            "Allocation(0)(usize)"
+        );
+
+        assert_eq!(
+            ReflectBaseType {
+                base_id: ReflectBase::Owned(ReflectAllocationId::new(0)),
+                type_id,
+            }
+            .display_value_with_world(world.clone()),
+            "Allocation(0)(usize)"
+        );
+
+        assert_eq!(
+            ReflectBaseType {
+                base_id: ReflectBase::Owned(ReflectAllocationId::new(0)),
+                type_id,
+            }
+            .display_without_world(),
+            format!("Allocation(0)({:?})", type_id)
+        );
+    }
+
+    #[test]
+    fn test_reflect_reference() {
+        let mut world = setup_world();
+
+        let world = WorldGuard::new(WorldAccessGuard::new(&mut world));
+
+        let type_id = TypeId::of::<usize>();
+
+        let allocator = world.allocator();
+        let mut allocator_write = allocator.write();
+        let reflect_reference = ReflectReference::new_allocated(2usize, &mut allocator_write);
+        drop(allocator_write);
+
+        assert_eq!(
+            reflect_reference.display_with_world(world.clone()),
+            "<Reference to Allocation(0)(usize) -> usize>"
+        );
+
+        assert_eq!(
+            reflect_reference.display_value_with_world(world.clone()),
+            "Reflect(usize(2))"
+        );
+
+        assert_eq!(
+            reflect_reference.display_without_world(),
+            format!("<Reference to Allocation(0)({:?})>", type_id)
+        );
     }
 }

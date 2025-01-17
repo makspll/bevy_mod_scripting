@@ -182,3 +182,35 @@ impl TryFrom<ScriptValue> for ParsedPath {
         })
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_script_value_to_parsed_path() {
+        let value = ScriptValue::String("test".into());
+        let parsed_path = ParsedPath::from(vec![OffsetAccess {
+            access: bevy::reflect::Access::Field("test".to_owned().into()),
+            offset: Some(4),
+        }]);
+        assert_eq!(parsed_path, ParsedPath::try_from(value).unwrap());
+
+        let value = ScriptValue::String("_0".into());
+        let parsed_path = ParsedPath::from(vec![OffsetAccess {
+            access: bevy::reflect::Access::TupleIndex(0),
+            offset: Some(1),
+        }]);
+        assert_eq!(parsed_path, ParsedPath::try_from(value).unwrap());
+
+        let value = ScriptValue::Integer(0);
+        let parsed_path = ParsedPath::from(vec![OffsetAccess {
+            access: bevy::reflect::Access::ListIndex(0),
+            offset: Some(1),
+        }]);
+        assert_eq!(parsed_path, ParsedPath::try_from(value).unwrap());
+
+        let value = ScriptValue::Float(0.0);
+        assert!(ParsedPath::try_from(value).is_err());
+    }
+}
