@@ -2,7 +2,10 @@
 //! The important thing is that there is only one runtime which is used to execute all scripts of a particular type or `context`.
 
 use crate::IntoScriptPluginParams;
-use bevy::ecs::system::Resource;
+use bevy::{
+    ecs::system::Resource,
+    prelude::{NonSendMut, Res},
+};
 
 pub trait Runtime: 'static {}
 impl<T: 'static> Runtime for T {}
@@ -34,4 +37,13 @@ impl<P: IntoScriptPluginParams> Clone for RuntimeSettings<P> {
 #[derive(Resource)]
 pub struct RuntimeContainer<P: IntoScriptPluginParams> {
     pub runtime: P::R,
+}
+
+pub fn initialize_runtime<P: IntoScriptPluginParams>(
+    mut runtime: NonSendMut<RuntimeContainer<P>>,
+    settings: Res<RuntimeSettings<P>>,
+) {
+    for initializer in settings.initializers.iter() {
+        (initializer)(&mut runtime.runtime);
+    }
 }

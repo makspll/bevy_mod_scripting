@@ -3,14 +3,11 @@
 #![allow(unused, deprecated, dead_code)]
 #![cfg_attr(rustfmt, rustfmt_skip)]
 use super::bevy_reflect::*;
-use bevy_mod_scripting_core::{
-    AddContextInitializer, StoreDocumentation,
-    bindings::{
-        ReflectReference,
-        function::{
-            from::{Ref, Mut, Val},
-            namespace::NamespaceBuilder,
-        },
+use bevy_mod_scripting_core::bindings::{
+    ReflectReference,
+    function::{
+        from::{Ref, Mut, Val},
+        namespace::NamespaceBuilder,
     },
 };
 use crate::*;

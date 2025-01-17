@@ -66,7 +66,7 @@ pub fn execute_integration_test<
         });
 
     // load the context as normal
-    let mut loaded_context = (context_settings.loader.unwrap().load)(
+    let mut loaded_context = (context_settings.loader.load)(
         &(script_id.to_owned()).into(),
         code,
         &context_settings.context_initializers,
@@ -81,7 +81,7 @@ pub fn execute_integration_test<
     })?;
 
     // call on_script_loaded as normal
-    let val = (callback_settings.callback_handler.unwrap())(
+    let val = (callback_settings.callback_handler)(
         vec![],
         Entity::from_raw(0),
         &(script_id.to_owned()).into(),
@@ -98,7 +98,7 @@ pub fn execute_integration_test<
     }
 
     // call on_test callback
-    let val = (callback_settings.callback_handler.unwrap())(
+    let val = (callback_settings.callback_handler)(
         vec![],
         Entity::from_raw(0),
         &(script_id.to_owned()).into(),

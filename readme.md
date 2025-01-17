@@ -1,3 +1,7 @@
+<img src="./badges/coverage.svg" width="175">
+
+---
+
 <p align="center">
     <img src="./logo_bevy_scripting.svg" width="250" onerror="this.onerror=null; this.src='https://raw.githubusercontent.com/makspll/bevy_mod_scripting/main/logo_bevy_scripting.svg'">
 </p>
@@ -41,7 +45,5 @@ The languages currently supported are as follows:
 ## Documentation
 
 For examples, installation and usage instructions see our shiny new [book](https://makspll.github.io/bevy_mod_scripting)
-
-## Footnotes
 
 [^1]: Due to the recent re-write of the crate, documentation generation as well as rhai and rune support are temporarilly on hold. They will likely be re-implemented in the future. `Rhai` in particualar is difficult to re-implement due to a lack of support for first-class-functions.

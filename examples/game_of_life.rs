@@ -18,8 +18,8 @@ use bevy_mod_scripting_core::{
     bindings::{function::namespace::NamespaceBuilder, script_value::ScriptValue},
     callback_labels,
     event::ScriptCallbackEvent,
+    handler::event_handler,
     script::ScriptComponent,
-    systems::event_handler,
 };
 use bevy_mod_scripting_lua::LuaScriptingPlugin;
 // use bevy_mod_scripting_rhai::RhaiScriptingPlugin;

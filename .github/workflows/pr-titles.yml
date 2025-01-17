@@ -24,3 +24,5 @@ jobs:
             fix
             feat
             chore
+            test
+            docs

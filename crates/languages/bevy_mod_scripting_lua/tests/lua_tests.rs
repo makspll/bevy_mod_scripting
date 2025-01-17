@@ -1,7 +1,7 @@
 use bevy_mod_scripting_core::{
     bindings::{pretty_print::DisplayWithWorld, ThreadWorldContainer, WorldContainer},
     error::ScriptError,
-    AddContextInitializer,
+    ConfigureScriptPlugin,
 };
 use bevy_mod_scripting_lua::LuaScriptingPlugin;
 use libtest_mimic::{Arguments, Failed, Trial};
@@ -26,8 +26,7 @@ impl Test {
                 let _ = type_registry;
             },
             |app| {
-                app.add_plugins(LuaScriptingPlugin::default());
-                app.add_context_initializer::<LuaScriptingPlugin>(|_,ctxt: &mut Lua| {
+                app.add_plugins(LuaScriptingPlugin::default().add_context_initializer(|_,ctxt: &mut Lua| {
                     let globals = ctxt.globals();
                     globals.set(
                         "assert_throws",
@@ -60,7 +59,7 @@ impl Test {
                         })?,
                     )?;
                     Ok(())
-                });
+                }));
             },
             self.path.as_os_str().to_str().unwrap(),
             self.code.as_bytes(),

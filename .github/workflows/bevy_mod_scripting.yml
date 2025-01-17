@@ -46,6 +46,7 @@ jobs:
   check:  
     permissions:
       pull-requests: write
+      contents: write
     name: Check - ${{ matrix.run_args.name }}
     runs-on: ${{ matrix.run_args.os }}
     # container: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
@@ -57,6 +58,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Install alsa and udev
         if: runner.os == 'linux'
         run: |
@@ -66,11 +68,35 @@ jobs:
         with:
           toolchain: stable
           override: true
+
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
+
       - name: Setup
         run: |
           cargo xtask init
+
       - name: Check
         run: |
           ${{ matrix.run_args.command }}
+
+      - name: Upload coverage artifact
+        if: ${{ matrix.run_args.generates_coverage }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: target/coverage/html/
+
+      - name: Update coverage badge
+        if: ${{ matrix.run_args.generates_coverage && github.ref == 'refs/heads/main' }}
+        run: |
+          cp target/coverage/html/badges/for_the_badge.svg badges/coverage.svg
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add badges/coverage.svg
+          
+          if [[ -n $(git status -s) ]]; then
+            git commit -m "chore(badge): Update coverage badge" -m "[skip ci]"
+            git push
+          fi

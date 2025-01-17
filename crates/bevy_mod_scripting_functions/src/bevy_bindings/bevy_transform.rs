@@ -7,14 +7,11 @@ use super::bevy_reflect::*;
 use super::bevy_core::*;
 use super::bevy_math::*;
 use super::bevy_hierarchy::*;
-use bevy_mod_scripting_core::{
-    AddContextInitializer, StoreDocumentation,
-    bindings::{
-        ReflectReference,
-        function::{
-            from::{Ref, Mut, Val},
-            namespace::NamespaceBuilder,
-        },
+use bevy_mod_scripting_core::bindings::{
+    ReflectReference,
+    function::{
+        from::{Ref, Mut, Val},
+        namespace::NamespaceBuilder,
     },
 };
 use crate::*;

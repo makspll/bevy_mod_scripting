@@ -13,6 +13,7 @@ env:
     BRANCH_NAME: __update-bevy-bindings-${{ github.head_ref || github.ref_name }} 
     GH_TOKEN: ${{ github.token }}
 
+
 jobs:
   generate_bindings:
     permissions:

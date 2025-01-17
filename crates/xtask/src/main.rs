@@ -206,6 +206,32 @@ impl From<String> for Features {
     }
 }
 
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    strum::EnumString,
+    strum::AsRefStr,
+    strum::Display,
+    strum::VariantArray,
+)]
+enum CiOs {
+    #[strum(serialize = "windows-latest")]
+    Windows,
+    #[strum(serialize = "macos-latest")]
+    Macos,
+    #[strum(serialize = "ubuntu-latest")]
+    Ubuntu,
+}
+
+impl CiOs {
+    fn is_main_os(&self) -> bool {
+        matches!(self, CiOs::Ubuntu)
+    }
+}
+
 #[derive(Debug, Clone, Parser)]
 struct App {
     #[clap(flatten)]
@@ -227,6 +253,10 @@ impl App {
 
         if let Some(profile) = self.global_args.profile {
             cmd.arg("--profile").arg(profile);
+        }
+
+        if self.global_args.coverage {
+            cmd.arg("--coverage");
         }
 
         match self.subcmd {
@@ -255,20 +285,13 @@ impl App {
                     cmd.arg("--no-rust-docs");
                 }
             }
-            Xtasks::Test {
-                name,
-                package,
-                no_coverage,
-            } => {
+            Xtasks::Test { name, package } => {
                 cmd.arg("test");
                 if let Some(name) = name {
                     cmd.arg("--name").arg(name);
                 }
                 if let Some(package) = package {
                     cmd.arg("--package").arg(package);
-                }
-                if no_coverage {
-                    cmd.arg("--no-coverage");
                 }
             }
             Xtasks::CiCheck => {
@@ -300,7 +323,7 @@ impl App {
         os_string
     }
 
-    pub(crate) fn into_ci_row(self, os: String) -> CiMatrixRow {
+    pub(crate) fn into_ci_row(self, os: CiOs) -> CiMatrixRow {
         CiMatrixRow {
             command: self.clone().into_command_string().into_string().unwrap(),
             name: format!(
@@ -313,7 +336,8 @@ impl App {
                     self.global_args.features.to_string()
                 }
             ),
-            os,
+            os: os.to_string(),
+            generates_coverage: self.global_args.coverage,
         }
     }
 }
@@ -325,6 +349,14 @@ struct GlobalArgs {
 
     #[clap(
         long,
+        global = true,
+        default_value = "false",
+        help = "Enable coverage collection for cargo commands"
+    )]
+    coverage: bool,
+
+    #[clap(
+        long,
         short,
         global = true,
         value_name = "PROFILE",
@@ -333,7 +365,42 @@ struct GlobalArgs {
     profile: Option<String>,
 }
 
-#[derive(Debug, Clone, Default, strum::EnumString, strum::VariantNames, strum::AsRefStr)]
+impl GlobalArgs {
+    pub fn with_coverage(self) -> Self {
+        Self {
+            coverage: true,
+            ..self
+        }
+    }
+
+    pub fn without_coverage(self) -> Self {
+        Self {
+            coverage: false,
+            ..self
+        }
+    }
+
+    pub fn with_features(self, features: Features) -> Self {
+        Self { features, ..self }
+    }
+
+    pub fn with_profile(self, profile: Option<String>) -> Self {
+        Self { profile, ..self }
+    }
+}
+
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Default,
+    strum::EnumString,
+    strum::VariantNames,
+    strum::AsRefStr,
+)]
 #[strum(serialize_all = "snake_case")]
 enum CheckKind {
     #[default]
@@ -348,7 +415,17 @@ impl CheckKind {
     }
 }
 
-#[derive(Debug, Clone, strum::EnumString, strum::AsRefStr, strum::VariantNames)]
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    strum::EnumString,
+    strum::AsRefStr,
+    strum::VariantNames,
+)]
 #[strum(serialize_all = "snake_case")]
 enum Macro {
     /// Integration tests for all script plugins
@@ -361,7 +438,7 @@ impl Macro {
     }
 }
 
-#[derive(Clone, Debug, clap::Subcommand, strum::AsRefStr)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, clap::Subcommand, strum::AsRefStr)]
 #[clap(
     name = "xtask",
     bin_name = "cargo xtask",
@@ -420,10 +497,6 @@ enum Xtasks {
         /// Run tests in the given package only
         #[clap(long)]
         package: Option<String>,
-
-        /// Run tests without coverage
-        #[clap(long)]
-        no_coverage: bool,
     },
     /// Perform a full check as it would be done in CI, except not parallelised
     CiCheck,
@@ -448,61 +521,61 @@ struct CiMatrixRow {
     name: String,
     /// The os to run this on
     os: String,
+    /// If this run produces lcov files
+    generates_coverage: bool,
 }
 
 impl Xtasks {
     fn run(self, app_settings: GlobalArgs) -> Result<String> {
+        if app_settings.coverage {
+            Self::set_cargo_coverage_settings();
+        }
+
         match self {
             Xtasks::Build => Self::build(app_settings),
             Xtasks::Check { ide_mode, kind } => Self::check(app_settings, ide_mode, kind),
             Xtasks::Docs { open, no_rust_docs } => Self::docs(app_settings, open, no_rust_docs),
-            Xtasks::Test {
-                name,
-                package,
-                no_coverage,
-            } => Self::test(app_settings, name, package, no_coverage),
+            Xtasks::Test { name, package } => Self::test(app_settings, name, package),
             Xtasks::CiCheck => Self::cicd(app_settings),
             Xtasks::Init => Self::init(app_settings),
             Xtasks::Macros { macro_name } => match macro_name {
                 Macro::ScriptTests => {
                     let mut settings = app_settings.clone();
                     settings.features = Features::all_features();
-                    Self::test(settings, Some("script_test".to_owned()), None, true)
+                    Self::test(settings, Some("script_test".to_owned()), None)
                 }
             },
             Xtasks::CiMatrix => {
-                let output = Self::ci_matrix(app_settings)?;
-                let mut matrix = output
-                    .into_iter()
-                    .map(|a| a.into_ci_row("ubuntu-latest".to_owned()))
-                    .collect::<Vec<_>>();
+                let mut output = Self::ci_matrix(app_settings)?;
+                output.sort_by(|e1, e2| e1.subcmd.cmp(&e2.subcmd));
+                let mut rows = Vec::default();
+                for os in <CiOs as strum::VariantArray>::VARIANTS {
+                    for row in output.iter() {
+                        let step_should_run_on_main_os =
+                            matches!(row.subcmd, Xtasks::Build | Xtasks::Docs { .. });
+                        let is_coverage_step = row.global_args.coverage;
 
-                // clone for macos and windows for certain steps
-                let mut multi_os_steps = matrix.clone();
+                        if !os.is_main_os() && step_should_run_on_main_os {
+                            continue;
+                        }
 
-                // we don't need to verify all feature flags on all platforms, this is mostly a "does it compile" check
-                // for finding out missing compile time logic or bad imports
-                multi_os_steps
-                    .retain(|e| !e.command.contains(" build") && !e.command.contains(" docs"));
+                        // we only need one source of coverage + windows is slow with this setting
+                        let row = if !os.is_main_os() && is_coverage_step {
+                            let new_args = row.global_args.clone().without_coverage();
+                            App {
+                                global_args: new_args,
+                                ..row.clone()
+                            }
+                            .into_ci_row(*os)
+                        } else {
+                            row.clone().into_ci_row(*os)
+                        };
 
-                let mut macos_matrix = multi_os_steps.clone();
-                let mut windows_matrix = multi_os_steps.clone();
-
-                for row in macos_matrix.iter_mut() {
-                    row.os = "macos-latest".to_owned();
-                    row.name = row.name.replace("ubuntu-latest", "macos-latest");
+                        rows.push(row);
+                    }
                 }
 
-                for row in windows_matrix.iter_mut() {
-                    row.os = "windows-latest".to_owned();
-                    row.name = row.name.replace("ubuntu-latest", "windows-latest");
-                }
-
-                matrix.extend(macos_matrix);
-                matrix.extend(windows_matrix);
-
-                matrix.sort_by_key(|e| e.name.to_owned());
-                let json = serde_json::to_string_pretty(&matrix)?;
+                let json = serde_json::to_string_pretty(&rows)?;
                 return Ok(json);
             }
         }?;
@@ -579,7 +652,12 @@ impl Xtasks {
         add_args: I,
         dir: Option<&Path>,
     ) -> Result<()> {
-        info!("Running workspace command: {}", command);
+        let coverage_mode = app_settings
+            .coverage
+            .then_some("with coverage")
+            .unwrap_or_default();
+
+        info!("Running workspace command {coverage_mode}: {command}");
 
         let mut args = vec![];
         args.push(command.to_owned());
@@ -590,8 +668,18 @@ impl Xtasks {
             args.push("--workspace".to_owned());
 
             if let Some(profile) = app_settings.profile.as_ref() {
-                args.push("--profile".to_owned());
-                args.push(profile.clone());
+                let use_profile = if profile == "ephemeral-build" && app_settings.coverage {
+                    // use special profile for coverage as it needs debug information
+                    // but also don't want it too slow
+                    "ephemeral-coverage"
+                } else {
+                    profile
+                };
+
+                if !app_settings.coverage {
+                    args.push("--profile".to_owned());
+                    args.push(use_profile.to_owned());
+                }
             }
 
             args.extend(app_settings.features.to_cargo_args());
@@ -781,30 +869,20 @@ impl Xtasks {
         Ok(())
     }
 
-    fn test(
-        app_settings: GlobalArgs,
-        package: Option<String>,
-        name: Option<String>,
-        no_coverage: bool,
-    ) -> Result<()> {
+    fn set_cargo_coverage_settings() {
+        // This makes local dev hell
+        // std::env::set_var("CARGO_INCREMENTAL", "0");
+        Self::append_rustflags("-Cinstrument-coverage");
+
+        let target_dir = std::env::var("CARGO_TARGET_DIR").unwrap_or_else(|_| "target".to_owned());
+        let coverage_dir = std::path::PathBuf::from(target_dir).join("coverage");
+        let coverage_file = coverage_dir.join("cargo-test-%p-%m.profraw");
+
+        std::env::set_var("LLVM_PROFILE_FILE", coverage_file);
+    }
+
+    fn test(app_settings: GlobalArgs, package: Option<String>, name: Option<String>) -> Result<()> {
         // run cargo test with instrumentation
-
-        if !no_coverage {
-            std::env::set_var("CARGO_INCREMENTAL", "0");
-            Self::append_rustflags("-Cinstrument-coverage");
-
-            let target_dir =
-                std::env::var("CARGO_TARGET_DIR").unwrap_or_else(|_| "target".to_owned());
-            let coverage_dir = std::path::PathBuf::from(target_dir).join("coverage");
-            let coverage_file = coverage_dir.join("cargo-test-%p-%m.profraw");
-
-            // clear coverage directory
-            assert!(coverage_dir != std::path::Path::new("/"));
-            let _ = std::fs::remove_dir_all(coverage_dir);
-
-            std::env::set_var("LLVM_PROFILE_FILE", coverage_file);
-        }
-
         let mut test_args = vec![];
         if let Some(package) = package {
             test_args.push("--package".to_owned());
@@ -824,7 +902,7 @@ impl Xtasks {
         )?;
 
         // generate coverage report and lcov file
-        if !no_coverage {
+        if app_settings.coverage {
             Self::run_system_command(
                 "grcov",
                 "Generating html coverage report",
@@ -839,9 +917,7 @@ impl Xtasks {
                     "--branch",
                     "--ignore-not-existing",
                     "--ignore",
-                    "../*",
-                    "--ignore",
-                    "/*",
+                    "**/bevy_bindings/**",
                     "-o",
                     "target/coverage/html",
                 ],
@@ -862,9 +938,7 @@ impl Xtasks {
                     "--branch",
                     "--ignore-not-existing",
                     "--ignore",
-                    "../*",
-                    "--ignore",
-                    "/*",
+                    "**/bevy_bindings/**",
                     "-o",
                     "target/coverage/lcov.info",
                 ],
@@ -903,7 +977,15 @@ impl Xtasks {
         powersets.reverse();
         info!("Powerset: {:?}", powersets);
 
-        let profile = app_settings.profile.or(Some("ephemeral-build".to_owned()));
+        let default_args = app_settings
+            .clone()
+            .with_features(Features::all_features())
+            .with_profile(
+                app_settings
+                    .profile
+                    .clone()
+                    .or(Some("ephemeral-build".to_owned())),
+            );
 
         for feature_set in powersets.iter_mut() {
             // choose language features
@@ -917,10 +999,7 @@ impl Xtasks {
             }
 
             output.push(App {
-                global_args: GlobalArgs {
-                    features: feature_set.clone(),
-                    profile: profile.clone(),
-                },
+                global_args: default_args.clone().with_features(feature_set.clone()),
                 subcmd: Xtasks::Build,
             })
         }
@@ -941,22 +1020,14 @@ impl Xtasks {
             }
 
             output.push(App {
-                global_args: GlobalArgs {
-                    features,
-                    profile: profile.clone(),
-                },
+                global_args: default_args.clone().with_features(features),
                 subcmd: Xtasks::Build,
             });
         }
 
-        let global_args = GlobalArgs {
-            features: Features::all_features(),
-            profile: profile.clone(),
-        };
-
         // next run a full lint check with all features
         output.push(App {
-            global_args: global_args.clone(),
+            global_args: default_args.clone(),
             subcmd: Xtasks::Check {
                 ide_mode: false,
                 kind: CheckKind::All,
@@ -965,8 +1036,7 @@ impl Xtasks {
 
         // then run docs
         output.push(App {
-            global_args: global_args.clone(),
-
+            global_args: default_args.clone(),
             subcmd: Xtasks::Docs {
                 open: false,
                 no_rust_docs: false,
@@ -975,11 +1045,10 @@ impl Xtasks {
 
         // and finally run tests with coverage
         output.push(App {
-            global_args: global_args.clone(),
+            global_args: default_args.clone().with_coverage(),
             subcmd: Xtasks::Test {
                 name: None,
                 package: None,
-                no_coverage: false,
             },
         });
 

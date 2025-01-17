@@ -10,8 +10,6 @@ use super::{{crate}}::*;
 
 
 use bevy_mod_scripting_core::{
-    AddContextInitializer, 
-    StoreDocumentation, 
     bindings::{
         ReflectReference, 
         function::{from::{Ref, Mut, Val}, namespace::{NamespaceBuilder}}

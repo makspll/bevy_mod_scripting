@@ -80,6 +80,11 @@ impl ReflectReference {
         })
     }
 
+    /// Create a new reference to a value by allocating it.
+    ///
+    /// You can retrieve the allocator from the world using [`WorldGuard::allocator`].
+    /// Make sure to drop the allocator write guard before doing anything with the reference to prevent deadlocks.
+    ///
     pub fn new_allocated<T: PartialReflect>(
         value: T,
         allocator: &mut ReflectAllocator,
@@ -545,5 +550,284 @@ impl Iterator for ReflectRefIter {
         };
 
         Some(result)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use bevy::prelude::{AppTypeRegistry, World};
+
+    use crate::bindings::{
+        function::script_function::AppScriptFunctionRegistry, AppReflectAllocator, WorldAccessGuard,
+    };
+
+    use super::*;
+
+    #[derive(Reflect, Component, Debug, Clone, PartialEq)]
+    struct Component(Vec<String>);
+
+    #[derive(Reflect, Resource, Debug, Clone, PartialEq)]
+    struct Resource(Vec<String>);
+
+    fn setup_world() -> World {
+        let mut world = World::default();
+
+        let type_registry = AppTypeRegistry::default();
+        {
+            let mut guard_type_registry = type_registry.write();
+            guard_type_registry.register::<Component>();
+            guard_type_registry.register::<Resource>();
+        }
+
+        world.insert_resource(type_registry);
+
+        let allocator = AppReflectAllocator::default();
+        world.insert_resource(allocator);
+
+        let script_function_registry = AppScriptFunctionRegistry::default();
+        world.insert_resource(script_function_registry);
+
+        world
+    }
+
+    #[test]
+    fn test_component_ref() {
+        let mut world = setup_world();
+
+        let entity = world
+            .spawn(Component(vec!["hello".to_owned(), "world".to_owned()]))
+            .id();
+
+        let world_guard = WorldGuard::new(WorldAccessGuard::new(&mut world));
+
+        let mut component_ref =
+            ReflectReference::new_component_ref::<Component>(entity, world_guard.clone())
+                .expect("could not create component reference");
+
+        // index into component
+        assert_eq!(
+            component_ref
+                .tail_type_id(world_guard.clone())
+                .unwrap()
+                .unwrap(),
+            TypeId::of::<Component>()
+        );
+
+        component_ref
+            .with_reflect(world_guard.clone(), |s| {
+                let s = s.try_downcast_ref::<Component>().unwrap();
+                assert_eq!(s, &Component(vec!["hello".to_owned(), "world".to_owned()]));
+            })
+            .unwrap();
+
+        // index into vec field
+        component_ref.index_path(ParsedPath::parse_static(".0").unwrap());
+        assert_eq!(
+            component_ref
+                .tail_type_id(world_guard.clone())
+                .unwrap()
+                .unwrap(),
+            TypeId::of::<Vec<String>>()
+        );
+
+        assert_eq!(
+            component_ref
+                .element_type_id(world_guard.clone())
+                .unwrap()
+                .unwrap(),
+            TypeId::of::<String>()
+        );
+
+        assert_eq!(
+            component_ref
+                .key_type_id(world_guard.clone())
+                .unwrap()
+                .unwrap(),
+            TypeId::of::<usize>()
+        );
+
+        component_ref
+            .with_reflect(world_guard.clone(), |s| {
+                let s = s.try_downcast_ref::<Vec<String>>().unwrap();
+                assert_eq!(s, &vec!["hello".to_owned(), "world".to_owned()]);
+            })
+            .unwrap();
+
+        // index into vec
+        component_ref.index_path(ParsedPath::parse_static("[0]").unwrap());
+
+        component_ref
+            .with_reflect(world_guard.clone(), |s| {
+                let s = s.try_downcast_ref::<String>().unwrap();
+                assert_eq!(s, "hello");
+            })
+            .unwrap();
+
+        assert_eq!(
+            component_ref
+                .tail_type_id(world_guard.clone())
+                .unwrap()
+                .unwrap(),
+            TypeId::of::<String>()
+        );
+    }
+
+    #[test]
+    fn test_resource_ref() {
+        let mut world = setup_world();
+
+        world.insert_resource(Resource(vec!["hello".to_owned(), "world".to_owned()]));
+
+        let world_guard = WorldGuard::new(WorldAccessGuard::new(&mut world));
+
+        let mut resource_ref = ReflectReference::new_resource_ref::<Resource>(world_guard.clone())
+            .expect("could not create resource reference");
+
+        // index into resource
+        assert_eq!(
+            resource_ref
+                .tail_type_id(world_guard.clone())
+                .unwrap()
+                .unwrap(),
+            TypeId::of::<Resource>()
+        );
+
+        resource_ref
+            .with_reflect(world_guard.clone(), |s| {
+                let s = s.try_downcast_ref::<Resource>().unwrap();
+                assert_eq!(s, &Resource(vec!["hello".to_owned(), "world".to_owned()]));
+            })
+            .unwrap();
+
+        // index into vec field
+        resource_ref.index_path(ParsedPath::parse_static(".0").unwrap());
+        assert_eq!(
+            resource_ref
+                .tail_type_id(world_guard.clone())
+                .unwrap()
+                .unwrap(),
+            TypeId::of::<Vec<String>>()
+        );
+
+        assert_eq!(
+            resource_ref
+                .element_type_id(world_guard.clone())
+                .unwrap()
+                .unwrap(),
+            TypeId::of::<String>()
+        );
+
+        assert_eq!(
+            resource_ref
+                .key_type_id(world_guard.clone())
+                .unwrap()
+                .unwrap(),
+            TypeId::of::<usize>()
+        );
+
+        resource_ref
+            .with_reflect(world_guard.clone(), |s| {
+                let s = s.try_downcast_ref::<Vec<String>>().unwrap();
+                assert_eq!(s, &vec!["hello".to_owned(), "world".to_owned()]);
+            })
+            .unwrap();
+
+        // index into vec
+        resource_ref.index_path(ParsedPath::parse_static("[0]").unwrap());
+
+        resource_ref
+            .with_reflect(world_guard.clone(), |s| {
+                let s = s.try_downcast_ref::<String>().unwrap();
+                assert_eq!(s, "hello");
+            })
+            .unwrap();
+
+        assert_eq!(
+            resource_ref
+                .tail_type_id(world_guard.clone())
+                .unwrap()
+                .unwrap(),
+            TypeId::of::<String>()
+        );
+    }
+
+    #[test]
+    fn test_allocation_ref() {
+        let mut world = setup_world();
+
+        let value = Component(vec!["hello".to_owned(), "world".to_owned()]);
+
+        let world_guard = WorldGuard::new(WorldAccessGuard::new(&mut world));
+        let allocator = world_guard.allocator();
+        let mut allocator_write = allocator.write();
+        let mut allocation_ref = ReflectReference::new_allocated(value, &mut allocator_write);
+        drop(allocator_write);
+
+        // index into component
+        assert_eq!(
+            allocation_ref
+                .tail_type_id(world_guard.clone())
+                .unwrap()
+                .unwrap(),
+            TypeId::of::<Component>()
+        );
+
+        allocation_ref
+            .with_reflect(world_guard.clone(), |s| {
+                let s = s.try_downcast_ref::<Component>().unwrap();
+                assert_eq!(s, &Component(vec!["hello".to_owned(), "world".to_owned()]));
+            })
+            .unwrap();
+
+        // index into vec field
+        allocation_ref.index_path(ParsedPath::parse_static(".0").unwrap());
+        assert_eq!(
+            allocation_ref
+                .tail_type_id(world_guard.clone())
+                .unwrap()
+                .unwrap(),
+            TypeId::of::<Vec<String>>()
+        );
+
+        assert_eq!(
+            allocation_ref
+                .element_type_id(world_guard.clone())
+                .unwrap()
+                .unwrap(),
+            TypeId::of::<String>()
+        );
+
+        assert_eq!(
+            allocation_ref
+                .key_type_id(world_guard.clone())
+                .unwrap()
+                .unwrap(),
+            TypeId::of::<usize>()
+        );
+
+        allocation_ref
+            .with_reflect(world_guard.clone(), |s| {
+                let s = s.try_downcast_ref::<Vec<String>>().unwrap();
+                assert_eq!(s, &vec!["hello".to_owned(), "world".to_owned()]);
+            })
+            .unwrap();
+
+        // index into vec
+        allocation_ref.index_path(ParsedPath::parse_static("[0]").unwrap());
+
+        allocation_ref
+            .with_reflect(world_guard.clone(), |s| {
+                let s = s.try_downcast_ref::<String>().unwrap();
+                assert_eq!(s, "hello");
+            })
+            .unwrap();
+
+        assert_eq!(
+            allocation_ref
+                .tail_type_id(world_guard.clone())
+                .unwrap()
+                .unwrap(),
+            TypeId::of::<String>()
+        );
     }
 }
