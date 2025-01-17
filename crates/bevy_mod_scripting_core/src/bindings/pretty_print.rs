@@ -577,11 +577,16 @@ mod test {
         let allocator = world.allocator();
         let mut allocator_write = allocator.write();
         let reflect_reference = ReflectReference::new_allocated(2usize, &mut allocator_write);
+        let id = match reflect_reference.base.base_id {
+            ReflectBase::Owned(ref id) => id.to_string(),
+            _ => panic!("Expected owned allocation"),
+        };
+
         drop(allocator_write);
 
         assert_eq!(
             reflect_reference.display_with_world(world.clone()),
-            "<Reference to Allocation(0)(usize) -> usize>"
+            format!("<Reference to Allocation({id})(usize) -> usize>")
         );
 
         assert_eq!(
@@ -591,7 +596,7 @@ mod test {
 
         assert_eq!(
             reflect_reference.display_without_world(),
-            format!("<Reference to Allocation(0)({:?})>", type_id)
+            format!("<Reference to Allocation({id})({:?})>", type_id)
         );
     }
 }
