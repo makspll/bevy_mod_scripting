@@ -88,7 +88,7 @@ jobs:
           path: target/coverage/html/
 
       - name: Update coverage badge
-        if: ${{ matrix.run_args.generates_coverage }}
+        if: ${{ matrix.run_args.generates_coverage && github.ref == 'refs/heads/main' }}
         run: |
           cp target/coverage/html/badges/for_the_badge.svg badges/coverage.svg
 
