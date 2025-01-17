@@ -46,6 +46,7 @@ jobs:
   check:  
     permissions:
       pull-requests: write
+      contents: write
     name: Check - ${{ matrix.run_args.name }}
     runs-on: ${{ matrix.run_args.os }}
     # container: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
