@@ -57,6 +57,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Install alsa and udev
         if: runner.os == 'linux'
         run: |
@@ -66,20 +67,25 @@ jobs:
         with:
           toolchain: stable
           override: true
+
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
+
       - name: Setup
         run: |
           cargo xtask init
+
       - name: Check
         run: |
           ${{ matrix.run_args.command }}
+
       - name: Upload coverage artifact
         if: ${{ matrix.run_args.generates_coverage }}
         uses: actions/upload-artifact@v4
         with:
           name: code-coverage-report
           path: target/coverage/html/
+
       - name: Update coverage badge
         if: ${{ matrix.run_args.generates_coverage }}
         run: |
