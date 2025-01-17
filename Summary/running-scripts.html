@@ -187,6 +187,7 @@ fn send_event(mut writer: EventWriter&lt;ScriptCallbackEvent&gt;) {
 <pre><code class="language-rust ignore">app.add_systems(Update, event_handler::&lt;OnEvent, LuaScriptingPlugin&gt;);</code></pre>
 <p>Note the system is parameterized by the label we defined earlier, and the scripting plugin we are using. You can add as many of these systems as you like.</p>
 <p>The event handler will catch all events with the label <code>OnEvent</code> and trigger the <code>on_event</code> callback on all targeted scripts which have that callback defined.</p>
+<p>In order to handle events in the same frame and not accidentally have events "spill over" into the next frame, you should make sure to order any systems which produce these events <em>before</em> the event handler systems.</p>
 
                     </main>
 
