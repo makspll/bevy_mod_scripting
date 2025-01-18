@@ -142,7 +142,7 @@ jobs:
     - name: Create Or Update PR
       if: steps.check_changes.outputs.changes && success() && steps.findPR.outputs.number 
       run: |
-        gh pr list --base feature/bevy-system-refactor --search "chore(codegen): update bevy bindings" --json number > prs.json
+        gh pr list --base ${{ github.ref }} --search "chore(codegen): update bevy bindings" --json number > prs.json
         if [ $(jq '. | length' prs.json) -eq 0 ]; then
-          gh pr create --title "chore(codegen): update bevy bindings" --body "This PR updates the bevy bindings for #${{ steps.findPR.outputs.number }}" --base ${{ github.ref }} --head ${{ env.BRANCH_NAME }} || true
+          gh pr create --title "chore(codegen): update bevy bindings" --body "This PR updates the bevy bindings for #${{ steps.findPR.outputs.number }}" --base ${{ github.ref }} --head ${{ env.CODEGEN_BRANCH_NAME }} || true
         fi
