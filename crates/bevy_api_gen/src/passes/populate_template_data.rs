@@ -32,7 +32,19 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
         let has_static_methods = fn_ctxts.iter().any(|fn_ctxt| !fn_ctxt.has_self);
 
         let mut functions = process_functions(ctxt, fn_ctxts);
-        functions.sort_by(|a, b| a.ident.cmp(&b.ident));
+        functions.sort_by(|a, b| {
+            a.ident
+                .cmp(&b.ident)
+                .then(a.args.len().cmp(&b.args.len()))
+                .then(
+                    a.args
+                        .iter()
+                        .zip(b.args.iter())
+                        .fold(std::cmp::Ordering::Equal, |acc, (a, b)| {
+                            acc.then(a.ty.cmp(&b.ty))
+                        }),
+                )
+        });
 
         let variant = ty_ctxt.variant_data.as_ref().unwrap();
 
