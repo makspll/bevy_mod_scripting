@@ -898,6 +898,13 @@ impl Xtasks {
         let output_dir = Self::relative_workspace_dir(&main_workspace_app_settings, output_dir)?;
         let bevy_dir =
             Self::relative_workspace_dir(&main_workspace_app_settings, "target/codegen/bevy")?;
+        let bevy_target_dir = bevy_dir.join("target");
+        // clear the bevy target dir if it exists
+        info!("Clearing bevy target dir: {:?}", bevy_target_dir);
+        if bevy_target_dir.exists() {
+            std::fs::remove_dir_all(&bevy_target_dir)?;
+        }
+
         let api_gen_dir = Self::codegen_crate_dir(&main_workspace_app_settings)?;
         let codegen_app_settings = main_workspace_app_settings
             .clone()
