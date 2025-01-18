@@ -1400,7 +1400,8 @@ impl Xtasks {
     fn read_json_with_comments(bytes: &[u8]) -> Result<serde_json::Value> {
         let stripped = StripComments::new(bytes);
         let mut reader = serde_json::Deserializer::from_reader(stripped);
-        let value = serde_json::Value::deserialize(&mut reader)?;
+        let value = serde_json::Value::deserialize(&mut reader)
+            .with_context(|| "deserializing json (excluding comments)")?;
         Ok(value)
     }
 
