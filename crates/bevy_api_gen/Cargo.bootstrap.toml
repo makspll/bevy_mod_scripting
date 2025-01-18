@@ -6,6 +6,7 @@ edition = "2021"
 
 [dependencies]
 mlua = { version = "0.10", features = ["lua54", "vendored", "send", "macros"] }
+bevy_mod_scripting_core = { path = "{{WORKSPACE_DIR}}/crates/bevy_mod_scripting_core" }
 bevy_reflect = { version = "0.15.0", features = [
     "bevy",
     "glam",

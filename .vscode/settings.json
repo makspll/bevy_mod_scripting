@@ -8,18 +8,22 @@
         "editor.formatOnSaveMode": "file",
         "editor.defaultFormatter": "rust-lang.rust-analyzer"
     },
+    "rust-analyzer.server.extraEnv": {
+        "RA_LOG": "warn,rust_analyzer::reload=info"
+    },
     "rust-analyzer.rustc.source": "discover",
     "rust-analyzer.linkedProjects": [
-        // "./crates/bevy_api_gen/Cargo.toml",
+        "./crates/bevy_api_gen/Cargo.toml",
         "Cargo.toml",
     ],
-    "rust-analyzer.check.invocationStrategy": "once",
+    "rust-analyzer.check.invocationStrategy": "per_workspace",
+    // "rust-analyzer.cargo.buildScripts.invocationStrategy": "per_workspace",
     "rust-analyzer.check.overrideCommand": [
         "/home/makspll/git/bevy_mod_scripting/check.sh"
     ],
-    "rust-analyzer.cargo.buildScripts.overrideCommand": [
-        "/home/makspll/git/bevy_mod_scripting/check.sh"
-    ],
+    // "rust-analyzer.cargo.buildScripts.overrideCommand": [
+    //     "/home/makspll/git/bevy_mod_scripting/check.sh"
+    // ],
     "rust-analyzer.showUnlinkedFileNotification": false,
     "rust-analyzer.runnables.extraTestBinaryArgs": [
         "--show-output",

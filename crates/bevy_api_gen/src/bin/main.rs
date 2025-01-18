@@ -326,13 +326,28 @@ fn find_bootstrap_dir() -> PathBuf {
 
 /// Generate bootstrapping crate files
 fn write_bootstrap_files(path: &Path) {
+    const WORKSPACE_DIR_PLACEHOLDER: &str = "{{WORKSPACE_DIR}}";
+
     // write manifest file 'Cargo.toml'
-    let manifest_content = include_bytes!("../../Cargo.bootstrap.toml");
+    let mut manifest_content =
+        String::from_utf8(include_bytes!("../../Cargo.bootstrap.toml").to_vec())
+            .expect("Could not read manifest template as utf8");
+
+    // replace placeholders
+    let workspace_dir = Path::new(file!())
+        .ancestors()
+        .skip(1)
+        .nth(5)
+        .expect("Could not find workspace directory");
+
+    manifest_content =
+        manifest_content.replace(WORKSPACE_DIR_PLACEHOLDER, workspace_dir.to_str().unwrap());
+
     let manifest_path = path.join("Cargo.toml");
 
     let mut file = File::create(manifest_path)
         .expect("Could not create manifest file for bootstrapping crate.");
-    file.write_all(manifest_content)
+    file.write_all(manifest_content.as_bytes())
         .expect("Failed writing to manifest file for bootstrapping crate");
 
     // write dummy main function
