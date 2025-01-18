@@ -18,7 +18,8 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: bevy-mod-scripting
   CODEGEN_BRANCH_NAME: __update-bevy-bindings-${{ github.head_ref || github.ref_name }}
-  
+  GH_TOKEN: ${{ github.token }}
+
 concurrency:
   # Use github.run_id on main branch
   # Use github.event.pull_request.number on pull requests, so it's unique per pull request

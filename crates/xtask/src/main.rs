@@ -835,20 +835,24 @@ impl Xtasks {
     }
 
     fn check_codegen_crate(app_settings: GlobalArgs, ide_mode: bool) -> Result<()> {
+        let toolchain = Self::read_rust_toolchain(&Self::codegen_crate_dir(&app_settings)?);
+
         // set the working directory to the codegen crate
         let app_settings = app_settings
             .clone()
-            .with_workspace_dir(Self::codegen_crate_dir(&app_settings)?);
+            .with_workspace_dir(Self::codegen_crate_dir(&app_settings)?)
+            .with_toolchain(toolchain)
+            .with_features(Features::new(vec![])); // TODO: support features for codegen crate if any
 
-        let mut clippy_args = vec!["+nightly-2024-12-15", "clippy"];
+        let mut clippy_args = vec![];
         if ide_mode {
             clippy_args.push("--message-format=json");
         }
         clippy_args.extend(vec!["--all-targets", "--", "-D", "warnings"]);
 
-        Self::run_system_command(
+        Self::run_workspace_command(
             &app_settings,
-            "cargo",
+            "clippy",
             "Failed to run clippy on codegen crate",
             clippy_args,
             None,
