@@ -212,9 +212,12 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::Isometry2d>, rhs: Val<bevy::math::Isometry2d>| {
-                    let output: Val<bevy::math::Isometry2d> = <bevy::math::Isometry2d as std::ops::Mul<
-                        bevy::math::Isometry2d,
+                |
+                    _self: Val<bevy::math::Isometry2d>,
+                    rhs: Val<bevy::math::prelude::Dir2>|
+                {
+                    let output: Val<bevy::math::prelude::Dir2> = <bevy::math::Isometry2d as std::ops::Mul<
+                        bevy::math::prelude::Dir2,
                     >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
@@ -222,12 +225,9 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             )
             .register(
                 "mul",
-                |
-                    _self: Val<bevy::math::Isometry2d>,
-                    rhs: Val<bevy::math::prelude::Dir2>|
-                {
-                    let output: Val<bevy::math::prelude::Dir2> = <bevy::math::Isometry2d as std::ops::Mul<
-                        bevy::math::prelude::Dir2,
+                |_self: Val<bevy::math::Isometry2d>, rhs: Val<bevy::math::Isometry2d>| {
+                    let output: Val<bevy::math::Isometry2d> = <bevy::math::Isometry2d as std::ops::Mul<
+                        bevy::math::Isometry2d,
                     >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
@@ -526,16 +526,6 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::Rot2>, rhs: Val<bevy::math::Rot2>| {
-                    let output: Val<bevy::math::Rot2> = <bevy::math::Rot2 as std::ops::Mul<
-                        bevy::math::Rot2,
-                    >>::mul(_self.into_inner(), rhs.into_inner())
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul",
                 |
                     _self: Val<bevy::math::Rot2>,
                     direction: Val<bevy::math::prelude::Dir2>|
@@ -543,6 +533,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: Val<bevy::math::prelude::Dir2> = <bevy::math::Rot2 as std::ops::Mul<
                         bevy::math::prelude::Dir2,
                     >>::mul(_self.into_inner(), direction.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
+                |_self: Val<bevy::math::Rot2>, rhs: Val<bevy::math::Rot2>| {
+                    let output: Val<bevy::math::Rot2> = <bevy::math::Rot2 as std::ops::Mul<
+                        bevy::math::Rot2,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },

@@ -54,6 +54,10 @@ pub struct Args {
     /// additional template context in the form of json, provided to the templates under an 'args' key
     #[arg(global = true, long)]
     pub template_args: Option<String>,
+
+    /// The path to the bevy_mod_scripting_core crate, used to bootstrap necessary traits
+    #[arg(global = true, long, default_value = ".")]
+    pub bms_core_path: Utf8PathBuf,
 }
 
 #[derive(clap::Args, Debug, Clone, Default, Serialize, Deserialize)]

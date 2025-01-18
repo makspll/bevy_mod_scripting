@@ -9,7 +9,7 @@ use std::{
 };
 
 use bevy_api_gen::*;
-use cargo_metadata::camino::Utf8Path;
+use cargo_metadata::camino::{Utf8Path, Utf8PathBuf};
 use clap::Parser;
 use log::{debug, error, info};
 use strum::VariantNames;
@@ -154,7 +154,7 @@ fn main() {
 
     debug!("Bootstrap directory: {}", &temp_dir.as_path().display());
 
-    write_bootstrap_files(temp_dir.as_path());
+    write_bootstrap_files(args.bms_core_path, temp_dir.as_path());
 
     let bootstrap_rlibs = build_bootstrap(temp_dir.as_path(), &plugin_target_dir.join("bootstrap"));
 
@@ -325,23 +325,15 @@ fn find_bootstrap_dir() -> PathBuf {
 }
 
 /// Generate bootstrapping crate files
-fn write_bootstrap_files(path: &Path) {
-    const WORKSPACE_DIR_PLACEHOLDER: &str = "{{WORKSPACE_DIR}}";
+fn write_bootstrap_files(bms_core_path: Utf8PathBuf, path: &Path) {
+    const BMS_CORE_PATH_PLACEHOLDER: &str = "{{BMS_CORE_PATH}}";
 
     // write manifest file 'Cargo.toml'
     let mut manifest_content =
         String::from_utf8(include_bytes!("../../Cargo.bootstrap.toml").to_vec())
             .expect("Could not read manifest template as utf8");
 
-    // replace placeholders
-    let workspace_dir = Path::new(file!())
-        .ancestors()
-        .skip(1)
-        .nth(5)
-        .expect("Could not find workspace directory");
-
-    manifest_content =
-        manifest_content.replace(WORKSPACE_DIR_PLACEHOLDER, workspace_dir.to_str().unwrap());
+    manifest_content = manifest_content.replace(BMS_CORE_PATH_PLACEHOLDER, bms_core_path.as_str());
 
     let manifest_path = path.join("Cargo.toml");
 

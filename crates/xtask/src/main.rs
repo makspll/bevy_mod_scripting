@@ -368,6 +368,9 @@ struct GlobalArgs {
     #[clap(skip)]
     override_workspace_dir: Option<PathBuf>,
 
+    #[clap(skip)]
+    override_toolchain: Option<String>,
+
     #[clap(
         long,
         short,
@@ -396,6 +399,13 @@ impl GlobalArgs {
     pub fn with_workspace_dir(self, dir: PathBuf) -> Self {
         Self {
             override_workspace_dir: Some(dir),
+            ..self
+        }
+    }
+
+    pub fn with_toolchain(self, toolchain: String) -> Self {
+        Self {
+            override_toolchain: Some(toolchain),
             ..self
         }
     }
@@ -718,9 +728,14 @@ impl Xtasks {
         info!("Running workspace command {coverage_mode}: {command}");
 
         let mut args = vec![];
+
+        if let Some(ref toolchain) = app_settings.override_toolchain {
+            args.push(format!("+{}", toolchain));
+        }
+
         args.push(command.to_owned());
 
-        if command != "fmt" {
+        if command != "fmt" && command != "bevy-api-gen" {
             // fmt doesn't care about features, workspaces or profiles
 
             args.push("--workspace".to_owned());
@@ -844,28 +859,51 @@ impl Xtasks {
         Ok(())
     }
 
+    /// reads rust-toolchain.toml file at the given directory and returns the toolchain string
+    fn read_rust_toolchain(path: &Path) -> String {
+        let rust_toolchain_path = path.join("rust-toolchain.toml");
+
+        let rust_toolchain = std::fs::read_to_string(rust_toolchain_path)
+            .expect("Could not read rust_toolchain.toml");
+
+        // parse the toml file
+        let toml: toml::Value =
+            toml::from_str(&rust_toolchain).expect("Could not parse rust_toolchain.toml");
+
+        let toolchain = toml
+            .get("toolchain")
+            .expect("Could not find toolchain in rust_toolchain.toml");
+        let channel = toolchain
+            .get("channel")
+            .expect("Could not find channel in rust_toolchain.toml");
+        let channel = channel
+            .as_str()
+            .expect("Channel in rust_toolchain.toml is not a string");
+
+        // set the toolchain
+        channel.to_string()
+    }
+
     fn codegen(
         app_settings: GlobalArgs,
         output_dir: PathBuf,
         bevy_features: Vec<String>,
     ) -> Result<()> {
         let main_workspace_app_settings = app_settings;
+        let output_dir = Self::relative_workspace_dir(&main_workspace_app_settings, output_dir)?;
         let bevy_dir =
             Self::relative_workspace_dir(&main_workspace_app_settings, "target/codegen/bevy")?;
+        let api_gen_dir = Self::codegen_crate_dir(&main_workspace_app_settings)?;
         let codegen_app_settings = main_workspace_app_settings
             .clone()
-            .with_workspace_dir(Self::codegen_crate_dir(&main_workspace_app_settings)?);
+            .with_workspace_dir(api_gen_dir.clone());
+
         let bevy_repo_app_settings = main_workspace_app_settings
             .clone()
-            .with_workspace_dir(bevy_dir.clone());
+            .with_workspace_dir(bevy_dir.clone())
+            .with_toolchain(Self::read_rust_toolchain(&api_gen_dir));
 
         // run cargo install
-        // print all env variables for cargo
-        let cargo_env = std::env::vars()
-            .map(|(k, v)| format!("{}={}", k, v))
-            .collect::<Vec<_>>()
-            .join("\n");
-        info!("Cargo env: {}", cargo_env);
         Self::run_system_command(
             &codegen_app_settings,
             "cargo",
@@ -887,7 +925,7 @@ impl Xtasks {
         std::fs::create_dir_all(&output_dir)?;
 
         // git clone bevy repo
-        Self::run_system_command(
+        let _ = Self::run_system_command(
             &bevy_repo_app_settings,
             "git",
             "Failed to clone bevy repo",
@@ -898,9 +936,10 @@ impl Xtasks {
                 format!("v{}", bevy_version).as_str(),
                 "--depth",
                 "1",
+                ".",
             ],
             None,
-        )?;
+        );
 
         // fetch the tags
         Self::run_system_command(
@@ -926,6 +965,9 @@ impl Xtasks {
         };
 
         let template_args = serde_json::to_string(&template_args)?;
+        let bms_core_path = Self::workspace_dir(&main_workspace_app_settings)?
+            .join("crates/bevy_mod_scripting_core")
+            .to_path_buf();
 
         Self::run_workspace_command(
             &bevy_repo_app_settings,
@@ -933,6 +975,8 @@ impl Xtasks {
             "Failed to run bevy-api-gen generate",
             vec![
                 "generate",
+                "--bms-core-path",
+                bms_core_path.to_str().unwrap(),
                 "--output",
                 output_dir.to_str().unwrap(),
                 "--template-args",
@@ -950,37 +994,16 @@ impl Xtasks {
             "Failed to run bevy-api-gen generate",
             vec![
                 "collect",
+                "--bms-core-path",
+                bms_core_path.to_str().unwrap(),
                 "--output",
                 output_dir.to_str().unwrap(),
                 "--template-args",
                 template_args.as_str(),
+                "-vvv",
             ],
             Some(&bevy_dir),
         )?;
-
-        // prune the output directory from non .rs files
-        let output_dir = std::fs::canonicalize(output_dir)?;
-        let remove_glob = output_dir
-            .join("**")
-            .join("*.rs")
-            .to_str()
-            .unwrap()
-            .to_owned();
-
-        let glob = glob::glob(&remove_glob)?;
-        for entry in glob {
-            let entry = entry?;
-            // ask the user to confirm deletion
-            if entry.is_file() {
-                println!("Removing file: {:?}. type 'y' to confirm", entry);
-                let mut input = String::new();
-                std::io::stdin().read_line(&mut input)?;
-
-                if input.trim() == "y" {
-                    std::fs::remove_file(entry)?;
-                }
-            }
-        }
 
         Ok(())
     }
@@ -1325,7 +1348,7 @@ fn pop_cargo_env() -> Result<()> {
     }
 
     // unset some other variables
-    let remove_vars = ["RUSTUP_TOOLCHAIN", "LD_LIBRARY_PATH"];
+    let remove_vars = ["RUSTUP_TOOLCHAIN"];
     for var in remove_vars.iter() {
         std::env::remove_var(var);
     }
