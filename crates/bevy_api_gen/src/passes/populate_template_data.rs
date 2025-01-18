@@ -240,13 +240,8 @@ fn ty_to_string<'tcx>(ctxt: &BevyCtxt<'tcx>, ty: Ty<'tcx>, proxy_types: bool) ->
 
                     trace!("Checking ADT: `{}`.", ctxt.tcx.item_name(def_id),);
 
-                    let contains = ctxt.meta_loader.one_of_meta_files_contains(
-                        &meta_sources,
-                        None,
-                        def_path_hash,
-                    );
-
-                    contains
+                    ctxt.meta_loader
+                        .one_of_meta_files_contains(&meta_sources, None, def_path_hash)
                 })
                 .is_some_and(identity)
         }),
