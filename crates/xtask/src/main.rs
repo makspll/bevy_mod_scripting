@@ -1372,7 +1372,7 @@ impl Xtasks {
         let mut context = tera::Context::new();
         let workspace_dir = Self::workspace_dir(&app_settings)?;
         let json_workspace_dir = serde_json::to_string(&workspace_dir)?; // make sure this works as a json string
-        context.insert("dir", &json);
+        context.insert("dir", &json_workspace_dir);
 
         let templated_settings = tera.render_str(vscode_settings, &context)?;
         let templated_settings_json = Self::read_json_with_comments(templated_settings.as_bytes())
