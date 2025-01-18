@@ -122,19 +122,20 @@ fn main() {
                     }
                 });
             let meta_loader = MetaLoader::new(vec![output.to_owned()], workspace_meta);
-            let context = Collect {
-                crates: crates
-                    .map(|c| {
-                        let name = c.to_str().unwrap().to_owned();
-                        log::info!("Collecting crate: {}", name);
-                        let meta = meta_loader
-                            .meta_for(&name)
-                            .expect("Could not find meta file for crate");
-                        Crate { name, meta }
-                    })
-                    .collect(),
-                api_name,
-            };
+            let mut crates: Vec<_> = crates
+                .map(|c| {
+                    let name = c.to_str().unwrap().to_owned();
+                    log::info!("Collecting crate: {}", name);
+                    let meta = meta_loader
+                        .meta_for(&name)
+                        .expect("Could not find meta file for crate");
+                    Crate { name, meta }
+                })
+                .collect();
+
+            crates.sort_by(|a, b| a.name.cmp(&b.name));
+
+            let context = Collect { crates, api_name };
             let mut context =
                 Context::from_serialize(context).expect("Could not create template context");
 
