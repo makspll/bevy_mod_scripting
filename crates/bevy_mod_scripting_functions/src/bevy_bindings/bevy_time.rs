@@ -60,6 +60,26 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             )
             .register(
+                "duration",
+                |_self: Ref<bevy::time::prelude::Timer>| {
+                    let output: Val<bevy::utils::Duration> = bevy::time::prelude::Timer::duration(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "elapsed",
+                |_self: Ref<bevy::time::prelude::Timer>| {
+                    let output: Val<bevy::utils::Duration> = bevy::time::prelude::Timer::elapsed(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "elapsed_secs",
                 |_self: Ref<bevy::time::prelude::Timer>| {
                     let output: f32 = bevy::time::prelude::Timer::elapsed_secs(&_self)
@@ -146,6 +166,20 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             )
             .register(
+                "new",
+                |
+                    duration: Val<bevy::utils::Duration>,
+                    mode: Val<bevy::time::prelude::TimerMode>|
+                {
+                    let output: Val<bevy::time::prelude::Timer> = bevy::time::prelude::Timer::new(
+                            duration.into_inner(),
+                            mode.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "pause",
                 |mut _self: Mut<bevy::time::prelude::Timer>| {
                     let output: () = bevy::time::prelude::Timer::pause(&mut _self)
@@ -161,6 +195,16 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             )
             .register(
+                "remaining",
+                |_self: Ref<bevy::time::prelude::Timer>| {
+                    let output: Val<bevy::utils::Duration> = bevy::time::prelude::Timer::remaining(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "remaining_secs",
                 |_self: Ref<bevy::time::prelude::Timer>| {
                     let output: f32 = bevy::time::prelude::Timer::remaining_secs(&_self)
@@ -172,6 +216,34 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 "reset",
                 |mut _self: Mut<bevy::time::prelude::Timer>| {
                     let output: () = bevy::time::prelude::Timer::reset(&mut _self)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "set_duration",
+                |
+                    mut _self: Mut<bevy::time::prelude::Timer>,
+                    duration: Val<bevy::utils::Duration>|
+                {
+                    let output: () = bevy::time::prelude::Timer::set_duration(
+                            &mut _self,
+                            duration.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "set_elapsed",
+                |
+                    mut _self: Mut<bevy::time::prelude::Timer>,
+                    time: Val<bevy::utils::Duration>|
+                {
+                    let output: () = bevy::time::prelude::Timer::set_elapsed(
+                            &mut _self,
+                            time.into_inner(),
+                        )
                         .into();
                     output
                 },
@@ -275,6 +347,16 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 },
             )
             .register(
+                "elapsed",
+                |_self: Ref<bevy::time::Stopwatch>| {
+                    let output: Val<bevy::utils::Duration> = bevy::time::Stopwatch::elapsed(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "elapsed_secs",
                 |_self: Ref<bevy::time::Stopwatch>| {
                     let output: f32 = bevy::time::Stopwatch::elapsed_secs(&_self).into();
@@ -325,6 +407,20 @@ impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
                 "reset",
                 |mut _self: Mut<bevy::time::Stopwatch>| {
                     let output: () = bevy::time::Stopwatch::reset(&mut _self).into();
+                    output
+                },
+            )
+            .register(
+                "set_elapsed",
+                |
+                    mut _self: Mut<bevy::time::Stopwatch>,
+                    time: Val<bevy::utils::Duration>|
+                {
+                    let output: () = bevy::time::Stopwatch::set_elapsed(
+                            &mut _self,
+                            time.into_inner(),
+                        )
+                        .into();
                     output
                 },
             )

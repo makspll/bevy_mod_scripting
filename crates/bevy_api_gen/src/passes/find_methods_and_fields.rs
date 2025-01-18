@@ -350,11 +350,19 @@ fn type_is_adt_and_reflectable<'tcx>(
             tcx.def_path_hash(did),
         );
 
-        log::trace!(
-            "Meta for type: `{}`, contained in meta `{}`",
-            tcx.item_name(did),
-            contains_hash
-        );
+        if contains_hash {
+            log::info!(
+                "Meta for type: `{}` with hash: `{:?}`, contained in the meta file",
+                tcx.item_name(did),
+                tcx.def_path_hash(did),
+            );
+        } else {
+            log::info!(
+                "Meta for type: `{}` with hash: `{:?}`, was not found in meta files for {crate_name} or in bevy_reflect, meaning it will not generate a proxy.",
+                tcx.item_name(did),
+                tcx.def_path_hash(did),
+            );
+        }
 
         contains_hash
     })

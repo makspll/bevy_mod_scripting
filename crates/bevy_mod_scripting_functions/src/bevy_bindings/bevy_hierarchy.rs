@@ -57,6 +57,16 @@ impl ::bevy::app::Plugin for BevyHierarchyScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "get",
+                |_self: Ref<bevy::hierarchy::prelude::Parent>| {
+                    let output: Val<bevy::ecs::entity::Entity> = bevy::hierarchy::prelude::Parent::get(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::hierarchy::HierarchyEvent>::new(world)
             .register(

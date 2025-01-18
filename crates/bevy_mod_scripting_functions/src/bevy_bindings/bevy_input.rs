@@ -20,6 +20,16 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
         let mut world = app.world_mut();
         NamespaceBuilder::<::bevy::input::gamepad::Gamepad>::new(world)
             .register(
+                "dpad",
+                |_self: Ref<bevy::input::gamepad::Gamepad>| {
+                    let output: Val<bevy::math::Vec2> = bevy::input::gamepad::Gamepad::dpad(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "just_pressed",
                 |
                     _self: Ref<bevy::input::gamepad::Gamepad>,
@@ -48,6 +58,16 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 },
             )
             .register(
+                "left_stick",
+                |_self: Ref<bevy::input::gamepad::Gamepad>| {
+                    let output: Val<bevy::math::Vec2> = bevy::input::gamepad::Gamepad::left_stick(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "pressed",
                 |
                     _self: Ref<bevy::input::gamepad::Gamepad>,
@@ -65,6 +85,16 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                 "product_id",
                 |_self: Ref<bevy::input::gamepad::Gamepad>| {
                     let output: std::option::Option<u16> = bevy::input::gamepad::Gamepad::product_id(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "right_stick",
+                |_self: Ref<bevy::input::gamepad::Gamepad>| {
+                    let output: Val<bevy::math::Vec2> = bevy::input::gamepad::Gamepad::right_stick(
                             &_self,
                         )
                         .into();
@@ -473,6 +503,22 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "new",
+                |
+                    entity: Val<bevy::ecs::entity::Entity>,
+                    axis: Val<bevy::input::gamepad::GamepadAxis>,
+                    value: f32|
+                {
+                    let output: Val<bevy::input::gamepad::GamepadAxisChangedEvent> = bevy::input::gamepad::GamepadAxisChangedEvent::new(
+                            entity.into_inner(),
+                            axis.into_inner(),
+                            value,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::input::gamepad::GamepadButtonChangedEvent>::new(world)
             .register(
@@ -494,6 +540,24 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                     let output: bool = <bevy::input::gamepad::GamepadButtonChangedEvent as std::cmp::PartialEq<
                         bevy::input::gamepad::GamepadButtonChangedEvent,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |
+                    entity: Val<bevy::ecs::entity::Entity>,
+                    button: Val<bevy::input::gamepad::GamepadButton>,
+                    state: Val<bevy::input::ButtonState>,
+                    value: f32|
+                {
+                    let output: Val<bevy::input::gamepad::GamepadButtonChangedEvent> = bevy::input::gamepad::GamepadButtonChangedEvent::new(
+                            entity.into_inner(),
+                            button.into_inner(),
+                            state.into_inner(),
+                            value,
+                        )
                         .into();
                     output
                 },
@@ -532,6 +596,24 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                     let output: bool = <bevy::input::gamepad::GamepadButtonStateChangedEvent as std::cmp::PartialEq<
                         bevy::input::gamepad::GamepadButtonStateChangedEvent,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |
+                    entity: Val<bevy::ecs::entity::Entity>,
+                    button: Val<bevy::input::gamepad::GamepadButton>,
+                    state: Val<bevy::input::ButtonState>|
+                {
+                    let output: Val<
+                        bevy::input::gamepad::GamepadButtonStateChangedEvent,
+                    > = bevy::input::gamepad::GamepadButtonStateChangedEvent::new(
+                            entity.into_inner(),
+                            button.into_inner(),
+                            state.into_inner(),
+                        )
                         .into();
                     output
                 },
@@ -600,6 +682,20 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                     let output: bool = <bevy::input::gamepad::GamepadConnectionEvent as std::cmp::PartialEq<
                         bevy::input::gamepad::GamepadConnectionEvent,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |
+                    gamepad: Val<bevy::ecs::entity::Entity>,
+                    connection: Val<bevy::input::gamepad::GamepadConnection>|
+                {
+                    let output: Val<bevy::input::gamepad::GamepadConnectionEvent> = bevy::input::gamepad::GamepadConnectionEvent::new(
+                            gamepad.into_inner(),
+                            connection.into_inner(),
+                        )
                         .into();
                     output
                 },
@@ -672,6 +768,16 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "gamepad",
+                |_self: Ref<bevy::input::gamepad::GamepadRumbleRequest>| {
+                    let output: Val<bevy::ecs::entity::Entity> = bevy::input::gamepad::GamepadRumbleRequest::gamepad(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<
             ::bevy::input::gamepad::RawGamepadAxisChangedEvent,
@@ -695,6 +801,22 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                     let output: bool = <bevy::input::gamepad::RawGamepadAxisChangedEvent as std::cmp::PartialEq<
                         bevy::input::gamepad::RawGamepadAxisChangedEvent,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |
+                    gamepad: Val<bevy::ecs::entity::Entity>,
+                    axis_type: Val<bevy::input::gamepad::GamepadAxis>,
+                    value: f32|
+                {
+                    let output: Val<bevy::input::gamepad::RawGamepadAxisChangedEvent> = bevy::input::gamepad::RawGamepadAxisChangedEvent::new(
+                            gamepad.into_inner(),
+                            axis_type.into_inner(),
+                            value,
+                        )
                         .into();
                     output
                 },
@@ -723,6 +845,24 @@ impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
                     let output: bool = <bevy::input::gamepad::RawGamepadButtonChangedEvent as std::cmp::PartialEq<
                         bevy::input::gamepad::RawGamepadButtonChangedEvent,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |
+                    gamepad: Val<bevy::ecs::entity::Entity>,
+                    button_type: Val<bevy::input::gamepad::GamepadButton>,
+                    value: f32|
+                {
+                    let output: Val<
+                        bevy::input::gamepad::RawGamepadButtonChangedEvent,
+                    > = bevy::input::gamepad::RawGamepadButtonChangedEvent::new(
+                            gamepad.into_inner(),
+                            button_type.into_inner(),
+                            value,
+                        )
                         .into();
                     output
                 },

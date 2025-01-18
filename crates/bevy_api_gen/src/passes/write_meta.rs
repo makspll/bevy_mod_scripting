@@ -20,6 +20,7 @@ pub(crate) fn write_meta(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
         proxies,
         will_generate,
         meta_version: META_VERSION.to_string(),
+        timestamp: chrono::Local::now().naive_local(),
     };
 
     ctxt.meta_loader

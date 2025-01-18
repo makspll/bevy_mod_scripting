@@ -26,6 +26,8 @@ fn main() {
     }
     env_logger::init();
 
+    info!("Using RUST_LOG: {:?}", env::var("RUST_LOG"));
+
     info!("Computing crate metadata");
     let metadata = cargo_metadata::MetadataCommand::new()
         .no_deps()

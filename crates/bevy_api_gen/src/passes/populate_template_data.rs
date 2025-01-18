@@ -125,10 +125,6 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
     }
 
     trace!("Populated template context:");
-    trace!(
-        "{}",
-        serde_json::to_string_pretty(&ctxt.template_context).unwrap()
-    );
 
     true
 }
@@ -242,11 +238,15 @@ fn ty_to_string<'tcx>(ctxt: &BevyCtxt<'tcx>, ty: Ty<'tcx>, proxy_types: bool) ->
                         "bevy_reflect",
                     ];
 
-                    ctxt.meta_loader.one_of_meta_files_contains(
+                    trace!("Checking ADT: `{}`.", ctxt.tcx.item_name(def_id),);
+
+                    let contains = ctxt.meta_loader.one_of_meta_files_contains(
                         &meta_sources,
-                        Some(&ctxt.tcx.crate_name(LOCAL_CRATE).to_ident_string()),
+                        None,
                         def_path_hash,
-                    )
+                    );
+
+                    contains
                 })
                 .is_some_and(identity)
         }),
@@ -338,7 +338,6 @@ impl<'a> TyPrinter<'a> {
     }
 
     pub fn print(mut self, ty: Ty<'_>) -> String {
-        log::trace!("Printing type: {:#?}", ty);
         self.print_ty(ty);
         self.buffer
     }
@@ -369,7 +368,6 @@ impl<'a> TyPrinter<'a> {
     }
 
     fn print_adt<'tcx, I: Iterator<Item = GenericArg<'tcx>>>(&mut self, ty: AdtDef<'tcx>, args: I) {
-        log::trace!("Printing ADT: {:#?}", ty);
         let did = ty.did();
         let import_path = (self.path_finder)(did);
         self.buffer.push_str(&import_path);
@@ -377,8 +375,6 @@ impl<'a> TyPrinter<'a> {
     }
 
     fn print_ty(&mut self, ty: Ty<'_>) {
-        log::trace!("Printing type: {:#?}", ty);
-
         match ty.kind() {
             TyKind::Bool => self.print_literal("bool"),
             TyKind::Char => self.print_literal("char"),

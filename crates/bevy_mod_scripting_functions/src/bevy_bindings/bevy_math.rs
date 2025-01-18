@@ -179,6 +179,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "from_translation",
+                |translation: Val<bevy::math::prelude::Vec2>| {
+                    let output: Val<bevy::math::Isometry2d> = bevy::math::Isometry2d::from_translation(
+                            translation.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "from_xy",
                 |x: f32, y: f32| {
                     let output: Val<bevy::math::Isometry2d> = bevy::math::Isometry2d::from_xy(
@@ -211,6 +221,20 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "inverse_transform_point",
+                |
+                    _self: Ref<bevy::math::Isometry2d>,
+                    point: Val<bevy::math::prelude::Vec2>|
+                {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::Isometry2d::inverse_transform_point(
+                            &_self,
+                            point.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "mul",
                 |_self: Val<bevy::math::Isometry2d>, rhs: Val<bevy::math::Isometry2d>| {
                     let output: Val<bevy::math::Isometry2d> = <bevy::math::Isometry2d as std::ops::Mul<
@@ -232,6 +256,47 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "mul",
+                |
+                    _self: Val<bevy::math::Isometry2d>,
+                    rhs: Val<bevy::math::prelude::Vec2>|
+                {
+                    let output: Val<bevy::math::prelude::Vec2> = <bevy::math::Isometry2d as std::ops::Mul<
+                        bevy::math::prelude::Vec2,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |
+                    translation: Val<bevy::math::prelude::Vec2>,
+                    rotation: Val<bevy::math::Rot2>|
+                {
+                    let output: Val<bevy::math::Isometry2d> = bevy::math::Isometry2d::new(
+                            translation.into_inner(),
+                            rotation.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "transform_point",
+                |
+                    _self: Ref<bevy::math::Isometry2d>,
+                    point: Val<bevy::math::prelude::Vec2>|
+                {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::Isometry2d::transform_point(
+                            &_self,
+                            point.into_inner(),
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::Isometry3d>::new(world)
             .register(
@@ -250,6 +315,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::Isometry3d as std::cmp::PartialEq<
                         bevy::math::Isometry3d,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "from_rotation",
+                |rotation: Val<bevy::math::prelude::Quat>| {
+                    let output: Val<bevy::math::Isometry3d> = bevy::math::Isometry3d::from_rotation(
+                            rotation.into_inner(),
+                        )
                         .into();
                     output
                 },
@@ -299,12 +374,35 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             )
             .register(
                 "mul",
+                |_self: Val<bevy::math::Isometry3d>, rhs: Val<bevy::math::Vec3A>| {
+                    let output: Val<bevy::math::Vec3A> = <bevy::math::Isometry3d as std::ops::Mul<
+                        bevy::math::Vec3A,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
                 |
                     _self: Val<bevy::math::Isometry3d>,
                     rhs: Val<bevy::math::prelude::Dir3>|
                 {
                     let output: Val<bevy::math::prelude::Dir3> = <bevy::math::Isometry3d as std::ops::Mul<
                         bevy::math::prelude::Dir3,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
+                |
+                    _self: Val<bevy::math::Isometry3d>,
+                    rhs: Val<bevy::math::prelude::Vec3>|
+                {
+                    let output: Val<bevy::math::prelude::Vec3> = <bevy::math::Isometry3d as std::ops::Mul<
+                        bevy::math::prelude::Vec3,
                     >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
@@ -330,6 +428,47 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "get_point",
+                |_self: Ref<bevy::math::Ray2d>, distance: f32| {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::Ray2d::get_point(
+                            &_self,
+                            distance,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "intersect_plane",
+                |
+                    _self: Ref<bevy::math::Ray2d>,
+                    plane_origin: Val<bevy::math::prelude::Vec2>,
+                    plane: Val<bevy::math::primitives::Plane2d>|
+                {
+                    let output: std::option::Option<f32> = bevy::math::Ray2d::intersect_plane(
+                            &_self,
+                            plane_origin.into_inner(),
+                            plane.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |
+                    origin: Val<bevy::math::prelude::Vec2>,
+                    direction: Val<bevy::math::prelude::Dir2>|
+                {
+                    let output: Val<bevy::math::Ray2d> = bevy::math::Ray2d::new(
+                            origin.into_inner(),
+                            direction.into_inner(),
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::Ray3d>::new(world)
             .register(
@@ -348,6 +487,47 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::Ray3d as std::cmp::PartialEq<
                         bevy::math::Ray3d,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "get_point",
+                |_self: Ref<bevy::math::Ray3d>, distance: f32| {
+                    let output: Val<bevy::math::prelude::Vec3> = bevy::math::Ray3d::get_point(
+                            &_self,
+                            distance,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "intersect_plane",
+                |
+                    _self: Ref<bevy::math::Ray3d>,
+                    plane_origin: Val<bevy::math::prelude::Vec3>,
+                    plane: Val<bevy::math::primitives::InfinitePlane3d>|
+                {
+                    let output: std::option::Option<f32> = bevy::math::Ray3d::intersect_plane(
+                            &_self,
+                            plane_origin.into_inner(),
+                            plane.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |
+                    origin: Val<bevy::math::prelude::Vec3>,
+                    direction: Val<bevy::math::prelude::Dir3>|
+                {
+                    let output: Val<bevy::math::Ray3d> = bevy::math::Ray3d::new(
+                            origin.into_inner(),
+                            direction.into_inner(),
+                        )
                         .into();
                     output
                 },
@@ -548,6 +728,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "mul",
+                |_self: Val<bevy::math::Rot2>, rhs: Val<bevy::math::prelude::Vec2>| {
+                    let output: Val<bevy::math::prelude::Vec2> = <bevy::math::Rot2 as std::ops::Mul<
+                        bevy::math::prelude::Vec2,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "nlerp",
                 |_self: Val<bevy::math::Rot2>, end: Val<bevy::math::Rot2>, s: f32| {
                     let output: Val<bevy::math::Rot2> = bevy::math::Rot2::nlerp(
@@ -613,6 +803,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::prelude::Dir2>::new(world)
             .register(
+                "as_vec2",
+                |_self: Ref<bevy::math::prelude::Dir2>| {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::prelude::Dir2::as_vec2(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "clone",
                 |_self: Ref<bevy::math::prelude::Dir2>| {
                     let output: Val<bevy::math::prelude::Dir2> = <bevy::math::prelude::Dir2 as std::clone::Clone>::clone(
@@ -657,10 +857,30 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "mul",
+                |_self: Val<bevy::math::prelude::Dir2>, rhs: f32| {
+                    let output: Val<bevy::math::prelude::Vec2> = <bevy::math::prelude::Dir2 as std::ops::Mul<
+                        f32,
+                    >>::mul(_self.into_inner(), rhs)
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "neg",
                 |_self: Val<bevy::math::prelude::Dir2>| {
                     let output: Val<bevy::math::prelude::Dir2> = <bevy::math::prelude::Dir2 as std::ops::Neg>::neg(
                             _self.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new_unchecked",
+                |value: Val<bevy::math::prelude::Vec2>| {
+                    let output: Val<bevy::math::prelude::Dir2> = bevy::math::prelude::Dir2::new_unchecked(
+                            value.into_inner(),
                         )
                         .into();
                     output
@@ -752,6 +972,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::prelude::Dir3>::new(world)
             .register(
+                "as_vec3",
+                |_self: Ref<bevy::math::prelude::Dir3>| {
+                    let output: Val<bevy::math::prelude::Vec3> = bevy::math::prelude::Dir3::as_vec3(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "clone",
                 |_self: Ref<bevy::math::prelude::Dir3>| {
                     let output: Val<bevy::math::prelude::Dir3> = <bevy::math::prelude::Dir3 as std::clone::Clone>::clone(
@@ -797,10 +1027,30 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "mul",
+                |_self: Val<bevy::math::prelude::Dir3>, rhs: f32| {
+                    let output: Val<bevy::math::prelude::Vec3> = <bevy::math::prelude::Dir3 as std::ops::Mul<
+                        f32,
+                    >>::mul(_self.into_inner(), rhs)
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "neg",
                 |_self: Val<bevy::math::prelude::Dir3>| {
                     let output: Val<bevy::math::prelude::Dir3> = <bevy::math::prelude::Dir3 as std::ops::Neg>::neg(
                             _self.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new_unchecked",
+                |value: Val<bevy::math::prelude::Vec3>| {
+                    let output: Val<bevy::math::prelude::Dir3> = bevy::math::prelude::Dir3::new_unchecked(
+                            value.into_inner(),
                         )
                         .into();
                     output
@@ -823,6 +1073,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             );
         NamespaceBuilder::<::bevy::math::prelude::Dir3A>::new(world)
+            .register(
+                "as_vec3a",
+                |_self: Ref<bevy::math::prelude::Dir3A>| {
+                    let output: Val<bevy::math::Vec3A> = bevy::math::prelude::Dir3A::as_vec3a(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
             .register(
                 "clone",
                 |_self: Ref<bevy::math::prelude::Dir3A>| {
@@ -869,10 +1129,30 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "mul",
+                |_self: Val<bevy::math::prelude::Dir3A>, rhs: f32| {
+                    let output: Val<bevy::math::Vec3A> = <bevy::math::prelude::Dir3A as std::ops::Mul<
+                        f32,
+                    >>::mul(_self.into_inner(), rhs)
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "neg",
                 |_self: Val<bevy::math::prelude::Dir3A>| {
                     let output: Val<bevy::math::prelude::Dir3A> = <bevy::math::prelude::Dir3A as std::ops::Neg>::neg(
                             _self.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new_unchecked",
+                |value: Val<bevy::math::Vec3A>| {
+                    let output: Val<bevy::math::prelude::Dir3A> = bevy::math::prelude::Dir3A::new_unchecked(
+                            value.into_inner(),
                         )
                         .into();
                     output
@@ -926,10 +1206,34 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "center",
+                |_self: Ref<bevy::math::prelude::IRect>| {
+                    let output: Val<bevy::math::prelude::IVec2> = bevy::math::prelude::IRect::center(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "clone",
                 |_self: Ref<bevy::math::prelude::IRect>| {
                     let output: Val<bevy::math::prelude::IRect> = <bevy::math::prelude::IRect as std::clone::Clone>::clone(
                             &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "contains",
+                |
+                    _self: Ref<bevy::math::prelude::IRect>,
+                    point: Val<bevy::math::prelude::IVec2>|
+                {
+                    let output: bool = bevy::math::prelude::IRect::contains(
+                            &_self,
+                            point.into_inner(),
                         )
                         .into();
                     output
@@ -944,6 +1248,58 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::prelude::IRect as std::cmp::PartialEq<
                         bevy::math::prelude::IRect,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "from_center_half_size",
+                |
+                    origin: Val<bevy::math::prelude::IVec2>,
+                    half_size: Val<bevy::math::prelude::IVec2>|
+                {
+                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::from_center_half_size(
+                            origin.into_inner(),
+                            half_size.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "from_center_size",
+                |
+                    origin: Val<bevy::math::prelude::IVec2>,
+                    size: Val<bevy::math::prelude::IVec2>|
+                {
+                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::from_center_size(
+                            origin.into_inner(),
+                            size.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "from_corners",
+                |
+                    p0: Val<bevy::math::prelude::IVec2>,
+                    p1: Val<bevy::math::prelude::IVec2>|
+                {
+                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::from_corners(
+                            p0.into_inner(),
+                            p1.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "half_size",
+                |_self: Ref<bevy::math::prelude::IRect>| {
+                    let output: Val<bevy::math::prelude::IVec2> = bevy::math::prelude::IRect::half_size(
+                            &_self,
+                        )
                         .into();
                     output
                 },
@@ -1002,12 +1358,36 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "size",
+                |_self: Ref<bevy::math::prelude::IRect>| {
+                    let output: Val<bevy::math::prelude::IVec2> = bevy::math::prelude::IRect::size(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "union",
                 |
                     _self: Ref<bevy::math::prelude::IRect>,
                     other: Val<bevy::math::prelude::IRect>|
                 {
                     let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::union(
+                            &_self,
+                            other.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "union_point",
+                |
+                    _self: Ref<bevy::math::prelude::IRect>,
+                    other: Val<bevy::math::prelude::IVec2>|
+                {
+                    let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::union_point(
                             &_self,
                             other.into_inner(),
                         )
@@ -1044,10 +1424,34 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "center",
+                |_self: Ref<bevy::math::prelude::Rect>| {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::prelude::Rect::center(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "clone",
                 |_self: Ref<bevy::math::prelude::Rect>| {
                     let output: Val<bevy::math::prelude::Rect> = <bevy::math::prelude::Rect as std::clone::Clone>::clone(
                             &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "contains",
+                |
+                    _self: Ref<bevy::math::prelude::Rect>,
+                    point: Val<bevy::math::prelude::Vec2>|
+                {
+                    let output: bool = bevy::math::prelude::Rect::contains(
+                            &_self,
+                            point.into_inner(),
                         )
                         .into();
                     output
@@ -1062,6 +1466,55 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::prelude::Rect as std::cmp::PartialEq<
                         bevy::math::prelude::Rect,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "from_center_half_size",
+                |
+                    origin: Val<bevy::math::prelude::Vec2>,
+                    half_size: Val<bevy::math::prelude::Vec2>|
+                {
+                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::from_center_half_size(
+                            origin.into_inner(),
+                            half_size.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "from_center_size",
+                |
+                    origin: Val<bevy::math::prelude::Vec2>,
+                    size: Val<bevy::math::prelude::Vec2>|
+                {
+                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::from_center_size(
+                            origin.into_inner(),
+                            size.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "from_corners",
+                |p0: Val<bevy::math::prelude::Vec2>, p1: Val<bevy::math::prelude::Vec2>| {
+                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::from_corners(
+                            p0.into_inner(),
+                            p1.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "half_size",
+                |_self: Ref<bevy::math::prelude::Rect>| {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::prelude::Rect::half_size(
+                            &_self,
+                        )
                         .into();
                     output
                 },
@@ -1134,12 +1587,36 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "size",
+                |_self: Ref<bevy::math::prelude::Rect>| {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::prelude::Rect::size(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "union",
                 |
                     _self: Ref<bevy::math::prelude::Rect>,
                     other: Val<bevy::math::prelude::Rect>|
                 {
                     let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::union(
+                            &_self,
+                            other.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "union_point",
+                |
+                    _self: Ref<bevy::math::prelude::Rect>,
+                    other: Val<bevy::math::prelude::Vec2>|
+                {
+                    let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::union_point(
                             &_self,
                             other.into_inner(),
                         )
@@ -1186,10 +1663,34 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "center",
+                |_self: Ref<bevy::math::prelude::URect>| {
+                    let output: Val<bevy::math::prelude::UVec2> = bevy::math::prelude::URect::center(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "clone",
                 |_self: Ref<bevy::math::prelude::URect>| {
                     let output: Val<bevy::math::prelude::URect> = <bevy::math::prelude::URect as std::clone::Clone>::clone(
                             &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "contains",
+                |
+                    _self: Ref<bevy::math::prelude::URect>,
+                    point: Val<bevy::math::prelude::UVec2>|
+                {
+                    let output: bool = bevy::math::prelude::URect::contains(
+                            &_self,
+                            point.into_inner(),
                         )
                         .into();
                     output
@@ -1204,6 +1705,58 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::prelude::URect as std::cmp::PartialEq<
                         bevy::math::prelude::URect,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "from_center_half_size",
+                |
+                    origin: Val<bevy::math::prelude::UVec2>,
+                    half_size: Val<bevy::math::prelude::UVec2>|
+                {
+                    let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::from_center_half_size(
+                            origin.into_inner(),
+                            half_size.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "from_center_size",
+                |
+                    origin: Val<bevy::math::prelude::UVec2>,
+                    size: Val<bevy::math::prelude::UVec2>|
+                {
+                    let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::from_center_size(
+                            origin.into_inner(),
+                            size.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "from_corners",
+                |
+                    p0: Val<bevy::math::prelude::UVec2>,
+                    p1: Val<bevy::math::prelude::UVec2>|
+                {
+                    let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::from_corners(
+                            p0.into_inner(),
+                            p1.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "half_size",
+                |_self: Ref<bevy::math::prelude::URect>| {
+                    let output: Val<bevy::math::prelude::UVec2> = bevy::math::prelude::URect::half_size(
+                            &_self,
+                        )
                         .into();
                     output
                 },
@@ -1262,12 +1815,36 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "size",
+                |_self: Ref<bevy::math::prelude::URect>| {
+                    let output: Val<bevy::math::prelude::UVec2> = bevy::math::prelude::URect::size(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "union",
                 |
                     _self: Ref<bevy::math::prelude::URect>,
                     other: Val<bevy::math::prelude::URect>|
                 {
                     let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::union(
+                            &_self,
+                            other.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "union_point",
+                |
+                    _self: Ref<bevy::math::prelude::URect>,
+                    other: Val<bevy::math::prelude::UVec2>|
+                {
+                    let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::union_point(
                             &_self,
                             other.into_inner(),
                         )
@@ -1303,6 +1880,34 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "closest_point",
+                |
+                    _self: Ref<bevy::math::bounding::Aabb2d>,
+                    point: Val<bevy::math::prelude::Vec2>|
+                {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::bounding::Aabb2d::closest_point(
+                            &_self,
+                            point.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |
+                    center: Val<bevy::math::prelude::Vec2>,
+                    half_size: Val<bevy::math::prelude::Vec2>|
+                {
+                    let output: Val<bevy::math::bounding::Aabb2d> = bevy::math::bounding::Aabb2d::new(
+                            center.into_inner(),
+                            half_size.into_inner(),
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::bounding::BoundingCircle>::new(world)
             .register(
@@ -1326,6 +1931,31 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "closest_point",
+                |
+                    _self: Ref<bevy::math::bounding::BoundingCircle>,
+                    point: Val<bevy::math::prelude::Vec2>|
+                {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::bounding::BoundingCircle::closest_point(
+                            &_self,
+                            point.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |center: Val<bevy::math::prelude::Vec2>, radius: f32| {
+                    let output: Val<bevy::math::bounding::BoundingCircle> = bevy::math::bounding::BoundingCircle::new(
+                            center.into_inner(),
+                            radius,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "radius",
                 |_self: Ref<bevy::math::bounding::BoundingCircle>| {
                     let output: f32 = bevy::math::bounding::BoundingCircle::radius(
@@ -1341,6 +1971,20 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 |_self: Ref<bevy::math::primitives::Circle>| {
                     let output: Val<bevy::math::primitives::Circle> = <bevy::math::primitives::Circle as std::clone::Clone>::clone(
                             &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "closest_point",
+                |
+                    _self: Ref<bevy::math::primitives::Circle>,
+                    point: Val<bevy::math::prelude::Vec2>|
+                {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Circle::closest_point(
+                            &_self,
+                            point.into_inner(),
                         )
                         .into();
                     output
@@ -1383,6 +2027,20 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 |_self: Ref<bevy::math::primitives::Annulus>| {
                     let output: Val<bevy::math::primitives::Annulus> = <bevy::math::primitives::Annulus as std::clone::Clone>::clone(
                             &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "closest_point",
+                |
+                    _self: Ref<bevy::math::primitives::Annulus>,
+                    point: Val<bevy::math::prelude::Vec2>|
+                {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Annulus::closest_point(
+                            &_self,
+                            point.into_inner(),
                         )
                         .into();
                     output
@@ -1449,6 +2107,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "chord_length",
                 |_self: Ref<bevy::math::primitives::Arc2d>| {
                     let output: f32 = bevy::math::primitives::Arc2d::chord_length(&_self)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "chord_midpoint",
+                |_self: Ref<bevy::math::primitives::Arc2d>| {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Arc2d::chord_midpoint(
+                            &_self,
+                        )
                         .into();
                     output
                 },
@@ -1536,9 +2204,29 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "left_endpoint",
+                |_self: Ref<bevy::math::primitives::Arc2d>| {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Arc2d::left_endpoint(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "length",
                 |_self: Ref<bevy::math::primitives::Arc2d>| {
                     let output: f32 = bevy::math::primitives::Arc2d::length(&_self)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "midpoint",
+                |_self: Ref<bevy::math::primitives::Arc2d>| {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Arc2d::midpoint(
+                            &_self,
+                        )
                         .into();
                     output
                 },
@@ -1549,6 +2237,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: Val<bevy::math::primitives::Arc2d> = bevy::math::primitives::Arc2d::new(
                             radius,
                             half_angle,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "right_endpoint",
+                |_self: Ref<bevy::math::primitives::Arc2d>| {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Arc2d::right_endpoint(
+                            &_self,
                         )
                         .into();
                     output
@@ -1642,6 +2340,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "chord_length",
                 |_self: Ref<bevy::math::primitives::CircularSector>| {
                     let output: f32 = bevy::math::primitives::CircularSector::chord_length(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "chord_midpoint",
+                |_self: Ref<bevy::math::primitives::CircularSector>| {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::CircularSector::chord_midpoint(
                             &_self,
                         )
                         .into();
@@ -1790,6 +2498,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "chord_length",
                 |_self: Ref<bevy::math::primitives::CircularSegment>| {
                     let output: f32 = bevy::math::primitives::CircularSegment::chord_length(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "chord_midpoint",
+                |_self: Ref<bevy::math::primitives::CircularSegment>| {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::CircularSegment::chord_midpoint(
                             &_self,
                         )
                         .into();
@@ -1948,6 +2666,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "from_size",
+                |size: Val<bevy::math::prelude::Vec2>| {
+                    let output: Val<bevy::math::primitives::Ellipse> = bevy::math::primitives::Ellipse::from_size(
+                            size.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "new",
                 |half_width: f32, half_height: f32| {
                     let output: Val<bevy::math::primitives::Ellipse> = bevy::math::primitives::Ellipse::new(
@@ -2021,6 +2749,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "new",
+                |normal: Val<bevy::math::prelude::Vec2>| {
+                    let output: Val<bevy::math::primitives::Plane2d> = bevy::math::primitives::Plane2d::new(
+                            normal.into_inner(),
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::primitives::Rectangle>::new(world)
             .register(
@@ -2028,6 +2766,20 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 |_self: Ref<bevy::math::primitives::Rectangle>| {
                     let output: Val<bevy::math::primitives::Rectangle> = <bevy::math::primitives::Rectangle as std::clone::Clone>::clone(
                             &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "closest_point",
+                |
+                    _self: Ref<bevy::math::primitives::Rectangle>,
+                    point: Val<bevy::math::prelude::Vec2>|
+                {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Rectangle::closest_point(
+                            &_self,
+                            point.into_inner(),
                         )
                         .into();
                     output
@@ -2047,10 +2799,34 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "from_corners",
+                |
+                    point1: Val<bevy::math::prelude::Vec2>,
+                    point2: Val<bevy::math::prelude::Vec2>|
+                {
+                    let output: Val<bevy::math::primitives::Rectangle> = bevy::math::primitives::Rectangle::from_corners(
+                            point1.into_inner(),
+                            point2.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "from_length",
                 |length: f32| {
                     let output: Val<bevy::math::primitives::Rectangle> = bevy::math::primitives::Rectangle::from_length(
                             length,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "from_size",
+                |size: Val<bevy::math::prelude::Vec2>| {
+                    let output: Val<bevy::math::primitives::Rectangle> = bevy::math::primitives::Rectangle::from_size(
+                            size.into_inner(),
                         )
                         .into();
                     output
@@ -2062,6 +2838,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: Val<bevy::math::primitives::Rectangle> = bevy::math::primitives::Rectangle::new(
                             width,
                             height,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "size",
+                |_self: Ref<bevy::math::primitives::Rectangle>| {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Rectangle::size(
+                            &_self,
                         )
                         .into();
                     output
@@ -2194,6 +2980,20 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "closest_point",
+                |
+                    _self: Ref<bevy::math::primitives::Rhombus>,
+                    point: Val<bevy::math::prelude::Vec2>|
+                {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Rhombus::closest_point(
+                            &_self,
+                            point.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::math::primitives::Rhombus>,
@@ -2287,6 +3087,26 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "point1",
+                |_self: Ref<bevy::math::primitives::Segment2d>| {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Segment2d::point1(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "point2",
+                |_self: Ref<bevy::math::primitives::Segment2d>| {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Segment2d::point2(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::primitives::Triangle2d>::new(world)
             .register(
@@ -2337,6 +3157,22 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 |_self: Ref<bevy::math::primitives::Triangle2d>| {
                     let output: bool = bevy::math::primitives::Triangle2d::is_obtuse(
                             &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |
+                    a: Val<bevy::math::prelude::Vec2>,
+                    b: Val<bevy::math::prelude::Vec2>,
+                    c: Val<bevy::math::prelude::Vec2>|
+                {
+                    let output: Val<bevy::math::primitives::Triangle2d> = bevy::math::primitives::Triangle2d::new(
+                            a.into_inner(),
+                            b.into_inner(),
+                            c.into_inner(),
                         )
                         .into();
                     output
@@ -2426,6 +3262,20 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "closest_point",
+                |
+                    _self: Ref<bevy::math::primitives::Sphere>,
+                    point: Val<bevy::math::prelude::Vec3>|
+                {
+                    let output: Val<bevy::math::prelude::Vec3> = bevy::math::primitives::Sphere::closest_point(
+                            &_self,
+                            point.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "diameter",
                 |_self: Ref<bevy::math::primitives::Sphere>| {
                     let output: f32 = bevy::math::primitives::Sphere::diameter(&_self)
@@ -2468,6 +3318,20 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "closest_point",
+                |
+                    _self: Ref<bevy::math::primitives::Cuboid>,
+                    point: Val<bevy::math::prelude::Vec3>|
+                {
+                    let output: Val<bevy::math::prelude::Vec3> = bevy::math::primitives::Cuboid::closest_point(
+                            &_self,
+                            point.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "eq",
                 |
                     _self: Ref<bevy::math::primitives::Cuboid>,
@@ -2476,6 +3340,20 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::primitives::Cuboid as std::cmp::PartialEq<
                         bevy::math::primitives::Cuboid,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "from_corners",
+                |
+                    point1: Val<bevy::math::prelude::Vec3>,
+                    point2: Val<bevy::math::prelude::Vec3>|
+                {
+                    let output: Val<bevy::math::primitives::Cuboid> = bevy::math::primitives::Cuboid::from_corners(
+                            point1.into_inner(),
+                            point2.into_inner(),
+                        )
                         .into();
                     output
                 },
@@ -2491,12 +3369,32 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "from_size",
+                |size: Val<bevy::math::prelude::Vec3>| {
+                    let output: Val<bevy::math::primitives::Cuboid> = bevy::math::primitives::Cuboid::from_size(
+                            size.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "new",
                 |x_length: f32, y_length: f32, z_length: f32| {
                     let output: Val<bevy::math::primitives::Cuboid> = bevy::math::primitives::Cuboid::new(
                             x_length,
                             y_length,
                             z_length,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "size",
+                |_self: Ref<bevy::math::primitives::Cuboid>| {
+                    let output: Val<bevy::math::prelude::Vec3> = bevy::math::primitives::Cuboid::size(
+                            &_self,
                         )
                         .into();
                     output
@@ -2726,6 +3624,34 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "isometry_from_xy",
+                |
+                    _self: Ref<bevy::math::primitives::InfinitePlane3d>,
+                    origin: Val<bevy::math::prelude::Vec3>|
+                {
+                    let output: Val<bevy::math::Isometry3d> = bevy::math::primitives::InfinitePlane3d::isometry_from_xy(
+                            &_self,
+                            origin.into_inner(),
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "isometry_into_xy",
+                |
+                    _self: Ref<bevy::math::primitives::InfinitePlane3d>,
+                    origin: Val<bevy::math::prelude::Vec3>|
+                {
+                    let output: Val<bevy::math::Isometry3d> = bevy::math::primitives::InfinitePlane3d::isometry_into_xy(
+                            &_self,
+                            origin.into_inner(),
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::primitives::Line3d>::new(world)
             .register(
@@ -2785,6 +3711,26 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "point1",
+                |_self: Ref<bevy::math::primitives::Segment3d>| {
+                    let output: Val<bevy::math::prelude::Vec3> = bevy::math::primitives::Segment3d::point1(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "point2",
+                |_self: Ref<bevy::math::primitives::Segment3d>| {
+                    let output: Val<bevy::math::prelude::Vec3> = bevy::math::primitives::Segment3d::point2(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::primitives::Torus>::new(world)
             .register(
@@ -2839,6 +3785,26 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
             );
         NamespaceBuilder::<::bevy::math::primitives::Triangle3d>::new(world)
             .register(
+                "centroid",
+                |_self: Ref<bevy::math::primitives::Triangle3d>| {
+                    let output: Val<bevy::math::prelude::Vec3> = bevy::math::primitives::Triangle3d::centroid(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "circumcenter",
+                |_self: Ref<bevy::math::primitives::Triangle3d>| {
+                    let output: Val<bevy::math::prelude::Vec3> = bevy::math::primitives::Triangle3d::circumcenter(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Triangle3d>| {
                     let output: Val<bevy::math::primitives::Triangle3d> = <bevy::math::primitives::Triangle3d as std::clone::Clone>::clone(
@@ -2886,6 +3852,22 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 |_self: Ref<bevy::math::primitives::Triangle3d>| {
                     let output: bool = bevy::math::primitives::Triangle3d::is_obtuse(
                             &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |
+                    a: Val<bevy::math::prelude::Vec3>,
+                    b: Val<bevy::math::prelude::Vec3>,
+                    c: Val<bevy::math::prelude::Vec3>|
+                {
+                    let output: Val<bevy::math::primitives::Triangle3d> = bevy::math::primitives::Triangle3d::new(
+                            a.into_inner(),
+                            b.into_inner(),
+                            c.into_inner(),
                         )
                         .into();
                     output
@@ -2951,10 +3933,36 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 },
             )
             .register(
+                "direction_recip",
+                |_self: Ref<bevy::math::bounding::RayCast2d>| {
+                    let output: Val<bevy::math::prelude::Vec2> = bevy::math::bounding::RayCast2d::direction_recip(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
                 "from_ray",
                 |ray: Val<bevy::math::Ray2d>, max: f32| {
                     let output: Val<bevy::math::bounding::RayCast2d> = bevy::math::bounding::RayCast2d::from_ray(
                             ray.into_inner(),
+                            max,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |
+                    origin: Val<bevy::math::prelude::Vec2>,
+                    direction: Val<bevy::math::prelude::Dir2>,
+                    max: f32|
+                {
+                    let output: Val<bevy::math::bounding::RayCast2d> = bevy::math::bounding::RayCast2d::new(
+                            origin.into_inner(),
+                            direction.into_inner(),
                             max,
                         )
                         .into();
@@ -3001,6 +4009,24 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "new",
+                |
+                    aabb: Val<bevy::math::bounding::Aabb2d>,
+                    origin: Val<bevy::math::prelude::Vec2>,
+                    direction: Val<bevy::math::prelude::Dir2>,
+                    max: f32|
+                {
+                    let output: Val<bevy::math::bounding::AabbCast2d> = bevy::math::bounding::AabbCast2d::new(
+                            aabb.into_inner(),
+                            origin.into_inner(),
+                            direction.into_inner(),
+                            max,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::bounding::BoundingCircleCast>::new(world)
             .register(
@@ -3042,6 +4068,24 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "new",
+                |
+                    circle: Val<bevy::math::bounding::BoundingCircle>,
+                    origin: Val<bevy::math::prelude::Vec2>,
+                    direction: Val<bevy::math::prelude::Dir2>,
+                    max: f32|
+                {
+                    let output: Val<bevy::math::bounding::BoundingCircleCast> = bevy::math::bounding::BoundingCircleCast::new(
+                            circle.into_inner(),
+                            origin.into_inner(),
+                            direction.into_inner(),
+                            max,
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::bounding::RayCast3d>::new(world)
             .register(
@@ -3062,6 +4106,16 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                 "clone",
                 |_self: Ref<bevy::math::bounding::RayCast3d>| {
                     let output: Val<bevy::math::bounding::RayCast3d> = <bevy::math::bounding::RayCast3d as std::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "direction_recip",
+                |_self: Ref<bevy::math::bounding::RayCast3d>| {
+                    let output: Val<bevy::math::Vec3A> = bevy::math::bounding::RayCast3d::direction_recip(
                             &_self,
                         )
                         .into();
@@ -3389,8 +4443,32 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                         .into();
                     output
                 },
+            )
+            .register(
+                "new",
+                |
+                    normal: Val<bevy::math::prelude::Vec3>,
+                    half_size: Val<bevy::math::prelude::Vec2>|
+                {
+                    let output: Val<bevy::math::primitives::Plane3d> = bevy::math::primitives::Plane3d::new(
+                            normal.into_inner(),
+                            half_size.into_inner(),
+                        )
+                        .into();
+                    output
+                },
             );
         NamespaceBuilder::<::bevy::math::primitives::Tetrahedron>::new(world)
+            .register(
+                "centroid",
+                |_self: Ref<bevy::math::primitives::Tetrahedron>| {
+                    let output: Val<bevy::math::prelude::Vec3> = bevy::math::primitives::Tetrahedron::centroid(
+                            &_self,
+                        )
+                        .into();
+                    output
+                },
+            )
             .register(
                 "clone",
                 |_self: Ref<bevy::math::primitives::Tetrahedron>| {
@@ -3410,6 +4488,24 @@ impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
                     let output: bool = <bevy::math::primitives::Tetrahedron as std::cmp::PartialEq<
                         bevy::math::primitives::Tetrahedron,
                     >>::eq(&_self, &other)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "new",
+                |
+                    a: Val<bevy::math::prelude::Vec3>,
+                    b: Val<bevy::math::prelude::Vec3>,
+                    c: Val<bevy::math::prelude::Vec3>,
+                    d: Val<bevy::math::prelude::Vec3>|
+                {
+                    let output: Val<bevy::math::primitives::Tetrahedron> = bevy::math::primitives::Tetrahedron::new(
+                            a.into_inner(),
+                            b.into_inner(),
+                            c.into_inner(),
+                            d.into_inner(),
+                        )
                         .into();
                     output
                 },

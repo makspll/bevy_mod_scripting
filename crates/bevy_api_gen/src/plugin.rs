@@ -32,6 +32,8 @@ impl RustcPlugin for BevyAnalyzer {
         compiler_args: Vec<String>,
         plugin_args: Self::Args,
     ) -> rustc_interface::interface::Result<()> {
+        log::set_max_level(plugin_args.verbose.get_log_level().to_level_filter());
+
         if let Some(includes) = WorkspaceMeta::from_env().include_crates {
             let crate_name = compiler_args
                 .iter()

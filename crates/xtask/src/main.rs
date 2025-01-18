@@ -995,6 +995,7 @@ impl Xtasks {
                 template_args.as_str(),
                 "--features",
                 bevy_features.join(",").as_str(),
+                "-vv",
             ],
             Some(&bevy_dir),
         )?;
@@ -1012,7 +1013,7 @@ impl Xtasks {
                 output_dir.to_str().unwrap(),
                 "--template-args",
                 template_args.as_str(),
-                "-vvv",
+                "-vv",
             ],
             Some(&bevy_dir),
         )?;
@@ -1023,8 +1024,11 @@ impl Xtasks {
     fn check(app_settings: GlobalArgs, ide_mode: bool, kind: CheckKind) -> Result<()> {
         match kind {
             CheckKind::All => {
-                Self::check_main_workspace(app_settings.clone(), ide_mode)?;
-                Self::check_codegen_crate(app_settings.clone(), ide_mode)?;
+                let err_main = Self::check_main_workspace(app_settings.clone(), ide_mode);
+                let err_codegen = Self::check_codegen_crate(app_settings.clone(), ide_mode);
+
+                err_main?;
+                err_codegen?;
             }
             CheckKind::Main => {
                 Self::check_main_workspace(app_settings, ide_mode)?;
@@ -1372,7 +1376,7 @@ impl Xtasks {
         let mut context = tera::Context::new();
         let workspace_dir = Self::workspace_dir(&app_settings)?;
         let json_workspace_dir = serde_json::to_string(&workspace_dir)?; // make sure this works as a json string
-        context.insert("dir", &json_workspace_dir);
+        context.insert("dir", &json_workspace_dir.trim_matches('\"'));
 
         let templated_settings = tera.render_str(vscode_settings, &context)?;
         let templated_settings_json = Self::read_json_with_comments(templated_settings.as_bytes())
