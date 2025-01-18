@@ -1318,20 +1318,43 @@ impl Xtasks {
             None,
         )?;
 
-        // install llvm-tools and clippy
+        // install nightly toolchaing for bevy api gen
+        let toolchain = Self::read_rust_toolchain(&Self::codegen_crate_dir(&app_settings)?);
+        Self::run_system_command(
+            &app_settings,
+            "rustup",
+            "Failed to install nightly toolchain",
+            vec!["toolchain", "install", toolchain.as_str()],
+            None,
+        )?;
+
+        let rustup_components_args = [
+            "component",
+            "add",
+            "rust-src",
+            "rustc-dev",
+            "clippy",
+            "llvm-tools-preview",
+        ];
+
+        // install components for the stable and nightly toolchains
         Self::run_system_command(
             &app_settings,
             "rustup",
             "Failed to install rust components",
-            vec![
-                "component",
-                "add",
-                "rust-src",
-                "rustc-dev",
-                "clippy",
-                "llvm-tools-preview",
-            ],
+            rustup_components_args,
             None,
+        )?;
+
+        // add components on nightly toolchain
+        Self::run_system_command(
+            &app_settings,
+            "rustup",
+            "Failed to install nightly components",
+            rustup_components_args
+                .iter()
+                .chain(["--toolchain", toolchain.as_str()].iter()),
+            Some(Path::new(".")),
         )?;
 
         Ok(())
