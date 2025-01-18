@@ -3,11 +3,7 @@ on:
     branches:
       - "**"
     paths-ignore:
-      - 'crates/bevy_api_gen/**'
-      - 'crates/macro_tests/**'
       - '.github/workflows/release-plz.yml'
-      - '.github/workflows/bevy_api_gen.yml'
-      - '.github/workflows/macro_tests.yml'
       - 'docs/**'
 
 
