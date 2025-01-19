@@ -8,6 +8,7 @@
 - [Running Scripts](./Summary/running-scripts.md)
 - [Controlling Script Bindings](./Summary/controlling-script-bindings.md)
 - [Modifying Script Contexts](./Summary/customizing-script-contexts.md)
+- [Shared Contexts](./Summary/sharing-contexts-between-scripts.md)
 
 # Scripting Reference
 
