@@ -179,7 +179,6 @@ pub(crate) fn handle_script_errors<I: Iterator<Item = ScriptError> + Clone>(
     for error in errors.clone() {
         error_events.send(ScriptErrorEvent { error });
     }
-
     for error in errors {
         let arc_world = WorldGuard::new(WorldAccessGuard::new(world));
         bevy::log::error!("{}", error.display_with_world(arc_world));
