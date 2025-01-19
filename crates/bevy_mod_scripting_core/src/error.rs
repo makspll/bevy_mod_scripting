@@ -241,6 +241,27 @@ impl From<mlua::Error> for ScriptError {
 //     }
 // }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct MissingResourceError(&'static str);
+
+impl MissingResourceError {
+    pub fn new<R>() -> Self {
+        Self(std::any::type_name::<R>())
+    }
+}
+
+impl Display for MissingResourceError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Missing resource: {}. Was the plugin initialized correctly?",
+            self.0
+        )
+    }
+}
+
+impl std::error::Error for MissingResourceError {}
+
 #[derive(Debug, Clone, PartialEq, Reflect)]
 pub struct InteropError(#[reflect(ignore)] Arc<InteropErrorInner>);
 

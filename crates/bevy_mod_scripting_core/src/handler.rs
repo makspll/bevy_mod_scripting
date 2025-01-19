@@ -1,14 +1,12 @@
-use std::any::type_name;
-
 use crate::{
     bindings::{
         pretty_print::DisplayWithWorld, script_value::ScriptValue, WorldAccessGuard, WorldGuard,
     },
-    context::{ContextLoadingSettings, ContextPreHandlingInitializer, ScriptContexts},
+    context::ContextPreHandlingInitializer,
     error::ScriptError,
     event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent},
-    runtime::RuntimeContainer,
-    script::{ScriptComponent, ScriptId, Scripts},
+    extractors::{extract_handler_context, yield_handler_context, HandlerContext},
+    script::{ScriptComponent, ScriptId},
     IntoScriptPluginParams,
 };
 use bevy::{
@@ -18,7 +16,7 @@ use bevy::{
         world::World,
     },
     log::{debug, trace},
-    prelude::{EventReader, Events, Query, Ref, Res},
+    prelude::{EventReader, Events, Query, Ref},
 };
 
 pub trait Args: Clone + Send + Sync + 'static {}
@@ -53,36 +51,17 @@ macro_rules! push_err_and_continue {
     };
 }
 
-/// Passes events with the specified label to the script callback with the same name and runs the callback
-pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
+/// A utility to separate the event handling logic from the retrieval of the handler context
+pub(crate) fn event_handler_internal<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     world: &mut World,
+    res_ctxt: &mut HandlerContext<P>,
     params: &mut SystemState<(
         EventReader<ScriptCallbackEvent>,
-        Res<CallbackSettings<P>>,
-        Res<ContextLoadingSettings<P>>,
-        Res<Scripts>,
         Query<(Entity, Ref<ScriptComponent>)>,
     )>,
 ) {
-    let mut runtime_container = world
-        .remove_non_send_resource::<RuntimeContainer<P>>()
-        .unwrap_or_else(|| {
-            panic!(
-                "No runtime container for runtime {} found. Was the scripting plugin initialized correctly?",
-                type_name::<P::R>()
-            )
-        });
-    let runtime = &mut runtime_container.runtime;
-    let mut script_contexts = world
-        .remove_non_send_resource::<ScriptContexts<P>>()
-        .unwrap_or_else(|| panic!("No script contexts found for context {}", type_name::<P>()));
+    let (mut script_events, entities) = params.get_mut(world);
 
-    let (mut script_events, callback_settings, context_settings, scripts, entities) =
-        params.get_mut(world);
-
-    let handler = callback_settings.callback_handler;
-    let pre_handling_initializers = context_settings.context_pre_handling_initializers.clone();
-    let scripts = scripts.clone();
     let mut errors = Vec::default();
 
     let events = script_events.read().cloned().collect::<Vec<_>>();
@@ -112,7 +91,7 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
                     "Handling event for script {} on entity {:?}",
                     script_id, entity
                 );
-                let script = match scripts.scripts.get(script_id) {
+                let script = match res_ctxt.scripts.scripts.get(script_id) {
                     Some(s) => s,
                     None => {
                         trace!(
@@ -123,7 +102,11 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
                     }
                 };
 
-                let ctxt = match script_contexts.contexts.get_mut(&script.context_id) {
+                let ctxt = match res_ctxt
+                    .script_contexts
+                    .contexts
+                    .get_mut(&script.context_id)
+                {
                     Some(ctxt) => ctxt,
                     None => {
                         // if we don't have a context for the script, it's either:
@@ -133,14 +116,16 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
                     }
                 };
 
-                let handler_result = (handler)(
+                let handler_result = (res_ctxt.callback_settings.callback_handler)(
                     event.args.clone(),
                     *entity,
                     &script.id,
                     &L::into_callback_label(),
                     ctxt,
-                    &pre_handling_initializers,
-                    runtime,
+                    &res_ctxt
+                        .context_loading_settings
+                        .context_pre_handling_initializers,
+                    &mut res_ctxt.runtime_container.runtime,
                     world,
                 )
                 .map_err(|e| {
@@ -153,10 +138,35 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
         }
     }
 
-    world.insert_non_send_resource(runtime_container);
-    world.insert_non_send_resource(script_contexts);
-
     handle_script_errors(world, errors.into_iter());
+}
+
+/// Passes events with the specified label to the script callback with the same name and runs the callback.
+///
+/// If any of the resources required for the handler are missing, the system will log this issue and do nothing.
+pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
+    world: &mut World,
+    params: &mut SystemState<(
+        EventReader<ScriptCallbackEvent>,
+        Query<(Entity, Ref<ScriptComponent>)>,
+    )>,
+) {
+    let mut res_ctxt = match extract_handler_context::<P>(world) {
+        Ok(handler_context) => handler_context,
+        Err(e) => {
+            bevy::log::error_once!(
+                "Event handler for language `{}` will not run due to missing resource: {}",
+                P::LANGUAGE,
+                e
+            );
+            return;
+        }
+    };
+
+    // this ensures the internal handler cannot early return without yielding the context
+    event_handler_internal::<L, P>(world, &mut res_ctxt, params);
+
+    yield_handler_context(world, res_ctxt);
 }
 
 /// Handles errors caused by script execution and sends them to the error event channel
@@ -164,9 +174,7 @@ pub(crate) fn handle_script_errors<I: Iterator<Item = ScriptError> + Clone>(
     world: &mut World,
     errors: I,
 ) {
-    let mut error_events = world
-        .get_resource_mut::<Events<ScriptErrorEvent>>()
-        .expect("Missing events resource");
+    let mut error_events = world.get_resource_or_init::<Events<ScriptErrorEvent>>();
 
     for error in errors.clone() {
         error_events.send(ScriptErrorEvent { error });
