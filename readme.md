@@ -1,4 +1,4 @@
-<img src="./badges/coverage.svg" width="175"> [^2] <img src="./badges/no-panic.svg" width="175"> [^3]
+<img src="./badges/coverage.svg" width="175"> [^2] <img src="./badges/no-panics.svg" width="175"> [^3]
 ---
 
 <p align="center">
