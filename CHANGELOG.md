@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.0-alpha.5](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.0-alpha.4...v0.9.0-alpha.5) - 2025-01-19
+
+### Fixed
+
+- Fix missing functions in codegen (#210)
+
 ## [0.9.0-alpha.3](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.0-alpha.2...v0.9.0-alpha.3) - 2025-01-14
 
 ### Added
