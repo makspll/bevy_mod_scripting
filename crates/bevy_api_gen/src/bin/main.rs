@@ -15,7 +15,7 @@ use log::{debug, error, info};
 use strum::VariantNames;
 use tera::Context;
 
-const BOOTSTRAP_DEPS: [&str; 3] = ["mlua", "bevy_reflect", "bevy_mod_scripting_core"];
+const BOOTSTRAP_DEPS: [&str; 2] = ["bevy_reflect", "bevy_mod_scripting_core"];
 
 fn main() {
     // parse this here to early exit on wrong args

@@ -28,7 +28,7 @@ impl FileLoader for ModifyingFileLoader {
             RealFileLoader.read_file(path).map(|mut f| {
                 // we make it pub so in case we are re-exporting this crate we won't run into private re-export issues
 
-                for crate_ in &["bevy_reflect", "mlua", "bevy_mod_scripting_core"] {
+                for crate_ in &["bevy_reflect", "bevy_mod_scripting_core"] {
                     if !f.contains(&format!("extern crate {crate_}")) {
                         if f.contains(&format!("pub use {crate_}")) {
                             f.push_str(&format!(

@@ -2,7 +2,7 @@ use rustc_hir::def_id::LOCAL_CRATE;
 
 use crate::{Args, BevyCtxt, Meta, ProxyMeta, META_VERSION};
 
-/// Finds and caches relevant mlua traits, if they cannot be found throws an ICE
+/// Finds and caches relevant traits, if they cannot be found throws an ICE
 pub(crate) fn write_meta(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
     let tcx = &ctxt.tcx;
 

@@ -376,12 +376,7 @@ fn type_is_supported_as_non_proxy_arg<'tcx>(
     ty: Ty<'tcx>,
 ) -> bool {
     trace!("Checking type is supported as non proxy arg: '{ty:?}' with param_env: '{param_env:?}'");
-    impls_trait(
-        tcx,
-        param_env,
-        ty,
-        cached_traits.mlua_from_lua_multi.unwrap(),
-    )
+    impls_trait(tcx, param_env, ty, cached_traits.bms_from_script.unwrap())
 }
 
 /// Checks if the type can be used directly as a lua function output
@@ -398,12 +393,7 @@ fn type_is_supported_as_non_proxy_return_val<'tcx>(
         }
     }
 
-    impls_trait(
-        tcx,
-        param_env,
-        ty,
-        cached_traits.mlua_into_lua_multi.unwrap(),
-    )
+    impls_trait(tcx, param_env, ty, cached_traits.bms_into_script.unwrap())
 }
 
 pub(crate) fn impls_trait<'tcx>(

@@ -90,8 +90,6 @@ pub(crate) const DEF_PATHS_BMS_INTO_SCRIPT: [&str; 2] = [
     "bindings::function::into::IntoScript",
 ];
 
-pub(crate) const DEF_PATHS_FROM_LUA: [&str; 2] = ["value::FromLuaMulti", "mlua::FromLuaMulti"];
-pub(crate) const DEF_PATHS_INTO_LUA: [&str; 2] = ["value::IntoLuaMulti", "mlua::IntoLuaMulti"];
 pub(crate) const DEF_PATHS_REFLECT: [&str; 2] =
     ["bevy_reflect::PartialReflect", "reflect::PartialReflect"];
 pub(crate) const DEF_PATHS_GET_TYPE_REGISTRATION: [&str; 2] = [
@@ -124,8 +122,6 @@ pub(crate) const STD_SOURCE_TRAITS: [&str; 14] = [
 /// A collection of common traits stored for quick access.
 #[derive(Default)]
 pub(crate) struct CachedTraits {
-    pub(crate) mlua_from_lua_multi: Option<DefId>,
-    pub(crate) mlua_into_lua_multi: Option<DefId>,
     pub(crate) bms_into_script: Option<DefId>,
     pub(crate) bms_from_script: Option<DefId>,
     pub(crate) bevy_reflect_reflect: Option<DefId>,
@@ -138,10 +134,6 @@ pub(crate) struct CachedTraits {
 impl CachedTraits {
     pub(crate) fn has_all_bms_traits(&self) -> bool {
         self.bms_into_script.is_some() && self.bms_from_script.is_some()
-    }
-
-    pub(crate) fn has_all_mlua_traits(&self) -> bool {
-        self.mlua_from_lua_multi.is_some() && self.mlua_into_lua_multi.is_some()
     }
 
     pub(crate) fn has_all_bevy_traits(&self) -> bool {
