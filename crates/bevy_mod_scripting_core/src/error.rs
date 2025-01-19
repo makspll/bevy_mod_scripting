@@ -1,5 +1,5 @@
 use crate::bindings::{
-    access_map::DisplayCodeLocation, function::namespace::Namespace,
+    access_map::{DisplayCodeLocation, ReflectAccessId}, function::namespace::Namespace,
     pretty_print::DisplayWithWorld, script_value::ScriptValue, ReflectBaseType, ReflectReference,
 };
 use bevy::{
@@ -8,11 +8,7 @@ use bevy::{
     reflect::{func::FunctionError, PartialReflect, Reflect},
 };
 use std::{
-    any::TypeId,
-    fmt::{Debug, Display},
-    ops::Deref,
-    str::Utf8Error,
-    sync::Arc,
+    any::TypeId, borrow::Cow, fmt::{Debug, Display}, ops::Deref, str::Utf8Error, sync::Arc
 };
 
 pub type ScriptResult<T> = Result<T, ScriptError>;
@@ -310,6 +306,12 @@ impl<O> FlattenError<O, InteropError> for Result<Result<O, InteropError>, Intero
 }
 
 impl InteropError {
+    pub fn invariant(message: impl Display) -> Self {
+        Self(Arc::new(InteropErrorInner::Invariant {
+            message: message.to_string(),
+        }))
+    }
+
     /// Thrown if a callback requires world access, but is unable to do so due
     /// to the world not being reachable at all via any mechanism.
     pub fn missing_world() -> Self {
@@ -349,12 +351,14 @@ impl InteropError {
     /// Thrown if access to the given reflection base is required but cannot be claimed.
     /// This is likely due to some other script already claiming access to the base.
     pub fn cannot_claim_access(
-        base: ReflectBaseType,
+        base: ReflectAccessId,
         location: Option<std::panic::Location<'static>>,
+        context: impl Into<Cow<'static, str>>,
     ) -> Self {
         Self(Arc::new(InteropErrorInner::CannotClaimAccess {
             base,
             location,
+            context: context.into(),
         }))
     }
 
@@ -416,12 +420,12 @@ impl InteropError {
     pub fn unsupported_operation(
         base: Option<TypeId>,
         value: Option<Box<dyn PartialReflect>>,
-        operation: String,
+        operation: impl Display,
     ) -> Self {
         Self(Arc::new(InteropErrorInner::UnsupportedOperation {
             base,
             value,
-            operation,
+            operation: operation.to_string(),
         }))
     }
 
@@ -475,10 +479,10 @@ impl InteropError {
         Self(Arc::new(InteropErrorInner::OtherError { error }))
     }
 
-    pub fn missing_function(on: TypeId, function_name: String) -> Self {
+    pub fn missing_function(on: TypeId, function_name: impl Display) -> Self {
         Self(Arc::new(InteropErrorInner::MissingFunctionError {
             on,
-            function_name,
+            function_name: function_name.to_string(),
         }))
     }
 
@@ -490,18 +494,18 @@ impl InteropError {
         }))
     }
 
+    pub fn unregistered_component_or_resource_type(type_name: impl Into<Cow<'static, str>>) -> Self {
+        Self(Arc::new(InteropErrorInner::UnregisteredComponentOrResourceType { type_name: type_name.into() }))
+    }
+
     pub fn inner(&self) -> &InteropErrorInner {
         &self.0
     }
 
-    /// Unwraps the inner error
-    ///
-    /// # Panics
-    /// - if there are multiple references to the inner error
-    pub fn into_inner(self) -> InteropErrorInner {
-        Arc::try_unwrap(self.0).unwrap_or_else(|a| {
-            Arc::try_unwrap(a).expect("tried to unwrap interop error while a copy exists")
-        })
+    /// Unwraps the inner error if there is only one reference to it.
+    /// Otherwise returns Self.
+    pub fn into_inner(self) -> Result<InteropErrorInner, Self> {
+        Arc::try_unwrap(self.0).map_err(Self)
     }
 }
 
@@ -522,7 +526,8 @@ pub enum InteropErrorInner {
         reason: String,
     },
     CannotClaimAccess {
-        base: ReflectBaseType,
+        base: ReflectAccessId,
+        context: Cow<'static, str>,
         location: Option<std::panic::Location<'static>>,
     },
     InvalidAccessCount {
@@ -597,6 +602,12 @@ pub enum InteropErrorInner {
     OtherError {
         error: Box<dyn std::error::Error + Send + Sync>,
     },
+    UnregisteredComponentOrResourceType {
+        type_name: Cow<'static, str>,
+    },
+    Invariant {
+        message: String,
+    },
 }
 
 impl PartialEq for InteropErrorInner {
@@ -621,10 +632,10 @@ macro_rules! unregistered_base {
 }
 
 macro_rules! cannot_claim_access {
-    ($base:expr, $location:expr) => {
+    ($base:expr, $location:expr, $ctxt:expr) => {
         format!(
-            "Cannot claim access to base type: {}. The base is already claimed by something else in a way which prevents safe access. Location: {}",
-            $base, $location
+            "Cannot claim access to base type: {}. The base is already claimed by something else in a way which prevents safe access. Location: {}. Context: {}",
+            $base, $location, $ctxt
         )
     };
 }
@@ -767,17 +778,33 @@ macro_rules! invalid_access_count {
     };
 }
 
+macro_rules! invariant {
+    ($message:expr) => {
+        format!(
+            "An invariant has been broken. This is a bug in BMS, please report me! : {}",
+            $message
+        )
+    };
+}
+
+macro_rules! unregistered_component_or_resource_type {
+    ($type_name:expr) => {
+        format!("Expected registered component/resource but got unregistered type: {}", $type_name)
+    };
+}
+
 impl DisplayWithWorld for InteropErrorInner {
     fn display_with_world(&self, world: crate::bindings::WorldGuard) -> String {
         match self {
+            
             InteropErrorInner::MissingFunctionError { on, function_name } => {
                 missing_function_error!(function_name, on.display_with_world(world))
             },
             InteropErrorInner::UnregisteredBase { base } => {
                 unregistered_base!(base.display_with_world(world))
             }
-            InteropErrorInner::CannotClaimAccess { base, location } => {
-                cannot_claim_access!(base.display_with_world(world), location.display_location())
+            InteropErrorInner::CannotClaimAccess { base, location, context } => {
+                cannot_claim_access!(base.display_with_world(world), location.display_location(), context)
             }
             InteropErrorInner::ImpossibleConversion { into } => {
                 impossible_conversion!(into.display_with_world(world))
@@ -865,7 +892,7 @@ impl DisplayWithWorld for InteropErrorInner {
                     Namespace::OnType(type_id) => format!("on type: {}", type_id.display_with_world(world.clone())),
                 };
                 let display_name = if function_name.starts_with("TypeId") {
-                    function_name.split("::").last().unwrap()
+                    function_name.split("::").last().unwrap_or_default()
                 } else {
                     function_name.as_str()
                 };
@@ -887,6 +914,12 @@ impl DisplayWithWorld for InteropErrorInner {
             InteropErrorInner::InvalidAccessCount { count, expected, context } => {
                 invalid_access_count!(expected, count, context)
             },
+            InteropErrorInner::Invariant { message } => {
+                invariant!(message)
+            },
+            InteropErrorInner::UnregisteredComponentOrResourceType { type_name } => {
+                unregistered_component_or_resource_type!(type_name)
+            },
         }
     }
 
@@ -899,8 +932,8 @@ impl DisplayWithWorld for InteropErrorInner {
             InteropErrorInner::UnregisteredBase { base } => {
                 unregistered_base!(base.display_without_world())
             }
-            InteropErrorInner::CannotClaimAccess { base, location } => {
-                cannot_claim_access!(base.display_without_world(), location.display_location())
+            InteropErrorInner::CannotClaimAccess { base, location, context } => {
+                cannot_claim_access!(base.display_without_world(), location.display_location(), context)
             }
             InteropErrorInner::ImpossibleConversion { into } => {
                 impossible_conversion!(into.display_without_world())
@@ -988,7 +1021,7 @@ impl DisplayWithWorld for InteropErrorInner {
                     Namespace::OnType(type_id) => format!("on type: {}", type_id.display_without_world()),
                 };
                 let display_name = if function_name.starts_with("TypeId") {
-                    function_name.split("::").last().unwrap()
+                    function_name.split("::").last().unwrap_or_default()
                 } else {
                     function_name.as_str()
                 };
@@ -1009,6 +1042,12 @@ impl DisplayWithWorld for InteropErrorInner {
             },
             InteropErrorInner::InvalidAccessCount { count, expected, context } => {
                 invalid_access_count!(expected, count, context)
+            },
+            InteropErrorInner::Invariant { message } => {
+                invariant!(message)
+            },
+            InteropErrorInner::UnregisteredComponentOrResourceType { type_name } => {
+                unregistered_component_or_resource_type!(type_name)
             },
         }
     }

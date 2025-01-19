@@ -85,19 +85,11 @@ impl ReflectReference {
     /// You can retrieve the allocator from the world using [`WorldGuard::allocator`].
     /// Make sure to drop the allocator write guard before doing anything with the reference to prevent deadlocks.
     ///
-    pub fn new_allocated<T: PartialReflect>(
+    pub fn new_allocated<T: Reflect>(
         value: T,
         allocator: &mut ReflectAllocator,
     ) -> ReflectReference {
-        let type_id = value
-            .get_represented_type_info()
-            .map(|i| i.type_id())
-            .unwrap_or_else(|| {
-                panic!(
-                    "Type '{}' has no represented type information to allocate with.",
-                    std::any::type_name::<T>()
-                )
-            });
+        let type_id = std::any::TypeId::of::<T>();
         let id = allocator.allocate(value);
         ReflectReference {
             base: ReflectBaseType {
@@ -108,20 +100,35 @@ impl ReflectReference {
         }
     }
 
-    pub fn new_allocated_boxed(
+    /// Create a new reference to a value by allocating it.
+    ///
+    /// Prefer using [`Self::new_allocated`] if you have a value that implements [`Reflect`].
+    /// Will fail if the value does not have represented type info with a specific type id.
+    pub fn new_allocated_boxed_parial_reflect(
         value: Box<dyn PartialReflect>,
         allocator: &mut ReflectAllocator,
+    ) -> Result<ReflectReference, InteropError> {
+        match value.get_represented_type_info() {
+            Some(i) => {
+                let id = allocator.allocate_boxed(value);
+                Ok(ReflectReference {
+                    base: ReflectBaseType {
+                        type_id: i.type_id(),
+                        base_id: ReflectBase::Owned(id),
+                    },
+                    reflect_path: ParsedPath(Vec::default()),
+                })
+            }
+            None => Err(InteropError::unsupported_operation(None, Some(value), "Tried to create a reference to a partial reflect value with no represented type info")),
+        }
+    }
+
+    pub fn new_allocated_boxed(
+        value: Box<dyn Reflect>,
+        allocator: &mut ReflectAllocator,
     ) -> ReflectReference {
-        let type_id = value
-            .get_represented_type_info()
-            .map(|i| i.type_id())
-            .unwrap_or_else(|| {
-                panic!(
-                    "Type '{}' has no represented type information to allocate with.",
-                    std::any::type_name_of_val(value.as_ref())
-                )
-            });
-        let id = allocator.allocate_boxed(value);
+        let type_id = value.type_id();
+        let id = allocator.allocate_boxed(value.into_partial_reflect());
         ReflectReference {
             base: ReflectBaseType {
                 type_id,
@@ -131,9 +138,9 @@ impl ReflectReference {
         }
     }
 
-    pub fn new_resource_ref<T: Resource>(world: WorldGuard) -> Option<Self> {
+    pub fn new_resource_ref<T: Resource>(world: WorldGuard) -> Result<Self, InteropError> {
         let reflect_id = ReflectAccessId::for_resource::<T>(&world.as_unsafe_world_cell())?;
-        Some(Self {
+        Ok(Self {
             base: ReflectBaseType {
                 type_id: TypeId::of::<T>(),
                 base_id: ReflectBase::Resource(reflect_id.into()),
@@ -142,9 +149,12 @@ impl ReflectReference {
         })
     }
 
-    pub fn new_component_ref<T: Component>(entity: Entity, world: WorldGuard) -> Option<Self> {
+    pub fn new_component_ref<T: Component>(
+        entity: Entity,
+        world: WorldGuard,
+    ) -> Result<Self, InteropError> {
         let reflect_id = ReflectAccessId::for_component::<T>(&world.as_unsafe_world_cell())?;
-        Some(Self {
+        Ok(Self {
             base: ReflectBaseType {
                 type_id: TypeId::of::<T>(),
                 base_id: ReflectBase::Component(entity, reflect_id.into()),
@@ -220,13 +230,12 @@ impl ReflectReference {
         world: WorldGuard,
         f: F,
     ) -> Result<O, InteropError> {
-        let access_id = ReflectAccessId::for_reference(self.base.base_id.clone())
-            .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
+        let access_id = ReflectAccessId::for_reference(self.base.base_id.clone());
         with_access_read!(
             world.0.accesses,
             access_id,
             "could not access reflect reference",
-            { unsafe { self.reflect_unsafe(world.clone()) }.map(f) }
+            { unsafe { self.reflect_unsafe(world.clone()) }.map(f)? }
         )
     }
 
@@ -241,13 +250,12 @@ impl ReflectReference {
         world: WorldGuard,
         f: F,
     ) -> Result<O, InteropError> {
-        let access_id = ReflectAccessId::for_reference(self.base.base_id.clone())
-            .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
+        let access_id = ReflectAccessId::for_reference(self.base.base_id.clone());
         with_access_write!(
             world.0.accesses,
             access_id,
             "Could not access reflect reference mutably",
-            { unsafe { self.reflect_mut_unsafe(world.clone()) }.map(f) }
+            { unsafe { self.reflect_mut_unsafe(world.clone()) }.map(f)? }
         )
     }
 
@@ -522,8 +530,7 @@ impl ReflectRefIter {
         let next = match &mut self.index {
             IterationKey::Index(i) => {
                 let mut next = self.base.clone();
-                let parsed_path =
-                    ParsedPath::parse(&format!("[{}]", *i)).expect("invariant violated");
+                let parsed_path = ParsedPath::from(vec![list_index_access(*i)]);
                 next.index_path(parsed_path);
                 *i += 1;
                 next
@@ -531,6 +538,10 @@ impl ReflectRefIter {
         };
         (next, index)
     }
+}
+
+const fn list_index_access(index: usize) -> bevy::reflect::Access<'static> {
+    bevy::reflect::Access::ListIndex(index)
 }
 
 impl Iterator for ReflectRefIter {
@@ -541,7 +552,7 @@ impl Iterator for ReflectRefIter {
             match &mut self.index {
                 IterationKey::Index(i) => {
                     let mut next = self.base.clone();
-                    let parsed_path = ParsedPath::parse(&i.to_string()).unwrap();
+                    let parsed_path = ParsedPath::from(vec![list_index_access(*i)]);
                     next.index_path(parsed_path);
                     *i += 1;
                     Ok(next)

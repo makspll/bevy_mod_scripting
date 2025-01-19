@@ -99,7 +99,7 @@ impl IntoLua for LuaScriptValue {
             ScriptValue::Error(script_error) => return Err(mlua::Error::external(script_error)),
             ScriptValue::Function(function) => lua
                 .create_function(move |_lua, args: Variadic<LuaScriptValue>| {
-                    let world = ThreadWorldContainer.get_world();
+                    let world = ThreadWorldContainer.try_get_world()?;
                     let out = function.call(
                         args.into_iter().map(Into::into),
                         world,
@@ -111,7 +111,7 @@ impl IntoLua for LuaScriptValue {
                 .into_lua(lua)?,
             ScriptValue::FunctionMut(function) => lua
                 .create_function(move |_lua, args: Variadic<LuaScriptValue>| {
-                    let world = ThreadWorldContainer.get_world();
+                    let world = ThreadWorldContainer.try_get_world()?;
                     let out = function.call(
                         args.into_iter().map(Into::into),
                         world,

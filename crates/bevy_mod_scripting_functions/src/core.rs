@@ -6,7 +6,6 @@ use bevy::{
 };
 use bevy_mod_scripting_core::*;
 use bindings::{
-    access_map::ReflectAccessId,
     function::{
         from::{Ref, Val},
         from_ref::FromScriptRef,
@@ -16,8 +15,8 @@ use bindings::{
     },
     pretty_print::DisplayWithWorld,
     script_value::ScriptValue,
-    ReflectReference, ReflectionPathExt, ScriptQueryBuilder, ScriptQueryResult,
-    ScriptTypeRegistration, WorldCallbackAccess,
+    ReflectReference, ReflectionPathExt, ScriptComponentRegistration, ScriptQueryBuilder,
+    ScriptQueryResult, ScriptResourceRegistration, ScriptTypeRegistration, WorldCallbackAccess,
 };
 use error::InteropError;
 use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
@@ -32,63 +31,88 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
         .register(
             "get_type_by_name",
             |world: WorldCallbackAccess, type_name: String| {
-                let val = world.get_type_by_name(type_name)?;
-                Ok(val.map(Val))
+                let world = world.try_read()?;
+                let val = world.get_type_by_name(type_name);
+
+                Ok(match val {
+                    Some(registration) => {
+                        let allocator = world.allocator();
+
+                        let registration = match world.get_component_type(registration) {
+                            Ok(comp) => {
+                                let mut allocator = allocator.write();
+                                return Ok(Some(ReflectReference::new_allocated(
+                                    comp,
+                                    &mut allocator,
+                                )));
+                            }
+                            Err(registration) => registration,
+                        };
+
+                        let registration = match world.get_resource_type(registration) {
+                            Ok(res) => {
+                                let mut allocator = allocator.write();
+                                return Ok(Some(ReflectReference::new_allocated(
+                                    res,
+                                    &mut allocator,
+                                )));
+                            }
+                            Err(registration) => registration,
+                        };
+
+                        let mut allocator = allocator.write();
+                        Some(ReflectReference::new_allocated(
+                            registration,
+                            &mut allocator,
+                        ))
+                    }
+                    None => None,
+                })
             },
         )
         .register(
             "get_component",
             |world: WorldCallbackAccess,
              entity: Val<Entity>,
-             registration: Val<ScriptTypeRegistration>| {
-                registration
-                    .component_id()
-                    .and_then(|id| world.get_component(*entity, id).transpose())
-                    .transpose()
+             registration: Val<ScriptComponentRegistration>| {
+                world.get_component(*entity, registration.component_id())
             },
         )
         .register(
             "has_component",
-            |s: WorldCallbackAccess,
+            |world: WorldCallbackAccess,
              entity: Val<Entity>,
-             registration: Val<ScriptTypeRegistration>| {
-                match registration.component_id() {
-                    Some(id) => s.has_component(*entity, id),
-                    None => Ok(false),
-                }
+             registration: Val<ScriptComponentRegistration>| {
+                world.has_component(*entity, registration.component_id())
             },
         )
         .register(
             "remove_component",
-            |s: WorldCallbackAccess, e: Val<Entity>, r: Val<ScriptTypeRegistration>| {
-                s.remove_component(*e, r.clone())
+            |world: WorldCallbackAccess, e: Val<Entity>, r: Val<ScriptComponentRegistration>| {
+                world.remove_component(*e, r.clone())
             },
         )
         .register(
             "get_resource",
-            |world: WorldCallbackAccess, registration: Val<ScriptTypeRegistration>| {
-                match registration.resource_id() {
-                    Some(id) => Ok(world.get_resource(id)?),
-                    None => Ok(None),
-                }
+            |world: WorldCallbackAccess, registration: Val<ScriptResourceRegistration>| {
+                world.get_resource(registration.resource_id())
             },
         )
         .register(
             "has_resource",
-            |s: WorldCallbackAccess, registration: Val<ScriptTypeRegistration>| match registration
-                .resource_id()
-            {
-                Some(id) => s.has_resource(id),
-                None => Ok(false),
+            |world: WorldCallbackAccess, registration: Val<ScriptResourceRegistration>| {
+                world.has_resource(registration.resource_id())
             },
         )
         .register(
             "remove_resource",
-            |s: WorldCallbackAccess, r: Val<ScriptTypeRegistration>| s.remove_resource(r.clone()),
+            |s: WorldCallbackAccess, r: Val<ScriptResourceRegistration>| {
+                s.remove_resource(r.into_inner())
+            },
         )
         .register(
             "add_default_component",
-            |w: WorldCallbackAccess, e: Val<Entity>, r: Val<ScriptTypeRegistration>| {
+            |w: WorldCallbackAccess, e: Val<Entity>, r: Val<ScriptComponentRegistration>| {
                 w.add_default_component(*e, r.clone())
             },
         )
@@ -140,21 +164,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
             let query_builder = ScriptQueryBuilder::default();
             Ok(Val(query_builder))
         })
-        .register("exit", |s: WorldCallbackAccess| s.exit())
-        .register("log_all_allocations", |s: WorldCallbackAccess| {
-            let world = s.try_read().expect("stale world");
-            let allocator = world.allocator();
-            let allocator = allocator.read();
-            for (id, _) in allocator.iter_allocations() {
-                let raid = ReflectAccessId::for_allocation(id.clone());
-                if world.claim_read_access(raid) {
-                    // Safety: ref released above
-                    unsafe { world.release_access(raid) };
-                } else {
-                    panic!("Failed to claim read access for allocation id: {}", id.id());
-                }
-            }
-        });
+        .register("exit", |s: WorldCallbackAccess| s.exit());
     Ok(())
 }
 
@@ -165,13 +175,13 @@ pub fn register_reflect_reference_functions(
         .register(
             "display_ref",
             |w: WorldCallbackAccess, s: ReflectReference| {
-                let world = w.try_read().expect("Stale world");
-                s.display_with_world(world)
+                let world = w.try_read()?;
+                Ok(s.display_with_world(world))
             },
         )
         .register("display_value", |w: WorldCallbackAccess, s: ReflectReference| {
-            let world = w.try_read().expect("Stale world");
-            s.display_value_with_world(world)
+            let world = w.try_read()?;
+            Ok(s.display_value_with_world(world))
         })
         .register(
             "get",
@@ -184,7 +194,7 @@ pub fn register_reflect_reference_functions(
                     path.convert_to_0_indexed();
                 }
                 self_.index_path(path);
-                let world = world.try_read().expect("Stale world");
+                let world = world.try_read()?;
                 ReflectReference::into_script_ref(self_, world)
             },
         )
@@ -196,8 +206,8 @@ pub fn register_reflect_reference_functions(
              key: ScriptValue,
              value: ScriptValue| {
                 if let ScriptValue::Reference(mut self_) = self_ {
-                    let world = world.try_read().expect("stale world");
-                    let mut path: ParsedPath = key.try_into().unwrap();
+                    let world = world.try_read()?;
+                    let mut path: ParsedPath = key.try_into()?;
                     if caller_context.convert_to_0_indexed {
                         path.convert_to_0_indexed();
                     }
@@ -213,19 +223,19 @@ pub fn register_reflect_reference_functions(
                                 value,
                                 world.clone(),
                             )?;
-                            r.try_apply(other.as_partial_reflect()).unwrap();
+                            r.try_apply(other.as_partial_reflect()).map_err(|e| InteropError::external_error(Box::new(e)))?;
                             Ok::<_, InteropError>(())
                         })
                         .into();
-                    return r;
+                    return Ok(r);
                 }
-                ScriptValue::Unit
+                Ok(ScriptValue::Unit)
             },
         )
         .register(
             "push",
             |w: WorldCallbackAccess, s: ReflectReference, v: ScriptValue| {
-                let world = w.try_read().expect("stale world");
+                let world = w.try_read()?;
                 let target_type_id = s.element_type_id(world.clone())?.ok_or_else(|| {
                     InteropError::unsupported_operation(
                         s.tail_type_id(world.clone()).unwrap_or_default(),
@@ -238,18 +248,18 @@ pub fn register_reflect_reference_functions(
             },
         )
         .register("pop", |w: WorldCallbackAccess, s: ReflectReference| {
-            let world = w.try_read().expect("stale world");
+            let world = w.try_read()?;
             let o = s.with_reflect_mut(world.clone(), |s| s.try_pop_boxed())??;
             let reference = {
                 let allocator = world.allocator();
                 let mut allocator = allocator.write();
-                ReflectReference::new_allocated_boxed(o, &mut allocator)
+                ReflectReference::new_allocated_boxed_parial_reflect(o, &mut allocator)?
             };
 
             ReflectReference::into_script_ref(reference, world)
         })
         .register("insert", |caller_context: CallerContext, w: WorldCallbackAccess, s: ReflectReference, k: ScriptValue, v: ScriptValue| {
-            let world = w.try_read().expect("stale world");
+            let world = w.try_read()?;
             let key_type_id = s.key_type_id(world.clone())?.ok_or_else(|| {
                 InteropError::unsupported_operation(
                     s.tail_type_id(world.clone()).unwrap_or_default(),
@@ -277,15 +287,15 @@ pub fn register_reflect_reference_functions(
             s.with_reflect_mut(world, |s| s.try_insert_boxed(key, value))?
         })
         .register("clear", |w: WorldCallbackAccess, s: ReflectReference| {
-            let world = w.try_read().expect("stale world");
+            let world = w.try_read()?;
             s.with_reflect_mut(world, |s| s.try_clear())?
         })
         .register("len", |w: WorldCallbackAccess, s: ReflectReference| {
-            let world = w.try_read().expect("stale world");
+            let world = w.try_read()?;
             s.len(world)
         })
         .register("remove", |caller_context: CallerContext, w: WorldCallbackAccess, s: ReflectReference, k: ScriptValue| {
-            let world = w.try_read().expect("stale world");
+            let world = w.try_read()?;
             let key_type_id = s.key_type_id(world.clone())?.ok_or_else(|| {
                 InteropError::unsupported_operation(
                     s.tail_type_id(world.clone()).unwrap_or_default(),
@@ -301,18 +311,20 @@ pub fn register_reflect_reference_functions(
             }
 
             let removed = s.with_reflect_mut(world.clone(), |s| s.try_remove_boxed(key))??;
-
-            removed.map(|some| {
-                let reference = {
-                    let allocator = world.allocator();
-                    let mut allocator = allocator.write();
-                    ReflectReference::new_allocated_boxed(some, &mut allocator)
-                };
-                ReflectReference::into_script_ref(reference, world)
-            }).transpose()
+            match removed {
+                Some(removed) => {
+                    let reference = {
+                        let allocator = world.allocator();
+                        let mut allocator = allocator.write();
+                        ReflectReference::new_allocated_boxed_parial_reflect(removed, &mut allocator)?
+                    };
+                    ReflectReference::into_script_ref(reference, world)
+                }
+                None => Ok(ScriptValue::Unit),
+            }
         })
         .register("iter", |w: WorldCallbackAccess, s: ReflectReference| {
-            let world = w.try_read().expect("stale world");
+            let world = w.try_read()?;
             let mut len = s.len(world.clone())?.unwrap_or_default();
             let mut infinite_iter = s.into_iter_infinite();
             let iter_function = move || {
@@ -342,13 +354,24 @@ pub fn register_script_type_registration_functions(
         .register("type_name", |s: Ref<ScriptTypeRegistration>| s.type_name())
         .register("short_name", |s: Ref<ScriptTypeRegistration>| {
             s.short_name()
-        })
-        .register("is_resource", |s: Ref<ScriptTypeRegistration>| {
-            s.resource_id().is_some()
-        })
-        .register("is_component", |s: Ref<ScriptTypeRegistration>| {
-            s.component_id().is_some()
         });
+
+    NamespaceBuilder::<ScriptComponentRegistration>::new(registry)
+        .register("type_name", |s: Ref<ScriptComponentRegistration>| {
+            s.type_registration().type_name()
+        })
+        .register("short_name", |s: Ref<ScriptComponentRegistration>| {
+            s.type_registration().short_name()
+        });
+
+    NamespaceBuilder::<ScriptResourceRegistration>::new(registry)
+        .register("type_name", |s: Ref<ScriptResourceRegistration>| {
+            s.type_registration().type_name()
+        })
+        .register("short_name", |s: Ref<ScriptResourceRegistration>| {
+            s.type_registration().short_name()
+        });
+
     Ok(())
 }
 
@@ -358,7 +381,7 @@ pub fn register_script_query_builder_functions(
     NamespaceBuilder::<ScriptQueryBuilder>::new(registry)
         .register(
             "component",
-            |s: Val<ScriptQueryBuilder>, components: Val<ScriptTypeRegistration>| {
+            |s: Val<ScriptQueryBuilder>, components: Val<ScriptComponentRegistration>| {
                 let mut builder = s.into_inner();
                 builder.component(components.into_inner());
                 Val(builder)
@@ -366,7 +389,7 @@ pub fn register_script_query_builder_functions(
         )
         .register(
             "with",
-            |s: Val<ScriptQueryBuilder>, with: Val<ScriptTypeRegistration>| {
+            |s: Val<ScriptQueryBuilder>, with: Val<ScriptComponentRegistration>| {
                 let mut builder = s.into_inner();
                 builder.with_component(with.into_inner());
                 Val(builder)
@@ -374,7 +397,7 @@ pub fn register_script_query_builder_functions(
         )
         .register(
             "without",
-            |s: Val<ScriptQueryBuilder>, without: Val<ScriptTypeRegistration>| {
+            |s: Val<ScriptQueryBuilder>, without: Val<ScriptComponentRegistration>| {
                 let mut builder = s.into_inner();
                 builder.without_component(without.into_inner());
                 Val(builder)
@@ -410,21 +433,30 @@ pub fn register_core_functions(app: &mut App) {
     // perhaps people might want to include some but not all of these
 
     #[cfg(feature = "core_functions")]
-    register_world_functions(world).expect("Failed to register world functions");
+    if let Err(e) = register_world_functions(world) {
+        bevy::log::error!("Failed to register script world functions: {:?}", e);
+    }
 
     #[cfg(feature = "core_functions")]
-    register_reflect_reference_functions(world)
-        .expect("Failed to register reflect reference functions");
+    if let Err(e) = register_reflect_reference_functions(world) {
+        bevy::log::error!("Failed to register reflect reference functions: {:?}", e);
+    }
 
     #[cfg(feature = "core_functions")]
-    register_script_type_registration_functions(world)
-        .expect("Failed to register script type registration functions");
+    if let Err(e) = register_script_type_registration_functions(world) {
+        bevy::log::error!(
+            "Failed to register script type registration functions: {:?}",
+            e
+        );
+    }
 
     #[cfg(feature = "core_functions")]
-    register_script_query_builder_functions(world)
-        .expect("Failed to register script query builder functions");
+    if let Err(e) = register_script_query_builder_functions(world) {
+        bevy::log::error!("Failed to register script query builder functions: {:?}", e);
+    }
 
     #[cfg(feature = "core_functions")]
-    register_script_query_result_functions(world)
-        .expect("Failed to register script query result functions");
+    if let Err(e) = register_script_query_result_functions(world) {
+        bevy::log::error!("Failed to register script query result functions: {:?}", e);
+    }
 }

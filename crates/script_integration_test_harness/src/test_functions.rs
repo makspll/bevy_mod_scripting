@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use bevy::{
     app::App,
+    ecs::component::ComponentId,
     prelude::{Entity, World},
     reflect::{Reflect, TypeRegistration},
 };
@@ -12,7 +13,7 @@ use bevy_mod_scripting_core::{
             script_function::{CallerContext, DynamicScriptFunctionMut},
         },
         pretty_print::DisplayWithWorld,
-        ReflectReference, ScriptTypeRegistration, WorldCallbackAccess,
+        ReflectReference, ScriptComponentRegistration, ScriptTypeRegistration, WorldCallbackAccess,
     },
     error::InteropError,
 };
@@ -25,11 +26,30 @@ pub fn register_test_functions(world: &mut App) {
             let world = s.try_read().unwrap();
             #[derive(Reflect)]
             struct Dummy;
-            let reg =
-                ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()), None, None);
+            let reg = ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()));
             let allocator = world.allocator();
             let mut allocator = allocator.write();
             ReflectReference::new_allocated(reg, &mut allocator)
+        })
+        .register("_get_mock_component_type", |s: WorldCallbackAccess| {
+            let world = s.try_read().unwrap();
+            #[derive(Reflect)]
+            struct Dummy;
+            let reg = ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()));
+            let comp = ScriptComponentRegistration::new(reg, ComponentId::new(999999999999999));
+            let allocator = world.allocator();
+            let mut allocator = allocator.write();
+            ReflectReference::new_allocated(comp, &mut allocator)
+        })
+        .register("_get_mock_resource_type", |s: WorldCallbackAccess| {
+            let world = s.try_read().unwrap();
+            #[derive(Reflect)]
+            struct Dummy;
+            let reg = ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()));
+            let comp = ScriptComponentRegistration::new(reg, ComponentId::new(999999999999999));
+            let allocator = world.allocator();
+            let mut allocator = allocator.write();
+            ReflectReference::new_allocated(comp, &mut allocator)
         })
         .register(
             "_get_entity_with_test_component",

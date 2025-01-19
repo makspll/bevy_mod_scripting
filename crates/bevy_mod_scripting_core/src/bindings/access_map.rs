@@ -7,6 +7,8 @@ use bevy::{
 use dashmap::{DashMap, Entry};
 use smallvec::SmallVec;
 
+use crate::error::InteropError;
+
 use super::{ReflectAllocationId, ReflectBase};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -80,8 +82,8 @@ pub enum ReflectAccessKind {
 /// for script owned values this is an allocationId, this is used to ensure we have permission to access the value.
 #[derive(PartialEq, Eq, Copy, Clone, Hash, Debug)]
 pub struct ReflectAccessId {
-    kind: ReflectAccessKind,
-    id: u64,
+    pub(crate) kind: ReflectAccessKind,
+    pub(crate) id: u64,
 }
 
 impl AccessMapKey for ReflectAccessId {
@@ -111,19 +113,25 @@ impl AccessMapKey for ReflectAccessId {
 }
 
 impl ReflectAccessId {
-    pub fn for_resource<R: Resource>(cell: &UnsafeWorldCell) -> Option<Self> {
-        Some(Self {
+    pub fn for_resource<R: Resource>(cell: &UnsafeWorldCell) -> Result<Self, InteropError> {
+        let resource_id = cell.components().resource_id::<R>().ok_or_else(|| {
+            InteropError::unregistered_component_or_resource_type(std::any::type_name::<R>())
+        })?;
+
+        Ok(Self {
             kind: ReflectAccessKind::ComponentOrResource,
-            id: cell.components().resource_id::<R>()?.index() as u64,
+            id: resource_id.index() as u64,
         })
     }
 
     pub fn for_component<C: bevy::ecs::component::Component>(
         cell: &UnsafeWorldCell,
-    ) -> Option<Self> {
-        let component_id = cell.components().component_id::<C>()?;
+    ) -> Result<Self, InteropError> {
+        let component_id = cell.components().component_id::<C>().ok_or_else(|| {
+            InteropError::unregistered_component_or_resource_type(std::any::type_name::<C>())
+        })?;
 
-        Some(Self::for_component_id(component_id))
+        Ok(Self::for_component_id(component_id))
     }
 
     pub fn for_allocation(id: ReflectAllocationId) -> Self {
@@ -140,11 +148,11 @@ impl ReflectAccessId {
         }
     }
 
-    pub fn for_reference(base: ReflectBase) -> Option<Self> {
+    pub fn for_reference(base: ReflectBase) -> Self {
         match base {
-            ReflectBase::Resource(id) => Some(Self::for_component_id(id)),
-            ReflectBase::Component(_, id) => Some(Self::for_component_id(id)),
-            ReflectBase::Owned(id) => Some(Self::for_allocation(id)),
+            ReflectBase::Resource(id) => Self::for_component_id(id),
+            ReflectBase::Component(_, id) => Self::for_component_id(id),
+            ReflectBase::Owned(id) => Self::for_allocation(id),
         }
     }
 }
@@ -170,6 +178,12 @@ impl From<ReflectAllocationId> for ReflectAccessId {
 impl From<ReflectAccessId> for ComponentId {
     fn from(val: ReflectAccessId) -> Self {
         ComponentId::new(val.id as usize)
+    }
+}
+
+impl From<ReflectAccessId> for ReflectAllocationId {
+    fn from(val: ReflectAccessId) -> Self {
+        ReflectAllocationId::new(val.id)
     }
 }
 
@@ -323,17 +337,15 @@ impl DisplayCodeLocation for Option<std::panic::Location<'_>> {
 macro_rules! with_access_read {
     ($access_map:expr, $id:expr, $msg:expr, $body:block) => {{
         if !$access_map.claim_read_access($id) {
-            panic!(
-                "{}. Aliasing access is held somewhere else: {}",
+            Err($crate::error::InteropError::cannot_claim_access(
+                $id,
+                $access_map.access_location($id),
                 $msg,
-                $crate::bindings::access_map::DisplayCodeLocation::display_location(
-                    $access_map.access_location($id)
-                )
-            );
+            ))
         } else {
             let result = $body;
             $access_map.release_access($id);
-            result
+            Ok(result)
         }
     }};
 }
@@ -342,17 +354,15 @@ macro_rules! with_access_read {
 macro_rules! with_access_write {
     ($access_map:expr, $id:expr, $msg:expr, $body:block) => {
         if !$access_map.claim_write_access($id) {
-            panic!(
-                "{}. Aliasing access is held somewhere else: {}",
+            Err($crate::error::InteropError::cannot_claim_access(
+                $id,
+                $access_map.access_location($id),
                 $msg,
-                $crate::bindings::access_map::DisplayCodeLocation::display_location(
-                    $access_map.access_location($id)
-                )
-            );
+            ))
         } else {
             let result = $body;
             $access_map.release_access($id);
-            result
+            Ok(result)
         }
     };
 }

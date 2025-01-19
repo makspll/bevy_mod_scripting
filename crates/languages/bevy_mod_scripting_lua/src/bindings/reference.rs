@@ -38,7 +38,7 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::Index,
             |_, (self_, key): (LuaReflectReference, LuaScriptValue)| {
-                let world = ThreadWorldContainer.get_world();
+                let world = ThreadWorldContainer.try_get_world()?;
                 let self_: ReflectReference = self_.into();
                 let type_id = self_.tail_type_id(world.clone())?.or_fake_id();
 
@@ -58,7 +58,10 @@ impl UserData for LuaReflectReference {
 
                 let func = world
                     .lookup_function([TypeId::of::<ReflectReference>()], "get")
-                    .expect("No 'get' function registered for a ReflectReference");
+                    .map_err(|f| {
+                        InteropError::missing_function(TypeId::of::<ReflectReference>(), f)
+                    })?;
+
                 // call the function with the key
                 let out = func.call(
                     vec![ScriptValue::Reference(self_), key],
@@ -72,18 +75,20 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::NewIndex,
             |_, (self_, key, value): (LuaReflectReference, LuaScriptValue, LuaScriptValue)| {
-                let world = ThreadWorldContainer.get_world();
+                let world = ThreadWorldContainer.try_get_world()?;
                 let self_: ReflectReference = self_.into();
                 let key: ScriptValue = key.into();
                 let value: ScriptValue = value.into();
 
                 let func = world
                     .lookup_function([TypeId::of::<ReflectReference>()], "set")
-                    .expect("No 'set' function registered for a ReflectReference");
+                    .map_err(|f| {
+                        InteropError::missing_function(TypeId::of::<ReflectReference>(), f)
+                    })?;
 
                 let out = func.call(
                     vec![ScriptValue::Reference(self_), key, value],
-                    ThreadWorldContainer.get_world(),
+                    world,
                     LUA_CALLER_CONTEXT,
                 )?;
 
@@ -94,8 +99,8 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::Sub,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
-                let world = ThreadWorldContainer.get_callback_world();
-                let guard = world.try_read().expect("World is not set or expired");
+                let world = ThreadWorldContainer.try_get_callback_world()?;
+                let guard = world.try_read()?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
                 let target_type_id = self_.tail_type_id(guard)?.or_fake_id();
@@ -109,8 +114,8 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::Add,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
-                let world = ThreadWorldContainer.get_callback_world();
-                let guard = world.try_read().expect("World is not set or expired");
+                let world = ThreadWorldContainer.try_get_callback_world()?;
+                let guard = world.try_read()?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
                 let target_type_id = self_.tail_type_id(guard)?.or_fake_id();
@@ -124,8 +129,8 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::Mul,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
-                let world = ThreadWorldContainer.get_callback_world();
-                let guard = world.try_read().expect("World is not set or expired");
+                let world = ThreadWorldContainer.try_get_callback_world()?;
+                let guard = world.try_read()?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
                 let target_type_id = self_.tail_type_id(guard)?.or_fake_id();
@@ -139,8 +144,8 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::Div,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
-                let world = ThreadWorldContainer.get_callback_world();
-                let guard = world.try_read().expect("World is not set or expired");
+                let world = ThreadWorldContainer.try_get_callback_world()?;
+                let guard = world.try_read()?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
                 let target_type_id = self_.tail_type_id(guard)?.or_fake_id();
@@ -154,8 +159,8 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::Mod,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
-                let world = ThreadWorldContainer.get_callback_world();
-                let guard = world.try_read().expect("World is not set or expired");
+                let world = ThreadWorldContainer.try_get_callback_world()?;
+                let guard = world.try_read()?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
                 let target_type_id = self_.tail_type_id(guard)?.or_fake_id();
@@ -167,8 +172,8 @@ impl UserData for LuaReflectReference {
         );
 
         m.add_meta_function(MetaMethod::Unm, |_, self_: LuaReflectReference| {
-            let world = ThreadWorldContainer.get_callback_world();
-            let guard = world.try_read().expect("World is not set or expired");
+            let world = ThreadWorldContainer.try_get_callback_world()?;
+            let guard = world.try_read()?;
             let self_: ReflectReference = self_.into();
             let target_type_id = self_.tail_type_id(guard)?.or_fake_id();
             let args = vec![ScriptValue::Reference(self_)];
@@ -179,8 +184,8 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::Pow,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
-                let world = ThreadWorldContainer.get_callback_world();
-                let guard = world.try_read().expect("World is not set or expired");
+                let world = ThreadWorldContainer.try_get_callback_world()?;
+                let guard = world.try_read()?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
                 let target_type_id = self_.tail_type_id(guard)?.or_fake_id();
@@ -194,8 +199,8 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::Eq,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
-                let world = ThreadWorldContainer.get_callback_world();
-                let guard = world.try_read().expect("World is not set or expired");
+                let world = ThreadWorldContainer.try_get_callback_world()?;
+                let guard = world.try_read()?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
                 let target_type_id = self_.tail_type_id(guard)?.or_fake_id();
@@ -209,8 +214,8 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::Lt,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
-                let world = ThreadWorldContainer.get_callback_world();
-                let guard = world.try_read().expect("World is not set or expired");
+                let world = ThreadWorldContainer.try_get_callback_world()?;
+                let guard = world.try_read()?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
                 let target_type_id = self_.tail_type_id(guard)?.or_fake_id();
@@ -222,7 +227,7 @@ impl UserData for LuaReflectReference {
         );
 
         m.add_meta_function(MetaMethod::Len, |_lua, self_: LuaScriptValue| {
-            let world = ThreadWorldContainer.get_world();
+            let world = ThreadWorldContainer.try_get_world()?;
             let script_value: ScriptValue = self_.into();
             Ok(match script_value {
                 ScriptValue::Reference(r) => r.len(world)?,
@@ -240,11 +245,11 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(MetaMethod::Pairs, |_, s: LuaReflectReference| {
             // let mut iter_func = lookup_dynamic_function_typed::<ReflectReference>(l, "iter")
             //     .expect("No iter function registered");
-            let world = ThreadWorldContainer.get_world();
+            let world = ThreadWorldContainer.try_get_world()?;
 
             let iter_func = world
                 .lookup_function([TypeId::of::<ReflectReference>()], "iter")
-                .expect("No iter function registered");
+                .map_err(|f| InteropError::missing_function(TypeId::of::<ReflectReference>(), f))?;
 
             Ok(LuaScriptValue::from(iter_func.call(
                 vec![ScriptValue::Reference(s.into())],
@@ -254,13 +259,12 @@ impl UserData for LuaReflectReference {
         });
 
         m.add_meta_function(MetaMethod::ToString, |_, self_: LuaReflectReference| {
-            let world = ThreadWorldContainer.get_world();
+            let world = ThreadWorldContainer.try_get_world()?;
             let reflect_reference: ReflectReference = self_.into();
 
             let func = world
                 .lookup_function([TypeId::of::<ReflectReference>()], "display_ref")
-                .expect("No 'display' function registered for a ReflectReference");
-
+                .map_err(|f| InteropError::missing_function(TypeId::of::<ReflectReference>(), f))?;
             let out = func.call(
                 vec![ScriptValue::Reference(reflect_reference)],
                 world,
@@ -283,7 +287,7 @@ impl UserData for LuaStaticReflectReference {
         m.add_meta_function(
             MetaMethod::Index,
             |_, (self_, key): (LuaStaticReflectReference, LuaScriptValue)| {
-                let world = ThreadWorldContainer.get_world();
+                let world = ThreadWorldContainer.try_get_world()?;
                 let type_id = self_.0;
 
                 let key: ScriptValue = key.into();
@@ -301,7 +305,7 @@ impl UserData for LuaStaticReflectReference {
                     Err(key) => key,
                 };
 
-                let world = ThreadWorldContainer.get_world();
+                let world = ThreadWorldContainer.try_get_world()?;
                 Err(
                     InteropError::missing_function(type_id, key.display_with_world(world.clone()))
                         .into(),
