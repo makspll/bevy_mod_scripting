@@ -1,5 +1,4 @@
-<img src="./badges/coverage.svg" width="175">
-
+<img src="./badges/coverage.svg" width="175"> [^2] <img src="./badges/panic-free.svg" width="175"> [^3]
 ---
 
 <p align="center">
@@ -47,3 +46,7 @@ The languages currently supported are as follows:
 For examples, installation and usage instructions see our shiny new [book](https://makspll.github.io/bevy_mod_scripting)
 
 [^1]: Due to the recent re-write of the crate, documentation generation as well as rhai and rune support are temporarilly on hold. They will likely be re-implemented in the future. `Rhai` in particualar is difficult to re-implement due to a lack of support for first-class-functions.
+
+[^2]: the coverage does not include generated bindings. 
+
+[^3]: The crate strictly enforces no `unwrap`, `expect`, `panic` or `todo`'s via clippy lints.
