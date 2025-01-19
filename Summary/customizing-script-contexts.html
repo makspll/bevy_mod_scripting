@@ -161,6 +161,7 @@
                         <h1 id="modifying-script-contexts"><a class="header" href="#modifying-script-contexts">Modifying Script Contexts</a></h1>
 <p>You should be able to achieve what you need by registering script functions in most cases. However sometimes you might want to override the way contexts are loaded, or how the runtime is initialized.</p>
 <p>This is possible using <code>Context Initializers</code> and <code>Context Pre Handling Initializers</code> as well as <code>Runtime Initializers</code>.</p>
+<p>It is however always reccomened to use the dynamic script function registry whenever possible, as it is more flexible and easier to use. It also allows you to introspect available functions easier.</p>
 <h2 id="context-initializers"><a class="header" href="#context-initializers">Context Initializers</a></h2>
 <p>For example, let's say you want to set a dynamic amount of globals in your script, depending on some setting in your app.</p>
 <p>You could do this by customizing the scripting plugin:</p>
@@ -205,7 +206,7 @@ plugin.add_context_initializer(|script_id: &amp;str, context: &amp;mut Lua| {
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../ScriptingReference/introduction.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../Summary/sharing-contexts-between-scripts.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -219,7 +220,7 @@ plugin.add_context_initializer(|script_id: &amp;str, context: &amp;mut Lua| {
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../ScriptingReference/introduction.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../Summary/sharing-contexts-between-scripts.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

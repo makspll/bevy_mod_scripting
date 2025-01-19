@@ -161,6 +161,7 @@
                         <h2 id="world"><a class="header" href="#world">World</a></h2>
 <p>The <code>World</code> is the entry point for interacting with <code>Bevy</code>. It is provided to scripts under either the <code>world</code> or <code>World</code> static variable.</p>
 <h3 id="get_type_by_name"><a class="header" href="#get_type_by_name">get_type_by_name</a></h3>
+<p>Returns either a <code>ScriptComponentRegistration</code> or <code>ScriptResourceRegistration</code> depending on the type of the type requested. If the type is neither returns a <code>ScriptTypeRegistration</code>.</p>
 <p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>type_name</code></td><td><code>String</code></td><td>The name of the type to get, this can be either the short type name, i.e. <code>my_type</code> or the long name i.e. <code>my_crate::my_module::my_type</code></td></tr>
@@ -168,7 +169,7 @@
 </div>
 <p>Returns:</p>
 <div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>Option&lt;ScriptTypeRegistration&gt;</code></td><td>The type if it exists, otherwise <code>None</code></td></tr>
+<tr><td><code>Option&lt;ScriptTypeRegistration OR scriptComponentRegistration OR scriptResourceRegistration&gt;</code></td><td>The registration for the type if it exists, otherwise <code>None</code></td></tr>
 </tbody></table>
 </div>
 <pre><code class="language-lua">MyType = world.get_type_by_name("MyType")

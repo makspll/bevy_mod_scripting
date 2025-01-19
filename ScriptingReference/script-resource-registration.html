@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Introduction - Bevy Scripting</title>
+        <title>ScriptResourceRegistration - Bevy Scripting</title>
 
 
         <!-- Custom HTML head -->
@@ -129,7 +129,7 @@
                         <a href="https://github.com/makspll/bevy_mod_scripting" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/ScriptingReference/introduction.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/ScriptingReference/script-resource-registration.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -158,19 +158,44 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="scripting-reference"><a class="header" href="#scripting-reference">Scripting Reference</a></h1>
-<p>This part of the book covers the user-facing API of the scripting languages supported by BMS. This will be where you will want to forward your script users to get started with scripting in BMS.</p>
-<p>If you are a modder, welcome! 👋, apologies for the rust-centricity of this guide, we are working on it!</p>
+                        <h1 id="scriptresourceregistration"><a class="header" href="#scriptresourceregistration">ScriptResourceRegistration</a></h1>
+<p>A reference to a resource type's registration, in general think of this as a handle to a type.</p>
+<h2 id="type_name"><a class="header" href="#type_name">type_name</a></h2>
+<p>Arguments:</p>
+<div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>s</code></td><td><code>ScriptResourceRegistration</code></td><td>The type registration as returned by <code>get_type_by_name</code></td></tr>
+</tbody></table>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>String</code></td><td>The type name</td></tr>
+</tbody></table>
+</div>
+<pre><code class="language-lua">local name = MyType:type_name()
+</code></pre>
+<h2 id="short_name"><a class="header" href="#short_name">short_name</a></h2>
+<p>Arguments:</p>
+<div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>s</code></td><td><code>ScriptResourceRegistration</code></td><td>The type registration as returned by <code>get_type_by_name</code></td></tr>
+</tbody></table>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>String</code></td><td>The short name</td></tr>
+</tbody></table>
+</div>
+<pre><code class="language-lua">local name = MyType:short_name()
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../Summary/sharing-contexts-between-scripts.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../ScriptingReference/script-component-registration.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../ScriptingReference/core-api.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../ScriptingReference/script-query-builder.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -180,11 +205,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../Summary/sharing-contexts-between-scripts.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../ScriptingReference/script-component-registration.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../ScriptingReference/core-api.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../ScriptingReference/script-query-builder.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

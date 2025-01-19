@@ -311,6 +311,7 @@ fn send_event(mut writer: EventWriter&lt;ScriptCallbackEvent&gt;) {
 <div style="break-before: page; page-break-before: always;"></div><h1 id="modifying-script-contexts"><a class="header" href="#modifying-script-contexts">Modifying Script Contexts</a></h1>
 <p>You should be able to achieve what you need by registering script functions in most cases. However sometimes you might want to override the way contexts are loaded, or how the runtime is initialized.</p>
 <p>This is possible using <code>Context Initializers</code> and <code>Context Pre Handling Initializers</code> as well as <code>Runtime Initializers</code>.</p>
+<p>It is however always reccomened to use the dynamic script function registry whenever possible, as it is more flexible and easier to use. It also allows you to introspect available functions easier.</p>
 <h2 id="context-initializers"><a class="header" href="#context-initializers">Context Initializers</a></h2>
 <p>For example, let's say you want to set a dynamic amount of globals in your script, depending on some setting in your app.</p>
 <p>You could do this by customizing the scripting plugin:</p>
@@ -346,6 +347,23 @@ plugin.add_context_initializer(|script_id: &amp;str, context: &amp;mut Lua| {
     world.with_resource::&lt;MyResource&gt;(|res| println!("My resource: {:?}", res));
     Ok(())
 });</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="shared-contexts"><a class="header" href="#shared-contexts">Shared Contexts</a></h1>
+<p>By default BMS will create an individual script context, or sandbox, for each script that is run. This means that each script will have its own set of global variables and functions that are isolated from other scripts. However, sometimes this might not be desirable, if you aren't worried about scripts interfering with each other, or if you want to easilly share data between scripts. In these cases, you can use shared contexts.</p>
+<h2 id="enabling-shared-contexts"><a class="header" href="#enabling-shared-contexts">Enabling Shared Contexts</a></h2>
+<p>You can enable shared contexts by configuring the relevant scripting plugin like so:</p>
+<pre><code class="language-rust ignore">let mut plugin = LuaScriptingPlugin::default().enable_context_sharing();
+
+app.add_plugins(plugin);</code></pre>
+<h2 id="context-loading-settings"><a class="header" href="#context-loading-settings">Context Loading Settings</a></h2>
+<p>All context loading settings are stored in a separate resource per scripting plugin namely: <code>ContextLoadingSettings&lt;Plugin&gt;</code>.</p>
+<p>The settings are as follows:</p>
+<ul>
+<li><code>loader</code> - the load and unload strategy for contexts. Each scripting plugin will have a load and unload function which is hooked up through here</li>
+<li><code>assigner</code> - the strategy for assigning/unassigning contexts to scripts. This is used to determine how to assign a context to a script when it is run, and what to do with the context when the script is finished.</li>
+<li><code>context_initializers</code> - stores all context initializers for the plugin</li>
+<li><code>context_pre_handling_initializers</code> - stores all context pre-handling initializers for the plugin</li>
+</ul>
+<p>More advanced applications might want to customize these settings to suit their needs.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="scripting-reference"><a class="header" href="#scripting-reference">Scripting Reference</a></h1>
 <p>This part of the book covers the user-facing API of the scripting languages supported by BMS. This will be where you will want to forward your script users to get started with scripting in BMS.</p>
 <p>If you are a modder, welcome! 👋, apologies for the rust-centricity of this guide, we are working on it!</p>
@@ -355,6 +373,7 @@ plugin.add_context_initializer(|script_id: &amp;str, context: &amp;mut Lua| {
 <div style="break-before: page; page-break-before: always;"></div><h2 id="world"><a class="header" href="#world">World</a></h2>
 <p>The <code>World</code> is the entry point for interacting with <code>Bevy</code>. It is provided to scripts under either the <code>world</code> or <code>World</code> static variable.</p>
 <h3 id="get_type_by_name"><a class="header" href="#get_type_by_name">get_type_by_name</a></h3>
+<p>Returns either a <code>ScriptComponentRegistration</code> or <code>ScriptResourceRegistration</code> depending on the type of the type requested. If the type is neither returns a <code>ScriptTypeRegistration</code>.</p>
 <p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>type_name</code></td><td><code>String</code></td><td>The name of the type to get, this can be either the short type name, i.e. <code>my_type</code> or the long name i.e. <code>my_crate::my_module::my_type</code></td></tr>
@@ -362,7 +381,7 @@ plugin.add_context_initializer(|script_id: &amp;str, context: &amp;mut Lua| {
 </div>
 <p>Returns:</p>
 <div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>Option&lt;ScriptTypeRegistration&gt;</code></td><td>The type if it exists, otherwise <code>None</code></td></tr>
+<tr><td><code>Option&lt;ScriptTypeRegistration OR scriptComponentRegistration OR scriptResourceRegistration&gt;</code></td><td>The registration for the type if it exists, otherwise <code>None</code></td></tr>
 </tbody></table>
 </div>
 <pre><code class="language-lua">MyType = world.get_type_by_name("MyType")
@@ -796,6 +815,62 @@ end
     print("MyType is a component")
 end
 </code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="scriptcomponentregistration"><a class="header" href="#scriptcomponentregistration">ScriptComponentRegistration</a></h1>
+<p>A reference to a component type's registration, in general think of this as a handle to a type.</p>
+<h2 id="type_name-1"><a class="header" href="#type_name-1">type_name</a></h2>
+<p>Arguments:</p>
+<div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>s</code></td><td><code>ScriptComponentRegistration</code></td><td>The type registration as returned by <code>get_type_by_name</code></td></tr>
+</tbody></table>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>String</code></td><td>The type name</td></tr>
+</tbody></table>
+</div>
+<pre><code class="language-lua">local name = MyType:type_name()
+</code></pre>
+<h2 id="short_name-1"><a class="header" href="#short_name-1">short_name</a></h2>
+<p>Arguments:</p>
+<div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>s</code></td><td><code>ScriptComponentRegistration</code></td><td>The type registration as returned by <code>get_type_by_name</code></td></tr>
+</tbody></table>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>String</code></td><td>The short name</td></tr>
+</tbody></table>
+</div>
+<pre><code class="language-lua">local name = MyType:short_name()
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="scriptresourceregistration"><a class="header" href="#scriptresourceregistration">ScriptResourceRegistration</a></h1>
+<p>A reference to a resource type's registration, in general think of this as a handle to a type.</p>
+<h2 id="type_name-2"><a class="header" href="#type_name-2">type_name</a></h2>
+<p>Arguments:</p>
+<div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>s</code></td><td><code>ScriptResourceRegistration</code></td><td>The type registration as returned by <code>get_type_by_name</code></td></tr>
+</tbody></table>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>String</code></td><td>The type name</td></tr>
+</tbody></table>
+</div>
+<pre><code class="language-lua">local name = MyType:type_name()
+</code></pre>
+<h2 id="short_name-2"><a class="header" href="#short_name-2">short_name</a></h2>
+<p>Arguments:</p>
+<div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>s</code></td><td><code>ScriptResourceRegistration</code></td><td>The type registration as returned by <code>get_type_by_name</code></td></tr>
+</tbody></table>
+</div>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>String</code></td><td>The short name</td></tr>
+</tbody></table>
+</div>
+<pre><code class="language-lua">local name = MyType:short_name()
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="scriptquerybuilder"><a class="header" href="#scriptquerybuilder">ScriptQueryBuilder</a></h1>
 <p>The query builder is used to build queries for entities with specific components. Can be used to interact with arbitrary entities in the world.</p>
 <h2 id="component"><a class="header" href="#component">component</a></h2>
@@ -803,7 +878,7 @@ end
 <p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>s</code></td><td><code>ScriptQueryBuilder</code></td><td>The query builder</td></tr>
-<tr><td><code>component</code></td><td><code>ScriptTypeRegistration</code></td><td>The component to query for</td></tr>
+<tr><td><code>component</code></td><td><code>ScriptComponentRegistration</code></td><td>The component to query for</td></tr>
 </tbody></table>
 </div>
 <p>Returns:</p>
@@ -817,7 +892,7 @@ end
 <p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>s</code></td><td><code>ScriptQueryBuilder</code></td><td>The query builder</td></tr>
-<tr><td><code>with</code></td><td><code>ScriptTypeRegistration</code></td><td>The component to include in the query</td></tr>
+<tr><td><code>with</code></td><td><code>ScriptComponentRegistration</code></td><td>The component to include in the query</td></tr>
 </tbody></table>
 </div>
 <p>Returns:</p>
@@ -831,7 +906,7 @@ end
 <p>Arguments:</p>
 <div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>s</code></td><td><code>ScriptQueryBuilder</code></td><td>The query builder</td></tr>
-<tr><td><code>without</code></td><td><code>ScriptTypeRegistration</code></td><td>The component to exclude from the query</td></tr>
+<tr><td><code>without</code></td><td><code>ScriptComponentRegistration</code></td><td>The component to exclude from the query</td></tr>
 </tbody></table>
 </div>
 <p>Returns:</p>
