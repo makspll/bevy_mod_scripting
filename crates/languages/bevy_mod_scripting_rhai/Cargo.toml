@@ -30,3 +30,6 @@ regex = "1.11"
 [[test]]
 name = "rhai_tests"
 harness = false
+
+[lints]
+workspace = true
