@@ -2,9 +2,6 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 #![cfg_attr(rustfmt, rustfmt_skip)]
-use super::bevy_ecs::*;
-use super::bevy_reflect::*;
-use super::bevy_core::*;
 use bevy_mod_scripting_core::bindings::{
     ReflectReference,
     function::{

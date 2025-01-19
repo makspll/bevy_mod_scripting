@@ -995,7 +995,7 @@ impl Xtasks {
                 template_args.as_str(),
                 "--features",
                 bevy_features.join(",").as_str(),
-                "-vv",
+                "-v",
             ],
             Some(&bevy_dir),
         )?;
@@ -1013,7 +1013,7 @@ impl Xtasks {
                 output_dir.to_str().unwrap(),
                 "--template-args",
                 template_args.as_str(),
-                "-vv",
+                "-v",
             ],
             Some(&bevy_dir),
         )?;

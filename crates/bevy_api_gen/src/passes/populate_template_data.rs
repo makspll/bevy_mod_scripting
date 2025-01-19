@@ -82,35 +82,10 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
     }
 
     let crate_name = tcx.crate_name(LOCAL_CRATE).to_string();
-    let dep_names = tcx
-        .crates(())
-        .iter()
-        .map(|d| tcx.crate_name(*d).to_ident_string())
-        .collect::<Vec<_>>();
-
-    let dependencies = ctxt
-        .meta_loader
-        .workspace_meta
-        .crates
-        .iter()
-        .filter(|c| {
-            dep_names.contains(c)
-                && ctxt
-                    .meta_loader
-                    .meta_for(c)
-                    .unwrap_or_else(|| panic!("Expected meta for dependency: {c}"))
-                    .will_generate
-        })
-        .cloned()
-        .collect();
 
     ctxt.clear();
 
-    ctxt.template_context = Some(TemplateContext {
-        crate_name,
-        items,
-        dependencies,
-    });
+    ctxt.template_context = Some(TemplateContext { crate_name, items });
 
     if let crate::Command::Generate {
         template_data_only, ..

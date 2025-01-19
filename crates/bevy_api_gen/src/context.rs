@@ -81,6 +81,15 @@ impl ReflectType<'_> {
     }
 }
 
+pub(crate) const DEF_PATHS_BMS_FROM_SCRIPT: [&str; 2] = [
+    "bevy_mod_scripting_core::bindings::function::from::FromScript",
+    "bindings::function::from::FromScript",
+];
+pub(crate) const DEF_PATHS_BMS_INTO_SCRIPT: [&str; 2] = [
+    "bevy_mod_scripting_core::bindings::function::into::IntoScript",
+    "bindings::function::into::IntoScript",
+];
+
 pub(crate) const DEF_PATHS_FROM_LUA: [&str; 2] = ["value::FromLuaMulti", "mlua::FromLuaMulti"];
 pub(crate) const DEF_PATHS_INTO_LUA: [&str; 2] = ["value::IntoLuaMulti", "mlua::IntoLuaMulti"];
 pub(crate) const DEF_PATHS_REFLECT: [&str; 2] =
@@ -117,6 +126,8 @@ pub(crate) const STD_SOURCE_TRAITS: [&str; 14] = [
 pub(crate) struct CachedTraits {
     pub(crate) mlua_from_lua_multi: Option<DefId>,
     pub(crate) mlua_into_lua_multi: Option<DefId>,
+    pub(crate) bms_into_script: Option<DefId>,
+    pub(crate) bms_from_script: Option<DefId>,
     pub(crate) bevy_reflect_reflect: Option<DefId>,
     pub(crate) bevy_reflect_get_type_registration: Option<DefId>,
     /// Map from def_path_str to DefId of common std traits we work with
@@ -125,6 +136,10 @@ pub(crate) struct CachedTraits {
 }
 
 impl CachedTraits {
+    pub(crate) fn has_all_bms_traits(&self) -> bool {
+        self.bms_into_script.is_some() && self.bms_from_script.is_some()
+    }
+
     pub(crate) fn has_all_mlua_traits(&self) -> bool {
         self.mlua_from_lua_multi.is_some() && self.mlua_into_lua_multi.is_some()
     }
