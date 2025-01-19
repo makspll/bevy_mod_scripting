@@ -162,25 +162,11 @@
 <p>this crate contains a work in progress <code>xtask</code> setup which in theory should allow you to setup everything you need for local development by running:</p>
 <pre><code class="language-sh">cargo xtask init
 </code></pre>
-<p>However at the moment it does not generate IDE specific files for you, so you will need to do that manually.</p>
-<h2 id="vscode"><a class="header" href="#vscode">VScode</a></h2>
-<p>For vscode you will want to enter the following into your <code>settings.json</code></p>
-<pre><code class="language-json">{
-    "rust-analyzer.rustc.source": "discover",
-    "rust-analyzer.linkedProjects": [
-        // "./crates/bevy_api_gen/Cargo.toml", uncommenting this is currently not fully supported with xtask + vscode, rust analyzer bugs out a lot sadly
-        "Cargo.toml",
-    ],
-    "rust-analyzer.check.invocationStrategy": "once",
-    "rust-analyzer.check.overrideCommand": [
-        "/absolute-path-to-this-project/bevy_mod_scripting/check.sh"
-    ],
-    "rust-analyzer.cargo.buildScripts.overrideCommand": [
-        "/absolute-path-to-this-project/bevy_mod_scripting/check.sh"
-    ],
-}
-</code></pre>
-<p>If you are on windows you might need to create an equivalent <code>check.exe</code> to run <code>cargo xtask check --ide-mode</code> in the root directory of this workspace.</p>
+<p>This command currently supports the following IDE's</p>
+<ul>
+<li><a href="https://code.visualstudio.com/">VSCode</a></li>
+</ul>
+<p>If you'd like to add support for another IDE, please feel free to open a PR!</p>
 
                     </main>
 
