@@ -75,7 +75,6 @@ end
 
 function on_update()
     local cells = fetch_life_state().cells
-    world.log_all_allocations()
     local settings = world.get_resource(Settings)
     local dimensions = settings.physical_grid_dimensions
     local dimension_x = dimensions._1

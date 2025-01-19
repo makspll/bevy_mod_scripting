@@ -22,8 +22,8 @@ pub trait PartialReflectExt {
         reflect: &dyn PartialReflect,
         world: WorldGuard,
     ) -> Box<dyn PartialReflect>;
-    fn allocate_cloned(&self, world: WorldGuard) -> ReflectReference;
-    fn allocate(boxed: Box<dyn PartialReflect>, world: WorldGuard) -> ReflectReference;
+
+    fn allocate(boxed: Box<dyn Reflect>, world: WorldGuard) -> ReflectReference;
 
     /// Check if the represented type is from the given crate and has the given type identifier,
     /// returns false if not representing any type or if the type is not from the given crate or does not have the given type identifier.
@@ -186,7 +186,7 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
                 // pop then insert in reverse order of popping (last elem -> first elem to insert)
                 let to_insert = (0..to_be_inserted_elems)
                     .rev()
-                    .map(|_| r.pop().expect("invariant"))
+                    .map_while(|_| r.pop())
                     .collect::<Vec<_>>();
 
                 to_insert.into_iter().rev().for_each(|e| {
@@ -197,10 +197,12 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
 
                 // apply to existing elements in the list
                 for i in apply_range {
-                    apply(
-                        l.get_mut(i).expect("invariant"),
-                        r.get(i).expect("invariant"),
-                    )?;
+                    let left = l.get_mut(i);
+                    let right = r.get(i);
+                    match (left, right) {
+                        (Some(left), Some(right)) => apply(left, right)?,
+                        _ => return Err(InteropError::invariant("set_as_list failed")),
+                    };
                 }
 
                 Ok(())
@@ -273,15 +275,11 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
     }
 
     fn convert_to_0_indexed_key(&mut self) {
-        if let Some(type_id) = self.get_represented_type_info().map(|ti| ti.type_id()) {
-            if type_id == TypeId::of::<usize>() {
-                let self_ = self
-                    .as_partial_reflect_mut()
-                    .try_downcast_mut::<usize>()
-                    .expect("invariant");
-
-                *self_ = self_.saturating_sub(1);
-            }
+        if let Some(usize) = self
+            .try_as_reflect_mut()
+            .and_then(|r| r.downcast_mut::<usize>())
+        {
+            *usize = usize.saturating_sub(1);
         }
     }
 
@@ -405,15 +403,10 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
         }
     }
 
-    fn allocate(boxed: Box<dyn PartialReflect>, world: WorldGuard) -> ReflectReference {
+    fn allocate(boxed: Box<dyn Reflect>, world: WorldGuard) -> ReflectReference {
         let allocator = world.allocator();
         let mut allocator = allocator.write();
         ReflectReference::new_allocated_boxed(boxed, &mut allocator)
-    }
-
-    fn allocate_cloned(&self, world: WorldGuard) -> ReflectReference {
-        let boxed = self.clone_value();
-        Self::allocate(boxed, world)
     }
 }
 

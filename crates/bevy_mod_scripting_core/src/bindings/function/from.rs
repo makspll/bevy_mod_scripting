@@ -114,7 +114,9 @@ impl FromScript for char {
     {
         match value {
             ScriptValue::Integer(i) => Ok(i as u8 as char),
-            ScriptValue::String(c) if c.len() == 1 => Ok(c.chars().next().expect("invariant")),
+            ScriptValue::String(c) => c.chars().next().ok_or_else(|| {
+                InteropError::value_mismatch(TypeId::of::<char>(), ScriptValue::String(c))
+            }),
             ScriptValue::Reference(r) => r.downcast::<Self>(world),
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<Self>(),
@@ -226,10 +228,7 @@ impl<T: FromReflect> FromScript for Ref<'_, T> {
     ) -> Result<Self::This<'_>, InteropError> {
         match value {
             ScriptValue::Reference(reflect_reference) => {
-                let raid = ReflectAccessId::for_reference(reflect_reference.base.base_id.clone())
-                    .ok_or_else(|| {
-                    InteropError::unregistered_base(reflect_reference.base.clone())
-                })?;
+                let raid = ReflectAccessId::for_reference(reflect_reference.base.base_id.clone());
 
                 if world.claim_read_access(raid) {
                     // Safety: we just claimed access
@@ -243,8 +242,9 @@ impl<T: FromReflect> FromScript for Ref<'_, T> {
                     Ok(Ref(cast))
                 } else {
                     Err(InteropError::cannot_claim_access(
-                        reflect_reference.base,
+                        raid,
                         world.get_access_location(raid),
+                        format!("In conversion to type: Ref<{}>", std::any::type_name::<T>()),
                     ))
                 }
             }
@@ -300,10 +300,7 @@ impl<T: FromReflect> FromScript for Mut<'_, T> {
     ) -> Result<Self::This<'_>, InteropError> {
         match value {
             ScriptValue::Reference(reflect_reference) => {
-                let raid = ReflectAccessId::for_reference(reflect_reference.base.base_id.clone())
-                    .ok_or_else(|| {
-                    InteropError::unregistered_base(reflect_reference.base.clone())
-                })?;
+                let raid = ReflectAccessId::for_reference(reflect_reference.base.base_id.clone());
 
                 if world.claim_write_access(raid) {
                     // Safety: we just claimed write access
@@ -315,8 +312,9 @@ impl<T: FromReflect> FromScript for Mut<'_, T> {
                     Ok(Mut(cast))
                 } else {
                     Err(InteropError::cannot_claim_access(
-                        reflect_reference.base,
+                        raid,
                         world.get_access_location(raid),
+                        format!("In conversion to type: Mut<{}>", std::any::type_name::<T>()),
                     ))
                 }
             }

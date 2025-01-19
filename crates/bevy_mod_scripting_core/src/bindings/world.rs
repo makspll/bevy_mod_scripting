@@ -11,8 +11,10 @@ use super::{
         namespace::Namespace,
         script_function::{AppScriptFunctionRegistry, CallerContext, DynamicScriptFunction},
     },
+    pretty_print::DisplayWithWorld,
     script_value::ScriptValue,
-    AppReflectAllocator, ReflectBase, ReflectBaseType, ReflectReference, ScriptTypeRegistration,
+    AppReflectAllocator, ReflectBase, ReflectBaseType, ReflectReference,
+    ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration,
 };
 use crate::{error::InteropError, with_access_read, with_access_write, with_global_access};
 use bevy::{
@@ -111,10 +113,26 @@ impl WorldCallbackAccess {
         Ok(world.get_type_by_name(type_name))
     }
 
+    pub fn get_component_type(
+        &self,
+        registration: ScriptTypeRegistration,
+    ) -> Result<Result<ScriptComponentRegistration, ScriptTypeRegistration>, InteropError> {
+        let world = self.try_read()?;
+        Ok(world.get_component_type(registration))
+    }
+
+    pub fn get_resource_type(
+        &self,
+        registration: ScriptTypeRegistration,
+    ) -> Result<Result<ScriptResourceRegistration, ScriptTypeRegistration>, InteropError> {
+        let world = self.try_read()?;
+        Ok(world.get_resource_type(registration))
+    }
+
     pub fn add_default_component(
         &self,
         entity: Entity,
-        registration: ScriptTypeRegistration,
+        registration: ScriptComponentRegistration,
     ) -> Result<(), InteropError> {
         let world = self.try_read()?;
         world.add_default_component(entity, registration)
@@ -141,7 +159,7 @@ impl WorldCallbackAccess {
     pub fn remove_component(
         &self,
         entity: Entity,
-        registration: ScriptTypeRegistration,
+        registration: ScriptComponentRegistration,
     ) -> Result<(), InteropError> {
         let world = self.try_read()?;
         world.remove_component(entity, registration)
@@ -157,7 +175,7 @@ impl WorldCallbackAccess {
 
     pub fn remove_resource(
         &self,
-        registration: ScriptTypeRegistration,
+        registration: ScriptResourceRegistration,
     ) -> Result<(), InteropError> {
         let world = self.try_read()?;
         world.remove_resource(registration)
@@ -251,7 +269,7 @@ impl WorldCallbackAccess {
             }
         }
 
-        Err(last_error.expect("invariant, iterator should always return at least one item, and if the call fails it should return an error"))
+        Err(last_error.ok_or_else(|| InteropError::invariant("invariant, iterator should always return at least one item, and if the call fails it should return an error"))?)
     }
 }
 
@@ -274,22 +292,21 @@ pub(crate) struct WorldAccessGuardInner<'w> {
 }
 
 impl<'w> WorldAccessGuard<'w> {
-    /// Creates a new [`WorldAccessGuard`] for the given mutable borrow of the world
+    /// Creates a new [`WorldAccessGuard`] for the given mutable borrow of the world.
+    ///
+    /// Creating a guard requires that some resources exist in the world, namely:
+    /// - [`AppTypeRegistry`]
+    /// - [`AppReflectAllocator`]
+    /// - [`AppScriptFunctionRegistry`]
+    ///
+    /// If these resources do not exist, they will be initialized.
     pub fn new(world: &'w mut World) -> Self {
-        let type_registry = world
-            .get_resource::<AppTypeRegistry>()
-            .expect("Type registry not present, cannot create world access guard")
-            .0
-            .clone();
+        let type_registry = world.get_resource_or_init::<AppTypeRegistry>().0.clone();
 
-        let allocator = world
-            .get_resource::<AppReflectAllocator>()
-            .expect("Reflect allocator not present, cannot create world access guard")
-            .clone();
+        let allocator = world.get_resource_or_init::<AppReflectAllocator>().clone();
 
         let function_registry = world
-            .get_resource::<AppScriptFunctionRegistry>()
-            .expect("Function registry not present, cannot create world access guard")
+            .get_resource_or_init::<AppScriptFunctionRegistry>()
             .clone();
 
         Self(Arc::new(WorldAccessGuardInner {
@@ -401,13 +418,12 @@ impl<'w> WorldAccessGuard<'w> {
     ///
     /// # Panics
     /// - if the resource does not exist
-    pub fn with_resource<F, R, O>(&self, f: F) -> O
+    pub fn with_resource<F, R, O>(&self, f: F) -> Result<O, InteropError>
     where
         R: Resource,
         F: FnOnce(&R) -> O,
     {
-        let access_id = ReflectAccessId::for_resource::<R>(&self.0.cell)
-            .unwrap_or_else(|| panic!("Resource does not exist: {}", std::any::type_name::<R>()));
+        let access_id = ReflectAccessId::for_resource::<R>(&self.0.cell)?;
 
         with_access_read!(
             self.0.accesses,
@@ -415,7 +431,13 @@ impl<'w> WorldAccessGuard<'w> {
             format!("Could not access resource: {}", std::any::type_name::<R>()),
             {
                 // Safety: we have acquired access for the duration of the closure
-                f(unsafe { self.0.cell.get_resource::<R>().expect("invariant") })
+                f(unsafe {
+                    self.0.cell.get_resource::<R>().ok_or_else(|| {
+                        InteropError::unregistered_component_or_resource_type(
+                            std::any::type_name::<R>(),
+                        )
+                    })?
+                })
             }
         )
     }
@@ -424,21 +446,25 @@ impl<'w> WorldAccessGuard<'w> {
     ///
     /// # Panics
     /// - if the resource does not exist
-    pub fn with_resource_mut<F, R, O>(&self, f: F) -> O
+    pub fn with_resource_mut<F, R, O>(&self, f: F) -> Result<O, InteropError>
     where
         R: Resource,
         F: FnOnce(Mut<R>) -> O,
     {
-        let access_id = ReflectAccessId::for_resource::<R>(&self.0.cell)
-            .unwrap_or_else(|| panic!("Resource does not exist: {}", std::any::type_name::<R>()));
-
+        let access_id = ReflectAccessId::for_resource::<R>(&self.0.cell)?;
         with_access_write!(
             self.0.accesses,
             access_id,
             format!("Could not access resource: {}", std::any::type_name::<R>()),
             {
                 // Safety: we have acquired access for the duration of the closure
-                f(unsafe { self.0.cell.get_resource_mut::<R>().expect("invariant") })
+                f(unsafe {
+                    self.0.cell.get_resource_mut::<R>().ok_or_else(|| {
+                        InteropError::unregistered_component_or_resource_type(
+                            std::any::type_name::<R>(),
+                        )
+                    })?
+                })
             }
         )
     }
@@ -447,14 +473,12 @@ impl<'w> WorldAccessGuard<'w> {
     ///
     /// # Panics
     /// - if the component does not exist
-    pub fn with_component<F, T, O>(&self, entity: Entity, f: F) -> O
+    pub fn with_component<F, T, O>(&self, entity: Entity, f: F) -> Result<O, InteropError>
     where
         T: Component,
         F: FnOnce(Option<&T>) -> O,
     {
-        let access_id = ReflectAccessId::for_component::<T>(&self.0.cell)
-            .unwrap_or_else(|| panic!("Component does not exist: {}", std::any::type_name::<T>()));
-
+        let access_id = ReflectAccessId::for_component::<T>(&self.0.cell)?;
         with_access_read!(
             self.0.accesses,
             access_id,
@@ -470,13 +494,12 @@ impl<'w> WorldAccessGuard<'w> {
     ///
     /// # Panics
     /// - if the component does not exist
-    pub fn with_component_mut<F, T, O>(&self, entity: Entity, f: F) -> O
+    pub fn with_component_mut<F, T, O>(&self, entity: Entity, f: F) -> Result<O, InteropError>
     where
         T: Component,
         F: FnOnce(Option<Mut<T>>) -> O,
     {
-        let access_id = ReflectAccessId::for_component::<T>(&self.0.cell)
-            .unwrap_or_else(|| panic!("Component does not exist: {}", std::any::type_name::<T>()));
+        let access_id = ReflectAccessId::for_component::<T>(&self.0.cell)?;
 
         with_access_write!(
             self.0.accesses,
@@ -538,22 +561,37 @@ impl WorldAccessGuard<'_> {
         type_registry
             .get_with_short_type_path(&type_name)
             .or_else(|| type_registry.get_with_type_path(&type_name))
-            .map(|registration| {
-                ScriptTypeRegistration::new(
-                    Arc::new(registration.clone()),
-                    self.get_component_id(registration.type_id()),
-                    self.get_resource_id(registration.type_id()),
-                )
-            })
+            .map(|registration| ScriptTypeRegistration::new(Arc::new(registration.clone())))
+    }
+
+    pub fn get_component_type(
+        &self,
+        registration: ScriptTypeRegistration,
+    ) -> Result<ScriptComponentRegistration, ScriptTypeRegistration> {
+        match self.get_component_id(registration.type_id()) {
+            Some(comp_id) => Ok(ScriptComponentRegistration::new(registration, comp_id)),
+            None => Err(registration),
+        }
+    }
+
+    pub fn get_resource_type(
+        &self,
+        registration: ScriptTypeRegistration,
+    ) -> Result<ScriptResourceRegistration, ScriptTypeRegistration> {
+        match self.get_resource_id(registration.type_id()) {
+            Some(resource_id) => Ok(ScriptResourceRegistration::new(registration, resource_id)),
+            None => Err(registration),
+        }
     }
 
     pub fn add_default_component(
         &self,
         entity: Entity,
-        registration: ScriptTypeRegistration,
+        registration: ScriptComponentRegistration,
     ) -> Result<(), InteropError> {
         let component_data = registration
-            .registration
+            .type_registration()
+            .type_registration()
             .data::<ReflectComponent>()
             .ok_or_else(|| {
                 InteropError::missing_type_data(
@@ -563,10 +601,17 @@ impl WorldAccessGuard<'_> {
             })?;
 
         // we look for ReflectDefault or ReflectFromWorld data then a ReflectComponent data
-        let instance = if let Some(default_td) = registration.registration.data::<ReflectDefault>()
+        let instance = if let Some(default_td) = registration
+            .type_registration()
+            .type_registration()
+            .data::<ReflectDefault>()
         {
             default_td.default()
-        } else if let Some(from_world_td) = registration.registration.data::<ReflectFromWorld>() {
+        } else if let Some(from_world_td) = registration
+            .type_registration()
+            .type_registration()
+            .data::<ReflectFromWorld>()
+        {
             with_global_access!(self.0.accesses, "Could not add default component", {
                 let world = unsafe { self.0.cell.world_mut() };
                 from_world_td.from_world(world)
@@ -615,9 +660,16 @@ impl WorldAccessGuard<'_> {
         if entity.contains_id(component_id) {
             Ok(Some(ReflectReference {
                 base: ReflectBaseType {
-                    type_id: component_info
-                        .type_id()
-                        .expect("Component does not have type id"),
+                    type_id: component_info.type_id().ok_or_else(|| {
+                        InteropError::unsupported_operation(
+                            None,
+                            None,
+                            format!(
+                                "Component {} does not have a type id. Such components are not supported by BMS.",
+                                component_id.display_without_world()
+                            ),
+                        )
+                    })?,
                     base_id: ReflectBase::Component(entity.id(), component_id),
                 },
                 reflect_path: ParsedPath(vec![]),
@@ -644,10 +696,11 @@ impl WorldAccessGuard<'_> {
     pub fn remove_component(
         &self,
         entity: Entity,
-        registration: ScriptTypeRegistration,
+        registration: ScriptComponentRegistration,
     ) -> Result<(), InteropError> {
         let component_data = registration
-            .registration
+            .type_registration()
+            .type_registration()
             .data::<ReflectComponent>()
             .ok_or_else(|| {
                 InteropError::missing_type_data(
@@ -680,7 +733,16 @@ impl WorldAccessGuard<'_> {
             base: ReflectBaseType {
                 type_id: component_info
                     .type_id()
-                    .expect("Resource does not have type id"),
+                    .ok_or_else(|| {
+                        InteropError::unsupported_operation(
+                            None,
+                            None,
+                            format!(
+                                "Resource {} does not have a type id. Such resources are not supported by BMS.",
+                                resource_id.display_without_world()
+                            ),
+                        )
+                    })?,
                 base_id: ReflectBase::Resource(resource_id),
             },
             reflect_path: ParsedPath(vec![]),
@@ -689,10 +751,11 @@ impl WorldAccessGuard<'_> {
 
     pub fn remove_resource(
         &self,
-        registration: ScriptTypeRegistration,
+        registration: ScriptResourceRegistration,
     ) -> Result<(), InteropError> {
         let component_data = registration
-            .registration
+            .type_registration()
+            .type_registration()
             .data::<ReflectResource>()
             .ok_or_else(|| {
                 InteropError::missing_type_data(
@@ -725,7 +788,7 @@ impl WorldAccessGuard<'_> {
         }
 
         self.with_component(entity, |c: Option<&Children>| {
-            Ok(c.map(|c| c.to_vec()).unwrap_or_default())
+            c.map(|c| c.to_vec()).unwrap_or_default()
         })
     }
 
@@ -734,7 +797,7 @@ impl WorldAccessGuard<'_> {
             return Err(InteropError::missing_entity(entity));
         }
 
-        self.with_component(entity, |c: Option<&Parent>| Ok(c.map(|c| c.get())))
+        self.with_component(entity, |c: Option<&Parent>| c.map(|c| c.get()))
     }
 
     pub fn push_children(&self, parent: Entity, children: &[Entity]) -> Result<(), InteropError> {
@@ -870,19 +933,6 @@ pub trait WorldContainer {
     type Error: Debug;
     /// Sets the world to the given value
     fn set_world(&mut self, world: WorldCallbackAccess) -> Result<(), Self::Error>;
-
-    /// Gets the world, use [`WorldContainer::try_get_world`] if you want to handle errors with retrieving the world
-    /// # Panics
-    /// - if the world has not been set
-    /// - if the world has been dropped
-    fn get_world(&self) -> WorldGuard<'static> {
-        self.try_get_world().expect("World not set, or expired")
-    }
-
-    fn get_callback_world(&self) -> WorldCallbackAccess {
-        self.try_get_callback_world()
-            .expect("World not set, or expired")
-    }
 
     /// Tries to get the world
     fn try_get_world(&self) -> Result<Arc<WorldAccessGuard<'static>>, Self::Error>;

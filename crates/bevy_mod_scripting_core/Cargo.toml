@@ -39,3 +39,6 @@ itertools = "0.13"
 
 [dev-dependencies]
 test_utils = { workspace = true }
+
+[lints]
+workspace = true

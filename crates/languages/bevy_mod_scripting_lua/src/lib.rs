@@ -71,7 +71,7 @@ impl Default for LuaScriptingPlugin {
                     },
                     |_script_id, context: &mut Lua| {
                         // set static globals
-                        let world = ThreadWorldContainer.get_world();
+                        let world = ThreadWorldContainer.try_get_world()?;
                         let type_registry = world.type_registry();
                         let type_registry = type_registry.read();
 
@@ -114,7 +114,7 @@ impl Default for LuaScriptingPlugin {
                     },
                 ],
                 context_pre_handling_initializers: vec![|script_id, entity, context| {
-                    let world = ThreadWorldContainer.get_world();
+                    let world = ThreadWorldContainer.try_get_world()?;
                     context
                         .globals()
                         .set(

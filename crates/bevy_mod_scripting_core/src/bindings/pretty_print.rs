@@ -1,9 +1,11 @@
 use crate::reflection_extensions::{FakeType, TypeIdExtensions};
 
 use super::{
-    script_value::ScriptValue, ReflectBase, ReflectBaseType, ReflectReference, WorldGuard,
+    access_map::ReflectAccessId, script_value::ScriptValue, ReflectAllocationId, ReflectBase,
+    ReflectBaseType, ReflectReference, WorldGuard,
 };
 use bevy::{
+    ecs::component::ComponentId,
     prelude::World,
     reflect::{PartialReflect, ReflectRef},
 };
@@ -360,6 +362,55 @@ impl DisplayWithWorld for ReflectBaseType {
         let mut string = String::new();
         ReflectReferencePrinter::pretty_print_base(self, None, &mut string);
         string
+    }
+}
+
+impl DisplayWithWorld for ComponentId {
+    fn display_without_world(&self) -> String {
+        format!("ComponentOrResource({})", self.index())
+    }
+
+    fn display_with_world(&self, world: WorldGuard) -> String {
+        let component_name = world
+            .as_unsafe_world_cell()
+            .components()
+            .get_info(*self)
+            .map(|info| info.name());
+
+        match component_name {
+            Some(n) => format!("ComponentOrResource({})", n),
+            None => "ComponentOrResource(<Unknown>)".to_owned(),
+        }
+    }
+}
+
+impl DisplayWithWorld for ReflectAccessId {
+    fn display_without_world(&self) -> String {
+        match self.kind {
+            super::access_map::ReflectAccessKind::ComponentOrResource => {
+                let component_id = ComponentId::from(*self);
+                component_id.display_without_world()
+            }
+            super::access_map::ReflectAccessKind::Allocation => {
+                format!("Allocation({})", self.id)
+            }
+        }
+    }
+
+    fn display_with_world(&self, world: WorldGuard) -> String {
+        match self.kind {
+            super::access_map::ReflectAccessKind::ComponentOrResource => {
+                let component_id = ComponentId::from(*self);
+                component_id.display_with_world(world)
+            }
+            super::access_map::ReflectAccessKind::Allocation => {
+                let allocation_id = ReflectAllocationId::from(*self);
+                let allocator = world.allocator();
+                let allocator = allocator.read();
+                let type_id = allocator.get_type_id(&allocation_id).or_fake_id();
+                format!("Allocation({})", type_id.display_with_world(world))
+            }
+        }
     }
 }
 

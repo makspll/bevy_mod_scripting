@@ -20,3 +20,6 @@ bevy = { workspace = true, default-features = false }
 rune = "0.13.1"
 rune-modules = "0.13.1"
 anyhow = "1.0.75"
+
+[lints]
+workspace = true

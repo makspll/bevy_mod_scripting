@@ -586,7 +586,7 @@ impl Xtasks {
             Xtasks::Build => Self::build(app_settings),
             Xtasks::Check { ide_mode, kind } => Self::check(app_settings, ide_mode, kind),
             Xtasks::Docs { open, no_rust_docs } => Self::docs(app_settings, open, no_rust_docs),
-            Xtasks::Test { name, package } => Self::test(app_settings, name, package),
+            Xtasks::Test { name, package } => Self::test(app_settings, package, name),
             Xtasks::CiCheck => Self::cicd(app_settings),
             Xtasks::Init => Self::init(app_settings),
             Xtasks::Macros { macro_name } => match macro_name {
@@ -1135,11 +1135,14 @@ impl Xtasks {
             test_args.push(name);
         }
 
+        test_args.push("--exclude".to_owned());
+        test_args.push("xtask".to_owned());
+
         Self::run_workspace_command(
             &app_settings,
             "test",
             "Failed to run tests",
-            vec!["--exclude", "xtask"],
+            test_args,
             None,
         )?;
 

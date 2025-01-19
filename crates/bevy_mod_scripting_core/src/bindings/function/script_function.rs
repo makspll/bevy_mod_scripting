@@ -398,6 +398,9 @@ impl ScriptFunctionRegistry {
     }
 
     /// Remove a function from the registry if it exists. Returns the removed function if it was found.
+    ///
+    /// Note if the function is overloaded, you will need to remove each overload individually.
+    /// Use [`ScriptFunctionRegistry::remove_all_overloads`] to remove all overloads at once.
     pub fn remove(
         &mut self,
         namespace: Namespace,
@@ -405,6 +408,21 @@ impl ScriptFunctionRegistry {
     ) -> Option<DynamicScriptFunction> {
         let name = name.into();
         self.functions.remove(&FunctionKey { name, namespace })
+    }
+
+    pub fn remove_all_overloads(
+        &mut self,
+        namespace: Namespace,
+        name: impl Into<Cow<'static, str>>,
+    ) -> Result<Vec<DynamicScriptFunction>, Cow<'static, str>> {
+        let overloads: Vec<_> = self.iter_overloads(namespace, name)?.cloned().collect();
+        for overload in overloads.iter() {
+            self.functions.remove(&FunctionKey {
+                name: overload.info.name.clone(),
+                namespace,
+            });
+        }
+        Ok(overloads)
     }
 
     fn register_overload<F, M>(
@@ -428,17 +446,13 @@ impl ScriptFunctionRegistry {
             return;
         }
 
-        for i in 1..16 {
+        for i in 1.. {
             let overload = format!("{name}-{i}");
             if !self.contains(namespace, overload.clone()) {
                 self.register(namespace, overload, func);
                 return;
             }
         }
-
-        panic!(
-            "Could not register overload for function {name}. Maximum number of overloads reached"
-        );
     }
 
     pub fn contains(&self, namespace: Namespace, name: impl Into<Cow<'static, str>>) -> bool {
@@ -476,7 +490,7 @@ impl ScriptFunctionRegistry {
             Err(name) => return Err(name),
         };
 
-        let overloads = (1..16)
+        let overloads = (1..)
             .map(move |i| {
                 if i == 0 {
                     self.get_function(namespace, name.clone())
@@ -486,7 +500,7 @@ impl ScriptFunctionRegistry {
                 }
             })
             .take_while(|o| o.is_ok())
-            .map(|o| o.unwrap());
+            .filter_map(|o| o.ok());
 
         Ok(seed.chain(overloads))
     }
@@ -690,5 +704,21 @@ mod test {
         assert!(removed.is_some());
         let removed = registry.remove(namespace, "test");
         assert!(removed.is_none());
+    }
+
+    #[test]
+    fn test_remove_all_overloads() {
+        let mut registry = ScriptFunctionRegistry::default();
+        let fn_ = |a: usize, b: usize| a + b;
+        let namespace = Namespace::Global;
+        registry.register(namespace, "test", fn_);
+        let fn_2 = |a: usize, b: i32| a + (b as usize);
+        registry.register(namespace, "test", fn_2);
+
+        let removed = registry
+            .remove_all_overloads(namespace, "test")
+            .expect("Failed to remove overloads");
+        assert_eq!(removed.len(), 2);
+        assert!(registry.get_function(namespace, "test").is_err());
     }
 }

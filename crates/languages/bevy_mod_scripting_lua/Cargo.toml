@@ -54,3 +54,6 @@ regex = "1.11"
 [[test]]
 name = "lua_tests"
 harness = false
+
+[lints]
+workspace = true

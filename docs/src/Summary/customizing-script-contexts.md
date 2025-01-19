@@ -4,6 +4,7 @@ You should be able to achieve what you need by registering script functions in m
 
 This is possible using `Context Initializers` and `Context Pre Handling Initializers` as well as `Runtime Initializers`.
 
+It is however always reccomened to use the dynamic script function registry whenever possible, as it is more flexible and easier to use. It also allows you to introspect available functions easier.
 
 ## Context Initializers
 
