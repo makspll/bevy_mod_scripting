@@ -1,6 +1,9 @@
 use crate::bindings::{
-    access_map::{DisplayCodeLocation, ReflectAccessId}, function::namespace::Namespace,
-    pretty_print::DisplayWithWorld, script_value::ScriptValue, ReflectBaseType, ReflectReference,
+    access_map::{DisplayCodeLocation, ReflectAccessId},
+    function::namespace::Namespace,
+    pretty_print::DisplayWithWorld,
+    script_value::ScriptValue,
+    ReflectBaseType, ReflectReference,
 };
 use bevy::{
     ecs::component::ComponentId,
@@ -8,7 +11,12 @@ use bevy::{
     reflect::{func::FunctionError, PartialReflect, Reflect},
 };
 use std::{
-    any::TypeId, borrow::Cow, fmt::{Debug, Display}, ops::Deref, str::Utf8Error, sync::Arc
+    any::TypeId,
+    borrow::Cow,
+    fmt::{Debug, Display},
+    ops::Deref,
+    str::Utf8Error,
+    sync::Arc,
 };
 
 pub type ScriptResult<T> = Result<T, ScriptError>;
@@ -494,8 +502,14 @@ impl InteropError {
         }))
     }
 
-    pub fn unregistered_component_or_resource_type(type_name: impl Into<Cow<'static, str>>) -> Self {
-        Self(Arc::new(InteropErrorInner::UnregisteredComponentOrResourceType { type_name: type_name.into() }))
+    pub fn unregistered_component_or_resource_type(
+        type_name: impl Into<Cow<'static, str>>,
+    ) -> Self {
+        Self(Arc::new(
+            InteropErrorInner::UnregisteredComponentOrResourceType {
+                type_name: type_name.into(),
+            },
+        ))
     }
 
     pub fn inner(&self) -> &InteropErrorInner {
@@ -789,14 +803,16 @@ macro_rules! invariant {
 
 macro_rules! unregistered_component_or_resource_type {
     ($type_name:expr) => {
-        format!("Expected registered component/resource but got unregistered type: {}", $type_name)
+        format!(
+            "Expected registered component/resource but got unregistered type: {}",
+            $type_name
+        )
     };
 }
 
 impl DisplayWithWorld for InteropErrorInner {
     fn display_with_world(&self, world: crate::bindings::WorldGuard) -> String {
         match self {
-            
             InteropErrorInner::MissingFunctionError { on, function_name } => {
                 missing_function_error!(function_name, on.display_with_world(world))
             },
