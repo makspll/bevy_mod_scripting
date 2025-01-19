@@ -59,7 +59,6 @@ impl ValueEnum for TemplateKind {
 
 #[derive(Serialize)]
 pub(crate) struct TemplateContext {
-    pub(crate) dependencies: Vec<String>,
     pub(crate) crate_name: String,
     pub(crate) items: Vec<Item>,
 }

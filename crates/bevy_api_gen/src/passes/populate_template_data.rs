@@ -32,7 +32,19 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
         let has_static_methods = fn_ctxts.iter().any(|fn_ctxt| !fn_ctxt.has_self);
 
         let mut functions = process_functions(ctxt, fn_ctxts);
-        functions.sort_by(|a, b| a.ident.cmp(&b.ident));
+        functions.sort_by(|a, b| {
+            a.ident
+                .cmp(&b.ident)
+                .then(a.args.len().cmp(&b.args.len()))
+                .then(
+                    a.args
+                        .iter()
+                        .zip(b.args.iter())
+                        .fold(std::cmp::Ordering::Equal, |acc, (a, b)| {
+                            acc.then(a.ty.cmp(&b.ty))
+                        }),
+                )
+        });
 
         let variant = ty_ctxt.variant_data.as_ref().unwrap();
 
@@ -70,35 +82,10 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
     }
 
     let crate_name = tcx.crate_name(LOCAL_CRATE).to_string();
-    let dep_names = tcx
-        .crates(())
-        .iter()
-        .map(|d| tcx.crate_name(*d).to_ident_string())
-        .collect::<Vec<_>>();
-
-    let dependencies = ctxt
-        .meta_loader
-        .workspace_meta
-        .crates
-        .iter()
-        .filter(|c| {
-            dep_names.contains(c)
-                && ctxt
-                    .meta_loader
-                    .meta_for(c)
-                    .unwrap_or_else(|| panic!("Expected meta for dependency: {c}"))
-                    .will_generate
-        })
-        .cloned()
-        .collect();
 
     ctxt.clear();
 
-    ctxt.template_context = Some(TemplateContext {
-        crate_name,
-        items,
-        dependencies,
-    });
+    ctxt.template_context = Some(TemplateContext { crate_name, items });
 
     if let crate::Command::Generate {
         template_data_only, ..
@@ -113,10 +100,6 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
     }
 
     trace!("Populated template context:");
-    trace!(
-        "{}",
-        serde_json::to_string_pretty(&ctxt.template_context).unwrap()
-    );
 
     true
 }
@@ -230,11 +213,10 @@ fn ty_to_string<'tcx>(ctxt: &BevyCtxt<'tcx>, ty: Ty<'tcx>, proxy_types: bool) ->
                         "bevy_reflect",
                     ];
 
-                    ctxt.meta_loader.one_of_meta_files_contains(
-                        &meta_sources,
-                        Some(&ctxt.tcx.crate_name(LOCAL_CRATE).to_ident_string()),
-                        def_path_hash,
-                    )
+                    trace!("Checking ADT: `{}`.", ctxt.tcx.item_name(def_id),);
+
+                    ctxt.meta_loader
+                        .one_of_meta_files_contains(&meta_sources, None, def_path_hash)
                 })
                 .is_some_and(identity)
         }),
@@ -326,7 +308,6 @@ impl<'a> TyPrinter<'a> {
     }
 
     pub fn print(mut self, ty: Ty<'_>) -> String {
-        log::trace!("Printing type: {:#?}", ty);
         self.print_ty(ty);
         self.buffer
     }
@@ -357,7 +338,6 @@ impl<'a> TyPrinter<'a> {
     }
 
     fn print_adt<'tcx, I: Iterator<Item = GenericArg<'tcx>>>(&mut self, ty: AdtDef<'tcx>, args: I) {
-        log::trace!("Printing ADT: {:#?}", ty);
         let did = ty.did();
         let import_path = (self.path_finder)(did);
         self.buffer.push_str(&import_path);
@@ -365,8 +345,6 @@ impl<'a> TyPrinter<'a> {
     }
 
     fn print_ty(&mut self, ty: Ty<'_>) {
-        log::trace!("Printing type: {:#?}", ty);
-
         match ty.kind() {
             TyKind::Bool => self.print_literal("bool"),
             TyKind::Char => self.print_literal("char"),

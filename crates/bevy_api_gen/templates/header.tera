@@ -2,13 +2,6 @@
 #![allow(unused, deprecated, dead_code)]
 #![cfg_attr(rustfmt, rustfmt_skip)]
 
-{% for crate in dependencies %}
-{% if crate != crate_name %}
-use super::{{crate}}::*;
-{% endif %}
-{% endfor %}
-
-
 use bevy_mod_scripting_core::{
     bindings::{
         ReflectReference, 

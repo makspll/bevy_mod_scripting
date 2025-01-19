@@ -59,6 +59,7 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
         // tera environment for import processor
         let tera = crate::configure_tera(tcx.crate_name(LOCAL_CRATE).as_str(), &templates_dir);
 
+        info!("Using meta directories: {:?}", meta_dirs);
         let mut ctxt = crate::BevyCtxt::new(
             tcx,
             &meta_dirs,

@@ -1256,20 +1256,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "add",
-                |_self: Val<bevy::math::Vec3>, rhs: f32| {
+                |_self: Val<bevy::math::Vec3>, rhs: Val<bevy::math::Vec3>| {
                     let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Add<
-                        f32,
-                    >>::add(_self.into_inner(), rhs)
+                        bevy::math::Vec3,
+                    >>::add(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "add",
-                |_self: Val<bevy::math::Vec3>, rhs: Val<bevy::math::Vec3>| {
+                |_self: Val<bevy::math::Vec3>, rhs: f32| {
                     let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Add<
-                        bevy::math::Vec3,
-                    >>::add(_self.into_inner(), rhs.into_inner())
+                        f32,
+                    >>::add(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -1537,10 +1537,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::Vec3>, rhs: f32| {
+                |_self: Val<bevy::math::Vec3>, rhs: Ref<bevy::math::Vec3>| {
                     let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Div<
-                        f32,
-                    >>::div(_self.into_inner(), rhs)
+                        &bevy::math::Vec3,
+                    >>::div(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -1557,10 +1557,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::Vec3>, rhs: Ref<bevy::math::Vec3>| {
+                |_self: Val<bevy::math::Vec3>, rhs: f32| {
                     let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Div<
-                        &bevy::math::Vec3,
-                    >>::div(_self.into_inner(), &rhs)
+                        f32,
+                    >>::div(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -1842,10 +1842,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::Vec3>, rhs: f32| {
+                |_self: Val<bevy::math::Vec3>, rhs: Ref<bevy::math::Vec3>| {
                     let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Mul<
-                        f32,
-                    >>::mul(_self.into_inner(), rhs)
+                        &bevy::math::Vec3,
+                    >>::mul(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -1862,10 +1862,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::Vec3>, rhs: Ref<bevy::math::Vec3>| {
+                |_self: Val<bevy::math::Vec3>, rhs: f32| {
                     let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Mul<
-                        &bevy::math::Vec3,
-                    >>::mul(_self.into_inner(), &rhs)
+                        f32,
+                    >>::mul(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -2025,10 +2025,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::Vec3>, rhs: f32| {
+                |_self: Val<bevy::math::Vec3>, rhs: Ref<bevy::math::Vec3>| {
                     let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Rem<
-                        f32,
-                    >>::rem(_self.into_inner(), rhs)
+                        &bevy::math::Vec3,
+                    >>::rem(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -2045,10 +2045,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::Vec3>, rhs: Ref<bevy::math::Vec3>| {
+                |_self: Val<bevy::math::Vec3>, rhs: f32| {
                     let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Rem<
-                        &bevy::math::Vec3,
-                    >>::rem(_self.into_inner(), &rhs)
+                        f32,
+                    >>::rem(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -2110,20 +2110,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::Vec3>, rhs: Val<bevy::math::Vec3>| {
+                |_self: Val<bevy::math::Vec3>, rhs: Ref<bevy::math::Vec3>| {
                     let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Sub<
-                        bevy::math::Vec3,
-                    >>::sub(_self.into_inner(), rhs.into_inner())
+                        &bevy::math::Vec3,
+                    >>::sub(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::Vec3>, rhs: Ref<bevy::math::Vec3>| {
+                |_self: Val<bevy::math::Vec3>, rhs: Val<bevy::math::Vec3>| {
                     let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Sub<
-                        &bevy::math::Vec3,
-                    >>::sub(_self.into_inner(), &rhs)
+                        bevy::math::Vec3,
+                    >>::sub(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -2211,10 +2211,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "add",
-                |_self: Val<bevy::math::IVec2>, rhs: i32| {
+                |_self: Val<bevy::math::IVec2>, rhs: Ref<bevy::math::IVec2>| {
                     let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Add<
-                        i32,
-                    >>::add(_self.into_inner(), rhs)
+                        &bevy::math::IVec2,
+                    >>::add(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -2231,10 +2231,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "add",
-                |_self: Val<bevy::math::IVec2>, rhs: Ref<bevy::math::IVec2>| {
+                |_self: Val<bevy::math::IVec2>, rhs: i32| {
                     let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Add<
-                        &bevy::math::IVec2,
-                    >>::add(_self.into_inner(), &rhs)
+                        i32,
+                    >>::add(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -2414,20 +2414,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::IVec2>, rhs: i32| {
+                |_self: Val<bevy::math::IVec2>, rhs: Val<bevy::math::IVec2>| {
                     let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Div<
-                        i32,
-                    >>::div(_self.into_inner(), rhs)
+                        bevy::math::IVec2,
+                    >>::div(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::IVec2>, rhs: Val<bevy::math::IVec2>| {
+                |_self: Val<bevy::math::IVec2>, rhs: i32| {
                     let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Div<
-                        bevy::math::IVec2,
-                    >>::div(_self.into_inner(), rhs.into_inner())
+                        i32,
+                    >>::div(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -2582,20 +2582,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::IVec2>, rhs: i32| {
+                |_self: Val<bevy::math::IVec2>, rhs: Val<bevy::math::IVec2>| {
                     let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Mul<
-                        i32,
-                    >>::mul(_self.into_inner(), rhs)
+                        bevy::math::IVec2,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::IVec2>, rhs: Val<bevy::math::IVec2>| {
+                |_self: Val<bevy::math::IVec2>, rhs: i32| {
                     let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Mul<
-                        bevy::math::IVec2,
-                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        i32,
+                    >>::mul(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -2641,6 +2641,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "rem",
+                |_self: Val<bevy::math::IVec2>, rhs: Ref<bevy::math::IVec2>| {
+                    let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Rem<
+                        &bevy::math::IVec2,
+                    >>::rem(_self.into_inner(), &rhs)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "rem",
                 |_self: Val<bevy::math::IVec2>, rhs: Val<bevy::math::IVec2>| {
                     let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Rem<
                         bevy::math::IVec2,
@@ -2655,16 +2665,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Rem<
                         i32,
                     >>::rem(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "rem",
-                |_self: Val<bevy::math::IVec2>, rhs: Ref<bevy::math::IVec2>| {
-                    let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Rem<
-                        &bevy::math::IVec2,
-                    >>::rem(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -2803,20 +2803,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::IVec2>, rhs: i32| {
+                |_self: Val<bevy::math::IVec2>, rhs: Val<bevy::math::IVec2>| {
                     let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Sub<
-                        i32,
-                    >>::sub(_self.into_inner(), rhs)
+                        bevy::math::IVec2,
+                    >>::sub(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::IVec2>, rhs: Val<bevy::math::IVec2>| {
+                |_self: Val<bevy::math::IVec2>, rhs: i32| {
                     let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Sub<
-                        bevy::math::IVec2,
-                    >>::sub(_self.into_inner(), rhs.into_inner())
+                        i32,
+                    >>::sub(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -3153,20 +3153,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::IVec3>, rhs: i32| {
+                |_self: Val<bevy::math::IVec3>, rhs: Val<bevy::math::IVec3>| {
                     let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Div<
-                        i32,
-                    >>::div(_self.into_inner(), rhs)
+                        bevy::math::IVec3,
+                    >>::div(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::IVec3>, rhs: Val<bevy::math::IVec3>| {
+                |_self: Val<bevy::math::IVec3>, rhs: i32| {
                     let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Div<
-                        bevy::math::IVec3,
-                    >>::div(_self.into_inner(), rhs.into_inner())
+                        i32,
+                    >>::div(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -3311,6 +3311,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
+                |_self: Val<bevy::math::IVec3>, rhs: Ref<bevy::math::IVec3>| {
+                    let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Mul<
+                        &bevy::math::IVec3,
+                    >>::mul(_self.into_inner(), &rhs)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
                 |_self: Val<bevy::math::IVec3>, rhs: Val<bevy::math::IVec3>| {
                     let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Mul<
                         bevy::math::IVec3,
@@ -3325,16 +3335,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Mul<
                         i32,
                     >>::mul(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul",
-                |_self: Val<bevy::math::IVec3>, rhs: Ref<bevy::math::IVec3>| {
-                    let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Mul<
-                        &bevy::math::IVec3,
-                    >>::mul(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -3359,20 +3359,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::IVec3>, rhs: Val<bevy::math::IVec3>| {
+                |_self: Val<bevy::math::IVec3>, rhs: Ref<bevy::math::IVec3>| {
                     let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Rem<
-                        bevy::math::IVec3,
-                    >>::rem(_self.into_inner(), rhs.into_inner())
+                        &bevy::math::IVec3,
+                    >>::rem(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::IVec3>, rhs: Ref<bevy::math::IVec3>| {
+                |_self: Val<bevy::math::IVec3>, rhs: Val<bevy::math::IVec3>| {
                     let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Rem<
-                        &bevy::math::IVec3,
-                    >>::rem(_self.into_inner(), &rhs)
+                        bevy::math::IVec3,
+                    >>::rem(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -3657,10 +3657,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "add",
-                |_self: Val<bevy::math::IVec4>, rhs: i32| {
+                |_self: Val<bevy::math::IVec4>, rhs: Ref<bevy::math::IVec4>| {
                     let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Add<
-                        i32,
-                    >>::add(_self.into_inner(), rhs)
+                        &bevy::math::IVec4,
+                    >>::add(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -3677,10 +3677,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "add",
-                |_self: Val<bevy::math::IVec4>, rhs: Ref<bevy::math::IVec4>| {
+                |_self: Val<bevy::math::IVec4>, rhs: i32| {
                     let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Add<
-                        &bevy::math::IVec4,
-                    >>::add(_self.into_inner(), &rhs)
+                        i32,
+                    >>::add(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -3860,20 +3860,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::IVec4>, rhs: i32| {
+                |_self: Val<bevy::math::IVec4>, rhs: Val<bevy::math::IVec4>| {
                     let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Div<
-                        i32,
-                    >>::div(_self.into_inner(), rhs)
+                        bevy::math::IVec4,
+                    >>::div(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::IVec4>, rhs: Val<bevy::math::IVec4>| {
+                |_self: Val<bevy::math::IVec4>, rhs: i32| {
                     let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Div<
-                        bevy::math::IVec4,
-                    >>::div(_self.into_inner(), rhs.into_inner())
+                        i32,
+                    >>::div(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -4070,20 +4070,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::IVec4>, rhs: i32| {
+                |_self: Val<bevy::math::IVec4>, rhs: Val<bevy::math::IVec4>| {
                     let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Rem<
-                        i32,
-                    >>::rem(_self.into_inner(), rhs)
+                        bevy::math::IVec4,
+                    >>::rem(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::IVec4>, rhs: Val<bevy::math::IVec4>| {
+                |_self: Val<bevy::math::IVec4>, rhs: i32| {
                     let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Rem<
-                        bevy::math::IVec4,
-                    >>::rem(_self.into_inner(), rhs.into_inner())
+                        i32,
+                    >>::rem(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -4201,20 +4201,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::IVec4>, rhs: Val<bevy::math::IVec4>| {
+                |_self: Val<bevy::math::IVec4>, rhs: Ref<bevy::math::IVec4>| {
                     let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Sub<
-                        bevy::math::IVec4,
-                    >>::sub(_self.into_inner(), rhs.into_inner())
+                        &bevy::math::IVec4,
+                    >>::sub(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::IVec4>, rhs: Ref<bevy::math::IVec4>| {
+                |_self: Val<bevy::math::IVec4>, rhs: Val<bevy::math::IVec4>| {
                     let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Sub<
-                        &bevy::math::IVec4,
-                    >>::sub(_self.into_inner(), &rhs)
+                        bevy::math::IVec4,
+                    >>::sub(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -4379,20 +4379,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "add",
-                |_self: Val<bevy::math::I64Vec2>, rhs: i64| {
+                |_self: Val<bevy::math::I64Vec2>, rhs: Val<bevy::math::I64Vec2>| {
                     let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Add<
-                        i64,
-                    >>::add(_self.into_inner(), rhs)
+                        bevy::math::I64Vec2,
+                    >>::add(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "add",
-                |_self: Val<bevy::math::I64Vec2>, rhs: Val<bevy::math::I64Vec2>| {
+                |_self: Val<bevy::math::I64Vec2>, rhs: i64| {
                     let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Add<
-                        bevy::math::I64Vec2,
-                    >>::add(_self.into_inner(), rhs.into_inner())
+                        i64,
+                    >>::add(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -4572,20 +4572,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::I64Vec2>, rhs: i64| {
+                |_self: Val<bevy::math::I64Vec2>, rhs: Val<bevy::math::I64Vec2>| {
                     let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Div<
-                        i64,
-                    >>::div(_self.into_inner(), rhs)
+                        bevy::math::I64Vec2,
+                    >>::div(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::I64Vec2>, rhs: Val<bevy::math::I64Vec2>| {
+                |_self: Val<bevy::math::I64Vec2>, rhs: i64| {
                     let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Div<
-                        bevy::math::I64Vec2,
-                    >>::div(_self.into_inner(), rhs.into_inner())
+                        i64,
+                    >>::div(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -4738,10 +4738,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::I64Vec2>, rhs: i64| {
+                |_self: Val<bevy::math::I64Vec2>, rhs: Ref<bevy::math::I64Vec2>| {
                     let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Mul<
-                        i64,
-                    >>::mul(_self.into_inner(), rhs)
+                        &bevy::math::I64Vec2,
+                    >>::mul(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -4758,10 +4758,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::I64Vec2>, rhs: Ref<bevy::math::I64Vec2>| {
+                |_self: Val<bevy::math::I64Vec2>, rhs: i64| {
                     let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Mul<
-                        &bevy::math::I64Vec2,
-                    >>::mul(_self.into_inner(), &rhs)
+                        i64,
+                    >>::mul(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -4817,20 +4817,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::I64Vec2>, rhs: i64| {
+                |_self: Val<bevy::math::I64Vec2>, rhs: Val<bevy::math::I64Vec2>| {
                     let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Rem<
-                        i64,
-                    >>::rem(_self.into_inner(), rhs)
+                        bevy::math::I64Vec2,
+                    >>::rem(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::I64Vec2>, rhs: Val<bevy::math::I64Vec2>| {
+                |_self: Val<bevy::math::I64Vec2>, rhs: i64| {
                     let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Rem<
-                        bevy::math::I64Vec2,
-                    >>::rem(_self.into_inner(), rhs.into_inner())
+                        i64,
+                    >>::rem(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -4959,20 +4959,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::I64Vec2>, rhs: Val<bevy::math::I64Vec2>| {
+                |_self: Val<bevy::math::I64Vec2>, rhs: Ref<bevy::math::I64Vec2>| {
                     let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Sub<
-                        bevy::math::I64Vec2,
-                    >>::sub(_self.into_inner(), rhs.into_inner())
+                        &bevy::math::I64Vec2,
+                    >>::sub(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::I64Vec2>, rhs: Ref<bevy::math::I64Vec2>| {
+                |_self: Val<bevy::math::I64Vec2>, rhs: Val<bevy::math::I64Vec2>| {
                     let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Sub<
-                        &bevy::math::I64Vec2,
-                    >>::sub(_self.into_inner(), &rhs)
+                        bevy::math::I64Vec2,
+                    >>::sub(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -5095,6 +5095,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "add",
+                |_self: Val<bevy::math::I64Vec3>, rhs: Ref<bevy::math::I64Vec3>| {
+                    let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Add<
+                        &bevy::math::I64Vec3,
+                    >>::add(_self.into_inner(), &rhs)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "add",
                 |_self: Val<bevy::math::I64Vec3>, rhs: Val<bevy::math::I64Vec3>| {
                     let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Add<
                         bevy::math::I64Vec3,
@@ -5109,16 +5119,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Add<
                         i64,
                     >>::add(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "add",
-                |_self: Val<bevy::math::I64Vec3>, rhs: Ref<bevy::math::I64Vec3>| {
-                    let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Add<
-                        &bevy::math::I64Vec3,
-                    >>::add(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -5309,10 +5309,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::I64Vec3>, rhs: i64| {
+                |_self: Val<bevy::math::I64Vec3>, rhs: Ref<bevy::math::I64Vec3>| {
                     let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Div<
-                        i64,
-                    >>::div(_self.into_inner(), rhs)
+                        &bevy::math::I64Vec3,
+                    >>::div(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -5329,10 +5329,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::I64Vec3>, rhs: Ref<bevy::math::I64Vec3>| {
+                |_self: Val<bevy::math::I64Vec3>, rhs: i64| {
                     let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Div<
-                        &bevy::math::I64Vec3,
-                    >>::div(_self.into_inner(), &rhs)
+                        i64,
+                    >>::div(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -5485,6 +5485,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
+                |_self: Val<bevy::math::I64Vec3>, rhs: Ref<bevy::math::I64Vec3>| {
+                    let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Mul<
+                        &bevy::math::I64Vec3,
+                    >>::mul(_self.into_inner(), &rhs)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
                 |_self: Val<bevy::math::I64Vec3>, rhs: Val<bevy::math::I64Vec3>| {
                     let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Mul<
                         bevy::math::I64Vec3,
@@ -5499,16 +5509,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Mul<
                         i64,
                     >>::mul(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul",
-                |_self: Val<bevy::math::I64Vec3>, rhs: Ref<bevy::math::I64Vec3>| {
-                    let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Mul<
-                        &bevy::math::I64Vec3,
-                    >>::mul(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -5537,10 +5537,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::I64Vec3>, rhs: i64| {
+                |_self: Val<bevy::math::I64Vec3>, rhs: Ref<bevy::math::I64Vec3>| {
                     let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Rem<
-                        i64,
-                    >>::rem(_self.into_inner(), rhs)
+                        &bevy::math::I64Vec3,
+                    >>::rem(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -5557,10 +5557,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::I64Vec3>, rhs: Ref<bevy::math::I64Vec3>| {
+                |_self: Val<bevy::math::I64Vec3>, rhs: i64| {
                     let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Rem<
-                        &bevy::math::I64Vec3,
-                    >>::rem(_self.into_inner(), &rhs)
+                        i64,
+                    >>::rem(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -5688,20 +5688,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::I64Vec3>, rhs: i64| {
+                |_self: Val<bevy::math::I64Vec3>, rhs: Val<bevy::math::I64Vec3>| {
                     let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Sub<
-                        i64,
-                    >>::sub(_self.into_inner(), rhs)
+                        bevy::math::I64Vec3,
+                    >>::sub(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::I64Vec3>, rhs: Val<bevy::math::I64Vec3>| {
+                |_self: Val<bevy::math::I64Vec3>, rhs: i64| {
                     let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Sub<
-                        bevy::math::I64Vec3,
-                    >>::sub(_self.into_inner(), rhs.into_inner())
+                        i64,
+                    >>::sub(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -5835,6 +5835,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "add",
+                |_self: Val<bevy::math::I64Vec4>, rhs: Ref<bevy::math::I64Vec4>| {
+                    let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Add<
+                        &bevy::math::I64Vec4,
+                    >>::add(_self.into_inner(), &rhs)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "add",
                 |_self: Val<bevy::math::I64Vec4>, rhs: Val<bevy::math::I64Vec4>| {
                     let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Add<
                         bevy::math::I64Vec4,
@@ -5849,16 +5859,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Add<
                         i64,
                     >>::add(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "add",
-                |_self: Val<bevy::math::I64Vec4>, rhs: Ref<bevy::math::I64Vec4>| {
-                    let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Add<
-                        &bevy::math::I64Vec4,
-                    >>::add(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -6028,16 +6028,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::I64Vec4>, rhs: i64| {
-                    let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Div<
-                        i64,
-                    >>::div(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "div",
                 |_self: Val<bevy::math::I64Vec4>, rhs: Ref<bevy::math::I64Vec4>| {
                     let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Div<
                         &bevy::math::I64Vec4,
@@ -6052,6 +6042,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Div<
                         bevy::math::I64Vec4,
                     >>::div(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "div",
+                |_self: Val<bevy::math::I64Vec4>, rhs: i64| {
+                    let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Div<
+                        i64,
+                    >>::div(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -6203,20 +6203,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::I64Vec4>, rhs: i64| {
+                |_self: Val<bevy::math::I64Vec4>, rhs: Val<bevy::math::I64Vec4>| {
                     let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Mul<
-                        i64,
-                    >>::mul(_self.into_inner(), rhs)
+                        bevy::math::I64Vec4,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::I64Vec4>, rhs: Val<bevy::math::I64Vec4>| {
+                |_self: Val<bevy::math::I64Vec4>, rhs: i64| {
                     let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Mul<
-                        bevy::math::I64Vec4,
-                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        i64,
+                    >>::mul(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -6246,16 +6246,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::I64Vec4>, rhs: i64| {
-                    let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Rem<
-                        i64,
-                    >>::rem(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "rem",
                 |_self: Val<bevy::math::I64Vec4>, rhs: Ref<bevy::math::I64Vec4>| {
                     let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Rem<
                         &bevy::math::I64Vec4,
@@ -6270,6 +6260,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Rem<
                         bevy::math::I64Vec4,
                     >>::rem(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "rem",
+                |_self: Val<bevy::math::I64Vec4>, rhs: i64| {
+                    let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Rem<
+                        i64,
+                    >>::rem(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -6387,16 +6387,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::I64Vec4>, rhs: i64| {
-                    let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Sub<
-                        i64,
-                    >>::sub(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "sub",
                 |_self: Val<bevy::math::I64Vec4>, rhs: Ref<bevy::math::I64Vec4>| {
                     let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Sub<
                         &bevy::math::I64Vec4,
@@ -6411,6 +6401,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Sub<
                         bevy::math::I64Vec4,
                     >>::sub(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "sub",
+                |_self: Val<bevy::math::I64Vec4>, rhs: i64| {
+                    let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Sub<
+                        i64,
+                    >>::sub(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -6545,6 +6545,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
         NamespaceBuilder::<::bevy::math::UVec2>::new(world)
             .register(
                 "add",
+                |_self: Val<bevy::math::UVec2>, rhs: Ref<bevy::math::UVec2>| {
+                    let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Add<
+                        &bevy::math::UVec2,
+                    >>::add(_self.into_inner(), &rhs)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "add",
                 |_self: Val<bevy::math::UVec2>, rhs: Val<bevy::math::UVec2>| {
                     let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Add<
                         bevy::math::UVec2,
@@ -6559,16 +6569,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Add<
                         u32,
                     >>::add(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "add",
-                |_self: Val<bevy::math::UVec2>, rhs: Ref<bevy::math::UVec2>| {
-                    let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Add<
-                        &bevy::math::UVec2,
-                    >>::add(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -6874,20 +6874,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::UVec2>, rhs: Val<bevy::math::UVec2>| {
+                |_self: Val<bevy::math::UVec2>, rhs: Ref<bevy::math::UVec2>| {
                     let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Mul<
-                        bevy::math::UVec2,
-                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        &bevy::math::UVec2,
+                    >>::mul(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::UVec2>, rhs: Ref<bevy::math::UVec2>| {
+                |_self: Val<bevy::math::UVec2>, rhs: Val<bevy::math::UVec2>| {
                     let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Mul<
-                        &bevy::math::UVec2,
-                    >>::mul(_self.into_inner(), &rhs)
+                        bevy::math::UVec2,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -6912,20 +6912,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::UVec2>, rhs: Val<bevy::math::UVec2>| {
+                |_self: Val<bevy::math::UVec2>, rhs: Ref<bevy::math::UVec2>| {
                     let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Rem<
-                        bevy::math::UVec2,
-                    >>::rem(_self.into_inner(), rhs.into_inner())
+                        &bevy::math::UVec2,
+                    >>::rem(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::UVec2>, rhs: Ref<bevy::math::UVec2>| {
+                |_self: Val<bevy::math::UVec2>, rhs: Val<bevy::math::UVec2>| {
                     let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Rem<
-                        &bevy::math::UVec2,
-                    >>::rem(_self.into_inner(), &rhs)
+                        bevy::math::UVec2,
+                    >>::rem(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -7021,16 +7021,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::UVec2>, rhs: u32| {
-                    let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Sub<
-                        u32,
-                    >>::sub(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "sub",
                 |_self: Val<bevy::math::UVec2>, rhs: Ref<bevy::math::UVec2>| {
                     let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Sub<
                         &bevy::math::UVec2,
@@ -7045,6 +7035,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Sub<
                         bevy::math::UVec2,
                     >>::sub(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "sub",
+                |_self: Val<bevy::math::UVec2>, rhs: u32| {
+                    let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Sub<
+                        u32,
+                    >>::sub(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -7146,20 +7146,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "add",
-                |_self: Val<bevy::math::UVec3>, rhs: u32| {
+                |_self: Val<bevy::math::UVec3>, rhs: Val<bevy::math::UVec3>| {
                     let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Add<
-                        u32,
-                    >>::add(_self.into_inner(), rhs)
+                        bevy::math::UVec3,
+                    >>::add(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "add",
-                |_self: Val<bevy::math::UVec3>, rhs: Val<bevy::math::UVec3>| {
+                |_self: Val<bevy::math::UVec3>, rhs: u32| {
                     let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Add<
-                        bevy::math::UVec3,
-                    >>::add(_self.into_inner(), rhs.into_inner())
+                        u32,
+                    >>::add(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -7339,6 +7339,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "div",
+                |_self: Val<bevy::math::UVec3>, rhs: Ref<bevy::math::UVec3>| {
+                    let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Div<
+                        &bevy::math::UVec3,
+                    >>::div(_self.into_inner(), &rhs)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "div",
                 |_self: Val<bevy::math::UVec3>, rhs: Val<bevy::math::UVec3>| {
                     let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Div<
                         bevy::math::UVec3,
@@ -7353,16 +7363,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Div<
                         u32,
                     >>::div(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "div",
-                |_self: Val<bevy::math::UVec3>, rhs: Ref<bevy::math::UVec3>| {
-                    let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Div<
-                        &bevy::math::UVec3,
-                    >>::div(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -7496,16 +7496,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::UVec3>, rhs: u32| {
-                    let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Mul<
-                        u32,
-                    >>::mul(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul",
                 |_self: Val<bevy::math::UVec3>, rhs: Val<bevy::math::UVec3>| {
                     let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Mul<
                         bevy::math::UVec3,
@@ -7515,19 +7505,19 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .register(
-                "new",
-                |x: u32, y: u32, z: u32| {
-                    let output: Val<bevy::math::UVec3> = bevy::math::UVec3::new(x, y, z)
+                "mul",
+                |_self: Val<bevy::math::UVec3>, rhs: u32| {
+                    let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Mul<
+                        u32,
+                    >>::mul(_self.into_inner(), rhs)
                         .into();
                     output
                 },
             )
             .register(
-                "rem",
-                |_self: Val<bevy::math::UVec3>, rhs: u32| {
-                    let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Rem<
-                        u32,
-                    >>::rem(_self.into_inner(), rhs)
+                "new",
+                |x: u32, y: u32, z: u32| {
+                    let output: Val<bevy::math::UVec3> = bevy::math::UVec3::new(x, y, z)
                         .into();
                     output
                 },
@@ -7548,6 +7538,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Rem<
                         bevy::math::UVec3,
                     >>::rem(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "rem",
+                |_self: Val<bevy::math::UVec3>, rhs: u32| {
+                    let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Rem<
+                        u32,
+                    >>::rem(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -7643,20 +7643,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::UVec3>, rhs: u32| {
+                |_self: Val<bevy::math::UVec3>, rhs: Val<bevy::math::UVec3>| {
                     let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Sub<
-                        u32,
-                    >>::sub(_self.into_inner(), rhs)
+                        bevy::math::UVec3,
+                    >>::sub(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::UVec3>, rhs: Val<bevy::math::UVec3>| {
+                |_self: Val<bevy::math::UVec3>, rhs: u32| {
                     let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Sub<
-                        bevy::math::UVec3,
-                    >>::sub(_self.into_inner(), rhs.into_inner())
+                        u32,
+                    >>::sub(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -7769,6 +7769,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
         NamespaceBuilder::<::bevy::math::UVec4>::new(world)
             .register(
                 "add",
+                |_self: Val<bevy::math::UVec4>, rhs: Ref<bevy::math::UVec4>| {
+                    let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Add<
+                        &bevy::math::UVec4,
+                    >>::add(_self.into_inner(), &rhs)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "add",
                 |_self: Val<bevy::math::UVec4>, rhs: Val<bevy::math::UVec4>| {
                     let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Add<
                         bevy::math::UVec4,
@@ -7783,16 +7793,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Add<
                         u32,
                     >>::add(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "add",
-                |_self: Val<bevy::math::UVec4>, rhs: Ref<bevy::math::UVec4>| {
-                    let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Add<
-                        &bevy::math::UVec4,
-                    >>::add(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -7961,20 +7961,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::UVec4>, rhs: u32| {
+                |_self: Val<bevy::math::UVec4>, rhs: Val<bevy::math::UVec4>| {
                     let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Div<
-                        u32,
-                    >>::div(_self.into_inner(), rhs)
+                        bevy::math::UVec4,
+                    >>::div(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::UVec4>, rhs: Val<bevy::math::UVec4>| {
+                |_self: Val<bevy::math::UVec4>, rhs: u32| {
                     let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Div<
-                        bevy::math::UVec4,
-                    >>::div(_self.into_inner(), rhs.into_inner())
+                        u32,
+                    >>::div(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -8087,10 +8087,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::UVec4>, rhs: u32| {
+                |_self: Val<bevy::math::UVec4>, rhs: Ref<bevy::math::UVec4>| {
                     let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Mul<
-                        u32,
-                    >>::mul(_self.into_inner(), rhs)
+                        &bevy::math::UVec4,
+                    >>::mul(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -8107,10 +8107,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::UVec4>, rhs: Ref<bevy::math::UVec4>| {
+                |_self: Val<bevy::math::UVec4>, rhs: u32| {
                     let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Mul<
-                        &bevy::math::UVec4,
-                    >>::mul(_self.into_inner(), &rhs)
+                        u32,
+                    >>::mul(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -8124,6 +8124,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                             z,
                             w,
                         )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "rem",
+                |_self: Val<bevy::math::UVec4>, rhs: Ref<bevy::math::UVec4>| {
+                    let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Rem<
+                        &bevy::math::UVec4,
+                    >>::rem(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -8144,16 +8154,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Rem<
                         u32,
                     >>::rem(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "rem",
-                |_self: Val<bevy::math::UVec4>, rhs: Ref<bevy::math::UVec4>| {
-                    let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Rem<
-                        &bevy::math::UVec4,
-                    >>::rem(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -8249,20 +8249,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::UVec4>, rhs: u32| {
+                |_self: Val<bevy::math::UVec4>, rhs: Val<bevy::math::UVec4>| {
                     let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Sub<
-                        u32,
-                    >>::sub(_self.into_inner(), rhs)
+                        bevy::math::UVec4,
+                    >>::sub(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::UVec4>, rhs: Val<bevy::math::UVec4>| {
+                |_self: Val<bevy::math::UVec4>, rhs: u32| {
                     let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Sub<
-                        bevy::math::UVec4,
-                    >>::sub(_self.into_inner(), rhs.into_inner())
+                        u32,
+                    >>::sub(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -8386,16 +8386,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
         NamespaceBuilder::<::bevy::math::U64Vec2>::new(world)
             .register(
                 "add",
-                |_self: Val<bevy::math::U64Vec2>, rhs: u64| {
-                    let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Add<
-                        u64,
-                    >>::add(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "add",
                 |_self: Val<bevy::math::U64Vec2>, rhs: Ref<bevy::math::U64Vec2>| {
                     let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Add<
                         &bevy::math::U64Vec2,
@@ -8410,6 +8400,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Add<
                         bevy::math::U64Vec2,
                     >>::add(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "add",
+                |_self: Val<bevy::math::U64Vec2>, rhs: u64| {
+                    let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Add<
+                        u64,
+                    >>::add(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -8568,20 +8568,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::U64Vec2>, rhs: Val<bevy::math::U64Vec2>| {
+                |_self: Val<bevy::math::U64Vec2>, rhs: Ref<bevy::math::U64Vec2>| {
                     let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Div<
-                        bevy::math::U64Vec2,
-                    >>::div(_self.into_inner(), rhs.into_inner())
+                        &bevy::math::U64Vec2,
+                    >>::div(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::U64Vec2>, rhs: Ref<bevy::math::U64Vec2>| {
+                |_self: Val<bevy::math::U64Vec2>, rhs: Val<bevy::math::U64Vec2>| {
                     let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Div<
-                        &bevy::math::U64Vec2,
-                    >>::div(_self.into_inner(), &rhs)
+                        bevy::math::U64Vec2,
+                    >>::div(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -8723,20 +8723,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::U64Vec2>, rhs: Val<bevy::math::U64Vec2>| {
+                |_self: Val<bevy::math::U64Vec2>, rhs: Ref<bevy::math::U64Vec2>| {
                     let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Mul<
-                        bevy::math::U64Vec2,
-                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        &bevy::math::U64Vec2,
+                    >>::mul(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::U64Vec2>, rhs: Ref<bevy::math::U64Vec2>| {
+                |_self: Val<bevy::math::U64Vec2>, rhs: Val<bevy::math::U64Vec2>| {
                     let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Mul<
-                        &bevy::math::U64Vec2,
-                    >>::mul(_self.into_inner(), &rhs)
+                        bevy::math::U64Vec2,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -8761,20 +8761,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::U64Vec2>, rhs: Val<bevy::math::U64Vec2>| {
+                |_self: Val<bevy::math::U64Vec2>, rhs: Ref<bevy::math::U64Vec2>| {
                     let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Rem<
-                        bevy::math::U64Vec2,
-                    >>::rem(_self.into_inner(), rhs.into_inner())
+                        &bevy::math::U64Vec2,
+                    >>::rem(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::U64Vec2>, rhs: Ref<bevy::math::U64Vec2>| {
+                |_self: Val<bevy::math::U64Vec2>, rhs: Val<bevy::math::U64Vec2>| {
                     let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Rem<
-                        &bevy::math::U64Vec2,
-                    >>::rem(_self.into_inner(), &rhs)
+                        bevy::math::U64Vec2,
+                    >>::rem(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -8870,16 +8870,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::U64Vec2>, rhs: u64| {
-                    let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Sub<
-                        u64,
-                    >>::sub(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "sub",
                 |_self: Val<bevy::math::U64Vec2>, rhs: Ref<bevy::math::U64Vec2>| {
                     let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Sub<
                         &bevy::math::U64Vec2,
@@ -8894,6 +8884,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Sub<
                         bevy::math::U64Vec2,
                     >>::sub(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "sub",
+                |_self: Val<bevy::math::U64Vec2>, rhs: u64| {
+                    let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Sub<
+                        u64,
+                    >>::sub(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -8985,16 +8985,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
         NamespaceBuilder::<::bevy::math::U64Vec3>::new(world)
             .register(
                 "add",
-                |_self: Val<bevy::math::U64Vec3>, rhs: u64| {
-                    let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Add<
-                        u64,
-                    >>::add(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "add",
                 |_self: Val<bevy::math::U64Vec3>, rhs: Ref<bevy::math::U64Vec3>| {
                     let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Add<
                         &bevy::math::U64Vec3,
@@ -9009,6 +8999,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Add<
                         bevy::math::U64Vec3,
                     >>::add(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "add",
+                |_self: Val<bevy::math::U64Vec3>, rhs: u64| {
+                    let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Add<
+                        u64,
+                    >>::add(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -9198,20 +9198,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::U64Vec3>, rhs: u64| {
+                |_self: Val<bevy::math::U64Vec3>, rhs: Val<bevy::math::U64Vec3>| {
                     let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Div<
-                        u64,
-                    >>::div(_self.into_inner(), rhs)
+                        bevy::math::U64Vec3,
+                    >>::div(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::U64Vec3>, rhs: Val<bevy::math::U64Vec3>| {
+                |_self: Val<bevy::math::U64Vec3>, rhs: u64| {
                     let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Div<
-                        bevy::math::U64Vec3,
-                    >>::div(_self.into_inner(), rhs.into_inner())
+                        u64,
+                    >>::div(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -9353,20 +9353,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::U64Vec3>, rhs: u64| {
+                |_self: Val<bevy::math::U64Vec3>, rhs: Val<bevy::math::U64Vec3>| {
                     let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Mul<
-                        u64,
-                    >>::mul(_self.into_inner(), rhs)
+                        bevy::math::U64Vec3,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::U64Vec3>, rhs: Val<bevy::math::U64Vec3>| {
+                |_self: Val<bevy::math::U64Vec3>, rhs: u64| {
                     let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Mul<
-                        bevy::math::U64Vec3,
-                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        u64,
+                    >>::mul(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -9379,16 +9379,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                             y,
                             z,
                         )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "rem",
-                |_self: Val<bevy::math::U64Vec3>, rhs: u64| {
-                    let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Rem<
-                        u64,
-                    >>::rem(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -9409,6 +9399,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Rem<
                         bevy::math::U64Vec3,
                     >>::rem(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "rem",
+                |_self: Val<bevy::math::U64Vec3>, rhs: u64| {
+                    let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Rem<
+                        u64,
+                    >>::rem(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -9494,6 +9494,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "sub",
+                |_self: Val<bevy::math::U64Vec3>, rhs: Ref<bevy::math::U64Vec3>| {
+                    let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Sub<
+                        &bevy::math::U64Vec3,
+                    >>::sub(_self.into_inner(), &rhs)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "sub",
                 |_self: Val<bevy::math::U64Vec3>, rhs: Val<bevy::math::U64Vec3>| {
                     let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Sub<
                         bevy::math::U64Vec3,
@@ -9508,16 +9518,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Sub<
                         u64,
                     >>::sub(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "sub",
-                |_self: Val<bevy::math::U64Vec3>, rhs: Ref<bevy::math::U64Vec3>| {
-                    let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Sub<
-                        &bevy::math::U64Vec3,
-                    >>::sub(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -9630,6 +9630,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
         NamespaceBuilder::<::bevy::math::U64Vec4>::new(world)
             .register(
                 "add",
+                |_self: Val<bevy::math::U64Vec4>, rhs: Ref<bevy::math::U64Vec4>| {
+                    let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Add<
+                        &bevy::math::U64Vec4,
+                    >>::add(_self.into_inner(), &rhs)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "add",
                 |_self: Val<bevy::math::U64Vec4>, rhs: Val<bevy::math::U64Vec4>| {
                     let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Add<
                         bevy::math::U64Vec4,
@@ -9644,16 +9654,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Add<
                         u64,
                     >>::add(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "add",
-                |_self: Val<bevy::math::U64Vec4>, rhs: Ref<bevy::math::U64Vec4>| {
-                    let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Add<
-                        &bevy::math::U64Vec4,
-                    >>::add(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -9956,6 +9956,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
+                |_self: Val<bevy::math::U64Vec4>, rhs: Ref<bevy::math::U64Vec4>| {
+                    let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Mul<
+                        &bevy::math::U64Vec4,
+                    >>::mul(_self.into_inner(), &rhs)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
                 |_self: Val<bevy::math::U64Vec4>, rhs: Val<bevy::math::U64Vec4>| {
                     let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Mul<
                         bevy::math::U64Vec4,
@@ -9975,16 +9985,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 },
             )
             .register(
-                "mul",
-                |_self: Val<bevy::math::U64Vec4>, rhs: Ref<bevy::math::U64Vec4>| {
-                    let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Mul<
-                        &bevy::math::U64Vec4,
-                    >>::mul(_self.into_inner(), &rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
                 "new",
                 |x: u64, y: u64, z: u64, w: u64| {
                     let output: Val<bevy::math::U64Vec4> = bevy::math::U64Vec4::new(
@@ -9993,6 +9993,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                             z,
                             w,
                         )
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "rem",
+                |_self: Val<bevy::math::U64Vec4>, rhs: Ref<bevy::math::U64Vec4>| {
+                    let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Rem<
+                        &bevy::math::U64Vec4,
+                    >>::rem(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -10013,16 +10023,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Rem<
                         u64,
                     >>::rem(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "rem",
-                |_self: Val<bevy::math::U64Vec4>, rhs: Ref<bevy::math::U64Vec4>| {
-                    let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Rem<
-                        &bevy::math::U64Vec4,
-                    >>::rem(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -10108,16 +10108,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::U64Vec4>, rhs: u64| {
-                    let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Sub<
-                        u64,
-                    >>::sub(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "sub",
                 |_self: Val<bevy::math::U64Vec4>, rhs: Ref<bevy::math::U64Vec4>| {
                     let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Sub<
                         &bevy::math::U64Vec4,
@@ -10132,6 +10122,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Sub<
                         bevy::math::U64Vec4,
                     >>::sub(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "sub",
+                |_self: Val<bevy::math::U64Vec4>, rhs: u64| {
+                    let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Sub<
+                        u64,
+                    >>::sub(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -10291,20 +10291,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "add",
-                |_self: Val<bevy::math::Vec2>, rhs: f32| {
+                |_self: Val<bevy::math::Vec2>, rhs: Val<bevy::math::Vec2>| {
                     let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Add<
-                        f32,
-                    >>::add(_self.into_inner(), rhs)
+                        bevy::math::Vec2,
+                    >>::add(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "add",
-                |_self: Val<bevy::math::Vec2>, rhs: Val<bevy::math::Vec2>| {
+                |_self: Val<bevy::math::Vec2>, rhs: f32| {
                     let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Add<
-                        bevy::math::Vec2,
-                    >>::add(_self.into_inner(), rhs.into_inner())
+                        f32,
+                    >>::add(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -10552,20 +10552,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::Vec2>, rhs: Val<bevy::math::Vec2>| {
+                |_self: Val<bevy::math::Vec2>, rhs: Ref<bevy::math::Vec2>| {
                     let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Div<
-                        bevy::math::Vec2,
-                    >>::div(_self.into_inner(), rhs.into_inner())
+                        &bevy::math::Vec2,
+                    >>::div(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::Vec2>, rhs: Ref<bevy::math::Vec2>| {
+                |_self: Val<bevy::math::Vec2>, rhs: Val<bevy::math::Vec2>| {
                     let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Div<
-                        &bevy::math::Vec2,
-                    >>::div(_self.into_inner(), &rhs)
+                        bevy::math::Vec2,
+                    >>::div(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -10867,16 +10867,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::Vec2>, rhs: f32| {
-                    let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Mul<
-                        f32,
-                    >>::mul(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul",
                 |_self: Val<bevy::math::Vec2>, rhs: Ref<bevy::math::Vec2>| {
                     let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Mul<
                         &bevy::math::Vec2,
@@ -10891,6 +10881,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Mul<
                         bevy::math::Vec2,
                     >>::mul(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
+                |_self: Val<bevy::math::Vec2>, rhs: f32| {
+                    let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Mul<
+                        f32,
+                    >>::mul(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -11081,20 +11081,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::Vec2>, rhs: f32| {
+                |_self: Val<bevy::math::Vec2>, rhs: Val<bevy::math::Vec2>| {
                     let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Rem<
-                        f32,
-                    >>::rem(_self.into_inner(), rhs)
+                        bevy::math::Vec2,
+                    >>::rem(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::Vec2>, rhs: Val<bevy::math::Vec2>| {
+                |_self: Val<bevy::math::Vec2>, rhs: f32| {
                     let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Rem<
-                        bevy::math::Vec2,
-                    >>::rem(_self.into_inner(), rhs.into_inner())
+                        f32,
+                    >>::rem(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -11183,20 +11183,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::Vec2>, rhs: Val<bevy::math::Vec2>| {
+                |_self: Val<bevy::math::Vec2>, rhs: Ref<bevy::math::Vec2>| {
                     let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Sub<
-                        bevy::math::Vec2,
-                    >>::sub(_self.into_inner(), rhs.into_inner())
+                        &bevy::math::Vec2,
+                    >>::sub(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::Vec2>, rhs: Ref<bevy::math::Vec2>| {
+                |_self: Val<bevy::math::Vec2>, rhs: Val<bevy::math::Vec2>| {
                     let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Sub<
-                        &bevy::math::Vec2,
-                    >>::sub(_self.into_inner(), &rhs)
+                        bevy::math::Vec2,
+                    >>::sub(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -11297,20 +11297,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "add",
-                |_self: Val<bevy::math::Vec3A>, rhs: f32| {
+                |_self: Val<bevy::math::Vec3A>, rhs: Val<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Add<
-                        f32,
-                    >>::add(_self.into_inner(), rhs)
+                        bevy::math::Vec3A,
+                    >>::add(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "add",
-                |_self: Val<bevy::math::Vec3A>, rhs: Val<bevy::math::Vec3A>| {
+                |_self: Val<bevy::math::Vec3A>, rhs: f32| {
                     let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Add<
-                        bevy::math::Vec3A,
-                    >>::add(_self.into_inner(), rhs.into_inner())
+                        f32,
+                    >>::add(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -11578,6 +11578,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "div",
+                |_self: Val<bevy::math::Vec3A>, rhs: Ref<bevy::math::Vec3A>| {
+                    let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Div<
+                        &bevy::math::Vec3A,
+                    >>::div(_self.into_inner(), &rhs)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "div",
                 |_self: Val<bevy::math::Vec3A>, rhs: Val<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Div<
                         bevy::math::Vec3A,
@@ -11592,16 +11602,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Div<
                         f32,
                     >>::div(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "div",
-                |_self: Val<bevy::math::Vec3A>, rhs: Ref<bevy::math::Vec3A>| {
-                    let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Div<
-                        &bevy::math::Vec3A,
-                    >>::div(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -11893,10 +11893,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::Vec3A>, rhs: f32| {
+                |_self: Val<bevy::math::Vec3A>, rhs: Ref<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Mul<
-                        f32,
-                    >>::mul(_self.into_inner(), rhs)
+                        &bevy::math::Vec3A,
+                    >>::mul(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -11913,10 +11913,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::Vec3A>, rhs: Ref<bevy::math::Vec3A>| {
+                |_self: Val<bevy::math::Vec3A>, rhs: f32| {
                     let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Mul<
-                        &bevy::math::Vec3A,
-                    >>::mul(_self.into_inner(), &rhs)
+                        f32,
+                    >>::mul(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -12080,16 +12080,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::Vec3A>, rhs: f32| {
-                    let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Rem<
-                        f32,
-                    >>::rem(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "rem",
                 |_self: Val<bevy::math::Vec3A>, rhs: Ref<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Rem<
                         &bevy::math::Vec3A,
@@ -12104,6 +12094,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Rem<
                         bevy::math::Vec3A,
                     >>::rem(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "rem",
+                |_self: Val<bevy::math::Vec3A>, rhs: f32| {
+                    let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Rem<
+                        f32,
+                    >>::rem(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -12165,10 +12165,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::Vec3A>, rhs: f32| {
+                |_self: Val<bevy::math::Vec3A>, rhs: Ref<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Sub<
-                        f32,
-                    >>::sub(_self.into_inner(), rhs)
+                        &bevy::math::Vec3A,
+                    >>::sub(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -12185,10 +12185,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "sub",
-                |_self: Val<bevy::math::Vec3A>, rhs: Ref<bevy::math::Vec3A>| {
+                |_self: Val<bevy::math::Vec3A>, rhs: f32| {
                     let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Sub<
-                        &bevy::math::Vec3A,
-                    >>::sub(_self.into_inner(), &rhs)
+                        f32,
+                    >>::sub(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -12825,10 +12825,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::Vec4>, rhs: f32| {
+                |_self: Val<bevy::math::Vec4>, rhs: Ref<bevy::math::Vec4>| {
                     let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Mul<
-                        f32,
-                    >>::mul(_self.into_inner(), rhs)
+                        &bevy::math::Vec4,
+                    >>::mul(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -12845,10 +12845,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::Vec4>, rhs: Ref<bevy::math::Vec4>| {
+                |_self: Val<bevy::math::Vec4>, rhs: f32| {
                     let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Mul<
-                        &bevy::math::Vec4,
-                    >>::mul(_self.into_inner(), &rhs)
+                        f32,
+                    >>::mul(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -13008,16 +13008,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::Vec4>, rhs: f32| {
-                    let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Rem<
-                        f32,
-                    >>::rem(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "rem",
                 |_self: Val<bevy::math::Vec4>, rhs: Ref<bevy::math::Vec4>| {
                     let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Rem<
                         &bevy::math::Vec4,
@@ -13032,6 +13022,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Rem<
                         bevy::math::Vec4,
                     >>::rem(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "rem",
+                |_self: Val<bevy::math::Vec4>, rhs: f32| {
+                    let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Rem<
+                        f32,
+                    >>::rem(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -13093,6 +13093,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "sub",
+                |_self: Val<bevy::math::Vec4>, rhs: Ref<bevy::math::Vec4>| {
+                    let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Sub<
+                        &bevy::math::Vec4,
+                    >>::sub(_self.into_inner(), &rhs)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "sub",
                 |_self: Val<bevy::math::Vec4>, rhs: Val<bevy::math::Vec4>| {
                     let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Sub<
                         bevy::math::Vec4,
@@ -13107,16 +13117,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Sub<
                         f32,
                     >>::sub(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "sub",
-                |_self: Val<bevy::math::Vec4>, rhs: Ref<bevy::math::Vec4>| {
-                    let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Sub<
-                        &bevy::math::Vec4,
-                    >>::sub(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -13502,6 +13502,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "add",
+                |_self: Val<bevy::math::DVec2>, rhs: Ref<bevy::math::DVec2>| {
+                    let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Add<
+                        &bevy::math::DVec2,
+                    >>::add(_self.into_inner(), &rhs)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "add",
                 |_self: Val<bevy::math::DVec2>, rhs: Val<bevy::math::DVec2>| {
                     let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Add<
                         bevy::math::DVec2,
@@ -13516,16 +13526,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Add<
                         f64,
                     >>::add(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "add",
-                |_self: Val<bevy::math::DVec2>, rhs: Ref<bevy::math::DVec2>| {
-                    let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Add<
-                        &bevy::math::DVec2,
-                    >>::add(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -13773,20 +13773,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::DVec2>, rhs: Val<bevy::math::DVec2>| {
+                |_self: Val<bevy::math::DVec2>, rhs: Ref<bevy::math::DVec2>| {
                     let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Div<
-                        bevy::math::DVec2,
-                    >>::div(_self.into_inner(), rhs.into_inner())
+                        &bevy::math::DVec2,
+                    >>::div(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::DVec2>, rhs: Ref<bevy::math::DVec2>| {
+                |_self: Val<bevy::math::DVec2>, rhs: Val<bevy::math::DVec2>| {
                     let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Div<
-                        &bevy::math::DVec2,
-                    >>::div(_self.into_inner(), &rhs)
+                        bevy::math::DVec2,
+                    >>::div(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -14088,20 +14088,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::DVec2>, rhs: Val<bevy::math::DVec2>| {
+                |_self: Val<bevy::math::DVec2>, rhs: Ref<bevy::math::DVec2>| {
                     let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Mul<
-                        bevy::math::DVec2,
-                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        &bevy::math::DVec2,
+                    >>::mul(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::DVec2>, rhs: Ref<bevy::math::DVec2>| {
+                |_self: Val<bevy::math::DVec2>, rhs: Val<bevy::math::DVec2>| {
                     let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Mul<
-                        &bevy::math::DVec2,
-                    >>::mul(_self.into_inner(), &rhs)
+                        bevy::math::DVec2,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -14296,16 +14296,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::DVec2>, rhs: f64| {
-                    let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Rem<
-                        f64,
-                    >>::rem(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "rem",
                 |_self: Val<bevy::math::DVec2>, rhs: Ref<bevy::math::DVec2>| {
                     let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Rem<
                         &bevy::math::DVec2,
@@ -14320,6 +14310,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Rem<
                         bevy::math::DVec2,
                     >>::rem(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "rem",
+                |_self: Val<bevy::math::DVec2>, rhs: f64| {
+                    let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Rem<
+                        f64,
+                    >>::rem(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -14512,6 +14512,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "add",
+                |_self: Val<bevy::math::DVec3>, rhs: Ref<bevy::math::DVec3>| {
+                    let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Add<
+                        &bevy::math::DVec3,
+                    >>::add(_self.into_inner(), &rhs)
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "add",
                 |_self: Val<bevy::math::DVec3>, rhs: Val<bevy::math::DVec3>| {
                     let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Add<
                         bevy::math::DVec3,
@@ -14526,16 +14536,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Add<
                         f64,
                     >>::add(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "add",
-                |_self: Val<bevy::math::DVec3>, rhs: Ref<bevy::math::DVec3>| {
-                    let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Add<
-                        &bevy::math::DVec3,
-                    >>::add(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -14823,20 +14823,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::DVec3>, rhs: f64| {
+                |_self: Val<bevy::math::DVec3>, rhs: Val<bevy::math::DVec3>| {
                     let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Div<
-                        f64,
-                    >>::div(_self.into_inner(), rhs)
+                        bevy::math::DVec3,
+                    >>::div(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "div",
-                |_self: Val<bevy::math::DVec3>, rhs: Val<bevy::math::DVec3>| {
+                |_self: Val<bevy::math::DVec3>, rhs: f64| {
                     let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Div<
-                        bevy::math::DVec3,
-                    >>::div(_self.into_inner(), rhs.into_inner())
+                        f64,
+                    >>::div(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -15118,10 +15118,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::DVec3>, rhs: f64| {
+                |_self: Val<bevy::math::DVec3>, rhs: Ref<bevy::math::DVec3>| {
                     let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Mul<
-                        f64,
-                    >>::mul(_self.into_inner(), rhs)
+                        &bevy::math::DVec3,
+                    >>::mul(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
@@ -15138,10 +15138,10 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::DVec3>, rhs: Ref<bevy::math::DVec3>| {
+                |_self: Val<bevy::math::DVec3>, rhs: f64| {
                     let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Mul<
-                        &bevy::math::DVec3,
-                    >>::mul(_self.into_inner(), &rhs)
+                        f64,
+                    >>::mul(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -15315,20 +15315,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::DVec3>, rhs: f64| {
+                |_self: Val<bevy::math::DVec3>, rhs: Val<bevy::math::DVec3>| {
                     let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Rem<
-                        f64,
-                    >>::rem(_self.into_inner(), rhs)
+                        bevy::math::DVec3,
+                    >>::rem(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::DVec3>, rhs: Val<bevy::math::DVec3>| {
+                |_self: Val<bevy::math::DVec3>, rhs: f64| {
                     let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Rem<
-                        bevy::math::DVec3,
-                    >>::rem(_self.into_inner(), rhs.into_inner())
+                        f64,
+                    >>::rem(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -15507,20 +15507,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "add",
-                |_self: Val<bevy::math::DVec4>, rhs: Val<bevy::math::DVec4>| {
+                |_self: Val<bevy::math::DVec4>, rhs: Ref<bevy::math::DVec4>| {
                     let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Add<
-                        bevy::math::DVec4,
-                    >>::add(_self.into_inner(), rhs.into_inner())
+                        &bevy::math::DVec4,
+                    >>::add(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
             )
             .register(
                 "add",
-                |_self: Val<bevy::math::DVec4>, rhs: Ref<bevy::math::DVec4>| {
+                |_self: Val<bevy::math::DVec4>, rhs: Val<bevy::math::DVec4>| {
                     let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Add<
-                        &bevy::math::DVec4,
-                    >>::add(_self.into_inner(), &rhs)
+                        bevy::math::DVec4,
+                    >>::add(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -16060,20 +16060,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::DVec4>, rhs: f64| {
+                |_self: Val<bevy::math::DVec4>, rhs: Val<bevy::math::DVec4>| {
                     let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Mul<
-                        f64,
-                    >>::mul(_self.into_inner(), rhs)
+                        bevy::math::DVec4,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::DVec4>, rhs: Val<bevy::math::DVec4>| {
+                |_self: Val<bevy::math::DVec4>, rhs: f64| {
                     let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Mul<
-                        bevy::math::DVec4,
-                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        f64,
+                    >>::mul(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -16242,20 +16242,20 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::DVec4>, rhs: Val<bevy::math::DVec4>| {
+                |_self: Val<bevy::math::DVec4>, rhs: Ref<bevy::math::DVec4>| {
                     let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Rem<
-                        bevy::math::DVec4,
-                    >>::rem(_self.into_inner(), rhs.into_inner())
+                        &bevy::math::DVec4,
+                    >>::rem(_self.into_inner(), &rhs)
                         .into();
                     output
                 },
             )
             .register(
                 "rem",
-                |_self: Val<bevy::math::DVec4>, rhs: Ref<bevy::math::DVec4>| {
+                |_self: Val<bevy::math::DVec4>, rhs: Val<bevy::math::DVec4>| {
                     let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Rem<
-                        &bevy::math::DVec4,
-                    >>::rem(_self.into_inner(), &rhs)
+                        bevy::math::DVec4,
+                    >>::rem(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -16651,6 +16651,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
+                |_self: Val<bevy::math::Mat2>, rhs: Val<bevy::math::Mat2>| {
+                    let output: Val<bevy::math::Mat2> = <bevy::math::Mat2 as std::ops::Mul<
+                        bevy::math::Mat2,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
                 |_self: Val<bevy::math::Mat2>, rhs: Val<bevy::math::Vec2>| {
                     let output: Val<bevy::math::Vec2> = <bevy::math::Mat2 as std::ops::Mul<
                         bevy::math::Vec2,
@@ -16665,16 +16675,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::Mat2> = <bevy::math::Mat2 as std::ops::Mul<
                         f32,
                     >>::mul(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul",
-                |_self: Val<bevy::math::Mat2>, rhs: Val<bevy::math::Mat2>| {
-                    let output: Val<bevy::math::Mat2> = <bevy::math::Mat2 as std::ops::Mul<
-                        bevy::math::Mat2,
-                    >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -17089,19 +17089,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::Mat3>, rhs: f32| {
+                |_self: Val<bevy::math::Mat3>, rhs: Val<bevy::math::Affine2>| {
                     let output: Val<bevy::math::Mat3> = <bevy::math::Mat3 as std::ops::Mul<
-                        f32,
-                    >>::mul(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul",
-                |_self: Val<bevy::math::Mat3>, rhs: Val<bevy::math::Vec3>| {
-                    let output: Val<bevy::math::Vec3> = <bevy::math::Mat3 as std::ops::Mul<
-                        bevy::math::Vec3,
+                        bevy::math::Affine2,
                     >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
@@ -17119,9 +17109,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::Mat3>, rhs: Val<bevy::math::Affine2>| {
-                    let output: Val<bevy::math::Mat3> = <bevy::math::Mat3 as std::ops::Mul<
-                        bevy::math::Affine2,
+                |_self: Val<bevy::math::Mat3>, rhs: Val<bevy::math::Vec3>| {
+                    let output: Val<bevy::math::Vec3> = <bevy::math::Mat3 as std::ops::Mul<
+                        bevy::math::Vec3,
                     >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
@@ -17133,6 +17123,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::Vec3A> = <bevy::math::Mat3 as std::ops::Mul<
                         bevy::math::Vec3A,
                     >>::mul(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
+                |_self: Val<bevy::math::Mat3>, rhs: f32| {
+                    let output: Val<bevy::math::Mat3> = <bevy::math::Mat3 as std::ops::Mul<
+                        f32,
+                    >>::mul(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -17593,26 +17593,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::Mat3A>, rhs: f32| {
-                    let output: Val<bevy::math::Mat3A> = <bevy::math::Mat3A as std::ops::Mul<
-                        f32,
-                    >>::mul(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul",
-                |_self: Val<bevy::math::Mat3A>, rhs: Val<bevy::math::Vec3>| {
-                    let output: Val<bevy::math::Vec3> = <bevy::math::Mat3A as std::ops::Mul<
-                        bevy::math::Vec3,
-                    >>::mul(_self.into_inner(), rhs.into_inner())
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul",
                 |_self: Val<bevy::math::Mat3A>, rhs: Val<bevy::math::Affine2>| {
                     let output: Val<bevy::math::Mat3A> = <bevy::math::Mat3A as std::ops::Mul<
                         bevy::math::Affine2,
@@ -17633,10 +17613,30 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
+                |_self: Val<bevy::math::Mat3A>, rhs: Val<bevy::math::Vec3>| {
+                    let output: Val<bevy::math::Vec3> = <bevy::math::Mat3A as std::ops::Mul<
+                        bevy::math::Vec3,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
                 |_self: Val<bevy::math::Mat3A>, rhs: Val<bevy::math::Vec3A>| {
                     let output: Val<bevy::math::Vec3A> = <bevy::math::Mat3A as std::ops::Mul<
                         bevy::math::Vec3A,
                     >>::mul(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
+                |_self: Val<bevy::math::Mat3A>, rhs: f32| {
+                    let output: Val<bevy::math::Mat3A> = <bevy::math::Mat3A as std::ops::Mul<
+                        f32,
+                    >>::mul(_self.into_inner(), rhs)
                         .into();
                     output
                 },
@@ -18150,9 +18150,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::Mat4>, rhs: Val<bevy::math::Mat4>| {
+                |_self: Val<bevy::math::Mat4>, rhs: Val<bevy::math::Affine3A>| {
                     let output: Val<bevy::math::Mat4> = <bevy::math::Mat4 as std::ops::Mul<
-                        bevy::math::Mat4,
+                        bevy::math::Affine3A,
                     >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
@@ -18160,9 +18160,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::Mat4>, rhs: Val<bevy::math::Affine3A>| {
+                |_self: Val<bevy::math::Mat4>, rhs: Val<bevy::math::Mat4>| {
                     let output: Val<bevy::math::Mat4> = <bevy::math::Mat4 as std::ops::Mul<
-                        bevy::math::Affine3A,
+                        bevy::math::Mat4,
                     >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
@@ -19145,6 +19145,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
+                |_self: Val<bevy::math::DMat3>, rhs: Val<bevy::math::DAffine2>| {
+                    let output: Val<bevy::math::DMat3> = <bevy::math::DMat3 as std::ops::Mul<
+                        bevy::math::DAffine2,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
                 |_self: Val<bevy::math::DMat3>, rhs: Val<bevy::math::DMat3>| {
                     let output: Val<bevy::math::DMat3> = <bevy::math::DMat3 as std::ops::Mul<
                         bevy::math::DMat3,
@@ -19155,9 +19165,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::DMat3>, rhs: Val<bevy::math::DAffine2>| {
-                    let output: Val<bevy::math::DMat3> = <bevy::math::DMat3 as std::ops::Mul<
-                        bevy::math::DAffine2,
+                |_self: Val<bevy::math::DMat3>, rhs: Val<bevy::math::DVec3>| {
+                    let output: Val<bevy::math::DVec3> = <bevy::math::DMat3 as std::ops::Mul<
+                        bevy::math::DVec3,
                     >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
@@ -19169,16 +19179,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                     let output: Val<bevy::math::DMat3> = <bevy::math::DMat3 as std::ops::Mul<
                         f64,
                     >>::mul(_self.into_inner(), rhs)
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul",
-                |_self: Val<bevy::math::DMat3>, rhs: Val<bevy::math::DVec3>| {
-                    let output: Val<bevy::math::DVec3> = <bevy::math::DMat3 as std::ops::Mul<
-                        bevy::math::DVec3,
-                    >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
                 },
@@ -19673,6 +19673,16 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
+                |_self: Val<bevy::math::DMat4>, rhs: Val<bevy::math::DAffine3>| {
+                    let output: Val<bevy::math::DMat4> = <bevy::math::DMat4 as std::ops::Mul<
+                        bevy::math::DAffine3,
+                    >>::mul(_self.into_inner(), rhs.into_inner())
+                        .into();
+                    output
+                },
+            )
+            .register(
+                "mul",
                 |_self: Val<bevy::math::DMat4>, rhs: Val<bevy::math::DMat4>| {
                     let output: Val<bevy::math::DMat4> = <bevy::math::DMat4 as std::ops::Mul<
                         bevy::math::DMat4,
@@ -19686,16 +19696,6 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
                 |_self: Val<bevy::math::DMat4>, rhs: Val<bevy::math::DVec4>| {
                     let output: Val<bevy::math::DVec4> = <bevy::math::DMat4 as std::ops::Mul<
                         bevy::math::DVec4,
-                    >>::mul(_self.into_inner(), rhs.into_inner())
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "mul",
-                |_self: Val<bevy::math::DMat4>, rhs: Val<bevy::math::DAffine3>| {
-                    let output: Val<bevy::math::DMat4> = <bevy::math::DMat4 as std::ops::Mul<
-                        bevy::math::DAffine3,
                     >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
@@ -21489,9 +21489,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::DQuat>, rhs: Val<bevy::math::DVec3>| {
-                    let output: Val<bevy::math::DVec3> = <bevy::math::DQuat as std::ops::Mul<
-                        bevy::math::DVec3,
+                |_self: Val<bevy::math::DQuat>, rhs: Val<bevy::math::DQuat>| {
+                    let output: Val<bevy::math::DQuat> = <bevy::math::DQuat as std::ops::Mul<
+                        bevy::math::DQuat,
                     >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output
@@ -21499,9 +21499,9 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
             )
             .register(
                 "mul",
-                |_self: Val<bevy::math::DQuat>, rhs: Val<bevy::math::DQuat>| {
-                    let output: Val<bevy::math::DQuat> = <bevy::math::DQuat as std::ops::Mul<
-                        bevy::math::DQuat,
+                |_self: Val<bevy::math::DQuat>, rhs: Val<bevy::math::DVec3>| {
+                    let output: Val<bevy::math::DVec3> = <bevy::math::DQuat as std::ops::Mul<
+                        bevy::math::DVec3,
                     >>::mul(_self.into_inner(), rhs.into_inner())
                         .into();
                     output

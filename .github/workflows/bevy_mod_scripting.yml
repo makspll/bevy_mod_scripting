@@ -3,11 +3,7 @@ on:
     branches:
       - "**"
     paths-ignore:
-      - 'crates/bevy_api_gen/**'
-      - 'crates/macro_tests/**'
       - '.github/workflows/release-plz.yml'
-      - '.github/workflows/bevy_api_gen.yml'
-      - '.github/workflows/macro_tests.yml'
       - 'docs/**'
 
 
@@ -17,7 +13,9 @@ name: Check and Lint - bevy_mod_scripting
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: bevy-mod-scripting
-  
+  CODEGEN_BRANCH_NAME: __update-bevy-bindings-${{ github.head_ref || github.ref_name }}
+  GH_TOKEN: ${{ github.token }}
+
 concurrency:
   # Use github.run_id on main branch
   # Use github.event.pull_request.number on pull requests, so it's unique per pull request
@@ -100,3 +98,47 @@ jobs:
             git commit -m "chore(badge): Update coverage badge" -m "[skip ci]"
             git push
           fi
+  generate_bindings:
+    name: Bindings - Synchronise
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Setup Bot GitHub Credentials
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com" 
+    - name: Setup
+      run: |
+        cargo xtask init
+    - name: Generate Bindings
+      run: |
+        cargo xtask codegen
+    - name: Check for changes
+      id: check_changes
+      run: |
+        if [[ -n $(git status --porcelain) ]]; then
+            echo "changes=true" >> "$GITHUB_OUTPUT"; 
+        fi
+    - name: Commit Changes
+      if: steps.check_changes.outputs.changes
+      run: |
+        git checkout -b ${{ env.CODEGEN_BRANCH_NAME }} || git checkout ${{ env.CODEGEN_BRANCH_NAME }}
+        git add -A
+        git commit -m "chore(codegen): update bevy bindings"
+        git push -u origin ${{ env.CODEGEN_BRANCH_NAME }} --force
+    - uses: jwalton/gh-find-current-pr@master
+      if: steps.check_changes.outputs.changes
+      id: findPR
+      with:
+        state: all
+    - name: Create Or Update PR
+      if: steps.check_changes.outputs.changes && success() && steps.findPR.outputs.number 
+      run: |
+        gh pr list --base ${{ github.ref }} --search "chore(codegen): update bevy bindings" --json number > prs.json
+        if [ $(jq '. | length' prs.json) -eq 0 ]; then
+          gh pr create --title "chore(codegen): update bevy bindings" --body "This PR updates the bevy bindings for #${{ steps.findPR.outputs.number }}" --base ${{ github.ref }} --head ${{ env.CODEGEN_BRANCH_NAME }} || true
+        fi

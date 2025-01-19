@@ -1,13 +1,14 @@
-use anyhow::*;
+use anyhow::{Context, *};
 use clap::Parser;
 use itertools::Itertools;
+use json_comments::StripComments;
 use log::*;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::{
     collections::{HashMap, HashSet},
     ffi::{OsStr, OsString},
     io::Write,
-    path::Path,
+    path::{Path, PathBuf},
     process::Command,
     str::FromStr,
 };
@@ -234,11 +235,11 @@ impl CiOs {
 
 #[derive(Debug, Clone, Parser)]
 struct App {
-    #[clap(flatten)]
-    global_args: GlobalArgs,
-
     #[clap(subcommand)]
     subcmd: Xtasks,
+
+    #[clap(flatten)]
+    global_args: GlobalArgs,
 }
 
 impl App {
@@ -300,6 +301,16 @@ impl App {
             Xtasks::CiMatrix => {
                 cmd.arg("ci-matrix");
             }
+            Xtasks::Codegen {
+                output_dir,
+                bevy_features,
+            } => {
+                cmd.arg("codegen")
+                    .arg("--output-dir")
+                    .arg(output_dir)
+                    .arg("--bevy-features")
+                    .arg(bevy_features.join(","));
+            }
         }
 
         cmd
@@ -355,6 +366,12 @@ struct GlobalArgs {
     )]
     coverage: bool,
 
+    #[clap(skip)]
+    override_workspace_dir: Option<PathBuf>,
+
+    #[clap(skip)]
+    override_toolchain: Option<String>,
+
     #[clap(
         long,
         short,
@@ -376,6 +393,20 @@ impl GlobalArgs {
     pub fn without_coverage(self) -> Self {
         Self {
             coverage: false,
+            ..self
+        }
+    }
+
+    pub fn with_workspace_dir(self, dir: PathBuf) -> Self {
+        Self {
+            override_workspace_dir: Some(dir),
+            ..self
+        }
+    }
+
+    pub fn with_toolchain(self, toolchain: String) -> Self {
+        Self {
+            override_toolchain: Some(toolchain),
             ..self
         }
     }
@@ -437,6 +468,10 @@ impl Macro {
         format!("[{}]", Macro::VARIANTS.join("|")).into()
     }
 }
+#[derive(Debug, Clone, serde::Serialize)]
+struct CodegenTemplateArgs {
+    self_is_bms_lua: bool,
+}
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, clap::Subcommand, strum::AsRefStr)]
 #[clap(
@@ -487,6 +522,22 @@ enum Xtasks {
         /// Skip building rust docs
         #[clap(long)]
         no_rust_docs: bool,
+    },
+    /// Run code generation
+    Codegen {
+        /// output the generated code to the given directory
+        #[clap(
+            long,
+            default_value = "./crates/bevy_mod_scripting_functions/src/bevy_bindings/"
+        )]
+        output_dir: PathBuf,
+
+        #[clap(
+            long,
+            default_value = "bevy_asset,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded",
+            help = "The features to enable for the bevy crate"
+        )]
+        bevy_features: Vec<String>,
     },
     /// Build the main workspace, and then run all tests
     Test {
@@ -578,13 +629,18 @@ impl Xtasks {
                 let json = serde_json::to_string_pretty(&rows)?;
                 return Ok(json);
             }
+            Xtasks::Codegen {
+                output_dir,
+                bevy_features,
+            } => Self::codegen(app_settings, output_dir, bevy_features),
         }?;
 
         Ok("".into())
     }
 
-    fn cargo_metadata() -> Result<cargo_metadata::Metadata> {
-        let cargo_manifest_path = std::env::var("CARGO_MANIFEST_PATH").unwrap();
+    /// Reads the metadata from the main workspace
+    fn main_workspace_cargo_metadata() -> Result<cargo_metadata::Metadata> {
+        let cargo_manifest_path = std::env::var("MAIN_CARGO_MANIFEST_PATH").unwrap();
 
         let mut cmd = cargo_metadata::MetadataCommand::new();
         cmd.manifest_path(cargo_manifest_path);
@@ -592,14 +648,26 @@ impl Xtasks {
         Ok(out)
     }
 
-    fn workspace_dir() -> Result<std::path::PathBuf> {
-        let metadata = Self::cargo_metadata()?;
+    fn workspace_dir(app_settings: &GlobalArgs) -> Result<std::path::PathBuf> {
+        if let Some(dir) = &app_settings.override_workspace_dir {
+            return Ok(dir.into());
+        }
+
+        let metadata = Self::main_workspace_cargo_metadata()?;
         let workspace_root = metadata.workspace_root;
         Ok(workspace_root.into())
     }
 
-    fn relative_workspace_dir<P: AsRef<Path>>(dir: P) -> Result<std::path::PathBuf> {
-        let workspace_dir = Self::workspace_dir()?;
+    fn codegen_crate_dir(app_settings: &GlobalArgs) -> Result<std::path::PathBuf> {
+        let workspace_dir = Self::workspace_dir(app_settings)?;
+        Ok(workspace_dir.join("crates").join("bevy_api_gen"))
+    }
+
+    fn relative_workspace_dir<P: AsRef<Path>>(
+        app_settings: &GlobalArgs,
+        dir: P,
+    ) -> Result<std::path::PathBuf> {
+        let workspace_dir = Self::workspace_dir(app_settings)?;
         Ok(workspace_dir.join(dir))
     }
 
@@ -612,6 +680,7 @@ impl Xtasks {
     }
 
     fn run_system_command<I: IntoIterator<Item = impl AsRef<OsStr>>>(
+        app_settings: &GlobalArgs,
         command: &str,
         context: &str,
         add_args: I,
@@ -620,8 +689,8 @@ impl Xtasks {
         info!("Running system command: {}", command);
 
         let working_dir = match dir {
-            Some(d) => Self::relative_workspace_dir(d)?,
-            None => Self::workspace_dir()?,
+            Some(d) => Self::relative_workspace_dir(app_settings, d)?,
+            None => Self::workspace_dir(app_settings)?,
         };
 
         let mut cmd = Command::new(command);
@@ -660,9 +729,14 @@ impl Xtasks {
         info!("Running workspace command {coverage_mode}: {command}");
 
         let mut args = vec![];
+
+        if let Some(ref toolchain) = app_settings.override_toolchain {
+            args.push(format!("+{}", toolchain));
+        }
+
         args.push(command.to_owned());
 
-        if command != "fmt" {
+        if command != "fmt" && command != "bevy-api-gen" {
             // fmt doesn't care about features, workspaces or profiles
 
             args.push("--workspace".to_owned());
@@ -693,8 +767,8 @@ impl Xtasks {
         }));
 
         let working_dir = match dir {
-            Some(d) => Self::relative_workspace_dir(d)?,
-            None => Self::workspace_dir()?,
+            Some(d) => Self::relative_workspace_dir(app_settings, d)?,
+            None => Self::workspace_dir(app_settings)?,
         };
 
         let mut cmd = Command::new("cargo");
@@ -761,25 +835,188 @@ impl Xtasks {
         Ok(())
     }
 
-    fn check_codegen_crate(_app_settings: GlobalArgs, _ide_mode: bool) -> Result<()> {
+    fn check_codegen_crate(app_settings: GlobalArgs, ide_mode: bool) -> Result<()> {
+        let toolchain = Self::read_rust_toolchain(&Self::codegen_crate_dir(&app_settings)?);
+
         // set the working directory to the codegen crate
-        // let crates_path = Self::relative_workspace_dir(PathBuf::from("crates"))?;
-        // let codegen_crate_path = crates_path.join("bevy_api_gen");
+        let app_settings = app_settings
+            .clone()
+            .with_workspace_dir(Self::codegen_crate_dir(&app_settings)?)
+            .with_toolchain(toolchain)
+            .with_features(Features::new(vec![])); // TODO: support features for codegen crate if any
 
-        // let mut clippy_args = vec!["+nightly-2024-12-15", "clippy"];
-        // if ide_mode {
-        //     clippy_args.push("--message-format=json");
-        // }
-        // clippy_args.extend(vec!["--all-targets", "--", "-D", "warnings"]);
+        let mut clippy_args = vec![];
+        if ide_mode {
+            clippy_args.push("--message-format=json");
+        }
+        clippy_args.extend(vec!["--all-targets", "--", "-D", "warnings"]);
 
-        // Self::run_system_command(
-        //     "cargo",
-        //     "Failed to run clippy on codegen crate",
-        //     clippy_args,
-        //     Some(&codegen_crate_path),
-        // )?;
+        Self::run_workspace_command(
+            &app_settings,
+            "clippy",
+            "Failed to run clippy on codegen crate",
+            clippy_args,
+            None,
+        )?;
 
         // TODO: for now do nothing, it's difficult to get rust analyzer to accept the nightly version
+
+        Ok(())
+    }
+
+    /// reads rust-toolchain.toml file at the given directory and returns the toolchain string
+    fn read_rust_toolchain(path: &Path) -> String {
+        let rust_toolchain_path = path.join("rust-toolchain.toml");
+
+        let rust_toolchain = std::fs::read_to_string(rust_toolchain_path)
+            .expect("Could not read rust_toolchain.toml");
+
+        // parse the toml file
+        let toml: toml::Value =
+            toml::from_str(&rust_toolchain).expect("Could not parse rust_toolchain.toml");
+
+        let toolchain = toml
+            .get("toolchain")
+            .expect("Could not find toolchain in rust_toolchain.toml");
+        let channel = toolchain
+            .get("channel")
+            .expect("Could not find channel in rust_toolchain.toml");
+        let channel = channel
+            .as_str()
+            .expect("Channel in rust_toolchain.toml is not a string");
+
+        // set the toolchain
+        channel.to_string()
+    }
+
+    fn codegen(
+        app_settings: GlobalArgs,
+        output_dir: PathBuf,
+        bevy_features: Vec<String>,
+    ) -> Result<()> {
+        let main_workspace_app_settings = app_settings;
+        let output_dir = Self::relative_workspace_dir(&main_workspace_app_settings, output_dir)?;
+        let bevy_dir =
+            Self::relative_workspace_dir(&main_workspace_app_settings, "target/codegen/bevy")?;
+        let bevy_target_dir = bevy_dir.join("target");
+        // clear the bevy target dir if it exists
+        info!("Clearing bevy target dir: {:?}", bevy_target_dir);
+        if bevy_target_dir.exists() {
+            std::fs::remove_dir_all(&bevy_target_dir)?;
+        }
+
+        let api_gen_dir = Self::codegen_crate_dir(&main_workspace_app_settings)?;
+        let codegen_app_settings = main_workspace_app_settings
+            .clone()
+            .with_workspace_dir(api_gen_dir.clone());
+
+        let bevy_repo_app_settings = main_workspace_app_settings
+            .clone()
+            .with_workspace_dir(bevy_dir.clone())
+            .with_toolchain(Self::read_rust_toolchain(&api_gen_dir));
+
+        // run cargo install
+        Self::run_system_command(
+            &codegen_app_settings,
+            "cargo",
+            "Failed to install bevy_api_gen",
+            vec!["install", "--path", "."],
+            None,
+        )?;
+
+        let metadata = Self::main_workspace_cargo_metadata()?;
+        let bevy_version = metadata
+            .packages
+            .iter()
+            .find(|p| p.name == "bevy")
+            .expect("Could not find bevy package in metadata")
+            .version
+            .clone();
+        // create directories if they don't already exist
+        std::fs::create_dir_all(&bevy_dir)?;
+        std::fs::create_dir_all(&output_dir)?;
+
+        // git clone bevy repo
+        let _ = Self::run_system_command(
+            &bevy_repo_app_settings,
+            "git",
+            "Failed to clone bevy repo",
+            vec![
+                "clone",
+                "https://github.com/bevyengine/bevy",
+                "--branch",
+                format!("v{}", bevy_version).as_str(),
+                "--depth",
+                "1",
+                ".",
+            ],
+            None,
+        );
+
+        // fetch the tags
+        Self::run_system_command(
+            &bevy_repo_app_settings,
+            "git",
+            "Failed to fetch bevy tags",
+            vec!["fetch", "--tags"],
+            Some(&bevy_dir),
+        )?;
+
+        // checkout the version tag
+        Self::run_system_command(
+            &bevy_repo_app_settings,
+            "git",
+            "Failed to checkout bevy tag",
+            vec!["checkout", format!("v{}", bevy_version).as_str()],
+            Some(&bevy_dir),
+        )?;
+
+        // run bevy_api_gen
+        let template_args = CodegenTemplateArgs {
+            self_is_bms_lua: true,
+        };
+
+        let template_args = serde_json::to_string(&template_args)?;
+        let bms_core_path = Self::workspace_dir(&main_workspace_app_settings)?
+            .join("crates/bevy_mod_scripting_core")
+            .to_path_buf();
+
+        Self::run_workspace_command(
+            &bevy_repo_app_settings,
+            "bevy-api-gen",
+            "Failed to run bevy-api-gen generate",
+            vec![
+                "generate",
+                "--bms-core-path",
+                bms_core_path.to_str().unwrap(),
+                "--output",
+                output_dir.to_str().unwrap(),
+                "--template-args",
+                template_args.as_str(),
+                "--features",
+                bevy_features.join(",").as_str(),
+                "-v",
+            ],
+            Some(&bevy_dir),
+        )?;
+
+        // collect
+        Self::run_workspace_command(
+            &bevy_repo_app_settings,
+            "bevy-api-gen",
+            "Failed to run bevy-api-gen generate",
+            vec![
+                "collect",
+                "--bms-core-path",
+                bms_core_path.to_str().unwrap(),
+                "--output",
+                output_dir.to_str().unwrap(),
+                "--template-args",
+                template_args.as_str(),
+                "-v",
+            ],
+            Some(&bevy_dir),
+        )?;
 
         Ok(())
     }
@@ -787,8 +1024,11 @@ impl Xtasks {
     fn check(app_settings: GlobalArgs, ide_mode: bool, kind: CheckKind) -> Result<()> {
         match kind {
             CheckKind::All => {
-                Self::check_main_workspace(app_settings.clone(), ide_mode)?;
-                Self::check_codegen_crate(app_settings, ide_mode)?;
+                let err_main = Self::check_main_workspace(app_settings.clone(), ide_mode);
+                let err_codegen = Self::check_codegen_crate(app_settings.clone(), ide_mode);
+
+                err_main?;
+                err_codegen?;
             }
             CheckKind::Main => {
                 Self::check_main_workspace(app_settings, ide_mode)?;
@@ -804,7 +1044,7 @@ impl Xtasks {
         // find [package.metadata."docs.rs"] key in Cargo.toml
         if !no_rust_docs {
             info!("Building rust docs");
-            let metadata = Self::cargo_metadata()?;
+            let metadata = Self::main_workspace_cargo_metadata()?;
 
             let package = metadata
                 .packages
@@ -860,6 +1100,7 @@ impl Xtasks {
         let args = if !open { vec!["build"] } else { vec!["serve"] };
 
         Self::run_system_command(
+            &app_settings,
             "mdbook",
             "Failed to build or serve mdbook docs",
             args,
@@ -874,7 +1115,8 @@ impl Xtasks {
         // std::env::set_var("CARGO_INCREMENTAL", "0");
         Self::append_rustflags("-Cinstrument-coverage");
 
-        let target_dir = std::env::var("CARGO_TARGET_DIR").unwrap_or_else(|_| "target".to_owned());
+        let target_dir =
+            std::env::var("MAIN_CARGO_TARGET_DIR").unwrap_or_else(|_| "target".to_owned());
         let coverage_dir = std::path::PathBuf::from(target_dir).join("coverage");
         let coverage_file = coverage_dir.join("cargo-test-%p-%m.profraw");
 
@@ -904,6 +1146,7 @@ impl Xtasks {
         // generate coverage report and lcov file
         if app_settings.coverage {
             Self::run_system_command(
+                &app_settings,
                 "grcov",
                 "Generating html coverage report",
                 vec![
@@ -925,6 +1168,7 @@ impl Xtasks {
             )?;
 
             Self::run_system_command(
+                &app_settings,
                 "grcov",
                 "Failed to generate coverage report",
                 vec![
@@ -1067,9 +1311,10 @@ impl Xtasks {
         Ok(())
     }
 
-    fn init(_app_settings: GlobalArgs) -> Result<()> {
+    fn init(app_settings: GlobalArgs) -> Result<()> {
         // install cargo mdbook
         Self::run_system_command(
+            &app_settings,
             "cargo",
             "Failed to install mdbook",
             vec!["install", "mdbook"],
@@ -1078,35 +1323,138 @@ impl Xtasks {
 
         // install grcov
         Self::run_system_command(
+            &app_settings,
             "cargo",
             "Failed to install grcov",
             vec!["install", "grcov"],
             None,
         )?;
 
-        // install llvm-tools and clippy
+        // install nightly toolchaing for bevy api gen
+        let toolchain = Self::read_rust_toolchain(&Self::codegen_crate_dir(&app_settings)?);
         Self::run_system_command(
+            &app_settings,
             "rustup",
-            "Failed to install rust components",
-            vec![
-                "component",
-                "add",
-                "rust-src",
-                "rustc-dev",
-                "clippy",
-                "llvm-tools-preview",
-            ],
+            "Failed to install nightly toolchain",
+            vec!["toolchain", "install", toolchain.as_str()],
             None,
         )?;
 
+        let rustup_components_args = [
+            "component",
+            "add",
+            "rust-src",
+            "rustc-dev",
+            "clippy",
+            "llvm-tools-preview",
+        ];
+
+        // install components for the stable and nightly toolchains
+        Self::run_system_command(
+            &app_settings,
+            "rustup",
+            "Failed to install rust components",
+            rustup_components_args,
+            None,
+        )?;
+
+        // add components on nightly toolchain
+        Self::run_system_command(
+            &app_settings,
+            "rustup",
+            "Failed to install nightly components",
+            rustup_components_args
+                .iter()
+                .chain(["--toolchain", toolchain.as_str()].iter()),
+            Some(Path::new(".")),
+        )?;
+
+        // create .vscode settings
+        // read from templates at compile time
+        let vscode_settings = include_str!("../templates/settings.json.tera");
+        let mut tera = tera::Tera::default();
+        let mut context = tera::Context::new();
+        let workspace_dir = Self::workspace_dir(&app_settings)?;
+        let json_workspace_dir = serde_json::to_string(&workspace_dir)?; // make sure this works as a json string
+        context.insert("dir", &json_workspace_dir.trim_matches('\"'));
+
+        let templated_settings = tera.render_str(vscode_settings, &context)?;
+        let templated_settings_json = Self::read_json_with_comments(templated_settings.as_bytes())
+            .with_context(|| "reading templated vscode settings")?;
+        let vscode_dir = Self::relative_workspace_dir(&app_settings, ".vscode")?;
+        std::fs::create_dir_all(&vscode_dir)?;
+        let vscode_settings_path = vscode_dir.join("settings.json");
+
+        // if the file already exists, merge the settings otherwise create it
+        info!(
+            "Merging vscode settings at {:?}. With overrides generated by template.",
+            vscode_settings_path
+        );
+        if vscode_settings_path.exists() {
+            let existing_settings = std::fs::read_to_string(&vscode_settings_path)?;
+            let mut existing_settings = Self::read_json_with_comments(existing_settings.as_bytes())
+                .with_context(|| "reading existing vscode settings file")?;
+            Self::merge_json(templated_settings_json, &mut existing_settings);
+            let merged_settings = serde_json::to_string_pretty(&existing_settings)?;
+            std::fs::write(&vscode_settings_path, merged_settings)?;
+        } else {
+            std::fs::write(&vscode_settings_path, templated_settings)?;
+        }
+
         Ok(())
     }
+
+    fn read_json_with_comments(bytes: &[u8]) -> Result<serde_json::Value> {
+        let stripped = StripComments::new(bytes);
+        let mut reader = serde_json::Deserializer::from_reader(stripped);
+        let value = serde_json::Value::deserialize(&mut reader)
+            .with_context(|| format!("deserializing json:\n{}", String::from_utf8_lossy(bytes)))?;
+        Ok(value)
+    }
+
+    /// Override the target json file with some overrides. Will replace values if they already exist, or insert them otherwise.
+    fn merge_json(overrides: serde_json::Value, target: &mut serde_json::Value) {
+        if let (serde_json::Value::Object(overrides), serde_json::Value::Object(target)) =
+            (overrides, target)
+        {
+            for (key, value) in overrides {
+                // simply replace
+                info!("Replacing json key: {} with value: {}", key, value);
+                target.insert(key.clone(), value.clone());
+            }
+        } else {
+            warn!("Could not merge json, overrides and target are not objects");
+        }
+    }
+}
+
+/// Because we are likely already runnnig in the context of a cargo invocation,
+/// some environment variables may be set that we don't want to inherit.
+/// Set them to MAIN_CARGO_<VARIABLE> so that we can reference them but so they dont get inherited by further cargo commands
+fn pop_cargo_env() -> Result<()> {
+    let env = std::env::vars().collect::<Vec<_>>();
+    for (key, value) in env.iter() {
+        if key.starts_with("CARGO_") {
+            let new_key = format!("MAIN_{}", key);
+            std::env::set_var(new_key, value);
+            std::env::remove_var(key);
+        }
+    }
+
+    // unset some other variables
+    let remove_vars = ["RUSTUP_TOOLCHAIN"];
+    for var in remove_vars.iter() {
+        std::env::remove_var(var);
+    }
+
+    Ok(())
 }
 
 fn try_main() -> Result<()> {
     pretty_env_logger::formatted_builder()
         .filter_level(LevelFilter::Info)
         .init();
+    pop_cargo_env()?;
     let args = App::try_parse()?;
     let out = args.subcmd.run(args.global_args)?;
     // push any output to stdout
@@ -1119,7 +1467,7 @@ fn try_main() -> Result<()> {
 
 fn main() {
     if let Err(e) = try_main() {
-        eprintln!("{}", e);
+        eprintln!("{:?}", e);
         std::process::exit(1);
     }
 }

@@ -1,11 +1,11 @@
-# Cargo.toml file used for bootstrapping of mlua and other dependencies which need to be included in every crate for analysis
+# Cargo.toml file used for bootstrapping of bms and other dependencies which need to be included in every crate for analysis
 [package]
 name = "bevy_analyzer_deps_bootstrap"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-mlua = { version = "0.10", features = ["lua54", "vendored", "send", "macros"] }
+bevy_mod_scripting_core = { path = "{{BMS_CORE_PATH}}" }
 bevy_reflect = { version = "0.15.0", features = [
     "bevy",
     "glam",

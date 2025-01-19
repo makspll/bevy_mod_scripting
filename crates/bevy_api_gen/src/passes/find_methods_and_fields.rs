@@ -350,11 +350,19 @@ fn type_is_adt_and_reflectable<'tcx>(
             tcx.def_path_hash(did),
         );
 
-        log::trace!(
-            "Meta for type: `{}`, contained in meta `{}`",
-            tcx.item_name(did),
-            contains_hash
-        );
+        if contains_hash {
+            log::info!(
+                "Meta for type: `{}` with hash: `{:?}`, contained in the meta file",
+                tcx.item_name(did),
+                tcx.def_path_hash(did),
+            );
+        } else {
+            log::info!(
+                "Meta for type: `{}` with hash: `{:?}`, was not found in meta files for {crate_name} or in bevy_reflect, meaning it will not generate a proxy.",
+                tcx.item_name(did),
+                tcx.def_path_hash(did),
+            );
+        }
 
         contains_hash
     })
@@ -368,12 +376,7 @@ fn type_is_supported_as_non_proxy_arg<'tcx>(
     ty: Ty<'tcx>,
 ) -> bool {
     trace!("Checking type is supported as non proxy arg: '{ty:?}' with param_env: '{param_env:?}'");
-    impls_trait(
-        tcx,
-        param_env,
-        ty,
-        cached_traits.mlua_from_lua_multi.unwrap(),
-    )
+    impls_trait(tcx, param_env, ty, cached_traits.bms_from_script.unwrap())
 }
 
 /// Checks if the type can be used directly as a lua function output
@@ -390,12 +393,7 @@ fn type_is_supported_as_non_proxy_return_val<'tcx>(
         }
     }
 
-    impls_trait(
-        tcx,
-        param_env,
-        ty,
-        cached_traits.mlua_into_lua_multi.unwrap(),
-    )
+    impls_trait(tcx, param_env, ty, cached_traits.bms_into_script.unwrap())
 }
 
 pub(crate) fn impls_trait<'tcx>(
