@@ -124,7 +124,7 @@ impl WorldCallbackAccess {
     pub fn get_resource_type(
         &self,
         registration: ScriptTypeRegistration,
-    ) -> Result<Result<ScriptComponentRegistration, ScriptTypeRegistration>, InteropError> {
+    ) -> Result<Result<ScriptResourceRegistration, ScriptTypeRegistration>, InteropError> {
         let world = self.try_read()?;
         Ok(world.get_resource_type(registration))
     }
@@ -577,9 +577,9 @@ impl WorldAccessGuard<'_> {
     pub fn get_resource_type(
         &self,
         registration: ScriptTypeRegistration,
-    ) -> Result<ScriptComponentRegistration, ScriptTypeRegistration> {
+    ) -> Result<ScriptResourceRegistration, ScriptTypeRegistration> {
         match self.get_resource_id(registration.type_id()) {
-            Some(resource_id) => Ok(ScriptComponentRegistration::new(registration, resource_id)),
+            Some(resource_id) => Ok(ScriptResourceRegistration::new(registration, resource_id)),
             None => Err(registration),
         }
     }

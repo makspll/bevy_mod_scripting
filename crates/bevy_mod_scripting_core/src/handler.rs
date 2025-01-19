@@ -186,6 +186,7 @@ pub(crate) fn handle_script_errors<I: Iterator<Item = ScriptError> + Clone>(
 }
 
 #[cfg(test)]
+#[allow(clippy::todo)]
 mod test {
     use std::{borrow::Cow, collections::HashMap};
 

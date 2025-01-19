@@ -4,6 +4,8 @@ The `World` is the entry point for interacting with `Bevy`. It is provided to sc
 
 ### get_type_by_name
 
+Returns either a `ScriptComponentRegistration` or `ScriptResourceRegistration` depending on the type of the type requested. If the type is neither returns a `ScriptTypeRegistration`.
+
 Arguments:
 
 | Argument | Type | Description |
@@ -14,7 +16,7 @@ Returns:
 
 | Return | Description |
 | ---  | --- |
-| `Option<ScriptTypeRegistration>` | The type if it exists, otherwise `None` |
+| `Option<ScriptTypeRegistration OR scriptComponentRegistration OR scriptResourceRegistration>` | The registration for the type if it exists, otherwise `None` |
 
 ```lua
 MyType = world.get_type_by_name("MyType")

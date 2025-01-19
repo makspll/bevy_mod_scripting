@@ -122,3 +122,4 @@ required-features = ["lua54", "bevy/file_watcher", "bevy/multi_threaded"]
 panic = "deny"
 unwrap_used = "deny"
 expect_used = "deny"
+todo = "deny"

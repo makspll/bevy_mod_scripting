@@ -38,22 +38,22 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
                     Some(registration) => {
                         let allocator = world.allocator();
 
-                        let registration = match world.get_component_type(registration) {
-                            Ok(comp) => {
+                        let registration = match world.get_resource_type(registration) {
+                            Ok(res) => {
                                 let mut allocator = allocator.write();
                                 return Ok(Some(ReflectReference::new_allocated(
-                                    comp,
+                                    res,
                                     &mut allocator,
                                 )));
                             }
                             Err(registration) => registration,
                         };
 
-                        let registration = match world.get_resource_type(registration) {
-                            Ok(res) => {
+                        let registration = match world.get_component_type(registration) {
+                            Ok(comp) => {
                                 let mut allocator = allocator.write();
                                 return Ok(Some(ReflectReference::new_allocated(
-                                    res,
+                                    comp,
                                     &mut allocator,
                                 )));
                             }

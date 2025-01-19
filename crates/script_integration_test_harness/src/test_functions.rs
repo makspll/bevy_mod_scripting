@@ -13,7 +13,8 @@ use bevy_mod_scripting_core::{
             script_function::{CallerContext, DynamicScriptFunctionMut},
         },
         pretty_print::DisplayWithWorld,
-        ReflectReference, ScriptComponentRegistration, ScriptTypeRegistration, WorldCallbackAccess,
+        ReflectReference, ScriptComponentRegistration, ScriptResourceRegistration,
+        ScriptTypeRegistration, WorldCallbackAccess,
     },
     error::InteropError,
 };
@@ -46,7 +47,7 @@ pub fn register_test_functions(world: &mut App) {
             #[derive(Reflect)]
             struct Dummy;
             let reg = ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()));
-            let comp = ScriptComponentRegistration::new(reg, ComponentId::new(999999999999999));
+            let comp = ScriptResourceRegistration::new(reg, ComponentId::new(999999999999999));
             let allocator = world.allocator();
             let mut allocator = allocator.write();
             ReflectReference::new_allocated(comp, &mut allocator)

@@ -192,9 +192,7 @@ mod tests {
 
         const LANGUAGE: Language = Language::Lua;
 
-        fn build_runtime() -> Self::R {
-            todo!()
-        }
+        fn build_runtime() -> Self::R {}
     }
 
     #[test]
