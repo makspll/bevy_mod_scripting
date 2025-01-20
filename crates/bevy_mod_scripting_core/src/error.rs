@@ -1081,8 +1081,7 @@ mod test {
     use bevy::prelude::{AppTypeRegistry, World};
 
     use crate::bindings::{
-        function::script_function::AppScriptFunctionRegistry, AppReflectAllocator,
-        WorldAccessGuard, WorldGuard,
+        function::script_function::AppScriptFunctionRegistry, AppReflectAllocator, WorldGuard,
     };
 
     use super::*;
@@ -1101,7 +1100,7 @@ mod test {
         let script_function_registry = AppScriptFunctionRegistry::default();
         world.insert_resource(script_function_registry);
 
-        let world_guard = WorldGuard::new(WorldAccessGuard::new(&mut world));
+        let world_guard = WorldGuard::new(&mut world);
         assert_eq!(
             error.display_with_world(world_guard),
             format!(

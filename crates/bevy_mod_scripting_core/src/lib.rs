@@ -7,7 +7,7 @@ use bevy::prelude::*;
 use bindings::{
     function::script_function::AppScriptFunctionRegistry, garbage_collector,
     script_value::ScriptValue, AppReflectAllocator, ReflectAllocator, ReflectReference,
-    ScriptTypeRegistration, WorldCallbackAccess,
+    ScriptTypeRegistration,
 };
 use context::{
     Context, ContextAssigner, ContextBuilder, ContextInitializer, ContextLoadingSettings,
@@ -221,7 +221,6 @@ fn register_script_plugin_systems<P: IntoScriptPluginParams>(app: &mut App) {
 
 /// Register all types that need to be accessed via reflection
 fn register_types(app: &mut App) {
-    app.register_type::<WorldCallbackAccess>();
     app.register_type::<ScriptValue>();
     app.register_type::<ScriptTypeRegistration>();
     app.register_type::<ReflectReference>();

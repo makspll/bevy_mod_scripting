@@ -1,6 +1,7 @@
 use crate::{
     bindings::{
-        pretty_print::DisplayWithWorld, script_value::ScriptValue, WorldAccessGuard, WorldGuard,
+        pretty_print::DisplayWithWorld, script_value::ScriptValue, ThreadWorldContainer,
+        WorldContainer, WorldGuard,
     },
     context::ContextPreHandlingInitializer,
     error::ScriptError,
@@ -30,13 +31,52 @@ pub type HandlerFn<P> = fn(
     context: &mut <P as IntoScriptPluginParams>::C,
     pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
     runtime: &mut <P as IntoScriptPluginParams>::R,
-    world: &mut World,
 ) -> Result<ScriptValue, ScriptError>;
 
 /// A resource that holds the settings for the callback handler for a specific combination of type parameters
 #[derive(Resource)]
 pub struct CallbackSettings<P: IntoScriptPluginParams> {
     pub callback_handler: HandlerFn<P>,
+}
+
+impl<P: IntoScriptPluginParams> Clone for CallbackSettings<P> {
+    fn clone(&self) -> Self {
+        Self {
+            callback_handler: self.callback_handler,
+        }
+    }
+}
+
+impl<P: IntoScriptPluginParams> CallbackSettings<P> {
+    pub fn new(callback_handler: HandlerFn<P>) -> Self {
+        Self { callback_handler }
+    }
+
+    /// Calls the handler function while providing the necessary thread local context
+    pub fn call(
+        handler: HandlerFn<P>,
+        args: Vec<ScriptValue>,
+        entity: Entity,
+        script_id: &ScriptId,
+        callback: &CallbackLabel,
+        script_ctxt: &mut P::C,
+        pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
+        runtime: &mut P::R,
+        world: &mut World,
+    ) -> Result<ScriptValue, ScriptError> {
+        WorldGuard::with_static_guard(world, |world| {
+            ThreadWorldContainer.set_world(world)?;
+            (handler)(
+                args,
+                entity,
+                script_id,
+                callback,
+                script_ctxt,
+                pre_handling_initializers,
+                runtime,
+            )
+        })
+    }
 }
 
 macro_rules! push_err_and_continue {
@@ -116,7 +156,8 @@ pub(crate) fn event_handler_internal<L: IntoCallbackLabel, P: IntoScriptPluginPa
                     }
                 };
 
-                let handler_result = (res_ctxt.callback_settings.callback_handler)(
+                let handler_result = (CallbackSettings::<P>::call)(
+                    res_ctxt.callback_settings.callback_handler,
                     event.args.clone(),
                     *entity,
                     &script.id,
@@ -180,7 +221,7 @@ pub(crate) fn handle_script_errors<I: Iterator<Item = ScriptError> + Clone>(
         error_events.send(ScriptErrorEvent { error });
     }
     for error in errors {
-        let arc_world = WorldGuard::new(WorldAccessGuard::new(world));
+        let arc_world = WorldGuard::new(world);
         bevy::log::error!("{}", error.display_with_world(arc_world));
     }
 }
@@ -252,8 +293,8 @@ mod test {
         app.insert_non_send_resource(ScriptContexts::<P> { contexts });
         app.insert_resource(ContextLoadingSettings::<P> {
             loader: ContextBuilder {
-                load: |_, _, _, _, _, _| todo!(),
-                reload: |_, _, _, _, _, _, _| todo!(),
+                load: |_, _, _, _, _| todo!(),
+                reload: |_, _, _, _, _, _| todo!(),
             },
             assigner: ContextAssigner {
                 assign: |_, _, _| todo!(),
@@ -287,7 +328,7 @@ mod test {
             invocations: vec![],
         };
         let mut app = setup_app::<OnTestCallback, TestPlugin>(
-            |args, entity, script, _, ctxt, _, runtime, _| {
+            |args, entity, script, _, ctxt, _, runtime| {
                 ctxt.invocations.extend(args);
                 runtime.invocations.push((entity, script.clone()));
                 Ok(ScriptValue::Unit)
@@ -374,7 +415,7 @@ mod test {
             invocations: vec![],
         };
         let mut app = setup_app::<OnTestCallback, TestPlugin>(
-            |args, entity, script, _, ctxt, _, runtime, _| {
+            |args, entity, script, _, ctxt, _, runtime| {
                 ctxt.invocations.extend(args);
                 runtime.invocations.push((entity, script.clone()));
                 Ok(ScriptValue::Unit)

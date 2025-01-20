@@ -6,10 +6,8 @@ use bevy::{
     reflect::TypeRegistry,
 };
 use bevy_mod_scripting_core::{
-    bindings::{
-        pretty_print::DisplayWithWorld, script_value::ScriptValue, WorldAccessGuard, WorldGuard,
-    },
-    context::ContextLoadingSettings,
+    bindings::{pretty_print::DisplayWithWorld, script_value::ScriptValue, WorldGuard},
+    context::{ContextBuilder, ContextLoadingSettings},
     event::{IntoCallbackLabel, OnScriptLoaded},
     handler::CallbackSettings,
     runtime::RuntimeSettings,
@@ -66,7 +64,8 @@ pub fn execute_integration_test<
         });
 
     // load the context as normal
-    let mut loaded_context = (context_settings.loader.load)(
+    let mut loaded_context = (ContextBuilder::<P>::load)(
+        context_settings.loader.load,
         &(script_id.to_owned()).into(),
         code,
         &context_settings.context_initializers,
@@ -76,12 +75,12 @@ pub fn execute_integration_test<
     )
     .map_err(|e| {
         let world = app.world_mut();
-        let world = WorldAccessGuard::new(world);
         e.display_with_world(WorldGuard::new(world))
     })?;
 
     // call on_script_loaded as normal
-    let val = (callback_settings.callback_handler)(
+    let val = (CallbackSettings::<P>::call)(
+        callback_settings.callback_handler,
         vec![],
         Entity::from_raw(0),
         &(script_id.to_owned()).into(),
@@ -91,14 +90,15 @@ pub fn execute_integration_test<
         &mut runtime,
         app.world_mut(),
     )
-    .map_err(|e| e.display_with_world(WorldGuard::new(WorldAccessGuard::new(app.world_mut()))))?;
+    .map_err(|e| e.display_with_world(WorldGuard::new(app.world_mut())))?;
 
     if let ScriptValue::Error(e) = val {
-        return Err(e.display_with_world(WorldGuard::new(WorldAccessGuard::new(app.world_mut()))));
+        return Err(e.display_with_world(WorldGuard::new(app.world_mut())));
     }
 
     // call on_test callback
-    let val = (callback_settings.callback_handler)(
+    let val = (CallbackSettings::<P>::call)(
+        callback_settings.callback_handler,
         vec![],
         Entity::from_raw(0),
         &(script_id.to_owned()).into(),
@@ -108,10 +108,10 @@ pub fn execute_integration_test<
         &mut runtime,
         app.world_mut(),
     )
-    .map_err(|e| e.display_with_world(WorldGuard::new(WorldAccessGuard::new(app.world_mut()))))?;
+    .map_err(|e| e.display_with_world(WorldGuard::new(app.world_mut())))?;
 
     if let ScriptValue::Error(e) = val {
-        return Err(e.display_with_world(WorldGuard::new(WorldAccessGuard::new(app.world_mut()))));
+        return Err(e.display_with_world(WorldGuard::new(app.world_mut())));
     }
 
     Ok(())

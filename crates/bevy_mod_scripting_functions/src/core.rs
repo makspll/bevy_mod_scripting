@@ -11,12 +11,13 @@ use bindings::{
         from_ref::FromScriptRef,
         into_ref::IntoScriptRef,
         namespace::NamespaceBuilder,
-        script_function::{CallerContext, ScriptFunctionMut},
+        script_function::{FunctionCallContext, ScriptFunctionMut},
     },
     pretty_print::DisplayWithWorld,
     script_value::ScriptValue,
     ReflectReference, ReflectionPathExt, ScriptComponentRegistration, ScriptQueryBuilder,
-    ScriptQueryResult, ScriptResourceRegistration, ScriptTypeRegistration, WorldCallbackAccess,
+    ScriptQueryResult, ScriptResourceRegistration, ScriptTypeRegistration, ThreadWorldContainer,
+    WorldContainer,
 };
 use error::InteropError;
 use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
@@ -30,15 +31,15 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
     NamespaceBuilder::<World>::new_unregistered(reg)
         .register(
             "get_type_by_name",
-            |world: WorldCallbackAccess, type_name: String| {
-                let world = world.try_read()?;
+            |ctxt: FunctionCallContext, type_name: String| {
+                let world = ctxt.world()?;
                 let val = world.get_type_by_name(type_name);
 
                 Ok(match val {
                     Some(registration) => {
                         let allocator = world.allocator();
 
-                        let registration = match world.get_resource_type(registration) {
+                        let registration = match world.get_resource_type(registration)? {
                             Ok(res) => {
                                 let mut allocator = allocator.write();
                                 return Ok(Some(ReflectReference::new_allocated(
@@ -49,7 +50,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
                             Err(registration) => registration,
                         };
 
-                        let registration = match world.get_component_type(registration) {
+                        let registration = match world.get_component_type(registration)? {
                             Ok(comp) => {
                                 let mut allocator = allocator.write();
                                 return Ok(Some(ReflectReference::new_allocated(
@@ -72,106 +73,133 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
         )
         .register(
             "get_component",
-            |world: WorldCallbackAccess,
+            |ctxt: FunctionCallContext,
              entity: Val<Entity>,
              registration: Val<ScriptComponentRegistration>| {
+                let world = ctxt.world()?;
                 world.get_component(*entity, registration.component_id())
             },
         )
         .register(
             "has_component",
-            |world: WorldCallbackAccess,
+            |ctxt: FunctionCallContext,
              entity: Val<Entity>,
              registration: Val<ScriptComponentRegistration>| {
+                let world = ctxt.world()?;
                 world.has_component(*entity, registration.component_id())
             },
         )
         .register(
             "remove_component",
-            |world: WorldCallbackAccess, e: Val<Entity>, r: Val<ScriptComponentRegistration>| {
+            |ctxt: FunctionCallContext, e: Val<Entity>, r: Val<ScriptComponentRegistration>| {
+                let world = ctxt.world()?;
                 world.remove_component(*e, r.clone())
             },
         )
         .register(
             "get_resource",
-            |world: WorldCallbackAccess, registration: Val<ScriptResourceRegistration>| {
+            |ctxt: FunctionCallContext, registration: Val<ScriptResourceRegistration>| {
+                let world = ctxt.world()?;
                 world.get_resource(registration.resource_id())
             },
         )
         .register(
             "has_resource",
-            |world: WorldCallbackAccess, registration: Val<ScriptResourceRegistration>| {
+            |ctxt: FunctionCallContext, registration: Val<ScriptResourceRegistration>| {
+                let world = ctxt.world()?;
                 world.has_resource(registration.resource_id())
             },
         )
         .register(
             "remove_resource",
-            |s: WorldCallbackAccess, r: Val<ScriptResourceRegistration>| {
-                s.remove_resource(r.into_inner())
+            |ctxt: FunctionCallContext, r: Val<ScriptResourceRegistration>| {
+                let world = ctxt.world()?;
+                world.remove_resource(r.into_inner())
             },
         )
         .register(
             "add_default_component",
-            |w: WorldCallbackAccess, e: Val<Entity>, r: Val<ScriptComponentRegistration>| {
-                w.add_default_component(*e, r.clone())
+            |ctxt: FunctionCallContext, e: Val<Entity>, r: Val<ScriptComponentRegistration>| {
+                let world = ctxt.world()?;
+                world.add_default_component(*e, r.clone())
+            },
+        )
+        .register("spawn", |ctxt: FunctionCallContext| {
+            let world = ctxt.world()?;
+            Ok(Val(world.spawn()?))
+        })
+        .register(
+            "insert_component",
+            |ctxt: FunctionCallContext,
+             e: Val<Entity>,
+             r: Val<ScriptComponentRegistration>,
+             v: ReflectReference| {
+                let world = ctxt.world()?;
+                world.insert_component(*e, r.into_inner(), v)
             },
         )
         .register(
-            "insert_component",
-            |w: WorldCallbackAccess,
-             e: Val<Entity>,
-             r: Val<ScriptComponentRegistration>,
-             v: ReflectReference| { w.insert_component(*e, r.into_inner(), v) },
-        )
-        .register("spawn", |s: WorldCallbackAccess| Ok(Val(s.spawn()?)))
-        .register(
             "insert_children",
-            |caller_context: CallerContext,
-             w: WorldCallbackAccess,
-             e: Val<Entity>,
-             index: usize,
-             c: Vec<Val<Entity>>| {
-                let index = if caller_context.convert_to_0_indexed {
+            |ctxt: FunctionCallContext, e: Val<Entity>, index: usize, c: Vec<Val<Entity>>| {
+                let world = ctxt.world()?;
+                let index = if ctxt.convert_to_0_indexed {
                     index - 1
                 } else {
                     index
                 };
-                w.insert_children(*e, index, &c.into_iter().map(|v| *v).collect::<Vec<_>>())
+                world.insert_children(*e, index, &c.into_iter().map(|v| *v).collect::<Vec<_>>())
             },
         )
         .register(
             "push_children",
-            |w: WorldCallbackAccess, e: Val<Entity>, c: Vec<Val<Entity>>| {
-                w.push_children(*e, &c.into_iter().map(|v| *v).collect::<Vec<_>>())
+            |ctxt: FunctionCallContext, e: Val<Entity>, c: Vec<Val<Entity>>| {
+                let world = ctxt.world()?;
+                world.push_children(*e, &c.into_iter().map(|v| *v).collect::<Vec<_>>())
             },
         )
-        .register("get_children", |w: WorldCallbackAccess, e: Val<Entity>| {
-            let children = w.get_children(*e)?;
-            Ok(children.into_iter().map(Val).collect::<Vec<_>>())
-        })
-        .register("get_parent", |w: WorldCallbackAccess, e: Val<Entity>| {
-            let parent = w.get_parent(*e)?;
+        .register(
+            "get_children",
+            |ctxt: FunctionCallContext, e: Val<Entity>| {
+                let world = ctxt.world()?;
+                let children = world.get_children(*e)?;
+                Ok(children.into_iter().map(Val).collect::<Vec<_>>())
+            },
+        )
+        .register("get_parent", |ctxt: FunctionCallContext, e: Val<Entity>| {
+            let world = ctxt.world()?;
+            let parent = world.get_parent(*e)?;
             Ok(parent.map(Val))
         })
-        .register("despawn", |s: WorldCallbackAccess, e: Val<Entity>| {
-            s.despawn(*e)
+        .register("despawn", |ctxt: FunctionCallContext, e: Val<Entity>| {
+            let world = ctxt.world()?;
+            world.despawn(*e)
         })
         .register(
             "despawn_descendants",
-            |s: WorldCallbackAccess, e: Val<Entity>| s.despawn_descendants(*e),
+            |ctxt: FunctionCallContext, e: Val<Entity>| {
+                let world = ctxt.world()?;
+                world.despawn_descendants(*e)
+            },
         )
         .register(
             "despawn_recursive",
-            |s: WorldCallbackAccess, e: Val<Entity>| s.despawn_recursive(*e),
+            |ctxt: FunctionCallContext, e: Val<Entity>| {
+                let world = ctxt.world()?;
+                world.despawn_recursive(*e)
+            },
         )
-        .register("has_entity", |s: WorldCallbackAccess, e: Val<Entity>| {
-            s.has_entity(*e)
+        .register("has_entity", |ctxt: FunctionCallContext, e: Val<Entity>| {
+            let world = ctxt.world()?;
+            world.has_entity(*e)
         })
         .register("query", || {
             let query_builder = ScriptQueryBuilder::default();
             Ok(Val(query_builder))
         })
-        .register("exit", |s: WorldCallbackAccess| s.exit());
+        .register("exit", |ctxt: FunctionCallContext| {
+            let world = ctxt.world()?;
+            world.exit()
+        });
     Ok(())
 }
 
@@ -181,41 +209,39 @@ pub fn register_reflect_reference_functions(
     NamespaceBuilder::<ReflectReference>::new(reg)
         .register(
             "display_ref",
-            |w: WorldCallbackAccess, s: ReflectReference| {
-                let world = w.try_read()?;
+            |ctxt: FunctionCallContext, s: ReflectReference| {
+                let world = ctxt.world()?;
                 Ok(s.display_with_world(world))
             },
         )
-        .register("display_value", |w: WorldCallbackAccess, s: ReflectReference| {
-            let world = w.try_read()?;
+        .register("display_value", |ctxt: FunctionCallContext, s: ReflectReference| {
+            let world = ctxt.world()?;
             Ok(s.display_value_with_world(world))
         })
         .register(
             "get",
-            |caller_context: CallerContext,
-             world: WorldCallbackAccess,
+            |ctxt: FunctionCallContext,
              mut self_: ReflectReference,
              key: ScriptValue| {
                 let mut path: ParsedPath = key.try_into()?;
-                if caller_context.convert_to_0_indexed {
+                if ctxt.convert_to_0_indexed {
                     path.convert_to_0_indexed();
                 }
                 self_.index_path(path);
-                let world = world.try_read()?;
+                let world = ctxt.world()?;
                 ReflectReference::into_script_ref(self_, world)
             },
         )
         .register(
             "set",
-            |caller_context: CallerContext,
-             world: WorldCallbackAccess,
+            |ctxt: FunctionCallContext,
              self_: ScriptValue,
              key: ScriptValue,
              value: ScriptValue| {
                 if let ScriptValue::Reference(mut self_) = self_ {
-                    let world = world.try_read()?;
+                    let world = ctxt.world()?;
                     let mut path: ParsedPath = key.try_into()?;
-                    if caller_context.convert_to_0_indexed {
+                    if ctxt.convert_to_0_indexed {
                         path.convert_to_0_indexed();
                     }
                     self_.index_path(path);
@@ -241,8 +267,8 @@ pub fn register_reflect_reference_functions(
         )
         .register(
             "push",
-            |w: WorldCallbackAccess, s: ReflectReference, v: ScriptValue| {
-                let world = w.try_read()?;
+            |ctxt: FunctionCallContext, s: ReflectReference, v: ScriptValue| {
+                let world = ctxt.world()?;
                 let target_type_id = s.element_type_id(world.clone())?.ok_or_else(|| {
                     InteropError::unsupported_operation(
                         s.tail_type_id(world.clone()).unwrap_or_default(),
@@ -254,8 +280,8 @@ pub fn register_reflect_reference_functions(
                 s.with_reflect_mut(world, |s| s.try_push_boxed(other))?
             },
         )
-        .register("pop", |w: WorldCallbackAccess, s: ReflectReference| {
-            let world = w.try_read()?;
+        .register("pop", |ctxt: FunctionCallContext, s: ReflectReference| {
+            let world = ctxt.world()?;
             let o = s.with_reflect_mut(world.clone(), |s| s.try_pop_boxed())??;
             let reference = {
                 let allocator = world.allocator();
@@ -265,8 +291,8 @@ pub fn register_reflect_reference_functions(
 
             ReflectReference::into_script_ref(reference, world)
         })
-        .register("insert", |caller_context: CallerContext, w: WorldCallbackAccess, s: ReflectReference, k: ScriptValue, v: ScriptValue| {
-            let world = w.try_read()?;
+        .register("insert", |ctxt: FunctionCallContext, s: ReflectReference, k: ScriptValue, v: ScriptValue| {
+            let world = ctxt.world()?;
             let key_type_id = s.key_type_id(world.clone())?.ok_or_else(|| {
                 InteropError::unsupported_operation(
                     s.tail_type_id(world.clone()).unwrap_or_default(),
@@ -277,7 +303,7 @@ pub fn register_reflect_reference_functions(
 
             let mut key = <Box<dyn PartialReflect>>::from_script_ref(key_type_id, k, world.clone())?;
 
-            if caller_context.convert_to_0_indexed {
+            if ctxt.convert_to_0_indexed {
                 key.convert_to_0_indexed_key();
             }
 
@@ -293,16 +319,16 @@ pub fn register_reflect_reference_functions(
 
             s.with_reflect_mut(world, |s| s.try_insert_boxed(key, value))?
         })
-        .register("clear", |w: WorldCallbackAccess, s: ReflectReference| {
-            let world = w.try_read()?;
+        .register("clear", |ctxt: FunctionCallContext, s: ReflectReference| {
+            let world = ctxt.world()?;
             s.with_reflect_mut(world, |s| s.try_clear())?
         })
-        .register("len", |w: WorldCallbackAccess, s: ReflectReference| {
-            let world = w.try_read()?;
+        .register("len", |ctxt: FunctionCallContext, s: ReflectReference| {
+            let world = ctxt.world()?;
             s.len(world)
         })
-        .register("remove", |caller_context: CallerContext, w: WorldCallbackAccess, s: ReflectReference, k: ScriptValue| {
-            let world = w.try_read()?;
+        .register("remove", |ctxt: FunctionCallContext, s: ReflectReference, k: ScriptValue| {
+            let world = ctxt.world()?;
             let key_type_id = s.key_type_id(world.clone())?.ok_or_else(|| {
                 InteropError::unsupported_operation(
                     s.tail_type_id(world.clone()).unwrap_or_default(),
@@ -313,7 +339,7 @@ pub fn register_reflect_reference_functions(
 
             let mut key = <Box<dyn PartialReflect>>::from_script_ref(key_type_id, k, world.clone())?;
 
-            if caller_context.convert_to_0_indexed {
+            if ctxt.convert_to_0_indexed {
                 key.convert_to_0_indexed_key();
             }
 
@@ -330,18 +356,21 @@ pub fn register_reflect_reference_functions(
                 None => Ok(ScriptValue::Unit),
             }
         })
-        .register("iter", |w: WorldCallbackAccess, s: ReflectReference| {
-            let world = w.try_read()?;
+        .register("iter", |ctxt: FunctionCallContext, s: ReflectReference| {
+            let world = ctxt.world()?;
             let mut len = s.len(world.clone())?.unwrap_or_default();
             let mut infinite_iter = s.into_iter_infinite();
             let iter_function = move || {
+                // world is not thread safe, we can't capture it in the closure
+                // or it will also be non-thread safe
+                let world = ThreadWorldContainer.try_get_world()?;
                 if len == 0 {
                     return Ok(ScriptValue::Unit);
                 }
 
                 let (next_ref, _) = infinite_iter.next_ref();
 
-                let converted = ReflectReference::into_script_ref(next_ref, world.clone());
+                let converted = ReflectReference::into_script_ref(next_ref, world);
                 // println!("idx: {idx:?}, converted: {converted:?}");
                 len -= 1;
                 // we stop once the reflection path is invalid
@@ -412,7 +441,8 @@ pub fn register_script_query_builder_functions(
         )
         .register(
             "build",
-            |world: WorldCallbackAccess, s: Val<ScriptQueryBuilder>| {
+            |ctxt: FunctionCallContext, s: Val<ScriptQueryBuilder>| {
+                let world = ctxt.world()?;
                 let builder = s.into_inner();
                 let result = world.query(builder)?;
                 let result = result.into_iter().map(Val).collect::<Vec<_>>();
