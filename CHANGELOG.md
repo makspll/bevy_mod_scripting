@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0-alpha.7](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.0-alpha.6...v0.9.0-alpha.7) - 2025-01-20
+
+### Added
+
+- [**breaking**] Remove `WorldCallbackAccess` & Combine context args for dynamic functions into one `FunctionCallContext` (#219)
+- Add component `upsert` function (#218)
+
 ## [0.9.0-alpha.6](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.0-alpha.5...v0.9.0-alpha.6) - 2025-01-19
 
 ### Added
