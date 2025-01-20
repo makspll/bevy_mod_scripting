@@ -10,11 +10,11 @@ use bevy_mod_scripting_core::{
     bindings::{
         function::{
             namespace::{GlobalNamespace, NamespaceBuilder},
-            script_function::{CallerContext, DynamicScriptFunctionMut},
+            script_function::{DynamicScriptFunctionMut, FunctionCallContext},
         },
         pretty_print::DisplayWithWorld,
         ReflectReference, ScriptComponentRegistration, ScriptResourceRegistration,
-        ScriptTypeRegistration, WorldCallbackAccess,
+        ScriptTypeRegistration,
     },
     error::InteropError,
 };
@@ -23,8 +23,8 @@ use test_utils::test_data::EnumerateTestComponents;
 pub fn register_test_functions(world: &mut App) {
     let world = world.world_mut();
     NamespaceBuilder::<World>::new_unregistered(world)
-        .register("_get_mock_type", |s: WorldCallbackAccess| {
-            let world = s.try_read().unwrap();
+        .register("_get_mock_type", |s: FunctionCallContext| {
+            let world = s.world().unwrap();
             #[derive(Reflect)]
             struct Dummy;
             let reg = ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()));
@@ -32,8 +32,8 @@ pub fn register_test_functions(world: &mut App) {
             let mut allocator = allocator.write();
             ReflectReference::new_allocated(reg, &mut allocator)
         })
-        .register("_get_mock_component_type", |s: WorldCallbackAccess| {
-            let world = s.try_read().unwrap();
+        .register("_get_mock_component_type", |s: FunctionCallContext| {
+            let world = s.world().unwrap();
             #[derive(Reflect)]
             struct Dummy;
             let reg = ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()));
@@ -42,8 +42,8 @@ pub fn register_test_functions(world: &mut App) {
             let mut allocator = allocator.write();
             ReflectReference::new_allocated(comp, &mut allocator)
         })
-        .register("_get_mock_resource_type", |s: WorldCallbackAccess| {
-            let world = s.try_read().unwrap();
+        .register("_get_mock_resource_type", |s: FunctionCallContext| {
+            let world = s.world().unwrap();
             #[derive(Reflect)]
             struct Dummy;
             let reg = ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()));
@@ -54,8 +54,8 @@ pub fn register_test_functions(world: &mut App) {
         })
         .register(
             "_get_entity_with_test_component",
-            |s: WorldCallbackAccess, name: String| {
-                let world = s.try_read().unwrap();
+            |s: FunctionCallContext, name: String| {
+                let world = s.world().unwrap();
                 World::enumerate_test_components()
                     .iter()
                     .find(|(n, _, _)| n.contains(&name))
@@ -72,10 +72,10 @@ pub fn register_test_functions(world: &mut App) {
         )
         .register(
             "_assert_throws",
-            |s: WorldCallbackAccess, f: DynamicScriptFunctionMut, reg: String| {
-                let world = s.try_read().unwrap();
+            |s: FunctionCallContext, f: DynamicScriptFunctionMut, reg: String| {
+                let world = s.world().unwrap();
 
-                let result = f.call(vec![], world.clone(), CallerContext::default());
+                let result = f.call(vec![], FunctionCallContext::default());
                 let err = match result {
                     Ok(_) => {
                         return Err(InteropError::external_error(

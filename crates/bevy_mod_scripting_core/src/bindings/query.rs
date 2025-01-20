@@ -1,4 +1,4 @@
-use super::{ReflectReference, WorldAccessGuard, WorldCallbackAccess};
+use super::{ReflectReference, WorldAccessGuard};
 use crate::{error::InteropError, with_global_access};
 use bevy::{
     ecs::{component::ComponentId, entity::Entity},
@@ -152,15 +152,15 @@ pub struct ScriptQueryResult {
     pub components: Vec<ReflectReference>,
 }
 
-impl WorldCallbackAccess {
-    pub fn query(
-        &self,
-        query: ScriptQueryBuilder,
-    ) -> Result<VecDeque<ScriptQueryResult>, InteropError> {
-        // find the set of components
-        self.try_read().and_then(|world| world.query(query))
-    }
-}
+// impl WorldCallbackAccess {
+//     pub fn query(
+//         &self,
+//         query: ScriptQueryBuilder,
+//     ) -> Result<VecDeque<ScriptQueryResult>, InteropError> {
+//         // find the set of components
+//         self.try_read().and_then(|world| world.query(query))
+//     }
+// }
 
 impl WorldAccessGuard<'_> {
     pub fn query(
@@ -168,7 +168,7 @@ impl WorldAccessGuard<'_> {
         query: ScriptQueryBuilder,
     ) -> Result<VecDeque<ScriptQueryResult>, InteropError> {
         with_global_access!(self.0.accesses, "Could not query", {
-            let world = unsafe { self.as_unsafe_world_cell().world_mut() };
+            let world = unsafe { self.as_unsafe_world_cell()?.world_mut() };
             let mut dynamic_query = QueryBuilder::<EntityRef>::new(world);
 
             // we don't actually want to fetch the data for components now, only figure out

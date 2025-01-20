@@ -9,7 +9,7 @@ use super::{
     access_map::{AccessCount, AccessMap, ReflectAccessId},
     function::{
         namespace::Namespace,
-        script_function::{AppScriptFunctionRegistry, CallerContext, DynamicScriptFunction},
+        script_function::{AppScriptFunctionRegistry, DynamicScriptFunction, FunctionCallContext},
     },
     pretty_print::DisplayWithWorld,
     script_value::ScriptValue,
@@ -27,262 +27,235 @@ use bevy::{
         world::{unsafe_world_cell::UnsafeWorldCell, CommandQueue, Mut, World},
     },
     hierarchy::{BuildChildren, Children, DespawnRecursiveExt, Parent},
-    reflect::{std_traits::ReflectDefault, ParsedPath, Reflect, TypeRegistryArc},
+    reflect::{std_traits::ReflectDefault, ParsedPath, TypeRegistryArc},
 };
 use std::{
     any::TypeId,
     borrow::Cow,
-    cell::RefCell,
+    cell::{Cell, RefCell},
     fmt::Debug,
-    sync::{Arc, Weak},
+    rc::Rc,
+    sync::Arc,
     time::Duration,
 };
 
 /// Prefer to directly using [`WorldAccessGuard`]. If the underlying type changes, this alias will be updated.
-pub type WorldGuard<'w> = Arc<WorldAccessGuard<'w>>;
+pub type WorldGuard<'w> = WorldAccessGuard<'w>;
 /// Similar to [`WorldGuard`], but without the arc, use for when you don't need the outer Arc.
 pub type WorldGuardRef<'w> = &'w WorldAccessGuard<'w>;
 
-/// While [`WorldAccessGuard`] prevents aliasing at runtime and also makes sure world exists at least as long as the guard itself,
-/// borrows sadly do not persist the script-host boundary :(. That is to be expected, but instead we can make an abstraction which removes the lifetime parameter, making the outer type 'static,
-/// while making sure the lifetime is still satisfied!
-#[derive(Clone, Debug, Reflect)]
-#[reflect(opaque)]
-pub struct WorldCallbackAccess(pub(crate) Weak<WorldAccessGuard<'static>>);
+// /// While [`WorldAccessGuard`] prevents aliasing at runtime and also makes sure world exists at least as long as the guard itself,
+// /// borrows sadly do not persist the script-host boundary :(. That is to be expected, but instead we can make an abstraction which removes the lifetime parameter, making the outer type 'static,
+// /// while making sure the lifetime is still satisfied!
+// #[derive(Clone, Debug)]
+// #[reflect(opaque)]
+// pub struct WorldCallbackAccess(pub(crate) Weak<WorldAccessGuard<'static>>);
 
-impl WorldCallbackAccess {
-    /// Wraps a callback which requires access to the world in a 'static way via [`WorldCallbackAccess`].
-    pub fn with_callback_access<T>(
-        world: &mut World,
-        callback: impl FnOnce(&WorldCallbackAccess) -> T,
-    ) -> T {
-        // - the world cannot be dropped before the world drops since we have mutable reference to it in this entire function
-        // - nothing can alias inappropriately WorldAccessGuard since it's only instance is behind the raw Arc
-        let world_guard_arc = Arc::new(WorldAccessGuard::new(world));
-        let world_guard = unsafe { WorldCallbackAccess::new(Arc::downgrade(&world_guard_arc)) };
-        callback(&world_guard)
-    }
+// impl WorldCallbackAccess {
+//     /// Wraps a callback which requires access to the world in a 'static way via [`WorldCallbackAccess`].
+//     pub fn with_callback_access<T>(
+//         world: &mut World,
+//         callback: impl FnOnce(&WorldCallbackAccess) -> T,
+//     ) -> T {
+//         // - the world cannot be dropped before the world drops since we have mutable reference to it in this entire function
+//         // - nothing can alias inappropriately WorldAccessGuard since it's only instance is behind the raw Arc
+//         let world_guard_arc = Arc::new(WorldAccessGuard::new(world));
+//         let world_guard = unsafe { WorldCallbackAccess::new(Arc::downgrade(&world_guard_arc)) };
+//         callback(&world_guard)
+//     }
 
-    /// Creates a new [`WorldCallbackAccess`] with an erased lifetime.
-    ///
-    /// For safe alternative see [`Self::from_guard`]
-    ///
-    /// # Safety
-    /// - The caller must ensure the [`WorldAccessGuard`] will not outlive the 'w lifetime
-    /// - In practice this means that between the moment the original Arc is dropped, the lifetime 'w must be valid
-    /// - I.e. you *must* drop the original [`Arc<WorldAccessGuard>`] before the original 'w scope ends
-    pub unsafe fn new<'w>(world: Weak<WorldAccessGuard<'w>>) -> Self {
-        // Safety: the caller ensures `WorldAccessGuard` does not outlive the original lifetime 'w
+//     /// Creates a new [`WorldCallbackAccess`] with an erased lifetime.
+//     ///
+//     /// For safe alternative see [`Self::from_guard`]
+//     ///
+//     /// # Safety
+//     /// - The caller must ensure the [`WorldAccessGuard`] will not outlive the 'w lifetime
+//     /// - In practice this means that between the moment the original Arc is dropped, the lifetime 'w must be valid
+//     /// - I.e. you *must* drop the original [`Arc<WorldAccessGuard>`] before the original 'w scope ends
+//     pub unsafe fn new<'w>(world: Weak<WorldAccessGuard<'w>>) -> Self {
+//         // Safety: the caller ensures `WorldAccessGuard` does not outlive the original lifetime 'w
 
-        let world = unsafe {
-            std::mem::transmute::<Weak<WorldAccessGuard<'w>>, Weak<WorldAccessGuard<'static>>>(
-                world,
-            )
-        };
+//         let world = unsafe {
+//             std::mem::transmute::<Weak<WorldAccessGuard<'w>>, Weak<WorldAccessGuard<'static>>>(
+//                 world,
+//             )
+//         };
 
-        Self(world)
-    }
+//         Self(world)
+//     }
 
-    pub fn from_guard(world: WorldGuard<'_>) -> Self {
-        // Safety: the caller ensures `WorldAccessGuard` does not outlive the original lifetime 'w
-        unsafe { Self::new(Arc::downgrade(&world)) }
-    }
+//     // pub fn from_guard(world: WorldGuard<'_>) -> Self {
+//     //     // Safety: the caller ensures `WorldAccessGuard` does not outlive the original lifetime 'w
+//     //     unsafe { Self::new(Arc::new(&world)) }
+//     // }
 
-    /// Attempts to read the world access guard, if it still exists
-    pub fn try_read(&self) -> Result<WorldGuard<'static>, InteropError> {
-        self.0
-            .upgrade()
-            .ok_or_else(InteropError::stale_world_access)
-    }
-}
+//     /// Attempts to read the world access guard, if it still exists
+//     pub fn try_read(&self) -> Result<WorldGuard<'static>, InteropError> {
+//         self.0
+//             .upgrade()
+//             .map()
+//             .ok_or_else(InteropError::stale_world_access)
+//     }
+// }
 
-/// common world methods, see:
-/// - [`crate::bindings::query`] for query related functionality
-impl WorldCallbackAccess {
-    pub fn spawn(&self) -> Result<Entity, InteropError> {
-        let world = self.try_read()?;
-        Ok(world.spawn())
-    }
+// /// common world methods, see:
+// /// - [`crate::bindings::query`] for query related functionality
+// impl WorldCallbackAccess {
+//     pub fn spawn(&self) -> Result<Entity, InteropError> {
+//         let world = self.try_read()?;
+//         Ok(world.spawn())
+//     }
 
-    // TODO: uses `String` for type_name to avoid lifetime issues with types proxying this via macros
-    pub fn get_type_by_name(
-        &self,
-        type_name: String,
-    ) -> Result<Option<ScriptTypeRegistration>, InteropError> {
-        let world = self.try_read()?;
-        Ok(world.get_type_by_name(type_name))
-    }
+//     // TODO: uses `String` for type_name to avoid lifetime issues with types proxying this via macros
+//     pub fn get_type_by_name(
+//         &self,
+//         type_name: String,
+//     ) -> Result<Option<ScriptTypeRegistration>, InteropError> {
+//         let world = self.try_read()?;
+//         Ok(world.get_type_by_name(type_name))
+//     }
 
-    pub fn get_component_type(
-        &self,
-        registration: ScriptTypeRegistration,
-    ) -> Result<Result<ScriptComponentRegistration, ScriptTypeRegistration>, InteropError> {
-        let world = self.try_read()?;
-        Ok(world.get_component_type(registration))
-    }
+//     pub fn get_component_type(
+//         &self,
+//         registration: ScriptTypeRegistration,
+//     ) -> Result<Result<ScriptComponentRegistration, ScriptTypeRegistration>, InteropError> {
+//         let world = self.try_read()?;
+//         Ok(world.get_component_type(registration))
+//     }
 
-    pub fn get_resource_type(
-        &self,
-        registration: ScriptTypeRegistration,
-    ) -> Result<Result<ScriptResourceRegistration, ScriptTypeRegistration>, InteropError> {
-        let world = self.try_read()?;
-        Ok(world.get_resource_type(registration))
-    }
+//     pub fn get_resource_type(
+//         &self,
+//         registration: ScriptTypeRegistration,
+//     ) -> Result<Result<ScriptResourceRegistration, ScriptTypeRegistration>, InteropError> {
+//         let world = self.try_read()?;
+//         Ok(world.get_resource_type(registration))
+//     }
 
-    pub fn add_default_component(
-        &self,
-        entity: Entity,
-        registration: ScriptComponentRegistration,
-    ) -> Result<(), InteropError> {
-        let world = self.try_read()?;
-        world.add_default_component(entity, registration)
-    }
+//     pub fn add_default_component(
+//         &self,
+//         entity: Entity,
+//         registration: ScriptComponentRegistration,
+//     ) -> Result<(), InteropError> {
+//         let world = self.try_read()?;
+//         world.add_default_component(entity, registration)
+//     }
 
-    pub fn get_component(
-        &self,
-        entity: Entity,
-        component_id: ComponentId,
-    ) -> Result<Option<ReflectReference>, InteropError> {
-        let world = self.try_read()?;
-        world.get_component(entity, component_id)
-    }
+//     pub fn get_component(
+//         &self,
+//         entity: Entity,
+//         component_id: ComponentId,
+//     ) -> Result<Option<ReflectReference>, InteropError> {
+//         let world = self.try_read()?;
+//         world.get_component(entity, component_id)
+//     }
 
-    pub fn has_component(
-        &self,
-        entity: Entity,
-        component_id: ComponentId,
-    ) -> Result<bool, InteropError> {
-        let world = self.try_read()?;
-        world.has_component(entity, component_id)
-    }
+//     pub fn has_component(
+//         &self,
+//         entity: Entity,
+//         component_id: ComponentId,
+//     ) -> Result<bool, InteropError> {
+//         let world = self.try_read()?;
+//         world.has_component(entity, component_id)
+//     }
 
-    pub fn remove_component(
-        &self,
-        entity: Entity,
-        registration: ScriptComponentRegistration,
-    ) -> Result<(), InteropError> {
-        let world = self.try_read()?;
-        world.remove_component(entity, registration)
-    }
+//     pub fn remove_component(
+//         &self,
+//         entity: Entity,
+//         registration: ScriptComponentRegistration,
+//     ) -> Result<(), InteropError> {
+//         let world = self.try_read()?;
+//         world.remove_component(entity, registration)
+//     }
 
-    pub fn get_resource(
-        &self,
-        resource_id: ComponentId,
-    ) -> Result<Option<ReflectReference>, InteropError> {
-        let world = self.try_read()?;
-        world.get_resource(resource_id)
-    }
+//     pub fn get_resource(
+//         &self,
+//         resource_id: ComponentId,
+//     ) -> Result<Option<ReflectReference>, InteropError> {
+//         let world = self.try_read()?;
+//         world.get_resource(resource_id)
+//     }
 
-    pub fn remove_resource(
-        &self,
-        registration: ScriptResourceRegistration,
-    ) -> Result<(), InteropError> {
-        let world = self.try_read()?;
-        world.remove_resource(registration)
-    }
+//     pub fn remove_resource(
+//         &self,
+//         registration: ScriptResourceRegistration,
+//     ) -> Result<(), InteropError> {
+//         let world = self.try_read()?;
+//         world.remove_resource(registration)
+//     }
 
-    pub fn has_resource(&self, resource_id: ComponentId) -> Result<bool, InteropError> {
-        let world = self.try_read()?;
-        Ok(world.has_resource(resource_id))
-    }
+//     pub fn has_resource(&self, resource_id: ComponentId) -> Result<bool, InteropError> {
+//         let world = self.try_read()?;
+//         Ok(world.has_resource(resource_id)?)
+//     }
 
-    pub fn has_entity(&self, entity: Entity) -> Result<bool, InteropError> {
-        let world = self.try_read()?;
-        Ok(world.has_entity(entity))
-    }
+//     pub fn has_entity(&self, entity: Entity) -> Result<bool, InteropError> {
+//         let world = self.try_read()?;
+//         Ok(world.has_entity(entity)?)
+//     }
 
-    pub fn get_children(&self, entity: Entity) -> Result<Vec<Entity>, InteropError> {
-        let world = self.try_read()?;
-        world.get_children(entity)
-    }
+//     pub fn get_children(&self, entity: Entity) -> Result<Vec<Entity>, InteropError> {
+//         let world = self.try_read()?;
+//         world.get_children(entity)
+//     }
 
-    pub fn get_parent(&self, entity: Entity) -> Result<Option<Entity>, InteropError> {
-        let world = self.try_read()?;
-        world.get_parent(entity)
-    }
+//     pub fn get_parent(&self, entity: Entity) -> Result<Option<Entity>, InteropError> {
+//         let world = self.try_read()?;
+//         world.get_parent(entity)
+//     }
 
-    pub fn push_children(&self, parent: Entity, children: &[Entity]) -> Result<(), InteropError> {
-        let world = self.try_read()?;
-        world.push_children(parent, children)
-    }
+//     pub fn push_children(&self, parent: Entity, children: &[Entity]) -> Result<(), InteropError> {
+//         let world = self.try_read()?;
+//         world.push_children(parent, children)
+//     }
 
-    pub fn remove_children(&self, parent: Entity, children: &[Entity]) -> Result<(), InteropError> {
-        let world = self.try_read()?;
-        world.remove_children(parent, children)
-    }
+//     pub fn remove_children(&self, parent: Entity, children: &[Entity]) -> Result<(), InteropError> {
+//         let world = self.try_read()?;
+//         world.remove_children(parent, children)
+//     }
 
-    pub fn insert_children(
-        &self,
-        parent: Entity,
-        index: usize,
-        children: &[Entity],
-    ) -> Result<(), InteropError> {
-        let world = self.try_read()?;
-        world.insert_children(parent, index, children)
-    }
+//     pub fn insert_children(
+//         &self,
+//         parent: Entity,
+//         index: usize,
+//         children: &[Entity],
+//     ) -> Result<(), InteropError> {
+//         let world = self.try_read()?;
+//         world.insert_children(parent, index, children)
+//     }
 
-    pub fn despawn_recursive(&self, entity: Entity) -> Result<(), InteropError> {
-        let world = self.try_read()?;
-        world.despawn_recursive(entity)
-    }
+//     pub fn despawn_recursive(&self, entity: Entity) -> Result<(), InteropError> {
+//         let world = self.try_read()?;
+//         world.despawn_recursive(entity)
+//     }
 
-    pub fn despawn(&self, entity: Entity) -> Result<(), InteropError> {
-        let world = self.try_read()?;
-        world.despawn(entity)
-    }
+//     pub fn despawn(&self, entity: Entity) -> Result<(), InteropError> {
+//         let world = self.try_read()?;
+//         world.despawn(entity)
+//     }
 
-    pub fn despawn_descendants(&self, entity: Entity) -> Result<(), InteropError> {
-        let world = self.try_read()?;
-        world.despawn_descendants(entity)
-    }
+//     pub fn despawn_descendants(&self, entity: Entity) -> Result<(), InteropError> {
+//         let world = self.try_read()?;
+//         world.despawn_descendants(entity)
+//     }
 
-    pub fn exit(&self) -> Result<(), InteropError> {
-        let world = self.try_read()?;
-        world.exit();
-        Ok(())
-    }
+//     pub fn exit(&self) -> Result<(), InteropError> {
+//         let world = self.try_read()?;
+//         world.exit();
+//         Ok(())
+//     }
 
-    /// Tries to call a fitting overload of the function with the given name and in the type id's namespace based on the arguments provided.
-    /// Currently does this by repeatedly trying each overload until one succeeds or all fail.
-    pub fn try_call_overloads(
-        &self,
-        type_id: TypeId,
-        name: impl Into<Cow<'static, str>>,
-        args: Vec<ScriptValue>,
-        context: CallerContext,
-    ) -> Result<ScriptValue, InteropError> {
-        let world = self.try_read()?;
-        let registry = world.script_function_registry();
-        let registry = registry.read();
-
-        let name = name.into();
-        let overload_iter = match registry.iter_overloads(Namespace::OnType(type_id), name) {
-            Ok(iter) => iter,
-            Err(name) => return Err(InteropError::missing_function(type_id, name.to_string())),
-        };
-
-        let mut last_error = None;
-        for overload in overload_iter {
-            match overload.call(args.clone(), world.clone(), context) {
-                Ok(out) => return Ok(out),
-                Err(e) => last_error = Some(e),
-            }
-        }
-
-        Err(last_error.ok_or_else(|| InteropError::invariant("invariant, iterator should always return at least one item, and if the call fails it should return an error"))?)
-    }
-}
+// }
 
 pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(5);
 pub const DEFAULT_INTERVAL: Duration = Duration::from_millis(10);
 
 /// Provides safe access to the world via [`WorldAccess`] permissions, which enforce aliasing rules at runtime in multi-thread environments
 #[derive(Clone)]
-pub struct WorldAccessGuard<'w>(pub(crate) Arc<WorldAccessGuardInner<'w>>);
+pub struct WorldAccessGuard<'w>(pub(crate) Rc<WorldAccessGuardInner<'w>>);
 
 /// Used to decrease the stack size of [`WorldAccessGuard`]
 pub(crate) struct WorldAccessGuardInner<'w> {
-    cell: UnsafeWorldCell<'w>,
+    cell: Cell<Option<UnsafeWorldCell<'w>>>,
     // TODO: this is fairly hefty, explore sparse sets, bit fields etc
     pub(crate) accesses: AccessMap,
     /// Cached for convenience, since we need it for most operations, means we don't need to lock the type registry every time
@@ -292,6 +265,22 @@ pub(crate) struct WorldAccessGuardInner<'w> {
 }
 
 impl<'w> WorldAccessGuard<'w> {
+    /// Safely allows access to the world for the duration of the closure via a static [`WorldAccessGuard`].
+    ///
+    /// The guard is invalidated at the end of the closure, meaning the world cannot be accessed at all after the closure ends.
+    pub fn with_static_guard<O>(
+        world: &'w mut World,
+        f: impl FnOnce(WorldGuard<'static>) -> O,
+    ) -> O {
+        let guard = WorldAccessGuard::new(world);
+        // safety: we invalidate the guard after the closure is called, meaning the world cannot be accessed at all after the 'w lifetime ends
+        let static_guard: WorldAccessGuard<'static> = unsafe { std::mem::transmute(guard) };
+        let o = f(static_guard.clone());
+
+        static_guard.invalidate();
+        o
+    }
+
     /// Creates a new [`WorldAccessGuard`] for the given mutable borrow of the world.
     ///
     /// Creating a guard requires that some resources exist in the world, namely:
@@ -308,14 +297,19 @@ impl<'w> WorldAccessGuard<'w> {
         let function_registry = world
             .get_resource_or_init::<AppScriptFunctionRegistry>()
             .clone();
-
-        Self(Arc::new(WorldAccessGuardInner {
-            cell: world.as_unsafe_world_cell(),
+        let cell = Cell::new(Some(world.as_unsafe_world_cell()));
+        Self(Rc::new(WorldAccessGuardInner {
+            cell,
             accesses: Default::default(),
             allocator,
             type_registry,
             function_registry,
         }))
+    }
+
+    /// Invalidates the world access guard, making it unusable.
+    pub fn invalidate(&self) {
+        self.0.cell.replace(None);
     }
 
     /// Begins a new access scope. Currently this simply throws an erorr if there are any accesses held. Should only be used in a single-threaded context
@@ -341,23 +335,29 @@ impl<'w> WorldAccessGuard<'w> {
 
     /// Retrieves the underlying unsafe world cell, with no additional guarantees of safety
     /// proceed with caution and only use this if you understand what you're doing
-    pub fn as_unsafe_world_cell(&self) -> UnsafeWorldCell<'w> {
-        self.0.cell
+    pub fn as_unsafe_world_cell(&self) -> Result<UnsafeWorldCell<'w>, InteropError> {
+        self.0.cell.get().ok_or_else(InteropError::missing_world)
     }
 
     /// Retrieves the underlying read only unsafe world cell, with no additional guarantees of safety
     /// proceed with caution and only use this if you understand what you're doing
-    pub fn as_unsafe_world_cell_readonly(&self) -> UnsafeWorldCell<'w> {
-        self.0.cell
+    pub fn as_unsafe_world_cell_readonly(&self) -> Result<UnsafeWorldCell<'w>, InteropError> {
+        self.0.cell.get().ok_or_else(InteropError::missing_world)
     }
 
     /// Gets the component id of the given component or resource
-    pub fn get_component_id(&self, id: TypeId) -> Option<ComponentId> {
-        self.0.cell.components().get_id(id)
+    pub fn get_component_id(&self, id: TypeId) -> Result<Option<ComponentId>, InteropError> {
+        Ok(self
+            .as_unsafe_world_cell_readonly()?
+            .components()
+            .get_id(id))
     }
 
-    pub fn get_resource_id(&self, id: TypeId) -> Option<ComponentId> {
-        self.0.cell.components().get_resource_id(id)
+    pub fn get_resource_id(&self, id: TypeId) -> Result<Option<ComponentId>, InteropError> {
+        Ok(self
+            .as_unsafe_world_cell_readonly()?
+            .components()
+            .get_resource_id(id))
     }
 
     pub fn get_access_location(
@@ -423,7 +423,8 @@ impl<'w> WorldAccessGuard<'w> {
         R: Resource,
         F: FnOnce(&R) -> O,
     {
-        let access_id = ReflectAccessId::for_resource::<R>(&self.0.cell)?;
+        let cell = self.as_unsafe_world_cell()?;
+        let access_id = ReflectAccessId::for_resource::<R>(&cell)?;
 
         with_access_read!(
             self.0.accesses,
@@ -432,7 +433,7 @@ impl<'w> WorldAccessGuard<'w> {
             {
                 // Safety: we have acquired access for the duration of the closure
                 f(unsafe {
-                    self.0.cell.get_resource::<R>().ok_or_else(|| {
+                    cell.get_resource::<R>().ok_or_else(|| {
                         InteropError::unregistered_component_or_resource_type(
                             std::any::type_name::<R>(),
                         )
@@ -451,7 +452,8 @@ impl<'w> WorldAccessGuard<'w> {
         R: Resource,
         F: FnOnce(Mut<R>) -> O,
     {
-        let access_id = ReflectAccessId::for_resource::<R>(&self.0.cell)?;
+        let cell = self.as_unsafe_world_cell()?;
+        let access_id = ReflectAccessId::for_resource::<R>(&cell)?;
         with_access_write!(
             self.0.accesses,
             access_id,
@@ -459,7 +461,7 @@ impl<'w> WorldAccessGuard<'w> {
             {
                 // Safety: we have acquired access for the duration of the closure
                 f(unsafe {
-                    self.0.cell.get_resource_mut::<R>().ok_or_else(|| {
+                    cell.get_resource_mut::<R>().ok_or_else(|| {
                         InteropError::unregistered_component_or_resource_type(
                             std::any::type_name::<R>(),
                         )
@@ -478,14 +480,15 @@ impl<'w> WorldAccessGuard<'w> {
         T: Component,
         F: FnOnce(Option<&T>) -> O,
     {
-        let access_id = ReflectAccessId::for_component::<T>(&self.0.cell)?;
+        let cell = self.as_unsafe_world_cell()?;
+        let access_id = ReflectAccessId::for_component::<T>(&cell)?;
         with_access_read!(
             self.0.accesses,
             access_id,
             format!("Could not access component: {}", std::any::type_name::<T>()),
             {
                 // Safety: we have acquired access for the duration of the closure
-                f(unsafe { self.0.cell.get_entity(entity).and_then(|e| e.get::<T>()) })
+                f(unsafe { cell.get_entity(entity).and_then(|e| e.get::<T>()) })
             }
         )
     }
@@ -499,7 +502,8 @@ impl<'w> WorldAccessGuard<'w> {
         T: Component,
         F: FnOnce(Option<Mut<T>>) -> O,
     {
-        let access_id = ReflectAccessId::for_component::<T>(&self.0.cell)?;
+        let cell = self.as_unsafe_world_cell()?;
+        let access_id = ReflectAccessId::for_component::<T>(&cell)?;
 
         with_access_write!(
             self.0.accesses,
@@ -507,12 +511,7 @@ impl<'w> WorldAccessGuard<'w> {
             format!("Could not access component: {}", std::any::type_name::<T>()),
             {
                 // Safety: we have acquired access for the duration of the closure
-                f(unsafe {
-                    self.0
-                        .cell
-                        .get_entity(entity)
-                        .and_then(|e| e.get_mut::<T>())
-                })
+                f(unsafe { cell.get_entity(entity).and_then(|e| e.get_mut::<T>()) })
             }
         )
     }
@@ -540,18 +539,49 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     /// checks if a given entity exists and is valid
-    pub fn is_valid_entity(&self, entity: Entity) -> bool {
-        self.0.cell.get_entity(entity).is_some()
+    pub fn is_valid_entity(&self, entity: Entity) -> Result<bool, InteropError> {
+        let cell = self.as_unsafe_world_cell()?;
+        Ok(cell.get_entity(entity).is_some())
+    }
+
+    /// Tries to call a fitting overload of the function with the given name and in the type id's namespace based on the arguments provided.
+    /// Currently does this by repeatedly trying each overload until one succeeds or all fail.
+    pub fn try_call_overloads(
+        &self,
+        type_id: TypeId,
+        name: impl Into<Cow<'static, str>>,
+        args: Vec<ScriptValue>,
+        context: FunctionCallContext,
+    ) -> Result<ScriptValue, InteropError> {
+        let registry = self.script_function_registry();
+        let registry = registry.read();
+
+        let name = name.into();
+        let overload_iter = match registry.iter_overloads(Namespace::OnType(type_id), name) {
+            Ok(iter) => iter,
+            Err(name) => return Err(InteropError::missing_function(type_id, name.to_string())),
+        };
+
+        let mut last_error = None;
+        for overload in overload_iter {
+            match overload.call(args.clone(), context) {
+                Ok(out) => return Ok(out),
+                Err(e) => last_error = Some(e),
+            }
+        }
+
+        Err(last_error.ok_or_else(|| InteropError::invariant("invariant, iterator should always return at least one item, and if the call fails it should return an error"))?)
     }
 }
 
 /// Impl block for higher level world methods
 impl WorldAccessGuard<'_> {
-    pub fn spawn(&self) -> Entity {
+    pub fn spawn(&self) -> Result<Entity, InteropError> {
+        let cell = self.as_unsafe_world_cell()?;
         with_global_access!(self.0.accesses, "Could not spawn entity", {
             // Safety we have global access
-            let entity = unsafe { self.0.cell.world_mut().spawn_empty() };
-            entity.id()
+            let entity = unsafe { cell.world_mut().spawn_empty() };
+            Ok(entity.id())
         })
     }
 
@@ -567,21 +597,21 @@ impl WorldAccessGuard<'_> {
     pub fn get_component_type(
         &self,
         registration: ScriptTypeRegistration,
-    ) -> Result<ScriptComponentRegistration, ScriptTypeRegistration> {
-        match self.get_component_id(registration.type_id()) {
+    ) -> Result<Result<ScriptComponentRegistration, ScriptTypeRegistration>, InteropError> {
+        Ok(match self.get_component_id(registration.type_id())? {
             Some(comp_id) => Ok(ScriptComponentRegistration::new(registration, comp_id)),
             None => Err(registration),
-        }
+        })
     }
 
     pub fn get_resource_type(
         &self,
         registration: ScriptTypeRegistration,
-    ) -> Result<ScriptResourceRegistration, ScriptTypeRegistration> {
-        match self.get_resource_id(registration.type_id()) {
+    ) -> Result<Result<ScriptResourceRegistration, ScriptTypeRegistration>, InteropError> {
+        Ok(match self.get_resource_id(registration.type_id())? {
             Some(resource_id) => Ok(ScriptResourceRegistration::new(registration, resource_id)),
             None => Err(registration),
-        }
+        })
     }
 
     pub fn add_default_component(
@@ -589,6 +619,7 @@ impl WorldAccessGuard<'_> {
         entity: Entity,
         registration: ScriptComponentRegistration,
     ) -> Result<(), InteropError> {
+        let cell = self.as_unsafe_world_cell()?;
         let component_data = registration
             .type_registration()
             .type_registration()
@@ -613,7 +644,7 @@ impl WorldAccessGuard<'_> {
             .data::<ReflectFromWorld>()
         {
             with_global_access!(self.0.accesses, "Could not add default component", {
-                let world = unsafe { self.0.cell.world_mut() };
+                let world = unsafe { cell.world_mut() };
                 from_world_td.from_world(world)
             })
         } else {
@@ -626,7 +657,7 @@ impl WorldAccessGuard<'_> {
         //  TODO: this shouldn't need entire world access it feels
         with_global_access!(self.0.accesses, "Could not add default component", {
             let type_registry = self.type_registry();
-            let world = unsafe { self.0.cell.world_mut() };
+            let world = unsafe { cell.world_mut() };
 
             let mut entity = world
                 .get_entity_mut(entity)
@@ -644,15 +675,12 @@ impl WorldAccessGuard<'_> {
         entity: Entity,
         component_id: ComponentId,
     ) -> Result<Option<ReflectReference>, InteropError> {
-        let entity = self
-            .0
-            .cell
+        let cell = self.as_unsafe_world_cell()?;
+        let entity = cell
             .get_entity(entity)
             .ok_or_else(|| InteropError::missing_entity(entity))?;
 
-        let component_info = self
-            .0
-            .cell
+        let component_info = cell
             .components()
             .get_info(component_id)
             .ok_or_else(|| InteropError::invalid_component(component_id))?;
@@ -684,9 +712,8 @@ impl WorldAccessGuard<'_> {
         entity: Entity,
         component_id: ComponentId,
     ) -> Result<bool, InteropError> {
-        let entity = self
-            .0
-            .cell
+        let cell = self.as_unsafe_world_cell()?;
+        let entity = cell
             .get_entity(entity)
             .ok_or_else(|| InteropError::missing_entity(entity))?;
 
@@ -698,6 +725,7 @@ impl WorldAccessGuard<'_> {
         entity: Entity,
         registration: ScriptComponentRegistration,
     ) -> Result<(), InteropError> {
+        let cell = self.as_unsafe_world_cell()?;
         let component_data = registration
             .type_registration()
             .type_registration()
@@ -711,7 +739,7 @@ impl WorldAccessGuard<'_> {
 
         //  TODO: this shouldn't need entire world access it feels
         with_global_access!(self.0.accesses, "Could not remove component", {
-            let world = unsafe { self.0.cell.world_mut() };
+            let world = unsafe { cell.world_mut() };
             let mut entity = world
                 .get_entity_mut(entity)
                 .map_err(|_| InteropError::missing_entity(entity))?;
@@ -724,7 +752,8 @@ impl WorldAccessGuard<'_> {
         &self,
         resource_id: ComponentId,
     ) -> Result<Option<ReflectReference>, InteropError> {
-        let component_info = match self.0.cell.components().get_info(resource_id) {
+        let cell = self.as_unsafe_world_cell()?;
+        let component_info = match cell.components().get_info(resource_id) {
             Some(info) => info,
             None => return Ok(None),
         };
@@ -753,6 +782,7 @@ impl WorldAccessGuard<'_> {
         &self,
         registration: ScriptResourceRegistration,
     ) -> Result<(), InteropError> {
+        let cell = self.as_unsafe_world_cell()?;
         let component_data = registration
             .type_registration()
             .type_registration()
@@ -766,24 +796,25 @@ impl WorldAccessGuard<'_> {
 
         //  TODO: this shouldn't need entire world access it feels
         with_global_access!(self.0.accesses, "Could not remove resource", {
-            let world = unsafe { self.0.cell.world_mut() };
+            let world = unsafe { cell.world_mut() };
             component_data.remove(world);
             Ok(())
         })
     }
 
-    pub fn has_resource(&self, resource_id: ComponentId) -> bool {
+    pub fn has_resource(&self, resource_id: ComponentId) -> Result<bool, InteropError> {
+        let cell = self.as_unsafe_world_cell()?;
         // Safety: we are not reading the value at all
-        let res_ptr = unsafe { self.0.cell.get_resource_by_id(resource_id) };
-        res_ptr.is_some()
+        let res_ptr = unsafe { cell.get_resource_by_id(resource_id) };
+        Ok(res_ptr.is_some())
     }
 
-    pub fn has_entity(&self, entity: Entity) -> bool {
+    pub fn has_entity(&self, entity: Entity) -> Result<bool, InteropError> {
         self.is_valid_entity(entity)
     }
 
     pub fn get_children(&self, entity: Entity) -> Result<Vec<Entity>, InteropError> {
-        if !self.is_valid_entity(entity) {
+        if !self.is_valid_entity(entity)? {
             return Err(InteropError::missing_entity(entity));
         }
 
@@ -793,7 +824,7 @@ impl WorldAccessGuard<'_> {
     }
 
     pub fn get_parent(&self, entity: Entity) -> Result<Option<Entity>, InteropError> {
-        if !self.is_valid_entity(entity) {
+        if !self.is_valid_entity(entity)? {
             return Err(InteropError::missing_entity(entity));
         }
 
@@ -802,17 +833,17 @@ impl WorldAccessGuard<'_> {
 
     pub fn push_children(&self, parent: Entity, children: &[Entity]) -> Result<(), InteropError> {
         // verify entities exist
-        if !self.is_valid_entity(parent) {
+        if !self.is_valid_entity(parent)? {
             return Err(InteropError::missing_entity(parent));
         }
         for c in children {
-            if !self.is_valid_entity(*c) {
+            if !self.is_valid_entity(*c)? {
                 return Err(InteropError::missing_entity(*c));
             }
         }
-
+        let cell = self.as_unsafe_world_cell()?;
         with_global_access!(self.0.accesses, "Could not push children", {
-            let world = unsafe { self.0.cell.world_mut() };
+            let world = unsafe { cell.world_mut() };
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
             commands.entity(parent).add_children(children);
@@ -823,18 +854,19 @@ impl WorldAccessGuard<'_> {
     }
 
     pub fn remove_children(&self, parent: Entity, children: &[Entity]) -> Result<(), InteropError> {
-        if !self.is_valid_entity(parent) {
+        if !self.is_valid_entity(parent)? {
             return Err(InteropError::missing_entity(parent));
         }
 
         for c in children {
-            if !self.is_valid_entity(*c) {
+            if !self.is_valid_entity(*c)? {
                 return Err(InteropError::missing_entity(*c));
             }
         }
+        let cell = self.as_unsafe_world_cell()?;
 
         with_global_access!(self.0.accesses, "Could not remove children", {
-            let world = unsafe { self.0.cell.world_mut() };
+            let world = unsafe { cell.world_mut() };
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
             commands.entity(parent).remove_children(children);
@@ -850,18 +882,19 @@ impl WorldAccessGuard<'_> {
         index: usize,
         children: &[Entity],
     ) -> Result<(), InteropError> {
-        if !self.is_valid_entity(parent) {
+        if !self.is_valid_entity(parent)? {
             return Err(InteropError::missing_entity(parent));
         }
 
         for c in children {
-            if !self.is_valid_entity(*c) {
+            if !self.is_valid_entity(*c)? {
                 return Err(InteropError::missing_entity(*c));
             }
         }
 
+        let cell = self.as_unsafe_world_cell()?;
         with_global_access!(self.0.accesses, "Could not insert children", {
-            let world = unsafe { self.0.cell.world_mut() };
+            let world = unsafe { cell.world_mut() };
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
             commands.entity(parent).insert_children(index, children);
@@ -872,12 +905,12 @@ impl WorldAccessGuard<'_> {
     }
 
     pub fn despawn_recursive(&self, parent: Entity) -> Result<(), InteropError> {
-        if !self.is_valid_entity(parent) {
+        if !self.is_valid_entity(parent)? {
             return Err(InteropError::missing_entity(parent));
         }
-
+        let cell = self.as_unsafe_world_cell()?;
         with_global_access!(self.0.accesses, "Could not despawn entity", {
-            let world = unsafe { self.0.cell.world_mut() };
+            let world = unsafe { cell.world_mut() };
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
             commands.entity(parent).despawn_recursive();
@@ -888,12 +921,13 @@ impl WorldAccessGuard<'_> {
     }
 
     pub fn despawn(&self, entity: Entity) -> Result<(), InteropError> {
-        if !self.is_valid_entity(entity) {
+        if !self.is_valid_entity(entity)? {
             return Err(InteropError::missing_entity(entity));
         }
 
+        let cell = self.as_unsafe_world_cell()?;
         with_global_access!(self.0.accesses, "Could not despawn entity", {
-            let world = unsafe { self.0.cell.world_mut() };
+            let world = unsafe { cell.world_mut() };
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
             commands.entity(entity).despawn();
@@ -904,12 +938,14 @@ impl WorldAccessGuard<'_> {
     }
 
     pub fn despawn_descendants(&self, parent: Entity) -> Result<(), InteropError> {
-        if !self.is_valid_entity(parent) {
+        if !self.is_valid_entity(parent)? {
             return Err(InteropError::missing_entity(parent));
         }
 
+        let cell = self.as_unsafe_world_cell()?;
+
         with_global_access!(self.0.accesses, "Could not despawn descendants", {
-            let world = unsafe { self.0.cell.world_mut() };
+            let world = unsafe { cell.world_mut() };
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
             commands.entity(parent).despawn_descendants();
@@ -920,60 +956,45 @@ impl WorldAccessGuard<'_> {
     }
 
     /// Sends AppExit event to the world with success status
-    pub fn exit(&self) {
+    pub fn exit(&self) -> Result<(), InteropError> {
+        let cell = self.as_unsafe_world_cell()?;
         with_global_access!(self.0.accesses, "Could not exit the app", {
-            let world = unsafe { self.0.cell.world_mut() };
+            let world = unsafe { cell.world_mut() };
             world.send_event(AppExit::Success);
-        });
+            Ok(())
+        })
     }
 }
 
 /// Utility type for accessing the world in a callback
 pub trait WorldContainer {
     type Error: Debug;
-    /// Sets the world to the given value
-    fn set_world(&mut self, world: WorldCallbackAccess) -> Result<(), Self::Error>;
+    /// Sets the world to the given value in the container
+    fn set_world(&mut self, world: WorldGuard<'static>) -> Result<(), Self::Error>;
 
-    /// Tries to get the world
-    fn try_get_world(&self) -> Result<Arc<WorldAccessGuard<'static>>, Self::Error>;
-
-    fn try_get_callback_world(&self) -> Result<WorldCallbackAccess, Self::Error>;
+    /// Tries to get the world from the container
+    fn try_get_world(&self) -> Result<WorldGuard<'static>, Self::Error>;
 }
 
 /// A world container that stores the world in a thread local
 pub struct ThreadWorldContainer;
 
 thread_local! {
-    static WORLD_CALLBACK_ACCESS: RefCell<Option<WorldCallbackAccess>> = const { RefCell::new(None) };
+    static WORLD_CALLBACK_ACCESS: RefCell<Option<WorldGuard<'static>>> = const { RefCell::new(None) };
 }
 
 impl WorldContainer for ThreadWorldContainer {
     type Error = InteropError;
 
-    fn set_world(&mut self, world: WorldCallbackAccess) -> Result<(), Self::Error> {
+    fn set_world(&mut self, world: WorldGuard<'static>) -> Result<(), Self::Error> {
         WORLD_CALLBACK_ACCESS.with(|w| {
             w.replace(Some(world));
         });
         Ok(())
     }
 
-    fn try_get_world(&self) -> Result<Arc<WorldAccessGuard<'static>>, Self::Error> {
-        WORLD_CALLBACK_ACCESS.with(|w| {
-            w.borrow()
-                .as_ref()
-                .map(|w| w.try_read())
-                .ok_or_else(InteropError::missing_world)
-        })?
-    }
-
-    fn try_get_callback_world(&self) -> Result<WorldCallbackAccess, Self::Error> {
-        WORLD_CALLBACK_ACCESS.with(|w| {
-            w.borrow()
-                .as_ref()
-                .cloned()
-                // .map(|w| w.try_read())
-                .ok_or_else(InteropError::missing_world)
-        })
+    fn try_get_world(&self) -> Result<WorldGuard<'static>, Self::Error> {
+        WORLD_CALLBACK_ACCESS.with(|w| w.borrow().clone().ok_or_else(InteropError::missing_world))
     }
 }
 
