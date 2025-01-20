@@ -394,6 +394,7 @@ impl DisplayWithWorld for ReflectAccessId {
             super::access_map::ReflectAccessKind::Allocation => {
                 format!("Allocation({})", self.id)
             }
+            super::access_map::ReflectAccessKind::Global => "Global".to_owned(),
         }
     }
 
@@ -410,6 +411,7 @@ impl DisplayWithWorld for ReflectAccessId {
                 let type_id = allocator.get_type_id(&allocation_id).or_fake_id();
                 format!("Allocation({})", type_id.display_with_world(world))
             }
+            super::access_map::ReflectAccessKind::Global => "Global".to_owned(),
         }
     }
 }

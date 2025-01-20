@@ -1,10 +1,11 @@
-use std::{sync::atomic::AtomicBool, thread::ThreadId};
+use std::thread::ThreadId;
 
 use bevy::{
     ecs::{component::ComponentId, world::unsafe_world_cell::UnsafeWorldCell},
     prelude::Resource,
 };
 use dashmap::{DashMap, Entry};
+use parking_lot::RwLock;
 use smallvec::SmallVec;
 
 use crate::error::InteropError;
@@ -56,8 +57,14 @@ impl AccessCount {
     }
 }
 
+/// For structs which can be mapped to a u64 index
 pub trait AccessMapKey {
+    /// Convert the key to an index
+    ///
+    /// The key 0 must not be be used as it's reserved for global access
     fn as_index(&self) -> u64;
+
+    /// Convert an index back to the original struct
     fn from_index(value: u64) -> Self;
 }
 
@@ -76,6 +83,7 @@ impl AccessMapKey for u64 {
 pub enum ReflectAccessKind {
     ComponentOrResource,
     Allocation,
+    Global,
 }
 
 /// Describes the id pointing to the base value we are accessing via reflection, for components and resources this is the ComponentId
@@ -88,12 +96,13 @@ pub struct ReflectAccessId {
 
 impl AccessMapKey for ReflectAccessId {
     fn as_index(&self) -> u64 {
-        // project two linear non-negative ranges to a single linear non-negative range
-        // y1 = 2x - 0
-        // y2 = 2x - 1
+        // project two linear non-negative ranges to a single linear non-negative range, offset by 1 to avoid 0
+        // y1 = 2x - 0 + 1
+        // y2 = 2x - 1 + 1
         match self.kind {
-            ReflectAccessKind::ComponentOrResource => self.id * 2,
-            ReflectAccessKind::Allocation => self.id * 2 + 1,
+            ReflectAccessKind::ComponentOrResource => (self.id * 2) + 1,
+            ReflectAccessKind::Allocation => (self.id * 2) + 1,
+            ReflectAccessKind::Global => 0,
         }
     }
 
@@ -101,18 +110,28 @@ impl AccessMapKey for ReflectAccessId {
         // retrieve the kind of range based on if the value is odd or even
         // y1 if even, y2 if odd
         // to retrieve value of x:
-        // x1 = y / 2
-        // x2 = (y - 1) / 2
-        let (kind, id) = if value % 2 == 0 {
-            (ReflectAccessKind::ComponentOrResource, value / 2)
+        // x1 = (y / 2) - 1
+        // x2 = ((y - 1) / 2) - 1
+
+        let (kind, id) = if value == 0 {
+            (ReflectAccessKind::Global, 0)
+        } else if value % 2 == 0 {
+            (ReflectAccessKind::ComponentOrResource, (value / 2) - 1)
         } else {
-            (ReflectAccessKind::Allocation, (value - 1) / 2)
+            (ReflectAccessKind::Allocation, ((value - 1) / 2) - 1)
         };
         Self { kind, id }
     }
 }
 
 impl ReflectAccessId {
+    pub fn for_global() -> Self {
+        Self {
+            kind: ReflectAccessKind::Global,
+            id: 0,
+        }
+    }
+
     pub fn for_resource<R: Resource>(cell: &UnsafeWorldCell) -> Result<Self, InteropError> {
         let resource_id = cell.components().resource_id::<R>().ok_or_else(|| {
             InteropError::unregistered_component_or_resource_type(std::any::type_name::<R>())
@@ -190,16 +209,27 @@ impl From<ReflectAccessId> for ReflectAllocationId {
 #[derive(Debug, Default)]
 pub struct AccessMap {
     individual_accesses: DashMap<u64, AccessCount>,
-    global_lock: AtomicBool,
+    global_lock: RwLock<AccessCount>,
 }
 
 impl AccessMap {
+    pub fn is_locked_exclusively(&self) -> bool {
+        let global_lock = self.global_lock.read();
+        !global_lock.can_write()
+    }
+
+    pub fn global_access_location(&self) -> Option<std::panic::Location<'static>> {
+        let global_lock = self.global_lock.read();
+        global_lock.as_location()
+    }
+
     /// Tries to claim read access, will return false if somebody else is writing to the same key, or holding a global lock
     #[track_caller]
     pub fn claim_read_access<K: AccessMapKey>(&self, key: K) -> bool {
-        if self.global_lock.load(std::sync::atomic::Ordering::Relaxed) {
+        if self.is_locked_exclusively() {
             return false;
         }
+
         let key = key.as_index();
         let access = self.individual_accesses.try_entry(key);
         match access.map(Entry::or_default) {
@@ -217,7 +247,7 @@ impl AccessMap {
     #[track_caller]
     /// Tries to claim write access, will return false if somebody else is reading or writing to the same key, or holding a global lock
     pub fn claim_write_access<K: AccessMapKey>(&self, key: K) -> bool {
-        if self.global_lock.load(std::sync::atomic::Ordering::Relaxed) {
+        if self.is_locked_exclusively() {
             return false;
         }
         let key = key.as_index();
@@ -237,17 +267,19 @@ impl AccessMap {
 
     /// Tries to claim global access. This type of access prevents any other access from happening simulatenously
     /// Will return false if anybody else is currently accessing any part of the map
+    #[track_caller]
     pub fn claim_global_access(&self) -> bool {
-        self.individual_accesses.is_empty()
-            && self
-                .global_lock
-                .compare_exchange(
-                    false,
-                    true,
-                    std::sync::atomic::Ordering::Relaxed,
-                    std::sync::atomic::Ordering::Relaxed,
-                )
-                .is_ok()
+        let mut global_lock = self.global_lock.write();
+
+        if !self.individual_accesses.is_empty() || !global_lock.can_write() {
+            return false;
+        }
+        global_lock.read_by.push(ClaimOwner {
+            id: std::thread::current().id(),
+            location: *std::panic::Location::caller(),
+        });
+        global_lock.written = true;
+        true
     }
 
     /// Releases an access
@@ -278,8 +310,15 @@ impl AccessMap {
 
     /// Releases a global access
     pub fn release_global_access(&self) {
-        self.global_lock
-            .store(false, std::sync::atomic::Ordering::Relaxed);
+        let mut global_lock = self.global_lock.write();
+        global_lock.written = false;
+        if let Some(p) = global_lock.read_by.pop() {
+            assert!(
+                p.id == std::thread::current().id(),
+                "Access released from wrong thread, claimed at {}",
+                p.location.display_location()
+            );
+        }
     }
 
     pub fn list_accesses<K: AccessMapKey>(&self) -> Vec<(K, AccessCount)> {
@@ -295,14 +334,17 @@ impl AccessMap {
 
     pub fn release_all_accesses(&self) {
         self.individual_accesses.clear();
-        self.global_lock
-            .store(false, std::sync::atomic::Ordering::Relaxed);
+        self.release_global_access();
     }
 
     pub fn access_location<K: AccessMapKey>(
         &self,
         key: K,
     ) -> Option<std::panic::Location<'static>> {
+        if key.as_index() == 0 {
+            return self.global_access_location();
+        }
+
         self.individual_accesses
             .try_get(&key.as_index())
             .try_unwrap()
@@ -371,18 +413,17 @@ macro_rules! with_access_write {
 macro_rules! with_global_access {
     ($access_map:expr, $msg:expr, $body:block) => {
         if !$access_map.claim_global_access() {
-            panic!(
-                "{}. Another access is held somewhere else preventing locking the world: {}",
+            Err($crate::error::InteropError::cannot_claim_access(
+                $crate::bindings::access_map::ReflectAccessId::for_global(),
+                $access_map
+                    .access_location($crate::bindings::access_map::ReflectAccessId::for_global()),
                 $msg,
-                $crate::bindings::access_map::DisplayCodeLocation::display_location(
-                    $access_map.access_first_location()
-                )
-            );
+            ))
         } else {
             #[allow(clippy::redundant_closure_call)]
             let result = (|| $body)();
             $access_map.release_global_access();
-            result
+            Ok(result)
         }
     };
 }

@@ -208,6 +208,6 @@ impl WorldAccessGuard<'_> {
                     }
                 })
                 .collect())
-        })
+        })?
     }
 }

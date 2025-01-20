@@ -212,6 +212,19 @@ impl<'w> WorldAccessGuard<'w> {
         self.0.function_registry.clone()
     }
 
+    /// Claims access to the world for the duration of the closure, allowing for global access to the world.
+    #[track_caller]
+    pub fn with_global_access<F: FnOnce(&mut World) -> O, O>(
+        &self,
+        f: F,
+    ) -> Result<O, InteropError> {
+        with_global_access!(self.0.accesses, "Could not claim exclusive world access", {
+            // safety: we have global access for the duration of the closure
+            let world = unsafe { self.as_unsafe_world_cell()?.world_mut() };
+            Ok(f(world))
+        })?
+    }
+
     /// Safely accesses the resource by claiming and releasing access to it.
     ///
     /// # Panics
@@ -375,11 +388,9 @@ impl<'w> WorldAccessGuard<'w> {
 /// Impl block for higher level world methods
 impl WorldAccessGuard<'_> {
     pub fn spawn(&self) -> Result<Entity, InteropError> {
-        let cell = self.as_unsafe_world_cell()?;
-        with_global_access!(self.0.accesses, "Could not spawn entity", {
-            // Safety we have global access
-            let entity = unsafe { cell.world_mut().spawn_empty() };
-            Ok(entity.id())
+        self.with_global_access(|world| {
+            let entity = world.spawn_empty();
+            entity.id()
         })
     }
 
@@ -417,7 +428,7 @@ impl WorldAccessGuard<'_> {
         entity: Entity,
         registration: ScriptComponentRegistration,
     ) -> Result<(), InteropError> {
-        let cell = self.as_unsafe_world_cell()?;
+        // let cell = self.as_unsafe_world_cell()?;
         let component_data = registration
             .type_registration()
             .type_registration()
@@ -441,10 +452,7 @@ impl WorldAccessGuard<'_> {
             .type_registration()
             .data::<ReflectFromWorld>()
         {
-            with_global_access!(self.0.accesses, "Could not add default component", {
-                let world = unsafe { cell.world_mut() };
-                from_world_td.from_world(world)
-            })
+            self.with_global_access(|world| from_world_td.from_world(world))?
         } else {
             return Err(InteropError::missing_type_data(
                 registration.registration.type_id(),
@@ -453,9 +461,8 @@ impl WorldAccessGuard<'_> {
         };
 
         //  TODO: this shouldn't need entire world access it feels
-        with_global_access!(self.0.accesses, "Could not add default component", {
+        self.with_global_access(|world| {
             let type_registry = self.type_registry();
-            let world = unsafe { cell.world_mut() };
 
             let mut entity = world
                 .get_entity_mut(entity)
@@ -465,7 +472,7 @@ impl WorldAccessGuard<'_> {
                 component_data.insert(&mut entity, instance.as_partial_reflect(), &registry);
             }
             Ok(())
-        })
+        })?
     }
 
     pub fn insert_component(
@@ -493,13 +500,12 @@ impl WorldAccessGuard<'_> {
             let mut entity = world_mut
                 .get_entity_mut(entity)
                 .map_err(|_| InteropError::missing_entity(entity))?;
-            // TODO: is this fine? creating a new arc here?
-            // Safety: we have global access, we are only accessing the entity and component
+
             let ref_ = unsafe { value.reflect_unsafe(self.clone())? };
             component_data.apply_or_insert(&mut entity, ref_, &type_registry);
 
             Ok(())
-        })
+        })?
     }
 
     pub fn get_component(
@@ -557,7 +563,6 @@ impl WorldAccessGuard<'_> {
         entity: Entity,
         registration: ScriptComponentRegistration,
     ) -> Result<(), InteropError> {
-        let cell = self.as_unsafe_world_cell()?;
         let component_data = registration
             .type_registration()
             .type_registration()
@@ -570,14 +575,13 @@ impl WorldAccessGuard<'_> {
             })?;
 
         //  TODO: this shouldn't need entire world access it feels
-        with_global_access!(self.0.accesses, "Could not remove component", {
-            let world = unsafe { cell.world_mut() };
+        self.with_global_access(|world| {
             let mut entity = world
                 .get_entity_mut(entity)
                 .map_err(|_| InteropError::missing_entity(entity))?;
             component_data.remove(&mut entity);
             Ok(())
-        })
+        })?
     }
 
     pub fn get_resource(
@@ -614,7 +618,6 @@ impl WorldAccessGuard<'_> {
         &self,
         registration: ScriptResourceRegistration,
     ) -> Result<(), InteropError> {
-        let cell = self.as_unsafe_world_cell()?;
         let component_data = registration
             .type_registration()
             .type_registration()
@@ -627,11 +630,7 @@ impl WorldAccessGuard<'_> {
             })?;
 
         //  TODO: this shouldn't need entire world access it feels
-        with_global_access!(self.0.accesses, "Could not remove resource", {
-            let world = unsafe { cell.world_mut() };
-            component_data.remove(world);
-            Ok(())
-        })
+        self.with_global_access(|world| component_data.remove(world))
     }
 
     pub fn has_resource(&self, resource_id: ComponentId) -> Result<bool, InteropError> {
@@ -673,16 +672,12 @@ impl WorldAccessGuard<'_> {
                 return Err(InteropError::missing_entity(*c));
             }
         }
-        let cell = self.as_unsafe_world_cell()?;
-        with_global_access!(self.0.accesses, "Could not push children", {
-            let world = unsafe { cell.world_mut() };
+        self.with_global_access(|world| {
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
             commands.entity(parent).add_children(children);
             queue.apply(world);
-        });
-
-        Ok(())
+        })
     }
 
     pub fn remove_children(&self, parent: Entity, children: &[Entity]) -> Result<(), InteropError> {
@@ -695,17 +690,12 @@ impl WorldAccessGuard<'_> {
                 return Err(InteropError::missing_entity(*c));
             }
         }
-        let cell = self.as_unsafe_world_cell()?;
-
-        with_global_access!(self.0.accesses, "Could not remove children", {
-            let world = unsafe { cell.world_mut() };
+        self.with_global_access(|world| {
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
             commands.entity(parent).remove_children(children);
             queue.apply(world);
-        });
-
-        Ok(())
+        })
     }
 
     pub fn insert_children(
@@ -724,32 +714,24 @@ impl WorldAccessGuard<'_> {
             }
         }
 
-        let cell = self.as_unsafe_world_cell()?;
-        with_global_access!(self.0.accesses, "Could not insert children", {
-            let world = unsafe { cell.world_mut() };
+        self.with_global_access(|world| {
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
             commands.entity(parent).insert_children(index, children);
             queue.apply(world);
-        });
-
-        Ok(())
+        })
     }
 
     pub fn despawn_recursive(&self, parent: Entity) -> Result<(), InteropError> {
         if !self.is_valid_entity(parent)? {
             return Err(InteropError::missing_entity(parent));
         }
-        let cell = self.as_unsafe_world_cell()?;
-        with_global_access!(self.0.accesses, "Could not despawn entity", {
-            let world = unsafe { cell.world_mut() };
+        self.with_global_access(|world| {
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
             commands.entity(parent).despawn_recursive();
             queue.apply(world);
-        });
-
-        Ok(())
+        })
     }
 
     pub fn despawn(&self, entity: Entity) -> Result<(), InteropError> {
@@ -757,16 +739,12 @@ impl WorldAccessGuard<'_> {
             return Err(InteropError::missing_entity(entity));
         }
 
-        let cell = self.as_unsafe_world_cell()?;
-        with_global_access!(self.0.accesses, "Could not despawn entity", {
-            let world = unsafe { cell.world_mut() };
+        self.with_global_access(|world| {
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
             commands.entity(entity).despawn();
             queue.apply(world);
-        });
-
-        Ok(())
+        })
     }
 
     pub fn despawn_descendants(&self, parent: Entity) -> Result<(), InteropError> {
@@ -774,26 +752,18 @@ impl WorldAccessGuard<'_> {
             return Err(InteropError::missing_entity(parent));
         }
 
-        let cell = self.as_unsafe_world_cell()?;
-
-        with_global_access!(self.0.accesses, "Could not despawn descendants", {
-            let world = unsafe { cell.world_mut() };
+        self.with_global_access(|world| {
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
             commands.entity(parent).despawn_descendants();
             queue.apply(world);
-        });
-
-        Ok(())
+        })
     }
 
     /// Sends AppExit event to the world with success status
     pub fn exit(&self) -> Result<(), InteropError> {
-        let cell = self.as_unsafe_world_cell()?;
-        with_global_access!(self.0.accesses, "Could not exit the app", {
-            let world = unsafe { cell.world_mut() };
+        self.with_global_access(|world| {
             world.send_event(AppExit::Success);
-            Ok(())
         })
     }
 }
