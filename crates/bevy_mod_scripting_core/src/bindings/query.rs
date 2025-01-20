@@ -14,21 +14,23 @@ use std::{any::TypeId, collections::VecDeque, sync::Arc};
 #[reflect(opaque)]
 pub struct ScriptTypeRegistration {
     pub(crate) registration: Arc<TypeRegistration>,
-    pub component_id: Option<ComponentId>,
-    pub resource_id: Option<ComponentId>,
+}
+
+#[derive(Clone, Reflect, Debug)]
+pub struct ScriptComponentRegistration {
+    pub(crate) registration: ScriptTypeRegistration,
+    pub(crate) component_id: ComponentId,
+}
+
+#[derive(Clone, Reflect, Debug)]
+pub struct ScriptResourceRegistration {
+    pub(crate) registration: ScriptTypeRegistration,
+    pub(crate) resource_id: ComponentId,
 }
 
 impl ScriptTypeRegistration {
-    pub fn new(
-        registration: Arc<TypeRegistration>,
-        component_id: Option<ComponentId>,
-        resource_id: Option<ComponentId>,
-    ) -> Self {
-        Self {
-            registration,
-            component_id,
-            resource_id,
-        }
+    pub fn new(registration: Arc<TypeRegistration>) -> Self {
+        Self { registration }
     }
 
     #[inline(always)]
@@ -46,16 +48,47 @@ impl ScriptTypeRegistration {
         self.registration.type_info().type_id()
     }
 
-    /// Returns the [`ComponentId`] for this type, if it is a component.
-    #[inline(always)]
-    pub fn component_id(&self) -> Option<ComponentId> {
-        self.component_id
+    pub fn type_registration(&self) -> &TypeRegistration {
+        &self.registration
+    }
+}
+impl ScriptResourceRegistration {
+    pub fn new(registration: ScriptTypeRegistration, resource_id: ComponentId) -> Self {
+        Self {
+            registration,
+            resource_id,
+        }
     }
 
     /// Returns the [`ComponentId`] for this type, if it is a resource.
     #[inline(always)]
-    pub fn resource_id(&self) -> Option<ComponentId> {
+    pub fn resource_id(&self) -> ComponentId {
         self.resource_id
+    }
+
+    /// Returns the [`ScriptTypeRegistration`] for this type.
+    pub fn type_registration(&self) -> &ScriptTypeRegistration {
+        &self.registration
+    }
+}
+
+impl ScriptComponentRegistration {
+    pub fn new(registration: ScriptTypeRegistration, component_id: ComponentId) -> Self {
+        Self {
+            registration,
+            component_id,
+        }
+    }
+
+    /// Returns the [`ComponentId`] for this type, if it is a component.
+    #[inline(always)]
+    pub fn component_id(&self) -> ComponentId {
+        self.component_id
+    }
+
+    /// Returns the [`ScriptTypeRegistration`] for this type.
+    pub fn type_registration(&self) -> &ScriptTypeRegistration {
+        &self.registration
     }
 }
 
@@ -76,37 +109,37 @@ impl std::fmt::Display for ScriptTypeRegistration {
 #[derive(Clone, Default, Reflect)]
 #[reflect(opaque)]
 pub struct ScriptQueryBuilder {
-    components: Vec<ScriptTypeRegistration>,
-    with: Vec<ScriptTypeRegistration>,
-    without: Vec<ScriptTypeRegistration>,
+    components: Vec<ScriptComponentRegistration>,
+    with: Vec<ScriptComponentRegistration>,
+    without: Vec<ScriptComponentRegistration>,
 }
 
 impl ScriptQueryBuilder {
-    pub fn components(&mut self, components: Vec<ScriptTypeRegistration>) -> &mut Self {
+    pub fn components(&mut self, components: Vec<ScriptComponentRegistration>) -> &mut Self {
         self.components.extend(components);
         self
     }
-    pub fn component(&mut self, component: ScriptTypeRegistration) -> &mut Self {
+    pub fn component(&mut self, component: ScriptComponentRegistration) -> &mut Self {
         self.components.push(component);
         self
     }
 
-    pub fn with_components(&mut self, with: Vec<ScriptTypeRegistration>) -> &mut Self {
+    pub fn with_components(&mut self, with: Vec<ScriptComponentRegistration>) -> &mut Self {
         self.with.extend(with);
         self
     }
 
-    pub fn with_component(&mut self, with: ScriptTypeRegistration) -> &mut Self {
+    pub fn with_component(&mut self, with: ScriptComponentRegistration) -> &mut Self {
         self.with.push(with);
         self
     }
 
-    pub fn without_components(&mut self, without: Vec<ScriptTypeRegistration>) -> &mut Self {
+    pub fn without_components(&mut self, without: Vec<ScriptComponentRegistration>) -> &mut Self {
         self.without.extend(without);
         self
     }
 
-    pub fn without_component(&mut self, without: ScriptTypeRegistration) -> &mut Self {
+    pub fn without_component(&mut self, without: ScriptComponentRegistration) -> &mut Self {
         self.without.push(without);
         self
     }
@@ -142,33 +175,15 @@ impl WorldAccessGuard<'_> {
             // which entities match the query
             // so we might be being slightly overkill
             for c in &query.components {
-                dynamic_query.ref_id(c.component_id().ok_or_else(|| {
-                    InteropError::unsupported_operation(
-                        Some(c.type_id()),
-                        None,
-                        "query for component on non-component type".to_owned(),
-                    )
-                })?);
+                dynamic_query.ref_id(c.component_id());
             }
 
             for w in query.with {
-                dynamic_query.with_id(w.component_id.ok_or_else(|| {
-                    InteropError::unsupported_operation(
-                        Some(w.type_id()),
-                        None,
-                        "query for entity with component which is non-component type".to_owned(),
-                    )
-                })?);
+                dynamic_query.with_id(w.component_id());
             }
 
             for without_id in query.without {
-                dynamic_query.without_id(without_id.component_id.ok_or_else(|| {
-                    InteropError::unsupported_operation(
-                        Some(without_id.type_id()),
-                        None,
-                        "query for entity without component which is non-component type".to_owned(),
-                    )
-                })?);
+                dynamic_query.without_id(without_id.component_id());
             }
 
             let mut built_query = dynamic_query.build();
@@ -181,11 +196,8 @@ impl WorldAccessGuard<'_> {
                         .iter()
                         .map(|c| ReflectReference {
                             base: super::ReflectBaseType {
-                                type_id: c.type_id(),
-                                base_id: super::ReflectBase::Component(
-                                    r.id(),
-                                    c.component_id.unwrap(),
-                                ),
+                                type_id: c.type_registration().type_id(),
+                                base_id: super::ReflectBase::Component(r.id(), c.component_id()),
                             },
                             reflect_path: ParsedPath(vec![]),
                         })

@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 use bevy_mod_scripting_core::{
     bindings::{pretty_print::DisplayWithWorld, ThreadWorldContainer, WorldContainer},
     error::ScriptError,
@@ -31,7 +32,7 @@ impl Test {
                     globals.set(
                         "assert_throws",
                         ctxt.create_function(|_lua, (f, reg): (Function, String)| {
-                            let world =  ThreadWorldContainer.get_world();
+                            let world =  ThreadWorldContainer.try_get_world()?;
                             let result = f.call::<()>(MultiValue::new());
                             let err = match result {
                                 Ok(_) => {

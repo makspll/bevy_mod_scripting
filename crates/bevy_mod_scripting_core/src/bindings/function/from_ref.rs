@@ -67,12 +67,11 @@ impl FromScriptRef for Box<dyn PartialReflect> {
             )
         })?;
 
-        if type_info.is_option() {
-            let inner_type = type_info.option_inner_type().expect("invariant");
+        if let Some(inner_option_type) = type_info.option_inner_type() {
             let mut dynamic_enum = match value {
                 ScriptValue::Unit => DynamicEnum::new("None", DynamicVariant::Unit),
                 _ => {
-                    let inner = Self::from_script_ref(inner_type, value, world)?;
+                    let inner = Self::from_script_ref(inner_option_type, value, world)?;
                     DynamicEnum::new(
                         "Some",
                         DynamicVariant::Tuple(DynamicTuple::from_iter(vec![inner])),
@@ -84,13 +83,11 @@ impl FromScriptRef for Box<dyn PartialReflect> {
             return Ok(Box::new(dynamic_enum));
         }
 
-        if type_info.is_list() {
-            let inner_type = type_info.list_inner_type().expect("invariant");
-
+        if let Some(inner_list_type) = type_info.list_inner_type() {
             if let ScriptValue::List(vec) = value {
                 let mut dynamic_list = DynamicList::default();
                 for item in vec {
-                    let inner = Self::from_script_ref(inner_type, item, world.clone())?;
+                    let inner = Self::from_script_ref(inner_list_type, item, world.clone())?;
                     dynamic_list.push_box(inner);
                 }
 

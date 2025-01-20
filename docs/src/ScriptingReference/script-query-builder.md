@@ -11,7 +11,7 @@ Arguments:
 | Argument | Type | Description |
 | --- | --- | --- |
 | `s` | `ScriptQueryBuilder` | The query builder |
-| `component` | `ScriptTypeRegistration` | The component to query for |
+| `component` | `ScriptComponentRegistration` | The component to query for |
 
 Returns:
 
@@ -30,7 +30,7 @@ Arguments:
 | Argument | Type | Description |
 | --- | --- | --- |
 | `s` | `ScriptQueryBuilder` | The query builder |
-| `with` | `ScriptTypeRegistration` | The component to include in the query |
+| `with` | `ScriptComponentRegistration` | The component to include in the query |
 
 Returns:
 
@@ -49,7 +49,7 @@ Arguments:
 | Argument | Type | Description |
 | --- | --- | --- |
 | `s` | `ScriptQueryBuilder` | The query builder |
-| `without` | `ScriptTypeRegistration` | The component to exclude from the query |
+| `without` | `ScriptComponentRegistration` | The component to exclude from the query |
 
 Returns:
 

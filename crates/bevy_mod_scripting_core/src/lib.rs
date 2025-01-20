@@ -24,6 +24,7 @@ pub mod commands;
 pub mod context;
 pub mod error;
 pub mod event;
+pub mod extractors;
 pub mod handler;
 pub mod reflection_extensions;
 pub mod runtime;
@@ -143,6 +144,12 @@ pub trait ConfigureScriptPlugin {
         initializer: ContextPreHandlingInitializer<Self::P>,
     ) -> Self;
     fn add_runtime_initializer(self, initializer: RuntimeInitializer<Self::P>) -> Self;
+
+    /// Switch the context assigning strategy to a global context assigner.
+    ///
+    /// This means that all scripts will share the same context. This is useful for when you want to share data between scripts easilly.
+    /// Be careful however as this also means that scripts can interfere with each other in unexpected ways!.
+    fn enable_context_sharing(self);
 }
 
 impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugin for P {
@@ -165,6 +172,10 @@ impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugi
     fn add_runtime_initializer(mut self, initializer: RuntimeInitializer<Self::P>) -> Self {
         self.as_mut().add_runtime_initializer(initializer);
         self
+    }
+
+    fn enable_context_sharing(mut self) {
+        self.as_mut().context_assigner = ContextAssigner::new_global_context_assigner();
     }
 }
 

@@ -8,6 +8,7 @@
 - [Running Scripts](./Summary/running-scripts.md)
 - [Controlling Script Bindings](./Summary/controlling-script-bindings.md)
 - [Modifying Script Contexts](./Summary/customizing-script-contexts.md)
+- [Shared Contexts](./Summary/sharing-contexts-between-scripts.md)
 
 # Scripting Reference
 
@@ -16,6 +17,8 @@
     - [World](./ScriptingReference/world.md)
     - [ReflectReference](./ScriptingReference/reflect-reference.md)
     - [ScriptTypeRegistration](./ScriptingReference/script-type-registration.md)
+    - [ScriptComponentRegistration](./ScriptingReference/script-component-registration.md)
+    - [ScriptResourceRegistration](./ScriptingReference/script-resource-registration.md)
     - [ScriptQueryBuilder](./ScriptingReference/script-query-builder.md)
     - [ScriptQueryResult](./ScriptingReference/script-query-result.md)
 - [Core Callbacks](./ScriptingReference/core-callbacks.md)

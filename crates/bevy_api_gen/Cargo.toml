@@ -58,5 +58,3 @@ chrono = "0.4"
 
 [build-dependencies]
 toml = "0.8"
-
-[workspace]

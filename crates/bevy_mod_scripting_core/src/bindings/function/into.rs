@@ -1,6 +1,6 @@
 use std::{borrow::Cow, ffi::OsString, path::PathBuf};
 
-use bevy::reflect::PartialReflect;
+use bevy::reflect::Reflect;
 
 use crate::{
     bindings::{script_value::ScriptValue, ReflectReference, WorldGuard},
@@ -112,9 +112,9 @@ impl IntoScript for ReflectReference {
     }
 }
 
-impl<T: PartialReflect> IntoScript for Val<T> {
+impl<T: Reflect> IntoScript for Val<T> {
     fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
-        let boxed: Box<dyn PartialReflect> = Box::new(self.0);
+        let boxed = Box::new(self.0);
         let allocator = world.allocator();
         let mut allocator = allocator.write();
 

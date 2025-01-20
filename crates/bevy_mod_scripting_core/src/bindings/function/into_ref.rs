@@ -1,6 +1,6 @@
 use std::{ffi::OsString, path::PathBuf};
 
-use bevy::reflect::{ParsedPath, PartialReflect};
+use bevy::reflect::{Access, PartialReflect};
 
 use crate::{
     bindings::{function::into::IntoScript, ReflectReference, WorldGuard},
@@ -99,7 +99,7 @@ fn into_script_ref(
     // either return nil or ref into
     if let Ok(as_option) = r.as_option() {
         return if let Some(s) = as_option {
-            self_.index_path(ParsedPath::parse_static(".0").expect("invariant"));
+            self_.index_path(vec![FIRST_TUPLE_FIELD_ACCESS]);
             into_script_ref(self_, s, world)
         } else {
             Ok(ScriptValue::Unit)
@@ -108,3 +108,5 @@ fn into_script_ref(
 
     Ok(ScriptValue::Reference(self_))
 }
+
+const FIRST_TUPLE_FIELD_ACCESS: Access = Access::TupleIndex(0);
