@@ -129,6 +129,16 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
             Ok(Val(world.spawn()?))
         })
         .register(
+            "insert_component",
+            |ctxt: FunctionCallContext,
+             e: Val<Entity>,
+             r: Val<ScriptComponentRegistration>,
+             v: ReflectReference| {
+                let world = ctxt.world()?;
+                world.insert_component(*e, r.into_inner(), v)
+            },
+        )
+        .register(
             "insert_children",
             |ctxt: FunctionCallContext, e: Val<Entity>, index: usize, c: Vec<Val<Entity>>| {
                 let world = ctxt.world()?;
