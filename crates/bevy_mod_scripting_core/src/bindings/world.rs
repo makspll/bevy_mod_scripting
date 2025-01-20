@@ -138,6 +138,16 @@ impl WorldCallbackAccess {
         world.add_default_component(entity, registration)
     }
 
+    pub fn insert_component(
+        &self,
+        entity: Entity,
+        registration: ScriptComponentRegistration,
+        value: ReflectReference,
+    ) -> Result<(), InteropError> {
+        let world = self.try_read()?;
+        world.insert_component(entity, registration, value)
+    }
+
     pub fn get_component(
         &self,
         entity: Entity,
@@ -635,6 +645,39 @@ impl WorldAccessGuard<'_> {
                 let registry = type_registry.read();
                 component_data.insert(&mut entity, instance.as_partial_reflect(), &registry);
             }
+            Ok(())
+        })
+    }
+
+    pub fn insert_component(
+        &self,
+        entity: Entity,
+        registration: ScriptComponentRegistration,
+        value: ReflectReference,
+    ) -> Result<(), InteropError> {
+        let component_data = registration
+            .type_registration()
+            .type_registration()
+            .data::<ReflectComponent>()
+            .ok_or_else(|| {
+                InteropError::missing_type_data(
+                    registration.registration.type_id(),
+                    "ReflectComponent".to_owned(),
+                )
+            })?;
+
+        with_global_access!(self.0.accesses, "Could not insert element", {
+            let type_registry = self.type_registry();
+            let type_registry = type_registry.read();
+            let world_mut = unsafe { self.0.cell.world_mut() };
+            let mut entity = world_mut
+                .get_entity_mut(entity)
+                .map_err(|_| InteropError::missing_entity(entity))?;
+            // TODO: is this fine? creating a new arc here?
+            // Safety: we have global access, we are only accessing the entity and component
+            let ref_ = unsafe { value.reflect_unsafe(Arc::new(self.clone()))? };
+            component_data.apply_or_insert(&mut entity, ref_, &type_registry);
+
             Ok(())
         })
     }

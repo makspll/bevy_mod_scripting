@@ -116,6 +116,13 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
                 w.add_default_component(*e, r.clone())
             },
         )
+        .register(
+            "insert_component",
+            |w: WorldCallbackAccess,
+             e: Val<Entity>,
+             r: Val<ScriptComponentRegistration>,
+             v: ReflectReference| { w.insert_component(*e, r.into_inner(), v) },
+        )
         .register("spawn", |s: WorldCallbackAccess| Ok(Val(s.spawn()?)))
         .register(
             "insert_children",

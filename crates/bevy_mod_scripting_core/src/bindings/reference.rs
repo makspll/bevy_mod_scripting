@@ -221,9 +221,6 @@ impl ReflectReference {
 
     /// The way to access the value of the reference, that is the pointed-to value.
     /// This method is safe to use as it ensures no-one else has aliasing access to the value at the same time.
-    ///
-    /// # Panics
-    /// - if the value is aliased and the access is not allowed
     #[track_caller]
     pub fn with_reflect<O, F: FnOnce(&dyn PartialReflect) -> O>(
         &self,
@@ -241,9 +238,6 @@ impl ReflectReference {
 
     /// The way to access the value of the reference, that is the pointed-to value.
     /// This method is safe to use as it ensures no-one else has aliasing access to the value at the same time.
-    ///
-    /// # Panics
-    /// - if the value is aliased and the access is not allowed
     #[track_caller]
     pub fn with_reflect_mut<O, F: FnOnce(&mut dyn PartialReflect) -> O>(
         &self,
