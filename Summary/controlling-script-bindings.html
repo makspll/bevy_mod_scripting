@@ -187,14 +187,22 @@
 <pre><code class="language-lua">hello_world("hi from lua!")
 </code></pre>
 <h2 id="context-arguments"><a class="header" href="#context-arguments">Context Arguments</a></h2>
-<p>Each script function call always receives 2 context arguments, namely:</p>
-<ul>
-<li><code>CallerContext</code></li>
-<li><code>WorldCallbackAccess</code></li>
-</ul>
-<p>The first one is configured by the caller, and contains requests from the caller to your function, such as "I am calling you from a 1-indexed array system, please convert the index first", This argument is only relevant if you're targeting multiple languages.</p>
-<p>The second argument gives you access to the world from your function.</p>
-<p>You can opt-in to receive these arguments by adding them to your closure arguments in the above order (either both or just one)</p>
+<p>Each script function call always receives an additional context argument: <code>FunctionCallContext</code>.
+You can opt-in to receive this argument in your own function definitions by adding it as the first argument.</p>
+<p>The context contains requests from the caller to your function, such as "I am calling you from a 1-indexed array system, please convert the index first", This argument is only relevant if you're targeting multiple languages.</p>
+<p>It also allows you to retrieve the world via <code>FunctionCallContext::world()</code>.</p>
+<p>You can use this as follows:</p>
+<pre><code class="language-rust ignore">    NamespaceBuilder::&lt;ReflectReference&gt;::new(&amp;mut world)
+        .register(
+            "hello_world",
+            |ctx: FunctionCallContext, s: String| {
+                let world = ctx.world()?;
+                let should_use_0_indexing = ctx.convert_to_0_indexed;
+                println!(should_use_0_indexing);
+                println!(s)
+                Ok(())
+            },
+        );</code></pre>
 <h2 id="generic-arguments"><a class="header" href="#generic-arguments">Generic Arguments</a></h2>
 <p>Sometimes you might want to be generic over the type of argument you're accepting, you can do so by accepting <code>ScriptValue</code> arguments like so:</p>
 <pre><code class="language-rust ignore">    NamespaceBuilder::&lt;ReflectReference&gt;::new(&amp;mut world)
