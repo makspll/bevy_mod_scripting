@@ -265,6 +265,18 @@ end
 </div>
 <pre><code class="language-lua">world.add_default_component(entity, MyType)
 </code></pre>
+<h3 id="insert_component"><a class="header" href="#insert_component">insert_component</a></h3>
+<p>Inserts or applies the given value to the component of the entity. If the component does not exist it will be added.</p>
+<p>Arguments:</p>
+<div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>entity</code></td><td><code>Entity</code></td><td>The entity to add the component to</td></tr>
+<tr><td><code>registration</code></td><td><code>ScriptTypeRegistration</code></td><td>The type registration as returned by <code>get_type_by_name</code> of the component</td></tr>
+<tr><td><code>component</code></td><td><code>ReflectReference</code></td><td>A reference to an existing component value to be inserted</td></tr>
+</tbody></table>
+</div>
+<pre><code class="language-lua">local existingComponent = world.get_component(otherEntity, MyType)
+world.insert_component(entity, MyType, existingComponent)
+</code></pre>
 <h3 id="spawn"><a class="header" href="#spawn">spawn</a></h3>
 <p>Returns:</p>
 <div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
