@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::todo, clippy::expect_used, clippy::panic)]
 use bevy_mod_scripting_core::AddRuntimeInitializer;
 use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
 use libtest_mimic::{Arguments, Failed, Trial};

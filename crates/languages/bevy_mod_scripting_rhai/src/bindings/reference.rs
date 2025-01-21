@@ -1,4 +1,4 @@
-use super::script_value::{FromDynamic, RHAI_CALLER_CONTEXT};
+use super::script_value::{FromDynamic, IntoDynamic, RHAI_CALLER_CONTEXT};
 use bevy_mod_scripting_core::{
     bindings::{
         pretty_print::DisplayWithWorld, script_value::ScriptValue, ReflectReference,
@@ -53,7 +53,7 @@ impl CustomType for RhaiReflectReference {
         builder
             .with_name(std::any::type_name::<ReflectReference>())
             .with_indexer_get(|self_: &mut Self, _index: Dynamic| {
-                let world = ThreadWorldContainer.get_world();
+                let world = ThreadWorldContainer.try_get_world()?;
                 let self_ = &self_.0;
                 let type_id = self_.tail_type_id(world.clone())?.or_fake_id();
 
@@ -63,7 +63,7 @@ impl CustomType for RhaiReflectReference {
                         match world
                             .lookup_function([type_id, TypeId::of::<ReflectReference>()], string)
                         {
-                            Ok(func) => return Ok(Dynamic::from(func)),
+                            Ok(func) => return ScriptValue::Function(func).into_dynamic(),
                             Err(string) => ScriptValue::String(string),
                         }
                     }
@@ -72,11 +72,10 @@ impl CustomType for RhaiReflectReference {
 
                 let func = world
                     .lookup_function([type_id, TypeId::of::<ReflectReference>()], "get")
-                    .expect("No 'get' function registered for ReflectReference");
+                    .map_err(|_| InteropError::missing_function(type_id, "get".to_owned()))?;
 
                 let out = func.call(
                     vec![ScriptValue::Reference(self_.clone()), key],
-                    world,
                     RHAI_CALLER_CONTEXT,
                 )?;
 
@@ -93,13 +92,13 @@ impl CustomType for RhaiStaticReflectReference {
         builder
             .with_name(std::any::type_name::<RhaiStaticReflectReference>())
             .with_indexer_get(|self_: &mut Self, index: Dynamic| {
-                let world = ThreadWorldContainer.get_world();
+                let world = ThreadWorldContainer.try_get_world()?;
                 let type_id = self_.0;
                 let key: ScriptValue = ScriptValue::from_dynamic(index)?;
 
                 let key = match key.as_string() {
                     Ok(name) => match world.lookup_function([type_id], name) {
-                        Ok(func) => return Ok(Dynamic::from(func)),
+                        Ok(func) => return ScriptValue::Function(func).into_dynamic(),
                         Err(key) => ScriptValue::String(key),
                     },
                     Err(key) => key,

@@ -1,4 +1,3 @@
-let my_fn = world["get_type_by_name"];
-print(my_fn);
-let type = my_fn("UnregisteredType");
+let type = world.get_type_by_name.call("MissingType");
+
 assert(type == (), "Unregistered type was found");
