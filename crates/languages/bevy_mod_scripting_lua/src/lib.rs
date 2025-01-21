@@ -6,7 +6,7 @@ use bevy_mod_scripting_core::{
     asset::{AssetPathToLanguageMapper, Language},
     bindings::{
         function::namespace::Namespace, script_value::ScriptValue, ThreadWorldContainer,
-        WorldCallbackAccess, WorldContainer,
+        WorldContainer,
     },
     context::{ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
@@ -151,7 +151,6 @@ pub fn lua_context_load(
     content: &[u8],
     initializers: &[ContextInitializer<LuaScriptingPlugin>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
-    world: &mut World,
     _: &mut (),
 ) -> Result<Lua, ScriptError> {
     #[cfg(feature = "unsafe_lua_modules")]
@@ -159,21 +158,18 @@ pub fn lua_context_load(
     #[cfg(not(feature = "unsafe_lua_modules"))]
     let mut context = Lua::new();
 
-    with_world(world, &mut context, |context| {
-        initializers
-            .iter()
-            .try_for_each(|init| init(script_id, context))?;
+    initializers
+        .iter()
+        .try_for_each(|init| init(script_id, &mut context))?;
 
-        pre_handling_initializers
-            .iter()
-            .try_for_each(|init| init(script_id, Entity::from_raw(0), context))?;
+    pre_handling_initializers
+        .iter()
+        .try_for_each(|init| init(script_id, Entity::from_raw(0), &mut context))?;
 
-        context
-            .load(content)
-            .exec()
-            .map_err(ScriptError::from_mlua_error)?;
-        Ok(())
-    })?;
+    context
+        .load(content)
+        .exec()
+        .map_err(ScriptError::from_mlua_error)?;
 
     Ok(context)
 }
@@ -184,7 +180,6 @@ pub fn lua_context_reload(
     old_ctxt: &mut Lua,
     initializers: &[ContextInitializer<LuaScriptingPlugin>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
-    world: &mut World,
     _: &mut (),
 ) -> Result<(), ScriptError> {
     *old_ctxt = lua_context_load(
@@ -192,7 +187,6 @@ pub fn lua_context_reload(
         content,
         initializers,
         pre_handling_initializers,
-        world,
         &mut (),
     )?;
     Ok(())
@@ -207,38 +201,23 @@ pub fn lua_handler(
     context: &mut Lua,
     pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
     _: &mut (),
-    world: &mut bevy::ecs::world::World,
 ) -> Result<ScriptValue, bevy_mod_scripting_core::error::ScriptError> {
-    with_world(world, context, |context| {
-        pre_handling_initializers
-            .iter()
-            .try_for_each(|init| init(script_id, entity, context))?;
+    pre_handling_initializers
+        .iter()
+        .try_for_each(|init| init(script_id, entity, context))?;
 
-        let handler: Function = match context.globals().raw_get(callback_label.as_ref()) {
-            Ok(handler) => handler,
-            // not subscribed to this event type
-            Err(_) => return Ok(ScriptValue::Unit),
-        };
+    let handler: Function = match context.globals().raw_get(callback_label.as_ref()) {
+        Ok(handler) => handler,
+        // not subscribed to this event type
+        Err(_) => return Ok(ScriptValue::Unit),
+    };
 
-        let input = MultiValue::from_vec(
-            args.into_iter()
-                .map(|arg| LuaScriptValue::from(arg).into_lua(context))
-                .collect::<Result<_, _>>()?,
-        );
+    let input = MultiValue::from_vec(
+        args.into_iter()
+            .map(|arg| LuaScriptValue::from(arg).into_lua(context))
+            .collect::<Result<_, _>>()?,
+    );
 
-        let out = handler.call::<LuaScriptValue>(input)?;
-        Ok(out.into())
-    })
-}
-
-/// Safely scopes world access for a lua context to the given closure's scope
-pub fn with_world<O, F: FnOnce(&mut Lua) -> Result<O, ScriptError>>(
-    world: &mut World,
-    context: &mut Lua,
-    f: F,
-) -> Result<O, ScriptError> {
-    WorldCallbackAccess::with_callback_access(world, |guard| {
-        ThreadWorldContainer.set_world(guard.clone())?;
-        f(context)
-    })
+    let out = handler.call::<LuaScriptValue>(input)?;
+    Ok(out.into())
 }

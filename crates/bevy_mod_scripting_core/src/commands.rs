@@ -1,8 +1,9 @@
 use crate::{
     asset::ScriptAsset,
+    context::ContextBuilder,
     event::{IntoCallbackLabel, OnScriptLoaded, OnScriptUnloaded},
     extractors::{extract_handler_context, yield_handler_context, HandlerContext},
-    handler::handle_script_errors,
+    handler::{handle_script_errors, CallbackSettings},
     script::{Script, ScriptId},
     IntoScriptPluginParams,
 };
@@ -44,7 +45,8 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
             match res_ctxt.script_contexts.get_mut(script.context_id) {
                 Some(context) => {
                     // first let the script uninstall itself
-                    match (res_ctxt.callback_settings.callback_handler)(
+                    match (CallbackSettings::<P>::call)(
+                        res_ctxt.callback_settings.callback_handler,
                         vec![],
                         bevy::ecs::entity::Entity::from_raw(0),
                         &self.id,
@@ -130,7 +132,8 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
             self.id
         );
 
-        match (res_ctxt.callback_settings.callback_handler)(
+        match (CallbackSettings::<P>::call)(
+            res_ctxt.callback_settings.callback_handler,
             vec![],
             bevy::ecs::entity::Entity::from_raw(0),
             &self.id,
@@ -165,7 +168,8 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         previous_context_id: u32,
     ) {
         if let Some(mut previous_context) = res_ctxt.script_contexts.remove(previous_context_id) {
-            match (res_ctxt.context_loading_settings.loader.reload)(
+            match (ContextBuilder::<P>::reload)(
+                res_ctxt.context_loading_settings.loader.reload,
                 &self.id,
                 &self.content,
                 &mut previous_context,
@@ -231,7 +235,8 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
                 } else {
                     // load new context
                     bevy::log::debug!("{}", log_context);
-                    let ctxt = (res_ctxt.context_loading_settings.loader.load)(
+                    let ctxt = (ContextBuilder::<P>::load)(
+                        res_ctxt.context_loading_settings.loader.load,
                         &self.id,
                         &self.content,
                         &res_ctxt.context_loading_settings.context_initializers,
@@ -333,7 +338,7 @@ mod test {
 
         app.insert_resource(ContextLoadingSettings::<DummyPlugin> {
             loader: ContextBuilder {
-                load: |name, c, init, pre_run_init, _, _| {
+                load: |name, c, init, pre_run_init, _| {
                     let mut context = String::from_utf8_lossy(c).into();
                     for init in init {
                         init(name, &mut context)?;
@@ -343,7 +348,7 @@ mod test {
                     }
                     Ok(context)
                 },
-                reload: |name, new, existing, init, pre_run_init, _, _| {
+                reload: |name, new, existing, init, pre_run_init, _| {
                     *existing = String::from_utf8_lossy(new).into();
                     for init in init {
                         init(name, existing)?;
@@ -371,7 +376,7 @@ mod test {
             runtime: "Runtime".to_string(),
         })
         .insert_resource(CallbackSettings::<DummyPlugin> {
-            callback_handler: |_, _, _, callback, c, _, _, _| {
+            callback_handler: |_, _, _, callback, c, _, _| {
                 c.push_str(format!(" callback-ran-{}", callback).as_str());
                 Ok(ScriptValue::Unit)
             },

@@ -1,4 +1,5 @@
 use crate::{
+    bindings::{ThreadWorldContainer, WorldContainer, WorldGuard},
     error::ScriptError,
     script::{Script, ScriptId},
     IntoScriptPluginParams,
@@ -91,26 +92,73 @@ impl<T: IntoScriptPluginParams> Clone for ContextLoadingSettings<T> {
         }
     }
 }
+pub type ContextLoadFn<P> = fn(
+    script_id: &ScriptId,
+    content: &[u8],
+    context_initializers: &[ContextInitializer<P>],
+    pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
+    runtime: &mut <P as IntoScriptPluginParams>::R,
+) -> Result<<P as IntoScriptPluginParams>::C, ScriptError>;
+
+pub type ContextReloadFn<P> = fn(
+    script_id: &ScriptId,
+    content: &[u8],
+    previous_context: &mut <P as IntoScriptPluginParams>::C,
+    context_initializers: &[ContextInitializer<P>],
+    pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
+    runtime: &mut <P as IntoScriptPluginParams>::R,
+) -> Result<(), ScriptError>;
 
 /// A strategy for loading and reloading contexts
 pub struct ContextBuilder<P: IntoScriptPluginParams> {
-    pub load: fn(
+    pub load: ContextLoadFn<P>,
+    pub reload: ContextReloadFn<P>,
+}
+
+impl<P: IntoScriptPluginParams> ContextBuilder<P> {
+    pub fn load(
+        loader: ContextLoadFn<P>,
         script: &ScriptId,
         content: &[u8],
         context_initializers: &[ContextInitializer<P>],
         pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
         world: &mut World,
         runtime: &mut P::R,
-    ) -> Result<P::C, ScriptError>,
-    pub reload: fn(
+    ) -> Result<P::C, ScriptError> {
+        WorldGuard::with_static_guard(world, |world| {
+            ThreadWorldContainer.set_world(world)?;
+            (loader)(
+                script,
+                content,
+                context_initializers,
+                pre_handling_initializers,
+                runtime,
+            )
+        })
+    }
+
+    pub fn reload(
+        reloader: ContextReloadFn<P>,
         script: &ScriptId,
-        new_content: &[u8],
-        context: &mut P::C,
+        content: &[u8],
+        previous_context: &mut P::C,
         context_initializers: &[ContextInitializer<P>],
         pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
         world: &mut World,
         runtime: &mut P::R,
-    ) -> Result<(), ScriptError>,
+    ) -> Result<(), ScriptError> {
+        WorldGuard::with_static_guard(world, |world| {
+            ThreadWorldContainer.set_world(world)?;
+            (reloader)(
+                script,
+                content,
+                previous_context,
+                context_initializers,
+                pre_handling_initializers,
+                runtime,
+            )
+        })
+    }
 }
 
 impl<P: IntoScriptPluginParams> Clone for ContextBuilder<P> {

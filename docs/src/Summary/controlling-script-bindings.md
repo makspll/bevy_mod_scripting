@@ -44,15 +44,28 @@ hello_world("hi from lua!")
 
 ## Context Arguments
 
-Each script function call always receives 2 context arguments, namely:
-- `CallerContext`
-- `WorldCallbackAccess`
+Each script function call always receives an additional context argument: `FunctionCallContext`.
+You can opt-in to receive this argument in your own function definitions by adding it as the first argument.
 
-The first one is configured by the caller, and contains requests from the caller to your function, such as "I am calling you from a 1-indexed array system, please convert the index first", This argument is only relevant if you're targeting multiple languages.
+The context contains requests from the caller to your function, such as "I am calling you from a 1-indexed array system, please convert the index first", This argument is only relevant if you're targeting multiple languages.
 
-The second argument gives you access to the world from your function.
+It also allows you to retrieve the world via `FunctionCallContext::world()`.
 
-You can opt-in to receive these arguments by adding them to your closure arguments in the above order (either both or just one)
+You can use this as follows:
+
+```rust,ignore
+    NamespaceBuilder::<ReflectReference>::new(&mut world)
+        .register(
+            "hello_world",
+            |ctx: FunctionCallContext, s: String| {
+                let world = ctx.world()?;
+                let should_use_0_indexing = ctx.convert_to_0_indexed;
+                println!(should_use_0_indexing);
+                println!(s)
+                Ok(())
+            },
+        );
+```
 
 ## Generic Arguments
 

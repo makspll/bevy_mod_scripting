@@ -145,6 +145,24 @@ Arguments:
 world.add_default_component(entity, MyType)
 ```
 
+### insert_component
+
+Inserts or applies the given value to the component of the entity. If the component does not exist it will be added.
+
+Arguments:
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `entity` | `Entity` | The entity to add the component to |
+| `registration` | `ScriptTypeRegistration` | The type registration as returned by `get_type_by_name` of the component |
+| `component` | `ReflectReference` | A reference to an existing component value to be inserted |
+
+```lua
+local existingComponent = world.get_component(otherEntity, MyType)
+world.insert_component(entity, MyType, existingComponent)
+```
+
+
 ### spawn
 
 Returns:

@@ -373,8 +373,8 @@ impl DisplayWithWorld for ComponentId {
     fn display_with_world(&self, world: WorldGuard) -> String {
         let component_name = world
             .as_unsafe_world_cell()
-            .components()
-            .get_info(*self)
+            .ok()
+            .and_then(|c| c.components().get_info(*self))
             .map(|info| info.name());
 
         match component_name {
@@ -394,6 +394,7 @@ impl DisplayWithWorld for ReflectAccessId {
             super::access_map::ReflectAccessKind::Allocation => {
                 format!("Allocation({})", self.id)
             }
+            super::access_map::ReflectAccessKind::Global => "Global".to_owned(),
         }
     }
 
@@ -410,6 +411,7 @@ impl DisplayWithWorld for ReflectAccessId {
                 let type_id = allocator.get_type_id(&allocation_id).or_fake_id();
                 format!("Allocation({})", type_id.display_with_world(world))
             }
+            super::access_map::ReflectAccessKind::Global => "Global".to_owned(),
         }
     }
 }
@@ -543,7 +545,7 @@ mod test {
 
     use crate::bindings::{
         function::script_function::AppScriptFunctionRegistry, AppReflectAllocator,
-        ReflectAllocationId, WorldAccessGuard,
+        ReflectAllocationId,
     };
 
     use super::*;
@@ -566,7 +568,7 @@ mod test {
     #[test]
     fn test_type_id() {
         let mut world = setup_world();
-        let world = WorldGuard::new(WorldAccessGuard::new(&mut world));
+        let world = WorldGuard::new(&mut world);
 
         let type_id = TypeId::of::<usize>();
         assert_eq!(type_id.display_with_world(world.clone()), "usize");
@@ -585,7 +587,7 @@ mod test {
     #[test]
     fn test_reflect_base_type() {
         let mut world = setup_world();
-        let world = WorldGuard::new(WorldAccessGuard::new(&mut world));
+        let world = WorldGuard::new(&mut world);
 
         let type_id = TypeId::of::<usize>();
 
@@ -621,7 +623,7 @@ mod test {
     fn test_reflect_reference() {
         let mut world = setup_world();
 
-        let world = WorldGuard::new(WorldAccessGuard::new(&mut world));
+        let world = WorldGuard::new(&mut world);
 
         let type_id = TypeId::of::<usize>();
 

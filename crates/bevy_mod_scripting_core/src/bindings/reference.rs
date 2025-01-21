@@ -139,7 +139,7 @@ impl ReflectReference {
     }
 
     pub fn new_resource_ref<T: Resource>(world: WorldGuard) -> Result<Self, InteropError> {
-        let reflect_id = ReflectAccessId::for_resource::<T>(&world.as_unsafe_world_cell())?;
+        let reflect_id = ReflectAccessId::for_resource::<T>(&world.as_unsafe_world_cell()?)?;
         Ok(Self {
             base: ReflectBaseType {
                 type_id: TypeId::of::<T>(),
@@ -153,7 +153,7 @@ impl ReflectReference {
         entity: Entity,
         world: WorldGuard,
     ) -> Result<Self, InteropError> {
-        let reflect_id = ReflectAccessId::for_component::<T>(&world.as_unsafe_world_cell())?;
+        let reflect_id = ReflectAccessId::for_component::<T>(&world.as_unsafe_world_cell()?)?;
         Ok(Self {
             base: ReflectBaseType {
                 type_id: TypeId::of::<T>(),
@@ -221,9 +221,6 @@ impl ReflectReference {
 
     /// The way to access the value of the reference, that is the pointed-to value.
     /// This method is safe to use as it ensures no-one else has aliasing access to the value at the same time.
-    ///
-    /// # Panics
-    /// - if the value is aliased and the access is not allowed
     #[track_caller]
     pub fn with_reflect<O, F: FnOnce(&dyn PartialReflect) -> O>(
         &self,
@@ -241,9 +238,6 @@ impl ReflectReference {
 
     /// The way to access the value of the reference, that is the pointed-to value.
     /// This method is safe to use as it ensures no-one else has aliasing access to the value at the same time.
-    ///
-    /// # Panics
-    /// - if the value is aliased and the access is not allowed
     #[track_caller]
     pub fn with_reflect_mut<O, F: FnOnce(&mut dyn PartialReflect) -> O>(
         &self,
@@ -323,7 +317,7 @@ impl ReflectReference {
             .base
             .base_id
             .clone()
-            .into_ptr(world.as_unsafe_world_cell())
+            .into_ptr(world.as_unsafe_world_cell()?)
             .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
 
         // (Ptr) Safety: we use the same type_id to both
@@ -377,7 +371,7 @@ impl ReflectReference {
             .base
             .base_id
             .clone()
-            .into_ptr_mut(world.as_unsafe_world_cell())
+            .into_ptr_mut(world.as_unsafe_world_cell()?)
             .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
 
         // (Ptr) Safety: we use the same type_id to both
@@ -569,7 +563,7 @@ mod test {
     use bevy::prelude::{AppTypeRegistry, World};
 
     use crate::bindings::{
-        function::script_function::AppScriptFunctionRegistry, AppReflectAllocator, WorldAccessGuard,
+        function::script_function::AppScriptFunctionRegistry, AppReflectAllocator,
     };
 
     use super::*;
@@ -609,7 +603,7 @@ mod test {
             .spawn(Component(vec!["hello".to_owned(), "world".to_owned()]))
             .id();
 
-        let world_guard = WorldGuard::new(WorldAccessGuard::new(&mut world));
+        let world_guard = WorldGuard::new(&mut world);
 
         let mut component_ref =
             ReflectReference::new_component_ref::<Component>(entity, world_guard.clone())
@@ -689,7 +683,7 @@ mod test {
 
         world.insert_resource(Resource(vec!["hello".to_owned(), "world".to_owned()]));
 
-        let world_guard = WorldGuard::new(WorldAccessGuard::new(&mut world));
+        let world_guard = WorldGuard::new(&mut world);
 
         let mut resource_ref = ReflectReference::new_resource_ref::<Resource>(world_guard.clone())
             .expect("could not create resource reference");
@@ -768,7 +762,7 @@ mod test {
 
         let value = Component(vec!["hello".to_owned(), "world".to_owned()]);
 
-        let world_guard = WorldGuard::new(WorldAccessGuard::new(&mut world));
+        let world_guard = WorldGuard::new(&mut world);
         let allocator = world_guard.allocator();
         let mut allocator_write = allocator.write();
         let mut allocation_ref = ReflectReference::new_allocated(value, &mut allocator_write);

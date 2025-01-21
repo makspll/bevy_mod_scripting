@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-alpha.7](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.0-alpha.6...bevy_mod_scripting_core-v0.9.0-alpha.7) - 2025-01-20
+
+### Added
+
+- [**breaking**] Remove `WorldCallbackAccess` & Combine context args for dynamic functions into one `FunctionCallContext` (#219)
+- Add component `upsert` function (#218)
+
 ## [0.9.0-alpha.6](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.0-alpha.5...bevy_mod_scripting_core-v0.9.0-alpha.6) - 2025-01-19
 
 ### Added
