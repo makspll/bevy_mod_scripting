@@ -36,6 +36,8 @@ parking_lot = "0.12.1"
 dashmap = "6"
 smallvec = "1.11"
 itertools = "0.13"
+allocator-api2 = "0.2"
+blink-alloc = { version = "0.3", features = ["sync"] }
 
 [dev-dependencies]
 test_utils = { workspace = true }

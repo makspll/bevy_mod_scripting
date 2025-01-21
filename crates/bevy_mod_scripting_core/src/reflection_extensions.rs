@@ -1,7 +1,4 @@
-use crate::{
-    bindings::{ReflectReference, WorldGuard},
-    error::InteropError,
-};
+use crate::{bindings::WorldGuard, error::InteropError};
 use bevy::reflect::{
     func::Return, FromReflect, PartialReflect, Reflect, ReflectFromReflect, ReflectMut, TypeInfo,
 };
@@ -22,8 +19,6 @@ pub trait PartialReflectExt {
         reflect: &dyn PartialReflect,
         world: WorldGuard,
     ) -> Box<dyn PartialReflect>;
-
-    fn allocate(boxed: Box<dyn Reflect>, world: WorldGuard) -> ReflectReference;
 
     /// Check if the represented type is from the given crate and has the given type identifier,
     /// returns false if not representing any type or if the type is not from the given crate or does not have the given type identifier.
@@ -401,12 +396,6 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
             Ok(v) => v.into_partial_reflect(),
             Err(_) => reflect.clone_value(),
         }
-    }
-
-    fn allocate(boxed: Box<dyn Reflect>, world: WorldGuard) -> ReflectReference {
-        let allocator = world.allocator();
-        let mut allocator = allocator.write();
-        ReflectReference::new_allocated_boxed(boxed, &mut allocator)
     }
 }
 

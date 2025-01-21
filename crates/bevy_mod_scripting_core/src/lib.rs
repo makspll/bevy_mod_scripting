@@ -5,9 +5,8 @@ use asset::{
 };
 use bevy::prelude::*;
 use bindings::{
-    function::script_function::AppScriptFunctionRegistry, garbage_collector,
-    script_value::ScriptValue, AppReflectAllocator, ReflectAllocator, ReflectReference,
-    ScriptTypeRegistration,
+    cleanup_deferred_allocations, function::script_function::AppScriptFunctionRegistry,
+    script_value::ScriptValue, ReflectReference, ScriptTypeRegistration,
 };
 use context::{
     Context, ContextAssigner, ContextBuilder, ContextInitializer, ContextLoadingSettings,
@@ -192,7 +191,6 @@ fn once_per_app_init(app: &mut App) {
 
     app.add_event::<ScriptErrorEvent>()
         .add_event::<ScriptCallbackEvent>()
-        .init_resource::<AppReflectAllocator>()
         .init_resource::<Scripts>()
         .init_asset::<ScriptAsset>()
         .init_resource::<AppScriptFunctionRegistry>()
@@ -203,7 +201,7 @@ fn once_per_app_init(app: &mut App) {
 
     app.add_systems(
         PostUpdate,
-        ((garbage_collector).in_set(ScriptingSystemSet::GarbageCollection),),
+        ((cleanup_deferred_allocations).in_set(ScriptingSystemSet::GarbageCollection),),
     );
 
     configure_asset_systems(app);

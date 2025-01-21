@@ -23,53 +23,34 @@ use test_utils::test_data::EnumerateTestComponents;
 pub fn register_test_functions(world: &mut App) {
     let world = world.world_mut();
     NamespaceBuilder::<World>::new_unregistered(world)
-        .register("_get_mock_type", |s: FunctionCallContext| {
-            let world = s.world().unwrap();
+        .register("_get_mock_type", || {
             #[derive(Reflect)]
             struct Dummy;
             let reg = ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()));
-            let allocator = world.allocator();
-            let mut allocator = allocator.write();
-            ReflectReference::new_allocated(reg, &mut allocator)
+            ReflectReference::new_allocated(reg)
         })
-        .register("_get_mock_component_type", |s: FunctionCallContext| {
-            let world = s.world().unwrap();
+        .register("_get_mock_component_type", || {
             #[derive(Reflect)]
             struct Dummy;
             let reg = ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()));
             let comp = ScriptComponentRegistration::new(reg, ComponentId::new(999999999999999));
-            let allocator = world.allocator();
-            let mut allocator = allocator.write();
-            ReflectReference::new_allocated(comp, &mut allocator)
+            ReflectReference::new_allocated(comp)
         })
-        .register("_get_mock_resource_type", |s: FunctionCallContext| {
-            let world = s.world().unwrap();
+        .register("_get_mock_resource_type", || {
             #[derive(Reflect)]
             struct Dummy;
             let reg = ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()));
             let comp = ScriptResourceRegistration::new(reg, ComponentId::new(999999999999999));
-            let allocator = world.allocator();
-            let mut allocator = allocator.write();
-            ReflectReference::new_allocated(comp, &mut allocator)
+            ReflectReference::new_allocated(comp)
         })
-        .register(
-            "_get_entity_with_test_component",
-            |s: FunctionCallContext, name: String| {
-                let world = s.world().unwrap();
-                World::enumerate_test_components()
-                    .iter()
-                    .find(|(n, _, _)| n.contains(&name))
-                    .map(|(_, _, c)| {
-                        let allocator = world.allocator();
-                        let mut allocator = allocator.write();
-
-                        ReflectReference::new_allocated(
-                            c.unwrap_or(Entity::from_raw(9999)),
-                            &mut allocator,
-                        )
-                    })
-            },
-        )
+        .register("_get_entity_with_test_component", |name: String| {
+            World::enumerate_test_components()
+                .iter()
+                .find(|(n, _, _)| n.contains(&name))
+                .map(|(_, _, c)| {
+                    ReflectReference::new_allocated(c.unwrap_or(Entity::from_raw(9999)))
+                })
+        })
         .register(
             "_assert_throws",
             |s: FunctionCallContext, f: DynamicScriptFunctionMut, reg: String| {

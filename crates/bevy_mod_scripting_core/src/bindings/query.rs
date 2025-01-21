@@ -1,5 +1,5 @@
 use super::{ReflectReference, WorldAccessGuard};
-use crate::{error::InteropError, with_global_access};
+use crate::error::InteropError;
 use bevy::{
     ecs::{component::ComponentId, entity::Entity},
     prelude::{EntityRef, QueryBuilder},
@@ -167,8 +167,7 @@ impl WorldAccessGuard<'_> {
         &self,
         query: ScriptQueryBuilder,
     ) -> Result<VecDeque<ScriptQueryResult>, InteropError> {
-        with_global_access!(self.0.accesses, "Could not query", {
-            let world = unsafe { self.as_unsafe_world_cell()?.world_mut() };
+        self.with_global_access(|world| {
             let mut dynamic_query = QueryBuilder::<EntityRef>::new(world);
 
             // we don't actually want to fetch the data for components now, only figure out

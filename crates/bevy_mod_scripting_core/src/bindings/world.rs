@@ -13,8 +13,8 @@ use super::{
     },
     pretty_print::DisplayWithWorld,
     script_value::ScriptValue,
-    AppReflectAllocator, ReflectBase, ReflectBaseType, ReflectReference,
-    ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration,
+    ReflectBase, ReflectBaseType, ReflectReference, ScriptComponentRegistration,
+    ScriptResourceRegistration, ScriptTypeRegistration,
 };
 use crate::{error::InteropError, with_access_read, with_access_write, with_global_access};
 use bevy::{
@@ -58,7 +58,6 @@ pub(crate) struct WorldAccessGuardInner<'w> {
     pub(crate) accesses: AccessMap,
     /// Cached for convenience, since we need it for most operations, means we don't need to lock the type registry every time
     type_registry: TypeRegistryArc,
-    allocator: AppReflectAllocator,
     function_registry: AppScriptFunctionRegistry,
 }
 
@@ -90,8 +89,6 @@ impl<'w> WorldAccessGuard<'w> {
     pub fn new(world: &'w mut World) -> Self {
         let type_registry = world.get_resource_or_init::<AppTypeRegistry>().0.clone();
 
-        let allocator = world.get_resource_or_init::<AppReflectAllocator>().clone();
-
         let function_registry = world
             .get_resource_or_init::<AppScriptFunctionRegistry>()
             .clone();
@@ -99,7 +96,6 @@ impl<'w> WorldAccessGuard<'w> {
         Self(Rc::new(WorldAccessGuardInner {
             cell,
             accesses: Default::default(),
-            allocator,
             type_registry,
             function_registry,
         }))
@@ -200,11 +196,6 @@ impl<'w> WorldAccessGuard<'w> {
     /// Returns the type registry for the world
     pub fn type_registry(&self) -> TypeRegistryArc {
         self.0.type_registry.clone()
-    }
-
-    /// Returns the script allocator for the world
-    pub fn allocator(&self) -> AppReflectAllocator {
-        self.0.allocator.clone()
     }
 
     /// Returns the function registry for the world

@@ -1,8 +1,8 @@
 use crate::reflection_extensions::{FakeType, TypeIdExtensions};
 
 use super::{
-    access_map::ReflectAccessId, script_value::ScriptValue, ReflectAllocationId, ReflectBase,
-    ReflectBaseType, ReflectReference, WorldGuard,
+    access_map::ReflectAccessId, script_value::ScriptValue, ReflectBase, ReflectBaseType,
+    ReflectReference, ReflectionPathExt, WorldGuard,
 };
 use bevy::{
     ecs::component::ComponentId,
@@ -81,9 +81,11 @@ impl ReflectReferencePrinter {
 
             pretty_path.push_str(&self.reference.reflect_path.to_string());
 
-            if let Some(tail_type_id) = tail_type_id {
-                let type_path = tail_type_id.display_with_world(world);
-                pretty_path.push_str(&format!(" -> {}", type_path));
+            if !self.reference.reflect_path.is_empty() {
+                if let Some(tail_type_id) = tail_type_id {
+                    let type_path = tail_type_id.display_with_world(world);
+                    pretty_path.push_str(&format!(" -> {}", type_path));
+                }
             }
         } else {
             Self::pretty_print_base(&self.reference.base, None, &mut pretty_path);
@@ -101,7 +103,7 @@ impl ReflectReferencePrinter {
                 // instead of relying on type registrations, simply traverse the reflection tree and print sensible values
                 self.reference
                     .with_reflect(world, |r| {
-                        self.pretty_print_value_inner(r, &mut output);
+                        Self::pretty_print_value_inner(r, &mut output);
                     })
                     .unwrap_or_else(|e| {
                         output.push_str(&format!("<Error in printing: {}>", e));
@@ -117,8 +119,8 @@ impl ReflectReferencePrinter {
 
     fn pretty_print_base(base: &ReflectBaseType, world: Option<WorldGuard>, out: &mut String) {
         let type_id = base.type_id;
-        let type_path = if let Some(world) = world {
-            type_id.display_with_world(world.clone())
+        let type_path = if let Some(world) = world.clone() {
+            type_id.display_with_world(world)
         } else {
             type_id.display_without_world()
         };
@@ -126,12 +128,28 @@ impl ReflectReferencePrinter {
         let base_kind = match base.base_id {
             ReflectBase::Component(e, _) => format!("Component on entity {}", e),
             ReflectBase::Resource(_) => "Resource".to_owned(),
-            ReflectBase::Owned(ref id) => format!("Allocation({})", id),
+            ReflectBase::Owned(ref alloc) => {
+                if let Some(world) = world {
+                    let raid = ReflectAccessId::for_allocation(alloc);
+                    if world.claim_read_access(raid) {
+                        // safety: we just checked that we have read access
+                        let partial_reflect = unsafe { alloc.get() };
+                        let mut out = String::new();
+                        Self::pretty_print_value_inner(partial_reflect, &mut out);
+                        unsafe { world.release_access(raid) };
+                        format!("Allocation({})", out)
+                    } else {
+                        "Allocation".to_string()
+                    }
+                } else {
+                    "Allocation".to_string()
+                }
+            }
         };
 
         out.push_str(&format!("{}({})", base_kind, type_path));
     }
-    pub fn pretty_print_value_opaque(&self, v: &dyn PartialReflect, output: &mut String) {
+    pub fn pretty_print_value_opaque(v: &dyn PartialReflect, output: &mut String) {
         let type_id = v
             .get_represented_type_info()
             .map(|t| t.type_id())
@@ -195,7 +213,6 @@ impl ReflectReferencePrinter {
         N: Iterator<Item = &'k str>,
         M: Iterator<Item = &'k dyn PartialReflect>,
     >(
-        &self,
         field_names: N,
         field_values: M,
         output: &mut String,
@@ -209,13 +226,13 @@ impl ReflectReferencePrinter {
                 itertools::EitherOrBoth::Right(name) => (().as_partial_reflect(), name),
             };
             let mut field_printed = String::new();
-            self.pretty_print_value_inner(val, &mut field_printed);
+            Self::pretty_print_value_inner(val, &mut field_printed);
             (Some(name), field_printed)
         });
         Self::pretty_print_key_values(BracketType::Curly, fields_iter, output);
     }
 
-    fn pretty_print_value_inner(&self, v: &dyn PartialReflect, output: &mut String) {
+    fn pretty_print_value_inner(v: &dyn PartialReflect, output: &mut String) {
         match v.reflect_ref() {
             bevy::reflect::ReflectRef::Struct(s) => {
                 let field_names = s
@@ -225,12 +242,12 @@ impl ReflectReferencePrinter {
                     .iter();
                 let field_values = s.iter_fields();
 
-                self.pretty_print_value_struct(field_names.copied(), field_values, output);
+                Self::pretty_print_value_struct(field_names.copied(), field_values, output);
             }
             ReflectRef::TupleStruct(t) => {
                 let fields_iter = t.iter_fields().enumerate().map(|(i, val)| {
                     let mut field_printed = String::new();
-                    self.pretty_print_value_inner(val, &mut field_printed);
+                    Self::pretty_print_value_inner(val, &mut field_printed);
                     (Some(i.to_string()), field_printed)
                 });
                 Self::pretty_print_key_values(BracketType::Round, fields_iter, output);
@@ -238,7 +255,7 @@ impl ReflectReferencePrinter {
             ReflectRef::Tuple(t) => {
                 let fields_iter = t.iter_fields().map(|val| {
                     let mut field_printed = String::new();
-                    self.pretty_print_value_inner(val, &mut field_printed);
+                    Self::pretty_print_value_inner(val, &mut field_printed);
                     (None::<String>, field_printed)
                 });
                 Self::pretty_print_key_values(BracketType::Round, fields_iter, output);
@@ -246,7 +263,7 @@ impl ReflectReferencePrinter {
             ReflectRef::List(l) => {
                 let fields_iter = l.iter().map(|val| {
                     let mut field_printed = String::new();
-                    self.pretty_print_value_inner(val, &mut field_printed);
+                    Self::pretty_print_value_inner(val, &mut field_printed);
                     (None::<String>, field_printed)
                 });
                 Self::pretty_print_key_values(BracketType::Square, fields_iter, output);
@@ -254,7 +271,7 @@ impl ReflectReferencePrinter {
             ReflectRef::Array(a) => {
                 let fields_iter = a.iter().map(|val| {
                     let mut field_printed = String::new();
-                    self.pretty_print_value_inner(val, &mut field_printed);
+                    Self::pretty_print_value_inner(val, &mut field_printed);
                     (None::<String>, field_printed)
                 });
                 Self::pretty_print_key_values(BracketType::Square, fields_iter, output);
@@ -262,10 +279,10 @@ impl ReflectReferencePrinter {
             ReflectRef::Map(m) => {
                 let fields_iter = m.iter().map(|(key, val)| {
                     let mut key_printed = String::new();
-                    self.pretty_print_value_inner(key, &mut key_printed);
+                    Self::pretty_print_value_inner(key, &mut key_printed);
 
                     let mut field_printed = String::new();
-                    self.pretty_print_value_inner(val, &mut field_printed);
+                    Self::pretty_print_value_inner(val, &mut field_printed);
                     (Some(key_printed), field_printed)
                 });
                 Self::pretty_print_key_values(BracketType::Curly, fields_iter, output);
@@ -273,7 +290,7 @@ impl ReflectReferencePrinter {
             ReflectRef::Set(s) => {
                 let fields_iter = s.iter().map(|val| {
                     let mut field_printed = String::new();
-                    self.pretty_print_value_inner(val, &mut field_printed);
+                    Self::pretty_print_value_inner(val, &mut field_printed);
                     (None::<String>, field_printed)
                 });
                 Self::pretty_print_key_values(BracketType::Curly, fields_iter, output);
@@ -286,13 +303,13 @@ impl ReflectReferencePrinter {
                 };
                 let key_vals = e.iter_fields().map(|v| {
                     let mut field_printed = String::new();
-                    self.pretty_print_value_inner(v.value(), &mut field_printed);
+                    Self::pretty_print_value_inner(v.value(), &mut field_printed);
                     (v.name(), field_printed)
                 });
                 Self::pretty_print_key_values(bracket_type, key_vals, output);
             }
             ReflectRef::Opaque(o) => {
-                self.pretty_print_value_opaque(o, output);
+                Self::pretty_print_value_opaque(o, output);
             }
             ReflectRef::Function(f) => {
                 output.push_str("Function(");
@@ -404,14 +421,8 @@ impl DisplayWithWorld for ReflectAccessId {
                 let component_id = ComponentId::from(*self);
                 component_id.display_with_world(world)
             }
-            super::access_map::ReflectAccessKind::Allocation => {
-                let allocation_id = ReflectAllocationId::from(*self);
-                let allocator = world.allocator();
-                let allocator = allocator.read();
-                let type_id = allocator.get_type_id(&allocation_id).or_fake_id();
-                format!("Allocation({})", type_id.display_with_world(world))
-            }
-            super::access_map::ReflectAccessKind::Global => "Global".to_owned(),
+            super::access_map::ReflectAccessKind::Allocation => self.display_without_world(),
+            super::access_map::ReflectAccessKind::Global => self.display_without_world(),
         }
     }
 }
@@ -541,12 +552,8 @@ impl<T: DisplayWithWorld> DisplayWithWorld for Vec<T> {
 
 #[cfg(test)]
 mod test {
+    use crate::bindings::function::script_function::AppScriptFunctionRegistry;
     use bevy::prelude::AppTypeRegistry;
-
-    use crate::bindings::{
-        function::script_function::AppScriptFunctionRegistry, AppReflectAllocator,
-        ReflectAllocationId,
-    };
 
     use super::*;
 
@@ -555,9 +562,6 @@ mod test {
 
         let type_registry = AppTypeRegistry::default();
         world.insert_resource(type_registry);
-
-        let allocator = AppReflectAllocator::default();
-        world.insert_resource(allocator);
 
         let script_function_registry = AppScriptFunctionRegistry::default();
         world.insert_resource(script_function_registry);
@@ -585,41 +589,6 @@ mod test {
     }
 
     #[test]
-    fn test_reflect_base_type() {
-        let mut world = setup_world();
-        let world = WorldGuard::new(&mut world);
-
-        let type_id = TypeId::of::<usize>();
-
-        assert_eq!(
-            ReflectBaseType {
-                base_id: ReflectBase::Owned(ReflectAllocationId::new(0)),
-                type_id,
-            }
-            .display_with_world(world.clone()),
-            "Allocation(0)(usize)"
-        );
-
-        assert_eq!(
-            ReflectBaseType {
-                base_id: ReflectBase::Owned(ReflectAllocationId::new(0)),
-                type_id,
-            }
-            .display_value_with_world(world.clone()),
-            "Allocation(0)(usize)"
-        );
-
-        assert_eq!(
-            ReflectBaseType {
-                base_id: ReflectBase::Owned(ReflectAllocationId::new(0)),
-                type_id,
-            }
-            .display_without_world(),
-            format!("Allocation(0)({:?})", type_id)
-        );
-    }
-
-    #[test]
     fn test_reflect_reference() {
         let mut world = setup_world();
 
@@ -627,19 +596,11 @@ mod test {
 
         let type_id = TypeId::of::<usize>();
 
-        let allocator = world.allocator();
-        let mut allocator_write = allocator.write();
-        let reflect_reference = ReflectReference::new_allocated(2usize, &mut allocator_write);
-        let id = match reflect_reference.base.base_id {
-            ReflectBase::Owned(ref id) => id.to_string(),
-            _ => panic!("Expected owned allocation"),
-        };
-
-        drop(allocator_write);
+        let reflect_reference = ReflectReference::new_allocated(2usize);
 
         assert_eq!(
             reflect_reference.display_with_world(world.clone()),
-            format!("<Reference to Allocation({id})(usize) -> usize>")
+            format!("<Reference to Allocation(Reflect(usize(2)))(usize)>")
         );
 
         assert_eq!(
@@ -649,7 +610,7 @@ mod test {
 
         assert_eq!(
             reflect_reference.display_without_world(),
-            format!("<Reference to Allocation({id})({:?})>", type_id)
+            format!("<Reference to Allocation({:?})>", type_id)
         );
     }
 }

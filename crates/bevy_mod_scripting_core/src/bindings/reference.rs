@@ -4,12 +4,11 @@
 //! reflection gives us access to `dyn PartialReflect` objects via their type name,
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
-use super::{access_map::ReflectAccessId, WorldGuard};
+use super::{access_map::ReflectAccessId, ReflectAllocation2, WorldGuard};
 use crate::{
-    bindings::ReflectAllocationId,
     error::InteropError,
     reflection_extensions::{PartialReflectExt, TypeIdExtensions},
-    with_access_read, with_access_write, ReflectAllocator,
+    with_access_read, with_access_write,
 };
 use bevy::{
     ecs::{
@@ -41,7 +40,7 @@ impl Default for ReflectReference {
         Self {
             base: ReflectBaseType {
                 type_id: None::<TypeId>.or_fake_id(),
-                base_id: ReflectBase::Owned(ReflectAllocationId::new(0)),
+                base_id: ReflectBase::Resource(ComponentId::new(9999999999)),
             },
             reflect_path: ParsedPath(vec![]),
         }
@@ -85,16 +84,22 @@ impl ReflectReference {
     /// You can retrieve the allocator from the world using [`WorldGuard::allocator`].
     /// Make sure to drop the allocator write guard before doing anything with the reference to prevent deadlocks.
     ///
-    pub fn new_allocated<T: Reflect>(
-        value: T,
-        allocator: &mut ReflectAllocator,
-    ) -> ReflectReference {
-        let type_id = std::any::TypeId::of::<T>();
-        let id = allocator.allocate(value);
+    pub fn new_allocated<T: Reflect>(value: T) -> ReflectReference {
         ReflectReference {
             base: ReflectBaseType {
-                type_id,
-                base_id: ReflectBase::Owned(id),
+                type_id: value.type_id(),
+                base_id: ReflectBase::Owned(ReflectAllocation2::new(value)),
+            },
+            reflect_path: ParsedPath(Vec::default()),
+        }
+    }
+    pub fn new_allocated_boxed(value: Box<dyn Reflect>) -> ReflectReference {
+        ReflectReference {
+            base: ReflectBaseType {
+                type_id: value.type_id(),
+                base_id: ReflectBase::Owned(ReflectAllocation2::new_boxed(
+                    value.into_partial_reflect(),
+                )),
             },
             reflect_path: ParsedPath(Vec::default()),
         }
@@ -104,37 +109,20 @@ impl ReflectReference {
     ///
     /// Prefer using [`Self::new_allocated`] if you have a value that implements [`Reflect`].
     /// Will fail if the value does not have represented type info with a specific type id.
-    pub fn new_allocated_boxed_parial_reflect(
+    pub fn new_allocated_boxed_partial(
         value: Box<dyn PartialReflect>,
-        allocator: &mut ReflectAllocator,
     ) -> Result<ReflectReference, InteropError> {
         match value.get_represented_type_info() {
             Some(i) => {
-                let id = allocator.allocate_boxed(value);
                 Ok(ReflectReference {
                     base: ReflectBaseType {
                         type_id: i.type_id(),
-                        base_id: ReflectBase::Owned(id),
+                        base_id: ReflectBase::Owned(ReflectAllocation2::new_boxed(value)),
                     },
                     reflect_path: ParsedPath(Vec::default()),
                 })
             }
             None => Err(InteropError::unsupported_operation(None, Some(value), "Tried to create a reference to a partial reflect value with no represented type info")),
-        }
-    }
-
-    pub fn new_allocated_boxed(
-        value: Box<dyn Reflect>,
-        allocator: &mut ReflectAllocator,
-    ) -> ReflectReference {
-        let type_id = value.type_id();
-        let id = allocator.allocate_boxed(value.into_partial_reflect());
-        ReflectReference {
-            base: ReflectBaseType {
-                type_id,
-                base_id: ReflectBase::Owned(id),
-            },
-            reflect_path: ParsedPath(Vec::default()),
         }
     }
 
@@ -188,33 +176,40 @@ impl ReflectReference {
     /// - If all above fails, [`bevy::reflect::PartialReflect::clone_value`] is used to clone the value.
     ///
     pub fn to_owned_value(
-        &self,
+        self,
         world: WorldGuard,
     ) -> Result<Box<dyn PartialReflect>, InteropError> {
-        if let ReflectBase::Owned(id) = &self.base.base_id {
-            if self.reflect_path.is_empty() && id.strong_count() == 0 {
-                let allocator = world.allocator();
-                let mut allocator = allocator.write();
-                let arc = allocator
-                    .remove(id)
-                    .ok_or_else(|| InteropError::garbage_collected_allocation(self.clone()))?;
-
-                let access_id = ReflectAccessId::for_allocation(id.clone());
+        let self_ = if let ReflectBase::Owned(allocation) = self.base.base_id {
+            let allocation = if self.reflect_path.is_empty() && allocation.strong_count() == 0 {
+                let access_id = ReflectAccessId::for_allocation(&allocation);
                 if world.claim_write_access(access_id) {
                     // Safety: we claim write access, nobody else is accessing this
-                    if unsafe { &*arc.get_ptr() }.try_as_reflect().is_some() {
-                        // Safety: the only accesses exist in this function
-                        unsafe { world.release_access(access_id) };
-                        return Ok(unsafe { arc.take() });
-                    } else {
-                        unsafe { world.release_access(access_id) };
+                    let o = unsafe { allocation.take_if_reflect() };
+                    unsafe { world.release_access(access_id) };
+                    match o {
+                        Ok(v) => return Ok(v.into_partial_reflect()),
+                        Err(allocation) => allocation,
                     }
+                } else {
+                    allocation
                 }
-                allocator.insert(id.clone(), arc);
-            }
-        }
+            } else {
+                allocation
+            };
 
-        self.with_reflect(world.clone(), |r| {
+            // reconstruct and try something else
+            ReflectReference {
+                base: ReflectBaseType {
+                    type_id: self.base.type_id,
+                    base_id: ReflectBase::Owned(allocation),
+                },
+                reflect_path: self.reflect_path,
+            }
+        } else {
+            self
+        };
+
+        self_.with_reflect(world.clone(), |r| {
             <dyn PartialReflect>::from_reflect_or_clone(r, world.clone())
         })
     }
@@ -293,16 +288,9 @@ impl ReflectReference {
         &self,
         world: WorldGuard<'w>,
     ) -> Result<&'w dyn PartialReflect, InteropError> {
-        if let ReflectBase::Owned(id) = &self.base.base_id {
-            let allocator = world.allocator();
-            let allocator = allocator.read();
-
-            let arc = allocator
-                .get(id)
-                .ok_or_else(|| InteropError::garbage_collected_allocation(self.clone()))?;
-
-            // safety: caller promises it's fine :)
-            return self.walk_path(unsafe { &*arc.get_ptr() });
+        if let ReflectBase::Owned(allocation) = &self.base.base_id {
+            // safety: caller promises it's fine :) + we run deallocation cleanup in another system which cannot run at the same time as this
+            return self.walk_path(unsafe { allocation.get() });
         }
 
         let type_registry = world.type_registry();
@@ -348,15 +336,9 @@ impl ReflectReference {
         &self,
         world: WorldGuard<'w>,
     ) -> Result<&'w mut dyn PartialReflect, InteropError> {
-        if let ReflectBase::Owned(id) = &self.base.base_id {
-            let allocator = world.allocator();
-            let allocator = allocator.read();
-            let arc = allocator
-                .get(id)
-                .ok_or_else(|| InteropError::garbage_collected_allocation(self.clone()))?;
-
-            // Safety: caller promises this is fine :)
-            return self.walk_path_mut(unsafe { &mut *arc.get_ptr() });
+        if let ReflectBase::Owned(allocation) = &self.base.base_id {
+            // Safety: caller promises this is fine :) + we run deallocation cleanup in another system which cannot run at the same time as this
+            return self.walk_path_mut(unsafe { allocation.get_mut() });
         };
 
         let type_registry = world.type_registry();
@@ -419,7 +401,8 @@ pub struct ReflectBaseType {
 pub enum ReflectBase {
     Component(Entity, ComponentId),
     Resource(ComponentId),
-    Owned(ReflectAllocationId),
+    // Owned(ReflectAllocationId),
+    Owned(ReflectAllocation2),
 }
 
 impl ReflectBase {
@@ -562,9 +545,7 @@ impl Iterator for ReflectRefIter {
 mod test {
     use bevy::prelude::{AppTypeRegistry, World};
 
-    use crate::bindings::{
-        function::script_function::AppScriptFunctionRegistry, AppReflectAllocator,
-    };
+    use crate::bindings::function::script_function::AppScriptFunctionRegistry;
 
     use super::*;
 
@@ -585,9 +566,6 @@ mod test {
         }
 
         world.insert_resource(type_registry);
-
-        let allocator = AppReflectAllocator::default();
-        world.insert_resource(allocator);
 
         let script_function_registry = AppScriptFunctionRegistry::default();
         world.insert_resource(script_function_registry);
@@ -763,10 +741,7 @@ mod test {
         let value = Component(vec!["hello".to_owned(), "world".to_owned()]);
 
         let world_guard = WorldGuard::new(&mut world);
-        let allocator = world_guard.allocator();
-        let mut allocator_write = allocator.write();
-        let mut allocation_ref = ReflectReference::new_allocated(value, &mut allocator_write);
-        drop(allocator_write);
+        let mut allocation_ref = ReflectReference::new_allocated(value);
 
         // index into component
         assert_eq!(

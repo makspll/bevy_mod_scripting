@@ -311,6 +311,9 @@ impl App {
                     .arg("--bevy-features")
                     .arg(bevy_features.join(","));
             }
+            Xtasks::Miri => {
+                cmd.arg("miri");
+            }
         }
 
         cmd
@@ -549,6 +552,8 @@ enum Xtasks {
         #[clap(long)]
         package: Option<String>,
     },
+    /// Runs miri on marked tests
+    Miri,
     /// Perform a full check as it would be done in CI, except not parallelised
     CiCheck,
     /// Generate a json job matrix, containing, describing maximally parallelised jobs for running in CI/CD.
@@ -602,8 +607,10 @@ impl Xtasks {
                 let mut rows = Vec::default();
                 for os in <CiOs as strum::VariantArray>::VARIANTS {
                     for row in output.iter() {
-                        let step_should_run_on_main_os =
-                            matches!(row.subcmd, Xtasks::Build | Xtasks::Docs { .. });
+                        let step_should_run_on_main_os = matches!(
+                            row.subcmd,
+                            Xtasks::Build | Xtasks::Docs { .. } | Xtasks::Miri
+                        );
                         let is_coverage_step = row.global_args.coverage;
 
                         if !os.is_main_os() && step_should_run_on_main_os {
@@ -633,9 +640,25 @@ impl Xtasks {
                 output_dir,
                 bevy_features,
             } => Self::codegen(app_settings, output_dir, bevy_features),
+            Xtasks::Miri => Self::miri(app_settings),
         }?;
 
         Ok("".into())
+    }
+
+    fn miri(app_settings: GlobalArgs) -> Result<()> {
+        // use the same toolchain as the codegen crate
+        let nightly_toolchain = "nightly".to_owned();
+        let app_settings = app_settings.with_toolchain(nightly_toolchain);
+        let core_path = PathBuf::from("crates").join("bevy_mod_scripting_core");
+        std::env::set_var("MIRIFLAGS", "-Zmiri-disable-isolation");
+        Self::run_system_command(
+            &app_settings,
+            "cargo",
+            "Failed to run miri",
+            vec!["+nightly", "miri", "test", "miri"],
+            Some(&core_path),
+        )
     }
 
     /// Reads the metadata from the main workspace
@@ -736,7 +759,7 @@ impl Xtasks {
 
         args.push(command.to_owned());
 
-        if command != "fmt" && command != "bevy-api-gen" {
+        if command != "fmt" && command != "bevy-api-gen" && command != "miri" {
             // fmt doesn't care about features, workspaces or profiles
 
             args.push("--workspace".to_owned());
@@ -758,7 +781,6 @@ impl Xtasks {
 
             args.extend(app_settings.features.to_cargo_args());
         }
-
         args.extend(add_args.into_iter().map(|s| {
             s.as_ref()
                 .to_str()
@@ -1299,6 +1321,12 @@ impl Xtasks {
             },
         });
 
+        // then miri
+        output.push(App {
+            global_args: default_args.clone(),
+            subcmd: Xtasks::Miri,
+        });
+
         Ok(output)
     }
 
@@ -1333,15 +1361,19 @@ impl Xtasks {
             None,
         )?;
 
-        // install nightly toolchaing for bevy api gen
+        // install nightly toolchains, one for codegen one for miri
+
         let toolchain = Self::read_rust_toolchain(&Self::codegen_crate_dir(&app_settings)?);
-        Self::run_system_command(
-            &app_settings,
-            "rustup",
-            "Failed to install nightly toolchain",
-            vec!["toolchain", "install", toolchain.as_str()],
-            None,
-        )?;
+        let toolchains = [toolchain.as_str(), "nightly"];
+        for toolchain in toolchains {
+            Self::run_system_command(
+                &app_settings,
+                "rustup",
+                "Failed to install nightly toolchain",
+                vec!["toolchain", "install", toolchain],
+                None,
+            )?;
+        }
 
         let rustup_components_args = [
             "component",
@@ -1352,24 +1384,26 @@ impl Xtasks {
             "llvm-tools-preview",
         ];
 
-        // install components for the stable and nightly toolchains
-        Self::run_system_command(
-            &app_settings,
-            "rustup",
-            "Failed to install rust components",
-            rustup_components_args,
-            None,
-        )?;
+        // install components for codegen and stable toolchains
+        for toolchain in ["stable", toolchain.as_str()] {
+            Self::run_system_command(
+                &app_settings,
+                "rustup",
+                "Failed to install rust components",
+                rustup_components_args
+                    .iter()
+                    .chain(["--toolchain", toolchain].iter()),
+                None,
+            )?;
+        }
 
-        // add components on nightly toolchain
+        // install miri components
         Self::run_system_command(
             &app_settings,
             "rustup",
-            "Failed to install nightly components",
-            rustup_components_args
-                .iter()
-                .chain(["--toolchain", toolchain.as_str()].iter()),
-            Some(Path::new(".")),
+            "Failed to install miri components",
+            vec!["component", "add", "miri", "--toolchain", "nightly"],
+            None,
         )?;
 
         // create .vscode settings

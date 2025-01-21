@@ -5,13 +5,12 @@ use bevy::{
 use bevy_mod_scripting_core::{
     asset::{AssetPathToLanguageMapper, Language},
     bindings::{
-        function::namespace::Namespace, script_value::ScriptValue, ThreadWorldContainer,
-        WorldContainer,
+        function::namespace::Namespace, script_value::ScriptValue, ReflectReference,
+        ThreadWorldContainer, WorldContainer,
     },
     context::{ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
     event::CallbackLabel,
-    reflection_extensions::PartialReflectExt,
     runtime::RuntimeSettings,
     script::ScriptId,
     IntoScriptPluginParams, ScriptingPlugin,
@@ -114,12 +113,11 @@ impl Default for LuaScriptingPlugin {
                     },
                 ],
                 context_pre_handling_initializers: vec![|script_id, entity, context| {
-                    let world = ThreadWorldContainer.try_get_world()?;
                     context
                         .globals()
                         .set(
                             "entity",
-                            LuaReflectReference(<Entity>::allocate(Box::new(entity), world)),
+                            LuaReflectReference(ReflectReference::new_allocated(entity)),
                         )
                         .map_err(ScriptError::from_mlua_error)?;
                     context

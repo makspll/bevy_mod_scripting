@@ -1078,13 +1078,9 @@ impl Default for InteropErrorInner {
 
 #[cfg(test)]
 mod test {
-    use bevy::prelude::{AppTypeRegistry, World};
-
-    use crate::bindings::{
-        function::script_function::AppScriptFunctionRegistry, AppReflectAllocator, WorldGuard,
-    };
-
     use super::*;
+    use crate::bindings::{function::script_function::AppScriptFunctionRegistry, WorldGuard};
+    use bevy::prelude::{AppTypeRegistry, World};
 
     #[test]
     fn test_error_display() {
@@ -1093,9 +1089,6 @@ mod test {
         let mut world = World::default();
         let type_registry = AppTypeRegistry::default();
         world.insert_resource(type_registry);
-
-        let script_allocator = AppReflectAllocator::default();
-        world.insert_resource(script_allocator);
 
         let script_function_registry = AppScriptFunctionRegistry::default();
         world.insert_resource(script_function_registry);

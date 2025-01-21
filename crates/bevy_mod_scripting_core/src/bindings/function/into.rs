@@ -113,14 +113,10 @@ impl IntoScript for ReflectReference {
 }
 
 impl<T: Reflect> IntoScript for Val<T> {
-    fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
-        let boxed = Box::new(self.0);
-        let allocator = world.allocator();
-        let mut allocator = allocator.write();
-
-        Ok(ScriptValue::Reference(
-            ReflectReference::new_allocated_boxed(boxed, &mut allocator),
-        ))
+    fn into_script(self, _world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        Ok(ScriptValue::Reference(ReflectReference::new_allocated(
+            self.0,
+        )))
     }
 }
 

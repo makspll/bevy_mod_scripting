@@ -10,7 +10,7 @@ use smallvec::SmallVec;
 
 use crate::error::InteropError;
 
-use super::{ReflectAllocationId, ReflectBase};
+use super::{ReflectAllocation2, ReflectBase};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ClaimOwner {
@@ -153,10 +153,14 @@ impl ReflectAccessId {
         Ok(Self::for_component_id(component_id))
     }
 
-    pub fn for_allocation(id: ReflectAllocationId) -> Self {
+    pub fn for_allocation(allocation: &ReflectAllocation2) -> Self {
+        debug_assert!(
+            usize::MAX as u128 <= u64::MAX as u128,
+            "usize assumption broken"
+        );
         Self {
             kind: ReflectAccessKind::Allocation,
-            id: id.id(),
+            id: allocation.unique_id() as u64,
         }
     }
 
@@ -171,38 +175,26 @@ impl ReflectAccessId {
         match base {
             ReflectBase::Resource(id) => Self::for_component_id(id),
             ReflectBase::Component(_, id) => Self::for_component_id(id),
-            ReflectBase::Owned(id) => Self::for_allocation(id),
+            ReflectBase::Owned(id) => Self::for_allocation(&id),
         }
     }
 }
 
 impl From<ComponentId> for ReflectAccessId {
     fn from(value: ComponentId) -> Self {
-        Self {
-            kind: ReflectAccessKind::ComponentOrResource,
-            id: value.index() as u64,
-        }
+        ReflectAccessId::for_component_id(value)
     }
 }
 
-impl From<ReflectAllocationId> for ReflectAccessId {
-    fn from(value: ReflectAllocationId) -> Self {
-        Self {
-            kind: ReflectAccessKind::Allocation,
-            id: value.id(),
-        }
+impl From<&ReflectAllocation2> for ReflectAccessId {
+    fn from(value: &ReflectAllocation2) -> Self {
+        ReflectAccessId::for_allocation(value)
     }
 }
 
 impl From<ReflectAccessId> for ComponentId {
     fn from(val: ReflectAccessId) -> Self {
         ComponentId::new(val.id as usize)
-    }
-}
-
-impl From<ReflectAccessId> for ReflectAllocationId {
-    fn from(val: ReflectAccessId) -> Self {
-        ReflectAllocationId::new(val.id)
     }
 }
 

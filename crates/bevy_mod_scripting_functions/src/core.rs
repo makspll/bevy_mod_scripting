@@ -37,35 +37,21 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
 
                 Ok(match val {
                     Some(registration) => {
-                        let allocator = world.allocator();
-
                         let registration = match world.get_resource_type(registration)? {
                             Ok(res) => {
-                                let mut allocator = allocator.write();
-                                return Ok(Some(ReflectReference::new_allocated(
-                                    res,
-                                    &mut allocator,
-                                )));
+                                return Ok(Some(ReflectReference::new_allocated(res)));
                             }
                             Err(registration) => registration,
                         };
 
                         let registration = match world.get_component_type(registration)? {
                             Ok(comp) => {
-                                let mut allocator = allocator.write();
-                                return Ok(Some(ReflectReference::new_allocated(
-                                    comp,
-                                    &mut allocator,
-                                )));
+                                return Ok(Some(ReflectReference::new_allocated(comp)));
                             }
                             Err(registration) => registration,
                         };
 
-                        let mut allocator = allocator.write();
-                        Some(ReflectReference::new_allocated(
-                            registration,
-                            &mut allocator,
-                        ))
+                        Some(ReflectReference::new_allocated(registration))
                     }
                     None => None,
                 })
@@ -283,11 +269,7 @@ pub fn register_reflect_reference_functions(
         .register("pop", |ctxt: FunctionCallContext, s: ReflectReference| {
             let world = ctxt.world()?;
             let o = s.with_reflect_mut(world.clone(), |s| s.try_pop_boxed())??;
-            let reference = {
-                let allocator = world.allocator();
-                let mut allocator = allocator.write();
-                ReflectReference::new_allocated_boxed_parial_reflect(o, &mut allocator)?
-            };
+            let reference = ReflectReference::new_allocated_boxed_partial(o)?;
 
             ReflectReference::into_script_ref(reference, world)
         })
@@ -346,11 +328,7 @@ pub fn register_reflect_reference_functions(
             let removed = s.with_reflect_mut(world.clone(), |s| s.try_remove_boxed(key))??;
             match removed {
                 Some(removed) => {
-                    let reference = {
-                        let allocator = world.allocator();
-                        let mut allocator = allocator.write();
-                        ReflectReference::new_allocated_boxed_parial_reflect(removed, &mut allocator)?
-                    };
+                    let reference = ReflectReference::new_allocated_boxed_partial(removed)?;
                     ReflectReference::into_script_ref(reference, world)
                 }
                 None => Ok(ScriptValue::Unit),
