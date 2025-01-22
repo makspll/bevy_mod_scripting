@@ -283,9 +283,6 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     /// Safely accesses the component by claiming and releasing access to it.
-    ///
-    /// # Panics
-    /// - if the component does not exist
     pub fn with_component<F, T, O>(&self, entity: Entity, f: F) -> Result<O, InteropError>
     where
         T: Component,
@@ -305,9 +302,6 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     /// Safely accesses the component by claiming and releasing access to it.
-    ///
-    /// # Panics
-    /// - if the component does not exist
     pub fn with_component_mut<F, T, O>(&self, entity: Entity, f: F) -> Result<O, InteropError>
     where
         T: Component,
