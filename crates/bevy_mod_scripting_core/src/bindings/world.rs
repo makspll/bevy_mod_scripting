@@ -327,6 +327,27 @@ impl<'w> WorldAccessGuard<'w> {
         )
     }
 
+    /// Safey modify or insert a component by claiming and releasing global access.
+    pub fn with_or_insert_component_mut<F, T, O>(&self,
+        entity: Entity,
+        f: F,
+    ) -> Result<O, InteropError>
+    where
+        T: Component + Default,
+        F: FnOnce(&mut T) -> O,
+    {
+        self.with_global_access(|world| match world.get_mut::<T>(entity) {
+            Some(mut component) => f(&mut component),
+            None => {
+                let mut component = T::default();
+                let mut commands = world.commands();
+                let result = f(&mut component);
+                commands.entity(entity).insert(component);
+                result
+            }
+        })
+    }
+
     /// Try to lookup a function with the given name on the given type id's namespaces.
     ///
     /// Returns the function if found, otherwise returns the name of the function that was not found.
