@@ -16,6 +16,7 @@ name = "bevy_mod_scripting_core"
 path = "src/lib.rs"
 
 [features]
+default = []
 # if enabled enables documentation updating in optimized builds
 doc_always = []
 
@@ -24,8 +25,10 @@ mlua_impls = ["mlua"]
 rhai_impls = ["rhai"]
 
 [dependencies]
-mlua = { optional = true, workspace = true }
-rhai = { optional = true, workspace = true }
+mlua = { version = "0.10", default-features = false, optional = true }
+rhai = { git = "https://github.com/rhaiscript/rhai", rev = "4ead53eb40f4a18d6f827609041ef1c742f04799", default-features = false, features = [
+    "sync",
+], optional = true }
 
 bevy = { workspace = true, default-features = false, features = [
     "bevy_asset",

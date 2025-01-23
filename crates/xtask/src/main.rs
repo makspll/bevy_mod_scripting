@@ -1252,27 +1252,6 @@ impl Xtasks {
 
         log::info!("Powerset command combinations: {:?}", output);
 
-        // also run a all features + each exclusive feature by itself
-        for feature in available_features
-            .0
-            .iter()
-            .filter(|f| f.to_feature_group().is_exclusive())
-        {
-            // run with all features
-            let mut features = Features::non_exclusive_features();
-            features.0.insert(*feature);
-
-            // don't include if we already ran this combination
-            if powersets.iter().any(|f| f == &features) {
-                continue;
-            }
-
-            output.push(App {
-                global_args: default_args.clone().with_features(features),
-                subcmd: Xtasks::Build,
-            });
-        }
-
         // next run a full lint check with all features
         output.push(App {
             global_args: default_args.clone(),

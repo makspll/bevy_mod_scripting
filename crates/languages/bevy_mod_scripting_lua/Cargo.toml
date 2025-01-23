@@ -40,7 +40,7 @@ path = "src/lib.rs"
 bevy = { workspace = true, default-features = false }
 bevy_mod_scripting_core = { workspace = true, features = ["mlua_impls"] }
 bevy_mod_scripting_functions = { workspace = true, features = [] }
-mlua = { workspace = true, features = ["vendored", "send", "macros"] }
+mlua = { version = "0.10", features = ["vendored", "send", "macros"] }
 parking_lot = "0.12.1"
 uuid = "1.1"
 smol_str = "0.2.2"
