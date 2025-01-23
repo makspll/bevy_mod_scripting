@@ -1,5 +1,9 @@
 #![allow(clippy::unwrap_used, clippy::todo, clippy::expect_used, clippy::panic)]
-use bevy_mod_scripting_core::{bindings::{pretty_print::DisplayWithWorld, ThreadWorldContainer, WorldContainer}, error::ScriptError, AddRuntimeInitializer};
+use bevy_mod_scripting_core::{
+    bindings::{pretty_print::DisplayWithWorld, ThreadWorldContainer, WorldContainer},
+    error::ScriptError,
+    AddRuntimeInitializer,
+};
 use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
 use libtest_mimic::{Arguments, Failed, Trial};
 use rhai::{Dynamic, EvalAltResult, FnPtr, NativeCallContext};
@@ -42,7 +46,6 @@ impl Test {
                             panic!("Assertion failed");
                         }
                     });
-                    
                     runtime.register_fn("assert_throws", |ctxt: NativeCallContext, fn_: FnPtr, regex: String| {
                         let world = ThreadWorldContainer.try_get_world()?;
                         let args: [Dynamic;0] = [];
