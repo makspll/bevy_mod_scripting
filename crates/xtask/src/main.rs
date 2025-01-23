@@ -1250,6 +1250,8 @@ impl Xtasks {
             })
         }
 
+        log::info!("Powerset command combinations: {:?}", output);
+
         // also run a all features + each exclusive feature by itself
         for feature in available_features
             .0

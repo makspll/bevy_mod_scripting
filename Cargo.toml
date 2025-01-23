@@ -39,9 +39,9 @@ bevy_bindings = ["bevy_mod_scripting_functions/bevy_bindings"]
 
 # optional
 unsafe_lua_modules = ["bevy_mod_scripting_lua?/unsafe_lua_modules"]
-mlua_serialize = ["bevy_mod_scripting_lua/mlua_serialize"]
-mlua_macros = ["bevy_mod_scripting_lua/mlua_macros"]
-mlua_async = ["bevy_mod_scripting_lua/mlua_async"]
+mlua_serialize = ["bevy_mod_scripting_lua?/mlua_serialize"]
+mlua_macros = ["bevy_mod_scripting_lua?/mlua_macros"]
+mlua_async = ["bevy_mod_scripting_lua?/mlua_async"]
 
 ## rhai
 rhai = ["bevy_mod_scripting_rhai"]
