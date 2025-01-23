@@ -60,7 +60,7 @@ pub fn execute_integration_test<
         .initializers
         .iter()
         .for_each(|initializer| {
-            (initializer)(&mut runtime);
+            (initializer)(&mut runtime).unwrap();
         });
 
     // load the context as normal
