@@ -111,10 +111,15 @@ debug = true
 inherits = "release"
 debug = true
 
-# [[example]]
-# name = "game_of_life"
-# path = "examples/game_of_life.rs"
-# required-features = ["lua54", "bevy/file_watcher", "bevy/multi_threaded"]
+[[example]]
+name = "game_of_life"
+path = "examples/game_of_life.rs"
+required-features = [
+    "lua54",
+    "rhai",
+    "bevy/file_watcher",
+    "bevy/multi_threaded",
+]
 
 [workspace.lints.clippy]
 panic = "deny"

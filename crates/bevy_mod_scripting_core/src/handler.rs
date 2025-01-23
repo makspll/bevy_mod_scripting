@@ -16,7 +16,7 @@ use bevy::{
         system::{Resource, SystemState},
         world::World,
     },
-    log::{debug, trace},
+    log::trace,
     prelude::{EventReader, Events, Query, Ref},
 };
 
@@ -127,15 +127,18 @@ pub(crate) fn event_handler_internal<L: IntoCallbackLabel, P: IntoScriptPluginPa
                     }
                     _ => (),
                 }
-                debug!(
-                    "Handling event for script {} on entity {:?}",
-                    script_id, entity
+                trace!(
+                    "{}: Handling event for script {} on entity {:?}",
+                    P::LANGUAGE,
+                    script_id,
+                    entity
                 );
                 let script = match res_ctxt.scripts.scripts.get(script_id) {
                     Some(s) => s,
                     None => {
                         trace!(
-                            "Script `{}` on entity `{:?}` is either still loading or doesn't exist, ignoring.",
+                            "{}: Script `{}` on entity `{:?}` is either still loading or doesn't exist, ignoring.",
+                            P::LANGUAGE,
                             script_id, entity
                         );
                         continue;

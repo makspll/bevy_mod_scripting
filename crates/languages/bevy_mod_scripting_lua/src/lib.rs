@@ -209,7 +209,14 @@ pub fn lua_handler(
     let handler: Function = match context.globals().raw_get(callback_label.as_ref()) {
         Ok(handler) => handler,
         // not subscribed to this event type
-        Err(_) => return Ok(ScriptValue::Unit),
+        Err(_) => {
+            bevy::log::trace!(
+                "Script {} is not subscribed to callback {}",
+                script_id,
+                callback_label.as_ref()
+            );
+            return Ok(ScriptValue::Unit);
+        }
     };
 
     let input = MultiValue::from_vec(

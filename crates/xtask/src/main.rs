@@ -138,16 +138,6 @@ impl Features {
         )
     }
 
-    fn non_exclusive_features() -> Self {
-        Self(
-            <Feature as strum::VariantArray>::VARIANTS
-                .iter()
-                .filter(|f| !f.to_feature_group().is_exclusive())
-                .cloned()
-                .collect(),
-        )
-    }
-
     fn to_cargo_args(&self) -> Vec<String> {
         if self.0.is_empty() {
             vec![]

@@ -18,9 +18,9 @@ use bevy_mod_scripting_core::{
 };
 use bindings::{
     reference::{ReservedKeyword, RhaiReflectReference, RhaiStaticReflectReference},
-    script_value::IntoDynamic,
+    script_value::{FromDynamic, IntoDynamic},
 };
-use rhai::{CallFnOptions, Engine, FnPtr, Scope, AST};
+use rhai::{CallFnOptions, Dynamic, Engine, EvalAltResult, Scope, AST};
 
 pub use rhai;
 pub mod bindings;
@@ -224,23 +224,38 @@ pub fn rhai_callback_handler(
         .iter()
         .try_for_each(|init| init(script_id, entity, context))?;
 
-    if context
-        .scope
-        .get_value::<FnPtr>(callback.as_ref())
-        .is_none()
-    {
-        // not subscribed to this handler
-        return Ok(ScriptValue::Unit);
-    };
-
     // we want the call to be able to impact the scope
     let options = CallFnOptions::new().rewind_scope(false);
-    let out = runtime.call_fn_with_options::<ScriptValue>(
+    let args = args
+        .into_iter()
+        .map(|v| v.into_dynamic())
+        .collect::<Result<Vec<_>, _>>()?;
+
+    bevy::log::trace!(
+        "Calling callback {} in script {} with args: {:?}",
+        callback,
+        script_id,
+        args
+    );
+    match runtime.call_fn_with_options::<Dynamic>(
         options,
         &mut context.scope,
         &context.ast,
         callback.as_ref(),
         args,
-    )?;
-    Ok(out)
+    ) {
+        Ok(v) => Ok(ScriptValue::from_dynamic(v)?),
+        Err(e) => {
+            if let EvalAltResult::ErrorFunctionNotFound(_, _) = e.unwrap_inner() {
+                bevy::log::trace!(
+                    "Script {} is not subscribed to callback {} with the provided arguments.",
+                    script_id,
+                    callback
+                );
+                Ok(ScriptValue::Unit)
+            } else {
+                Err(ScriptError::from(e))
+            }
+        }
+    }
 }

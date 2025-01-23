@@ -1,7 +1,7 @@
 LifeState = world.get_type_by_name("LifeState")
 Settings = world.get_type_by_name("Settings")
 
-world.info("Lua: The game_of_life.lua script just got loaded")
+info("Lua: The game_of_life.lua script just got loaded")
 
 math.randomseed(os.time())
 
@@ -12,8 +12,8 @@ function fetch_life_state()
 end  
 
 function on_script_loaded()
-    world.info("Lua: Hello! I am initiating the game of life simulation state with randomness!")
-    world.info("Lua: Click on the screen to set cells alive after running the `gol start` command")
+    info("Lua: Hello! I am initiating the game of life simulation state with randomness!")
+    info("Lua: Click on the screen to set cells alive after running the `gol start` command")
     
     local life_state = fetch_life_state()
     local cells = life_state.cells
@@ -27,8 +27,7 @@ end
 
 function on_click(x,y)
     -- get the settings
-    world.info("Lua: Clicked at x: " .. x .. " y: " .. y)
-    print(entity)
+    info("Lua: Clicked at x: " .. x .. " y: " .. y)
     local life_state = fetch_life_state()
     local cells = life_state.cells
 
@@ -110,7 +109,7 @@ function on_update()
 end
 
 function on_script_unloaded()
-    world.info("Lua: I am being unloaded, goodbye!")
+    info("Lua: I am being unloaded, goodbye!")
 
     -- set state to 0's
     local life_state = fetch_life_state()
