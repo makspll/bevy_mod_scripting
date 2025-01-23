@@ -33,6 +33,7 @@ impl Test {
                             panic!("Assertion failed. {}", b);
                         }
                     });
+                    Ok(())
                 });
 
                 app.add_runtime_initializer::<RhaiScriptingPlugin>(|runtime| {
@@ -44,6 +45,7 @@ impl Test {
                             panic!("Assertion failed");
                         }
                     });
+                    Ok(())
                 });
 
                 // app.add_context_initializer::<LuaScriptingPlugin>(|_,ctxt: &mut Lua| {
@@ -123,7 +125,9 @@ fn discover_all_tests() -> Vec<Test> {
     visit_dirs(&test_root, &mut |entry| {
         let path = entry.path();
         let code = fs::read_to_string(&path).unwrap();
-        test_files.push(Test { code, path });
+        if path.extension().unwrap() == "rhai" {
+            test_files.push(Test { code, path });
+        }
     })
     .unwrap();
 

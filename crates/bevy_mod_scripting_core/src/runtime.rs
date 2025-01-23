@@ -1,7 +1,7 @@
 //! "Runtime" here refers to the execution evironment of scripts. This might be the VM executing bytecode or the interpreter executing source code.
 //! The important thing is that there is only one runtime which is used to execute all scripts of a particular type or `context`.
 
-use crate::IntoScriptPluginParams;
+use crate::{error::ScriptError, IntoScriptPluginParams};
 use bevy::{
     ecs::system::Resource,
     prelude::{NonSendMut, Res},
@@ -10,7 +10,8 @@ use bevy::{
 pub trait Runtime: 'static {}
 impl<T: 'static> Runtime for T {}
 
-pub type RuntimeInitializer<P> = fn(&mut <P as IntoScriptPluginParams>::R);
+pub type RuntimeInitializer<P> =
+    fn(&mut <P as IntoScriptPluginParams>::R) -> Result<(), ScriptError>;
 
 #[derive(Resource)]
 pub struct RuntimeSettings<P: IntoScriptPluginParams> {
@@ -42,8 +43,9 @@ pub struct RuntimeContainer<P: IntoScriptPluginParams> {
 pub fn initialize_runtime<P: IntoScriptPluginParams>(
     mut runtime: NonSendMut<RuntimeContainer<P>>,
     settings: Res<RuntimeSettings<P>>,
-) {
+) -> Result<(), ScriptError> {
     for initializer in settings.initializers.iter() {
-        (initializer)(&mut runtime.runtime);
+        (initializer)(&mut runtime.runtime)?;
     }
+    Ok(())
 }

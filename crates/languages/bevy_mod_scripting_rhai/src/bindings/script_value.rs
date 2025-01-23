@@ -1,5 +1,8 @@
 use bevy_mod_scripting_core::{
-    bindings::{function::script_function::FunctionCallContext, script_value::ScriptValue},
+    bindings::{
+        function::script_function::{DynamicScriptFunction, FunctionCallContext},
+        script_value::ScriptValue,
+    },
     error::InteropError,
 };
 use rhai::{Dynamic, EvalAltResult, FnPtr, NativeCallContext};
@@ -72,6 +75,39 @@ pub const RHAI_CALLER_CONTEXT: FunctionCallContext = FunctionCallContext {
 //     }
 // }
 
+/// A function curried with one argument, i.e. the receiver
+pub struct FunctionWithReceiver {
+    pub function: DynamicScriptFunction,
+    pub receiver: ScriptValue,
+}
+
+impl FunctionWithReceiver {
+    pub fn curry(function: DynamicScriptFunction, receiver: ScriptValue) -> Self {
+        Self { function, receiver }
+    }
+}
+
+impl IntoDynamic for FunctionWithReceiver {
+    fn into_dynamic(self) -> Result<Dynamic, Box<EvalAltResult>> {
+        Ok(Dynamic::from(FnPtr::from_fn(
+            self.function.name().to_string(),
+            move |_ctxt: NativeCallContext, args: &mut [&mut Dynamic]| {
+                let convert_args = args
+                    .iter_mut()
+                    .map(|arg| ScriptValue::from_dynamic(arg.clone()))
+                    .collect::<Result<Vec<_>, _>>()?;
+
+                let out = self.function.call(
+                    std::iter::once(self.receiver.clone()).chain(convert_args),
+                    RHAI_CALLER_CONTEXT,
+                )?;
+
+                out.into_dynamic()
+            },
+        )?))
+    }
+}
+
 pub trait IntoDynamic {
     fn into_dynamic(self) -> Result<Dynamic, Box<EvalAltResult>>;
 }
@@ -95,7 +131,11 @@ impl IntoDynamic for ScriptValue {
                     .into(),
                 )
             })?,
-            ScriptValue::List(_vec) => todo!("vec is not implemented yet"),
+            ScriptValue::List(_vec) => Dynamic::from_array(
+                _vec.into_iter()
+                    .map(|v| v.into_dynamic())
+                    .collect::<Result<Vec<_>, _>>()?,
+            ),
             ScriptValue::Reference(reflect_reference) => {
                 Dynamic::from(RhaiReflectReference(reflect_reference))
             }
@@ -150,6 +190,13 @@ impl FromDynamic for ScriptValue {
             d if d.is_float() => Ok(ScriptValue::Float(d.as_float().unwrap())),
             d if d.is_string() => Ok(ScriptValue::String(
                 d.into_immutable_string().unwrap().to_string().into(),
+            )),
+            d if d.is_array() => Ok(ScriptValue::List(
+                d.into_array()
+                    .map_err(|_| InteropError::invariant("d is proved to be an array"))?
+                    .into_iter()
+                    .map(ScriptValue::from_dynamic)
+                    .collect::<Result<Vec<_>, _>>()?,
             )),
             d => {
                 if let Some(v) = d.try_cast::<RhaiReflectReference>() {

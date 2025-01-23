@@ -4,7 +4,10 @@ use bevy::{
 };
 use bevy_mod_scripting_core::{
     asset::{AssetPathToLanguageMapper, Language},
-    bindings::{script_value::ScriptValue, ThreadWorldContainer, WorldContainer},
+    bindings::{
+        function::namespace::Namespace, script_value::ScriptValue, ThreadWorldContainer,
+        WorldContainer,
+    },
     context::{ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
     event::CallbackLabel,
@@ -13,7 +16,10 @@ use bevy_mod_scripting_core::{
     script::ScriptId,
     IntoScriptPluginParams, ScriptingPlugin,
 };
-use bindings::reference::{RhaiReflectReference, RhaiStaticReflectReference};
+use bindings::{
+    reference::{ReservedKeyword, RhaiReflectReference, RhaiStaticReflectReference},
+    script_value::IntoDynamic,
+};
 use rhai::{CallFnOptions, Engine, FnPtr, Scope, AST};
 
 pub use rhai;
@@ -50,6 +56,8 @@ impl Default for RhaiScriptingPlugin {
                     initializers: vec![|runtime: &mut Engine| {
                         runtime.build_type::<RhaiReflectReference>();
                         runtime.build_type::<RhaiStaticReflectReference>();
+                        runtime.register_iterator_result::<RhaiReflectReference, _>();
+                        Ok(())
                     }],
                 },
                 callback_handler: rhai_callback_handler,
@@ -60,13 +68,68 @@ impl Default for RhaiScriptingPlugin {
                 language_mapper: AssetPathToLanguageMapper {
                     map: rhai_language_mapper,
                 },
-                context_initializers: vec![|_script_id: _, context: &mut RhaiScriptContext| {
-                    context.scope.set_or_push(
-                        "world",
-                        RhaiStaticReflectReference(std::any::TypeId::of::<World>()),
-                    );
-                    Ok(())
-                }],
+                context_initializers: vec![
+                    |_, context: &mut RhaiScriptContext| {
+                        context.scope.set_or_push(
+                            "world",
+                            RhaiStaticReflectReference(std::any::TypeId::of::<World>()),
+                        );
+                        Ok(())
+                    },
+                    |_, context: &mut RhaiScriptContext| {
+                        // initialize global functions
+                        let world = ThreadWorldContainer.try_get_world()?;
+                        let type_registry = world.type_registry();
+                        let type_registry = type_registry.read();
+
+                        for registration in type_registry.iter() {
+                            // only do this for non generic types
+                            // we don't want to see `Vec<Entity>:function()` in lua
+                            if !registration.type_info().generics().is_empty() {
+                                continue;
+                            }
+
+                            if let Some(global_name) =
+                                registration.type_info().type_path_table().ident()
+                            {
+                                let ref_ = RhaiStaticReflectReference(registration.type_id());
+                                context.scope.set_or_push(global_name, ref_);
+                            }
+                        }
+
+                        let mut script_function_registry = world.script_function_registry();
+                        let mut script_function_registry = script_function_registry.write();
+
+                        // iterate all functions, and remap names with reserved keywords
+                        let mut re_insertions = Vec::new();
+                        for (key, function) in script_function_registry.iter_all() {
+                            let name = key.name.clone();
+                            if ReservedKeyword::is_reserved_keyword(&name) {
+                                let new_name = format!("{}_", name);
+                                let mut function = function.clone();
+                                function.info.name = new_name.clone().into();
+                                re_insertions.push((key.namespace, new_name, function.clone()));
+                            }
+                        }
+                        for (namespace, name, func) in re_insertions {
+                            script_function_registry.raw_insert(namespace, name, func);
+                        }
+
+                        // then go through functions in the global namespace and add them to the lua context
+
+                        for (key, function) in script_function_registry
+                            .iter_all()
+                            .filter(|(k, _)| k.namespace == Namespace::Global)
+                        {
+                            context.scope.set_or_push(
+                                key.name.clone(),
+                                ScriptValue::Function(function.clone()).into_dynamic()?,
+                            );
+                        }
+
+                        Ok(())
+                    },
+                ],
                 context_pre_handling_initializers: vec![|script, entity, context| {
                     let world = ThreadWorldContainer.try_get_world()?;
                     context.scope.set_or_push(

@@ -353,7 +353,7 @@ impl ScriptFunctionRegistryArc {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct FunctionKey {
     pub name: Cow<'static, str>,
     pub namespace: Namespace,
@@ -503,6 +503,23 @@ impl ScriptFunctionRegistry {
     /// Iterates over all functions including overloads
     pub fn iter_all(&self) -> impl Iterator<Item = (&FunctionKey, &DynamicScriptFunction)> {
         self.functions.iter()
+    }
+
+    /// Insert a function into the registry with the given key, this will not perform any overloading logic.
+    /// Do not use unless you really need to.
+    pub fn raw_insert(
+        &mut self,
+        namespace: Namespace,
+        name: impl Into<Cow<'static, str>>,
+        func: DynamicScriptFunction,
+    ) {
+        self.functions.insert(
+            FunctionKey {
+                name: name.into(),
+                namespace,
+            },
+            func,
+        );
     }
 }
 
