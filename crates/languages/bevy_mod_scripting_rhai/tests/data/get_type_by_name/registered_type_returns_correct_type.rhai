@@ -1,6 +1,6 @@
 let type = world.get_type_by_name.call("TestComponent");
 
-assert(type != (), "Registered type was not found");
+assert(type_of(type) != "()", "Registered type was not found");
 
 let expected_type_name = "test_utils::test_data::TestComponent";
 let expected_short_name = "TestComponent";

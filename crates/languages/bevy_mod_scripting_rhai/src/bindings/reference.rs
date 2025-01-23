@@ -204,6 +204,7 @@ pub enum RhaiOperator {
     Unm,
     Pow,
     Eq,
+    Ne,
     Lt,
 }
 
@@ -219,6 +220,7 @@ impl RhaiOperator {
             RhaiOperator::Pow => "**",
             RhaiOperator::Eq => "==",
             RhaiOperator::Lt => "<",
+            RhaiOperator::Ne => "!=",
         }
     }
 }
@@ -413,7 +415,7 @@ impl CustomType for RhaiReflectReference {
                     let args = vec![ScriptValue::Reference(self_), other];
                     let out = world.try_call_overloads(
                         target_type_id,
-                        "mod",
+                        "rem",
                         args,
                         RHAI_CALLER_CONTEXT,
                     )?;
@@ -426,7 +428,7 @@ impl CustomType for RhaiReflectReference {
                 let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
                 let args = vec![ScriptValue::Reference(self_)];
                 let out =
-                    world.try_call_overloads(target_type_id, "unm", args, RHAI_CALLER_CONTEXT)?;
+                    world.try_call_overloads(target_type_id, "neg", args, RHAI_CALLER_CONTEXT)?;
                 out.into_dynamic()
             })
             .with_fn(
@@ -461,6 +463,26 @@ impl CustomType for RhaiReflectReference {
                         RHAI_CALLER_CONTEXT,
                     )?;
                     out.into_dynamic()
+                },
+            )
+            .with_fn(
+                RhaiOperator::Ne.function_name(),
+                |self_: Self, other: Dynamic| {
+                    let world = ThreadWorldContainer.try_get_world()?;
+                    let self_: ReflectReference = self_.0.clone();
+                    let other: ScriptValue = ScriptValue::from_dynamic(other)?;
+                    let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                    let args = vec![ScriptValue::Reference(self_), other];
+                    let out = world.try_call_overloads(
+                        target_type_id,
+                        "eq",
+                        args,
+                        RHAI_CALLER_CONTEXT,
+                    )?;
+                    match out {
+                        ScriptValue::Bool(b) => ScriptValue::Bool(!b).into_dynamic(),
+                        _ => Err(InteropError::invariant("eq did not return a bool").into()),
+                    }
                 },
             )
             .with_fn(
