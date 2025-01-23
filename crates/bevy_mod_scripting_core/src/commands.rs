@@ -85,7 +85,6 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
                             script.context_id,
                             self.id
                         );
-                    return;
                 }
             };
         } else {

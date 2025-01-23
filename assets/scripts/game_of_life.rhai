@@ -124,7 +124,7 @@ fn on_script_unloaded() {
     info.call("Rhai: I am being unloaded, goodbye!");
 
     // set state to 0's
-    let life_state = fetch_life_state();
+    let life_state = fetch_life_state!();
     let cells = life_state.cells;
     for i in 0..cells.len.call() {
         cells[i] = 0;
