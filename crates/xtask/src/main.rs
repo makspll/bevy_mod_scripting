@@ -45,9 +45,8 @@ enum Feature {
     MluaSerialize,
     MluaMacros,
     MluaAsync,
-    // Rhai
     // Rhai,
-
+    Rhai,
     // Rune
     // Rune,
 }
@@ -55,7 +54,7 @@ enum Feature {
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, strum::EnumIter)]
 enum FeatureGroup {
     LuaExclusive,
-    // RhaiExclusive,
+    RhaiExclusive,
     // RuneExclusive,
     ForExternalCrate,
     BMSFeature,
@@ -65,7 +64,7 @@ impl FeatureGroup {
     fn default_feature(self) -> Feature {
         match self {
             FeatureGroup::LuaExclusive => Feature::Lua54,
-            // FeatureGroup::RhaiExclusive => Feature::Rhai,
+            FeatureGroup::RhaiExclusive => Feature::Rhai,
             // FeatureGroup::RuneExclusive => Feature::Rune,
             _ => panic!("No default feature for non-exclusive group"),
         }
@@ -74,7 +73,7 @@ impl FeatureGroup {
     fn is_exclusive(self) -> bool {
         matches!(
             self,
-            FeatureGroup::LuaExclusive // | FeatureGroup::RhaiExclusive | FeatureGroup::RuneExclusive
+            FeatureGroup::LuaExclusive | FeatureGroup::RhaiExclusive // | FeatureGroup::RuneExclusive
         )
     }
 }
@@ -93,7 +92,7 @@ impl IntoFeatureGroup for Feature {
             | Feature::Luajit
             | Feature::Luajit52
             | Feature::Luau => FeatureGroup::LuaExclusive,
-            // Feature::Rhai => FeatureGroup::RhaiExclusive,
+            Feature::Rhai => FeatureGroup::RhaiExclusive,
             // Feature::Rune => FeatureGroup::RuneExclusive,
             Feature::MluaAsync
             | Feature::MluaMacros
