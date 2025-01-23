@@ -47,6 +47,12 @@ pub struct RhaiScriptingPlugin {
     pub scripting_plugin: ScriptingPlugin<RhaiScriptingPlugin>,
 }
 
+impl AsMut<ScriptingPlugin<Self>> for RhaiScriptingPlugin {
+    fn as_mut(&mut self) -> &mut ScriptingPlugin<Self> {
+        &mut self.scripting_plugin
+    }
+}
+
 impl Default for RhaiScriptingPlugin {
     fn default() -> Self {
         RhaiScriptingPlugin {
@@ -154,24 +160,6 @@ fn rhai_language_mapper(path: &std::path::Path) -> Language {
 impl Plugin for RhaiScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         self.scripting_plugin.build(app);
-    }
-
-    fn cleanup(&self, _app: &mut bevy::prelude::App) {
-        // let mut runtime = app
-        //     .world_mut()
-        //     .get_non_send_resource_mut::<RuntimeContainer<Self>>()
-        //     .expect("Rhai runtime not found");
-        // let engine = &mut runtime.runtime;
-        // let function_registry = app
-        //     .world_mut()
-        //     .get_resource_or_init::<AppScriptFunctionRegistry>();
-
-        // let function_registry = function_registry.read();
-
-        // for (k, func) in function_registry.iter_all() {
-        //     let rhai_func = to_rhai_fn(func.clone());
-        //     // engine.register_fn("func", rhai_func);
-        // }
     }
 }
 
