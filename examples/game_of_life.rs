@@ -175,7 +175,7 @@ pub fn register_script_functions(app: &mut App) -> &mut App {
         .register("info", |s: String| {
             bevy::log::info!(s);
         })
-        .register("rand", || rand::random::<f32>());
+        .register("rand", rand::random::<f32>);
     app
 }
 
