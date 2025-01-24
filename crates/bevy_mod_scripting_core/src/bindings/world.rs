@@ -283,9 +283,6 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     /// Safely accesses the component by claiming and releasing access to it.
-    ///
-    /// # Panics
-    /// - if the component does not exist
     pub fn with_component<F, T, O>(&self, entity: Entity, f: F) -> Result<O, InteropError>
     where
         T: Component,
@@ -305,9 +302,6 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     /// Safely accesses the component by claiming and releasing access to it.
-    ///
-    /// # Panics
-    /// - if the component does not exist
     pub fn with_component_mut<F, T, O>(&self, entity: Entity, f: F) -> Result<O, InteropError>
     where
         T: Component,
@@ -325,6 +319,27 @@ impl<'w> WorldAccessGuard<'w> {
                 f(unsafe { cell.get_entity(entity).and_then(|e| e.get_mut::<T>()) })
             }
         )
+    }
+
+    /// Safey modify or insert a component by claiming and releasing global access.
+    pub fn with_or_insert_component_mut<F, T, O>(&self,
+        entity: Entity,
+        f: F,
+    ) -> Result<O, InteropError>
+    where
+        T: Component + Default,
+        F: FnOnce(&mut T) -> O,
+    {
+        self.with_global_access(|world| match world.get_mut::<T>(entity) {
+            Some(mut component) => f(&mut component),
+            None => {
+                let mut component = T::default();
+                let mut commands = world.commands();
+                let result = f(&mut component);
+                commands.entity(entity).insert(component);
+                result
+            }
+        })
     }
 
     /// Try to lookup a function with the given name on the given type id's namespaces.
