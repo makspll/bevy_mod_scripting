@@ -101,21 +101,21 @@ impl ScriptError {
         }
     }
 
-    // #[cfg(feature = "rhai_impls")]
-    // pub fn from_rhai_error(error: rhai::EvalAltResult) -> Self {
-    //     match error {
-    //         rhai::EvalAltResult::ErrorSystem(message, error) => {
-    //             if let Some(inner) = error.downcast_ref::<InteropError>() {
-    //                 Self::new(inner.clone())
-    //             } else if let Some(inner) = error.downcast_ref::<ScriptError>() {
-    //                 inner.clone()
-    //             } else {
-    //                 Self::new_external_boxed(error).with_context(message)
-    //             }
-    //         }
-    //         _ => Self::new_external(error),
-    //     }
-    // }
+    #[cfg(feature = "rhai_impls")]
+    pub fn from_rhai_error(error: rhai::EvalAltResult) -> Self {
+        match error {
+            rhai::EvalAltResult::ErrorSystem(message, error) => {
+                if let Some(inner) = error.downcast_ref::<InteropError>() {
+                    Self::new(inner.clone())
+                } else if let Some(inner) = error.downcast_ref::<ScriptError>() {
+                    inner.clone()
+                } else {
+                    Self::new_external_boxed(error).with_context(message)
+                }
+            }
+            _ => Self::new_external(error),
+        }
+    }
 
     pub fn new_external(reason: impl std::error::Error + Send + Sync + 'static) -> Self {
         Self::new_external_boxed(Box::new(reason))
@@ -211,39 +211,39 @@ impl From<mlua::Error> for ScriptError {
     }
 }
 
-// #[cfg(feature = "rhai_impls")]
-// impl From<rhai::ParseError> for ScriptError {
-//     fn from(value: rhai::ParseError) -> Self {
-//         ScriptError::new_external(value)
-//     }
-// }
+#[cfg(feature = "rhai_impls")]
+impl From<rhai::ParseError> for ScriptError {
+    fn from(value: rhai::ParseError) -> Self {
+        ScriptError::new_external(value)
+    }
+}
 
-// #[cfg(feature = "rhai_impls")]
-// impl From<Box<rhai::EvalAltResult>> for ScriptError {
-//     fn from(value: Box<rhai::EvalAltResult>) -> Self {
-//         ScriptError::from_rhai_error(*value)
-//     }
-// }
+#[cfg(feature = "rhai_impls")]
+impl From<Box<rhai::EvalAltResult>> for ScriptError {
+    fn from(value: Box<rhai::EvalAltResult>) -> Self {
+        ScriptError::from_rhai_error(*value)
+    }
+}
 
-// #[cfg(feature = "rhai_impls")]
-// impl From<ScriptError> for Box<rhai::EvalAltResult> {
-//     fn from(value: ScriptError) -> Self {
-//         Box::new(rhai::EvalAltResult::ErrorSystem(
-//             "ScriptError".to_owned(),
-//             Box::new(value),
-//         ))
-//     }
-// }
+#[cfg(feature = "rhai_impls")]
+impl From<ScriptError> for Box<rhai::EvalAltResult> {
+    fn from(value: ScriptError) -> Self {
+        Box::new(rhai::EvalAltResult::ErrorSystem(
+            "ScriptError".to_owned(),
+            Box::new(value),
+        ))
+    }
+}
 
-// #[cfg(feature = "rhai_impls")]
-// impl From<InteropError> for Box<rhai::EvalAltResult> {
-//     fn from(value: InteropError) -> Self {
-//         Box::new(rhai::EvalAltResult::ErrorSystem(
-//             "InteropError".to_owned(),
-//             Box::new(value),
-//         ))
-//     }
-// }
+#[cfg(feature = "rhai_impls")]
+impl From<InteropError> for Box<rhai::EvalAltResult> {
+    fn from(value: InteropError) -> Self {
+        Box::new(rhai::EvalAltResult::ErrorSystem(
+            "InteropError".to_owned(),
+            Box::new(value),
+        ))
+    }
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct MissingResourceError(&'static str);

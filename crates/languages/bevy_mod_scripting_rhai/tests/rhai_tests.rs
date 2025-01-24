@@ -1,7 +1,12 @@
-use bevy_mod_scripting_core::AddRuntimeInitializer;
+#![allow(clippy::unwrap_used, clippy::todo, clippy::expect_used, clippy::panic)]
+use bevy_mod_scripting_core::{
+    bindings::{pretty_print::DisplayWithWorld, ThreadWorldContainer, WorldContainer},
+    error::ScriptError,
+    AddRuntimeInitializer,
+};
 use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
 use libtest_mimic::{Arguments, Failed, Trial};
-use rhai::Dynamic;
+use rhai::{Dynamic, EvalAltResult, FnPtr, NativeCallContext};
 use script_integration_test_harness::execute_integration_test;
 use std::{
     fs::{self, DirEntry},
@@ -32,9 +37,7 @@ impl Test {
                             panic!("Assertion failed. {}", b);
                         }
                     });
-                });
 
-                app.add_runtime_initializer::<RhaiScriptingPlugin>(|runtime| {
                     runtime.register_fn("assert", |a: Dynamic| {
                         if !a.is::<bool>() {
                             panic!("Expected a boolean value, but got {:?}", a);
@@ -43,42 +46,30 @@ impl Test {
                             panic!("Assertion failed");
                         }
                     });
+                    runtime.register_fn("assert_throws", |ctxt: NativeCallContext, fn_: FnPtr, regex: String| {
+                        let world = ThreadWorldContainer.try_get_world()?;
+                        let args: [Dynamic;0] = [];
+                        let result = fn_.call_within_context::<()>(&ctxt, args);
+                        match result {
+                            Ok(_) => panic!("Expected function to throw error, but it did not."),
+                            Err(e) => {
+                                let e = ScriptError::from_rhai_error(*e);
+                                let err = e.display_with_world(world);
+                                let regex = regex::Regex::new(&regex).unwrap();
+                                if regex.is_match(&err) {
+                                    Ok::<(), Box<EvalAltResult>>(())
+                                } else {
+                                    panic!(
+                                        "Expected error message to match the regex: \n{}\n\nBut got:\n{}",
+                                        regex.as_str(),
+                                        err
+                                    )
+                                }
+                            },
+                        }
+                    });
+                    Ok(())
                 });
-
-                // app.add_context_initializer::<LuaScriptingPlugin>(|_,ctxt: &mut Lua| {
-                //     let globals = ctxt.globals();
-                //     globals.set(
-                //         "assert_throws",
-                //         ctxt.create_function(|lua, (f, reg): (Function, String)| {
-                //             let world = lua.get_world();
-                //             let result = f.call::<()>(MultiValue::new());
-                //             let err = match result {
-                //                 Ok(_) => {
-                //                     return Err(mlua::Error::external(
-                //                         "Expected function to throw error, but it did not.",
-                //                     ))
-                //                 }
-                //                 Err(e) =>
-                //                     ScriptError::from_mlua_error(e).display_with_world(world)
-                //                 ,
-                //             };
-
-                //             let regex = regex::Regex::new(&reg).unwrap();
-                //             if regex.is_match(&err) {
-                //                 Ok(())
-                //             } else {
-                //                 Err(mlua::Error::external(
-                //                     format!(
-                //                         "Expected error message to match the regex: \n{}\n\nBut got:\n{}",
-                //                         regex.as_str(),
-                //                         err
-                //                     ),
-                //                 ))
-                //             }
-                //         })?,
-                //     )?;
-                //     Ok(())
-                // });
             },
             self.path.as_os_str().to_str().unwrap(),
             self.code.as_bytes(),
@@ -122,7 +113,9 @@ fn discover_all_tests() -> Vec<Test> {
     visit_dirs(&test_root, &mut |entry| {
         let path = entry.path();
         let code = fs::read_to_string(&path).unwrap();
-        test_files.push(Test { code, path });
+        if path.extension().unwrap() == "rhai" {
+            test_files.push(Test { code, path });
+        }
     })
     .unwrap();
 

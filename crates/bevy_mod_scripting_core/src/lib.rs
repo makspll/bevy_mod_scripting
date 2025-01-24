@@ -13,6 +13,7 @@ use context::{
     Context, ContextAssigner, ContextBuilder, ContextInitializer, ContextLoadingSettings,
     ContextPreHandlingInitializer, ScriptContexts,
 };
+use error::ScriptError;
 use event::ScriptCallbackEvent;
 use handler::{CallbackSettings, HandlerFn};
 use runtime::{initialize_runtime, Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
@@ -213,7 +214,12 @@ fn once_per_app_init(app: &mut App) {
 fn register_script_plugin_systems<P: IntoScriptPluginParams>(app: &mut App) {
     app.add_systems(
         PostStartup,
-        (initialize_runtime::<P>).in_set(ScriptingSystemSet::RuntimeInitialization),
+        (initialize_runtime::<P>.pipe(|e: In<Result<(), ScriptError>>| {
+            if let Err(e) = e.0 {
+                error!("Error initializing runtime: {:?}", e);
+            }
+        }))
+        .in_set(ScriptingSystemSet::RuntimeInitialization),
     );
 
     configure_asset_systems_for_plugin::<P>(app);

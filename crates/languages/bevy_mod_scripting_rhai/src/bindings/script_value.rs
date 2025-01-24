@@ -1,38 +1,18 @@
-use std::{str::FromStr, sync::Arc};
-
 use bevy_mod_scripting_core::{
     bindings::{
-        function::script_function::{
-            CallerContext, DynamicScriptFunction, DynamicScriptFunctionMut,
-        },
+        function::script_function::{DynamicScriptFunction, FunctionCallContext},
         script_value::ScriptValue,
     },
     error::InteropError,
 };
-use rhai::{
-    plugin::{PluginFunc, RhaiFunc},
-    Dynamic, EvalAltResult, FnPtr, RhaiNativeFunc,
-};
+use rhai::{Dynamic, EvalAltResult, FnPtr, NativeCallContext};
+use std::str::FromStr;
 
-pub const RHAI_CALLER_CONTEXT: CallerContext = CallerContext {
+use super::reference::RhaiReflectReference;
+
+pub const RHAI_CALLER_CONTEXT: FunctionCallContext = FunctionCallContext {
     convert_to_0_indexed: false,
 };
-
-#[allow(dead_code)]
-struct FuncWrapper(DynamicScriptFunction);
-
-#[allow(dead_code)]
-struct FuncMutWrapper(DynamicScriptFunctionMut);
-
-impl RhaiNativeFunc for FuncWrapper {
-    fn into_rhai_function(self, is_pure: bool, is_volatile: bool) -> RhaiFunc {
-        todo!()
-    }
-
-    fn param_types() -> [std::any::TypeId; N] {
-        todo!()
-    }
-}
 
 // impl PluginFunc for FuncWrapper {
 //     fn call(
@@ -95,23 +75,36 @@ impl RhaiNativeFunc for FuncWrapper {
 //     }
 // }
 
-#[allow(dead_code)]
-pub(crate) fn to_rhai_fn(func: DynamicScriptFunction) -> RhaiFunc {
-    RhaiFunc::Plugin {
-        func: Arc::new(FuncWrapper(func)),
-    }
-    .into()
-    // FnPtr {
-    //     name: todo!(),
-    //     curry: todo!(),
-    //     environ: todo!(),
-    //     fn_def: todo!(),
-    // }
+/// A function curried with one argument, i.e. the receiver
+pub struct FunctionWithReceiver {
+    pub function: DynamicScriptFunction,
+    pub receiver: ScriptValue,
 }
 
-pub(crate) fn to_rhai_fn_mut(func: DynamicScriptFunctionMut) -> RhaiFunc {
-    RhaiFunc::Plugin {
-        func: Arc::new(FuncMutWrapper(func)),
+impl FunctionWithReceiver {
+    pub fn curry(function: DynamicScriptFunction, receiver: ScriptValue) -> Self {
+        Self { function, receiver }
+    }
+}
+
+impl IntoDynamic for FunctionWithReceiver {
+    fn into_dynamic(self) -> Result<Dynamic, Box<EvalAltResult>> {
+        Ok(Dynamic::from(FnPtr::from_fn(
+            self.function.name().to_string(),
+            move |_ctxt: NativeCallContext, args: &mut [&mut Dynamic]| {
+                let convert_args = args
+                    .iter_mut()
+                    .map(|arg| ScriptValue::from_dynamic(arg.clone()))
+                    .collect::<Result<Vec<_>, _>>()?;
+
+                let out = self.function.call(
+                    std::iter::once(self.receiver.clone()).chain(convert_args),
+                    RHAI_CALLER_CONTEXT,
+                )?;
+
+                out.into_dynamic()
+            },
+        )?))
     }
 }
 
@@ -119,6 +112,7 @@ pub trait IntoDynamic {
     fn into_dynamic(self) -> Result<Dynamic, Box<EvalAltResult>>;
 }
 
+#[allow(clippy::todo)]
 impl IntoDynamic for ScriptValue {
     fn into_dynamic(self) -> Result<Dynamic, Box<EvalAltResult>> {
         Ok(match self {
@@ -137,11 +131,47 @@ impl IntoDynamic for ScriptValue {
                     .into(),
                 )
             })?,
-            ScriptValue::List(_vec) => todo!(),
-            ScriptValue::Reference(_reflect_reference) => todo!(),
-            ScriptValue::FunctionMut(func) => Dynamic::from(to_rhai_fn_mut(func)),
-            ScriptValue::Function(func) => Dynamic::from(to_rhai_fn(func)),
-            ScriptValue::Error(_interop_error) => todo!(),
+            ScriptValue::List(_vec) => Dynamic::from_array(
+                _vec.into_iter()
+                    .map(|v| v.into_dynamic())
+                    .collect::<Result<Vec<_>, _>>()?,
+            ),
+            ScriptValue::Reference(reflect_reference) => {
+                Dynamic::from(RhaiReflectReference(reflect_reference))
+            }
+            ScriptValue::FunctionMut(func) => Dynamic::from(FnPtr::from_fn(
+                func.name().to_string(),
+                move |_ctxt: NativeCallContext, args: &mut [&mut Dynamic]| {
+                    let convert_args = args
+                        .iter_mut()
+                        .map(|arg| ScriptValue::from_dynamic(arg.clone()))
+                        .collect::<Result<Vec<_>, _>>()?;
+
+                    let out = func.call(convert_args, RHAI_CALLER_CONTEXT)?;
+
+                    out.into_dynamic()
+                },
+            )?),
+            ScriptValue::Function(func) => Dynamic::from(FnPtr::from_fn(
+                func.name().to_string(),
+                move |_ctxt: NativeCallContext, args: &mut [&mut Dynamic]| {
+                    let convert_args = args
+                        .iter_mut()
+                        .map(|arg| ScriptValue::from_dynamic(arg.clone()))
+                        .collect::<Result<Vec<_>, _>>()?;
+
+                    let out = func.call(convert_args, RHAI_CALLER_CONTEXT)?;
+
+                    out.into_dynamic()
+                },
+            )?),
+            ScriptValue::Error(interop_error) => {
+                return Err(EvalAltResult::ErrorSystem(
+                    "Interop error in rhai script".to_string(),
+                    interop_error.into(),
+                )
+                .into())
+            }
         })
     }
 }
@@ -150,6 +180,7 @@ pub trait FromDynamic: Sized {
     fn from_dynamic(dynamic: Dynamic) -> Result<Self, Box<EvalAltResult>>;
 }
 
+#[allow(clippy::unwrap_used, clippy::todo)]
 impl FromDynamic for ScriptValue {
     fn from_dynamic(dynamic: Dynamic) -> Result<Self, Box<EvalAltResult>> {
         match dynamic {
@@ -160,7 +191,20 @@ impl FromDynamic for ScriptValue {
             d if d.is_string() => Ok(ScriptValue::String(
                 d.into_immutable_string().unwrap().to_string().into(),
             )),
-            _ => todo!(),
+            d if d.is_array() => Ok(ScriptValue::List(
+                d.into_array()
+                    .map_err(|_| InteropError::invariant("d is proved to be an array"))?
+                    .into_iter()
+                    .map(ScriptValue::from_dynamic)
+                    .collect::<Result<Vec<_>, _>>()?,
+            )),
+            d => {
+                if let Some(v) = d.try_cast::<RhaiReflectReference>() {
+                    Ok(ScriptValue::Reference(v.0))
+                } else {
+                    todo!("from conversion not implemented yet")
+                }
+            }
         }
     }
 }

@@ -15,14 +15,17 @@ use bevy_console::{make_layer, AddConsoleCommand, ConsoleCommand, ConsoleOpen, C
 use bevy_mod_scripting::ScriptFunctionsPlugin;
 use bevy_mod_scripting_core::{
     asset::ScriptAsset,
-    bindings::{function::namespace::NamespaceBuilder, script_value::ScriptValue},
+    bindings::{
+        function::namespace::{GlobalNamespace, NamespaceBuilder},
+        script_value::ScriptValue,
+    },
     callback_labels,
     event::ScriptCallbackEvent,
     handler::event_handler,
     script::ScriptComponent,
 };
 use bevy_mod_scripting_lua::LuaScriptingPlugin;
-// use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
+use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
 use clap::Parser;
 
 // CONSOLE SETUP
@@ -98,7 +101,7 @@ fn game_of_life_app(app: &mut App) -> &mut App {
         .add_plugins((
             // for scripting
             LuaScriptingPlugin::default(),
-            // RhaiScriptingPlugin::default(),
+            RhaiScriptingPlugin::default(),
             ScriptFunctionsPlugin,
         ))
         .register_type::<LifeState>()
@@ -114,9 +117,9 @@ fn game_of_life_app(app: &mut App) -> &mut App {
                 send_on_update.after(update_rendered_state),
                 (
                     event_handler::<OnUpdate, LuaScriptingPlugin>,
-                    // event_handler::<OnUpdate, RhaiScriptingPlugin>,
+                    event_handler::<OnUpdate, RhaiScriptingPlugin>,
                     event_handler::<OnClick, LuaScriptingPlugin>,
-                    // event_handler::<OnClick, RhaiScriptingPlugin>,
+                    event_handler::<OnClick, RhaiScriptingPlugin>,
                 )
                     .after(send_on_update),
             ),
@@ -168,9 +171,11 @@ pub fn load_script_assets(
 
 pub fn register_script_functions(app: &mut App) -> &mut App {
     let world = app.world_mut();
-    NamespaceBuilder::<World>::new_unregistered(world).register("info", |s: String| {
-        bevy::log::info!(s);
-    });
+    NamespaceBuilder::<GlobalNamespace>::new_unregistered(world)
+        .register("info", |s: String| {
+            bevy::log::info!(s);
+        })
+        .register("rand", rand::random::<f32>);
     app
 }
 
@@ -274,10 +279,7 @@ callback_labels!(
 
 /// Sends events allowing scripts to drive update logic
 pub fn send_on_update(mut events: EventWriter<ScriptCallbackEvent>) {
-    events.send(ScriptCallbackEvent::new_for_all(
-        OnUpdate,
-        vec![ScriptValue::Unit],
-    ));
+    events.send(ScriptCallbackEvent::new_for_all(OnUpdate, vec![]));
 }
 
 pub fn send_on_click(
