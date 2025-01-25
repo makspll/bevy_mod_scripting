@@ -57,7 +57,7 @@ impl UserData for LuaReflectReference {
                 };
 
                 let func = world
-                    .lookup_function([TypeId::of::<ReflectReference>()], "get")
+                    .lookup_function([type_id, TypeId::of::<ReflectReference>()], "get")
                     .map_err(|f| {
                         InteropError::missing_function(TypeId::of::<ReflectReference>(), f)
                     })?;
@@ -76,9 +76,10 @@ impl UserData for LuaReflectReference {
                 let self_: ReflectReference = self_.into();
                 let key: ScriptValue = key.into();
                 let value: ScriptValue = value.into();
+                let type_id = self_.tail_type_id(world.clone())?.or_fake_id();
 
                 let func = world
-                    .lookup_function([TypeId::of::<ReflectReference>()], "set")
+                    .lookup_function([type_id, TypeId::of::<ReflectReference>()], "set")
                     .map_err(|f| {
                         InteropError::missing_function(TypeId::of::<ReflectReference>(), f)
                     })?;

@@ -320,9 +320,10 @@ impl CustomType for RhaiReflectReference {
                 let self_ = self_.0.clone();
                 let key = ScriptValue::from_dynamic(_index)?;
                 let value = ScriptValue::from_dynamic(_value)?;
+                let type_id = self_.tail_type_id(world.clone())?.or_fake_id();
 
                 let func = world
-                    .lookup_function([TypeId::of::<ReflectReference>()], "set")
+                    .lookup_function([type_id, TypeId::of::<ReflectReference>()], "set")
                     .map_err(|f| {
                         InteropError::missing_function(TypeId::of::<ReflectReference>(), f)
                     })?;

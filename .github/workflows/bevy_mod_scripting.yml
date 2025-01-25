@@ -7,7 +7,7 @@ on:
       - 'docs/**'
 
 
-name: Check and Lint - bevy_mod_scripting
+name: CI
 
 
 env:
