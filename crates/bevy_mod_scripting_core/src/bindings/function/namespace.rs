@@ -97,54 +97,6 @@ impl Namespace {
     }
 }
 
-// impl RegisterNamespacedFunction for ScriptFunctionRegistry {
-//     fn register_namespaced_function<S, N, F, M>(&mut self, name: N, function: F)
-//     where
-//         N: Into<Cow<'static, str>>,
-//         S: IntoNamespace,
-//         F: ScriptFunction<'static, M>,
-//     {
-//         self.register(S::into_namespace(), name, function);
-//     }
-// }
-
-// impl GetNamespacedFunction for ScriptFunctionRegistry {
-//     fn iter_overloads_namespaced<N>(
-//         &self,
-//         name: N,
-//         namespace: Namespace,
-//     ) -> impl Iterator<Item = &DynamicScriptFunction>
-//     where
-//         N: Into<Cow<'static, str>>,
-//     {
-//         let cow: Cow<'static, str> = name.into();
-//         let function_name = namespace.function_name(cow);
-//         self.iter_overloads(function_name)
-//     }
-
-//     fn get_namespaced_function<N>(
-//         &self,
-//         name: N,
-//         namespace: Namespace,
-//     ) -> Option<&DynamicScriptFunction>
-//     where
-//         N: Into<Cow<'static, str>>,
-//     {
-//         let cow: Cow<'static, str> = name.into();
-//         let function_name = namespace.function_name(cow);
-//         self.get_first(&function_name)
-//     }
-
-//     fn has_namespaced_function<N>(&self, name: N, namespace: Namespace) -> bool
-//     where
-//         N: Into<Cow<'static, str>>,
-//     {
-//         let cow: Cow<'static, str> = name.into();
-//         let function_name = namespace.function_name(cow);
-//         self.contains(&function_name)
-//     }
-// }
-
 pub struct NamespaceBuilder<'a, N> {
     namespace: PhantomData<N>,
     pub world: &'a mut World,
