@@ -16,7 +16,7 @@ use bevy::{
         system::{Resource, SystemState},
         world::World,
     },
-    log::{trace, trace_once},
+    log::trace_once,
     prelude::{EventReader, Events, Query, Ref},
 };
 

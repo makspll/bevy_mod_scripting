@@ -17,7 +17,7 @@ path = "src/lib.rs"
 
 [dependencies]
 bevy = { workspace = true, default-features = false }
-rhai = { git = "https://github.com/rhaiscript/rhai", rev = "4ead53eb40f4a18d6f827609041ef1c742f04799" }
+rhai = { version = "1.21" }
 bevy_mod_scripting_core = { workspace = true, features = ["rhai_impls"] }
 bevy_mod_scripting_functions = { workspace = true, features = [
 ], default-features = false }

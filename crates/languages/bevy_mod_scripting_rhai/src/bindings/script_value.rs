@@ -89,6 +89,7 @@ impl FunctionWithReceiver {
 
 impl IntoDynamic for FunctionWithReceiver {
     fn into_dynamic(self) -> Result<Dynamic, Box<EvalAltResult>> {
+        #[allow(deprecated)]
         Ok(Dynamic::from(FnPtr::from_fn(
             self.function.name().to_string(),
             move |_ctxt: NativeCallContext, args: &mut [&mut Dynamic]| {
@@ -139,6 +140,7 @@ impl IntoDynamic for ScriptValue {
             ScriptValue::Reference(reflect_reference) => {
                 Dynamic::from(RhaiReflectReference(reflect_reference))
             }
+            #[allow(deprecated)]
             ScriptValue::FunctionMut(func) => Dynamic::from(FnPtr::from_fn(
                 func.name().to_string(),
                 move |_ctxt: NativeCallContext, args: &mut [&mut Dynamic]| {
@@ -152,6 +154,7 @@ impl IntoDynamic for ScriptValue {
                     out.into_dynamic()
                 },
             )?),
+            #[allow(deprecated)]
             ScriptValue::Function(func) => Dynamic::from(FnPtr::from_fn(
                 func.name().to_string(),
                 move |_ctxt: NativeCallContext, args: &mut [&mut Dynamic]| {
