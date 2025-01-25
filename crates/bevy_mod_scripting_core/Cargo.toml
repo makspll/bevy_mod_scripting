@@ -16,16 +16,19 @@ name = "bevy_mod_scripting_core"
 path = "src/lib.rs"
 
 [features]
+default = []
 # if enabled enables documentation updating in optimized builds
 doc_always = []
 
 # if enabled enables some common mlua trait implementations 
 mlua_impls = ["mlua"]
-# rhai_impls = ["rhai"]
+rhai_impls = ["rhai"]
 
 [dependencies]
-mlua = { optional = true, workspace = true }
-# rhai = { optional = true, workspace = true }
+mlua = { version = "0.10", default-features = false, optional = true }
+rhai = { version = "1.21", default-features = false, features = [
+    "sync",
+], optional = true }
 
 bevy = { workspace = true, default-features = false, features = [
     "bevy_asset",

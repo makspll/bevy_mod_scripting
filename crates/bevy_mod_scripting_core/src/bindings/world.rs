@@ -322,7 +322,8 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     /// Safey modify or insert a component by claiming and releasing global access.
-    pub fn with_or_insert_component_mut<F, T, O>(&self,
+    pub fn with_or_insert_component_mut<F, T, O>(
+        &self,
         entity: Entity,
         f: F,
     ) -> Result<O, InteropError>

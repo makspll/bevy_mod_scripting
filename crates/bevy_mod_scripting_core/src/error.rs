@@ -101,21 +101,21 @@ impl ScriptError {
         }
     }
 
-    // #[cfg(feature = "rhai_impls")]
-    // pub fn from_rhai_error(error: rhai::EvalAltResult) -> Self {
-    //     match error {
-    //         rhai::EvalAltResult::ErrorSystem(message, error) => {
-    //             if let Some(inner) = error.downcast_ref::<InteropError>() {
-    //                 Self::new(inner.clone())
-    //             } else if let Some(inner) = error.downcast_ref::<ScriptError>() {
-    //                 inner.clone()
-    //             } else {
-    //                 Self::new_external_boxed(error).with_context(message)
-    //             }
-    //         }
-    //         _ => Self::new_external(error),
-    //     }
-    // }
+    #[cfg(feature = "rhai_impls")]
+    pub fn from_rhai_error(error: rhai::EvalAltResult) -> Self {
+        match error {
+            rhai::EvalAltResult::ErrorSystem(message, error) => {
+                if let Some(inner) = error.downcast_ref::<InteropError>() {
+                    Self::new(inner.clone())
+                } else if let Some(inner) = error.downcast_ref::<ScriptError>() {
+                    inner.clone()
+                } else {
+                    Self::new_external_boxed(error).with_context(message)
+                }
+            }
+            _ => Self::new_external(error),
+        }
+    }
 
     pub fn new_external(reason: impl std::error::Error + Send + Sync + 'static) -> Self {
         Self::new_external_boxed(Box::new(reason))
@@ -211,39 +211,39 @@ impl From<mlua::Error> for ScriptError {
     }
 }
 
-// #[cfg(feature = "rhai_impls")]
-// impl From<rhai::ParseError> for ScriptError {
-//     fn from(value: rhai::ParseError) -> Self {
-//         ScriptError::new_external(value)
-//     }
-// }
+#[cfg(feature = "rhai_impls")]
+impl From<rhai::ParseError> for ScriptError {
+    fn from(value: rhai::ParseError) -> Self {
+        ScriptError::new_external(value)
+    }
+}
 
-// #[cfg(feature = "rhai_impls")]
-// impl From<Box<rhai::EvalAltResult>> for ScriptError {
-//     fn from(value: Box<rhai::EvalAltResult>) -> Self {
-//         ScriptError::from_rhai_error(*value)
-//     }
-// }
+#[cfg(feature = "rhai_impls")]
+impl From<Box<rhai::EvalAltResult>> for ScriptError {
+    fn from(value: Box<rhai::EvalAltResult>) -> Self {
+        ScriptError::from_rhai_error(*value)
+    }
+}
 
-// #[cfg(feature = "rhai_impls")]
-// impl From<ScriptError> for Box<rhai::EvalAltResult> {
-//     fn from(value: ScriptError) -> Self {
-//         Box::new(rhai::EvalAltResult::ErrorSystem(
-//             "ScriptError".to_owned(),
-//             Box::new(value),
-//         ))
-//     }
-// }
+#[cfg(feature = "rhai_impls")]
+impl From<ScriptError> for Box<rhai::EvalAltResult> {
+    fn from(value: ScriptError) -> Self {
+        Box::new(rhai::EvalAltResult::ErrorSystem(
+            "ScriptError".to_owned(),
+            Box::new(value),
+        ))
+    }
+}
 
-// #[cfg(feature = "rhai_impls")]
-// impl From<InteropError> for Box<rhai::EvalAltResult> {
-//     fn from(value: InteropError) -> Self {
-//         Box::new(rhai::EvalAltResult::ErrorSystem(
-//             "InteropError".to_owned(),
-//             Box::new(value),
-//         ))
-//     }
-// }
+#[cfg(feature = "rhai_impls")]
+impl From<InteropError> for Box<rhai::EvalAltResult> {
+    fn from(value: InteropError) -> Self {
+        Box::new(rhai::EvalAltResult::ErrorSystem(
+            "InteropError".to_owned(),
+            Box::new(value),
+        ))
+    }
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct MissingResourceError(&'static str);
@@ -624,9 +624,194 @@ pub enum InteropErrorInner {
     },
 }
 
+/// For test purposes
 impl PartialEq for InteropErrorInner {
     fn eq(&self, _other: &Self) -> bool {
-        false
+        match (self, _other) {
+            (InteropErrorInner::StaleWorldAccess, InteropErrorInner::StaleWorldAccess) => true,
+            (InteropErrorInner::MissingWorld, InteropErrorInner::MissingWorld) => true,
+            (
+                InteropErrorInner::UnregisteredBase { base: a },
+                InteropErrorInner::UnregisteredBase { base: b },
+            ) => a == b,
+            (
+                InteropErrorInner::MissingTypeData {
+                    type_id: a,
+                    type_data: b,
+                },
+                InteropErrorInner::MissingTypeData {
+                    type_id: c,
+                    type_data: d,
+                },
+            ) => a == c && b == d,
+            (
+                InteropErrorInner::FailedFromReflect {
+                    type_id: a,
+                    reason: b,
+                },
+                InteropErrorInner::FailedFromReflect {
+                    type_id: c,
+                    reason: d,
+                },
+            ) => a == c && b == d,
+            (
+                InteropErrorInner::CannotClaimAccess {
+                    base: a,
+                    context: b,
+                    location: c,
+                },
+                InteropErrorInner::CannotClaimAccess {
+                    base: d,
+                    context: e,
+                    location: f,
+                },
+            ) => a == d && b == e && c == f,
+            (
+                InteropErrorInner::ImpossibleConversion { into: a },
+                InteropErrorInner::ImpossibleConversion { into: b },
+            ) => a == b,
+            (
+                InteropErrorInner::BetterConversionExists { context: a },
+                InteropErrorInner::BetterConversionExists { context: b },
+            ) => a == b,
+            (
+                InteropErrorInner::TypeMismatch {
+                    expected: a,
+                    got: b,
+                },
+                InteropErrorInner::TypeMismatch {
+                    expected: c,
+                    got: d,
+                },
+            ) => a == c && b == d,
+            (
+                InteropErrorInner::StringTypeMismatch {
+                    expected: a,
+                    got: b,
+                },
+                InteropErrorInner::StringTypeMismatch {
+                    expected: c,
+                    got: d,
+                },
+            ) => a == c && b == d,
+            (
+                InteropErrorInner::ValueMismatch {
+                    expected: a,
+                    got: b,
+                },
+                InteropErrorInner::ValueMismatch {
+                    expected: c,
+                    got: d,
+                },
+            ) => a == c && b == d,
+            (
+                InteropErrorInner::LengthMismatch {
+                    expected: a,
+                    got: b,
+                },
+                InteropErrorInner::LengthMismatch {
+                    expected: c,
+                    got: d,
+                },
+            ) => a == c && b == d,
+            (
+                InteropErrorInner::CouldNotDowncast { from: a, to: b },
+                InteropErrorInner::CouldNotDowncast { from: c, to: d },
+            ) => a == c && b == d,
+            (
+                InteropErrorInner::GarbageCollectedAllocation { reference: a },
+                InteropErrorInner::GarbageCollectedAllocation { reference: b },
+            ) => a == b,
+            (
+                InteropErrorInner::ReflectionPathError {
+                    error: a,
+                    reference: b,
+                },
+                InteropErrorInner::ReflectionPathError {
+                    error: c,
+                    reference: d,
+                },
+            ) => a == c && b == d,
+            (
+                InteropErrorInner::UnsupportedOperation {
+                    base: a,
+                    value: _b,
+                    operation: c,
+                },
+                InteropErrorInner::UnsupportedOperation {
+                    base: d,
+                    value: _e,
+                    operation: f,
+                },
+            ) => a == d && c == f,
+            (
+                InteropErrorInner::InvalidIndex {
+                    value: a,
+                    reason: b,
+                },
+                InteropErrorInner::InvalidIndex {
+                    value: c,
+                    reason: d,
+                },
+            ) => a == c && b == d,
+            (
+                InteropErrorInner::MissingEntity { entity: a },
+                InteropErrorInner::MissingEntity { entity: b },
+            ) => a == b,
+            (
+                InteropErrorInner::InvalidComponent { component_id: a },
+                InteropErrorInner::InvalidComponent { component_id: b },
+            ) => a == b,
+            (
+                InteropErrorInner::FunctionCallError { inner: a },
+                InteropErrorInner::FunctionCallError { inner: b },
+            ) => a == b,
+            (
+                InteropErrorInner::MissingFunctionError {
+                    on: a,
+                    function_name: _b,
+                },
+                InteropErrorInner::MissingFunctionError {
+                    on: c,
+                    function_name: _d,
+                },
+            ) => a == c,
+            (
+                InteropErrorInner::FunctionInteropError {
+                    function_name: a,
+                    on: b,
+                    error: c,
+                },
+                InteropErrorInner::FunctionInteropError {
+                    function_name: d,
+                    on: e,
+                    error: f,
+                },
+            ) => a == d && b == e && c == f,
+            (
+                InteropErrorInner::FunctionArgConversionError {
+                    argument: a,
+                    error: b,
+                },
+                InteropErrorInner::FunctionArgConversionError {
+                    argument: c,
+                    error: d,
+                },
+            ) => a == c && b == d,
+            (
+                InteropErrorInner::OtherError { error: a },
+                InteropErrorInner::OtherError { error: b },
+            ) => a.to_string() == b.to_string(),
+            (
+                InteropErrorInner::UnregisteredComponentOrResourceType { type_name: a },
+                InteropErrorInner::UnregisteredComponentOrResourceType { type_name: b },
+            ) => a == b,
+            (
+                InteropErrorInner::Invariant { message: a },
+                InteropErrorInner::Invariant { message: b },
+            ) => a == b,
+            _ => false,
+        }
     }
 }
 

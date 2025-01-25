@@ -1,4 +1,5 @@
 use super::{from::FromScript, into::IntoScript, namespace::Namespace};
+use crate::bindings::function::arg_info::ArgInfo;
 use crate::{
     bindings::{
         function::from::{Mut, Ref, Val},
@@ -9,20 +10,17 @@ use crate::{
 };
 use bevy::{
     prelude::{Reflect, Resource},
-    reflect::{
-        func::{args::GetOwnership, FunctionError},
-        FromReflect, GetTypeRegistration, TypePath, TypeRegistry, Typed,
-    },
+    reflect::{func::FunctionError, FromReflect, GetTypeRegistration, TypeRegistry, Typed},
 };
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::borrow::Cow;
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::hash::Hash;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 
 #[diagnostic::on_unimplemented(
-    message = "Only functions with all arguments impplementing FromScript and return values supporting IntoScript are supported. Registering functions also requires they implement GetInnerTypeDependencies",
+    message = "This function does not fulfil the requirements to be a script callable function. All arguments must implement the ScriptArgument trait and all return values must implement the ScriptReturn trait",
     note = "If you're trying to return a non-primitive type, you might need to use Val<T> Ref<T> or Mut<T> wrappers"
 )]
 pub trait ScriptFunction<'env, Marker> {
@@ -159,7 +157,9 @@ impl FunctionInfo {
 pub struct DynamicScriptFunction {
     pub info: FunctionInfo,
     // TODO: info about the function, this is hard right now because of non 'static lifetimes in wrappers, we can't use TypePath etc
-    func: Arc<dyn Fn(FunctionCallContext, Vec<ScriptValue>) -> ScriptValue + Send + Sync + 'static>,
+    func: Arc<
+        dyn Fn(FunctionCallContext, VecDeque<ScriptValue>) -> ScriptValue + Send + Sync + 'static,
+    >,
 }
 
 impl PartialEq for DynamicScriptFunction {
@@ -175,7 +175,10 @@ pub struct DynamicScriptFunctionMut {
     func: Arc<
         RwLock<
             // I'd rather consume an option or something instead of having the RWLock but I just wanna get this release out
-            dyn FnMut(FunctionCallContext, Vec<ScriptValue>) -> ScriptValue + Send + Sync + 'static,
+            dyn FnMut(FunctionCallContext, VecDeque<ScriptValue>) -> ScriptValue
+                + Send
+                + Sync
+                + 'static,
         >,
     >,
 }
@@ -195,7 +198,7 @@ impl DynamicScriptFunction {
         args: I,
         context: FunctionCallContext,
     ) -> Result<ScriptValue, InteropError> {
-        let args = args.into_iter().collect::<Vec<_>>();
+        let args = args.into_iter().collect::<VecDeque<_>>();
         // should we be inlining call errors into the return value?
         let return_val = (self.func)(context, args);
         match return_val {
@@ -242,7 +245,7 @@ impl DynamicScriptFunctionMut {
         args: I,
         context: FunctionCallContext,
     ) -> Result<ScriptValue, InteropError> {
-        let args = args.into_iter().collect::<Vec<_>>();
+        let args = args.into_iter().collect::<VecDeque<_>>();
         // should we be inlining call errors into the return value?
         let mut write = self.func.write();
         let return_val = (write)(context, args);
@@ -298,7 +301,7 @@ impl std::fmt::Debug for DynamicScriptFunctionMut {
 
 impl<F> From<F> for DynamicScriptFunction
 where
-    F: Fn(FunctionCallContext, Vec<ScriptValue>) -> ScriptValue + Send + Sync + 'static,
+    F: Fn(FunctionCallContext, VecDeque<ScriptValue>) -> ScriptValue + Send + Sync + 'static,
 {
     fn from(fn_: F) -> Self {
         DynamicScriptFunction {
@@ -311,7 +314,7 @@ where
 
 impl<F> From<F> for DynamicScriptFunctionMut
 where
-    F: FnMut(FunctionCallContext, Vec<ScriptValue>) -> ScriptValue + Send + Sync + 'static,
+    F: FnMut(FunctionCallContext, VecDeque<ScriptValue>) -> ScriptValue + Send + Sync + 'static,
 {
     fn from(fn_: F) -> Self {
         DynamicScriptFunctionMut {
@@ -353,7 +356,7 @@ impl ScriptFunctionRegistryArc {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct FunctionKey {
     pub name: Cow<'static, str>,
     pub namespace: Namespace,
@@ -504,6 +507,23 @@ impl ScriptFunctionRegistry {
     pub fn iter_all(&self) -> impl Iterator<Item = (&FunctionKey, &DynamicScriptFunction)> {
         self.functions.iter()
     }
+
+    /// Insert a function into the registry with the given key, this will not perform any overloading logic.
+    /// Do not use unless you really need to.
+    pub fn raw_insert(
+        &mut self,
+        namespace: Namespace,
+        name: impl Into<Cow<'static, str>>,
+        func: DynamicScriptFunction,
+    ) {
+        self.functions.insert(
+            FunctionKey {
+                name: name.into(),
+                namespace,
+            },
+            func,
+        );
+    }
 }
 
 macro_rules! count {
@@ -545,39 +565,50 @@ macro_rules! impl_script_function {
         impl<
             'env,
             'w : 'static,
-            $( $param: FromScript, )*
+            $( $param: FromScript + ArgInfo,)*
             O,
             F
         > $trait_type<'env,
             fn( $($contextty,)? $($param ),* ) -> $res
         > for F
         where
-            O: IntoScript + TypePath + GetOwnership,
+            O: IntoScript,
             F: $fn_type(  $($contextty,)? $($param ),* ) -> $res + Send + Sync + 'static ,
             $( $param::This<'w>: Into<$param>,)*
         {
             #[allow(unused_mut,unused_variables)]
             fn $trait_fn_name(mut self) -> $dynamic_type {
-                let func = (move |caller_context: FunctionCallContext, args: Vec<ScriptValue> | {
+                let func = (move |caller_context: FunctionCallContext, mut args: VecDeque<ScriptValue> | {
                     let res: Result<ScriptValue, InteropError> = (|| {
+                        let received_args_len = args.len();
                         let expected_arg_count = count!($($param )*);
-                        if args.len() < expected_arg_count {
-                            return Err(InteropError::function_call_error(FunctionError::ArgCountMismatch{
-                                expected: expected_arg_count,
-                                received: args.len()
-                            }));
-                        }
+
                         $( let $context = caller_context; )?
                         let world = caller_context.world()?;
                         world.begin_access_scope()?;
+                        let mut current_arg = 0;
+
+                        $(
+                            current_arg += 1;
+                            let $param = args.pop_front();
+                            let $param = match $param {
+                                Some($param) => $param,
+                                None => {
+                                    if let Some(default) = <$param>::default_value() {
+                                        default
+                                    } else {
+                                        return Err(InteropError::function_call_error(FunctionError::ArgCountMismatch{
+                                            expected: expected_arg_count,
+                                            received: received_args_len
+                                        }));
+                                    }
+                                }
+                            };
+                            let $param = <$param>::from_script($param, world.clone())
+                                .map_err(|e| InteropError::function_arg_conversion_error(current_arg.to_string(), e))?;
+                        )*
+
                         let ret = {
-                            let mut current_arg = 0;
-                            let mut arg_iter = args.into_iter();
-                            $(
-                                current_arg += 1;
-                                let $param = <$param>::from_script(arg_iter.next().expect("invariant"), world.clone())
-                                    .map_err(|e| InteropError::function_arg_conversion_error(current_arg.to_string(), e))?;
-                            )*
                             let out = self( $( $context,)?  $( $param.into(), )* );
                             $(
                                 let $out = out?;
@@ -621,10 +652,20 @@ bevy::utils::all_tuples!(impl_script_function_type_dependencies, 0, 13, T);
 #[cfg(test)]
 mod test {
     use super::*;
+
+    fn with_local_world<F: Fn()>(f: F) {
+        let mut world = bevy::prelude::World::default();
+        WorldGuard::with_static_guard(&mut world, |world| {
+            ThreadWorldContainer.set_world(world).unwrap();
+            f()
+        });
+    }
+
     #[test]
     fn test_register_script_function() {
         let mut registry = ScriptFunctionRegistry::default();
         let fn_ = |a: usize, b: usize| a + b;
+
         let namespace = Namespace::Global;
         registry.register(namespace, "test", fn_);
         let function = registry
@@ -633,6 +674,46 @@ mod test {
 
         assert_eq!(function.info.name(), "test");
         assert_eq!(function.info.namespace(), namespace);
+    }
+
+    #[test]
+    fn test_optional_argument_not_required() {
+        let fn_ = |a: usize, b: Option<usize>| a + b.unwrap_or(0);
+        let script_function = fn_.into_dynamic_script_function();
+
+        with_local_world(|| {
+            let out = script_function
+                .call(vec![ScriptValue::from(1)], FunctionCallContext::default())
+                .unwrap();
+
+            assert_eq!(out, ScriptValue::from(1));
+        });
+    }
+
+    #[test]
+    fn test_invalid_amount_of_args_errors_nicely() {
+        let fn_ = |a: usize, b: usize| a + b;
+        let script_function = fn_.into_dynamic_script_function().with_name("my_fn");
+
+        with_local_world(|| {
+            let out =
+                script_function.call(vec![ScriptValue::from(1)], FunctionCallContext::default());
+
+            assert!(out.is_err());
+            assert_eq!(
+                out.unwrap_err().into_inner().unwrap(),
+                InteropError::function_interop_error(
+                    "my_fn",
+                    Namespace::Global,
+                    InteropError::function_call_error(FunctionError::ArgCountMismatch {
+                        expected: 2,
+                        received: 1
+                    })
+                )
+                .into_inner()
+                .unwrap()
+            );
+        });
     }
 
     #[test]

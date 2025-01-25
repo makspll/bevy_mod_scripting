@@ -45,9 +45,8 @@ enum Feature {
     MluaSerialize,
     MluaMacros,
     MluaAsync,
-    // Rhai
     // Rhai,
-
+    Rhai,
     // Rune
     // Rune,
 }
@@ -55,7 +54,7 @@ enum Feature {
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, strum::EnumIter)]
 enum FeatureGroup {
     LuaExclusive,
-    // RhaiExclusive,
+    RhaiExclusive,
     // RuneExclusive,
     ForExternalCrate,
     BMSFeature,
@@ -65,7 +64,7 @@ impl FeatureGroup {
     fn default_feature(self) -> Feature {
         match self {
             FeatureGroup::LuaExclusive => Feature::Lua54,
-            // FeatureGroup::RhaiExclusive => Feature::Rhai,
+            FeatureGroup::RhaiExclusive => Feature::Rhai,
             // FeatureGroup::RuneExclusive => Feature::Rune,
             _ => panic!("No default feature for non-exclusive group"),
         }
@@ -74,7 +73,7 @@ impl FeatureGroup {
     fn is_exclusive(self) -> bool {
         matches!(
             self,
-            FeatureGroup::LuaExclusive // | FeatureGroup::RhaiExclusive | FeatureGroup::RuneExclusive
+            FeatureGroup::LuaExclusive | FeatureGroup::RhaiExclusive // | FeatureGroup::RuneExclusive
         )
     }
 }
@@ -93,7 +92,7 @@ impl IntoFeatureGroup for Feature {
             | Feature::Luajit
             | Feature::Luajit52
             | Feature::Luau => FeatureGroup::LuaExclusive,
-            // Feature::Rhai => FeatureGroup::RhaiExclusive,
+            Feature::Rhai => FeatureGroup::RhaiExclusive,
             // Feature::Rune => FeatureGroup::RuneExclusive,
             Feature::MluaAsync
             | Feature::MluaMacros
@@ -134,16 +133,6 @@ impl Features {
                     let group = f.to_feature_group();
                     (!group.is_exclusive()) || (**f == group.default_feature())
                 })
-                .cloned()
-                .collect(),
-        )
-    }
-
-    fn non_exclusive_features() -> Self {
-        Self(
-            <Feature as strum::VariantArray>::VARIANTS
-                .iter()
-                .filter(|f| !f.to_feature_group().is_exclusive())
                 .cloned()
                 .collect(),
         )
@@ -1251,26 +1240,7 @@ impl Xtasks {
             })
         }
 
-        // also run a all features + each exclusive feature by itself
-        for feature in available_features
-            .0
-            .iter()
-            .filter(|f| f.to_feature_group().is_exclusive())
-        {
-            // run with all features
-            let mut features = Features::non_exclusive_features();
-            features.0.insert(*feature);
-
-            // don't include if we already ran this combination
-            if powersets.iter().any(|f| f == &features) {
-                continue;
-            }
-
-            output.push(App {
-                global_args: default_args.clone().with_features(features),
-                subcmd: Xtasks::Build,
-            });
-        }
+        log::info!("Powerset command combinations: {:?}", output);
 
         // next run a full lint check with all features
         output.push(App {

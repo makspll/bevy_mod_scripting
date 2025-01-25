@@ -252,10 +252,20 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
     mut commands: Commands,
 ) {
     for event in events.read() {
+        let metadata = match event {
+            ScriptAssetEvent::Added(script_metadata)
+            | ScriptAssetEvent::Removed(script_metadata)
+            | ScriptAssetEvent::Modified(script_metadata) => script_metadata,
+        };
+
+        if metadata.language != P::LANGUAGE {
+            continue;
+        }
+
         trace!("{}: Received script asset event: {:?}", P::LANGUAGE, event);
         match event {
             // emitted when a new script asset is loaded for the first time
-            ScriptAssetEvent::Added(metadata) | ScriptAssetEvent::Modified(metadata) => {
+            ScriptAssetEvent::Added(_) | ScriptAssetEvent::Modified(_) => {
                 if metadata.language != P::LANGUAGE {
                     trace!(
                         "{}: Script asset with id: {} is for a different langauge than this sync system. Skipping.",
@@ -275,7 +285,7 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
                     ));
                 }
             }
-            ScriptAssetEvent::Removed(metadata) => {
+            ScriptAssetEvent::Removed(_) => {
                 info!("{}: Deleting Script: {:?}", P::LANGUAGE, metadata.script_id,);
                 commands.queue(DeleteScript::<P>::new(metadata.script_id.clone()));
             }

@@ -1,0 +1,1 @@
+assert(global_hello_world.call() == "hi!", "global_hello_world() == 'hi!'")
