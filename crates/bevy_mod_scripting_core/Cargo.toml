@@ -26,7 +26,7 @@ rhai_impls = ["rhai"]
 
 [dependencies]
 mlua = { version = "0.10", default-features = false, optional = true }
-rhai = { git = "https://github.com/rhaiscript/rhai", rev = "4ead53eb40f4a18d6f827609041ef1c742f04799", default-features = false, features = [
+rhai = { version = "1.21", default-features = false, features = [
     "sync",
 ], optional = true }
 
