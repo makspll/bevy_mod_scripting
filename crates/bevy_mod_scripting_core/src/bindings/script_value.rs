@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, collections::HashMap};
 
 use bevy::reflect::{OffsetAccess, ParsedPath, Reflect};
 
@@ -26,6 +26,8 @@ pub enum ScriptValue {
     String(Cow<'static, str>),
     /// Represents a list of other things passed by value
     List(Vec<ScriptValue>),
+    /// Represents a map of other things passed by value
+    Map(HashMap<String, ScriptValue>),
     /// Represents a reference to a value.
     Reference(ReflectReference),
     /// A dynamic script function possibly storing state. Preffer using the [`ScriptValue::Function`] variant instead if possible.
@@ -57,6 +59,7 @@ impl ScriptValue {
             ScriptValue::FunctionMut(_) => "FunctionMut".to_owned(),
             ScriptValue::Function(_) => "Function".to_owned(),
             ScriptValue::Error(_) => "Error".to_owned(),
+            ScriptValue::Map(_) => "Map".to_owned(),
         }
     }
 }
@@ -136,6 +139,12 @@ impl<T: Into<ScriptValue>, E: Into<InteropError>> From<Result<T, E>> for ScriptV
             Ok(v) => v.into(),
             Err(e) => ScriptValue::Error(e.into()),
         }
+    }
+}
+
+impl From<HashMap<String, ScriptValue>> for ScriptValue {
+    fn from(value: HashMap<String, ScriptValue>) -> Self {
+        ScriptValue::Map(value)
     }
 }
 

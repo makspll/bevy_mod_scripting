@@ -39,6 +39,7 @@ parking_lot = "0.12.1"
 dashmap = "6"
 smallvec = "1.11"
 itertools = "0.13"
+derivative = "2.2"
 
 [dev-dependencies]
 test_utils = { workspace = true }

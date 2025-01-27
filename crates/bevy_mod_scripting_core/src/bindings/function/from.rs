@@ -421,3 +421,27 @@ impl FromScript for DynamicScriptFunction {
         }
     }
 }
+
+impl<V> FromScript for std::collections::HashMap<String, V>
+where
+    V: FromScript + 'static,
+    for<'w> V::This<'w>: Into<V>,
+{
+    type This<'w> = Self;
+
+    fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
+        match value {
+            ScriptValue::Map(map) => {
+                let mut hashmap = std::collections::HashMap::new();
+                for (key, value) in map {
+                    hashmap.insert(key, V::from_script(value, world.clone())?.into());
+                }
+                Ok(hashmap)
+            }
+            _ => Err(InteropError::value_mismatch(
+                std::any::TypeId::of::<std::collections::HashMap<String, V>>(),
+                value,
+            )),
+        }
+    }
+}

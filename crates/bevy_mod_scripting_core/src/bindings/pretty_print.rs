@@ -154,6 +154,16 @@ impl ReflectReferencePrinter {
             id if id == TypeId::of::<i16>() => downcast_case!(v, output, i16),
             id if id == TypeId::of::<i8>() => downcast_case!(v, output, i8),
             id if id == TypeId::of::<String>() => downcast_case!(v, output, String),
+            id if id == TypeId::of::<std::path::PathBuf>() => {
+                downcast_case!(v, output, std::path::PathBuf)
+            }
+            id if id == TypeId::of::<std::ffi::OsString>() => {
+                downcast_case!(v, output, std::ffi::OsString)
+            }
+            id if id == TypeId::of::<Cow<str>>() => {
+                downcast_case!(v, output, Cow<str>)
+            }
+            id if id == TypeId::of::<char>() => downcast_case!(v, output, char),
             id if id == TypeId::of::<bool>() => downcast_case!(v, output, bool),
             _ => {
                 output.push_str(
@@ -465,7 +475,8 @@ impl DisplayWithWorld for ScriptValue {
             ScriptValue::Float(f) => f.to_string(),
             ScriptValue::String(cow) => cow.to_string(),
             ScriptValue::Error(script_error) => script_error.display_with_world(world),
-            ScriptValue::List(vec) => vec.display_without_world(),
+            ScriptValue::List(vec) => vec.display_with_world(world),
+            ScriptValue::Map(hash_map) => hash_map.display_with_world(world),
         }
     }
 
@@ -494,6 +505,7 @@ impl DisplayWithWorld for ScriptValue {
                 format!("Function({})", dynamic_script_function.name())
             }
             ScriptValue::Error(interop_error) => interop_error.display_without_world(),
+            ScriptValue::Map(hash_map) => hash_map.display_without_world(),
         }
     }
 }
@@ -529,6 +541,69 @@ impl<T: DisplayWithWorld> DisplayWithWorld for Vec<T> {
         let mut string = String::new();
         BracketType::Square.surrounded(&mut string, |string| {
             for (i, v) in self.iter().enumerate() {
+                string.push_str(&v.display_without_world());
+                if i != self.len() - 1 {
+                    string.push_str(", ");
+                }
+            }
+        });
+        string
+    }
+}
+
+impl DisplayWithWorld for String {
+    fn display_with_world(&self, _world: WorldGuard) -> String {
+        self.to_string()
+    }
+
+    fn display_value_with_world(&self, _world: WorldGuard) -> String {
+        self.to_string()
+    }
+
+    fn display_without_world(&self) -> String {
+        self.to_string()
+    }
+}
+
+impl<K: DisplayWithWorld, V: DisplayWithWorld> DisplayWithWorld
+    for std::collections::HashMap<K, V>
+{
+    fn display_with_world(&self, world: WorldGuard) -> String {
+        let mut string = String::new();
+        BracketType::Curly.surrounded(&mut string, |string| {
+            for (i, (k, v)) in self.iter().enumerate() {
+                string.push_str(&k.display_with_world(world.clone()));
+                string.push_str(": ");
+                string.push_str(&v.display_with_world(world.clone()));
+                if i != self.len() - 1 {
+                    string.push_str(", ");
+                }
+            }
+        });
+        string
+    }
+
+    fn display_value_with_world(&self, world: WorldGuard) -> String {
+        let mut string = String::new();
+        BracketType::Curly.surrounded(&mut string, |string| {
+            for (i, (k, v)) in self.iter().enumerate() {
+                string.push_str(&k.display_value_with_world(world.clone()));
+                string.push_str(": ");
+                string.push_str(&v.display_value_with_world(world.clone()));
+                if i != self.len() - 1 {
+                    string.push_str(", ");
+                }
+            }
+        });
+        string
+    }
+
+    fn display_without_world(&self) -> String {
+        let mut string = String::new();
+        BracketType::Curly.surrounded(&mut string, |string| {
+            for (i, (k, v)) in self.iter().enumerate() {
+                string.push_str(&k.display_without_world());
+                string.push_str(": ");
                 string.push_str(&v.display_without_world());
                 if i != self.len() - 1 {
                     string.push_str(", ");
@@ -651,5 +726,18 @@ mod test {
             reflect_reference.display_without_world(),
             format!("<Reference to Allocation({id})({:?})>", type_id)
         );
+    }
+
+    #[test]
+    fn test_hashmap() {
+        let mut world = setup_world();
+        let world = WorldGuard::new(&mut world);
+
+        let mut map = std::collections::HashMap::new();
+        map.insert("hello".to_owned(), ScriptValue::Bool(true));
+
+        assert_eq!(map.display_with_world(world.clone()), "{hello: true}");
+
+        assert_eq!(map.display_value_with_world(world.clone()), "{hello: true}");
     }
 }

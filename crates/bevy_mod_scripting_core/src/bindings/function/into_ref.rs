@@ -1,4 +1,4 @@
-use std::{ffi::OsString, path::PathBuf};
+use std::{borrow::Cow, ffi::OsString, path::PathBuf};
 
 use bevy::reflect::{Access, PartialReflect};
 
@@ -90,6 +90,13 @@ fn into_script_ref(
             to : bool    => return downcast_into_value!(r, bool).into_script(world),
             tp : char    => return downcast_into_value!(r, char).into_script(world),
             tq : String  => return downcast_into_value!(r, String).clone().into_script(world),
+            tcs: Cow<'static, str> => match r.try_downcast_ref::<Cow<'static, str>>() {
+                Some(cow) => return Ok(ScriptValue::String(cow.clone())),
+                None => return Err(InteropError::type_mismatch(
+                    std::any::TypeId::of::<Cow<str>>(),
+                    r.get_represented_type_info().map(|i| i.type_id()),
+                )),
+            },
             tr : PathBuf => return downcast_into_value!(r, PathBuf).clone().into_script(world),
             ts : OsString=> return downcast_into_value!(r, OsString).clone().into_script(world),
             tn : ()      => return Ok(ScriptValue::Unit)
