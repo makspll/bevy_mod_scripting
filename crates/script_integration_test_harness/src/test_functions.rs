@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 use bevy::{
     app::App,
@@ -102,5 +102,6 @@ pub fn register_test_functions(world: &mut App) {
         );
 
     NamespaceBuilder::<GlobalNamespace>::new_unregistered(world)
-        .register("global_hello_world", || Ok("hi!"));
+        .register("global_hello_world", || Ok("hi!"))
+        .register("make_hashmap", |map: HashMap<String, usize>| map);
 }
