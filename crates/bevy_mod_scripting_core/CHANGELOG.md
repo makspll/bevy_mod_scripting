@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-alpha.8](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.0-alpha.7...bevy_mod_scripting_core-v0.9.0-alpha.8) - 2025-01-27
+
+### Added
+
+- Add `functions` script method, and create function info scaffolding (#228)
+- Call custom `get` and `set` functions on the type when indexing. (#226)
+- Add `optional` arguments to script functions (#225)
+- re-implement rhai again (#222)
+- Add world.with_or_insert_component_mut() (#223)
+
 ## [0.9.0-alpha.7](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.0-alpha.6...bevy_mod_scripting_core-v0.9.0-alpha.7) - 2025-01-20
 
 ### Added
