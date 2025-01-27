@@ -129,7 +129,7 @@ pub trait FromDynamic: Sized {
     fn from_dynamic(dynamic: Dynamic) -> Result<Self, Box<EvalAltResult>>;
 }
 
-#[allow(clippy::unwrap_used, clippy::todo)]
+#[allow(clippy::unwrap_used)]
 impl FromDynamic for ScriptValue {
     fn from_dynamic(dynamic: Dynamic) -> Result<Self, Box<EvalAltResult>> {
         match dynamic {
@@ -139,6 +139,18 @@ impl FromDynamic for ScriptValue {
             d if d.is_float() => Ok(ScriptValue::Float(d.as_float().unwrap())),
             d if d.is_string() => Ok(ScriptValue::String(
                 d.into_immutable_string().unwrap().to_string().into(),
+            )),
+            mut d if d.is_map() => Ok(ScriptValue::Map(
+                d.as_map_mut()
+                    .map_err(|_| {
+                        Box::new(EvalAltResult::ErrorSystem(
+                            "FromDynamic".to_string(),
+                            InteropError::invariant("d is proved to be a map").into(),
+                        ))
+                    })?
+                    .iter()
+                    .map(|(k, v)| Ok((k.to_string(), ScriptValue::from_dynamic(v.clone())?)))
+                    .collect::<Result<_, Box<EvalAltResult>>>()?,
             )),
             d if d.is_array() => Ok(ScriptValue::List(
                 d.into_array()
@@ -151,7 +163,13 @@ impl FromDynamic for ScriptValue {
                 if let Some(v) = d.try_cast::<RhaiReflectReference>() {
                     Ok(ScriptValue::Reference(v.0))
                 } else {
-                    todo!("from conversion not implemented yet")
+                    Err(Box::new(EvalAltResult::ErrorSystem(
+                        "FromDynamic".to_string(),
+                        Box::new(InteropError::impossible_conversion(std::any::TypeId::of::<
+                            ScriptValue,
+                        >(
+                        ))),
+                    )))
                 }
             }
         }
