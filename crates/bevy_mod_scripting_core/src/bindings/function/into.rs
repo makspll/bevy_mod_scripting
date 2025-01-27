@@ -1,4 +1,4 @@
-use std::{borrow::Cow, ffi::OsString, path::PathBuf};
+use std::{borrow::Cow, collections::HashMap, ffi::OsString, path::PathBuf};
 
 use bevy::reflect::Reflect;
 
@@ -150,6 +150,16 @@ impl<T: IntoScript, const N: usize> IntoScript for [T; N] {
             values.push(val.into_script(world.clone())?);
         }
         Ok(ScriptValue::List(values))
+    }
+}
+
+impl<V: IntoScript> IntoScript for HashMap<String, V> {
+    fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        let mut map = HashMap::new();
+        for (key, value) in self {
+            map.insert(key, value.into_script(world.clone())?);
+        }
+        Ok(ScriptValue::Map(map))
     }
 }
 

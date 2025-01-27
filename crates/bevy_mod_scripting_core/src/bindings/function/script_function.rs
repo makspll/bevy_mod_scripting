@@ -1,16 +1,14 @@
 use super::{from::FromScript, into::IntoScript, namespace::Namespace};
-use crate::bindings::function::arg_info::ArgInfo;
+use crate::bindings::function::arg_meta::ArgMeta;
+use crate::docgen::info::{FunctionInfo, GetFunctionInfo};
 use crate::{
-    bindings::{
-        function::from::{Mut, Ref, Val},
-        ReflectReference, ThreadWorldContainer, WorldContainer, WorldGuard,
-    },
+    bindings::{ThreadWorldContainer, WorldContainer, WorldGuard},
     error::InteropError,
     ScriptValue,
 };
 use bevy::{
     prelude::{Reflect, Resource},
-    reflect::{func::FunctionError, FromReflect, GetTypeRegistration, TypeRegistry, Typed},
+    reflect::func::FunctionError,
 };
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::borrow::Cow;
@@ -28,89 +26,11 @@ pub trait ScriptFunction<'env, Marker> {
 }
 
 #[diagnostic::on_unimplemented(
-    message = "Only functions with all arguments impplementing FromScript and return values supporting IntoScript are supported. Registering functions also requires they implement GetInnerTypeDependencies",
+    message = "Only functions with all arguments impplementing FromScript and return values supporting IntoScript are supported. Registering functions also requires they implement GetTypeDependencies",
     note = "If you're trying to return a non-primitive type, you might need to use Val<T> Ref<T> or Mut<T> wrappers"
 )]
 pub trait ScriptFunctionMut<'env, Marker> {
     fn into_dynamic_script_function_mut(self) -> DynamicScriptFunctionMut;
-}
-
-/// Functionally identical to [`GetTypeRegistration`] but without the 'static bound
-pub trait GetInnerTypeDependencies {
-    fn register_type_dependencies(registry: &mut TypeRegistry);
-}
-
-#[macro_export]
-macro_rules! no_type_dependencies {
-    ($($path:path),*) => {
-        $(
-            impl $crate::bindings::function::script_function::GetInnerTypeDependencies for $path {
-                fn register_type_dependencies(_registry: &mut bevy::reflect::TypeRegistry) {}
-            }
-        )*
-    };
-}
-
-#[macro_export]
-macro_rules! self_type_dependency_only {
-    ($($path:ty),*) => {
-        $(
-            impl $crate::bindings::function::script_function::GetInnerTypeDependencies for $path {
-                fn register_type_dependencies(registry: &mut bevy::reflect::TypeRegistry) {
-                    registry.register::<$path>();
-                }
-            }
-        )*
-    };
-}
-
-macro_rules! recursive_type_dependencies {
-    ($( ($path:ty where $($bound:ident : $($bound_val:path);*),* $(,,const $const:ident : $const_ty:ty)? $(=> with $self_:ident)?) ),* )  => {
-        $(
-            impl<$($bound : $($bound_val +)*),* , $(const $const : $const_ty )?> GetInnerTypeDependencies for $path {
-                fn register_type_dependencies(registry: &mut TypeRegistry) {
-                    $(
-                        registry.register::<$bound>();
-                    )*
-                    $(
-                        registry.register::<$self_>();
-                    )?
-                }
-            }
-        )*
-    };
-}
-
-macro_rules! register_tuple_dependencies {
-    ($($ty:ident),*) => {
-        impl<$($ty: GetTypeRegistration + Typed),*> GetInnerTypeDependencies for ($($ty,)*) {
-            fn register_type_dependencies(registry: &mut TypeRegistry) {
-                $(
-                    registry.register::<$ty>();
-                )*
-            }
-        }
-    };
-}
-
-no_type_dependencies!(InteropError);
-no_type_dependencies!(WorldGuard<'static>);
-self_type_dependency_only!(FunctionCallContext, ReflectReference);
-
-recursive_type_dependencies!(
-    (Val<T> where T: GetTypeRegistration),
-    (Ref<'_, T>  where T: GetTypeRegistration),
-    (Mut<'_, T>  where T: GetTypeRegistration),
-    (Result<T, InteropError>  where T: GetTypeRegistration),
-    ([T; N]  where T: GetTypeRegistration;Typed,, const N: usize => with Self),
-    (Option<T>  where T: GetTypeRegistration;FromReflect;Typed => with Self),
-    (Vec<T>  where T: GetTypeRegistration;FromReflect;Typed => with Self),
-    (HashMap<K,V> where K: GetTypeRegistration;FromReflect;Typed;Hash;Eq, V: GetTypeRegistration;FromReflect;Typed => with Self)
-);
-
-bevy::utils::all_tuples!(register_tuple_dependencies, 1, 14, T);
-pub trait GetFunctionTypeDependencies<Marker> {
-    fn register_type_dependencies(registry: &mut TypeRegistry);
 }
 
 /// The caller context when calling a script function.
@@ -128,26 +48,8 @@ impl FunctionCallContext {
     }
 
     /// Tries to access the world, returning an error if the world is not available
-    pub fn world(&self) -> Result<WorldGuard<'static>, InteropError> {
+    pub fn world<'l>(&self) -> Result<WorldGuard<'l>, InteropError> {
         ThreadWorldContainer.try_get_world()
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Default)]
-pub struct FunctionInfo {
-    pub name: Cow<'static, str>,
-    pub namespace: Namespace,
-}
-
-impl FunctionInfo {
-    /// The name of the function
-    pub fn name(&self) -> &Cow<'static, str> {
-        &self.name
-    }
-
-    /// If the function is namespaced to a specific type, this will return the type id of that type
-    pub fn namespace(&self) -> Namespace {
-        self.namespace
     }
 }
 
@@ -204,7 +106,7 @@ impl DynamicScriptFunction {
         match return_val {
             ScriptValue::Error(e) => Err(InteropError::function_interop_error(
                 self.name(),
-                self.info.namespace(),
+                self.info.namespace,
                 e,
             )),
             v => Ok(v),
@@ -213,6 +115,10 @@ impl DynamicScriptFunction {
 
     pub fn name(&self) -> &Cow<'static, str> {
         &self.info.name
+    }
+
+    pub fn with_info(self, info: FunctionInfo) -> Self {
+        Self { info, ..self }
     }
 
     pub fn with_name<N: Into<Cow<'static, str>>>(self, name: N) -> Self {
@@ -252,7 +158,7 @@ impl DynamicScriptFunctionMut {
         match return_val {
             ScriptValue::Error(e) => Err(InteropError::function_interop_error(
                 self.name(),
-                self.info.namespace(),
+                self.info.namespace,
                 e,
             )),
             v => Ok(v),
@@ -260,6 +166,10 @@ impl DynamicScriptFunctionMut {
     }
     pub fn name(&self) -> &Cow<'static, str> {
         &self.info.name
+    }
+
+    pub fn with_info(self, info: FunctionInfo) -> Self {
+        Self { info, ..self }
     }
 
     pub fn with_name<N: Into<Cow<'static, str>>>(self, name: N) -> Self {
@@ -372,15 +282,30 @@ impl ScriptFunctionRegistry {
     /// the new function will be registered as an overload of the function.
     ///
     /// If you want to overwrite an existing function, use [`ScriptFunctionRegistry::overwrite`]
-    pub fn register<F, M>(
+    pub fn register<'env, F, M>(
         &mut self,
         namespace: Namespace,
         name: impl Into<Cow<'static, str>>,
         func: F,
     ) where
-        F: ScriptFunction<'static, M>,
+        F: ScriptFunction<'env, M> + GetFunctionInfo<M>,
     {
-        self.register_overload(namespace, name, func, false);
+        self.register_overload(namespace, name, func, false, None::<&'static str>);
+    }
+
+    /// Equivalent to [`ScriptFunctionRegistry::register`] but with the ability to provide documentation for the function.
+    ///
+    /// The docstring will be added to the function's metadata and can be accessed at runtime.
+    pub fn register_documented<F, M>(
+        &mut self,
+        namespace: Namespace,
+        name: impl Into<Cow<'static, str>>,
+        func: F,
+        docs: &'static str,
+    ) where
+        F: ScriptFunction<'static, M> + GetFunctionInfo<M>,
+    {
+        self.register_overload(namespace, name, func, false, Some(docs));
     }
 
     /// Overwrite a function with the given name. If the function does not exist, it will be registered as a new function.
@@ -390,9 +315,21 @@ impl ScriptFunctionRegistry {
         name: impl Into<Cow<'static, str>>,
         func: F,
     ) where
-        F: ScriptFunction<'static, M>,
+        F: ScriptFunction<'static, M> + GetFunctionInfo<M>,
     {
-        self.register_overload(namespace, name, func, true);
+        self.register_overload(namespace, name, func, true, None::<&'static str>);
+    }
+
+    pub fn overwrite_documented<F, M>(
+        &mut self,
+        namespace: Namespace,
+        name: impl Into<Cow<'static, str>>,
+        func: F,
+        docs: &'static str,
+    ) where
+        F: ScriptFunction<'static, M> + GetFunctionInfo<M>,
+    {
+        self.register_overload(namespace, name, func, true, Some(docs));
     }
 
     /// Remove a function from the registry if it exists. Returns the removed function if it was found.
@@ -423,23 +360,26 @@ impl ScriptFunctionRegistry {
         Ok(overloads)
     }
 
-    fn register_overload<F, M>(
+    fn register_overload<'env, F, M>(
         &mut self,
         namespace: Namespace,
         name: impl Into<Cow<'static, str>>,
         func: F,
         overwrite: bool,
+        docs: Option<impl Into<Cow<'static, str>>>,
     ) where
-        F: ScriptFunction<'static, M>,
+        F: ScriptFunction<'env, M> + GetFunctionInfo<M>,
     {
         // always start with non-suffixed registration
         // TODO: we do alot of string work, can we make this all more efficient?
         let name: Cow<'static, str> = name.into();
         if overwrite || !self.contains(namespace, name.clone()) {
-            let func = func
-                .into_dynamic_script_function()
-                .with_name(name.clone())
-                .with_namespace(namespace);
+            let info = func.get_function_info(name.clone(), namespace);
+            let info = match docs {
+                Some(docs) => info.with_docs(docs.into()),
+                None => info,
+            };
+            let func = func.into_dynamic_script_function().with_info(info);
             self.functions.insert(FunctionKey { name, namespace }, func);
             return;
         }
@@ -508,6 +448,15 @@ impl ScriptFunctionRegistry {
         self.functions.iter()
     }
 
+    pub fn iter_namespace(
+        &self,
+        namespace: Namespace,
+    ) -> impl Iterator<Item = (&FunctionKey, &DynamicScriptFunction)> {
+        self.functions
+            .iter()
+            .filter(move |(key, _)| key.namespace == namespace)
+    }
+
     /// Insert a function into the registry with the given key, this will not perform any overloading logic.
     /// Do not use unless you really need to.
     pub fn raw_insert(
@@ -564,8 +513,7 @@ macro_rules! impl_script_function {
         #[allow(non_snake_case)]
         impl<
             'env,
-            'w : 'static,
-            $( $param: FromScript + ArgInfo,)*
+            $( $param: FromScript + ArgMeta,)*
             O,
             F
         > $trait_type<'env,
@@ -573,8 +521,8 @@ macro_rules! impl_script_function {
         > for F
         where
             O: IntoScript,
-            F: $fn_type(  $($contextty,)? $($param ),* ) -> $res + Send + Sync + 'static ,
-            $( $param::This<'w>: Into<$param>,)*
+            F: $fn_type(  $($contextty,)? $($param ),* ) -> $res + Send + Sync + 'static,
+            $( $param::This<'env>: Into<$param>,)*
         {
             #[allow(unused_mut,unused_variables)]
             fn $trait_fn_name(mut self) -> $dynamic_type {
@@ -630,24 +578,7 @@ macro_rules! impl_script_function {
     };
 }
 
-macro_rules! impl_script_function_type_dependencies{
-    ($( $param:ident ),* ) => {
-        impl<F, $( $param: GetInnerTypeDependencies ,)* O: GetInnerTypeDependencies> GetFunctionTypeDependencies<fn($($param),*) -> O> for F
-            where F: Fn( $( $param ),* ) -> O
-        {
-            fn register_type_dependencies(registry: &mut TypeRegistry) {
-                $(
-                    $param::register_type_dependencies(registry);
-                )*
-
-                O::register_type_dependencies(registry);
-            }
-        }
-    };
-}
-
 bevy::utils::all_tuples!(impl_script_function, 0, 13, T);
-bevy::utils::all_tuples!(impl_script_function_type_dependencies, 0, 13, T);
 
 #[cfg(test)]
 mod test {
@@ -672,8 +603,8 @@ mod test {
             .get_function(namespace, "test")
             .expect("Failed to get function");
 
-        assert_eq!(function.info.name(), "test");
-        assert_eq!(function.info.namespace(), namespace);
+        assert_eq!(function.info.name, "test");
+        assert_eq!(function.info.namespace, namespace);
     }
 
     #[test]
@@ -729,8 +660,8 @@ mod test {
             .get_function(namespace, "test")
             .expect("Failed to get function");
 
-        assert_eq!(first_function.info.name(), "test");
-        assert_eq!(first_function.info.namespace(), namespace);
+        assert_eq!(first_function.info.name, "test");
+        assert_eq!(first_function.info.namespace, namespace);
 
         let all_functions = registry
             .iter_overloads(namespace, "test")
@@ -738,8 +669,8 @@ mod test {
             .collect::<Vec<_>>();
 
         assert_eq!(all_functions.len(), 2);
-        assert_eq!(all_functions[0].info.name(), "test");
-        assert_eq!(all_functions[1].info.name(), "test-1");
+        assert_eq!(all_functions[0].info.name, "test");
+        assert_eq!(all_functions[1].info.name, "test-1");
     }
 
     #[test]
@@ -757,7 +688,7 @@ mod test {
             .collect::<Vec<_>>();
 
         assert_eq!(all_functions.len(), 1);
-        assert_eq!(all_functions[0].info.name(), "test");
+        assert_eq!(all_functions[0].info.name, "test");
     }
 
     #[test]

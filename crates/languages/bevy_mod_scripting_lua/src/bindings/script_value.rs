@@ -3,7 +3,10 @@ use bevy_mod_scripting_core::bindings::{
     function::script_function::FunctionCallContext, script_value::ScriptValue,
 };
 use mlua::{FromLua, IntoLua, Value, Variadic};
-use std::ops::{Deref, DerefMut};
+use std::{
+    collections::HashMap,
+    ops::{Deref, DerefMut},
+};
 
 #[derive(Debug, Clone)]
 pub struct LuaScriptValue(pub ScriptValue);
@@ -65,7 +68,6 @@ impl FromLua for LuaScriptValue {
                 })?;
                 ScriptValue::Reference(ud.clone().into())
             }
-            // Value::Error(error) => todo!(),
             _ => {
                 return Err(mlua::Error::FromLuaConversionError {
                     from: value.type_name(),
@@ -118,6 +120,13 @@ impl IntoLua for LuaScriptValue {
                         .map(|(k, v)| (k + 1, LuaScriptValue::from(v))),
                 )?;
                 Value::Table(table)
+            }
+            ScriptValue::Map(map) => {
+                let hashmap: HashMap<String, Value> = map
+                    .into_iter()
+                    .map(|(k, v)| Ok((k, LuaScriptValue::from(v).into_lua(lua)?)))
+                    .collect::<Result<_, mlua::Error>>()?;
+                hashmap.into_lua(lua)?
             }
         })
     }
