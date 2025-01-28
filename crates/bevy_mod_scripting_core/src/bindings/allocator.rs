@@ -141,7 +141,7 @@ pub struct ReflectAllocator {
     allocations: HashMap<ReflectAllocationId, ReflectAllocation>,
     types: HashMap<u64, TypeId>,
 }
-
+#[profiling::all_functions]
 impl ReflectAllocator {
     /// Allocates a new [`Reflect`] value and returns an [`AllocationId`] which can be used to access it later.
     /// Use [`Self::allocate_boxed`] if you already have an allocated boxed value.
@@ -206,6 +206,7 @@ impl ReflectAllocator {
 }
 
 /// Cleans up dangling script allocations
+#[profiling::function]
 pub fn garbage_collector(allocator: ResMut<AppReflectAllocator>) {
     let mut allocator = allocator.write();
     allocator.clean_garbage_allocations()

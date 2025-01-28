@@ -43,7 +43,7 @@ impl FromScript for () {
 
 impl FromScript for bool {
     type This<'w> = Self;
-
+    #[profiling::function]
     fn from_script(
         value: ScriptValue,
         world: WorldGuard<'_>,
@@ -67,6 +67,7 @@ macro_rules! impl_from_with_downcast {
         $(
             impl FromScript for $ty {
                 type This<'w> = Self;
+                #[profiling::function]
                 fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
                     match value {
                         ScriptValue::Integer(i) => Ok(i as $ty),
@@ -88,6 +89,7 @@ macro_rules! impl_from_stringlike {
         $(
             impl FromScript for $ty {
                 type This<'w> = Self;
+                #[profiling::function]
                 fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
                     match value {
                         ScriptValue::String(s) => Ok(s.to_string().into()),
@@ -104,7 +106,7 @@ impl_from_stringlike!(String, PathBuf, OsString);
 
 impl FromScript for char {
     type This<'w> = Self;
-
+    #[profiling::function]
     fn from_script(
         value: ScriptValue,
         world: WorldGuard<'_>,
@@ -128,6 +130,7 @@ impl FromScript for char {
 
 impl FromScript for ReflectReference {
     type This<'w> = Self;
+    #[profiling::function]
     fn from_script(value: ScriptValue, _world: WorldGuard) -> Result<Self, InteropError> {
         match value {
             ScriptValue::Reference(r) => Ok(r),
@@ -178,6 +181,7 @@ impl<T> From<T> for Val<T> {
 
 impl<T: FromReflect> FromScript for Val<T> {
     type This<'w> = Self;
+    #[profiling::function]
     fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
         match value {
             ScriptValue::Reference(reflect_reference) => Ok(Val(reflect_reference.with_reflect(
@@ -221,7 +225,7 @@ impl<T> Deref for Ref<'_, T> {
 
 impl<T: FromReflect> FromScript for Ref<'_, T> {
     type This<'a> = Ref<'a, T>;
-
+    #[profiling::function]
     fn from_script(
         value: ScriptValue,
         world: WorldGuard<'_>,
@@ -293,7 +297,7 @@ impl<'a, T> From<&'a mut T> for Mut<'a, T> {
 
 impl<T: FromReflect> FromScript for Mut<'_, T> {
     type This<'w> = Mut<'w, T>;
-
+    #[profiling::function]
     fn from_script(
         value: ScriptValue,
         world: WorldGuard<'_>,
@@ -331,7 +335,7 @@ where
     for<'w> T::This<'w>: Into<T>,
 {
     type This<'w> = Self;
-
+    #[profiling::function]
     fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
         match value {
             ScriptValue::Unit => Ok(None),
@@ -345,7 +349,7 @@ where
     for<'w> T::This<'w>: Into<T>,
 {
     type This<'w> = Self;
-
+    #[profiling::function]
     fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
         match value {
             ScriptValue::List(list) => {
@@ -368,7 +372,7 @@ where
     for<'w> T::This<'w>: Into<T>,
 {
     type This<'w> = Self;
-
+    #[profiling::function]
     fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
         match value {
             ScriptValue::List(list) if list.len() == N => {
@@ -390,7 +394,7 @@ where
 
 impl FromScript for DynamicScriptFunctionMut {
     type This<'w> = Self;
-
+    #[profiling::function]
     fn from_script(value: ScriptValue, _: WorldGuard<'_>) -> Result<Self::This<'_>, InteropError>
     where
         Self: Sized,
@@ -407,7 +411,7 @@ impl FromScript for DynamicScriptFunctionMut {
 
 impl FromScript for DynamicScriptFunction {
     type This<'w> = Self;
-
+    #[profiling::function]
     fn from_script(value: ScriptValue, _: WorldGuard<'_>) -> Result<Self::This<'_>, InteropError>
     where
         Self: Sized,
@@ -428,7 +432,7 @@ where
     for<'w> V::This<'w>: Into<V>,
 {
     type This<'w> = Self;
-
+    #[profiling::function]
     fn from_script(value: ScriptValue, world: WorldGuard) -> Result<Self, InteropError> {
         match value {
             ScriptValue::Map(map) => {

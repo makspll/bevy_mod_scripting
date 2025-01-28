@@ -40,7 +40,7 @@ dashmap = "6"
 smallvec = "1.11"
 itertools = "0.13"
 derivative = "2.2"
-
+profiling = {workspace = true}
 [dev-dependencies]
 test_utils = { workspace = true }
 

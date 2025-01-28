@@ -43,6 +43,7 @@ mlua_serialize = ["bevy_mod_scripting_lua?/mlua_serialize"]
 mlua_macros = ["bevy_mod_scripting_lua?/mlua_macros"]
 mlua_async = ["bevy_mod_scripting_lua?/mlua_async"]
 
+
 ## rhai
 rhai = ["bevy_mod_scripting_rhai"]
 
@@ -56,8 +57,8 @@ bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", ver
 bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.9.0-alpha.7", optional = true }
 # bevy_mod_scripting_rune = { path = "crates/languages/bevy_mod_scripting_rune", version = "0.9.0-alpha.2", optional = true }
 bevy_mod_scripting_functions = { workspace = true }
-
 [workspace.dependencies]
+profiling = {version = "1.0" }
 bevy = { version = "0.15.0", default-features = false }
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.9.0-alpha.8" }
 bevy_mod_scripting_functions = { path = "crates/bevy_mod_scripting_functions", version = "0.9.0-alpha.8", default-features = false }

@@ -161,7 +161,7 @@ pub struct ScriptQueryResult {
 //         self.try_read().and_then(|world| world.query(query))
 //     }
 // }
-
+#[profiling::all_functions]
 impl WorldAccessGuard<'_> {
     pub fn query(
         &self,

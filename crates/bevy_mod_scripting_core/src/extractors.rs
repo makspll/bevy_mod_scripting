@@ -21,7 +21,7 @@ pub(crate) struct HandlerContext<P: IntoScriptPluginParams> {
     pub runtime_container: RuntimeContainer<P>,
     pub script_contexts: ScriptContexts<P>,
 }
-
+#[profiling::function]
 pub(crate) fn extract_handler_context<P: IntoScriptPluginParams>(
     world: &mut World,
 ) -> Result<HandlerContext<P>, MissingResourceError> {
@@ -53,7 +53,7 @@ pub(crate) fn extract_handler_context<P: IntoScriptPluginParams>(
         script_contexts,
     })
 }
-
+#[profiling::function]
 pub(crate) fn yield_handler_context<P: IntoScriptPluginParams>(
     world: &mut World,
     context: HandlerContext<P>,

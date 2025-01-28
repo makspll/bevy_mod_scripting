@@ -342,7 +342,7 @@ pub trait DisplayWithWorld: std::fmt::Debug {
         self.display_with_world(world)
     }
 }
-
+#[profiling::all_functions]
 impl DisplayWithWorld for ReflectReference {
     fn display_with_world(&self, world: WorldGuard) -> String {
         ReflectReferencePrinter::new(self.clone()).pretty_print(Some(world))
@@ -356,7 +356,7 @@ impl DisplayWithWorld for ReflectReference {
         ReflectReferencePrinter::new(self.clone()).pretty_print(None)
     }
 }
-
+#[profiling::all_functions]
 impl DisplayWithWorld for ReflectBaseType {
     fn display_with_world(&self, world: WorldGuard) -> String {
         let mut string = String::new();
@@ -374,7 +374,7 @@ impl DisplayWithWorld for ReflectBaseType {
         string
     }
 }
-
+#[profiling::all_functions]
 impl DisplayWithWorld for ComponentId {
     fn display_without_world(&self) -> String {
         format!("ComponentOrResource({})", self.index())
@@ -393,7 +393,7 @@ impl DisplayWithWorld for ComponentId {
         }
     }
 }
-
+#[profiling::all_functions]
 impl DisplayWithWorld for ReflectAccessId {
     fn display_without_world(&self) -> String {
         match self.kind {
@@ -425,7 +425,7 @@ impl DisplayWithWorld for ReflectAccessId {
         }
     }
 }
-
+#[profiling::all_functions]
 impl DisplayWithWorld for TypeId {
     fn display_with_world(&self, world: WorldGuard) -> String {
         if *self == TypeId::of::<FakeType>() {
@@ -455,7 +455,7 @@ impl DisplayWithWorld for TypeId {
         format!("{:?}", self)
     }
 }
-
+#[profiling::all_functions]
 impl DisplayWithWorld for ScriptValue {
     fn display_with_world(&self, world: WorldGuard) -> String {
         match self {
@@ -509,7 +509,7 @@ impl DisplayWithWorld for ScriptValue {
         }
     }
 }
-
+#[profiling::all_functions]
 impl<T: DisplayWithWorld> DisplayWithWorld for Vec<T> {
     fn display_with_world(&self, world: WorldGuard) -> String {
         let mut string = String::new();
@@ -550,7 +550,7 @@ impl<T: DisplayWithWorld> DisplayWithWorld for Vec<T> {
         string
     }
 }
-
+#[profiling::all_functions]
 impl DisplayWithWorld for String {
     fn display_with_world(&self, _world: WorldGuard) -> String {
         self.to_string()
@@ -564,7 +564,7 @@ impl DisplayWithWorld for String {
         self.to_string()
     }
 }
-
+#[profiling::all_functions]
 impl<K: DisplayWithWorld, V: DisplayWithWorld> DisplayWithWorld
     for std::collections::HashMap<K, V>
 {

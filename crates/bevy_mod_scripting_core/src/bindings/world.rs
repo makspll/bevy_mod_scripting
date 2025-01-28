@@ -69,7 +69,7 @@ impl WorldAccessGuard<'static> {
         unsafe { std::mem::transmute(self) }
     }
 }
-
+#[profiling::all_functions]
 impl<'w> WorldAccessGuard<'w> {
     /// Safely allows access to the world for the duration of the closure via a static [`WorldAccessGuard`].
     ///
@@ -428,6 +428,7 @@ impl<'w> WorldAccessGuard<'w> {
 }
 
 /// Impl block for higher level world methods
+ #[profiling::all_functions]
 impl WorldAccessGuard<'_> {
     pub fn spawn(&self) -> Result<Entity, InteropError> {
         self.with_global_access(|world| {
@@ -826,7 +827,7 @@ pub struct ThreadWorldContainer;
 thread_local! {
     static WORLD_CALLBACK_ACCESS: RefCell<Option<WorldGuard<'static>>> = const { RefCell::new(None) };
 }
-
+#[profiling::all_functions]
 impl WorldContainer for ThreadWorldContainer {
     type Error = InteropError;
 
