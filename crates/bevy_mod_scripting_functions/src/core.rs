@@ -32,7 +32,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
         .register(
             "get_type_by_name",
             |ctxt: FunctionCallContext, type_name: String| {
-                     profiling::function_scope!("get_type_by_name");
+                profiling::function_scope!("get_type_by_name");
                 profiling::function_scope!("get_type_by_name");
                 let world = ctxt.world()?;
                 let val = world.get_type_by_name(type_name);
@@ -86,8 +86,8 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
         .register(
             "has_component",
             |ctxt: FunctionCallContext,
-            entity: Val<Entity>,
-            registration: Val<ScriptComponentRegistration>| {
+             entity: Val<Entity>,
+             registration: Val<ScriptComponentRegistration>| {
                 profiling::function_scope!("has_component");
                 let world = ctxt.world()?;
                 world.has_component(*entity, registration.component_id())
@@ -96,7 +96,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
         .register(
             "remove_component",
             |ctxt: FunctionCallContext, e: Val<Entity>, r: Val<ScriptComponentRegistration>| {
-                     profiling::function_scope!("remove_component");
+                profiling::function_scope!("remove_component");
                 let world = ctxt.world()?;
                 world.remove_component(*e, r.clone())
             },
@@ -104,7 +104,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
         .register(
             "get_resource",
             |ctxt: FunctionCallContext, registration: Val<ScriptResourceRegistration>| {
-                     profiling::function_scope!("get_resource");
+                profiling::function_scope!("get_resource");
                 let world = ctxt.world()?;
                 world.get_resource(registration.resource_id())
             },
@@ -112,7 +112,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
         .register(
             "has_resource",
             |ctxt: FunctionCallContext, registration: Val<ScriptResourceRegistration>| {
-                     profiling::function_scope!("has_resource");
+                profiling::function_scope!("has_resource");
                 let world = ctxt.world()?;
                 world.has_resource(registration.resource_id())
             },
@@ -120,7 +120,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
         .register(
             "remove_resource",
             |ctxt: FunctionCallContext, r: Val<ScriptResourceRegistration>| {
-                     profiling::function_scope!("remove_resource");
+                profiling::function_scope!("remove_resource");
                 let world = ctxt.world()?;
                 world.remove_resource(r.into_inner())
             },
@@ -128,7 +128,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
         .register(
             "add_default_component",
             |ctxt: FunctionCallContext, e: Val<Entity>, r: Val<ScriptComponentRegistration>| {
-                     profiling::function_scope!("add_default_component");
+                profiling::function_scope!("add_default_component");
                 let world = ctxt.world()?;
                 world.add_default_component(*e, r.clone())
             },
@@ -152,7 +152,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
         .register(
             "insert_children",
             |ctxt: FunctionCallContext, e: Val<Entity>, index: usize, c: Vec<Val<Entity>>| {
-                     profiling::function_scope!("insert_children");
+                profiling::function_scope!("insert_children");
                 let world = ctxt.world()?;
                 let index = if ctxt.convert_to_0_indexed {
                     index - 1
@@ -165,7 +165,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
         .register(
             "push_children",
             |ctxt: FunctionCallContext, e: Val<Entity>, c: Vec<Val<Entity>>| {
-                     profiling::function_scope!("push_children");
+                profiling::function_scope!("push_children");
                 let world = ctxt.world()?;
                 world.push_children(*e, &c.into_iter().map(|v| *v).collect::<Vec<_>>())
             },
@@ -173,7 +173,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
         .register(
             "get_children",
             |ctxt: FunctionCallContext, e: Val<Entity>| {
-                     profiling::function_scope!("get_children");
+                profiling::function_scope!("get_children");
                 let world = ctxt.world()?;
                 let children = world.get_children(*e)?;
                 Ok(children.into_iter().map(Val).collect::<Vec<_>>())
@@ -193,7 +193,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
         .register(
             "despawn_descendants",
             |ctxt: FunctionCallContext, e: Val<Entity>| {
-                     profiling::function_scope!("despawn_descendants");
+                profiling::function_scope!("despawn_descendants");
                 let world = ctxt.world()?;
                 world.despawn_descendants(*e)
             },
@@ -201,7 +201,7 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
         .register(
             "despawn_recursive",
             |ctxt: FunctionCallContext, e: Val<Entity>| {
-                     profiling::function_scope!("despawn_recursive");
+                profiling::function_scope!("despawn_recursive");
                 let world = ctxt.world()?;
                 world.despawn_recursive(*e)
             },
@@ -220,7 +220,6 @@ pub fn register_world_functions(reg: &mut World) -> Result<(), FunctionRegistrat
             profiling::function_scope!("exit");
             let world = ctxt.world()?;
             world.exit()
-               
         });
     Ok(())
 }
@@ -435,27 +434,22 @@ pub fn register_script_type_registration_functions(
         .register("short_name", |s: Ref<ScriptTypeRegistration>| {
             s.short_name()
         });
-             
 
     NamespaceBuilder::<ScriptComponentRegistration>::new(registry)
         .register("type_name", |s: Ref<ScriptComponentRegistration>| {
             s.type_registration().type_name()
         })
-            
         .register("short_name", |s: Ref<ScriptComponentRegistration>| {
             s.type_registration().short_name()
         });
-           
 
     NamespaceBuilder::<ScriptResourceRegistration>::new(registry)
         .register("type_name", |s: Ref<ScriptResourceRegistration>| {
             s.type_registration().type_name()
         })
-             
         .register("short_name", |s: Ref<ScriptResourceRegistration>| {
             s.type_registration().short_name()
         });
-         
 
     Ok(())
 }
@@ -467,7 +461,7 @@ pub fn register_script_query_builder_functions(
         .register(
             "component",
             |s: Val<ScriptQueryBuilder>, components: Val<ScriptComponentRegistration>| {
-                     profiling::function_scope!("component");
+                profiling::function_scope!("component");
                 let mut builder = s.into_inner();
                 builder.component(components.into_inner());
                 Val(builder)
@@ -476,7 +470,7 @@ pub fn register_script_query_builder_functions(
         .register(
             "with",
             |s: Val<ScriptQueryBuilder>, with: Val<ScriptComponentRegistration>| {
-                     profiling::function_scope!("with");
+                profiling::function_scope!("with");
                 let mut builder = s.into_inner();
                 builder.with_component(with.into_inner());
                 Val(builder)
@@ -485,7 +479,7 @@ pub fn register_script_query_builder_functions(
         .register(
             "without",
             |s: Val<ScriptQueryBuilder>, without: Val<ScriptComponentRegistration>| {
-                     profiling::function_scope!("without");
+                profiling::function_scope!("without");
                 let mut builder = s.into_inner();
                 builder.without_component(without.into_inner());
                 Val(builder)
@@ -494,7 +488,7 @@ pub fn register_script_query_builder_functions(
         .register(
             "build",
             |ctxt: FunctionCallContext, s: Val<ScriptQueryBuilder>| {
-                     profiling::function_scope!("build");
+                profiling::function_scope!("build");
                 let world = ctxt.world()?;
                 let builder = s.into_inner();
                 let result = world.query(builder)?;
@@ -512,9 +506,8 @@ pub fn register_script_query_result_functions(
         .register("entity", |s: Ref<ScriptQueryResult>| Val::new(s.entity))
         .register("components", |s: Ref<ScriptQueryResult>| {
             s.components.to_vec()
-                 
         });
-            
+
     Ok(())
 }
 

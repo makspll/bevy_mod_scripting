@@ -92,7 +92,7 @@ macro_rules! push_err_and_continue {
 }
 
 /// A utility to separate the event handling logic from the retrieval of the handler context
- #[profiling::function]
+#[profiling::function]
 pub(crate) fn event_handler_internal<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     world: &mut World,
     res_ctxt: &mut HandlerContext<P>,

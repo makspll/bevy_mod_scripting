@@ -428,7 +428,7 @@ impl<'w> WorldAccessGuard<'w> {
 }
 
 /// Impl block for higher level world methods
- #[profiling::all_functions]
+#[profiling::all_functions]
 impl WorldAccessGuard<'_> {
     pub fn spawn(&self) -> Result<Entity, InteropError> {
         self.with_global_access(|world| {
