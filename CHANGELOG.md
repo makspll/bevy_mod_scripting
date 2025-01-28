@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.0-alpha.9](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.0-alpha.8...v0.9.0-alpha.9) - 2025-01-28
+
+### Fixed
+
+- prevent allocation and component ID ranges from overlapping (#230)
+
 ## [0.9.0-alpha.8](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.0-alpha.7...v0.9.0-alpha.8) - 2025-01-27
 
 ### Added

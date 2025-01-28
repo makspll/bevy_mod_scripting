@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-alpha.9](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.0-alpha.8...bevy_mod_scripting_core-v0.9.0-alpha.9) - 2025-01-28
+
+### Fixed
+
+- prevent allocation and component ID ranges from overlapping (#230)
+
 ## [0.9.0-alpha.8](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.0-alpha.7...bevy_mod_scripting_core-v0.9.0-alpha.8) - 2025-01-27
 
 ### Added
