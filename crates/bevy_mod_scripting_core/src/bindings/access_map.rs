@@ -96,31 +96,35 @@ pub struct ReflectAccessId {
 
 impl AccessMapKey for ReflectAccessId {
     fn as_index(&self) -> u64 {
-        // project two linear non-negative ranges to a single linear non-negative range, offset by 1 to avoid 0
-        // y1 = 2x - 0 + 1
-        // y2 = 2x - 1 + 1
+        // project two linear non-negative ranges [0,inf] to a single linear non-negative range, offset by 1 to avoid 0
+        // y1 = 2x - 0 + 2 = 2x + 2
+        // y2 = 2x - 1 + 2 = 2x + 1
         match self.kind {
-            ReflectAccessKind::ComponentOrResource => (self.id * 2) + 1,
+            ReflectAccessKind::ComponentOrResource => (self.id * 2) + 2,
             ReflectAccessKind::Allocation => (self.id * 2) + 1,
             ReflectAccessKind::Global => 0,
         }
     }
 
     fn from_index(value: u64) -> Self {
-        // retrieve the kind of range based on if the value is odd or even
-        // y1 if even, y2 if odd
-        // to retrieve value of x:
-        // x1 = (y / 2) - 1
-        // x2 = ((y - 1) / 2) - 1
+        // reverse the projection
+        // x1 = (y1 - 2) / 2
+        // x2 = (y2 - 1) / 2
 
-        let (kind, id) = if value == 0 {
-            (ReflectAccessKind::Global, 0)
-        } else if value % 2 == 0 {
-            (ReflectAccessKind::ComponentOrResource, (value / 2) - 1)
-        } else {
-            (ReflectAccessKind::Allocation, ((value - 1) / 2) - 1)
-        };
-        Self { kind, id }
+        match value {
+            0 => ReflectAccessId {
+                kind: ReflectAccessKind::Global,
+                id: 0,
+            },
+            v if v % 2 == 0 => ReflectAccessId {
+                kind: ReflectAccessKind::ComponentOrResource,
+                id: (v - 2) / 2,
+            },
+            v => ReflectAccessId {
+                kind: ReflectAccessKind::Allocation,
+                id: (v - 1) / 2,
+            },
+        }
     }
 }
 
@@ -520,5 +524,42 @@ mod test {
         })
         .join()
         .unwrap();
+    }
+
+    #[test]
+    fn test_as_and_from_index_for_access_id_non_overlapping() {
+        let global = ReflectAccessId::for_global();
+
+        let first_component = ReflectAccessId {
+            kind: ReflectAccessKind::ComponentOrResource,
+            id: 0,
+        };
+
+        let first_allocation = ReflectAccessId {
+            kind: ReflectAccessKind::Allocation,
+            id: 0,
+        };
+
+        let second_component = ReflectAccessId {
+            kind: ReflectAccessKind::ComponentOrResource,
+            id: 1,
+        };
+
+        let second_allocation = ReflectAccessId {
+            kind: ReflectAccessKind::Allocation,
+            id: 1,
+        };
+
+        assert_eq!(global.as_index(), 0);
+        assert_eq!(first_allocation.as_index(), 1);
+        assert_eq!(first_component.as_index(), 2);
+        assert_eq!(second_allocation.as_index(), 3);
+        assert_eq!(second_component.as_index(), 4);
+
+        assert_eq!(ReflectAccessId::from_index(0), global);
+        assert_eq!(ReflectAccessId::from_index(1), first_allocation);
+        assert_eq!(ReflectAccessId::from_index(2), first_component);
+        assert_eq!(ReflectAccessId::from_index(3), second_allocation);
+        assert_eq!(ReflectAccessId::from_index(4), second_component);
     }
 }
