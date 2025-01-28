@@ -378,6 +378,16 @@ pub fn register_reflect_reference_functions(
             };
 
             Ok(iter_function.into_dynamic_script_function_mut())
+        })
+        .register("functions", |ctxt: FunctionCallContext, s: ReflectReference| {
+            let world = ctxt.world()?;
+            let type_id = s.tail_type_id(world.clone())?.or_fake_id();
+            let functions = world.get_functions_on_type(type_id)
+                .into_iter()
+                .map(|(_,v)| Val::new(v.info))
+                .collect::<Vec<_>>();
+            // convert to info
+            Ok(functions)
         });
 
     Ok(())

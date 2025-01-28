@@ -1,11 +1,16 @@
-use crate::bindings::function::script_function::{
-    AppScriptFunctionRegistry, DynamicScriptFunction, GetFunctionTypeDependencies, ScriptFunction,
+use crate::{
+    bindings::function::script_function::{
+        AppScriptFunctionRegistry, DynamicScriptFunction, ScriptFunction,
+    },
+    docgen::info::GetFunctionInfo,
 };
 use bevy::{
     prelude::{AppTypeRegistry, World},
-    reflect::GetTypeRegistration,
+    reflect::{GetTypeRegistration, Reflect},
 };
 use std::{any::TypeId, borrow::Cow, marker::PhantomData};
+
+use super::type_dependencies::GetFunctionTypeDependencies;
 
 pub trait RegisterNamespacedFunction {
     fn register_namespaced_function<S, N, F, M>(&mut self, name: N, function: F)
@@ -52,7 +57,7 @@ pub trait GetNamespacedFunction {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Reflect)]
 pub enum Namespace {
     /// The function is registered in the global namespace, i.e. with no namespace.
     /// In practice functions in this namespace should be callable directly by their name, i.e. `my_function()`
@@ -128,10 +133,10 @@ impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
         }
     }
 
-    pub fn register<N, F, M>(&mut self, name: N, function: F) -> &mut Self
+    pub fn register<'env, N, F, M>(&mut self, name: N, function: F) -> &mut Self
     where
         N: Into<Cow<'static, str>>,
-        F: ScriptFunction<'static, M> + GetFunctionTypeDependencies<M>,
+        F: ScriptFunction<'env, M> + GetFunctionTypeDependencies<M> + GetFunctionInfo<M>,
     {
         {
             {

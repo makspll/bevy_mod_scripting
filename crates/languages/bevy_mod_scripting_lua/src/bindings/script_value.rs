@@ -3,7 +3,10 @@ use bevy_mod_scripting_core::bindings::{
     function::script_function::FunctionCallContext, script_value::ScriptValue,
 };
 use mlua::{FromLua, IntoLua, Value, Variadic};
-use std::ops::{Deref, DerefMut};
+use std::{
+    collections::HashMap,
+    ops::{Deref, DerefMut},
+};
 
 #[derive(Debug, Clone)]
 pub struct LuaScriptValue(pub ScriptValue);
@@ -35,7 +38,7 @@ impl From<LuaScriptValue> for ScriptValue {
 }
 
 impl FromLua for LuaScriptValue {
-    fn from_lua(value: mlua::Value, _lua: &mlua::Lua) -> mlua::Result<Self> {
+    fn from_lua(value: mlua::Value, lua: &mlua::Lua) -> mlua::Result<Self> {
         Ok(match value {
             Value::Nil => ScriptValue::Unit,
             Value::Boolean(b) => ScriptValue::Bool(b),
@@ -47,12 +50,34 @@ impl FromLua for LuaScriptValue {
             Value::Number(n) => ScriptValue::Float(n),
             Value::String(s) => ScriptValue::String(s.to_str()?.to_owned().into()),
             Value::Table(table) => {
-                let mut vec = Vec::with_capacity(table.len()? as usize);
-                for i in table.sequence_values() {
-                    let v: LuaScriptValue = i?;
-                    vec.push(v.into());
+                // check the key types, if strings then it's a map
+                let mut iter = table.pairs::<Value, LuaScriptValue>();
+
+                match iter.next() {
+                    Some(v) => {
+                        let (k, v) = v?;
+                        // if the key is a string, then it's a map
+                        if k.is_string() {
+                            let mut map = HashMap::new();
+                            map.insert(k.to_string()?, v.into());
+                            for pair in iter {
+                                let (k, v) = pair?;
+                                let str_: String = String::from_lua(k, lua)?;
+                                map.insert(str_, v.into());
+                            }
+                            return Ok(LuaScriptValue::from(ScriptValue::Map(map)));
+                        } else {
+                            // if the key is an integer, then it's a list
+                            let mut vec = Vec::with_capacity(table.len()? as usize);
+                            vec.push(v.into());
+                            for pair in iter {
+                                vec.push(pair?.1.into());
+                            }
+                            return Ok(LuaScriptValue::from(ScriptValue::List(vec)));
+                        }
+                    }
+                    None => return Ok(LuaScriptValue::from(ScriptValue::List(vec![]))),
                 }
-                ScriptValue::List(vec)
             }
             // Value::Thread(thread) => todo!(),
             Value::UserData(ud) => {
@@ -65,7 +90,6 @@ impl FromLua for LuaScriptValue {
                 })?;
                 ScriptValue::Reference(ud.clone().into())
             }
-            // Value::Error(error) => todo!(),
             _ => {
                 return Err(mlua::Error::FromLuaConversionError {
                     from: value.type_name(),
@@ -118,6 +142,13 @@ impl IntoLua for LuaScriptValue {
                         .map(|(k, v)| (k + 1, LuaScriptValue::from(v))),
                 )?;
                 Value::Table(table)
+            }
+            ScriptValue::Map(map) => {
+                let hashmap: HashMap<String, Value> = map
+                    .into_iter()
+                    .map(|(k, v)| Ok((k, LuaScriptValue::from(v).into_lua(lua)?)))
+                    .collect::<Result<_, mlua::Error>>()?;
+                hashmap.into_lua(lua)?
             }
         })
     }

@@ -5,7 +5,7 @@ use bevy_mod_scripting_core::{
     },
     error::InteropError,
 };
-use rhai::{Dynamic, EvalAltResult, FnPtr, NativeCallContext};
+use rhai::{Dynamic, EvalAltResult, FnPtr, Map, NativeCallContext};
 use std::str::FromStr;
 
 use super::reference::RhaiReflectReference;
@@ -13,67 +13,6 @@ use super::reference::RhaiReflectReference;
 pub const RHAI_CALLER_CONTEXT: FunctionCallContext = FunctionCallContext {
     convert_to_0_indexed: false,
 };
-
-// impl PluginFunc for FuncWrapper {
-//     fn call(
-//         &self,
-//         _context: Option<rhai::NativeCallContext>,
-//         _args: &mut [&mut Dynamic],
-//     ) -> rhai::plugin::RhaiResult {
-//         // let convert_args = _args
-//         //     .iter_mut()
-//         //     .map(|arg| ScriptValue::from_dynamic(arg.clone()))
-//         //     .collect::<Result<Vec<_>, _>>()?;
-
-//         // let out = self.0.call(
-//         //     rhai_caller_context(self.0.info.namespace()),
-//         //     WorldCallbackAccess::from_guard(ThreadWorldContainer.get_world()),
-//         //     convert_args,
-//         // );
-
-//         // out.into_dynamic()
-//         todo!()
-//     }
-
-//     fn is_method_call(&self) -> bool {
-//         // TODO: is this correct? do we care if it's a method call?
-//         false
-//     }
-
-//     fn has_context(&self) -> bool {
-//         false
-//     }
-// }
-
-// impl PluginFunc for FuncMutWrapper {
-//     fn call(
-//         &self,
-//         _context: Option<rhai::NativeCallContext>,
-//         _args: &mut [&mut Dynamic],
-//     ) -> rhai::plugin::RhaiResult {
-//         // let convert_args = _args
-//         //     .iter_mut()
-//         //     .map(|arg| ScriptValue::from_dynamic(arg.clone()))
-//         //     .collect::<Result<Vec<_>, _>>()?;
-
-//         // let out = self.0.call(
-//         //     rhai_caller_context(self.0.info.namespace()),
-//         //     WorldCallbackAccess::from_guard(ThreadWorldContainer.get_world()),
-//         //     convert_args,
-//         // );
-
-//         // out.into_dynamic()
-//         todo!()
-//     }
-
-//     fn is_method_call(&self) -> bool {
-//         false
-//     }
-
-//     fn has_context(&self) -> bool {
-//         false
-//     }
-// }
 
 /// A function curried with one argument, i.e. the receiver
 pub struct FunctionWithReceiver {
@@ -137,6 +76,13 @@ impl IntoDynamic for ScriptValue {
                     .map(|v| v.into_dynamic())
                     .collect::<Result<Vec<_>, _>>()?,
             ),
+            ScriptValue::Map(map) => {
+                let rhai_map: Map = map
+                    .into_iter()
+                    .map(|(k, v)| Ok((k.into(), v.into_dynamic()?)))
+                    .collect::<Result<_, Box<EvalAltResult>>>()?;
+                Dynamic::from_map(rhai_map)
+            }
             ScriptValue::Reference(reflect_reference) => {
                 Dynamic::from(RhaiReflectReference(reflect_reference))
             }
@@ -183,7 +129,7 @@ pub trait FromDynamic: Sized {
     fn from_dynamic(dynamic: Dynamic) -> Result<Self, Box<EvalAltResult>>;
 }
 
-#[allow(clippy::unwrap_used, clippy::todo)]
+#[allow(clippy::unwrap_used)]
 impl FromDynamic for ScriptValue {
     fn from_dynamic(dynamic: Dynamic) -> Result<Self, Box<EvalAltResult>> {
         match dynamic {
@@ -193,6 +139,18 @@ impl FromDynamic for ScriptValue {
             d if d.is_float() => Ok(ScriptValue::Float(d.as_float().unwrap())),
             d if d.is_string() => Ok(ScriptValue::String(
                 d.into_immutable_string().unwrap().to_string().into(),
+            )),
+            mut d if d.is_map() => Ok(ScriptValue::Map(
+                d.as_map_mut()
+                    .map_err(|_| {
+                        Box::new(EvalAltResult::ErrorSystem(
+                            "FromDynamic".to_string(),
+                            InteropError::invariant("d is proved to be a map").into(),
+                        ))
+                    })?
+                    .iter()
+                    .map(|(k, v)| Ok((k.to_string(), ScriptValue::from_dynamic(v.clone())?)))
+                    .collect::<Result<_, Box<EvalAltResult>>>()?,
             )),
             d if d.is_array() => Ok(ScriptValue::List(
                 d.into_array()
@@ -205,7 +163,13 @@ impl FromDynamic for ScriptValue {
                 if let Some(v) = d.try_cast::<RhaiReflectReference>() {
                     Ok(ScriptValue::Reference(v.0))
                 } else {
-                    todo!("from conversion not implemented yet")
+                    Err(Box::new(EvalAltResult::ErrorSystem(
+                        "FromDynamic".to_string(),
+                        Box::new(InteropError::impossible_conversion(std::any::TypeId::of::<
+                            ScriptValue,
+                        >(
+                        ))),
+                    )))
                 }
             }
         }

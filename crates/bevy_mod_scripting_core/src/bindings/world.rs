@@ -62,6 +62,14 @@ pub(crate) struct WorldAccessGuardInner<'w> {
     function_registry: AppScriptFunctionRegistry,
 }
 
+impl WorldAccessGuard<'static> {
+    /// Shortens the lifetime of the guard to the given lifetime.
+    pub(crate) fn shorten_lifetime<'w>(self) -> WorldGuard<'w> {
+        // Safety: todo
+        unsafe { std::mem::transmute(self) }
+    }
+}
+
 impl<'w> WorldAccessGuard<'w> {
     /// Safely allows access to the world for the duration of the closure via a static [`WorldAccessGuard`].
     ///
@@ -363,6 +371,24 @@ impl<'w> WorldAccessGuard<'w> {
         }
 
         Err(name)
+    }
+
+    /// Iterates over all available functions on the type id's namespace + those available on any reference if any exist.
+    pub fn get_functions_on_type(
+        &self,
+        type_id: TypeId,
+    ) -> Vec<(Cow<'static, str>, DynamicScriptFunction)> {
+        let registry = self.script_function_registry();
+        let registry = registry.read();
+
+        registry
+            .iter_namespace(Namespace::OnType(type_id))
+            .chain(
+                registry
+                    .iter_namespace(Namespace::OnType(std::any::TypeId::of::<ReflectReference>())),
+            )
+            .map(|(key, func)| (key.name.clone(), func.clone()))
+            .collect()
     }
 
     /// checks if a given entity exists and is valid
@@ -791,7 +817,7 @@ pub trait WorldContainer {
     fn set_world(&mut self, world: WorldGuard<'static>) -> Result<(), Self::Error>;
 
     /// Tries to get the world from the container
-    fn try_get_world(&self) -> Result<WorldGuard<'static>, Self::Error>;
+    fn try_get_world<'l>(&self) -> Result<WorldGuard<'l>, Self::Error>;
 }
 
 /// A world container that stores the world in a thread local
@@ -811,7 +837,9 @@ impl WorldContainer for ThreadWorldContainer {
         Ok(())
     }
 
-    fn try_get_world(&self) -> Result<WorldGuard<'static>, Self::Error> {
-        WORLD_CALLBACK_ACCESS.with(|w| w.borrow().clone().ok_or_else(InteropError::missing_world))
+    fn try_get_world<'l>(&self) -> Result<WorldGuard<'l>, Self::Error> {
+        WORLD_CALLBACK_ACCESS
+            .with(|w| w.borrow().clone().ok_or_else(InteropError::missing_world))
+            .map(|v| v.shorten_lifetime())
     }
 }

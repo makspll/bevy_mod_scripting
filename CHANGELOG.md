@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.0-alpha.8](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.0-alpha.7...v0.9.0-alpha.8) - 2025-01-27
+
+### Added
+
+- re-implement rhai again (#222)
+- add `ScriptValue::Map` and create appropriate conversions in lua and rhai (#229)
+- Add `functions` script method, and create function info scaffolding (#228)
+- Call custom `get` and `set` functions on the type when indexing. (#226)
+- Add `optional` arguments to script functions (#225)
+- Add world.with_or_insert_component_mut() (#223)
+
 ## [0.9.0-alpha.7](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.0-alpha.6...v0.9.0-alpha.7) - 2025-01-20
 
 ### Added
