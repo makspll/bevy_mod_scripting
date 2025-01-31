@@ -1,5 +1,6 @@
 use bevy::{
     app::Plugin,
+    asset::AssetPath,
     ecs::{entity::Entity, world::World},
 };
 use bevy_mod_scripting_core::{
@@ -133,8 +134,8 @@ impl Default for LuaScriptingPlugin {
     }
 }
 #[profiling::function]
-fn lua_language_mapper(path: &std::path::Path) -> Language {
-    match path.extension().and_then(|ext| ext.to_str()) {
+fn lua_language_mapper(path: &AssetPath) -> Language {
+    match path.path().extension().and_then(|ext| ext.to_str()) {
         Some("lua") => Language::Lua,
         _ => Language::Unknown,
     }

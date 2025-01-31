@@ -1,5 +1,6 @@
 use bevy::{
     app::Plugin,
+    asset::AssetPath,
     ecs::{entity::Entity, world::World},
 };
 use bevy_mod_scripting_core::{
@@ -150,8 +151,8 @@ impl Default for RhaiScriptingPlugin {
     }
 }
 
-fn rhai_language_mapper(path: &std::path::Path) -> Language {
-    match path.extension().and_then(|ext| ext.to_str()) {
+fn rhai_language_mapper(path: &AssetPath) -> Language {
+    match path.path().extension().and_then(|ext| ext.to_str()) {
         Some("rhai") => Language::Rhai,
         _ => Language::Unknown,
     }
