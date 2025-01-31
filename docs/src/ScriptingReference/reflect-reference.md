@@ -1,9 +1,9 @@
 # ReflectReference
 
-ReflectReferences are simply references to date living either:
-- In a component
-- In a resource
-- In the allocator
+ReflectReferences are simply references to data living either in:
+- A component
+- A resource
+- The allocator
 
 Reflect references contain a standard interface which operates over the reflection layer exposed by `Bevy` and also provides a way to call various dynamic functions registered on the underlying pointed to data.
 
@@ -218,5 +218,22 @@ end
 -- same as 
 for val in pairs(ref) do
     print(val)
+end
+```
+
+## functions
+Returns a list of functions that can be called on the reference.
+
+Returns:
+
+| Return | Description |
+| ---  | --- |
+| `Vec<FunctionInfo>` | The list of functions |
+
+```lua
+local functions = ref:functions()
+for _, func in ipairs(functions) do
+    print(func.name)
+    
 end
 ```

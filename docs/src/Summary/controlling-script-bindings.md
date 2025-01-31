@@ -4,6 +4,12 @@ In this book we reffer to anything accessible by a script, which allows it to co
 
 The "binding" here being used as in: binding `script` code to `rust` code.
 
+## Namespaces
+
+Namespaces are a way to group functions together, and are used to prevent naming conflicts. You can have multiple namespaces, and each namespace can have multiple functions.
+
+Language implementations will also look for specific functions registered on your type first before looking at the generic `ReflectReference` namespace.
+
 ## Dynamic Functions
 
 Everything callable by scripts must first be registered in the dynamic function registry. Notably we do not make use of the normal bevy function registry to improve performance and usability. This means you cannot call just any function.
@@ -34,12 +40,21 @@ Registering functions can be done via the `NamespaceBuilder` like below:
                 println!(s)
             },
         );
+
+    NamespaceBuilder::<GlobalNamespace>::new_unregistered(&mut world)
+        .register(
+            "hello_world2",
+            |s: String| {
+                println!(s)
+            },
+        );
 ```
 
 This will allow you to call this function within lua like so:
 
 ```lua
-hello_world("hi from lua!")
+some_type:hello_world("hi from method!");
+hello_world2("hi from global!");
 ```
 
 ## Context Arguments
@@ -92,3 +107,25 @@ Your script functions can return errors either by:
 - Returning `Result<T: IntoScript, InteropError>`
 - Returning `ScriptValue` and manually creating the `ScriptValue::Error(into_interop_erorr.into())` variant.
 
+## Reserved Functions
+
+There are a few reserved functions that you can override by registering them on a specific type:
+
+| Function Name | Description | Overridable? | Has Default Implementation? |
+|---------------|-------------| ------------ | --------------------------- |
+| get | a getter function, used for indexing into a type | ✅ | ✅ |
+| set | a setter function, used for setting a value on a type | ✅ | ✅ |
+| sub | a subtraction function, used for subtracting two values | ✅ | ❌ |
+| add | an addition function, used for adding two values | ✅ | ❌ |
+| mul | a multiplication function, used for multiplying two values | ✅ | ❌ |
+| div | a division function, used for dividing two values | ✅ | ❌ |
+| rem | a remainder function, used for getting the remainder of two values | ✅ | ❌ |
+| neg | a negation function, used for negating a value | ✅ | ❌ |
+| pow | a power function, used for raising a value to a power | ✅ | ❌ | 
+| eq | an equality function, used for checking if two values are equal | ✅ | ❌ |
+| lt | a less than function, used for checking if a value is less than another | ✅ | ❌ |
+| iter | an iterator function, used for iterating over a value | ❌ | ✅ |
+| display_ref | a display function, used for displaying a reference to a value | ❌ | ✅ |
+| display_value | a display function, used for displaying a mutable reference to a value | ❌ | ✅ |
+
+In this context `overridable` indicates whether language implementations will look for a specific function on your type before looking at the generic `ReflectReference` namespace. You can still remove the existing registration for these functions on the `ReflectReference` namespace if you want to replace them with your own implementation.
