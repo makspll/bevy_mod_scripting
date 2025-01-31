@@ -5,6 +5,12 @@ on:
     paths-ignore:
       - '.github/workflows/release-plz.yml'
       - 'docs/**'
+  pull_request:
+    branches:
+      - "**"
+    paths-ignore:
+      - '.github/workflows/release-plz.yml'
+      - 'docs/**'
 
 
 name: CI
