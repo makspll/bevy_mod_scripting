@@ -215,7 +215,7 @@ pub struct AccessMap {
     individual_accesses: DashMap<u64, AccessCount>,
     global_lock: RwLock<AccessCount>,
 }
-
+#[profiling::all_functions]
 impl AccessMap {
     pub fn is_locked_exclusively(&self) -> bool {
         let global_lock = self.global_lock.read();

@@ -36,7 +36,7 @@ impl From<LuaScriptValue> for ScriptValue {
         value.0
     }
 }
-
+#[profiling::all_functions]
 impl FromLua for LuaScriptValue {
     fn from_lua(value: mlua::Value, lua: &mlua::Lua) -> mlua::Result<Self> {
         Ok(match value {
@@ -105,7 +105,7 @@ impl FromLua for LuaScriptValue {
 pub const LUA_CALLER_CONTEXT: FunctionCallContext = FunctionCallContext {
     convert_to_0_indexed: true,
 };
-
+#[profiling::all_functions]
 impl IntoLua for LuaScriptValue {
     fn into_lua(self, lua: &mlua::Lua) -> mlua::Result<mlua::Value> {
         Ok(match self.0 {

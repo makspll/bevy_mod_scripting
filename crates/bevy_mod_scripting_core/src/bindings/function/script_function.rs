@@ -100,6 +100,7 @@ impl DynamicScriptFunction {
         args: I,
         context: FunctionCallContext,
     ) -> Result<ScriptValue, InteropError> {
+        profiling::scope!("Dynamic Call ", self.name().clone());
         let args = args.into_iter().collect::<VecDeque<_>>();
         // should we be inlining call errors into the return value?
         let return_val = (self.func)(context, args);
@@ -151,6 +152,7 @@ impl DynamicScriptFunctionMut {
         args: I,
         context: FunctionCallContext,
     ) -> Result<ScriptValue, InteropError> {
+        profiling::scope!("Dynamic Call Mut", self.name().clone());
         let args = args.into_iter().collect::<VecDeque<_>>();
         // should we be inlining call errors into the return value?
         let mut write = self.func.write();
@@ -276,7 +278,7 @@ pub struct FunctionKey {
 pub struct ScriptFunctionRegistry {
     functions: HashMap<FunctionKey, DynamicScriptFunction>,
 }
-
+#[profiling::all_functions]
 impl ScriptFunctionRegistry {
     /// Register a script function with the given name. If the name already exists,
     /// the new function will be registered as an overload of the function.
@@ -525,7 +527,9 @@ macro_rules! impl_script_function {
             $( $param::This<'env>: Into<$param>,)*
         {
             #[allow(unused_mut,unused_variables)]
+            #[profiling::function]
             fn $trait_fn_name(mut self) -> $dynamic_type {
+
                 let func = (move |caller_context: FunctionCallContext, mut args: VecDeque<ScriptValue> | {
                     let res: Result<ScriptValue, InteropError> = (|| {
                         let received_args_len = args.len();

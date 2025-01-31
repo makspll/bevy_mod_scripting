@@ -147,7 +147,7 @@ impl From<HashMap<String, ScriptValue>> for ScriptValue {
         ScriptValue::Map(value)
     }
 }
-
+#[profiling::all_functions]
 impl TryFrom<ScriptValue> for ParsedPath {
     type Error = InteropError;
     fn try_from(value: ScriptValue) -> Result<Self, Self::Error> {

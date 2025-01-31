@@ -30,6 +30,7 @@ bevy = { workspace = true, features = [
     "file_watcher",
     "multi_threaded",
 ] }
+profiling = {workspace = true}
 uuid = "1.11"
 smol_str = "0.2.2"
 bevy_mod_scripting_core = { workspace = true }

@@ -38,6 +38,7 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::Index,
             |_, (self_, key): (LuaReflectReference, LuaScriptValue)| {
+                profiling::function_scope!("MetaMethod::Index");
                 let world = ThreadWorldContainer.try_get_world()?;
                 let self_: ReflectReference = self_.into();
                 let type_id = self_.tail_type_id(world.clone())?.or_fake_id();
@@ -72,6 +73,7 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::NewIndex,
             |_, (self_, key, value): (LuaReflectReference, LuaScriptValue, LuaScriptValue)| {
+                profiling::function_scope!("MetaMethod::NewIndex");
                 let world = ThreadWorldContainer.try_get_world()?;
                 let self_: ReflectReference = self_.into();
                 let key: ScriptValue = key.into();
@@ -96,6 +98,7 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::Sub,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
+                profiling::function_scope!("MetaMethod::Sub");
                 let world = ThreadWorldContainer.try_get_world()?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
@@ -110,6 +113,7 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::Add,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
+                profiling::function_scope!("MetaMethod::Add");
                 let world = ThreadWorldContainer.try_get_world()?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
@@ -124,6 +128,7 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::Mul,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
+                profiling::function_scope!("MetaMethod::Mul");
                 let world = ThreadWorldContainer.try_get_world()?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
@@ -138,6 +143,7 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::Div,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
+                profiling::function_scope!("MetaMethod::Div");
                 let world = ThreadWorldContainer.try_get_world()?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
@@ -152,6 +158,7 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::Mod,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
+                profiling::function_scope!("MetaMethod::Mod");
                 let world = ThreadWorldContainer.try_get_world()?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
@@ -164,6 +171,7 @@ impl UserData for LuaReflectReference {
         );
 
         m.add_meta_function(MetaMethod::Unm, |_, self_: LuaReflectReference| {
+            profiling::function_scope!("MetaMethod::Unm");
             let world = ThreadWorldContainer.try_get_world()?;
             let self_: ReflectReference = self_.into();
             let target_type_id = self_.tail_type_id(world.clone())?.or_fake_id();
@@ -175,6 +183,7 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::Pow,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
+                profiling::function_scope!("MetaMethod::Pow");
                 let world = ThreadWorldContainer.try_get_world()?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
@@ -189,6 +198,7 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::Eq,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
+                profiling::function_scope!("MetaMethod::Eq");
                 let world = ThreadWorldContainer.try_get_world()?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
@@ -203,6 +213,7 @@ impl UserData for LuaReflectReference {
         m.add_meta_function(
             MetaMethod::Lt,
             |_, (self_, other): (LuaReflectReference, LuaScriptValue)| {
+                profiling::function_scope!("MetaMethod::Lt");
                 let world = ThreadWorldContainer.try_get_world()?;
                 let self_: ReflectReference = self_.into();
                 let other: ScriptValue = other.into();
@@ -215,6 +226,7 @@ impl UserData for LuaReflectReference {
         );
 
         m.add_meta_function(MetaMethod::Len, |_lua, self_: LuaScriptValue| {
+            profiling::function_scope!("MetaMethod::Len");
             let world = ThreadWorldContainer.try_get_world()?;
             let script_value: ScriptValue = self_.into();
             Ok(match script_value {
@@ -231,6 +243,7 @@ impl UserData for LuaReflectReference {
             feature = "luajit52",
         ))]
         m.add_meta_function(MetaMethod::Pairs, |_, s: LuaReflectReference| {
+            profiling::function_scope!("MetaMethod::Pairs");
             // let mut iter_func = lookup_dynamic_function_typed::<ReflectReference>(l, "iter")
             //     .expect("No iter function registered");
             let world = ThreadWorldContainer.try_get_world()?;
@@ -246,6 +259,7 @@ impl UserData for LuaReflectReference {
         });
 
         m.add_meta_function(MetaMethod::ToString, |_, self_: LuaReflectReference| {
+            profiling::function_scope!("MetaMethod::ToString");
             let world = ThreadWorldContainer.try_get_world()?;
             let reflect_reference: ReflectReference = self_.into();
 
@@ -273,6 +287,7 @@ impl UserData for LuaStaticReflectReference {
         m.add_meta_function(
             MetaMethod::Index,
             |_, (self_, key): (LuaStaticReflectReference, LuaScriptValue)| {
+                profiling::function_scope!("MetaMethod::Index");
                 let world = ThreadWorldContainer.try_get_world()?;
                 let type_id = self_.0;
 

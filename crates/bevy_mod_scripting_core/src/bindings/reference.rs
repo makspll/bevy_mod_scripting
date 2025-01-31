@@ -58,7 +58,7 @@ pub enum TypeIdSource {
     /// Givent the Tail reference is a container type, use the type id of the keys of the container
     Key,
 }
-
+#[profiling::all_functions]
 impl ReflectReference {
     /// Creates a new infinite iterator. This iterator will keep returning the next element reference forever.
     pub fn into_iter_infinite(self) -> ReflectRefIter {
@@ -421,7 +421,7 @@ pub enum ReflectBase {
     Resource(ComponentId),
     Owned(ReflectAllocationId),
 }
-
+#[profiling::all_functions]
 impl ReflectBase {
     /// Retrieves the pointer to the underlying `dyn PartialReflect` object valid for the 'w lifteime of the world cell
     ///
@@ -469,7 +469,7 @@ pub trait ReflectionPathExt {
 
     fn iter(&self) -> impl Iterator<Item = &bevy::reflect::OffsetAccess>;
 }
-
+#[profiling::all_functions]
 impl ReflectionPathExt for ParsedPath {
     /// Assumes the accesses are 1 indexed and converts them to 0 indexed
     fn convert_to_0_indexed(&mut self) {
@@ -505,7 +505,7 @@ pub struct ReflectRefIter {
 pub enum IterationKey {
     Index(usize),
 }
-
+#[profiling::all_functions]
 impl ReflectRefIter {
     pub fn new_indexed(base: ReflectReference) -> Self {
         Self {
@@ -537,7 +537,7 @@ impl ReflectRefIter {
 const fn list_index_access(index: usize) -> bevy::reflect::Access<'static> {
     bevy::reflect::Access::ListIndex(index)
 }
-
+#[profiling::all_functions]
 impl Iterator for ReflectRefIter {
     type Item = Result<ReflectReference, InteropError>;
 

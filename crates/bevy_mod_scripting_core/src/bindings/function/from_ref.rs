@@ -24,6 +24,7 @@ pub trait FromScriptRef {
 }
 
 impl FromScriptRef for Box<dyn PartialReflect> {
+    #[profiling::function]
     fn from_script_ref(
         target: TypeId,
         value: ScriptValue,

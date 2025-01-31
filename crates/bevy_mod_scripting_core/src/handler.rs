@@ -46,7 +46,7 @@ impl<P: IntoScriptPluginParams> Clone for CallbackSettings<P> {
         }
     }
 }
-
+#[profiling::all_functions]
 impl<P: IntoScriptPluginParams> CallbackSettings<P> {
     pub fn new(callback_handler: HandlerFn<P>) -> Self {
         Self { callback_handler }
@@ -92,6 +92,7 @@ macro_rules! push_err_and_continue {
 }
 
 /// A utility to separate the event handling logic from the retrieval of the handler context
+#[profiling::function]
 pub(crate) fn event_handler_internal<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     world: &mut World,
     res_ctxt: &mut HandlerContext<P>,
@@ -182,6 +183,7 @@ pub(crate) fn event_handler_internal<L: IntoCallbackLabel, P: IntoScriptPluginPa
 /// Passes events with the specified label to the script callback with the same name and runs the callback.
 ///
 /// If any of the resources required for the handler are missing, the system will log this issue and do nothing.
+#[profiling::function]
 pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     world: &mut World,
     params: &mut SystemState<(
