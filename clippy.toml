@@ -1,2 +1,5 @@
 type-complexity-threshold = 1000
 too-many-arguments-threshold = 999
+allow-panic-in-tests = true
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true

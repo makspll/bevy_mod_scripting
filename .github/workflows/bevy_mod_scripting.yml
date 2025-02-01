@@ -1,17 +1,27 @@
 on:
   push:
     branches:
+      - main
+      - staging
+    paths-ignore:
+      - '.github/workflows/release-plz.yml'
+      - 'docs/**'
+  pull_request:
+    branches:
       - "**"
     paths-ignore:
-      - 'crates/bevy_api_gen/**'
-      - 'crates/macro_tests/**'
       - '.github/workflows/release-plz.yml'
-      - '.github/workflows/bevy_api_gen.yml'
-      - '.github/workflows/macro_tests.yml'
       - 'docs/**'
 
 
-name: Check and Lint - bevy_mod_scripting
+name: CI
+
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: bevy-mod-scripting
+  CODEGEN_BRANCH_NAME: __update-bevy-bindings-${{ github.head_ref || github.ref_name }}
+  GH_TOKEN: ${{ github.token }}
 
 concurrency:
   # Use github.run_id on main branch
@@ -21,120 +31,121 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
-    name: Check - ${{ matrix.run_args.label }}
+  generate-job-matrix:
+    runs-on: ubuntu-latest
+    # container: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+    outputs:
+      matrix: ${{ steps.generate-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Generate matrix
+        id: generate-matrix
+        run: |
+          cargo xtask ci-matrix > matrix.json
+          cat matrix.json
+          echo "Convert to single line JSON"
+          jq -c . matrix.json > matrix-one-line.json
+          echo "matrix=$(cat matrix-one-line.json)" >> $GITHUB_OUTPUT
+
+  check:  
+    permissions:
+      pull-requests: write
+      contents: write
+    name: Check - ${{ matrix.run_args.name }}
     runs-on: ${{ matrix.run_args.os }}
+    # container: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+    needs: 
+      - generate-job-matrix
     strategy:
       matrix:
-       run_args: [ 
-        {label: Windows - All Features,        os: windows-latest,      features: "lua54,rhai,teal,lua_script_api,rhai_script_api,rune",      cross: x86_64-pc-windows-msvc    }, 
-        {label: MacOS - All Features,          os: macOS-latest,        features: "lua54,rhai,teal,lua_script_api,rhai_script_api,rune",      cross: x86_64-apple-darwin       },
-        {label: Ubuntu - All Features,         os: ubuntu-latest,       features: "lua54,lua_script_api,rhai,teal,rhai_script_api,rune",      cross: x86_64-unknown-linux-gnu  }, 
-        {label: Ubuntu Aarch64 - All Features, os: ubuntu-latest,       features: "lua54,rhai,teal,lua_script_api,rhai_script_api,rune",      cross: aarch64-unknown-linux-gnu },
-        {label: Ubuntu - Lua51,                os: ubuntu-latest,       features: "lua51,lua_script_api",                                     cross: x86_64-unknown-linux-gnu  }, 
-        {label: Ubuntu - Lua52,                os: ubuntu-latest,       features: "lua52,lua_script_api",                                     cross: x86_64-unknown-linux-gnu  }, 
-        {label: Ubuntu - Lua53,                os: ubuntu-latest,       features: "lua53,lua_script_api",                                     cross: x86_64-unknown-linux-gnu  }, 
-        {label: Ubuntu - Luajit,               os: ubuntu-latest,       features: "luajit,lua_script_api",                                    cross: x86_64-unknown-linux-gnu  }, 
-        {label: Ubuntu - Luajit52,             os: ubuntu-latest,       features: "luajit52,lua_script_api",                                  cross: x86_64-unknown-linux-gnu  },
-        {label: Ubuntu - Luau,                 os: ubuntu-latest,       features: "luau,lua_script_api",                                      cross: x86_64-unknown-linux-gnu  }
-
-      ]
+       run_args: ${{fromJson(needs.generate-job-matrix.outputs.matrix)}}
     steps:
-      - if: runner.os == 'linux'
-        name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v2.7.3
-      - if: runner.os != 'windows'
-        name: Clear space
-        run: rm -rf /usr/share/dotnet; rm -rf /opt/ghc; rm -rf "/usr/local/share/boost"; rm -rf "$AGENT_TOOLSDIRECTORY"
-      - uses: houseabsolute/actions-rust-cross@v0
-        with:
-          command: check
-          target: ${{ matrix.run_args.cross }}
-          args: --workspace --features=${{ matrix.run_args.features }} --profile=ephemeral-build
-
-  fmt:
-    name: Rustfmt
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          components: rustfmt
-          toolchain: stable
-          override: true
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v2.7.3
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
-
-  clippy:
-    name: Clippy
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: clippy
-          override: true
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v2.7.3
-      - uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --features=lua54,rhai,teal,lua_script_api,rhai_script_api,rune --profile=ephemeral-build -- -D warnings 
-  tests:
-    name: Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clear space
-        run: sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
       - name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+        if: runner.os == 'linux'
+        run: |
+          sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+          sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
+
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
-      - uses: actions-rs/cargo@v1
+
+      - name: Setup
+        run: |
+          cargo xtask init
+
+      - name: Check
+        run: |
+          ${{ matrix.run_args.command }}
+
+      - name: Upload coverage artifact
+        if: ${{ matrix.run_args.generates_coverage }}
+        uses: actions/upload-artifact@v4
         with:
-          command: test
-          args: --workspace --features=lua54,rhai,teal,lua_script_api,rhai_script_api,rune --profile=ephemeral-build
-  docs:
-    name: Docs
+          name: code-coverage-report
+          path: target/coverage/html/
+
+      - name: Update coverage badge
+        if: ${{ matrix.run_args.generates_coverage && github.ref == 'refs/heads/main' }}
+        run: |
+          cp target/coverage/html/badges/for_the_badge.svg badges/coverage.svg
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add badges/coverage.svg
+          
+          if [[ -n $(git status -s) ]]; then
+            git commit -m "chore(badge): Update coverage badge" -m "[skip ci]"
+            git push
+          fi
+  generate_bindings:
+    name: Bindings - Synchronise
+    permissions:
+      contents: write
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v2.7.3
-      - name: Find docs.rs features
-        run: echo "DOCS_FEATURES=$(cargo metadata --no-deps | python -c "import sys,json; [print(','.join(x['metadata']['docs.rs']['features'])) for x in json.load(sys.stdin)['packages'] if x['name'] == 'bevy_mod_scripting']")" >> $GITHUB_OUTPUT
-        id: features
-      - uses: actions-rs/cargo@v1
-        with:
-          command: doc
-          args: --workspace --features=${{ steps.features.outputs.DOCS_FEATURES }} --profile=ephemeral-build
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Setup Bot GitHub Credentials
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com" 
+    - name: Setup
+      run: |
+        cargo xtask init
+    - name: Generate Bindings
+      run: |
+        cargo xtask codegen
+    - name: Check for changes
+      id: check_changes
+      run: |
+        if [[ -n $(git status --porcelain) ]]; then
+            echo "changes=true" >> "$GITHUB_OUTPUT"; 
+        fi
+    - name: Commit Changes
+      if: steps.check_changes.outputs.changes
+      run: |
+        git checkout -b ${{ env.CODEGEN_BRANCH_NAME }} || git checkout ${{ env.CODEGEN_BRANCH_NAME }}
+        git add -A
+        git commit -m "chore(codegen): update bevy bindings"
+        git push -u origin ${{ env.CODEGEN_BRANCH_NAME }} --force
+    - uses: jwalton/gh-find-current-pr@master
+      if: steps.check_changes.outputs.changes
+      id: findPR
+      with:
+        state: all
+    - name: Create Or Update PR
+      if: steps.check_changes.outputs.changes && success() && steps.findPR.outputs.number 
+      run: |
+        gh pr list --base ${{ github.ref }} --search "chore(codegen): update bevy bindings" --json number > prs.json
+        if [ $(jq '. | length' prs.json) -eq 0 ]; then
+          gh pr create --title "chore(codegen): update bevy bindings" --body "This PR updates the bevy bindings for #${{ steps.findPR.outputs.number }}" --base ${{ github.ref }} --head ${{ env.CODEGEN_BRANCH_NAME }} || true
+        fi

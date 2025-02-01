@@ -1,211 +1,276 @@
-use crate::{
-    event::ScriptErrorEvent,
-    hosts::{APIProvider, APIProviders, ScriptHost},
+//! Core functionality for the bevy_mod_scripting framework.
+//!
+//! Contains language agnostic systems and types for handling scripting in bevy.
+
+use crate::event::ScriptErrorEvent;
+use asset::{
+    configure_asset_systems, configure_asset_systems_for_plugin, AssetPathToLanguageMapper,
+    Language, ScriptAsset, ScriptAssetLoader, ScriptAssetSettings,
 };
-use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
-use event::ScriptLoaded;
-use systems::script_event_handler;
+use bevy::prelude::*;
+use bindings::{
+    function::script_function::AppScriptFunctionRegistry, garbage_collector,
+    script_value::ScriptValue, AppReflectAllocator, ReflectAllocator, ReflectReference,
+    ScriptTypeRegistration,
+};
+use context::{
+    Context, ContextAssigner, ContextBuilder, ContextInitializer, ContextLoadingSettings,
+    ContextPreHandlingInitializer, ScriptContexts,
+};
+use error::ScriptError;
+use event::ScriptCallbackEvent;
+use handler::{CallbackSettings, HandlerFn};
+use runtime::{initialize_runtime, Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
+use script::Scripts;
 
 pub mod asset;
-pub mod docs;
+pub mod bindings;
+pub mod commands;
+pub mod context;
+pub mod docgen;
 pub mod error;
 pub mod event;
-pub mod hosts;
-pub mod systems;
-pub mod world;
-pub mod prelude {
-    // general
-    pub use {
-        crate::asset::CodeAsset,
-        crate::docs::DocFragment,
-        crate::error::ScriptError,
-        crate::event::{ScriptErrorEvent, ScriptEvent},
-        crate::hosts::{
-            APIProvider, APIProviders, Recipients, Script, ScriptCollection, ScriptContexts,
-            ScriptData, ScriptHost,
-        },
-        crate::systems::script_event_handler,
-        crate::{
-            AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
-            ScriptingPlugin,
-        },
-        bevy_event_priority::{
-            AddPriorityEvent, PriorityEvent, PriorityEventReader, PriorityEventWriter,
-            PriorityEvents, PriorityIterator,
-        },
-    };
+pub mod extractors;
+pub mod handler;
+pub mod reflection_extensions;
+pub mod runtime;
+pub mod script;
+
+#[derive(SystemSet, Hash, Debug, Eq, PartialEq, Clone)]
+/// Labels for various BMS systems
+pub enum ScriptingSystemSet {
+    /// Systems which handle the processing of asset events for script assets, and dispatching internal script asset events
+    ScriptAssetDispatch,
+    /// Systems which read incoming internal script asset events and produce script lifecycle commands
+    ScriptCommandDispatch,
+    /// Systems which read incoming script asset events and remove metadata for removed assets
+    ScriptMetadataRemoval,
+
+    /// One time runtime initialization systems
+    RuntimeInitialization,
+
+    /// Systems which handle the garbage collection of allocated values
+    GarbageCollection,
 }
-pub use bevy_event_priority as events;
 
-#[derive(Default)]
-/// Bevy plugin enabling run-time scripting
-pub struct ScriptingPlugin;
+/// Types which act like scripting plugins, by selecting a context and runtime
+/// Each individual combination of context and runtime has specific infrastructure built for it and does not interact with other scripting plugins
+pub trait IntoScriptPluginParams: 'static {
+    /// The language of the scripts
+    const LANGUAGE: Language;
+    /// The context type used for the scripts
+    type C: Context;
+    /// The runtime type used for the scripts
+    type R: Runtime;
 
-impl Plugin for ScriptingPlugin {
+    /// Build the runtime
+    fn build_runtime() -> Self::R;
+}
+
+/// Bevy plugin enabling scripting within the bevy mod scripting framework
+pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
+    /// Settings for the runtime
+    pub runtime_settings: RuntimeSettings<P>,
+    /// The handler used for executing callbacks in scripts
+    pub callback_handler: HandlerFn<P>,
+    /// The context builder for loading contexts
+    pub context_builder: ContextBuilder<P>,
+    /// The context assigner for assigning contexts to scripts.
+    pub context_assigner: ContextAssigner<P>,
+
+    /// The asset path to language mapper for the plugin
+    pub language_mapper: AssetPathToLanguageMapper,
+
+    /// initializers for the contexts, run when loading the script
+    pub context_initializers: Vec<ContextInitializer<P>>,
+    /// initializers for the contexts run every time before handling events
+    pub context_pre_handling_initializers: Vec<ContextPreHandlingInitializer<P>>,
+}
+
+impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_event::<ScriptErrorEvent>();
+        app.insert_resource(self.runtime_settings.clone())
+            .insert_non_send_resource::<RuntimeContainer<P>>(RuntimeContainer {
+                runtime: P::build_runtime(),
+            })
+            .init_non_send_resource::<ScriptContexts<P>>()
+            .insert_resource::<CallbackSettings<P>>(CallbackSettings {
+                callback_handler: self.callback_handler,
+            })
+            .insert_resource::<ContextLoadingSettings<P>>(ContextLoadingSettings {
+                loader: self.context_builder.clone(),
+                assigner: self.context_assigner.clone(),
+                context_initializers: self.context_initializers.clone(),
+                context_pre_handling_initializers: self.context_pre_handling_initializers.clone(),
+            });
+
+        register_script_plugin_systems::<P>(app);
+        once_per_app_init(app);
+
+        app.world_mut()
+            .resource_mut::<ScriptAssetSettings>()
+            .as_mut()
+            .script_language_mappers
+            .push(self.language_mapper);
+
+        register_types(app);
     }
 }
 
-pub trait GenDocumentation {
-    fn update_documentation<T: ScriptHost>(&mut self) -> &mut Self;
+impl<P: IntoScriptPluginParams> ScriptingPlugin<P> {
+    /// Adds a context initializer to the plugin
+    ///
+    /// Initializers will be run every time a context is loaded or re-loaded and before any events are handled
+    pub fn add_context_initializer(&mut self, initializer: ContextInitializer<P>) -> &mut Self {
+        self.context_initializers.push(initializer);
+        self
+    }
+
+    /// Adds a context pre-handling initializer to the plugin.
+    ///
+    /// Initializers will be run every time before handling events and after the context is loaded or re-loaded.
+    pub fn add_context_pre_handling_initializer(
+        &mut self,
+        initializer: ContextPreHandlingInitializer<P>,
+    ) -> &mut Self {
+        self.context_pre_handling_initializers.push(initializer);
+        self
+    }
+
+    /// Adds a runtime initializer to the plugin.
+    ///
+    /// Initializers will be run after the runtime is created, but before any contexts are loaded.
+    pub fn add_runtime_initializer(&mut self, initializer: RuntimeInitializer<P>) -> &mut Self {
+        self.runtime_settings.initializers.push(initializer);
+        self
+    }
 }
 
-impl GenDocumentation for App {
-    /// Updates/Generates documentation and any other artifacts required for script API's. Disabled in optimized builds unless `doc_always` feature is enabled.
-    fn update_documentation<T: ScriptHost>(&mut self) -> &mut Self {
-        #[cfg(any(debug_assertions, feature = "doc_always"))]
-        {
-            info!("Generating documentation");
-            let w = &mut self.world_mut();
-            let providers: &APIProviders<T> = w.resource();
-            if let Err(e) = providers.gen_all() {
-                error!("{}", e);
+/// Utility trait for configuring all scripting plugins.
+pub trait ConfigureScriptPlugin {
+    /// The type of the plugin to configure
+    type P: IntoScriptPluginParams;
+
+    /// Add a context initializer to the plugin
+    fn add_context_initializer(self, initializer: ContextInitializer<Self::P>) -> Self;
+
+    /// Add a context pre-handling initializer to the plugin
+    fn add_context_pre_handling_initializer(
+        self,
+        initializer: ContextPreHandlingInitializer<Self::P>,
+    ) -> Self;
+
+    /// Add a runtime initializer to the plugin
+    fn add_runtime_initializer(self, initializer: RuntimeInitializer<Self::P>) -> Self;
+
+    /// Switch the context assigning strategy to a global context assigner.
+    ///
+    /// This means that all scripts will share the same context. This is useful for when you want to share data between scripts easilly.
+    /// Be careful however as this also means that scripts can interfere with each other in unexpected ways!.
+    fn enable_context_sharing(self);
+}
+
+impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugin for P {
+    type P = P;
+
+    fn add_context_initializer(mut self, initializer: ContextInitializer<Self::P>) -> Self {
+        self.as_mut().add_context_initializer(initializer);
+        self
+    }
+
+    fn add_context_pre_handling_initializer(
+        mut self,
+        initializer: ContextPreHandlingInitializer<Self::P>,
+    ) -> Self {
+        self.as_mut()
+            .add_context_pre_handling_initializer(initializer);
+        self
+    }
+
+    fn add_runtime_initializer(mut self, initializer: RuntimeInitializer<Self::P>) -> Self {
+        self.as_mut().add_runtime_initializer(initializer);
+        self
+    }
+
+    fn enable_context_sharing(mut self) {
+        self.as_mut().context_assigner = ContextAssigner::new_global_context_assigner();
+    }
+}
+
+// One of registration of things that need to be done only once per app
+fn once_per_app_init(app: &mut App) {
+    #[derive(Resource)]
+    struct BMSInitialized;
+
+    if app.world().contains_resource::<BMSInitialized>() {
+        return;
+    }
+
+    app.insert_resource(BMSInitialized);
+
+    app.add_event::<ScriptErrorEvent>()
+        .add_event::<ScriptCallbackEvent>()
+        .init_resource::<AppReflectAllocator>()
+        .init_resource::<Scripts>()
+        .init_asset::<ScriptAsset>()
+        .init_resource::<AppScriptFunctionRegistry>()
+        .register_asset_loader(ScriptAssetLoader {
+            extensions: &[],
+            preprocessor: None,
+        });
+
+    app.add_systems(
+        PostUpdate,
+        ((garbage_collector).in_set(ScriptingSystemSet::GarbageCollection),),
+    );
+
+    configure_asset_systems(app);
+}
+
+/// Systems registered per-language
+fn register_script_plugin_systems<P: IntoScriptPluginParams>(app: &mut App) {
+    app.add_systems(
+        PostStartup,
+        (initialize_runtime::<P>.pipe(|e: In<Result<(), ScriptError>>| {
+            if let Err(e) = e.0 {
+                error!("Error initializing runtime: {:?}", e);
             }
-            info!("Documentation generated");
+        }))
+        .in_set(ScriptingSystemSet::RuntimeInitialization),
+    );
+
+    configure_asset_systems_for_plugin::<P>(app);
+}
+
+/// Register all types that need to be accessed via reflection
+fn register_types(app: &mut App) {
+    app.register_type::<ScriptValue>();
+    app.register_type::<ScriptTypeRegistration>();
+    app.register_type::<ReflectReference>();
+}
+
+/// Trait for adding a runtime initializer to an app
+pub trait AddRuntimeInitializer {
+    /// Adds a runtime initializer to the app
+    fn add_runtime_initializer<P: IntoScriptPluginParams>(
+        &mut self,
+        initializer: RuntimeInitializer<P>,
+    ) -> &mut Self;
+}
+
+impl AddRuntimeInitializer for App {
+    fn add_runtime_initializer<P: IntoScriptPluginParams>(
+        &mut self,
+        initializer: RuntimeInitializer<P>,
+    ) -> &mut Self {
+        if !self.world_mut().contains_resource::<RuntimeSettings<P>>() {
+            self.world_mut().init_resource::<RuntimeSettings<P>>();
         }
-
-        self
-    }
-}
-
-/// Trait for app builder notation
-pub trait AddScriptHost {
-    /// registers the given script host with your app,
-    /// the given system set will contain systems handling script loading, re-loading, removal etc.
-    /// This system set will also send events related to the script lifecycle.
-    ///
-    /// Note: any systems which need to run the same frame a script is loaded must run after this set.
-    fn add_script_host<T: ScriptHost>(&mut self, schedule: impl ScheduleLabel) -> &mut Self;
-
-    /// Similar to `add_script_host` but allows you to specify a system set to add the script host to.
-    fn add_script_host_to_set<T: ScriptHost>(
-        &mut self,
-        schedule: impl ScheduleLabel,
-        set: impl SystemSet,
-    ) -> &mut Self;
-}
-
-impl AddScriptHost for App {
-    fn add_script_host_to_set<T>(
-        &mut self,
-        schedule: impl ScheduleLabel,
-        set: impl SystemSet,
-    ) -> &mut Self
-    where
-        T: ScriptHost,
-    {
-        T::register_with_app_in_set(self, schedule, set);
-        self.init_resource::<T>();
-        self.add_event::<ScriptLoaded>();
-        self
-    }
-
-    fn add_script_host<T>(&mut self, schedule: impl ScheduleLabel) -> &mut Self
-    where
-        T: ScriptHost,
-    {
-        T::register_with_app(self, schedule);
-        self.init_resource::<T>();
-        self.add_event::<ScriptLoaded>();
-        self
-    }
-}
-
-pub trait AddScriptApiProvider {
-    fn add_api_provider<T: ScriptHost>(
-        &mut self,
-        provider: Box<
-            dyn APIProvider<
-                APITarget = T::APITarget,
-                DocTarget = T::DocTarget,
-                ScriptContext = T::ScriptContext,
-            >,
-        >,
-    ) -> &mut Self;
-}
-
-impl AddScriptApiProvider for App {
-    fn add_api_provider<T: ScriptHost>(
-        &mut self,
-        provider: Box<
-            dyn APIProvider<
-                APITarget = T::APITarget,
-                DocTarget = T::DocTarget,
-                ScriptContext = T::ScriptContext,
-            >,
-        >,
-    ) -> &mut Self {
-        provider.register_with_app(self);
-        let w = &mut self.world_mut();
-        let providers: &mut APIProviders<T> = &mut w.resource_mut();
-        providers.providers.push(provider);
-        self
-    }
-}
-
-pub trait AddScriptHostHandler {
-    /// Enables this script host to handle events with priorities in the range [0,min_prio] (inclusive),
-    /// during from within the given set.
-    ///
-    /// Note: this is identical to adding the script_event_handler system manually, so if you require more complex setup, you can use the following:
-    /// ```rust,ignore
-    /// self.add_systems(
-    ///     MySchedule,
-    ///     script_event_handler::<T, MAX, MIN>
-    /// );
-    /// ```
-    ///
-    /// Think of event handler systems as event sinks, which collect and "unpack" the instructions in each event every frame.
-    /// Because events are also prioritised, you can enforce a particular order of execution for your events (within each frame)
-    /// regardless of where they were fired from.
-    ///
-    /// A good example of this is Unity [game loop's](https://docs.unity3d.com/Manual/ExecutionOrder.html) `onUpdate` and `onFixedUpdate`.
-    /// FixedUpdate runs *before* any physics while Update runs after physics and input events.
-    ///
-    /// In this crate you can achieve this by using a separate system set before and after your physics,
-    /// then assigning event priorities such that your events are forced to run at the points you want them to, for example:
-    ///
-    /// PrePhysics priority range [0,1]
-    /// PostPhysics priority range [2,4]
-    ///
-    /// | Priority | Handler     | Event         |
-    /// | -------- | ----------- | ------------  |
-    /// | 0        | PrePhysics  | Start       0 |
-    /// | 1        | PrePhysics  | FixedUpdate 1 |
-    /// | 2        | PostPhysics | OnCollision 2 |
-    /// | 3        | PostPhysics | OnMouse     3 |
-    /// | 4        | PostPhysics | Update      4 |
-    ///
-    /// Note: in this example, if your FixedUpdate event is fired *after* the handler system set has run, it will be discarded (since other handlers discard events of higher priority).
-    fn add_script_handler<T: ScriptHost, const MAX: u32, const MIN: u32>(
-        &mut self,
-        schedule: impl ScheduleLabel,
-    ) -> &mut Self;
-
-    /// The same as `add_script_handler` but allows you to specify a system set to add the handler to.
-    fn add_script_handler_to_set<T: ScriptHost, const MAX: u32, const MIN: u32>(
-        &mut self,
-        schedule: impl ScheduleLabel,
-        set: impl SystemSet,
-    ) -> &mut Self;
-}
-
-impl AddScriptHostHandler for App {
-    fn add_script_handler_to_set<T: ScriptHost, const MAX: u32, const MIN: u32>(
-        &mut self,
-        schedule: impl ScheduleLabel,
-        set: impl SystemSet,
-    ) -> &mut Self {
-        self.add_systems(schedule, script_event_handler::<T, MAX, MIN>.in_set(set));
-        self
-    }
-
-    fn add_script_handler<T: ScriptHost, const MAX: u32, const MIN: u32>(
-        &mut self,
-        schedule: impl ScheduleLabel,
-    ) -> &mut Self {
-        self.add_systems(schedule, script_event_handler::<T, MAX, MIN>);
+        self.world_mut()
+            .resource_mut::<RuntimeSettings<P>>()
+            .as_mut()
+            .initializers
+            .push(initializer);
         self
     }
 }

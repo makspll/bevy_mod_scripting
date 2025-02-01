@@ -6,9 +6,10 @@ use std::{
 };
 
 use cargo_metadata::camino::Utf8PathBuf;
+use chrono::NaiveDateTime;
 use log::trace;
 use rustc_hir::def_id::DefPathHash;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
 
 use crate::WorkspaceMeta;
 
@@ -25,6 +26,27 @@ pub struct Meta {
     /// False if no files are going to be generated for this crate
     pub(crate) will_generate: bool,
     pub(crate) meta_version: String,
+    #[serde(
+        serialize_with = "serialize_timestamp",
+        deserialize_with = "deserialize_timestamp"
+    )]
+    pub(crate) timestamp: NaiveDateTime,
+}
+
+fn serialize_timestamp<S: Serializer>(
+    timestamp: &NaiveDateTime,
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
+    // format as date and time
+    serializer.serialize_str(&timestamp.format("%Y-%m-%d %H:%M:%S").to_string())
+}
+
+fn deserialize_timestamp<'de, D>(deserializer: D) -> Result<NaiveDateTime, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let s = String::deserialize(deserializer)?;
+    NaiveDateTime::parse_from_str(&s, "%Y-%m-%d %H:%M:%S").map_err(serde::de::Error::custom)
 }
 
 impl Meta {
@@ -37,7 +59,7 @@ impl Meta {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub(crate) struct ProxyMeta {
     pub(crate) ident: String,
     pub(crate) stable_crate_id: u64,
@@ -46,8 +68,8 @@ pub(crate) struct ProxyMeta {
 
 /// Manages deserialisation and retrieval of meta files
 pub struct MetaLoader {
-    pub(crate) meta_dirs: Vec<Utf8PathBuf>,
-    pub(crate) workspace_meta: WorkspaceMeta,
+    pub meta_dirs: Vec<Utf8PathBuf>,
+    pub workspace_meta: WorkspaceMeta,
     cache: RefCell<HashMap<String, Meta>>,
 }
 
@@ -66,6 +88,28 @@ impl MetaLoader {
         self.meta_for_retry(crate_name, 3)
     }
 
+    /// Searches the given meta sources in order for the provided DefPathHash, once a meta file containing this hash is found
+    /// the search stops and returns true, if no meta file is found containing the hash, false is returned
+    ///
+    /// if a curr_source argument is provided, the search will skip this source as it is assumed that the current crate is still being compiled and not meta file for it exists yet
+    pub fn one_of_meta_files_contains(
+        &self,
+        meta_sources: &[&str],
+        curr_source: Option<&str>,
+        target_def_path_hash: DefPathHash,
+    ) -> bool {
+        let meta = match meta_sources
+            .iter()
+            .filter(|s| curr_source.is_none() || curr_source.is_some_and(|cs| cs != **s))
+            .find_map(|s| self.meta_for(s))
+        {
+            Some(meta) => meta,
+            None => return false, // TODO: is it possible we get false negatives here ? perhaps due to parallel compilation ? or possibly because of dependency order
+        };
+
+        meta.contains_def_path_hash(target_def_path_hash)
+    }
+
     fn meta_for_retry(&self, crate_name: &str, _try_attempts: usize) -> Option<Meta> {
         let meta = self
             .meta_dirs
@@ -78,7 +122,7 @@ impl MetaLoader {
 
         if meta.is_none() {
             log::trace!(
-                "Could not find meta for crate: `{}`, is_workspace_and_included: '{}'",
+                "Could not find meta file for crate: `{}`, is_workspace_and_included: '{}'",
                 crate_name,
                 needs_meta
             )
@@ -96,11 +140,15 @@ impl MetaLoader {
             trace!("Loading meta from cache for: {}", crate_name);
             cache.get(crate_name).cloned()
         } else {
-            trace!("Loading meta from filesystem for: {}", crate_name);
             drop(cache);
             let mut cache = self.cache.borrow_mut();
-            let meta =
-                Self::opt_load_meta(dir.join(Self::crate_name_to_meta_filename(crate_name)))?;
+            let dir = dir.join(Self::crate_name_to_meta_filename(crate_name));
+            trace!(
+                "Attempting to load meta from filesystem for crate: {}, at: {}",
+                crate_name,
+                dir
+            );
+            let meta = Self::opt_load_meta(dir)?;
             cache.insert(crate_name.to_owned(), meta.clone());
             Some(meta)
         }
@@ -128,7 +176,7 @@ impl MetaLoader {
 
         let file = File::create(&path).unwrap();
         let mut writer = BufWriter::new(file);
-        serde_json::to_writer(&mut writer, meta).unwrap();
+        serde_json::to_writer_pretty(&mut writer, meta).unwrap();
         writer.flush().expect("Could not flush data to meta file");
     }
 

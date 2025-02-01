@@ -1,0 +1,1 @@
+assert(global_hello_world() == "hi!", "global_hello_world() == 'hi!'")

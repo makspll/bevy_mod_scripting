@@ -1,0 +1,15 @@
+[package]
+name = "script_integration_test_harness"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+bevy = { workspace = true }
+test_utils = { workspace = true }
+bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_functions = { workspace = true, features = [
+    "bevy_bindings",
+    "core_functions",
+] }
+regex = { version = "1.11" }

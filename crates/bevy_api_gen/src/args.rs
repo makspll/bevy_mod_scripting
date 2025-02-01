@@ -54,6 +54,10 @@ pub struct Args {
     /// additional template context in the form of json, provided to the templates under an 'args' key
     #[arg(global = true, long)]
     pub template_args: Option<String>,
+
+    /// The path to the bevy_mod_scripting_core crate, used to bootstrap necessary traits
+    #[arg(global = true, long, default_value = ".")]
+    pub bms_core_path: Utf8PathBuf,
 }
 
 #[derive(clap::Args, Debug, Clone, Default, Serialize, Deserialize)]
@@ -112,6 +116,7 @@ fn default_ignored_types() -> String {
         "bevy_reflect::DynamicTuple",
         "bevy_reflect::DynamicTupleStruct",
         "bevy_reflect::DynamicEnum",
+        "bevy_reflect::DynamicSet",
         "bevy_reflect::OsString", // TODO: once macros allow Vecs for primitives as args remove this from ignored types
     ]
     .join(",")
@@ -189,7 +194,12 @@ pub enum Command {
 
         /// The name of the API, this will be passed to the `collect.rs` template, which by default will be used as the APIProvider name and the
         /// title of the documentation.
-        #[arg(short, long, value_name = "NAME", default_value = "LuaBevyAPIProvider")]
+        #[arg(
+            short,
+            long,
+            value_name = "NAME",
+            default_value = "LuaBevyScriptingPlugin"
+        )]
         api_name: String,
     },
 }

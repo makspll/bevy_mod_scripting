@@ -36,14 +36,10 @@ source = "discover"
 [package.metadata.rust-analyzer]
 rustc_private = true
 
-[rust-analyzer.check]
-overrideCommand = ["cargo", "+nightly-2024-11-05", "a", "--message-format=json"]
-
-
 [dependencies]
 log = "0.4"
 env_logger = "0.11"
-rustc_plugin = { git = "https://github.com/makspll/rustc_plugin", branch = "feature/rust-1.82.0" }
+rustc_plugin = "0.12.0-nightly-2024-12-15"
 indexmap = "2"
 tempdir = "0.3"
 cargo_metadata = "0.18"
@@ -58,8 +54,7 @@ convert_case = "0.6"
 syn = { version = "2", features = ["parsing"], no-default-features = true }
 clap-verbosity-flag = "2.2"
 itertools = "0.12"
+chrono = "0.4"
 
 [build-dependencies]
 toml = "0.8"
-
-[workspace]

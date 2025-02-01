@@ -2,6 +2,7 @@
 #![deny(rustc::internal)]
 
 extern crate rustc_ast;
+extern crate rustc_const_eval;
 extern crate rustc_driver;
 extern crate rustc_errors;
 extern crate rustc_hir;

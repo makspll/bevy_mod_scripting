@@ -1,11 +1,12 @@
 use std::{
     io,
-    sync::atomic::{AtomicBool, Ordering},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
 };
 
 use log::trace;
-use rustc_middle::ty::data_structures::Lrc;
-// use rustc_data_structures::sync::{AtomicBool, Lrc};
 use rustc_span::source_map::{FileLoader, RealFileLoader};
 
 /// Injects extern statements into the first loaded file (crate root)
@@ -27,7 +28,7 @@ impl FileLoader for ModifyingFileLoader {
             RealFileLoader.read_file(path).map(|mut f| {
                 // we make it pub so in case we are re-exporting this crate we won't run into private re-export issues
 
-                for crate_ in &["bevy_reflect", "mlua"] {
+                for crate_ in &["bevy_reflect", "bevy_mod_scripting_core"] {
                     if !f.contains(&format!("extern crate {crate_}")) {
                         if f.contains(&format!("pub use {crate_}")) {
                             f.push_str(&format!(
@@ -41,7 +42,6 @@ impl FileLoader for ModifyingFileLoader {
                         }
                     }
                 }
-
                 f
             })
         } else {
@@ -49,7 +49,7 @@ impl FileLoader for ModifyingFileLoader {
         }
     }
 
-    fn read_binary_file(&self, path: &std::path::Path) -> io::Result<Lrc<[u8]>> {
+    fn read_binary_file(&self, path: &std::path::Path) -> io::Result<Arc<[u8]>> {
         RealFileLoader.read_binary_file(path)
     }
 }

@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_rhai"
-version = "0.8.0"
+version = "0.9.0-alpha.9"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -17,6 +17,20 @@ path = "src/lib.rs"
 
 [dependencies]
 bevy = { workspace = true, default-features = false }
-rhai = { version = "1.16", features = ["sync"] }
-bevy_mod_scripting_core = { workspace = true }
-anyhow = "1.0.75"
+rhai = { version = "1.21" }
+bevy_mod_scripting_core = { workspace = true, features = ["rhai_impls"] }
+bevy_mod_scripting_functions = { workspace = true, features = [
+], default-features = false }
+strum = { version = "0.26", features = ["derive"] }
+
+[dev-dependencies]
+script_integration_test_harness = { workspace = true }
+libtest-mimic = "0.8"
+regex = "1.11"
+
+[[test]]
+name = "rhai_tests"
+harness = false
+
+[lints]
+workspace = true

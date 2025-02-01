@@ -6,9 +6,7 @@ use rustc_hir::{
     Safety,
 };
 use rustc_infer::infer::TyCtxtInferExt;
-use rustc_middle::ty::{
-    AdtKind, AssocKind, FieldDef, FnSig, ParamEnv, Ty, TyCtxt, TyKind, TypingMode,
-};
+use rustc_middle::ty::{AdtKind, AssocKind, FieldDef, FnSig, Ty, TyCtxt, TyKind, TypingEnv};
 use rustc_span::Symbol;
 use rustc_trait_selection::infer::InferCtxtExt;
 
@@ -36,8 +34,8 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                         info!("ignoring enum variant: {}::{} due to 'reflect(ignore)' attribute", ctxt.tcx.item_name(def_id), variant.name);
                         todo!();
                     }
-
-                    process_fields(ctxt.tcx, &ctxt.meta_loader, &ctxt.reflect_types, &ctxt.cached_traits, variant.fields.iter(), ctxt.tcx.param_env(variant.def_id))
+                    let param_env = TypingEnv::non_body_analysis(ctxt.tcx, variant.def_id);
+                    process_fields(ctxt.tcx, &ctxt.meta_loader, &ctxt.reflect_types, &ctxt.cached_traits, variant.fields.iter(), param_env)
                 }).collect::<Vec<_>>();
 
                 strats.iter().for_each(|(f_did, strat)| match strat {
@@ -52,7 +50,8 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
 
             },
             AdtKind::Struct => {
-                let fields = process_fields(ctxt.tcx, &ctxt.meta_loader, &ctxt.reflect_types,&ctxt.cached_traits, adt_def.all_fields(), ctxt.tcx.param_env(def_id));
+                let param_env = TypingEnv::non_body_analysis(ctxt.tcx, def_id);
+                let fields = process_fields(ctxt.tcx, &ctxt.meta_loader, &ctxt.reflect_types,&ctxt.cached_traits, adt_def.all_fields(), param_env);
                 fields.iter().for_each(|(f_did, strat)| match strat {
                     ReflectionStrategy::Reflection => report_field_not_supported(ctxt.tcx, *f_did, def_id, None, "type is neither a proxy nor a type expressible as lua primitive"),
                     ReflectionStrategy::Filtered => report_field_not_supported(ctxt.tcx, *f_did, def_id, None, "field has a 'reflect(ignore)' attribute"),
@@ -118,7 +117,8 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                         ctxt.tcx.item_name(def_id)
                     );
 
-                    let param_env = ctxt.tcx.param_env(fn_did);
+                    // let param_env = ctxt.tcx.param_env(fn_did);
+                    let param_env = TypingEnv::non_body_analysis(ctxt.tcx, def_id);
                     let sig: FnSig = ctxt.tcx.normalize_erasing_late_bound_regions(
                         param_env,
                         ctxt.tcx.fn_sig(fn_did).instantiate_identity(),
@@ -206,7 +206,7 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                         is_unsafe,
                         def_id: fn_did,
                         has_self,
-                        trait_did,
+                        trait_and_impl_did: trait_did.map(|td| (td, *impl_did)),
                         reflection_strategies,
                     })
                 })
@@ -238,10 +238,9 @@ fn report_field_not_supported(
     variant_did: Option<DefId>,
     reason: &'static str,
 ) {
-    let normalised_ty = tcx.normalize_erasing_regions(
-        tcx.param_env(type_did),
-        tcx.type_of(f_did).instantiate_identity(),
-    );
+    let param_env = TypingEnv::non_body_analysis(tcx, type_did);
+    let normalised_ty =
+        tcx.normalize_erasing_regions(param_env, tcx.type_of(f_did).instantiate_identity());
     info!(
         "Ignoring field: `{}:{}` on type: `{}` in variant: `{}` as it is not supported: `{}`",
         tcx.item_name(f_did),
@@ -259,7 +258,7 @@ fn process_fields<'tcx, 'f, I: Iterator<Item = &'f FieldDef>>(
     reflect_types: &IndexMap<DefId, ReflectType<'tcx>>,
     cached_traits: &CachedTraits,
     fields: I,
-    param_env: ParamEnv<'tcx>,
+    param_env: TypingEnv<'tcx>,
 ) -> Vec<(DefId, ReflectionStrategy)> {
     fields
         .map(move |f| {
@@ -332,6 +331,7 @@ fn type_is_adt_and_reflectable<'tcx>(
     ty.ty_adt_def().is_some_and(|adt_def| {
         let did = adt_def.did();
 
+        // even though our meta might already be written at this point, we use this as a quick out
         if reflect_types.contains_key(&did) {
             // local types are easy to check
             return true;
@@ -344,24 +344,26 @@ fn type_is_adt_and_reflectable<'tcx>(
         // so search for these metas!
         let crate_name = tcx.crate_name(did.krate).to_ident_string();
 
-        let meta_sources = if tcx.crate_name(LOCAL_CRATE).as_str() == "bevy_reflect" {
-            // otherwise meta loader might expect the meta to exist
-            vec![crate_name]
-        } else {
-            vec![crate_name, "bevy_reflect".to_string()]
-        };
-
-        let meta = match meta_sources.iter().find_map(|s| meta_loader.meta_for(s)) {
-            Some(meta) => meta,
-            None => return false, // TODO: is it possible we get false negatives here ? perhaps due to parallel compilation ? or possibly because of dependency order
-        };
-
-        let contains_hash = meta.contains_def_path_hash(tcx.def_path_hash(did));
-        log::trace!(
-            "Meta for type: `{}`, contained in meta `{}`",
-            tcx.item_name(did),
-            contains_hash
+        let contains_hash = meta_loader.one_of_meta_files_contains(
+            &[&crate_name, "bevy_reflect"],
+            Some(&tcx.crate_name(LOCAL_CRATE).to_ident_string()),
+            tcx.def_path_hash(did),
         );
+
+        if contains_hash {
+            log::info!(
+                "Meta for type: `{}` with hash: `{:?}`, contained in the meta file",
+                tcx.item_name(did),
+                tcx.def_path_hash(did),
+            );
+        } else {
+            log::info!(
+                "Meta for type: `{}` with hash: `{:?}`, was not found in meta files for {crate_name} or in bevy_reflect, meaning it will not generate a proxy.",
+                tcx.item_name(did),
+                tcx.def_path_hash(did),
+            );
+        }
+
         contains_hash
     })
 }
@@ -369,23 +371,18 @@ fn type_is_adt_and_reflectable<'tcx>(
 /// Checks if the type can be used directly as a lua function argument, by checking if it implements the FromLua trait
 fn type_is_supported_as_non_proxy_arg<'tcx>(
     tcx: TyCtxt<'tcx>,
-    param_env: ParamEnv<'tcx>,
+    param_env: TypingEnv<'tcx>,
     cached_traits: &CachedTraits,
     ty: Ty<'tcx>,
 ) -> bool {
     trace!("Checking type is supported as non proxy arg: '{ty:?}' with param_env: '{param_env:?}'");
-    impls_trait(
-        tcx,
-        param_env,
-        ty,
-        cached_traits.mlua_from_lua_multi.unwrap(),
-    )
+    impls_trait(tcx, param_env, ty, cached_traits.bms_from_script.unwrap())
 }
 
 /// Checks if the type can be used directly as a lua function output
 fn type_is_supported_as_non_proxy_return_val<'tcx>(
     tcx: TyCtxt<'tcx>,
-    param_env: ParamEnv<'tcx>,
+    param_env: TypingEnv<'tcx>,
     cached_traits: &CachedTraits,
     ty: Ty<'tcx>,
 ) -> bool {
@@ -396,22 +393,17 @@ fn type_is_supported_as_non_proxy_return_val<'tcx>(
         }
     }
 
-    impls_trait(
-        tcx,
-        param_env,
-        ty,
-        cached_traits.mlua_into_lua_multi.unwrap(),
-    )
+    impls_trait(tcx, param_env, ty, cached_traits.bms_into_script.unwrap())
 }
 
 pub(crate) fn impls_trait<'tcx>(
     tcx: TyCtxt<'tcx>,
-    param_env: ParamEnv<'tcx>,
+    param_env: TypingEnv<'tcx>,
     ty: Ty<'tcx>,
     trait_did: DefId,
 ) -> bool {
     tcx.infer_ctxt()
-        .build(TypingMode::non_body_analysis())
-        .type_implements_trait(trait_did, [ty], param_env)
+        .build(param_env.typing_mode)
+        .type_implements_trait(trait_did, [ty], param_env.param_env)
         .must_apply_modulo_regions()
 }

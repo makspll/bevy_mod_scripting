@@ -6,7 +6,7 @@ use rustc_infer::{
     infer::{InferCtxt, TyCtxtInferExt},
     traits::{Obligation, ObligationCause},
 };
-use rustc_middle::ty::{Ty, TypingMode};
+use rustc_middle::ty::{Ty, TypingEnv, TypingMode};
 use rustc_span::DUMMY_SP;
 use rustc_trait_selection::traits::ObligationCtxt;
 
@@ -33,13 +33,13 @@ pub(crate) fn find_trait_impls(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
         // filter out types which have impls both ways
         let retaining = type_impl_of_trait(
             tcx,
-            ctxt.cached_traits.mlua_from_lua_multi.unwrap(),
+            ctxt.cached_traits.bms_from_script.unwrap(),
             reflect_ty_did,
         )
         .is_empty()
             || type_impl_of_trait(
                 tcx,
-                ctxt.cached_traits.mlua_into_lua_multi.unwrap(),
+                ctxt.cached_traits.bms_into_script.unwrap(),
                 reflect_ty_did,
             )
             .is_empty();
@@ -134,8 +134,12 @@ fn impl_matches<'tcx>(infcx: &InferCtxt<'tcx>, ty: Ty<'tcx>, impl_def_id: DefId)
 
     let impl_may_apply = |impl_def_id| {
         let ocx = ObligationCtxt::new(infcx);
-        let param_env = tcx.param_env_reveal_all_normalized(impl_def_id);
+        // let param_env = infcx.resolve_regions(impl_def_id);
+        // let param_env = tcx.param_env_reveal_all_normalized(impl_def_id);
+        let typing_env = TypingEnv::non_body_analysis(tcx, impl_def_id);
+        let param_env = typing_env.with_post_analysis_normalized(tcx).param_env;
         let impl_args = infcx.fresh_args_for_item(DUMMY_SP, impl_def_id);
+
         let impl_trait_ref = tcx
             .impl_trait_ref(impl_def_id)
             .expect("Expected defid to be an impl for a trait")

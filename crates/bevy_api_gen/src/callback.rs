@@ -1,5 +1,4 @@
 use log::{info, trace};
-use rustc_errors::FatalError;
 use rustc_hir::def_id::LOCAL_CRATE;
 use tera::Context;
 
@@ -16,15 +15,13 @@ impl BevyAnalyzerCallbacks {
 }
 
 impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
-    fn after_expansion<'tcx>(
+    fn after_expansion(
         &mut self,
         compiler: &rustc_interface::interface::Compiler,
-        queries: &'tcx rustc_interface::Queries<'tcx>,
+        tcx: rustc_middle::ty::TyCtxt<'_>,
     ) -> rustc_driver::Compilation {
         trace!("After expansion callback");
-        let Ok(mut gcx) = queries.global_ctxt() else {
-            FatalError.raise()
-        };
+
         let sess = &compiler.sess;
 
         if sess.dcx().has_errors().is_some() {
@@ -59,36 +56,37 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
             _ => false,
         };
 
-        gcx.enter(|tcx| {
-            // tera environment for import processor
-            let tera = crate::configure_tera(tcx.crate_name(LOCAL_CRATE).as_str(), &templates_dir);
+        // tera environment for import processor
+        let tera = crate::configure_tera(tcx.crate_name(LOCAL_CRATE).as_str(), &templates_dir);
 
-            let mut ctxt = crate::BevyCtxt::new(
-                tcx,
-                &meta_dirs,
-                WorkspaceMeta::from_env(),
-                include_private,
-                Some(Box::new(move |import_path| {
-                    let mut ctxt = Context::new();
-                    ctxt.insert("import", import_path);
-                    tera.render(&TemplateKind::ImportProcessor.to_string(), &ctxt)
-                        .unwrap()
-                })),
+        info!("Using meta directories: {:?}", meta_dirs);
+        let mut ctxt = crate::BevyCtxt::new(
+            tcx,
+            &meta_dirs,
+            WorkspaceMeta::from_env(),
+            include_private,
+            Some(Box::new(move |import_path| {
+                let mut ctxt = Context::new();
+                ctxt.insert("import", import_path);
+                tera.render(&TemplateKind::ImportProcessor.to_string(), &ctxt)
+                    .unwrap()
+            })),
+        );
+
+        trace!("Running all passes");
+        for p in ALL_PASSES {
+            info!(
+                "{}, in crate: {}",
+                p.description,
+                tcx.crate_name(LOCAL_CRATE),
             );
-
-            trace!("Running all passes");
-            for p in ALL_PASSES {
-                info!(
-                    "{}, in crate: {}",
-                    p.description,
-                    tcx.crate_name(LOCAL_CRATE),
-                );
-                let continue_ = tcx.sess.time(p.name, || (p.cb)(&mut ctxt, &self.args));
-                if !continue_ {
-                    break;
-                }
+            let continue_ = tcx.sess.time(p.name, || (p.cb)(&mut ctxt, &self.args));
+            if !continue_ {
+                break;
             }
-        });
+            trace!("Finished pass, continuing");
+        }
+
         rustc_driver::Compilation::Continue
     }
 }

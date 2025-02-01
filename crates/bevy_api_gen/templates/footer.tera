@@ -1,70 +1,48 @@
-#[derive(Default)]
-pub(crate) struct Globals;
+{% if args.self_is_bms_lua %}
+{% set bms_lua_path="crate" %}
+{% else %}
+{% set bms_lua_path="bevy_mod_scripting::lua"%}
+{% endif %}
 
-impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
-    fn add_instances<'lua, T: bevy_mod_scripting_lua::tealr::mlu::InstanceCollector<'lua>>(
-        self,
-        instances: &mut T,
-    ) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()> {
-        {% for item in items %} 
-            {% if item.has_static_methods %}
-                instances.add_instance("{{ item.ident }}", 
-                                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<{{item.ident | prefix_lua}}>::new)?;
-            {% endif %}
-        {% endfor %}
-        Ok(())
-    }
-}
 
-pub struct {{ "A P I Provider" | prefix_cratename | convert_case(case="upper_camel")}};
+pub struct {{ "ScriptingPlugin" | prefix_cratename | convert_case(case="upper_camel")}};
 
-impl bevy_mod_scripting_core::hosts::APIProvider for {{ "A P I Provider" | prefix_cratename | convert_case(case="upper_camel") }} {
-        type APITarget = std::sync::Mutex<bevy_mod_scripting_lua::tealr::mlu::mlua::Lua>;
-        type ScriptContext = std::sync::Mutex<bevy_mod_scripting_lua::tealr::mlu::mlua::Lua>;
-        type DocTarget = bevy_mod_scripting_lua::docs::LuaDocFragment;
+impl ::bevy::app::Plugin for {{ "ScriptingPlugin" | prefix_cratename | convert_case(case="upper_camel")}} {
+    fn build(&self, app: &mut ::bevy::prelude::App) {
+        let mut world = app.world_mut();
 
-    fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-        let ctx = ctx
-            .get_mut()
-            .expect("Unable to acquire lock on Lua context");
-        bevy_mod_scripting_lua::tealr::mlu::set_global_env(Globals, ctx)
-            .map_err(|e| bevy_mod_scripting_core::error::ScriptError::Other(e.to_string()))
-    }
-
-    fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
-        Some(bevy_mod_scripting_lua::docs::LuaDocFragment::new("{{ "A P I" | prefix_cratename | convert_case(case="upper_camel") }}", |tw| {
-            tw
-                .document_global_instance::<Globals>().expect("Something went wrong documenting globals")
-            {% for item in items %}
-                .process_type::<{{ item.ident | prefix_lua }}>()
-                {% if item.has_static_methods %}
-                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<{{ item.ident | prefix_lua }}>>()
-                {% endif %}
-            {% endfor %}
-            }
-        ))
-    }
-
-    fn setup_script(
-        &mut self,
-        script_data: &bevy_mod_scripting_core::hosts::ScriptData,
-        ctx: &mut Self::ScriptContext,
-    ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-        Ok(())
-    }
-
-    fn setup_script_runtime(
-        &mut self,
-        world_ptr: bevy_mod_scripting_core::world::WorldPointer,
-        _script_data: &bevy_mod_scripting_core::hosts::ScriptData,
-        ctx: &mut Self::ScriptContext,
-    ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-        Ok(())
-    }
-
-    fn register_with_app(&self, app: &mut bevy::app::App) {
         {% for item in items %}
-        app.register_foreign_lua_type::<{{ item.import_path }}>();
+        NamespaceBuilder::<::{{ item.import_path }}>::new(world)
+        {%- for function in item.functions -%}
+            .register("{{ function.ident }}", |
+            {%- for arg in function.args -%}
+                {%- if arg.proxy_ty is matching("Mut.*")-%}
+                mut {% endif -%}
+                {{- arg.ident | to_arg_pattern() -}}
+            : {{- arg.proxy_ty -}},
+            {%- endfor -%}
+            | {
+                let output: {{ function.output.proxy_ty }} =
+                {%- if function.from_trait_path -%}
+                {{- function_call_expression(type=item.import_path, trait=function.from_trait_path, function=function.ident) -}}
+                {%- else -%}
+                {{- function_call_expression(type=item.import_path, function=function.ident) -}}
+                {%- endif -%}
+                (
+                    {%- for arg in function.args -%}
+                        {%- if arg.proxy_ty is matching("Ref.*")-%}
+                        &{% endif -%}
+                        {%- if arg.proxy_ty is matching ("Mut.*")-%}
+                        &mut {% endif -%}
+                        {{- arg.ident | to_arg_pattern() -}}
+                        {%- if arg.proxy_ty is matching("Val.*")-%}
+                        .into_inner()
+                        {%- endif -%}, 
+                    {%- endfor -%}
+                ).into();
+                output
+            })
+        {%- endfor -%};     
         {% endfor %}
     }
 }

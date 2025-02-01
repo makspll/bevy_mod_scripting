@@ -1,0 +1,11 @@
+[package]
+name = "test_utils"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+bevy = { workspace = true, features = ["bevy_asset"] }
+
+[lib]
+path = "src/lib.rs"

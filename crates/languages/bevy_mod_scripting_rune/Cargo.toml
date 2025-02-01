@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_rune"
-version = "0.8.0"
+version = "0.9.0-alpha.2"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Necessary functionality for Rune support with bevy_mod_scripting"
@@ -20,3 +20,6 @@ bevy = { workspace = true, default-features = false }
 rune = "0.13.1"
 rune-modules = "0.13.1"
 anyhow = "1.0.75"
+
+[lints]
+workspace = true
