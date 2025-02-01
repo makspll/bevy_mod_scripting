@@ -1,3 +1,5 @@
+//! Implementations of the [`ScriptFunction`] and [`ScriptFunctionMut`] traits for functions with up to 13 arguments.
+
 use super::{from::FromScript, into::IntoScript, namespace::Namespace};
 use crate::bindings::function::arg_meta::ArgMeta;
 use crate::docgen::info::{FunctionInfo, GetFunctionInfo};
@@ -21,7 +23,9 @@ use std::sync::Arc;
     message = "This function does not fulfil the requirements to be a script callable function. All arguments must implement the ScriptArgument trait and all return values must implement the ScriptReturn trait",
     note = "If you're trying to return a non-primitive type, you might need to use Val<T> Ref<T> or Mut<T> wrappers"
 )]
+/// A trait implemented by functions which can act as dynamic script functions, which can then be registered against a [`ScriptFunctionRegistry`].
 pub trait ScriptFunction<'env, Marker> {
+    /// Convert this function into a [`DynamicScriptFunction`]
     fn into_dynamic_script_function(self) -> DynamicScriptFunction;
 }
 
@@ -29,7 +33,9 @@ pub trait ScriptFunction<'env, Marker> {
     message = "Only functions with all arguments impplementing FromScript and return values supporting IntoScript are supported. Registering functions also requires they implement GetTypeDependencies",
     note = "If you're trying to return a non-primitive type, you might need to use Val<T> Ref<T> or Mut<T> wrappers"
 )]
+/// A trait implemented by functions which can act as mutable dynamic script functions.
 pub trait ScriptFunctionMut<'env, Marker> {
+    /// Convert this function into a [`DynamicScriptFunctionMut`]
     fn into_dynamic_script_function_mut(self) -> DynamicScriptFunctionMut;
 }
 
@@ -38,9 +44,11 @@ pub trait ScriptFunctionMut<'env, Marker> {
 #[derive(Clone, Copy, Debug, Reflect, Default)]
 #[reflect(opaque)]
 pub struct FunctionCallContext {
+    /// Whether the caller uses 1-indexing on all indexes and expects 0-indexing conversions to be performed.
     pub convert_to_0_indexed: bool,
 }
 impl FunctionCallContext {
+    /// Create a new FunctionCallContext with the given 1-indexing conversion preference
     pub fn new(convert_to_0_indexed: bool) -> Self {
         Self {
             convert_to_0_indexed,
@@ -53,10 +61,11 @@ impl FunctionCallContext {
     }
 }
 
-/// The Script Function equivalent for dynamic functions. Currently unused
 #[derive(Clone, Reflect)]
 #[reflect(opaque)]
+/// A dynamic script function.
 pub struct DynamicScriptFunction {
+    /// The meta information about the function
     pub info: FunctionInfo,
     // TODO: info about the function, this is hard right now because of non 'static lifetimes in wrappers, we can't use TypePath etc
     func: Arc<
@@ -72,7 +81,9 @@ impl PartialEq for DynamicScriptFunction {
 
 #[derive(Clone, Reflect)]
 #[reflect(opaque)]
+/// A dynamic mutable script function.
 pub struct DynamicScriptFunctionMut {
+    /// The meta information about the function
     pub info: FunctionInfo,
     func: Arc<
         RwLock<
@@ -114,14 +125,17 @@ impl DynamicScriptFunction {
         }
     }
 
+    /// Get the name of the function
     pub fn name(&self) -> &Cow<'static, str> {
         &self.info.name
     }
 
+    /// Set the meta information about the function
     pub fn with_info(self, info: FunctionInfo) -> Self {
         Self { info, ..self }
     }
 
+    /// Set the name of the function
     pub fn with_name<N: Into<Cow<'static, str>>>(self, name: N) -> Self {
         Self {
             info: FunctionInfo {
@@ -132,6 +146,7 @@ impl DynamicScriptFunction {
         }
     }
 
+    /// Set the namespace of the function
     pub fn with_namespace(self, namespace: Namespace) -> Self {
         Self {
             info: FunctionInfo {
@@ -166,14 +181,18 @@ impl DynamicScriptFunctionMut {
             v => Ok(v),
         }
     }
+
+    /// Get the name of the function
     pub fn name(&self) -> &Cow<'static, str> {
         &self.info.name
     }
 
+    /// Set the meta information about the function
     pub fn with_info(self, info: FunctionInfo) -> Self {
         Self { info, ..self }
     }
 
+    /// Set the name of the function
     pub fn with_name<N: Into<Cow<'static, str>>>(self, name: N) -> Self {
         Self {
             info: FunctionInfo {
@@ -184,6 +203,7 @@ impl DynamicScriptFunctionMut {
         }
     }
 
+    /// Set the namespace of the function
     pub fn with_namespace(self, namespace: Namespace) -> Self {
         Self {
             info: FunctionInfo {
@@ -256,28 +276,36 @@ impl DerefMut for AppScriptFunctionRegistry {
 }
 
 #[derive(Clone, Debug, Default)]
+/// A thread-safe reference counted wrapper around a [`ScriptFunctionRegistry`]
 pub struct ScriptFunctionRegistryArc(pub Arc<RwLock<ScriptFunctionRegistry>>);
 
 impl ScriptFunctionRegistryArc {
+    /// claim a read lock on the registry
     pub fn read(&self) -> RwLockReadGuard<ScriptFunctionRegistry> {
         self.0.read()
     }
 
+    /// claim a write lock on the registry
     pub fn write(&mut self) -> RwLockWriteGuard<ScriptFunctionRegistry> {
         self.0.write()
     }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+/// A key used to identify a function in the registry
 pub struct FunctionKey {
+    /// The name of the function
     pub name: Cow<'static, str>,
+    /// The namespace of the function
     pub namespace: Namespace,
 }
 
 #[derive(Debug, Default)]
+/// A registry of dynamic script functions
 pub struct ScriptFunctionRegistry {
     functions: HashMap<FunctionKey, DynamicScriptFunction>,
 }
+
 #[profiling::all_functions]
 impl ScriptFunctionRegistry {
     /// Register a script function with the given name. If the name already exists,
@@ -322,6 +350,7 @@ impl ScriptFunctionRegistry {
         self.register_overload(namespace, name, func, true, None::<&'static str>);
     }
 
+    /// Equivalent to [`ScriptFunctionRegistry::overwrite`] but with the ability to provide documentation for the function.
     pub fn overwrite_documented<F, M>(
         &mut self,
         namespace: Namespace,
@@ -347,6 +376,7 @@ impl ScriptFunctionRegistry {
         self.functions.remove(&FunctionKey { name, namespace })
     }
 
+    /// Remove all overloads of a function with the given name. Returns a vector of the removed functions.
     pub fn remove_all_overloads(
         &mut self,
         namespace: Namespace,
@@ -362,6 +392,8 @@ impl ScriptFunctionRegistry {
         Ok(overloads)
     }
 
+    /// Register a script function with the given name. If the name already exists,
+    /// the new function will be registered as an overload of the function.
     fn register_overload<'env, F, M>(
         &mut self,
         namespace: Namespace,
@@ -395,6 +427,7 @@ impl ScriptFunctionRegistry {
         }
     }
 
+    /// Check if a function with the given name and namespace exists
     pub fn contains(&self, namespace: Namespace, name: impl Into<Cow<'static, str>>) -> bool {
         self.functions.contains_key(&FunctionKey {
             name: name.into(),
@@ -450,6 +483,7 @@ impl ScriptFunctionRegistry {
         self.functions.iter()
     }
 
+    /// Iterates over all functions in the given namespace
     pub fn iter_namespace(
         &self,
         namespace: Namespace,
@@ -636,7 +670,7 @@ mod test {
 
             assert!(out.is_err());
             assert_eq!(
-                out.unwrap_err().into_inner().unwrap(),
+                out.unwrap_err(),
                 InteropError::function_interop_error(
                     "my_fn",
                     Namespace::Global,
@@ -645,8 +679,6 @@ mod test {
                         received: 1
                     })
                 )
-                .into_inner()
-                .unwrap()
             );
         });
     }

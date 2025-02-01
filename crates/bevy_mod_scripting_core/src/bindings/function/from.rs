@@ -1,3 +1,5 @@
+//! This module contains the [`FromScript`] trait and its implemenations.
+
 use crate::{
     bindings::{access_map::ReflectAccessId, ReflectReference, WorldGuard},
     error::InteropError,
@@ -18,7 +20,10 @@ use super::script_function::{DynamicScriptFunction, DynamicScriptFunctionMut};
 /// The [`FromScript::This`] associated type is used to allow for the implementation of this trait to return
 /// a type with the lifetime of the world guard. In 99% cases you can just use `Self` as the associated type.
 pub trait FromScript {
+    /// The type that is constructed from the script value.
     type This<'w>;
+
+    /// Construct a value of type `T` from a [`ScriptValue`].
     fn from_script(
         value: ScriptValue,
         world: WorldGuard<'_>,
@@ -150,10 +155,12 @@ impl FromScript for ReflectReference {
 pub struct Val<T>(pub T);
 
 impl<T> Val<T> {
+    /// Create a new `Val` with the given value.
     pub fn new(value: T) -> Self {
         Val(value)
     }
 
+    /// Unwrap the value from the `Val`.
     pub fn into_inner(self) -> T {
         self.0
     }

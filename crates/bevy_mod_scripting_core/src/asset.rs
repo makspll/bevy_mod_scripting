@@ -1,3 +1,5 @@
+//! Systems and resources for handling script assets and events
+
 use crate::{
     commands::{CreateOrUpdateScript, DeleteScript},
     error::ScriptError,
@@ -6,7 +8,7 @@ use crate::{
 };
 use bevy::{
     app::{App, PreUpdate},
-    asset::{Asset, AssetEvent, AssetId, AssetLoader, Assets},
+    asset::{Asset, AssetEvent, AssetId, AssetLoader, AssetPath, Assets},
     ecs::system::Resource,
     log::{debug, error, info, trace},
     prelude::{
@@ -16,17 +18,18 @@ use bevy::{
     reflect::TypePath,
     utils::HashMap,
 };
-use std::{
-    borrow::Cow,
-    path::{Path, PathBuf},
-};
+use std::borrow::Cow;
 
 /// Represents a scripting language. Languages which compile into another language should use the target language as their language.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Language {
+    /// The Rhai scripting language
     Rhai,
+    /// The Lua scripting language
     Lua,
+    /// The Rune scripting language
     Rune,
+    /// An external scripting language
     External(Cow<'static, str>),
     /// Set if none of the asset path to language mappers match
     Unknown,
@@ -47,9 +50,10 @@ impl std::fmt::Display for Language {
 /// Represents a script loaded into memory as an asset
 #[derive(Asset, TypePath, Clone)]
 pub struct ScriptAsset {
+    /// The body of the script
     pub content: Box<[u8]>,
     /// The virtual filesystem path of the asset, used to map to the script Id for asset backed scripts
-    pub asset_path: PathBuf,
+    pub asset_path: AssetPath<'static>,
 }
 
 #[derive(Event, Debug, Clone)]
@@ -60,6 +64,7 @@ pub(crate) enum ScriptAssetEvent {
 }
 
 #[derive(Default)]
+/// A loader for script assets
 pub struct ScriptAssetLoader {
     /// The file extensions this loader should handle
     pub extensions: &'static [&'static str],
@@ -90,7 +95,7 @@ impl AssetLoader for ScriptAssetLoader {
         }
         let asset = ScriptAsset {
             content: content.into_boxed_slice(),
-            asset_path: load_context.path().to_owned(),
+            asset_path: load_context.asset_path().to_owned(),
         };
         Ok(asset)
     }
@@ -101,13 +106,17 @@ impl AssetLoader for ScriptAssetLoader {
 }
 
 #[derive(Clone, Resource)]
+/// Settings to do with script assets and how they are handled
 pub struct ScriptAssetSettings {
+    /// Strategy for mapping asset paths to script ids, by default this is the identity function
     pub script_id_mapper: AssetPathToScriptIdMapper,
+    /// Strategies for mapping asset paths to languages
     pub script_language_mappers: Vec<AssetPathToLanguageMapper>,
 }
 
 impl ScriptAssetSettings {
-    pub fn select_script_language(&self, path: &Path) -> Language {
+    /// Selects the language for a given asset path
+    pub fn select_script_language(&self, path: &AssetPath) -> Language {
         for mapper in &self.script_language_mappers {
             let language = (mapper.map)(path);
             match language {
@@ -124,7 +133,7 @@ impl Default for ScriptAssetSettings {
     fn default() -> Self {
         Self {
             script_id_mapper: AssetPathToScriptIdMapper {
-                map: (|path: &Path| path.to_string_lossy().into_owned().into()),
+                map: (|path: &AssetPath| path.path().to_string_lossy().into_owned().into()),
             },
             script_language_mappers: vec![],
         }
@@ -134,41 +143,53 @@ impl Default for ScriptAssetSettings {
 /// Strategy for mapping asset paths to script ids, by default this is the identity function
 #[derive(Clone, Copy)]
 pub struct AssetPathToScriptIdMapper {
-    pub map: fn(&Path) -> ScriptId,
+    /// The mapping function
+    pub map: fn(&AssetPath) -> ScriptId,
 }
 
 #[derive(Clone, Copy)]
+/// Strategy for mapping asset paths to languages
 pub struct AssetPathToLanguageMapper {
-    pub map: fn(&Path) -> Language,
+    /// The mapping function
+    pub map: fn(&AssetPath) -> Language,
 }
 
 /// A cache of asset id's to their script id's. Necessary since when we drop an asset we won't have the ability to get the path from the asset.
 #[derive(Default, Debug, Resource)]
 pub struct ScriptMetadataStore {
+    /// The map of asset id's to their metadata
     pub map: HashMap<AssetId<ScriptAsset>, ScriptMetadata>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+/// Metadata for a script asset
 pub struct ScriptMetadata {
+    /// The asset id of the script
     pub asset_id: AssetId<ScriptAsset>,
+    /// The script id of the script
     pub script_id: ScriptId,
+    /// The language of the script
     pub language: Language,
 }
 
 impl ScriptMetadataStore {
+    /// Inserts a new metadata entry
     pub fn insert(&mut self, id: AssetId<ScriptAsset>, meta: ScriptMetadata) {
         // TODO: new generations of assets are not going to have the same ID as the old one
         self.map.insert(id, meta);
     }
 
+    /// Gets a metadata entry
     pub fn get(&self, id: AssetId<ScriptAsset>) -> Option<&ScriptMetadata> {
         self.map.get(&id)
     }
 
+    /// Removes a metadata entry
     pub fn remove(&mut self, id: AssetId<ScriptAsset>) -> Option<ScriptMetadata> {
         self.map.remove(&id)
     }
 
+    /// Checks if the store contains a metadata entry
     pub fn contains(&self, id: AssetId<ScriptAsset>) -> bool {
         self.map.contains_key(&id)
     }
@@ -333,6 +354,8 @@ pub(crate) fn configure_asset_systems_for_plugin<P: IntoScriptPluginParams>(
 
 #[cfg(test)]
 mod tests {
+    use std::path::{Path, PathBuf};
+
     use bevy::{
         app::{App, Update},
         asset::{AssetApp, AssetPlugin, AssetServer, Assets, Handle, LoadState},
@@ -352,12 +375,12 @@ mod tests {
     fn make_test_settings() -> ScriptAssetSettings {
         ScriptAssetSettings {
             script_id_mapper: AssetPathToScriptIdMapper {
-                map: |path| path.to_string_lossy().into_owned().into(),
+                map: |path| path.path().to_string_lossy().into_owned().into(),
             },
             script_language_mappers: vec![
                 AssetPathToLanguageMapper {
                     map: |path| {
-                        if path.extension().unwrap() == "lua" {
+                        if path.path().extension().unwrap() == "lua" {
                             Language::Lua
                         } else {
                             Language::Unknown
@@ -366,7 +389,7 @@ mod tests {
                 },
                 AssetPathToLanguageMapper {
                     map: |path| {
-                        if path.extension().unwrap() == "rhai" {
+                        if path.path().extension().unwrap() == "rhai" {
                             Language::Rhai
                         } else {
                             Language::Unknown
@@ -427,7 +450,7 @@ mod tests {
 
         assert_eq!(
             asset.asset_path,
-            PathBuf::from("test_assets/test_script.script")
+            AssetPath::from_path(&PathBuf::from("test_assets/test_script.script"))
         );
 
         assert_eq!(
@@ -457,7 +480,7 @@ mod tests {
 
         assert_eq!(
             asset.asset_path,
-            PathBuf::from("test_assets/test_script.script")
+            AssetPath::from(PathBuf::from("test_assets/test_script.script"))
         );
         assert_eq!(
             String::from_utf8(asset.content.clone().to_vec()).unwrap(),
@@ -485,14 +508,14 @@ mod tests {
     fn test_script_asset_settings_select_language() {
         let settings = make_test_settings();
 
-        let path = Path::new("test.lua");
-        assert_eq!(settings.select_script_language(path), Language::Lua);
+        let path = AssetPath::from(Path::new("test.lua"));
+        assert_eq!(settings.select_script_language(&path), Language::Lua);
         assert_eq!(
-            settings.select_script_language(Path::new("test.rhai")),
+            settings.select_script_language(&AssetPath::from(Path::new("test.rhai"))),
             Language::Rhai
         );
         assert_eq!(
-            settings.select_script_language(Path::new("test.blob")),
+            settings.select_script_language(&AssetPath::from(Path::new("test.blob"))),
             Language::Unknown
         );
     }

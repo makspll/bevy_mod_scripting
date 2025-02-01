@@ -21,6 +21,7 @@ impl<T: IntoScript + GetTypeDependencies> ScriptReturn for T {}
 
 /// Describes an argument to a script function. Provides necessary information for the function to handle dispatch.
 pub trait ArgMeta {
+    /// The default value for the argument. Used when the argument is not provided.
     fn default_value() -> Option<ScriptValue> {
         None
     }

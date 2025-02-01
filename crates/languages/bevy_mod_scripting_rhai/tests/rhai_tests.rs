@@ -1,4 +1,10 @@
-#![allow(clippy::unwrap_used, clippy::todo, clippy::expect_used, clippy::panic)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::todo,
+    clippy::expect_used,
+    clippy::panic,
+    missing_docs
+)]
 use bevy_mod_scripting_core::{
     bindings::{pretty_print::DisplayWithWorld, ThreadWorldContainer, WorldContainer},
     error::ScriptError,

@@ -1,5 +1,7 @@
+//! Lua integration for the bevy_mod_scripting system.
 use bevy::{
     app::Plugin,
+    asset::AssetPath,
     ecs::{entity::Entity, world::World},
 };
 use bevy_mod_scripting_core::{
@@ -22,6 +24,8 @@ use bindings::{
 };
 pub use mlua;
 use mlua::{Function, IntoLua, Lua, MultiValue};
+
+/// Bindings for lua.
 pub mod bindings;
 
 impl IntoScriptPluginParams for LuaScriptingPlugin {
@@ -39,7 +43,9 @@ impl AsMut<ScriptingPlugin<Self>> for LuaScriptingPlugin {
     }
 }
 
+/// The lua scripting plugin. Used to add lua scripting to a bevy app within the context of the BMS framework.
 pub struct LuaScriptingPlugin {
+    /// The internal scripting plugin
     pub scripting_plugin: ScriptingPlugin<Self>,
 }
 
@@ -133,8 +139,8 @@ impl Default for LuaScriptingPlugin {
     }
 }
 #[profiling::function]
-fn lua_language_mapper(path: &std::path::Path) -> Language {
-    match path.extension().and_then(|ext| ext.to_str()) {
+fn lua_language_mapper(path: &AssetPath) -> Language {
+    match path.path().extension().and_then(|ext| ext.to_str()) {
         Some("lua") => Language::Lua,
         _ => Language::Unknown,
     }
@@ -146,6 +152,7 @@ impl Plugin for LuaScriptingPlugin {
     }
 }
 #[profiling::function]
+/// Load a lua context from a script
 pub fn lua_context_load(
     script_id: &ScriptId,
     content: &[u8],
@@ -174,6 +181,7 @@ pub fn lua_context_load(
     Ok(context)
 }
 #[profiling::function]
+/// Reload a lua context from a script
 pub fn lua_context_reload(
     script: &ScriptId,
     content: &[u8],
@@ -194,6 +202,7 @@ pub fn lua_context_reload(
 
 #[allow(clippy::too_many_arguments)]
 #[profiling::function]
+/// The lua handler for events
 pub fn lua_handler(
     args: Vec<ScriptValue>,
     entity: bevy::ecs::entity::Entity,

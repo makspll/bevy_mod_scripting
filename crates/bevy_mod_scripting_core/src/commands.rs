@@ -1,3 +1,5 @@
+//! Commands for creating, updating and deleting scripts
+
 use crate::{
     asset::ScriptAsset,
     context::ContextBuilder,
@@ -10,13 +12,16 @@ use crate::{
 use bevy::{asset::Handle, log::debug, prelude::Command};
 use std::marker::PhantomData;
 
+/// Deletes a script with the given ID
 pub struct DeleteScript<P: IntoScriptPluginParams> {
+    /// The ID of the script to delete
     pub id: ScriptId,
-    // hack to make this Send, C does not need to be Send since it is not stored in the command
+    /// hack to make this Send, C does not need to be Send since it is not stored in the command
     pub _ph: PhantomData<fn(P::C, P::R)>,
 }
 
 impl<P: IntoScriptPluginParams> DeleteScript<P> {
+    /// Creates a new DeleteScript command with the given ID
     pub fn new(id: ScriptId) -> Self {
         Self {
             id,
@@ -110,6 +115,7 @@ pub struct CreateOrUpdateScript<P: IntoScriptPluginParams> {
 }
 
 impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
+    /// Creates a new CreateOrUpdateScript command with the given ID, content and asset
     pub fn new(id: ScriptId, content: Box<[u8]>, asset: Option<Handle<ScriptAsset>>) -> Self {
         Self {
             id,

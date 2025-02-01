@@ -1,3 +1,5 @@
+//! Contains the [`IntoScriptRef`] trait and its implementations.
+
 use std::{borrow::Cow, ffi::OsString, path::PathBuf};
 
 use bevy::reflect::{Access, PartialReflect};
@@ -17,6 +19,7 @@ use crate::{
 /// - Primitives are converted to simple values
 /// - Container types are converted to references (so the references persist after accesses inside them)
 pub trait IntoScriptRef {
+    /// Converts a value represented by a reference into a [`crate::bindings::function::ScriptValue`].
     fn into_script_ref(
         self_: ReflectReference,
         world: WorldGuard,
@@ -24,6 +27,7 @@ pub trait IntoScriptRef {
 }
 
 #[macro_export]
+/// a utility for matching types by their [`std::any::TypeId`]
 macro_rules! match_by_type {
     (match $on:ident {$($id:ident : $ty:ty => $conv:expr),*}) => {
         $(
@@ -41,6 +45,7 @@ macro_rules! match_by_type {
 }
 
 #[macro_export]
+/// Downcasts a reference into a value of a given type or returns an error if the downcast fails.
 macro_rules! downcast_into_value {
     ($r:ident, $ty:ty) => {
         *$r.try_downcast_ref::<$ty>().ok_or_else(|| {

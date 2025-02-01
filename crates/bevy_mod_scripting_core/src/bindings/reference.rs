@@ -28,6 +28,7 @@ use std::{any::TypeId, fmt::Debug};
 #[reflect(Default)]
 pub struct ReflectReference {
     #[reflect(ignore)]
+    /// The base type and id of the value we want to access
     pub base: ReflectBaseType,
     // TODO: experiment with Fixed capacity vec, boxed array etc, compromise between heap allocation and runtime cost
     // needs benchmarks first though
@@ -123,6 +124,7 @@ impl ReflectReference {
         }
     }
 
+    /// Create a new reference to a value by allocating it.
     pub fn new_allocated_boxed(
         value: Box<dyn Reflect>,
         allocator: &mut ReflectAllocator,
@@ -138,6 +140,7 @@ impl ReflectReference {
         }
     }
 
+    /// Create a new reference to resource
     pub fn new_resource_ref<T: Resource>(world: WorldGuard) -> Result<Self, InteropError> {
         let reflect_id = ReflectAccessId::for_resource::<T>(&world.as_unsafe_world_cell()?)?;
         Ok(Self {
@@ -149,6 +152,7 @@ impl ReflectReference {
         })
     }
 
+    /// Create a new reference to component
     pub fn new_component_ref<T: Component>(
         entity: Entity,
         world: WorldGuard,
@@ -253,6 +257,7 @@ impl ReflectReference {
         )
     }
 
+    /// Retrieves the type id of the value the reference points to.
     pub fn tail_type_id(&self, world: WorldGuard) -> Result<Option<TypeId>, InteropError> {
         if self.reflect_path.is_empty() {
             return Ok(Some(self.base.type_id));
@@ -262,14 +267,17 @@ impl ReflectReference {
         })
     }
 
+    /// Retrieves the type id of the elements in the value the reference points to.
     pub fn element_type_id(&self, world: WorldGuard) -> Result<Option<TypeId>, InteropError> {
         self.with_reflect(world, |r| r.element_type_id())
     }
 
+    /// Retrieves the type id of the keys in the value the reference points to.
     pub fn key_type_id(&self, world: WorldGuard) -> Result<Option<TypeId>, InteropError> {
         self.with_reflect(world, |r| r.key_type_id())
     }
 
+    /// Retrieves the type id of the value the reference points to based on the given source.
     pub fn type_id_of(
         &self,
         source: TypeIdSource,
@@ -409,18 +417,25 @@ impl ReflectReference {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd)]
+/// The type id and base id of the value we want to access
 pub struct ReflectBaseType {
+    /// The type id of the value we want to access
     pub type_id: TypeId,
+    /// The base kind of the value we want to access
     pub base_id: ReflectBase,
 }
 
 /// The Id of the kind of reflection base being pointed to
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd)]
 pub enum ReflectBase {
+    /// A component of an entity
     Component(Entity, ComponentId),
+    /// A resource
     Resource(ComponentId),
+    /// an allocation
     Owned(ReflectAllocationId),
 }
+
 #[profiling::all_functions]
 impl ReflectBase {
     /// Retrieves the pointer to the underlying `dyn PartialReflect` object valid for the 'w lifteime of the world cell
@@ -462,11 +477,13 @@ impl ReflectBase {
     }
 }
 
+/// An iterator over a reflect reference that will keep returning the next element forever.
 pub trait ReflectionPathExt {
+    /// Assumes the accesses are 1 indexed and converts them to 0 indexed
     fn convert_to_0_indexed(&mut self);
-
+    /// Returns true if the path is empty
     fn is_empty(&self) -> bool;
-
+    /// Returns an iterator over the accesses
     fn iter(&self) -> impl Iterator<Item = &bevy::reflect::OffsetAccess>;
 }
 #[profiling::all_functions]
@@ -502,11 +519,15 @@ pub struct ReflectRefIter {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+/// The key of the current iteration
 pub enum IterationKey {
+    /// The current index
     Index(usize),
 }
+
 #[profiling::all_functions]
 impl ReflectRefIter {
+    /// Creates a new iterator that will keep returning the next element forever.
     pub fn new_indexed(base: ReflectReference) -> Self {
         Self {
             base,
@@ -514,6 +535,7 @@ impl ReflectRefIter {
         }
     }
 
+    /// Returns the current index of the iterator
     pub fn index(&self) -> IterationKey {
         self.index.clone()
     }

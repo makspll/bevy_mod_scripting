@@ -1,3 +1,5 @@
+//! This module contains the [`GetTypeDependencies`] trait and its implementations for various types.
+
 use super::{
     from::{Mut, Ref, Val},
     script_function::FunctionCallContext,
@@ -12,10 +14,12 @@ use std::hash::Hash;
 
 /// Functionally identical to [`GetTypeRegistration`] but without the 'static bound
 pub trait GetTypeDependencies {
+    /// Registers the type dependencies of the implementing type with the given [`TypeRegistry`].
     fn register_type_dependencies(registry: &mut TypeRegistry);
 }
 
 #[macro_export]
+/// A macro for implementing [`GetTypeDependencies`] for types with no type dependencies.
 macro_rules! no_type_dependencies {
     ($($path:path),*) => {
         $(
@@ -27,6 +31,7 @@ macro_rules! no_type_dependencies {
 }
 
 #[macro_export]
+/// A macro for implementing [`GetTypeDependencies`] for types that only depend on themselves.
 macro_rules! self_type_dependency_only {
     ($($path:ty),*) => {
         $(
@@ -84,7 +89,10 @@ recursive_type_dependencies!(
 );
 
 bevy::utils::all_tuples!(register_tuple_dependencies, 1, 14, T);
+
+/// A trait collecting type dependency information for a whole function. Used to register everything used by a function with the type registry
 pub trait GetFunctionTypeDependencies<Marker> {
+    /// Registers the type dependencies of the implementing type with the given [`TypeRegistry`].
     fn register_type_dependencies(registry: &mut TypeRegistry);
 }
 

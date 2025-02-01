@@ -1,3 +1,5 @@
+//! Traits and types for managing script contexts.
+
 use crate::{
     bindings::{ThreadWorldContainer, WorldContainer, WorldGuard},
     error::ScriptError,
@@ -7,14 +9,17 @@ use crate::{
 use bevy::ecs::{entity::Entity, system::Resource, world::World};
 use std::{collections::HashMap, sync::atomic::AtomicU32};
 
+/// A trait that all script contexts must implement.
 pub trait Context: 'static {}
 impl<T: 'static> Context for T {}
 
+/// The type of a context id
 pub type ContextId = u32;
 
 /// Stores script state for a scripting plugin. Scripts are identified by their `ScriptId`, while contexts are identified by their `ContextId`.
 #[derive(Resource)]
 pub struct ScriptContexts<P: IntoScriptPluginParams> {
+    /// The contexts of the scripts
     pub contexts: HashMap<ContextId, P::C>,
 }
 
@@ -35,6 +40,7 @@ impl<P: IntoScriptPluginParams> ScriptContexts<P> {
         id
     }
 
+    /// Inserts a context with a specific id
     pub fn insert_with_id(&mut self, id: ContextId, ctxt: P::C) -> Option<P::C> {
         self.contexts.insert(id, ctxt)
     }
@@ -44,18 +50,22 @@ impl<P: IntoScriptPluginParams> ScriptContexts<P> {
         CONTEXT_ID_COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
     }
 
+    /// Removes a context from the map
     pub fn remove(&mut self, id: ContextId) -> Option<P::C> {
         self.contexts.remove(&id)
     }
 
+    /// Get a reference to a context
     pub fn get(&self, id: ContextId) -> Option<&P::C> {
         self.contexts.get(&id)
     }
 
+    /// Get a mutable reference to a context
     pub fn get_mut(&mut self, id: ContextId) -> Option<&mut P::C> {
         self.contexts.get_mut(&id)
     }
 
+    /// Check if a context exists
     pub fn contains(&self, id: ContextId) -> bool {
         self.contexts.contains_key(&id)
     }
@@ -92,6 +102,7 @@ impl<T: IntoScriptPluginParams> Clone for ContextLoadingSettings<T> {
         }
     }
 }
+/// A strategy for loading contexts
 pub type ContextLoadFn<P> = fn(
     script_id: &ScriptId,
     content: &[u8],
@@ -100,6 +111,7 @@ pub type ContextLoadFn<P> = fn(
     runtime: &mut <P as IntoScriptPluginParams>::R,
 ) -> Result<<P as IntoScriptPluginParams>::C, ScriptError>;
 
+/// A strategy for reloading contexts
 pub type ContextReloadFn<P> = fn(
     script_id: &ScriptId,
     content: &[u8],
@@ -111,11 +123,14 @@ pub type ContextReloadFn<P> = fn(
 
 /// A strategy for loading and reloading contexts
 pub struct ContextBuilder<P: IntoScriptPluginParams> {
+    /// The function to load a context
     pub load: ContextLoadFn<P>,
+    /// The function to reload a context
     pub reload: ContextReloadFn<P>,
 }
 
 impl<P: IntoScriptPluginParams> ContextBuilder<P> {
+    /// load a context
     pub fn load(
         loader: ContextLoadFn<P>,
         script: &ScriptId,
@@ -137,6 +152,7 @@ impl<P: IntoScriptPluginParams> ContextBuilder<P> {
         })
     }
 
+    /// reload a context
     pub fn reload(
         reloader: ContextReloadFn<P>,
         script: &ScriptId,
