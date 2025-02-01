@@ -102,11 +102,12 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global push.autoSetupRemote true
           git add badges/coverage.svg
           
           if [[ -n $(git status -s) ]]; then
             git commit -m "chore(badge): Update coverage badge" -m "[skip ci]"
-            git push
+            git push -f
             gh pr create --title "chore: Update coverage badge" --body "Updates coverage badge based on test results" --base ${{ github.ref }}  --head chore/_update-coverage-badge > pr.txt
             sed -n 's/.*pull\/\([0-9]*\).*/\1/p' pr.txt > pr_number.txt
             PRNUMBER=$(cat pr_number.txt)
