@@ -10,7 +10,7 @@ homepage = "https://github.com/makspll/bevy_mod_scripting"
 keywords = ["bevy", "gamedev", "scripting", "lua"]
 categories = ["game-development"]
 readme = "readme.md"
-include = ["readme.md", "/src", "/examples", "/assets", "LICENSE"]
+include = ["readme.md", "/src", "/examples", "/assets", "LICENSE", "/badges"]
 
 [lib]
 name = "bevy_mod_scripting"
@@ -58,7 +58,7 @@ bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", v
 # bevy_mod_scripting_rune = { path = "crates/languages/bevy_mod_scripting_rune", version = "0.9.0-alpha.2", optional = true }
 bevy_mod_scripting_functions = { workspace = true }
 [workspace.dependencies]
-profiling = {version = "1.0" }
+profiling = { version = "1.0" }
 bevy = { version = "0.15.0", default-features = false }
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.9.0-alpha.9" }
 bevy_mod_scripting_functions = { path = "crates/bevy_mod_scripting_functions", version = "0.9.0-alpha.9", default-features = false }
@@ -127,3 +127,4 @@ panic = "deny"
 unwrap_used = "deny"
 expect_used = "deny"
 todo = "deny"
+missing_docs = "deny"
