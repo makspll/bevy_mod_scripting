@@ -13,8 +13,9 @@ Scripts can run logic either when loaded or when triggered by an event. For exam
 
 ```lua
 print("hello from load time")
-function on_event()
+function on_event(arg1)
     print("hello from event time")
+    print(arg1)
 end
 ```
 
