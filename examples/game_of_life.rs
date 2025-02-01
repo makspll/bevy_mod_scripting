@@ -61,8 +61,7 @@ fn run_script_cmd(
                 );
                 commands.spawn(ScriptComponent::new(vec![format!(
                     "scripts/game_of_life.{language}"
-                )
-                .into()]));
+                )]));
             }
             GameOfLifeCommand::Stop => {
                 // we can simply drop the handle, or manually delete, I'll just drop the handle

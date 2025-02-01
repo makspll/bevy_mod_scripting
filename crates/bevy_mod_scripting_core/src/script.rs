@@ -26,8 +26,8 @@ impl Deref for ScriptComponent {
 
 impl ScriptComponent {
     /// Creates a new [`ScriptComponent`] with the given ScriptID's
-    pub fn new(components: Vec<ScriptId>) -> Self {
-        Self(components)
+    pub fn new<S: Into<ScriptId>, I: IntoIterator<Item = S>>(components: I) -> Self {
+        Self(components.into_iter().map(Into::into).collect())
     }
 }
 

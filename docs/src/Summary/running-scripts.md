@@ -22,19 +22,29 @@ Will print "hello from load time" when the script is loaded, and "hello from eve
 
 In order to trigger `on_event` you need to first define a label, then send an event containing the label:
 ```rust,ignore
+
+#[derive(Reflect)]
+pub struct MyReflectType;
+
 // define the label, you can define as many as you like here
 callback_labels!(OnEvent => "on_event");
 
 // trigger the event
-fn send_event(mut writer: EventWriter<ScriptCallbackEvent>) {
+fn send_event(mut writer: EventWriter<ScriptCallbackEvent>, mut allocator: ResMut<AppReflectAllocator>) {
+
+    let allocator = allocator.write();
+    let my_reflect_payload = ReflectReference::new_allocated(MyReflectType, &mut allocator);
+
     writer.send(ScriptCallbackEvent::new_for_all(
         OnEvent,
-        vec![ScriptValue::Unit],
+        vec![my_reflect_payload.into()],
     ));
 }
 ```
 
-Note the second argument is the payload we are sending with the event, in this case we are sending an empty payload.
+Note the second argument is the payload we are sending with the event, in this case we are sending an arbitrary reflect type `MyReflectType`. This can be any type you like, as long as it implements `Reflect`.
+
+Other variants of the `ScriptValue` enum are available for sending different types of data, such as `ScriptValue::Integer` for primtive, types.
 
 
 # Event Handlers
