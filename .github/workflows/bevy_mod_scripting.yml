@@ -6,6 +6,7 @@ on:
       - '.github/workflows/release-plz.yml'
       - 'docs/**'
   pull_request:
+    types: [opened]
     branches:
       - "**"
     paths-ignore:
