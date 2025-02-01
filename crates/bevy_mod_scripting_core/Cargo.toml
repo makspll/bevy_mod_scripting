@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_core"
-version = "0.9.0-alpha.9"
+version = "0.9.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -40,7 +40,7 @@ dashmap = "6"
 smallvec = "1.11"
 itertools = "0.13"
 derivative = "2.2"
-profiling = {workspace = true}
+profiling = { workspace = true }
 [dev-dependencies]
 test_utils = { workspace = true }
 
