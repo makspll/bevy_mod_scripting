@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.1](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.0...v0.9.1) - 2025-02-01
+
+### Fixed
+
+- bump `bevy` to 0.15.1 (#241)
+
 ## [0.9.0-alpha.9](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.0-alpha.8...v0.9.0-alpha.9) - 2025-01-28
 
 ### Fixed
