@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-alpha.10](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_lua-v0.9.0-alpha.9...bevy_mod_scripting_lua-v0.9.0-alpha.10) - 2025-02-01
+
+### Added
+
+- Profiling First Draft (#232)
+
 ## [0.9.0-alpha.8](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_lua-v0.9.0-alpha.7...bevy_mod_scripting_lua-v0.9.0-alpha.8) - 2025-01-27
 
 ### Added

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.0-alpha.10](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.0-alpha.9...v0.9.0-alpha.10) - 2025-02-01
+
+### Added
+
+- Profiling First Draft (#232)
+
 ## [0.9.0-alpha.9](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.0-alpha.8...v0.9.0-alpha.9) - 2025-01-28
 
 ### Fixed
