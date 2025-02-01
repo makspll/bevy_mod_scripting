@@ -55,6 +55,15 @@ For examples, installation and usage instructions see our shiny new [book](https
 | 0.7                 | 0.14   |
 | 0.6                 | 0.13.1 |
 
+## Supported Platforms
+
+| platform | is supported? |
+|----------|---------------|
+| Windows  | yes |
+| Linux    | yes |
+| MacOS    | yes |
+| WASM     | no, see [this issue](https://github.com/makspll/bevy_mod_scripting/issues/166) |
+
 [^1]: Due to the recent re-write of the crate, documentation generation as well as rune support are temporarilly on hold. They will likely be re-implemented in the future.
 
 [^2]: the coverage does not include generated bindings. 
