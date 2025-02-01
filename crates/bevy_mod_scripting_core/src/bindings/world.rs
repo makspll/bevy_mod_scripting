@@ -36,16 +36,12 @@ use std::{
     fmt::Debug,
     rc::Rc,
     sync::Arc,
-    time::Duration,
 };
 
 /// Prefer to directly using [`WorldAccessGuard`]. If the underlying type changes, this alias will be updated.
 pub type WorldGuard<'w> = WorldAccessGuard<'w>;
 /// Similar to [`WorldGuard`], but without the arc, use for when you don't need the outer Arc.
 pub type WorldGuardRef<'w> = &'w WorldAccessGuard<'w>;
-
-pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(5);
-pub const DEFAULT_INTERVAL: Duration = Duration::from_millis(10);
 
 /// Provides safe access to the world via [`WorldAccess`] permissions, which enforce aliasing rules at runtime in multi-thread environments
 #[derive(Clone)]
@@ -159,6 +155,7 @@ impl<'w> WorldAccessGuard<'w> {
             .get_id(id))
     }
 
+    /// Gets the resource id of the given component or resource
     pub fn get_resource_id(&self, id: TypeId) -> Result<Option<ComponentId>, InteropError> {
         Ok(self
             .as_unsafe_world_cell_readonly()?
@@ -166,6 +163,7 @@ impl<'w> WorldAccessGuard<'w> {
             .get_resource_id(id))
     }
 
+    /// Get the location of the given access
     pub fn get_access_location(
         &self,
         raid: ReflectAccessId,
@@ -174,11 +172,13 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     #[track_caller]
+    /// Claims read access to the given type.
     pub fn claim_read_access(&self, raid: ReflectAccessId) -> bool {
         self.0.accesses.claim_read_access(raid)
     }
 
     #[track_caller]
+    /// Claims write access to the given type.
     pub fn claim_write_access(&self, raid: ReflectAccessId) -> bool {
         self.0.accesses.claim_write_access(raid)
     }
@@ -193,6 +193,7 @@ impl<'w> WorldAccessGuard<'w> {
         self.0.accesses.release_access(raid)
     }
 
+    /// Claims global access to the world
     pub fn claim_global_access(&self) -> bool {
         self.0.accesses.claim_global_access()
     }
@@ -430,6 +431,7 @@ impl<'w> WorldAccessGuard<'w> {
 /// Impl block for higher level world methods
 #[profiling::all_functions]
 impl WorldAccessGuard<'_> {
+    /// Spawns a new entity in the world
     pub fn spawn(&self) -> Result<Entity, InteropError> {
         self.with_global_access(|world| {
             let entity = world.spawn_empty();
@@ -437,6 +439,7 @@ impl WorldAccessGuard<'_> {
         })
     }
 
+    /// get a type registration for the type
     pub fn get_type_by_name(&self, type_name: String) -> Option<ScriptTypeRegistration> {
         let type_registry = self.type_registry();
         let type_registry = type_registry.read();
@@ -446,6 +449,7 @@ impl WorldAccessGuard<'_> {
             .map(|registration| ScriptTypeRegistration::new(Arc::new(registration.clone())))
     }
 
+    /// get a component type registration for the type
     pub fn get_component_type(
         &self,
         registration: ScriptTypeRegistration,
@@ -456,6 +460,7 @@ impl WorldAccessGuard<'_> {
         })
     }
 
+    /// get a resource type registration for the type
     pub fn get_resource_type(
         &self,
         registration: ScriptTypeRegistration,
@@ -466,6 +471,7 @@ impl WorldAccessGuard<'_> {
         })
     }
 
+    /// add a default component to an entity
     pub fn add_default_component(
         &self,
         entity: Entity,
@@ -518,6 +524,7 @@ impl WorldAccessGuard<'_> {
         })?
     }
 
+    /// insert the component into the entity
     pub fn insert_component(
         &self,
         entity: Entity,
@@ -551,6 +558,7 @@ impl WorldAccessGuard<'_> {
         })?
     }
 
+    /// get the component from the entity
     pub fn get_component(
         &self,
         entity: Entity,
@@ -588,6 +596,7 @@ impl WorldAccessGuard<'_> {
         }
     }
 
+    /// check if the entity has the component
     pub fn has_component(
         &self,
         entity: Entity,
@@ -601,6 +610,7 @@ impl WorldAccessGuard<'_> {
         Ok(entity.contains_id(component_id))
     }
 
+    /// remove the component from the entity
     pub fn remove_component(
         &self,
         entity: Entity,
@@ -627,6 +637,7 @@ impl WorldAccessGuard<'_> {
         })?
     }
 
+    /// get the given resource
     pub fn get_resource(
         &self,
         resource_id: ComponentId,
@@ -657,6 +668,7 @@ impl WorldAccessGuard<'_> {
         }))
     }
 
+    /// remove the given resource
     pub fn remove_resource(
         &self,
         registration: ScriptResourceRegistration,
@@ -676,6 +688,7 @@ impl WorldAccessGuard<'_> {
         self.with_global_access(|world| component_data.remove(world))
     }
 
+    /// check if the entity has the resource
     pub fn has_resource(&self, resource_id: ComponentId) -> Result<bool, InteropError> {
         let cell = self.as_unsafe_world_cell()?;
         // Safety: we are not reading the value at all
@@ -683,10 +696,12 @@ impl WorldAccessGuard<'_> {
         Ok(res_ptr.is_some())
     }
 
+    /// check the given entity exists
     pub fn has_entity(&self, entity: Entity) -> Result<bool, InteropError> {
         self.is_valid_entity(entity)
     }
 
+    /// get the children of the given entity
     pub fn get_children(&self, entity: Entity) -> Result<Vec<Entity>, InteropError> {
         if !self.is_valid_entity(entity)? {
             return Err(InteropError::missing_entity(entity));
@@ -697,6 +712,7 @@ impl WorldAccessGuard<'_> {
         })
     }
 
+    /// get the parent of the given entity
     pub fn get_parent(&self, entity: Entity) -> Result<Option<Entity>, InteropError> {
         if !self.is_valid_entity(entity)? {
             return Err(InteropError::missing_entity(entity));
@@ -705,6 +721,7 @@ impl WorldAccessGuard<'_> {
         self.with_component(entity, |c: Option<&Parent>| c.map(|c| c.get()))
     }
 
+    /// insert children into the given entity
     pub fn push_children(&self, parent: Entity, children: &[Entity]) -> Result<(), InteropError> {
         // verify entities exist
         if !self.is_valid_entity(parent)? {
@@ -723,6 +740,7 @@ impl WorldAccessGuard<'_> {
         })
     }
 
+    /// remove children from the given entity
     pub fn remove_children(&self, parent: Entity, children: &[Entity]) -> Result<(), InteropError> {
         if !self.is_valid_entity(parent)? {
             return Err(InteropError::missing_entity(parent));
@@ -741,6 +759,7 @@ impl WorldAccessGuard<'_> {
         })
     }
 
+    /// insert children into the given entity at the given index
     pub fn insert_children(
         &self,
         parent: Entity,
@@ -765,6 +784,7 @@ impl WorldAccessGuard<'_> {
         })
     }
 
+    /// despawn this and all children of the given entity recursively
     pub fn despawn_recursive(&self, parent: Entity) -> Result<(), InteropError> {
         if !self.is_valid_entity(parent)? {
             return Err(InteropError::missing_entity(parent));
@@ -777,6 +797,7 @@ impl WorldAccessGuard<'_> {
         })
     }
 
+    /// despawn the given entity
     pub fn despawn(&self, entity: Entity) -> Result<(), InteropError> {
         if !self.is_valid_entity(entity)? {
             return Err(InteropError::missing_entity(entity));
@@ -790,6 +811,7 @@ impl WorldAccessGuard<'_> {
         })
     }
 
+    /// despawn all children of the given entity recursively
     pub fn despawn_descendants(&self, parent: Entity) -> Result<(), InteropError> {
         if !self.is_valid_entity(parent)? {
             return Err(InteropError::missing_entity(parent));
@@ -813,6 +835,7 @@ impl WorldAccessGuard<'_> {
 
 /// Utility type for accessing the world in a callback
 pub trait WorldContainer {
+    /// The error type for the container
     type Error: Debug;
     /// Sets the world to the given value in the container
     fn set_world(&mut self, world: WorldGuard<'static>) -> Result<(), Self::Error>;

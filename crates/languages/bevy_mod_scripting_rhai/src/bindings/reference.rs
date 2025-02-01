@@ -15,6 +15,8 @@ use std::{
 use strum::VariantNames;
 
 #[derive(Debug, strum::EnumString, strum::VariantNames, Clone)]
+/// A list of reserved keywords in Rhai
+#[allow(missing_docs)]
 pub enum ReservedKeyword {
     // Reserved under certain flags
     #[strum(serialize = "?.")]
@@ -155,12 +157,14 @@ pub enum ReservedKeyword {
 }
 
 impl ReservedKeyword {
+    /// Returns whether the given string is a reserved keyword in Rhai
     pub fn is_reserved_keyword(s: impl AsRef<str>) -> bool {
         ReservedKeyword::VARIANTS.iter().any(|v| v == &s.as_ref())
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
+/// A wrapper around a [`ReflectReference`] that implements [`CustomType`] for Rhai
 pub struct RhaiReflectReference(pub ReflectReference);
 
 impl AsRef<ReflectReference> for RhaiReflectReference {
@@ -195,6 +199,8 @@ impl DerefMut for RhaiReflectReference {
     }
 }
 
+/// A rhai operator enum
+#[allow(missing_docs)]
 pub enum RhaiOperator {
     Sub,
     Add,
@@ -209,6 +215,7 @@ pub enum RhaiOperator {
 }
 
 impl RhaiOperator {
+    /// Returns the function name for the operator
     pub fn function_name(self) -> &'static str {
         match self {
             RhaiOperator::Sub => "-",
@@ -225,6 +232,7 @@ impl RhaiOperator {
     }
 }
 
+/// An iterator over a [`ReflectReference`] that implements [`IntoIterator`] for Rhai
 pub struct RhaiReflectRefIter {
     next_func: DynamicScriptFunctionMut,
 }
@@ -536,6 +544,7 @@ impl CustomType for RhaiReflectReference {
 }
 
 #[derive(Clone, Debug, Copy, PartialEq)]
+/// A wrapper around a [`TypeId`] that implements [`CustomType`] for Rhai
 pub struct RhaiStaticReflectReference(pub TypeId);
 
 impl CustomType for RhaiStaticReflectReference {

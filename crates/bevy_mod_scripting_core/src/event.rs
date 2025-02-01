@@ -1,9 +1,12 @@
+//! Event handlers and event types for scripting.
+
 use crate::{bindings::script_value::ScriptValue, error::ScriptError, script::ScriptId};
 use bevy::{ecs::entity::Entity, prelude::Event};
 
 /// An error coming from a script
 #[derive(Debug, Event)]
 pub struct ScriptErrorEvent {
+    /// The script that caused the error
     pub error: ScriptError,
 }
 
@@ -35,10 +38,12 @@ impl CallbackLabel {
         }
     }
 
+    /// Creates a new callback label, filtering out invalid characters
     pub fn new_lossy(label: &str) -> Self {
         Self(Self::filter_invalid(label))
     }
 
+    /// Creates a new callback label, returning None if the label is invalid
     pub fn new(label: &str) -> Option<Self> {
         let new_lossy = Self::new_lossy(label);
         if new_lossy.0.len() != label.len() {
@@ -50,10 +55,13 @@ impl CallbackLabel {
 }
 
 #[macro_export]
+/// Creates a set of callback labels
 macro_rules! callback_labels {
     ($($name:ident => $label:expr),*) => {
 
         $(
+            #[doc = "A callback label for the event: "]
+            #[doc = stringify!($label)]
             pub struct $name;
             impl $crate::event::IntoCallbackLabel for $name {
                 fn into_callback_label() -> $crate::event::CallbackLabel {
@@ -69,7 +77,9 @@ callback_labels!(
     OnScriptUnloaded => "on_script_unloaded"
 );
 
+/// A trait for types that can be converted into a callback label
 pub trait IntoCallbackLabel {
+    /// Converts the type into a callback label
     fn into_callback_label() -> CallbackLabel;
 }
 
@@ -117,12 +127,16 @@ pub enum Recipients {
 /// A callback event meant to trigger a callback in a subset/set of scripts in the world with the given arguments
 #[derive(Clone, Event, Debug)]
 pub struct ScriptCallbackEvent {
+    /// The label of the callback
     pub label: CallbackLabel,
+    /// The recipients of the callback
     pub recipients: Recipients,
+    /// The arguments to the callback
     pub args: Vec<ScriptValue>,
 }
 
 impl ScriptCallbackEvent {
+    /// Creates a new callback event with the given label, arguments and recipients
     pub fn new<L: Into<CallbackLabel>>(
         label: L,
         args: Vec<ScriptValue>,
@@ -135,6 +149,7 @@ impl ScriptCallbackEvent {
         }
     }
 
+    /// Creates a new callback event with the given label, arguments and all scripts as recipients
     pub fn new_for_all<L: Into<CallbackLabel>>(label: L, args: Vec<ScriptValue>) -> Self {
         Self::new(label, args, Recipients::All)
     }

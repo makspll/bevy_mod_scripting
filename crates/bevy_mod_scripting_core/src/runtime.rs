@@ -7,14 +7,18 @@ use bevy::{
     prelude::{NonSendMut, Res},
 };
 
+/// A trait that all script runtimes must implement.
 pub trait Runtime: 'static {}
 impl<T: 'static> Runtime for T {}
 
+/// A function that initializes a runtime.
 pub type RuntimeInitializer<P> =
     fn(&mut <P as IntoScriptPluginParams>::R) -> Result<(), ScriptError>;
 
 #[derive(Resource)]
+/// Resource storing settings for a scripting plugin regarding runtime initialization & configuration.
 pub struct RuntimeSettings<P: IntoScriptPluginParams> {
+    /// Initializers for the runtime. These are run when the runtime is initialized.
     pub initializers: Vec<RuntimeInitializer<P>>,
 }
 
@@ -37,10 +41,11 @@ impl<P: IntoScriptPluginParams> Clone for RuntimeSettings<P> {
 /// Stores a particular runtime.
 #[derive(Resource)]
 pub struct RuntimeContainer<P: IntoScriptPluginParams> {
+    /// The runtime contained within.
     pub runtime: P::R,
 }
 
-pub fn initialize_runtime<P: IntoScriptPluginParams>(
+pub(crate) fn initialize_runtime<P: IntoScriptPluginParams>(
     mut runtime: NonSendMut<RuntimeContainer<P>>,
     settings: Res<RuntimeSettings<P>>,
 ) -> Result<(), ScriptError> {

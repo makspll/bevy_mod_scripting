@@ -1,3 +1,5 @@
+//! Systems and resources for handling script assets and events
+
 use crate::{
     commands::{CreateOrUpdateScript, DeleteScript},
     error::ScriptError,
@@ -21,9 +23,13 @@ use std::borrow::Cow;
 /// Represents a scripting language. Languages which compile into another language should use the target language as their language.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Language {
+    /// The Rhai scripting language
     Rhai,
+    /// The Lua scripting language
     Lua,
+    /// The Rune scripting language
     Rune,
+    /// An external scripting language
     External(Cow<'static, str>),
     /// Set if none of the asset path to language mappers match
     Unknown,
@@ -44,6 +50,7 @@ impl std::fmt::Display for Language {
 /// Represents a script loaded into memory as an asset
 #[derive(Asset, TypePath, Clone)]
 pub struct ScriptAsset {
+    /// The body of the script
     pub content: Box<[u8]>,
     /// The virtual filesystem path of the asset, used to map to the script Id for asset backed scripts
     pub asset_path: AssetPath<'static>,
@@ -57,6 +64,7 @@ pub(crate) enum ScriptAssetEvent {
 }
 
 #[derive(Default)]
+/// A loader for script assets
 pub struct ScriptAssetLoader {
     /// The file extensions this loader should handle
     pub extensions: &'static [&'static str],
@@ -98,12 +106,16 @@ impl AssetLoader for ScriptAssetLoader {
 }
 
 #[derive(Clone, Resource)]
+/// Settings to do with script assets and how they are handled
 pub struct ScriptAssetSettings {
+    /// Strategy for mapping asset paths to script ids, by default this is the identity function
     pub script_id_mapper: AssetPathToScriptIdMapper,
+    /// Strategies for mapping asset paths to languages
     pub script_language_mappers: Vec<AssetPathToLanguageMapper>,
 }
 
 impl ScriptAssetSettings {
+    /// Selects the language for a given asset path
     pub fn select_script_language(&self, path: &AssetPath) -> Language {
         for mapper in &self.script_language_mappers {
             let language = (mapper.map)(path);
@@ -131,41 +143,53 @@ impl Default for ScriptAssetSettings {
 /// Strategy for mapping asset paths to script ids, by default this is the identity function
 #[derive(Clone, Copy)]
 pub struct AssetPathToScriptIdMapper {
+    /// The mapping function
     pub map: fn(&AssetPath) -> ScriptId,
 }
 
 #[derive(Clone, Copy)]
+/// Strategy for mapping asset paths to languages
 pub struct AssetPathToLanguageMapper {
+    /// The mapping function
     pub map: fn(&AssetPath) -> Language,
 }
 
 /// A cache of asset id's to their script id's. Necessary since when we drop an asset we won't have the ability to get the path from the asset.
 #[derive(Default, Debug, Resource)]
 pub struct ScriptMetadataStore {
+    /// The map of asset id's to their metadata
     pub map: HashMap<AssetId<ScriptAsset>, ScriptMetadata>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+/// Metadata for a script asset
 pub struct ScriptMetadata {
+    /// The asset id of the script
     pub asset_id: AssetId<ScriptAsset>,
+    /// The script id of the script
     pub script_id: ScriptId,
+    /// The language of the script
     pub language: Language,
 }
 
 impl ScriptMetadataStore {
+    /// Inserts a new metadata entry
     pub fn insert(&mut self, id: AssetId<ScriptAsset>, meta: ScriptMetadata) {
         // TODO: new generations of assets are not going to have the same ID as the old one
         self.map.insert(id, meta);
     }
 
+    /// Gets a metadata entry
     pub fn get(&self, id: AssetId<ScriptAsset>) -> Option<&ScriptMetadata> {
         self.map.get(&id)
     }
 
+    /// Removes a metadata entry
     pub fn remove(&mut self, id: AssetId<ScriptAsset>) -> Option<ScriptMetadata> {
         self.map.remove(&id)
     }
 
+    /// Checks if the store contains a metadata entry
     pub fn contains(&self, id: AssetId<ScriptAsset>) -> bool {
         self.map.contains_key(&id)
     }

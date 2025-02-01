@@ -1,3 +1,5 @@
+//! Contains the [`FromScriptRef`] trait and its implementations.
+
 use std::{any::TypeId, ffi::OsString, path::PathBuf};
 
 use bevy::reflect::{DynamicEnum, DynamicList, DynamicTuple, DynamicVariant, PartialReflect};
@@ -14,6 +16,7 @@ use crate::{
 ///
 /// Type Erased version of [`super::from::FromScript`].
 pub trait FromScriptRef {
+    /// Converts a [`ScriptValue`] to a value equivalent to the given [`TypeId`].
     fn from_script_ref(
         target: TypeId,
         value: ScriptValue,

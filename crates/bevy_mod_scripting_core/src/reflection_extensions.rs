@@ -1,3 +1,5 @@
+//! Various utility functions for working with reflection types.
+
 use crate::{
     bindings::{ReflectReference, WorldGuard},
     error::InteropError,
@@ -11,18 +13,22 @@ use std::{
 };
 /// Extension trait for [`PartialReflect`] providing additional functionality for working with specific types.
 pub trait PartialReflectExt {
+    /// Try to remove the value at the given key, if the type supports removing with the given key.
     fn try_remove_boxed(
         &mut self,
         key: Box<dyn PartialReflect>,
     ) -> Result<Option<Box<dyn PartialReflect>>, InteropError>;
 
+    /// Convert index keys to 0-indexed keys if this type is an index key.
     fn convert_to_0_indexed_key(&mut self);
 
+    /// Try to create a new instance of the concrete type from a possibly untyped reference.
     fn from_reflect_or_clone(
         reflect: &dyn PartialReflect,
         world: WorldGuard,
     ) -> Box<dyn PartialReflect>;
 
+    /// Allocate a new boxed reflect reference from a boxed reflect.
     fn allocate(boxed: Box<dyn Reflect>, world: WorldGuard) -> ReflectReference;
 
     /// Check if the represented type is from the given crate and has the given type identifier,
@@ -69,7 +75,7 @@ pub trait PartialReflectExt {
     /// For maps, there is no natural `end`, so the push will error out
     fn try_push_boxed(&mut self, value: Box<dyn PartialReflect>) -> Result<(), InteropError>;
 
-    // If the type has a natural last element to pop, pops the last element and returns it as a boxed value.
+    /// If the type has a natural last element to pop, pops the last element and returns it as a boxed value.
     fn try_pop_boxed(&mut self) -> Result<Box<dyn PartialReflect>, InteropError>;
 
     /// If the type is a container type, empties the contents
@@ -90,7 +96,10 @@ pub trait PartialReflectExt {
         world: WorldGuard,
     ) -> Result<Box<dyn Reflect>, InteropError>;
 }
+
+/// Extension trait for [`TypeId`] providing additional functionality for working with type ids.
 pub trait TypeIdExtensions {
+    /// Returns the type id if it is Some, otherwise returns a fake type id.
     fn or_fake_id(&self) -> TypeId;
 }
 
@@ -410,11 +419,17 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
     }
 }
 
+/// Extension trait for TypeInfos providing additional functionality for working with type information.
 pub trait TypeInfoExtensions {
+    /// Returns the inner type of the list if the type is a list, otherwise None.
     fn list_inner_type(&self) -> Option<TypeId>;
+    /// Returns true if the type is a list.
     fn is_list(&self) -> bool;
+    /// Returns true if the type is an option.
     fn is_option(&self) -> bool;
+    /// Returns the inner type of the option if the type is an option, otherwise None.
     fn option_inner_type(&self) -> Option<TypeId>;
+    /// Returns true if the type is the given type from the given crate.
     fn is_type(&self, crate_name: Option<&str>, type_ident: &str) -> bool;
 }
 
@@ -445,10 +460,14 @@ impl TypeInfoExtensions for TypeInfo {
     }
 }
 
+/// Extension trait for [`Return`] providing additional functionality for working with return values.
 pub trait ReturnValExt<'a> {
+    /// Try to convert the return value into the concrete type, or return a boxed partial reflect if the conversion fails.
     fn try_into_or_boxed<T: PartialReflect + FromReflect>(
         self,
     ) -> Result<T, Box<dyn PartialReflect>>;
+
+    /// Get a reference to the partial reflect value.
     fn as_ref(&'a self) -> &'a dyn PartialReflect;
 }
 

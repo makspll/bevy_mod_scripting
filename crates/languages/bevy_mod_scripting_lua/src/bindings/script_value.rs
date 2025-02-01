@@ -9,6 +9,7 @@ use std::{
 };
 
 #[derive(Debug, Clone)]
+/// A wrapper around a [`ScriptValue`] that implements [`FromLua`] and [`IntoLua`]
 pub struct LuaScriptValue(pub ScriptValue);
 
 impl Deref for LuaScriptValue {
@@ -102,6 +103,7 @@ impl FromLua for LuaScriptValue {
     }
 }
 
+/// The context for calling a function from Lua
 pub const LUA_CALLER_CONTEXT: FunctionCallContext = FunctionCallContext {
     convert_to_0_indexed: true,
 };

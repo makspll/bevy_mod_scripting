@@ -1,3 +1,7 @@
+//! Core functionality for the bevy_mod_scripting framework.
+//!
+//! Contains language agnostic systems and types for handling scripting in bevy.
+
 use crate::event::ScriptErrorEvent;
 use asset::{
     configure_asset_systems, configure_asset_systems_for_plugin, AssetPathToLanguageMapper,
@@ -52,10 +56,14 @@ pub enum ScriptingSystemSet {
 /// Types which act like scripting plugins, by selecting a context and runtime
 /// Each individual combination of context and runtime has specific infrastructure built for it and does not interact with other scripting plugins
 pub trait IntoScriptPluginParams: 'static {
+    /// The language of the scripts
     const LANGUAGE: Language;
+    /// The context type used for the scripts
     type C: Context;
+    /// The runtime type used for the scripts
     type R: Runtime;
 
+    /// Build the runtime
     fn build_runtime() -> Self::R;
 }
 
@@ -70,6 +78,7 @@ pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
     /// The context assigner for assigning contexts to scripts.
     pub context_assigner: ContextAssigner<P>,
 
+    /// The asset path to language mapper for the plugin
     pub language_mapper: AssetPathToLanguageMapper,
 
     /// initializers for the contexts, run when loading the script
@@ -139,12 +148,19 @@ impl<P: IntoScriptPluginParams> ScriptingPlugin<P> {
 
 /// Utility trait for configuring all scripting plugins.
 pub trait ConfigureScriptPlugin {
+    /// The type of the plugin to configure
     type P: IntoScriptPluginParams;
+
+    /// Add a context initializer to the plugin
     fn add_context_initializer(self, initializer: ContextInitializer<Self::P>) -> Self;
+
+    /// Add a context pre-handling initializer to the plugin
     fn add_context_pre_handling_initializer(
         self,
         initializer: ContextPreHandlingInitializer<Self::P>,
     ) -> Self;
+
+    /// Add a runtime initializer to the plugin
     fn add_runtime_initializer(self, initializer: RuntimeInitializer<Self::P>) -> Self;
 
     /// Switch the context assigning strategy to a global context assigner.
@@ -233,7 +249,9 @@ fn register_types(app: &mut App) {
     app.register_type::<ReflectReference>();
 }
 
+/// Trait for adding a runtime initializer to an app
 pub trait AddRuntimeInitializer {
+    /// Adds a runtime initializer to the app
     fn add_runtime_initializer<P: IntoScriptPluginParams>(
         &mut self,
         initializer: RuntimeInitializer<P>,

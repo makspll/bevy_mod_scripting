@@ -10,17 +10,21 @@ use std::str::FromStr;
 
 use super::reference::RhaiReflectReference;
 
+/// The default function call context for rhai
 pub const RHAI_CALLER_CONTEXT: FunctionCallContext = FunctionCallContext {
     convert_to_0_indexed: false,
 };
 
 /// A function curried with one argument, i.e. the receiver
 pub struct FunctionWithReceiver {
+    /// The function
     pub function: DynamicScriptFunction,
+    /// The receiver
     pub receiver: ScriptValue,
 }
 
 impl FunctionWithReceiver {
+    /// Create a new function with receiver
     pub fn curry(function: DynamicScriptFunction, receiver: ScriptValue) -> Self {
         Self { function, receiver }
     }
@@ -48,7 +52,9 @@ impl IntoDynamic for FunctionWithReceiver {
     }
 }
 
+/// A trait for converting types into a [`Dynamic`] value
 pub trait IntoDynamic {
+    /// Convert the type into a [`Dynamic`] value
     fn into_dynamic(self) -> Result<Dynamic, Box<EvalAltResult>>;
 }
 
@@ -125,7 +131,9 @@ impl IntoDynamic for ScriptValue {
     }
 }
 
+/// A trait for converting a [`Dynamic`] value into a type
 pub trait FromDynamic: Sized {
+    /// Convert a [`Dynamic`] value into a type
     fn from_dynamic(dynamic: Dynamic) -> Result<Self, Box<EvalAltResult>>;
 }
 

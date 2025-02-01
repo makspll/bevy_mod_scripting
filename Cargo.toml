@@ -127,4 +127,6 @@ panic = "deny"
 unwrap_used = "deny"
 expect_used = "deny"
 todo = "deny"
+
+[workspace.lints.rust]
 missing_docs = "deny"

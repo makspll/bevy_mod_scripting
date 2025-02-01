@@ -1,7 +1,7 @@
+//! A module for managing namespaces for functions
+
 use crate::{
-    bindings::function::script_function::{
-        AppScriptFunctionRegistry, DynamicScriptFunction, ScriptFunction,
-    },
+    bindings::function::script_function::{AppScriptFunctionRegistry, ScriptFunction},
     docgen::info::GetFunctionInfo,
 };
 use bevy::{
@@ -12,52 +12,8 @@ use std::{any::TypeId, borrow::Cow, marker::PhantomData};
 
 use super::type_dependencies::GetFunctionTypeDependencies;
 
-pub trait RegisterNamespacedFunction {
-    fn register_namespaced_function<S, N, F, M>(&mut self, name: N, function: F)
-    where
-        N: Into<Cow<'static, str>>,
-        S: IntoNamespace,
-        F: ScriptFunction<'static, M>;
-}
-
-pub trait GetNamespacedFunction {
-    fn iter_overloads_namespaced<N>(
-        &self,
-        name: N,
-        namespace: Namespace,
-    ) -> impl Iterator<Item = &DynamicScriptFunction>
-    where
-        N: Into<Cow<'static, str>>;
-    fn get_namespaced_function<N>(
-        &self,
-        name: N,
-        namespace: Namespace,
-    ) -> Option<&DynamicScriptFunction>
-    where
-        N: Into<Cow<'static, str>>;
-
-    fn get_namespaced_function_typed<N, NS>(&self, name: N) -> Option<&DynamicScriptFunction>
-    where
-        N: Into<Cow<'static, str>>,
-        NS: IntoNamespace,
-    {
-        Self::get_namespaced_function(self, name, NS::into_namespace())
-    }
-
-    fn has_namespaced_function<N>(&self, name: N, namespace: Namespace) -> bool
-    where
-        N: Into<Cow<'static, str>>;
-
-    fn has_namespaced_function_typed<N, NS>(&self, name: N) -> bool
-    where
-        N: Into<Cow<'static, str>>,
-        NS: IntoNamespace,
-    {
-        Self::has_namespaced_function(self, name, NS::into_namespace())
-    }
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Reflect)]
+/// A namespace for functions
 pub enum Namespace {
     /// The function is registered in the global namespace, i.e. with no namespace.
     /// In practice functions in this namespace should be callable directly by their name, i.e. `my_function()`
@@ -71,7 +27,9 @@ pub enum Namespace {
 /// A type which implements [`IntoNamespace`] by always converting to the global namespace
 pub struct GlobalNamespace;
 
+/// A type convertible to a [`Namespace`]
 pub trait IntoNamespace {
+    /// Converts this type into a [`Namespace`]
     fn into_namespace() -> Namespace;
 }
 
@@ -85,7 +43,9 @@ impl<T: ?Sized + 'static> IntoNamespace for T {
     }
 }
 
+/// A type which implements [`IntoNamespace`] by always converting to the global namespace
 impl Namespace {
+    /// Returns the prefix for this namespace
     pub fn prefix(self) -> Cow<'static, str> {
         match self {
             Namespace::Global => Cow::Borrowed(""),
@@ -102,8 +62,11 @@ impl Namespace {
     }
 }
 
+/// A convenience builder for registering multiple functions in a namespace
 pub struct NamespaceBuilder<'a, N> {
+    /// phantom data to reference the namespace type
     namespace: PhantomData<N>,
+    /// a cached reference to the world
     pub world: &'a mut World,
 }
 
@@ -133,6 +96,7 @@ impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
         }
     }
 
+    /// Registers a function in the namespace
     pub fn register<'env, N, F, M>(&mut self, name: N, function: F) -> &mut Self
     where
         N: Into<Cow<'static, str>>,

@@ -1,3 +1,5 @@
+//! Utilities for querying the world.
+
 use super::{ReflectReference, WorldAccessGuard};
 use crate::{error::InteropError, with_global_access};
 use bevy::{
@@ -17,42 +19,50 @@ pub struct ScriptTypeRegistration {
 }
 
 #[derive(Clone, Reflect, Debug)]
+/// A registration for a component type.
 pub struct ScriptComponentRegistration {
     pub(crate) registration: ScriptTypeRegistration,
     pub(crate) component_id: ComponentId,
 }
 
 #[derive(Clone, Reflect, Debug)]
+/// A registration for a resource type.
 pub struct ScriptResourceRegistration {
     pub(crate) registration: ScriptTypeRegistration,
     pub(crate) resource_id: ComponentId,
 }
 
 impl ScriptTypeRegistration {
+    /// Creates a new [`ScriptTypeRegistration`] from a [`TypeRegistration`].
     pub fn new(registration: Arc<TypeRegistration>) -> Self {
         Self { registration }
     }
 
     #[inline(always)]
+    /// Returns the short name of the type.
     pub fn short_name(&self) -> &'static str {
         self.registration.type_info().type_path_table().short_path()
     }
 
     #[inline(always)]
+    /// Returns the full name of the type.
     pub fn type_name(&self) -> &'static str {
         self.registration.type_info().type_path_table().path()
     }
 
     #[inline(always)]
+    /// Returns the [`TypeId`] of the type.
     pub fn type_id(&self) -> TypeId {
         self.registration.type_info().type_id()
     }
 
+    /// Returns the [`TypeRegistration`] for this type.
     pub fn type_registration(&self) -> &TypeRegistration {
         &self.registration
     }
 }
 impl ScriptResourceRegistration {
+    /// Creates a new [`ScriptResourceRegistration`] from a [`ScriptTypeRegistration`] and a [`ComponentId`].
     pub fn new(registration: ScriptTypeRegistration, resource_id: ComponentId) -> Self {
         Self {
             registration,
@@ -73,6 +83,7 @@ impl ScriptResourceRegistration {
 }
 
 impl ScriptComponentRegistration {
+    /// Creates a new [`ScriptComponentRegistration`] from a [`ScriptTypeRegistration`] and a [`ComponentId`].
     pub fn new(registration: ScriptTypeRegistration, component_id: ComponentId) -> Self {
         Self {
             registration,
@@ -108,6 +119,7 @@ impl std::fmt::Display for ScriptTypeRegistration {
 
 #[derive(Clone, Default, Reflect)]
 #[reflect(opaque)]
+/// A builder for a query.
 pub struct ScriptQueryBuilder {
     components: Vec<ScriptComponentRegistration>,
     with: Vec<ScriptComponentRegistration>,
@@ -115,30 +127,36 @@ pub struct ScriptQueryBuilder {
 }
 
 impl ScriptQueryBuilder {
+    /// Adds components to the query.
     pub fn components(&mut self, components: Vec<ScriptComponentRegistration>) -> &mut Self {
         self.components.extend(components);
         self
     }
+    /// Adds a component to the query.
     pub fn component(&mut self, component: ScriptComponentRegistration) -> &mut Self {
         self.components.push(component);
         self
     }
 
+    /// Adds components to the query that must be present.
     pub fn with_components(&mut self, with: Vec<ScriptComponentRegistration>) -> &mut Self {
         self.with.extend(with);
         self
     }
 
+    /// Adds a component to the query that must be present.
     pub fn with_component(&mut self, with: ScriptComponentRegistration) -> &mut Self {
         self.with.push(with);
         self
     }
 
+    /// Adds components to the query that must not be present.
     pub fn without_components(&mut self, without: Vec<ScriptComponentRegistration>) -> &mut Self {
         self.without.extend(without);
         self
     }
 
+    /// Adds a component to the query that must not be present.
     pub fn without_component(&mut self, without: ScriptComponentRegistration) -> &mut Self {
         self.without.push(without);
         self
@@ -147,22 +165,17 @@ impl ScriptQueryBuilder {
 
 #[derive(Clone, Reflect)]
 #[reflect(opaque)]
+/// A result from a query.
 pub struct ScriptQueryResult {
+    /// The entity that matched the query.
     pub entity: Entity,
+    /// The components that matched the query.
     pub components: Vec<ReflectReference>,
 }
 
-// impl WorldCallbackAccess {
-//     pub fn query(
-//         &self,
-//         query: ScriptQueryBuilder,
-//     ) -> Result<VecDeque<ScriptQueryResult>, InteropError> {
-//         // find the set of components
-//         self.try_read().and_then(|world| world.query(query))
-//     }
-// }
 #[profiling::all_functions]
 impl WorldAccessGuard<'_> {
+    /// Queries the world for entities that match the given query.
     pub fn query(
         &self,
         query: ScriptQueryBuilder,

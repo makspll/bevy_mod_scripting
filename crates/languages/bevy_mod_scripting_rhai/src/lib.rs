@@ -1,3 +1,5 @@
+//! Rhai scripting language support for Bevy.
+
 use bevy::{
     app::Plugin,
     asset::AssetPath,
@@ -24,12 +26,17 @@ use bindings::{
 use rhai::{CallFnOptions, Dynamic, Engine, EvalAltResult, Scope, AST};
 
 pub use rhai;
+/// Bindings for rhai.
 pub mod bindings;
 
+/// The rhai runtime type.
 pub type RhaiRuntime = Engine;
 
+/// The rhai context type.
 pub struct RhaiScriptContext {
+    /// The AST of the script
     pub ast: AST,
+    /// The scope of the script
     pub scope: Scope<'static>,
 }
 
@@ -44,7 +51,9 @@ impl IntoScriptPluginParams for RhaiScriptingPlugin {
     }
 }
 
+/// The rhai scripting plugin. Used to add rhai scripting to a bevy app within the context of the BMS framework.
 pub struct RhaiScriptingPlugin {
+    /// The internal scripting plugin
     pub scripting_plugin: ScriptingPlugin<RhaiScriptingPlugin>,
 }
 
@@ -164,6 +173,7 @@ impl Plugin for RhaiScriptingPlugin {
     }
 }
 
+/// Load a rhai context from a script.
 pub fn rhai_context_load(
     script: &ScriptId,
     content: &[u8],
@@ -193,6 +203,7 @@ pub fn rhai_context_load(
     Ok(context)
 }
 
+/// Reload a rhai context from a script.
 pub fn rhai_context_reload(
     script: &ScriptId,
     content: &[u8],
@@ -212,6 +223,7 @@ pub fn rhai_context_reload(
 }
 
 #[allow(clippy::too_many_arguments)]
+/// The rhai callback handler.
 pub fn rhai_callback_handler(
     args: Vec<ScriptValue>,
     entity: Entity,

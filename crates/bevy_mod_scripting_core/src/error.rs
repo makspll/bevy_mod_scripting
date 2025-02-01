@@ -1,3 +1,5 @@
+//! Errors that can occur when interacting with the scripting system
+
 use crate::bindings::{
     access_map::{DisplayCodeLocation, ReflectAccessId},
     function::namespace::Namespace,
@@ -19,8 +21,6 @@ use std::{
     sync::Arc,
 };
 
-pub type ScriptResult<T> = Result<T, ScriptError>;
-
 /// An error with an optional script Context
 #[derive(Debug, Clone, PartialEq, Reflect)]
 #[reflect(opaque)]
@@ -39,14 +39,20 @@ impl Deref for ScriptError {
 /// The innards are separated to reduce the size of this error
 #[derive(Debug, Clone)]
 pub struct ScriptErrorInner {
+    /// The script that caused the error
     pub script: Option<String>,
+    /// The context in which the error occurred
     pub context: String,
+    /// The error that occurred
     pub reason: Arc<ErrorKind>,
 }
 
 #[derive(Debug)]
+/// The kind of error that occurred
 pub enum ErrorKind {
+    /// An error that can be displayed
     Display(Box<dyn std::error::Error + Send + Sync>),
+    /// An error that can be displayed with a world
     WithWorld(Box<dyn DisplayWithWorld + Send + Sync>),
 }
 
@@ -102,6 +108,7 @@ impl ScriptError {
     }
 
     #[cfg(feature = "rhai_impls")]
+    /// destructures a rhai error into a script error, taking care to preserve as much information as possible
     pub fn from_rhai_error(error: rhai::EvalAltResult) -> Self {
         match error {
             rhai::EvalAltResult::ErrorSystem(message, error) => {
@@ -117,10 +124,12 @@ impl ScriptError {
         }
     }
 
+    /// Creates a new script error with an external error
     pub fn new_external(reason: impl std::error::Error + Send + Sync + 'static) -> Self {
         Self::new_external_boxed(Box::new(reason))
     }
 
+    /// Creates a new script error with an external error
     pub fn new_external_boxed(reason: Box<dyn std::error::Error + Send + Sync + 'static>) -> Self {
         Self(Arc::new(ScriptErrorInner {
             script: None,
@@ -129,6 +138,7 @@ impl ScriptError {
         }))
     }
 
+    /// Creates a new script error with a reason
     pub fn new(reason: impl DisplayWithWorld + Send + Sync + 'static) -> Self {
         Self(Arc::new(ScriptErrorInner {
             script: None,
@@ -137,6 +147,7 @@ impl ScriptError {
         }))
     }
 
+    /// Creates a new script error with a reason
     pub fn with_script<S: ToString>(self, script: S) -> Self {
         Self(Arc::new(ScriptErrorInner {
             script: Some(script.to_string()),
@@ -145,6 +156,7 @@ impl ScriptError {
         }))
     }
 
+    /// Adds context to the error
     pub fn with_context<S: ToString>(self, context: S) -> Self {
         Self(Arc::new(ScriptErrorInner {
             script: self.0.script.clone(),
@@ -246,9 +258,11 @@ impl From<InteropError> for Box<rhai::EvalAltResult> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+/// An error thrown when a resource is missing
 pub struct MissingResourceError(&'static str);
 
 impl MissingResourceError {
+    /// Creates a new missing resource error
     pub fn new<R>() -> Self {
         Self(std::any::type_name::<R>())
     }
@@ -267,6 +281,7 @@ impl Display for MissingResourceError {
 impl std::error::Error for MissingResourceError {}
 
 #[derive(Debug, Clone, PartialEq, Reflect)]
+/// An error thrown when interoperating with scripting languages.
 pub struct InteropError(#[reflect(ignore)] Arc<InteropErrorInner>);
 
 impl std::error::Error for InteropError {}
@@ -299,7 +314,9 @@ impl From<Utf8Error> for ScriptError {
     }
 }
 
+/// Utility trait for flattening errors
 pub trait FlattenError<O, E> {
+    /// Flattens the error into a single error type
     fn flatten_interop_error(self) -> Result<O, E>;
 }
 
@@ -314,6 +331,7 @@ impl<O> FlattenError<O, InteropError> for Result<Result<O, InteropError>, Intero
 }
 
 impl InteropError {
+    /// Creates a new invariant error. Thrown when an invariant is violated.
     pub fn invariant(message: impl Display) -> Self {
         Self(Arc::new(InteropErrorInner::Invariant {
             message: message.to_string(),
@@ -470,12 +488,15 @@ impl InteropError {
         Self(Arc::new(InteropErrorInner::FunctionCallError { inner }))
     }
 
+    /// Thrown when an error happens during argument conversion in a function call
     pub fn function_arg_conversion_error(argument: String, error: InteropError) -> Self {
         Self(Arc::new(InteropErrorInner::FunctionArgConversionError {
             argument,
             error,
         }))
     }
+
+    /// Thrown when a length mismatch occurs
     pub fn length_mismatch(expected: usize, got: usize) -> Self {
         Self(Arc::new(InteropErrorInner::LengthMismatch {
             expected,
@@ -483,10 +504,12 @@ impl InteropError {
         }))
     }
 
+    /// Thrown when an error happens that is not covered by the other variants
     pub fn external_error(error: Box<dyn std::error::Error + Send + Sync>) -> Self {
         Self(Arc::new(InteropErrorInner::OtherError { error }))
     }
 
+    /// Thrown when a function is missing from the function registry
     pub fn missing_function(on: TypeId, function_name: impl Display) -> Self {
         Self(Arc::new(InteropErrorInner::MissingFunctionError {
             on,
@@ -494,6 +517,7 @@ impl InteropError {
         }))
     }
 
+    /// Thrown when an invalid access count is detected
     pub fn invalid_access_count(count: usize, expected: usize, context: String) -> Self {
         Self(Arc::new(InteropErrorInner::InvalidAccessCount {
             count,
@@ -502,6 +526,7 @@ impl InteropError {
         }))
     }
 
+    /// Thrown when a component or resource type is not registered
     pub fn unregistered_component_or_resource_type(
         type_name: impl Into<Cow<'static, str>>,
     ) -> Self {
@@ -511,115 +536,176 @@ impl InteropError {
             },
         ))
     }
-
-    pub fn inner(&self) -> &InteropErrorInner {
-        &self.0
-    }
-
-    /// Unwraps the inner error if there is only one reference to it.
-    /// Otherwise returns Self.
-    pub fn into_inner(self) -> Result<InteropErrorInner, Self> {
-        Arc::try_unwrap(self.0).map_err(Self)
-    }
 }
 
 /// For errors to do with reflection, type conversions or other interop issues
 #[derive(Debug)]
-pub enum InteropErrorInner {
+pub(crate) enum InteropErrorInner {
+    /// Thrown if a callback requires world access, but is unable to do so due
     StaleWorldAccess,
+    /// Thrown if a callback requires world access, but is unable to do so due
     MissingWorld,
+    /// Thrown if a base type is not registered with the reflection system
     UnregisteredBase {
+        /// The base type that was not registered
         base: ReflectBaseType,
     },
+    /// Thrown if a base type is not registered with the reflection system
     MissingTypeData {
+        /// The type that was missing data
         type_id: TypeId,
+        /// The type data that was missing
         type_data: String,
     },
+    /// Thrown if a type cannot be converted from reflect
     FailedFromReflect {
+        /// The type that failed to convert
         type_id: Option<TypeId>,
+        /// The reason for the failure
         reason: String,
     },
+    /// Thrown if access to the given reflection base is required but cannot be claimed
     CannotClaimAccess {
+        /// The base that could not be claimed
         base: ReflectAccessId,
+        /// The context in which the error occurred
         context: Cow<'static, str>,
+        /// The location in the code where the blocking access is being held
         location: Option<std::panic::Location<'static>>,
     },
+    /// thrown when the access count is invalid
     InvalidAccessCount {
+        /// The count of accesses
         count: usize,
+        /// The expected count
         expected: usize,
+        /// The context in which the error occurred
         context: String,
     },
+    /// Thrown if a conversion into the given type is impossible
     ImpossibleConversion {
+        /// The type that the conversion was attempted into
         into: TypeId,
     },
+    /// Thrown if a conversion was not fully completed, as a better conversion exists
     BetterConversionExists {
+        /// The context in which the error occurred
         context: String,
     },
+    /// Thrown if a value was expected to be of one type but was of another
     TypeMismatch {
+        /// The type that was expected
         expected: TypeId,
+        /// The type that was received
         got: Option<TypeId>,
     },
+    /// Thrown if a value was expected to be of one type but was of another
     StringTypeMismatch {
+        /// The type that was expected
         expected: String,
+        /// The type that was received
         got: Option<TypeId>,
     },
+    /// Thrown if a [`ScriptValue`] could not be converted to the expected type
     ValueMismatch {
+        /// The type that was expected
         expected: TypeId,
+        /// The value that was received
         got: ScriptValue,
     },
+    /// Thrown if a length mismatch occurs
     LengthMismatch {
+        /// The length that was expected
         expected: usize,
+        /// The length that was received
         got: usize,
     },
+    /// Thrown if a downcast from a reflect reference to a specific type failed
     CouldNotDowncast {
+        /// The reference that was attempted to be downcast
         from: ReflectReference,
+        /// The type that the downcast was attempted to
         to: TypeId,
     },
+    /// Thrown if a garbage collected allocation was attempted to be accessed
     GarbageCollectedAllocation {
+        /// The reference that was attempted to be accessed
         reference: ReflectReference,
     },
+    /// Thrown if a reflection path is invalid
     ReflectionPathError {
+        /// The error that occurred
         error: String,
+        /// The reference that was attempted to be accessed
         reference: Option<ReflectReference>,
     },
+    /// Thrown if an operation is not supported on the given base type
     UnsupportedOperation {
+        /// The base that the operation was attempted on
         base: Option<TypeId>,
+        /// The value that was used in the operation
         value: Option<Box<dyn PartialReflect>>,
+        /// The operation that was attempted
         operation: String,
     },
+    /// Thrown if an invalid index operation was attempted on a value
     InvalidIndex {
+        /// The value that was attempted to be indexed
         value: ScriptValue,
+        /// The reason for the invalid index
         reason: String,
     },
+    /// Thrown if an entity was missing or invalid
     MissingEntity {
+        /// The entity that was missing
         entity: Entity,
     },
+    /// Thrown if a component was invalid
     InvalidComponent {
+        /// The component that was invalid
         component_id: ComponentId,
     },
+    /// Thrown when an error happens in a function call
     FunctionCallError {
+        /// The inner error that occurred
         inner: FunctionError,
     },
+    /// Thrown when an error happens during argument conversion in a function call
     MissingFunctionError {
+        /// The type that the function was attempted to be called on
         on: TypeId,
+        /// The function that was attempted to be called
         function_name: String,
     },
+    /// Thrown when an error happens in the context of a function call
     FunctionInteropError {
+        /// The function that the error occurred in
         function_name: String,
+        /// The namespace that the function was called on
         on: Namespace,
+        /// The error that occurred
         error: InteropError,
     },
+    /// Thrown when an error happens that is not covered by the other variants
     FunctionArgConversionError {
+        /// The argument that was attempted to be converted
         argument: String,
+        /// The error that occurred
         error: InteropError,
     },
+    /// Thrown when an error happens that is not covered by the other variants
     OtherError {
+        /// The error that occurred
         error: Box<dyn std::error::Error + Send + Sync>,
     },
+    /// Thrown when a component or resource type is not registered
     UnregisteredComponentOrResourceType {
+        /// The type that was not registered
         type_name: Cow<'static, str>,
     },
+    /// Thrown when an invariant is violated
     Invariant {
+        /// The message that describes the invariant violation
         message: String,
     },
 }

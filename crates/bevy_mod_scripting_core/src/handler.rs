@@ -1,3 +1,5 @@
+//! Contains the logic for handling script callback events
+
 use crate::{
     bindings::{
         pretty_print::DisplayWithWorld, script_value::ScriptValue, ThreadWorldContainer,
@@ -20,9 +22,7 @@ use bevy::{
     prelude::{EventReader, Events, Query, Ref},
 };
 
-pub trait Args: Clone + Send + Sync + 'static {}
-impl<T: Clone + Send + Sync + 'static> Args for T {}
-
+/// A function that handles a callback event
 pub type HandlerFn<P> = fn(
     args: Vec<ScriptValue>,
     entity: Entity,
@@ -36,6 +36,7 @@ pub type HandlerFn<P> = fn(
 /// A resource that holds the settings for the callback handler for a specific combination of type parameters
 #[derive(Resource)]
 pub struct CallbackSettings<P: IntoScriptPluginParams> {
+    /// The callback handler function
     pub callback_handler: HandlerFn<P>,
 }
 
@@ -46,8 +47,10 @@ impl<P: IntoScriptPluginParams> Clone for CallbackSettings<P> {
         }
     }
 }
+
 #[profiling::all_functions]
 impl<P: IntoScriptPluginParams> CallbackSettings<P> {
+    /// Creates a new callback settings resource with the given handler function
     pub fn new(callback_handler: HandlerFn<P>) -> Self {
         Self { callback_handler }
     }

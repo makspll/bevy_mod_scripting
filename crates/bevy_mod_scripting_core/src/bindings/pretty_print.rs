@@ -1,3 +1,5 @@
+//! Pretty printing for reflect references and other types.
+
 use crate::reflection_extensions::{FakeType, TypeIdExtensions};
 
 use super::{
@@ -12,6 +14,7 @@ use bevy::{
 use itertools::Itertools;
 use std::{any::TypeId, borrow::Cow};
 
+/// A utility for printing reflect references in a human readable format.
 pub struct ReflectReferencePrinter {
     pub(crate) reference: ReflectReference,
 }
@@ -64,6 +67,7 @@ impl ReflectReferencePrinter {
     const UNREGISTERED_TYPE: &'static str = "Unregistered";
     const UNKNOWN_FIELD: &'static str = "<Unknown Field>";
 
+    /// Creates a new reflect reference printer
     pub fn new(reference: ReflectReference) -> Self {
         Self { reference }
     }
@@ -131,6 +135,8 @@ impl ReflectReferencePrinter {
 
         out.push_str(&format!("{}({})", base_kind, type_path));
     }
+
+    /// Pretty prints a value of an opaque type.
     pub fn pretty_print_value_opaque(&self, v: &dyn PartialReflect, output: &mut String) {
         let type_id = v
             .get_represented_type_info()
@@ -418,8 +424,21 @@ impl DisplayWithWorld for ReflectAccessId {
                 let allocation_id = ReflectAllocationId::from(*self);
                 let allocator = world.allocator();
                 let allocator = allocator.read();
-                let type_id = allocator.get_type_id(&allocation_id).or_fake_id();
-                format!("Allocation({})", type_id.display_with_world(world))
+                let raid = ReflectAccessId::for_allocation(allocation_id.clone());
+
+                if world.claim_read_access(raid) {
+                    if let Some(allocation) = allocator.get(&allocation_id) {
+                        let ptr = allocation.get_ptr();
+                        let val = unsafe { &*ptr };
+                        let o = format!("Allocation({:?})", val);
+                        unsafe { world.release_access(raid) };
+                        o
+                    } else {
+                        format!("Allocation({})", allocation_id)
+                    }
+                } else {
+                    format!("Allocation({})", allocation_id)
+                }
             }
             super::access_map::ReflectAccessKind::Global => "Global".to_owned(),
         }

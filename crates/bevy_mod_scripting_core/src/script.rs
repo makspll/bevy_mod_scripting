@@ -1,10 +1,19 @@
+//! Script related types, functions and components
+
 use crate::{asset::ScriptAsset, context::ContextId};
 use bevy::{asset::Handle, ecs::system::Resource, reflect::Reflect};
 use std::{borrow::Cow, collections::HashMap, ops::Deref};
 
+/// A unique identifier for a script, by default corresponds to the path of the asset excluding the asset source.
+///
+/// I.e. an asset with the path `path/to/asset.ext` will have the script id `path/to/asset.ext`
 pub type ScriptId = Cow<'static, str>;
 
 #[derive(bevy::ecs::component::Component, Reflect, Clone)]
+
+/// A component which identifies the scripts existing on an entity.
+///
+/// Event handlers search for components with this component to figure out which scripts to run and on which entities.
 pub struct ScriptComponent(pub Vec<ScriptId>);
 
 impl Deref for ScriptComponent {
@@ -16,6 +25,7 @@ impl Deref for ScriptComponent {
 }
 
 impl ScriptComponent {
+    /// Creates a new [`ScriptComponent`] with the given ScriptID's
     pub fn new(components: Vec<ScriptId>) -> Self {
         Self(components)
     }
@@ -30,6 +40,7 @@ pub struct Scripts {
 /// A script
 #[derive(Clone)]
 pub struct Script {
+    /// The id of the script
     pub id: ScriptId,
     /// the asset holding the content of the script if it comes from an asset
     pub asset: Option<Handle<ScriptAsset>>,

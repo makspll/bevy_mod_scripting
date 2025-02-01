@@ -1,3 +1,5 @@
+//! Implementations of the [`IntoScript`] trait for various types.
+
 use std::{borrow::Cow, collections::HashMap, ffi::OsString, path::PathBuf};
 
 use bevy::reflect::Reflect;
@@ -13,7 +15,9 @@ use super::{
     script_function::{DynamicScriptFunction, DynamicScriptFunctionMut},
 };
 
+/// Converts a value into a [`ScriptValue`].
 pub trait IntoScript {
+    /// Convert this value into a [`ScriptValue`].
     fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError>;
 }
 

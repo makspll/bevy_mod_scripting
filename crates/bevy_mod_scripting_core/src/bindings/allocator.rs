@@ -1,7 +1,8 @@
+//! An allocator used to control the lifetime of allocations
+
 use bevy::{ecs::system::Resource, prelude::ResMut, reflect::PartialReflect};
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::{
-    any::TypeId,
     cell::UnsafeCell,
     cmp::Ordering,
     collections::HashMap,
@@ -11,8 +12,10 @@ use std::{
 };
 
 #[derive(Clone, Debug)]
+/// Unique identifier for an allocation
 pub struct ReflectAllocationId(pub(crate) Arc<u64>);
 impl ReflectAllocationId {
+    /// Returns the id of the allocation
     pub fn id(&self) -> u64 {
         *self.0
     }
@@ -22,6 +25,7 @@ impl ReflectAllocationId {
         Self(Arc::new(id))
     }
 
+    /// Returns the number of strong references to this id
     pub fn strong_count(&self) -> usize {
         Arc::strong_count(&self.0)
     }
@@ -79,16 +83,19 @@ impl<T: ?Sized> Drop for OwningPtr<T> {
 
 // yikes, the indirection. I need this to store boxed values too though
 #[derive(Debug)]
+/// A boxed [`PartialReflect`] value
 pub struct ReflectAllocation(Box<UnsafeCell<dyn PartialReflect>>);
 
 // unsafe impl Send for ReflectAllocation {}
 unsafe impl Sync for ReflectAllocation {}
 
 impl ReflectAllocation {
+    /// Returns a pointer to the [`PartialReflect`] value
     pub fn get_ptr(&self) -> *mut dyn PartialReflect {
         self.0.as_ref().get()
     }
 
+    /// Creates a new [`ReflectAllocation`] from a boxed [`PartialReflect`] value
     pub fn new(value: Box<dyn PartialReflect>) -> Self {
         let value: Box<UnsafeCell<dyn PartialReflect>> = unsafe { std::mem::transmute(value) };
         Self(value)
@@ -124,10 +131,12 @@ impl Default for AppReflectAllocator {
 }
 
 impl AppReflectAllocator {
+    /// claim a read lock on the allocator
     pub fn read(&self) -> RwLockReadGuard<ReflectAllocator> {
         self.allocator.read()
     }
 
+    /// claim a write lock on the allocator
     pub fn write(&self) -> RwLockWriteGuard<ReflectAllocator> {
         self.allocator.write()
     }
@@ -139,8 +148,8 @@ impl AppReflectAllocator {
 pub struct ReflectAllocator {
     // TODO: experiment with object pools, sparse set etc.
     allocations: HashMap<ReflectAllocationId, ReflectAllocation>,
-    types: HashMap<u64, TypeId>,
 }
+
 #[profiling::all_functions]
 impl ReflectAllocator {
     /// Allocates a new [`Reflect`] value and returns an [`AllocationId`] which can be used to access it later.
@@ -149,20 +158,18 @@ impl ReflectAllocator {
         self.allocate_boxed(Box::new(value))
     }
 
+    /// Allocates a new boxed [`PartialReflect`] value and returns an [`AllocationId`] which can be used to access it later.
     pub fn allocate_boxed(&mut self, value: Box<dyn PartialReflect>) -> ReflectAllocationId {
         static COUNTER: AtomicU64 = AtomicU64::new(0);
 
-        let type_id = value.get_represented_type_info().map(|i| i.type_id());
         let id =
             ReflectAllocationId::new(COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed));
-        let index = id.id();
         let value = ReflectAllocation::new(value);
         self.allocations.insert(id.clone(), value);
-        if let Some(type_id) = type_id {
-            self.types.insert(index, type_id);
-        }
         id
     }
+
+    /// Insert a value into the allocator with a given id
     pub fn insert(
         &mut self,
         id: ReflectAllocationId,
@@ -171,18 +178,17 @@ impl ReflectAllocator {
         self.allocations.insert(id, value)
     }
 
+    /// Remove a value from the allocator with a given id
     pub fn remove(&mut self, id: &ReflectAllocationId) -> Option<ReflectAllocation> {
         self.allocations.remove(id)
     }
 
-    pub fn get_type_id(&self, id: &ReflectAllocationId) -> Option<TypeId> {
-        self.types.get(&id.id()).cloned()
-    }
-
+    /// Get the type id of a value with a given id
     pub fn get_mut(&mut self, id: &ReflectAllocationId) -> Option<&mut ReflectAllocation> {
         self.allocations.get_mut(id)
     }
 
+    /// Get the reflect value with a given id
     pub fn get(&self, id: &ReflectAllocationId) -> Option<&ReflectAllocation> {
         self.allocations.get(id)
     }
@@ -198,6 +204,7 @@ impl ReflectAllocator {
         self.allocations.retain(|k, _| Arc::strong_count(&k.0) > 1);
     }
 
+    /// Returns an iterator over all allocations
     pub fn iter_allocations(
         &self,
     ) -> impl Iterator<Item = (&ReflectAllocationId, &ReflectAllocation)> {

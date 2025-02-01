@@ -1,3 +1,5 @@
+//! This module contains the `ScriptValue` enum which is used to pass values between scripting languages and Rust.
+
 use std::{borrow::Cow, collections::HashMap};
 
 use bevy::reflect::{OffsetAccess, ParsedPath, Reflect};
@@ -47,6 +49,7 @@ impl ScriptValue {
         }
     }
 
+    /// Returns the variant of the value as a string.
     pub fn type_name(&self) -> String {
         match self {
             ScriptValue::Unit => "Unit".to_owned(),

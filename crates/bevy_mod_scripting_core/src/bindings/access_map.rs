@@ -1,3 +1,4 @@
+//! A map of access claims used to safely and dynamically access the world.
 use std::thread::ThreadId;
 
 use bevy::{
@@ -13,12 +14,14 @@ use crate::error::InteropError;
 use super::{ReflectAllocationId, ReflectBase};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+/// An owner of an access claim and the code location of the claim.
 pub struct ClaimOwner {
     id: ThreadId,
     location: std::panic::Location<'static>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+/// A count of the number of readers and writers of an access claim.
 pub struct AccessCount {
     /// The number of readers including thread information
     read_by: SmallVec<[ClaimOwner; 1]>,
@@ -81,8 +84,11 @@ impl AccessMapKey for u64 {
 /// Describes kinds of base value we are accessing via reflection
 #[derive(PartialEq, Eq, Copy, Clone, Hash, Debug)]
 pub enum ReflectAccessKind {
+    /// Accessing a component or resource
     ComponentOrResource,
+    /// Accessing an owned value
     Allocation,
+    /// Accessing the world
     Global,
 }
 
@@ -129,6 +135,7 @@ impl AccessMapKey for ReflectAccessId {
 }
 
 impl ReflectAccessId {
+    /// Creates a new access id for the global world
     pub fn for_global() -> Self {
         Self {
             kind: ReflectAccessKind::Global,
@@ -136,6 +143,7 @@ impl ReflectAccessId {
         }
     }
 
+    /// Creates a new access id for a resource
     pub fn for_resource<R: Resource>(cell: &UnsafeWorldCell) -> Result<Self, InteropError> {
         let resource_id = cell.components().resource_id::<R>().ok_or_else(|| {
             InteropError::unregistered_component_or_resource_type(std::any::type_name::<R>())
@@ -147,6 +155,7 @@ impl ReflectAccessId {
         })
     }
 
+    /// Creates a new access id for a component
     pub fn for_component<C: bevy::ecs::component::Component>(
         cell: &UnsafeWorldCell,
     ) -> Result<Self, InteropError> {
@@ -157,6 +166,7 @@ impl ReflectAccessId {
         Ok(Self::for_component_id(component_id))
     }
 
+    /// Creates a new access id for a component id
     pub fn for_allocation(id: ReflectAllocationId) -> Self {
         Self {
             kind: ReflectAccessKind::Allocation,
@@ -164,6 +174,7 @@ impl ReflectAccessId {
         }
     }
 
+    /// Creates a new access id for a component id
     pub fn for_component_id(id: ComponentId) -> Self {
         Self {
             kind: ReflectAccessKind::ComponentOrResource,
@@ -171,6 +182,7 @@ impl ReflectAccessId {
         }
     }
 
+    /// Creates a new access id for a reference
     pub fn for_reference(base: ReflectBase) -> Self {
         match base {
             ReflectBase::Resource(id) => Self::for_component_id(id),
@@ -211,17 +223,21 @@ impl From<ReflectAccessId> for ReflectAllocationId {
 }
 
 #[derive(Debug, Default)]
+/// A map of access claims
 pub struct AccessMap {
     individual_accesses: DashMap<u64, AccessCount>,
     global_lock: RwLock<AccessCount>,
 }
+
 #[profiling::all_functions]
 impl AccessMap {
+    /// Checks if the map is locked exclusively
     pub fn is_locked_exclusively(&self) -> bool {
         let global_lock = self.global_lock.read();
         !global_lock.can_write()
     }
 
+    /// retrieves the location of the global lock if any
     pub fn global_access_location(&self) -> Option<std::panic::Location<'static>> {
         let global_lock = self.global_lock.read();
         global_lock.as_location()
@@ -325,6 +341,7 @@ impl AccessMap {
         }
     }
 
+    /// Lists all accesses
     pub fn list_accesses<K: AccessMapKey>(&self) -> Vec<(K, AccessCount)> {
         self.individual_accesses
             .iter()
@@ -332,15 +349,18 @@ impl AccessMap {
             .collect()
     }
 
+    /// Counts the number of accesses
     pub fn count_accesses(&self) -> usize {
         self.individual_accesses.len()
     }
 
+    /// Releases all accesses
     pub fn release_all_accesses(&self) {
         self.individual_accesses.clear();
         self.release_global_access();
     }
 
+    /// Accesses the location of a key
     pub fn access_location<K: AccessMapKey>(
         &self,
         key: K,
@@ -355,6 +375,7 @@ impl AccessMap {
             .and_then(|access| access.as_location())
     }
 
+    /// Accesses the location of the first access
     pub fn access_first_location(&self) -> Option<std::panic::Location<'static>> {
         self.individual_accesses
             .iter()
@@ -362,7 +383,9 @@ impl AccessMap {
     }
 }
 
+/// A trait for displaying a code location nicely
 pub trait DisplayCodeLocation {
+    /// Displays the location
     fn display_location(self) -> String;
 }
 
@@ -380,6 +403,7 @@ impl DisplayCodeLocation for Option<std::panic::Location<'_>> {
 }
 
 #[macro_export]
+/// A macro for claiming access to a value for reading
 macro_rules! with_access_read {
     ($access_map:expr, $id:expr, $msg:expr, $body:block) => {{
         if !$access_map.claim_read_access($id) {
@@ -397,6 +421,7 @@ macro_rules! with_access_read {
 }
 
 #[macro_export]
+/// A macro for claiming access to a value for writing
 macro_rules! with_access_write {
     ($access_map:expr, $id:expr, $msg:expr, $body:block) => {
         if !$access_map.claim_write_access($id) {
@@ -414,6 +439,7 @@ macro_rules! with_access_write {
 }
 
 #[macro_export]
+/// A macro for claiming global access
 macro_rules! with_global_access {
     ($access_map:expr, $msg:expr, $body:block) => {
         if !$access_map.claim_global_access() {
