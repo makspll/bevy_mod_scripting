@@ -7,6 +7,13 @@ on:
     paths:
       - 'docs/**'
       - '.github/workflows/mdbook.yml'
+  pull_request:
+    types: [opened]
+    branches:
+      - "**"
+    paths:
+      - 'docs/**'
+      - '.github/workflows/mdbook.yml'
 
 jobs:
 
