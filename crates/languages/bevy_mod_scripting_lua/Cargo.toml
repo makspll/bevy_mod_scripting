@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_lua"
-version = "0.9.0-alpha.9"
+version = "0.9.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -45,7 +45,7 @@ parking_lot = "0.12.1"
 uuid = "1.1"
 smol_str = "0.2.2"
 smallvec = "1.13"
-profiling = {workspace = true}
+profiling = { workspace = true }
 
 [dev-dependencies]
 script_integration_test_harness = { workspace = true }
