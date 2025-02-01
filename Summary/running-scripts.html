@@ -165,23 +165,33 @@
 <h1 id="running-scripts"><a class="header" href="#running-scripts">Running Scripts</a></h1>
 <p>Scripts can run logic either when loaded or when triggered by an event. For example the script:</p>
 <pre><code class="language-lua">print("hello from load time")
-function on_event()
+function on_event(arg1)
     print("hello from event time")
+    print(arg1)
 end
 </code></pre>
 <p>Will print "hello from load time" when the script is loaded, and "hello from event time" when the script receives an event targeting the <code>on_event</code> callback with a receiver list including this script or entity.</p>
 <p>In order to trigger <code>on_event</code> you need to first define a label, then send an event containing the label:</p>
-<pre><code class="language-rust ignore">// define the label, you can define as many as you like here
+<pre><code class="language-rust ignore">
+#[derive(Reflect)]
+pub struct MyReflectType;
+
+// define the label, you can define as many as you like here
 callback_labels!(OnEvent =&gt; "on_event");
 
 // trigger the event
-fn send_event(mut writer: EventWriter&lt;ScriptCallbackEvent&gt;) {
+fn send_event(mut writer: EventWriter&lt;ScriptCallbackEvent&gt;, mut allocator: ResMut&lt;AppReflectAllocator&gt;) {
+
+    let allocator = allocator.write();
+    let my_reflect_payload = ReflectReference::new_allocated(MyReflectType, &amp;mut allocator);
+
     writer.send(ScriptCallbackEvent::new_for_all(
         OnEvent,
-        vec![ScriptValue::Unit],
+        vec![my_reflect_payload.into()],
     ));
 }</code></pre>
-<p>Note the second argument is the payload we are sending with the event, in this case we are sending an empty payload.</p>
+<p>Note the second argument is the payload we are sending with the event, in this case we are sending an arbitrary reflect type <code>MyReflectType</code>. This can be any type you like, as long as it implements <code>Reflect</code>.</p>
+<p>Other variants of the <code>ScriptValue</code> enum are available for sending different types of data, such as <code>ScriptValue::Integer</code> for primtive, types.</p>
 <h1 id="event-handlers"><a class="header" href="#event-handlers">Event Handlers</a></h1>
 <p>In order for the events you send to actually be picked up, you need to inject special systems into your application. These systems will listen for the events and trigger the appropriate callbacks on the scripts:</p>
 <pre><code class="language-rust ignore">app.add_systems(Update, event_handler::&lt;OnEvent, LuaScriptingPlugin&gt;);</code></pre>
