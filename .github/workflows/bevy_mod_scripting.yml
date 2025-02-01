@@ -1,12 +1,12 @@
 on:
   push:
     branches:
-      - "**"
+      - main
+      - staging
     paths-ignore:
       - '.github/workflows/release-plz.yml'
       - 'docs/**'
   pull_request:
-    types: [opened]
     branches:
       - "**"
     paths-ignore:

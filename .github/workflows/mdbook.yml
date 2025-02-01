@@ -3,12 +3,12 @@ name: Deploy mdBook to GitHub Pages
 on:
   push:
     branches:
-      - "**"
+      - master
+      - staging
     paths:
       - 'docs/**'
       - '.github/workflows/mdbook.yml'
   pull_request:
-    types: [opened]
     branches:
       - "**"
     paths:
