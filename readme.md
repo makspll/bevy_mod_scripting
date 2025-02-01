@@ -45,6 +45,16 @@ The languages currently supported are as follows:
 
 For examples, installation and usage instructions see our shiny new [book](https://makspll.github.io/bevy_mod_scripting)
 
+## Bevy Compatibility
+
+| bevy_mod_scripting  | bevy   |
+|---------------------|--------|
+| 0.9.1               | 0.15.1 |
+| 0.9                 | 0.15.0 |
+| 0.8                 | 0.15.0 |
+| 0.7                 | 0.14   |
+| 0.6                 | 0.13.1 |
+
 [^1]: Due to the recent re-write of the crate, documentation generation as well as rune support are temporarilly on hold. They will likely be re-implemented in the future.
 
 [^2]: the coverage does not include generated bindings. 
