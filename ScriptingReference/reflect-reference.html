@@ -159,11 +159,11 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="reflectreference"><a class="header" href="#reflectreference">ReflectReference</a></h1>
-<p>ReflectReferences are simply references to date living either:</p>
+<p>ReflectReferences are simply references to data living either in:</p>
 <ul>
-<li>In a component</li>
-<li>In a resource</li>
-<li>In the allocator</li>
+<li>A component</li>
+<li>A resource</li>
+<li>The allocator</li>
 </ul>
 <p>Reflect references contain a standard interface which operates over the reflection layer exposed by <code>Bevy</code> and also provides a way to call various dynamic functions registered on the underlying pointed to data.</p>
 <h2 id="display_ref"><a class="header" href="#display_ref">display_ref</a></h2>
@@ -325,6 +325,19 @@ end
 -- same as 
 for val in pairs(ref) do
     print(val)
+end
+</code></pre>
+<h2 id="functions"><a class="header" href="#functions">functions</a></h2>
+<p>Returns a list of functions that can be called on the reference.</p>
+<p>Returns:</p>
+<div class="table-wrapper"><table><thead><tr><th>Return</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Vec&lt;FunctionInfo&gt;</code></td><td>The list of functions</td></tr>
+</tbody></table>
+</div>
+<pre><code class="language-lua">local functions = ref:functions()
+for _, func in ipairs(functions) do
+    print(func.name)
+    
 end
 </code></pre>
 

@@ -188,12 +188,13 @@ app.add_plugins(plugin)</code></pre>
     runtime.set_max_stack_size(1000);
     Ok(())
 });</code></pre>
+<p>In the case of Lua, the runtime type is <code>()</code> i.e. This is because <code>mlua</code> does not have a separate runtime concept.</p>
 <h2 id="accessing-the-world-in-initializers"><a class="header" href="#accessing-the-world-in-initializers">Accessing the World in Initializers</a></h2>
 <p>You can access the world in these initializers by using the thread local: <code>ThreadWorldContainer</code>:</p>
 <pre><code class="language-rust ignore">
 let plugin = LuaScriptingPlugin::default();
 plugin.add_context_initializer(|script_id: &amp;str, context: &amp;mut Lua| {
-    let world = ThreadWorldContainer::get_world();
+    let world = ThreadWorldContainer.try_get_world().unwrap();
     world.with_resource::&lt;MyResource&gt;(|res| println!("My resource: {:?}", res));
     Ok(())
 });</code></pre>
