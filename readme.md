@@ -38,14 +38,14 @@ The languages currently supported are as follows:
 |Luajit|
 |Luajit52|
 |Luau|
-|~~Rhai~~ temporarilly on hold[^1]|
+|Rhai|
 |~~Rune~~ temporarilly on hold[^1]|
 
 ## Documentation
 
 For examples, installation and usage instructions see our shiny new [book](https://makspll.github.io/bevy_mod_scripting)
 
-[^1]: Due to the recent re-write of the crate, documentation generation as well as rhai and rune support are temporarilly on hold. They will likely be re-implemented in the future. `Rhai` in particualar is difficult to re-implement due to a lack of support for first-class-functions.
+[^1]: Due to the recent re-write of the crate, documentation generation as well as rune support are temporarilly on hold. They will likely be re-implemented in the future.
 
 [^2]: the coverage does not include generated bindings. 
 

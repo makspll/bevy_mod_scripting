@@ -45,6 +45,8 @@ let plugin = SomeScriptingPlugin::default().add_runtime_initializer(|runtime: &m
 });
 ```
 
+In the case of Lua, the runtime type is `()` i.e. This is because `mlua` does not have a separate runtime concept.
+
 ## Accessing the World in Initializers
 
 You can access the world in these initializers by using the thread local: `ThreadWorldContainer`:

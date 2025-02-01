@@ -49,4 +49,4 @@ DeleteScript::<LuaScriptingPlugin>::new("my_script.lua".into())
 replace `LuaScriptingPlugin` with the scripting plugin you are using.
 
 ## Loading/Unloading timeframe
-Scripts are processed via commands, so any asset events will be processed at the next command execution point running after BMS internal asset systems.
+Scripts asset events are processed within the same frame they are issued. This means the moment an asset is loaded, it should be loaded and ready to use in the `Update` schedule. Similarly, the moment an asset is deleted, it should be unloaded and no longer usable in the `Update` schedule.

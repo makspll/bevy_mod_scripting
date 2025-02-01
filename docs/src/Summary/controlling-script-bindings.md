@@ -57,6 +57,8 @@ some_type:hello_world("hi from method!");
 hello_world2("hi from global!");
 ```
 
+Note the `new_unregistered` call instead of `new`, this is because `GlobalNamespace` is not a `Reflect` type, and the `new` call also automatically registers the type in the reflection registry.
+
 ## Context Arguments
 
 Each script function call always receives an additional context argument: `FunctionCallContext`.
