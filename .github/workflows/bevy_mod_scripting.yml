@@ -52,6 +52,7 @@ jobs:
     permissions:
       pull-requests: write
       contents: write
+      issues: write
     name: Check - ${{ matrix.run_args.name }}
     runs-on: ${{ matrix.run_args.os }}
     # container: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
@@ -93,17 +94,24 @@ jobs:
           path: target/coverage/html/
 
       - name: Update coverage badge
-        if: ${{ matrix.run_args.generates_coverage && github.ref == 'refs/heads/main' }}
+        if: ${{ matrix.run_args.generates_coverage }}
+        continue-on-error: true
         run: |
+          git checkout -b chore/_update-coverage-badge || git checkout chore/_update-coverage-badge
           cp target/coverage/html/badges/for_the_badge.svg badges/coverage.svg
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global push.autoSetupRemote true
           git add badges/coverage.svg
           
           if [[ -n $(git status -s) ]]; then
             git commit -m "chore(badge): Update coverage badge" -m "[skip ci]"
-            git push
+            git push -f
+            gh pr create --title "chore: Update coverage badge" --body "Updates coverage badge based on test results" --base ${{ github.ref }}  --head chore/_update-coverage-badge > pr.txt
+            sed -n 's/.*pull\/\([0-9]*\).*/\1/p' pr.txt > pr_number.txt
+            PRNUMBER=$(cat pr_number.txt)
+            gh pr merge $PRNUMBER --squash
           fi
   generate_bindings:
     name: Bindings - Synchronise
