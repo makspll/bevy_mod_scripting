@@ -1,6 +1,6 @@
 # Controlling Script Bindings
 
-In this book we reffer to anything accessible by a script, which allows it to communicate with your Rust code a `binding` (which in previous versions was more generically referred to as a script API).
+In this book we refer to anything accessible by a script, which allows it to communicate with your Rust code a `binding` (which in previous versions was more generically referred to as a script API).
 
 The "binding" here being used as in: binding `script` code to `rust` code.
 
@@ -17,8 +17,8 @@ Everything callable by scripts must first be registered in the dynamic function 
 In order for a function to be callable by a script it must adhere to a few requirements:
 - Each argument must implement `FromScript`.
 - Each return type must implement `IntoScript`.
-- Each argument must also implement `GetInnerTypeDependencies`
-- Each return type must also implement `GetInnerTypeDependencies`
+- Each argument must also implement `GetTypeDependencies`
+- Each return type must also implement `GetTypeDependencies`
 
 The into/from requirements allow us to convert these types to `ScriptValue`'s, and each supported scripting language can then marshall these into the script.
 
@@ -26,7 +26,7 @@ Note these types are implemented for primitives, but if you want to interact wit
 
 These wrappers enable us to safely interact with bevy, and claim any necessary mutex'es on `Resources`, `Components` or `Allocations`.
 
-The `GetInnerTypeDependencies`, trait is simply a local trait alias for `GetTypeRegistration` with less strict type requirements. It allows us to register all the types necessary for the function calls, so that you don't have to register anything manually. If your type implements `GetTypeRegistration` you should not face any issues on this front.
+The `GetTypeDependencies`, trait is simply a local trait alias for `GetTypeRegistration` with less strict type requirements. It allows us to register all the types necessary for the function calls, so that you don't have to register anything manually. If your type implements `GetTypeRegistration` you should not face any issues on this front.
 
 ## Registering Script Functions
 
