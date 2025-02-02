@@ -3,7 +3,7 @@ name: Deploy mdBook to GitHub Pages
 on:
   push:
     branches:
-      - master
+      - main
       - staging
     paths:
       - 'docs/**'
