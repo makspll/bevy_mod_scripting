@@ -159,7 +159,7 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="controlling-script-bindings"><a class="header" href="#controlling-script-bindings">Controlling Script Bindings</a></h1>
-<p>In this book we reffer to anything accessible by a script, which allows it to communicate with your Rust code a <code>binding</code> (which in previous versions was more generically referred to as a script API).</p>
+<p>In this book we refer to anything accessible by a script, which allows it to communicate with your Rust code a <code>binding</code> (which in previous versions was more generically referred to as a script API).</p>
 <p>The "binding" here being used as in: binding <code>script</code> code to <code>rust</code> code.</p>
 <h2 id="namespaces"><a class="header" href="#namespaces">Namespaces</a></h2>
 <p>Namespaces are a way to group functions together, and are used to prevent naming conflicts. You can have multiple namespaces, and each namespace can have multiple functions.</p>
@@ -170,13 +170,13 @@
 <ul>
 <li>Each argument must implement <code>FromScript</code>.</li>
 <li>Each return type must implement <code>IntoScript</code>.</li>
-<li>Each argument must also implement <code>GetInnerTypeDependencies</code></li>
-<li>Each return type must also implement <code>GetInnerTypeDependencies</code></li>
+<li>Each argument must also implement <code>GetTypeDependencies</code></li>
+<li>Each return type must also implement <code>GetTypeDependencies</code></li>
 </ul>
 <p>The into/from requirements allow us to convert these types to <code>ScriptValue</code>'s, and each supported scripting language can then marshall these into the script.</p>
 <p>Note these types are implemented for primitives, but if you want to interact with one of your <code>Reflect</code> implementing types, you will need to use one of <code>Ref&lt;T&gt;</code>, <code>Mut&lt;T&gt;</code> or <code>Val&lt;T&gt;</code> wrappers in place of <code>&amp;T</code>, <code>&amp;mut T</code> and <code>T</code> respectively.</p>
 <p>These wrappers enable us to safely interact with bevy, and claim any necessary mutex'es on <code>Resources</code>, <code>Components</code> or <code>Allocations</code>.</p>
-<p>The <code>GetInnerTypeDependencies</code>, trait is simply a local trait alias for <code>GetTypeRegistration</code> with less strict type requirements. It allows us to register all the types necessary for the function calls, so that you don't have to register anything manually. If your type implements <code>GetTypeRegistration</code> you should not face any issues on this front.</p>
+<p>The <code>GetTypeDependencies</code>, trait is simply a local trait alias for <code>GetTypeRegistration</code> with less strict type requirements. It allows us to register all the types necessary for the function calls, so that you don't have to register anything manually. If your type implements <code>GetTypeRegistration</code> you should not face any issues on this front.</p>
 <h2 id="registering-script-functions"><a class="header" href="#registering-script-functions">Registering Script Functions</a></h2>
 <p>Registering functions can be done via the <code>NamespaceBuilder</code> like below:</p>
 <pre><code class="language-rust ignore">    NamespaceBuilder::&lt;ReflectReference&gt;::new(&amp;mut world)
