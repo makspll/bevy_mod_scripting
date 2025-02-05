@@ -161,6 +161,13 @@
                         <h1 id="scripting-reference"><a class="header" href="#scripting-reference">Scripting Reference</a></h1>
 <p>This part of the book covers the user-facing API of the scripting languages supported by BMS. This will be where you will want to forward your script users to get started with scripting in BMS.</p>
 <p>If you are a modder, welcome! 👋, apologies for the rust-centricity of this guide, we are working on it!</p>
+<h2 id="globals"><a class="header" href="#globals">Globals</a></h2>
+<p>Scripts will have access to a few global variables in most callbacks:</p>
+<ul>
+<li><code>world</code>: a static reference to the world, with all sorts of functions available</li>
+<li><code>entity</code>: the entity the script is attached to, not available on load/unload callbacks</li>
+<li><code>script_id</code>: the ID of the current script</li>
+</ul>
 
                     </main>
 
