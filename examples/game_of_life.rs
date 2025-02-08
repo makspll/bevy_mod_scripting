@@ -20,6 +20,7 @@ use bevy_mod_scripting_core::{
         script_value::ScriptValue,
     },
     callback_labels,
+    commands::AddStaticScript,
     event::ScriptCallbackEvent,
     handler::event_handler,
     script::ScriptComponent,
@@ -53,15 +54,24 @@ fn run_script_cmd(
 ) {
     if let Some(Ok(command)) = log.take() {
         match command {
-            GameOfLifeCommand::Start { language } => {
+            GameOfLifeCommand::Start {
+                language,
+                use_static_script,
+            } => {
                 // create an entity with the script component
                 bevy::log::info!(
                     "Starting game of life spawning entity with the game_of_life.{} script",
                     language
                 );
-                commands.spawn(ScriptComponent::new(vec![format!(
-                    "scripts/game_of_life.{language}"
-                )]));
+
+                let script_path = format!("scripts/game_of_life.{}", language);
+                if !use_static_script {
+                    bevy::log::info!("Spawning an entity with ScriptComponent");
+                    commands.spawn(ScriptComponent::new(vec![script_path]));
+                } else {
+                    bevy::log::info!("Using static script instead of spawning an entity");
+                    commands.queue(AddStaticScript::new(script_path))
+                }
             }
             GameOfLifeCommand::Stop => {
                 // we can simply drop the handle, or manually delete, I'll just drop the handle
@@ -87,8 +97,12 @@ pub enum GameOfLifeCommand {
     /// Start the game of life by spawning an entity with the game_of_life.{language} script
     Start {
         /// The language to use for the script, i.e. "lua" or "rhai"
-        #[clap(short, long, default_value = "lua")]
+        #[clap(default_value = "lua")]
         language: String,
+
+        /// Whether to use a static script instead of spawning an entity with the script
+        #[clap(short, long, default_value = "false")]
+        use_static_script: bool,
     },
     /// Stop the game of life by dropping a handle to the game_of_life script
     Stop,

@@ -6,7 +6,7 @@ use crate::{
     event::{IntoCallbackLabel, OnScriptLoaded, OnScriptUnloaded},
     extractors::{extract_handler_context, yield_handler_context, HandlerContext},
     handler::{handle_script_errors, CallbackSettings},
-    script::{Script, ScriptId},
+    script::{Script, ScriptId, StaticScripts},
     IntoScriptPluginParams,
 };
 use bevy::{asset::Handle, log::debug, prelude::Command};
@@ -313,6 +313,46 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
     }
 }
 
+/// Adds a static script to the collection of static scripts
+pub struct AddStaticScript {
+    /// The ID of the script to add
+    id: ScriptId,
+}
+
+impl AddStaticScript {
+    /// Creates a new AddStaticScript command with the given ID
+    pub fn new(id: impl Into<ScriptId>) -> Self {
+        Self { id: id.into() }
+    }
+}
+
+impl Command for AddStaticScript {
+    fn apply(self, world: &mut bevy::prelude::World) {
+        let mut static_scripts = world.get_resource_or_init::<StaticScripts>();
+        static_scripts.insert(self.id);
+    }
+}
+
+/// Removes a static script from the collection of static scripts
+pub struct RemoveStaticScript {
+    /// The ID of the script to remove
+    id: ScriptId,
+}
+
+impl RemoveStaticScript {
+    /// Creates a new RemoveStaticScript command with the given ID
+    pub fn new(id: ScriptId) -> Self {
+        Self { id }
+    }
+}
+
+impl Command for RemoveStaticScript {
+    fn apply(self, world: &mut bevy::prelude::World) {
+        let mut static_scripts = world.get_resource_or_init::<StaticScripts>();
+        static_scripts.remove(self.id);
+    }
+}
+
 #[cfg(test)]
 mod test {
     use bevy::{
@@ -577,5 +617,24 @@ mod test {
             .unwrap();
 
         assert!(contexts.contexts.len() == 1);
+    }
+
+    #[test]
+    fn test_static_scripts() {
+        let mut app = setup_app();
+
+        let world = app.world_mut();
+
+        let command = AddStaticScript::new("script");
+        command.apply(world);
+
+        let static_scripts = world.get_resource::<StaticScripts>().unwrap();
+        assert!(static_scripts.contains("script"));
+
+        let command = RemoveStaticScript::new("script".into());
+        command.apply(world);
+
+        let static_scripts = world.get_resource::<StaticScripts>().unwrap();
+        assert!(!static_scripts.contains("script"));
     }
 }

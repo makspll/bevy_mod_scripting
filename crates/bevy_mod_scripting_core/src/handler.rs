@@ -112,6 +112,15 @@ pub(crate) fn event_handler_internal<L: IntoCallbackLabel, P: IntoScriptPluginPa
     let entity_scripts = entities
         .iter()
         .map(|(e, s)| (e, s.0.clone()))
+        .chain(
+            // on top of script components we also want to run static scripts
+            // semantically these are just scripts with no entity, in our case we use an invalid entity index 0
+            res_ctxt
+                .static_scripts
+                .scripts
+                .iter()
+                .map(|s| (Entity::from_raw(0), vec![s.clone()])),
+        )
         .collect::<Vec<_>>();
 
     for event in events
@@ -241,7 +250,7 @@ mod test {
         event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent},
         handler::HandlerFn,
         runtime::RuntimeContainer,
-        script::{Script, ScriptComponent, ScriptId, Scripts},
+        script::{Script, ScriptComponent, ScriptId, Scripts, StaticScripts},
     };
 
     use super::*;
@@ -476,6 +485,75 @@ mod test {
             vec![
                 (test_entity_id, test_script_id.clone()),
                 (test_entity_id, test_script_id.clone())
+            ]
+        );
+    }
+
+    #[test]
+    fn test_handler_called_for_static_scripts() {
+        let test_script_id = Cow::Borrowed("test_script");
+        let test_ctxt_id = 0;
+
+        let scripts = HashMap::from_iter(vec![(
+            test_script_id.clone(),
+            Script {
+                id: test_script_id.clone(),
+                asset: None,
+                context_id: test_ctxt_id,
+            },
+        )]);
+        let contexts = HashMap::from_iter(vec![(
+            test_ctxt_id,
+            TestContext {
+                invocations: vec![],
+            },
+        )]);
+        let runtime = TestRuntime {
+            invocations: vec![],
+        };
+        let mut app = setup_app::<OnTestCallback, TestPlugin>(
+            |args, entity, script, _, ctxt, _, runtime| {
+                ctxt.invocations.extend(args);
+                runtime.invocations.push((entity, script.clone()));
+                Ok(ScriptValue::Unit)
+            },
+            runtime,
+            contexts,
+            scripts,
+        );
+
+        app.world_mut().insert_resource(StaticScripts {
+            scripts: vec![test_script_id.clone()].into_iter().collect(),
+        });
+
+        app.world_mut().send_event(ScriptCallbackEvent::new(
+            OnTestCallback::into_callback_label(),
+            vec![ScriptValue::String("test_args_script".into())],
+            crate::event::Recipients::All,
+        ));
+
+        app.world_mut().send_event(ScriptCallbackEvent::new(
+            OnTestCallback::into_callback_label(),
+            vec![ScriptValue::String("test_script_id".into())],
+            crate::event::Recipients::Script(test_script_id.clone()),
+        ));
+
+        app.update();
+
+        let test_context = app
+            .world()
+            .get_non_send_resource::<ScriptContexts<TestPlugin>>()
+            .unwrap();
+
+        assert_eq!(
+            test_context
+                .contexts
+                .get(&test_ctxt_id)
+                .unwrap()
+                .invocations,
+            vec![
+                ScriptValue::String("test_args_script".into()),
+                ScriptValue::String("test_script_id".into())
             ]
         );
     }

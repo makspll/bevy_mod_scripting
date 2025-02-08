@@ -1,7 +1,7 @@
 //! Script related types, functions and components
 
 use crate::{asset::ScriptAsset, context::ContextId};
-use bevy::{asset::Handle, ecs::system::Resource, reflect::Reflect};
+use bevy::{asset::Handle, ecs::system::Resource, reflect::Reflect, utils::HashSet};
 use std::{borrow::Cow, collections::HashMap, ops::Deref};
 
 /// A unique identifier for a script, by default corresponds to the path of the asset excluding the asset source.
@@ -46,4 +46,67 @@ pub struct Script {
     pub asset: Option<Handle<ScriptAsset>>,
     /// The id of the context this script is currently assigned to
     pub context_id: ContextId,
+}
+
+/// A collection of scripts, not associated with any entity.
+///
+/// Useful for `global` or `static` scripts which operate over a larger scope than a single entity.
+#[derive(Default, Resource)]
+pub struct StaticScripts {
+    pub(crate) scripts: HashSet<ScriptId>,
+}
+
+impl StaticScripts {
+    /// Inserts a static script into the collection
+    pub fn insert<S: Into<ScriptId>>(&mut self, script: S) {
+        self.scripts.insert(script.into());
+    }
+
+    /// Removes a static script from the collection, returning `true` if the script was in the collection, `false` otherwise
+    pub fn remove<S: Into<ScriptId>>(&mut self, script: S) -> bool {
+        self.scripts.remove(&script.into())
+    }
+
+    /// Checks if a static script is in the collection
+    /// Returns `true` if the script is in the collection, `false` otherwise
+    pub fn contains<S: Into<ScriptId>>(&self, script: S) -> bool {
+        self.scripts.contains(&script.into())
+    }
+
+    /// Returns an iterator over the static scripts
+    pub fn iter(&self) -> impl Iterator<Item = &ScriptId> {
+        self.scripts.iter()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn static_scripts_insert() {
+        let mut static_scripts = StaticScripts::default();
+        static_scripts.insert("script1");
+        assert_eq!(static_scripts.scripts.len(), 1);
+        assert!(static_scripts.scripts.contains("script1"));
+    }
+
+    #[test]
+    fn static_scripts_remove() {
+        let mut static_scripts = StaticScripts::default();
+        static_scripts.insert("script1");
+        assert_eq!(static_scripts.scripts.len(), 1);
+        assert!(static_scripts.scripts.contains("script1"));
+        assert!(static_scripts.remove("script1"));
+        assert_eq!(static_scripts.scripts.len(), 0);
+        assert!(!static_scripts.scripts.contains("script1"));
+    }
+
+    #[test]
+    fn static_scripts_contains() {
+        let mut static_scripts = StaticScripts::default();
+        static_scripts.insert("script1");
+        assert!(static_scripts.contains("script1"));
+        assert!(!static_scripts.contains("script2"));
+    }
 }

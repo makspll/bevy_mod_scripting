@@ -1,11 +1,34 @@
 # Attaching Scripts
 
-Once you have scripts discovered and loaded, you'll want to run them. At the moment BMS supports one method of triggering scripts, and that is by attaching them to entities via `ScriptComponent`'s and then sending script event's which trigger callbacks on the scripts.
+
+Once you have scripts discovered and loaded, you'll want to run them.
+
+At the moment BMS supports two methods of making scripts runnable: 
+- Attaching them to entities via `ScriptComponent`'s
+- Adding static scripts
+
+And then sending script event's which trigger callbacks on the scripts.
+
+## Attaching scripts to entities
 
 In order to attach a script and make it runnable simply add a `ScriptComponent` to an entity
 ```rust,ignore
     commands.entity(my_entity).insert(ScriptComponent::new(vec!["my_script.lua", "my_other_script.lua"]));
 ```
+
+When this script is run the `entity` global will represent the entity the script is attached to. This allows you to interact with the entity in your script easilly.
+
+## Making static scripts runnable
+
+Some scripts do not require attaching to an entity. You can run these scripts by loading them first as you would with any other script, then either adding them at app level via `add_static_script` or by issuing a `AddStaticScript` command like so:
+
+```rust,ignore
+    commands.queue(AddStaticScript::new("my_static_script.lua"));
+```
+
+The script will then be run as any other script but without being attached to any entity. and as such the `entity` global will always represent an invalid entity.
+
+Note: Internally these scripts are attached to a dummy entity and as such you can think of them as being attached to an entity with an id of `0`.
 
 # Running Scripts
 
