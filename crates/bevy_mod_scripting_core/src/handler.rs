@@ -302,6 +302,7 @@ mod test {
         app.insert_resource::<Scripts>(Scripts { scripts });
         app.insert_non_send_resource(RuntimeContainer::<P> { runtime });
         app.insert_non_send_resource(ScriptContexts::<P> { contexts });
+        app.init_resource::<StaticScripts>();
         app.insert_resource(ContextLoadingSettings::<P> {
             loader: ContextBuilder {
                 load: |_, _, _, _, _| todo!(),
