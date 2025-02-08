@@ -35,7 +35,7 @@ jobs:
 
             console.log(pullRequests)
 
-            const prsNeedingDocs = pullRequests.map(pr => `- [ ] ${pr.html_url} `).join("\n");
+            const prsNeedingDocs = pullRequests.map(pr => `- [ ] ${pr.html_url} by @${pr.user.login}`).join("\n");
             if (!prsNeedingDocs) {
               return "- [x] All PRs with 'needs documentation' label have been updated in the book.";
             } else {
