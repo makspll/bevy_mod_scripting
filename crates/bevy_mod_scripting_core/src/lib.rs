@@ -315,7 +315,6 @@ impl AddRuntimeInitializer for App {
     }
 }
 
-
 /// Trait for adding static scripts to an app
 pub trait ManageStaticScripts {
     /// Registers a script id as a static script.
