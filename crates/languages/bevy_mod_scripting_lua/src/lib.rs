@@ -151,6 +151,10 @@ impl Plugin for LuaScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         self.scripting_plugin.build(app);
     }
+
+    fn finish(&self, app: &mut bevy::app::App) {
+        self.scripting_plugin.finish(app);
+    }
 }
 #[profiling::function]
 /// Load a lua context from a script

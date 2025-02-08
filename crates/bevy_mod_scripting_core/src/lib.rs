@@ -55,6 +55,10 @@ pub enum ScriptingSystemSet {
 
 /// Types which act like scripting plugins, by selecting a context and runtime
 /// Each individual combination of context and runtime has specific infrastructure built for it and does not interact with other scripting plugins
+///
+/// When implementing a new scripting plugin, also ensure the following implementations exist:
+/// - [`Plugin`] for the plugin, both [`Plugin::build`] and [`Plugin::finish`] methods need to be dispatched to the underlying [`ScriptingPlugin`] struct
+/// - [`AsMut<ScriptingPlugin<Self>`] for the plugin struct
 pub trait IntoScriptPluginParams: 'static {
     /// The language of the scripts
     const LANGUAGE: Language;
@@ -222,6 +226,10 @@ fn once_per_app_finalize(app: &mut App) {
         .supported_extensions;
 
     // convert extensions to static array
+    bevy::log::info!(
+        "Initializing BMS with Supported extensions: {:?}",
+        asset_settings_extensions
+    );
 
     app.register_asset_loader(ScriptAssetLoader {
         extensions: asset_settings_extensions,

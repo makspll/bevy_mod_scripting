@@ -172,6 +172,10 @@ impl Plugin for RhaiScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         self.scripting_plugin.build(app);
     }
+
+    fn finish(&self, app: &mut bevy::app::App) {
+        self.scripting_plugin.finish(app);
+    }
 }
 
 /// Load a rhai context from a script.
