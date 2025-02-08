@@ -25,7 +25,7 @@ jobs:
         id: find-prs
         with:
           script: |
-            const query = `repo:${context.repo.owner}/${context.repo.repo} author:makspll`;
+            const query = `repo:${context.repo.owner}/${context.repo.repo}`;
             const encodedQuery = encodeURIComponent(query);
 
             console.log(encodedQuery);
@@ -37,7 +37,7 @@ jobs:
 
             console.log(pullRequests)
 
-            const prsNeedingDocs = pullRequests.map(pr => `- [ ] ${pr.html_url} by @${pr.user.login}`).join("\n");
+            const prsNeedingDocs = pullRequests.map(pr => `- [ ] ${pr.html_url} `).join("\n");
             if (!prsNeedingDocs) {
               return "- [x] All PRs with 'needs documentation' label have been updated in the book.";
             } else {
