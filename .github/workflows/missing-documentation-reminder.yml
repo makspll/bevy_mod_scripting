@@ -26,7 +26,7 @@ jobs:
           script: |
             const query = `repo:${context.repo.owner}/${context.repo.repo} is:pr is:closed label:"needs documentation" is:merged`;
             const { data: { items: pullRequests } } = await github.rest.search.issuesAndPullRequests({
-              q: query,
+              q: `q=${encodeURIComponent(query)}`,
               per_page: 100
             });
 
@@ -45,4 +45,7 @@ jobs:
           body: |
             The following PRs have been closed but still need updates in the book:
             ${{ steps.find-prs.outputs.result }}
+
+            If you are an author of one of these PRs, please consider updating the boook in `/docs` with appropriate documentation.
+            Thank you!
           edit-mode: replace
