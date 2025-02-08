@@ -24,17 +24,19 @@ jobs:
         id: find-prs
         with:
           script: |
-            const { data: pullRequests } = await github.pulls.list({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'closed',
-              labels: 'needs documentation'
+            const query = `repo:${context.repo.owner}/${context.repo.repo} is:pr is:closed label:"needs documentation"`;
+            const { data: { items: pullRequests } } = await github.rest.search.issuesAndPullRequests({
+              q: query,
+              per_page: 100
             });
 
-            const prsNeedingDocs = pullRequests.filter(pr => pr.labels.some(label => label.name === 'needs documentation'));
-
-            return prsNeedingDocs.map(pr => `- ${pr.html_url} by @${pr.user.login}`).join("\n");
-
+            const prsNeedingDocs = pullRequests.map(pr => `- [ ] ${pr.html_url} by @${pr.user.login}`).join("\n");
+            if (!prsNeedingDocs) {
+              return "- [x] All PRs with 'needs documentation' label have been updated in the book.";
+            } else {
+              return prsNeedingDocs;
+            }
+          
       - name: Update Issue Body
         uses: julien-deramond/update-issue-body@v1
         with:
