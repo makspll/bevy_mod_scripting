@@ -35,7 +35,7 @@ jobs:
 
             const { data: { items: pullRequests } } = await github.rest.search.issuesAndPullRequests({
               q: encodedQuery,
-              per_page: 100
+              per_page: 1
             });
 
             console.log(pullRequests)
