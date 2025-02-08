@@ -25,7 +25,7 @@ jobs:
         id: find-prs
         with:
           script: |
-            const query = `repo:${context.repo.owner}/${context.repo.repo} is:pr is:closed label:"needs documentation" is:merged`;
+            const query = `repo:${context.repo.owner}/${context.repo.repo} author:makspll`;
             const encodedQuery = encodeURIComponent(query);
 
             console.log(encodedQuery);
