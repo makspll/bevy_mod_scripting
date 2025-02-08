@@ -155,6 +155,7 @@ impl Default for RhaiScriptingPlugin {
                     context.scope.set_or_push("script_id", script.to_owned());
                     Ok(())
                 }],
+                supported_extensions: &["rhai"],
             },
         }
     }
@@ -170,6 +171,10 @@ fn rhai_language_mapper(path: &AssetPath) -> Language {
 impl Plugin for RhaiScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         self.scripting_plugin.build(app);
+    }
+
+    fn finish(&self, app: &mut bevy::app::App) {
+        self.scripting_plugin.finish(app);
     }
 }
 

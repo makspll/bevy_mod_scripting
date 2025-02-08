@@ -43,6 +43,7 @@ derivative = "2.2"
 profiling = { workspace = true }
 [dev-dependencies]
 test_utils = { workspace = true }
+tokio = { version = "1", features = ["rt", "macros"] }
 
 [lints]
 workspace = true
