@@ -130,10 +130,10 @@ pub(crate) fn event_handler_internal<L: IntoCallbackLabel, P: IntoScriptPluginPa
                         continue
                     }
                     crate::event::Recipients::Language(target_language)
-                    if *target_language != P::LANGUAGE =>
-                        {
-                            continue
-                        }
+                        if *target_language != P::LANGUAGE =>
+                    {
+                        continue
+                    }
                     _ => (),
                 }
                 let script = match res_ctxt.scripts.scripts.get(script_id) {
