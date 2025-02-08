@@ -34,7 +34,7 @@ jobs:
               per_page: 100
             });
 
-            console.log(items)
+            console.log(pullRequests)
 
             const prsNeedingDocs = pullRequests.map(pr => `- [ ] ${pr.html_url} by @${pr.user.login}`).join("\n");
             if (!prsNeedingDocs) {
