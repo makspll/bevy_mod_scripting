@@ -24,7 +24,7 @@ jobs:
         id: find-prs
         with:
           script: |
-            const query = `repo:${context.repo.owner}/${context.repo.repo} is:pr is:closed label:"needs documentation"`;
+            const query = `repo:${context.repo.owner}/${context.repo.repo} is:pr is:closed label:"needs documentation" is:merged`;
             const { data: { items: pullRequests } } = await github.rest.search.issuesAndPullRequests({
               q: query,
               per_page: 100
