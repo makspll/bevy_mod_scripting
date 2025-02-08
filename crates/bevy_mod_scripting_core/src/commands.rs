@@ -420,6 +420,7 @@ mod test {
         .insert_non_send_resource(RuntimeContainer::<DummyPlugin> {
             runtime: "Runtime".to_string(),
         })
+        .init_resource::<StaticScripts>()
         .insert_resource(CallbackSettings::<DummyPlugin> {
             callback_handler: |_, _, _, callback, c, _, _| {
                 c.push_str(format!(" callback-ran-{}", callback).as_str());
