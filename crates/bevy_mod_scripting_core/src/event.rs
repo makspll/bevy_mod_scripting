@@ -122,6 +122,8 @@ pub enum Recipients {
     Script(ScriptId),
     /// The event is to be handled by all the scripts on the specified entity
     Entity(Entity),
+    /// The event is to be handled by all the scripts of one language
+    Language(crate::asset::Language),
 }
 
 /// A callback event meant to trigger a callback in a subset/set of scripts in the world with the given arguments
