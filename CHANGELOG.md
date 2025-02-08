@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.9.2](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.1...v0.9.2) - 2025-02-08
+
+### Added
+
+- make `extractors` module non-public (#251)
+
+### Fixed
+
+- add missing extensions in the asset loader (#254)
+
 ## [0.9.1](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.0...v0.9.1) - 2025-02-01
 
 ### Fixed
