@@ -25,7 +25,10 @@ jobs:
         id: find-prs
         with:
           script: |
-            const query = `bevy`;
+            const repo = context.repo;
+            const repo_scope = `${repo.owner}/${repo.repo}`;
+
+            const query = `${repo_scope} bevy`;
             const encodedQuery = encodeURIComponent(query);
 
             console.log(encodedQuery);
