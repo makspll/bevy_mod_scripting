@@ -13,6 +13,7 @@ use bindings::{
     script_value::ScriptValue, AppReflectAllocator, ReflectAllocator, ReflectReference,
     ScriptTypeRegistration,
 };
+use commands::{AddStaticScript, RemoveStaticScript};
 use context::{
     Context, ContextAssigner, ContextBuilder, ContextInitializer, ContextLoadingSettings,
     ContextPreHandlingInitializer, ScriptContexts,
@@ -21,7 +22,7 @@ use error::ScriptError;
 use event::ScriptCallbackEvent;
 use handler::{CallbackSettings, HandlerFn};
 use runtime::{initialize_runtime, Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
-use script::Scripts;
+use script::{ScriptId, Scripts, StaticScripts};
 
 mod extractors;
 
@@ -113,6 +114,8 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
             });
 
         register_script_plugin_systems::<P>(app);
+
+        // add extension for the language to the asset loader
         once_per_app_init(app);
 
         app.add_supported_script_extensions(self.supported_extensions);
@@ -252,6 +255,7 @@ fn once_per_app_init(app: &mut App) {
         .add_event::<ScriptCallbackEvent>()
         .init_resource::<AppReflectAllocator>()
         .init_resource::<Scripts>()
+        .init_resource::<StaticScripts>()
         .init_asset::<ScriptAsset>()
         .init_resource::<AppScriptFunctionRegistry>();
 
@@ -307,6 +311,31 @@ impl AddRuntimeInitializer for App {
             .as_mut()
             .initializers
             .push(initializer);
+        self
+    }
+}
+
+/// Trait for adding static scripts to an app
+pub trait ManageStaticScripts {
+    /// Registers a script id as a static script.
+    ///
+    /// Event handlers will run these scripts on top of the entity scripts.
+    fn add_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self;
+
+    /// Removes a script id from the list of static scripts.
+    ///
+    /// Does nothing if the script id is not in the list.
+    fn remove_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self;
+}
+
+impl ManageStaticScripts for App {
+    fn add_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self {
+        AddStaticScript::new(script_id.into()).apply(self.world_mut());
+        self
+    }
+
+    fn remove_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self {
+        RemoveStaticScript::new(script_id.into()).apply(self.world_mut());
         self
     }
 }

@@ -9,7 +9,7 @@ use crate::{
     error::MissingResourceError,
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::Scripts,
+    script::{Scripts, StaticScripts},
     IntoScriptPluginParams,
 };
 
@@ -20,6 +20,7 @@ pub(crate) struct HandlerContext<P: IntoScriptPluginParams> {
     pub scripts: Scripts,
     pub runtime_container: RuntimeContainer<P>,
     pub script_contexts: ScriptContexts<P>,
+    pub static_scripts: StaticScripts,
 }
 #[profiling::function]
 pub(crate) fn extract_handler_context<P: IntoScriptPluginParams>(
@@ -44,6 +45,9 @@ pub(crate) fn extract_handler_context<P: IntoScriptPluginParams>(
     let script_contexts = world
         .remove_non_send_resource::<ScriptContexts<P>>()
         .ok_or_else(MissingResourceError::new::<ScriptContexts<P>>)?;
+    let static_scripts = world
+        .remove_resource::<StaticScripts>()
+        .ok_or_else(MissingResourceError::new::<StaticScripts>)?;
 
     Ok(HandlerContext {
         callback_settings,
@@ -51,6 +55,7 @@ pub(crate) fn extract_handler_context<P: IntoScriptPluginParams>(
         scripts,
         runtime_container,
         script_contexts,
+        static_scripts,
     })
 }
 #[profiling::function]
@@ -63,4 +68,5 @@ pub(crate) fn yield_handler_context<P: IntoScriptPluginParams>(
     world.insert_resource(context.scripts);
     world.insert_non_send_resource(context.runtime_container);
     world.insert_non_send_resource(context.script_contexts);
+    world.insert_resource(context.static_scripts);
 }
