@@ -85,6 +85,9 @@ pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
     pub context_initializers: Vec<ContextInitializer<P>>,
     /// initializers for the contexts run every time before handling events
     pub context_pre_handling_initializers: Vec<ContextPreHandlingInitializer<P>>,
+
+    /// Supported extensions to be added to the asset settings without the dot
+    pub supported_extensions: &'static [&'static str],
 }
 
 impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
@@ -107,6 +110,8 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
         register_script_plugin_systems::<P>(app);
         once_per_app_init(app);
 
+        app.add_supported_script_extensions(self.supported_extensions);
+
         app.world_mut()
             .resource_mut::<ScriptAssetSettings>()
             .as_mut()
@@ -114,6 +119,10 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
             .push(self.language_mapper);
 
         register_types(app);
+    }
+
+    fn finish(&self, app: &mut App) {
+        once_per_app_finalize(app);
     }
 }
 
@@ -197,6 +206,29 @@ impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugi
     }
 }
 
+fn once_per_app_finalize(app: &mut App) {
+    #[derive(Resource)]
+    struct BMSFinalized;
+
+    if app.world().contains_resource::<BMSFinalized>() {
+        return;
+    }
+    app.insert_resource(BMSFinalized);
+
+    // read extensions from asset settings
+    let asset_settings_extensions = app
+        .world_mut()
+        .get_resource_or_init::<ScriptAssetSettings>()
+        .supported_extensions;
+
+    // convert extensions to static array
+
+    app.register_asset_loader(ScriptAssetLoader {
+        extensions: asset_settings_extensions,
+        preprocessor: None,
+    });
+}
+
 // One of registration of things that need to be done only once per app
 fn once_per_app_init(app: &mut App) {
     #[derive(Resource)]
@@ -205,7 +237,6 @@ fn once_per_app_init(app: &mut App) {
     if app.world().contains_resource::<BMSInitialized>() {
         return;
     }
-
     app.insert_resource(BMSInitialized);
 
     app.add_event::<ScriptErrorEvent>()
@@ -213,11 +244,7 @@ fn once_per_app_init(app: &mut App) {
         .init_resource::<AppReflectAllocator>()
         .init_resource::<Scripts>()
         .init_asset::<ScriptAsset>()
-        .init_resource::<AppScriptFunctionRegistry>()
-        .register_asset_loader(ScriptAssetLoader {
-            extensions: &[],
-            preprocessor: None,
-        });
+        .init_resource::<AppScriptFunctionRegistry>();
 
     app.add_systems(
         PostUpdate,
@@ -272,5 +299,65 @@ impl AddRuntimeInitializer for App {
             .initializers
             .push(initializer);
         self
+    }
+}
+
+/// Trait for adding a supported extension to the script asset settings.
+///
+/// This is only valid in the plugin building phase, as the asset loader will be created in the `finalize` phase.
+/// Any changes to the asset settings after that will not be reflected in the asset loader.
+pub trait ConfigureScriptAssetSettings {
+    /// Adds a supported extension to the asset settings
+    fn add_supported_script_extensions(&mut self, extensions: &[&'static str]) -> &mut Self;
+}
+
+impl ConfigureScriptAssetSettings for App {
+    fn add_supported_script_extensions(&mut self, extensions: &[&'static str]) -> &mut Self {
+        let mut asset_settings = self
+            .world_mut()
+            .get_resource_or_init::<ScriptAssetSettings>();
+
+        let mut new_arr = Vec::from(asset_settings.supported_extensions);
+
+        new_arr.extend(extensions);
+
+        let new_arr_static = Vec::leak(new_arr);
+
+        asset_settings.supported_extensions = new_arr_static;
+
+        self
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_asset_extensions_correctly_accumulate() {
+        let mut app = App::new();
+        app.init_resource::<ScriptAssetSettings>();
+        app.add_plugins(AssetPlugin::default());
+
+        app.world_mut()
+            .resource_mut::<ScriptAssetSettings>()
+            .supported_extensions = &["lua", "rhai"];
+
+        once_per_app_finalize(&mut app);
+
+        let asset_loader = app
+            .world()
+            .get_resource::<AssetServer>()
+            .expect("Asset loader not found");
+
+        asset_loader
+            .get_asset_loader_with_extension("lua")
+            .await
+            .expect("Lua loader not found");
+
+        asset_loader
+            .get_asset_loader_with_extension("rhai")
+            .await
+            .expect("Rhai loader not found");
     }
 }
