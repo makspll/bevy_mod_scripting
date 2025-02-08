@@ -48,6 +48,8 @@ jobs:
         with:
           issue-number: 255
           body: |
+            This is an automatically generated issue.
+            
             The following PRs have been closed but still need updates in the book:
             ${{ steps.find-prs.outputs.result }}
 
