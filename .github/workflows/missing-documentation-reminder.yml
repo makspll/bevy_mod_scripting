@@ -28,7 +28,7 @@ jobs:
             const repo = context.repo;
             const repo_scope = `${repo.owner}/${repo.repo}`;
 
-            const query = `${repo_scope} bevy`;
+            const query = `repo:${repo_scope} bevy`;
             const encodedQuery = encodeURIComponent(query);
 
             console.log(encodedQuery);
