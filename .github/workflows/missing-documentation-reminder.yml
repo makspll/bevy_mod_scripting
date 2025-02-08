@@ -25,16 +25,14 @@ jobs:
         id: find-prs
         with:
           script: |
-            const repo = context.repo;
-            const repo_scope = `${repo.owner}/${repo.repo}`;
 
-            const query = `repo:${repo_scope} bevy`;
+            const query = `repo:${{ github.repository }} bevy`;
             const encodedQuery = encodeURIComponent(query);
 
             console.log(encodedQuery);
 
             const { data: { items: pullRequests } } = await github.rest.search.issuesAndPullRequests({
-              q: encodedQuery,
+              q: query,
               per_page: 1
             });
 
