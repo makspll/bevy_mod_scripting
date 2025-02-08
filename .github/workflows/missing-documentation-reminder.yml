@@ -25,7 +25,7 @@ jobs:
         id: find-prs
         with:
           script: |
-            const query = ``;
+            const query = `bevy`;
             const encodedQuery = encodeURIComponent(query);
 
             console.log(encodedQuery);
