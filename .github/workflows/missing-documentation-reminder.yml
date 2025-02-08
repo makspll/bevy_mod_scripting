@@ -25,10 +25,16 @@ jobs:
         with:
           script: |
             const query = `repo:${context.repo.owner}/${context.repo.repo} is:pr is:closed label:"needs documentation" is:merged`;
+            const encodedQuery = encodeURIComponent(query);
+
+            console.log(encodedQuery);
+
             const { data: { items: pullRequests } } = await github.rest.search.issuesAndPullRequests({
-              q: `q=${encodeURIComponent(query)}`,
+              q: encodedQuery,
               per_page: 100
             });
+
+            console.log(items)
 
             const prsNeedingDocs = pullRequests.map(pr => `- [ ] ${pr.html_url} by @${pr.user.login}`).join("\n");
             if (!prsNeedingDocs) {
