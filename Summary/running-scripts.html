@@ -159,9 +159,22 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="attaching-scripts"><a class="header" href="#attaching-scripts">Attaching Scripts</a></h1>
-<p>Once you have scripts discovered and loaded, you'll want to run them. At the moment BMS supports one method of triggering scripts, and that is by attaching them to entities via <code>ScriptComponent</code>'s and then sending script event's which trigger callbacks on the scripts.</p>
+<p>Once you have scripts discovered and loaded, you'll want to run them.</p>
+<p>At the moment BMS supports two methods of making scripts runnable:</p>
+<ul>
+<li>Attaching them to entities via <code>ScriptComponent</code>'s</li>
+<li>Adding static scripts</li>
+</ul>
+<p>And then sending script event's which trigger callbacks on the scripts.</p>
+<h2 id="attaching-scripts-to-entities"><a class="header" href="#attaching-scripts-to-entities">Attaching scripts to entities</a></h2>
 <p>In order to attach a script and make it runnable simply add a <code>ScriptComponent</code> to an entity</p>
 <pre><code class="language-rust ignore">    commands.entity(my_entity).insert(ScriptComponent::new(vec!["my_script.lua", "my_other_script.lua"]));</code></pre>
+<p>When this script is run the <code>entity</code> global will represent the entity the script is attached to. This allows you to interact with the entity in your script easilly.</p>
+<h2 id="making-static-scripts-runnable"><a class="header" href="#making-static-scripts-runnable">Making static scripts runnable</a></h2>
+<p>Some scripts do not require attaching to an entity. You can run these scripts by loading them first as you would with any other script, then either adding them at app level via <code>add_static_script</code> or by issuing a <code>AddStaticScript</code> command like so:</p>
+<pre><code class="language-rust ignore">    commands.queue(AddStaticScript::new("my_static_script.lua"));</code></pre>
+<p>The script will then be run as any other script but without being attached to any entity. and as such the <code>entity</code> global will always represent an invalid entity.</p>
+<p>Note: Internally these scripts are attached to a dummy entity and as such you can think of them as being attached to an entity with an id of <code>0</code>.</p>
 <h1 id="running-scripts"><a class="header" href="#running-scripts">Running Scripts</a></h1>
 <p>Scripts can run logic either when loaded or when triggered by an event. For example the script:</p>
 <pre><code class="language-lua">print("hello from load time")
