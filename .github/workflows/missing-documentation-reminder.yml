@@ -26,7 +26,7 @@ jobs:
         with:
           script: |
 
-            const query = `repo:makspll/bevy_mod_scripting bevy`;
+            const query = `repo:makspll/bevy_mod_scripting is:pr is:merged is:closed label:"needs documentation"`;
             const encodedQuery = encodeURIComponent(query);
 
             console.log(encodedQuery);
