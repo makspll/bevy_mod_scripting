@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.3](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.2...bevy_mod_scripting_core-v0.9.3) - 2025-02-08
+
+### Added
+
+- add static scripts which do not need to be attached to entities to be run (#253)
+- add recipient for specific language (#250)
+
 ## [0.9.2](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.1...bevy_mod_scripting_core-v0.9.2) - 2025-02-08
 
 ### Added
