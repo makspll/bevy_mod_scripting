@@ -134,6 +134,7 @@ impl Default for LuaScriptingPlugin {
                         .map_err(ScriptError::from_mlua_error)?;
                     Ok(())
                 }],
+                supported_extensions: &["lua"],
             },
         }
     }
@@ -149,6 +150,10 @@ fn lua_language_mapper(path: &AssetPath) -> Language {
 impl Plugin for LuaScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         self.scripting_plugin.build(app);
+    }
+
+    fn finish(&self, app: &mut bevy::app::App) {
+        self.scripting_plugin.finish(app);
     }
 }
 #[profiling::function]

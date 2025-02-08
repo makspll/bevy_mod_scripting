@@ -112,6 +112,12 @@ pub struct ScriptAssetSettings {
     pub script_id_mapper: AssetPathToScriptIdMapper,
     /// Strategies for mapping asset paths to languages
     pub script_language_mappers: Vec<AssetPathToLanguageMapper>,
+
+    /// The currently supported asset extensions
+    /// Should be updated by each scripting plugin to include the extensions it supports.
+    ///
+    /// Will be used to populate the script asset loader with the supported extensions
+    pub supported_extensions: &'static [&'static str],
 }
 
 impl ScriptAssetSettings {
@@ -136,6 +142,7 @@ impl Default for ScriptAssetSettings {
                 map: (|path: &AssetPath| path.path().to_string_lossy().into_owned().into()),
             },
             script_language_mappers: vec![],
+            supported_extensions: &[],
         }
     }
 }
@@ -374,6 +381,7 @@ mod tests {
 
     fn make_test_settings() -> ScriptAssetSettings {
         ScriptAssetSettings {
+            supported_extensions: &[],
             script_id_mapper: AssetPathToScriptIdMapper {
                 map: |path| path.path().to_string_lossy().into_owned().into(),
             },

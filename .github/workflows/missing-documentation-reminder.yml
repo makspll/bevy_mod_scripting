@@ -1,0 +1,58 @@
+name: Missing Documentation Reminder
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - edited
+      - closed
+
+jobs:
+  find-missing-documentation:
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find closed PRs with 'needs documentation' label
+        uses: actions/github-script@v6
+        id: find-prs
+        with:
+          script: |
+
+            const query = `repo:makspll/bevy_mod_scripting is:pr is:merged is:closed label:"needs documentation"`;
+            const encodedQuery = encodeURIComponent(query);
+
+            console.log(encodedQuery);
+
+            const { data: { items: pullRequests } } = await github.rest.search.issuesAndPullRequests({
+              q: query,
+              per_page: 100
+            });
+
+            console.log(pullRequests)
+
+            const prsNeedingDocs = pullRequests.map(pr => `- [ ] ${pr.html_url} by @${pr.user.login}`).join("\n");
+            if (!prsNeedingDocs) {
+              return "- [x] All PRs with 'needs documentation' label have been updated in the book.";
+            } else {
+              return prsNeedingDocs;
+            }
+          result-encoding: string
+          
+      - name: Update Issue Body
+        uses: julien-deramond/update-issue-body@v1
+        with:
+          issue-number: 255
+          body: |
+            This is an automatically generated issue.
+            
+            The following PRs have been closed but still need updates in the book:
+            ${{ steps.find-prs.outputs.result }}
+
+            If you are an author of one of these PRs, please consider updating the boook in `/docs` with appropriate documentation.
+            Thank you!
+          edit-mode: replace

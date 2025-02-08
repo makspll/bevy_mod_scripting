@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_core"
-version = "0.9.1"
+version = "0.9.2"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -43,6 +43,7 @@ derivative = "2.2"
 profiling = { workspace = true }
 [dev-dependencies]
 test_utils = { workspace = true }
+tokio = { version = "1", features = ["rt", "macros"] }
 
 [lints]
 workspace = true
