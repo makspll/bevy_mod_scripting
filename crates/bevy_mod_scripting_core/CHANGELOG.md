@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.2](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.1...bevy_mod_scripting_core-v0.9.2) - 2025-02-08
+
+### Added
+
+- make `extractors` module non-public (#251)
+
+### Fixed
+
+- add missing extensions in the asset loader (#254)
+
 ## [0.9.0-alpha.9](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.0-alpha.8...bevy_mod_scripting_core-v0.9.0-alpha.9) - 2025-01-28
 
 ### Fixed
