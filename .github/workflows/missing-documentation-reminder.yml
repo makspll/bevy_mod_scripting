@@ -6,6 +6,9 @@ on:
     types:
       - edited
       - closed
+  push:
+    branches:
+      - "**"
 
 jobs:
   find-missing-documentation:
