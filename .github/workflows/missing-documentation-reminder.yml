@@ -1,9 +1,11 @@
 name: Missing Documentation Reminder
 
 on:
-  schedule:
-    - cron: '0 0 * * *' # Runs nightly at midnight
   workflow_dispatch:
+  pull_request:
+    types:
+      - edited
+      - closed
 
 jobs:
   find-missing-documentation:
