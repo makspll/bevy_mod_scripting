@@ -1,0 +1,40 @@
+name: Missing Documentation Reminder
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs nightly at midnight
+  workflow_dispatch:
+
+jobs:
+  find-missing-documentation:
+    permissions:
+      contents: read
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find closed PRs with 'needs documentation' label
+        uses: actions/github-script@v6
+        id: find-prs
+        with:
+          script: |
+            const { data: pullRequests } = await github.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'closed',
+              labels: 'needs documentation'
+            });
+
+            const prsNeedingDocs = pullRequests.filter(pr => pr.labels.some(label => label.name === 'needs documentation'));
+
+            return prsNeedingDocs.map(pr => `- ${pr.html_url} by @${pr.user.login}`).join("\n");
+
+      - name: Update Issue Body
+        uses: julien-deramond/update-issue-body@v1
+        with:
+          issue-number: 255
+          body: |
+            The following PRs have been closed but still need updates in the book:
+            ${{ steps.find-prs.outputs.result }}
+          edit-mode: replace
