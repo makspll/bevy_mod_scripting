@@ -36,6 +36,7 @@ jobs:
             } else {
               return prsNeedingDocs;
             }
+          result-encoding: string
           
       - name: Update Issue Body
         uses: julien-deramond/update-issue-body@v1
