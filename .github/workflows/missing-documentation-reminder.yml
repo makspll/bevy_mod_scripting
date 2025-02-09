@@ -2,10 +2,9 @@ name: Missing Documentation Reminder
 
 on:
   workflow_dispatch:
-  pull_request:
-    types:
-      - edited
-      - closed
+  push:
+    branches:
+      - main
 
 jobs:
   find-missing-documentation:
@@ -23,7 +22,7 @@ jobs:
         with:
           script: |
 
-            const query = `repo:makspll/bevy_mod_scripting is:pr is:merged is:closed label:"needs documentation"`;
+            const query = `repo:makspll/bevy_mod_scripting is:closed label:"needs documentation"`;
             const encodedQuery = encodeURIComponent(query);
 
             console.log(encodedQuery);
