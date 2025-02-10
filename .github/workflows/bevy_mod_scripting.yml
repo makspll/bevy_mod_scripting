@@ -167,15 +167,9 @@ jobs:
         git add -A
         git commit -m "chore(codegen): update bevy bindings"
         git push -u origin ${{ env.CODEGEN_BRANCH_NAME }} --force
-    - uses: jwalton/gh-find-current-pr@master
-      if: steps.check_changes.outputs.changes
-      id: findPR
-      with:
-        state: all
-    - name: Create Or Update PR
-      if: steps.check_changes.outputs.changes && success() && steps.findPR.outputs.number 
+    - name: Merge Changes
+      if: steps.check_changes.outputs.changes && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/staging'
       run: |
-        gh pr list --base ${{ github.ref }} --search "chore(codegen): update bevy bindings" --json number > prs.json
-        if [ $(jq '. | length' prs.json) -eq 0 ]; then
-          gh pr create --title "chore(codegen): update bevy bindings" --body "This PR updates the bevy bindings for #${{ steps.findPR.outputs.number }}" --base ${{ github.ref }} --head ${{ env.CODEGEN_BRANCH_NAME }} || true
-        fi
+        git checkout ${{ github.head_ref || github.ref_name }} 
+        git merge ${{ env.CODEGEN_BRANCH_NAME }} || echo "Merge conflict detected. Please resolve manually."
+        git push origin ${{ github.head_ref || github.ref_name }} 
