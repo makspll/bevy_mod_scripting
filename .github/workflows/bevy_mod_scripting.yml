@@ -72,44 +72,49 @@ jobs:
       issues: write
     name: Check - ${{ matrix.run_args.name }}
     runs-on: ${{ matrix.run_args.os }}
-    if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
     strategy:
       matrix:
        run_args: ${{fromJson(needs.generate-job-matrix.outputs.matrix)}}
     steps:
       - name: Checkout
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
         uses: actions/checkout@v4
 
       - name: Install alsa and udev
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
         if: runner.os == 'linux'
         run: |
           sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
           sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - uses: actions-rs/toolchain@v1
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
         with:
           toolchain: stable
           override: true
 
       - name: Rust Cache
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
         uses: Swatinem/rust-cache@v2.7.3
 
       - name: Setup
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
         run: |
           cargo xtask init
 
       - name: Check
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
         run: |
           ${{ matrix.run_args.command }}
 
       - name: Upload coverage artifact
-        if: ${{ matrix.run_args.generates_coverage }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.generates_coverage }}
         uses: actions/upload-artifact@v4
         with:
           name: code-coverage-report
           path: target/coverage/html/
 
       - name: Update coverage badge
-        if: ${{ matrix.run_args.generates_coverage }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.generates_coverage }}
         continue-on-error: true
         run: |
           git checkout -b chore/_update-coverage-badge || git checkout chore/_update-coverage-badge
