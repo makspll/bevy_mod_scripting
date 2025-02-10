@@ -10,7 +10,7 @@ pub struct {{ "ScriptingPlugin" | prefix_cratename | convert_case(case="upper_ca
 {% for item in items %}
 #[script_bindings(
     remote,
-    name = "{{ item.ident | convert_case(case="snake") }}",
+    name = "{{ item.ident | convert_case(case="snake") }}_functions",
     bms_core_path="bevy_mod_scripting_core"
 )]
 impl {{item.import_path}} {
@@ -52,7 +52,7 @@ impl ::bevy::app::Plugin for {{ "ScriptingPlugin" | prefix_cratename | convert_c
         let mut world = app.world_mut();
 
         {% for item in items %}
-            register_{{ item.ident | convert_case(case="snake") }}(&mut world);
+            register_{{ item.ident | convert_case(case="snake") }}_functions(&mut world);
         {% endfor %}
     }
 }
