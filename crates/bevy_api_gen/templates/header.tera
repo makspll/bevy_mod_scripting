@@ -8,6 +8,9 @@ use bevy_mod_scripting_core::{
         function::{from::{Ref, Mut, Val}, namespace::{NamespaceBuilder}}
     }
 };
+
+use bevy_mod_scripting_derive::script_bindings;
+
 {% if args.self_is_bms_lua %}
 use crate::*;
 {% else %}
