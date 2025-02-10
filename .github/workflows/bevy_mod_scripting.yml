@@ -43,6 +43,9 @@ jobs:
           filters: |
             src:
               - 'src/**'
+              - 'crates/**'
+              - 'examples/**'
+              - 'assets/**'
               - 'docs/**'
               - '.github/workflows/bevy_mod_scripting.yml'
 

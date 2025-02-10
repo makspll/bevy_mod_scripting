@@ -12,6 +12,7 @@ use syn::{spanned::Spanned, ImplItemFn, ItemImpl};
 /// - `name`: the name to use to suffix the generated function, i.e. `test_fn` will generate `register_test_fn. Defaults to `functions`
 /// - `remote`: If true the original impl block will be ignored, and only the function registrations will be generated
 /// - `bms_core_path`: If set the path to override bms imports, normally only used internally
+/// - `unregistered`: If set, will use `new_unregistered` instead of `new` for the namespace builder
 #[proc_macro_attribute]
 pub fn script_bindings(
     args: proc_macro::TokenStream,
@@ -45,10 +46,15 @@ pub fn script_bindings(
     let bms_core_path = &args.bms_core_path;
 
     let function_name = format_ident!("register_{}", args.name);
+    let builder_function_name = if args.unregistered {
+        format_ident!("new_unregistered")
+    } else {
+        format_ident!("new")
+    };
 
     let out = quote_spanned! {impl_span=>
         fn #function_name(world: &mut bevy::ecs::world::World) {
-            #bms_core_path::bindings::function::namespace::NamespaceBuilder::<#type_ident_with_generics>::new(world)
+            #bms_core_path::bindings::function::namespace::NamespaceBuilder::<#type_ident_with_generics>::#builder_function_name(world)
                 #(#function_registrations)*;
         }
 
@@ -65,6 +71,8 @@ struct Args {
     pub remote: bool,
     /// If set the path to override bms imports
     pub bms_core_path: syn::Path,
+    /// If true will use `new_unregistered` instead of `new` for the namespace builder
+    pub unregistered: bool,
 }
 
 impl syn::parse::Parse for Args {
@@ -75,6 +83,7 @@ impl syn::parse::Parse for Args {
 
         let mut name = syn::Ident::new("functions", Span::call_site());
         let mut remote = false;
+        let mut unregistered = false;
         let mut bms_core_path =
             syn::Path::from(syn::Ident::new("bevy_mod_scripting", Span::call_site()));
         bms_core_path.segments.push(syn::PathSegment {
@@ -87,6 +96,9 @@ impl syn::parse::Parse for Args {
                 syn::Meta::Path(path) => {
                     if path.is_ident("remote") {
                         remote = true;
+                        continue;
+                    } else if path.is_ident("unregistered") {
+                        unregistered = true;
                         continue;
                     }
                 }
@@ -107,23 +119,24 @@ impl syn::parse::Parse for Args {
                         }
                     }
                 }
-                _ => {}
+                _ => {
+                    unknown_spans.push((pair.span(), "Unsupported meta kind for script_bindings"));
+                    continue;
+                }
             }
 
-            unknown_spans.push(pair.span());
+            unknown_spans.push((pair.span(), "Unknown argument to script_bindings"));
         }
 
         if !unknown_spans.is_empty() {
-            return Err(syn::Error::new(
-                unknown_spans[0],
-                "Unknown argument to script_bindings",
-            ));
+            return Err(syn::Error::new(unknown_spans[0].0, unknown_spans[0].1));
         }
 
         Ok(Self {
             remote,
             bms_core_path,
             name,
+            unregistered,
         })
     }
 }
@@ -152,7 +165,8 @@ fn process_impl_fn(fun: &ImplItemFn) -> TokenStream {
         .map(|s| syn::LitStr::new(&s, Span::call_site()))
         .unwrap_or(syn::LitStr::new("", Span::call_site()));
     let fun_name = syn::LitStr::new(&fun.sig.ident.to_string(), Span::call_site());
-    quote_spanned! {Span::call_site()=>
+    let fun_span = fun.sig.ident.span();
+    quote_spanned! {fun_span=>
         .register_documented(
             #fun_name,
             |#args| #body,
