@@ -16,15 +16,18 @@ mod test {
     use bevy_mod_scripting_derive::script_bindings;
 
     use crate::{
-        bindings::function::{
-            from::{Ref, Val},
-            namespace::IntoNamespace,
-            script_function::AppScriptFunctionRegistry,
+        bindings::{
+            function::{
+                from::{Ref, Val},
+                namespace::IntoNamespace,
+                script_function::AppScriptFunctionRegistry,
+            },
+            script_value::ScriptValue,
         },
-        error::InteropError,
+        docgen::typed_through::TypedThrough,
     };
 
-    use super::arg_meta::{ScriptArgument, ScriptReturn};
+    use super::arg_meta::{ScriptArgument, ScriptReturn, TypedScriptArgument, TypedScriptReturn};
 
     #[test]
     fn test_macro_generates_correct_registrator_function() {
@@ -71,9 +74,9 @@ mod test {
         );
     }
 
-    fn test_is_valid_return<T: ScriptReturn>() {}
-    fn test_is_valid_arg<T: ScriptArgument>() {}
-    fn test_is_valid_arg_and_return<T: ScriptArgument + ScriptReturn>() {}
+    fn test_is_valid_return<T: TypedScriptReturn>() {}
+    fn test_is_valid_arg<T: TypedScriptArgument>() {}
+    fn test_is_valid_arg_and_return<T: TypedScriptReturn + TypedScriptArgument>() {}
 
     #[test]
     fn primitives_are_valid_args() {
@@ -92,6 +95,7 @@ mod test {
         test_is_valid_arg_and_return::<f64>();
         test_is_valid_arg_and_return::<usize>();
         test_is_valid_arg_and_return::<isize>();
+        test_is_valid_arg_and_return::<ScriptValue>();
     }
 
     #[test]
@@ -100,6 +104,7 @@ mod test {
         test_is_valid_arg_and_return::<std::path::PathBuf>();
         test_is_valid_arg_and_return::<std::ffi::OsString>();
         test_is_valid_arg_and_return::<char>();
+        test_is_valid_return::<&'static str>();
     }
 
     #[test]
@@ -107,7 +112,7 @@ mod test {
         fn test_val<T>()
         where
             T: ScriptArgument + ScriptReturn,
-            T: GetTypeRegistration + FromReflect,
+            T: GetTypeRegistration + FromReflect + Typed,
         {
             test_is_valid_arg_and_return::<Val<T>>();
         }
@@ -128,12 +133,10 @@ mod test {
             test_is_valid_arg::<Ref<'_, T>>();
         }
 
-        test_is_valid_return::<InteropError>();
-
         fn test_array<T, const N: usize>()
         where
             T: ScriptArgument + ScriptReturn,
-            T: GetTypeRegistration + FromReflect + Typed,
+            T: GetTypeRegistration + FromReflect + TypedThrough + Typed,
             for<'a> T::This<'a>: Into<T>,
         {
             test_is_valid_arg_and_return::<[T; N]>();
@@ -142,7 +145,7 @@ mod test {
         fn test_tuple<T>()
         where
             T: ScriptArgument + ScriptReturn,
-            T: GetTypeRegistration + FromReflect + Typed,
+            T: GetTypeRegistration + FromReflect + TypedThrough + Typed,
             for<'a> T::This<'a>: Into<T>,
         {
             test_is_valid_arg_and_return::<()>();
@@ -154,7 +157,7 @@ mod test {
         fn test_option<T>()
         where
             T: ScriptArgument + ScriptReturn,
-            T: GetTypeRegistration + FromReflect + Typed,
+            T: GetTypeRegistration + FromReflect + Typed + TypedThrough,
             for<'a> T::This<'a>: Into<T>,
         {
             test_is_valid_arg_and_return::<Option<T>>();
@@ -163,7 +166,7 @@ mod test {
         fn test_vec<T>()
         where
             T: ScriptArgument + ScriptReturn,
-            T: GetTypeRegistration + FromReflect + Typed,
+            T: GetTypeRegistration + FromReflect + Typed + TypedThrough,
             for<'a> T::This<'a>: Into<T>,
         {
             test_is_valid_arg_and_return::<Vec<T>>();
@@ -172,7 +175,7 @@ mod test {
         fn test_hashmap<V>()
         where
             V: ScriptArgument + ScriptReturn,
-            V: GetTypeRegistration + FromReflect + Typed,
+            V: GetTypeRegistration + FromReflect + Typed + TypedThrough,
             for<'a> V::This<'a>: Into<V>,
         {
             test_is_valid_arg_and_return::<std::collections::HashMap<String, V>>();

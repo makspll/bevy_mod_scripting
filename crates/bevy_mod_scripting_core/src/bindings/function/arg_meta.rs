@@ -2,7 +2,10 @@
 
 use std::{ffi::OsString, path::PathBuf};
 
-use crate::bindings::{script_value::ScriptValue, ReflectReference};
+use crate::{
+    bindings::{script_value::ScriptValue, ReflectReference},
+    docgen::typed_through::TypedThrough,
+};
 
 use super::{
     from::{FromScript, Mut, Ref, Val},
@@ -15,9 +18,17 @@ use super::{
 pub trait ScriptArgument: ArgMeta + FromScript + GetTypeDependencies {}
 impl<T: ArgMeta + FromScript + GetTypeDependencies> ScriptArgument for T {}
 
+/// Marker trait for types that can be used as arguments to a script function. And contain type information.
+pub trait TypedScriptArgument: TypedThrough + ScriptArgument {}
+impl<T: TypedThrough + ScriptArgument> TypedScriptArgument for T {}
+
 /// Marker trait for types that can be used as return values from a script function.
 pub trait ScriptReturn: IntoScript + GetTypeDependencies {}
 impl<T: IntoScript + GetTypeDependencies> ScriptReturn for T {}
+
+/// Marker trait for types that can be used as return values from a script function. And contain type information.
+pub trait TypedScriptReturn: TypedThrough + ScriptReturn {}
+impl<T: TypedThrough + ScriptReturn> TypedScriptReturn for T {}
 
 /// Describes an argument to a script function. Provides necessary information for the function to handle dispatch.
 pub trait ArgMeta {
@@ -37,13 +48,29 @@ macro_rules! impl_arg_info {
     };
 }
 
-impl_arg_info!(bool, i8, i16, i32, i64, i128, u8, u16, u32, u64, u128, f32, f64, usize, isize);
-
-impl_arg_info!(String, PathBuf, OsString);
-
-impl_arg_info!(char);
-
-impl_arg_info!(ReflectReference);
+impl_arg_info!(
+    bool,
+    i8,
+    i16,
+    i32,
+    i64,
+    i128,
+    u8,
+    u16,
+    u32,
+    u64,
+    u128,
+    f32,
+    f64,
+    usize,
+    isize,
+    String,
+    PathBuf,
+    OsString,
+    char,
+    ReflectReference,
+    &'static str
+);
 
 impl<T> ArgMeta for Val<T> {}
 impl<T> ArgMeta for Ref<'_, T> {}

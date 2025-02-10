@@ -1,11 +1,11 @@
 //! Information about functions and their arguments.
 
-use bevy::reflect::Reflect;
-
-use crate::bindings::function::from::{Mut, Val};
+use crate::bindings::function::arg_meta::ArgMeta;
 use crate::bindings::function::namespace::Namespace;
-use crate::bindings::function::{arg_meta::ArgMeta, from::Ref};
+use bevy::reflect::Reflect;
 use std::{any::TypeId, borrow::Cow};
+
+use super::typed_through::{ThroughTypeInfo, TypedThrough};
 
 /// for things you can call and provide some introspection capability.
 pub trait GetFunctionInfo<Marker> {
@@ -13,7 +13,7 @@ pub trait GetFunctionInfo<Marker> {
     fn get_function_info(&self, name: Cow<'static, str>, namespace: Namespace) -> FunctionInfo;
 }
 
-#[derive(Debug, Clone, PartialEq, Reflect)]
+#[derive(Debug, Clone, Reflect)]
 /// Information about a function.
 pub struct FunctionInfo {
     /// The name of the function.
@@ -58,18 +58,17 @@ impl FunctionInfo {
     }
 
     /// Add an argument to the function info.
-    pub fn add_arg<T: ArgMeta + 'static>(mut self, name: Option<Cow<'static, str>>) -> Self {
-        self.arg_info.push(FunctionArgInfo {
-            name,
-            arg_index: self.arg_info.len(),
-            type_id: TypeId::of::<T>(),
-            type_kind: TypeKind::new_for::<T>(),
-        });
+    pub fn add_arg<T: ArgMeta + TypedThrough + 'static>(
+        mut self,
+        name: Option<Cow<'static, str>>,
+    ) -> Self {
+        self.arg_info
+            .push(FunctionArgInfo::for_type::<T>(name, self.arg_info.len()));
         self
     }
 
     /// Add a return value to the function info.
-    pub fn add_return<T: 'static>(mut self) -> Self {
+    pub fn add_return<T: TypedThrough + 'static>(mut self) -> Self {
         self.return_info = Some(FunctionReturnInfo::new_for::<T>());
         self
     }
@@ -95,36 +94,7 @@ impl FunctionInfo {
     }
 }
 
-/// The kind of type being used as a return value or argument in a script function.
-#[derive(Debug, Clone, PartialEq, Reflect)]
-pub enum TypeKind {
-    /// A `Ref` wrapped type
-    Ref,
-    /// A `Mut` wrapped type
-    Mut,
-    /// A `Val` wrapped type
-    Val,
-    /// Any other type, such as a primtive or something which implements `IntoScript` or `FromScript` directly
-    Primitive,
-}
-
-impl TypeKind {
-    /// Create a new type kind for a specific type.
-    pub fn new_for<T: 'static>() -> Self {
-        let type_id = TypeId::of::<T>();
-        if std::any::TypeId::of::<Ref<T>>() == type_id {
-            Self::Ref
-        } else if std::any::TypeId::of::<Mut<T>>() == type_id {
-            Self::Mut
-        } else if std::any::TypeId::of::<Val<T>>() == type_id {
-            Self::Val
-        } else {
-            Self::Primitive
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Reflect)]
+#[derive(Debug, Clone, Reflect)]
 /// Information about a function argument.
 pub struct FunctionArgInfo {
     /// The name of the argument.
@@ -133,8 +103,9 @@ pub struct FunctionArgInfo {
     pub arg_index: usize,
     /// The type of the argument.
     pub type_id: TypeId,
-    /// The kind of type being used as an argument.
-    pub type_kind: TypeKind,
+    /// The type information of the argument.
+    #[reflect(ignore)]
+    pub type_info: Option<ThroughTypeInfo>,
 }
 
 impl FunctionArgInfo {
@@ -143,6 +114,19 @@ impl FunctionArgInfo {
         self.name = Some(name);
         self
     }
+
+    /// Create a new function argument info for a specific type.
+    pub fn for_type<T: TypedThrough + 'static>(
+        name: Option<impl Into<Cow<'static, str>>>,
+        arg_index: usize,
+    ) -> Self {
+        Self {
+            name: name.map(Into::into),
+            arg_index,
+            type_id: TypeId::of::<T>(),
+            type_info: Some(T::through_type_info()),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Reflect)]
@@ -150,8 +134,6 @@ impl FunctionArgInfo {
 pub struct FunctionReturnInfo {
     /// The type of the return value.
     pub type_id: TypeId,
-    /// The kind of type being used as a return value.
-    pub type_kind: TypeKind,
 }
 
 impl FunctionReturnInfo {
@@ -159,7 +141,6 @@ impl FunctionReturnInfo {
     pub fn new_for<T: 'static>() -> Self {
         Self {
             type_id: TypeId::of::<T>(),
-            type_kind: TypeKind::new_for::<T>(),
         }
     }
 }
@@ -169,8 +150,8 @@ macro_rules! impl_documentable {
         impl<$($param,)* F, O> GetFunctionInfo<fn($($param),*) -> O> for F
             where
             F: Fn($($param),*) -> O,
-            $($param: ArgMeta + 'static,)*
-            O: 'static
+            $($param: ArgMeta + TypedThrough + 'static,)*
+            O: TypedThrough + 'static
         {
             fn get_function_info(&self, name: Cow<'static, str>, namespace: Namespace) -> FunctionInfo {
                 #[allow(unused_mut)]
