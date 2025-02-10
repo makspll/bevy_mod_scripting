@@ -64,7 +64,7 @@ jobs:
           echo "matrix=$(cat matrix-one-line.json)" >> $GITHUB_OUTPUT
 
   check:  
-    needs: [check-needs-run]
+    needs: [check-needs-run, generate-job-matrix]
     permissions:
       pull-requests: write
       contents: write
@@ -72,8 +72,6 @@ jobs:
     name: Check - ${{ matrix.run_args.name }}
     runs-on: ${{ matrix.run_args.os }}
     if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
-    needs: 
-      - generate-job-matrix
     strategy:
       matrix:
        run_args: ${{fromJson(needs.generate-job-matrix.outputs.matrix)}}
