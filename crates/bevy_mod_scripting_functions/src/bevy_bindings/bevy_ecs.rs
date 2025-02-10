@@ -12,7 +12,7 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 use crate::*;
 pub struct BevyEcsScriptingPlugin;
-#[script_bindings(remote, name = "entity")]
+#[script_bindings(remote, name = "entity", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::ecs::entity::Entity {
     fn clone(_self: Ref<bevy::ecs::entity::Entity>) {
         let output: Val<bevy::ecs::entity::Entity> = <bevy::ecs::entity::Entity as std::clone::Clone>::clone(
@@ -56,15 +56,23 @@ impl bevy::ecs::entity::Entity {
         output
     }
 }
-#[script_bindings(remote, name = "on_add")]
+#[script_bindings(remote, name = "on_add", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::ecs::world::OnAdd {}
-#[script_bindings(remote, name = "on_insert")]
+#[script_bindings(remote, name = "on_insert", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::ecs::world::OnInsert {}
-#[script_bindings(remote, name = "on_remove")]
+#[script_bindings(remote, name = "on_remove", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::ecs::world::OnRemove {}
-#[script_bindings(remote, name = "on_replace")]
+#[script_bindings(
+    remote,
+    name = "on_replace",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::ecs::world::OnReplace {}
-#[script_bindings(remote, name = "component_id")]
+#[script_bindings(
+    remote,
+    name = "component_id",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::ecs::component::ComponentId {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::ecs::component::ComponentId>) {
         let output: () = <bevy::ecs::component::ComponentId as std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -103,7 +111,7 @@ impl bevy::ecs::component::ComponentId {
         output
     }
 }
-#[script_bindings(remote, name = "tick")]
+#[script_bindings(remote, name = "tick", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::ecs::component::Tick {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::ecs::component::Tick>) {
         let output: () = <bevy::ecs::component::Tick as std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -158,7 +166,11 @@ impl bevy::ecs::component::Tick {
         output
     }
 }
-#[script_bindings(remote, name = "component_ticks")]
+#[script_bindings(
+    remote,
+    name = "component_ticks",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::ecs::component::ComponentTicks {
     fn clone(_self: Ref<bevy::ecs::component::ComponentTicks>) {
         let output: Val<bevy::ecs::component::ComponentTicks> = <bevy::ecs::component::ComponentTicks as std::clone::Clone>::clone(
@@ -212,7 +224,11 @@ impl bevy::ecs::component::ComponentTicks {
         output
     }
 }
-#[script_bindings(remote, name = "identifier")]
+#[script_bindings(
+    remote,
+    name = "identifier",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::ecs::identifier::Identifier {
     fn clone(_self: Ref<bevy::ecs::identifier::Identifier>) {
         let output: Val<bevy::ecs::identifier::Identifier> = <bevy::ecs::identifier::Identifier as std::clone::Clone>::clone(
@@ -256,7 +272,11 @@ impl bevy::ecs::identifier::Identifier {
         output
     }
 }
-#[script_bindings(remote, name = "entity_hash")]
+#[script_bindings(
+    remote,
+    name = "entity_hash",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::ecs::entity::EntityHash {
     fn clone(_self: Ref<bevy::ecs::entity::EntityHash>) {
         let output: Val<bevy::ecs::entity::EntityHash> = <bevy::ecs::entity::EntityHash as std::clone::Clone>::clone(
@@ -266,7 +286,11 @@ impl bevy::ecs::entity::EntityHash {
         output
     }
 }
-#[script_bindings(remote, name = "removed_component_entity")]
+#[script_bindings(
+    remote,
+    name = "removed_component_entity",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::ecs::removal_detection::RemovedComponentEntity {
     fn clone(_self: Ref<bevy::ecs::removal_detection::RemovedComponentEntity>) {
         let output: Val<bevy::ecs::removal_detection::RemovedComponentEntity> = <bevy::ecs::removal_detection::RemovedComponentEntity as std::clone::Clone>::clone(
@@ -276,7 +300,11 @@ impl bevy::ecs::removal_detection::RemovedComponentEntity {
         output
     }
 }
-#[script_bindings(remote, name = "system_id_marker")]
+#[script_bindings(
+    remote,
+    name = "system_id_marker",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::ecs::system::SystemIdMarker {}
 impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {

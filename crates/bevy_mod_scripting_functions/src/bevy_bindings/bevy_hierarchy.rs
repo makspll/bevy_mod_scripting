@@ -12,7 +12,7 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 use crate::*;
 pub struct BevyHierarchyScriptingPlugin;
-#[script_bindings(remote, name = "children")]
+#[script_bindings(remote, name = "children", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::hierarchy::prelude::Children {
     fn swap(
         mut _self: Mut<bevy::hierarchy::prelude::Children>,
@@ -28,7 +28,7 @@ impl bevy::hierarchy::prelude::Children {
         output
     }
 }
-#[script_bindings(remote, name = "parent")]
+#[script_bindings(remote, name = "parent", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::hierarchy::prelude::Parent {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::hierarchy::prelude::Parent>) {
         let output: () = <bevy::hierarchy::prelude::Parent as std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -55,7 +55,11 @@ impl bevy::hierarchy::prelude::Parent {
         output
     }
 }
-#[script_bindings(remote, name = "hierarchy_event")]
+#[script_bindings(
+    remote,
+    name = "hierarchy_event",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::hierarchy::HierarchyEvent {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::hierarchy::HierarchyEvent>) {
         let output: () = <bevy::hierarchy::HierarchyEvent as std::cmp::Eq>::assert_receiver_is_total_eq(
