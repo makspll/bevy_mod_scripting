@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.9.4](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.3...v0.9.4) - 2025-02-10
+
+### Added
+
+- Add `script_bindings` impl block derive macro (#263)
+- refactor generated bindings to use new derive macro (#268)
+- refactor core bindings to use new derive macro (#267)
+
+### Fixed
+
+- don't use `new_unregistered` for most of core bindings macros (#270)
+
 ## [0.9.3](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.2...v0.9.3) - 2025-02-08
 
 ### Added

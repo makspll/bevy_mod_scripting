@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.4](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.3...bevy_mod_scripting_core-v0.9.4) - 2025-02-10
+
+### Added
+
+- Add `script_bindings` impl block derive macro (#263)
+
 ## [0.9.3](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.2...bevy_mod_scripting_core-v0.9.3) - 2025-02-08
 
 ### Added
