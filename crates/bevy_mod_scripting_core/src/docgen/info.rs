@@ -1,10 +1,11 @@
 //! Information about functions and their arguments.
 
-use bevy::reflect::Reflect;
-
 use crate::bindings::function::arg_meta::ArgMeta;
 use crate::bindings::function::namespace::Namespace;
+use bevy::reflect::Reflect;
 use std::{any::TypeId, borrow::Cow};
+
+use super::typed_through::{ThroughTypeInfo, TypedThrough};
 
 /// for things you can call and provide some introspection capability.
 pub trait GetFunctionInfo<Marker> {
@@ -12,7 +13,7 @@ pub trait GetFunctionInfo<Marker> {
     fn get_function_info(&self, name: Cow<'static, str>, namespace: Namespace) -> FunctionInfo;
 }
 
-#[derive(Debug, Clone, PartialEq, Reflect)]
+#[derive(Debug, Clone, Reflect)]
 /// Information about a function.
 pub struct FunctionInfo {
     /// The name of the function.
@@ -22,7 +23,7 @@ pub struct FunctionInfo {
     /// Information about the arguments of the function.
     pub arg_info: Vec<FunctionArgInfo>,
     /// Information about the return value of the function.
-    pub return_info: FunctionReturnInfo,
+    pub return_info: Option<FunctionReturnInfo>,
     /// Documentation for the function.
     pub docs: Option<Cow<'static, str>>,
 }
@@ -40,7 +41,7 @@ impl FunctionInfo {
             name: Cow::Borrowed(""),
             namespace: Namespace::Global,
             arg_info: Vec::new(),
-            return_info: FunctionReturnInfo::new(),
+            return_info: None,
             docs: None,
         }
     }
@@ -51,25 +52,24 @@ impl FunctionInfo {
             name,
             namespace,
             arg_info: Vec::new(),
-            return_info: FunctionReturnInfo::new(),
+            return_info: None,
             docs: None,
         }
     }
 
     /// Add an argument to the function info.
-    pub fn add_arg<T: ArgMeta + 'static>(mut self, name: Option<Cow<'static, str>>) -> Self {
-        self.arg_info.push(FunctionArgInfo {
-            name,
-            arg_index: self.arg_info.len(),
-            type_id: TypeId::of::<T>(),
-            docs: None,
-        });
+    pub fn add_arg<T: ArgMeta + TypedThrough + 'static>(
+        mut self,
+        name: Option<Cow<'static, str>>,
+    ) -> Self {
+        self.arg_info
+            .push(FunctionArgInfo::for_type::<T>(name, self.arg_info.len()));
         self
     }
 
     /// Add a return value to the function info.
-    pub fn add_return(mut self, return_info: FunctionReturnInfo) -> Self {
-        self.return_info = return_info;
+    pub fn add_return<T: TypedThrough + 'static>(mut self) -> Self {
+        self.return_info = Some(FunctionReturnInfo::new_for::<T>());
         self
     }
 
@@ -94,7 +94,7 @@ impl FunctionInfo {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Reflect)]
+#[derive(Debug, Clone, Reflect)]
 /// Information about a function argument.
 pub struct FunctionArgInfo {
     /// The name of the argument.
@@ -103,31 +103,29 @@ pub struct FunctionArgInfo {
     pub arg_index: usize,
     /// The type of the argument.
     pub type_id: TypeId,
-    /// Documentation for the argument.
-    pub docs: Option<Cow<'static, str>>,
+    /// The type information of the argument.
+    #[reflect(ignore)]
+    pub type_info: Option<ThroughTypeInfo>,
 }
 
 impl FunctionArgInfo {
-    /// Create a new function argument info with default values.
-    pub fn new(arg_index: usize, type_id: TypeId) -> Self {
-        Self {
-            name: None,
-            arg_index,
-            type_id,
-            docs: None,
-        }
-    }
-
     /// Create a new function argument info with a name.
     pub fn with_name(mut self, name: Cow<'static, str>) -> Self {
         self.name = Some(name);
         self
     }
 
-    /// Add documentation to the function argument info.
-    pub fn with_docs(mut self, docs: Cow<'static, str>) -> Self {
-        self.docs = Some(docs);
-        self
+    /// Create a new function argument info for a specific type.
+    pub fn for_type<T: TypedThrough + 'static>(
+        name: Option<impl Into<Cow<'static, str>>>,
+        arg_index: usize,
+    ) -> Self {
+        Self {
+            name: name.map(Into::into),
+            arg_index,
+            type_id: TypeId::of::<T>(),
+            type_info: Some(T::through_type_info()),
+        }
     }
 }
 
@@ -138,20 +136,7 @@ pub struct FunctionReturnInfo {
     pub type_id: TypeId,
 }
 
-impl Default for FunctionReturnInfo {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl FunctionReturnInfo {
-    /// Create a new function return info with default values.
-    pub fn new() -> Self {
-        Self {
-            type_id: TypeId::of::<()>(),
-        }
-    }
-
     /// Create a new function return info for a specific type.
     pub fn new_for<T: 'static>() -> Self {
         Self {
@@ -165,8 +150,8 @@ macro_rules! impl_documentable {
         impl<$($param,)* F, O> GetFunctionInfo<fn($($param),*) -> O> for F
             where
             F: Fn($($param),*) -> O,
-            $($param: ArgMeta + 'static,)*
-            O: 'static
+            $($param: ArgMeta + TypedThrough + 'static,)*
+            O: TypedThrough + 'static
         {
             fn get_function_info(&self, name: Cow<'static, str>, namespace: Namespace) -> FunctionInfo {
                 #[allow(unused_mut)]
@@ -174,7 +159,7 @@ macro_rules! impl_documentable {
                 $(
                     info = info.add_arg::<$param>(None);
                 )*
-                info.add_return(FunctionReturnInfo::new_for::<O>())
+                info.add_return::<O>()
             }
         }
     };
@@ -198,10 +183,24 @@ mod test {
         assert_eq!(info.name, "test_fn");
         assert_eq!(info.namespace, Namespace::Global);
         assert_eq!(info.arg_info.len(), 2);
-        assert_eq!(info.return_info.type_id, TypeId::of::<f64>());
+        assert_eq!(info.return_info.unwrap().type_id, TypeId::of::<f64>());
 
         assert_eq!(info.arg_info[0].type_id, TypeId::of::<i32>());
         assert_eq!(info.arg_info[1].type_id, TypeId::of::<f32>());
+
+        match info.arg_info[0].type_info.as_ref().unwrap() {
+            ThroughTypeInfo::TypeInfo(type_info) => {
+                assert_eq!(type_info.type_id(), TypeId::of::<i32>());
+            }
+            _ => panic!("Expected TypeInfo"),
+        }
+
+        match info.arg_info[1].type_info.as_ref().unwrap() {
+            ThroughTypeInfo::TypeInfo(type_info) => {
+                assert_eq!(type_info.type_id(), TypeId::of::<f32>());
+            }
+            _ => panic!("Expected TypeInfo"),
+        }
     }
 
     #[test]
@@ -212,9 +211,35 @@ mod test {
         assert_eq!(info.name, "test_fn");
         assert_eq!(info.namespace, Namespace::Global);
         assert_eq!(info.arg_info.len(), 2);
-        assert_eq!(info.return_info.type_id, TypeId::of::<Val<f64>>());
+        assert_eq!(info.return_info.unwrap().type_id, TypeId::of::<Val<f64>>());
 
         assert_eq!(info.arg_info[0].type_id, TypeId::of::<Ref<'static, i32>>());
         assert_eq!(info.arg_info[1].type_id, TypeId::of::<Mut<'static, f32>>());
+
+        match info.arg_info[0].type_info.as_ref().unwrap() {
+            ThroughTypeInfo::UntypedWrapper {
+                through_type,
+                wrapper_type_id,
+                wrapper_name,
+            } => {
+                assert_eq!(through_type.type_id(), TypeId::of::<i32>());
+                assert_eq!(*wrapper_type_id, TypeId::of::<Ref<'static, i32>>());
+                assert_eq!(*wrapper_name, "Ref");
+            }
+            _ => panic!("Expected UntypedWrapper"),
+        }
+
+        match info.arg_info[1].type_info.as_ref().unwrap() {
+            ThroughTypeInfo::UntypedWrapper {
+                through_type,
+                wrapper_type_id,
+                wrapper_name,
+            } => {
+                assert_eq!(through_type.type_id(), TypeId::of::<f32>());
+                assert_eq!(*wrapper_type_id, TypeId::of::<Mut<'static, f32>>());
+                assert_eq!(*wrapper_name, "Mut");
+            }
+            _ => panic!("Expected UntypedWrapper"),
+        }
     }
 }

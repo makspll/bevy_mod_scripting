@@ -73,12 +73,6 @@ pub struct DynamicScriptFunction {
     >,
 }
 
-impl PartialEq for DynamicScriptFunction {
-    fn eq(&self, other: &Self) -> bool {
-        self.info == other.info
-    }
-}
-
 #[derive(Clone, Reflect)]
 #[reflect(opaque)]
 /// A dynamic mutable script function.
@@ -94,12 +88,6 @@ pub struct DynamicScriptFunctionMut {
                 + 'static,
         >,
     >,
-}
-
-impl PartialEq for DynamicScriptFunctionMut {
-    fn eq(&self, other: &Self) -> bool {
-        self.info == other.info
-    }
 }
 
 impl DynamicScriptFunction {
@@ -212,6 +200,18 @@ impl DynamicScriptFunctionMut {
             },
             func: self.func,
         }
+    }
+}
+
+impl PartialEq for DynamicScriptFunction {
+    fn eq(&self, other: &Self) -> bool {
+        std::ptr::addr_eq(self as *const Self, other as *const Self)
+    }
+}
+
+impl PartialEq for DynamicScriptFunctionMut {
+    fn eq(&self, other: &Self) -> bool {
+        std::ptr::addr_eq(self as *const Self, other as *const Self)
     }
 }
 
