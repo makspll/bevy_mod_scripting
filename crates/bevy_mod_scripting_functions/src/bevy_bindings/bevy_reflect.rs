@@ -14,7 +14,7 @@ use crate::*;
 pub struct BevyReflectScriptingPlugin;
 #[script_bindings(
     remote,
-    name = "atomic_bool",
+    name = "atomic_bool_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl std::sync::atomic::AtomicBool {
@@ -33,7 +33,7 @@ impl std::sync::atomic::AtomicBool {
 }
 #[script_bindings(
     remote,
-    name = "atomic_i_16",
+    name = "atomic_i_16_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl std::sync::atomic::AtomicI16 {
@@ -52,7 +52,7 @@ impl std::sync::atomic::AtomicI16 {
 }
 #[script_bindings(
     remote,
-    name = "atomic_i_32",
+    name = "atomic_i_32_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl std::sync::atomic::AtomicI32 {
@@ -71,7 +71,7 @@ impl std::sync::atomic::AtomicI32 {
 }
 #[script_bindings(
     remote,
-    name = "atomic_i_64",
+    name = "atomic_i_64_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl std::sync::atomic::AtomicI64 {
@@ -90,7 +90,7 @@ impl std::sync::atomic::AtomicI64 {
 }
 #[script_bindings(
     remote,
-    name = "atomic_i_8",
+    name = "atomic_i_8_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl std::sync::atomic::AtomicI8 {
@@ -109,7 +109,7 @@ impl std::sync::atomic::AtomicI8 {
 }
 #[script_bindings(
     remote,
-    name = "atomic_isize",
+    name = "atomic_isize_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl std::sync::atomic::AtomicIsize {
@@ -130,7 +130,7 @@ impl std::sync::atomic::AtomicIsize {
 }
 #[script_bindings(
     remote,
-    name = "atomic_u_16",
+    name = "atomic_u_16_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl std::sync::atomic::AtomicU16 {
@@ -149,7 +149,7 @@ impl std::sync::atomic::AtomicU16 {
 }
 #[script_bindings(
     remote,
-    name = "atomic_u_32",
+    name = "atomic_u_32_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl std::sync::atomic::AtomicU32 {
@@ -168,7 +168,7 @@ impl std::sync::atomic::AtomicU32 {
 }
 #[script_bindings(
     remote,
-    name = "atomic_u_64",
+    name = "atomic_u_64_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl std::sync::atomic::AtomicU64 {
@@ -187,7 +187,7 @@ impl std::sync::atomic::AtomicU64 {
 }
 #[script_bindings(
     remote,
-    name = "atomic_u_8",
+    name = "atomic_u_8_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl std::sync::atomic::AtomicU8 {
@@ -206,7 +206,7 @@ impl std::sync::atomic::AtomicU8 {
 }
 #[script_bindings(
     remote,
-    name = "atomic_usize",
+    name = "atomic_usize_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl std::sync::atomic::AtomicUsize {
@@ -225,7 +225,11 @@ impl std::sync::atomic::AtomicUsize {
         output
     }
 }
-#[script_bindings(remote, name = "duration", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "duration_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::utils::Duration {
     fn abs_diff(_self: Val<bevy::utils::Duration>, other: Val<bevy::utils::Duration>) {
         let output: Val<bevy::utils::Duration> = bevy::utils::Duration::abs_diff(
@@ -452,7 +456,11 @@ impl bevy::utils::Duration {
         output
     }
 }
-#[script_bindings(remote, name = "instant", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "instant_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::utils::Instant {
     fn add(_self: Val<bevy::utils::Instant>, other: Val<bevy::utils::Duration>) {
         let output: Val<bevy::utils::Instant> = <bevy::utils::Instant as std::ops::Add<
@@ -530,7 +538,7 @@ impl bevy::utils::Instant {
 }
 #[script_bindings(
     remote,
-    name = "range_full",
+    name = "range_full_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl std::ops::RangeFull {
@@ -556,7 +564,11 @@ impl std::ops::RangeFull {
         output
     }
 }
-#[script_bindings(remote, name = "quat", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "quat_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::Quat {
     fn abs_diff_eq(
         _self: Val<bevy::math::Quat>,
@@ -885,7 +897,11 @@ impl bevy::math::Quat {
         output
     }
 }
-#[script_bindings(remote, name = "vec_3", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "vec_3_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::Vec3 {
     fn abs(_self: Val<bevy::math::Vec3>) {
         let output: Val<bevy::math::Vec3> = bevy::math::Vec3::abs(_self.into_inner())
@@ -1531,7 +1547,11 @@ impl bevy::math::Vec3 {
         output
     }
 }
-#[script_bindings(remote, name = "i_vec_2", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "i_vec_2_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::IVec2 {
     fn abs(_self: Val<bevy::math::IVec2>) {
         let output: Val<bevy::math::IVec2> = bevy::math::IVec2::abs(_self.into_inner())
@@ -2022,7 +2042,11 @@ impl bevy::math::IVec2 {
         output
     }
 }
-#[script_bindings(remote, name = "i_vec_3", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "i_vec_3_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::IVec3 {
     fn abs(_self: Val<bevy::math::IVec3>) {
         let output: Val<bevy::math::IVec3> = bevy::math::IVec3::abs(_self.into_inner())
@@ -2519,7 +2543,11 @@ impl bevy::math::IVec3 {
         output
     }
 }
-#[script_bindings(remote, name = "i_vec_4", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "i_vec_4_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::IVec4 {
     fn abs(_self: Val<bevy::math::IVec4>) {
         let output: Val<bevy::math::IVec4> = bevy::math::IVec4::abs(_self.into_inner())
@@ -3006,7 +3034,7 @@ impl bevy::math::IVec4 {
 }
 #[script_bindings(
     remote,
-    name = "i_64_vec_2",
+    name = "i_64_vec_2_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::I64Vec2 {
@@ -3508,7 +3536,7 @@ impl bevy::math::I64Vec2 {
 }
 #[script_bindings(
     remote,
-    name = "i_64_vec_3",
+    name = "i_64_vec_3_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::I64Vec3 {
@@ -4015,7 +4043,7 @@ impl bevy::math::I64Vec3 {
 }
 #[script_bindings(
     remote,
-    name = "i_64_vec_4",
+    name = "i_64_vec_4_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::I64Vec4 {
@@ -4508,7 +4536,11 @@ impl bevy::math::I64Vec4 {
         output
     }
 }
-#[script_bindings(remote, name = "u_vec_2", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "u_vec_2_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::UVec2 {
     fn add(_self: Val<bevy::math::UVec2>, rhs: Ref<bevy::math::UVec2>) {
         let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Add<
@@ -4905,7 +4937,11 @@ impl bevy::math::UVec2 {
         output
     }
 }
-#[script_bindings(remote, name = "u_vec_3", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "u_vec_3_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::UVec3 {
     fn add(_self: Val<bevy::math::UVec3>, rhs: Ref<bevy::math::UVec3>) {
         let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Add<
@@ -5329,7 +5365,11 @@ impl bevy::math::UVec3 {
         output
     }
 }
-#[script_bindings(remote, name = "u_vec_4", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "u_vec_4_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::UVec4 {
     fn add(_self: Val<bevy::math::UVec4>, rhs: Ref<bevy::math::UVec4>) {
         let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Add<
@@ -5743,7 +5783,7 @@ impl bevy::math::UVec4 {
 }
 #[script_bindings(
     remote,
-    name = "u_64_vec_2",
+    name = "u_64_vec_2_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::U64Vec2 {
@@ -6150,7 +6190,7 @@ impl bevy::math::U64Vec2 {
 }
 #[script_bindings(
     remote,
-    name = "u_64_vec_3",
+    name = "u_64_vec_3_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::U64Vec3 {
@@ -6585,7 +6625,7 @@ impl bevy::math::U64Vec3 {
 }
 #[script_bindings(
     remote,
-    name = "u_64_vec_4",
+    name = "u_64_vec_4_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::U64Vec4 {
@@ -7006,7 +7046,11 @@ impl bevy::math::U64Vec4 {
         output
     }
 }
-#[script_bindings(remote, name = "vec_2", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "vec_2_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::Vec2 {
     fn abs(_self: Val<bevy::math::Vec2>) {
         let output: Val<bevy::math::Vec2> = bevy::math::Vec2::abs(_self.into_inner())
@@ -7665,7 +7709,11 @@ impl bevy::math::Vec2 {
         output
     }
 }
-#[script_bindings(remote, name = "vec_3_a", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "vec_3_a_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::Vec3A {
     fn abs(_self: Val<bevy::math::Vec3A>) {
         let output: Val<bevy::math::Vec3A> = bevy::math::Vec3A::abs(_self.into_inner())
@@ -8324,7 +8372,11 @@ impl bevy::math::Vec3A {
         output
     }
 }
-#[script_bindings(remote, name = "vec_4", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "vec_4_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::Vec4 {
     fn abs(_self: Val<bevy::math::Vec4>) {
         let output: Val<bevy::math::Vec4> = bevy::math::Vec4::abs(_self.into_inner())
@@ -8940,7 +8992,11 @@ impl bevy::math::Vec4 {
         output
     }
 }
-#[script_bindings(remote, name = "b_vec_2", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "b_vec_2_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::BVec2 {
     fn all(_self: Val<bevy::math::BVec2>) {
         let output: bool = bevy::math::BVec2::all(_self.into_inner()).into();
@@ -8996,7 +9052,11 @@ impl bevy::math::BVec2 {
         output
     }
 }
-#[script_bindings(remote, name = "b_vec_3", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "b_vec_3_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::BVec3 {
     fn all(_self: Val<bevy::math::BVec3>) {
         let output: bool = bevy::math::BVec3::all(_self.into_inner()).into();
@@ -9052,7 +9112,11 @@ impl bevy::math::BVec3 {
         output
     }
 }
-#[script_bindings(remote, name = "b_vec_4", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "b_vec_4_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::BVec4 {
     fn all(_self: Val<bevy::math::BVec4>) {
         let output: bool = bevy::math::BVec4::all(_self.into_inner()).into();
@@ -9108,7 +9172,11 @@ impl bevy::math::BVec4 {
         output
     }
 }
-#[script_bindings(remote, name = "d_vec_2", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "d_vec_2_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::DVec2 {
     fn abs(_self: Val<bevy::math::DVec2>) {
         let output: Val<bevy::math::DVec2> = bevy::math::DVec2::abs(_self.into_inner())
@@ -9775,7 +9843,11 @@ impl bevy::math::DVec2 {
         output
     }
 }
-#[script_bindings(remote, name = "d_vec_3", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "d_vec_3_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::DVec3 {
     fn abs(_self: Val<bevy::math::DVec3>) {
         let output: Val<bevy::math::DVec3> = bevy::math::DVec3::abs(_self.into_inner())
@@ -10433,7 +10505,11 @@ impl bevy::math::DVec3 {
         output
     }
 }
-#[script_bindings(remote, name = "d_vec_4", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "d_vec_4_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::DVec4 {
     fn abs(_self: Val<bevy::math::DVec4>) {
         let output: Val<bevy::math::DVec4> = bevy::math::DVec4::abs(_self.into_inner())
@@ -11057,7 +11133,11 @@ impl bevy::math::DVec4 {
         output
     }
 }
-#[script_bindings(remote, name = "mat_2", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "mat_2_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::Mat2 {
     fn abs(_self: Ref<bevy::math::Mat2>) {
         let output: Val<bevy::math::Mat2> = bevy::math::Mat2::abs(&_self).into();
@@ -11268,7 +11348,11 @@ impl bevy::math::Mat2 {
         output
     }
 }
-#[script_bindings(remote, name = "mat_3", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "mat_3_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::Mat3 {
     fn abs(_self: Ref<bevy::math::Mat3>) {
         let output: Val<bevy::math::Mat3> = bevy::math::Mat3::abs(&_self).into();
@@ -11580,7 +11664,11 @@ impl bevy::math::Mat3 {
         output
     }
 }
-#[script_bindings(remote, name = "mat_3_a", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "mat_3_a_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::Mat3A {
     fn abs(_self: Ref<bevy::math::Mat3A>) {
         let output: Val<bevy::math::Mat3A> = bevy::math::Mat3A::abs(&_self).into();
@@ -11894,7 +11982,11 @@ impl bevy::math::Mat3A {
         output
     }
 }
-#[script_bindings(remote, name = "mat_4", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "mat_4_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::Mat4 {
     fn abs(_self: Ref<bevy::math::Mat4>) {
         let output: Val<bevy::math::Mat4> = bevy::math::Mat4::abs(&_self).into();
@@ -12411,7 +12503,11 @@ impl bevy::math::Mat4 {
         output
     }
 }
-#[script_bindings(remote, name = "d_mat_2", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "d_mat_2_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::DMat2 {
     fn abs(_self: Ref<bevy::math::DMat2>) {
         let output: Val<bevy::math::DMat2> = bevy::math::DMat2::abs(&_self).into();
@@ -12610,7 +12706,11 @@ impl bevy::math::DMat2 {
         output
     }
 }
-#[script_bindings(remote, name = "d_mat_3", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "d_mat_3_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::DMat3 {
     fn abs(_self: Ref<bevy::math::DMat3>) {
         let output: Val<bevy::math::DMat3> = bevy::math::DMat3::abs(&_self).into();
@@ -12909,7 +13009,11 @@ impl bevy::math::DMat3 {
         output
     }
 }
-#[script_bindings(remote, name = "d_mat_4", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "d_mat_4_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::DMat4 {
     fn abs(_self: Ref<bevy::math::DMat4>) {
         let output: Val<bevy::math::DMat4> = bevy::math::DMat4::abs(&_self).into();
@@ -13399,7 +13503,11 @@ impl bevy::math::DMat4 {
         output
     }
 }
-#[script_bindings(remote, name = "affine_2", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "affine_2_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::Affine2 {
     fn abs_diff_eq(
         _self: Ref<bevy::math::Affine2>,
@@ -13574,7 +13682,7 @@ impl bevy::math::Affine2 {
 }
 #[script_bindings(
     remote,
-    name = "affine_3_a",
+    name = "affine_3_a_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::Affine3A {
@@ -13845,7 +13953,7 @@ impl bevy::math::Affine3A {
 }
 #[script_bindings(
     remote,
-    name = "d_affine_2",
+    name = "d_affine_2_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::DAffine2 {
@@ -14009,7 +14117,7 @@ impl bevy::math::DAffine2 {
 }
 #[script_bindings(
     remote,
-    name = "d_affine_3",
+    name = "d_affine_3_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::DAffine3 {
@@ -14259,7 +14367,11 @@ impl bevy::math::DAffine3 {
         output
     }
 }
-#[script_bindings(remote, name = "d_quat", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "d_quat_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::DQuat {
     fn abs_diff_eq(
         _self: Val<bevy::math::DQuat>,
@@ -14572,7 +14684,11 @@ impl bevy::math::DQuat {
         output
     }
 }
-#[script_bindings(remote, name = "euler_rot", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "euler_rot_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::EulerRot {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::math::EulerRot>) {
         let output: () = <bevy::math::EulerRot as std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -14596,7 +14712,11 @@ impl bevy::math::EulerRot {
         output
     }
 }
-#[script_bindings(remote, name = "b_vec_3_a", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "b_vec_3_a_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::BVec3A {
     fn all(_self: Val<bevy::math::BVec3A>) {
         let output: bool = bevy::math::BVec3A::all(_self.into_inner()).into();
@@ -14645,7 +14765,11 @@ impl bevy::math::BVec3A {
         output
     }
 }
-#[script_bindings(remote, name = "b_vec_4_a", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "b_vec_4_a_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::BVec4A {
     fn all(_self: Val<bevy::math::BVec4A>) {
         let output: bool = bevy::math::BVec4A::all(_self.into_inner()).into();
@@ -14694,7 +14818,11 @@ impl bevy::math::BVec4A {
         output
     }
 }
-#[script_bindings(remote, name = "smol_str", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "smol_str_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl smol_str::SmolStr {
     fn clone(_self: Ref<smol_str::SmolStr>) {
         let output: Val<smol_str::SmolStr> = <smol_str::SmolStr as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
@@ -14727,7 +14855,11 @@ impl smol_str::SmolStr {
         output
     }
 }
-#[script_bindings(remote, name = "uuid", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "uuid_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl uuid::Uuid {
     fn as_u128(_self: Ref<uuid::Uuid>) {
         let output: u128 = uuid::Uuid::as_u128(&_self).into();
@@ -14829,59 +14961,59 @@ impl uuid::Uuid {
 impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
         let mut world = app.world_mut();
-        register_atomic_bool(&mut world);
-        register_atomic_i_16(&mut world);
-        register_atomic_i_32(&mut world);
-        register_atomic_i_64(&mut world);
-        register_atomic_i_8(&mut world);
-        register_atomic_isize(&mut world);
-        register_atomic_u_16(&mut world);
-        register_atomic_u_32(&mut world);
-        register_atomic_u_64(&mut world);
-        register_atomic_u_8(&mut world);
-        register_atomic_usize(&mut world);
-        register_duration(&mut world);
-        register_instant(&mut world);
-        register_range_full(&mut world);
-        register_quat(&mut world);
-        register_vec_3(&mut world);
-        register_i_vec_2(&mut world);
-        register_i_vec_3(&mut world);
-        register_i_vec_4(&mut world);
-        register_i_64_vec_2(&mut world);
-        register_i_64_vec_3(&mut world);
-        register_i_64_vec_4(&mut world);
-        register_u_vec_2(&mut world);
-        register_u_vec_3(&mut world);
-        register_u_vec_4(&mut world);
-        register_u_64_vec_2(&mut world);
-        register_u_64_vec_3(&mut world);
-        register_u_64_vec_4(&mut world);
-        register_vec_2(&mut world);
-        register_vec_3_a(&mut world);
-        register_vec_4(&mut world);
-        register_b_vec_2(&mut world);
-        register_b_vec_3(&mut world);
-        register_b_vec_4(&mut world);
-        register_d_vec_2(&mut world);
-        register_d_vec_3(&mut world);
-        register_d_vec_4(&mut world);
-        register_mat_2(&mut world);
-        register_mat_3(&mut world);
-        register_mat_3_a(&mut world);
-        register_mat_4(&mut world);
-        register_d_mat_2(&mut world);
-        register_d_mat_3(&mut world);
-        register_d_mat_4(&mut world);
-        register_affine_2(&mut world);
-        register_affine_3_a(&mut world);
-        register_d_affine_2(&mut world);
-        register_d_affine_3(&mut world);
-        register_d_quat(&mut world);
-        register_euler_rot(&mut world);
-        register_b_vec_3_a(&mut world);
-        register_b_vec_4_a(&mut world);
-        register_smol_str(&mut world);
-        register_uuid(&mut world);
+        register_atomic_bool_functions(&mut world);
+        register_atomic_i_16_functions(&mut world);
+        register_atomic_i_32_functions(&mut world);
+        register_atomic_i_64_functions(&mut world);
+        register_atomic_i_8_functions(&mut world);
+        register_atomic_isize_functions(&mut world);
+        register_atomic_u_16_functions(&mut world);
+        register_atomic_u_32_functions(&mut world);
+        register_atomic_u_64_functions(&mut world);
+        register_atomic_u_8_functions(&mut world);
+        register_atomic_usize_functions(&mut world);
+        register_duration_functions(&mut world);
+        register_instant_functions(&mut world);
+        register_range_full_functions(&mut world);
+        register_quat_functions(&mut world);
+        register_vec_3_functions(&mut world);
+        register_i_vec_2_functions(&mut world);
+        register_i_vec_3_functions(&mut world);
+        register_i_vec_4_functions(&mut world);
+        register_i_64_vec_2_functions(&mut world);
+        register_i_64_vec_3_functions(&mut world);
+        register_i_64_vec_4_functions(&mut world);
+        register_u_vec_2_functions(&mut world);
+        register_u_vec_3_functions(&mut world);
+        register_u_vec_4_functions(&mut world);
+        register_u_64_vec_2_functions(&mut world);
+        register_u_64_vec_3_functions(&mut world);
+        register_u_64_vec_4_functions(&mut world);
+        register_vec_2_functions(&mut world);
+        register_vec_3_a_functions(&mut world);
+        register_vec_4_functions(&mut world);
+        register_b_vec_2_functions(&mut world);
+        register_b_vec_3_functions(&mut world);
+        register_b_vec_4_functions(&mut world);
+        register_d_vec_2_functions(&mut world);
+        register_d_vec_3_functions(&mut world);
+        register_d_vec_4_functions(&mut world);
+        register_mat_2_functions(&mut world);
+        register_mat_3_functions(&mut world);
+        register_mat_3_a_functions(&mut world);
+        register_mat_4_functions(&mut world);
+        register_d_mat_2_functions(&mut world);
+        register_d_mat_3_functions(&mut world);
+        register_d_mat_4_functions(&mut world);
+        register_affine_2_functions(&mut world);
+        register_affine_3_a_functions(&mut world);
+        register_d_affine_2_functions(&mut world);
+        register_d_affine_3_functions(&mut world);
+        register_d_quat_functions(&mut world);
+        register_euler_rot_functions(&mut world);
+        register_b_vec_3_a_functions(&mut world);
+        register_b_vec_4_a_functions(&mut world);
+        register_smol_str_functions(&mut world);
+        register_uuid_functions(&mut world);
     }
 }

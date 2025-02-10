@@ -12,7 +12,11 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 use crate::*;
 pub struct BevyEcsScriptingPlugin;
-#[script_bindings(remote, name = "entity", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "entity_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::ecs::entity::Entity {
     fn clone(_self: Ref<bevy::ecs::entity::Entity>) {
         let output: Val<bevy::ecs::entity::Entity> = <bevy::ecs::entity::Entity as std::clone::Clone>::clone(
@@ -56,21 +60,33 @@ impl bevy::ecs::entity::Entity {
         output
     }
 }
-#[script_bindings(remote, name = "on_add", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "on_add_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::ecs::world::OnAdd {}
-#[script_bindings(remote, name = "on_insert", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "on_insert_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::ecs::world::OnInsert {}
-#[script_bindings(remote, name = "on_remove", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "on_remove_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::ecs::world::OnRemove {}
 #[script_bindings(
     remote,
-    name = "on_replace",
+    name = "on_replace_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::ecs::world::OnReplace {}
 #[script_bindings(
     remote,
-    name = "component_id",
+    name = "component_id_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::ecs::component::ComponentId {
@@ -111,7 +127,11 @@ impl bevy::ecs::component::ComponentId {
         output
     }
 }
-#[script_bindings(remote, name = "tick", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "tick_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::ecs::component::Tick {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::ecs::component::Tick>) {
         let output: () = <bevy::ecs::component::Tick as std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -168,7 +188,7 @@ impl bevy::ecs::component::Tick {
 }
 #[script_bindings(
     remote,
-    name = "component_ticks",
+    name = "component_ticks_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::ecs::component::ComponentTicks {
@@ -226,7 +246,7 @@ impl bevy::ecs::component::ComponentTicks {
 }
 #[script_bindings(
     remote,
-    name = "identifier",
+    name = "identifier_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::ecs::identifier::Identifier {
@@ -274,7 +294,7 @@ impl bevy::ecs::identifier::Identifier {
 }
 #[script_bindings(
     remote,
-    name = "entity_hash",
+    name = "entity_hash_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::ecs::entity::EntityHash {
@@ -288,7 +308,7 @@ impl bevy::ecs::entity::EntityHash {
 }
 #[script_bindings(
     remote,
-    name = "removed_component_entity",
+    name = "removed_component_entity_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::ecs::removal_detection::RemovedComponentEntity {
@@ -302,24 +322,24 @@ impl bevy::ecs::removal_detection::RemovedComponentEntity {
 }
 #[script_bindings(
     remote,
-    name = "system_id_marker",
+    name = "system_id_marker_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::ecs::system::SystemIdMarker {}
 impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
         let mut world = app.world_mut();
-        register_entity(&mut world);
-        register_on_add(&mut world);
-        register_on_insert(&mut world);
-        register_on_remove(&mut world);
-        register_on_replace(&mut world);
-        register_component_id(&mut world);
-        register_tick(&mut world);
-        register_component_ticks(&mut world);
-        register_identifier(&mut world);
-        register_entity_hash(&mut world);
-        register_removed_component_entity(&mut world);
-        register_system_id_marker(&mut world);
+        register_entity_functions(&mut world);
+        register_on_add_functions(&mut world);
+        register_on_insert_functions(&mut world);
+        register_on_remove_functions(&mut world);
+        register_on_replace_functions(&mut world);
+        register_component_id_functions(&mut world);
+        register_tick_functions(&mut world);
+        register_component_ticks_functions(&mut world);
+        register_identifier_functions(&mut world);
+        register_entity_hash_functions(&mut world);
+        register_removed_component_entity_functions(&mut world);
+        register_system_id_marker_functions(&mut world);
     }
 }

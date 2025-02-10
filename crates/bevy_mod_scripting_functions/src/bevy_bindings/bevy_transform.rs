@@ -14,7 +14,7 @@ use crate::*;
 pub struct BevyTransformScriptingPlugin;
 #[script_bindings(
     remote,
-    name = "global_transform",
+    name = "global_transform_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::transform::components::GlobalTransform {
@@ -245,7 +245,11 @@ impl bevy::transform::components::GlobalTransform {
         output
     }
 }
-#[script_bindings(remote, name = "transform", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "transform_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::transform::components::Transform {
     fn back(_self: Ref<bevy::transform::components::Transform>) {
         let output: Val<bevy::math::Dir3> = bevy::transform::components::Transform::back(
@@ -617,7 +621,7 @@ impl bevy::transform::components::Transform {
 impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
         let mut world = app.world_mut();
-        register_global_transform(&mut world);
-        register_transform(&mut world);
+        register_global_transform_functions(&mut world);
+        register_transform_functions(&mut world);
     }
 }

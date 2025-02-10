@@ -12,7 +12,11 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 use crate::*;
 pub struct BevyInputScriptingPlugin;
-#[script_bindings(remote, name = "gamepad", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "gamepad_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::input::gamepad::Gamepad {
     fn dpad(_self: Ref<bevy::input::gamepad::Gamepad>) {
         let output: Val<bevy::math::Vec2> = bevy::input::gamepad::Gamepad::dpad(&_self)
@@ -83,7 +87,7 @@ impl bevy::input::gamepad::Gamepad {
 }
 #[script_bindings(
     remote,
-    name = "gamepad_axis",
+    name = "gamepad_axis_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadAxis {
@@ -114,7 +118,7 @@ impl bevy::input::gamepad::GamepadAxis {
 }
 #[script_bindings(
     remote,
-    name = "gamepad_button",
+    name = "gamepad_button_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadButton {
@@ -145,7 +149,7 @@ impl bevy::input::gamepad::GamepadButton {
 }
 #[script_bindings(
     remote,
-    name = "gamepad_settings",
+    name = "gamepad_settings_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadSettings {
@@ -157,7 +161,11 @@ impl bevy::input::gamepad::GamepadSettings {
         output
     }
 }
-#[script_bindings(remote, name = "key_code", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "key_code_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::input::keyboard::KeyCode {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::input::keyboard::KeyCode>) {
         let output: () = <bevy::input::keyboard::KeyCode as std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -186,7 +194,7 @@ impl bevy::input::keyboard::KeyCode {
 }
 #[script_bindings(
     remote,
-    name = "mouse_button",
+    name = "mouse_button_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::mouse::MouseButton {
@@ -217,7 +225,7 @@ impl bevy::input::mouse::MouseButton {
 }
 #[script_bindings(
     remote,
-    name = "touch_input",
+    name = "touch_input_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::touch::TouchInput {
@@ -241,7 +249,7 @@ impl bevy::input::touch::TouchInput {
 }
 #[script_bindings(
     remote,
-    name = "keyboard_focus_lost",
+    name = "keyboard_focus_lost_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::keyboard::KeyboardFocusLost {
@@ -274,7 +282,7 @@ impl bevy::input::keyboard::KeyboardFocusLost {
 }
 #[script_bindings(
     remote,
-    name = "keyboard_input",
+    name = "keyboard_input_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::keyboard::KeyboardInput {
@@ -305,7 +313,7 @@ impl bevy::input::keyboard::KeyboardInput {
 }
 #[script_bindings(
     remote,
-    name = "accumulated_mouse_motion",
+    name = "accumulated_mouse_motion_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::mouse::AccumulatedMouseMotion {
@@ -329,7 +337,7 @@ impl bevy::input::mouse::AccumulatedMouseMotion {
 }
 #[script_bindings(
     remote,
-    name = "accumulated_mouse_scroll",
+    name = "accumulated_mouse_scroll_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::mouse::AccumulatedMouseScroll {
@@ -353,7 +361,7 @@ impl bevy::input::mouse::AccumulatedMouseScroll {
 }
 #[script_bindings(
     remote,
-    name = "mouse_button_input",
+    name = "mouse_button_input_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::mouse::MouseButtonInput {
@@ -384,7 +392,7 @@ impl bevy::input::mouse::MouseButtonInput {
 }
 #[script_bindings(
     remote,
-    name = "mouse_motion",
+    name = "mouse_motion_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::mouse::MouseMotion {
@@ -408,7 +416,7 @@ impl bevy::input::mouse::MouseMotion {
 }
 #[script_bindings(
     remote,
-    name = "mouse_wheel",
+    name = "mouse_wheel_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::mouse::MouseWheel {
@@ -432,7 +440,7 @@ impl bevy::input::mouse::MouseWheel {
 }
 #[script_bindings(
     remote,
-    name = "gamepad_axis_changed_event",
+    name = "gamepad_axis_changed_event_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadAxisChangedEvent {
@@ -469,7 +477,7 @@ impl bevy::input::gamepad::GamepadAxisChangedEvent {
 }
 #[script_bindings(
     remote,
-    name = "gamepad_button_changed_event",
+    name = "gamepad_button_changed_event_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadButtonChangedEvent {
@@ -508,7 +516,7 @@ impl bevy::input::gamepad::GamepadButtonChangedEvent {
 }
 #[script_bindings(
     remote,
-    name = "gamepad_button_state_changed_event",
+    name = "gamepad_button_state_changed_event_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadButtonStateChangedEvent {
@@ -554,7 +562,7 @@ impl bevy::input::gamepad::GamepadButtonStateChangedEvent {
 }
 #[script_bindings(
     remote,
-    name = "gamepad_connection",
+    name = "gamepad_connection_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadConnection {
@@ -578,7 +586,7 @@ impl bevy::input::gamepad::GamepadConnection {
 }
 #[script_bindings(
     remote,
-    name = "gamepad_connection_event",
+    name = "gamepad_connection_event_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadConnectionEvent {
@@ -627,7 +635,7 @@ impl bevy::input::gamepad::GamepadConnectionEvent {
 }
 #[script_bindings(
     remote,
-    name = "gamepad_event",
+    name = "gamepad_event_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadEvent {
@@ -651,7 +659,7 @@ impl bevy::input::gamepad::GamepadEvent {
 }
 #[script_bindings(
     remote,
-    name = "gamepad_input",
+    name = "gamepad_input_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadInput {
@@ -682,7 +690,7 @@ impl bevy::input::gamepad::GamepadInput {
 }
 #[script_bindings(
     remote,
-    name = "gamepad_rumble_request",
+    name = "gamepad_rumble_request_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadRumbleRequest {
@@ -703,7 +711,7 @@ impl bevy::input::gamepad::GamepadRumbleRequest {
 }
 #[script_bindings(
     remote,
-    name = "raw_gamepad_axis_changed_event",
+    name = "raw_gamepad_axis_changed_event_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::RawGamepadAxisChangedEvent {
@@ -740,7 +748,7 @@ impl bevy::input::gamepad::RawGamepadAxisChangedEvent {
 }
 #[script_bindings(
     remote,
-    name = "raw_gamepad_button_changed_event",
+    name = "raw_gamepad_button_changed_event_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::RawGamepadButtonChangedEvent {
@@ -777,7 +785,7 @@ impl bevy::input::gamepad::RawGamepadButtonChangedEvent {
 }
 #[script_bindings(
     remote,
-    name = "raw_gamepad_event",
+    name = "raw_gamepad_event_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::RawGamepadEvent {
@@ -801,7 +809,7 @@ impl bevy::input::gamepad::RawGamepadEvent {
 }
 #[script_bindings(
     remote,
-    name = "pinch_gesture",
+    name = "pinch_gesture_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gestures::PinchGesture {
@@ -825,7 +833,7 @@ impl bevy::input::gestures::PinchGesture {
 }
 #[script_bindings(
     remote,
-    name = "rotation_gesture",
+    name = "rotation_gesture_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gestures::RotationGesture {
@@ -849,7 +857,7 @@ impl bevy::input::gestures::RotationGesture {
 }
 #[script_bindings(
     remote,
-    name = "double_tap_gesture",
+    name = "double_tap_gesture_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gestures::DoubleTapGesture {
@@ -873,7 +881,7 @@ impl bevy::input::gestures::DoubleTapGesture {
 }
 #[script_bindings(
     remote,
-    name = "pan_gesture",
+    name = "pan_gesture_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gestures::PanGesture {
@@ -897,7 +905,7 @@ impl bevy::input::gestures::PanGesture {
 }
 #[script_bindings(
     remote,
-    name = "button_state",
+    name = "button_state_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::ButtonState {
@@ -929,7 +937,7 @@ impl bevy::input::ButtonState {
 }
 #[script_bindings(
     remote,
-    name = "button_settings",
+    name = "button_settings_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::ButtonSettings {
@@ -1001,7 +1009,7 @@ impl bevy::input::gamepad::ButtonSettings {
 }
 #[script_bindings(
     remote,
-    name = "axis_settings",
+    name = "axis_settings_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::AxisSettings {
@@ -1119,7 +1127,7 @@ impl bevy::input::gamepad::AxisSettings {
 }
 #[script_bindings(
     remote,
-    name = "button_axis_settings",
+    name = "button_axis_settings_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::ButtonAxisSettings {
@@ -1146,7 +1154,7 @@ impl bevy::input::gamepad::ButtonAxisSettings {
 }
 #[script_bindings(
     remote,
-    name = "gamepad_rumble_intensity",
+    name = "gamepad_rumble_intensity_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadRumbleIntensity {
@@ -1182,7 +1190,11 @@ impl bevy::input::gamepad::GamepadRumbleIntensity {
         output
     }
 }
-#[script_bindings(remote, name = "key", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "key_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::input::keyboard::Key {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::input::keyboard::Key>) {
         let output: () = <bevy::input::keyboard::Key as std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -1211,7 +1223,7 @@ impl bevy::input::keyboard::Key {
 }
 #[script_bindings(
     remote,
-    name = "native_key_code",
+    name = "native_key_code_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::keyboard::NativeKeyCode {
@@ -1242,7 +1254,7 @@ impl bevy::input::keyboard::NativeKeyCode {
 }
 #[script_bindings(
     remote,
-    name = "native_key",
+    name = "native_key_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::keyboard::NativeKey {
@@ -1273,7 +1285,7 @@ impl bevy::input::keyboard::NativeKey {
 }
 #[script_bindings(
     remote,
-    name = "mouse_scroll_unit",
+    name = "mouse_scroll_unit_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::mouse::MouseScrollUnit {
@@ -1304,7 +1316,7 @@ impl bevy::input::mouse::MouseScrollUnit {
 }
 #[script_bindings(
     remote,
-    name = "touch_phase",
+    name = "touch_phase_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::touch::TouchPhase {
@@ -1335,7 +1347,7 @@ impl bevy::input::touch::TouchPhase {
 }
 #[script_bindings(
     remote,
-    name = "force_touch",
+    name = "force_touch_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::touch::ForceTouch {
@@ -1360,45 +1372,45 @@ impl bevy::input::touch::ForceTouch {
 impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
         let mut world = app.world_mut();
-        register_gamepad(&mut world);
-        register_gamepad_axis(&mut world);
-        register_gamepad_button(&mut world);
-        register_gamepad_settings(&mut world);
-        register_key_code(&mut world);
-        register_mouse_button(&mut world);
-        register_touch_input(&mut world);
-        register_keyboard_focus_lost(&mut world);
-        register_keyboard_input(&mut world);
-        register_accumulated_mouse_motion(&mut world);
-        register_accumulated_mouse_scroll(&mut world);
-        register_mouse_button_input(&mut world);
-        register_mouse_motion(&mut world);
-        register_mouse_wheel(&mut world);
-        register_gamepad_axis_changed_event(&mut world);
-        register_gamepad_button_changed_event(&mut world);
-        register_gamepad_button_state_changed_event(&mut world);
-        register_gamepad_connection(&mut world);
-        register_gamepad_connection_event(&mut world);
-        register_gamepad_event(&mut world);
-        register_gamepad_input(&mut world);
-        register_gamepad_rumble_request(&mut world);
-        register_raw_gamepad_axis_changed_event(&mut world);
-        register_raw_gamepad_button_changed_event(&mut world);
-        register_raw_gamepad_event(&mut world);
-        register_pinch_gesture(&mut world);
-        register_rotation_gesture(&mut world);
-        register_double_tap_gesture(&mut world);
-        register_pan_gesture(&mut world);
-        register_button_state(&mut world);
-        register_button_settings(&mut world);
-        register_axis_settings(&mut world);
-        register_button_axis_settings(&mut world);
-        register_gamepad_rumble_intensity(&mut world);
-        register_key(&mut world);
-        register_native_key_code(&mut world);
-        register_native_key(&mut world);
-        register_mouse_scroll_unit(&mut world);
-        register_touch_phase(&mut world);
-        register_force_touch(&mut world);
+        register_gamepad_functions(&mut world);
+        register_gamepad_axis_functions(&mut world);
+        register_gamepad_button_functions(&mut world);
+        register_gamepad_settings_functions(&mut world);
+        register_key_code_functions(&mut world);
+        register_mouse_button_functions(&mut world);
+        register_touch_input_functions(&mut world);
+        register_keyboard_focus_lost_functions(&mut world);
+        register_keyboard_input_functions(&mut world);
+        register_accumulated_mouse_motion_functions(&mut world);
+        register_accumulated_mouse_scroll_functions(&mut world);
+        register_mouse_button_input_functions(&mut world);
+        register_mouse_motion_functions(&mut world);
+        register_mouse_wheel_functions(&mut world);
+        register_gamepad_axis_changed_event_functions(&mut world);
+        register_gamepad_button_changed_event_functions(&mut world);
+        register_gamepad_button_state_changed_event_functions(&mut world);
+        register_gamepad_connection_functions(&mut world);
+        register_gamepad_connection_event_functions(&mut world);
+        register_gamepad_event_functions(&mut world);
+        register_gamepad_input_functions(&mut world);
+        register_gamepad_rumble_request_functions(&mut world);
+        register_raw_gamepad_axis_changed_event_functions(&mut world);
+        register_raw_gamepad_button_changed_event_functions(&mut world);
+        register_raw_gamepad_event_functions(&mut world);
+        register_pinch_gesture_functions(&mut world);
+        register_rotation_gesture_functions(&mut world);
+        register_double_tap_gesture_functions(&mut world);
+        register_pan_gesture_functions(&mut world);
+        register_button_state_functions(&mut world);
+        register_button_settings_functions(&mut world);
+        register_axis_settings_functions(&mut world);
+        register_button_axis_settings_functions(&mut world);
+        register_gamepad_rumble_intensity_functions(&mut world);
+        register_key_functions(&mut world);
+        register_native_key_code_functions(&mut world);
+        register_native_key_functions(&mut world);
+        register_mouse_scroll_unit_functions(&mut world);
+        register_touch_phase_functions(&mut world);
+        register_force_touch_functions(&mut world);
     }
 }

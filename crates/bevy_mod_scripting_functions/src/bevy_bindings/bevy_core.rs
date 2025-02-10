@@ -12,7 +12,11 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 use crate::*;
 pub struct BevyCoreScriptingPlugin;
-#[script_bindings(remote, name = "name", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "name_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::core::prelude::Name {
     fn clone(_self: Ref<bevy::core::prelude::Name>) {
         let output: Val<bevy::core::prelude::Name> = <bevy::core::prelude::Name as std::clone::Clone>::clone(
@@ -32,6 +36,6 @@ impl bevy::core::prelude::Name {
 impl ::bevy::app::Plugin for BevyCoreScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
         let mut world = app.world_mut();
-        register_name(&mut world);
+        register_name_functions(&mut world);
     }
 }

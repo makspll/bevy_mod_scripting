@@ -12,7 +12,11 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 use crate::*;
 pub struct BevyTimeScriptingPlugin;
-#[script_bindings(remote, name = "fixed", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "fixed_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::time::prelude::Fixed {
     fn clone(_self: Ref<bevy::time::prelude::Fixed>) {
         let output: Val<bevy::time::prelude::Fixed> = <bevy::time::prelude::Fixed as std::clone::Clone>::clone(
@@ -22,7 +26,11 @@ impl bevy::time::prelude::Fixed {
         output
     }
 }
-#[script_bindings(remote, name = "real", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "real_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::time::prelude::Real {
     fn clone(_self: Ref<bevy::time::prelude::Real>) {
         let output: Val<bevy::time::prelude::Real> = <bevy::time::prelude::Real as std::clone::Clone>::clone(
@@ -32,7 +40,11 @@ impl bevy::time::prelude::Real {
         output
     }
 }
-#[script_bindings(remote, name = "timer", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "timer_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::time::prelude::Timer {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::time::prelude::Timer>) {
         let output: () = <bevy::time::prelude::Timer as std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -190,7 +202,7 @@ impl bevy::time::prelude::Timer {
 }
 #[script_bindings(
     remote,
-    name = "timer_mode",
+    name = "timer_mode_functions",
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::time::prelude::TimerMode {
@@ -219,7 +231,11 @@ impl bevy::time::prelude::TimerMode {
         output
     }
 }
-#[script_bindings(remote, name = "virtual", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "virtual_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::time::prelude::Virtual {
     fn clone(_self: Ref<bevy::time::prelude::Virtual>) {
         let output: Val<bevy::time::prelude::Virtual> = <bevy::time::prelude::Virtual as std::clone::Clone>::clone(
@@ -229,7 +245,11 @@ impl bevy::time::prelude::Virtual {
         output
     }
 }
-#[script_bindings(remote, name = "stopwatch", bms_core_path = "bevy_mod_scripting_core")]
+#[script_bindings(
+    remote,
+    name = "stopwatch_functions",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::time::Stopwatch {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::time::Stopwatch>) {
         let output: () = <bevy::time::Stopwatch as std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -300,11 +320,11 @@ impl bevy::time::Stopwatch {
 impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
         let mut world = app.world_mut();
-        register_fixed(&mut world);
-        register_real(&mut world);
-        register_timer(&mut world);
-        register_timer_mode(&mut world);
-        register_virtual(&mut world);
-        register_stopwatch(&mut world);
+        register_fixed_functions(&mut world);
+        register_real_functions(&mut world);
+        register_timer_functions(&mut world);
+        register_timer_mode_functions(&mut world);
+        register_virtual_functions(&mut world);
+        register_stopwatch_functions(&mut world);
     }
 }
