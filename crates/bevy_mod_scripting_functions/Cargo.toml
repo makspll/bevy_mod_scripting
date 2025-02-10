@@ -34,6 +34,7 @@ profiling = { workspace = true }
 uuid = "1.11"
 smol_str = "0.2.2"
 bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_derive = { workspace = true }
 
 [lints]
 workspace = true
