@@ -78,6 +78,20 @@ impl FunctionInfo {
         self.docs = Some(docs.into());
         self
     }
+
+    /// Add argument names to the function info.
+    ///
+    /// If the number of argument names is less than the number of arguments, the remaining arguments will be unnamed.
+    /// If the number of argument names is greater than the number of arguments, the extra argument names will be ignored.
+    pub fn with_arg_names(mut self, arg_names: &[&'static str]) -> Self {
+        self.arg_info
+            .iter_mut()
+            .zip(arg_names.iter())
+            .for_each(|(arg, name)| {
+                arg.name = Some(Cow::Borrowed(*name));
+            });
+        self
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Reflect)]

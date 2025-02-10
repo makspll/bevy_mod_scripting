@@ -102,13 +102,48 @@ impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
         N: Into<Cow<'static, str>>,
         F: ScriptFunction<'env, M> + GetFunctionTypeDependencies<M> + GetFunctionInfo<M>,
     {
+        self.register_inner(name, function, None, None)
+    }
+
+    /// Registers a function in the namespace with a docstring
+    pub fn register_documented<'env, N, F, M>(
+        &mut self,
+        name: N,
+        function: F,
+        docstring: &'static str,
+        arg_names: &'static [&'static str],
+    ) -> &mut Self
+    where
+        N: Into<Cow<'static, str>>,
+        F: ScriptFunction<'env, M> + GetFunctionTypeDependencies<M> + GetFunctionInfo<M>,
+    {
+        self.register_inner(name, function, Some(docstring), Some(arg_names))
+    }
+
+    fn register_inner<'env, N, F, M>(
+        &mut self,
+        name: N,
+        function: F,
+        docstring: Option<&'static str>,
+        arg_names: Option<&'static [&'static str]>,
+    ) -> &mut Self
+    where
+        N: Into<Cow<'static, str>>,
+        F: ScriptFunction<'env, M> + GetFunctionTypeDependencies<M> + GetFunctionInfo<M>,
+    {
         {
             {
                 let mut registry = self
                     .world
                     .get_resource_or_init::<AppScriptFunctionRegistry>();
                 let mut registry = registry.write();
-                registry.register(S::into_namespace(), name, function);
+                registry.register_with_arg_names(
+                    S::into_namespace(),
+                    name,
+                    function,
+                    docstring.unwrap_or_default(),
+                    arg_names.unwrap_or(&[]),
+                );
             }
             {
                 let type_registry = self.world.get_resource_or_init::<AppTypeRegistry>();

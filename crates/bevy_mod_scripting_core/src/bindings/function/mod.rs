@@ -12,14 +12,64 @@ pub mod type_dependencies;
 #[cfg(test)]
 #[allow(dead_code)]
 mod test {
-    use bevy::reflect::{FromReflect, GetTypeRegistration, Typed};
+    use bevy::reflect::{FromReflect, GetTypeRegistration, Reflect, Typed};
+    use bevy_mod_scripting_derive::script_bindings;
 
     use crate::{
-        bindings::function::from::{Ref, Val},
+        bindings::function::{
+            from::{Ref, Val},
+            namespace::IntoNamespace,
+            script_function::AppScriptFunctionRegistry,
+        },
         error::InteropError,
     };
 
     use super::arg_meta::{ScriptArgument, ScriptReturn};
+
+    #[test]
+    fn test_macro_generates_correct_registrator_function() {
+        #[derive(Reflect)]
+        struct TestStruct;
+
+        #[script_bindings(bms_core_path = "crate", name = "test_fn")]
+        impl TestStruct {
+            /// My docs !!
+            fn test_fn(_self: Ref<TestStruct>, mut _arg1: usize) {}
+        }
+
+        let mut test_world = bevy::ecs::world::World::default();
+
+        register_test_fn(&mut test_world);
+
+        let app_registry = test_world
+            .get_resource::<AppScriptFunctionRegistry>()
+            .unwrap();
+        let app_registry = app_registry.read();
+
+        let test_fn = app_registry
+            .get_function(TestStruct::into_namespace(), "test_fn")
+            .unwrap();
+
+        assert_eq!(test_fn.info.docs, Some("My docs !!".into()));
+        assert_eq!(test_fn.info.arg_info.len(), 2);
+
+        assert_eq!(
+            test_fn.info.arg_info[0].type_id,
+            std::any::TypeId::of::<Ref<TestStruct>>()
+        );
+        assert_eq!(test_fn.info.arg_info[0].name, Some("_self".into()));
+
+        assert_eq!(
+            test_fn.info.arg_info[1].type_id,
+            std::any::TypeId::of::<usize>()
+        );
+        assert_eq!(test_fn.info.arg_info[1].name, Some("_arg1".into()));
+
+        assert_eq!(
+            test_fn.info.return_info.type_id,
+            std::any::TypeId::of::<()>()
+        );
+    }
 
     fn test_is_valid_return<T: ScriptReturn>() {}
     fn test_is_valid_arg<T: ScriptArgument>() {}

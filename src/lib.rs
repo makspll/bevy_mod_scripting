@@ -19,4 +19,5 @@ pub mod rhai {
 //     pub use bevy_mod_scripting_rune::*;
 // }
 
+pub use bevy_mod_scripting_derive::*;
 pub use bevy_mod_scripting_functions::*;
