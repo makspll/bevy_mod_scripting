@@ -250,8 +250,7 @@ impl World {
 #[script_bindings(
     remote,
     bms_core_path = "bevy_mod_scripting_core",
-    name = "reflect_reference_functions",
-    unregistered
+    name = "reflect_reference_functions"
 )]
 impl ReflectReference {
     fn display_ref(ctxt: FunctionCallContext, s: ReflectReference) -> Result<String, InteropError> {
@@ -480,8 +479,7 @@ impl ReflectReference {
 #[script_bindings(
     remote,
     bms_core_path = "bevy_mod_scripting_core",
-    name = "script_type_registration_functions",
-    unregistered
+    name = "script_type_registration_functions"
 )]
 impl ScriptTypeRegistration {
     fn type_name(s: Ref<ScriptTypeRegistration>) -> String {
@@ -498,8 +496,7 @@ impl ScriptTypeRegistration {
 #[script_bindings(
     remote,
     bms_core_path = "bevy_mod_scripting_core",
-    name = "script_component_registration_functions",
-    unregistered
+    name = "script_component_registration_functions"
 )]
 impl ScriptComponentRegistration {
     fn type_name(s: Ref<ScriptComponentRegistration>) -> &'static str {
@@ -516,8 +513,7 @@ impl ScriptComponentRegistration {
 #[script_bindings(
     remote,
     bms_core_path = "bevy_mod_scripting_core",
-    name = "script_resource_registration_functions",
-    unregistered
+    name = "script_resource_registration_functions"
 )]
 impl ScriptResourceRegistration {
     fn type_name(s: Ref<ScriptResourceRegistration>) -> &'static str {
@@ -534,8 +530,7 @@ impl ScriptResourceRegistration {
 #[script_bindings(
     remote,
     bms_core_path = "bevy_mod_scripting_core",
-    name = "script_query_builder_functions",
-    unregistered
+    name = "script_query_builder_functions"
 )]
 impl ScriptQueryBuilder {
     fn component(
@@ -584,8 +579,7 @@ impl ScriptQueryBuilder {
 #[script_bindings(
     remote,
     bms_core_path = "bevy_mod_scripting_core",
-    name = "script_query_result_functions",
-    unregistered
+    name = "script_query_result_functions"
 )]
 impl ScriptQueryResult {
     fn entity(s: Ref<ScriptQueryResult>) -> Val<Entity> {
