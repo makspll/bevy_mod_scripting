@@ -66,7 +66,7 @@ mod test {
         assert_eq!(test_fn.info.arg_info[1].name, Some("_arg1".into()));
 
         assert_eq!(
-            test_fn.info.return_info.type_id,
+            test_fn.info.return_info.as_ref().unwrap().type_id,
             std::any::TypeId::of::<()>()
         );
     }
