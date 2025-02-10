@@ -31,6 +31,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+
+  check-needs-run:
+    outputs:
+      any-changes: ${{ steps.changes.outputs.src }}
+    permissions:
+      pull-requests: read
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          base: main
+          filters: |
+            src:
+              - 'src/**'
+              - 'docs/**'
+              - '.github/workflows/bevy_mod_scripting.yml'
+
+
   generate-job-matrix:
     runs-on: ubuntu-latest
     # container: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
@@ -49,13 +70,14 @@ jobs:
           echo "matrix=$(cat matrix-one-line.json)" >> $GITHUB_OUTPUT
 
   check:  
+    needs: [check-needs-run]
     permissions:
       pull-requests: write
       contents: write
       issues: write
     name: Check - ${{ matrix.run_args.name }}
     runs-on: ${{ matrix.run_args.os }}
-    # container: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+    if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
     needs: 
       - generate-job-matrix
     strategy:
