@@ -187,6 +187,20 @@ mod test {
 
         assert_eq!(info.arg_info[0].type_id, TypeId::of::<i32>());
         assert_eq!(info.arg_info[1].type_id, TypeId::of::<f32>());
+
+        match info.arg_info[0].type_info.as_ref().unwrap() {
+            ThroughTypeInfo::TypeInfo(type_info) => {
+                assert_eq!(type_info.type_id(), TypeId::of::<i32>());
+            }
+            _ => panic!("Expected TypeInfo"),
+        }
+
+        match info.arg_info[1].type_info.as_ref().unwrap() {
+            ThroughTypeInfo::TypeInfo(type_info) => {
+                assert_eq!(type_info.type_id(), TypeId::of::<f32>());
+            }
+            _ => panic!("Expected TypeInfo"),
+        }
     }
 
     #[test]
@@ -201,5 +215,31 @@ mod test {
 
         assert_eq!(info.arg_info[0].type_id, TypeId::of::<Ref<'static, i32>>());
         assert_eq!(info.arg_info[1].type_id, TypeId::of::<Mut<'static, f32>>());
+
+        match info.arg_info[0].type_info.as_ref().unwrap() {
+            ThroughTypeInfo::UntypedWrapper {
+                through_type,
+                wrapper_type_id,
+                wrapper_name,
+            } => {
+                assert_eq!(through_type.type_id(), TypeId::of::<i32>());
+                assert_eq!(*wrapper_type_id, TypeId::of::<Ref<'static, i32>>());
+                assert_eq!(*wrapper_name, "Ref");
+            }
+            _ => panic!("Expected UntypedWrapper"),
+        }
+
+        match info.arg_info[1].type_info.as_ref().unwrap() {
+            ThroughTypeInfo::UntypedWrapper {
+                through_type,
+                wrapper_type_id,
+                wrapper_name,
+            } => {
+                assert_eq!(through_type.type_id(), TypeId::of::<f32>());
+                assert_eq!(*wrapper_type_id, TypeId::of::<Mut<'static, f32>>());
+                assert_eq!(*wrapper_name, "Mut");
+            }
+            _ => panic!("Expected UntypedWrapper"),
+        }
     }
 }
