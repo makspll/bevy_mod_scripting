@@ -15,6 +15,10 @@ pub struct {{ "ScriptingPlugin" | prefix_cratename | convert_case(case="upper_ca
 )]
 impl {{item.import_path}} {
 {% for function in item.functions %}
+
+    {% for docstring in function.docstrings %}
+    /// {{ docstring }}
+    {% endfor %}
     fn {{ function.ident }} (
         {%- for arg in function.args -%}
             {%- if arg.proxy_ty is matching("Mut.*")-%}
