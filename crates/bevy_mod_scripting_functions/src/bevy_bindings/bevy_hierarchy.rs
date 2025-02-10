@@ -18,11 +18,12 @@ pub struct BevyHierarchyScriptingPlugin;
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::hierarchy::prelude::Children {
+    ///  Swaps the child at `a_index` with the child at `b_index`.
     fn swap(
         mut _self: Mut<bevy::hierarchy::prelude::Children>,
         a_index: usize,
         b_index: usize,
-    ) {
+    ) -> () {
         let output: () = bevy::hierarchy::prelude::Children::swap(
                 &mut _self,
                 a_index,
@@ -38,7 +39,7 @@ impl bevy::hierarchy::prelude::Children {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::hierarchy::prelude::Parent {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::hierarchy::prelude::Parent>) {
+    fn assert_receiver_is_total_eq(_self: Ref<bevy::hierarchy::prelude::Parent>) -> () {
         let output: () = <bevy::hierarchy::prelude::Parent as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
@@ -48,14 +49,17 @@ impl bevy::hierarchy::prelude::Parent {
     fn eq(
         _self: Ref<bevy::hierarchy::prelude::Parent>,
         other: Ref<bevy::hierarchy::prelude::Parent>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::hierarchy::prelude::Parent as std::cmp::PartialEq<
             bevy::hierarchy::prelude::Parent,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn get(_self: Ref<bevy::hierarchy::prelude::Parent>) {
+    ///  Gets the [`Entity`] ID of the parent.
+    fn get(
+        _self: Ref<bevy::hierarchy::prelude::Parent>,
+    ) -> Val<bevy::ecs::entity::Entity> {
         let output: Val<bevy::ecs::entity::Entity> = bevy::hierarchy::prelude::Parent::get(
                 &_self,
             )
@@ -69,14 +73,16 @@ impl bevy::hierarchy::prelude::Parent {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::hierarchy::HierarchyEvent {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::hierarchy::HierarchyEvent>) {
+    fn assert_receiver_is_total_eq(_self: Ref<bevy::hierarchy::HierarchyEvent>) -> () {
         let output: () = <bevy::hierarchy::HierarchyEvent as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::hierarchy::HierarchyEvent>) {
+    fn clone(
+        _self: Ref<bevy::hierarchy::HierarchyEvent>,
+    ) -> Val<bevy::hierarchy::HierarchyEvent> {
         let output: Val<bevy::hierarchy::HierarchyEvent> = <bevy::hierarchy::HierarchyEvent as std::clone::Clone>::clone(
                 &_self,
             )
@@ -86,7 +92,7 @@ impl bevy::hierarchy::HierarchyEvent {
     fn eq(
         _self: Ref<bevy::hierarchy::HierarchyEvent>,
         other: Ref<bevy::hierarchy::HierarchyEvent>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::hierarchy::HierarchyEvent as std::cmp::PartialEq<
             bevy::hierarchy::HierarchyEvent,
         >>::eq(&_self, &other)

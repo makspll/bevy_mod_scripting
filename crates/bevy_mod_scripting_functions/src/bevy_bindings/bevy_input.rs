@@ -18,15 +18,18 @@ pub struct BevyInputScriptingPlugin;
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::Gamepad {
-    fn dpad(_self: Ref<bevy::input::gamepad::Gamepad>) {
+    ///  Returns the directional pad as a [`Vec2`]
+    fn dpad(_self: Ref<bevy::input::gamepad::Gamepad>) -> Val<bevy::math::Vec2> {
         let output: Val<bevy::math::Vec2> = bevy::input::gamepad::Gamepad::dpad(&_self)
             .into();
         output
     }
+    ///  Returns `true` if the [`GamepadButton`] has been pressed during the current frame.
+    ///  Note: This function does not imply information regarding the current state of [`ButtonInput::pressed`] or [`ButtonInput::just_released`].
     fn just_pressed(
         _self: Ref<bevy::input::gamepad::Gamepad>,
         button_type: Val<bevy::input::gamepad::GamepadButton>,
-    ) {
+    ) -> bool {
         let output: bool = bevy::input::gamepad::Gamepad::just_pressed(
                 &_self,
                 button_type.into_inner(),
@@ -34,10 +37,12 @@ impl bevy::input::gamepad::Gamepad {
             .into();
         output
     }
+    ///  Returns `true` if the [`GamepadButton`] has been released during the current frame.
+    ///  Note: This function does not imply information regarding the current state of [`ButtonInput::pressed`] or [`ButtonInput::just_pressed`].
     fn just_released(
         _self: Ref<bevy::input::gamepad::Gamepad>,
         button_type: Val<bevy::input::gamepad::GamepadButton>,
-    ) {
+    ) -> bool {
         let output: bool = bevy::input::gamepad::Gamepad::just_released(
                 &_self,
                 button_type.into_inner(),
@@ -45,17 +50,19 @@ impl bevy::input::gamepad::Gamepad {
             .into();
         output
     }
-    fn left_stick(_self: Ref<bevy::input::gamepad::Gamepad>) {
+    ///  Returns the left stick as a [`Vec2`]
+    fn left_stick(_self: Ref<bevy::input::gamepad::Gamepad>) -> Val<bevy::math::Vec2> {
         let output: Val<bevy::math::Vec2> = bevy::input::gamepad::Gamepad::left_stick(
                 &_self,
             )
             .into();
         output
     }
+    ///  Returns `true` if the [`GamepadButton`] has been pressed.
     fn pressed(
         _self: Ref<bevy::input::gamepad::Gamepad>,
         button_type: Val<bevy::input::gamepad::GamepadButton>,
-    ) {
+    ) -> bool {
         let output: bool = bevy::input::gamepad::Gamepad::pressed(
                 &_self,
                 button_type.into_inner(),
@@ -63,21 +70,27 @@ impl bevy::input::gamepad::Gamepad {
             .into();
         output
     }
-    fn product_id(_self: Ref<bevy::input::gamepad::Gamepad>) {
+    ///  Returns the USB product ID as assigned by the [vendor], if available.
+    ///  [vendor]: Self::vendor_id
+    fn product_id(
+        _self: Ref<bevy::input::gamepad::Gamepad>,
+    ) -> std::option::Option<u16> {
         let output: std::option::Option<u16> = bevy::input::gamepad::Gamepad::product_id(
                 &_self,
             )
             .into();
         output
     }
-    fn right_stick(_self: Ref<bevy::input::gamepad::Gamepad>) {
+    ///  Returns the right stick as a [`Vec2`]
+    fn right_stick(_self: Ref<bevy::input::gamepad::Gamepad>) -> Val<bevy::math::Vec2> {
         let output: Val<bevy::math::Vec2> = bevy::input::gamepad::Gamepad::right_stick(
                 &_self,
             )
             .into();
         output
     }
-    fn vendor_id(_self: Ref<bevy::input::gamepad::Gamepad>) {
+    ///  Returns the USB vendor ID as assigned by the USB-IF, if available.
+    fn vendor_id(_self: Ref<bevy::input::gamepad::Gamepad>) -> std::option::Option<u16> {
         let output: std::option::Option<u16> = bevy::input::gamepad::Gamepad::vendor_id(
                 &_self,
             )
@@ -91,14 +104,16 @@ impl bevy::input::gamepad::Gamepad {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadAxis {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::gamepad::GamepadAxis>) {
+    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::gamepad::GamepadAxis>) -> () {
         let output: () = <bevy::input::gamepad::GamepadAxis as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::input::gamepad::GamepadAxis>) {
+    fn clone(
+        _self: Ref<bevy::input::gamepad::GamepadAxis>,
+    ) -> Val<bevy::input::gamepad::GamepadAxis> {
         let output: Val<bevy::input::gamepad::GamepadAxis> = <bevy::input::gamepad::GamepadAxis as std::clone::Clone>::clone(
                 &_self,
             )
@@ -108,7 +123,7 @@ impl bevy::input::gamepad::GamepadAxis {
     fn eq(
         _self: Ref<bevy::input::gamepad::GamepadAxis>,
         other: Ref<bevy::input::gamepad::GamepadAxis>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::gamepad::GamepadAxis as std::cmp::PartialEq<
             bevy::input::gamepad::GamepadAxis,
         >>::eq(&_self, &other)
@@ -122,14 +137,18 @@ impl bevy::input::gamepad::GamepadAxis {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadButton {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::gamepad::GamepadButton>) {
+    fn assert_receiver_is_total_eq(
+        _self: Ref<bevy::input::gamepad::GamepadButton>,
+    ) -> () {
         let output: () = <bevy::input::gamepad::GamepadButton as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::input::gamepad::GamepadButton>) {
+    fn clone(
+        _self: Ref<bevy::input::gamepad::GamepadButton>,
+    ) -> Val<bevy::input::gamepad::GamepadButton> {
         let output: Val<bevy::input::gamepad::GamepadButton> = <bevy::input::gamepad::GamepadButton as std::clone::Clone>::clone(
                 &_self,
             )
@@ -139,7 +158,7 @@ impl bevy::input::gamepad::GamepadButton {
     fn eq(
         _self: Ref<bevy::input::gamepad::GamepadButton>,
         other: Ref<bevy::input::gamepad::GamepadButton>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::gamepad::GamepadButton as std::cmp::PartialEq<
             bevy::input::gamepad::GamepadButton,
         >>::eq(&_self, &other)
@@ -153,7 +172,9 @@ impl bevy::input::gamepad::GamepadButton {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadSettings {
-    fn clone(_self: Ref<bevy::input::gamepad::GamepadSettings>) {
+    fn clone(
+        _self: Ref<bevy::input::gamepad::GamepadSettings>,
+    ) -> Val<bevy::input::gamepad::GamepadSettings> {
         let output: Val<bevy::input::gamepad::GamepadSettings> = <bevy::input::gamepad::GamepadSettings as std::clone::Clone>::clone(
                 &_self,
             )
@@ -167,14 +188,16 @@ impl bevy::input::gamepad::GamepadSettings {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::keyboard::KeyCode {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::keyboard::KeyCode>) {
+    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::keyboard::KeyCode>) -> () {
         let output: () = <bevy::input::keyboard::KeyCode as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::input::keyboard::KeyCode>) {
+    fn clone(
+        _self: Ref<bevy::input::keyboard::KeyCode>,
+    ) -> Val<bevy::input::keyboard::KeyCode> {
         let output: Val<bevy::input::keyboard::KeyCode> = <bevy::input::keyboard::KeyCode as std::clone::Clone>::clone(
                 &_self,
             )
@@ -184,7 +207,7 @@ impl bevy::input::keyboard::KeyCode {
     fn eq(
         _self: Ref<bevy::input::keyboard::KeyCode>,
         other: Ref<bevy::input::keyboard::KeyCode>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::keyboard::KeyCode as std::cmp::PartialEq<
             bevy::input::keyboard::KeyCode,
         >>::eq(&_self, &other)
@@ -198,14 +221,16 @@ impl bevy::input::keyboard::KeyCode {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::mouse::MouseButton {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::mouse::MouseButton>) {
+    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::mouse::MouseButton>) -> () {
         let output: () = <bevy::input::mouse::MouseButton as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::input::mouse::MouseButton>) {
+    fn clone(
+        _self: Ref<bevy::input::mouse::MouseButton>,
+    ) -> Val<bevy::input::mouse::MouseButton> {
         let output: Val<bevy::input::mouse::MouseButton> = <bevy::input::mouse::MouseButton as std::clone::Clone>::clone(
                 &_self,
             )
@@ -215,7 +240,7 @@ impl bevy::input::mouse::MouseButton {
     fn eq(
         _self: Ref<bevy::input::mouse::MouseButton>,
         other: Ref<bevy::input::mouse::MouseButton>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::mouse::MouseButton as std::cmp::PartialEq<
             bevy::input::mouse::MouseButton,
         >>::eq(&_self, &other)
@@ -229,7 +254,9 @@ impl bevy::input::mouse::MouseButton {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::touch::TouchInput {
-    fn clone(_self: Ref<bevy::input::touch::TouchInput>) {
+    fn clone(
+        _self: Ref<bevy::input::touch::TouchInput>,
+    ) -> Val<bevy::input::touch::TouchInput> {
         let output: Val<bevy::input::touch::TouchInput> = <bevy::input::touch::TouchInput as std::clone::Clone>::clone(
                 &_self,
             )
@@ -239,7 +266,7 @@ impl bevy::input::touch::TouchInput {
     fn eq(
         _self: Ref<bevy::input::touch::TouchInput>,
         other: Ref<bevy::input::touch::TouchInput>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::touch::TouchInput as std::cmp::PartialEq<
             bevy::input::touch::TouchInput,
         >>::eq(&_self, &other)
@@ -255,14 +282,16 @@ impl bevy::input::touch::TouchInput {
 impl bevy::input::keyboard::KeyboardFocusLost {
     fn assert_receiver_is_total_eq(
         _self: Ref<bevy::input::keyboard::KeyboardFocusLost>,
-    ) {
+    ) -> () {
         let output: () = <bevy::input::keyboard::KeyboardFocusLost as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::input::keyboard::KeyboardFocusLost>) {
+    fn clone(
+        _self: Ref<bevy::input::keyboard::KeyboardFocusLost>,
+    ) -> Val<bevy::input::keyboard::KeyboardFocusLost> {
         let output: Val<bevy::input::keyboard::KeyboardFocusLost> = <bevy::input::keyboard::KeyboardFocusLost as std::clone::Clone>::clone(
                 &_self,
             )
@@ -272,7 +301,7 @@ impl bevy::input::keyboard::KeyboardFocusLost {
     fn eq(
         _self: Ref<bevy::input::keyboard::KeyboardFocusLost>,
         other: Ref<bevy::input::keyboard::KeyboardFocusLost>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::keyboard::KeyboardFocusLost as std::cmp::PartialEq<
             bevy::input::keyboard::KeyboardFocusLost,
         >>::eq(&_self, &other)
@@ -286,14 +315,18 @@ impl bevy::input::keyboard::KeyboardFocusLost {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::keyboard::KeyboardInput {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::keyboard::KeyboardInput>) {
+    fn assert_receiver_is_total_eq(
+        _self: Ref<bevy::input::keyboard::KeyboardInput>,
+    ) -> () {
         let output: () = <bevy::input::keyboard::KeyboardInput as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::input::keyboard::KeyboardInput>) {
+    fn clone(
+        _self: Ref<bevy::input::keyboard::KeyboardInput>,
+    ) -> Val<bevy::input::keyboard::KeyboardInput> {
         let output: Val<bevy::input::keyboard::KeyboardInput> = <bevy::input::keyboard::KeyboardInput as std::clone::Clone>::clone(
                 &_self,
             )
@@ -303,7 +336,7 @@ impl bevy::input::keyboard::KeyboardInput {
     fn eq(
         _self: Ref<bevy::input::keyboard::KeyboardInput>,
         other: Ref<bevy::input::keyboard::KeyboardInput>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::keyboard::KeyboardInput as std::cmp::PartialEq<
             bevy::input::keyboard::KeyboardInput,
         >>::eq(&_self, &other)
@@ -317,7 +350,9 @@ impl bevy::input::keyboard::KeyboardInput {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::mouse::AccumulatedMouseMotion {
-    fn clone(_self: Ref<bevy::input::mouse::AccumulatedMouseMotion>) {
+    fn clone(
+        _self: Ref<bevy::input::mouse::AccumulatedMouseMotion>,
+    ) -> Val<bevy::input::mouse::AccumulatedMouseMotion> {
         let output: Val<bevy::input::mouse::AccumulatedMouseMotion> = <bevy::input::mouse::AccumulatedMouseMotion as std::clone::Clone>::clone(
                 &_self,
             )
@@ -327,7 +362,7 @@ impl bevy::input::mouse::AccumulatedMouseMotion {
     fn eq(
         _self: Ref<bevy::input::mouse::AccumulatedMouseMotion>,
         other: Ref<bevy::input::mouse::AccumulatedMouseMotion>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::mouse::AccumulatedMouseMotion as std::cmp::PartialEq<
             bevy::input::mouse::AccumulatedMouseMotion,
         >>::eq(&_self, &other)
@@ -341,7 +376,9 @@ impl bevy::input::mouse::AccumulatedMouseMotion {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::mouse::AccumulatedMouseScroll {
-    fn clone(_self: Ref<bevy::input::mouse::AccumulatedMouseScroll>) {
+    fn clone(
+        _self: Ref<bevy::input::mouse::AccumulatedMouseScroll>,
+    ) -> Val<bevy::input::mouse::AccumulatedMouseScroll> {
         let output: Val<bevy::input::mouse::AccumulatedMouseScroll> = <bevy::input::mouse::AccumulatedMouseScroll as std::clone::Clone>::clone(
                 &_self,
             )
@@ -351,7 +388,7 @@ impl bevy::input::mouse::AccumulatedMouseScroll {
     fn eq(
         _self: Ref<bevy::input::mouse::AccumulatedMouseScroll>,
         other: Ref<bevy::input::mouse::AccumulatedMouseScroll>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::mouse::AccumulatedMouseScroll as std::cmp::PartialEq<
             bevy::input::mouse::AccumulatedMouseScroll,
         >>::eq(&_self, &other)
@@ -365,14 +402,18 @@ impl bevy::input::mouse::AccumulatedMouseScroll {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::mouse::MouseButtonInput {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::mouse::MouseButtonInput>) {
+    fn assert_receiver_is_total_eq(
+        _self: Ref<bevy::input::mouse::MouseButtonInput>,
+    ) -> () {
         let output: () = <bevy::input::mouse::MouseButtonInput as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::input::mouse::MouseButtonInput>) {
+    fn clone(
+        _self: Ref<bevy::input::mouse::MouseButtonInput>,
+    ) -> Val<bevy::input::mouse::MouseButtonInput> {
         let output: Val<bevy::input::mouse::MouseButtonInput> = <bevy::input::mouse::MouseButtonInput as std::clone::Clone>::clone(
                 &_self,
             )
@@ -382,7 +423,7 @@ impl bevy::input::mouse::MouseButtonInput {
     fn eq(
         _self: Ref<bevy::input::mouse::MouseButtonInput>,
         other: Ref<bevy::input::mouse::MouseButtonInput>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::mouse::MouseButtonInput as std::cmp::PartialEq<
             bevy::input::mouse::MouseButtonInput,
         >>::eq(&_self, &other)
@@ -396,7 +437,9 @@ impl bevy::input::mouse::MouseButtonInput {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::mouse::MouseMotion {
-    fn clone(_self: Ref<bevy::input::mouse::MouseMotion>) {
+    fn clone(
+        _self: Ref<bevy::input::mouse::MouseMotion>,
+    ) -> Val<bevy::input::mouse::MouseMotion> {
         let output: Val<bevy::input::mouse::MouseMotion> = <bevy::input::mouse::MouseMotion as std::clone::Clone>::clone(
                 &_self,
             )
@@ -406,7 +449,7 @@ impl bevy::input::mouse::MouseMotion {
     fn eq(
         _self: Ref<bevy::input::mouse::MouseMotion>,
         other: Ref<bevy::input::mouse::MouseMotion>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::mouse::MouseMotion as std::cmp::PartialEq<
             bevy::input::mouse::MouseMotion,
         >>::eq(&_self, &other)
@@ -420,7 +463,9 @@ impl bevy::input::mouse::MouseMotion {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::mouse::MouseWheel {
-    fn clone(_self: Ref<bevy::input::mouse::MouseWheel>) {
+    fn clone(
+        _self: Ref<bevy::input::mouse::MouseWheel>,
+    ) -> Val<bevy::input::mouse::MouseWheel> {
         let output: Val<bevy::input::mouse::MouseWheel> = <bevy::input::mouse::MouseWheel as std::clone::Clone>::clone(
                 &_self,
             )
@@ -430,7 +475,7 @@ impl bevy::input::mouse::MouseWheel {
     fn eq(
         _self: Ref<bevy::input::mouse::MouseWheel>,
         other: Ref<bevy::input::mouse::MouseWheel>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::mouse::MouseWheel as std::cmp::PartialEq<
             bevy::input::mouse::MouseWheel,
         >>::eq(&_self, &other)
@@ -444,7 +489,9 @@ impl bevy::input::mouse::MouseWheel {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadAxisChangedEvent {
-    fn clone(_self: Ref<bevy::input::gamepad::GamepadAxisChangedEvent>) {
+    fn clone(
+        _self: Ref<bevy::input::gamepad::GamepadAxisChangedEvent>,
+    ) -> Val<bevy::input::gamepad::GamepadAxisChangedEvent> {
         let output: Val<bevy::input::gamepad::GamepadAxisChangedEvent> = <bevy::input::gamepad::GamepadAxisChangedEvent as std::clone::Clone>::clone(
                 &_self,
             )
@@ -454,18 +501,19 @@ impl bevy::input::gamepad::GamepadAxisChangedEvent {
     fn eq(
         _self: Ref<bevy::input::gamepad::GamepadAxisChangedEvent>,
         other: Ref<bevy::input::gamepad::GamepadAxisChangedEvent>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::gamepad::GamepadAxisChangedEvent as std::cmp::PartialEq<
             bevy::input::gamepad::GamepadAxisChangedEvent,
         >>::eq(&_self, &other)
             .into();
         output
     }
+    ///  Creates a new [`GamepadAxisChangedEvent`]
     fn new(
         entity: Val<bevy::ecs::entity::Entity>,
         axis: Val<bevy::input::gamepad::GamepadAxis>,
         value: f32,
-    ) {
+    ) -> Val<bevy::input::gamepad::GamepadAxisChangedEvent> {
         let output: Val<bevy::input::gamepad::GamepadAxisChangedEvent> = bevy::input::gamepad::GamepadAxisChangedEvent::new(
                 entity.into_inner(),
                 axis.into_inner(),
@@ -481,7 +529,9 @@ impl bevy::input::gamepad::GamepadAxisChangedEvent {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadButtonChangedEvent {
-    fn clone(_self: Ref<bevy::input::gamepad::GamepadButtonChangedEvent>) {
+    fn clone(
+        _self: Ref<bevy::input::gamepad::GamepadButtonChangedEvent>,
+    ) -> Val<bevy::input::gamepad::GamepadButtonChangedEvent> {
         let output: Val<bevy::input::gamepad::GamepadButtonChangedEvent> = <bevy::input::gamepad::GamepadButtonChangedEvent as std::clone::Clone>::clone(
                 &_self,
             )
@@ -491,19 +541,20 @@ impl bevy::input::gamepad::GamepadButtonChangedEvent {
     fn eq(
         _self: Ref<bevy::input::gamepad::GamepadButtonChangedEvent>,
         other: Ref<bevy::input::gamepad::GamepadButtonChangedEvent>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::gamepad::GamepadButtonChangedEvent as std::cmp::PartialEq<
             bevy::input::gamepad::GamepadButtonChangedEvent,
         >>::eq(&_self, &other)
             .into();
         output
     }
+    ///  Creates a new [`GamepadButtonChangedEvent`]
     fn new(
         entity: Val<bevy::ecs::entity::Entity>,
         button: Val<bevy::input::gamepad::GamepadButton>,
         state: Val<bevy::input::ButtonState>,
         value: f32,
-    ) {
+    ) -> Val<bevy::input::gamepad::GamepadButtonChangedEvent> {
         let output: Val<bevy::input::gamepad::GamepadButtonChangedEvent> = bevy::input::gamepad::GamepadButtonChangedEvent::new(
                 entity.into_inner(),
                 button.into_inner(),
@@ -522,14 +573,16 @@ impl bevy::input::gamepad::GamepadButtonChangedEvent {
 impl bevy::input::gamepad::GamepadButtonStateChangedEvent {
     fn assert_receiver_is_total_eq(
         _self: Ref<bevy::input::gamepad::GamepadButtonStateChangedEvent>,
-    ) {
+    ) -> () {
         let output: () = <bevy::input::gamepad::GamepadButtonStateChangedEvent as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::input::gamepad::GamepadButtonStateChangedEvent>) {
+    fn clone(
+        _self: Ref<bevy::input::gamepad::GamepadButtonStateChangedEvent>,
+    ) -> Val<bevy::input::gamepad::GamepadButtonStateChangedEvent> {
         let output: Val<bevy::input::gamepad::GamepadButtonStateChangedEvent> = <bevy::input::gamepad::GamepadButtonStateChangedEvent as std::clone::Clone>::clone(
                 &_self,
             )
@@ -539,18 +592,19 @@ impl bevy::input::gamepad::GamepadButtonStateChangedEvent {
     fn eq(
         _self: Ref<bevy::input::gamepad::GamepadButtonStateChangedEvent>,
         other: Ref<bevy::input::gamepad::GamepadButtonStateChangedEvent>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::gamepad::GamepadButtonStateChangedEvent as std::cmp::PartialEq<
             bevy::input::gamepad::GamepadButtonStateChangedEvent,
         >>::eq(&_self, &other)
             .into();
         output
     }
+    ///  Creates a new [`GamepadButtonStateChangedEvent`]
     fn new(
         entity: Val<bevy::ecs::entity::Entity>,
         button: Val<bevy::input::gamepad::GamepadButton>,
         state: Val<bevy::input::ButtonState>,
-    ) {
+    ) -> Val<bevy::input::gamepad::GamepadButtonStateChangedEvent> {
         let output: Val<bevy::input::gamepad::GamepadButtonStateChangedEvent> = bevy::input::gamepad::GamepadButtonStateChangedEvent::new(
                 entity.into_inner(),
                 button.into_inner(),
@@ -566,7 +620,9 @@ impl bevy::input::gamepad::GamepadButtonStateChangedEvent {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadConnection {
-    fn clone(_self: Ref<bevy::input::gamepad::GamepadConnection>) {
+    fn clone(
+        _self: Ref<bevy::input::gamepad::GamepadConnection>,
+    ) -> Val<bevy::input::gamepad::GamepadConnection> {
         let output: Val<bevy::input::gamepad::GamepadConnection> = <bevy::input::gamepad::GamepadConnection as std::clone::Clone>::clone(
                 &_self,
             )
@@ -576,7 +632,7 @@ impl bevy::input::gamepad::GamepadConnection {
     fn eq(
         _self: Ref<bevy::input::gamepad::GamepadConnection>,
         other: Ref<bevy::input::gamepad::GamepadConnection>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::gamepad::GamepadConnection as std::cmp::PartialEq<
             bevy::input::gamepad::GamepadConnection,
         >>::eq(&_self, &other)
@@ -590,21 +646,25 @@ impl bevy::input::gamepad::GamepadConnection {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadConnectionEvent {
-    fn clone(_self: Ref<bevy::input::gamepad::GamepadConnectionEvent>) {
+    fn clone(
+        _self: Ref<bevy::input::gamepad::GamepadConnectionEvent>,
+    ) -> Val<bevy::input::gamepad::GamepadConnectionEvent> {
         let output: Val<bevy::input::gamepad::GamepadConnectionEvent> = <bevy::input::gamepad::GamepadConnectionEvent as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn connected(_self: Ref<bevy::input::gamepad::GamepadConnectionEvent>) {
+    ///  Is the gamepad connected?
+    fn connected(_self: Ref<bevy::input::gamepad::GamepadConnectionEvent>) -> bool {
         let output: bool = bevy::input::gamepad::GamepadConnectionEvent::connected(
                 &_self,
             )
             .into();
         output
     }
-    fn disconnected(_self: Ref<bevy::input::gamepad::GamepadConnectionEvent>) {
+    ///  Is the gamepad disconnected?
+    fn disconnected(_self: Ref<bevy::input::gamepad::GamepadConnectionEvent>) -> bool {
         let output: bool = bevy::input::gamepad::GamepadConnectionEvent::disconnected(
                 &_self,
             )
@@ -614,17 +674,18 @@ impl bevy::input::gamepad::GamepadConnectionEvent {
     fn eq(
         _self: Ref<bevy::input::gamepad::GamepadConnectionEvent>,
         other: Ref<bevy::input::gamepad::GamepadConnectionEvent>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::gamepad::GamepadConnectionEvent as std::cmp::PartialEq<
             bevy::input::gamepad::GamepadConnectionEvent,
         >>::eq(&_self, &other)
             .into();
         output
     }
+    ///  Creates a [`GamepadConnectionEvent`].
     fn new(
         gamepad: Val<bevy::ecs::entity::Entity>,
         connection: Val<bevy::input::gamepad::GamepadConnection>,
-    ) {
+    ) -> Val<bevy::input::gamepad::GamepadConnectionEvent> {
         let output: Val<bevy::input::gamepad::GamepadConnectionEvent> = bevy::input::gamepad::GamepadConnectionEvent::new(
                 gamepad.into_inner(),
                 connection.into_inner(),
@@ -639,7 +700,9 @@ impl bevy::input::gamepad::GamepadConnectionEvent {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadEvent {
-    fn clone(_self: Ref<bevy::input::gamepad::GamepadEvent>) {
+    fn clone(
+        _self: Ref<bevy::input::gamepad::GamepadEvent>,
+    ) -> Val<bevy::input::gamepad::GamepadEvent> {
         let output: Val<bevy::input::gamepad::GamepadEvent> = <bevy::input::gamepad::GamepadEvent as std::clone::Clone>::clone(
                 &_self,
             )
@@ -649,7 +712,7 @@ impl bevy::input::gamepad::GamepadEvent {
     fn eq(
         _self: Ref<bevy::input::gamepad::GamepadEvent>,
         other: Ref<bevy::input::gamepad::GamepadEvent>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::gamepad::GamepadEvent as std::cmp::PartialEq<
             bevy::input::gamepad::GamepadEvent,
         >>::eq(&_self, &other)
@@ -663,14 +726,18 @@ impl bevy::input::gamepad::GamepadEvent {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadInput {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::gamepad::GamepadInput>) {
+    fn assert_receiver_is_total_eq(
+        _self: Ref<bevy::input::gamepad::GamepadInput>,
+    ) -> () {
         let output: () = <bevy::input::gamepad::GamepadInput as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::input::gamepad::GamepadInput>) {
+    fn clone(
+        _self: Ref<bevy::input::gamepad::GamepadInput>,
+    ) -> Val<bevy::input::gamepad::GamepadInput> {
         let output: Val<bevy::input::gamepad::GamepadInput> = <bevy::input::gamepad::GamepadInput as std::clone::Clone>::clone(
                 &_self,
             )
@@ -680,7 +747,7 @@ impl bevy::input::gamepad::GamepadInput {
     fn eq(
         _self: Ref<bevy::input::gamepad::GamepadInput>,
         other: Ref<bevy::input::gamepad::GamepadInput>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::gamepad::GamepadInput as std::cmp::PartialEq<
             bevy::input::gamepad::GamepadInput,
         >>::eq(&_self, &other)
@@ -694,14 +761,19 @@ impl bevy::input::gamepad::GamepadInput {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadRumbleRequest {
-    fn clone(_self: Ref<bevy::input::gamepad::GamepadRumbleRequest>) {
+    fn clone(
+        _self: Ref<bevy::input::gamepad::GamepadRumbleRequest>,
+    ) -> Val<bevy::input::gamepad::GamepadRumbleRequest> {
         let output: Val<bevy::input::gamepad::GamepadRumbleRequest> = <bevy::input::gamepad::GamepadRumbleRequest as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn gamepad(_self: Ref<bevy::input::gamepad::GamepadRumbleRequest>) {
+    ///  Get the [`Entity`] associated with this request.
+    fn gamepad(
+        _self: Ref<bevy::input::gamepad::GamepadRumbleRequest>,
+    ) -> Val<bevy::ecs::entity::Entity> {
         let output: Val<bevy::ecs::entity::Entity> = bevy::input::gamepad::GamepadRumbleRequest::gamepad(
                 &_self,
             )
@@ -715,7 +787,9 @@ impl bevy::input::gamepad::GamepadRumbleRequest {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::RawGamepadAxisChangedEvent {
-    fn clone(_self: Ref<bevy::input::gamepad::RawGamepadAxisChangedEvent>) {
+    fn clone(
+        _self: Ref<bevy::input::gamepad::RawGamepadAxisChangedEvent>,
+    ) -> Val<bevy::input::gamepad::RawGamepadAxisChangedEvent> {
         let output: Val<bevy::input::gamepad::RawGamepadAxisChangedEvent> = <bevy::input::gamepad::RawGamepadAxisChangedEvent as std::clone::Clone>::clone(
                 &_self,
             )
@@ -725,18 +799,19 @@ impl bevy::input::gamepad::RawGamepadAxisChangedEvent {
     fn eq(
         _self: Ref<bevy::input::gamepad::RawGamepadAxisChangedEvent>,
         other: Ref<bevy::input::gamepad::RawGamepadAxisChangedEvent>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::gamepad::RawGamepadAxisChangedEvent as std::cmp::PartialEq<
             bevy::input::gamepad::RawGamepadAxisChangedEvent,
         >>::eq(&_self, &other)
             .into();
         output
     }
+    ///  Creates a [`RawGamepadAxisChangedEvent`].
     fn new(
         gamepad: Val<bevy::ecs::entity::Entity>,
         axis_type: Val<bevy::input::gamepad::GamepadAxis>,
         value: f32,
-    ) {
+    ) -> Val<bevy::input::gamepad::RawGamepadAxisChangedEvent> {
         let output: Val<bevy::input::gamepad::RawGamepadAxisChangedEvent> = bevy::input::gamepad::RawGamepadAxisChangedEvent::new(
                 gamepad.into_inner(),
                 axis_type.into_inner(),
@@ -752,7 +827,9 @@ impl bevy::input::gamepad::RawGamepadAxisChangedEvent {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::RawGamepadButtonChangedEvent {
-    fn clone(_self: Ref<bevy::input::gamepad::RawGamepadButtonChangedEvent>) {
+    fn clone(
+        _self: Ref<bevy::input::gamepad::RawGamepadButtonChangedEvent>,
+    ) -> Val<bevy::input::gamepad::RawGamepadButtonChangedEvent> {
         let output: Val<bevy::input::gamepad::RawGamepadButtonChangedEvent> = <bevy::input::gamepad::RawGamepadButtonChangedEvent as std::clone::Clone>::clone(
                 &_self,
             )
@@ -762,18 +839,19 @@ impl bevy::input::gamepad::RawGamepadButtonChangedEvent {
     fn eq(
         _self: Ref<bevy::input::gamepad::RawGamepadButtonChangedEvent>,
         other: Ref<bevy::input::gamepad::RawGamepadButtonChangedEvent>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::gamepad::RawGamepadButtonChangedEvent as std::cmp::PartialEq<
             bevy::input::gamepad::RawGamepadButtonChangedEvent,
         >>::eq(&_self, &other)
             .into();
         output
     }
+    ///  Creates a [`RawGamepadButtonChangedEvent`].
     fn new(
         gamepad: Val<bevy::ecs::entity::Entity>,
         button_type: Val<bevy::input::gamepad::GamepadButton>,
         value: f32,
-    ) {
+    ) -> Val<bevy::input::gamepad::RawGamepadButtonChangedEvent> {
         let output: Val<bevy::input::gamepad::RawGamepadButtonChangedEvent> = bevy::input::gamepad::RawGamepadButtonChangedEvent::new(
                 gamepad.into_inner(),
                 button_type.into_inner(),
@@ -789,7 +867,9 @@ impl bevy::input::gamepad::RawGamepadButtonChangedEvent {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::RawGamepadEvent {
-    fn clone(_self: Ref<bevy::input::gamepad::RawGamepadEvent>) {
+    fn clone(
+        _self: Ref<bevy::input::gamepad::RawGamepadEvent>,
+    ) -> Val<bevy::input::gamepad::RawGamepadEvent> {
         let output: Val<bevy::input::gamepad::RawGamepadEvent> = <bevy::input::gamepad::RawGamepadEvent as std::clone::Clone>::clone(
                 &_self,
             )
@@ -799,7 +879,7 @@ impl bevy::input::gamepad::RawGamepadEvent {
     fn eq(
         _self: Ref<bevy::input::gamepad::RawGamepadEvent>,
         other: Ref<bevy::input::gamepad::RawGamepadEvent>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::gamepad::RawGamepadEvent as std::cmp::PartialEq<
             bevy::input::gamepad::RawGamepadEvent,
         >>::eq(&_self, &other)
@@ -813,7 +893,9 @@ impl bevy::input::gamepad::RawGamepadEvent {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gestures::PinchGesture {
-    fn clone(_self: Ref<bevy::input::gestures::PinchGesture>) {
+    fn clone(
+        _self: Ref<bevy::input::gestures::PinchGesture>,
+    ) -> Val<bevy::input::gestures::PinchGesture> {
         let output: Val<bevy::input::gestures::PinchGesture> = <bevy::input::gestures::PinchGesture as std::clone::Clone>::clone(
                 &_self,
             )
@@ -823,7 +905,7 @@ impl bevy::input::gestures::PinchGesture {
     fn eq(
         _self: Ref<bevy::input::gestures::PinchGesture>,
         other: Ref<bevy::input::gestures::PinchGesture>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::gestures::PinchGesture as std::cmp::PartialEq<
             bevy::input::gestures::PinchGesture,
         >>::eq(&_self, &other)
@@ -837,7 +919,9 @@ impl bevy::input::gestures::PinchGesture {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gestures::RotationGesture {
-    fn clone(_self: Ref<bevy::input::gestures::RotationGesture>) {
+    fn clone(
+        _self: Ref<bevy::input::gestures::RotationGesture>,
+    ) -> Val<bevy::input::gestures::RotationGesture> {
         let output: Val<bevy::input::gestures::RotationGesture> = <bevy::input::gestures::RotationGesture as std::clone::Clone>::clone(
                 &_self,
             )
@@ -847,7 +931,7 @@ impl bevy::input::gestures::RotationGesture {
     fn eq(
         _self: Ref<bevy::input::gestures::RotationGesture>,
         other: Ref<bevy::input::gestures::RotationGesture>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::gestures::RotationGesture as std::cmp::PartialEq<
             bevy::input::gestures::RotationGesture,
         >>::eq(&_self, &other)
@@ -861,7 +945,9 @@ impl bevy::input::gestures::RotationGesture {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gestures::DoubleTapGesture {
-    fn clone(_self: Ref<bevy::input::gestures::DoubleTapGesture>) {
+    fn clone(
+        _self: Ref<bevy::input::gestures::DoubleTapGesture>,
+    ) -> Val<bevy::input::gestures::DoubleTapGesture> {
         let output: Val<bevy::input::gestures::DoubleTapGesture> = <bevy::input::gestures::DoubleTapGesture as std::clone::Clone>::clone(
                 &_self,
             )
@@ -871,7 +957,7 @@ impl bevy::input::gestures::DoubleTapGesture {
     fn eq(
         _self: Ref<bevy::input::gestures::DoubleTapGesture>,
         other: Ref<bevy::input::gestures::DoubleTapGesture>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::gestures::DoubleTapGesture as std::cmp::PartialEq<
             bevy::input::gestures::DoubleTapGesture,
         >>::eq(&_self, &other)
@@ -885,7 +971,9 @@ impl bevy::input::gestures::DoubleTapGesture {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gestures::PanGesture {
-    fn clone(_self: Ref<bevy::input::gestures::PanGesture>) {
+    fn clone(
+        _self: Ref<bevy::input::gestures::PanGesture>,
+    ) -> Val<bevy::input::gestures::PanGesture> {
         let output: Val<bevy::input::gestures::PanGesture> = <bevy::input::gestures::PanGesture as std::clone::Clone>::clone(
                 &_self,
             )
@@ -895,7 +983,7 @@ impl bevy::input::gestures::PanGesture {
     fn eq(
         _self: Ref<bevy::input::gestures::PanGesture>,
         other: Ref<bevy::input::gestures::PanGesture>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::gestures::PanGesture as std::cmp::PartialEq<
             bevy::input::gestures::PanGesture,
         >>::eq(&_self, &other)
@@ -909,28 +997,32 @@ impl bevy::input::gestures::PanGesture {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::ButtonState {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::ButtonState>) {
+    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::ButtonState>) -> () {
         let output: () = <bevy::input::ButtonState as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::input::ButtonState>) {
+    fn clone(_self: Ref<bevy::input::ButtonState>) -> Val<bevy::input::ButtonState> {
         let output: Val<bevy::input::ButtonState> = <bevy::input::ButtonState as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn eq(_self: Ref<bevy::input::ButtonState>, other: Ref<bevy::input::ButtonState>) {
+    fn eq(
+        _self: Ref<bevy::input::ButtonState>,
+        other: Ref<bevy::input::ButtonState>,
+    ) -> bool {
         let output: bool = <bevy::input::ButtonState as std::cmp::PartialEq<
             bevy::input::ButtonState,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn is_pressed(_self: Ref<bevy::input::ButtonState>) {
+    ///  Is this button pressed?
+    fn is_pressed(_self: Ref<bevy::input::ButtonState>) -> bool {
         let output: bool = bevy::input::ButtonState::is_pressed(&_self).into();
         output
     }
@@ -941,7 +1033,9 @@ impl bevy::input::ButtonState {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::ButtonSettings {
-    fn clone(_self: Ref<bevy::input::gamepad::ButtonSettings>) {
+    fn clone(
+        _self: Ref<bevy::input::gamepad::ButtonSettings>,
+    ) -> Val<bevy::input::gamepad::ButtonSettings> {
         let output: Val<bevy::input::gamepad::ButtonSettings> = <bevy::input::gamepad::ButtonSettings as std::clone::Clone>::clone(
                 &_self,
             )
@@ -951,14 +1045,16 @@ impl bevy::input::gamepad::ButtonSettings {
     fn eq(
         _self: Ref<bevy::input::gamepad::ButtonSettings>,
         other: Ref<bevy::input::gamepad::ButtonSettings>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::gamepad::ButtonSettings as std::cmp::PartialEq<
             bevy::input::gamepad::ButtonSettings,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn is_pressed(_self: Ref<bevy::input::gamepad::ButtonSettings>, value: f32) {
+    ///  Returns `true` if the button is pressed.
+    ///  A button is considered pressed if the `value` passed is greater than or equal to the press threshold.
+    fn is_pressed(_self: Ref<bevy::input::gamepad::ButtonSettings>, value: f32) -> bool {
         let output: bool = bevy::input::gamepad::ButtonSettings::is_pressed(
                 &_self,
                 value,
@@ -966,7 +1062,12 @@ impl bevy::input::gamepad::ButtonSettings {
             .into();
         output
     }
-    fn is_released(_self: Ref<bevy::input::gamepad::ButtonSettings>, value: f32) {
+    ///  Returns `true` if the button is released.
+    ///  A button is considered released if the `value` passed is lower than or equal to the release threshold.
+    fn is_released(
+        _self: Ref<bevy::input::gamepad::ButtonSettings>,
+        value: f32,
+    ) -> bool {
         let output: bool = bevy::input::gamepad::ButtonSettings::is_released(
                 &_self,
                 value,
@@ -974,20 +1075,25 @@ impl bevy::input::gamepad::ButtonSettings {
             .into();
         output
     }
-    fn press_threshold(_self: Ref<bevy::input::gamepad::ButtonSettings>) {
+    ///  Get the button input threshold above which the button is considered pressed.
+    fn press_threshold(_self: Ref<bevy::input::gamepad::ButtonSettings>) -> f32 {
         let output: f32 = bevy::input::gamepad::ButtonSettings::press_threshold(&_self)
             .into();
         output
     }
-    fn release_threshold(_self: Ref<bevy::input::gamepad::ButtonSettings>) {
+    ///  Get the button input threshold below which the button is considered released.
+    fn release_threshold(_self: Ref<bevy::input::gamepad::ButtonSettings>) -> f32 {
         let output: f32 = bevy::input::gamepad::ButtonSettings::release_threshold(&_self)
             .into();
         output
     }
+    ///  Try to set the button input threshold above which the button is considered pressed.
+    ///  If the value passed is outside the range [release threshold..=1.0], the value will not be changed.
+    ///  Returns the new value of the press threshold.
     fn set_press_threshold(
         mut _self: Mut<bevy::input::gamepad::ButtonSettings>,
         value: f32,
-    ) {
+    ) -> f32 {
         let output: f32 = bevy::input::gamepad::ButtonSettings::set_press_threshold(
                 &mut _self,
                 value,
@@ -995,10 +1101,13 @@ impl bevy::input::gamepad::ButtonSettings {
             .into();
         output
     }
+    ///  Try to set the button input threshold below which the button is considered released. If the
+    ///  value passed is outside the range [0.0..=press threshold], the value will not be changed.
+    ///  Returns the new value of the release threshold.
     fn set_release_threshold(
         mut _self: Mut<bevy::input::gamepad::ButtonSettings>,
         value: f32,
-    ) {
+    ) -> f32 {
         let output: f32 = bevy::input::gamepad::ButtonSettings::set_release_threshold(
                 &mut _self,
                 value,
@@ -1013,24 +1122,29 @@ impl bevy::input::gamepad::ButtonSettings {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::AxisSettings {
-    fn clamp(_self: Ref<bevy::input::gamepad::AxisSettings>, new_value: f32) {
+    ///  Clamps the `raw_value` according to the `AxisSettings`.
+    fn clamp(_self: Ref<bevy::input::gamepad::AxisSettings>, new_value: f32) -> f32 {
         let output: f32 = bevy::input::gamepad::AxisSettings::clamp(&_self, new_value)
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::input::gamepad::AxisSettings>) {
+    fn clone(
+        _self: Ref<bevy::input::gamepad::AxisSettings>,
+    ) -> Val<bevy::input::gamepad::AxisSettings> {
         let output: Val<bevy::input::gamepad::AxisSettings> = <bevy::input::gamepad::AxisSettings as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn deadzone_lowerbound(_self: Ref<bevy::input::gamepad::AxisSettings>) {
+    ///  Get the value above which inputs will be rounded up to 0.0.
+    fn deadzone_lowerbound(_self: Ref<bevy::input::gamepad::AxisSettings>) -> f32 {
         let output: f32 = bevy::input::gamepad::AxisSettings::deadzone_lowerbound(&_self)
             .into();
         output
     }
-    fn deadzone_upperbound(_self: Ref<bevy::input::gamepad::AxisSettings>) {
+    ///  Get the value below which positive inputs will be rounded down to 0.0.
+    fn deadzone_upperbound(_self: Ref<bevy::input::gamepad::AxisSettings>) -> f32 {
         let output: f32 = bevy::input::gamepad::AxisSettings::deadzone_upperbound(&_self)
             .into();
         output
@@ -1038,18 +1152,21 @@ impl bevy::input::gamepad::AxisSettings {
     fn eq(
         _self: Ref<bevy::input::gamepad::AxisSettings>,
         other: Ref<bevy::input::gamepad::AxisSettings>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::gamepad::AxisSettings as std::cmp::PartialEq<
             bevy::input::gamepad::AxisSettings,
         >>::eq(&_self, &other)
             .into();
         output
     }
+    ///  Filters the `new_value` based on the `old_value`, according to the [`AxisSettings`].
+    ///  Returns the clamped `new_value` if the change exceeds the settings threshold,
+    ///  and `None` otherwise.
     fn filter(
         _self: Ref<bevy::input::gamepad::AxisSettings>,
         new_value: f32,
         old_value: std::option::Option<f32>,
-    ) {
+    ) -> std::option::Option<f32> {
         let output: std::option::Option<f32> = bevy::input::gamepad::AxisSettings::filter(
                 &_self,
                 new_value,
@@ -1058,20 +1175,26 @@ impl bevy::input::gamepad::AxisSettings {
             .into();
         output
     }
-    fn livezone_lowerbound(_self: Ref<bevy::input::gamepad::AxisSettings>) {
+    ///  Get the value below which negative inputs will be rounded down to -1.0.
+    fn livezone_lowerbound(_self: Ref<bevy::input::gamepad::AxisSettings>) -> f32 {
         let output: f32 = bevy::input::gamepad::AxisSettings::livezone_lowerbound(&_self)
             .into();
         output
     }
-    fn livezone_upperbound(_self: Ref<bevy::input::gamepad::AxisSettings>) {
+    ///  Get the value above which inputs will be rounded up to 1.0.
+    fn livezone_upperbound(_self: Ref<bevy::input::gamepad::AxisSettings>) -> f32 {
         let output: f32 = bevy::input::gamepad::AxisSettings::livezone_upperbound(&_self)
             .into();
         output
     }
+    ///  Try to set the value above which inputs will be rounded up to 0.0.
+    ///  If the value passed is less than -1.0 or less than `livezone_lowerbound`,
+    ///  the value will not be changed.
+    ///  Returns the new value of `deadzone_lowerbound`.
     fn set_deadzone_lowerbound(
         mut _self: Mut<bevy::input::gamepad::AxisSettings>,
         value: f32,
-    ) {
+    ) -> f32 {
         let output: f32 = bevy::input::gamepad::AxisSettings::set_deadzone_lowerbound(
                 &mut _self,
                 value,
@@ -1079,10 +1202,14 @@ impl bevy::input::gamepad::AxisSettings {
             .into();
         output
     }
+    ///  Try to set the value below which positive inputs will be rounded down to 0.0.
+    ///  If the value passed is negative or greater than `livezone_upperbound`,
+    ///  the value will not be changed.
+    ///  Returns the new value of `deadzone_upperbound`.
     fn set_deadzone_upperbound(
         mut _self: Mut<bevy::input::gamepad::AxisSettings>,
         value: f32,
-    ) {
+    ) -> f32 {
         let output: f32 = bevy::input::gamepad::AxisSettings::set_deadzone_upperbound(
                 &mut _self,
                 value,
@@ -1090,10 +1217,14 @@ impl bevy::input::gamepad::AxisSettings {
             .into();
         output
     }
+    ///  Try to set the value below which negative inputs will be rounded down to -1.0.
+    ///  If the value passed is positive or greater than `deadzone_lowerbound`,
+    ///  the value will not be changed.
+    ///  Returns the new value of `livezone_lowerbound`.
     fn set_livezone_lowerbound(
         mut _self: Mut<bevy::input::gamepad::AxisSettings>,
         value: f32,
-    ) {
+    ) -> f32 {
         let output: f32 = bevy::input::gamepad::AxisSettings::set_livezone_lowerbound(
                 &mut _self,
                 value,
@@ -1101,10 +1232,14 @@ impl bevy::input::gamepad::AxisSettings {
             .into();
         output
     }
+    ///  Try to set the value above which inputs will be rounded up to 1.0.
+    ///  If the value passed is negative or less than `deadzone_upperbound`,
+    ///  the value will not be changed.
+    ///  Returns the new value of `livezone_upperbound`.
     fn set_livezone_upperbound(
         mut _self: Mut<bevy::input::gamepad::AxisSettings>,
         value: f32,
-    ) {
+    ) -> f32 {
         let output: f32 = bevy::input::gamepad::AxisSettings::set_livezone_upperbound(
                 &mut _self,
                 value,
@@ -1112,7 +1247,13 @@ impl bevy::input::gamepad::AxisSettings {
             .into();
         output
     }
-    fn set_threshold(mut _self: Mut<bevy::input::gamepad::AxisSettings>, value: f32) {
+    ///  Try to set the minimum value by which input must change before the changes will be applied.
+    ///  If the value passed is not within [0.0..=2.0], the value will not be changed.
+    ///  Returns the new value of threshold.
+    fn set_threshold(
+        mut _self: Mut<bevy::input::gamepad::AxisSettings>,
+        value: f32,
+    ) -> f32 {
         let output: f32 = bevy::input::gamepad::AxisSettings::set_threshold(
                 &mut _self,
                 value,
@@ -1120,7 +1261,8 @@ impl bevy::input::gamepad::AxisSettings {
             .into();
         output
     }
-    fn threshold(_self: Ref<bevy::input::gamepad::AxisSettings>) {
+    ///  Get the minimum value by which input must change before the change is registered.
+    fn threshold(_self: Ref<bevy::input::gamepad::AxisSettings>) -> f32 {
         let output: f32 = bevy::input::gamepad::AxisSettings::threshold(&_self).into();
         output
     }
@@ -1131,18 +1273,23 @@ impl bevy::input::gamepad::AxisSettings {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::ButtonAxisSettings {
-    fn clone(_self: Ref<bevy::input::gamepad::ButtonAxisSettings>) {
+    fn clone(
+        _self: Ref<bevy::input::gamepad::ButtonAxisSettings>,
+    ) -> Val<bevy::input::gamepad::ButtonAxisSettings> {
         let output: Val<bevy::input::gamepad::ButtonAxisSettings> = <bevy::input::gamepad::ButtonAxisSettings as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
+    ///  Filters the `new_value` based on the `old_value`, according to the [`ButtonAxisSettings`].
+    ///  Returns the clamped `new_value`, according to the [`ButtonAxisSettings`], if the change
+    ///  exceeds the settings threshold, and `None` otherwise.
     fn filter(
         _self: Ref<bevy::input::gamepad::ButtonAxisSettings>,
         new_value: f32,
         old_value: std::option::Option<f32>,
-    ) {
+    ) -> std::option::Option<f32> {
         let output: std::option::Option<f32> = bevy::input::gamepad::ButtonAxisSettings::filter(
                 &_self,
                 new_value,
@@ -1158,7 +1305,9 @@ impl bevy::input::gamepad::ButtonAxisSettings {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::gamepad::GamepadRumbleIntensity {
-    fn clone(_self: Ref<bevy::input::gamepad::GamepadRumbleIntensity>) {
+    fn clone(
+        _self: Ref<bevy::input::gamepad::GamepadRumbleIntensity>,
+    ) -> Val<bevy::input::gamepad::GamepadRumbleIntensity> {
         let output: Val<bevy::input::gamepad::GamepadRumbleIntensity> = <bevy::input::gamepad::GamepadRumbleIntensity as std::clone::Clone>::clone(
                 &_self,
             )
@@ -1168,21 +1317,27 @@ impl bevy::input::gamepad::GamepadRumbleIntensity {
     fn eq(
         _self: Ref<bevy::input::gamepad::GamepadRumbleIntensity>,
         other: Ref<bevy::input::gamepad::GamepadRumbleIntensity>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::gamepad::GamepadRumbleIntensity as std::cmp::PartialEq<
             bevy::input::gamepad::GamepadRumbleIntensity,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn strong_motor(intensity: f32) {
+    ///  Creates a new rumble intensity with strong motor intensity set to the given value.
+    ///  Clamped within the `0.0` to `1.0` range.
+    fn strong_motor(
+        intensity: f32,
+    ) -> Val<bevy::input::gamepad::GamepadRumbleIntensity> {
         let output: Val<bevy::input::gamepad::GamepadRumbleIntensity> = bevy::input::gamepad::GamepadRumbleIntensity::strong_motor(
                 intensity,
             )
             .into();
         output
     }
-    fn weak_motor(intensity: f32) {
+    ///  Creates a new rumble intensity with weak motor intensity set to the given value.
+    ///  Clamped within the `0.0` to `1.0` range.
+    fn weak_motor(intensity: f32) -> Val<bevy::input::gamepad::GamepadRumbleIntensity> {
         let output: Val<bevy::input::gamepad::GamepadRumbleIntensity> = bevy::input::gamepad::GamepadRumbleIntensity::weak_motor(
                 intensity,
             )
@@ -1196,14 +1351,14 @@ impl bevy::input::gamepad::GamepadRumbleIntensity {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::keyboard::Key {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::keyboard::Key>) {
+    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::keyboard::Key>) -> () {
         let output: () = <bevy::input::keyboard::Key as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::input::keyboard::Key>) {
+    fn clone(_self: Ref<bevy::input::keyboard::Key>) -> Val<bevy::input::keyboard::Key> {
         let output: Val<bevy::input::keyboard::Key> = <bevy::input::keyboard::Key as std::clone::Clone>::clone(
                 &_self,
             )
@@ -1213,7 +1368,7 @@ impl bevy::input::keyboard::Key {
     fn eq(
         _self: Ref<bevy::input::keyboard::Key>,
         other: Ref<bevy::input::keyboard::Key>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::keyboard::Key as std::cmp::PartialEq<
             bevy::input::keyboard::Key,
         >>::eq(&_self, &other)
@@ -1227,14 +1382,18 @@ impl bevy::input::keyboard::Key {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::keyboard::NativeKeyCode {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::keyboard::NativeKeyCode>) {
+    fn assert_receiver_is_total_eq(
+        _self: Ref<bevy::input::keyboard::NativeKeyCode>,
+    ) -> () {
         let output: () = <bevy::input::keyboard::NativeKeyCode as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::input::keyboard::NativeKeyCode>) {
+    fn clone(
+        _self: Ref<bevy::input::keyboard::NativeKeyCode>,
+    ) -> Val<bevy::input::keyboard::NativeKeyCode> {
         let output: Val<bevy::input::keyboard::NativeKeyCode> = <bevy::input::keyboard::NativeKeyCode as std::clone::Clone>::clone(
                 &_self,
             )
@@ -1244,7 +1403,7 @@ impl bevy::input::keyboard::NativeKeyCode {
     fn eq(
         _self: Ref<bevy::input::keyboard::NativeKeyCode>,
         other: Ref<bevy::input::keyboard::NativeKeyCode>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::keyboard::NativeKeyCode as std::cmp::PartialEq<
             bevy::input::keyboard::NativeKeyCode,
         >>::eq(&_self, &other)
@@ -1258,14 +1417,16 @@ impl bevy::input::keyboard::NativeKeyCode {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::keyboard::NativeKey {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::keyboard::NativeKey>) {
+    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::keyboard::NativeKey>) -> () {
         let output: () = <bevy::input::keyboard::NativeKey as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::input::keyboard::NativeKey>) {
+    fn clone(
+        _self: Ref<bevy::input::keyboard::NativeKey>,
+    ) -> Val<bevy::input::keyboard::NativeKey> {
         let output: Val<bevy::input::keyboard::NativeKey> = <bevy::input::keyboard::NativeKey as std::clone::Clone>::clone(
                 &_self,
             )
@@ -1275,7 +1436,7 @@ impl bevy::input::keyboard::NativeKey {
     fn eq(
         _self: Ref<bevy::input::keyboard::NativeKey>,
         other: Ref<bevy::input::keyboard::NativeKey>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::keyboard::NativeKey as std::cmp::PartialEq<
             bevy::input::keyboard::NativeKey,
         >>::eq(&_self, &other)
@@ -1289,14 +1450,18 @@ impl bevy::input::keyboard::NativeKey {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::mouse::MouseScrollUnit {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::mouse::MouseScrollUnit>) {
+    fn assert_receiver_is_total_eq(
+        _self: Ref<bevy::input::mouse::MouseScrollUnit>,
+    ) -> () {
         let output: () = <bevy::input::mouse::MouseScrollUnit as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::input::mouse::MouseScrollUnit>) {
+    fn clone(
+        _self: Ref<bevy::input::mouse::MouseScrollUnit>,
+    ) -> Val<bevy::input::mouse::MouseScrollUnit> {
         let output: Val<bevy::input::mouse::MouseScrollUnit> = <bevy::input::mouse::MouseScrollUnit as std::clone::Clone>::clone(
                 &_self,
             )
@@ -1306,7 +1471,7 @@ impl bevy::input::mouse::MouseScrollUnit {
     fn eq(
         _self: Ref<bevy::input::mouse::MouseScrollUnit>,
         other: Ref<bevy::input::mouse::MouseScrollUnit>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::mouse::MouseScrollUnit as std::cmp::PartialEq<
             bevy::input::mouse::MouseScrollUnit,
         >>::eq(&_self, &other)
@@ -1320,14 +1485,16 @@ impl bevy::input::mouse::MouseScrollUnit {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::touch::TouchPhase {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::touch::TouchPhase>) {
+    fn assert_receiver_is_total_eq(_self: Ref<bevy::input::touch::TouchPhase>) -> () {
         let output: () = <bevy::input::touch::TouchPhase as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::input::touch::TouchPhase>) {
+    fn clone(
+        _self: Ref<bevy::input::touch::TouchPhase>,
+    ) -> Val<bevy::input::touch::TouchPhase> {
         let output: Val<bevy::input::touch::TouchPhase> = <bevy::input::touch::TouchPhase as std::clone::Clone>::clone(
                 &_self,
             )
@@ -1337,7 +1504,7 @@ impl bevy::input::touch::TouchPhase {
     fn eq(
         _self: Ref<bevy::input::touch::TouchPhase>,
         other: Ref<bevy::input::touch::TouchPhase>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::touch::TouchPhase as std::cmp::PartialEq<
             bevy::input::touch::TouchPhase,
         >>::eq(&_self, &other)
@@ -1351,7 +1518,9 @@ impl bevy::input::touch::TouchPhase {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::input::touch::ForceTouch {
-    fn clone(_self: Ref<bevy::input::touch::ForceTouch>) {
+    fn clone(
+        _self: Ref<bevy::input::touch::ForceTouch>,
+    ) -> Val<bevy::input::touch::ForceTouch> {
         let output: Val<bevy::input::touch::ForceTouch> = <bevy::input::touch::ForceTouch as std::clone::Clone>::clone(
                 &_self,
             )
@@ -1361,7 +1530,7 @@ impl bevy::input::touch::ForceTouch {
     fn eq(
         _self: Ref<bevy::input::touch::ForceTouch>,
         other: Ref<bevy::input::touch::ForceTouch>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::input::touch::ForceTouch as std::cmp::PartialEq<
             bevy::input::touch::ForceTouch,
         >>::eq(&_self, &other)

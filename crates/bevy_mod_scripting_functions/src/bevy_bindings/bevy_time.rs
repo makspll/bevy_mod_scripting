@@ -18,7 +18,7 @@ pub struct BevyTimeScriptingPlugin;
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::time::prelude::Fixed {
-    fn clone(_self: Ref<bevy::time::prelude::Fixed>) {
+    fn clone(_self: Ref<bevy::time::prelude::Fixed>) -> Val<bevy::time::prelude::Fixed> {
         let output: Val<bevy::time::prelude::Fixed> = <bevy::time::prelude::Fixed as std::clone::Clone>::clone(
                 &_self,
             )
@@ -32,7 +32,7 @@ impl bevy::time::prelude::Fixed {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::time::prelude::Real {
-    fn clone(_self: Ref<bevy::time::prelude::Real>) {
+    fn clone(_self: Ref<bevy::time::prelude::Real>) -> Val<bevy::time::prelude::Real> {
         let output: Val<bevy::time::prelude::Real> = <bevy::time::prelude::Real as std::clone::Clone>::clone(
                 &_self,
             )
@@ -46,65 +46,134 @@ impl bevy::time::prelude::Real {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::time::prelude::Timer {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::time::prelude::Timer>) {
+    fn assert_receiver_is_total_eq(_self: Ref<bevy::time::prelude::Timer>) -> () {
         let output: () = <bevy::time::prelude::Timer as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::time::prelude::Timer>) {
+    fn clone(_self: Ref<bevy::time::prelude::Timer>) -> Val<bevy::time::prelude::Timer> {
         let output: Val<bevy::time::prelude::Timer> = <bevy::time::prelude::Timer as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn duration(_self: Ref<bevy::time::prelude::Timer>) {
+    ///  Returns the duration of the timer.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::time::Duration;
+    ///  let timer = Timer::new(Duration::from_secs(1), TimerMode::Once);
+    ///  assert_eq!(timer.duration(), Duration::from_secs(1));
+    ///  ```
+    fn duration(_self: Ref<bevy::time::prelude::Timer>) -> Val<bevy::utils::Duration> {
         let output: Val<bevy::utils::Duration> = bevy::time::prelude::Timer::duration(
                 &_self,
             )
             .into();
         output
     }
-    fn elapsed(_self: Ref<bevy::time::prelude::Timer>) {
+    ///  Returns the time elapsed on the timer. Guaranteed to be between 0.0 and `duration`.
+    ///  Will only equal `duration` when the timer is finished and non repeating.
+    ///  See also [`Stopwatch::elapsed`](Stopwatch::elapsed).
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::time::Duration;
+    ///  let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
+    ///  timer.tick(Duration::from_secs_f32(0.5));
+    ///  assert_eq!(timer.elapsed(), Duration::from_secs_f32(0.5));
+    ///  ```
+    fn elapsed(_self: Ref<bevy::time::prelude::Timer>) -> Val<bevy::utils::Duration> {
         let output: Val<bevy::utils::Duration> = bevy::time::prelude::Timer::elapsed(
                 &_self,
             )
             .into();
         output
     }
-    fn elapsed_secs(_self: Ref<bevy::time::prelude::Timer>) {
+    ///  Returns the time elapsed on the timer as an `f32`.
+    ///  See also [`Timer::elapsed`](Timer::elapsed).
+    fn elapsed_secs(_self: Ref<bevy::time::prelude::Timer>) -> f32 {
         let output: f32 = bevy::time::prelude::Timer::elapsed_secs(&_self).into();
         output
     }
-    fn elapsed_secs_f64(_self: Ref<bevy::time::prelude::Timer>) {
+    ///  Returns the time elapsed on the timer as an `f64`.
+    ///  See also [`Timer::elapsed`](Timer::elapsed).
+    fn elapsed_secs_f64(_self: Ref<bevy::time::prelude::Timer>) -> f64 {
         let output: f64 = bevy::time::prelude::Timer::elapsed_secs_f64(&_self).into();
         output
     }
     fn eq(
         _self: Ref<bevy::time::prelude::Timer>,
         other: Ref<bevy::time::prelude::Timer>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::time::prelude::Timer as std::cmp::PartialEq<
             bevy::time::prelude::Timer,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn finished(_self: Ref<bevy::time::prelude::Timer>) {
+    ///  Returns `true` if the timer has reached its duration.
+    ///  For repeating timers, this method behaves identically to [`Timer::just_finished`].
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::time::Duration;
+    ///  let mut timer_once = Timer::from_seconds(1.0, TimerMode::Once);
+    ///  timer_once.tick(Duration::from_secs_f32(1.5));
+    ///  assert!(timer_once.finished());
+    ///  timer_once.tick(Duration::from_secs_f32(0.5));
+    ///  assert!(timer_once.finished());
+    ///  let mut timer_repeating = Timer::from_seconds(1.0, TimerMode::Repeating);
+    ///  timer_repeating.tick(Duration::from_secs_f32(1.1));
+    ///  assert!(timer_repeating.finished());
+    ///  timer_repeating.tick(Duration::from_secs_f32(0.8));
+    ///  assert!(!timer_repeating.finished());
+    ///  timer_repeating.tick(Duration::from_secs_f32(0.6));
+    ///  assert!(timer_repeating.finished());
+    ///  ```
+    fn finished(_self: Ref<bevy::time::prelude::Timer>) -> bool {
         let output: bool = bevy::time::prelude::Timer::finished(&_self).into();
         output
     }
-    fn fraction(_self: Ref<bevy::time::prelude::Timer>) {
+    ///  Returns the fraction of the timer elapsed time (goes from 0.0 to 1.0).
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::time::Duration;
+    ///  let mut timer = Timer::from_seconds(2.0, TimerMode::Once);
+    ///  timer.tick(Duration::from_secs_f32(0.5));
+    ///  assert_eq!(timer.fraction(), 0.25);
+    ///  ```
+    fn fraction(_self: Ref<bevy::time::prelude::Timer>) -> f32 {
         let output: f32 = bevy::time::prelude::Timer::fraction(&_self).into();
         output
     }
-    fn fraction_remaining(_self: Ref<bevy::time::prelude::Timer>) {
+    ///  Returns the fraction of the timer remaining time (goes from 1.0 to 0.0).
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::time::Duration;
+    ///  let mut timer = Timer::from_seconds(2.0, TimerMode::Once);
+    ///  timer.tick(Duration::from_secs_f32(0.5));
+    ///  assert_eq!(timer.fraction_remaining(), 0.75);
+    ///  ```
+    fn fraction_remaining(_self: Ref<bevy::time::prelude::Timer>) -> f32 {
         let output: f32 = bevy::time::prelude::Timer::fraction_remaining(&_self).into();
         output
     }
-    fn from_seconds(duration: f32, mode: Val<bevy::time::prelude::TimerMode>) {
+    ///  Creates a new timer with a given duration in seconds.
+    ///  # Example
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
+    ///  ```
+    fn from_seconds(
+        duration: f32,
+        mode: Val<bevy::time::prelude::TimerMode>,
+    ) -> Val<bevy::time::prelude::Timer> {
         let output: Val<bevy::time::prelude::Timer> = bevy::time::prelude::Timer::from_seconds(
                 duration,
                 mode.into_inner(),
@@ -112,21 +181,43 @@ impl bevy::time::prelude::Timer {
             .into();
         output
     }
-    fn just_finished(_self: Ref<bevy::time::prelude::Timer>) {
+    ///  Returns `true` only on the tick the timer reached its duration.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::time::Duration;
+    ///  let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
+    ///  timer.tick(Duration::from_secs_f32(1.5));
+    ///  assert!(timer.just_finished());
+    ///  timer.tick(Duration::from_secs_f32(0.5));
+    ///  assert!(!timer.just_finished());
+    ///  ```
+    fn just_finished(_self: Ref<bevy::time::prelude::Timer>) -> bool {
         let output: bool = bevy::time::prelude::Timer::just_finished(&_self).into();
         output
     }
-    fn mode(_self: Ref<bevy::time::prelude::Timer>) {
+    ///  Returns the mode of the timer.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  let mut timer = Timer::from_seconds(1.0, TimerMode::Repeating);
+    ///  assert_eq!(timer.mode(), TimerMode::Repeating);
+    ///  ```
+    fn mode(
+        _self: Ref<bevy::time::prelude::Timer>,
+    ) -> Val<bevy::time::prelude::TimerMode> {
         let output: Val<bevy::time::prelude::TimerMode> = bevy::time::prelude::Timer::mode(
                 &_self,
             )
             .into();
         output
     }
+    ///  Creates a new timer with a given duration.
+    ///  See also [`Timer::from_seconds`](Timer::from_seconds).
     fn new(
         duration: Val<bevy::utils::Duration>,
         mode: Val<bevy::time::prelude::TimerMode>,
-    ) {
+    ) -> Val<bevy::time::prelude::Timer> {
         let output: Val<bevy::time::prelude::Timer> = bevy::time::prelude::Timer::new(
                 duration.into_inner(),
                 mode.into_inner(),
@@ -134,33 +225,98 @@ impl bevy::time::prelude::Timer {
             .into();
         output
     }
-    fn pause(mut _self: Mut<bevy::time::prelude::Timer>) {
+    ///  Pauses the Timer. Disables the ticking of the timer.
+    ///  See also [`Stopwatch::pause`](Stopwatch::pause).
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::time::Duration;
+    ///  let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
+    ///  timer.pause();
+    ///  timer.tick(Duration::from_secs_f32(0.5));
+    ///  assert_eq!(timer.elapsed_secs(), 0.0);
+    ///  ```
+    fn pause(mut _self: Mut<bevy::time::prelude::Timer>) -> () {
         let output: () = bevy::time::prelude::Timer::pause(&mut _self).into();
         output
     }
-    fn paused(_self: Ref<bevy::time::prelude::Timer>) {
+    ///  Returns `true` if the timer is paused.
+    ///  See also [`Stopwatch::is_paused`](Stopwatch::is_paused).
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
+    ///  assert!(!timer.paused());
+    ///  timer.pause();
+    ///  assert!(timer.paused());
+    ///  timer.unpause();
+    ///  assert!(!timer.paused());
+    ///  ```
+    fn paused(_self: Ref<bevy::time::prelude::Timer>) -> bool {
         let output: bool = bevy::time::prelude::Timer::paused(&_self).into();
         output
     }
-    fn remaining(_self: Ref<bevy::time::prelude::Timer>) {
+    ///  Returns the remaining time using Duration
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::time::Duration;
+    ///  let mut timer = Timer::from_seconds(2.0, TimerMode::Once);
+    ///  timer.tick(Duration::from_secs_f32(0.5));
+    ///  assert_eq!(timer.remaining(), Duration::from_secs_f32(1.5));
+    ///  ```
+    fn remaining(_self: Ref<bevy::time::prelude::Timer>) -> Val<bevy::utils::Duration> {
         let output: Val<bevy::utils::Duration> = bevy::time::prelude::Timer::remaining(
                 &_self,
             )
             .into();
         output
     }
-    fn remaining_secs(_self: Ref<bevy::time::prelude::Timer>) {
+    ///  Returns the remaining time in seconds
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::cmp::Ordering;
+    ///  use std::time::Duration;
+    ///  let mut timer = Timer::from_seconds(2.0, TimerMode::Once);
+    ///  timer.tick(Duration::from_secs_f32(0.5));
+    ///  let result = timer.remaining_secs().total_cmp(&1.5);
+    ///  assert_eq!(Ordering::Equal, result);
+    ///  ```
+    fn remaining_secs(_self: Ref<bevy::time::prelude::Timer>) -> f32 {
         let output: f32 = bevy::time::prelude::Timer::remaining_secs(&_self).into();
         output
     }
-    fn reset(mut _self: Mut<bevy::time::prelude::Timer>) {
+    ///  Resets the timer. The reset doesn't affect the `paused` state of the timer.
+    ///  See also [`Stopwatch::reset`](Stopwatch::reset).
+    ///  Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::time::Duration;
+    ///  let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
+    ///  timer.tick(Duration::from_secs_f32(1.5));
+    ///  timer.reset();
+    ///  assert!(!timer.finished());
+    ///  assert!(!timer.just_finished());
+    ///  assert_eq!(timer.elapsed_secs(), 0.0);
+    ///  ```
+    fn reset(mut _self: Mut<bevy::time::prelude::Timer>) -> () {
         let output: () = bevy::time::prelude::Timer::reset(&mut _self).into();
         output
     }
+    ///  Sets the duration of the timer.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::time::Duration;
+    ///  let mut timer = Timer::from_seconds(1.5, TimerMode::Once);
+    ///  timer.set_duration(Duration::from_secs(1));
+    ///  assert_eq!(timer.duration(), Duration::from_secs(1));
+    ///  ```
     fn set_duration(
         mut _self: Mut<bevy::time::prelude::Timer>,
         duration: Val<bevy::utils::Duration>,
-    ) {
+    ) -> () {
         let output: () = bevy::time::prelude::Timer::set_duration(
                 &mut _self,
                 duration.into_inner(),
@@ -168,10 +324,22 @@ impl bevy::time::prelude::Timer {
             .into();
         output
     }
+    ///  Sets the elapsed time of the timer without any other considerations.
+    ///  See also [`Stopwatch::set`](Stopwatch::set).
+    ///  #
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::time::Duration;
+    ///  let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
+    ///  timer.set_elapsed(Duration::from_secs(2));
+    ///  assert_eq!(timer.elapsed(), Duration::from_secs(2));
+    ///  // the timer is not finished even if the elapsed time is greater than the duration.
+    ///  assert!(!timer.finished());
+    ///  ```
     fn set_elapsed(
         mut _self: Mut<bevy::time::prelude::Timer>,
         time: Val<bevy::utils::Duration>,
-    ) {
+    ) -> () {
         let output: () = bevy::time::prelude::Timer::set_elapsed(
                 &mut _self,
                 time.into_inner(),
@@ -179,10 +347,18 @@ impl bevy::time::prelude::Timer {
             .into();
         output
     }
+    ///  Sets the mode of the timer.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  let mut timer = Timer::from_seconds(1.0, TimerMode::Repeating);
+    ///  timer.set_mode(TimerMode::Once);
+    ///  assert_eq!(timer.mode(), TimerMode::Once);
+    ///  ```
     fn set_mode(
         mut _self: Mut<bevy::time::prelude::Timer>,
         mode: Val<bevy::time::prelude::TimerMode>,
-    ) {
+    ) -> () {
         let output: () = bevy::time::prelude::Timer::set_mode(
                 &mut _self,
                 mode.into_inner(),
@@ -190,12 +366,41 @@ impl bevy::time::prelude::Timer {
             .into();
         output
     }
-    fn times_finished_this_tick(_self: Ref<bevy::time::prelude::Timer>) {
+    ///  Returns the number of times a repeating timer
+    ///  finished during the last [`tick`](Timer<T>::tick) call.
+    ///  For non repeating-timers, this method will only ever
+    ///  return 0 or 1.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::time::Duration;
+    ///  let mut timer = Timer::from_seconds(1.0, TimerMode::Repeating);
+    ///  timer.tick(Duration::from_secs_f32(6.0));
+    ///  assert_eq!(timer.times_finished_this_tick(), 6);
+    ///  timer.tick(Duration::from_secs_f32(2.0));
+    ///  assert_eq!(timer.times_finished_this_tick(), 2);
+    ///  timer.tick(Duration::from_secs_f32(0.5));
+    ///  assert_eq!(timer.times_finished_this_tick(), 0);
+    ///  ```
+    fn times_finished_this_tick(_self: Ref<bevy::time::prelude::Timer>) -> u32 {
         let output: u32 = bevy::time::prelude::Timer::times_finished_this_tick(&_self)
             .into();
         output
     }
-    fn unpause(mut _self: Mut<bevy::time::prelude::Timer>) {
+    ///  Unpauses the Timer. Resumes the ticking of the timer.
+    ///  See also [`Stopwatch::unpause()`](Stopwatch::unpause).
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::time::Duration;
+    ///  let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
+    ///  timer.pause();
+    ///  timer.tick(Duration::from_secs_f32(0.5));
+    ///  timer.unpause();
+    ///  timer.tick(Duration::from_secs_f32(0.5));
+    ///  assert_eq!(timer.elapsed_secs(), 0.5);
+    ///  ```
+    fn unpause(mut _self: Mut<bevy::time::prelude::Timer>) -> () {
         let output: () = bevy::time::prelude::Timer::unpause(&mut _self).into();
         output
     }
@@ -206,14 +411,16 @@ impl bevy::time::prelude::Timer {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::time::prelude::TimerMode {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::time::prelude::TimerMode>) {
+    fn assert_receiver_is_total_eq(_self: Ref<bevy::time::prelude::TimerMode>) -> () {
         let output: () = <bevy::time::prelude::TimerMode as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::time::prelude::TimerMode>) {
+    fn clone(
+        _self: Ref<bevy::time::prelude::TimerMode>,
+    ) -> Val<bevy::time::prelude::TimerMode> {
         let output: Val<bevy::time::prelude::TimerMode> = <bevy::time::prelude::TimerMode as std::clone::Clone>::clone(
                 &_self,
             )
@@ -223,7 +430,7 @@ impl bevy::time::prelude::TimerMode {
     fn eq(
         _self: Ref<bevy::time::prelude::TimerMode>,
         other: Ref<bevy::time::prelude::TimerMode>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::time::prelude::TimerMode as std::cmp::PartialEq<
             bevy::time::prelude::TimerMode,
         >>::eq(&_self, &other)
@@ -237,7 +444,9 @@ impl bevy::time::prelude::TimerMode {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::time::prelude::Virtual {
-    fn clone(_self: Ref<bevy::time::prelude::Virtual>) {
+    fn clone(
+        _self: Ref<bevy::time::prelude::Virtual>,
+    ) -> Val<bevy::time::prelude::Virtual> {
         let output: Val<bevy::time::prelude::Virtual> = <bevy::time::prelude::Virtual as std::clone::Clone>::clone(
                 &_self,
             )
@@ -251,60 +460,141 @@ impl bevy::time::prelude::Virtual {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::time::Stopwatch {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::time::Stopwatch>) {
+    fn assert_receiver_is_total_eq(_self: Ref<bevy::time::Stopwatch>) -> () {
         let output: () = <bevy::time::Stopwatch as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::time::Stopwatch>) {
+    fn clone(_self: Ref<bevy::time::Stopwatch>) -> Val<bevy::time::Stopwatch> {
         let output: Val<bevy::time::Stopwatch> = <bevy::time::Stopwatch as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn elapsed(_self: Ref<bevy::time::Stopwatch>) {
+    ///  Returns the elapsed time since the last [`reset`](Stopwatch::reset)
+    ///  of the stopwatch.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::time::Duration;
+    ///  let mut stopwatch = Stopwatch::new();
+    ///  stopwatch.tick(Duration::from_secs(1));
+    ///  assert_eq!(stopwatch.elapsed(), Duration::from_secs(1));
+    ///  ```
+    ///  # See Also
+    ///  [`elapsed_secs`](Stopwatch::elapsed_secs) - if an `f32` value is desirable instead.
+    ///  [`elapsed_secs_f64`](Stopwatch::elapsed_secs_f64) - if an `f64` is desirable instead.
+    fn elapsed(_self: Ref<bevy::time::Stopwatch>) -> Val<bevy::utils::Duration> {
         let output: Val<bevy::utils::Duration> = bevy::time::Stopwatch::elapsed(&_self)
             .into();
         output
     }
-    fn elapsed_secs(_self: Ref<bevy::time::Stopwatch>) {
+    ///  Returns the elapsed time since the last [`reset`](Stopwatch::reset)
+    ///  of the stopwatch, in seconds.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::time::Duration;
+    ///  let mut stopwatch = Stopwatch::new();
+    ///  stopwatch.tick(Duration::from_secs(1));
+    ///  assert_eq!(stopwatch.elapsed_secs(), 1.0);
+    ///  ```
+    ///  # See Also
+    ///  [`elapsed`](Stopwatch::elapsed) - if a `Duration` is desirable instead.
+    ///  [`elapsed_secs_f64`](Stopwatch::elapsed_secs_f64) - if an `f64` is desirable instead.
+    fn elapsed_secs(_self: Ref<bevy::time::Stopwatch>) -> f32 {
         let output: f32 = bevy::time::Stopwatch::elapsed_secs(&_self).into();
         output
     }
-    fn elapsed_secs_f64(_self: Ref<bevy::time::Stopwatch>) {
+    ///  Returns the elapsed time since the last [`reset`](Stopwatch::reset)
+    ///  of the stopwatch, in seconds, as f64.
+    ///  # See Also
+    ///  [`elapsed`](Stopwatch::elapsed) - if a `Duration` is desirable instead.
+    ///  [`elapsed_secs`](Stopwatch::elapsed_secs) - if an `f32` is desirable instead.
+    fn elapsed_secs_f64(_self: Ref<bevy::time::Stopwatch>) -> f64 {
         let output: f64 = bevy::time::Stopwatch::elapsed_secs_f64(&_self).into();
         output
     }
-    fn eq(_self: Ref<bevy::time::Stopwatch>, other: Ref<bevy::time::Stopwatch>) {
+    fn eq(_self: Ref<bevy::time::Stopwatch>, other: Ref<bevy::time::Stopwatch>) -> bool {
         let output: bool = <bevy::time::Stopwatch as std::cmp::PartialEq<
             bevy::time::Stopwatch,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn is_paused(_self: Ref<bevy::time::Stopwatch>) {
+    ///  Returns `true` if the stopwatch is paused.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  let mut stopwatch = Stopwatch::new();
+    ///  assert!(!stopwatch.is_paused());
+    ///  stopwatch.pause();
+    ///  assert!(stopwatch.is_paused());
+    ///  stopwatch.unpause();
+    ///  assert!(!stopwatch.is_paused());
+    ///  ```
+    fn is_paused(_self: Ref<bevy::time::Stopwatch>) -> bool {
         let output: bool = bevy::time::Stopwatch::is_paused(&_self).into();
         output
     }
-    fn new() {
+    ///  Create a new unpaused `Stopwatch` with no elapsed time.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  let stopwatch = Stopwatch::new();
+    ///  assert_eq!(stopwatch.elapsed_secs(), 0.0);
+    ///  assert_eq!(stopwatch.is_paused(), false);
+    ///  ```
+    fn new() -> Val<bevy::time::Stopwatch> {
         let output: Val<bevy::time::Stopwatch> = bevy::time::Stopwatch::new().into();
         output
     }
-    fn pause(mut _self: Mut<bevy::time::Stopwatch>) {
+    ///  Pauses the stopwatch. Any call to [`tick`](Stopwatch::tick) while
+    ///  paused will not have any effect on the elapsed time.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::time::Duration;
+    ///  let mut stopwatch = Stopwatch::new();
+    ///  stopwatch.pause();
+    ///  stopwatch.tick(Duration::from_secs_f32(1.5));
+    ///  assert!(stopwatch.is_paused());
+    ///  assert_eq!(stopwatch.elapsed_secs(), 0.0);
+    ///  ```
+    fn pause(mut _self: Mut<bevy::time::Stopwatch>) -> () {
         let output: () = bevy::time::Stopwatch::pause(&mut _self).into();
         output
     }
-    fn reset(mut _self: Mut<bevy::time::Stopwatch>) {
+    ///  Resets the stopwatch. The reset doesn't affect the paused state of the stopwatch.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::time::Duration;
+    ///  let mut stopwatch = Stopwatch::new();
+    ///  stopwatch.tick(Duration::from_secs_f32(1.5));
+    ///  stopwatch.reset();
+    ///  assert_eq!(stopwatch.elapsed_secs(), 0.0);
+    ///  ```
+    fn reset(mut _self: Mut<bevy::time::Stopwatch>) -> () {
         let output: () = bevy::time::Stopwatch::reset(&mut _self).into();
         output
     }
+    ///  Sets the elapsed time of the stopwatch.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::time::Duration;
+    ///  let mut stopwatch = Stopwatch::new();
+    ///  stopwatch.set_elapsed(Duration::from_secs_f32(1.0));
+    ///  assert_eq!(stopwatch.elapsed_secs(), 1.0);
+    ///  ```
     fn set_elapsed(
         mut _self: Mut<bevy::time::Stopwatch>,
         time: Val<bevy::utils::Duration>,
-    ) {
+    ) -> () {
         let output: () = bevy::time::Stopwatch::set_elapsed(
                 &mut _self,
                 time.into_inner(),
@@ -312,7 +602,20 @@ impl bevy::time::Stopwatch {
             .into();
         output
     }
-    fn unpause(mut _self: Mut<bevy::time::Stopwatch>) {
+    ///  Unpauses the stopwatch. Resume the effect of ticking on elapsed time.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_time::*;
+    ///  use std::time::Duration;
+    ///  let mut stopwatch = Stopwatch::new();
+    ///  stopwatch.pause();
+    ///  stopwatch.tick(Duration::from_secs_f32(1.0));
+    ///  stopwatch.unpause();
+    ///  stopwatch.tick(Duration::from_secs_f32(1.0));
+    ///  assert!(!stopwatch.is_paused());
+    ///  assert_eq!(stopwatch.elapsed_secs(), 1.0);
+    ///  ```
+    fn unpause(mut _self: Mut<bevy::time::Stopwatch>) -> () {
         let output: () = bevy::time::Stopwatch::unpause(&mut _self).into();
         output
     }

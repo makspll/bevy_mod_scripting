@@ -18,40 +18,48 @@ pub struct BevyMathScriptingPlugin;
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::AspectRatio {
-    fn clone(_self: Ref<bevy::math::AspectRatio>) {
+    fn clone(_self: Ref<bevy::math::AspectRatio>) -> Val<bevy::math::AspectRatio> {
         let output: Val<bevy::math::AspectRatio> = <bevy::math::AspectRatio as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn eq(_self: Ref<bevy::math::AspectRatio>, other: Ref<bevy::math::AspectRatio>) {
+    fn eq(
+        _self: Ref<bevy::math::AspectRatio>,
+        other: Ref<bevy::math::AspectRatio>,
+    ) -> bool {
         let output: bool = <bevy::math::AspectRatio as std::cmp::PartialEq<
             bevy::math::AspectRatio,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn inverse(_self: Ref<bevy::math::AspectRatio>) {
+    ///  Returns the inverse of this aspect ratio (height/width).
+    fn inverse(_self: Ref<bevy::math::AspectRatio>) -> Val<bevy::math::AspectRatio> {
         let output: Val<bevy::math::AspectRatio> = bevy::math::AspectRatio::inverse(
                 &_self,
             )
             .into();
         output
     }
-    fn is_landscape(_self: Ref<bevy::math::AspectRatio>) {
+    ///  Returns true if the aspect ratio represents a landscape orientation.
+    fn is_landscape(_self: Ref<bevy::math::AspectRatio>) -> bool {
         let output: bool = bevy::math::AspectRatio::is_landscape(&_self).into();
         output
     }
-    fn is_portrait(_self: Ref<bevy::math::AspectRatio>) {
+    ///  Returns true if the aspect ratio represents a portrait orientation.
+    fn is_portrait(_self: Ref<bevy::math::AspectRatio>) -> bool {
         let output: bool = bevy::math::AspectRatio::is_portrait(&_self).into();
         output
     }
-    fn is_square(_self: Ref<bevy::math::AspectRatio>) {
+    ///  Returns true if the aspect ratio is exactly square.
+    fn is_square(_self: Ref<bevy::math::AspectRatio>) -> bool {
         let output: bool = bevy::math::AspectRatio::is_square(&_self).into();
         output
     }
-    fn ratio(_self: Ref<bevy::math::AspectRatio>) {
+    ///  Returns the aspect ratio as a f32 value.
+    fn ratio(_self: Ref<bevy::math::AspectRatio>) -> f32 {
         let output: f32 = bevy::math::AspectRatio::ratio(&_self).into();
         output
     }
@@ -62,21 +70,24 @@ impl bevy::math::AspectRatio {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::CompassOctant {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::CompassOctant>) {
+    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::CompassOctant>) -> () {
         let output: () = <bevy::math::CompassOctant as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::CompassOctant>) {
+    fn clone(_self: Ref<bevy::math::CompassOctant>) -> Val<bevy::math::CompassOctant> {
         let output: Val<bevy::math::CompassOctant> = <bevy::math::CompassOctant as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn eq(_self: Ref<bevy::math::CompassOctant>, other: Ref<bevy::math::CompassOctant>) {
+    fn eq(
+        _self: Ref<bevy::math::CompassOctant>,
+        other: Ref<bevy::math::CompassOctant>,
+    ) -> bool {
         let output: bool = <bevy::math::CompassOctant as std::cmp::PartialEq<
             bevy::math::CompassOctant,
         >>::eq(&_self, &other)
@@ -90,14 +101,16 @@ impl bevy::math::CompassOctant {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::CompassQuadrant {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::CompassQuadrant>) {
+    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::CompassQuadrant>) -> () {
         let output: () = <bevy::math::CompassQuadrant as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::CompassQuadrant>) {
+    fn clone(
+        _self: Ref<bevy::math::CompassQuadrant>,
+    ) -> Val<bevy::math::CompassQuadrant> {
         let output: Val<bevy::math::CompassQuadrant> = <bevy::math::CompassQuadrant as std::clone::Clone>::clone(
                 &_self,
             )
@@ -107,7 +120,7 @@ impl bevy::math::CompassQuadrant {
     fn eq(
         _self: Ref<bevy::math::CompassQuadrant>,
         other: Ref<bevy::math::CompassQuadrant>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::CompassQuadrant as std::cmp::PartialEq<
             bevy::math::CompassQuadrant,
         >>::eq(&_self, &other)
@@ -121,48 +134,60 @@ impl bevy::math::CompassQuadrant {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::Isometry2d {
-    fn clone(_self: Ref<bevy::math::Isometry2d>) {
+    fn clone(_self: Ref<bevy::math::Isometry2d>) -> Val<bevy::math::Isometry2d> {
         let output: Val<bevy::math::Isometry2d> = <bevy::math::Isometry2d as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn eq(_self: Ref<bevy::math::Isometry2d>, other: Ref<bevy::math::Isometry2d>) {
+    fn eq(
+        _self: Ref<bevy::math::Isometry2d>,
+        other: Ref<bevy::math::Isometry2d>,
+    ) -> bool {
         let output: bool = <bevy::math::Isometry2d as std::cmp::PartialEq<
             bevy::math::Isometry2d,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn from_rotation(rotation: Val<bevy::math::Rot2>) {
+    ///  Create a two-dimensional isometry from a rotation.
+    fn from_rotation(rotation: Val<bevy::math::Rot2>) -> Val<bevy::math::Isometry2d> {
         let output: Val<bevy::math::Isometry2d> = bevy::math::Isometry2d::from_rotation(
                 rotation.into_inner(),
             )
             .into();
         output
     }
-    fn from_translation(translation: Val<bevy::math::prelude::Vec2>) {
+    ///  Create a two-dimensional isometry from a translation.
+    fn from_translation(
+        translation: Val<bevy::math::prelude::Vec2>,
+    ) -> Val<bevy::math::Isometry2d> {
         let output: Val<bevy::math::Isometry2d> = bevy::math::Isometry2d::from_translation(
                 translation.into_inner(),
             )
             .into();
         output
     }
-    fn from_xy(x: f32, y: f32) {
+    ///  Create a two-dimensional isometry from a translation with the given `x` and `y` components.
+    fn from_xy(x: f32, y: f32) -> Val<bevy::math::Isometry2d> {
         let output: Val<bevy::math::Isometry2d> = bevy::math::Isometry2d::from_xy(x, y)
             .into();
         output
     }
-    fn inverse(_self: Ref<bevy::math::Isometry2d>) {
+    ///  The inverse isometry that undoes this one.
+    fn inverse(_self: Ref<bevy::math::Isometry2d>) -> Val<bevy::math::Isometry2d> {
         let output: Val<bevy::math::Isometry2d> = bevy::math::Isometry2d::inverse(&_self)
             .into();
         output
     }
+    ///  Compute `iso1.inverse() * iso2` in a more efficient way for one-shot cases.
+    ///  If the same isometry is used multiple times, it is more efficient to instead compute
+    ///  the inverse once and use that for each transformation.
     fn inverse_mul(
         _self: Ref<bevy::math::Isometry2d>,
         rhs: Val<bevy::math::Isometry2d>,
-    ) {
+    ) -> Val<bevy::math::Isometry2d> {
         let output: Val<bevy::math::Isometry2d> = bevy::math::Isometry2d::inverse_mul(
                 &_self,
                 rhs.into_inner(),
@@ -170,10 +195,14 @@ impl bevy::math::Isometry2d {
             .into();
         output
     }
+    ///  Transform a point by rotating and translating it using the inverse of this isometry.
+    ///  This is more efficient than `iso.inverse().transform_point(point)` for one-shot cases.
+    ///  If the same isometry is used multiple times, it is more efficient to instead compute
+    ///  the inverse once and use that for each transformation.
     fn inverse_transform_point(
         _self: Ref<bevy::math::Isometry2d>,
         point: Val<bevy::math::prelude::Vec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::Isometry2d::inverse_transform_point(
                 &_self,
                 point.into_inner(),
@@ -181,31 +210,41 @@ impl bevy::math::Isometry2d {
             .into();
         output
     }
-    fn mul(_self: Val<bevy::math::Isometry2d>, rhs: Val<bevy::math::Isometry2d>) {
+    fn mul(
+        _self: Val<bevy::math::Isometry2d>,
+        rhs: Val<bevy::math::Isometry2d>,
+    ) -> Val<bevy::math::Isometry2d> {
         let output: Val<bevy::math::Isometry2d> = <bevy::math::Isometry2d as std::ops::Mul<
             bevy::math::Isometry2d,
         >>::mul(_self.into_inner(), rhs.into_inner())
             .into();
         output
     }
-    fn mul(_self: Val<bevy::math::Isometry2d>, rhs: Val<bevy::math::prelude::Dir2>) {
+    fn mul(
+        _self: Val<bevy::math::Isometry2d>,
+        rhs: Val<bevy::math::prelude::Dir2>,
+    ) -> Val<bevy::math::prelude::Dir2> {
         let output: Val<bevy::math::prelude::Dir2> = <bevy::math::Isometry2d as std::ops::Mul<
             bevy::math::prelude::Dir2,
         >>::mul(_self.into_inner(), rhs.into_inner())
             .into();
         output
     }
-    fn mul(_self: Val<bevy::math::Isometry2d>, rhs: Val<bevy::math::prelude::Vec2>) {
+    fn mul(
+        _self: Val<bevy::math::Isometry2d>,
+        rhs: Val<bevy::math::prelude::Vec2>,
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = <bevy::math::Isometry2d as std::ops::Mul<
             bevy::math::prelude::Vec2,
         >>::mul(_self.into_inner(), rhs.into_inner())
             .into();
         output
     }
+    ///  Create a two-dimensional isometry from a rotation and a translation.
     fn new(
         translation: Val<bevy::math::prelude::Vec2>,
         rotation: Val<bevy::math::Rot2>,
-    ) {
+    ) -> Val<bevy::math::Isometry2d> {
         let output: Val<bevy::math::Isometry2d> = bevy::math::Isometry2d::new(
                 translation.into_inner(),
                 rotation.into_inner(),
@@ -213,10 +252,11 @@ impl bevy::math::Isometry2d {
             .into();
         output
     }
+    ///  Transform a point by rotating and translating it using this isometry.
     fn transform_point(
         _self: Ref<bevy::math::Isometry2d>,
         point: Val<bevy::math::prelude::Vec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::Isometry2d::transform_point(
                 &_self,
                 point.into_inner(),
@@ -231,28 +271,35 @@ impl bevy::math::Isometry2d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::Isometry3d {
-    fn clone(_self: Ref<bevy::math::Isometry3d>) {
+    fn clone(_self: Ref<bevy::math::Isometry3d>) -> Val<bevy::math::Isometry3d> {
         let output: Val<bevy::math::Isometry3d> = <bevy::math::Isometry3d as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn eq(_self: Ref<bevy::math::Isometry3d>, other: Ref<bevy::math::Isometry3d>) {
+    fn eq(
+        _self: Ref<bevy::math::Isometry3d>,
+        other: Ref<bevy::math::Isometry3d>,
+    ) -> bool {
         let output: bool = <bevy::math::Isometry3d as std::cmp::PartialEq<
             bevy::math::Isometry3d,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn from_rotation(rotation: Val<bevy::math::prelude::Quat>) {
+    ///  Create a three-dimensional isometry from a rotation.
+    fn from_rotation(
+        rotation: Val<bevy::math::prelude::Quat>,
+    ) -> Val<bevy::math::Isometry3d> {
         let output: Val<bevy::math::Isometry3d> = bevy::math::Isometry3d::from_rotation(
                 rotation.into_inner(),
             )
             .into();
         output
     }
-    fn from_xyz(x: f32, y: f32, z: f32) {
+    ///  Create a three-dimensional isometry from a translation with the given `x`, `y`, and `z` components.
+    fn from_xyz(x: f32, y: f32, z: f32) -> Val<bevy::math::Isometry3d> {
         let output: Val<bevy::math::Isometry3d> = bevy::math::Isometry3d::from_xyz(
                 x,
                 y,
@@ -261,15 +308,19 @@ impl bevy::math::Isometry3d {
             .into();
         output
     }
-    fn inverse(_self: Ref<bevy::math::Isometry3d>) {
+    ///  The inverse isometry that undoes this one.
+    fn inverse(_self: Ref<bevy::math::Isometry3d>) -> Val<bevy::math::Isometry3d> {
         let output: Val<bevy::math::Isometry3d> = bevy::math::Isometry3d::inverse(&_self)
             .into();
         output
     }
+    ///  Compute `iso1.inverse() * iso2` in a more efficient way for one-shot cases.
+    ///  If the same isometry is used multiple times, it is more efficient to instead compute
+    ///  the inverse once and use that for each transformation.
     fn inverse_mul(
         _self: Ref<bevy::math::Isometry3d>,
         rhs: Val<bevy::math::Isometry3d>,
-    ) {
+    ) -> Val<bevy::math::Isometry3d> {
         let output: Val<bevy::math::Isometry3d> = bevy::math::Isometry3d::inverse_mul(
                 &_self,
                 rhs.into_inner(),
@@ -277,28 +328,40 @@ impl bevy::math::Isometry3d {
             .into();
         output
     }
-    fn mul(_self: Val<bevy::math::Isometry3d>, rhs: Val<bevy::math::Isometry3d>) {
+    fn mul(
+        _self: Val<bevy::math::Isometry3d>,
+        rhs: Val<bevy::math::Isometry3d>,
+    ) -> Val<bevy::math::Isometry3d> {
         let output: Val<bevy::math::Isometry3d> = <bevy::math::Isometry3d as std::ops::Mul<
             bevy::math::Isometry3d,
         >>::mul(_self.into_inner(), rhs.into_inner())
             .into();
         output
     }
-    fn mul(_self: Val<bevy::math::Isometry3d>, rhs: Val<bevy::math::Vec3A>) {
+    fn mul(
+        _self: Val<bevy::math::Isometry3d>,
+        rhs: Val<bevy::math::Vec3A>,
+    ) -> Val<bevy::math::Vec3A> {
         let output: Val<bevy::math::Vec3A> = <bevy::math::Isometry3d as std::ops::Mul<
             bevy::math::Vec3A,
         >>::mul(_self.into_inner(), rhs.into_inner())
             .into();
         output
     }
-    fn mul(_self: Val<bevy::math::Isometry3d>, rhs: Val<bevy::math::prelude::Dir3>) {
+    fn mul(
+        _self: Val<bevy::math::Isometry3d>,
+        rhs: Val<bevy::math::prelude::Dir3>,
+    ) -> Val<bevy::math::prelude::Dir3> {
         let output: Val<bevy::math::prelude::Dir3> = <bevy::math::Isometry3d as std::ops::Mul<
             bevy::math::prelude::Dir3,
         >>::mul(_self.into_inner(), rhs.into_inner())
             .into();
         output
     }
-    fn mul(_self: Val<bevy::math::Isometry3d>, rhs: Val<bevy::math::prelude::Vec3>) {
+    fn mul(
+        _self: Val<bevy::math::Isometry3d>,
+        rhs: Val<bevy::math::prelude::Vec3>,
+    ) -> Val<bevy::math::prelude::Vec3> {
         let output: Val<bevy::math::prelude::Vec3> = <bevy::math::Isometry3d as std::ops::Mul<
             bevy::math::prelude::Vec3,
         >>::mul(_self.into_inner(), rhs.into_inner())
@@ -312,21 +375,25 @@ impl bevy::math::Isometry3d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::Ray2d {
-    fn clone(_self: Ref<bevy::math::Ray2d>) {
+    fn clone(_self: Ref<bevy::math::Ray2d>) -> Val<bevy::math::Ray2d> {
         let output: Val<bevy::math::Ray2d> = <bevy::math::Ray2d as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn eq(_self: Ref<bevy::math::Ray2d>, other: Ref<bevy::math::Ray2d>) {
+    fn eq(_self: Ref<bevy::math::Ray2d>, other: Ref<bevy::math::Ray2d>) -> bool {
         let output: bool = <bevy::math::Ray2d as std::cmp::PartialEq<
             bevy::math::Ray2d,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn get_point(_self: Ref<bevy::math::Ray2d>, distance: f32) {
+    ///  Get a point at a given distance along the ray
+    fn get_point(
+        _self: Ref<bevy::math::Ray2d>,
+        distance: f32,
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::Ray2d::get_point(
                 &_self,
                 distance,
@@ -334,11 +401,12 @@ impl bevy::math::Ray2d {
             .into();
         output
     }
+    ///  Get the distance to a plane if the ray intersects it
     fn intersect_plane(
         _self: Ref<bevy::math::Ray2d>,
         plane_origin: Val<bevy::math::prelude::Vec2>,
         plane: Val<bevy::math::primitives::Plane2d>,
-    ) {
+    ) -> std::option::Option<f32> {
         let output: std::option::Option<f32> = bevy::math::Ray2d::intersect_plane(
                 &_self,
                 plane_origin.into_inner(),
@@ -347,10 +415,11 @@ impl bevy::math::Ray2d {
             .into();
         output
     }
+    ///  Create a new `Ray2d` from a given origin and direction
     fn new(
         origin: Val<bevy::math::prelude::Vec2>,
         direction: Val<bevy::math::prelude::Dir2>,
-    ) {
+    ) -> Val<bevy::math::Ray2d> {
         let output: Val<bevy::math::Ray2d> = bevy::math::Ray2d::new(
                 origin.into_inner(),
                 direction.into_inner(),
@@ -365,21 +434,25 @@ impl bevy::math::Ray2d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::Ray3d {
-    fn clone(_self: Ref<bevy::math::Ray3d>) {
+    fn clone(_self: Ref<bevy::math::Ray3d>) -> Val<bevy::math::Ray3d> {
         let output: Val<bevy::math::Ray3d> = <bevy::math::Ray3d as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn eq(_self: Ref<bevy::math::Ray3d>, other: Ref<bevy::math::Ray3d>) {
+    fn eq(_self: Ref<bevy::math::Ray3d>, other: Ref<bevy::math::Ray3d>) -> bool {
         let output: bool = <bevy::math::Ray3d as std::cmp::PartialEq<
             bevy::math::Ray3d,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn get_point(_self: Ref<bevy::math::Ray3d>, distance: f32) {
+    ///  Get a point at a given distance along the ray
+    fn get_point(
+        _self: Ref<bevy::math::Ray3d>,
+        distance: f32,
+    ) -> Val<bevy::math::prelude::Vec3> {
         let output: Val<bevy::math::prelude::Vec3> = bevy::math::Ray3d::get_point(
                 &_self,
                 distance,
@@ -387,11 +460,12 @@ impl bevy::math::Ray3d {
             .into();
         output
     }
+    ///  Get the distance to a plane if the ray intersects it
     fn intersect_plane(
         _self: Ref<bevy::math::Ray3d>,
         plane_origin: Val<bevy::math::prelude::Vec3>,
         plane: Val<bevy::math::primitives::InfinitePlane3d>,
-    ) {
+    ) -> std::option::Option<f32> {
         let output: std::option::Option<f32> = bevy::math::Ray3d::intersect_plane(
                 &_self,
                 plane_origin.into_inner(),
@@ -400,10 +474,11 @@ impl bevy::math::Ray3d {
             .into();
         output
     }
+    ///  Create a new `Ray3d` from a given origin and direction
     fn new(
         origin: Val<bevy::math::prelude::Vec3>,
         direction: Val<bevy::math::prelude::Dir3>,
-    ) {
+    ) -> Val<bevy::math::Ray3d> {
         let output: Val<bevy::math::Ray3d> = bevy::math::Ray3d::new(
                 origin.into_inner(),
                 direction.into_inner(),
@@ -418,7 +493,8 @@ impl bevy::math::Ray3d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::Rot2 {
-    fn angle_between(_self: Val<bevy::math::Rot2>, other: Val<bevy::math::Rot2>) {
+    ///  Returns the angle in radians needed to make `self` and `other` coincide.
+    fn angle_between(_self: Val<bevy::math::Rot2>, other: Val<bevy::math::Rot2>) -> f32 {
         let output: f32 = bevy::math::Rot2::angle_between(
                 _self.into_inner(),
                 other.into_inner(),
@@ -426,7 +502,8 @@ impl bevy::math::Rot2 {
             .into();
         output
     }
-    fn angle_to(_self: Val<bevy::math::Rot2>, other: Val<bevy::math::Rot2>) {
+    ///  Returns the angle in radians needed to make `self` and `other` coincide.
+    fn angle_to(_self: Val<bevy::math::Rot2>, other: Val<bevy::math::Rot2>) -> f32 {
         let output: f32 = bevy::math::Rot2::angle_to(
                 _self.into_inner(),
                 other.into_inner(),
@@ -434,103 +511,187 @@ impl bevy::math::Rot2 {
             .into();
         output
     }
-    fn as_degrees(_self: Val<bevy::math::Rot2>) {
+    ///  Returns the rotation in degrees in the `(-180, 180]` range.
+    fn as_degrees(_self: Val<bevy::math::Rot2>) -> f32 {
         let output: f32 = bevy::math::Rot2::as_degrees(_self.into_inner()).into();
         output
     }
-    fn as_radians(_self: Val<bevy::math::Rot2>) {
+    ///  Returns the rotation in radians in the `(-pi, pi]` range.
+    fn as_radians(_self: Val<bevy::math::Rot2>) -> f32 {
         let output: f32 = bevy::math::Rot2::as_radians(_self.into_inner()).into();
         output
     }
-    fn as_turn_fraction(_self: Val<bevy::math::Rot2>) {
+    ///  Returns the rotation as a fraction of a full 360 degree turn.
+    fn as_turn_fraction(_self: Val<bevy::math::Rot2>) -> f32 {
         let output: f32 = bevy::math::Rot2::as_turn_fraction(_self.into_inner()).into();
         output
     }
-    fn clone(_self: Ref<bevy::math::Rot2>) {
+    fn clone(_self: Ref<bevy::math::Rot2>) -> Val<bevy::math::Rot2> {
         let output: Val<bevy::math::Rot2> = <bevy::math::Rot2 as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn degrees(degrees: f32) {
+    ///  Creates a [`Rot2`] from a counterclockwise angle in degrees.
+    ///  # Note
+    ///  The input rotation will always be clamped to the range `(-180°, 180°]` by design.
+    ///  # Example
+    ///  ```
+    ///  # use bevy_math::Rot2;
+    ///  # use approx::assert_relative_eq;
+    ///  let rot1 = Rot2::degrees(270.0);
+    ///  let rot2 = Rot2::degrees(-90.0);
+    ///  assert_relative_eq!(rot1, rot2);
+    ///  let rot3 = Rot2::degrees(180.0);
+    ///  assert_relative_eq!(rot1 * rot1, rot3);
+    ///  ```
+    fn degrees(degrees: f32) -> Val<bevy::math::Rot2> {
         let output: Val<bevy::math::Rot2> = bevy::math::Rot2::degrees(degrees).into();
         output
     }
-    fn eq(_self: Ref<bevy::math::Rot2>, other: Ref<bevy::math::Rot2>) {
+    fn eq(_self: Ref<bevy::math::Rot2>, other: Ref<bevy::math::Rot2>) -> bool {
         let output: bool = <bevy::math::Rot2 as std::cmp::PartialEq<
             bevy::math::Rot2,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn fast_renormalize(_self: Val<bevy::math::Rot2>) {
+    ///  Returns `self` after an approximate normalization, assuming the value is already nearly normalized.
+    ///  Useful for preventing numerical error accumulation.
+    ///  See [`Dir3::fast_renormalize`](crate::Dir3::fast_renormalize) for an example of when such error accumulation might occur.
+    fn fast_renormalize(_self: Val<bevy::math::Rot2>) -> Val<bevy::math::Rot2> {
         let output: Val<bevy::math::Rot2> = bevy::math::Rot2::fast_renormalize(
                 _self.into_inner(),
             )
             .into();
         output
     }
-    fn from_sin_cos(sin: f32, cos: f32) {
+    ///  Creates a [`Rot2`] from the sine and cosine of an angle in radians.
+    ///  The rotation is only valid if `sin * sin + cos * cos == 1.0`.
+    ///  # Panics
+    ///  Panics if `sin * sin + cos * cos != 1.0` when the `glam_assert` feature is enabled.
+    fn from_sin_cos(sin: f32, cos: f32) -> Val<bevy::math::Rot2> {
         let output: Val<bevy::math::Rot2> = bevy::math::Rot2::from_sin_cos(sin, cos)
             .into();
         output
     }
-    fn inverse(_self: Val<bevy::math::Rot2>) {
+    ///  Returns the inverse of the rotation. This is also the conjugate
+    ///  of the unit complex number representing the rotation.
+    fn inverse(_self: Val<bevy::math::Rot2>) -> Val<bevy::math::Rot2> {
         let output: Val<bevy::math::Rot2> = bevy::math::Rot2::inverse(_self.into_inner())
             .into();
         output
     }
-    fn is_finite(_self: Val<bevy::math::Rot2>) {
+    ///  Returns `true` if the rotation is neither infinite nor NaN.
+    fn is_finite(_self: Val<bevy::math::Rot2>) -> bool {
         let output: bool = bevy::math::Rot2::is_finite(_self.into_inner()).into();
         output
     }
-    fn is_nan(_self: Val<bevy::math::Rot2>) {
+    ///  Returns `true` if the rotation is NaN.
+    fn is_nan(_self: Val<bevy::math::Rot2>) -> bool {
         let output: bool = bevy::math::Rot2::is_nan(_self.into_inner()).into();
         output
     }
-    fn is_near_identity(_self: Val<bevy::math::Rot2>) {
+    ///  Returns `true` if the rotation is near [`Rot2::IDENTITY`].
+    fn is_near_identity(_self: Val<bevy::math::Rot2>) -> bool {
         let output: bool = bevy::math::Rot2::is_near_identity(_self.into_inner()).into();
         output
     }
-    fn is_normalized(_self: Val<bevy::math::Rot2>) {
+    ///  Returns whether `self` has a length of `1.0` or not.
+    ///  Uses a precision threshold of approximately `1e-4`.
+    fn is_normalized(_self: Val<bevy::math::Rot2>) -> bool {
         let output: bool = bevy::math::Rot2::is_normalized(_self.into_inner()).into();
         output
     }
-    fn length(_self: Val<bevy::math::Rot2>) {
+    ///  Computes the length or norm of the complex number used to represent the rotation.
+    ///  The length is typically expected to be `1.0`. Unexpectedly denormalized rotations
+    ///  can be a result of incorrect construction or floating point error caused by
+    ///  successive operations.
+    fn length(_self: Val<bevy::math::Rot2>) -> f32 {
         let output: f32 = bevy::math::Rot2::length(_self.into_inner()).into();
         output
     }
-    fn length_recip(_self: Val<bevy::math::Rot2>) {
+    ///  Computes `1.0 / self.length()`.
+    ///  For valid results, `self` must _not_ have a length of zero.
+    fn length_recip(_self: Val<bevy::math::Rot2>) -> f32 {
         let output: f32 = bevy::math::Rot2::length_recip(_self.into_inner()).into();
         output
     }
-    fn length_squared(_self: Val<bevy::math::Rot2>) {
+    ///  Computes the squared length or norm of the complex number used to represent the rotation.
+    ///  This is generally faster than [`Rot2::length()`], as it avoids a square
+    ///  root operation.
+    ///  The length is typically expected to be `1.0`. Unexpectedly denormalized rotations
+    ///  can be a result of incorrect construction or floating point error caused by
+    ///  successive operations.
+    fn length_squared(_self: Val<bevy::math::Rot2>) -> f32 {
         let output: f32 = bevy::math::Rot2::length_squared(_self.into_inner()).into();
         output
     }
-    fn mul(_self: Val<bevy::math::Rot2>, rhs: Val<bevy::math::Rot2>) {
+    fn mul(
+        _self: Val<bevy::math::Rot2>,
+        rhs: Val<bevy::math::Rot2>,
+    ) -> Val<bevy::math::Rot2> {
         let output: Val<bevy::math::Rot2> = <bevy::math::Rot2 as std::ops::Mul<
             bevy::math::Rot2,
         >>::mul(_self.into_inner(), rhs.into_inner())
             .into();
         output
     }
-    fn mul(_self: Val<bevy::math::Rot2>, direction: Val<bevy::math::prelude::Dir2>) {
+    ///  Rotates the [`Dir2`] using a [`Rot2`].
+    fn mul(
+        _self: Val<bevy::math::Rot2>,
+        direction: Val<bevy::math::prelude::Dir2>,
+    ) -> Val<bevy::math::prelude::Dir2> {
         let output: Val<bevy::math::prelude::Dir2> = <bevy::math::Rot2 as std::ops::Mul<
             bevy::math::prelude::Dir2,
         >>::mul(_self.into_inner(), direction.into_inner())
             .into();
         output
     }
-    fn mul(_self: Val<bevy::math::Rot2>, rhs: Val<bevy::math::prelude::Vec2>) {
+    ///  Rotates a [`Vec2`] by a [`Rot2`].
+    fn mul(
+        _self: Val<bevy::math::Rot2>,
+        rhs: Val<bevy::math::prelude::Vec2>,
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = <bevy::math::Rot2 as std::ops::Mul<
             bevy::math::prelude::Vec2,
         >>::mul(_self.into_inner(), rhs.into_inner())
             .into();
         output
     }
-    fn nlerp(_self: Val<bevy::math::Rot2>, end: Val<bevy::math::Rot2>, s: f32) {
+    ///  Performs a linear interpolation between `self` and `rhs` based on
+    ///  the value `s`, and normalizes the rotation afterwards.
+    ///  When `s == 0.0`, the result will be equal to `self`.
+    ///  When `s == 1.0`, the result will be equal to `rhs`.
+    ///  This is slightly more efficient than [`slerp`](Self::slerp), and produces a similar result
+    ///  when the difference between the two rotations is small. At larger differences,
+    ///  the result resembles a kind of ease-in-out effect.
+    ///  If you would like the angular velocity to remain constant, consider using [`slerp`](Self::slerp) instead.
+    ///  # Details
+    ///  `nlerp` corresponds to computing an angle for a point at position `s` on a line drawn
+    ///  between the endpoints of the arc formed by `self` and `rhs` on a unit circle,
+    ///  and normalizing the result afterwards.
+    ///  Note that if the angles are opposite like 0 and π, the line will pass through the origin,
+    ///  and the resulting angle will always be either `self` or `rhs` depending on `s`.
+    ///  If `s` happens to be `0.5` in this case, a valid rotation cannot be computed, and `self`
+    ///  will be returned as a fallback.
+    ///  # Example
+    ///  ```
+    ///  # use bevy_math::Rot2;
+    ///  #
+    ///  let rot1 = Rot2::IDENTITY;
+    ///  let rot2 = Rot2::degrees(135.0);
+    ///  let result1 = rot1.nlerp(rot2, 1.0 / 3.0);
+    ///  assert_eq!(result1.as_degrees(), 28.675055);
+    ///  let result2 = rot1.nlerp(rot2, 0.5);
+    ///  assert_eq!(result2.as_degrees(), 67.5);
+    ///  ```
+    fn nlerp(
+        _self: Val<bevy::math::Rot2>,
+        end: Val<bevy::math::Rot2>,
+        s: f32,
+    ) -> Val<bevy::math::Rot2> {
         let output: Val<bevy::math::Rot2> = bevy::math::Rot2::nlerp(
                 _self.into_inner(),
                 end.into_inner(),
@@ -539,22 +700,66 @@ impl bevy::math::Rot2 {
             .into();
         output
     }
-    fn normalize(_self: Val<bevy::math::Rot2>) {
+    ///  Returns `self` with a length of `1.0`.
+    ///  Note that [`Rot2`] should typically already be normalized by design.
+    ///  Manual normalization is only needed when successive operations result in
+    ///  accumulated floating point error, or if the rotation was constructed
+    ///  with invalid values.
+    ///  # Panics
+    ///  Panics if `self` has a length of zero, NaN, or infinity when debug assertions are enabled.
+    fn normalize(_self: Val<bevy::math::Rot2>) -> Val<bevy::math::Rot2> {
         let output: Val<bevy::math::Rot2> = bevy::math::Rot2::normalize(
                 _self.into_inner(),
             )
             .into();
         output
     }
-    fn radians(radians: f32) {
+    ///  Creates a [`Rot2`] from a counterclockwise angle in radians.
+    ///  # Note
+    ///  The input rotation will always be clamped to the range `(-π, π]` by design.
+    ///  # Example
+    ///  ```
+    ///  # use bevy_math::Rot2;
+    ///  # use approx::assert_relative_eq;
+    ///  # use std::f32::consts::{FRAC_PI_2, PI};
+    ///  let rot1 = Rot2::radians(3.0 * FRAC_PI_2);
+    ///  let rot2 = Rot2::radians(-FRAC_PI_2);
+    ///  assert_relative_eq!(rot1, rot2);
+    ///  let rot3 = Rot2::radians(PI);
+    ///  assert_relative_eq!(rot1 * rot1, rot3);
+    ///  ```
+    fn radians(radians: f32) -> Val<bevy::math::Rot2> {
         let output: Val<bevy::math::Rot2> = bevy::math::Rot2::radians(radians).into();
         output
     }
-    fn sin_cos(_self: Val<bevy::math::Rot2>) {
+    ///  Returns the sine and cosine of the rotation angle in radians.
+    fn sin_cos(_self: Val<bevy::math::Rot2>) -> (f32, f32) {
         let output: (f32, f32) = bevy::math::Rot2::sin_cos(_self.into_inner()).into();
         output
     }
-    fn slerp(_self: Val<bevy::math::Rot2>, end: Val<bevy::math::Rot2>, s: f32) {
+    ///  Performs a spherical linear interpolation between `self` and `end`
+    ///  based on the value `s`.
+    ///  This corresponds to interpolating between the two angles at a constant angular velocity.
+    ///  When `s == 0.0`, the result will be equal to `self`.
+    ///  When `s == 1.0`, the result will be equal to `rhs`.
+    ///  If you would like the rotation to have a kind of ease-in-out effect, consider
+    ///  using the slightly more efficient [`nlerp`](Self::nlerp) instead.
+    ///  # Example
+    ///  ```
+    ///  # use bevy_math::Rot2;
+    ///  #
+    ///  let rot1 = Rot2::IDENTITY;
+    ///  let rot2 = Rot2::degrees(135.0);
+    ///  let result1 = rot1.slerp(rot2, 1.0 / 3.0);
+    ///  assert_eq!(result1.as_degrees(), 45.0);
+    ///  let result2 = rot1.slerp(rot2, 0.5);
+    ///  assert_eq!(result2.as_degrees(), 67.5);
+    ///  ```
+    fn slerp(
+        _self: Val<bevy::math::Rot2>,
+        end: Val<bevy::math::Rot2>,
+        s: f32,
+    ) -> Val<bevy::math::Rot2> {
         let output: Val<bevy::math::Rot2> = bevy::math::Rot2::slerp(
                 _self.into_inner(),
                 end.into_inner(),
@@ -563,7 +768,20 @@ impl bevy::math::Rot2 {
             .into();
         output
     }
-    fn turn_fraction(fraction: f32) {
+    ///  Creates a [`Rot2`] from a counterclockwise fraction of a full turn of 360 degrees.
+    ///  # Note
+    ///  The input rotation will always be clamped to the range `(-50%, 50%]` by design.
+    ///  # Example
+    ///  ```
+    ///  # use bevy_math::Rot2;
+    ///  # use approx::assert_relative_eq;
+    ///  let rot1 = Rot2::turn_fraction(0.75);
+    ///  let rot2 = Rot2::turn_fraction(-0.25);
+    ///  assert_relative_eq!(rot1, rot2);
+    ///  let rot3 = Rot2::turn_fraction(0.5);
+    ///  assert_relative_eq!(rot1 * rot1, rot3);
+    ///  ```
+    fn turn_fraction(fraction: f32) -> Val<bevy::math::Rot2> {
         let output: Val<bevy::math::Rot2> = bevy::math::Rot2::turn_fraction(fraction)
             .into();
         output
@@ -575,35 +793,47 @@ impl bevy::math::Rot2 {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::prelude::Dir2 {
-    fn as_vec2(_self: Ref<bevy::math::prelude::Dir2>) {
+    ///  Returns the inner [`Vec2`]
+    fn as_vec2(_self: Ref<bevy::math::prelude::Dir2>) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::prelude::Dir2::as_vec2(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::prelude::Dir2>) {
+    fn clone(_self: Ref<bevy::math::prelude::Dir2>) -> Val<bevy::math::prelude::Dir2> {
         let output: Val<bevy::math::prelude::Dir2> = <bevy::math::prelude::Dir2 as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn eq(_self: Ref<bevy::math::prelude::Dir2>, other: Ref<bevy::math::prelude::Dir2>) {
+    fn eq(
+        _self: Ref<bevy::math::prelude::Dir2>,
+        other: Ref<bevy::math::prelude::Dir2>,
+    ) -> bool {
         let output: bool = <bevy::math::prelude::Dir2 as std::cmp::PartialEq<
             bevy::math::prelude::Dir2,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn fast_renormalize(_self: Val<bevy::math::prelude::Dir2>) {
+    ///  Returns `self` after an approximate normalization, assuming the value is already nearly normalized.
+    ///  Useful for preventing numerical error accumulation.
+    ///  See [`Dir3::fast_renormalize`] for an example of when such error accumulation might occur.
+    fn fast_renormalize(
+        _self: Val<bevy::math::prelude::Dir2>,
+    ) -> Val<bevy::math::prelude::Dir2> {
         let output: Val<bevy::math::prelude::Dir2> = bevy::math::prelude::Dir2::fast_renormalize(
                 _self.into_inner(),
             )
             .into();
         output
     }
-    fn from_xy_unchecked(x: f32, y: f32) {
+    ///  Create a direction from its `x` and `y` components, assuming the resulting vector is normalized.
+    ///  # Warning
+    ///  The vector produced from `x` and `y` must be normalized, i.e its length must be `1.0`.
+    fn from_xy_unchecked(x: f32, y: f32) -> Val<bevy::math::prelude::Dir2> {
         let output: Val<bevy::math::prelude::Dir2> = bevy::math::prelude::Dir2::from_xy_unchecked(
                 x,
                 y,
@@ -611,31 +841,40 @@ impl bevy::math::prelude::Dir2 {
             .into();
         output
     }
-    fn mul(_self: Val<bevy::math::prelude::Dir2>, rhs: f32) {
+    fn mul(
+        _self: Val<bevy::math::prelude::Dir2>,
+        rhs: f32,
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = <bevy::math::prelude::Dir2 as std::ops::Mul<
             f32,
         >>::mul(_self.into_inner(), rhs)
             .into();
         output
     }
-    fn neg(_self: Val<bevy::math::prelude::Dir2>) {
+    fn neg(_self: Val<bevy::math::prelude::Dir2>) -> Val<bevy::math::prelude::Dir2> {
         let output: Val<bevy::math::prelude::Dir2> = <bevy::math::prelude::Dir2 as std::ops::Neg>::neg(
                 _self.into_inner(),
             )
             .into();
         output
     }
-    fn new_unchecked(value: Val<bevy::math::prelude::Vec2>) {
+    ///  Create a [`Dir2`] from a [`Vec2`] that is already normalized.
+    ///  # Warning
+    ///  `value` must be normalized, i.e its length must be `1.0`.
+    fn new_unchecked(
+        value: Val<bevy::math::prelude::Vec2>,
+    ) -> Val<bevy::math::prelude::Dir2> {
         let output: Val<bevy::math::prelude::Dir2> = bevy::math::prelude::Dir2::new_unchecked(
                 value.into_inner(),
             )
             .into();
         output
     }
+    ///  Get the rotation that rotates `other` to this direction.
     fn rotation_from(
         _self: Val<bevy::math::prelude::Dir2>,
         other: Val<bevy::math::prelude::Dir2>,
-    ) {
+    ) -> Val<bevy::math::Rot2> {
         let output: Val<bevy::math::Rot2> = bevy::math::prelude::Dir2::rotation_from(
                 _self.into_inner(),
                 other.into_inner(),
@@ -643,24 +882,27 @@ impl bevy::math::prelude::Dir2 {
             .into();
         output
     }
-    fn rotation_from_x(_self: Val<bevy::math::prelude::Dir2>) {
+    ///  Get the rotation that rotates the X-axis to this direction.
+    fn rotation_from_x(_self: Val<bevy::math::prelude::Dir2>) -> Val<bevy::math::Rot2> {
         let output: Val<bevy::math::Rot2> = bevy::math::prelude::Dir2::rotation_from_x(
                 _self.into_inner(),
             )
             .into();
         output
     }
-    fn rotation_from_y(_self: Val<bevy::math::prelude::Dir2>) {
+    ///  Get the rotation that rotates the Y-axis to this direction.
+    fn rotation_from_y(_self: Val<bevy::math::prelude::Dir2>) -> Val<bevy::math::Rot2> {
         let output: Val<bevy::math::Rot2> = bevy::math::prelude::Dir2::rotation_from_y(
                 _self.into_inner(),
             )
             .into();
         output
     }
+    ///  Get the rotation that rotates this direction to `other`.
     fn rotation_to(
         _self: Val<bevy::math::prelude::Dir2>,
         other: Val<bevy::math::prelude::Dir2>,
-    ) {
+    ) -> Val<bevy::math::Rot2> {
         let output: Val<bevy::math::Rot2> = bevy::math::prelude::Dir2::rotation_to(
                 _self.into_inner(),
                 other.into_inner(),
@@ -668,25 +910,44 @@ impl bevy::math::prelude::Dir2 {
             .into();
         output
     }
-    fn rotation_to_x(_self: Val<bevy::math::prelude::Dir2>) {
+    ///  Get the rotation that rotates this direction to the X-axis.
+    fn rotation_to_x(_self: Val<bevy::math::prelude::Dir2>) -> Val<bevy::math::Rot2> {
         let output: Val<bevy::math::Rot2> = bevy::math::prelude::Dir2::rotation_to_x(
                 _self.into_inner(),
             )
             .into();
         output
     }
-    fn rotation_to_y(_self: Val<bevy::math::prelude::Dir2>) {
+    ///  Get the rotation that rotates this direction to the Y-axis.
+    fn rotation_to_y(_self: Val<bevy::math::prelude::Dir2>) -> Val<bevy::math::Rot2> {
         let output: Val<bevy::math::Rot2> = bevy::math::prelude::Dir2::rotation_to_y(
                 _self.into_inner(),
             )
             .into();
         output
     }
+    ///  Performs a spherical linear interpolation between `self` and `rhs`
+    ///  based on the value `s`.
+    ///  This corresponds to interpolating between the two directions at a constant angular velocity.
+    ///  When `s == 0.0`, the result will be equal to `self`.
+    ///  When `s == 1.0`, the result will be equal to `rhs`.
+    ///  # Example
+    ///  ```
+    ///  # use bevy_math::Dir2;
+    ///  # use approx::{assert_relative_eq, RelativeEq};
+    ///  #
+    ///  let dir1 = Dir2::X;
+    ///  let dir2 = Dir2::Y;
+    ///  let result1 = dir1.slerp(dir2, 1.0 / 3.0);
+    ///  assert_relative_eq!(result1, Dir2::from_xy(0.75_f32.sqrt(), 0.5).unwrap());
+    ///  let result2 = dir1.slerp(dir2, 0.5);
+    ///  assert_relative_eq!(result2, Dir2::from_xy(0.5_f32.sqrt(), 0.5_f32.sqrt()).unwrap());
+    ///  ```
     fn slerp(
         _self: Val<bevy::math::prelude::Dir2>,
         rhs: Val<bevy::math::prelude::Dir2>,
         s: f32,
-    ) {
+    ) -> Val<bevy::math::prelude::Dir2> {
         let output: Val<bevy::math::prelude::Dir2> = bevy::math::prelude::Dir2::slerp(
                 _self.into_inner(),
                 rhs.into_inner(),
@@ -702,35 +963,69 @@ impl bevy::math::prelude::Dir2 {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::prelude::Dir3 {
-    fn as_vec3(_self: Ref<bevy::math::prelude::Dir3>) {
+    ///  Returns the inner [`Vec3`]
+    fn as_vec3(_self: Ref<bevy::math::prelude::Dir3>) -> Val<bevy::math::prelude::Vec3> {
         let output: Val<bevy::math::prelude::Vec3> = bevy::math::prelude::Dir3::as_vec3(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::prelude::Dir3>) {
+    fn clone(_self: Ref<bevy::math::prelude::Dir3>) -> Val<bevy::math::prelude::Dir3> {
         let output: Val<bevy::math::prelude::Dir3> = <bevy::math::prelude::Dir3 as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn eq(_self: Ref<bevy::math::prelude::Dir3>, other: Ref<bevy::math::prelude::Dir3>) {
+    fn eq(
+        _self: Ref<bevy::math::prelude::Dir3>,
+        other: Ref<bevy::math::prelude::Dir3>,
+    ) -> bool {
         let output: bool = <bevy::math::prelude::Dir3 as std::cmp::PartialEq<
             bevy::math::prelude::Dir3,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn fast_renormalize(_self: Val<bevy::math::prelude::Dir3>) {
+    ///  Returns `self` after an approximate normalization, assuming the value is already nearly normalized.
+    ///  Useful for preventing numerical error accumulation.
+    ///  # Example
+    ///  The following seemingly benign code would start accumulating errors over time,
+    ///  leading to `dir` eventually not being normalized anymore.
+    ///  ```
+    ///  # use bevy_math::prelude::*;
+    ///  # let N: usize = 200;
+    ///  let mut dir = Dir3::X;
+    ///  let quaternion = Quat::from_euler(EulerRot::XYZ, 1.0, 2.0, 3.0);
+    ///  for i in 0..N {
+    ///      dir = quaternion * dir;
+    ///  }
+    ///  ```
+    ///  Instead, do the following.
+    ///  ```
+    ///  # use bevy_math::prelude::*;
+    ///  # let N: usize = 200;
+    ///  let mut dir = Dir3::X;
+    ///  let quaternion = Quat::from_euler(EulerRot::XYZ, 1.0, 2.0, 3.0);
+    ///  for i in 0..N {
+    ///      dir = quaternion * dir;
+    ///      dir = dir.fast_renormalize();
+    ///  }
+    ///  ```
+    fn fast_renormalize(
+        _self: Val<bevy::math::prelude::Dir3>,
+    ) -> Val<bevy::math::prelude::Dir3> {
         let output: Val<bevy::math::prelude::Dir3> = bevy::math::prelude::Dir3::fast_renormalize(
                 _self.into_inner(),
             )
             .into();
         output
     }
-    fn from_xyz_unchecked(x: f32, y: f32, z: f32) {
+    ///  Create a direction from its `x`, `y`, and `z` components, assuming the resulting vector is normalized.
+    ///  # Warning
+    ///  The vector produced from `x`, `y`, and `z` must be normalized, i.e its length must be `1.0`.
+    fn from_xyz_unchecked(x: f32, y: f32, z: f32) -> Val<bevy::math::prelude::Dir3> {
         let output: Val<bevy::math::prelude::Dir3> = bevy::math::prelude::Dir3::from_xyz_unchecked(
                 x,
                 y,
@@ -739,32 +1034,61 @@ impl bevy::math::prelude::Dir3 {
             .into();
         output
     }
-    fn mul(_self: Val<bevy::math::prelude::Dir3>, rhs: f32) {
+    fn mul(
+        _self: Val<bevy::math::prelude::Dir3>,
+        rhs: f32,
+    ) -> Val<bevy::math::prelude::Vec3> {
         let output: Val<bevy::math::prelude::Vec3> = <bevy::math::prelude::Dir3 as std::ops::Mul<
             f32,
         >>::mul(_self.into_inner(), rhs)
             .into();
         output
     }
-    fn neg(_self: Val<bevy::math::prelude::Dir3>) {
+    fn neg(_self: Val<bevy::math::prelude::Dir3>) -> Val<bevy::math::prelude::Dir3> {
         let output: Val<bevy::math::prelude::Dir3> = <bevy::math::prelude::Dir3 as std::ops::Neg>::neg(
                 _self.into_inner(),
             )
             .into();
         output
     }
-    fn new_unchecked(value: Val<bevy::math::prelude::Vec3>) {
+    ///  Create a [`Dir3`] from a [`Vec3`] that is already normalized.
+    ///  # Warning
+    ///  `value` must be normalized, i.e its length must be `1.0`.
+    fn new_unchecked(
+        value: Val<bevy::math::prelude::Vec3>,
+    ) -> Val<bevy::math::prelude::Dir3> {
         let output: Val<bevy::math::prelude::Dir3> = bevy::math::prelude::Dir3::new_unchecked(
                 value.into_inner(),
             )
             .into();
         output
     }
+    ///  Performs a spherical linear interpolation between `self` and `rhs`
+    ///  based on the value `s`.
+    ///  This corresponds to interpolating between the two directions at a constant angular velocity.
+    ///  When `s == 0.0`, the result will be equal to `self`.
+    ///  When `s == 1.0`, the result will be equal to `rhs`.
+    ///  # Example
+    ///  ```
+    ///  # use bevy_math::Dir3;
+    ///  # use approx::{assert_relative_eq, RelativeEq};
+    ///  #
+    ///  let dir1 = Dir3::X;
+    ///  let dir2 = Dir3::Y;
+    ///  let result1 = dir1.slerp(dir2, 1.0 / 3.0);
+    ///  assert_relative_eq!(
+    ///      result1,
+    ///      Dir3::from_xyz(0.75_f32.sqrt(), 0.5, 0.0).unwrap(),
+    ///      epsilon = 0.000001
+    ///  );
+    ///  let result2 = dir1.slerp(dir2, 0.5);
+    ///  assert_relative_eq!(result2, Dir3::from_xyz(0.5_f32.sqrt(), 0.5_f32.sqrt(), 0.0).unwrap());
+    ///  ```
     fn slerp(
         _self: Val<bevy::math::prelude::Dir3>,
         rhs: Val<bevy::math::prelude::Dir3>,
         s: f32,
-    ) {
+    ) -> Val<bevy::math::prelude::Dir3> {
         let output: Val<bevy::math::prelude::Dir3> = bevy::math::prelude::Dir3::slerp(
                 _self.into_inner(),
                 rhs.into_inner(),
@@ -780,12 +1104,13 @@ impl bevy::math::prelude::Dir3 {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::prelude::Dir3A {
-    fn as_vec3a(_self: Ref<bevy::math::prelude::Dir3A>) {
+    ///  Returns the inner [`Vec3A`]
+    fn as_vec3a(_self: Ref<bevy::math::prelude::Dir3A>) -> Val<bevy::math::Vec3A> {
         let output: Val<bevy::math::Vec3A> = bevy::math::prelude::Dir3A::as_vec3a(&_self)
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::prelude::Dir3A>) {
+    fn clone(_self: Ref<bevy::math::prelude::Dir3A>) -> Val<bevy::math::prelude::Dir3A> {
         let output: Val<bevy::math::prelude::Dir3A> = <bevy::math::prelude::Dir3A as std::clone::Clone>::clone(
                 &_self,
             )
@@ -795,21 +1120,29 @@ impl bevy::math::prelude::Dir3A {
     fn eq(
         _self: Ref<bevy::math::prelude::Dir3A>,
         other: Ref<bevy::math::prelude::Dir3A>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::prelude::Dir3A as std::cmp::PartialEq<
             bevy::math::prelude::Dir3A,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn fast_renormalize(_self: Val<bevy::math::prelude::Dir3A>) {
+    ///  Returns `self` after an approximate normalization, assuming the value is already nearly normalized.
+    ///  Useful for preventing numerical error accumulation.
+    ///  See [`Dir3::fast_renormalize`] for an example of when such error accumulation might occur.
+    fn fast_renormalize(
+        _self: Val<bevy::math::prelude::Dir3A>,
+    ) -> Val<bevy::math::prelude::Dir3A> {
         let output: Val<bevy::math::prelude::Dir3A> = bevy::math::prelude::Dir3A::fast_renormalize(
                 _self.into_inner(),
             )
             .into();
         output
     }
-    fn from_xyz_unchecked(x: f32, y: f32, z: f32) {
+    ///  Create a direction from its `x`, `y`, and `z` components, assuming the resulting vector is normalized.
+    ///  # Warning
+    ///  The vector produced from `x`, `y`, and `z` must be normalized, i.e its length must be `1.0`.
+    fn from_xyz_unchecked(x: f32, y: f32, z: f32) -> Val<bevy::math::prelude::Dir3A> {
         let output: Val<bevy::math::prelude::Dir3A> = bevy::math::prelude::Dir3A::from_xyz_unchecked(
                 x,
                 y,
@@ -818,32 +1151,56 @@ impl bevy::math::prelude::Dir3A {
             .into();
         output
     }
-    fn mul(_self: Val<bevy::math::prelude::Dir3A>, rhs: f32) {
+    fn mul(_self: Val<bevy::math::prelude::Dir3A>, rhs: f32) -> Val<bevy::math::Vec3A> {
         let output: Val<bevy::math::Vec3A> = <bevy::math::prelude::Dir3A as std::ops::Mul<
             f32,
         >>::mul(_self.into_inner(), rhs)
             .into();
         output
     }
-    fn neg(_self: Val<bevy::math::prelude::Dir3A>) {
+    fn neg(_self: Val<bevy::math::prelude::Dir3A>) -> Val<bevy::math::prelude::Dir3A> {
         let output: Val<bevy::math::prelude::Dir3A> = <bevy::math::prelude::Dir3A as std::ops::Neg>::neg(
                 _self.into_inner(),
             )
             .into();
         output
     }
-    fn new_unchecked(value: Val<bevy::math::Vec3A>) {
+    ///  Create a [`Dir3A`] from a [`Vec3A`] that is already normalized.
+    ///  # Warning
+    ///  `value` must be normalized, i.e its length must be `1.0`.
+    fn new_unchecked(value: Val<bevy::math::Vec3A>) -> Val<bevy::math::prelude::Dir3A> {
         let output: Val<bevy::math::prelude::Dir3A> = bevy::math::prelude::Dir3A::new_unchecked(
                 value.into_inner(),
             )
             .into();
         output
     }
+    ///  Performs a spherical linear interpolation between `self` and `rhs`
+    ///  based on the value `s`.
+    ///  This corresponds to interpolating between the two directions at a constant angular velocity.
+    ///  When `s == 0.0`, the result will be equal to `self`.
+    ///  When `s == 1.0`, the result will be equal to `rhs`.
+    ///  # Example
+    ///  ```
+    ///  # use bevy_math::Dir3A;
+    ///  # use approx::{assert_relative_eq, RelativeEq};
+    ///  #
+    ///  let dir1 = Dir3A::X;
+    ///  let dir2 = Dir3A::Y;
+    ///  let result1 = dir1.slerp(dir2, 1.0 / 3.0);
+    ///  assert_relative_eq!(
+    ///      result1,
+    ///      Dir3A::from_xyz(0.75_f32.sqrt(), 0.5, 0.0).unwrap(),
+    ///      epsilon = 0.000001
+    ///  );
+    ///  let result2 = dir1.slerp(dir2, 0.5);
+    ///  assert_relative_eq!(result2, Dir3A::from_xyz(0.5_f32.sqrt(), 0.5_f32.sqrt(), 0.0).unwrap());
+    ///  ```
     fn slerp(
         _self: Val<bevy::math::prelude::Dir3A>,
         rhs: Val<bevy::math::prelude::Dir3A>,
         s: f32,
-    ) {
+    ) -> Val<bevy::math::prelude::Dir3A> {
         let output: Val<bevy::math::prelude::Dir3A> = bevy::math::prelude::Dir3A::slerp(
                 _self.into_inner(),
                 rhs.into_inner(),
@@ -859,45 +1216,71 @@ impl bevy::math::prelude::Dir3A {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::prelude::IRect {
-    fn as_rect(_self: Ref<bevy::math::prelude::IRect>) {
+    ///  Returns self as [`Rect`] (f32)
+    fn as_rect(
+        _self: Ref<bevy::math::prelude::IRect>,
+    ) -> Val<bevy::math::prelude::Rect> {
         let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::IRect::as_rect(
                 &_self,
             )
             .into();
         output
     }
-    fn as_urect(_self: Ref<bevy::math::prelude::IRect>) {
+    ///  Returns self as [`URect`] (u32)
+    fn as_urect(
+        _self: Ref<bevy::math::prelude::IRect>,
+    ) -> Val<bevy::math::prelude::URect> {
         let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::IRect::as_urect(
                 &_self,
             )
             .into();
         output
     }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::prelude::IRect>) {
+    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::prelude::IRect>) -> () {
         let output: () = <bevy::math::prelude::IRect as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn center(_self: Ref<bevy::math::prelude::IRect>) {
+    ///  The center point of the rectangle.
+    ///  # Rounding Behavior
+    ///  If the (min + max) contains odd numbers they will be rounded down to the nearest whole number when calculating the center.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{IRect, IVec2};
+    ///  let r = IRect::new(0, 0, 5, 2); // w=5 h=2
+    ///  assert_eq!(r.center(), IVec2::new(2, 1));
+    ///  ```
+    fn center(
+        _self: Ref<bevy::math::prelude::IRect>,
+    ) -> Val<bevy::math::prelude::IVec2> {
         let output: Val<bevy::math::prelude::IVec2> = bevy::math::prelude::IRect::center(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::prelude::IRect>) {
+    fn clone(_self: Ref<bevy::math::prelude::IRect>) -> Val<bevy::math::prelude::IRect> {
         let output: Val<bevy::math::prelude::IRect> = <bevy::math::prelude::IRect as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
+    ///  Check if a point lies within this rectangle, inclusive of its edges.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::IRect;
+    ///  let r = IRect::new(0, 0, 5, 1); // w=5 h=1
+    ///  assert!(r.contains(r.center()));
+    ///  assert!(r.contains(r.min));
+    ///  assert!(r.contains(r.max));
+    ///  ```
     fn contains(
         _self: Ref<bevy::math::prelude::IRect>,
         point: Val<bevy::math::prelude::IVec2>,
-    ) {
+    ) -> bool {
         let output: bool = bevy::math::prelude::IRect::contains(
                 &_self,
                 point.into_inner(),
@@ -908,17 +1291,27 @@ impl bevy::math::prelude::IRect {
     fn eq(
         _self: Ref<bevy::math::prelude::IRect>,
         other: Ref<bevy::math::prelude::IRect>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::prelude::IRect as std::cmp::PartialEq<
             bevy::math::prelude::IRect,
         >>::eq(&_self, &other)
             .into();
         output
     }
+    ///  Create a new rectangle from its center and half-size.
+    ///  # Panics
+    ///  This method panics if any of the components of the half-size is negative.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{IRect, IVec2};
+    ///  let r = IRect::from_center_half_size(IVec2::ZERO, IVec2::ONE); // w=2 h=2
+    ///  assert_eq!(r.min, IVec2::splat(-1));
+    ///  assert_eq!(r.max, IVec2::splat(1));
+    ///  ```
     fn from_center_half_size(
         origin: Val<bevy::math::prelude::IVec2>,
         half_size: Val<bevy::math::prelude::IVec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::IRect> {
         let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::from_center_half_size(
                 origin.into_inner(),
                 half_size.into_inner(),
@@ -926,10 +1319,22 @@ impl bevy::math::prelude::IRect {
             .into();
         output
     }
+    ///  Create a new rectangle from its center and size.
+    ///  # Rounding Behavior
+    ///  If the size contains odd numbers they will be rounded down to the nearest whole number.
+    ///  # Panics
+    ///  This method panics if any of the components of the size is negative.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{IRect, IVec2};
+    ///  let r = IRect::from_center_size(IVec2::ZERO, IVec2::new(3, 2)); // w=2 h=2
+    ///  assert_eq!(r.min, IVec2::splat(-1));
+    ///  assert_eq!(r.max, IVec2::splat(1));
+    ///  ```
     fn from_center_size(
         origin: Val<bevy::math::prelude::IVec2>,
         size: Val<bevy::math::prelude::IVec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::IRect> {
         let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::from_center_size(
                 origin.into_inner(),
                 size.into_inner(),
@@ -937,10 +1342,21 @@ impl bevy::math::prelude::IRect {
             .into();
         output
     }
+    ///  Create a new rectangle from two corner points.
+    ///  The two points do not need to be the minimum and/or maximum corners.
+    ///  They only need to be two opposite corners.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{IRect, IVec2};
+    ///  // Unit rect from [0,0] to [1,1]
+    ///  let r = IRect::from_corners(IVec2::ZERO, IVec2::ONE); // w=1 h=1
+    ///  // Same; the points do not need to be ordered
+    ///  let r = IRect::from_corners(IVec2::ONE, IVec2::ZERO); // w=1 h=1
+    ///  ```
     fn from_corners(
         p0: Val<bevy::math::prelude::IVec2>,
         p1: Val<bevy::math::prelude::IVec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::IRect> {
         let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::from_corners(
                 p0.into_inner(),
                 p1.into_inner(),
@@ -948,18 +1364,55 @@ impl bevy::math::prelude::IRect {
             .into();
         output
     }
-    fn half_size(_self: Ref<bevy::math::prelude::IRect>) {
+    ///  Rectangle half-size.
+    ///  # Rounding Behavior
+    ///  If the full size contains odd numbers they will be rounded down to the nearest whole number when calculating the half size.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{IRect, IVec2};
+    ///  let r = IRect::new(0, 0, 4, 3); // w=4 h=3
+    ///  assert_eq!(r.half_size(), IVec2::new(2, 1));
+    ///  ```
+    fn half_size(
+        _self: Ref<bevy::math::prelude::IRect>,
+    ) -> Val<bevy::math::prelude::IVec2> {
         let output: Val<bevy::math::prelude::IVec2> = bevy::math::prelude::IRect::half_size(
                 &_self,
             )
             .into();
         output
     }
-    fn height(_self: Ref<bevy::math::prelude::IRect>) {
+    ///  Rectangle height (max.y - min.y).
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::IRect;
+    ///  let r = IRect::new(0, 0, 5, 1); // w=5 h=1
+    ///  assert_eq!(r.height(), 1);
+    ///  ```
+    fn height(_self: Ref<bevy::math::prelude::IRect>) -> i32 {
         let output: i32 = bevy::math::prelude::IRect::height(&_self).into();
         output
     }
-    fn inflate(_self: Ref<bevy::math::prelude::IRect>, expansion: i32) {
+    ///  Create a new rectangle by expanding it evenly on all sides.
+    ///  A positive expansion value produces a larger rectangle,
+    ///  while a negative expansion value produces a smaller rectangle.
+    ///  If this would result in zero or negative width or height, [`IRect::EMPTY`] is returned instead.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{IRect, IVec2};
+    ///  let r = IRect::new(0, 0, 5, 1); // w=5 h=1
+    ///  let r2 = r.inflate(3); // w=11 h=7
+    ///  assert_eq!(r2.min, IVec2::splat(-3));
+    ///  assert_eq!(r2.max, IVec2::new(8, 4));
+    ///  let r = IRect::new(0, -1, 4, 3); // w=4 h=4
+    ///  let r2 = r.inflate(-1); // w=2 h=2
+    ///  assert_eq!(r2.min, IVec2::new(1, 0));
+    ///  assert_eq!(r2.max, IVec2::new(3, 2));
+    ///  ```
+    fn inflate(
+        _self: Ref<bevy::math::prelude::IRect>,
+        expansion: i32,
+    ) -> Val<bevy::math::prelude::IRect> {
         let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::inflate(
                 &_self,
                 expansion,
@@ -967,10 +1420,23 @@ impl bevy::math::prelude::IRect {
             .into();
         output
     }
+    ///  Build a new rectangle formed of the intersection of this rectangle and another rectangle.
+    ///  The intersection is the largest rectangle enclosed in both rectangles. If the intersection
+    ///  is empty, this method returns an empty rectangle ([`IRect::is_empty()`] returns `true`), but
+    ///  the actual values of [`IRect::min`] and [`IRect::max`] are implementation-dependent.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{IRect, IVec2};
+    ///  let r1 = IRect::new(0, 0, 5, 1); // w=5 h=1
+    ///  let r2 = IRect::new(1, -1, 3, 3); // w=2 h=4
+    ///  let r = r1.intersect(r2);
+    ///  assert_eq!(r.min, IVec2::new(1, 0));
+    ///  assert_eq!(r.max, IVec2::new(3, 1));
+    ///  ```
     fn intersect(
         _self: Ref<bevy::math::prelude::IRect>,
         other: Val<bevy::math::prelude::IRect>,
-    ) {
+    ) -> Val<bevy::math::prelude::IRect> {
         let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::intersect(
                 &_self,
                 other.into_inner(),
@@ -978,11 +1444,27 @@ impl bevy::math::prelude::IRect {
             .into();
         output
     }
-    fn is_empty(_self: Ref<bevy::math::prelude::IRect>) {
+    ///  Check if the rectangle is empty.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{IRect, IVec2};
+    ///  let r = IRect::from_corners(IVec2::ZERO, IVec2::new(0, 1)); // w=0 h=1
+    ///  assert!(r.is_empty());
+    ///  ```
+    fn is_empty(_self: Ref<bevy::math::prelude::IRect>) -> bool {
         let output: bool = bevy::math::prelude::IRect::is_empty(&_self).into();
         output
     }
-    fn new(x0: i32, y0: i32, x1: i32, y1: i32) {
+    ///  Create a new rectangle from two corner points.
+    ///  The two points do not need to be the minimum and/or maximum corners.
+    ///  They only need to be two opposite corners.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::IRect;
+    ///  let r = IRect::new(0, 4, 10, 6); // w=10 h=2
+    ///  let r = IRect::new(2, 3, 5, -1); // w=3 h=4
+    ///  ```
+    fn new(x0: i32, y0: i32, x1: i32, y1: i32) -> Val<bevy::math::prelude::IRect> {
         let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::new(
                 x0,
                 y0,
@@ -992,17 +1474,35 @@ impl bevy::math::prelude::IRect {
             .into();
         output
     }
-    fn size(_self: Ref<bevy::math::prelude::IRect>) {
+    ///  Rectangle size.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{IRect, IVec2};
+    ///  let r = IRect::new(0, 0, 5, 1); // w=5 h=1
+    ///  assert_eq!(r.size(), IVec2::new(5, 1));
+    ///  ```
+    fn size(_self: Ref<bevy::math::prelude::IRect>) -> Val<bevy::math::prelude::IVec2> {
         let output: Val<bevy::math::prelude::IVec2> = bevy::math::prelude::IRect::size(
                 &_self,
             )
             .into();
         output
     }
+    ///  Build a new rectangle formed of the union of this rectangle and another rectangle.
+    ///  The union is the smallest rectangle enclosing both rectangles.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{IRect, IVec2};
+    ///  let r1 = IRect::new(0, 0, 5, 1); // w=5 h=1
+    ///  let r2 = IRect::new(1, -1, 3, 3); // w=2 h=4
+    ///  let r = r1.union(r2);
+    ///  assert_eq!(r.min, IVec2::new(0, -1));
+    ///  assert_eq!(r.max, IVec2::new(5, 3));
+    ///  ```
     fn union(
         _self: Ref<bevy::math::prelude::IRect>,
         other: Val<bevy::math::prelude::IRect>,
-    ) {
+    ) -> Val<bevy::math::prelude::IRect> {
         let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::union(
                 &_self,
                 other.into_inner(),
@@ -1010,10 +1510,21 @@ impl bevy::math::prelude::IRect {
             .into();
         output
     }
+    ///  Build a new rectangle formed of the union of this rectangle and a point.
+    ///  The union is the smallest rectangle enclosing both the rectangle and the point. If the
+    ///  point is already inside the rectangle, this method returns a copy of the rectangle.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{IRect, IVec2};
+    ///  let r = IRect::new(0, 0, 5, 1); // w=5 h=1
+    ///  let u = r.union_point(IVec2::new(3, 6));
+    ///  assert_eq!(u.min, IVec2::ZERO);
+    ///  assert_eq!(u.max, IVec2::new(5, 6));
+    ///  ```
     fn union_point(
         _self: Ref<bevy::math::prelude::IRect>,
         other: Val<bevy::math::prelude::IVec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::IRect> {
         let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::IRect::union_point(
                 &_self,
                 other.into_inner(),
@@ -1021,7 +1532,14 @@ impl bevy::math::prelude::IRect {
             .into();
         output
     }
-    fn width(_self: Ref<bevy::math::prelude::IRect>) {
+    ///  Rectangle width (max.x - min.x).
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::IRect;
+    ///  let r = IRect::new(0, 0, 5, 1); // w=5 h=1
+    ///  assert_eq!(r.width(), 5);
+    ///  ```
+    fn width(_self: Ref<bevy::math::prelude::IRect>) -> i32 {
         let output: i32 = bevy::math::prelude::IRect::width(&_self).into();
         output
     }
@@ -1032,38 +1550,60 @@ impl bevy::math::prelude::IRect {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::prelude::Rect {
-    fn as_irect(_self: Ref<bevy::math::prelude::Rect>) {
+    ///  Returns self as [`IRect`] (i32)
+    fn as_irect(
+        _self: Ref<bevy::math::prelude::Rect>,
+    ) -> Val<bevy::math::prelude::IRect> {
         let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::Rect::as_irect(
                 &_self,
             )
             .into();
         output
     }
-    fn as_urect(_self: Ref<bevy::math::prelude::Rect>) {
+    ///  Returns self as [`URect`] (u32)
+    fn as_urect(
+        _self: Ref<bevy::math::prelude::Rect>,
+    ) -> Val<bevy::math::prelude::URect> {
         let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::Rect::as_urect(
                 &_self,
             )
             .into();
         output
     }
-    fn center(_self: Ref<bevy::math::prelude::Rect>) {
+    ///  The center point of the rectangle.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{Rect, Vec2};
+    ///  let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
+    ///  assert!(r.center().abs_diff_eq(Vec2::new(2.5, 0.5), 1e-5));
+    ///  ```
+    fn center(_self: Ref<bevy::math::prelude::Rect>) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::prelude::Rect::center(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::prelude::Rect>) {
+    fn clone(_self: Ref<bevy::math::prelude::Rect>) -> Val<bevy::math::prelude::Rect> {
         let output: Val<bevy::math::prelude::Rect> = <bevy::math::prelude::Rect as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
+    ///  Check if a point lies within this rectangle, inclusive of its edges.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::Rect;
+    ///  let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
+    ///  assert!(r.contains(r.center()));
+    ///  assert!(r.contains(r.min));
+    ///  assert!(r.contains(r.max));
+    ///  ```
     fn contains(
         _self: Ref<bevy::math::prelude::Rect>,
         point: Val<bevy::math::prelude::Vec2>,
-    ) {
+    ) -> bool {
         let output: bool = bevy::math::prelude::Rect::contains(
                 &_self,
                 point.into_inner(),
@@ -1071,17 +1611,30 @@ impl bevy::math::prelude::Rect {
             .into();
         output
     }
-    fn eq(_self: Ref<bevy::math::prelude::Rect>, other: Ref<bevy::math::prelude::Rect>) {
+    fn eq(
+        _self: Ref<bevy::math::prelude::Rect>,
+        other: Ref<bevy::math::prelude::Rect>,
+    ) -> bool {
         let output: bool = <bevy::math::prelude::Rect as std::cmp::PartialEq<
             bevy::math::prelude::Rect,
         >>::eq(&_self, &other)
             .into();
         output
     }
+    ///  Create a new rectangle from its center and half-size.
+    ///  # Panics
+    ///  This method panics if any of the components of the half-size is negative.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{Rect, Vec2};
+    ///  let r = Rect::from_center_half_size(Vec2::ZERO, Vec2::ONE); // w=2 h=2
+    ///  assert!(r.min.abs_diff_eq(Vec2::splat(-1.), 1e-5));
+    ///  assert!(r.max.abs_diff_eq(Vec2::splat(1.), 1e-5));
+    ///  ```
     fn from_center_half_size(
         origin: Val<bevy::math::prelude::Vec2>,
         half_size: Val<bevy::math::prelude::Vec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::Rect> {
         let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::from_center_half_size(
                 origin.into_inner(),
                 half_size.into_inner(),
@@ -1089,10 +1642,20 @@ impl bevy::math::prelude::Rect {
             .into();
         output
     }
+    ///  Create a new rectangle from its center and size.
+    ///  # Panics
+    ///  This method panics if any of the components of the size is negative.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{Rect, Vec2};
+    ///  let r = Rect::from_center_size(Vec2::ZERO, Vec2::ONE); // w=1 h=1
+    ///  assert!(r.min.abs_diff_eq(Vec2::splat(-0.5), 1e-5));
+    ///  assert!(r.max.abs_diff_eq(Vec2::splat(0.5), 1e-5));
+    ///  ```
     fn from_center_size(
         origin: Val<bevy::math::prelude::Vec2>,
         size: Val<bevy::math::prelude::Vec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::Rect> {
         let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::from_center_size(
                 origin.into_inner(),
                 size.into_inner(),
@@ -1100,10 +1663,21 @@ impl bevy::math::prelude::Rect {
             .into();
         output
     }
+    ///  Create a new rectangle from two corner points.
+    ///  The two points do not need to be the minimum and/or maximum corners.
+    ///  They only need to be two opposite corners.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{Rect, Vec2};
+    ///  // Unit rect from [0,0] to [1,1]
+    ///  let r = Rect::from_corners(Vec2::ZERO, Vec2::ONE); // w=1 h=1
+    ///  // Same; the points do not need to be ordered
+    ///  let r = Rect::from_corners(Vec2::ONE, Vec2::ZERO); // w=1 h=1
+    ///  ```
     fn from_corners(
         p0: Val<bevy::math::prelude::Vec2>,
         p1: Val<bevy::math::prelude::Vec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::Rect> {
         let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::from_corners(
                 p0.into_inner(),
                 p1.into_inner(),
@@ -1111,18 +1685,53 @@ impl bevy::math::prelude::Rect {
             .into();
         output
     }
-    fn half_size(_self: Ref<bevy::math::prelude::Rect>) {
+    ///  Rectangle half-size.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{Rect, Vec2};
+    ///  let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
+    ///  assert!(r.half_size().abs_diff_eq(Vec2::new(2.5, 0.5), 1e-5));
+    ///  ```
+    fn half_size(
+        _self: Ref<bevy::math::prelude::Rect>,
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::prelude::Rect::half_size(
                 &_self,
             )
             .into();
         output
     }
-    fn height(_self: Ref<bevy::math::prelude::Rect>) {
+    ///  Rectangle height (max.y - min.y).
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::Rect;
+    ///  let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
+    ///  assert!((r.height() - 1.).abs() <= 1e-5);
+    ///  ```
+    fn height(_self: Ref<bevy::math::prelude::Rect>) -> f32 {
         let output: f32 = bevy::math::prelude::Rect::height(&_self).into();
         output
     }
-    fn inflate(_self: Ref<bevy::math::prelude::Rect>, expansion: f32) {
+    ///  Create a new rectangle by expanding it evenly on all sides.
+    ///  A positive expansion value produces a larger rectangle,
+    ///  while a negative expansion value produces a smaller rectangle.
+    ///  If this would result in zero or negative width or height, [`Rect::EMPTY`] is returned instead.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{Rect, Vec2};
+    ///  let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
+    ///  let r2 = r.inflate(3.); // w=11 h=7
+    ///  assert!(r2.min.abs_diff_eq(Vec2::splat(-3.), 1e-5));
+    ///  assert!(r2.max.abs_diff_eq(Vec2::new(8., 4.), 1e-5));
+    ///  let r = Rect::new(0., -1., 6., 7.); // w=6 h=8
+    ///  let r2 = r.inflate(-2.); // w=11 h=7
+    ///  assert!(r2.min.abs_diff_eq(Vec2::new(2., 1.), 1e-5));
+    ///  assert!(r2.max.abs_diff_eq(Vec2::new(4., 5.), 1e-5));
+    ///  ```
+    fn inflate(
+        _self: Ref<bevy::math::prelude::Rect>,
+        expansion: f32,
+    ) -> Val<bevy::math::prelude::Rect> {
         let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::inflate(
                 &_self,
                 expansion,
@@ -1130,10 +1739,23 @@ impl bevy::math::prelude::Rect {
             .into();
         output
     }
+    ///  Build a new rectangle formed of the intersection of this rectangle and another rectangle.
+    ///  The intersection is the largest rectangle enclosed in both rectangles. If the intersection
+    ///  is empty, this method returns an empty rectangle ([`Rect::is_empty()`] returns `true`), but
+    ///  the actual values of [`Rect::min`] and [`Rect::max`] are implementation-dependent.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{Rect, Vec2};
+    ///  let r1 = Rect::new(0., 0., 5., 1.); // w=5 h=1
+    ///  let r2 = Rect::new(1., -1., 3., 3.); // w=2 h=4
+    ///  let r = r1.intersect(r2);
+    ///  assert!(r.min.abs_diff_eq(Vec2::new(1., 0.), 1e-5));
+    ///  assert!(r.max.abs_diff_eq(Vec2::new(3., 1.), 1e-5));
+    ///  ```
     fn intersect(
         _self: Ref<bevy::math::prelude::Rect>,
         other: Val<bevy::math::prelude::Rect>,
-    ) {
+    ) -> Val<bevy::math::prelude::Rect> {
         let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::intersect(
                 &_self,
                 other.into_inner(),
@@ -1141,11 +1763,27 @@ impl bevy::math::prelude::Rect {
             .into();
         output
     }
-    fn is_empty(_self: Ref<bevy::math::prelude::Rect>) {
+    ///  Check if the rectangle is empty.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{Rect, Vec2};
+    ///  let r = Rect::from_corners(Vec2::ZERO, Vec2::new(0., 1.)); // w=0 h=1
+    ///  assert!(r.is_empty());
+    ///  ```
+    fn is_empty(_self: Ref<bevy::math::prelude::Rect>) -> bool {
         let output: bool = bevy::math::prelude::Rect::is_empty(&_self).into();
         output
     }
-    fn new(x0: f32, y0: f32, x1: f32, y1: f32) {
+    ///  Create a new rectangle from two corner points.
+    ///  The two points do not need to be the minimum and/or maximum corners.
+    ///  They only need to be two opposite corners.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::Rect;
+    ///  let r = Rect::new(0., 4., 10., 6.); // w=10 h=2
+    ///  let r = Rect::new(2., 3., 5., -1.); // w=3 h=4
+    ///  ```
+    fn new(x0: f32, y0: f32, x1: f32, y1: f32) -> Val<bevy::math::prelude::Rect> {
         let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::new(
                 x0,
                 y0,
@@ -1155,10 +1793,23 @@ impl bevy::math::prelude::Rect {
             .into();
         output
     }
+    ///  Build a new rectangle from this one with its coordinates expressed
+    ///  relative to `other` in a normalized ([0..1] x [0..1]) coordinate system.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{Rect, Vec2};
+    ///  let r = Rect::new(2., 3., 4., 6.);
+    ///  let s = Rect::new(0., 0., 10., 10.);
+    ///  let n = r.normalize(s);
+    ///  assert_eq!(n.min.x, 0.2);
+    ///  assert_eq!(n.min.y, 0.3);
+    ///  assert_eq!(n.max.x, 0.4);
+    ///  assert_eq!(n.max.y, 0.6);
+    ///  ```
     fn normalize(
         _self: Ref<bevy::math::prelude::Rect>,
         other: Val<bevy::math::prelude::Rect>,
-    ) {
+    ) -> Val<bevy::math::prelude::Rect> {
         let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::normalize(
                 &_self,
                 other.into_inner(),
@@ -1166,17 +1817,35 @@ impl bevy::math::prelude::Rect {
             .into();
         output
     }
-    fn size(_self: Ref<bevy::math::prelude::Rect>) {
+    ///  Rectangle size.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{Rect, Vec2};
+    ///  let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
+    ///  assert!(r.size().abs_diff_eq(Vec2::new(5., 1.), 1e-5));
+    ///  ```
+    fn size(_self: Ref<bevy::math::prelude::Rect>) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::prelude::Rect::size(
                 &_self,
             )
             .into();
         output
     }
+    ///  Build a new rectangle formed of the union of this rectangle and another rectangle.
+    ///  The union is the smallest rectangle enclosing both rectangles.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{Rect, Vec2};
+    ///  let r1 = Rect::new(0., 0., 5., 1.); // w=5 h=1
+    ///  let r2 = Rect::new(1., -1., 3., 3.); // w=2 h=4
+    ///  let r = r1.union(r2);
+    ///  assert!(r.min.abs_diff_eq(Vec2::new(0., -1.), 1e-5));
+    ///  assert!(r.max.abs_diff_eq(Vec2::new(5., 3.), 1e-5));
+    ///  ```
     fn union(
         _self: Ref<bevy::math::prelude::Rect>,
         other: Val<bevy::math::prelude::Rect>,
-    ) {
+    ) -> Val<bevy::math::prelude::Rect> {
         let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::union(
                 &_self,
                 other.into_inner(),
@@ -1184,10 +1853,21 @@ impl bevy::math::prelude::Rect {
             .into();
         output
     }
+    ///  Build a new rectangle formed of the union of this rectangle and a point.
+    ///  The union is the smallest rectangle enclosing both the rectangle and the point. If the
+    ///  point is already inside the rectangle, this method returns a copy of the rectangle.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{Rect, Vec2};
+    ///  let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
+    ///  let u = r.union_point(Vec2::new(3., 6.));
+    ///  assert!(u.min.abs_diff_eq(Vec2::ZERO, 1e-5));
+    ///  assert!(u.max.abs_diff_eq(Vec2::new(5., 6.), 1e-5));
+    ///  ```
     fn union_point(
         _self: Ref<bevy::math::prelude::Rect>,
         other: Val<bevy::math::prelude::Vec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::Rect> {
         let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::Rect::union_point(
                 &_self,
                 other.into_inner(),
@@ -1195,7 +1875,14 @@ impl bevy::math::prelude::Rect {
             .into();
         output
     }
-    fn width(_self: Ref<bevy::math::prelude::Rect>) {
+    ///  Rectangle width (max.x - min.x).
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::Rect;
+    ///  let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
+    ///  assert!((r.width() - 5.).abs() <= 1e-5);
+    ///  ```
+    fn width(_self: Ref<bevy::math::prelude::Rect>) -> f32 {
         let output: f32 = bevy::math::prelude::Rect::width(&_self).into();
         output
     }
@@ -1206,45 +1893,71 @@ impl bevy::math::prelude::Rect {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::prelude::URect {
-    fn as_irect(_self: Ref<bevy::math::prelude::URect>) {
+    ///  Returns self as [`IRect`] (i32)
+    fn as_irect(
+        _self: Ref<bevy::math::prelude::URect>,
+    ) -> Val<bevy::math::prelude::IRect> {
         let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::URect::as_irect(
                 &_self,
             )
             .into();
         output
     }
-    fn as_rect(_self: Ref<bevy::math::prelude::URect>) {
+    ///  Returns self as [`Rect`] (f32)
+    fn as_rect(
+        _self: Ref<bevy::math::prelude::URect>,
+    ) -> Val<bevy::math::prelude::Rect> {
         let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::URect::as_rect(
                 &_self,
             )
             .into();
         output
     }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::prelude::URect>) {
+    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::prelude::URect>) -> () {
         let output: () = <bevy::math::prelude::URect as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn center(_self: Ref<bevy::math::prelude::URect>) {
+    ///  The center point of the rectangle.
+    ///  # Rounding Behavior
+    ///  If the (min + max) contains odd numbers they will be rounded down to the nearest whole number when calculating the center.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{URect, UVec2};
+    ///  let r = URect::new(0, 0, 4, 2); // w=4 h=2
+    ///  assert_eq!(r.center(), UVec2::new(2, 1));
+    ///  ```
+    fn center(
+        _self: Ref<bevy::math::prelude::URect>,
+    ) -> Val<bevy::math::prelude::UVec2> {
         let output: Val<bevy::math::prelude::UVec2> = bevy::math::prelude::URect::center(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::prelude::URect>) {
+    fn clone(_self: Ref<bevy::math::prelude::URect>) -> Val<bevy::math::prelude::URect> {
         let output: Val<bevy::math::prelude::URect> = <bevy::math::prelude::URect as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
+    ///  Check if a point lies within this rectangle, inclusive of its edges.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::URect;
+    ///  let r = URect::new(0, 0, 5, 1); // w=5 h=1
+    ///  assert!(r.contains(r.center()));
+    ///  assert!(r.contains(r.min));
+    ///  assert!(r.contains(r.max));
+    ///  ```
     fn contains(
         _self: Ref<bevy::math::prelude::URect>,
         point: Val<bevy::math::prelude::UVec2>,
-    ) {
+    ) -> bool {
         let output: bool = bevy::math::prelude::URect::contains(
                 &_self,
                 point.into_inner(),
@@ -1255,17 +1968,27 @@ impl bevy::math::prelude::URect {
     fn eq(
         _self: Ref<bevy::math::prelude::URect>,
         other: Ref<bevy::math::prelude::URect>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::prelude::URect as std::cmp::PartialEq<
             bevy::math::prelude::URect,
         >>::eq(&_self, &other)
             .into();
         output
     }
+    ///  Create a new rectangle from its center and half-size.
+    ///  # Panics
+    ///  This method panics if any of the components of the half-size is negative or if `origin - half_size` results in any negatives.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{URect, UVec2};
+    ///  let r = URect::from_center_half_size(UVec2::ONE, UVec2::ONE); // w=2 h=2
+    ///  assert_eq!(r.min, UVec2::splat(0));
+    ///  assert_eq!(r.max, UVec2::splat(2));
+    ///  ```
     fn from_center_half_size(
         origin: Val<bevy::math::prelude::UVec2>,
         half_size: Val<bevy::math::prelude::UVec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::URect> {
         let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::from_center_half_size(
                 origin.into_inner(),
                 half_size.into_inner(),
@@ -1273,10 +1996,22 @@ impl bevy::math::prelude::URect {
             .into();
         output
     }
+    ///  Create a new rectangle from its center and size.
+    ///  # Rounding Behavior
+    ///  If the size contains odd numbers they will be rounded down to the nearest whole number.
+    ///  # Panics
+    ///  This method panics if any of the components of the size is negative or if `origin - (size / 2)` results in any negatives.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{URect, UVec2};
+    ///  let r = URect::from_center_size(UVec2::ONE, UVec2::splat(2)); // w=2 h=2
+    ///  assert_eq!(r.min, UVec2::splat(0));
+    ///  assert_eq!(r.max, UVec2::splat(2));
+    ///  ```
     fn from_center_size(
         origin: Val<bevy::math::prelude::UVec2>,
         size: Val<bevy::math::prelude::UVec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::URect> {
         let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::from_center_size(
                 origin.into_inner(),
                 size.into_inner(),
@@ -1284,10 +2019,21 @@ impl bevy::math::prelude::URect {
             .into();
         output
     }
+    ///  Create a new rectangle from two corner points.
+    ///  The two points do not need to be the minimum and/or maximum corners.
+    ///  They only need to be two opposite corners.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{URect, UVec2};
+    ///  // Unit rect from [0,0] to [1,1]
+    ///  let r = URect::from_corners(UVec2::ZERO, UVec2::ONE); // w=1 h=1
+    ///  // Same; the points do not need to be ordered
+    ///  let r = URect::from_corners(UVec2::ONE, UVec2::ZERO); // w=1 h=1
+    ///  ```
     fn from_corners(
         p0: Val<bevy::math::prelude::UVec2>,
         p1: Val<bevy::math::prelude::UVec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::URect> {
         let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::from_corners(
                 p0.into_inner(),
                 p1.into_inner(),
@@ -1295,18 +2041,55 @@ impl bevy::math::prelude::URect {
             .into();
         output
     }
-    fn half_size(_self: Ref<bevy::math::prelude::URect>) {
+    ///  Rectangle half-size.
+    ///  # Rounding Behavior
+    ///  If the full size contains odd numbers they will be rounded down to the nearest whole number when calculating the half size.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{URect, UVec2};
+    ///  let r = URect::new(0, 0, 4, 2); // w=4 h=2
+    ///  assert_eq!(r.half_size(), UVec2::new(2, 1));
+    ///  ```
+    fn half_size(
+        _self: Ref<bevy::math::prelude::URect>,
+    ) -> Val<bevy::math::prelude::UVec2> {
         let output: Val<bevy::math::prelude::UVec2> = bevy::math::prelude::URect::half_size(
                 &_self,
             )
             .into();
         output
     }
-    fn height(_self: Ref<bevy::math::prelude::URect>) {
+    ///  Rectangle height (max.y - min.y).
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::URect;
+    ///  let r = URect::new(0, 0, 5, 1); // w=5 h=1
+    ///  assert_eq!(r.height(), 1);
+    ///  ```
+    fn height(_self: Ref<bevy::math::prelude::URect>) -> u32 {
         let output: u32 = bevy::math::prelude::URect::height(&_self).into();
         output
     }
-    fn inflate(_self: Ref<bevy::math::prelude::URect>, expansion: i32) {
+    ///  Create a new rectangle by expanding it evenly on all sides.
+    ///  A positive expansion value produces a larger rectangle,
+    ///  while a negative expansion value produces a smaller rectangle.
+    ///  If this would result in zero width or height, [`URect::EMPTY`] is returned instead.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{URect, UVec2};
+    ///  let r = URect::new(4, 4, 6, 6); // w=2 h=2
+    ///  let r2 = r.inflate(1); // w=4 h=4
+    ///  assert_eq!(r2.min, UVec2::splat(3));
+    ///  assert_eq!(r2.max, UVec2::splat(7));
+    ///  let r = URect::new(4, 4, 8, 8); // w=4 h=4
+    ///  let r2 = r.inflate(-1); // w=2 h=2
+    ///  assert_eq!(r2.min, UVec2::splat(5));
+    ///  assert_eq!(r2.max, UVec2::splat(7));
+    ///  ```
+    fn inflate(
+        _self: Ref<bevy::math::prelude::URect>,
+        expansion: i32,
+    ) -> Val<bevy::math::prelude::URect> {
         let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::inflate(
                 &_self,
                 expansion,
@@ -1314,10 +2097,23 @@ impl bevy::math::prelude::URect {
             .into();
         output
     }
+    ///  Build a new rectangle formed of the intersection of this rectangle and another rectangle.
+    ///  The intersection is the largest rectangle enclosed in both rectangles. If the intersection
+    ///  is empty, this method returns an empty rectangle ([`URect::is_empty()`] returns `true`), but
+    ///  the actual values of [`URect::min`] and [`URect::max`] are implementation-dependent.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{URect, UVec2};
+    ///  let r1 = URect::new(0, 0, 2, 2); // w=2 h=2
+    ///  let r2 = URect::new(1, 1, 3, 3); // w=2 h=2
+    ///  let r = r1.intersect(r2);
+    ///  assert_eq!(r.min, UVec2::new(1, 1));
+    ///  assert_eq!(r.max, UVec2::new(2, 2));
+    ///  ```
     fn intersect(
         _self: Ref<bevy::math::prelude::URect>,
         other: Val<bevy::math::prelude::URect>,
-    ) {
+    ) -> Val<bevy::math::prelude::URect> {
         let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::intersect(
                 &_self,
                 other.into_inner(),
@@ -1325,11 +2121,27 @@ impl bevy::math::prelude::URect {
             .into();
         output
     }
-    fn is_empty(_self: Ref<bevy::math::prelude::URect>) {
+    ///  Check if the rectangle is empty.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{URect, UVec2};
+    ///  let r = URect::from_corners(UVec2::ZERO, UVec2::new(0, 1)); // w=0 h=1
+    ///  assert!(r.is_empty());
+    ///  ```
+    fn is_empty(_self: Ref<bevy::math::prelude::URect>) -> bool {
         let output: bool = bevy::math::prelude::URect::is_empty(&_self).into();
         output
     }
-    fn new(x0: u32, y0: u32, x1: u32, y1: u32) {
+    ///  Create a new rectangle from two corner points.
+    ///  The two points do not need to be the minimum and/or maximum corners.
+    ///  They only need to be two opposite corners.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::URect;
+    ///  let r = URect::new(0, 4, 10, 6); // w=10 h=2
+    ///  let r = URect::new(2, 4, 5, 0); // w=3 h=4
+    ///  ```
+    fn new(x0: u32, y0: u32, x1: u32, y1: u32) -> Val<bevy::math::prelude::URect> {
         let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::new(
                 x0,
                 y0,
@@ -1339,17 +2151,35 @@ impl bevy::math::prelude::URect {
             .into();
         output
     }
-    fn size(_self: Ref<bevy::math::prelude::URect>) {
+    ///  Rectangle size.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{URect, UVec2};
+    ///  let r = URect::new(0, 0, 5, 1); // w=5 h=1
+    ///  assert_eq!(r.size(), UVec2::new(5, 1));
+    ///  ```
+    fn size(_self: Ref<bevy::math::prelude::URect>) -> Val<bevy::math::prelude::UVec2> {
         let output: Val<bevy::math::prelude::UVec2> = bevy::math::prelude::URect::size(
                 &_self,
             )
             .into();
         output
     }
+    ///  Build a new rectangle formed of the union of this rectangle and another rectangle.
+    ///  The union is the smallest rectangle enclosing both rectangles.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{URect, UVec2};
+    ///  let r1 = URect::new(0, 0, 5, 1); // w=5 h=1
+    ///  let r2 = URect::new(1, 0, 3, 8); // w=2 h=4
+    ///  let r = r1.union(r2);
+    ///  assert_eq!(r.min, UVec2::new(0, 0));
+    ///  assert_eq!(r.max, UVec2::new(5, 8));
+    ///  ```
     fn union(
         _self: Ref<bevy::math::prelude::URect>,
         other: Val<bevy::math::prelude::URect>,
-    ) {
+    ) -> Val<bevy::math::prelude::URect> {
         let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::union(
                 &_self,
                 other.into_inner(),
@@ -1357,10 +2187,21 @@ impl bevy::math::prelude::URect {
             .into();
         output
     }
+    ///  Build a new rectangle formed of the union of this rectangle and a point.
+    ///  The union is the smallest rectangle enclosing both the rectangle and the point. If the
+    ///  point is already inside the rectangle, this method returns a copy of the rectangle.
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::{URect, UVec2};
+    ///  let r = URect::new(0, 0, 5, 1); // w=5 h=1
+    ///  let u = r.union_point(UVec2::new(3, 6));
+    ///  assert_eq!(u.min, UVec2::ZERO);
+    ///  assert_eq!(u.max, UVec2::new(5, 6));
+    ///  ```
     fn union_point(
         _self: Ref<bevy::math::prelude::URect>,
         other: Val<bevy::math::prelude::UVec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::URect> {
         let output: Val<bevy::math::prelude::URect> = bevy::math::prelude::URect::union_point(
                 &_self,
                 other.into_inner(),
@@ -1368,7 +2209,14 @@ impl bevy::math::prelude::URect {
             .into();
         output
     }
-    fn width(_self: Ref<bevy::math::prelude::URect>) {
+    ///  Rectangle width (max.x - min.x).
+    ///  # Examples
+    ///  ```
+    ///  # use bevy_math::URect;
+    ///  let r = URect::new(0, 0, 5, 1); // w=5 h=1
+    ///  assert_eq!(r.width(), 5);
+    ///  ```
+    fn width(_self: Ref<bevy::math::prelude::URect>) -> u32 {
         let output: u32 = bevy::math::prelude::URect::width(&_self).into();
         output
     }
@@ -1385,24 +2233,32 @@ impl bevy::math::Affine3 {}
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::bounding::Aabb2d {
-    fn bounding_circle(_self: Ref<bevy::math::bounding::Aabb2d>) {
+    ///  Computes the smallest [`BoundingCircle`] containing this [`Aabb2d`].
+    fn bounding_circle(
+        _self: Ref<bevy::math::bounding::Aabb2d>,
+    ) -> Val<bevy::math::bounding::BoundingCircle> {
         let output: Val<bevy::math::bounding::BoundingCircle> = bevy::math::bounding::Aabb2d::bounding_circle(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::bounding::Aabb2d>) {
+    fn clone(
+        _self: Ref<bevy::math::bounding::Aabb2d>,
+    ) -> Val<bevy::math::bounding::Aabb2d> {
         let output: Val<bevy::math::bounding::Aabb2d> = <bevy::math::bounding::Aabb2d as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
+    ///  Finds the point on the AABB that is closest to the given `point`.
+    ///  If the point is outside the AABB, the returned point will be on the perimeter of the AABB.
+    ///  Otherwise, it will be inside the AABB and returned as is.
     fn closest_point(
         _self: Ref<bevy::math::bounding::Aabb2d>,
         point: Val<bevy::math::prelude::Vec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::bounding::Aabb2d::closest_point(
                 &_self,
                 point.into_inner(),
@@ -1410,10 +2266,11 @@ impl bevy::math::bounding::Aabb2d {
             .into();
         output
     }
+    ///  Constructs an AABB from its center and half-size.
     fn new(
         center: Val<bevy::math::prelude::Vec2>,
         half_size: Val<bevy::math::prelude::Vec2>,
-    ) {
+    ) -> Val<bevy::math::bounding::Aabb2d> {
         let output: Val<bevy::math::bounding::Aabb2d> = bevy::math::bounding::Aabb2d::new(
                 center.into_inner(),
                 half_size.into_inner(),
@@ -1428,24 +2285,32 @@ impl bevy::math::bounding::Aabb2d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::bounding::BoundingCircle {
-    fn aabb_2d(_self: Ref<bevy::math::bounding::BoundingCircle>) {
+    ///  Computes the smallest [`Aabb2d`] containing this [`BoundingCircle`].
+    fn aabb_2d(
+        _self: Ref<bevy::math::bounding::BoundingCircle>,
+    ) -> Val<bevy::math::bounding::Aabb2d> {
         let output: Val<bevy::math::bounding::Aabb2d> = bevy::math::bounding::BoundingCircle::aabb_2d(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::bounding::BoundingCircle>) {
+    fn clone(
+        _self: Ref<bevy::math::bounding::BoundingCircle>,
+    ) -> Val<bevy::math::bounding::BoundingCircle> {
         let output: Val<bevy::math::bounding::BoundingCircle> = <bevy::math::bounding::BoundingCircle as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
+    ///  Finds the point on the bounding circle that is closest to the given `point`.
+    ///  If the point is outside the circle, the returned point will be on the perimeter of the circle.
+    ///  Otherwise, it will be inside the circle and returned as is.
     fn closest_point(
         _self: Ref<bevy::math::bounding::BoundingCircle>,
         point: Val<bevy::math::prelude::Vec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::bounding::BoundingCircle::closest_point(
                 &_self,
                 point.into_inner(),
@@ -1453,7 +2318,11 @@ impl bevy::math::bounding::BoundingCircle {
             .into();
         output
     }
-    fn new(center: Val<bevy::math::prelude::Vec2>, radius: f32) {
+    ///  Constructs a bounding circle from its center and radius.
+    fn new(
+        center: Val<bevy::math::prelude::Vec2>,
+        radius: f32,
+    ) -> Val<bevy::math::bounding::BoundingCircle> {
         let output: Val<bevy::math::bounding::BoundingCircle> = bevy::math::bounding::BoundingCircle::new(
                 center.into_inner(),
                 radius,
@@ -1461,7 +2330,8 @@ impl bevy::math::bounding::BoundingCircle {
             .into();
         output
     }
-    fn radius(_self: Ref<bevy::math::bounding::BoundingCircle>) {
+    ///  Get the radius of the bounding circle
+    fn radius(_self: Ref<bevy::math::bounding::BoundingCircle>) -> f32 {
         let output: f32 = bevy::math::bounding::BoundingCircle::radius(&_self).into();
         output
     }
@@ -1472,17 +2342,22 @@ impl bevy::math::bounding::BoundingCircle {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Circle {
-    fn clone(_self: Ref<bevy::math::primitives::Circle>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Circle>,
+    ) -> Val<bevy::math::primitives::Circle> {
         let output: Val<bevy::math::primitives::Circle> = <bevy::math::primitives::Circle as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
+    ///  Finds the point on the circle that is closest to the given `point`.
+    ///  If the point is outside the circle, the returned point will be on the perimeter of the circle.
+    ///  Otherwise, it will be inside the circle and returned as is.
     fn closest_point(
         _self: Ref<bevy::math::primitives::Circle>,
         point: Val<bevy::math::prelude::Vec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Circle::closest_point(
                 &_self,
                 point.into_inner(),
@@ -1490,21 +2365,23 @@ impl bevy::math::primitives::Circle {
             .into();
         output
     }
-    fn diameter(_self: Ref<bevy::math::primitives::Circle>) {
+    ///  Get the diameter of the circle
+    fn diameter(_self: Ref<bevy::math::primitives::Circle>) -> f32 {
         let output: f32 = bevy::math::primitives::Circle::diameter(&_self).into();
         output
     }
     fn eq(
         _self: Ref<bevy::math::primitives::Circle>,
         other: Ref<bevy::math::primitives::Circle>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Circle as std::cmp::PartialEq<
             bevy::math::primitives::Circle,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn new(radius: f32) {
+    ///  Create a new [`Circle`] from a `radius`
+    fn new(radius: f32) -> Val<bevy::math::primitives::Circle> {
         let output: Val<bevy::math::primitives::Circle> = bevy::math::primitives::Circle::new(
                 radius,
             )
@@ -1518,17 +2395,23 @@ impl bevy::math::primitives::Circle {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Annulus {
-    fn clone(_self: Ref<bevy::math::primitives::Annulus>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Annulus>,
+    ) -> Val<bevy::math::primitives::Annulus> {
         let output: Val<bevy::math::primitives::Annulus> = <bevy::math::primitives::Annulus as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
+    ///  Finds the point on the annulus that is closest to the given `point`:
+    ///  - If the point is outside of the annulus completely, the returned point will be on the outer perimeter.
+    ///  - If the point is inside of the inner circle (hole) of the annulus, the returned point will be on the inner perimeter.
+    ///  - Otherwise, the returned point is overlapping the annulus and returned as is.
     fn closest_point(
         _self: Ref<bevy::math::primitives::Annulus>,
         point: Val<bevy::math::prelude::Vec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Annulus::closest_point(
                 &_self,
                 point.into_inner(),
@@ -1536,21 +2419,26 @@ impl bevy::math::primitives::Annulus {
             .into();
         output
     }
-    fn diameter(_self: Ref<bevy::math::primitives::Annulus>) {
+    ///  Get the diameter of the annulus
+    fn diameter(_self: Ref<bevy::math::primitives::Annulus>) -> f32 {
         let output: f32 = bevy::math::primitives::Annulus::diameter(&_self).into();
         output
     }
     fn eq(
         _self: Ref<bevy::math::primitives::Annulus>,
         other: Ref<bevy::math::primitives::Annulus>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Annulus as std::cmp::PartialEq<
             bevy::math::primitives::Annulus,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn new(inner_radius: f32, outer_radius: f32) {
+    ///  Create a new [`Annulus`] from the radii of the inner and outer circle
+    fn new(
+        inner_radius: f32,
+        outer_radius: f32,
+    ) -> Val<bevy::math::primitives::Annulus> {
         let output: Val<bevy::math::primitives::Annulus> = bevy::math::primitives::Annulus::new(
                 inner_radius,
                 outer_radius,
@@ -1558,7 +2446,8 @@ impl bevy::math::primitives::Annulus {
             .into();
         output
     }
-    fn thickness(_self: Ref<bevy::math::primitives::Annulus>) {
+    ///  Get the thickness of the annulus
+    fn thickness(_self: Ref<bevy::math::primitives::Annulus>) -> f32 {
         let output: f32 = bevy::math::primitives::Annulus::thickness(&_self).into();
         output
     }
@@ -1569,26 +2458,37 @@ impl bevy::math::primitives::Annulus {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Arc2d {
-    fn angle(_self: Ref<bevy::math::primitives::Arc2d>) {
+    ///  Get the angle of the arc
+    fn angle(_self: Ref<bevy::math::primitives::Arc2d>) -> f32 {
         let output: f32 = bevy::math::primitives::Arc2d::angle(&_self).into();
         output
     }
-    fn apothem(_self: Ref<bevy::math::primitives::Arc2d>) {
+    ///  Get the length of the apothem of this arc, that is,
+    ///  the distance from the center of the circle to the midpoint of the chord, in the direction of the midpoint of the arc.
+    ///  Equivalently, the [`radius`](Self::radius) minus the [`sagitta`](Self::sagitta).
+    ///  Note that for a [`major`](Self::is_major) arc, the apothem will be negative.
+    fn apothem(_self: Ref<bevy::math::primitives::Arc2d>) -> f32 {
         let output: f32 = bevy::math::primitives::Arc2d::apothem(&_self).into();
         output
     }
-    fn chord_length(_self: Ref<bevy::math::primitives::Arc2d>) {
+    ///  Get the distance between the endpoints (the length of the chord)
+    fn chord_length(_self: Ref<bevy::math::primitives::Arc2d>) -> f32 {
         let output: f32 = bevy::math::primitives::Arc2d::chord_length(&_self).into();
         output
     }
-    fn chord_midpoint(_self: Ref<bevy::math::primitives::Arc2d>) {
+    ///  Get the midpoint of the two endpoints (the midpoint of the chord)
+    fn chord_midpoint(
+        _self: Ref<bevy::math::primitives::Arc2d>,
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Arc2d::chord_midpoint(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::primitives::Arc2d>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Arc2d>,
+    ) -> Val<bevy::math::primitives::Arc2d> {
         let output: Val<bevy::math::primitives::Arc2d> = <bevy::math::primitives::Arc2d as std::clone::Clone>::clone(
                 &_self,
             )
@@ -1598,14 +2498,15 @@ impl bevy::math::primitives::Arc2d {
     fn eq(
         _self: Ref<bevy::math::primitives::Arc2d>,
         other: Ref<bevy::math::primitives::Arc2d>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Arc2d as std::cmp::PartialEq<
             bevy::math::primitives::Arc2d,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn from_degrees(radius: f32, angle: f32) {
+    ///  Create a new [`Arc2d`] from a `radius` and an `angle` in degrees.
+    fn from_degrees(radius: f32, angle: f32) -> Val<bevy::math::primitives::Arc2d> {
         let output: Val<bevy::math::primitives::Arc2d> = bevy::math::primitives::Arc2d::from_degrees(
                 radius,
                 angle,
@@ -1613,7 +2514,8 @@ impl bevy::math::primitives::Arc2d {
             .into();
         output
     }
-    fn from_radians(radius: f32, angle: f32) {
+    ///  Create a new [`Arc2d`] from a `radius` and an `angle` in radians
+    fn from_radians(radius: f32, angle: f32) -> Val<bevy::math::primitives::Arc2d> {
         let output: Val<bevy::math::primitives::Arc2d> = bevy::math::primitives::Arc2d::from_radians(
                 radius,
                 angle,
@@ -1621,7 +2523,9 @@ impl bevy::math::primitives::Arc2d {
             .into();
         output
     }
-    fn from_turns(radius: f32, fraction: f32) {
+    ///  Create a new [`Arc2d`] from a `radius` and a `fraction` of a single turn.
+    ///  For instance, `0.5` turns is a semicircle.
+    fn from_turns(radius: f32, fraction: f32) -> Val<bevy::math::primitives::Arc2d> {
         let output: Val<bevy::math::primitives::Arc2d> = bevy::math::primitives::Arc2d::from_turns(
                 radius,
                 fraction,
@@ -1629,38 +2533,51 @@ impl bevy::math::primitives::Arc2d {
             .into();
         output
     }
-    fn half_chord_length(_self: Ref<bevy::math::primitives::Arc2d>) {
+    ///  Get half the distance between the endpoints (half the length of the chord)
+    fn half_chord_length(_self: Ref<bevy::math::primitives::Arc2d>) -> f32 {
         let output: f32 = bevy::math::primitives::Arc2d::half_chord_length(&_self)
             .into();
         output
     }
-    fn is_major(_self: Ref<bevy::math::primitives::Arc2d>) {
+    ///  Produces true if the arc is at least half a circle.
+    ///  **Note:** This is not the negation of [`is_minor`](Self::is_minor): an exact semicircle is both major and minor.
+    fn is_major(_self: Ref<bevy::math::primitives::Arc2d>) -> bool {
         let output: bool = bevy::math::primitives::Arc2d::is_major(&_self).into();
         output
     }
-    fn is_minor(_self: Ref<bevy::math::primitives::Arc2d>) {
+    ///  Produces true if the arc is at most half a circle.
+    ///  **Note:** This is not the negation of [`is_major`](Self::is_major): an exact semicircle is both major and minor.
+    fn is_minor(_self: Ref<bevy::math::primitives::Arc2d>) -> bool {
         let output: bool = bevy::math::primitives::Arc2d::is_minor(&_self).into();
         output
     }
-    fn left_endpoint(_self: Ref<bevy::math::primitives::Arc2d>) {
+    ///  Get the left-hand end point of the arc
+    fn left_endpoint(
+        _self: Ref<bevy::math::primitives::Arc2d>,
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Arc2d::left_endpoint(
                 &_self,
             )
             .into();
         output
     }
-    fn length(_self: Ref<bevy::math::primitives::Arc2d>) {
+    ///  Get the length of the arc
+    fn length(_self: Ref<bevy::math::primitives::Arc2d>) -> f32 {
         let output: f32 = bevy::math::primitives::Arc2d::length(&_self).into();
         output
     }
-    fn midpoint(_self: Ref<bevy::math::primitives::Arc2d>) {
+    ///  Get the midpoint of the arc
+    fn midpoint(
+        _self: Ref<bevy::math::primitives::Arc2d>,
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Arc2d::midpoint(
                 &_self,
             )
             .into();
         output
     }
-    fn new(radius: f32, half_angle: f32) {
+    ///  Create a new [`Arc2d`] from a `radius` and a `half_angle`
+    fn new(radius: f32, half_angle: f32) -> Val<bevy::math::primitives::Arc2d> {
         let output: Val<bevy::math::primitives::Arc2d> = bevy::math::primitives::Arc2d::new(
                 radius,
                 half_angle,
@@ -1668,14 +2585,21 @@ impl bevy::math::primitives::Arc2d {
             .into();
         output
     }
-    fn right_endpoint(_self: Ref<bevy::math::primitives::Arc2d>) {
+    ///  Get the right-hand end point of the arc
+    fn right_endpoint(
+        _self: Ref<bevy::math::primitives::Arc2d>,
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Arc2d::right_endpoint(
                 &_self,
             )
             .into();
         output
     }
-    fn sagitta(_self: Ref<bevy::math::primitives::Arc2d>) {
+    ///  Get the length of the sagitta of this arc, that is,
+    ///  the length of the line between the midpoints of the arc and its chord.
+    ///  Equivalently, the height of the triangle whose base is the chord and whose apex is the midpoint of the arc.
+    ///  The sagitta is also the sum of the [`radius`](Self::radius) and the [`apothem`](Self::apothem).
+    fn sagitta(_self: Ref<bevy::math::primitives::Arc2d>) -> f32 {
         let output: f32 = bevy::math::primitives::Arc2d::sagitta(&_self).into();
         output
     }
@@ -1686,7 +2610,9 @@ impl bevy::math::primitives::Arc2d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Capsule2d {
-    fn clone(_self: Ref<bevy::math::primitives::Capsule2d>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Capsule2d>,
+    ) -> Val<bevy::math::primitives::Capsule2d> {
         let output: Val<bevy::math::primitives::Capsule2d> = <bevy::math::primitives::Capsule2d as std::clone::Clone>::clone(
                 &_self,
             )
@@ -1696,14 +2622,15 @@ impl bevy::math::primitives::Capsule2d {
     fn eq(
         _self: Ref<bevy::math::primitives::Capsule2d>,
         other: Ref<bevy::math::primitives::Capsule2d>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Capsule2d as std::cmp::PartialEq<
             bevy::math::primitives::Capsule2d,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn new(radius: f32, length: f32) {
+    ///  Create a new `Capsule2d` from a radius and length
+    fn new(radius: f32, length: f32) -> Val<bevy::math::primitives::Capsule2d> {
         let output: Val<bevy::math::primitives::Capsule2d> = bevy::math::primitives::Capsule2d::new(
                 radius,
                 length,
@@ -1711,7 +2638,10 @@ impl bevy::math::primitives::Capsule2d {
             .into();
         output
     }
-    fn to_inner_rectangle(_self: Ref<bevy::math::primitives::Capsule2d>) {
+    ///  Get the part connecting the semicircular ends of the capsule as a [`Rectangle`]
+    fn to_inner_rectangle(
+        _self: Ref<bevy::math::primitives::Capsule2d>,
+    ) -> Val<bevy::math::primitives::Rectangle> {
         let output: Val<bevy::math::primitives::Rectangle> = bevy::math::primitives::Capsule2d::to_inner_rectangle(
                 &_self,
             )
@@ -1725,32 +2655,44 @@ impl bevy::math::primitives::Capsule2d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::CircularSector {
-    fn angle(_self: Ref<bevy::math::primitives::CircularSector>) {
+    ///  Get the angle of the sector
+    fn angle(_self: Ref<bevy::math::primitives::CircularSector>) -> f32 {
         let output: f32 = bevy::math::primitives::CircularSector::angle(&_self).into();
         output
     }
-    fn apothem(_self: Ref<bevy::math::primitives::CircularSector>) {
+    ///  Get the length of the apothem of this sector
+    ///  See [`Arc2d::apothem`]
+    fn apothem(_self: Ref<bevy::math::primitives::CircularSector>) -> f32 {
         let output: f32 = bevy::math::primitives::CircularSector::apothem(&_self).into();
         output
     }
-    fn arc_length(_self: Ref<bevy::math::primitives::CircularSector>) {
+    ///  Get the length of the arc defining the sector
+    fn arc_length(_self: Ref<bevy::math::primitives::CircularSector>) -> f32 {
         let output: f32 = bevy::math::primitives::CircularSector::arc_length(&_self)
             .into();
         output
     }
-    fn chord_length(_self: Ref<bevy::math::primitives::CircularSector>) {
+    ///  Get the length of the chord defined by the sector
+    ///  See [`Arc2d::chord_length`]
+    fn chord_length(_self: Ref<bevy::math::primitives::CircularSector>) -> f32 {
         let output: f32 = bevy::math::primitives::CircularSector::chord_length(&_self)
             .into();
         output
     }
-    fn chord_midpoint(_self: Ref<bevy::math::primitives::CircularSector>) {
+    ///  Get the midpoint of the chord defined by the sector
+    ///  See [`Arc2d::chord_midpoint`]
+    fn chord_midpoint(
+        _self: Ref<bevy::math::primitives::CircularSector>,
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::CircularSector::chord_midpoint(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::primitives::CircularSector>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::CircularSector>,
+    ) -> Val<bevy::math::primitives::CircularSector> {
         let output: Val<bevy::math::primitives::CircularSector> = <bevy::math::primitives::CircularSector as std::clone::Clone>::clone(
                 &_self,
             )
@@ -1760,14 +2702,18 @@ impl bevy::math::primitives::CircularSector {
     fn eq(
         _self: Ref<bevy::math::primitives::CircularSector>,
         other: Ref<bevy::math::primitives::CircularSector>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::CircularSector as std::cmp::PartialEq<
             bevy::math::primitives::CircularSector,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn from_degrees(radius: f32, angle: f32) {
+    ///  Create a new [`CircularSector`] from a `radius` and an `angle` in degrees.
+    fn from_degrees(
+        radius: f32,
+        angle: f32,
+    ) -> Val<bevy::math::primitives::CircularSector> {
         let output: Val<bevy::math::primitives::CircularSector> = bevy::math::primitives::CircularSector::from_degrees(
                 radius,
                 angle,
@@ -1775,7 +2721,11 @@ impl bevy::math::primitives::CircularSector {
             .into();
         output
     }
-    fn from_radians(radius: f32, angle: f32) {
+    ///  Create a new [`CircularSector`] from a `radius` and an `angle` in radians.
+    fn from_radians(
+        radius: f32,
+        angle: f32,
+    ) -> Val<bevy::math::primitives::CircularSector> {
         let output: Val<bevy::math::primitives::CircularSector> = bevy::math::primitives::CircularSector::from_radians(
                 radius,
                 angle,
@@ -1783,7 +2733,12 @@ impl bevy::math::primitives::CircularSector {
             .into();
         output
     }
-    fn from_turns(radius: f32, fraction: f32) {
+    ///  Create a new [`CircularSector`] from a `radius` and a number of `turns` of a circle.
+    ///  For instance, `0.5` turns is a semicircle.
+    fn from_turns(
+        radius: f32,
+        fraction: f32,
+    ) -> Val<bevy::math::primitives::CircularSector> {
         let output: Val<bevy::math::primitives::CircularSector> = bevy::math::primitives::CircularSector::from_turns(
                 radius,
                 fraction,
@@ -1791,19 +2746,23 @@ impl bevy::math::primitives::CircularSector {
             .into();
         output
     }
-    fn half_angle(_self: Ref<bevy::math::primitives::CircularSector>) {
+    ///  Get half the angle of the sector
+    fn half_angle(_self: Ref<bevy::math::primitives::CircularSector>) -> f32 {
         let output: f32 = bevy::math::primitives::CircularSector::half_angle(&_self)
             .into();
         output
     }
-    fn half_chord_length(_self: Ref<bevy::math::primitives::CircularSector>) {
+    ///  Get half the length of the chord defined by the sector
+    ///  See [`Arc2d::half_chord_length`]
+    fn half_chord_length(_self: Ref<bevy::math::primitives::CircularSector>) -> f32 {
         let output: f32 = bevy::math::primitives::CircularSector::half_chord_length(
                 &_self,
             )
             .into();
         output
     }
-    fn new(radius: f32, angle: f32) {
+    ///  Create a new [`CircularSector`] from a `radius` and an `angle`
+    fn new(radius: f32, angle: f32) -> Val<bevy::math::primitives::CircularSector> {
         let output: Val<bevy::math::primitives::CircularSector> = bevy::math::primitives::CircularSector::new(
                 radius,
                 angle,
@@ -1811,11 +2770,14 @@ impl bevy::math::primitives::CircularSector {
             .into();
         output
     }
-    fn radius(_self: Ref<bevy::math::primitives::CircularSector>) {
+    ///  Get the radius of the sector
+    fn radius(_self: Ref<bevy::math::primitives::CircularSector>) -> f32 {
         let output: f32 = bevy::math::primitives::CircularSector::radius(&_self).into();
         output
     }
-    fn sagitta(_self: Ref<bevy::math::primitives::CircularSector>) {
+    ///  Get the length of the sagitta of this sector
+    ///  See [`Arc2d::sagitta`]
+    fn sagitta(_self: Ref<bevy::math::primitives::CircularSector>) -> f32 {
         let output: f32 = bevy::math::primitives::CircularSector::sagitta(&_self).into();
         output
     }
@@ -1826,33 +2788,44 @@ impl bevy::math::primitives::CircularSector {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::CircularSegment {
-    fn angle(_self: Ref<bevy::math::primitives::CircularSegment>) {
+    ///  Get the angle of the segment
+    fn angle(_self: Ref<bevy::math::primitives::CircularSegment>) -> f32 {
         let output: f32 = bevy::math::primitives::CircularSegment::angle(&_self).into();
         output
     }
-    fn apothem(_self: Ref<bevy::math::primitives::CircularSegment>) {
+    ///  Get the length of the apothem of this segment,
+    ///  which is the signed distance between the segment and the center of its circle
+    ///  See [`Arc2d::apothem`]
+    fn apothem(_self: Ref<bevy::math::primitives::CircularSegment>) -> f32 {
         let output: f32 = bevy::math::primitives::CircularSegment::apothem(&_self)
             .into();
         output
     }
-    fn arc_length(_self: Ref<bevy::math::primitives::CircularSegment>) {
+    ///  Get the length of the arc defining the segment
+    fn arc_length(_self: Ref<bevy::math::primitives::CircularSegment>) -> f32 {
         let output: f32 = bevy::math::primitives::CircularSegment::arc_length(&_self)
             .into();
         output
     }
-    fn chord_length(_self: Ref<bevy::math::primitives::CircularSegment>) {
+    ///  Get the length of the segment's base, also known as its chord
+    fn chord_length(_self: Ref<bevy::math::primitives::CircularSegment>) -> f32 {
         let output: f32 = bevy::math::primitives::CircularSegment::chord_length(&_self)
             .into();
         output
     }
-    fn chord_midpoint(_self: Ref<bevy::math::primitives::CircularSegment>) {
+    ///  Get the midpoint of the segment's base, also known as its chord
+    fn chord_midpoint(
+        _self: Ref<bevy::math::primitives::CircularSegment>,
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::CircularSegment::chord_midpoint(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::primitives::CircularSegment>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::CircularSegment>,
+    ) -> Val<bevy::math::primitives::CircularSegment> {
         let output: Val<bevy::math::primitives::CircularSegment> = <bevy::math::primitives::CircularSegment as std::clone::Clone>::clone(
                 &_self,
             )
@@ -1862,14 +2835,18 @@ impl bevy::math::primitives::CircularSegment {
     fn eq(
         _self: Ref<bevy::math::primitives::CircularSegment>,
         other: Ref<bevy::math::primitives::CircularSegment>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::CircularSegment as std::cmp::PartialEq<
             bevy::math::primitives::CircularSegment,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn from_degrees(radius: f32, angle: f32) {
+    ///  Create a new [`CircularSegment`] from a `radius` and an `angle` in degrees.
+    fn from_degrees(
+        radius: f32,
+        angle: f32,
+    ) -> Val<bevy::math::primitives::CircularSegment> {
         let output: Val<bevy::math::primitives::CircularSegment> = bevy::math::primitives::CircularSegment::from_degrees(
                 radius,
                 angle,
@@ -1877,7 +2854,11 @@ impl bevy::math::primitives::CircularSegment {
             .into();
         output
     }
-    fn from_radians(radius: f32, angle: f32) {
+    ///  Create a new [`CircularSegment`] from a `radius` and an `angle` in radians.
+    fn from_radians(
+        radius: f32,
+        angle: f32,
+    ) -> Val<bevy::math::primitives::CircularSegment> {
         let output: Val<bevy::math::primitives::CircularSegment> = bevy::math::primitives::CircularSegment::from_radians(
                 radius,
                 angle,
@@ -1885,7 +2866,12 @@ impl bevy::math::primitives::CircularSegment {
             .into();
         output
     }
-    fn from_turns(radius: f32, fraction: f32) {
+    ///  Create a new [`CircularSegment`] from a `radius` and a number of `turns` of a circle.
+    ///  For instance, `0.5` turns is a semicircle.
+    fn from_turns(
+        radius: f32,
+        fraction: f32,
+    ) -> Val<bevy::math::primitives::CircularSegment> {
         let output: Val<bevy::math::primitives::CircularSegment> = bevy::math::primitives::CircularSegment::from_turns(
                 radius,
                 fraction,
@@ -1893,19 +2879,22 @@ impl bevy::math::primitives::CircularSegment {
             .into();
         output
     }
-    fn half_angle(_self: Ref<bevy::math::primitives::CircularSegment>) {
+    ///  Get the half-angle of the segment
+    fn half_angle(_self: Ref<bevy::math::primitives::CircularSegment>) -> f32 {
         let output: f32 = bevy::math::primitives::CircularSegment::half_angle(&_self)
             .into();
         output
     }
-    fn half_chord_length(_self: Ref<bevy::math::primitives::CircularSegment>) {
+    ///  Get half the length of the segment's base, also known as its chord
+    fn half_chord_length(_self: Ref<bevy::math::primitives::CircularSegment>) -> f32 {
         let output: f32 = bevy::math::primitives::CircularSegment::half_chord_length(
                 &_self,
             )
             .into();
         output
     }
-    fn new(radius: f32, angle: f32) {
+    ///  Create a new [`CircularSegment`] from a `radius`, and an `angle`
+    fn new(radius: f32, angle: f32) -> Val<bevy::math::primitives::CircularSegment> {
         let output: Val<bevy::math::primitives::CircularSegment> = bevy::math::primitives::CircularSegment::new(
                 radius,
                 angle,
@@ -1913,11 +2902,14 @@ impl bevy::math::primitives::CircularSegment {
             .into();
         output
     }
-    fn radius(_self: Ref<bevy::math::primitives::CircularSegment>) {
+    ///  Get the radius of the segment
+    fn radius(_self: Ref<bevy::math::primitives::CircularSegment>) -> f32 {
         let output: f32 = bevy::math::primitives::CircularSegment::radius(&_self).into();
         output
     }
-    fn sagitta(_self: Ref<bevy::math::primitives::CircularSegment>) {
+    ///  Get the length of the sagitta of this segment, also known as its height
+    ///  See [`Arc2d::sagitta`]
+    fn sagitta(_self: Ref<bevy::math::primitives::CircularSegment>) -> f32 {
         let output: f32 = bevy::math::primitives::CircularSegment::sagitta(&_self)
             .into();
         output
@@ -1929,39 +2921,52 @@ impl bevy::math::primitives::CircularSegment {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Ellipse {
-    fn clone(_self: Ref<bevy::math::primitives::Ellipse>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Ellipse>,
+    ) -> Val<bevy::math::primitives::Ellipse> {
         let output: Val<bevy::math::primitives::Ellipse> = <bevy::math::primitives::Ellipse as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn eccentricity(_self: Ref<bevy::math::primitives::Ellipse>) {
+    ///  Returns the [eccentricity](https://en.wikipedia.org/wiki/Eccentricity_(mathematics)) of the ellipse.
+    ///  It can be thought of as a measure of how "stretched" or elongated the ellipse is.
+    ///  The value should be in the range [0, 1), where 0 represents a circle, and 1 represents a parabola.
+    fn eccentricity(_self: Ref<bevy::math::primitives::Ellipse>) -> f32 {
         let output: f32 = bevy::math::primitives::Ellipse::eccentricity(&_self).into();
         output
     }
     fn eq(
         _self: Ref<bevy::math::primitives::Ellipse>,
         other: Ref<bevy::math::primitives::Ellipse>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Ellipse as std::cmp::PartialEq<
             bevy::math::primitives::Ellipse,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn focal_length(_self: Ref<bevy::math::primitives::Ellipse>) {
+    ///  Get the focal length of the ellipse. This corresponds to the distance between one of the foci and the center of the ellipse.
+    ///  The focal length of an ellipse is related to its eccentricity by `eccentricity = focal_length / semi_major`
+    fn focal_length(_self: Ref<bevy::math::primitives::Ellipse>) -> f32 {
         let output: f32 = bevy::math::primitives::Ellipse::focal_length(&_self).into();
         output
     }
-    fn from_size(size: Val<bevy::math::prelude::Vec2>) {
+    ///  Create a new `Ellipse` from a given full size.
+    ///  `size.x` is the diameter along the X axis, and `size.y` is the diameter along the Y axis.
+    fn from_size(
+        size: Val<bevy::math::prelude::Vec2>,
+    ) -> Val<bevy::math::primitives::Ellipse> {
         let output: Val<bevy::math::primitives::Ellipse> = bevy::math::primitives::Ellipse::from_size(
                 size.into_inner(),
             )
             .into();
         output
     }
-    fn new(half_width: f32, half_height: f32) {
+    ///  Create a new `Ellipse` from half of its width and height.
+    ///  This corresponds to the two perpendicular radii defining the ellipse.
+    fn new(half_width: f32, half_height: f32) -> Val<bevy::math::primitives::Ellipse> {
         let output: Val<bevy::math::primitives::Ellipse> = bevy::math::primitives::Ellipse::new(
                 half_width,
                 half_height,
@@ -1969,11 +2974,13 @@ impl bevy::math::primitives::Ellipse {
             .into();
         output
     }
-    fn semi_major(_self: Ref<bevy::math::primitives::Ellipse>) {
+    ///  Returns the length of the semi-major axis. This corresponds to the longest radius of the ellipse.
+    fn semi_major(_self: Ref<bevy::math::primitives::Ellipse>) -> f32 {
         let output: f32 = bevy::math::primitives::Ellipse::semi_major(&_self).into();
         output
     }
-    fn semi_minor(_self: Ref<bevy::math::primitives::Ellipse>) {
+    ///  Returns the length of the semi-minor axis. This corresponds to the shortest radius of the ellipse.
+    fn semi_minor(_self: Ref<bevy::math::primitives::Ellipse>) -> f32 {
         let output: f32 = bevy::math::primitives::Ellipse::semi_minor(&_self).into();
         output
     }
@@ -1984,7 +2991,9 @@ impl bevy::math::primitives::Ellipse {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Line2d {
-    fn clone(_self: Ref<bevy::math::primitives::Line2d>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Line2d>,
+    ) -> Val<bevy::math::primitives::Line2d> {
         let output: Val<bevy::math::primitives::Line2d> = <bevy::math::primitives::Line2d as std::clone::Clone>::clone(
                 &_self,
             )
@@ -1994,7 +3003,7 @@ impl bevy::math::primitives::Line2d {
     fn eq(
         _self: Ref<bevy::math::primitives::Line2d>,
         other: Ref<bevy::math::primitives::Line2d>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Line2d as std::cmp::PartialEq<
             bevy::math::primitives::Line2d,
         >>::eq(&_self, &other)
@@ -2008,7 +3017,9 @@ impl bevy::math::primitives::Line2d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Plane2d {
-    fn clone(_self: Ref<bevy::math::primitives::Plane2d>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Plane2d>,
+    ) -> Val<bevy::math::primitives::Plane2d> {
         let output: Val<bevy::math::primitives::Plane2d> = <bevy::math::primitives::Plane2d as std::clone::Clone>::clone(
                 &_self,
             )
@@ -2018,14 +3029,19 @@ impl bevy::math::primitives::Plane2d {
     fn eq(
         _self: Ref<bevy::math::primitives::Plane2d>,
         other: Ref<bevy::math::primitives::Plane2d>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Plane2d as std::cmp::PartialEq<
             bevy::math::primitives::Plane2d,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn new(normal: Val<bevy::math::prelude::Vec2>) {
+    ///  Create a new `Plane2d` from a normal
+    ///  # Panics
+    ///  Panics if the given `normal` is zero (or very close to zero), or non-finite.
+    fn new(
+        normal: Val<bevy::math::prelude::Vec2>,
+    ) -> Val<bevy::math::primitives::Plane2d> {
         let output: Val<bevy::math::primitives::Plane2d> = bevy::math::primitives::Plane2d::new(
                 normal.into_inner(),
             )
@@ -2039,17 +3055,22 @@ impl bevy::math::primitives::Plane2d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Rectangle {
-    fn clone(_self: Ref<bevy::math::primitives::Rectangle>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Rectangle>,
+    ) -> Val<bevy::math::primitives::Rectangle> {
         let output: Val<bevy::math::primitives::Rectangle> = <bevy::math::primitives::Rectangle as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
+    ///  Finds the point on the rectangle that is closest to the given `point`.
+    ///  If the point is outside the rectangle, the returned point will be on the perimeter of the rectangle.
+    ///  Otherwise, it will be inside the rectangle and returned as is.
     fn closest_point(
         _self: Ref<bevy::math::primitives::Rectangle>,
         point: Val<bevy::math::prelude::Vec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Rectangle::closest_point(
                 &_self,
                 point.into_inner(),
@@ -2060,17 +3081,18 @@ impl bevy::math::primitives::Rectangle {
     fn eq(
         _self: Ref<bevy::math::primitives::Rectangle>,
         other: Ref<bevy::math::primitives::Rectangle>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Rectangle as std::cmp::PartialEq<
             bevy::math::primitives::Rectangle,
         >>::eq(&_self, &other)
             .into();
         output
     }
+    ///  Create a new `Rectangle` from two corner points
     fn from_corners(
         point1: Val<bevy::math::prelude::Vec2>,
         point2: Val<bevy::math::prelude::Vec2>,
-    ) {
+    ) -> Val<bevy::math::primitives::Rectangle> {
         let output: Val<bevy::math::primitives::Rectangle> = bevy::math::primitives::Rectangle::from_corners(
                 point1.into_inner(),
                 point2.into_inner(),
@@ -2078,21 +3100,27 @@ impl bevy::math::primitives::Rectangle {
             .into();
         output
     }
-    fn from_length(length: f32) {
+    ///  Create a `Rectangle` from a single length.
+    ///  The resulting `Rectangle` will be the same size in every direction.
+    fn from_length(length: f32) -> Val<bevy::math::primitives::Rectangle> {
         let output: Val<bevy::math::primitives::Rectangle> = bevy::math::primitives::Rectangle::from_length(
                 length,
             )
             .into();
         output
     }
-    fn from_size(size: Val<bevy::math::prelude::Vec2>) {
+    ///  Create a new `Rectangle` from a given full size
+    fn from_size(
+        size: Val<bevy::math::prelude::Vec2>,
+    ) -> Val<bevy::math::primitives::Rectangle> {
         let output: Val<bevy::math::primitives::Rectangle> = bevy::math::primitives::Rectangle::from_size(
                 size.into_inner(),
             )
             .into();
         output
     }
-    fn new(width: f32, height: f32) {
+    ///  Create a new `Rectangle` from a full width and height
+    fn new(width: f32, height: f32) -> Val<bevy::math::primitives::Rectangle> {
         let output: Val<bevy::math::primitives::Rectangle> = bevy::math::primitives::Rectangle::new(
                 width,
                 height,
@@ -2100,7 +3128,10 @@ impl bevy::math::primitives::Rectangle {
             .into();
         output
     }
-    fn size(_self: Ref<bevy::math::primitives::Rectangle>) {
+    ///  Get the size of the rectangle
+    fn size(
+        _self: Ref<bevy::math::primitives::Rectangle>,
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Rectangle::size(
                 &_self,
             )
@@ -2114,12 +3145,16 @@ impl bevy::math::primitives::Rectangle {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::RegularPolygon {
-    fn circumradius(_self: Ref<bevy::math::primitives::RegularPolygon>) {
+    ///  Get the radius of the circumcircle on which all vertices
+    ///  of the regular polygon lie
+    fn circumradius(_self: Ref<bevy::math::primitives::RegularPolygon>) -> f32 {
         let output: f32 = bevy::math::primitives::RegularPolygon::circumradius(&_self)
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::primitives::RegularPolygon>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::RegularPolygon>,
+    ) -> Val<bevy::math::primitives::RegularPolygon> {
         let output: Val<bevy::math::primitives::RegularPolygon> = <bevy::math::primitives::RegularPolygon as std::clone::Clone>::clone(
                 &_self,
             )
@@ -2129,47 +3164,77 @@ impl bevy::math::primitives::RegularPolygon {
     fn eq(
         _self: Ref<bevy::math::primitives::RegularPolygon>,
         other: Ref<bevy::math::primitives::RegularPolygon>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::RegularPolygon as std::cmp::PartialEq<
             bevy::math::primitives::RegularPolygon,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn external_angle_degrees(_self: Ref<bevy::math::primitives::RegularPolygon>) {
+    ///  Get the external angle of the regular polygon in degrees.
+    ///  This is the angle formed by two adjacent sides with points
+    ///  within the angle being in the exterior of the polygon
+    fn external_angle_degrees(
+        _self: Ref<bevy::math::primitives::RegularPolygon>,
+    ) -> f32 {
         let output: f32 = bevy::math::primitives::RegularPolygon::external_angle_degrees(
                 &_self,
             )
             .into();
         output
     }
-    fn external_angle_radians(_self: Ref<bevy::math::primitives::RegularPolygon>) {
+    ///  Get the external angle of the regular polygon in radians.
+    ///  This is the angle formed by two adjacent sides with points
+    ///  within the angle being in the exterior of the polygon
+    fn external_angle_radians(
+        _self: Ref<bevy::math::primitives::RegularPolygon>,
+    ) -> f32 {
         let output: f32 = bevy::math::primitives::RegularPolygon::external_angle_radians(
                 &_self,
             )
             .into();
         output
     }
-    fn inradius(_self: Ref<bevy::math::primitives::RegularPolygon>) {
+    ///  Get the inradius or apothem of the regular polygon.
+    ///  This is the radius of the largest circle that can
+    ///  be drawn within the polygon
+    fn inradius(_self: Ref<bevy::math::primitives::RegularPolygon>) -> f32 {
         let output: f32 = bevy::math::primitives::RegularPolygon::inradius(&_self)
             .into();
         output
     }
-    fn internal_angle_degrees(_self: Ref<bevy::math::primitives::RegularPolygon>) {
+    ///  Get the internal angle of the regular polygon in degrees.
+    ///  This is the angle formed by two adjacent sides with points
+    ///  within the angle being in the interior of the polygon
+    fn internal_angle_degrees(
+        _self: Ref<bevy::math::primitives::RegularPolygon>,
+    ) -> f32 {
         let output: f32 = bevy::math::primitives::RegularPolygon::internal_angle_degrees(
                 &_self,
             )
             .into();
         output
     }
-    fn internal_angle_radians(_self: Ref<bevy::math::primitives::RegularPolygon>) {
+    ///  Get the internal angle of the regular polygon in radians.
+    ///  This is the angle formed by two adjacent sides with points
+    ///  within the angle being in the interior of the polygon
+    fn internal_angle_radians(
+        _self: Ref<bevy::math::primitives::RegularPolygon>,
+    ) -> f32 {
         let output: f32 = bevy::math::primitives::RegularPolygon::internal_angle_radians(
                 &_self,
             )
             .into();
         output
     }
-    fn new(circumradius: f32, sides: u32) {
+    ///  Create a new `RegularPolygon`
+    ///  from the radius of the circumcircle and a number of sides
+    ///  # Panics
+    ///  Panics if `circumradius` is negative
+    fn new(
+        circumradius: f32,
+        sides: u32,
+    ) -> Val<bevy::math::primitives::RegularPolygon> {
         let output: Val<bevy::math::primitives::RegularPolygon> = bevy::math::primitives::RegularPolygon::new(
                 circumradius,
                 sides,
@@ -2177,7 +3242,8 @@ impl bevy::math::primitives::RegularPolygon {
             .into();
         output
     }
-    fn side_length(_self: Ref<bevy::math::primitives::RegularPolygon>) {
+    ///  Get the length of one side of the regular polygon
+    fn side_length(_self: Ref<bevy::math::primitives::RegularPolygon>) -> f32 {
         let output: f32 = bevy::math::primitives::RegularPolygon::side_length(&_self)
             .into();
         output
@@ -2189,21 +3255,28 @@ impl bevy::math::primitives::RegularPolygon {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Rhombus {
-    fn circumradius(_self: Ref<bevy::math::primitives::Rhombus>) {
+    ///  Get the radius of the circumcircle on which all vertices
+    ///  of the rhombus lie
+    fn circumradius(_self: Ref<bevy::math::primitives::Rhombus>) -> f32 {
         let output: f32 = bevy::math::primitives::Rhombus::circumradius(&_self).into();
         output
     }
-    fn clone(_self: Ref<bevy::math::primitives::Rhombus>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Rhombus>,
+    ) -> Val<bevy::math::primitives::Rhombus> {
         let output: Val<bevy::math::primitives::Rhombus> = <bevy::math::primitives::Rhombus as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
+    ///  Finds the point on the rhombus that is closest to the given `point`.
+    ///  If the point is outside the rhombus, the returned point will be on the perimeter of the rhombus.
+    ///  Otherwise, it will be inside the rhombus and returned as is.
     fn closest_point(
         _self: Ref<bevy::math::primitives::Rhombus>,
         point: Val<bevy::math::prelude::Vec2>,
-    ) {
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Rhombus::closest_point(
                 &_self,
                 point.into_inner(),
@@ -2214,32 +3287,40 @@ impl bevy::math::primitives::Rhombus {
     fn eq(
         _self: Ref<bevy::math::primitives::Rhombus>,
         other: Ref<bevy::math::primitives::Rhombus>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Rhombus as std::cmp::PartialEq<
             bevy::math::primitives::Rhombus,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn from_inradius(inradius: f32) {
+    ///  Create a new `Rhombus` from a given inradius with all inner angles equal.
+    fn from_inradius(inradius: f32) -> Val<bevy::math::primitives::Rhombus> {
         let output: Val<bevy::math::primitives::Rhombus> = bevy::math::primitives::Rhombus::from_inradius(
                 inradius,
             )
             .into();
         output
     }
-    fn from_side(side: f32) {
+    ///  Create a new `Rhombus` from a side length with all inner angles equal.
+    fn from_side(side: f32) -> Val<bevy::math::primitives::Rhombus> {
         let output: Val<bevy::math::primitives::Rhombus> = bevy::math::primitives::Rhombus::from_side(
                 side,
             )
             .into();
         output
     }
-    fn inradius(_self: Ref<bevy::math::primitives::Rhombus>) {
+    ///  Get the radius of the largest circle that can
+    ///  be drawn within the rhombus
+    fn inradius(_self: Ref<bevy::math::primitives::Rhombus>) -> f32 {
         let output: f32 = bevy::math::primitives::Rhombus::inradius(&_self).into();
         output
     }
-    fn new(horizontal_diagonal: f32, vertical_diagonal: f32) {
+    ///  Create a new `Rhombus` from a vertical and horizontal diagonal sizes.
+    fn new(
+        horizontal_diagonal: f32,
+        vertical_diagonal: f32,
+    ) -> Val<bevy::math::primitives::Rhombus> {
         let output: Val<bevy::math::primitives::Rhombus> = bevy::math::primitives::Rhombus::new(
                 horizontal_diagonal,
                 vertical_diagonal,
@@ -2247,7 +3328,8 @@ impl bevy::math::primitives::Rhombus {
             .into();
         output
     }
-    fn side(_self: Ref<bevy::math::primitives::Rhombus>) {
+    ///  Get the length of each side of the rhombus
+    fn side(_self: Ref<bevy::math::primitives::Rhombus>) -> f32 {
         let output: f32 = bevy::math::primitives::Rhombus::side(&_self).into();
         output
     }
@@ -2258,7 +3340,9 @@ impl bevy::math::primitives::Rhombus {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Segment2d {
-    fn clone(_self: Ref<bevy::math::primitives::Segment2d>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Segment2d>,
+    ) -> Val<bevy::math::primitives::Segment2d> {
         let output: Val<bevy::math::primitives::Segment2d> = <bevy::math::primitives::Segment2d as std::clone::Clone>::clone(
                 &_self,
             )
@@ -2268,14 +3352,18 @@ impl bevy::math::primitives::Segment2d {
     fn eq(
         _self: Ref<bevy::math::primitives::Segment2d>,
         other: Ref<bevy::math::primitives::Segment2d>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Segment2d as std::cmp::PartialEq<
             bevy::math::primitives::Segment2d,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn new(direction: Val<bevy::math::prelude::Dir2>, length: f32) {
+    ///  Create a new `Segment2d` from a direction and full length of the segment
+    fn new(
+        direction: Val<bevy::math::prelude::Dir2>,
+        length: f32,
+    ) -> Val<bevy::math::primitives::Segment2d> {
         let output: Val<bevy::math::primitives::Segment2d> = bevy::math::primitives::Segment2d::new(
                 direction.into_inner(),
                 length,
@@ -2283,14 +3371,20 @@ impl bevy::math::primitives::Segment2d {
             .into();
         output
     }
-    fn point1(_self: Ref<bevy::math::primitives::Segment2d>) {
+    ///  Get the position of the first point on the line segment
+    fn point1(
+        _self: Ref<bevy::math::primitives::Segment2d>,
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Segment2d::point1(
                 &_self,
             )
             .into();
         output
     }
-    fn point2(_self: Ref<bevy::math::primitives::Segment2d>) {
+    ///  Get the position of the second point on the line segment
+    fn point2(
+        _self: Ref<bevy::math::primitives::Segment2d>,
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::primitives::Segment2d::point2(
                 &_self,
             )
@@ -2304,7 +3398,9 @@ impl bevy::math::primitives::Segment2d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Triangle2d {
-    fn clone(_self: Ref<bevy::math::primitives::Triangle2d>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Triangle2d>,
+    ) -> Val<bevy::math::primitives::Triangle2d> {
         let output: Val<bevy::math::primitives::Triangle2d> = <bevy::math::primitives::Triangle2d as std::clone::Clone>::clone(
                 &_self,
             )
@@ -2314,31 +3410,37 @@ impl bevy::math::primitives::Triangle2d {
     fn eq(
         _self: Ref<bevy::math::primitives::Triangle2d>,
         other: Ref<bevy::math::primitives::Triangle2d>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Triangle2d as std::cmp::PartialEq<
             bevy::math::primitives::Triangle2d,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn is_acute(_self: Ref<bevy::math::primitives::Triangle2d>) {
+    ///  Checks if the triangle is acute, meaning all angles are less than 90 degrees
+    fn is_acute(_self: Ref<bevy::math::primitives::Triangle2d>) -> bool {
         let output: bool = bevy::math::primitives::Triangle2d::is_acute(&_self).into();
         output
     }
-    fn is_degenerate(_self: Ref<bevy::math::primitives::Triangle2d>) {
+    ///  Checks if the triangle is degenerate, meaning it has zero area.
+    ///  A triangle is degenerate if the cross product of the vectors `ab` and `ac` has a length less than `10e-7`.
+    ///  This indicates that the three vertices are collinear or nearly collinear.
+    fn is_degenerate(_self: Ref<bevy::math::primitives::Triangle2d>) -> bool {
         let output: bool = bevy::math::primitives::Triangle2d::is_degenerate(&_self)
             .into();
         output
     }
-    fn is_obtuse(_self: Ref<bevy::math::primitives::Triangle2d>) {
+    ///  Checks if the triangle is obtuse, meaning one angle is greater than 90 degrees
+    fn is_obtuse(_self: Ref<bevy::math::primitives::Triangle2d>) -> bool {
         let output: bool = bevy::math::primitives::Triangle2d::is_obtuse(&_self).into();
         output
     }
+    ///  Create a new `Triangle2d` from points `a`, `b`, and `c`
     fn new(
         a: Val<bevy::math::prelude::Vec2>,
         b: Val<bevy::math::prelude::Vec2>,
         c: Val<bevy::math::prelude::Vec2>,
-    ) {
+    ) -> Val<bevy::math::primitives::Triangle2d> {
         let output: Val<bevy::math::primitives::Triangle2d> = bevy::math::primitives::Triangle2d::new(
                 a.into_inner(),
                 b.into_inner(),
@@ -2347,11 +3449,16 @@ impl bevy::math::primitives::Triangle2d {
             .into();
         output
     }
-    fn reverse(mut _self: Mut<bevy::math::primitives::Triangle2d>) {
+    ///  Reverse the [`WindingOrder`] of the triangle
+    ///  by swapping the first and last vertices.
+    fn reverse(mut _self: Mut<bevy::math::primitives::Triangle2d>) -> () {
         let output: () = bevy::math::primitives::Triangle2d::reverse(&mut _self).into();
         output
     }
-    fn reversed(_self: Val<bevy::math::primitives::Triangle2d>) {
+    ///  This triangle but reversed.
+    fn reversed(
+        _self: Val<bevy::math::primitives::Triangle2d>,
+    ) -> Val<bevy::math::primitives::Triangle2d> {
         let output: Val<bevy::math::primitives::Triangle2d> = bevy::math::primitives::Triangle2d::reversed(
                 _self.into_inner(),
             )
@@ -2365,14 +3472,19 @@ impl bevy::math::primitives::Triangle2d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::bounding::Aabb3d {
-    fn bounding_sphere(_self: Ref<bevy::math::bounding::Aabb3d>) {
+    ///  Computes the smallest [`BoundingSphere`] containing this [`Aabb3d`].
+    fn bounding_sphere(
+        _self: Ref<bevy::math::bounding::Aabb3d>,
+    ) -> Val<bevy::math::bounding::BoundingSphere> {
         let output: Val<bevy::math::bounding::BoundingSphere> = bevy::math::bounding::Aabb3d::bounding_sphere(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::bounding::Aabb3d>) {
+    fn clone(
+        _self: Ref<bevy::math::bounding::Aabb3d>,
+    ) -> Val<bevy::math::bounding::Aabb3d> {
         let output: Val<bevy::math::bounding::Aabb3d> = <bevy::math::bounding::Aabb3d as std::clone::Clone>::clone(
                 &_self,
             )
@@ -2386,21 +3498,27 @@ impl bevy::math::bounding::Aabb3d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::bounding::BoundingSphere {
-    fn aabb_3d(_self: Ref<bevy::math::bounding::BoundingSphere>) {
+    ///  Computes the smallest [`Aabb3d`] containing this [`BoundingSphere`].
+    fn aabb_3d(
+        _self: Ref<bevy::math::bounding::BoundingSphere>,
+    ) -> Val<bevy::math::bounding::Aabb3d> {
         let output: Val<bevy::math::bounding::Aabb3d> = bevy::math::bounding::BoundingSphere::aabb_3d(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::bounding::BoundingSphere>) {
+    fn clone(
+        _self: Ref<bevy::math::bounding::BoundingSphere>,
+    ) -> Val<bevy::math::bounding::BoundingSphere> {
         let output: Val<bevy::math::bounding::BoundingSphere> = <bevy::math::bounding::BoundingSphere as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn radius(_self: Ref<bevy::math::bounding::BoundingSphere>) {
+    ///  Get the radius of the bounding sphere
+    fn radius(_self: Ref<bevy::math::bounding::BoundingSphere>) -> f32 {
         let output: f32 = bevy::math::bounding::BoundingSphere::radius(&_self).into();
         output
     }
@@ -2411,17 +3529,22 @@ impl bevy::math::bounding::BoundingSphere {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Sphere {
-    fn clone(_self: Ref<bevy::math::primitives::Sphere>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Sphere>,
+    ) -> Val<bevy::math::primitives::Sphere> {
         let output: Val<bevy::math::primitives::Sphere> = <bevy::math::primitives::Sphere as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
+    ///  Finds the point on the sphere that is closest to the given `point`.
+    ///  If the point is outside the sphere, the returned point will be on the surface of the sphere.
+    ///  Otherwise, it will be inside the sphere and returned as is.
     fn closest_point(
         _self: Ref<bevy::math::primitives::Sphere>,
         point: Val<bevy::math::prelude::Vec3>,
-    ) {
+    ) -> Val<bevy::math::prelude::Vec3> {
         let output: Val<bevy::math::prelude::Vec3> = bevy::math::primitives::Sphere::closest_point(
                 &_self,
                 point.into_inner(),
@@ -2429,21 +3552,23 @@ impl bevy::math::primitives::Sphere {
             .into();
         output
     }
-    fn diameter(_self: Ref<bevy::math::primitives::Sphere>) {
+    ///  Get the diameter of the sphere
+    fn diameter(_self: Ref<bevy::math::primitives::Sphere>) -> f32 {
         let output: f32 = bevy::math::primitives::Sphere::diameter(&_self).into();
         output
     }
     fn eq(
         _self: Ref<bevy::math::primitives::Sphere>,
         other: Ref<bevy::math::primitives::Sphere>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Sphere as std::cmp::PartialEq<
             bevy::math::primitives::Sphere,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn new(radius: f32) {
+    ///  Create a new [`Sphere`] from a `radius`
+    fn new(radius: f32) -> Val<bevy::math::primitives::Sphere> {
         let output: Val<bevy::math::primitives::Sphere> = bevy::math::primitives::Sphere::new(
                 radius,
             )
@@ -2457,17 +3582,22 @@ impl bevy::math::primitives::Sphere {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Cuboid {
-    fn clone(_self: Ref<bevy::math::primitives::Cuboid>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Cuboid>,
+    ) -> Val<bevy::math::primitives::Cuboid> {
         let output: Val<bevy::math::primitives::Cuboid> = <bevy::math::primitives::Cuboid as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
+    ///  Finds the point on the cuboid that is closest to the given `point`.
+    ///  If the point is outside the cuboid, the returned point will be on the surface of the cuboid.
+    ///  Otherwise, it will be inside the cuboid and returned as is.
     fn closest_point(
         _self: Ref<bevy::math::primitives::Cuboid>,
         point: Val<bevy::math::prelude::Vec3>,
-    ) {
+    ) -> Val<bevy::math::prelude::Vec3> {
         let output: Val<bevy::math::prelude::Vec3> = bevy::math::primitives::Cuboid::closest_point(
                 &_self,
                 point.into_inner(),
@@ -2478,17 +3608,18 @@ impl bevy::math::primitives::Cuboid {
     fn eq(
         _self: Ref<bevy::math::primitives::Cuboid>,
         other: Ref<bevy::math::primitives::Cuboid>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Cuboid as std::cmp::PartialEq<
             bevy::math::primitives::Cuboid,
         >>::eq(&_self, &other)
             .into();
         output
     }
+    ///  Create a new `Cuboid` from two corner points
     fn from_corners(
         point1: Val<bevy::math::prelude::Vec3>,
         point2: Val<bevy::math::prelude::Vec3>,
-    ) {
+    ) -> Val<bevy::math::primitives::Cuboid> {
         let output: Val<bevy::math::primitives::Cuboid> = bevy::math::primitives::Cuboid::from_corners(
                 point1.into_inner(),
                 point2.into_inner(),
@@ -2496,21 +3627,31 @@ impl bevy::math::primitives::Cuboid {
             .into();
         output
     }
-    fn from_length(length: f32) {
+    ///  Create a `Cuboid` from a single length.
+    ///  The resulting `Cuboid` will be the same size in every direction.
+    fn from_length(length: f32) -> Val<bevy::math::primitives::Cuboid> {
         let output: Val<bevy::math::primitives::Cuboid> = bevy::math::primitives::Cuboid::from_length(
                 length,
             )
             .into();
         output
     }
-    fn from_size(size: Val<bevy::math::prelude::Vec3>) {
+    ///  Create a new `Cuboid` from a given full size
+    fn from_size(
+        size: Val<bevy::math::prelude::Vec3>,
+    ) -> Val<bevy::math::primitives::Cuboid> {
         let output: Val<bevy::math::primitives::Cuboid> = bevy::math::primitives::Cuboid::from_size(
                 size.into_inner(),
             )
             .into();
         output
     }
-    fn new(x_length: f32, y_length: f32, z_length: f32) {
+    ///  Create a new `Cuboid` from a full x, y, and z length
+    fn new(
+        x_length: f32,
+        y_length: f32,
+        z_length: f32,
+    ) -> Val<bevy::math::primitives::Cuboid> {
         let output: Val<bevy::math::primitives::Cuboid> = bevy::math::primitives::Cuboid::new(
                 x_length,
                 y_length,
@@ -2519,7 +3660,10 @@ impl bevy::math::primitives::Cuboid {
             .into();
         output
     }
-    fn size(_self: Ref<bevy::math::primitives::Cuboid>) {
+    ///  Get the size of the cuboid
+    fn size(
+        _self: Ref<bevy::math::primitives::Cuboid>,
+    ) -> Val<bevy::math::prelude::Vec3> {
         let output: Val<bevy::math::prelude::Vec3> = bevy::math::primitives::Cuboid::size(
                 &_self,
             )
@@ -2533,18 +3677,24 @@ impl bevy::math::primitives::Cuboid {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Cylinder {
-    fn base(_self: Ref<bevy::math::primitives::Cylinder>) {
+    ///  Get the base of the cylinder as a [`Circle`]
+    fn base(
+        _self: Ref<bevy::math::primitives::Cylinder>,
+    ) -> Val<bevy::math::primitives::Circle> {
         let output: Val<bevy::math::primitives::Circle> = bevy::math::primitives::Cylinder::base(
                 &_self,
             )
             .into();
         output
     }
-    fn base_area(_self: Ref<bevy::math::primitives::Cylinder>) {
+    ///  Get the surface area of one base of the cylinder
+    fn base_area(_self: Ref<bevy::math::primitives::Cylinder>) -> f32 {
         let output: f32 = bevy::math::primitives::Cylinder::base_area(&_self).into();
         output
     }
-    fn clone(_self: Ref<bevy::math::primitives::Cylinder>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Cylinder>,
+    ) -> Val<bevy::math::primitives::Cylinder> {
         let output: Val<bevy::math::primitives::Cylinder> = <bevy::math::primitives::Cylinder as std::clone::Clone>::clone(
                 &_self,
             )
@@ -2554,18 +3704,21 @@ impl bevy::math::primitives::Cylinder {
     fn eq(
         _self: Ref<bevy::math::primitives::Cylinder>,
         other: Ref<bevy::math::primitives::Cylinder>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Cylinder as std::cmp::PartialEq<
             bevy::math::primitives::Cylinder,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn lateral_area(_self: Ref<bevy::math::primitives::Cylinder>) {
+    ///  Get the surface area of the side of the cylinder,
+    ///  also known as the lateral area
+    fn lateral_area(_self: Ref<bevy::math::primitives::Cylinder>) -> f32 {
         let output: f32 = bevy::math::primitives::Cylinder::lateral_area(&_self).into();
         output
     }
-    fn new(radius: f32, height: f32) {
+    ///  Create a new `Cylinder` from a radius and full height
+    fn new(radius: f32, height: f32) -> Val<bevy::math::primitives::Cylinder> {
         let output: Val<bevy::math::primitives::Cylinder> = bevy::math::primitives::Cylinder::new(
                 radius,
                 height,
@@ -2580,7 +3733,9 @@ impl bevy::math::primitives::Cylinder {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Capsule3d {
-    fn clone(_self: Ref<bevy::math::primitives::Capsule3d>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Capsule3d>,
+    ) -> Val<bevy::math::primitives::Capsule3d> {
         let output: Val<bevy::math::primitives::Capsule3d> = <bevy::math::primitives::Capsule3d as std::clone::Clone>::clone(
                 &_self,
             )
@@ -2590,14 +3745,15 @@ impl bevy::math::primitives::Capsule3d {
     fn eq(
         _self: Ref<bevy::math::primitives::Capsule3d>,
         other: Ref<bevy::math::primitives::Capsule3d>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Capsule3d as std::cmp::PartialEq<
             bevy::math::primitives::Capsule3d,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn new(radius: f32, length: f32) {
+    ///  Create a new `Capsule3d` from a radius and length
+    fn new(radius: f32, length: f32) -> Val<bevy::math::primitives::Capsule3d> {
         let output: Val<bevy::math::primitives::Capsule3d> = bevy::math::primitives::Capsule3d::new(
                 radius,
                 length,
@@ -2605,7 +3761,11 @@ impl bevy::math::primitives::Capsule3d {
             .into();
         output
     }
-    fn to_cylinder(_self: Ref<bevy::math::primitives::Capsule3d>) {
+    ///  Get the part connecting the hemispherical ends
+    ///  of the capsule as a [`Cylinder`]
+    fn to_cylinder(
+        _self: Ref<bevy::math::primitives::Capsule3d>,
+    ) -> Val<bevy::math::primitives::Cylinder> {
         let output: Val<bevy::math::primitives::Cylinder> = bevy::math::primitives::Capsule3d::to_cylinder(
                 &_self,
             )
@@ -2619,18 +3779,24 @@ impl bevy::math::primitives::Capsule3d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Cone {
-    fn base(_self: Ref<bevy::math::primitives::Cone>) {
+    ///  Get the base of the cone as a [`Circle`]
+    fn base(
+        _self: Ref<bevy::math::primitives::Cone>,
+    ) -> Val<bevy::math::primitives::Circle> {
         let output: Val<bevy::math::primitives::Circle> = bevy::math::primitives::Cone::base(
                 &_self,
             )
             .into();
         output
     }
-    fn base_area(_self: Ref<bevy::math::primitives::Cone>) {
+    ///  Get the surface area of the base of the cone
+    fn base_area(_self: Ref<bevy::math::primitives::Cone>) -> f32 {
         let output: f32 = bevy::math::primitives::Cone::base_area(&_self).into();
         output
     }
-    fn clone(_self: Ref<bevy::math::primitives::Cone>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Cone>,
+    ) -> Val<bevy::math::primitives::Cone> {
         let output: Val<bevy::math::primitives::Cone> = <bevy::math::primitives::Cone as std::clone::Clone>::clone(
                 &_self,
             )
@@ -2640,18 +3806,21 @@ impl bevy::math::primitives::Cone {
     fn eq(
         _self: Ref<bevy::math::primitives::Cone>,
         other: Ref<bevy::math::primitives::Cone>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Cone as std::cmp::PartialEq<
             bevy::math::primitives::Cone,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn lateral_area(_self: Ref<bevy::math::primitives::Cone>) {
+    ///  Get the surface area of the side of the cone,
+    ///  also known as the lateral area
+    fn lateral_area(_self: Ref<bevy::math::primitives::Cone>) -> f32 {
         let output: f32 = bevy::math::primitives::Cone::lateral_area(&_self).into();
         output
     }
-    fn new(radius: f32, height: f32) {
+    ///  Create a new [`Cone`] from a radius and height.
+    fn new(radius: f32, height: f32) -> Val<bevy::math::primitives::Cone> {
         let output: Val<bevy::math::primitives::Cone> = bevy::math::primitives::Cone::new(
                 radius,
                 height,
@@ -2659,7 +3828,9 @@ impl bevy::math::primitives::Cone {
             .into();
         output
     }
-    fn slant_height(_self: Ref<bevy::math::primitives::Cone>) {
+    ///  Get the slant height of the cone, the length of the line segment
+    ///  connecting a point on the base to the apex
+    fn slant_height(_self: Ref<bevy::math::primitives::Cone>) -> f32 {
         let output: f32 = bevy::math::primitives::Cone::slant_height(&_self).into();
         output
     }
@@ -2670,7 +3841,9 @@ impl bevy::math::primitives::Cone {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::ConicalFrustum {
-    fn clone(_self: Ref<bevy::math::primitives::ConicalFrustum>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::ConicalFrustum>,
+    ) -> Val<bevy::math::primitives::ConicalFrustum> {
         let output: Val<bevy::math::primitives::ConicalFrustum> = <bevy::math::primitives::ConicalFrustum as std::clone::Clone>::clone(
                 &_self,
             )
@@ -2680,7 +3853,7 @@ impl bevy::math::primitives::ConicalFrustum {
     fn eq(
         _self: Ref<bevy::math::primitives::ConicalFrustum>,
         other: Ref<bevy::math::primitives::ConicalFrustum>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::ConicalFrustum as std::cmp::PartialEq<
             bevy::math::primitives::ConicalFrustum,
         >>::eq(&_self, &other)
@@ -2694,7 +3867,9 @@ impl bevy::math::primitives::ConicalFrustum {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::InfinitePlane3d {
-    fn clone(_self: Ref<bevy::math::primitives::InfinitePlane3d>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::InfinitePlane3d>,
+    ) -> Val<bevy::math::primitives::InfinitePlane3d> {
         let output: Val<bevy::math::primitives::InfinitePlane3d> = <bevy::math::primitives::InfinitePlane3d as std::clone::Clone>::clone(
                 &_self,
             )
@@ -2704,17 +3879,35 @@ impl bevy::math::primitives::InfinitePlane3d {
     fn eq(
         _self: Ref<bevy::math::primitives::InfinitePlane3d>,
         other: Ref<bevy::math::primitives::InfinitePlane3d>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::InfinitePlane3d as std::cmp::PartialEq<
             bevy::math::primitives::InfinitePlane3d,
         >>::eq(&_self, &other)
             .into();
         output
     }
+    ///  Computes an [`Isometry3d`] which transforms points from the XY-plane to this plane with the
+    ///  given `origin`.
+    ///  ## Guarantees
+    ///  * the transformation is a [congruence] meaning it will preserve all distances and angles of
+    ///    the transformed geometry
+    ///  * uses the least rotation possible to transform the geometry
+    ///  * if two geometries are transformed with the same isometry, then the relations between
+    ///    them, like distances, are also preserved
+    ///  * compared to projections, the transformation is lossless (up to floating point errors)
+    ///    reversible
+    ///  ## Non-Guarantees
+    ///  * the rotation used is generally not unique
+    ///  * the orientation of the transformed geometry in the XY plane might be arbitrary, to
+    ///    enforce some kind of alignment the user has to use an extra transformation ontop of this
+    ///    one
+    ///  See [`isometries_xy`] for example usescases.
+    ///  [congruence]: https://en.wikipedia.org/wiki/Congruence_(geometry)
+    ///  [`isometries_xy`]: `InfinitePlane3d::isometries_xy`
     fn isometry_from_xy(
         _self: Ref<bevy::math::primitives::InfinitePlane3d>,
         origin: Val<bevy::math::prelude::Vec3>,
-    ) {
+    ) -> Val<bevy::math::Isometry3d> {
         let output: Val<bevy::math::Isometry3d> = bevy::math::primitives::InfinitePlane3d::isometry_from_xy(
                 &_self,
                 origin.into_inner(),
@@ -2722,10 +3915,28 @@ impl bevy::math::primitives::InfinitePlane3d {
             .into();
         output
     }
+    ///  Computes an [`Isometry3d`] which transforms points from the plane in 3D space with the given
+    ///  `origin` to the XY-plane.
+    ///  ## Guarantees
+    ///  * the transformation is a [congruence] meaning it will preserve all distances and angles of
+    ///    the transformed geometry
+    ///  * uses the least rotation possible to transform the geometry
+    ///  * if two geometries are transformed with the same isometry, then the relations between
+    ///    them, like distances, are also preserved
+    ///  * compared to projections, the transformation is lossless (up to floating point errors)
+    ///    reversible
+    ///  ## Non-Guarantees
+    ///  * the rotation used is generally not unique
+    ///  * the orientation of the transformed geometry in the XY plane might be arbitrary, to
+    ///    enforce some kind of alignment the user has to use an extra transformation ontop of this
+    ///    one
+    ///  See [`isometries_xy`] for example usescases.
+    ///  [congruence]: https://en.wikipedia.org/wiki/Congruence_(geometry)
+    ///  [`isometries_xy`]: `InfinitePlane3d::isometries_xy`
     fn isometry_into_xy(
         _self: Ref<bevy::math::primitives::InfinitePlane3d>,
         origin: Val<bevy::math::prelude::Vec3>,
-    ) {
+    ) -> Val<bevy::math::Isometry3d> {
         let output: Val<bevy::math::Isometry3d> = bevy::math::primitives::InfinitePlane3d::isometry_into_xy(
                 &_self,
                 origin.into_inner(),
@@ -2740,7 +3951,9 @@ impl bevy::math::primitives::InfinitePlane3d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Line3d {
-    fn clone(_self: Ref<bevy::math::primitives::Line3d>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Line3d>,
+    ) -> Val<bevy::math::primitives::Line3d> {
         let output: Val<bevy::math::primitives::Line3d> = <bevy::math::primitives::Line3d as std::clone::Clone>::clone(
                 &_self,
             )
@@ -2750,7 +3963,7 @@ impl bevy::math::primitives::Line3d {
     fn eq(
         _self: Ref<bevy::math::primitives::Line3d>,
         other: Ref<bevy::math::primitives::Line3d>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Line3d as std::cmp::PartialEq<
             bevy::math::primitives::Line3d,
         >>::eq(&_self, &other)
@@ -2764,7 +3977,9 @@ impl bevy::math::primitives::Line3d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Segment3d {
-    fn clone(_self: Ref<bevy::math::primitives::Segment3d>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Segment3d>,
+    ) -> Val<bevy::math::primitives::Segment3d> {
         let output: Val<bevy::math::primitives::Segment3d> = <bevy::math::primitives::Segment3d as std::clone::Clone>::clone(
                 &_self,
             )
@@ -2774,14 +3989,18 @@ impl bevy::math::primitives::Segment3d {
     fn eq(
         _self: Ref<bevy::math::primitives::Segment3d>,
         other: Ref<bevy::math::primitives::Segment3d>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Segment3d as std::cmp::PartialEq<
             bevy::math::primitives::Segment3d,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn new(direction: Val<bevy::math::prelude::Dir3>, length: f32) {
+    ///  Create a new `Segment3d` from a direction and full length of the segment
+    fn new(
+        direction: Val<bevy::math::prelude::Dir3>,
+        length: f32,
+    ) -> Val<bevy::math::primitives::Segment3d> {
         let output: Val<bevy::math::primitives::Segment3d> = bevy::math::primitives::Segment3d::new(
                 direction.into_inner(),
                 length,
@@ -2789,14 +4008,20 @@ impl bevy::math::primitives::Segment3d {
             .into();
         output
     }
-    fn point1(_self: Ref<bevy::math::primitives::Segment3d>) {
+    ///  Get the position of the first point on the line segment
+    fn point1(
+        _self: Ref<bevy::math::primitives::Segment3d>,
+    ) -> Val<bevy::math::prelude::Vec3> {
         let output: Val<bevy::math::prelude::Vec3> = bevy::math::primitives::Segment3d::point1(
                 &_self,
             )
             .into();
         output
     }
-    fn point2(_self: Ref<bevy::math::primitives::Segment3d>) {
+    ///  Get the position of the second point on the line segment
+    fn point2(
+        _self: Ref<bevy::math::primitives::Segment3d>,
+    ) -> Val<bevy::math::prelude::Vec3> {
         let output: Val<bevy::math::prelude::Vec3> = bevy::math::primitives::Segment3d::point2(
                 &_self,
             )
@@ -2810,7 +4035,9 @@ impl bevy::math::primitives::Segment3d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Torus {
-    fn clone(_self: Ref<bevy::math::primitives::Torus>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Torus>,
+    ) -> Val<bevy::math::primitives::Torus> {
         let output: Val<bevy::math::primitives::Torus> = <bevy::math::primitives::Torus as std::clone::Clone>::clone(
                 &_self,
             )
@@ -2820,18 +4047,24 @@ impl bevy::math::primitives::Torus {
     fn eq(
         _self: Ref<bevy::math::primitives::Torus>,
         other: Ref<bevy::math::primitives::Torus>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Torus as std::cmp::PartialEq<
             bevy::math::primitives::Torus,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn inner_radius(_self: Ref<bevy::math::primitives::Torus>) {
+    ///  Get the inner radius of the torus.
+    ///  For a ring torus, this corresponds to the radius of the hole,
+    ///  or `major_radius - minor_radius`
+    fn inner_radius(_self: Ref<bevy::math::primitives::Torus>) -> f32 {
         let output: f32 = bevy::math::primitives::Torus::inner_radius(&_self).into();
         output
     }
-    fn new(inner_radius: f32, outer_radius: f32) {
+    ///  Create a new `Torus` from an inner and outer radius.
+    ///  The inner radius is the radius of the hole, and the outer radius
+    ///  is the radius of the entire object
+    fn new(inner_radius: f32, outer_radius: f32) -> Val<bevy::math::primitives::Torus> {
         let output: Val<bevy::math::primitives::Torus> = bevy::math::primitives::Torus::new(
                 inner_radius,
                 outer_radius,
@@ -2839,7 +4072,10 @@ impl bevy::math::primitives::Torus {
             .into();
         output
     }
-    fn outer_radius(_self: Ref<bevy::math::primitives::Torus>) {
+    ///  Get the outer radius of the torus.
+    ///  This corresponds to the overall radius of the entire object,
+    ///  or `major_radius + minor_radius`
+    fn outer_radius(_self: Ref<bevy::math::primitives::Torus>) -> f32 {
         let output: f32 = bevy::math::primitives::Torus::outer_radius(&_self).into();
         output
     }
@@ -2850,21 +4086,31 @@ impl bevy::math::primitives::Torus {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Triangle3d {
-    fn centroid(_self: Ref<bevy::math::primitives::Triangle3d>) {
+    ///  Get the centroid of the triangle.
+    ///  This function finds the geometric center of the triangle by averaging the vertices:
+    ///  `centroid = (a + b + c) / 3`.
+    fn centroid(
+        _self: Ref<bevy::math::primitives::Triangle3d>,
+    ) -> Val<bevy::math::prelude::Vec3> {
         let output: Val<bevy::math::prelude::Vec3> = bevy::math::primitives::Triangle3d::centroid(
                 &_self,
             )
             .into();
         output
     }
-    fn circumcenter(_self: Ref<bevy::math::primitives::Triangle3d>) {
+    ///  Get the circumcenter of the triangle.
+    fn circumcenter(
+        _self: Ref<bevy::math::primitives::Triangle3d>,
+    ) -> Val<bevy::math::prelude::Vec3> {
         let output: Val<bevy::math::prelude::Vec3> = bevy::math::primitives::Triangle3d::circumcenter(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::primitives::Triangle3d>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Triangle3d>,
+    ) -> Val<bevy::math::primitives::Triangle3d> {
         let output: Val<bevy::math::primitives::Triangle3d> = <bevy::math::primitives::Triangle3d as std::clone::Clone>::clone(
                 &_self,
             )
@@ -2874,31 +4120,37 @@ impl bevy::math::primitives::Triangle3d {
     fn eq(
         _self: Ref<bevy::math::primitives::Triangle3d>,
         other: Ref<bevy::math::primitives::Triangle3d>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Triangle3d as std::cmp::PartialEq<
             bevy::math::primitives::Triangle3d,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn is_acute(_self: Ref<bevy::math::primitives::Triangle3d>) {
+    ///  Checks if the triangle is acute, meaning all angles are less than 90 degrees
+    fn is_acute(_self: Ref<bevy::math::primitives::Triangle3d>) -> bool {
         let output: bool = bevy::math::primitives::Triangle3d::is_acute(&_self).into();
         output
     }
-    fn is_degenerate(_self: Ref<bevy::math::primitives::Triangle3d>) {
+    ///  Checks if the triangle is degenerate, meaning it has zero area.
+    ///  A triangle is degenerate if the cross product of the vectors `ab` and `ac` has a length less than `10e-7`.
+    ///  This indicates that the three vertices are collinear or nearly collinear.
+    fn is_degenerate(_self: Ref<bevy::math::primitives::Triangle3d>) -> bool {
         let output: bool = bevy::math::primitives::Triangle3d::is_degenerate(&_self)
             .into();
         output
     }
-    fn is_obtuse(_self: Ref<bevy::math::primitives::Triangle3d>) {
+    ///  Checks if the triangle is obtuse, meaning one angle is greater than 90 degrees
+    fn is_obtuse(_self: Ref<bevy::math::primitives::Triangle3d>) -> bool {
         let output: bool = bevy::math::primitives::Triangle3d::is_obtuse(&_self).into();
         output
     }
+    ///  Create a new [`Triangle3d`] from points `a`, `b`, and `c`.
     fn new(
         a: Val<bevy::math::prelude::Vec3>,
         b: Val<bevy::math::prelude::Vec3>,
         c: Val<bevy::math::prelude::Vec3>,
-    ) {
+    ) -> Val<bevy::math::primitives::Triangle3d> {
         let output: Val<bevy::math::primitives::Triangle3d> = bevy::math::primitives::Triangle3d::new(
                 a.into_inner(),
                 b.into_inner(),
@@ -2907,11 +4159,15 @@ impl bevy::math::primitives::Triangle3d {
             .into();
         output
     }
-    fn reverse(mut _self: Mut<bevy::math::primitives::Triangle3d>) {
+    ///  Reverse the triangle by swapping the first and last vertices.
+    fn reverse(mut _self: Mut<bevy::math::primitives::Triangle3d>) -> () {
         let output: () = bevy::math::primitives::Triangle3d::reverse(&mut _self).into();
         output
     }
-    fn reversed(_self: Val<bevy::math::primitives::Triangle3d>) {
+    ///  This triangle but reversed.
+    fn reversed(
+        _self: Val<bevy::math::primitives::Triangle3d>,
+    ) -> Val<bevy::math::primitives::Triangle3d> {
         let output: Val<bevy::math::primitives::Triangle3d> = bevy::math::primitives::Triangle3d::reversed(
                 _self.into_inner(),
             )
@@ -2925,10 +4181,11 @@ impl bevy::math::primitives::Triangle3d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::bounding::RayCast2d {
+    ///  Get the distance of an intersection with an [`Aabb2d`], if any.
     fn aabb_intersection_at(
         _self: Ref<bevy::math::bounding::RayCast2d>,
         aabb: Ref<bevy::math::bounding::Aabb2d>,
-    ) {
+    ) -> std::option::Option<f32> {
         let output: std::option::Option<f32> = bevy::math::bounding::RayCast2d::aabb_intersection_at(
                 &_self,
                 &aabb,
@@ -2936,10 +4193,11 @@ impl bevy::math::bounding::RayCast2d {
             .into();
         output
     }
+    ///  Get the distance of an intersection with a [`BoundingCircle`], if any.
     fn circle_intersection_at(
         _self: Ref<bevy::math::bounding::RayCast2d>,
         circle: Ref<bevy::math::bounding::BoundingCircle>,
-    ) {
+    ) -> std::option::Option<f32> {
         let output: std::option::Option<f32> = bevy::math::bounding::RayCast2d::circle_intersection_at(
                 &_self,
                 &circle,
@@ -2947,21 +4205,30 @@ impl bevy::math::bounding::RayCast2d {
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::bounding::RayCast2d>) {
+    fn clone(
+        _self: Ref<bevy::math::bounding::RayCast2d>,
+    ) -> Val<bevy::math::bounding::RayCast2d> {
         let output: Val<bevy::math::bounding::RayCast2d> = <bevy::math::bounding::RayCast2d as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn direction_recip(_self: Ref<bevy::math::bounding::RayCast2d>) {
+    ///  Get the cached multiplicative inverse of the direction of the ray.
+    fn direction_recip(
+        _self: Ref<bevy::math::bounding::RayCast2d>,
+    ) -> Val<bevy::math::prelude::Vec2> {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::bounding::RayCast2d::direction_recip(
                 &_self,
             )
             .into();
         output
     }
-    fn from_ray(ray: Val<bevy::math::Ray2d>, max: f32) {
+    ///  Construct a [`RayCast2d`] from a [`Ray2d`] and max distance.
+    fn from_ray(
+        ray: Val<bevy::math::Ray2d>,
+        max: f32,
+    ) -> Val<bevy::math::bounding::RayCast2d> {
         let output: Val<bevy::math::bounding::RayCast2d> = bevy::math::bounding::RayCast2d::from_ray(
                 ray.into_inner(),
                 max,
@@ -2969,11 +4236,12 @@ impl bevy::math::bounding::RayCast2d {
             .into();
         output
     }
+    ///  Construct a [`RayCast2d`] from an origin, [`Dir2`], and max distance.
     fn new(
         origin: Val<bevy::math::prelude::Vec2>,
         direction: Val<bevy::math::prelude::Dir2>,
         max: f32,
-    ) {
+    ) -> Val<bevy::math::bounding::RayCast2d> {
         let output: Val<bevy::math::bounding::RayCast2d> = bevy::math::bounding::RayCast2d::new(
                 origin.into_inner(),
                 direction.into_inner(),
@@ -2989,10 +4257,11 @@ impl bevy::math::bounding::RayCast2d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::bounding::AabbCast2d {
+    ///  Get the distance at which the [`Aabb2d`]s collide, if at all.
     fn aabb_collision_at(
         _self: Ref<bevy::math::bounding::AabbCast2d>,
         aabb: Val<bevy::math::bounding::Aabb2d>,
-    ) {
+    ) -> std::option::Option<f32> {
         let output: std::option::Option<f32> = bevy::math::bounding::AabbCast2d::aabb_collision_at(
                 &_self,
                 aabb.into_inner(),
@@ -3000,18 +4269,21 @@ impl bevy::math::bounding::AabbCast2d {
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::bounding::AabbCast2d>) {
+    fn clone(
+        _self: Ref<bevy::math::bounding::AabbCast2d>,
+    ) -> Val<bevy::math::bounding::AabbCast2d> {
         let output: Val<bevy::math::bounding::AabbCast2d> = <bevy::math::bounding::AabbCast2d as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
+    ///  Construct an [`AabbCast2d`] from an [`Aabb2d`], [`Ray2d`], and max distance.
     fn from_ray(
         aabb: Val<bevy::math::bounding::Aabb2d>,
         ray: Val<bevy::math::Ray2d>,
         max: f32,
-    ) {
+    ) -> Val<bevy::math::bounding::AabbCast2d> {
         let output: Val<bevy::math::bounding::AabbCast2d> = bevy::math::bounding::AabbCast2d::from_ray(
                 aabb.into_inner(),
                 ray.into_inner(),
@@ -3020,12 +4292,13 @@ impl bevy::math::bounding::AabbCast2d {
             .into();
         output
     }
+    ///  Construct an [`AabbCast2d`] from an [`Aabb2d`], origin, [`Dir2`], and max distance.
     fn new(
         aabb: Val<bevy::math::bounding::Aabb2d>,
         origin: Val<bevy::math::prelude::Vec2>,
         direction: Val<bevy::math::prelude::Dir2>,
         max: f32,
-    ) {
+    ) -> Val<bevy::math::bounding::AabbCast2d> {
         let output: Val<bevy::math::bounding::AabbCast2d> = bevy::math::bounding::AabbCast2d::new(
                 aabb.into_inner(),
                 origin.into_inner(),
@@ -3042,10 +4315,11 @@ impl bevy::math::bounding::AabbCast2d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::bounding::BoundingCircleCast {
+    ///  Get the distance at which the [`BoundingCircle`]s collide, if at all.
     fn circle_collision_at(
         _self: Ref<bevy::math::bounding::BoundingCircleCast>,
         circle: Val<bevy::math::bounding::BoundingCircle>,
-    ) {
+    ) -> std::option::Option<f32> {
         let output: std::option::Option<f32> = bevy::math::bounding::BoundingCircleCast::circle_collision_at(
                 &_self,
                 circle.into_inner(),
@@ -3053,18 +4327,21 @@ impl bevy::math::bounding::BoundingCircleCast {
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::bounding::BoundingCircleCast>) {
+    fn clone(
+        _self: Ref<bevy::math::bounding::BoundingCircleCast>,
+    ) -> Val<bevy::math::bounding::BoundingCircleCast> {
         let output: Val<bevy::math::bounding::BoundingCircleCast> = <bevy::math::bounding::BoundingCircleCast as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
+    ///  Construct a [`BoundingCircleCast`] from a [`BoundingCircle`], [`Ray2d`], and max distance.
     fn from_ray(
         circle: Val<bevy::math::bounding::BoundingCircle>,
         ray: Val<bevy::math::Ray2d>,
         max: f32,
-    ) {
+    ) -> Val<bevy::math::bounding::BoundingCircleCast> {
         let output: Val<bevy::math::bounding::BoundingCircleCast> = bevy::math::bounding::BoundingCircleCast::from_ray(
                 circle.into_inner(),
                 ray.into_inner(),
@@ -3073,12 +4350,13 @@ impl bevy::math::bounding::BoundingCircleCast {
             .into();
         output
     }
+    ///  Construct a [`BoundingCircleCast`] from a [`BoundingCircle`], origin, [`Dir2`], and max distance.
     fn new(
         circle: Val<bevy::math::bounding::BoundingCircle>,
         origin: Val<bevy::math::prelude::Vec2>,
         direction: Val<bevy::math::prelude::Dir2>,
         max: f32,
-    ) {
+    ) -> Val<bevy::math::bounding::BoundingCircleCast> {
         let output: Val<bevy::math::bounding::BoundingCircleCast> = bevy::math::bounding::BoundingCircleCast::new(
                 circle.into_inner(),
                 origin.into_inner(),
@@ -3095,10 +4373,11 @@ impl bevy::math::bounding::BoundingCircleCast {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::bounding::RayCast3d {
+    ///  Get the distance of an intersection with an [`Aabb3d`], if any.
     fn aabb_intersection_at(
         _self: Ref<bevy::math::bounding::RayCast3d>,
         aabb: Ref<bevy::math::bounding::Aabb3d>,
-    ) {
+    ) -> std::option::Option<f32> {
         let output: std::option::Option<f32> = bevy::math::bounding::RayCast3d::aabb_intersection_at(
                 &_self,
                 &aabb,
@@ -3106,21 +4385,30 @@ impl bevy::math::bounding::RayCast3d {
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::bounding::RayCast3d>) {
+    fn clone(
+        _self: Ref<bevy::math::bounding::RayCast3d>,
+    ) -> Val<bevy::math::bounding::RayCast3d> {
         let output: Val<bevy::math::bounding::RayCast3d> = <bevy::math::bounding::RayCast3d as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn direction_recip(_self: Ref<bevy::math::bounding::RayCast3d>) {
+    ///  Get the cached multiplicative inverse of the direction of the ray.
+    fn direction_recip(
+        _self: Ref<bevy::math::bounding::RayCast3d>,
+    ) -> Val<bevy::math::Vec3A> {
         let output: Val<bevy::math::Vec3A> = bevy::math::bounding::RayCast3d::direction_recip(
                 &_self,
             )
             .into();
         output
     }
-    fn from_ray(ray: Val<bevy::math::Ray3d>, max: f32) {
+    ///  Construct a [`RayCast3d`] from a [`Ray3d`] and max distance.
+    fn from_ray(
+        ray: Val<bevy::math::Ray3d>,
+        max: f32,
+    ) -> Val<bevy::math::bounding::RayCast3d> {
         let output: Val<bevy::math::bounding::RayCast3d> = bevy::math::bounding::RayCast3d::from_ray(
                 ray.into_inner(),
                 max,
@@ -3128,10 +4416,11 @@ impl bevy::math::bounding::RayCast3d {
             .into();
         output
     }
+    ///  Get the distance of an intersection with a [`BoundingSphere`], if any.
     fn sphere_intersection_at(
         _self: Ref<bevy::math::bounding::RayCast3d>,
         sphere: Ref<bevy::math::bounding::BoundingSphere>,
-    ) {
+    ) -> std::option::Option<f32> {
         let output: std::option::Option<f32> = bevy::math::bounding::RayCast3d::sphere_intersection_at(
                 &_self,
                 &sphere,
@@ -3146,10 +4435,11 @@ impl bevy::math::bounding::RayCast3d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::bounding::AabbCast3d {
+    ///  Get the distance at which the [`Aabb3d`]s collide, if at all.
     fn aabb_collision_at(
         _self: Ref<bevy::math::bounding::AabbCast3d>,
         aabb: Val<bevy::math::bounding::Aabb3d>,
-    ) {
+    ) -> std::option::Option<f32> {
         let output: std::option::Option<f32> = bevy::math::bounding::AabbCast3d::aabb_collision_at(
                 &_self,
                 aabb.into_inner(),
@@ -3157,18 +4447,21 @@ impl bevy::math::bounding::AabbCast3d {
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::bounding::AabbCast3d>) {
+    fn clone(
+        _self: Ref<bevy::math::bounding::AabbCast3d>,
+    ) -> Val<bevy::math::bounding::AabbCast3d> {
         let output: Val<bevy::math::bounding::AabbCast3d> = <bevy::math::bounding::AabbCast3d as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
+    ///  Construct an [`AabbCast3d`] from an [`Aabb3d`], [`Ray3d`], and max distance.
     fn from_ray(
         aabb: Val<bevy::math::bounding::Aabb3d>,
         ray: Val<bevy::math::Ray3d>,
         max: f32,
-    ) {
+    ) -> Val<bevy::math::bounding::AabbCast3d> {
         let output: Val<bevy::math::bounding::AabbCast3d> = bevy::math::bounding::AabbCast3d::from_ray(
                 aabb.into_inner(),
                 ray.into_inner(),
@@ -3184,18 +4477,21 @@ impl bevy::math::bounding::AabbCast3d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::bounding::BoundingSphereCast {
-    fn clone(_self: Ref<bevy::math::bounding::BoundingSphereCast>) {
+    fn clone(
+        _self: Ref<bevy::math::bounding::BoundingSphereCast>,
+    ) -> Val<bevy::math::bounding::BoundingSphereCast> {
         let output: Val<bevy::math::bounding::BoundingSphereCast> = <bevy::math::bounding::BoundingSphereCast as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
+    ///  Construct a [`BoundingSphereCast`] from a [`BoundingSphere`], [`Ray3d`], and max distance.
     fn from_ray(
         sphere: Val<bevy::math::bounding::BoundingSphere>,
         ray: Val<bevy::math::Ray3d>,
         max: f32,
-    ) {
+    ) -> Val<bevy::math::bounding::BoundingSphereCast> {
         let output: Val<bevy::math::bounding::BoundingSphereCast> = bevy::math::bounding::BoundingSphereCast::from_ray(
                 sphere.into_inner(),
                 ray.into_inner(),
@@ -3204,10 +4500,11 @@ impl bevy::math::bounding::BoundingSphereCast {
             .into();
         output
     }
+    ///  Get the distance at which the [`BoundingSphere`]s collide, if at all.
     fn sphere_collision_at(
         _self: Ref<bevy::math::bounding::BoundingSphereCast>,
         sphere: Val<bevy::math::bounding::BoundingSphere>,
-    ) {
+    ) -> std::option::Option<f32> {
         let output: std::option::Option<f32> = bevy::math::bounding::BoundingSphereCast::sphere_collision_at(
                 &_self,
                 sphere.into_inner(),
@@ -3222,7 +4519,8 @@ impl bevy::math::bounding::BoundingSphereCast {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::curve::interval::Interval {
-    fn clamp(_self: Val<bevy::math::curve::interval::Interval>, value: f32) {
+    ///  Clamp the given `value` to lie within this interval.
+    fn clamp(_self: Val<bevy::math::curve::interval::Interval>, value: f32) -> f32 {
         let output: f32 = bevy::math::curve::interval::Interval::clamp(
                 _self.into_inner(),
                 value,
@@ -3230,14 +4528,17 @@ impl bevy::math::curve::interval::Interval {
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::curve::interval::Interval>) {
+    fn clone(
+        _self: Ref<bevy::math::curve::interval::Interval>,
+    ) -> Val<bevy::math::curve::interval::Interval> {
         let output: Val<bevy::math::curve::interval::Interval> = <bevy::math::curve::interval::Interval as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn contains(_self: Val<bevy::math::curve::interval::Interval>, item: f32) {
+    ///  Returns `true` if `item` is contained in this interval.
+    fn contains(_self: Val<bevy::math::curve::interval::Interval>, item: f32) -> bool {
         let output: bool = bevy::math::curve::interval::Interval::contains(
                 _self.into_inner(),
                 item,
@@ -3245,10 +4546,12 @@ impl bevy::math::curve::interval::Interval {
             .into();
         output
     }
+    ///  Returns `true` if the other interval is contained in this interval.
+    ///  This is non-strict: each interval will contain itself.
     fn contains_interval(
         _self: Val<bevy::math::curve::interval::Interval>,
         other: Val<bevy::math::curve::interval::Interval>,
-    ) {
+    ) -> bool {
         let output: bool = bevy::math::curve::interval::Interval::contains_interval(
                 _self.into_inner(),
                 other.into_inner(),
@@ -3256,7 +4559,8 @@ impl bevy::math::curve::interval::Interval {
             .into();
         output
     }
-    fn end(_self: Val<bevy::math::curve::interval::Interval>) {
+    ///  Get the end of this interval.
+    fn end(_self: Val<bevy::math::curve::interval::Interval>) -> f32 {
         let output: f32 = bevy::math::curve::interval::Interval::end(_self.into_inner())
             .into();
         output
@@ -3264,42 +4568,48 @@ impl bevy::math::curve::interval::Interval {
     fn eq(
         _self: Ref<bevy::math::curve::interval::Interval>,
         other: Ref<bevy::math::curve::interval::Interval>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::curve::interval::Interval as std::cmp::PartialEq<
             bevy::math::curve::interval::Interval,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn has_finite_end(_self: Val<bevy::math::curve::interval::Interval>) {
+    ///  Returns `true` if this interval has a finite end.
+    fn has_finite_end(_self: Val<bevy::math::curve::interval::Interval>) -> bool {
         let output: bool = bevy::math::curve::interval::Interval::has_finite_end(
                 _self.into_inner(),
             )
             .into();
         output
     }
-    fn has_finite_start(_self: Val<bevy::math::curve::interval::Interval>) {
+    ///  Returns `true` if this interval has a finite start.
+    fn has_finite_start(_self: Val<bevy::math::curve::interval::Interval>) -> bool {
         let output: bool = bevy::math::curve::interval::Interval::has_finite_start(
                 _self.into_inner(),
             )
             .into();
         output
     }
-    fn is_bounded(_self: Val<bevy::math::curve::interval::Interval>) {
+    ///  Returns `true` if this interval is bounded — that is, if both its start and end are finite.
+    ///  Equivalently, an interval is bounded if its length is finite.
+    fn is_bounded(_self: Val<bevy::math::curve::interval::Interval>) -> bool {
         let output: bool = bevy::math::curve::interval::Interval::is_bounded(
                 _self.into_inner(),
             )
             .into();
         output
     }
-    fn length(_self: Val<bevy::math::curve::interval::Interval>) {
+    ///  Get the length of this interval. Note that the result may be infinite (`f32::INFINITY`).
+    fn length(_self: Val<bevy::math::curve::interval::Interval>) -> f32 {
         let output: f32 = bevy::math::curve::interval::Interval::length(
                 _self.into_inner(),
             )
             .into();
         output
     }
-    fn start(_self: Val<bevy::math::curve::interval::Interval>) {
+    ///  Get the start of this interval.
+    fn start(_self: Val<bevy::math::curve::interval::Interval>) -> f32 {
         let output: f32 = bevy::math::curve::interval::Interval::start(
                 _self.into_inner(),
             )
@@ -3313,49 +4623,49 @@ impl bevy::math::curve::interval::Interval {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::FloatOrd {
-    fn clone(_self: Ref<bevy::math::FloatOrd>) {
+    fn clone(_self: Ref<bevy::math::FloatOrd>) -> Val<bevy::math::FloatOrd> {
         let output: Val<bevy::math::FloatOrd> = <bevy::math::FloatOrd as std::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn eq(_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>) {
+    fn eq(_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>) -> bool {
         let output: bool = <bevy::math::FloatOrd as std::cmp::PartialEq<
             bevy::math::FloatOrd,
         >>::eq(&_self, &other)
             .into();
         output
     }
-    fn ge(_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>) {
+    fn ge(_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>) -> bool {
         let output: bool = <bevy::math::FloatOrd as std::cmp::PartialOrd<
             bevy::math::FloatOrd,
         >>::ge(&_self, &other)
             .into();
         output
     }
-    fn gt(_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>) {
+    fn gt(_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>) -> bool {
         let output: bool = <bevy::math::FloatOrd as std::cmp::PartialOrd<
             bevy::math::FloatOrd,
         >>::gt(&_self, &other)
             .into();
         output
     }
-    fn le(_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>) {
+    fn le(_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>) -> bool {
         let output: bool = <bevy::math::FloatOrd as std::cmp::PartialOrd<
             bevy::math::FloatOrd,
         >>::le(&_self, &other)
             .into();
         output
     }
-    fn lt(_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>) {
+    fn lt(_self: Ref<bevy::math::FloatOrd>, other: Ref<bevy::math::FloatOrd>) -> bool {
         let output: bool = <bevy::math::FloatOrd as std::cmp::PartialOrd<
             bevy::math::FloatOrd,
         >>::lt(&_self, &other)
             .into();
         output
     }
-    fn neg(_self: Val<bevy::math::FloatOrd>) {
+    fn neg(_self: Val<bevy::math::FloatOrd>) -> Val<bevy::math::FloatOrd> {
         let output: Val<bevy::math::FloatOrd> = <bevy::math::FloatOrd as std::ops::Neg>::neg(
                 _self.into_inner(),
             )
@@ -3369,7 +4679,9 @@ impl bevy::math::FloatOrd {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Plane3d {
-    fn clone(_self: Ref<bevy::math::primitives::Plane3d>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Plane3d>,
+    ) -> Val<bevy::math::primitives::Plane3d> {
         let output: Val<bevy::math::primitives::Plane3d> = <bevy::math::primitives::Plane3d as std::clone::Clone>::clone(
                 &_self,
             )
@@ -3379,17 +4691,20 @@ impl bevy::math::primitives::Plane3d {
     fn eq(
         _self: Ref<bevy::math::primitives::Plane3d>,
         other: Ref<bevy::math::primitives::Plane3d>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Plane3d as std::cmp::PartialEq<
             bevy::math::primitives::Plane3d,
         >>::eq(&_self, &other)
             .into();
         output
     }
+    ///  Create a new `Plane3d` from a normal and a half size
+    ///  # Panics
+    ///  Panics if the given `normal` is zero (or very close to zero), or non-finite.
     fn new(
         normal: Val<bevy::math::prelude::Vec3>,
         half_size: Val<bevy::math::prelude::Vec2>,
-    ) {
+    ) -> Val<bevy::math::primitives::Plane3d> {
         let output: Val<bevy::math::primitives::Plane3d> = bevy::math::primitives::Plane3d::new(
                 normal.into_inner(),
                 half_size.into_inner(),
@@ -3404,14 +4719,21 @@ impl bevy::math::primitives::Plane3d {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::primitives::Tetrahedron {
-    fn centroid(_self: Ref<bevy::math::primitives::Tetrahedron>) {
+    ///  Get the centroid of the tetrahedron.
+    ///  This function finds the geometric center of the tetrahedron
+    ///  by averaging the vertices: `centroid = (a + b + c + d) / 4`.
+    fn centroid(
+        _self: Ref<bevy::math::primitives::Tetrahedron>,
+    ) -> Val<bevy::math::prelude::Vec3> {
         let output: Val<bevy::math::prelude::Vec3> = bevy::math::primitives::Tetrahedron::centroid(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::primitives::Tetrahedron>) {
+    fn clone(
+        _self: Ref<bevy::math::primitives::Tetrahedron>,
+    ) -> Val<bevy::math::primitives::Tetrahedron> {
         let output: Val<bevy::math::primitives::Tetrahedron> = <bevy::math::primitives::Tetrahedron as std::clone::Clone>::clone(
                 &_self,
             )
@@ -3421,19 +4743,20 @@ impl bevy::math::primitives::Tetrahedron {
     fn eq(
         _self: Ref<bevy::math::primitives::Tetrahedron>,
         other: Ref<bevy::math::primitives::Tetrahedron>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::primitives::Tetrahedron as std::cmp::PartialEq<
             bevy::math::primitives::Tetrahedron,
         >>::eq(&_self, &other)
             .into();
         output
     }
+    ///  Create a new [`Tetrahedron`] from points `a`, `b`, `c` and `d`.
     fn new(
         a: Val<bevy::math::prelude::Vec3>,
         b: Val<bevy::math::prelude::Vec3>,
         c: Val<bevy::math::prelude::Vec3>,
         d: Val<bevy::math::prelude::Vec3>,
-    ) {
+    ) -> Val<bevy::math::primitives::Tetrahedron> {
         let output: Val<bevy::math::primitives::Tetrahedron> = bevy::math::primitives::Tetrahedron::new(
                 a.into_inner(),
                 b.into_inner(),
@@ -3443,7 +4766,11 @@ impl bevy::math::primitives::Tetrahedron {
             .into();
         output
     }
-    fn signed_volume(_self: Ref<bevy::math::primitives::Tetrahedron>) {
+    ///  Get the signed volume of the tetrahedron.
+    ///  If it's negative, the normal vector of the face defined by
+    ///  the first three points using the right-hand rule points
+    ///  away from the fourth vertex.
+    fn signed_volume(_self: Ref<bevy::math::primitives::Tetrahedron>) -> f32 {
         let output: f32 = bevy::math::primitives::Tetrahedron::signed_volume(&_self)
             .into();
         output
@@ -3455,7 +4782,9 @@ impl bevy::math::primitives::Tetrahedron {
     bms_core_path = "bevy_mod_scripting_core"
 )]
 impl bevy::math::curve::easing::EaseFunction {
-    fn clone(_self: Ref<bevy::math::curve::easing::EaseFunction>) {
+    fn clone(
+        _self: Ref<bevy::math::curve::easing::EaseFunction>,
+    ) -> Val<bevy::math::curve::easing::EaseFunction> {
         let output: Val<bevy::math::curve::easing::EaseFunction> = <bevy::math::curve::easing::EaseFunction as std::clone::Clone>::clone(
                 &_self,
             )
@@ -3465,7 +4794,7 @@ impl bevy::math::curve::easing::EaseFunction {
     fn eq(
         _self: Ref<bevy::math::curve::easing::EaseFunction>,
         other: Ref<bevy::math::curve::easing::EaseFunction>,
-    ) {
+    ) -> bool {
         let output: bool = <bevy::math::curve::easing::EaseFunction as std::cmp::PartialEq<
             bevy::math::curve::easing::EaseFunction,
         >>::eq(&_self, &other)
