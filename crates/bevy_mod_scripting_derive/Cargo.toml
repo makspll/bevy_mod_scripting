@@ -1,0 +1,23 @@
+[package]
+name = "bevy_mod_scripting_derive"
+version = "0.9.3"
+edition = "2021"
+authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
+license = "MIT OR Apache-2.0"
+description = "Necessary functionality for Lua support with bevy_mod_scripting"
+repository = "https://github.com/makspll/bevy_mod_scripting"
+homepage = "https://github.com/makspll/bevy_mod_scripting"
+keywords = ["bevy", "gamedev", "scripting", "rhai"]
+categories = ["game-development"]
+readme = "readme.md"
+
+[dependencies]
+syn = "2"
+proc-macro2 = "1"
+quote = "1"
+
+[lib]
+proc-macro = true
+
+[lints]
+workspace = true

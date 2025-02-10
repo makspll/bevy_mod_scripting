@@ -320,47 +320,63 @@ impl ScriptFunctionRegistry {
     ) where
         F: ScriptFunction<'env, M> + GetFunctionInfo<M>,
     {
-        self.register_overload(namespace, name, func, false, None::<&'static str>);
+        self.register_overload(namespace, name, func, false, None::<&'static str>, None);
     }
 
     /// Equivalent to [`ScriptFunctionRegistry::register`] but with the ability to provide documentation for the function.
     ///
     /// The docstring will be added to the function's metadata and can be accessed at runtime.
-    pub fn register_documented<F, M>(
+    pub fn register_documented<'env, F, M>(
         &mut self,
         namespace: Namespace,
         name: impl Into<Cow<'static, str>>,
         func: F,
         docs: &'static str,
     ) where
-        F: ScriptFunction<'static, M> + GetFunctionInfo<M>,
+        F: ScriptFunction<'env, M> + GetFunctionInfo<M>,
     {
-        self.register_overload(namespace, name, func, false, Some(docs));
+        self.register_overload(namespace, name, func, false, Some(docs), None);
+    }
+
+    /// Equivalent to [`ScriptFunctionRegistry::register`] but with the ability to provide argument names for the function as well as documentation.
+    ///
+    /// The argument names and docstring will be added to the function's metadata and can be accessed at runtime.
+    pub fn register_with_arg_names<'env, F, M>(
+        &mut self,
+        namespace: Namespace,
+        name: impl Into<Cow<'static, str>>,
+        func: F,
+        docs: &'static str,
+        arg_names: &'static [&'static str],
+    ) where
+        F: ScriptFunction<'env, M> + GetFunctionInfo<M>,
+    {
+        self.register_overload(namespace, name, func, false, Some(docs), Some(arg_names));
     }
 
     /// Overwrite a function with the given name. If the function does not exist, it will be registered as a new function.
-    pub fn overwrite<F, M>(
+    pub fn overwrite<'env, F, M>(
         &mut self,
         namespace: Namespace,
         name: impl Into<Cow<'static, str>>,
         func: F,
     ) where
-        F: ScriptFunction<'static, M> + GetFunctionInfo<M>,
+        F: ScriptFunction<'env, M> + GetFunctionInfo<M>,
     {
-        self.register_overload(namespace, name, func, true, None::<&'static str>);
+        self.register_overload(namespace, name, func, true, None::<&'static str>, None);
     }
 
     /// Equivalent to [`ScriptFunctionRegistry::overwrite`] but with the ability to provide documentation for the function.
-    pub fn overwrite_documented<F, M>(
+    pub fn overwrite_documented<'env, F, M>(
         &mut self,
         namespace: Namespace,
         name: impl Into<Cow<'static, str>>,
         func: F,
         docs: &'static str,
     ) where
-        F: ScriptFunction<'static, M> + GetFunctionInfo<M>,
+        F: ScriptFunction<'env, M> + GetFunctionInfo<M>,
     {
-        self.register_overload(namespace, name, func, true, Some(docs));
+        self.register_overload(namespace, name, func, true, Some(docs), None);
     }
 
     /// Remove a function from the registry if it exists. Returns the removed function if it was found.
@@ -401,6 +417,7 @@ impl ScriptFunctionRegistry {
         func: F,
         overwrite: bool,
         docs: Option<impl Into<Cow<'static, str>>>,
+        arg_names: Option<&'static [&'static str]>,
     ) where
         F: ScriptFunction<'env, M> + GetFunctionInfo<M>,
     {
@@ -411,6 +428,10 @@ impl ScriptFunctionRegistry {
             let info = func.get_function_info(name.clone(), namespace);
             let info = match docs {
                 Some(docs) => info.with_docs(docs.into()),
+                None => info,
+            };
+            let info = match arg_names {
+                Some(arg_names) => info.with_arg_names(arg_names),
                 None => info,
             };
             let func = func.into_dynamic_script_function().with_info(info);

@@ -54,6 +54,10 @@ name = "bevy_mod_scripting_core"
 version_group = "main"
 
 [[package]]
+name = "bevy_mod_scripting_derive"
+version_group = "main"
+
+[[package]]
 name = "bevy_mod_scripting_rhai"
 version_group = "main"
 
