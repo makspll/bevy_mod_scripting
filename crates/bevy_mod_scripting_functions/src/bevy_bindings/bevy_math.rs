@@ -12,7 +12,11 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 use crate::*;
 pub struct BevyMathScriptingPlugin;
-#[script_bindings(remote, name = "aspect_ratio")]
+#[script_bindings(
+    remote,
+    name = "aspect_ratio",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::AspectRatio {
     fn clone(_self: Ref<bevy::math::AspectRatio>) {
         let output: Val<bevy::math::AspectRatio> = <bevy::math::AspectRatio as std::clone::Clone>::clone(
@@ -52,7 +56,11 @@ impl bevy::math::AspectRatio {
         output
     }
 }
-#[script_bindings(remote, name = "compass_octant")]
+#[script_bindings(
+    remote,
+    name = "compass_octant",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::CompassOctant {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::math::CompassOctant>) {
         let output: () = <bevy::math::CompassOctant as std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -76,7 +84,11 @@ impl bevy::math::CompassOctant {
         output
     }
 }
-#[script_bindings(remote, name = "compass_quadrant")]
+#[script_bindings(
+    remote,
+    name = "compass_quadrant",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::CompassQuadrant {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::math::CompassQuadrant>) {
         let output: () = <bevy::math::CompassQuadrant as std::cmp::Eq>::assert_receiver_is_total_eq(
@@ -103,7 +115,11 @@ impl bevy::math::CompassQuadrant {
         output
     }
 }
-#[script_bindings(remote, name = "isometry_2_d")]
+#[script_bindings(
+    remote,
+    name = "isometry_2_d",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::Isometry2d {
     fn clone(_self: Ref<bevy::math::Isometry2d>) {
         let output: Val<bevy::math::Isometry2d> = <bevy::math::Isometry2d as std::clone::Clone>::clone(
@@ -209,7 +225,11 @@ impl bevy::math::Isometry2d {
         output
     }
 }
-#[script_bindings(remote, name = "isometry_3_d")]
+#[script_bindings(
+    remote,
+    name = "isometry_3_d",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::Isometry3d {
     fn clone(_self: Ref<bevy::math::Isometry3d>) {
         let output: Val<bevy::math::Isometry3d> = <bevy::math::Isometry3d as std::clone::Clone>::clone(
@@ -286,7 +306,7 @@ impl bevy::math::Isometry3d {
         output
     }
 }
-#[script_bindings(remote, name = "ray_2_d")]
+#[script_bindings(remote, name = "ray_2_d", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::Ray2d {
     fn clone(_self: Ref<bevy::math::Ray2d>) {
         let output: Val<bevy::math::Ray2d> = <bevy::math::Ray2d as std::clone::Clone>::clone(
@@ -335,7 +355,7 @@ impl bevy::math::Ray2d {
         output
     }
 }
-#[script_bindings(remote, name = "ray_3_d")]
+#[script_bindings(remote, name = "ray_3_d", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::Ray3d {
     fn clone(_self: Ref<bevy::math::Ray3d>) {
         let output: Val<bevy::math::Ray3d> = <bevy::math::Ray3d as std::clone::Clone>::clone(
@@ -384,7 +404,7 @@ impl bevy::math::Ray3d {
         output
     }
 }
-#[script_bindings(remote, name = "rot_2")]
+#[script_bindings(remote, name = "rot_2", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::Rot2 {
     fn angle_between(_self: Val<bevy::math::Rot2>, other: Val<bevy::math::Rot2>) {
         let output: f32 = bevy::math::Rot2::angle_between(
@@ -537,7 +557,7 @@ impl bevy::math::Rot2 {
         output
     }
 }
-#[script_bindings(remote, name = "dir_2")]
+#[script_bindings(remote, name = "dir_2", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::prelude::Dir2 {
     fn as_vec2(_self: Ref<bevy::math::prelude::Dir2>) {
         let output: Val<bevy::math::prelude::Vec2> = bevy::math::prelude::Dir2::as_vec2(
@@ -660,7 +680,7 @@ impl bevy::math::prelude::Dir2 {
         output
     }
 }
-#[script_bindings(remote, name = "dir_3")]
+#[script_bindings(remote, name = "dir_3", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::prelude::Dir3 {
     fn as_vec3(_self: Ref<bevy::math::prelude::Dir3>) {
         let output: Val<bevy::math::prelude::Vec3> = bevy::math::prelude::Dir3::as_vec3(
@@ -734,7 +754,7 @@ impl bevy::math::prelude::Dir3 {
         output
     }
 }
-#[script_bindings(remote, name = "dir_3_a")]
+#[script_bindings(remote, name = "dir_3_a", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::prelude::Dir3A {
     fn as_vec3a(_self: Ref<bevy::math::prelude::Dir3A>) {
         let output: Val<bevy::math::Vec3A> = bevy::math::prelude::Dir3A::as_vec3a(&_self)
@@ -809,7 +829,7 @@ impl bevy::math::prelude::Dir3A {
         output
     }
 }
-#[script_bindings(remote, name = "i_rect")]
+#[script_bindings(remote, name = "i_rect", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::prelude::IRect {
     fn as_rect(_self: Ref<bevy::math::prelude::IRect>) {
         let output: Val<bevy::math::prelude::Rect> = bevy::math::prelude::IRect::as_rect(
@@ -978,7 +998,7 @@ impl bevy::math::prelude::IRect {
         output
     }
 }
-#[script_bindings(remote, name = "rect")]
+#[script_bindings(remote, name = "rect", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::prelude::Rect {
     fn as_irect(_self: Ref<bevy::math::prelude::Rect>) {
         let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::Rect::as_irect(
@@ -1148,7 +1168,7 @@ impl bevy::math::prelude::Rect {
         output
     }
 }
-#[script_bindings(remote, name = "u_rect")]
+#[script_bindings(remote, name = "u_rect", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::prelude::URect {
     fn as_irect(_self: Ref<bevy::math::prelude::URect>) {
         let output: Val<bevy::math::prelude::IRect> = bevy::math::prelude::URect::as_irect(
@@ -1317,9 +1337,9 @@ impl bevy::math::prelude::URect {
         output
     }
 }
-#[script_bindings(remote, name = "affine_3")]
+#[script_bindings(remote, name = "affine_3", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::Affine3 {}
-#[script_bindings(remote, name = "aabb_2_d")]
+#[script_bindings(remote, name = "aabb_2_d", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::bounding::Aabb2d {
     fn bounding_circle(_self: Ref<bevy::math::bounding::Aabb2d>) {
         let output: Val<bevy::math::bounding::BoundingCircle> = bevy::math::bounding::Aabb2d::bounding_circle(
@@ -1358,7 +1378,11 @@ impl bevy::math::bounding::Aabb2d {
         output
     }
 }
-#[script_bindings(remote, name = "bounding_circle")]
+#[script_bindings(
+    remote,
+    name = "bounding_circle",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::bounding::BoundingCircle {
     fn aabb_2d(_self: Ref<bevy::math::bounding::BoundingCircle>) {
         let output: Val<bevy::math::bounding::Aabb2d> = bevy::math::bounding::BoundingCircle::aabb_2d(
@@ -1398,7 +1422,7 @@ impl bevy::math::bounding::BoundingCircle {
         output
     }
 }
-#[script_bindings(remote, name = "circle")]
+#[script_bindings(remote, name = "circle", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::primitives::Circle {
     fn clone(_self: Ref<bevy::math::primitives::Circle>) {
         let output: Val<bevy::math::primitives::Circle> = <bevy::math::primitives::Circle as std::clone::Clone>::clone(
@@ -1440,7 +1464,7 @@ impl bevy::math::primitives::Circle {
         output
     }
 }
-#[script_bindings(remote, name = "annulus")]
+#[script_bindings(remote, name = "annulus", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::primitives::Annulus {
     fn clone(_self: Ref<bevy::math::primitives::Annulus>) {
         let output: Val<bevy::math::primitives::Annulus> = <bevy::math::primitives::Annulus as std::clone::Clone>::clone(
@@ -1487,7 +1511,7 @@ impl bevy::math::primitives::Annulus {
         output
     }
 }
-#[script_bindings(remote, name = "arc_2_d")]
+#[script_bindings(remote, name = "arc_2_d", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::primitives::Arc2d {
     fn angle(_self: Ref<bevy::math::primitives::Arc2d>) {
         let output: f32 = bevy::math::primitives::Arc2d::angle(&_self).into();
@@ -1600,7 +1624,11 @@ impl bevy::math::primitives::Arc2d {
         output
     }
 }
-#[script_bindings(remote, name = "capsule_2_d")]
+#[script_bindings(
+    remote,
+    name = "capsule_2_d",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::primitives::Capsule2d {
     fn clone(_self: Ref<bevy::math::primitives::Capsule2d>) {
         let output: Val<bevy::math::primitives::Capsule2d> = <bevy::math::primitives::Capsule2d as std::clone::Clone>::clone(
@@ -1635,7 +1663,11 @@ impl bevy::math::primitives::Capsule2d {
         output
     }
 }
-#[script_bindings(remote, name = "circular_sector")]
+#[script_bindings(
+    remote,
+    name = "circular_sector",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::primitives::CircularSector {
     fn angle(_self: Ref<bevy::math::primitives::CircularSector>) {
         let output: f32 = bevy::math::primitives::CircularSector::angle(&_self).into();
@@ -1732,7 +1764,11 @@ impl bevy::math::primitives::CircularSector {
         output
     }
 }
-#[script_bindings(remote, name = "circular_segment")]
+#[script_bindings(
+    remote,
+    name = "circular_segment",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::primitives::CircularSegment {
     fn angle(_self: Ref<bevy::math::primitives::CircularSegment>) {
         let output: f32 = bevy::math::primitives::CircularSegment::angle(&_self).into();
@@ -1831,7 +1867,7 @@ impl bevy::math::primitives::CircularSegment {
         output
     }
 }
-#[script_bindings(remote, name = "ellipse")]
+#[script_bindings(remote, name = "ellipse", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::primitives::Ellipse {
     fn clone(_self: Ref<bevy::math::primitives::Ellipse>) {
         let output: Val<bevy::math::primitives::Ellipse> = <bevy::math::primitives::Ellipse as std::clone::Clone>::clone(
@@ -1882,7 +1918,7 @@ impl bevy::math::primitives::Ellipse {
         output
     }
 }
-#[script_bindings(remote, name = "line_2_d")]
+#[script_bindings(remote, name = "line_2_d", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::primitives::Line2d {
     fn clone(_self: Ref<bevy::math::primitives::Line2d>) {
         let output: Val<bevy::math::primitives::Line2d> = <bevy::math::primitives::Line2d as std::clone::Clone>::clone(
@@ -1902,7 +1938,7 @@ impl bevy::math::primitives::Line2d {
         output
     }
 }
-#[script_bindings(remote, name = "plane_2_d")]
+#[script_bindings(remote, name = "plane_2_d", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::primitives::Plane2d {
     fn clone(_self: Ref<bevy::math::primitives::Plane2d>) {
         let output: Val<bevy::math::primitives::Plane2d> = <bevy::math::primitives::Plane2d as std::clone::Clone>::clone(
@@ -1929,7 +1965,7 @@ impl bevy::math::primitives::Plane2d {
         output
     }
 }
-#[script_bindings(remote, name = "rectangle")]
+#[script_bindings(remote, name = "rectangle", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::primitives::Rectangle {
     fn clone(_self: Ref<bevy::math::primitives::Rectangle>) {
         let output: Val<bevy::math::primitives::Rectangle> = <bevy::math::primitives::Rectangle as std::clone::Clone>::clone(
@@ -2000,7 +2036,11 @@ impl bevy::math::primitives::Rectangle {
         output
     }
 }
-#[script_bindings(remote, name = "regular_polygon")]
+#[script_bindings(
+    remote,
+    name = "regular_polygon",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::primitives::RegularPolygon {
     fn circumradius(_self: Ref<bevy::math::primitives::RegularPolygon>) {
         let output: f32 = bevy::math::primitives::RegularPolygon::circumradius(&_self)
@@ -2071,7 +2111,7 @@ impl bevy::math::primitives::RegularPolygon {
         output
     }
 }
-#[script_bindings(remote, name = "rhombus")]
+#[script_bindings(remote, name = "rhombus", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::primitives::Rhombus {
     fn circumradius(_self: Ref<bevy::math::primitives::Rhombus>) {
         let output: f32 = bevy::math::primitives::Rhombus::circumradius(&_self).into();
@@ -2136,7 +2176,11 @@ impl bevy::math::primitives::Rhombus {
         output
     }
 }
-#[script_bindings(remote, name = "segment_2_d")]
+#[script_bindings(
+    remote,
+    name = "segment_2_d",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::primitives::Segment2d {
     fn clone(_self: Ref<bevy::math::primitives::Segment2d>) {
         let output: Val<bevy::math::primitives::Segment2d> = <bevy::math::primitives::Segment2d as std::clone::Clone>::clone(
@@ -2178,7 +2222,11 @@ impl bevy::math::primitives::Segment2d {
         output
     }
 }
-#[script_bindings(remote, name = "triangle_2_d")]
+#[script_bindings(
+    remote,
+    name = "triangle_2_d",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::primitives::Triangle2d {
     fn clone(_self: Ref<bevy::math::primitives::Triangle2d>) {
         let output: Val<bevy::math::primitives::Triangle2d> = <bevy::math::primitives::Triangle2d as std::clone::Clone>::clone(
@@ -2235,7 +2283,7 @@ impl bevy::math::primitives::Triangle2d {
         output
     }
 }
-#[script_bindings(remote, name = "aabb_3_d")]
+#[script_bindings(remote, name = "aabb_3_d", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::bounding::Aabb3d {
     fn bounding_sphere(_self: Ref<bevy::math::bounding::Aabb3d>) {
         let output: Val<bevy::math::bounding::BoundingSphere> = bevy::math::bounding::Aabb3d::bounding_sphere(
@@ -2252,7 +2300,11 @@ impl bevy::math::bounding::Aabb3d {
         output
     }
 }
-#[script_bindings(remote, name = "bounding_sphere")]
+#[script_bindings(
+    remote,
+    name = "bounding_sphere",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::bounding::BoundingSphere {
     fn aabb_3d(_self: Ref<bevy::math::bounding::BoundingSphere>) {
         let output: Val<bevy::math::bounding::Aabb3d> = bevy::math::bounding::BoundingSphere::aabb_3d(
@@ -2273,7 +2325,7 @@ impl bevy::math::bounding::BoundingSphere {
         output
     }
 }
-#[script_bindings(remote, name = "sphere")]
+#[script_bindings(remote, name = "sphere", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::primitives::Sphere {
     fn clone(_self: Ref<bevy::math::primitives::Sphere>) {
         let output: Val<bevy::math::primitives::Sphere> = <bevy::math::primitives::Sphere as std::clone::Clone>::clone(
@@ -2315,7 +2367,7 @@ impl bevy::math::primitives::Sphere {
         output
     }
 }
-#[script_bindings(remote, name = "cuboid")]
+#[script_bindings(remote, name = "cuboid", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::primitives::Cuboid {
     fn clone(_self: Ref<bevy::math::primitives::Cuboid>) {
         let output: Val<bevy::math::primitives::Cuboid> = <bevy::math::primitives::Cuboid as std::clone::Clone>::clone(
@@ -2387,7 +2439,7 @@ impl bevy::math::primitives::Cuboid {
         output
     }
 }
-#[script_bindings(remote, name = "cylinder")]
+#[script_bindings(remote, name = "cylinder", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::primitives::Cylinder {
     fn base(_self: Ref<bevy::math::primitives::Cylinder>) {
         let output: Val<bevy::math::primitives::Circle> = bevy::math::primitives::Cylinder::base(
@@ -2430,7 +2482,11 @@ impl bevy::math::primitives::Cylinder {
         output
     }
 }
-#[script_bindings(remote, name = "capsule_3_d")]
+#[script_bindings(
+    remote,
+    name = "capsule_3_d",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::primitives::Capsule3d {
     fn clone(_self: Ref<bevy::math::primitives::Capsule3d>) {
         let output: Val<bevy::math::primitives::Capsule3d> = <bevy::math::primitives::Capsule3d as std::clone::Clone>::clone(
@@ -2465,7 +2521,7 @@ impl bevy::math::primitives::Capsule3d {
         output
     }
 }
-#[script_bindings(remote, name = "cone")]
+#[script_bindings(remote, name = "cone", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::primitives::Cone {
     fn base(_self: Ref<bevy::math::primitives::Cone>) {
         let output: Val<bevy::math::primitives::Circle> = bevy::math::primitives::Cone::base(
@@ -2512,7 +2568,11 @@ impl bevy::math::primitives::Cone {
         output
     }
 }
-#[script_bindings(remote, name = "conical_frustum")]
+#[script_bindings(
+    remote,
+    name = "conical_frustum",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::primitives::ConicalFrustum {
     fn clone(_self: Ref<bevy::math::primitives::ConicalFrustum>) {
         let output: Val<bevy::math::primitives::ConicalFrustum> = <bevy::math::primitives::ConicalFrustum as std::clone::Clone>::clone(
@@ -2532,7 +2592,11 @@ impl bevy::math::primitives::ConicalFrustum {
         output
     }
 }
-#[script_bindings(remote, name = "infinite_plane_3_d")]
+#[script_bindings(
+    remote,
+    name = "infinite_plane_3_d",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::primitives::InfinitePlane3d {
     fn clone(_self: Ref<bevy::math::primitives::InfinitePlane3d>) {
         let output: Val<bevy::math::primitives::InfinitePlane3d> = <bevy::math::primitives::InfinitePlane3d as std::clone::Clone>::clone(
@@ -2574,7 +2638,7 @@ impl bevy::math::primitives::InfinitePlane3d {
         output
     }
 }
-#[script_bindings(remote, name = "line_3_d")]
+#[script_bindings(remote, name = "line_3_d", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::primitives::Line3d {
     fn clone(_self: Ref<bevy::math::primitives::Line3d>) {
         let output: Val<bevy::math::primitives::Line3d> = <bevy::math::primitives::Line3d as std::clone::Clone>::clone(
@@ -2594,7 +2658,11 @@ impl bevy::math::primitives::Line3d {
         output
     }
 }
-#[script_bindings(remote, name = "segment_3_d")]
+#[script_bindings(
+    remote,
+    name = "segment_3_d",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::primitives::Segment3d {
     fn clone(_self: Ref<bevy::math::primitives::Segment3d>) {
         let output: Val<bevy::math::primitives::Segment3d> = <bevy::math::primitives::Segment3d as std::clone::Clone>::clone(
@@ -2636,7 +2704,7 @@ impl bevy::math::primitives::Segment3d {
         output
     }
 }
-#[script_bindings(remote, name = "torus")]
+#[script_bindings(remote, name = "torus", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::primitives::Torus {
     fn clone(_self: Ref<bevy::math::primitives::Torus>) {
         let output: Val<bevy::math::primitives::Torus> = <bevy::math::primitives::Torus as std::clone::Clone>::clone(
@@ -2672,7 +2740,11 @@ impl bevy::math::primitives::Torus {
         output
     }
 }
-#[script_bindings(remote, name = "triangle_3_d")]
+#[script_bindings(
+    remote,
+    name = "triangle_3_d",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::primitives::Triangle3d {
     fn centroid(_self: Ref<bevy::math::primitives::Triangle3d>) {
         let output: Val<bevy::math::prelude::Vec3> = bevy::math::primitives::Triangle3d::centroid(
@@ -2743,7 +2815,11 @@ impl bevy::math::primitives::Triangle3d {
         output
     }
 }
-#[script_bindings(remote, name = "ray_cast_2_d")]
+#[script_bindings(
+    remote,
+    name = "ray_cast_2_d",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::bounding::RayCast2d {
     fn aabb_intersection_at(
         _self: Ref<bevy::math::bounding::RayCast2d>,
@@ -2803,7 +2879,11 @@ impl bevy::math::bounding::RayCast2d {
         output
     }
 }
-#[script_bindings(remote, name = "aabb_cast_2_d")]
+#[script_bindings(
+    remote,
+    name = "aabb_cast_2_d",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::bounding::AabbCast2d {
     fn aabb_collision_at(
         _self: Ref<bevy::math::bounding::AabbCast2d>,
@@ -2852,7 +2932,11 @@ impl bevy::math::bounding::AabbCast2d {
         output
     }
 }
-#[script_bindings(remote, name = "bounding_circle_cast")]
+#[script_bindings(
+    remote,
+    name = "bounding_circle_cast",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::bounding::BoundingCircleCast {
     fn circle_collision_at(
         _self: Ref<bevy::math::bounding::BoundingCircleCast>,
@@ -2901,7 +2985,11 @@ impl bevy::math::bounding::BoundingCircleCast {
         output
     }
 }
-#[script_bindings(remote, name = "ray_cast_3_d")]
+#[script_bindings(
+    remote,
+    name = "ray_cast_3_d",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::bounding::RayCast3d {
     fn aabb_intersection_at(
         _self: Ref<bevy::math::bounding::RayCast3d>,
@@ -2948,7 +3036,11 @@ impl bevy::math::bounding::RayCast3d {
         output
     }
 }
-#[script_bindings(remote, name = "aabb_cast_3_d")]
+#[script_bindings(
+    remote,
+    name = "aabb_cast_3_d",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::bounding::AabbCast3d {
     fn aabb_collision_at(
         _self: Ref<bevy::math::bounding::AabbCast3d>,
@@ -2982,7 +3074,11 @@ impl bevy::math::bounding::AabbCast3d {
         output
     }
 }
-#[script_bindings(remote, name = "bounding_sphere_cast")]
+#[script_bindings(
+    remote,
+    name = "bounding_sphere_cast",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::bounding::BoundingSphereCast {
     fn clone(_self: Ref<bevy::math::bounding::BoundingSphereCast>) {
         let output: Val<bevy::math::bounding::BoundingSphereCast> = <bevy::math::bounding::BoundingSphereCast as std::clone::Clone>::clone(
@@ -3016,7 +3112,7 @@ impl bevy::math::bounding::BoundingSphereCast {
         output
     }
 }
-#[script_bindings(remote, name = "interval")]
+#[script_bindings(remote, name = "interval", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::curve::interval::Interval {
     fn clamp(_self: Val<bevy::math::curve::interval::Interval>, value: f32) {
         let output: f32 = bevy::math::curve::interval::Interval::clamp(
@@ -3103,7 +3199,7 @@ impl bevy::math::curve::interval::Interval {
         output
     }
 }
-#[script_bindings(remote, name = "float_ord")]
+#[script_bindings(remote, name = "float_ord", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::FloatOrd {
     fn clone(_self: Ref<bevy::math::FloatOrd>) {
         let output: Val<bevy::math::FloatOrd> = <bevy::math::FloatOrd as std::clone::Clone>::clone(
@@ -3155,7 +3251,7 @@ impl bevy::math::FloatOrd {
         output
     }
 }
-#[script_bindings(remote, name = "plane_3_d")]
+#[script_bindings(remote, name = "plane_3_d", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::math::primitives::Plane3d {
     fn clone(_self: Ref<bevy::math::primitives::Plane3d>) {
         let output: Val<bevy::math::primitives::Plane3d> = <bevy::math::primitives::Plane3d as std::clone::Clone>::clone(
@@ -3186,7 +3282,11 @@ impl bevy::math::primitives::Plane3d {
         output
     }
 }
-#[script_bindings(remote, name = "tetrahedron")]
+#[script_bindings(
+    remote,
+    name = "tetrahedron",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::primitives::Tetrahedron {
     fn centroid(_self: Ref<bevy::math::primitives::Tetrahedron>) {
         let output: Val<bevy::math::prelude::Vec3> = bevy::math::primitives::Tetrahedron::centroid(
@@ -3233,7 +3333,11 @@ impl bevy::math::primitives::Tetrahedron {
         output
     }
 }
-#[script_bindings(remote, name = "ease_function")]
+#[script_bindings(
+    remote,
+    name = "ease_function",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::math::curve::easing::EaseFunction {
     fn clone(_self: Ref<bevy::math::curve::easing::EaseFunction>) {
         let output: Val<bevy::math::curve::easing::EaseFunction> = <bevy::math::curve::easing::EaseFunction as std::clone::Clone>::clone(

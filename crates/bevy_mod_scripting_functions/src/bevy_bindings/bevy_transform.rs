@@ -12,7 +12,11 @@ use bevy_mod_scripting_core::bindings::{
 use bevy_mod_scripting_derive::script_bindings;
 use crate::*;
 pub struct BevyTransformScriptingPlugin;
-#[script_bindings(remote, name = "global_transform")]
+#[script_bindings(
+    remote,
+    name = "global_transform",
+    bms_core_path = "bevy_mod_scripting_core"
+)]
 impl bevy::transform::components::GlobalTransform {
     fn affine(_self: Ref<bevy::transform::components::GlobalTransform>) {
         let output: Val<bevy::math::Affine3A> = bevy::transform::components::GlobalTransform::affine(
@@ -241,7 +245,7 @@ impl bevy::transform::components::GlobalTransform {
         output
     }
 }
-#[script_bindings(remote, name = "transform")]
+#[script_bindings(remote, name = "transform", bms_core_path = "bevy_mod_scripting_core")]
 impl bevy::transform::components::Transform {
     fn back(_self: Ref<bevy::transform::components::Transform>) {
         let output: Val<bevy::math::Dir3> = bevy::transform::components::Transform::back(
