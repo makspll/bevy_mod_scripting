@@ -1,7 +1,9 @@
 //! Contains functions defined by the [`bevy_mod_scripting_core`] crate
 
 use bevy::{prelude::*, reflect::ParsedPath};
-use bevy_mod_scripting_core::*;
+use bevy_mod_scripting_core::{
+    bindings::function::script_function::DynamicScriptFunctionMut, docgen::info::FunctionInfo, *,
+};
 use bevy_mod_scripting_derive::script_bindings;
 use bindings::{
     function::{
@@ -31,7 +33,10 @@ pub fn register_bevy_bindings(app: &mut App) {
     unregistered
 )]
 impl World {
-    fn get_type_by_name(ctxt: FunctionCallContext, type_name: String) -> Option<ReflectReference> {
+    fn get_type_by_name(
+        ctxt: FunctionCallContext,
+        type_name: String,
+    ) -> Result<Option<ReflectReference>, InteropError> {
         profiling::function_scope!("get_type_by_name");
         let world = ctxt.world()?;
         let val = world.get_type_by_name(type_name);
@@ -249,10 +254,7 @@ impl World {
     unregistered
 )]
 impl ReflectReference {
-    fn display_ref(
-        ctxt: FunctionCallContext,
-        s: ReflectReference,
-    ) -> Result<ScriptValue, InteropError> {
+    fn display_ref(ctxt: FunctionCallContext, s: ReflectReference) -> Result<String, InteropError> {
         profiling::function_scope!("display_ref");
         let world = ctxt.world()?;
         Ok(s.display_with_world(world))
@@ -261,7 +263,7 @@ impl ReflectReference {
     fn display_value(
         ctxt: FunctionCallContext,
         s: ReflectReference,
-    ) -> Result<ScriptValue, InteropError> {
+    ) -> Result<String, InteropError> {
         profiling::function_scope!("display_value");
         let world = ctxt.world()?;
         Ok(s.display_value_with_world(world))
@@ -321,7 +323,7 @@ impl ReflectReference {
         ctxt: FunctionCallContext,
         s: ReflectReference,
         v: ScriptValue,
-    ) -> Result<ScriptValue, InteropError> {
+    ) -> Result<(), InteropError> {
         profiling::function_scope!("push");
         let world = ctxt.world()?;
         let target_type_id = s.element_type_id(world.clone())?.ok_or_else(|| {
@@ -353,7 +355,7 @@ impl ReflectReference {
         s: ReflectReference,
         k: ScriptValue,
         v: ScriptValue,
-    ) -> Result<ScriptValue, InteropError> {
+    ) -> Result<(), InteropError> {
         profiling::function_scope!("insert");
         let world = ctxt.world()?;
         let key_type_id = s.key_type_id(world.clone())?.ok_or_else(|| {
@@ -383,13 +385,13 @@ impl ReflectReference {
         s.with_reflect_mut(world, |s| s.try_insert_boxed(key, value))?
     }
 
-    fn clear(ctxt: FunctionCallContext, s: ReflectReference) -> Result<ScriptValue, InteropError> {
+    fn clear(ctxt: FunctionCallContext, s: ReflectReference) -> Result<(), InteropError> {
         profiling::function_scope!("clear");
         let world = ctxt.world()?;
         s.with_reflect_mut(world, |s| s.try_clear())?
     }
 
-    fn len(ctxt: FunctionCallContext, s: ReflectReference) -> Result<ScriptValue, InteropError> {
+    fn len(ctxt: FunctionCallContext, s: ReflectReference) -> Result<Option<usize>, InteropError> {
         profiling::function_scope!("len");
         let world = ctxt.world()?;
         s.len(world)
@@ -430,7 +432,10 @@ impl ReflectReference {
         }
     }
 
-    fn iter(ctxt: FunctionCallContext, s: ReflectReference) -> Result<ScriptValue, InteropError> {
+    fn iter(
+        ctxt: FunctionCallContext,
+        s: ReflectReference,
+    ) -> Result<DynamicScriptFunctionMut, InteropError> {
         profiling::function_scope!("iter");
         let world = ctxt.world()?;
         let mut len = s.len(world.clone())?.unwrap_or_default();
@@ -458,7 +463,7 @@ impl ReflectReference {
     fn functions(
         ctxt: FunctionCallContext,
         s: ReflectReference,
-    ) -> Result<ScriptValue, InteropError> {
+    ) -> Result<Vec<Val<FunctionInfo>>, InteropError> {
         profiling::function_scope!("functions");
         let world = ctxt.world()?;
         let type_id = s.tail_type_id(world.clone())?.or_fake_id();
@@ -481,12 +486,12 @@ impl ReflectReference {
 impl ScriptTypeRegistration {
     fn type_name(s: Ref<ScriptTypeRegistration>) -> String {
         profiling::function_scope!("type_name");
-        s.type_name()
+        s.type_name().to_string()
     }
 
     fn short_name(s: Ref<ScriptTypeRegistration>) -> String {
         profiling::function_scope!("short_name");
-        s.short_name()
+        s.short_name().to_string()
     }
 }
 
@@ -497,12 +502,12 @@ impl ScriptTypeRegistration {
     unregistered
 )]
 impl ScriptComponentRegistration {
-    fn type_name(s: Ref<ScriptComponentRegistration>) -> String {
+    fn type_name(s: Ref<ScriptComponentRegistration>) -> &'static str {
         profiling::function_scope!("type_name");
         s.type_registration().type_name()
     }
 
-    fn short_name(s: Ref<ScriptComponentRegistration>) -> String {
+    fn short_name(s: Ref<ScriptComponentRegistration>) -> &'static str {
         profiling::function_scope!("short_name");
         s.type_registration().short_name()
     }
@@ -515,12 +520,12 @@ impl ScriptComponentRegistration {
     unregistered
 )]
 impl ScriptResourceRegistration {
-    fn type_name(s: Ref<ScriptResourceRegistration>) -> String {
+    fn type_name(s: Ref<ScriptResourceRegistration>) -> &'static str {
         profiling::function_scope!("type_name");
         s.type_registration().type_name()
     }
 
-    fn short_name(s: Ref<ScriptResourceRegistration>) -> String {
+    fn short_name(s: Ref<ScriptResourceRegistration>) -> &'static str {
         profiling::function_scope!("short_name");
         s.type_registration().short_name()
     }
@@ -588,7 +593,7 @@ impl ScriptQueryResult {
         Val::new(s.entity)
     }
 
-    fn components(s: Ref<ScriptQueryResult>) -> Vec<Val<ScriptComponentRegistration>> {
+    fn components(s: Ref<ScriptQueryResult>) -> Vec<ReflectReference> {
         profiling::function_scope!("components");
         s.components.to_vec()
     }

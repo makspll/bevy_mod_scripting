@@ -166,10 +166,21 @@ fn process_impl_fn(fun: &ImplItemFn) -> TokenStream {
         .unwrap_or(syn::LitStr::new("", Span::call_site()));
     let fun_name = syn::LitStr::new(&fun.sig.ident.to_string(), Span::call_site());
     let fun_span = fun.sig.ident.span();
+    let out_type = match &fun.sig.output {
+        syn::ReturnType::Default => quote_spanned! {fun_span=>
+            ()
+        },
+        syn::ReturnType::Type(_, ty) => quote_spanned! {fun_span=>
+            #ty
+        },
+    };
     quote_spanned! {fun_span=>
         .register_documented(
             #fun_name,
-            |#args| #body,
+            |#args| {
+                let output: #out_type = {#body};
+                output
+            },
             #docstring,
             &[#(#args_names),*]
         )
