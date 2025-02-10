@@ -9,34 +9,29 @@ use bevy_mod_scripting_core::bindings::{
         namespace::NamespaceBuilder,
     },
 };
+use bevy_mod_scripting_derive::script_bindings;
 use crate::*;
 pub struct BevyCoreScriptingPlugin;
+#[script_bindings(remote, name = "name")]
+impl bevy::core::prelude::Name {
+    fn clone(_self: Ref<bevy::core::prelude::Name>) {
+        let output: Val<bevy::core::prelude::Name> = <bevy::core::prelude::Name as std::clone::Clone>::clone(
+                &_self,
+            )
+            .into();
+        output
+    }
+    fn eq(_self: Ref<bevy::core::prelude::Name>, other: Ref<bevy::core::prelude::Name>) {
+        let output: bool = <bevy::core::prelude::Name as std::cmp::PartialEq<
+            bevy::core::prelude::Name,
+        >>::eq(&_self, &other)
+            .into();
+        output
+    }
+}
 impl ::bevy::app::Plugin for BevyCoreScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
         let mut world = app.world_mut();
-        NamespaceBuilder::<::bevy::core::prelude::Name>::new(world)
-            .register(
-                "clone",
-                |_self: Ref<bevy::core::prelude::Name>| {
-                    let output: Val<bevy::core::prelude::Name> = <bevy::core::prelude::Name as std::clone::Clone>::clone(
-                            &_self,
-                        )
-                        .into();
-                    output
-                },
-            )
-            .register(
-                "eq",
-                |
-                    _self: Ref<bevy::core::prelude::Name>,
-                    other: Ref<bevy::core::prelude::Name>|
-                {
-                    let output: bool = <bevy::core::prelude::Name as std::cmp::PartialEq<
-                        bevy::core::prelude::Name,
-                    >>::eq(&_self, &other)
-                        .into();
-                    output
-                },
-            );
+        register_name(&mut world);
     }
 }
