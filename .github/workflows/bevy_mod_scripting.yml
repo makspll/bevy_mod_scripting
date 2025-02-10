@@ -170,6 +170,6 @@ jobs:
     - name: Merge Changes
       if: steps.check_changes.outputs.changes && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/staging'
       run: |
-        git checkout ${{ github.ref }}
+        git checkout ${{ github.head_ref || github.ref_name }} 
         git merge ${{ env.CODEGEN_BRANCH_NAME }} || echo "Merge conflict detected. Please resolve manually."
-        git push origin ${{ github.ref }}
+        git push origin ${{ github.head_ref || github.ref_name }} 
