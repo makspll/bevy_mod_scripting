@@ -32,12 +32,6 @@ pub enum TemplateKind {
     SharedModule,
     #[strum(to_string = "crate.tera")]
     CrateArtifact,
-    #[strum(to_string = "field.tera")]
-    Field,
-    #[strum(to_string = "function.tera")]
-    Function,
-    #[strum(to_string = "item.tera")]
-    Item,
     #[strum(to_string = "header.tera")]
     Header,
     #[strum(to_string = "footer.tera")]

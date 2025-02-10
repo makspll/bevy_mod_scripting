@@ -144,6 +144,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        ref: ${{ github.head_ref || github.ref_name }}
     - name: Setup Bot GitHub Credentials
       run: |
         git config user.name "github-actions[bot]"
@@ -163,19 +165,6 @@ jobs:
     - name: Commit Changes
       if: steps.check_changes.outputs.changes
       run: |
-        git checkout -b ${{ env.CODEGEN_BRANCH_NAME }} || git checkout ${{ env.CODEGEN_BRANCH_NAME }}
         git add -A
         git commit -m "chore(codegen): update bevy bindings"
-        git push -u origin ${{ env.CODEGEN_BRANCH_NAME }} --force
-    - uses: jwalton/gh-find-current-pr@master
-      if: steps.check_changes.outputs.changes
-      id: findPR
-      with:
-        state: all
-    - name: Create Or Update PR
-      if: steps.check_changes.outputs.changes && success() && steps.findPR.outputs.number 
-      run: |
-        gh pr list --base ${{ github.ref }} --search "chore(codegen): update bevy bindings" --json number > prs.json
-        if [ $(jq '. | length' prs.json) -eq 0 ]; then
-          gh pr create --title "chore(codegen): update bevy bindings" --body "This PR updates the bevy bindings for #${{ steps.findPR.outputs.number }}" --base ${{ github.ref }} --head ${{ env.CODEGEN_BRANCH_NAME }} || true
-        fi
+        git push
