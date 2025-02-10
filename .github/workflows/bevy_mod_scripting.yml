@@ -27,6 +27,7 @@ concurrency:
 jobs:
 
   check-needs-run:
+    runs-on: ubuntu-latest
     outputs:
       any-changes: ${{ steps.changes.outputs.src }}
     permissions:
