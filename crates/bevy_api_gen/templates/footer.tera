@@ -13,8 +13,7 @@ pub struct {{ "ScriptingPlugin" | prefix_cratename | convert_case(case="upper_ca
     name = "{{ item.ident | convert_case(case="snake") }}",
 )]
 impl {{item.import_path}} {
-{%- for function in item.functions -%}
-
+{% for function in item.functions %}
     fn {{ function.ident }} (
         {%- for arg in function.args -%}
             {%- if arg.proxy_ty is matching("Mut.*")-%}
@@ -43,7 +42,7 @@ impl {{item.import_path}} {
         ).into();
         output
     }
-{%- endfor -%};     
+{% endfor %}     
 }
 {% endfor %}
 
