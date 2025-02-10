@@ -144,6 +144,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        ref: ${{ github.head_ref || github.ref_name }}
     - name: Setup Bot GitHub Credentials
       run: |
         git config user.name "github-actions[bot]"
@@ -163,13 +165,6 @@ jobs:
     - name: Commit Changes
       if: steps.check_changes.outputs.changes
       run: |
-        git checkout -b ${{ env.CODEGEN_BRANCH_NAME }} || git checkout ${{ env.CODEGEN_BRANCH_NAME }}
         git add -A
         git commit -m "chore(codegen): update bevy bindings"
-        git push -u origin ${{ env.CODEGEN_BRANCH_NAME }} --force
-    - name: Merge Changes
-      if: steps.check_changes.outputs.changes && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/staging'
-      run: |
-        git checkout ${{ github.head_ref || github.ref_name }} 
-        git merge ${{ env.CODEGEN_BRANCH_NAME }} || echo "Merge conflict detected. Please resolve manually."
-        git push origin ${{ github.head_ref || github.ref_name }} 
+        git push
