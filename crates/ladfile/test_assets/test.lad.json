@@ -28,7 +28,7 @@
               "type": "usize"
             },
             {
-              "type": "alloc::string::String"
+              "type": "String"
             }
           ]
         }
@@ -73,7 +73,7 @@
             "type": "usize"
           },
           {
-            "type": "alloc::string::String"
+            "type": "String"
           }
         ]
       }
@@ -139,37 +139,33 @@
     }
   },
   "primitives": {
-    "TypeId(0x0b36ea25c1cf517efce182c726ea2190)": {
-      "kind": "pathBuf",
-      "documentation": "A heap allocated file path"
-    },
-    "TypeId(0x1c306727557831f62320b5841ddc7eb3)": {
+    "DynamicFunction": {
       "kind": "dynamicFunction",
       "documentation": "A callable dynamic function"
     },
-    "TypeId(0x7adbf8cf2ed263727e95f06e821c8654)": {
-      "kind": "osString",
-      "documentation": "A heap allocated OS string"
-    },
-    "TypeId(0x7f945ad2d333d63863e3b6f35dfc0c5d)": {
+    "DynamicFunctionMut": {
       "kind": "dynamicFunctionMut",
       "documentation": "A stateful and callable dynamic function"
     },
-    "TypeId(0xb98b1b7157a6417863eb502cd6cb5d6d)": {
-      "kind": "str",
-      "documentation": "A static string slice"
-    },
-    "alloc::string::String": {
-      "kind": "string",
-      "documentation": "A heap allocated string"
-    },
-    "bevy_mod_scripting_core::bindings::function::script_function::FunctionCallContext": {
+    "FunctionCallContext": {
       "kind": "functionCallContext",
       "documentation": "Function call context, if accepted by a function, means the function can access the world in arbitrary ways."
     },
-    "bevy_mod_scripting_core::bindings::reference::ReflectReference": {
+    "OsString": {
+      "kind": "osString",
+      "documentation": "A heap allocated OS string"
+    },
+    "PathBuf": {
+      "kind": "pathBuf",
+      "documentation": "A heap allocated file path"
+    },
+    "ReflectReference": {
       "kind": "reflectReference",
       "documentation": "A reference to a reflectable type"
+    },
+    "String": {
+      "kind": "string",
+      "documentation": "A heap allocated string"
     },
     "bool": {
       "kind": "bool",
@@ -210,6 +206,10 @@
     "isize": {
       "kind": "isize",
       "documentation": "A signed pointer-sized integer"
+    },
+    "str": {
+      "kind": "str",
+      "documentation": "A string slice"
     },
     "u128": {
       "kind": "u128",

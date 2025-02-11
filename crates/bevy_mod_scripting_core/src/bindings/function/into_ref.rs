@@ -30,11 +30,6 @@ pub trait IntoScriptRef {
 /// a utility for matching types by their [`std::any::TypeId`]
 macro_rules! match_by_type {
     (match $on:ident {$($id:ident : $ty:ty => $conv:expr),*}) => {
-        $(
-            #[allow(unused_variables)]
-            let $id = std::any::TypeId::of::<$ty>();
-        )*
-
         match $on {
         $(
             $id if $id == std::any::TypeId::of::<$ty>() => {$conv},

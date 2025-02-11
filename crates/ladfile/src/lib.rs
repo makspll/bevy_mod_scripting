@@ -162,6 +162,81 @@ pub enum LadBMSPrimitiveKind {
     ReflectReference,
 }
 
+impl LadBMSPrimitiveKind {
+    /// Get the corresponding type id for a primitive kind.
+    pub fn lad_type_id(self) -> LadTypeId {
+        match self {
+            LadBMSPrimitiveKind::Bool => LadTypeId::new_string_id("bool".into()),
+            LadBMSPrimitiveKind::Isize => LadTypeId::new_string_id("isize".into()),
+            LadBMSPrimitiveKind::I8 => LadTypeId::new_string_id("i8".into()),
+            LadBMSPrimitiveKind::I16 => LadTypeId::new_string_id("i16".into()),
+            LadBMSPrimitiveKind::I32 => LadTypeId::new_string_id("i32".into()),
+            LadBMSPrimitiveKind::I64 => LadTypeId::new_string_id("i64".into()),
+            LadBMSPrimitiveKind::I128 => LadTypeId::new_string_id("i128".into()),
+            LadBMSPrimitiveKind::Usize => LadTypeId::new_string_id("usize".into()),
+            LadBMSPrimitiveKind::U8 => LadTypeId::new_string_id("u8".into()),
+            LadBMSPrimitiveKind::U16 => LadTypeId::new_string_id("u16".into()),
+            LadBMSPrimitiveKind::U32 => LadTypeId::new_string_id("u32".into()),
+            LadBMSPrimitiveKind::U64 => LadTypeId::new_string_id("u64".into()),
+            LadBMSPrimitiveKind::U128 => LadTypeId::new_string_id("u128".into()),
+            LadBMSPrimitiveKind::F32 => LadTypeId::new_string_id("f32".into()),
+            LadBMSPrimitiveKind::F64 => LadTypeId::new_string_id("f64".into()),
+            LadBMSPrimitiveKind::Char => LadTypeId::new_string_id("char".into()),
+            LadBMSPrimitiveKind::Str => LadTypeId::new_string_id("str".into()),
+            LadBMSPrimitiveKind::String => LadTypeId::new_string_id("String".into()),
+            LadBMSPrimitiveKind::OsString => LadTypeId::new_string_id("OsString".into()),
+            LadBMSPrimitiveKind::PathBuf => LadTypeId::new_string_id("PathBuf".into()),
+            LadBMSPrimitiveKind::FunctionCallContext => {
+                LadTypeId::new_string_id("FunctionCallContext".into())
+            }
+            LadBMSPrimitiveKind::DynamicFunction => {
+                LadTypeId::new_string_id("DynamicFunction".into())
+            }
+            LadBMSPrimitiveKind::DynamicFunctionMut => {
+                LadTypeId::new_string_id("DynamicFunctionMut".into())
+            }
+            LadBMSPrimitiveKind::ReflectReference => {
+                LadTypeId::new_string_id("ReflectReference".into())
+            }
+        }
+    }
+
+    /// We can assume that the types here will be either primitives
+    /// or reflect types, as the rest will be covered by typed wrappers
+    /// so just check
+    fn from_type_id(type_id: TypeId) -> Option<LadBMSPrimitiveKind> {
+        match_by_type!(match type_id {
+            i: bool => return Some(LadBMSPrimitiveKind::Bool),
+            i: isize => return Some(LadBMSPrimitiveKind::Isize),
+            i: i8 => return Some(LadBMSPrimitiveKind::I8),
+            i: i16 => return Some(LadBMSPrimitiveKind::I16),
+            i: i32 => return Some(LadBMSPrimitiveKind::I32),
+            i: i64 => return Some(LadBMSPrimitiveKind::I64),
+            i: i128 => return Some(LadBMSPrimitiveKind::I128),
+            i: usize => return Some(LadBMSPrimitiveKind::Usize),
+            i: u8 => return Some(LadBMSPrimitiveKind::U8),
+            i: u16 => return Some(LadBMSPrimitiveKind::U16),
+            i: u32 => return Some(LadBMSPrimitiveKind::U32),
+            i: u64 => return Some(LadBMSPrimitiveKind::U64),
+            i: u128 => return Some(LadBMSPrimitiveKind::U128),
+            i: f32 => return Some(LadBMSPrimitiveKind::F32),
+            i: f64 => return Some(LadBMSPrimitiveKind::F64),
+            i: char => return Some(LadBMSPrimitiveKind::Char),
+            i: &'static str => return Some(LadBMSPrimitiveKind::Str),
+            i: str => return Some(LadBMSPrimitiveKind::Str),
+            i: String => return Some(LadBMSPrimitiveKind::String),
+            i: OsString => return Some(LadBMSPrimitiveKind::OsString),
+            i: PathBuf => return Some(LadBMSPrimitiveKind::PathBuf),
+            i: FunctionCallContext => return Some(LadBMSPrimitiveKind::FunctionCallContext),
+            i: DynamicFunction => return Some(LadBMSPrimitiveKind::DynamicFunction),
+            i: DynamicFunctionMut => return Some(LadBMSPrimitiveKind::DynamicFunctionMut),
+            i: ReflectReference => return Some(LadBMSPrimitiveKind::ReflectReference)
+        });
+
+        None
+    }
+}
+
 #[derive(
     Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
 )]
@@ -318,7 +393,7 @@ impl<'t> LadFileBuilder<'t> {
             .add_bms_primitive::<f32>("A 32-bit floating point number")
             .add_bms_primitive::<f64>("A 64-bit floating point number")
             .add_bms_primitive::<char>("An 8-bit character")
-            .add_bms_primitive::<&'static str>("A static string slice")
+            .add_bms_primitive::<&'static str>("A string slice")
             .add_bms_primitive::<String>("A heap allocated string")
             .add_bms_primitive::<OsString>("A heap allocated OS string")
             .add_bms_primitive::<PathBuf>("A heap allocated file path")
@@ -343,7 +418,7 @@ impl<'t> LadFileBuilder<'t> {
         docs: impl Into<Cow<'static, str>>,
     ) -> &mut Self {
         let type_id = self.lad_id_from_type_id(TypeId::of::<T>());
-        let kind = match Self::lad_primitive_type_from_type_id(TypeId::of::<T>()) {
+        let kind = match LadBMSPrimitiveKind::from_type_id(TypeId::of::<T>()) {
             Some(primitive) => primitive,
             None => return self,
         };
@@ -530,14 +605,20 @@ impl<'t> LadFileBuilder<'t> {
         if let Some(lad_id) = self.type_id_mapping.get(&type_id) {
             return lad_id.clone();
         }
-        let new_id = match self.type_registry.get_type_info(type_id) {
-            Some(info) => info.type_path_table().path().to_owned(),
-            None => format!("{type_id:?}"),
+
+        let new_id = match LadBMSPrimitiveKind::from_type_id(type_id) {
+            Some(primitive) => primitive.lad_type_id(),
+            None => {
+                if let Some(info) = self.type_registry.get_type_info(type_id) {
+                    LadTypeId::new_string_id(info.type_path_table().path().into())
+                } else {
+                    LadTypeId::new_string_id(format!("{type_id:?}").into())
+                }
+            }
         };
 
-        let lad_id = LadTypeId::new_string_id(new_id.into());
-        self.type_id_mapping.insert(type_id, lad_id.clone());
-        lad_id
+        self.type_id_mapping.insert(type_id, new_id.clone());
+        new_id
     }
 
     fn lad_function_id_from_info(&mut self, function_info: &FunctionInfo) -> LadFunctionId {
@@ -551,40 +632,6 @@ impl<'t> LadFileBuilder<'t> {
         };
 
         LadFunctionId::new_string_id(format!("{}::{}", namespace_string, function_info.name))
-    }
-
-    /// We can assume that the types here will be either primitives
-    /// or reflect types, as the rest will be covered by typed wrappers
-    /// so just check
-    fn lad_primitive_type_from_type_id(type_id: TypeId) -> Option<LadBMSPrimitiveKind> {
-        match_by_type!(match type_id {
-            i: bool => return Some(LadBMSPrimitiveKind::Bool),
-            i: isize => return Some(LadBMSPrimitiveKind::Isize),
-            i: i8 => return Some(LadBMSPrimitiveKind::I8),
-            i: i16 => return Some(LadBMSPrimitiveKind::I16),
-            i: i32 => return Some(LadBMSPrimitiveKind::I32),
-            i: i64 => return Some(LadBMSPrimitiveKind::I64),
-            i: i128 => return Some(LadBMSPrimitiveKind::I128),
-            i: usize => return Some(LadBMSPrimitiveKind::Usize),
-            i: u8 => return Some(LadBMSPrimitiveKind::U8),
-            i: u16 => return Some(LadBMSPrimitiveKind::U16),
-            i: u32 => return Some(LadBMSPrimitiveKind::U32),
-            i: u64 => return Some(LadBMSPrimitiveKind::U64),
-            i: u128 => return Some(LadBMSPrimitiveKind::U128),
-            i: f32 => return Some(LadBMSPrimitiveKind::F32),
-            i: f64 => return Some(LadBMSPrimitiveKind::F64),
-            i: char => return Some(LadBMSPrimitiveKind::Char),
-            i: &'static str => return Some(LadBMSPrimitiveKind::Str),
-            i: String => return Some(LadBMSPrimitiveKind::String),
-            i: OsString => return Some(LadBMSPrimitiveKind::OsString),
-            i: PathBuf => return Some(LadBMSPrimitiveKind::PathBuf),
-            i: FunctionCallContext => return Some(LadBMSPrimitiveKind::FunctionCallContext),
-            i: DynamicFunction => return Some(LadBMSPrimitiveKind::DynamicFunction),
-            i: DynamicFunctionMut => return Some(LadBMSPrimitiveKind::DynamicFunctionMut),
-            i: ReflectReference => return Some(LadBMSPrimitiveKind::ReflectReference)
-        });
-
-        None
     }
 
     fn lad_argument_type_from_through_type(
@@ -639,7 +686,7 @@ impl<'t> LadFileBuilder<'t> {
                 ),
             },
             ThroughTypeInfo::TypeInfo(type_info) => {
-                match Self::lad_primitive_type_from_type_id(type_info.type_id()) {
+                match LadBMSPrimitiveKind::from_type_id(type_info.type_id()) {
                     Some(primitive) => LadArgumentKind::Primitive(primitive),
                     None => LadArgumentKind::Unknown(self.lad_id_from_type_id(type_info.type_id())),
                 }
@@ -690,8 +737,6 @@ mod test {
     #[test]
     fn test_serializes_as_expected() {
         let mut type_registry = TypeRegistry::default();
-        type_registry.register::<ReflectReference>();
-        type_registry.register::<FunctionCallContext>();
 
         #[derive(Reflect)]
         /// I am a struct
