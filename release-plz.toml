@@ -3,6 +3,15 @@ dependencies_update = false
 publish_timeout = "30m"
 git_release_enable = false
 git_tag_enable = false
+git_release_body = """
+{{ changelog }}
+{% if remote.contributors %}
+### Contributors
+{% for contributor in remote.contributors %}
+* @{{ contributor.username }}
+{% endfor %}
+{% endif %}
+"""
 
 [changelog]
 commit_parsers = [
@@ -27,15 +36,7 @@ git_release_enable = true
 git_tag_enable = true
 git_tag_name = "v{{ version }}"
 git_release_name = "v{{ version }}"
-git_release_body = """
-{{ changelog }}
-{% if remote.contributors %}
-### Contributors
-{% for contributor in remote.contributors %}
-* @{{ contributor.username }}
-{% endfor %}
-{% endif %}
-"""
+
 changelog_include = [
     "bevy_mod_scripting_lua",
     "bevy_mod_scripting_core",
@@ -68,3 +69,11 @@ version_group = "main"
 [[package]]
 name = "bevy_mod_scripting_functions"
 version_group = "main"
+
+[[package]]
+name = "ladfile"
+git_release_enable = true
+git_release_latest = false
+git_tag_enable = true
+git_tag_name = "v{{ version }}-ladfile"
+git_release_name = "v{{ version }}-ladfile"
