@@ -34,6 +34,9 @@ bevy = { workspace = true, default-features = false, features = [
     "bevy_asset",
     "reflect_functions",
 ] }
+# I don't think bevy has a top level feature for this :C
+bevy_reflect = { version = "0.15.1", features = ["documentation"] }
+
 thiserror = "1.0.31"
 parking_lot = "0.12.1"
 dashmap = "6"
@@ -42,6 +45,10 @@ itertools = "0.13"
 derivative = "2.2"
 profiling = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+indexmap = { version = "2.7", features = ["serde"] }
+
 
 [dev-dependencies]
 test_utils = { workspace = true }
