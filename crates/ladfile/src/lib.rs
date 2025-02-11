@@ -1,17 +1,16 @@
 //! Parsing definitions for the LAD (Language Agnostic Decleration) file format.
 
-use super::{
-    info::FunctionInfo,
-    typed_through::{ThroughTypeInfo, UntypedWrapperKind},
-};
-use crate::{
+use bevy_mod_scripting_core::{
     bindings::{function::script_function::FunctionCallContext, ReflectReference},
+    docgen::{
+        info::FunctionInfo,
+        typed_through::{ThroughTypeInfo, TypedWrapperKind, UntypedWrapperKind},
+    },
     match_by_type,
 };
-use bevy::reflect::TypeInfo;
 use bevy_reflect::{
     func::{DynamicFunction, DynamicFunctionMut},
-    NamedField, Reflect, TypeRegistry, Typed, UnnamedField,
+    NamedField, Reflect, TypeInfo, TypeRegistry, Typed, UnnamedField,
 };
 use indexmap::IndexMap;
 use std::{any::TypeId, borrow::Cow, collections::HashMap, ffi::OsString, path::PathBuf};
@@ -543,8 +542,10 @@ impl<'t> LadFileBuilder<'t> {
 
     fn lad_function_id_from_info(&mut self, function_info: &FunctionInfo) -> LadFunctionId {
         let namespace_string = match function_info.namespace {
-            crate::bindings::function::namespace::Namespace::Global => "".to_string(),
-            crate::bindings::function::namespace::Namespace::OnType(type_id) => {
+            bevy_mod_scripting_core::bindings::function::namespace::Namespace::Global => {
+                "".to_string()
+            }
+            bevy_mod_scripting_core::bindings::function::namespace::Namespace::OnType(type_id) => {
                 self.lad_id_from_type_id(type_id).0.to_string()
             }
         };
@@ -607,44 +608,35 @@ impl<'t> LadFileBuilder<'t> {
                 }
             },
             ThroughTypeInfo::TypedWrapper(typed_wrapper_kind) => match typed_wrapper_kind {
-                super::typed_through::TypedWrapperKind::Vec(through_type_info) => {
-                    LadArgumentKind::Vec(Box::new(
-                        self.lad_argument_type_from_through_type(through_type_info),
-                    ))
-                }
-                super::typed_through::TypedWrapperKind::HashMap(
-                    through_type_info,
-                    through_type_info1,
-                ) => LadArgumentKind::HashMap(
-                    Box::new(self.lad_argument_type_from_through_type(through_type_info)),
-                    Box::new(self.lad_argument_type_from_through_type(through_type_info1)),
-                ),
-                super::typed_through::TypedWrapperKind::Array(through_type_info, size) => {
-                    LadArgumentKind::Array(
+                TypedWrapperKind::Vec(through_type_info) => LadArgumentKind::Vec(Box::new(
+                    self.lad_argument_type_from_through_type(through_type_info),
+                )),
+                TypedWrapperKind::HashMap(through_type_info, through_type_info1) => {
+                    LadArgumentKind::HashMap(
                         Box::new(self.lad_argument_type_from_through_type(through_type_info)),
-                        *size,
+                        Box::new(self.lad_argument_type_from_through_type(through_type_info1)),
                     )
                 }
-                super::typed_through::TypedWrapperKind::Option(through_type_info) => {
-                    LadArgumentKind::Option(Box::new(
-                        self.lad_argument_type_from_through_type(through_type_info),
-                    ))
-                }
-                super::typed_through::TypedWrapperKind::InteropResult(through_type_info) => {
+                TypedWrapperKind::Array(through_type_info, size) => LadArgumentKind::Array(
+                    Box::new(self.lad_argument_type_from_through_type(through_type_info)),
+                    *size,
+                ),
+                TypedWrapperKind::Option(through_type_info) => LadArgumentKind::Option(Box::new(
+                    self.lad_argument_type_from_through_type(through_type_info),
+                )),
+                TypedWrapperKind::InteropResult(through_type_info) => {
                     LadArgumentKind::InteropResult(Box::new(
                         self.lad_argument_type_from_through_type(through_type_info),
                     ))
                 }
-                super::typed_through::TypedWrapperKind::Tuple(through_type_infos) => {
-                    LadArgumentKind::Tuple(
-                        through_type_infos
-                            .iter()
-                            .map(|through_type_info| {
-                                self.lad_argument_type_from_through_type(through_type_info)
-                            })
-                            .collect(),
-                    )
-                }
+                TypedWrapperKind::Tuple(through_type_infos) => LadArgumentKind::Tuple(
+                    through_type_infos
+                        .iter()
+                        .map(|through_type_info| {
+                            self.lad_argument_type_from_through_type(through_type_info)
+                        })
+                        .collect(),
+                ),
             },
             ThroughTypeInfo::TypeInfo(type_info) => {
                 match Self::lad_primitive_type_from_type_id(type_info.type_id()) {
@@ -672,15 +664,14 @@ pub fn serialize_lad_file(lad_file: &LadFile, pretty: bool) -> Result<String, se
 
 #[cfg(test)]
 mod test {
-    use bevy_reflect::Typed;
-
-    use crate::{
+    use bevy_mod_scripting_core::{
         bindings::function::{
             from::Ref,
             namespace::{GlobalNamespace, IntoNamespace},
         },
         docgen::info::GetFunctionInfo,
     };
+    use bevy_reflect::Typed;
 
     use super::*;
 
@@ -767,17 +758,14 @@ mod test {
 
         if BLESS_TEST_FILE {
             let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-            let path_to_test_assets = std::path::Path::new(&manifest_dir)
-                .join("src")
-                .join("docgen")
-                .join("test_assets");
+            let path_to_test_assets = std::path::Path::new(&manifest_dir).join("test_assets");
 
             println!("Blessing test file at {:?}", path_to_test_assets);
             std::fs::write(path_to_test_assets.join("test.lad.json"), &serialized).unwrap();
             return;
         }
 
-        let expected = include_str!("test_assets/test.lad.json");
+        let expected = include_str!("../test_assets/test.lad.json");
 
         assert_eq!(
             serialized.trim(),
@@ -790,7 +778,7 @@ mod test {
 
     #[test]
     fn test_asset_deserializes_correctly() {
-        let asset = include_str!("test_assets/test.lad.json");
+        let asset = include_str!("../test_assets/test.lad.json");
         let deserialized = parse_lad_file(asset).unwrap();
         assert_eq!(deserialized.version, LAD_VERSION);
     }
