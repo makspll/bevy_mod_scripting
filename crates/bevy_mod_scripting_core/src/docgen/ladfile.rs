@@ -135,7 +135,6 @@ pub struct LadBMSPrimitiveType {
 /// The docstrings on variants corresponding to Reflect types, are used to generate documentation for these primitives.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Reflect)]
 #[serde(rename_all = "camelCase")]
-// #[serde(untagged)]
 #[allow(missing_docs)]
 pub enum LadBMSPrimitiveKind {
     Bool,
