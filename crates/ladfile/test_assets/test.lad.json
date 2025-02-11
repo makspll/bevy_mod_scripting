@@ -1,10 +1,10 @@
 {
   "version": "0.1.0",
   "types": {
-    "bevy_mod_scripting_core::docgen::ladfile::test::EnumType": {
+    "ladfile::test::EnumType": {
       "identifier": "EnumType",
-      "crate": "bevy_mod_scripting_core",
-      "path": "bevy_mod_scripting_core::docgen::ladfile::test::EnumType",
+      "crate": "ladfile",
+      "path": "ladfile::test::EnumType",
       "layout": [
         {
           "kind": "Unit",
@@ -34,10 +34,10 @@
         }
       ]
     },
-    "bevy_mod_scripting_core::docgen::ladfile::test::StructType<usize>": {
+    "ladfile::test::StructType<usize>": {
       "identifier": "StructType",
-      "crate": "bevy_mod_scripting_core",
-      "path": "bevy_mod_scripting_core::docgen::ladfile::test::StructType<usize>",
+      "crate": "ladfile",
+      "path": "ladfile::test::StructType<usize>",
       "generics": [
         {
           "type_id": "usize",
@@ -60,10 +60,10 @@
         ]
       }
     },
-    "bevy_mod_scripting_core::docgen::ladfile::test::TupleStructType": {
+    "ladfile::test::TupleStructType": {
       "identifier": "TupleStructType",
-      "crate": "bevy_mod_scripting_core",
-      "path": "bevy_mod_scripting_core::docgen::ladfile::test::TupleStructType",
+      "crate": "ladfile",
+      "path": "ladfile::test::TupleStructType",
       "documentation": " I am a tuple test type",
       "layout": {
         "kind": "TupleStruct",
@@ -78,10 +78,10 @@
         ]
       }
     },
-    "bevy_mod_scripting_core::docgen::ladfile::test::UnitType": {
+    "ladfile::test::UnitType": {
       "identifier": "UnitType",
-      "crate": "bevy_mod_scripting_core",
-      "path": "bevy_mod_scripting_core::docgen::ladfile::test::UnitType",
+      "crate": "ladfile",
+      "path": "ladfile::test::UnitType",
       "documentation": " I am a unit test type",
       "layout": {
         "kind": "Struct",
@@ -102,7 +102,7 @@
       ],
       "return_type": "usize"
     },
-    "bevy_mod_scripting_core::docgen::ladfile::test::StructType<usize>::hello_world": {
+    "ladfile::test::StructType<usize>::hello_world": {
       "identifier": "hello_world",
       "arguments": [
         {
@@ -128,7 +128,7 @@
           "kind": {
             "option": {
               "vec": {
-                "ref": "bevy_mod_scripting_core::docgen::ladfile::test::EnumType"
+                "ref": "ladfile::test::EnumType"
               }
             }
           },
