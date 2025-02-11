@@ -676,7 +676,7 @@ mod test {
     use super::*;
 
     /// Set to true to put output into test_assets.
-    const BLESS_TEST_FILE: bool = true;
+    const BLESS_TEST_FILE: bool = false;
 
     #[test]
     fn test_empty_lad_file_serializes_correctly() {
