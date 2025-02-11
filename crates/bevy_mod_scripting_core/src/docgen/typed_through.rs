@@ -37,12 +37,23 @@ pub enum ThroughTypeInfo {
         /// The type id of the wrapper type.
         wrapper_type_id: TypeId,
         /// The name of the wrapper type.
-        wrapper_name: &'static str,
+        wrapper_kind: UntypedWrapperKind,
     },
     /// A wrapper around a through typed type, which itself is also a `Typed` type.
     TypedWrapper(TypedWrapperKind),
     /// an actual type info
     TypeInfo(&'static TypeInfo),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+/// The kind of untyped wrapper.
+pub enum UntypedWrapperKind {
+    /// A reference wrapper.
+    Ref,
+    /// A mutable reference wrapper.
+    Mut,
+    /// A value wrapper.
+    Val,
 }
 
 /// The kind of typed wrapper.
@@ -73,7 +84,7 @@ impl<T: Typed> TypedThrough for Ref<'_, T> {
         ThroughTypeInfo::UntypedWrapper {
             through_type: T::type_info(),
             wrapper_type_id: TypeId::of::<Ref<T>>(),
-            wrapper_name: "Ref",
+            wrapper_kind: UntypedWrapperKind::Ref,
         }
     }
 }
@@ -83,7 +94,7 @@ impl<T: Typed> TypedThrough for Mut<'_, T> {
         ThroughTypeInfo::UntypedWrapper {
             through_type: T::type_info(),
             wrapper_type_id: TypeId::of::<Mut<T>>(),
-            wrapper_name: "Mut",
+            wrapper_kind: UntypedWrapperKind::Mut,
         }
     }
 }
@@ -93,7 +104,7 @@ impl<T: Typed> TypedThrough for Val<T> {
         ThroughTypeInfo::UntypedWrapper {
             through_type: T::type_info(),
             wrapper_type_id: TypeId::of::<Val<T>>(),
-            wrapper_name: "Val",
+            wrapper_kind: UntypedWrapperKind::Val,
         }
     }
 }

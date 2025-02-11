@@ -23,7 +23,7 @@ pub struct FunctionInfo {
     /// Information about the arguments of the function.
     pub arg_info: Vec<FunctionArgInfo>,
     /// Information about the return value of the function.
-    pub return_info: Option<FunctionReturnInfo>,
+    pub return_info: FunctionReturnInfo,
     /// Documentation for the function.
     pub docs: Option<Cow<'static, str>>,
 }
@@ -41,7 +41,7 @@ impl FunctionInfo {
             name: Cow::Borrowed(""),
             namespace: Namespace::Global,
             arg_info: Vec::new(),
-            return_info: None,
+            return_info: FunctionReturnInfo::default(),
             docs: None,
         }
     }
@@ -52,7 +52,7 @@ impl FunctionInfo {
             name,
             namespace,
             arg_info: Vec::new(),
-            return_info: None,
+            return_info: FunctionReturnInfo::default(),
             docs: None,
         }
     }
@@ -69,7 +69,7 @@ impl FunctionInfo {
 
     /// Add a return value to the function info.
     pub fn add_return<T: TypedThrough + 'static>(mut self) -> Self {
-        self.return_info = Some(FunctionReturnInfo::new_for::<T>());
+        self.return_info = FunctionReturnInfo::new_for::<T>();
         self
     }
 
@@ -136,6 +136,12 @@ pub struct FunctionReturnInfo {
     pub type_id: TypeId,
 }
 
+impl Default for FunctionReturnInfo {
+    fn default() -> Self {
+        Self::new_for::<()>()
+    }
+}
+
 impl FunctionReturnInfo {
     /// Create a new function return info for a specific type.
     pub fn new_for<T: 'static>() -> Self {
@@ -169,7 +175,10 @@ bevy::utils::all_tuples!(impl_documentable, 0, 13, T);
 
 #[cfg(test)]
 mod test {
-    use crate::bindings::function::from::{Mut, Ref, Val};
+    use crate::{
+        bindings::function::from::{Mut, Ref, Val},
+        docgen::typed_through::UntypedWrapperKind,
+    };
 
     use super::*;
 
@@ -183,7 +192,7 @@ mod test {
         assert_eq!(info.name, "test_fn");
         assert_eq!(info.namespace, Namespace::Global);
         assert_eq!(info.arg_info.len(), 2);
-        assert_eq!(info.return_info.unwrap().type_id, TypeId::of::<f64>());
+        assert_eq!(info.return_info.type_id, TypeId::of::<f64>());
 
         assert_eq!(info.arg_info[0].type_id, TypeId::of::<i32>());
         assert_eq!(info.arg_info[1].type_id, TypeId::of::<f32>());
@@ -211,33 +220,33 @@ mod test {
         assert_eq!(info.name, "test_fn");
         assert_eq!(info.namespace, Namespace::Global);
         assert_eq!(info.arg_info.len(), 2);
-        assert_eq!(info.return_info.unwrap().type_id, TypeId::of::<Val<f64>>());
+        assert_eq!(info.return_info.type_id, TypeId::of::<Val<f64>>());
 
         assert_eq!(info.arg_info[0].type_id, TypeId::of::<Ref<'static, i32>>());
         assert_eq!(info.arg_info[1].type_id, TypeId::of::<Mut<'static, f32>>());
 
-        match info.arg_info[0].type_info.as_ref().unwrap() {
-            ThroughTypeInfo::UntypedWrapper {
+        match &info.arg_info[0].type_info {
+            Some(ThroughTypeInfo::UntypedWrapper {
                 through_type,
                 wrapper_type_id,
-                wrapper_name,
-            } => {
+                wrapper_kind,
+            }) => {
                 assert_eq!(through_type.type_id(), TypeId::of::<i32>());
                 assert_eq!(*wrapper_type_id, TypeId::of::<Ref<'static, i32>>());
-                assert_eq!(*wrapper_name, "Ref");
+                assert_eq!(*wrapper_kind, UntypedWrapperKind::Ref);
             }
             _ => panic!("Expected UntypedWrapper"),
         }
 
-        match info.arg_info[1].type_info.as_ref().unwrap() {
-            ThroughTypeInfo::UntypedWrapper {
+        match &info.arg_info[1].type_info {
+            Some(ThroughTypeInfo::UntypedWrapper {
                 through_type,
                 wrapper_type_id,
-                wrapper_name,
-            } => {
+                wrapper_kind,
+            }) => {
                 assert_eq!(through_type.type_id(), TypeId::of::<f32>());
                 assert_eq!(*wrapper_type_id, TypeId::of::<Mut<'static, f32>>());
-                assert_eq!(*wrapper_name, "Mut");
+                assert_eq!(*wrapper_kind, UntypedWrapperKind::Mut);
             }
             _ => panic!("Expected UntypedWrapper"),
         }
