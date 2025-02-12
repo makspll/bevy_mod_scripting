@@ -46,9 +46,11 @@ The languages currently supported are as follows:
 For examples, installation and usage instructions see our shiny new [book](https://makspll.github.io/bevy_mod_scripting)
 
 ## Bevy Compatibility
+BMS generates code based on each bevy release, which is why we pin the patch version of bevy too.
 
 | bevy_mod_scripting  | bevy   |
 |---------------------|--------|
+| 0.9.4+              | 0.15.2 |
 | 0.9.1+              | 0.15.1 |
 | 0.9                 | 0.15.0 |
 | 0.8                 | 0.15.0 |
