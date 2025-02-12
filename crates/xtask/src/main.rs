@@ -49,6 +49,10 @@ enum Feature {
     Rhai,
     // Rune
     // Rune,
+
+    // Profiling
+    #[strum(serialize = "profiling/profile-with-tracy")]
+    Tracy,
 }
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, strum::EnumIter)]
@@ -97,7 +101,8 @@ impl IntoFeatureGroup for Feature {
             Feature::MluaAsync
             | Feature::MluaMacros
             | Feature::MluaSerialize
-            | Feature::UnsafeLuaModules => FeatureGroup::ForExternalCrate,
+            | Feature::UnsafeLuaModules
+            | Feature::Tracy => FeatureGroup::ForExternalCrate,
             Feature::BevyBindings | Feature::CoreFunctions => FeatureGroup::BMSFeature,
             // don't use wildcard here, we want to be explicit
         }
@@ -109,11 +114,12 @@ struct Features(HashSet<Feature>);
 
 impl Default for Features {
     fn default() -> Self {
-        // should be kept up to date with the default feature + lua54
+        // should be kept up to date with the default feature + lua54 on top of anything that is handy to run locally every time
         Features::new(vec![
             Feature::Lua54,
             Feature::CoreFunctions,
             Feature::BevyBindings,
+            Feature::Tracy,
         ])
     }
 }
