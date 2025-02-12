@@ -1,0 +1,31 @@
+[package]
+name = "mdbook_lad_preprocessor"
+version = "0.1.0"
+edition = "2021"
+authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
+license = "MIT OR Apache-2.0"
+description = "Language Agnostic Declaration (LAD) file format for the bevy_mod_scripting crate"
+repository = "https://github.com/makspll/bevy_mod_scripting"
+homepage = "https://github.com/makspll/bevy_mod_scripting"
+keywords = ["bevy", "gamedev", "scripting", "documentation", "generator"]
+categories = ["game-development", "development-tools"]
+include = ["readme.md", "/src"]
+readme = "readme.md"
+
+[dependencies]
+clap = "4"
+mdbook = "0.4"
+ladfile = { path = "../../ladfile", version = "0.1.1" }
+env_logger = "0.11"
+log = "0.4"
+serde_json = "1.0"
+
+[dev-dependencies]
+assert_cmd = "2.0"
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "mdbook-lad-preprocessor"
+path = "src/main.rs"
