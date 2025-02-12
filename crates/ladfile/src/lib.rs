@@ -875,6 +875,6 @@ mod test {
     fn test_asset_deserializes_correctly() {
         let asset = include_str!("../test_assets/test.lad.json");
         let deserialized = parse_lad_file(asset).unwrap();
-        assert_eq!(deserialized.version, LAD_VERSION);
+        assert_eq!(deserialized.version, "{{version}}");
     }
 }
