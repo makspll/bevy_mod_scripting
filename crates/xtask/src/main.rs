@@ -114,11 +114,12 @@ struct Features(HashSet<Feature>);
 
 impl Default for Features {
     fn default() -> Self {
-        // should be kept up to date with the default feature + lua54
+        // should be kept up to date with the default feature + lua54 on top of anything that is handy to run locally every time
         Features::new(vec![
             Feature::Lua54,
             Feature::CoreFunctions,
             Feature::BevyBindings,
+            Feature::Tracy,
         ])
     }
 }
