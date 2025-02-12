@@ -12,6 +12,7 @@ git_release_body = """
 {% endfor %}
 {% endif %}
 """
+pr_name = "chore: release {{ version }}"
 
 [changelog]
 commit_parsers = [
@@ -77,3 +78,4 @@ git_release_latest = false
 git_tag_enable = true
 git_tag_name = "v{{ version }}-ladfile"
 git_release_name = "v{{ version }}-ladfile"
+pr_name = "chore: release ladfile {{ version }}"
