@@ -49,7 +49,7 @@ For examples, installation and usage instructions see our shiny new [book](https
 
 | bevy_mod_scripting  | bevy   |
 |---------------------|--------|
-| 0.9.1               | 0.15.1 |
+| 0.9.1+              | 0.15.1 |
 | 0.9                 | 0.15.0 |
 | 0.8                 | 0.15.0 |
 | 0.7                 | 0.14   |
