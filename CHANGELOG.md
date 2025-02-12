@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.5](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.4...v0.9.5) - 2025-02-12
+
+### Added
+
+- update bevy to 0.15.2 (#280)
+
 ## [0.9.4](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.3...v0.9.4) - 2025-02-12
 
 ### Added
