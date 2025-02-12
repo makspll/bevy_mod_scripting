@@ -725,6 +725,11 @@ mod test {
     /// Set to true to put output into test_assets.
     const BLESS_TEST_FILE: bool = false;
 
+    /// normalize line endings etc..
+    fn normalize_file_for_os(file: &mut String) {
+        *file = file.replace("\r\n", "\n");
+    }
+
     #[test]
     fn test_empty_lad_file_serializes_correctly() {
         let lad_file = LadFile::new();
@@ -799,7 +804,9 @@ mod test {
             .add_type::<TupleStructType>()
             .add_type_info(EnumType::type_info())
             .build();
-        let serialized = serialize_lad_file(&lad_file, true).unwrap();
+        let mut serialized = serialize_lad_file(&lad_file, true).unwrap();
+
+        normalize_file_for_os(&mut serialized);
 
         if BLESS_TEST_FILE {
             let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
@@ -810,7 +817,8 @@ mod test {
             return;
         }
 
-        let expected = include_str!("../test_assets/test.lad.json");
+        let mut expected = include_str!("../test_assets/test.lad.json").to_owned();
+        normalize_file_for_os(&mut expected);
 
         assert_eq!(
             serialized.trim(),
