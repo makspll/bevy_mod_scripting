@@ -4,7 +4,7 @@ use env_logger::Builder;
 use log::LevelFilter;
 use mdbook::preprocess::{CmdPreprocessor, Preprocessor};
 use mdbook_lad_preprocessor::LADPreprocessor;
-use std::{env, io, process::exit};
+use std::{env, fs::File, io, process::exit};
 
 // use mdbook_lad_preprocessor::LADPreprocessor;
 
@@ -17,7 +17,16 @@ fn init_logger() {
         builder.filter(None, LevelFilter::Info);
     }
 
+    // target lad.log file in current directory
+    // print pwd
+    if let Ok(file) = File::create("./lad.log") {
+        let target = Box::new(file);
+        builder.target(env_logger::Target::Pipe(target));
+    }
+
     builder.init();
+
+    log::debug!("Debug logging enabled");
 }
 
 pub fn make_app() -> Command {

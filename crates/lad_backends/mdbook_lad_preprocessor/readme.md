@@ -15,17 +15,11 @@ Then any files with the `.lad.json` extension will be processed by the preproces
 So for example if you have the following structure:
 
 ```markdown
-# Summary
-
-[Prefix Chapter](prefix.dj)
-
----
-
 - [Normal file](normal_file.md)
 - [LAD file](lad_file.lad.json)
 ```
 
-The `lad_file.lad.json` will be processed by the preprocessor, and appropriate nested markdown will be generated from there on out.
+The `lad_file.lad.json` will be processed by the preprocessor, and appropriate nested markdown will be generated from there on out using the `LAD file` chapter as the parent page.
 
 If the file is not found
 

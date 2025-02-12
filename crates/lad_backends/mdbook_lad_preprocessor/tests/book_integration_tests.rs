@@ -35,10 +35,10 @@ fn test_on_example_ladfile() {
     add_executable_dir_to_path();
 
     let books_dir = get_books_dir();
-    println!("books_dir: {:?}", books_dir);
     let book = "example_ladfile";
 
     Command::new("mdbook")
+        .env("RUST_LOG", "debug")
         .current_dir(books_dir.join(book))
         .arg("build")
         .assert()
