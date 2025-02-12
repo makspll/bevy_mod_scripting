@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.4](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_functions-v0.9.3...bevy_mod_scripting_functions-v0.9.4) - 2025-02-12
+
+### Added
+
+- refactor generated bindings to use new derive macro (#268)
+- refactor core bindings to use new derive macro (#267)
+
+### Fixed
+
+- don't use `new_unregistered` for most of core bindings macros (#270)
+
 ## [0.9.0-alpha.8](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_functions-v0.9.0-alpha.7...bevy_mod_scripting_functions-v0.9.0-alpha.8) - 2025-01-27
 
 ### Added
