@@ -61,7 +61,7 @@ bevy_mod_scripting_derive = { workspace = true }
 
 [workspace.dependencies]
 profiling = { version = "1.0" }
-bevy = { version = "0.15.1", default-features = false }
+bevy = { version = "0.15.2", default-features = false }
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.9.4" }
 bevy_mod_scripting_functions = { path = "crates/bevy_mod_scripting_functions", version = "0.9.4", default-features = false }
 bevy_mod_scripting_derive = { path = "crates/bevy_mod_scripting_derive", version = "0.9.4" }
@@ -88,7 +88,8 @@ members = [
     "crates/bevy_mod_scripting_functions",
     "crates/xtask",
     "crates/script_integration_test_harness",
-    "crates/bevy_mod_scripting_derive", "crates/ladfile",
+    "crates/bevy_mod_scripting_derive",
+    "crates/ladfile",
 ]
 resolver = "2"
 exclude = ["crates/bevy_api_gen", "crates/macro_tests"]
