@@ -1,5 +1,15 @@
 {
-  "version": "0.1.0",
+  "version": "{{version}}",
+  "globals": {
+    "my_static_instance": {
+      "type_id": "ladfile::test::StructType<usize>",
+      "is_static": true
+    },
+    "my_non_static_instance": {
+      "type_id": "ladfile::test::UnitType",
+      "is_static": false
+    }
+  },
   "types": {
     "ladfile::test::EnumType": {
       "identifier": "EnumType",
