@@ -9,6 +9,7 @@ repository = "https://github.com/makspll/bevy_mod_scripting"
 homepage = "https://github.com/makspll/bevy_mod_scripting"
 keywords = ["bevy", "gamedev", "scripting", "format", "json"]
 categories = ["game-development", "parser-implementations"]
+include = ["readme.md", "/src", "/test_assets"]
 readme = "readme.md"
 
 [dependencies]

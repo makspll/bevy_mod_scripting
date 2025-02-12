@@ -15,13 +15,18 @@ use bevy_reflect::{
 use indexmap::IndexMap;
 use std::{any::TypeId, borrow::Cow, collections::HashMap, ffi::OsString, path::PathBuf};
 
-const LAD_VERSION: &str = "0.1.0";
+/// The current version of the LAD_VERSION format supported by this library.
+/// Earlier versions are not guaranteed to be supported.
+const LAD_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 /// A Language Agnostic Declaration (LAD) file.
 pub struct LadFile {
     /// The version of the LAD file format used.
     pub version: Cow<'static, str>,
+
+    /// The global instances defined in the LAD file.
+    pub globals: IndexMap<Cow<'static, str>, LadInstance>,
 
     /// The types defined in the LAD file.
     pub types: IndexMap<LadTypeId, LadType>,
@@ -38,6 +43,7 @@ impl LadFile {
     pub fn new() -> Self {
         Self {
             version: LAD_VERSION.into(),
+            globals: IndexMap::new(),
             types: IndexMap::new(),
             functions: IndexMap::new(),
             primitives: IndexMap::new(),
@@ -49,6 +55,19 @@ impl Default for LadFile {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// A LAD global instance
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct LadInstance {
+    /// The type of the instance
+    pub type_id: LadTypeId,
+
+    /// whether the instance is static or not
+    ///
+    /// static instances do not support method call syntax on them. I.e. only functions without a self parameter can be called on them.
+    /// They also do not support field access syntax.
+    pub is_static: bool,
 }
 
 #[derive(
@@ -432,6 +451,24 @@ impl<'t> LadFileBuilder<'t> {
         self
     }
 
+    /// Add a global instance to the LAD file.
+    ///
+    /// Requires the type to be registered via [`Self::add_type`] or [`Self::add_type_info`] first to provide rich type information.
+    ///
+    /// If `is_static` is true, the instance will be treated as a static instance
+    /// and hence not support method call syntax or method calls (i.e. only functions without a self parameter can be called on them).
+    pub fn add_instance<T: 'static>(
+        &mut self,
+        key: impl Into<Cow<'static, str>>,
+        is_static: bool,
+    ) -> &mut Self {
+        let type_id = self.lad_id_from_type_id(TypeId::of::<T>());
+        self.file
+            .globals
+            .insert(key.into(), LadInstance { type_id, is_static });
+        self
+    }
+
     /// Add a type definition to the LAD file.
     ///
     /// Equivalent to calling [`Self::add_type_info`] with `T::type_info()`.
@@ -726,7 +763,7 @@ mod test {
     const BLESS_TEST_FILE: bool = false;
 
     /// normalize line endings etc..
-    fn normalize_file_for_os(file: &mut String) {
+    fn normalize_file(file: &mut String) {
         *file = file.replace("\r\n", "\n");
     }
 
@@ -794,7 +831,7 @@ mod test {
             .get_function_info("hello_world".into(), GlobalNamespace::into_namespace())
             .with_arg_names(&["arg1"]);
 
-        let lad_file = LadFileBuilder::new(&type_registry)
+        let mut lad_file = LadFileBuilder::new(&type_registry)
             .set_sorted(true)
             .add_function_info(function_info)
             .add_function_info(global_function_info)
@@ -803,10 +840,15 @@ mod test {
             .add_type::<UnitType>()
             .add_type::<TupleStructType>()
             .add_type_info(EnumType::type_info())
+            .add_instance::<StructType<usize>>("my_static_instance", true)
+            .add_instance::<UnitType>("my_non_static_instance", false)
             .build();
+
+        // normalize the version so we don't have to update it every time
+        lad_file.version = "{{version}}".into();
         let mut serialized = serialize_lad_file(&lad_file, true).unwrap();
 
-        normalize_file_for_os(&mut serialized);
+        normalize_file(&mut serialized);
 
         if BLESS_TEST_FILE {
             let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
@@ -818,7 +860,7 @@ mod test {
         }
 
         let mut expected = include_str!("../test_assets/test.lad.json").to_owned();
-        normalize_file_for_os(&mut expected);
+        normalize_file(&mut expected);
 
         assert_eq!(
             serialized.trim(),
@@ -833,6 +875,6 @@ mod test {
     fn test_asset_deserializes_correctly() {
         let asset = include_str!("../test_assets/test.lad.json");
         let deserialized = parse_lad_file(asset).unwrap();
-        assert_eq!(deserialized.version, LAD_VERSION);
+        assert_eq!(deserialized.version, "{{version}}");
     }
 }
