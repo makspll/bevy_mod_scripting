@@ -14,3 +14,4 @@ Cargo.lock
 assets/scripts/tlconfig.lua
 **.log
 **build/
+.html

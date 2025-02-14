@@ -1,0 +1,10 @@
+[book]
+authors = ["Maksymilian Mozolewski"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Bevy Scripting"
+description = "Documentation for the Bevy Scripting library"
+
+
+[preprocessor.lad-preprocessor]

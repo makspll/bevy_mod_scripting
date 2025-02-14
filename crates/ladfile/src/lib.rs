@@ -1,7 +1,10 @@
 //! Parsing definitions for the LAD (Language Agnostic Decleration) file format.
 
 use bevy_mod_scripting_core::{
-    bindings::{function::script_function::FunctionCallContext, ReflectReference},
+    bindings::{
+        function::{namespace::Namespace, script_function::FunctionCallContext},
+        ReflectReference,
+    },
     docgen::{
         info::FunctionInfo,
         typed_through::{ThroughTypeInfo, TypedWrapperKind, UntypedWrapperKind},
@@ -36,6 +39,10 @@ pub struct LadFile {
 
     /// A mapping from type ids to primitive types
     pub primitives: IndexMap<LadTypeId, LadBMSPrimitiveType>,
+
+    /// A description of the LAD file and its contents in markdown
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub description: Option<String>,
 }
 
 impl LadFile {
@@ -47,6 +54,7 @@ impl LadFile {
             types: IndexMap::new(),
             functions: IndexMap::new(),
             primitives: IndexMap::new(),
+            description: None,
         }
     }
 }
@@ -77,6 +85,12 @@ pub struct LadInstance {
 /// Only unique within the LAD file.
 pub struct LadFunctionId(String);
 
+impl std::fmt::Display for LadFunctionId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 impl LadFunctionId {
     /// Create a new LAD function id with a string.
     pub fn new_string_id(function_id: String) -> Self {
@@ -87,6 +101,8 @@ impl LadFunctionId {
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 /// A function definition used in a LAD file.
 pub struct LadFunction {
+    /// The namespace of the function.
+    pub namespace: LadFunctionNamespace,
     /// The identifier or name of the function.
     pub identifier: Cow<'static, str>,
     /// The argument information for the function.
@@ -97,6 +113,16 @@ pub struct LadFunction {
     /// The documentation describing the function.
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub documentation: Option<Cow<'static, str>>,
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(untagged)]
+/// A function namespace used in a LAD file.
+pub enum LadFunctionNamespace {
+    /// A function in a type's namespace
+    Type(LadTypeId),
+    /// A global function
+    Global,
 }
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -265,6 +291,12 @@ impl LadBMSPrimitiveKind {
 /// It *might* be unique across LAD files, but this is not guaranteed and depends on the type itself.
 pub struct LadTypeId(Cow<'static, str>);
 
+impl std::fmt::Display for LadTypeId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 impl LadTypeId {
     /// Create a new LAD type id with a specific index.
     pub fn new_string_id(type_id: Cow<'static, str>) -> Self {
@@ -317,6 +349,32 @@ pub enum LadTypeLayout {
     Enum(Vec<LadVariant>),
 }
 
+impl LadTypeLayout {
+    /// Traverses the layout in a depth-first manner and calls the provided function on each variant in order of appearance.
+    /// Calls the function with the variant and its index in the layout starting from 0.
+    ///
+    /// If the layout is opaque, Some with the provided default is returned
+    pub fn for_each_variant<F: FnMut(&LadVariant, usize), D>(
+        &self,
+        mut f: F,
+        default: D,
+    ) -> Option<D> {
+        match self {
+            LadTypeLayout::Opaque => Some(default),
+            LadTypeLayout::MonoVariant(variant) => {
+                f(variant, 0);
+                None
+            }
+            LadTypeLayout::Enum(variants) => {
+                for (i, variant) in variants.iter().enumerate() {
+                    f(variant, i);
+                }
+                None
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(tag = "kind")]
 /// A variant definition used in a LAD file.
@@ -355,16 +413,19 @@ pub enum LadVariant {
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 /// A field definition used in a LAD file.
 pub struct LadField {
+    /// The type of the field.
     #[serde(rename = "type")]
-    type_: LadTypeId,
+    pub type_: LadTypeId,
 }
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 /// A named field definition used in a LAD file.
 pub struct LadNamedField {
-    name: String,
+    /// The name of the field.
+    pub name: String,
     #[serde(rename = "type")]
-    type_: LadTypeId,
+    /// The type of the field.
+    pub type_: LadTypeId,
 }
 
 /// A generic type definition used in a LAD file.
@@ -532,8 +593,20 @@ impl<'t> LadFileBuilder<'t> {
                 .collect(),
             return_type: self.lad_id_from_type_id(function_info.return_info.type_id),
             documentation: function_info.docs,
+            namespace: match function_info.namespace {
+                Namespace::Global => LadFunctionNamespace::Global,
+                Namespace::OnType(type_id) => {
+                    LadFunctionNamespace::Type(self.lad_id_from_type_id(type_id))
+                }
+            },
         };
         self.file.functions.insert(function_id, lad_function);
+        self
+    }
+
+    /// Set the markdown description of the LAD file.
+    pub fn set_description(&mut self, description: impl Into<String>) -> &mut Self {
+        self.file.description = Some(description.into());
         self
     }
 
@@ -544,6 +617,18 @@ impl<'t> LadFileBuilder<'t> {
             file.types.sort_keys();
             file.functions.sort_keys();
             file.primitives.sort_keys();
+        }
+
+        // associate functions on type namespaces with their types
+        for (function_id, function) in file.functions.iter() {
+            match &function.namespace {
+                LadFunctionNamespace::Type(type_id) => {
+                    if let Some(t) = file.types.get_mut(type_id) {
+                        t.associated_functions.push(function_id.clone());
+                    }
+                }
+                LadFunctionNamespace::Global => {}
+            }
         }
 
         file
@@ -832,6 +917,7 @@ mod test {
             .with_arg_names(&["arg1"]);
 
         let mut lad_file = LadFileBuilder::new(&type_registry)
+            .set_description("## Hello gentlemen\n I am  markdown file.\n - hello\n - world")
             .set_sorted(true)
             .add_function_info(function_info)
             .add_function_info(global_function_info)

@@ -1,0 +1,348 @@
+use std::{borrow::Cow, path::PathBuf};
+
+use ladfile::{LadFunction, LadInstance, LadType, LadTypeLayout};
+use mdbook::book::{Chapter, SectionNumber};
+
+use crate::markdown::{IntoMarkdown, MarkdownBuilder};
+
+pub(crate) fn section_to_chapter(
+    section: SectionAndChildren,
+    original_chapter: Option<&Chapter>,
+    parent_names: Vec<String>,
+    number: Option<SectionNumber>,
+    root_path: Option<PathBuf>,
+    root_source_path: Option<PathBuf>,
+) -> Chapter {
+    let mut parent_builder = MarkdownBuilder::new();
+    section.section.to_markdown(&mut parent_builder);
+
+    let new_path = root_path
+        .unwrap_or_default()
+        .join(section.section.file_name());
+
+    let new_source_path = root_source_path
+        .unwrap_or_default()
+        .join(section.section.file_name());
+
+    let current_number = number.clone().unwrap_or_default();
+
+    let children_chapters = section
+        .children
+        .into_iter()
+        .enumerate()
+        .map(|(index, child)| {
+            let mut new_number = current_number.clone();
+            new_number.push(index as u32);
+            section_to_chapter(
+                child,
+                None,
+                vec![section.section.title()],
+                Some(new_number),
+                Some(new_path.clone()),
+                Some(new_source_path.clone()),
+            )
+        })
+        .map(mdbook::BookItem::Chapter)
+        .collect();
+
+    if let Some(original) = original_chapter {
+        // override content only
+        Chapter {
+            content: parent_builder.build(),
+            sub_items: children_chapters,
+            ..original.clone()
+        }
+    } else {
+        Chapter {
+            name: section.section.title(),
+            content: parent_builder.build(),
+            number,
+            sub_items: children_chapters,
+            path: Some(new_path),
+            source_path: Some(new_source_path),
+            parent_names,
+        }
+    }
+}
+
+pub(crate) fn lad_file_to_sections(
+    ladfile: &ladfile::LadFile,
+    title: Option<String>,
+) -> SectionAndChildren<'_> {
+    let summary = Section::Summary { ladfile, title };
+
+    let children = ladfile
+        .types
+        .iter()
+        .map(|(_, lad_type)| Section::TypeDetail { lad_type, ladfile })
+        .map(|section| SectionAndChildren {
+            section,
+            children: Vec::new(),
+        })
+        .collect();
+
+    SectionAndChildren {
+        section: summary,
+        children,
+    }
+}
+pub(crate) struct SectionAndChildren<'a> {
+    section: Section<'a>,
+    children: Vec<SectionAndChildren<'a>>,
+}
+
+/// Sections which convert to single markdown files
+pub(crate) enum Section<'a> {
+    Summary {
+        ladfile: &'a ladfile::LadFile,
+        title: Option<String>,
+    },
+    TypeDetail {
+        lad_type: &'a LadType,
+        ladfile: &'a ladfile::LadFile,
+    },
+}
+
+impl Section<'_> {
+    pub(crate) fn title(&self) -> String {
+        match self {
+            Section::Summary { title, .. } => {
+                title.as_deref().unwrap_or("Bindings Summary").to_owned()
+            }
+            Section::TypeDetail {
+                lad_type: type_id, ..
+            } => type_id.identifier.clone(),
+        }
+    }
+
+    pub(crate) fn file_name(&self) -> String {
+        self.title().to_lowercase().replace(" ", "_")
+    }
+
+    pub(crate) fn section_items(&self) -> Vec<SectionItem> {
+        match self {
+            Section::Summary { ladfile, .. } => {
+                let types = ladfile.types.values().collect::<Vec<_>>();
+                let instances = ladfile.globals.iter().collect::<Vec<_>>();
+                vec![
+                    SectionItem::InstancesSummary { instances },
+                    SectionItem::TypesSummary { types },
+                ]
+            }
+            Section::TypeDetail {
+                lad_type: type_id,
+                ladfile,
+            } => {
+                let functions = type_id
+                    .associated_functions
+                    .iter()
+                    .filter_map(|i| ladfile.functions.get(i))
+                    .collect::<Vec<_>>();
+
+                vec![
+                    SectionItem::Layout {
+                        layout: &type_id.layout,
+                    },
+                    SectionItem::Description { lad_type: type_id },
+                    SectionItem::FunctionsSummary { functions },
+                ]
+            }
+        }
+    }
+}
+
+impl IntoMarkdown for Section<'_> {
+    fn to_markdown(&self, builder: &mut MarkdownBuilder) {
+        builder.heading(1, self.title());
+
+        for item in self.section_items() {
+            item.to_markdown(builder);
+        }
+    }
+}
+
+/// Items which combine markdown elements to build a section
+pub enum SectionItem<'a> {
+    Layout {
+        layout: &'a LadTypeLayout,
+    },
+    Description {
+        lad_type: &'a LadType,
+    },
+    FunctionsSummary {
+        functions: Vec<&'a LadFunction>,
+    },
+    TypesSummary {
+        types: Vec<&'a LadType>,
+    },
+    InstancesSummary {
+        instances: Vec<(&'a Cow<'static, str>, &'a LadInstance)>,
+    },
+}
+
+impl IntoMarkdown for SectionItem<'_> {
+    fn to_markdown(&self, builder: &mut MarkdownBuilder) {
+        match self {
+            SectionItem::Layout { layout } => {
+                // process the variants here
+                let opaque = layout.for_each_variant(
+                    |v, i| match v {
+                        ladfile::LadVariant::TupleStruct { name, fields } => {
+                            builder.heading(2, format!("{}", i)).complex(|builder| {
+                                builder.paragraph(format!("Tuple struct: {}", name)).list(
+                                    true,
+                                    fields
+                                        .iter()
+                                        .enumerate()
+                                        .map(|(i, f)| format!("{i}: {}", f.type_))
+                                        .collect(),
+                                );
+                            });
+                        }
+                        ladfile::LadVariant::Struct { name, fields } => {
+                            builder.heading(2, format!("{}", i)).complex(|builder| {
+                                builder.paragraph(format!("Struct: {}", name)).list(
+                                    false,
+                                    fields
+                                        .iter()
+                                        .map(|f| format!("{}: {}", f.name, f.type_))
+                                        .collect(),
+                                );
+                            });
+                        }
+                        ladfile::LadVariant::Unit { name } => {
+                            builder.heading(2, format!("{}", i)).complex(|builder| {
+                                builder.paragraph(format!("Unit: {}", name));
+                            });
+                        }
+                    },
+                    "Opaque Type. 🔒",
+                );
+
+                if let Some(opaque) = opaque {
+                    builder.paragraph(opaque);
+                }
+            }
+            SectionItem::Description {
+                lad_type: description,
+            } => {
+                builder.heading(2, "Description").quote(
+                    description
+                        .documentation
+                        .as_deref()
+                        .unwrap_or("None available. 🚧"),
+                );
+            }
+            SectionItem::FunctionsSummary { functions } => {
+                builder.heading(2, "Functions");
+
+                // make a table of functions as a quick reference, make them link to function details sub-sections
+                builder.table(|builder| {
+                    builder.headers(vec!["Function", "Summary"]);
+                    for function in functions.iter() {
+                        let mut first_col = function.identifier.to_string();
+                        first_col.push('(');
+                        for (idx, arg) in function.arguments.iter().enumerate() {
+                            first_col.push_str(
+                                &arg.name
+                                    .as_ref()
+                                    .cloned()
+                                    .unwrap_or_else(|| Cow::Owned(format!("arg{}", idx))),
+                            );
+                            if idx != function.arguments.len() - 1 {
+                                first_col.push_str(", ");
+                            }
+                        }
+                        first_col.push(')');
+
+                        // first line with content from documentation trimmed to 100 chars
+                        let second_col = function
+                            .documentation
+                            .as_deref()
+                            .map(|doc| {
+                                let doc = doc.trim();
+                                if doc.len() > 100 {
+                                    format!("{}...", &doc[..100])
+                                } else {
+                                    doc.to_owned()
+                                }
+                            })
+                            .unwrap_or_else(|| "No documentation available. 🚧".to_owned());
+
+                        let mut body_markdown = MarkdownBuilder::new();
+
+                        body_markdown.inline().inline_code(first_col);
+
+                        let mut second_col_markdown = MarkdownBuilder::new();
+
+                        second_col_markdown
+                            .inline()
+                            .link(second_col, function.identifier.to_string());
+
+                        builder.row(vec![body_markdown.build(), second_col_markdown.build()]);
+                    }
+                });
+            }
+            SectionItem::TypesSummary { types } => {
+                builder.heading(2, "Types");
+
+                // make a table of types as a quick reference, make them link to type details sub-sections
+                builder.table(|builder| {
+                    builder.headers(vec!["Type", "Summary"]);
+                    for type_ in types.iter() {
+                        let first_col = type_.identifier.to_string();
+
+                        // first line with content from documentation trimmed to 100 chars
+                        let second_col = type_
+                            .documentation
+                            .as_deref()
+                            .map(|doc| {
+                                let doc = doc.trim();
+                                if doc.len() > 100 {
+                                    format!("{}...", &doc[..100])
+                                } else {
+                                    doc.to_owned()
+                                }
+                            })
+                            .unwrap_or_else(|| "No documentation available. 🚧".to_owned());
+
+                        let mut body_markdown = MarkdownBuilder::new();
+
+                        body_markdown.inline().inline_code(first_col);
+
+                        let mut second_col_markdown = MarkdownBuilder::new();
+
+                        second_col_markdown
+                            .inline()
+                            .link(second_col, type_.identifier.to_string());
+
+                        builder.row(vec![body_markdown.build(), second_col_markdown.build()]);
+                    }
+                });
+            }
+            SectionItem::InstancesSummary { instances } => {
+                builder.heading(2, "Globals");
+
+                // make a table of instances as a quick reference, make them link to instance details sub-sections
+                builder.table(|builder| {
+                    builder.headers(vec!["Instance", "Type"]);
+                    for (key, instance) in instances.iter() {
+                        let first_col = key.to_string();
+
+                        let mut body_markdown = MarkdownBuilder::new();
+
+                        body_markdown.inline().inline_code(first_col);
+
+                        let mut second_col_markdown = MarkdownBuilder::new();
+
+                        second_col_markdown
+                            .inline()
+                            .link(instance.type_id.to_string(), instance.type_id.to_string());
+
+                        builder.row(vec![body_markdown.build(), second_col_markdown.build()]);
+                    }
+                });
+            }
+        }
+    }
+}
