@@ -51,7 +51,7 @@ enum Feature {
     // Rune,
 
     // Profiling
-    #[strum(serialize = "profiling/profile-with-tracy")]
+    #[strum(serialize = "bevy/trace_tracy")]
     Tracy,
 }
 
