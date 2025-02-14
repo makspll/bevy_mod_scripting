@@ -3,7 +3,10 @@ use std::{borrow::Cow, path::PathBuf};
 use ladfile::{LadFunction, LadInstance, LadType, LadTypeLayout};
 use mdbook::book::{Chapter, SectionNumber};
 
-use crate::markdown::{IntoMarkdown, MarkdownBuilder};
+use crate::{
+    markdown::{IntoMarkdown, Markdown, MarkdownBuilder},
+    markdown_vec,
+};
 
 pub(crate) fn section_to_chapter(
     section: SectionAndChildren,
@@ -186,41 +189,40 @@ impl IntoMarkdown for SectionItem<'_> {
             SectionItem::Layout { layout } => {
                 // process the variants here
                 let opaque = layout.for_each_variant(
-                    |v, i| match v {
+                    |v, _i| match v {
                         ladfile::LadVariant::TupleStruct { name, fields } => {
-                            builder.heading(2, format!("{}", i)).complex(|builder| {
-                                builder.paragraph(format!("Tuple struct: {}", name)).list(
-                                    true,
-                                    fields
-                                        .iter()
-                                        .enumerate()
-                                        .map(|(i, f)| format!("{i}: {}", f.type_))
-                                        .collect(),
-                                );
-                            });
+                            builder.heading(3, name.to_string()).list(
+                                true,
+                                fields
+                                    .iter()
+                                    .map(|f| Markdown::new_paragraph(f.type_.to_string()))
+                                    .collect(),
+                            );
                         }
                         ladfile::LadVariant::Struct { name, fields } => {
-                            builder.heading(2, format!("{}", i)).complex(|builder| {
-                                builder.paragraph(format!("Struct: {}", name)).list(
-                                    false,
-                                    fields
-                                        .iter()
-                                        .map(|f| format!("{}: {}", f.name, f.type_))
-                                        .collect(),
-                                );
-                            });
+                            builder.heading(3, name.to_string()).list(
+                                false,
+                                fields
+                                    .iter()
+                                    .map(|f| {
+                                        markdown_vec![
+                                            Markdown::new_paragraph(f.name.clone()).bold(),
+                                            Markdown::new_paragraph(":"),
+                                            f.type_.to_string()
+                                        ]
+                                    })
+                                    .collect(),
+                            );
                         }
                         ladfile::LadVariant::Unit { name } => {
-                            builder.heading(2, format!("{}", i)).complex(|builder| {
-                                builder.paragraph(format!("Unit: {}", name));
-                            });
+                            builder.heading(3, name.to_string());
                         }
                     },
                     "Opaque Type. 🔒",
                 );
 
                 if let Some(opaque) = opaque {
-                    builder.paragraph(opaque);
+                    builder.text(opaque);
                 }
             }
             SectionItem::Description {
@@ -269,17 +271,14 @@ impl IntoMarkdown for SectionItem<'_> {
                             })
                             .unwrap_or_else(|| "No documentation available. 🚧".to_owned());
 
-                        let mut body_markdown = MarkdownBuilder::new();
-
-                        body_markdown.inline().inline_code(first_col);
-
-                        let mut second_col_markdown = MarkdownBuilder::new();
-
-                        second_col_markdown
-                            .inline()
-                            .link(second_col, function.identifier.to_string());
-
-                        builder.row(vec![body_markdown.build(), second_col_markdown.build()]);
+                        builder.row(markdown_vec![
+                            Markdown::new_paragraph(first_col).code(),
+                            Markdown::Link {
+                                text: second_col,
+                                url: function.identifier.to_string(),
+                                anchor: true
+                            }
+                        ]);
                     }
                 });
             }
@@ -306,17 +305,14 @@ impl IntoMarkdown for SectionItem<'_> {
                             })
                             .unwrap_or_else(|| "No documentation available. 🚧".to_owned());
 
-                        let mut body_markdown = MarkdownBuilder::new();
-
-                        body_markdown.inline().inline_code(first_col);
-
-                        let mut second_col_markdown = MarkdownBuilder::new();
-
-                        second_col_markdown
-                            .inline()
-                            .link(second_col, type_.identifier.to_string());
-
-                        builder.row(vec![body_markdown.build(), second_col_markdown.build()]);
+                        builder.row(markdown_vec![
+                            Markdown::new_paragraph(first_col).code(),
+                            Markdown::Link {
+                                text: second_col,
+                                url: type_.identifier.to_string(),
+                                anchor: true
+                            }
+                        ]);
                     }
                 });
             }
@@ -329,17 +325,10 @@ impl IntoMarkdown for SectionItem<'_> {
                     for (key, instance) in instances.iter() {
                         let first_col = key.to_string();
 
-                        let mut body_markdown = MarkdownBuilder::new();
-
-                        body_markdown.inline().inline_code(first_col);
-
-                        let mut second_col_markdown = MarkdownBuilder::new();
-
-                        second_col_markdown
-                            .inline()
-                            .link(instance.type_id.to_string(), instance.type_id.to_string());
-
-                        builder.row(vec![body_markdown.build(), second_col_markdown.build()]);
+                        builder.row(markdown_vec![
+                            Markdown::new_paragraph(first_col).code(),
+                            Markdown::new_paragraph(instance.type_id.to_string())
+                        ]);
                     }
                 });
             }
