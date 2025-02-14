@@ -2,6 +2,8 @@
 #![allow(missing_docs)]
 
 use mdbook::{errors::Error, preprocess::Preprocessor};
+mod markdown;
+mod sections;
 
 const LAD_EXTENSION: &str = "lad.json";
 
@@ -18,6 +20,7 @@ impl Preprocessor for LADPreprocessor {
         mut book: mdbook::book::Book,
     ) -> mdbook::errors::Result<mdbook::book::Book> {
         let mut errors = Vec::default();
+
         book.for_each_mut(|item| {
             if let mdbook::BookItem::Chapter(chapter) = item {
                 let is_lad_chapter = chapter
@@ -31,6 +34,8 @@ impl Preprocessor for LADPreprocessor {
                     return;
                 }
 
+                let chapter_title = chapter.name.clone();
+
                 let lad = match ladfile::parse_lad_file(&chapter.content) {
                     Ok(lad) => lad,
                     Err(e) => {
@@ -42,15 +47,20 @@ impl Preprocessor for LADPreprocessor {
 
                 log::debug!("Parsed LAD file: {:?}", lad);
 
-                // for now just replace the content with a list of types in the LAD file
-                let content = lad
-                    .types
-                    .iter()
-                    .map(|(_, lad)| lad.identifier.clone())
-                    .collect::<Vec<_>>()
-                    .join("\n");
+                let sections = sections::lad_file_to_sections(&lad, Some(chapter_title));
 
-                chapter.content = content;
+                let new_chapter = sections::section_to_chapter(
+                    sections,
+                    Some(chapter),
+                    chapter.parent_names.clone(),
+                    chapter.number.clone(),
+                    None,
+                    None,
+                );
+
+                log::debug!("New chapter: {:?}", new_chapter);
+
+                *chapter = new_chapter;
             }
         });
 

@@ -55,6 +55,9 @@
         }
       ],
       "documentation": " I am a struct",
+      "associated_functions": [
+        "ladfile::test::StructType<usize>::hello_world"
+      ],
       "layout": {
         "kind": "Struct",
         "name": "StructType",
@@ -101,6 +104,7 @@
   },
   "functions": {
     "::hello_world": {
+      "namespace": null,
       "identifier": "hello_world",
       "arguments": [
         {
@@ -113,6 +117,7 @@
       "return_type": "usize"
     },
     "ladfile::test::StructType<usize>::hello_world": {
+      "namespace": "ladfile::test::StructType<usize>",
       "identifier": "hello_world",
       "arguments": [
         {
@@ -245,5 +250,6 @@
       "kind": "usize",
       "documentation": "An unsigned pointer-sized integer"
     }
-  }
+  },
+  "description": "## Hello gentlemen\n I am  markdown file.\n - hello\n - world"
 }
