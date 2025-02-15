@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 /// Escapes Markdown reserved characters in the given text.
 fn escape_markdown(text: &str) -> String {
     // Characters that should be escaped in markdown
@@ -25,8 +27,12 @@ pub enum Markdown {
         level: u8,
         text: String,
     },
-    Paragraph(String),
-    InlineCode(String),
+    Paragraph {
+        text: String,
+        bold: bool,
+        italic: bool,
+        code: bool,
+    },
     CodeBlock {
         language: Option<String>,
         code: String,
@@ -52,6 +58,54 @@ pub enum Markdown {
     },
 }
 
+#[allow(dead_code)]
+impl Markdown {
+    pub fn new_paragraph(text: impl Into<String>) -> Self {
+        Markdown::Paragraph {
+            text: text.into(),
+            bold: false,
+            italic: false,
+            code: false,
+        }
+    }
+
+    pub fn bold(self) -> Self {
+        match self {
+            Markdown::Paragraph { text, .. } => Markdown::Paragraph {
+                text,
+                bold: true,
+                italic: false,
+                code: false,
+            },
+            _ => self,
+        }
+    }
+
+    pub fn italic(self) -> Self {
+        match self {
+            Markdown::Paragraph { text, .. } => Markdown::Paragraph {
+                text,
+                bold: false,
+                italic: true,
+                code: false,
+            },
+            _ => self,
+        }
+    }
+
+    pub fn code(self) -> Self {
+        match self {
+            Markdown::Paragraph { text, .. } => Markdown::Paragraph {
+                text,
+                bold: false,
+                italic: false,
+                code: true,
+            },
+            _ => self,
+        }
+    }
+}
+
 impl IntoMarkdown for Markdown {
     fn to_markdown(&self, builder: &mut MarkdownBuilder) {
         match self {
@@ -62,28 +116,54 @@ impl IntoMarkdown for Markdown {
                 // Escape the text for Markdown
                 builder.append(&format!("{} {}", hashes, escape_markdown(text)));
             }
-            Markdown::Paragraph(text) => {
-                builder.append(&escape_markdown(text));
+            Markdown::Paragraph {
+                text,
+                bold,
+                italic,
+                code,
+            } => {
+                if *bold {
+                    builder.append("**");
+                }
+                if *italic {
+                    builder.append("_");
+                }
+                if *code {
+                    builder.append("`");
+                }
+
+                let escaped = if *code {
+                    text.clone()
+                } else {
+                    escape_markdown(text)
+                };
+
+                builder.append(&escaped);
+
+                if *code {
+                    builder.append("`");
+                }
+                if *italic {
+                    builder.append("_");
+                }
+                if *bold {
+                    builder.append("**");
+                }
             }
             Markdown::CodeBlock { language, code } => {
                 // Do not escape code blocks
                 let lang = language.as_deref().unwrap_or("");
                 builder.append(&format!("```{}\n{}\n```", lang, code));
             }
-            Markdown::InlineCode(code) => {
-                // Do not escape inline code
-                builder.append(&format!("`{}`", code));
-            }
             Markdown::List { ordered, items } => {
                 let list_output = items
                     .iter()
                     .enumerate()
                     .map(|(i, item)| {
-                        let escaped_item = escape_markdown(item);
                         if *ordered {
-                            format!("{}. {}", i + 1, escaped_item)
+                            format!("{}. {}", i + 1, item)
                         } else {
-                            format!("- {}", escaped_item)
+                            format!("- {}", item)
                         }
                     })
                     .collect::<Vec<String>>()
@@ -149,6 +229,56 @@ impl IntoMarkdown for Markdown {
     }
 }
 
+impl IntoMarkdown for &str {
+    fn to_markdown(&self, builder: &mut MarkdownBuilder) {
+        builder.append(&escape_markdown(self))
+    }
+}
+
+impl IntoMarkdown for String {
+    fn to_markdown(&self, builder: &mut MarkdownBuilder) {
+        builder.append(&escape_markdown(self.as_ref()))
+    }
+}
+
+impl IntoMarkdown for Cow<'_, str> {
+    fn to_markdown(&self, builder: &mut MarkdownBuilder) {
+        builder.append(&escape_markdown(self.as_ref()))
+    }
+}
+
+impl IntoMarkdown for Box<dyn IntoMarkdown> {
+    fn to_markdown(&self, builder: &mut MarkdownBuilder) {
+        self.as_ref().to_markdown(builder)
+    }
+}
+
+/// Usage: markdown_vec![item1, item2, item3]
+/// Creates Vec<dyn IntoMarkdown> from a list of items.
+#[macro_export]
+macro_rules! markdown_vec {
+    ($($x:expr),*$(,)?) => {
+        vec![$(
+            Box::new($x) as Box<dyn IntoMarkdown>
+        ),*]
+    };
+}
+
+impl<T: IntoMarkdown> IntoMarkdown for Vec<T> {
+    fn to_markdown(&self, builder: &mut MarkdownBuilder) {
+        for (i, item) in self.iter().enumerate() {
+            item.to_markdown(builder);
+            if i < self.len() - 1 {
+                if builder.inline {
+                    builder.append(" ");
+                } else {
+                    builder.append("\n\n");
+                }
+            }
+        }
+    }
+}
+
 /// Builder pattern for generating comprehensive Markdown documentation.
 /// Now also doubles as the accumulator for the generated markdown.
 pub struct MarkdownBuilder {
@@ -194,8 +324,35 @@ impl MarkdownBuilder {
     }
 
     /// Adds a paragraph element.
-    pub fn paragraph(&mut self, text: impl Into<String>) -> &mut Self {
-        self.elements.push(Markdown::Paragraph(text.into()));
+    pub fn text(&mut self, text: impl Into<String>) -> &mut Self {
+        self.elements.push(Markdown::Paragraph {
+            text: text.into(),
+            bold: false,
+            italic: false,
+            code: false,
+        });
+        self
+    }
+
+    /// Adds a bold element.
+    pub fn bold(&mut self, text: impl Into<String>) -> &mut Self {
+        self.elements.push(Markdown::Paragraph {
+            text: text.into(),
+            bold: true,
+            italic: false,
+            code: false,
+        });
+        self
+    }
+
+    /// Adds an italic element.
+    pub fn italic(&mut self, text: impl Into<String>) -> &mut Self {
+        self.elements.push(Markdown::Paragraph {
+            text: text.into(),
+            bold: false,
+            italic: true,
+            code: false,
+        });
         self
     }
 
@@ -214,13 +371,27 @@ impl MarkdownBuilder {
 
     /// Adds an inline code element.
     pub fn inline_code(&mut self, code: impl Into<String>) -> &mut Self {
-        self.elements.push(Markdown::InlineCode(code.into()));
+        self.elements.push(Markdown::Paragraph {
+            text: code.into(),
+            bold: false,
+            italic: false,
+            code: true,
+        });
         self
     }
 
     /// Adds a list element.
-    pub fn list(&mut self, ordered: bool, items: Vec<impl Into<String>>) -> &mut Self {
-        let converted_items: Vec<String> = items.into_iter().map(|s| s.into()).collect();
+    pub fn list(&mut self, ordered: bool, items: Vec<impl IntoMarkdown>) -> &mut Self {
+        let converted_items: Vec<String> = items
+            .into_iter()
+            .map(|s| {
+                let mut builder = MarkdownBuilder::new();
+                builder.inline();
+                s.to_markdown(&mut builder);
+                builder.build()
+            })
+            .collect();
+
         self.elements.push(Markdown::List {
             ordered,
             items: converted_items,
@@ -316,8 +487,16 @@ impl TableBuilder {
     }
 
     /// Adds a row to the table.
-    pub fn row(&mut self, row: Vec<impl Into<String>>) -> &mut Self {
-        let converted: Vec<String> = row.into_iter().map(|cell| cell.into()).collect();
+    pub fn row(&mut self, row: Vec<impl IntoMarkdown>) -> &mut Self {
+        let converted = row
+            .into_iter()
+            .map(|r| {
+                let mut builder = MarkdownBuilder::new();
+                builder.inline();
+                r.to_markdown(&mut builder);
+                builder.build()
+            })
+            .collect();
         self.rows.push(converted);
         self
     }
@@ -340,17 +519,26 @@ mod tests {
         let mut builder = MarkdownBuilder::new();
         let markdown = builder
             .heading(1, "Documentation Title *with special chars*")
-            .paragraph("This is the introduction with some _underscores_ and `backticks`.")
+            .text("This is the introduction with some _underscores_ and `backticks`.")
             .codeblock(Some("rust"), "fn main() { println!(\"Hello, world!\"); }")
             .list(
                 false,
-                vec![
+                markdown_vec![
                     "First bullet with #hash",
-                    "Second bullet with [brackets]",
-                    "Third bullet with (parentheses)",
+                    Markdown::new_paragraph("Second bullet with [brackets]")
+                        .bold()
+                        .code(),
                 ],
             )
             .quote("This is a quote!\nIt spans multiple lines.")
+            .list(
+                true,
+                Vec::from_iter(vec![markdown_vec![
+                    Markdown::new_paragraph("italic").italic(),
+                    Markdown::new_paragraph("bold").bold(),
+                    Markdown::new_paragraph("code").code(),
+                ]]),
+            )
             .image(
                 "Rust Logo",
                 "https://www.rust-lang.org/logos/rust-logo-512x512.png",
@@ -361,7 +549,10 @@ mod tests {
                 table
                     .headers(vec!["Header 1", "Header 2"])
                     .row(vec!["Row 1 Col 1", "Row 1 Col 2"])
-                    .row(vec!["Row 2 Col 1", "Row 2 Col 2"]);
+                    .row(markdown_vec![
+                        "Row 2 Col 1",
+                        Markdown::new_paragraph("some_code").code()
+                    ]);
             })
             .build();
         let expected = r#"
@@ -374,11 +565,12 @@ mod tests {
             ```
 
             - First bullet with \#hash
-            - Second bullet with \[brackets\]
-            - Third bullet with \(parentheses\)
+            - `Second bullet with [brackets]`
 
             > This is a quote\!
             > It spans multiple lines\.
+
+            1. _italic_ **bold** `code`
 
             ![Rust Logo](https://www.rust-lang.org/logos/rust-logo-512x512.png)
 
@@ -389,7 +581,7 @@ mod tests {
             | Header 1 | Header 2 |
             | --- | --- |
             | Row 1 Col 1 | Row 1 Col 2 |
-            | Row 2 Col 1 | Row 2 Col 2 |
+            | Row 2 Col 1 | `some_code` |
         "#;
 
         let trimmed_indentation_expected = expected
