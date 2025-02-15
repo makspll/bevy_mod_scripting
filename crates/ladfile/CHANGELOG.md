@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.1.1-ladfile...v0.2.0-ladfile) - 2025-02-15
+
+### Added
+
+- create mdbook backend for LAD files (#287)
+- add global instances to `LAD` format (#283)
+
 ## [0.1.1](https://github.com/makspll/bevy_mod_scripting/compare/v0.1.0-ladfile...v0.1.1-ladfile) - 2025-02-12
 
 ### Added
