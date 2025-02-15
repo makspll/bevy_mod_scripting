@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.6](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.5...bevy_mod_scripting_core-v0.9.6) - 2025-02-15
+
+### Fixed
+
+- compilation error with `bevy/trace_tracy` (#289)
+
 ## [0.9.4](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.3...bevy_mod_scripting_core-v0.9.4) - 2025-02-12
 
 ### Added

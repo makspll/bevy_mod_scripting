@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.9.6](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.5...v0.9.6) - 2025-02-15
+
+### Added
+
+- create mdbook backend for LAD files (#287)
+
+### Fixed
+
+- compilation error with `bevy/trace_tracy` (#289)
+
 ## [0.9.5](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.4...v0.9.5) - 2025-02-12
 
 ### Added
