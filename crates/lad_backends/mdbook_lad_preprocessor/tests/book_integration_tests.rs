@@ -66,7 +66,7 @@ fn test_on_example_ladfile() {
     copy_ladfile_to_book_dir(&books_dir.join(book), ladfile_path);
 
     Command::new("mdbook")
-        .env("RUST_LOG", "debug")
+        .env("RUST_LOG", "trace")
         .current_dir(books_dir.join(book))
         .arg("build")
         .assert()
