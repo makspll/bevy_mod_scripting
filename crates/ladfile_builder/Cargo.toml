@@ -1,5 +1,5 @@
 [package]
-name = "ladfile"
+name = "ladfile_builder"
 version = "0.2.0"
 edition = "2021"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
@@ -13,9 +13,13 @@ include = ["readme.md", "/src", "/test_assets"]
 readme = "readme.md"
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-indexmap = { version = "2.7", features = ["serde"] }
+bevy_mod_scripting_core = { workspace = true }
+# I don't think bevy has a top level feature for this :C
+bevy_reflect = { version = "0.15.2", features = ["documentation"] }
+ladfile = { version = "0.2.0", path = "../ladfile" }
+
+[dev-dependencies]
+pretty_assertions = "1.4"
 
 [lints]
 workspace = true

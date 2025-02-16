@@ -50,9 +50,20 @@ pub(crate) fn section_to_chapter(
 
     if let Some(original) = original_chapter {
         // override content only
+        log::debug!(
+            "Setting .md extension for chapter paths: {:?}, {:?}.",
+            original.path,
+            original.source_path
+        );
+
         Chapter {
             content: parent_builder.build(),
             sub_items: children_chapters,
+            path: original.path.as_ref().map(|p| p.with_extension("md")),
+            source_path: original
+                .source_path
+                .as_ref()
+                .map(|p| p.with_extension("md")),
             ..original.clone()
         }
     } else {
@@ -119,7 +130,7 @@ impl Section<'_> {
     }
 
     pub(crate) fn file_name(&self) -> String {
-        self.title().to_lowercase().replace(" ", "_")
+        self.title().to_lowercase().replace(" ", "_") + ".md"
     }
 
     pub(crate) fn section_items(&self) -> Vec<SectionItem> {
