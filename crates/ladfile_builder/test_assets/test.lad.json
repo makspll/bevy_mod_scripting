@@ -2,19 +2,19 @@
   "version": "{{version}}",
   "globals": {
     "my_static_instance": {
-      "type_id": "ladfile::test::StructType<usize>",
+      "type_id": "ladfile_builder::test::StructType<usize>",
       "is_static": true
     },
     "my_non_static_instance": {
-      "type_id": "ladfile::test::UnitType",
+      "type_id": "ladfile_builder::test::UnitType",
       "is_static": false
     }
   },
   "types": {
-    "ladfile::test::EnumType": {
+    "ladfile_builder::test::EnumType": {
       "identifier": "EnumType",
-      "crate": "ladfile",
-      "path": "ladfile::test::EnumType",
+      "crate": "ladfile_builder",
+      "path": "ladfile_builder::test::EnumType",
       "layout": [
         {
           "kind": "Unit",
@@ -44,10 +44,10 @@
         }
       ]
     },
-    "ladfile::test::StructType<usize>": {
+    "ladfile_builder::test::StructType<usize>": {
       "identifier": "StructType",
-      "crate": "ladfile",
-      "path": "ladfile::test::StructType<usize>",
+      "crate": "ladfile_builder",
+      "path": "ladfile_builder::test::StructType<usize>",
       "generics": [
         {
           "type_id": "usize",
@@ -56,7 +56,7 @@
       ],
       "documentation": " I am a struct",
       "associated_functions": [
-        "ladfile::test::StructType<usize>::hello_world"
+        "ladfile_builder::test::StructType<usize>::hello_world"
       ],
       "layout": {
         "kind": "Struct",
@@ -73,10 +73,10 @@
         ]
       }
     },
-    "ladfile::test::TupleStructType": {
+    "ladfile_builder::test::TupleStructType": {
       "identifier": "TupleStructType",
-      "crate": "ladfile",
-      "path": "ladfile::test::TupleStructType",
+      "crate": "ladfile_builder",
+      "path": "ladfile_builder::test::TupleStructType",
       "documentation": " I am a tuple test type",
       "layout": {
         "kind": "TupleStruct",
@@ -91,10 +91,10 @@
         ]
       }
     },
-    "ladfile::test::UnitType": {
+    "ladfile_builder::test::UnitType": {
       "identifier": "UnitType",
-      "crate": "ladfile",
-      "path": "ladfile::test::UnitType",
+      "crate": "ladfile_builder",
+      "path": "ladfile_builder::test::UnitType",
       "documentation": " I am a unit test type",
       "layout": {
         "kind": "Struct",
@@ -116,8 +116,8 @@
       ],
       "return_type": "usize"
     },
-    "ladfile::test::StructType<usize>::hello_world": {
-      "namespace": "ladfile::test::StructType<usize>",
+    "ladfile_builder::test::StructType<usize>::hello_world": {
+      "namespace": "ladfile_builder::test::StructType<usize>",
       "identifier": "hello_world",
       "arguments": [
         {
@@ -143,7 +143,7 @@
           "kind": {
             "option": {
               "vec": {
-                "ref": "ladfile::test::EnumType"
+                "ref": "ladfile_builder::test::EnumType"
               }
             }
           },
