@@ -67,8 +67,8 @@ bevy_mod_scripting_functions = { path = "crates/bevy_mod_scripting_functions", v
 bevy_mod_scripting_derive = { path = "crates/bevy_mod_scripting_derive", version = "0.9.6" }
 
 # test utilities
-script_integration_test_harness = { path = "crates/script_integration_test_harness" }
-test_utils = { path = "crates/test_utils" }
+script_integration_test_harness = { path = "crates/testing_crates/script_integration_test_harness" }
+test_utils = { path = "crates/testing_crates/test_utils" }
 
 [dev-dependencies]
 bevy = { workspace = true, default-features = true }
@@ -84,12 +84,13 @@ members = [
     "crates/languages/bevy_mod_scripting_lua",
     "crates/languages/bevy_mod_scripting_rhai",
     # "crates/languages/bevy_mod_scripting_rune",
-    "crates/test_utils",
     "crates/bevy_mod_scripting_functions",
     "crates/xtask",
-    "crates/script_integration_test_harness",
+    "crates/testing_crates/test_utils",
+    "crates/testing_crates/script_integration_test_harness",
     "crates/bevy_mod_scripting_derive",
-    "crates/ladfile", "crates/lad_backends/mdbook_lad_preprocessor",
+    "crates/ladfile",
+    "crates/lad_backends/mdbook_lad_preprocessor",
 ]
 resolver = "2"
 exclude = ["crates/bevy_api_gen", "crates/macro_tests"]
