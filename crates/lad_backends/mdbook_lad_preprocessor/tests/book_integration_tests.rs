@@ -47,7 +47,7 @@ fn test_on_example_ladfile() {
     let books_dir = get_books_dir();
     let book = "example_ladfile";
 
-    let ladfile_path = "../../../../ladfile/test_assets/test.lad.json";
+    let ladfile_path = "../../../../ladfile_builder/test_assets/test.lad.json";
 
     copy_ladfile_to_book_dir(&books_dir.join(book), ladfile_path);
 
