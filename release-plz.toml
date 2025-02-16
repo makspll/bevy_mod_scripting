@@ -77,3 +77,11 @@ git_release_latest = false
 git_tag_enable = true
 git_tag_name = "v{{ version }}-ladfile"
 git_release_name = "v{{ version }}-ladfile"
+
+[[package]]
+name = "ladfile_builder"
+git_release_enable = true
+git_release_latest = false
+git_tag_enable = true
+git_tag_name = "v{{ version }}-ladfile_builder"
+git_release_name = "v{{ version }}-ladfile_builder"
