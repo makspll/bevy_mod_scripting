@@ -4,6 +4,20 @@ use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote_spanned, ToTokens};
 use syn::{spanned::Spanned, ImplItemFn, ItemImpl};
 
+mod derive;
+
+#[proc_macro_derive(TypedThrough)]
+/// Default implementation for the `TypedThrough` trait
+pub fn typed_through(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    derive::typed_through(input.into()).into()
+}
+
+#[proc_macro_derive(IntoScript)]
+/// Default implementation for the `IntoScript` trait
+pub fn into_script(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    derive::into_script(input.into()).into()
+}
+
 /// Derive macro for generating script bindings from an impl block.
 ///
 /// Does not support generics.
