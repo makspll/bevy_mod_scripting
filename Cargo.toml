@@ -89,7 +89,9 @@ members = [
     "crates/xtask",
     "crates/script_integration_test_harness",
     "crates/bevy_mod_scripting_derive",
-    "crates/ladfile", "crates/lad_backends/mdbook_lad_preprocessor",
+    "crates/ladfile",
+    "crates/lad_backends/mdbook_lad_preprocessor",
+    "crates/ladfile_builder",
 ]
 resolver = "2"
 exclude = ["crates/bevy_api_gen", "crates/macro_tests"]
