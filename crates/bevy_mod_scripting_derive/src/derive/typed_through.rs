@@ -3,9 +3,12 @@ use quote::quote;
 use syn::DeriveInput;
 
 pub fn typed_through(input: TokenStream) -> TokenStream {
-    let DeriveInput {
-        ident, generics, ..
-    }: DeriveInput = syn::parse2(input).unwrap();
+    let (ident, generics) = match syn::parse2(input) {
+        Ok(DeriveInput {
+            ident, generics, ..
+        }) => (ident, generics),
+        Err(err) => return TokenStream::from(err.to_compile_error()),
+    };
 
     let (impl_generics, type_generics, where_clause) = generics.split_for_impl();
 
