@@ -47,6 +47,11 @@ fn all_files_in_dir_recursive(dir: &std::path::Path) -> Vec<std::path::PathBuf> 
     files
 }
 
+/// normalize line endings
+fn normalize_file(file: String) -> String {
+    file.replace("\r\n", "\n")
+}
+
 #[test]
 fn test_on_example_ladfile() {
     // invoke mdbook build
@@ -84,6 +89,9 @@ fn test_on_example_ladfile() {
         let expected_content =
             std::fs::read_to_string(&expected_file).expect("failed to read file");
         let book_content = std::fs::read_to_string(&book_file).expect("failed to read file");
-        pretty_assertions::assert_eq!(expected_content, book_content);
+        pretty_assertions::assert_eq!(
+            normalize_file(expected_content),
+            normalize_file(book_content)
+        );
     }
 }
