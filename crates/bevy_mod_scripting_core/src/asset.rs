@@ -10,7 +10,7 @@ use bevy::{
     app::{App, PreUpdate},
     asset::{Asset, AssetEvent, AssetId, AssetLoader, AssetPath, Assets},
     ecs::system::Resource,
-    log::{debug, warn, info, trace},
+    log::{debug, info, trace, warn},
     prelude::{
         Commands, Event, EventReader, EventWriter, IntoSystemConfigs, IntoSystemSetConfigs, Res,
         ResMut,
