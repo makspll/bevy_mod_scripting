@@ -606,7 +606,7 @@ mod test {
     use super::*;
 
     /// Set to true to put output into test_assets.
-    const BLESS_TEST_FILE: bool = true;
+    const BLESS_TEST_FILE: bool = false;
 
     /// normalize line endings etc..
     fn normalize_file(file: &mut String) {
