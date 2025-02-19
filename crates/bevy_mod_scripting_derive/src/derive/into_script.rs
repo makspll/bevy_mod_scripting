@@ -7,7 +7,7 @@ pub fn into_script(input: TokenStream) -> TokenStream {
         Ok(DeriveInput {
             ident, generics, ..
         }) => (ident, generics),
-        Err(err) => return TokenStream::from(err.to_compile_error()),
+        Err(err) => return err.to_compile_error(),
     };
 
     let (impl_generics, type_generics, where_clause) = generics.split_for_impl();
