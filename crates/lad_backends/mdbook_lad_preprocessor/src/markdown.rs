@@ -1,7 +1,11 @@
 use std::borrow::Cow;
 
 /// Escapes Markdown reserved characters in the given text.
-fn escape_markdown(text: &str) -> String {
+fn escape_markdown(text: &str, escape: bool) -> String {
+    if !escape {
+        return text.to_string();
+    }
+
     // Characters that should be escaped in markdown
     let escape_chars = r"\`*_{}[]()#+-.!";
     let mut escaped = String::with_capacity(text.len());
@@ -114,7 +118,7 @@ impl IntoMarkdown for Markdown {
                 let clamped_level = level.clamp(&1, &6);
                 let hashes = "#".repeat(*clamped_level as usize);
                 // Escape the text for Markdown
-                builder.append(&format!("{} {}", hashes, escape_markdown(text)));
+                builder.append(&format!("{} {}", hashes, text));
             }
             Markdown::Paragraph {
                 text,
@@ -135,7 +139,7 @@ impl IntoMarkdown for Markdown {
                 let escaped = if *code {
                     text.clone()
                 } else {
-                    escape_markdown(text)
+                    escape_markdown(text, builder.escape)
                 };
 
                 builder.append(&escaped);
@@ -173,14 +177,18 @@ impl IntoMarkdown for Markdown {
             Markdown::Quote(text) => {
                 let quote_output = text
                     .lines()
-                    .map(|line| format!("> {}", escape_markdown(line)))
+                    .map(|line| format!("> {}", escape_markdown(line, builder.escape)))
                     .collect::<Vec<String>>()
                     .join("\n");
                 builder.append(&quote_output);
             }
             Markdown::Image { alt, src } => {
                 // Escape alt text while leaving src untouched.
-                builder.append(&format!("![{}]({})", escape_markdown(alt), src));
+                builder.append(&format!(
+                    "![{}]({})",
+                    escape_markdown(alt, builder.escape),
+                    src
+                ));
             }
             Markdown::Link { text, url, anchor } => {
                 // anchors must be lowercase, only contain letters or dashes
@@ -196,7 +204,11 @@ impl IntoMarkdown for Markdown {
                     url.clone()
                 };
                 // Escape link text while leaving url untouched.
-                builder.append(&format!("[{}]({})", escape_markdown(text), url));
+                builder.append(&format!(
+                    "[{}]({})",
+                    escape_markdown(text, builder.escape),
+                    url
+                ));
             }
             Markdown::HorizontalRule => {
                 builder.append("---");
@@ -231,19 +243,19 @@ impl IntoMarkdown for Markdown {
 
 impl IntoMarkdown for &str {
     fn to_markdown(&self, builder: &mut MarkdownBuilder) {
-        builder.append(&escape_markdown(self))
+        builder.append(&escape_markdown(self, builder.escape))
     }
 }
 
 impl IntoMarkdown for String {
     fn to_markdown(&self, builder: &mut MarkdownBuilder) {
-        builder.append(&escape_markdown(self.as_ref()))
+        builder.append(&escape_markdown(self.as_ref(), builder.escape))
     }
 }
 
 impl IntoMarkdown for Cow<'_, str> {
     fn to_markdown(&self, builder: &mut MarkdownBuilder) {
-        builder.append(&escape_markdown(self.as_ref()))
+        builder.append(&escape_markdown(self.as_ref(), builder.escape))
     }
 }
 
@@ -270,7 +282,7 @@ impl<T: IntoMarkdown> IntoMarkdown for Vec<T> {
             item.to_markdown(builder);
             if i < self.len() - 1 {
                 if builder.inline {
-                    builder.append(" ");
+                    builder.append(builder.inline_separator);
                 } else {
                     builder.append("\n\n");
                 }
@@ -284,22 +296,50 @@ impl<T: IntoMarkdown> IntoMarkdown for Vec<T> {
 pub struct MarkdownBuilder {
     elements: Vec<Markdown>,
     output: String,
-    inline: bool,
+    pub inline: bool,
+    pub inline_separator: &'static str,
+    pub escape: bool,
 }
 
 #[allow(dead_code)]
 impl MarkdownBuilder {
+    /// Clears the builder's buffer
+    pub fn clear(&mut self) {
+        self.elements.clear();
+        self.output.clear();
+    }
+
     /// Creates a new MarkdownBuilder.
     pub fn new() -> Self {
         MarkdownBuilder {
             elements: Vec::new(),
             output: String::new(),
             inline: false,
+            inline_separator: " ",
+            escape: true,
         }
     }
 
+    /// Disables or enables the automatic escaping of Markdown reserved characters.
+    /// by default it is enabled.
+    ///
+    /// Will only affect elements which are escaped by default such as text.
+    pub fn set_escape_mode(&mut self, escape: bool) -> &mut Self {
+        self.escape = escape;
+        self
+    }
+
+    /// Enables inline mode, which prevents newlines from being inserted for elements that support it
     pub fn inline(&mut self) -> &mut Self {
         self.inline = true;
+        self
+    }
+
+    /// Enables inline mode on top of disabling the automatic space separator.
+    /// Each element will simply be concatenated without any separator.
+    pub fn tight_inline(&mut self) -> &mut Self {
+        self.inline = true;
+        self.inline_separator = "";
         self
     }
 
@@ -315,10 +355,15 @@ impl MarkdownBuilder {
     }
 
     /// Adds a heading element (Levels from 1-6).
-    pub fn heading(&mut self, level: u8, text: impl Into<String>) -> &mut Self {
+    pub fn heading(&mut self, level: u8, text: impl IntoMarkdown) -> &mut Self {
+        let mut builder = MarkdownBuilder::new();
+        builder.inline();
+        text.to_markdown(&mut builder);
+        let text = builder.build();
+
         self.elements.push(Markdown::Heading {
             level: level.min(6),
-            text: text.into(),
+            text,
         });
         self
     }
@@ -455,7 +500,7 @@ impl MarkdownBuilder {
             element.to_markdown(self);
             if i < len - 1 {
                 if self.inline {
-                    self.append(" ");
+                    self.append(self.inline_separator);
                 } else {
                     self.append("\n\n");
                 }

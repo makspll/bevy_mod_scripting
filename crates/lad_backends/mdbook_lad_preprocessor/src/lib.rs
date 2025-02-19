@@ -2,6 +2,7 @@
 #![allow(missing_docs)]
 
 use mdbook::{errors::Error, preprocess::Preprocessor};
+mod argument_visitor;
 mod markdown;
 mod sections;
 

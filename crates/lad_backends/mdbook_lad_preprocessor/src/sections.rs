@@ -1,10 +1,11 @@
 use std::{borrow::Cow, path::PathBuf};
 
-use ladfile::{LadFunction, LadInstance, LadType, LadTypeLayout};
+use ladfile::{ArgumentVisitor, LadFunction, LadInstance, LadType, LadTypeLayout};
 use mdbook::book::{Chapter, SectionNumber};
 
 use crate::{
-    markdown::{IntoMarkdown, Markdown, MarkdownBuilder},
+    argument_visitor::MarkdownArgumentVisitor,
+    markdown::{self, IntoMarkdown, Markdown, MarkdownBuilder},
     markdown_vec,
 };
 
@@ -186,6 +187,10 @@ pub enum SectionItem<'a> {
     FunctionsSummary {
         functions: Vec<&'a LadFunction>,
     },
+    FunctionDetails {
+        function: &'a LadFunction,
+        ladfile: &'a ladfile::LadFile,
+    },
     TypesSummary {
         types: Vec<&'a LadType>,
     },
@@ -342,6 +347,43 @@ impl IntoMarkdown for SectionItem<'_> {
                         ]);
                     }
                 });
+            }
+            SectionItem::FunctionDetails { function, ladfile } => {
+                builder.heading(
+                    3,
+                    Markdown::new_paragraph(function.identifier.to_string()).code(),
+                );
+
+                builder.heading(4, "Arguments");
+                builder.list(
+                    false,
+                    function
+                        .arguments
+                        .iter()
+                        .enumerate()
+                        .map(|(idx, arg)| {
+                            let mut arg_visitor = MarkdownArgumentVisitor::new(ladfile);
+                            arg_visitor.visit(&arg.kind);
+                            let markdown = arg_visitor.build();
+
+                            let arg_name = arg
+                                .name
+                                .as_ref()
+                                .cloned()
+                                .unwrap_or_else(|| Cow::Owned(format!("arg{}", idx)));
+
+                            markdown_vec![
+                                Markdown::new_paragraph(arg_name).bold(),
+                                Markdown::new_paragraph(":"),
+                                Markdown::new_paragraph(markdown).code()
+                            ]
+                        })
+                        .collect(),
+                );
+
+                builder.heading(4, "Return Type");
+
+                builder.text(function.return_type.to_string());
             }
         }
     }
