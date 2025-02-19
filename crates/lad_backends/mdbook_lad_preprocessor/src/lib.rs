@@ -32,6 +32,10 @@ impl Preprocessor for LADPreprocessor {
 
                 if !is_lad_chapter {
                     log::debug!("Skipping non-LAD chapter: {:?}", chapter.source_path);
+                    log::trace!(
+                        "Non-LAD chapter: {}",
+                        serde_json::to_string_pretty(&chapter).unwrap_or_default()
+                    );
                     return;
                 }
 
@@ -46,7 +50,10 @@ impl Preprocessor for LADPreprocessor {
                     }
                 };
 
-                log::debug!("Parsed LAD file: {:?}", lad);
+                log::debug!(
+                    "Parsed LAD file: {}",
+                    serde_json::to_string_pretty(&lad).unwrap_or_default()
+                );
 
                 let sections = sections::lad_file_to_sections(&lad, Some(chapter_title));
 
@@ -59,7 +66,11 @@ impl Preprocessor for LADPreprocessor {
                     None,
                 );
 
-                log::debug!("New chapter: {:?}", new_chapter);
+                // serialize chapter to json
+                log::debug!(
+                    "New chapter: {}",
+                    serde_json::to_string_pretty(&new_chapter).unwrap_or_default()
+                );
 
                 *chapter = new_chapter;
             }

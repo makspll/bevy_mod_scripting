@@ -1,5 +1,39 @@
 use std::borrow::Cow;
 
+/// Takes the first n characters from the markdown, without splitting any formatting
+pub(crate) fn markdown_substring(markdown: &str, length: usize) -> &str {
+    if markdown.len() <= length {
+        return markdown;
+    }
+    let mut end = length;
+    for &(open, close) in &[("`", "`"), ("**", "**"), ("*", "*"), ("_", "_"), ("[", "]")] {
+        // Count markers in the already cut substring.
+        let count = markdown[..end].matches(open).count();
+        // Check if an opening marker starts right at the cutoff.
+        let extra = if markdown[end..].starts_with(open) {
+            1
+        } else {
+            0
+        };
+        if (count + extra) % 2 == 1 {
+            let search_start = if extra == 1 { end + open.len() } else { end };
+            if let Some(pos) = markdown[search_start..].find(close) {
+                end = search_start + pos + close.len();
+                // Special handling for links: if the marker is "[" then check if a '(' follows.
+                if open == "[" && markdown.len() > end && markdown[end..].starts_with('(') {
+                    let paren_search_start = end + 1;
+                    if let Some(paren_pos) = markdown[paren_search_start..].find(')') {
+                        end = paren_search_start + paren_pos + 1;
+                    }
+                }
+            } else {
+                return markdown;
+            }
+        }
+    }
+    &markdown[..end]
+}
+
 /// Escapes Markdown reserved characters in the given text.
 fn escape_markdown(text: &str, escape: bool) -> String {
     if !escape {
@@ -59,6 +93,9 @@ pub enum Markdown {
     Table {
         headers: Vec<String>,
         rows: Vec<Vec<String>>,
+    },
+    Raw {
+        text: String,
     },
 }
 
@@ -177,7 +214,7 @@ impl IntoMarkdown for Markdown {
             Markdown::Quote(text) => {
                 let quote_output = text
                     .lines()
-                    .map(|line| format!("> {}", escape_markdown(line, builder.escape)))
+                    .map(|line| format!("> {}", line))
                     .collect::<Vec<String>>()
                     .join("\n");
                 builder.append(&quote_output);
@@ -214,6 +251,10 @@ impl IntoMarkdown for Markdown {
                 builder.append("---");
             }
             Markdown::Table { headers, rows } => {
+                if rows.is_empty() {
+                    return;
+                }
+
                 // Generate a Markdown table:
                 // Header row:
                 let header_line = format!("| {} |", headers.join(" | "));
@@ -236,6 +277,9 @@ impl IntoMarkdown for Markdown {
                     "{}\n{}\n{}",
                     header_line, separator_line, rows_lines
                 ));
+            }
+            Markdown::Raw { text } => {
+                builder.append(text);
             }
         }
     }
@@ -293,6 +337,7 @@ impl<T: IntoMarkdown> IntoMarkdown for Vec<T> {
 
 /// Builder pattern for generating comprehensive Markdown documentation.
 /// Now also doubles as the accumulator for the generated markdown.
+#[derive(Clone)]
 pub struct MarkdownBuilder {
     elements: Vec<Markdown>,
     output: String,
@@ -445,8 +490,10 @@ impl MarkdownBuilder {
     }
 
     /// Adds a quote element.
-    pub fn quote(&mut self, text: impl Into<String>) -> &mut Self {
-        self.elements.push(Markdown::Quote(text.into()));
+    pub fn quote(&mut self, text: impl IntoMarkdown) -> &mut Self {
+        let mut builder = MarkdownBuilder::new();
+        text.to_markdown(&mut builder);
+        self.elements.push(Markdown::Quote(builder.build()));
         self
     }
 
@@ -507,6 +554,12 @@ impl MarkdownBuilder {
             }
         }
         self.output.clone()
+    }
+}
+
+impl IntoMarkdown for MarkdownBuilder {
+    fn to_markdown(&self, builder: &mut MarkdownBuilder) {
+        *builder = self.clone()
     }
 }
 
@@ -644,5 +697,30 @@ mod tests {
         let trimmed_indentation_markdown = trimmed_indentation_markdown.trim();
 
         pretty_assertions::assert_eq!(trimmed_indentation_expected, trimmed_indentation_markdown);
+    }
+
+    #[test]
+    fn test_markdown_substring_works() {
+        // Test markdown_substring with simple 5–7 character inputs.
+        let cases = vec![
+            // Inline code: "a`bcd`" → with len 3, substring "a`b" is extended to the full inline segment.
+            ("a`bcd`", 3, "a`bcd`"),
+            // Bold: "a**b**" → with len 3, substring "a**" is extended to "a**b**".
+            ("a**b**", 3, "a**b**"),
+            // Italic: "a*b*" → with len 1, substring "["a*", extended to "a*b*".
+            ("a*b*", 1, "a*b*"),
+            // Underscore: "a_b_" → with len 1, extended to "a_b_".
+            ("a_b_", 1, "a_b_"),
+            // Link-like: "[x](y)" → with len 1, extended to the next closing bracket.
+            ("[x](y)", 1, "[x](y)"),
+        ];
+        for (input, len, expected) in cases {
+            assert_eq!(
+                expected,
+                markdown_substring(input, len),
+                "Failed for input: {}",
+                input
+            );
+        }
     }
 }

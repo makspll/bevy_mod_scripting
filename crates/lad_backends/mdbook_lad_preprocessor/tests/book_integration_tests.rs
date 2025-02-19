@@ -30,10 +30,6 @@ fn get_books_dir() -> std::path::PathBuf {
 fn copy_ladfile_to_book_dir(book_dir: &std::path::Path) {
     let ladfile = ladfile::EXAMPLE_LADFILE;
     let book_ladfile_path = book_dir.join("src").join("test.lad.json");
-    println!(
-        "Copying LAD file from {:?} to {:?}",
-        ladfile_path, book_ladfile_path
-    );
     std::fs::write(book_ladfile_path, ladfile).expect("failed to copy LAD file");
 }
 

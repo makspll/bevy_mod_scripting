@@ -1,17 +1,11 @@
-# Nested Lad
+# LAD
 
-## Globals
+## Contents
 
-| Instance | Type |
+This is an automatically generated file, you'll find links to the contents below
+
+| Section | Contents |
 | --- | --- |
-| `my_static_instance` | ladfile\_builder::test::StructType<usize> |
-| `my_non_static_instance` | ladfile\_builder::test::UnitType |
-
-## Types
-
-| Type | Summary |
-| --- | --- |
-| `EnumType` | [No documentation available\. 🚧](#enumtype) |
-| `StructType` | [I am a struct](#structtype) |
-| `TupleStructType` | [I am a tuple test type](#tuplestructtype) |
-| `UnitType` | [I am a unit test type](#unittype) |
+| `Types` | [Describes all available binding types](./lad/types.md) |
+| `Global Functions` | [Documents all the global functions present in the bindings](./lad/functions.md) |
+| `Globals` | [Documents all global variables present in the bindings](./lad/globals.md) |
