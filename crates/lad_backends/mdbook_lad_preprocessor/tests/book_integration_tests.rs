@@ -27,14 +27,10 @@ fn get_books_dir() -> std::path::PathBuf {
     manifest_dir.join("tests").join("books")
 }
 
-fn copy_ladfile_to_book_dir(book_dir: &std::path::Path, ladfile: &str) {
-    let ladfile_path = get_books_dir().join(ladfile);
+fn copy_ladfile_to_book_dir(book_dir: &std::path::Path) {
+    let ladfile = ladfile::EXAMPLE_LADFILE;
     let book_ladfile_path = book_dir.join("src").join("test.lad.json");
-    println!(
-        "Copying LAD file from {:?} to {:?}",
-        ladfile_path, book_ladfile_path
-    );
-    std::fs::copy(ladfile_path, book_ladfile_path).expect("failed to copy LAD file");
+    std::fs::write(book_ladfile_path, ladfile).expect("failed to copy LAD file");
 }
 
 fn all_files_in_dir_recursive(dir: &std::path::Path) -> Vec<std::path::PathBuf> {
@@ -51,6 +47,11 @@ fn all_files_in_dir_recursive(dir: &std::path::Path) -> Vec<std::path::PathBuf> 
     files
 }
 
+/// normalize line endings
+fn normalize_file(file: String) -> String {
+    file.replace("\r\n", "\n")
+}
+
 #[test]
 fn test_on_example_ladfile() {
     // invoke mdbook build
@@ -61,9 +62,7 @@ fn test_on_example_ladfile() {
     let books_dir = get_books_dir();
     let book = "example_ladfile";
 
-    let ladfile_path = "../../../../ladfile_builder/test_assets/test.lad.json";
-
-    copy_ladfile_to_book_dir(&books_dir.join(book), ladfile_path);
+    copy_ladfile_to_book_dir(&books_dir.join(book));
 
     Command::new("mdbook")
         .env("RUST_LOG", "trace")
@@ -90,6 +89,9 @@ fn test_on_example_ladfile() {
         let expected_content =
             std::fs::read_to_string(&expected_file).expect("failed to read file");
         let book_content = std::fs::read_to_string(&book_file).expect("failed to read file");
-        pretty_assertions::assert_eq!(expected_content, book_content);
+        pretty_assertions::assert_eq!(
+            normalize_file(expected_content),
+            normalize_file(book_content)
+        );
     }
 }

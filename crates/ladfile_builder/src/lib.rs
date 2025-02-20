@@ -16,7 +16,14 @@ use bevy_reflect::{
     NamedField, TypeInfo, TypeRegistry, Typed, UnnamedField,
 };
 use ladfile::*;
-use std::{any::TypeId, borrow::Cow, collections::HashMap, ffi::OsString, path::PathBuf};
+use std::{
+    any::TypeId,
+    borrow::Cow,
+    cmp::{max, min},
+    collections::HashMap,
+    ffi::OsString,
+    path::PathBuf,
+};
 
 /// We can assume that the types here will be either primitives
 /// or reflect types, as the rest will be covered by typed wrappers
@@ -186,7 +193,25 @@ impl<'t> LadFileBuilder<'t> {
 
     /// Add a function definition to the LAD file.
     /// Will overwrite any existing function definitions with the same function id.
+    ///
+    /// Parses argument and return specific docstrings as per: https://github.com/rust-lang/rust/issues/57525
+    ///
+    /// i.e. looks for blocks like:
+    /// ```rust,ignore
+    /// /// Arguments:
+    /// ///  * `arg_name`: docstring1
+    /// ///  * `arg_name2`: docstring2
+    /// ///
+    /// /// Returns:
+    /// ///  * `return_name`: return docstring
+    /// ```
+    ///
+    /// And then removes them from the original block, instead putting it in each argument / return docstring
     pub fn add_function_info(&mut self, function_info: FunctionInfo) -> &mut Self {
+        let default_docstring = Cow::Owned("".into());
+        let (main_docstring, arg_docstrings, return_docstring) =
+            Self::split_docstring(function_info.docs.as_ref().unwrap_or(&default_docstring));
+
         let function_id = self.lad_function_id_from_info(&function_info);
         let lad_function = LadFunction {
             identifier: function_info.name,
@@ -202,12 +227,28 @@ impl<'t> LadFileBuilder<'t> {
                     };
                     LadArgument {
                         kind,
+                        documentation: arg_docstrings.iter().find_map(|(name, doc)| {
+                            (Some(name.as_str()) == arg.name.as_deref())
+                                .then_some(Cow::Owned(doc.clone()))
+                        }),
                         name: arg.name,
                     }
                 })
                 .collect(),
-            return_type: self.lad_id_from_type_id(function_info.return_info.type_id),
-            documentation: function_info.docs,
+            return_type: LadArgument {
+                name: return_docstring.as_ref().cloned().map(|(n, _)| n.into()),
+                documentation: return_docstring.map(|(_, v)| v.into()),
+                kind: function_info
+                    .return_info
+                    .type_info
+                    .map(|info| self.lad_argument_type_from_through_type(&info))
+                    .unwrap_or_else(|| {
+                        LadArgumentKind::Unknown(
+                            self.lad_id_from_type_id(function_info.return_info.type_id),
+                        )
+                    }),
+            },
+            documentation: (!main_docstring.is_empty()).then_some(main_docstring.into()),
             namespace: match function_info.namespace {
                 Namespace::Global => LadFunctionNamespace::Global,
                 Namespace::OnType(type_id) => {
@@ -247,6 +288,125 @@ impl<'t> LadFileBuilder<'t> {
         }
 
         file
+    }
+
+    /// Checks if a line is one of:
+    /// - `# key:`
+    /// - `key:`
+    /// - `key`
+    /// - `## key`
+    ///
+    /// Or similar patterns
+    fn is_docstring_delimeter(key: &str, line: &str) -> bool {
+        line.trim()
+            .trim_start_matches("#")
+            .trim_end_matches(":")
+            .trim()
+            .eq_ignore_ascii_case(key)
+    }
+
+    /// Parses lines of the pattern:
+    /// * `arg` : val
+    ///
+    /// returning (arg,val) without markup
+    fn parse_arg_docstring(line: &str) -> Option<(&str, &str)> {
+        let regex =
+            regex::Regex::new(r#"\s*\*\s*`(?<arg>[^`]+)`\s*[:-]\s*(?<val>.+[^\s]).*$"#).ok()?;
+        let captures = regex.captures(line)?;
+        let arg = captures.name("arg")?;
+        let val = captures.name("val")?;
+
+        Some((arg.as_str(), val.as_str()))
+    }
+
+    /// Splits the docstring, into the following:
+    /// - The main docstring
+    /// - The argument docstrings
+    /// - The return docstring
+    ///
+    /// While removing any prefixes
+    fn split_docstring(
+        docstring: &str,
+    ) -> (String, Vec<(String, String)>, Option<(String, String)>) {
+        // find a line containing only `Arguments:` ignoring spaces and markdown headings
+        let lines = docstring.lines().collect::<Vec<_>>();
+
+        // this must exist for us to parse any of the areas
+        let argument_line_idx = match lines
+            .iter()
+            .enumerate()
+            .find_map(|(idx, l)| Self::is_docstring_delimeter("arguments", l).then_some(idx))
+        {
+            Some(a) => a,
+            None => return (docstring.to_owned(), vec![], None),
+        };
+
+        // this can, not exist, if arguments area does
+        let return_line_idx = lines.iter().enumerate().find_map(|(idx, l)| {
+            (Self::is_docstring_delimeter("returns", l)
+                || Self::is_docstring_delimeter("return", l))
+            .then_some(idx)
+        });
+
+        let return_area_idx = return_line_idx.unwrap_or(usize::MAX);
+        let return_area_first = argument_line_idx > return_area_idx;
+        let argument_range = match return_area_first {
+            true => argument_line_idx..lines.len(),
+            false => argument_line_idx..return_area_idx,
+        };
+        let return_range = match return_area_first {
+            true => return_area_idx..argument_line_idx,
+            false => return_area_idx..lines.len(),
+        };
+        let non_main_area =
+            min(return_area_idx, argument_line_idx)..max(return_area_idx, argument_line_idx);
+
+        let parsed_lines = lines
+            .iter()
+            .enumerate()
+            .map(|(i, l)| {
+                match Self::parse_arg_docstring(l) {
+                    Some(parsed) => {
+                        // figure out if it's in the argument, return or neither of the areas
+                        // if return area doesn't exist assign everything to arguments
+                        let in_argument_range = argument_range.contains(&i);
+                        let in_return_range = return_range.contains(&i);
+                        (l, Some((in_argument_range, in_return_range, parsed)))
+                    }
+                    None => (l, None),
+                }
+            })
+            .collect::<Vec<_>>();
+
+        // collect all argument docstrings, and the first return docstring, removing those lines from the docstring (and the argument/return headers)
+        // any other ones leave alone
+        let main_docstring = parsed_lines
+            .iter()
+            .enumerate()
+            .filter_map(|(i, (l, parsed))| {
+                ((!non_main_area.contains(&i) || !l.trim().is_empty())
+                    && (i != return_area_idx && i != argument_line_idx)
+                    && (parsed.is_none() || parsed.is_some_and(|(a, b, _)| !a && !b)))
+                .then_some((**l).to_owned())
+            })
+            .collect::<Vec<_>>();
+
+        let arg_docstrings = parsed_lines
+            .iter()
+            .filter_map(|(_l, parsed)| {
+                parsed.and_then(|(is_arg, is_return, (a, b))| {
+                    (is_arg && !is_return).then_some((a.to_owned(), b.to_owned()))
+                })
+            })
+            .collect();
+
+        let return_docstring = parsed_lines.iter().find_map(|(_l, parsed)| {
+            parsed.and_then(|(is_arg, is_return, (a, b))| {
+                (!is_arg && is_return).then_some((a.to_owned(), b.to_owned()))
+            })
+        });
+
+        (main_docstring.join("\n"), arg_docstrings, return_docstring)
     }
 
     fn variant_identifier_for_non_enum(type_info: &TypeInfo) -> Cow<'static, str> {
@@ -463,6 +623,187 @@ mod test {
     }
 
     #[test]
+    fn parse_docstrings_is_resistant_to_whitespace() {
+        pretty_assertions::assert_eq!(
+            LadFileBuilder::parse_arg_docstring("* `arg` : doc"),
+            Some(("arg", "doc"))
+        );
+        pretty_assertions::assert_eq!(
+            LadFileBuilder::parse_arg_docstring("  * `arg` - doc"),
+            Some(("arg", "doc"))
+        );
+        pretty_assertions::assert_eq!(
+            LadFileBuilder::parse_arg_docstring("   *   `arg`   :    doc     "),
+            Some(("arg", "doc"))
+        );
+    }
+
+    #[test]
+    fn docstring_delimeter_detection_is_flexible() {
+        assert!(LadFileBuilder::is_docstring_delimeter(
+            "arguments",
+            "arguments"
+        ));
+        assert!(LadFileBuilder::is_docstring_delimeter(
+            "arguments",
+            "Arguments:"
+        ));
+        assert!(LadFileBuilder::is_docstring_delimeter(
+            "arguments",
+            "## Arguments"
+        ));
+        assert!(LadFileBuilder::is_docstring_delimeter(
+            "arguments",
+            "## Arguments:"
+        ));
+        assert!(LadFileBuilder::is_docstring_delimeter(
+            "arguments",
+            "Arguments"
+        ));
+    }
+
+    /// Helper function to assert that splitting the docstring produces the expected output.
+    fn assert_docstring_split(
+        input: &str,
+        expected_main: &str,
+        expected_args: &[(&str, &str)],
+        expected_return: Option<(&str, &str)>,
+        test_name: &str,
+    ) {
+        let (main, args, ret) = LadFileBuilder::split_docstring(input);
+
+        pretty_assertions::assert_eq!(
+            main,
+            expected_main,
+            "main docstring was incorrect - {}",
+            test_name
+        );
+
+        let expected_args: Vec<(String, String)> = expected_args
+            .iter()
+            .map(|(a, b)| (a.to_string(), b.to_string()))
+            .collect();
+        pretty_assertions::assert_eq!(
+            args,
+            expected_args,
+            "argument docstring was incorrect - {}",
+            test_name
+        );
+
+        let expected_ret = expected_return.map(|(a, b)| (a.to_string(), b.to_string()));
+        pretty_assertions::assert_eq!(
+            ret,
+            expected_ret,
+            "return docstring was incorrect - {}",
+            test_name
+        );
+    }
+
+    #[test]
+    fn docstrings_parse_correctly_from_various_formats() {
+        assert_docstring_split(
+            r#"
+                ## Hello
+                Arguments: 
+                    * `arg1` - some docs
+                    * `arg2` : some more docs
+                # Returns
+                    * `return` : return docs
+            "#
+            .trim(),
+            "## Hello",
+            &[("arg1", "some docs"), ("arg2", "some more docs")],
+            Some(("return", "return docs")),
+            "normal docstring",
+        );
+        assert_docstring_split(
+            r#"
+                Arguments: 
+                    * `arg1` - some docs
+                    * `arg2` : some more docs
+                Returns
+                    * `return` : return docs
+            "#
+            .trim(),
+            "",
+            &[("arg1", "some docs"), ("arg2", "some more docs")],
+            Some(("return", "return docs")),
+            "empty main docstring",
+        );
+        assert_docstring_split(
+            r#"
+                Arguments: 
+                    * `arg1` - some docs
+                    * `arg2` : some more docs
+            "#
+            .trim(),
+            "",
+            &[("arg1", "some docs"), ("arg2", "some more docs")],
+            None,
+            "no return docstring",
+        );
+        assert_docstring_split(
+            r#"
+                Returns
+                    * `return` : return docs
+            "#
+            .trim(),
+            r#"
+                Returns
+                    * `return` : return docs
+            "#
+            .trim(),
+            &[],
+            None,
+            "no argument docstring",
+        );
+        assert_docstring_split(
+            r#"
+                ## Hello
+            "#
+            .trim(),
+            "## Hello",
+            &[],
+            None,
+            "no argument or return docstring",
+        );
+        // return first
+        assert_docstring_split(
+            r#"
+                Returns
+                    * `return` : return docs
+                Arguments: 
+                    * `arg1` - some docs
+                    * `arg2` : some more docs
+            "#
+            .trim(),
+            "",
+            &[("arg1", "some docs"), ("arg2", "some more docs")],
+            Some(("return", "return docs")),
+            "return first",
+        );
+        // whitespace in between
+        assert_docstring_split(
+            r#"
+                ## Hello
+
+
+                Arguments: 
+                    * `arg1` - some docs
+                    * `arg2` : some more docs
+
+                Returns
+                    * `return` : return docs
+            "#
+            .trim(),
+            "## Hello\n\n",
+            &[("arg1", "some docs"), ("arg2", "some more docs")],
+            Some(("return", "return docs")),
+            "whitespace in between",
+        );
+    }
+
+    #[test]
     fn test_serializes_as_expected() {
         let mut type_registry = TypeRegistry::default();
 
@@ -510,7 +851,20 @@ mod test {
             |_: ReflectReference, _: (usize, String), _: Option<Vec<Ref<EnumType>>>| 2usize;
         let function_with_complex_args_info = function_with_complex_args
             .get_function_info("hello_world".into(), StructType::<usize>::into_namespace())
-            .with_arg_names(&["ref_", "tuple", "option_vec_ref_wrapper"]);
+            .with_arg_names(&["ref_", "tuple", "option_vec_ref_wrapper"])
+            .with_docs(
+                "Arguments: ".to_owned()
+                    + "\n"
+                    + " * `ref_`: I am some docs for argument 1"
+                    + "\n"
+                    + " * `tuple`: I am some docs for argument 2"
+                    + "\n"
+                    + " * `option_vec_ref_wrapper`: I am some docs for argument 3"
+                    + "\n"
+                    + "Returns: "
+                    + "\n"
+                    + " * `return`: I am some docs for the return type, I provide a name for the return value too",
+            );
 
         let global_function = |_: usize| 2usize;
         let global_function_info = global_function
@@ -539,14 +893,17 @@ mod test {
 
         if BLESS_TEST_FILE {
             let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-            let path_to_test_assets = std::path::Path::new(&manifest_dir).join("test_assets");
+            let path_to_test_assets = std::path::Path::new(&manifest_dir)
+                .join("..")
+                .join("ladfile")
+                .join("test_assets");
 
             println!("Blessing test file at {:?}", path_to_test_assets);
             std::fs::write(path_to_test_assets.join("test.lad.json"), &serialized).unwrap();
             return;
         }
 
-        let mut expected = include_str!("../test_assets/test.lad.json").to_owned();
+        let mut expected = ladfile::EXAMPLE_LADFILE.to_string();
         normalize_file(&mut expected);
 
         pretty_assertions::assert_eq!(serialized.trim(), expected.trim(),);
@@ -554,8 +911,8 @@ mod test {
 
     #[test]
     fn test_asset_deserializes_correctly() {
-        let asset = include_str!("../test_assets/test.lad.json");
-        let deserialized = parse_lad_file(asset).unwrap();
+        let asset = ladfile::EXAMPLE_LADFILE.to_string();
+        let deserialized = parse_lad_file(&asset).unwrap();
         assert_eq!(deserialized.version, "{{version}}");
     }
 }

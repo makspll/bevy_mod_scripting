@@ -17,5 +17,11 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 indexmap = { version = "2.7", features = ["serde"] }
 
+
+[features]
+default = ["visitor", "testfile"]
+visitor = []
+testfile = []
+
 [lints]
 workspace = true

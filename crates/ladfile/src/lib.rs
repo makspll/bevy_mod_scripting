@@ -1,4 +1,8 @@
 //! Parsing definitions for the LAD (Language Agnostic Decleration) file format.
+//!
+//! The main ideals behind the format are:
+//! - Centralization, we want to centralize as much of the "documentation" logic in the building of this format. For example, instead of letting each backend parse argument docstrings from the function docstring, we can do this here, and let the backends concentrate on pure generation.
+//! - Rust centric, the format describes bindings from the Rust side, so we generate rust centric declarations. These can then freely be converted into whatever representaion necessary.
 
 use indexmap::IndexMap;
 use std::borrow::Cow;
@@ -6,6 +10,10 @@ use std::borrow::Cow;
 /// The current version of the LAD_VERSION format supported by this library.
 /// Earlier versions are not guaranteed to be supported.
 pub const LAD_VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// The included example LAD file for testing purposes.
+#[cfg(feature = "testfile")]
+pub const EXAMPLE_LADFILE: &str = include_str!("../test_assets/test.lad.json");
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 /// A Language Agnostic Declaration (LAD) file.
@@ -41,6 +49,25 @@ impl LadFile {
             primitives: IndexMap::new(),
             description: None,
         }
+    }
+
+    /// Retrieves the best type identifier suitable for a type id.
+    pub fn get_type_identifier(&self, type_id: &LadTypeId) -> Cow<'static, str> {
+        if let Some(primitive) = self.primitives.get(type_id) {
+            return primitive.kind.lad_type_id().to_string().into();
+        }
+
+        self.types
+            .get(type_id)
+            .map(|t| t.identifier.clone().into())
+            .unwrap_or_else(|| type_id.0.clone())
+    }
+
+    /// Retrieves the generics of a type id if it is a generic type.
+    pub fn get_type_generics(&self, type_id: &LadTypeId) -> Option<&[LadGeneric]> {
+        self.types
+            .get(type_id)
+            .and_then(|t| (!t.generics.is_empty()).then_some(t.generics.as_slice()))
     }
 }
 
@@ -94,7 +121,7 @@ pub struct LadFunction {
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub arguments: Vec<LadArgument>,
     /// The return type of the function.
-    pub return_type: LadTypeId,
+    pub return_type: LadArgument,
     /// The documentation describing the function.
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub documentation: Option<Cow<'static, str>>,
@@ -115,6 +142,11 @@ pub enum LadFunctionNamespace {
 pub struct LadArgument {
     /// The kind and type of argument
     pub kind: LadArgumentKind,
+
+    /// The provided documentation for this argument. Normally derived from the function docstring.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub documentation: Option<Cow<'static, str>>,
+
     /// The name of the argument
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub name: Option<Cow<'static, str>>,
@@ -150,6 +182,99 @@ pub enum LadArgumentKind {
     Unknown(LadTypeId),
 }
 
+/// A visitor pattern for running arbitrary logic on the hierarchy of arguments.
+///
+/// Use cases are mostly to do with printing the arguments in a human readable format.
+#[allow(unused_variables)]
+#[cfg(feature = "visitor")]
+pub trait ArgumentVisitor {
+    /// perform an action on a `LadTypeId`, by default noop
+    fn visit_lad_type_id(&mut self, type_id: &LadTypeId) {}
+    /// perform an action on a `LadBMSPrimitiveKind`, by default visits the type id of the primitive kind
+    fn visit_lad_bms_primitive_kind(&mut self, primitive_kind: &LadBMSPrimitiveKind) {
+        self.visit_lad_type_id(&primitive_kind.lad_type_id());
+    }
+
+    /// traverse a `Ref` wrapped argument, by default calls `visit` on the inner argument
+    fn walk_ref(&mut self, type_id: &LadTypeId) {
+        self.visit_lad_type_id(type_id);
+    }
+
+    /// traverse a `Mut` wrapped argument, by default calls `visit` on the inner argument
+    fn walk_mut(&mut self, type_id: &LadTypeId) {
+        self.visit_lad_type_id(type_id);
+    }
+
+    /// traverse a `Val` wrapped argument, by default calls `visit` on the inner argument
+    fn walk_val(&mut self, type_id: &LadTypeId) {
+        self.visit_lad_type_id(type_id);
+    }
+
+    /// traverse an `Option` wrapped argument, by default calls `visit` on the inner argument
+    fn walk_option(&mut self, inner: &LadArgumentKind) {
+        self.visit(inner);
+    }
+
+    /// traverse a `Vec` wrapped argument, by default calls `visit` on the inner argument
+    fn walk_vec(&mut self, inner: &LadArgumentKind) {
+        self.visit(inner);
+    }
+
+    /// traverse a `HashMap` wrapped argument, by default calls `visit` on the key and value
+    fn walk_hash_map(&mut self, key: &LadArgumentKind, value: &LadArgumentKind) {
+        self.visit(key);
+        self.visit(value);
+    }
+
+    /// traverse an `InteropResult` wrapped argument, by default calls `visit` on the inner argument
+    fn walk_interop_result(&mut self, inner: &LadArgumentKind) {
+        self.visit(inner);
+    }
+
+    /// traverse a tuple of arguments, by default calls `visit` on each argument
+    fn walk_tuple(&mut self, inner: &[LadArgumentKind]) {
+        for arg in inner {
+            self.visit(arg);
+        }
+    }
+
+    /// traverse an array of arguments, by default calls `visit` on the inner argument
+    fn walk_array(&mut self, inner: &LadArgumentKind, size: usize) {
+        self.visit(inner);
+    }
+
+    /// traverse a primitive argument, by default calls `visit` on the primitive kind
+    fn walk_primitive(&mut self, primitive_kind: &LadBMSPrimitiveKind) {
+        self.visit_lad_bms_primitive_kind(primitive_kind);
+    }
+
+    /// traverse an unknown argument, by default calls `visit` on the type id
+    fn walk_unknown(&mut self, type_id: &LadTypeId) {
+        self.visit_lad_type_id(type_id);
+    }
+
+    /// Visit an argument kind, by default calls the appropriate walk method on each enum variant.
+    ///
+    /// Each walk variant will walk over nested kinds, and visit the leaf types.
+    ///
+    /// If you want to do something with the parent types, you WILL have to override each individual walk method.
+    fn visit(&mut self, kind: &LadArgumentKind) {
+        match kind {
+            LadArgumentKind::Ref(type_id) => self.walk_ref(type_id),
+            LadArgumentKind::Mut(type_id) => self.walk_mut(type_id),
+            LadArgumentKind::Val(type_id) => self.walk_val(type_id),
+            LadArgumentKind::Option(inner) => self.walk_option(inner),
+            LadArgumentKind::Vec(inner) => self.walk_vec(inner),
+            LadArgumentKind::HashMap(key, value) => self.walk_hash_map(key, value),
+            LadArgumentKind::InteropResult(inner) => self.walk_interop_result(inner),
+            LadArgumentKind::Tuple(inner) => self.walk_tuple(inner),
+            LadArgumentKind::Array(inner, size) => self.walk_array(inner, *size),
+            LadArgumentKind::Primitive(primitive_kind) => self.walk_primitive(primitive_kind),
+            LadArgumentKind::Unknown(type_id) => self.walk_unknown(type_id),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 /// A BMS primitive definition
 pub struct LadBMSPrimitiveType {
@@ -162,7 +287,7 @@ pub struct LadBMSPrimitiveType {
 /// A primitive type kind in the LAD file format.
 ///
 /// The docstrings on variants corresponding to Reflect types, are used to generate documentation for these primitives.
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[allow(missing_docs)]
 pub enum LadBMSPrimitiveKind {
