@@ -10,7 +10,7 @@ use bevy::{
     app::{App, PreUpdate},
     asset::{Asset, AssetEvent, AssetId, AssetLoader, AssetPath, Assets},
     ecs::system::Resource,
-    log::{debug, error, info, trace},
+    log::{debug, info, trace, warn},
     prelude::{
         Commands, Event, EventReader, EventWriter, IntoSystemConfigs, IntoSystemSetConfigs, Res,
         ResMut,
@@ -231,7 +231,7 @@ pub(crate) fn dispatch_script_asset_events(
                         script_asset_events.send(ScriptAssetEvent::Added(metadata.clone()));
                         metadata_store.insert(*id, metadata);
                     } else {
-                        error!("A script was added but it's asset was not found, failed to compute metadata. This script will not be loaded. {}", id);
+                        warn!("A script was added but it's asset was not found, failed to compute metadata. This script will not be loaded. Did you forget to store `Handle<ScriptAsset>` somewhere?. {}", id);
                     }
                 }
             }
@@ -240,7 +240,7 @@ pub(crate) fn dispatch_script_asset_events(
                     debug!("Script removed: {:?}", metadata);
                     script_asset_events.send(ScriptAssetEvent::Removed(metadata.clone()));
                 } else {
-                    error!("Script metadata not found for removed script asset: {}. Cannot properly clean up script", id);
+                    warn!("Script metadata not found for removed script asset: {}. Cannot properly clean up script", id);
                 }
             }
             AssetEvent::Modified { id } => {
@@ -248,7 +248,7 @@ pub(crate) fn dispatch_script_asset_events(
                     debug!("Script modified: {:?}", metadata);
                     script_asset_events.send(ScriptAssetEvent::Modified(metadata.clone()));
                 } else {
-                    error!("Script metadata not found for modified script asset: {}. Cannot properly update script", id);
+                    warn!("Script metadata not found for modified script asset: {}. Cannot properly update script", id);
                 }
             }
             _ => {}
