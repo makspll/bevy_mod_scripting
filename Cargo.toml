@@ -100,6 +100,11 @@ exclude = ["crates/bevy_api_gen", "crates/macro_tests"]
 debug = 1
 opt-level = 1
 
+[profile.dev-debug]
+inherits = "dev"
+debug = true
+opt-level = 0
+
 [profile.dev.package."*"]
 debug = 0
 opt-level = 3

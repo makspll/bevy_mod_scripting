@@ -129,11 +129,14 @@ impl FunctionArgInfo {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Reflect)]
+#[derive(Debug, Clone, Reflect)]
 /// Information about a function return value.
 pub struct FunctionReturnInfo {
     /// The type of the return value.
     pub type_id: TypeId,
+    /// The type information of the return value.
+    #[reflect(ignore)]
+    pub type_info: Option<ThroughTypeInfo>,
 }
 
 impl Default for FunctionReturnInfo {
@@ -144,9 +147,10 @@ impl Default for FunctionReturnInfo {
 
 impl FunctionReturnInfo {
     /// Create a new function return info for a specific type.
-    pub fn new_for<T: 'static>() -> Self {
+    pub fn new_for<T: TypedThrough + 'static>() -> Self {
         Self {
             type_id: TypeId::of::<T>(),
+            type_info: Some(T::through_type_info()),
         }
     }
 }

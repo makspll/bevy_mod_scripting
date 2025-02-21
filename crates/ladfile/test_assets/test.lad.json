@@ -114,7 +114,11 @@
           "name": "arg1"
         }
       ],
-      "return_type": "usize"
+      "return_type": {
+        "kind": {
+          "primitive": "usize"
+        }
+      }
     },
     "ladfile_builder::test::StructType<usize>::hello_world": {
       "namespace": "ladfile_builder::test::StructType<usize>",
@@ -124,6 +128,7 @@
           "kind": {
             "primitive": "reflectReference"
           },
+          "documentation": "I am some docs for argument 1",
           "name": "ref_"
         },
         {
@@ -137,6 +142,7 @@
               }
             ]
           },
+          "documentation": "I am some docs for argument 2",
           "name": "tuple"
         },
         {
@@ -147,10 +153,17 @@
               }
             }
           },
+          "documentation": "I am some docs for argument 3",
           "name": "option_vec_ref_wrapper"
         }
       ],
-      "return_type": "usize"
+      "return_type": {
+        "kind": {
+          "primitive": "usize"
+        },
+        "documentation": "I am some docs for the return type, I provide a name for the return value too",
+        "name": "return"
+      }
     }
   },
   "primitives": {
