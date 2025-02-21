@@ -141,7 +141,7 @@ fn game_of_life_app(app: &mut App) -> &mut App {
 }
 
 #[derive(Debug, Default, Clone, Reflect, Component)]
-#[reflect(Component)]
+#[reflect(Component, Default)]
 pub struct LifeState {
     pub cells: Vec<u8>,
 }
