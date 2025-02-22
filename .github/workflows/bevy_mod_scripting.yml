@@ -82,7 +82,9 @@ jobs:
       - name: Checkout
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
         uses: actions/checkout@v4
-
+      - if: runner.os == 'linux'
+        run: |
+          sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - uses: actions-rs/toolchain@v1
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
         with:
