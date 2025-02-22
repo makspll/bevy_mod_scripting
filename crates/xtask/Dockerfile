@@ -7,5 +7,5 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-RUN cargo xtask init --update-ide false
+RUN cargo xtask init --dont-update-ide false
 RUN cargo xtask build
