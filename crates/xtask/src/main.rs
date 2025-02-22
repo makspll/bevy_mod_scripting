@@ -1097,24 +1097,23 @@ impl Xtasks {
 
     fn docs(mut app_settings: GlobalArgs, open: bool, no_rust_docs: bool) -> Result<()> {
         // find [package.metadata."docs.rs"] key in Cargo.toml
+        info!("installing mdbook ladfile preprocessor binary");
+        Self::install(app_settings.clone(), Binary::MdbookPreprocessor)?;
+
+        info!("Running docgen example to generate ladfiles");
+        Self::example(app_settings.clone(), "docgen".to_owned())?;
+
+        // copy the `<workspace>/assets/bindings.lad.json` file to it's path in the book
+        let ladfile_path = Self::relative_workspace_dir(&app_settings, "assets/bindings.lad.json")?;
+        let destination_path =
+            Self::relative_workspace_dir(&app_settings, "docs/src/ladfiles/bindings.lad.json")?;
+
+        info!("Copying generated ladfile from: {ladfile_path:?} to: {destination_path:?}");
+        std::fs::create_dir_all(destination_path.parent().unwrap())?;
+        std::fs::copy(ladfile_path, destination_path)
+            .with_context(|| "copying generated ladfile")?;
+
         if !no_rust_docs {
-            info!("installing mdbook ladfile preprocessor binary");
-            Self::install(app_settings.clone(), Binary::MdbookPreprocessor)?;
-
-            info!("Running docgen example to generate ladfiles");
-            Self::example(app_settings.clone(), "docgen".to_owned())?;
-
-            // copy the `<workspace>/assets/bindings.lad.json` file to it's path in the book
-            let ladfile_path =
-                Self::relative_workspace_dir(&app_settings, "assets/bindings.lad.json")?;
-            let destination_path =
-                Self::relative_workspace_dir(&app_settings, "docs/src/ladfiles/bindings.lad.json")?;
-
-            info!("Copying generated ladfile from: {ladfile_path:?} to: {destination_path:?}");
-            std::fs::create_dir_all(destination_path.parent().unwrap())?;
-            std::fs::copy(ladfile_path, destination_path)
-                .with_context(|| "copying generated ladfile")?;
-
             info!("Building rust docs");
             let metadata = Self::main_workspace_cargo_metadata()?;
 
