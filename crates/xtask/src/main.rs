@@ -284,6 +284,10 @@ impl App {
             cmd.arg("--coverage");
         }
 
+        if let Some(jobs) = self.global_args.jobs {
+            cmd.arg("--jobs").arg(jobs.to_string());
+        }
+
         match self.subcmd {
             Xtasks::Macros { macro_name } => {
                 cmd.arg("macros").arg(macro_name.as_ref());
@@ -414,9 +418,24 @@ struct GlobalArgs {
         help = "The cargo profile to use for commands that support it"
     )]
     profile: Option<String>,
+
+    #[clap(
+        long,
+        global = true,
+        value_name = "JOBS",
+        help = "The number of parallel jobs to run at most"
+    )]
+    jobs: Option<usize>,
 }
 
 impl GlobalArgs {
+    pub fn with_max_jobs(self, jobs: usize) -> Self {
+        Self {
+            jobs: Some(jobs),
+            ..self
+        }
+    }
+
     pub fn with_coverage(self) -> Self {
         Self {
             coverage: true,
@@ -808,6 +827,11 @@ impl Xtasks {
                 if !app_settings.coverage {
                     args.push("--profile".to_owned());
                     args.push(use_profile.to_owned());
+                }
+
+                if let Some(jobs) = app_settings.jobs {
+                    args.push("--jobs".to_owned());
+                    args.push(jobs.to_string());
                 }
             }
 
@@ -1344,7 +1368,11 @@ impl Xtasks {
 
         // and finally run tests with coverage
         output.push(App {
-            global_args: default_args.clone().with_coverage(),
+            global_args: default_args
+                .clone()
+                .with_coverage()
+                // github actions has been throwing a lot of OOM SIGTERM's lately
+                .with_max_jobs(4),
             subcmd: Xtasks::Test {
                 name: None,
                 package: None,
