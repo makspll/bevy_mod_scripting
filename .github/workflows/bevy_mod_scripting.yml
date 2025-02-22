@@ -93,7 +93,11 @@ jobs:
 
       - name: Rust Cache
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
-        uses: Swatinem/rust-cache@v2.7.3
+        uses: Swatinem/rust-cache@v2.7.7
+        with:
+          # reasoning: we want to cache xtask, most of the jobs in the matrix will be sped up a good bit thanks to that 
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+          cache-all-crates: true
 
       - name: Setup
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
