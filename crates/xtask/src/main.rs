@@ -641,7 +641,7 @@ impl Xtasks {
             Xtasks::Test { name, package } => Self::test(app_settings, package, name),
             Xtasks::CiCheck => Self::cicd(app_settings),
             Xtasks::Init { dont_update_ide } => Self::init(app_settings, dont_update_ide),
-            Xtasks::Example { example } => Self::example(app_settings, example)
+            Xtasks::Example { example } => Self::example(app_settings, example),
             Xtasks::Macros { macro_name } => match macro_name {
                 Macro::ScriptTests => {
                     let mut settings = app_settings.clone();
