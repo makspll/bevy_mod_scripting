@@ -23,7 +23,6 @@
     - [ScriptQueryBuilder](./ScriptingReference/script-query-builder.md)
     - [ScriptQueryResult](./ScriptingReference/script-query-result.md)
 - [Core Callbacks](./ScriptingReference/core-callbacks.md)
-- [:construction: Generated Docs](./ladfiles/bindings.lad.json)
 
 # Developing BMS
 
@@ -32,3 +31,7 @@
 - [New Languages](./Development/AddingLanguages/introduction.md)
     - [Evaluating Feasibility](./Development/AddingLanguages/evaluating-feasibility.md)
     - [Necessary Features](./Development/AddingLanguages/necessary-features.md)
+
+# WIP
+
+- [Generated Docs](./ladfiles/bindings.lad.json)
