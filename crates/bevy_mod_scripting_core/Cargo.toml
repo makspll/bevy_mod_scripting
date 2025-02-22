@@ -48,6 +48,7 @@ bevy_mod_scripting_derive = { workspace = true }
 [dev-dependencies]
 test_utils = { workspace = true }
 tokio = { version = "1", features = ["rt", "macros"] }
+pretty_assertions = "1.4"
 
 [lints]
 workspace = true

@@ -581,6 +581,14 @@ impl<'t> LadFileBuilder<'t> {
                         })
                         .collect(),
                 ),
+                TypedWrapperKind::Union(through_type_infos) => LadArgumentKind::Union(
+                    through_type_infos
+                        .iter()
+                        .map(|through_type_info| {
+                            self.lad_argument_type_from_through_type(through_type_info)
+                        })
+                        .collect(),
+                ),
             },
             ThroughTypeInfo::TypeInfo(type_info) => {
                 match primitive_from_type_id(type_info.type_id()) {

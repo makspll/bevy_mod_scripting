@@ -139,6 +139,45 @@ impl TestResourceWithVariousFields {
     }
 }
 
+#[derive(Component, Reflect, PartialEq, Eq, Debug, Default)]
+#[reflect(Component, Default)]
+pub struct SimpleStruct {
+    pub foo: usize,
+}
+
+impl SimpleStruct {
+    pub fn init() -> Self {
+        Self { foo: 42 }
+    }
+}
+
+#[derive(Component, Reflect, PartialEq, Eq, Debug, Default)]
+#[reflect(Component, Default)]
+pub struct SimpleTupleStruct(pub usize);
+
+impl SimpleTupleStruct {
+    pub fn init() -> Self {
+        Self(42)
+    }
+}
+
+#[derive(Component, Reflect, PartialEq, Eq, Debug, Default)]
+#[reflect(Component, Default)]
+pub enum SimpleEnum {
+    Struct {
+        foo: usize,
+    },
+    TupleStruct(usize),
+    #[default]
+    Unit,
+}
+
+impl SimpleEnum {
+    pub fn init() -> Self {
+        Self::Struct { foo: 42 }
+    }
+}
+
 pub(crate) const TEST_COMPONENT_ID_START: usize = 20;
 pub(crate) const TEST_ENTITY_ID_START: u32 = 0;
 
@@ -182,16 +221,16 @@ macro_rules! impl_test_component_ids {
                 world.register_component::<$comp_type>();
                 registry.register::<$comp_type>();
                 let registered_id = world.component_id::<$comp_type>().unwrap().index();
-                assert_eq!(registered_id, TEST_COMPONENT_ID_START + $comp_id, "Test setup failed. Did you register components before running setup_world?");
+                assert_eq!(registered_id, TEST_COMPONENT_ID_START + $comp_id, "Test setup failed. Did you register components before running setup_world?: {}", stringify!($comp_type));
                 let entity = world.spawn(<$comp_type>::init()).id();
-                assert_eq!(entity.index(), TEST_ENTITY_ID_START + $comp_id, "Test setup failed. Did you spawn entities before running setup_world?");
-                assert_eq!(entity.generation(), 1, "Test setup failed. Did you spawn entities before running setup_world?");
+                assert_eq!(entity.index(), TEST_ENTITY_ID_START + $comp_id, "Test setup failed. Did you spawn entities before running setup_world?: {}", stringify!($comp_type));
+                assert_eq!(entity.generation(), 1, "Test setup failed. Did you spawn entities before running setup_world?: {}", stringify!($comp_type));
             )*
             $(
                 world.insert_resource::<$res_type>(<$res_type>::init());
                 registry.register::<$res_type>();
                 let registered_id = world.resource_id::<$res_type>().unwrap().index();
-                assert_eq!(registered_id, TEST_COMPONENT_ID_START + $res_id, "Test setup failed. Did you register components before running setup_world?");
+                assert_eq!(registered_id, TEST_COMPONENT_ID_START + $res_id, "Test setup failed. Did you register components before running setup_world?: {}", stringify!($res_type));
             )*
         }
 
@@ -216,12 +255,15 @@ impl_test_component_ids!(
         CompWithFromWorld => 1,
         CompWithDefault => 2,
         CompWithDefaultAndComponentData => 3,
-        CompWithFromWorldAndComponentData => 4
+        CompWithFromWorldAndComponentData => 4,
+        SimpleStruct => 5,
+        SimpleTupleStruct => 6,
+        SimpleEnum => 7,
     ],
     [
-        TestResource => 5,
-        ResourceWithDefault => 6,
-        TestResourceWithVariousFields => 7,
+        TestResource => 8,
+        ResourceWithDefault => 9,
+        TestResourceWithVariousFields => 10,
     ]
 );
 

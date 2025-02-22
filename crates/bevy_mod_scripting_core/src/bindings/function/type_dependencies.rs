@@ -1,7 +1,7 @@
 //! This module contains the [`GetTypeDependencies`] trait and its implementations for various types.
 
 use super::{
-    from::{Mut, Ref, Val},
+    from::{Mut, Ref, Union, Val},
     script_function::FunctionCallContext,
 };
 use crate::{
@@ -87,6 +87,13 @@ recursive_type_dependencies!(
     (Vec<T>  where T: GetTypeRegistration;FromReflect;Typed => with Self),
     (HashMap<K,V> where K: GetTypeRegistration;FromReflect;Typed;Hash;Eq, V: GetTypeRegistration;FromReflect;Typed => with Self)
 );
+
+impl<T1: GetTypeDependencies, T2: GetTypeDependencies> GetTypeDependencies for Union<T1, T2> {
+    fn register_type_dependencies(registry: &mut TypeRegistry) {
+        T1::register_type_dependencies(registry);
+        T2::register_type_dependencies(registry);
+    }
+}
 
 bevy::utils::all_tuples!(register_tuple_dependencies, 1, 14, T);
 
