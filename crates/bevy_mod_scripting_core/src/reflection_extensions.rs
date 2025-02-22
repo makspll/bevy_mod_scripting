@@ -4,9 +4,7 @@ use crate::{
     bindings::{ReflectReference, WorldGuard},
     error::InteropError,
 };
-use bevy::reflect::{
-    func::Return, FromReflect, PartialReflect, Reflect, ReflectFromReflect, ReflectMut, TypeInfo,
-};
+use bevy::reflect::{PartialReflect, Reflect, ReflectFromReflect, ReflectMut, TypeInfo};
 use std::{
     any::{Any, TypeId},
     cmp::max,
@@ -457,37 +455,6 @@ impl TypeInfoExtensions for TypeInfo {
     fn is_type(&self, crate_name: Option<&str>, type_ident: &str) -> bool {
         self.type_path_table().ident() == Some(type_ident)
             && self.type_path_table().crate_name() == crate_name
-    }
-}
-
-/// Extension trait for [`Return`] providing additional functionality for working with return values.
-pub trait ReturnValExt<'a> {
-    /// Try to convert the return value into the concrete type, or return a boxed partial reflect if the conversion fails.
-    fn try_into_or_boxed<T: PartialReflect + FromReflect>(
-        self,
-    ) -> Result<T, Box<dyn PartialReflect>>;
-
-    /// Get a reference to the partial reflect value.
-    fn as_ref(&'a self) -> &'a dyn PartialReflect;
-}
-
-impl<'a> ReturnValExt<'a> for Return<'a> {
-    fn as_ref(&'a self) -> &'a dyn PartialReflect {
-        match self {
-            Return::Owned(f) => f.as_partial_reflect(),
-            Return::Ref(r) => r.as_partial_reflect(),
-            Return::Mut(r) => r.as_partial_reflect(),
-        }
-    }
-
-    fn try_into_or_boxed<T: PartialReflect + FromReflect>(
-        self,
-    ) -> Result<T, Box<dyn PartialReflect>> {
-        match self {
-            Return::Owned(partial_reflect) => partial_reflect.try_take::<T>(),
-            Return::Ref(r) => T::from_reflect(r).ok_or_else(|| r.clone_value()),
-            Return::Mut(r) => T::from_reflect(r).ok_or_else(|| r.clone_value()),
-        }
     }
 }
 

@@ -3,7 +3,12 @@ pub mod plugin;
 
 use bevy_mod_scripting_core::{
     bindings::{
-        function::{namespace::Namespace, script_function::FunctionCallContext},
+        function::{
+            namespace::Namespace,
+            script_function::{
+                DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext,
+            },
+        },
         ReflectReference,
     },
     docgen::{
@@ -12,10 +17,7 @@ use bevy_mod_scripting_core::{
     },
     match_by_type,
 };
-use bevy_reflect::{
-    func::{DynamicFunction, DynamicFunctionMut},
-    NamedField, TypeInfo, TypeRegistry, Typed, UnnamedField,
-};
+use bevy_reflect::{NamedField, TypeInfo, TypeRegistry, Typed, UnnamedField};
 use ladfile::*;
 use std::{
     any::TypeId,
@@ -53,8 +55,8 @@ fn primitive_from_type_id(type_id: TypeId) -> Option<LadBMSPrimitiveKind> {
         i: OsString => return Some(LadBMSPrimitiveKind::OsString),
         i: PathBuf => return Some(LadBMSPrimitiveKind::PathBuf),
         i: FunctionCallContext => return Some(LadBMSPrimitiveKind::FunctionCallContext),
-        i: DynamicFunction => return Some(LadBMSPrimitiveKind::DynamicFunction),
-        i: DynamicFunctionMut => return Some(LadBMSPrimitiveKind::DynamicFunctionMut),
+        i: DynamicScriptFunction => return Some(LadBMSPrimitiveKind::DynamicFunction),
+        i: DynamicScriptFunctionMut => return Some(LadBMSPrimitiveKind::DynamicFunctionMut),
         i: ReflectReference => return Some(LadBMSPrimitiveKind::ReflectReference)
     });
     None
@@ -101,8 +103,8 @@ impl<'t> LadFileBuilder<'t> {
             .add_bms_primitive::<OsString>("A heap allocated OS string")
             .add_bms_primitive::<PathBuf>("A heap allocated file path")
             .add_bms_primitive::<FunctionCallContext>("Function call context, if accepted by a function, means the function can access the world in arbitrary ways.")
-            .add_bms_primitive::<DynamicFunction>("A callable dynamic function")
-            .add_bms_primitive::<DynamicFunctionMut>("A stateful and callable dynamic function")
+            .add_bms_primitive::<DynamicScriptFunction>("A callable dynamic function")
+            .add_bms_primitive::<DynamicScriptFunctionMut>("A stateful and callable dynamic function")
             .add_bms_primitive::<ReflectReference>("A reference to a reflectable type");
 
         builder

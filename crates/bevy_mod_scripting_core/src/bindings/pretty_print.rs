@@ -310,15 +310,10 @@ impl ReflectReferencePrinter {
             ReflectRef::Opaque(o) => {
                 self.pretty_print_value_opaque(o, output);
             }
-            ReflectRef::Function(f) => {
-                output.push_str("Function(");
-                output.push_str(
-                    f.info()
-                        .name()
-                        .unwrap_or(&Cow::Borrowed("<unnamed function>"))
-                        .as_ref(),
-                );
-                output.push(')');
+            // for function_reflection from bevy or other feature gated things
+            #[allow(unreachable_patterns)]
+            _ => {
+                output.push_str(&format!("{:?}", v));
             }
         }
     }

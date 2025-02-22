@@ -18,7 +18,6 @@ bevy_bindings = []
 
 [dependencies]
 bevy = { workspace = true, features = [
-    "reflect_functions",
     "bevy_asset",
     "bevy_animation",
     "bevy_core_pipeline",
@@ -27,7 +26,6 @@ bevy = { workspace = true, features = [
     "bevy_render",
     "bevy_text",
     "bevy_sprite",
-    "file_watcher",
     "multi_threaded",
 ] }
 profiling = { workspace = true }
