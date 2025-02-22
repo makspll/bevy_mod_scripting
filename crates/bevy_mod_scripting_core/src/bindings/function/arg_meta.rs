@@ -8,7 +8,7 @@ use crate::{
 };
 
 use super::{
-    from::{FromScript, Mut, Ref, Val},
+    from::{FromScript, Mut, Ref, Union, Val},
     into::IntoScript,
     script_function::{DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext},
     type_dependencies::GetTypeDependencies,
@@ -72,6 +72,7 @@ impl_arg_info!(
     &'static str
 );
 
+impl<T1, T2> ArgMeta for Union<T1, T2> {}
 impl<T> ArgMeta for Val<T> {}
 impl<T> ArgMeta for Ref<'_, T> {}
 impl<T> ArgMeta for Mut<'_, T> {}

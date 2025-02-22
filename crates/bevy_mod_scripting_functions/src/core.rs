@@ -1,8 +1,14 @@
 //! Contains functions defined by the [`bevy_mod_scripting_core`] crate
 
+use std::collections::HashMap;
+
 use bevy::{prelude::*, reflect::ParsedPath};
 use bevy_mod_scripting_core::{
-    bindings::function::script_function::DynamicScriptFunctionMut, docgen::info::FunctionInfo, *,
+    bindings::function::{
+        from::Union, namespace::GlobalNamespace, script_function::DynamicScriptFunctionMut,
+    },
+    docgen::info::FunctionInfo,
+    *,
 };
 use bevy_mod_scripting_derive::script_bindings;
 use bindings::{
@@ -253,6 +259,15 @@ impl World {
     name = "reflect_reference_functions"
 )]
 impl ReflectReference {
+    fn variant_name(
+        ctxt: FunctionCallContext,
+        s: ReflectReference,
+    ) -> Result<Option<String>, InteropError> {
+        profiling::function_scope!("variant_name");
+        let world = ctxt.world()?;
+        s.variant_name(world)
+    }
+
     fn display_ref(ctxt: FunctionCallContext, s: ReflectReference) -> Result<String, InteropError> {
         profiling::function_scope!("display_ref");
         let world = ctxt.world()?;
@@ -593,6 +608,56 @@ impl ScriptQueryResult {
     }
 }
 
+#[script_bindings(
+    remote,
+    bms_core_path = "bevy_mod_scripting_core",
+    name = "global_namespace_functions",
+    unregistered
+)]
+impl GlobalNamespace {
+    /// Attempts to construct the given type, given an arbitrary map of values.
+    ///
+    /// Arguments:
+    /// * `registration`: The type to construct.
+    /// * `payload`: The values to use to construct the type.
+    /// Returns:
+    /// * `reference`: The constructed type.
+    fn construct(
+        ctxt: FunctionCallContext,
+        registration: Union<
+            Val<ScriptTypeRegistration>,
+            Union<Val<ScriptComponentRegistration>, Val<ScriptResourceRegistration>>,
+        >,
+        payload: HashMap<String, ScriptValue>,
+    ) -> Result<ReflectReference, InteropError> {
+        let registration = match registration.into_left() {
+            Ok(l) => l.into_inner(),
+            Err(r) => match r.into_left() {
+                Ok(l) => (l.into_inner()).into_type_registration(),
+                Err(r) => (r.into_inner()).into_type_registration(),
+            },
+        };
+
+        let world = ctxt.world()?;
+        let one_indexed = ctxt.convert_to_0_indexed;
+
+        let val = world.construct(registration.clone(), payload, one_indexed)?;
+        let allocator = world.allocator();
+        let mut allocator = allocator.write();
+        let reflect_val = val.try_into_reflect().map_err(|_| {
+            InteropError::failed_from_reflect(
+                Some(registration.type_id()),
+                "Could not construct the type".into(),
+            )
+        })?;
+
+        Ok(ReflectReference::new_allocated_boxed(
+            reflect_val,
+            &mut allocator,
+        ))
+    }
+}
+
 pub fn register_core_functions(app: &mut App) {
     let world = app.world_mut();
     // we don't exclude from compilation here,
@@ -611,5 +676,7 @@ pub fn register_core_functions(app: &mut App) {
 
         register_script_query_builder_functions(world);
         register_script_query_result_functions(world);
+
+        register_global_namespace_functions(world);
     }
 }

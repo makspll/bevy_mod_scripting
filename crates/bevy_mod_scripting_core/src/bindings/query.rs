@@ -80,6 +80,11 @@ impl ScriptResourceRegistration {
     pub fn type_registration(&self) -> &ScriptTypeRegistration {
         &self.registration
     }
+
+    /// Convert to a generic [`ScriptTypeRegistration`] ditching the resource information.
+    pub fn into_type_registration(self) -> ScriptTypeRegistration {
+        self.registration
+    }
 }
 
 impl ScriptComponentRegistration {
@@ -100,6 +105,11 @@ impl ScriptComponentRegistration {
     /// Returns the [`ScriptTypeRegistration`] for this type.
     pub fn type_registration(&self) -> &ScriptTypeRegistration {
         &self.registration
+    }
+
+    /// Convert to a generic [`ScriptTypeRegistration`] ditching the component information.
+    pub fn into_type_registration(self) -> ScriptTypeRegistration {
+        self.registration
     }
 }
 
