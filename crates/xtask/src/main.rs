@@ -1301,14 +1301,13 @@ impl Xtasks {
     fn init(app_settings: GlobalArgs, dont_update_ide: bool) -> Result<()> {
         // install alsa et al
         if cfg!(target_os = "linux") {
+            let sudo = if !is_root::is_root() { "sudo" } else { "" };
+            let install_cmd = format!("{sudo} apt-get update && sudo apt-get install --no-install-recommends -y libasound2-dev libudev-dev");
             Self::run_system_command(
                 &app_settings,
                 "sh",
                 "Failed to install Linux dependencies",
-                vec![
-                    "-c",
-                    "sudo apt-get update && sudo apt-get install --no-install-recommends -y libasound2-dev libudev-dev"
-                ],
+                vec!["-c", install_cmd.as_str()],
                 None,
             )?;
         }
