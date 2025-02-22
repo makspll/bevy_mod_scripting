@@ -716,10 +716,8 @@ mod test {
         let script_function = fn_.into_dynamic_script_function().with_name("my_fn");
 
         with_local_world(|| {
-            let out = script_function.call(
-                vec![ScriptValue::from(1), ScriptValue::from(2)],
-                FunctionCallContext::default(),
-            );
+            let out =
+                script_function.call(vec![ScriptValue::from(1)], FunctionCallContext::default());
 
             assert!(out.is_err());
             let world = FunctionCallContext::default().world().unwrap();
