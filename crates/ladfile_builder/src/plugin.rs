@@ -71,6 +71,12 @@ fn generate_lad_file(
     // first of all, iterate over all the types and register them
     for registration in type_registry.iter() {
         let type_info = registration.type_info();
+
+        // ignore things without an identifier
+        if type_info.type_path_table().ident().is_none() {
+            continue;
+        }
+
         builder.add_type_info(type_info);
 
         // find functions on the namespace
