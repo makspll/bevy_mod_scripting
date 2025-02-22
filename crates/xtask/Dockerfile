@@ -1,6 +1,9 @@
 FROM rust:latest AS base
 
-WORKDIR /app
+RUN useradd -m appuser
+USER appuser
+
+WORKDIR /usr/src/app
 
 COPY . .
 
