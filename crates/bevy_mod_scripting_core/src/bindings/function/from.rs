@@ -456,3 +456,46 @@ where
         }
     }
 }
+
+/// A union of two or more (by nesting unions) types.
+pub struct Union<T1, T2>(Result<T1, T2>);
+
+impl<T1, T2> Union<T1, T2> {
+    /// Try interpret the union as the left type
+    pub fn into_left(self) -> Result<T1, T2> {
+        match self.0 {
+            Ok(r) => Ok(r),
+            Err(l) => Err(l),
+        }
+    }
+
+    /// Try interpret the union as the right type
+    pub fn into_right(self) -> Result<T2, T1> {
+        match self.0 {
+            Err(r) => Ok(r),
+            Ok(l) => Err(l),
+        }
+    }
+}
+
+impl<T1: FromScript, T2: FromScript> FromScript for Union<T1, T2>
+where
+    for<'a> T1::This<'a>: Into<T1>,
+    for<'a> T2::This<'a>: Into<T2>,
+{
+    type This<'w> = Self;
+    fn from_script(
+        value: ScriptValue,
+        world: WorldGuard<'_>,
+    ) -> Result<Self::This<'_>, InteropError> {
+        let _ = match T1::from_script(value.clone(), world.clone()) {
+            Ok(v) => return Ok(Union(Ok(v.into()))),
+            Err(e) => e,
+        };
+
+        match T2::from_script(value, world) {
+            Ok(v) => Ok(Union(Err(v.into()))),
+            Err(e) => Err(e),
+        }
+    }
+}

@@ -8,7 +8,7 @@ use bevy::reflect::{TypeInfo, Typed};
 use crate::{
     bindings::{
         function::{
-            from::{Mut, Ref, Val},
+            from::{Mut, Ref, Union, Val},
             script_function::{
                 DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext,
             },
@@ -59,6 +59,8 @@ pub enum UntypedWrapperKind {
 /// The kind of typed wrapper.
 #[derive(Debug, Clone)]
 pub enum TypedWrapperKind {
+    /// A union of many possible types
+    Union(Vec<ThroughTypeInfo>),
     /// Wraps a `Vec` of a through typed type.
     Vec(Box<ThroughTypeInfo>),
     /// Wraps a `HashMap` of a through typed type.
@@ -77,6 +79,15 @@ pub enum TypedWrapperKind {
 pub trait TypedThrough {
     /// Get the [`ThroughTypeInfo`] for the type.
     fn through_type_info() -> ThroughTypeInfo;
+}
+
+impl<T1: TypedThrough, T2: TypedThrough> TypedThrough for Union<T1, T2> {
+    fn through_type_info() -> ThroughTypeInfo {
+        ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Union(vec![
+            T1::through_type_info(),
+            T2::through_type_info(),
+        ]))
+    }
 }
 
 impl<T: Typed> TypedThrough for Ref<'_, T> {

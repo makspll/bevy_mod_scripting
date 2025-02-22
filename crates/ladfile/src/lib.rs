@@ -176,6 +176,8 @@ pub enum LadArgumentKind {
     Array(Box<LadArgumentKind>, usize),
     /// A primitive type, implementing `IntoScript` and `FromScript` natively in BMS.
     Primitive(LadBMSPrimitiveKind),
+    /// A union of two or more types
+    Union(Vec<LadArgumentKind>),
     /// An arbitrary type which is either unsupported, doesn't contain type information, or is generally unknown.
     ///
     /// This will be the variant used for external primitives as well.
@@ -248,6 +250,13 @@ pub trait ArgumentVisitor {
         self.visit_lad_bms_primitive_kind(primitive_kind);
     }
 
+    /// traverse a union of arguments, by default calls `visit` on each argument
+    fn walk_union(&mut self, inner: &[LadArgumentKind]) {
+        for arg in inner {
+            self.visit(arg);
+        }
+    }
+
     /// traverse an unknown argument, by default calls `visit` on the type id
     fn walk_unknown(&mut self, type_id: &LadTypeId) {
         self.visit_lad_type_id(type_id);
@@ -270,6 +279,7 @@ pub trait ArgumentVisitor {
             LadArgumentKind::Tuple(inner) => self.walk_tuple(inner),
             LadArgumentKind::Array(inner, size) => self.walk_array(inner, *size),
             LadArgumentKind::Primitive(primitive_kind) => self.walk_primitive(primitive_kind),
+            LadArgumentKind::Union(inner) => self.walk_union(inner),
             LadArgumentKind::Unknown(type_id) => self.walk_unknown(type_id),
         }
     }

@@ -536,6 +536,25 @@ impl InteropError {
             },
         ))
     }
+
+    /// Thrown when constructing types and we find missing data needed to construct the type
+    pub fn missing_data_in_constructor(
+        type_id: TypeId,
+        missing_data_name: impl Into<Cow<'static, str>>,
+    ) -> Self {
+        Self(Arc::new(InteropErrorInner::MissingDataInConstructor {
+            type_id,
+            missing_data_name: missing_data_name.into(),
+        }))
+    }
+
+    /// Thrown if an enum variant is invalid.
+    pub fn invalid_enum_variant(type_id: TypeId, variant_name: impl ToString) -> Self {
+        Self(Arc::new(InteropErrorInner::InvalidEnumVariant {
+            type_id,
+            variant_name: variant_name.to_string(),
+        }))
+    }
 }
 
 /// For errors to do with reflection, type conversions or other interop issues
@@ -703,10 +722,22 @@ pub(crate) enum InteropErrorInner {
         /// The type that was not registered
         type_name: Cow<'static, str>,
     },
+    /// Thrown when constructing types and we find missing data
+    MissingDataInConstructor {
+        /// The type id of the type we're constructing
+        type_id: TypeId,
+        /// the name of the missing data
+        missing_data_name: Cow<'static, str>,
+    },
     /// Thrown when an invariant is violated
     Invariant {
         /// The message that describes the invariant violation
         message: String,
+    },
+    /// New variant for invalid enum variant errors.
+    InvalidEnumVariant {
+        type_id: TypeId,
+        variant_name: String,
     },
 }
 
@@ -896,6 +927,26 @@ impl PartialEq for InteropErrorInner {
                 InteropErrorInner::Invariant { message: a },
                 InteropErrorInner::Invariant { message: b },
             ) => a == b,
+            (
+                InteropErrorInner::MissingDataInConstructor {
+                    type_id: a,
+                    missing_data_name: b,
+                },
+                InteropErrorInner::MissingDataInConstructor {
+                    type_id: c,
+                    missing_data_name: d,
+                },
+            ) => a == c && b == d,
+            (
+                InteropErrorInner::InvalidEnumVariant {
+                    type_id: a,
+                    variant_name: b,
+                },
+                InteropErrorInner::InvalidEnumVariant {
+                    type_id: c,
+                    variant_name: d,
+                },
+            ) => a == c && b == d,
             _ => false,
         }
     }
@@ -1063,6 +1114,15 @@ macro_rules! invalid_access_count {
     };
 }
 
+macro_rules! missing_data_in_constructor {
+    ($type_id:expr, $missing_data_name:expr) => {
+        format!(
+            "Missing data in constructor for type: {}. Missing data: {}",
+            $type_id, $missing_data_name
+        )
+    };
+}
+
 macro_rules! invariant {
     ($message:expr) => {
         format!(
@@ -1207,6 +1267,16 @@ impl DisplayWithWorld for InteropErrorInner {
             InteropErrorInner::UnregisteredComponentOrResourceType { type_name } => {
                 unregistered_component_or_resource_type!(type_name)
             },
+            InteropErrorInner::MissingDataInConstructor { type_id, missing_data_name } => {
+                missing_data_in_constructor!(type_id.display_with_world(world), missing_data_name)
+            },
+            InteropErrorInner::InvalidEnumVariant { type_id, variant_name } => {
+                format!(
+                    "Invalid enum variant: {} for enum: {}",
+                    variant_name,
+                    type_id.display_with_world(world)
+                )
+            },
         }
     }
 
@@ -1335,6 +1405,16 @@ impl DisplayWithWorld for InteropErrorInner {
             },
             InteropErrorInner::UnregisteredComponentOrResourceType { type_name } => {
                 unregistered_component_or_resource_type!(type_name)
+            },
+            InteropErrorInner::MissingDataInConstructor { type_id, missing_data_name } => {
+                missing_data_in_constructor!(type_id.display_without_world(), missing_data_name)
+            },
+            InteropErrorInner::InvalidEnumVariant { type_id, variant_name } => {
+                format!(
+                    "Invalid enum variant: {} for enum: {}",
+                    variant_name,
+                    type_id.display_without_world()
+                )
             },
         }
     }
