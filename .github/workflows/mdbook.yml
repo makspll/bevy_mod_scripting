@@ -39,7 +39,7 @@ jobs:
       run: cargo xtask init --dont-update-ide
 
     - name: Build the book
-      run: cargo xtask docs
+      run: cargo xtask docs --no-rust-docs
 
     - name: Deploy to GitHub Pages
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
