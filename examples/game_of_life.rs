@@ -1,6 +1,9 @@
 #![allow(deprecated)]
 
+use std::time::Duration;
+
 use bevy::{
+    diagnostic::LogDiagnosticsPlugin,
     image::ImageSampler,
     log::LogPlugin,
     prelude::*,
@@ -18,6 +21,7 @@ use bevy_mod_scripting_core::{
     bindings::{
         function::namespace::{GlobalNamespace, NamespaceBuilder},
         script_value::ScriptValue,
+        AllocatorDiagnosticPlugin,
     },
     callback_labels,
     commands::AddStaticScript,
@@ -324,6 +328,14 @@ fn main() -> std::io::Result<()> {
 
     console_app(&mut app);
     game_of_life_app(&mut app);
+
+    app.add_plugins((
+        AllocatorDiagnosticPlugin,
+        LogDiagnosticsPlugin {
+            wait_duration: Duration::from_secs(60),
+            ..Default::default()
+        },
+    ));
 
     app.run();
 

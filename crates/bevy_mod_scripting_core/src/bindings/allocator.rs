@@ -1,6 +1,12 @@
 //! An allocator used to control the lifetime of allocations
 
-use bevy::{ecs::system::Resource, prelude::ResMut, reflect::PartialReflect};
+use bevy::{
+    app::{App, Plugin, PostUpdate},
+    diagnostic::{Diagnostic, DiagnosticPath, Diagnostics, RegisterDiagnostic},
+    ecs::system::{Res, Resource},
+    prelude::ResMut,
+    reflect::PartialReflect,
+};
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::{
     cell::UnsafeCell,
@@ -10,6 +16,14 @@ use std::{
     hash::Hasher,
     sync::{atomic::AtomicU64, Arc},
 };
+
+/// The path used for the total number of allocations diagnostic
+pub const ALLOCATOR_TOTAL_DIAG_PATH: DiagnosticPath =
+    DiagnosticPath::const_new("scripting_allocator_total");
+
+/// The path used for the total number of deallocated allocations diagnostic
+pub const ALLOCATOR_TOTAL_COLLECTED_DIAG_PATH: DiagnosticPath =
+    DiagnosticPath::const_new("scripting_allocator_total_collected");
 
 #[derive(Clone, Debug)]
 /// Unique identifier for an allocation
@@ -214,9 +228,34 @@ impl ReflectAllocator {
 
 /// Cleans up dangling script allocations
 #[profiling::function]
-pub fn garbage_collector(allocator: ResMut<AppReflectAllocator>) {
+pub fn garbage_collector(allocator: ResMut<AppReflectAllocator>, mut diagnostics: Diagnostics) {
     let mut allocator = allocator.write();
-    allocator.clean_garbage_allocations()
+    let before = allocator.allocations.len();
+    allocator.clean_garbage_allocations();
+    let after = allocator.allocations.len();
+    diagnostics.add_measurement(&ALLOCATOR_TOTAL_DIAG_PATH, || after as f64);
+    diagnostics.add_measurement(&ALLOCATOR_TOTAL_COLLECTED_DIAG_PATH, || {
+        (before - after) as f64
+    });
+}
+
+/// Measures the number of allocations in the allocator and other diagnostics when enabled
+pub fn measure_allocations(allocator: Res<AppReflectAllocator>, mut diagnostics: Diagnostics) {
+    let allocator = allocator.read();
+    let allocations_count = allocator.allocations.len();
+    diagnostics.add_measurement(&ALLOCATOR_TOTAL_DIAG_PATH, || allocations_count as f64);
+}
+
+/// A plugin which registers various allocator diagnostics
+pub struct AllocatorDiagnosticPlugin;
+impl Plugin for AllocatorDiagnosticPlugin {
+    fn build(&self, app: &mut App) {
+        app.register_diagnostic(Diagnostic::new(ALLOCATOR_TOTAL_DIAG_PATH).with_suffix(" allocs"))
+            .register_diagnostic(
+                Diagnostic::new(ALLOCATOR_TOTAL_COLLECTED_DIAG_PATH).with_suffix(" deallocs"),
+            )
+            .add_systems(PostUpdate, measure_allocations);
+    }
 }
 
 #[cfg(test)]
