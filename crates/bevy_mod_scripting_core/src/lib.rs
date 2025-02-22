@@ -239,6 +239,23 @@ fn once_per_app_finalize(app: &mut App) {
         extensions: asset_settings_extensions,
         preprocessor: None,
     });
+
+    // pre-register component id's
+    pre_register_componnents(app);
+}
+
+/// Ensures all types with `ReflectComponent` type data are pre-registered with component ID's
+fn pre_register_componnents(app: &mut App) {
+    let type_registry = app
+        .world_mut()
+        .get_resource_or_init::<AppTypeRegistry>()
+        .clone();
+    let type_registry = type_registry.read();
+
+    let world = app.world_mut();
+    for (_, data) in type_registry.iter_with_data::<ReflectComponent>() {
+        data.register_component(world);
+    }
 }
 
 // One of registration of things that need to be done only once per app
@@ -397,5 +414,24 @@ mod test {
             .get_asset_loader_with_extension("rhai")
             .await
             .expect("Rhai loader not found");
+    }
+
+    #[test]
+    fn test_reflect_component_is_preregistered_in_app_finalize() {
+        let mut app = App::new();
+
+        app.add_plugins(AssetPlugin::default());
+
+        #[derive(Component, Reflect)]
+        #[reflect(Component)]
+        struct Comp;
+
+        app.register_type::<Comp>();
+
+        assert!(app.world_mut().component_id::<Comp>().is_none());
+
+        once_per_app_finalize(&mut app);
+
+        assert!(app.world_mut().component_id::<Comp>().is_some());
     }
 }
