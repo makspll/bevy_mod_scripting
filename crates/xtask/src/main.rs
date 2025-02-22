@@ -284,6 +284,10 @@ impl App {
             cmd.arg("--coverage");
         }
 
+        if let Some(jobs) = self.global_args.jobs {
+            cmd.arg("--jobs").arg(jobs.to_string());
+        }
+
         match self.subcmd {
             Xtasks::Macros { macro_name } => {
                 cmd.arg("macros").arg(macro_name.as_ref());
