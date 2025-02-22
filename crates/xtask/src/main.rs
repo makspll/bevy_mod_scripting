@@ -1412,8 +1412,11 @@ impl Xtasks {
 /// Set them to MAIN_CARGO_<VARIABLE> so that we can reference them but so they dont get inherited by further cargo commands
 fn pop_cargo_env() -> Result<()> {
     let env = std::env::vars().collect::<Vec<_>>();
+    // RUSTUP TOOLCHAIN exclude is a temporary fix, it might make deving the api codegen crate not work
+    let exclude_list = ["CARGO_HOME", "RUSTUP_TOOLCHAIN"];
+
     for (key, value) in env.iter() {
-        if key.starts_with("CARGO_") {
+        if key.starts_with("CARGO_") && !exclude_list.contains(&(key.as_str())) {
             let new_key = format!("MAIN_{}", key);
             std::env::set_var(new_key, value);
             std::env::remove_var(key);
@@ -1423,6 +1426,9 @@ fn pop_cargo_env() -> Result<()> {
     // unset some other variables
     let remove_vars = ["RUSTUP_TOOLCHAIN"];
     for var in remove_vars.iter() {
+        if exclude_list.contains(var) {
+            continue;
+        }
         std::env::remove_var(var);
     }
 
