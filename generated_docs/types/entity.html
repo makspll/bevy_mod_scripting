@@ -1,0 +1,283 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Entity - Bevy Scripting</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Documentation for the Bevy Scripting library">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Bevy Scripting</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/makspll/bevy_mod_scripting" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/generated_docs/types/entity.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="entity"><a class="header" href="#entity">Entity</a></h1>
+<p>Opaque Type. 🔒</p>
+<h2 id="description"><a class="header" href="#description">Description</a></h2>
+<blockquote>
+<p>Lightweight identifier of an <a href="crate::entity">entity</a>.</p>
+<p>The identifier is implemented using a <a href="https://lucassardois.medium.com/generational-indices-guide-8e3c5f7fd594">generational index</a>: a combination of an index and a generation.
+This allows fast insertion after data removal in an array while minimizing loss of spatial locality.</p>
+<p>These identifiers are only valid on the <a href="crate::world::World"><code>World</code></a> it's sourced from. Attempting to use an <code>Entity</code> to
+fetch entity components or metadata from a different world will either fail or return unexpected results.</p>
+<h1 id="stability-warning"><a class="header" href="#stability-warning">Stability warning</a></h1>
+<p>For all intents and purposes, <code>Entity</code> should be treated as an opaque identifier. The internal bit
+representation is liable to change from release to release as are the behaviors or performance
+characteristics of any of its trait implementations (i.e. <code>Ord</code>, <code>Hash</code>, etc.). This means that changes in
+<code>Entity</code>'s representation, though made readable through various functions on the type, are not considered
+breaking changes under <a href="https://semver.org/">SemVer</a>.</p>
+<p>In particular, directly serializing with <code>Serialize</code> and <code>Deserialize</code> make zero guarantee of long
+term wire format compatibility. Changes in behavior will cause serialized <code>Entity</code> values persisted
+to long term storage (i.e. disk, databases, etc.) will fail to deserialize upon being updated.</p>
+<h1 id="usage"><a class="header" href="#usage">Usage</a></h1>
+<p>This data type is returned by iterating a <code>Query</code> that has <code>Entity</code> as part of its query fetch type parameter (<a href="crate::system::Query#entity-id-access">learn more</a>).
+It can also be obtained by calling <a href="crate::system::EntityCommands::id"><code>EntityCommands::id</code></a> or <a href="crate::world::EntityWorldMut::id"><code>EntityWorldMut::id</code></a>.</p>
+<pre><code># use bevy_ecs::prelude::*;
+# #[derive(Component)]
+# struct SomeComponent;
+fn setup(mut commands: Commands) {
+    // Calling `spawn` returns `EntityCommands`.
+    let entity = commands.spawn(SomeComponent).id();
+}
+
+fn exclusive_system(world: &amp;mut World) {
+    // Calling `spawn` returns `EntityWorldMut`.
+    let entity = world.spawn(SomeComponent).id();
+}
+#
+# bevy_ecs::system::assert_is_system(setup);
+# bevy_ecs::system::assert_is_system(exclusive_system);
+</code></pre>
+<p>It can be used to refer to a specific entity to apply <a href="crate::system::EntityCommands"><code>EntityCommands</code></a>, or to call <a href="crate::system::Query::get"><code>Query::get</code></a> (or similar methods) to access its components.</p>
+<pre><code># use bevy_ecs::prelude::*;
+#
+# #[derive(Component)]
+# struct Expired;
+#
+fn dispose_expired_food(mut commands: Commands, query: Query&lt;Entity, With&lt;Expired&gt;&gt;) {
+    for food_entity in &amp;query {
+        commands.entity(food_entity).despawn();
+    }
+}
+#
+# bevy_ecs::system::assert_is_system(dispose_expired_food);
+</code></pre>
+</blockquote>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
+<tr><td><code>clone(_self)</code></td><td><a href="./entity/clone.html">No Documentation 🚧</a></td></tr>
+<tr><td><code>eq(_self, other)</code></td><td><a href="./entity/eq.html">No Documentation 🚧</a></td></tr>
+<tr><td><code>from_bits(bits)</code></td><td>[ Reconstruct an `Entity` previously destructured with [`Entity::to_bits`].</td></tr>
+<tr><td>Only useful when applied to results from `to_bits` in the same instance of an application.</td><td></td></tr>
+<tr><td># Panics</td><td></td></tr>
+<tr><td>This method will likely panic if given `u64` values that did not come from [`Entity::to_bits`]](./entity/from_bits.md)</td><td></td></tr>
+<tr><td><code>from_raw(index)</code></td><td>[ Creates a new entity ID with the specified `index` and a generation of 1.</td></tr>
+<tr><td># Note</td><td></td></tr>
+<tr><td>Spawning a speci](./entity/from_raw.md)</td><td></td></tr>
+<tr><td><code>generation(_self)</code></td><td>[ Returns the generation of this Entity's index. The generation is incremented each time an</td></tr>
+<tr><td>entity w](./entity/generation.md)</td><td></td></tr>
+<tr><td><code>index(_self)</code></td><td>[ Return a transiently unique identifier.</td></tr>
+<tr><td>No two simultaneously-live entities share the same index, ](./entity/index.md)</td><td></td></tr>
+<tr><td><code>to_bits(_self)</code></td><td>[ Convert to a form convenient for passing outside of rust.</td></tr>
+<tr><td>Only useful for identifying entities wit](./entity/to_bits.md)</td><td></td></tr>
+</tbody></table>
+</div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../generated_docs/types/tick/set.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../generated_docs/types/entity/clone.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../generated_docs/types/tick/set.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../generated_docs/types/entity/clone.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../multi-code-block.js"></script>
+
+
+    </div>
+    </body>
+</html>

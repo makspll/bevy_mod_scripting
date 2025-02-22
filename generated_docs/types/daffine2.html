@@ -1,0 +1,259 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>DAffine2 - Bevy Scripting</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Documentation for the Bevy Scripting library">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Bevy Scripting</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/makspll/bevy_mod_scripting" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/generated_docs/types/daffine2.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="daffine2"><a class="header" href="#daffine2">DAffine2</a></h1>
+<h3 id="daffine2-1"><a class="header" href="#daffine2-1">DAffine2</a></h3>
+<ul>
+<li><strong>matrix2</strong> : glam::DMat2</li>
+<li><strong>translation</strong> : glam::DVec2</li>
+</ul>
+<h2 id="description"><a class="header" href="#description">Description</a></h2>
+<blockquote>
+<p>No Documentation 🚧</p>
+</blockquote>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
+<tr><td><code>abs_diff_eq(_self, rhs, max_abs_diff)</code></td><td>[ Returns true if the absolute difference of all elements between `self` and `rhs`</td></tr>
+<tr><td>is less than or e](./daffine2/abs_diff_eq.md)</td><td></td></tr>
+<tr><td><code>clone(_self)</code></td><td><a href="./daffine2/clone.html">No Documentation 🚧</a></td></tr>
+<tr><td><code>eq(_self, rhs)</code></td><td><a href="./daffine2/eq.html">No Documentation 🚧</a></td></tr>
+<tr><td><code>from_angle(angle)</code></td><td><a href="./daffine2/from_angle.html"> Creates an affine transform from the given rotation `angle`.</a></td></tr>
+<tr><td><code>from_angle_translation(angle, translation)</code></td><td>[ Creates an affine transform from the given 2D rotation `angle` (in radians) and</td></tr>
+<tr><td>`translation`.</td><td></td></tr>
+<tr><td>Eq](./daffine2/from_angle_translation.md)</td><td></td></tr>
+<tr><td><code>from_cols(x_axis, y_axis, z_axis)</code></td><td><a href="./daffine2/from_cols.html"> Creates an affine transform from three column vectors.</a></td></tr>
+<tr><td><code>from_mat2(matrix2)</code></td><td><a href="./daffine2/from_mat2.html"> Creates an affine transform from a 2x2 matrix (expressing scale, shear and rotation)</a></td></tr>
+<tr><td><code>from_mat2_translation(matrix2, translation)</code></td><td>[ Creates an affine transform from a 2x2 matrix (expressing scale, shear and rotation) and a</td></tr>
+<tr><td>transla](./daffine2/from_mat2_translation.md)</td><td></td></tr>
+<tr><td><code>from_mat3(m)</code></td><td><a href="./daffine2/from_mat3.html"> The given `DMat3` must be an affine transform,</a></td></tr>
+<tr><td><code>from_scale(scale)</code></td><td>[ Creates an affine transform that changes scale.</td></tr>
+<tr><td>Note that if any scale is zero the transform will ](./daffine2/from_scale.md)</td><td></td></tr>
+<tr><td><code>from_scale_angle_translation(scale, angle, translation)</code></td><td>[ Creates an affine transform from the given 2D `scale`, rotation `angle` (in radians) and</td></tr>
+<tr><td>`translation`](./daffine2/from_scale_angle_translation.md)</td><td></td></tr>
+<tr><td><code>from_translation(translation)</code></td><td><a href="./daffine2/from_translation.html"> Creates an affine transformation from the given 2D `translation`.</a></td></tr>
+<tr><td><code>inverse(_self)</code></td><td>[ Return the inverse of this transform.</td></tr>
+<tr><td>Note that if the transform is not invertible the result will](./daffine2/inverse.md)</td><td></td></tr>
+<tr><td><code>is_finite(_self)</code></td><td>[ Returns `true` if, and only if, all elements are finite.</td></tr>
+<tr><td>If any element is either `NaN`, positive ](./daffine2/is_finite.md)</td><td></td></tr>
+<tr><td><code>is_nan(_self)</code></td><td><a href="./daffine2/is_nan.html"> Returns `true` if any elements are `NaN`.</a></td></tr>
+<tr><td><code>mul(_self, rhs)</code></td><td><a href="./daffine2/mul.html">No Documentation 🚧</a></td></tr>
+<tr><td><code>mul-1(arg0, arg1)</code></td><td><a href="./daffine2/mul-1.html">No Documentation 🚧</a></td></tr>
+<tr><td><code>to_cols_array(_self)</code></td><td><a href="./daffine2/to_cols_array.html"> Creates a `[f64; 6]` array storing data in column major order.</a></td></tr>
+<tr><td><code>to_cols_array_2d(_self)</code></td><td>[ Creates a `[[f64; 2]; 3]` 2D array storing data in</td></tr>
+<tr><td>column major order.</td><td></td></tr>
+<tr><td>If you require data in row](./daffine2/to_cols_array_2d.md)</td><td></td></tr>
+<tr><td><code>transform_point2(_self, rhs)</code></td><td><a href="./daffine2/transform_point2.html"> Transforms the given 2D point, applying shear, scale, rotation and translation.</a></td></tr>
+<tr><td><code>transform_vector2(_self, rhs)</code></td><td>[ Transforms the given 2D vector, applying shear, scale and rotation (but NOT</td></tr>
+<tr><td>translation).</td><td></td></tr>
+<tr><td>To also](./daffine2/transform_vector2.md)</td><td></td></tr>
+</tbody></table>
+</div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../generated_docs/types/bvec4a/test.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../generated_docs/types/daffine2/abs_diff_eq.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../generated_docs/types/bvec4a/test.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../generated_docs/types/daffine2/abs_diff_eq.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../multi-code-block.js"></script>
+
+
+    </div>
+    </body>
+</html>
