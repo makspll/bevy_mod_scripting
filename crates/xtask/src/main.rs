@@ -825,9 +825,9 @@ impl Xtasks {
                     args.push(use_profile.to_owned());
                 }
 
-                if app_settings.jobs {
+                if let Some(jobs) = app_settings.jobs {
                     args.push("--jobs".to_owned());
-                    args.push(app_settings.jobs.unwrap().to_string());
+                    args.push(jobs.to_string());
                 }
             }
 
