@@ -15,3 +15,5 @@ assets/scripts/tlconfig.lua
 **.log
 **build/
 .html
+
+/assets/**/*.lad.json

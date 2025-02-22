@@ -202,6 +202,35 @@ impl From<String> for Features {
     }
 }
 
+/// Enumerates the binaries available in the project and their paths
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    strum::EnumString,
+    strum::AsRefStr,
+    strum::VariantNames,
+)]
+#[strum(serialize_all = "snake_case")]
+enum Binary {
+    MdbookPreprocessor,
+}
+
+impl Binary {
+    pub fn path(self) -> PathBuf {
+        PathBuf::from(match self {
+            Binary::MdbookPreprocessor => "./crates/lad_backends/mdbook_lad_preprocessor/",
+        })
+    }
+
+    pub fn to_placeholder() -> clap::builder::Str {
+        format!("[{}]", Binary::VARIANTS.join("|")).into()
+    }
+}
+
 #[derive(
     Debug,
     Clone,
@@ -305,6 +334,12 @@ impl App {
                     .arg(output_dir)
                     .arg("--bevy-features")
                     .arg(bevy_features.join(","));
+            }
+            Xtasks::Example { example } => {
+                cmd.arg("example").arg(example);
+            }
+            Xtasks::Install { binary } => {
+                cmd.arg("install").arg(binary.as_ref());
             }
         }
 
@@ -507,6 +542,20 @@ enum Xtasks {
         )]
         kind: CheckKind,
     },
+    /// Run the example with the given name
+    Example {
+        /// The example to run
+        example: String,
+    },
+    /// Installs a binary produced by the workspace
+    Install {
+        /// The binary to install
+        #[clap(
+            value_parser=clap::value_parser!(Binary),
+            value_name=Binary::to_placeholder(),
+        )]
+        binary: Binary,
+    },
     /// Build the rust crates.io docs as well as any other docs
     Docs {
         /// Open in browser
@@ -584,6 +633,7 @@ impl Xtasks {
             Xtasks::Test { name, package } => Self::test(app_settings, package, name),
             Xtasks::CiCheck => Self::cicd(app_settings),
             Xtasks::Init => Self::init(app_settings),
+            Xtasks::Example { example } => Self::example(app_settings, example),
             Xtasks::Macros { macro_name } => match macro_name {
                 Macro::ScriptTests => {
                     let mut settings = app_settings.clone();
@@ -628,6 +678,7 @@ impl Xtasks {
                 output_dir,
                 bevy_features,
             } => Self::codegen(app_settings, output_dir, bevy_features),
+            Xtasks::Install { binary } => Self::install(app_settings, binary),
         }?;
 
         Ok("".into())
@@ -731,7 +782,8 @@ impl Xtasks {
 
         args.push(command.to_owned());
 
-        if command != "fmt" && command != "bevy-api-gen" {
+        if command != "fmt" && command != "bevy-api-gen" && command != "run" && command != "install"
+        {
             // fmt doesn't care about features, workspaces or profiles
 
             args.push("--workspace".to_owned());
@@ -1038,6 +1090,23 @@ impl Xtasks {
     fn docs(mut app_settings: GlobalArgs, open: bool, no_rust_docs: bool) -> Result<()> {
         // find [package.metadata."docs.rs"] key in Cargo.toml
         if !no_rust_docs {
+            info!("installing mdbook ladfile preprocessor binary");
+            Self::install(app_settings.clone(), Binary::MdbookPreprocessor)?;
+
+            info!("Running docgen example to generate ladfiles");
+            Self::example(app_settings.clone(), "docgen".to_owned())?;
+
+            // copy the `<workspace>/assets/bindings.lad.json` file to it's path in the book
+            let ladfile_path =
+                Self::relative_workspace_dir(&app_settings, "assets/bindings.lad.json")?;
+            let destination_path =
+                Self::relative_workspace_dir(&app_settings, "docs/src/ladfiles/bindings.lad.json")?;
+
+            info!("Copying generated ladfile from: {ladfile_path:?} to: {destination_path:?}");
+            std::fs::create_dir_all(destination_path.parent().unwrap())?;
+            std::fs::copy(ladfile_path, destination_path)
+                .with_context(|| "copying generated ladfile")?;
+
             info!("Building rust docs");
             let metadata = Self::main_workspace_cargo_metadata()?;
 
@@ -1404,6 +1473,44 @@ impl Xtasks {
         } else {
             warn!("Could not merge json, overrides and target are not objects");
         }
+    }
+
+    fn example(app_settings: GlobalArgs, example: String) -> std::result::Result<(), Error> {
+        // find the required features for the example named this in the cargo.toml of the main workspace
+        // the keys look like
+        // [[example]]
+        // name = "docgen"
+        // path = "examples/docgen.rs"
+        // required-features = []
+
+        // let metadata = Self::main_workspace_cargo_metadata()?;
+        // let metadata = &metadata.root_package().unwrap().targets;
+        // println!("{metadata:#?}");
+
+        // run the example
+        Self::run_workspace_command(
+            &app_settings,
+            "run",
+            "Failed to run example",
+            vec!["--example", example.as_str()],
+            None,
+        )?;
+
+        Ok(())
+    }
+
+    fn install(app_settings: GlobalArgs, binary: Binary) -> std::result::Result<(), Error> {
+        // run cargo install --path
+        let binary_path = Self::relative_workspace_dir(&app_settings, binary.path())?;
+        Self::run_system_command(
+            &app_settings,
+            "cargo",
+            "Failed to install binary",
+            vec!["install", "--path", binary_path.to_str().unwrap()],
+            None,
+        )?;
+
+        Ok(())
     }
 }
 
