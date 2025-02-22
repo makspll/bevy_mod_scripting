@@ -18,7 +18,7 @@ mod test {
     use crate::{
         bindings::{
             function::{
-                from::{Ref, Val},
+                from::{Ref, Union, Val},
                 namespace::IntoNamespace,
                 script_function::AppScriptFunctionRegistry,
             },
@@ -109,6 +109,8 @@ mod test {
 
     #[test]
     fn composites_are_valid_args() {
+        test_is_valid_arg::<Union<usize, usize>>();
+
         fn test_val<T>()
         where
             T: ScriptArgument + ScriptReturn,

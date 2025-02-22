@@ -61,6 +61,16 @@ pub enum TypeIdSource {
 }
 #[profiling::all_functions]
 impl ReflectReference {
+    /// If this points to a variant of an enum, returns the name of the variant.
+    pub fn variant_name(&self, world: WorldGuard) -> Result<Option<String>, InteropError> {
+        self.with_reflect(world, |s| {
+            s.reflect_ref()
+                .as_enum()
+                .ok()
+                .map(|enum_ref| enum_ref.variant_name().to_owned())
+        })
+    }
+
     /// Creates a new infinite iterator. This iterator will keep returning the next element reference forever.
     pub fn into_iter_infinite(self) -> ReflectRefIter {
         ReflectRefIter::new_indexed(self)
