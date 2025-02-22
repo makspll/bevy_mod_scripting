@@ -7,5 +7,5 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-RUN cargo build --profile ephemeral-build
-RUN cargo xtask init
+RUN cargo xtask init --update-ide false
+RUN cargo xtask build
