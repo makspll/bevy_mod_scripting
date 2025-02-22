@@ -7,12 +7,14 @@ on:
       - staging
     paths:
       - 'docs/**'
+      - 'crates/xtask/**'
       - '.github/workflows/mdbook.yml'
   pull_request:
     branches:
       - "**"
     paths:
       - 'docs/**'
+      - 'crates/xtask/**'
       - '.github/workflows/mdbook.yml'
 
 jobs:
