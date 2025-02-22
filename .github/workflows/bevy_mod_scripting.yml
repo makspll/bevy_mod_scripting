@@ -83,11 +83,6 @@ jobs:
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
         uses: actions/checkout@v4
 
-      - name: Install alsa and udev
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && runner.os == 'linux' }}
-        run: |
-          sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-          sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - uses: actions-rs/toolchain@v1
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
         with:
