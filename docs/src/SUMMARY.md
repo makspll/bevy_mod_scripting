@@ -31,3 +31,7 @@
 - [New Languages](./Development/AddingLanguages/introduction.md)
     - [Evaluating Feasibility](./Development/AddingLanguages/evaluating-feasibility.md)
     - [Necessary Features](./Development/AddingLanguages/necessary-features.md)
+
+# WIP
+
+- [Generated Docs](./ladfiles/bindings.lad.json)

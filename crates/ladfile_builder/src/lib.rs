@@ -1,4 +1,5 @@
 //! Parsing definitions for the LAD (Language Agnostic Decleration) file format.
+pub mod plugin;
 
 use bevy_mod_scripting_core::{
     bindings::{
