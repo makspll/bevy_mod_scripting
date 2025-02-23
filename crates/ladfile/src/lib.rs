@@ -69,6 +69,19 @@ impl LadFile {
             .get(type_id)
             .and_then(|t| (!t.generics.is_empty()).then_some(t.generics.as_slice()))
     }
+
+    /// Retrieves the documentation of a type id if it is a defined type and has documentation.
+    pub fn get_type_documentation(&self, type_id: &LadTypeId) -> Option<&str> {
+        self.types
+            .get(type_id)
+            .and_then(|t| t.documentation.as_deref())
+            // try primitives
+            .or_else(|| {
+                self.primitives
+                    .get(type_id)
+                    .map(|p| p.documentation.as_ref())
+            })
+    }
 }
 
 impl Default for LadFile {

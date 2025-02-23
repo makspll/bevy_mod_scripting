@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-/// Takes the first n characters from the markdown, without splitting any formatting
+/// Takes the first n characters from the markdown, without splitting any formatting.
 pub(crate) fn markdown_substring(markdown: &str, length: usize) -> &str {
     if markdown.len() <= length {
         return markdown;
