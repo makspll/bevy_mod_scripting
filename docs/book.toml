@@ -12,5 +12,3 @@ git-repository-url = "https://github.com/makspll/bevy_mod_scripting"
 edit-url-template = "https://github.com/makspll/bevy_mod_scripting/edit/main/docs/{path}"
 
 [preprocessor.lad-preprocessor]
-
-[output.markdown]
