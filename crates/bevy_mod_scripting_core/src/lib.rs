@@ -99,10 +99,10 @@ pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
 impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.insert_resource(self.runtime_settings.clone())
-            .insert_non_send_resource::<RuntimeContainer<P>>(RuntimeContainer {
+            .insert_resource::<RuntimeContainer<P>>(RuntimeContainer {
                 runtime: P::build_runtime(),
             })
-            .init_non_send_resource::<ScriptContexts<P>>()
+            .init_resource::<ScriptContexts<P>>()
             .insert_resource::<CallbackSettings<P>>(CallbackSettings {
                 callback_handler: self.callback_handler,
             })

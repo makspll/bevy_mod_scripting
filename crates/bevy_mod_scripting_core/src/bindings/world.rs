@@ -92,6 +92,19 @@ impl<'w> WorldAccessGuard<'w> {
         o
     }
 
+    /// Safely allows access to the world for the duration of the closure via a static [`WorldAccessGuard`] using a previously lifetimed world guard.
+    pub fn with_existing_static_guard<O>(
+        guard: WorldAccessGuard<'w>,
+        f: impl FnOnce(WorldGuard<'static>) -> O,
+    ) -> O {
+        // safety: we invalidate the guard after the closure is called, meaning the world cannot be accessed at all after the 'w lifetime ends
+        let static_guard: WorldAccessGuard<'static> = unsafe { std::mem::transmute(guard) };
+        let o = f(static_guard.clone());
+
+        static_guard.invalidate();
+        o
+    }
+
     /// Creates a new [`WorldAccessGuard`] for the given mutable borrow of the world.
     ///
     /// Creating a guard requires that some resources exist in the world, namely:

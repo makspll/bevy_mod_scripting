@@ -8,8 +8,8 @@ use bevy::{
 };
 
 /// A trait that all script runtimes must implement.
-pub trait Runtime: 'static {}
-impl<T: 'static> Runtime for T {}
+pub trait Runtime: 'static + Send + Sync {}
+impl<T: 'static + Send + Sync> Runtime for T {}
 
 /// A function that initializes a runtime.
 pub type RuntimeInitializer<P> =

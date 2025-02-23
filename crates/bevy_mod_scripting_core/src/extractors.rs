@@ -2,71 +2,188 @@
 //!
 //! These are designed to be used to pipe inputs into other systems which require them, while handling any configuration erorrs nicely.
 
-use bevy::prelude::World;
+use bevy::ecs::{
+    component::ComponentId,
+    entity::Entity,
+    query::{Access, AccessConflicts, FilteredAccessSet},
+    storage::SparseSetIndex,
+    system::{ResMut, SystemParam},
+};
+use fixedbitset::FixedBitSet;
 
 use crate::{
+    bindings::{
+        access_map::ReflectAccessId, pretty_print::DisplayWithWorld, script_value::ScriptValue,
+        WorldAccessGuard, WorldGuard,
+    },
     context::{ContextLoadingSettings, ScriptContexts},
-    error::MissingResourceError,
+    error::{InteropError, ScriptError},
+    event::IntoCallbackLabel,
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{Scripts, StaticScripts},
+    script::{ScriptId, Scripts, StaticScripts},
     IntoScriptPluginParams,
 };
 
 /// Context for systems which handle events for scripts
-pub(crate) struct HandlerContext<P: IntoScriptPluginParams> {
-    pub callback_settings: CallbackSettings<P>,
-    pub context_loading_settings: ContextLoadingSettings<P>,
-    pub scripts: Scripts,
-    pub runtime_container: RuntimeContainer<P>,
-    pub script_contexts: ScriptContexts<P>,
-    pub static_scripts: StaticScripts,
+#[derive(SystemParam)]
+pub struct HandlerContext<'w, P: IntoScriptPluginParams> {
+    /// Settings for callbacks
+    pub callback_settings: ResMut<'w, CallbackSettings<P>>,
+    /// Settings for loading contexts
+    pub context_loading_settings: ResMut<'w, ContextLoadingSettings<P>>,
+    /// Scripts
+    pub scripts: ResMut<'w, Scripts>,
+    /// The runtime container
+    pub runtime_container: ResMut<'w, RuntimeContainer<P>>,
+    /// The script contexts
+    pub script_contexts: ResMut<'w, ScriptContexts<P>>,
+    /// List of static scripts
+    pub static_scripts: ResMut<'w, StaticScripts>,
 }
-#[profiling::function]
-pub(crate) fn extract_handler_context<P: IntoScriptPluginParams>(
-    world: &mut World,
-) -> Result<HandlerContext<P>, MissingResourceError> {
-    // we don't worry about re-inserting these resources if we fail to extract them, as the plugin is misconfigured anyway,
-    // so the only solution is to stop the program and fix the configuration
-    // the config is either all in or nothing
 
-    let callback_settings = world
-        .remove_resource::<CallbackSettings<P>>()
-        .ok_or_else(MissingResourceError::new::<CallbackSettings<P>>)?;
-    let context_loading_settings = world
-        .remove_resource::<ContextLoadingSettings<P>>()
-        .ok_or_else(MissingResourceError::new::<ContextLoadingSettings<P>>)?;
-    let scripts = world
-        .remove_resource::<Scripts>()
-        .ok_or_else(MissingResourceError::new::<Scripts>)?;
-    let runtime_container = world
-        .remove_non_send_resource::<RuntimeContainer<P>>()
-        .ok_or_else(MissingResourceError::new::<RuntimeContainer<P>>)?;
-    let script_contexts = world
-        .remove_non_send_resource::<ScriptContexts<P>>()
-        .ok_or_else(MissingResourceError::new::<ScriptContexts<P>>)?;
-    let static_scripts = world
-        .remove_resource::<StaticScripts>()
-        .ok_or_else(MissingResourceError::new::<StaticScripts>)?;
+impl<'w, P: IntoScriptPluginParams> HandlerContext<'w, P> {
+    pub fn call<C: IntoCallbackLabel>(
+        &mut self,
+        script_id: ScriptId,
+        entity: Entity,
+        payload: Vec<ScriptValue>,
+        guard: WorldGuard<'w>,
+    ) -> Result<ScriptValue, ScriptError> {
+        // find script
+        let script = match self.scripts.scripts.get(&script_id) {
+            Some(script) => script,
+            None => return Err(InteropError::missing_script(script_id).into()),
+        };
 
-    Ok(HandlerContext {
-        callback_settings,
-        context_loading_settings,
-        scripts,
-        runtime_container,
-        script_contexts,
-        static_scripts,
-    })
+        // find context
+        let context = match self.script_contexts.contexts.get_mut(&script.context_id) {
+            Some(context) => context,
+            None => return Err(InteropError::missing_context(script.context_id, script_id).into()),
+        };
+
+        // call the script
+        let handler = self.callback_settings.callback_handler;
+        let pre_handling_initializers = &self
+            .context_loading_settings
+            .context_pre_handling_initializers;
+        let runtime = &mut self.runtime_container.runtime;
+        CallbackSettings::<P>::call(
+            handler,
+            payload,
+            entity,
+            &script_id,
+            &C::into_callback_label(),
+            context,
+            pre_handling_initializers,
+            runtime,
+            guard,
+        )
+    }
 }
-#[profiling::function]
-pub(crate) fn yield_handler_context<P: IntoScriptPluginParams>(
-    world: &mut World,
-    context: HandlerContext<P>,
-) {
-    world.insert_resource(context.callback_settings);
-    world.insert_resource(context.context_loading_settings);
-    world.insert_resource(context.scripts);
-    world.insert_non_send_resource(context.runtime_container);
-    world.insert_non_send_resource(context.script_contexts);
-    world.insert_resource(context.static_scripts);
+
+/// A wrapper around a world which pre-populates access, to safely co-exist with other system params,
+/// acts exactly like `&mut World` so this should be your only top-level system param
+///
+/// The reason is the guard needs to know the underlying access that
+pub struct WithWorldGuard<'w, 's, T: SystemParam> {
+    world_guard: WorldGuard<'w>,
+    param: T::Item<'w, 's>,
+}
+
+impl<'w, 's, T: SystemParam> WithWorldGuard<'w, 's, T> {
+    /// Get the world guard and the inner system param
+    pub fn get(&self) -> (WorldGuard<'w>, &T::Item<'w, 's>) {
+        (self.world_guard.clone(), &self.param)
+    }
+
+    /// Get the world guard and the inner system param mutably
+    pub fn get_mut(&mut self) -> (WorldGuard<'w>, &mut T::Item<'w, 's>) {
+        (self.world_guard.clone(), &mut self.param)
+    }
+}
+
+unsafe impl<T: SystemParam> SystemParam for WithWorldGuard<'_, '_, T> {
+    type State = (T::State, FilteredAccessSet<ComponentId>);
+
+    type Item<'world, 'state> = WithWorldGuard<'world, 'state, T>;
+
+    fn init_state(
+        world: &mut bevy::ecs::world::World,
+        system_meta: &mut bevy::ecs::system::SystemMeta,
+    ) -> Self::State {
+        let inner_state = T::init_state(world, system_meta);
+
+        let accessed_components = system_meta.component_access_set().clone();
+        unsafe { system_meta.component_access_set_mut().write_all() }
+        unsafe { system_meta.archetype_component_access_mut().write_all() }
+        (inner_state, accessed_components)
+    }
+
+    unsafe fn get_param<'world, 'state>(
+        state: &'state mut Self::State,
+        system_meta: &bevy::ecs::system::SystemMeta,
+        world: bevy::ecs::world::unsafe_world_cell::UnsafeWorldCell<'world>,
+        change_tick: bevy::ecs::component::Tick,
+    ) -> Self::Item<'world, 'state> {
+        // read components being read in the state, and lock those accesses in the new world access guard
+        let guard = WorldAccessGuard::new(world.world_mut());
+        let combined_access: Access<ComponentId> = state.1.combined_access().clone();
+
+        #[allow(
+            clippy::panic,
+            reason = "This API does not allow us to handle this error nicely, and continuing is a safety issue."
+        )]
+        for (raid, is_write) in get_all_access_ids(&combined_access) {
+            if is_write {
+                if !guard.claim_write_access(raid) {
+                    panic!("System tried to access set of system params which break rust aliasing rules. Aliasing access: {}", raid.display_with_world(guard.clone()));
+                }
+            } else if !guard.claim_read_access(raid) {
+                panic!("System tried to access set of system params which break rust aliasing rules. Aliasing access: {}", raid.display_with_world(guard.clone()));
+            }
+        }
+
+        WithWorldGuard {
+            world_guard: guard,
+            param: T::get_param(&mut state.0, system_meta, world, change_tick),
+        }
+    }
+}
+
+fn individual_conflicts(conflicts: AccessConflicts) -> FixedBitSet {
+    match conflicts {
+        // todo, not sure what to do here
+        AccessConflicts::All => FixedBitSet::new(),
+        AccessConflicts::Individual(fixed_bit_set) => fixed_bit_set,
+    }
+}
+
+fn get_all_access_ids(access: &Access<ComponentId>) -> Vec<(ReflectAccessId, bool)> {
+    let mut access_all_read = Access::<ComponentId>::default();
+    access_all_read.read_all_components();
+
+    let mut access_all_write = Access::<ComponentId>::default();
+    access_all_write.write_all_components();
+
+    // read conflicts with each set to figure out the necessary locks
+
+    let read = individual_conflicts(access.get_conflicts(&access_all_read));
+    let written = individual_conflicts(access.get_conflicts(&access_all_write));
+
+    let mut result = Vec::new();
+    for c in read.ones() {
+        result.push((
+            ReflectAccessId::for_component_id(ComponentId::get_sparse_set_index(c)),
+            false,
+        ));
+    }
+    for c in written.ones() {
+        result.push((
+            ReflectAccessId::for_component_id(ComponentId::get_sparse_set_index(c)),
+            true,
+        ));
+    }
+
+    result
 }

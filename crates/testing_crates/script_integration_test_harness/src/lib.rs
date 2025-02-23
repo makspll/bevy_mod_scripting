@@ -70,7 +70,7 @@ pub fn execute_integration_test<
         code,
         &context_settings.context_initializers,
         &context_settings.context_pre_handling_initializers,
-        app.world_mut(),
+        WorldGuard::new(app.world_mut()),
         &mut runtime,
     )
     .map_err(|e| {
@@ -88,7 +88,7 @@ pub fn execute_integration_test<
         &mut loaded_context,
         &context_settings.context_pre_handling_initializers,
         &mut runtime,
-        app.world_mut(),
+        WorldGuard::new(app.world_mut()),
     )
     .map_err(|e| e.display_with_world(WorldGuard::new(app.world_mut())))?;
 
@@ -106,7 +106,7 @@ pub fn execute_integration_test<
         &mut loaded_context,
         &context_settings.context_pre_handling_initializers,
         &mut runtime,
-        app.world_mut(),
+        WorldGuard::new(app.world_mut()),
     )
     .map_err(|e| e.display_with_world(WorldGuard::new(app.world_mut())))?;
 

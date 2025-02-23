@@ -6,12 +6,12 @@ use crate::{
     script::{Script, ScriptId},
     IntoScriptPluginParams,
 };
-use bevy::ecs::{entity::Entity, system::Resource, world::World};
+use bevy::ecs::{entity::Entity, system::Resource};
 use std::{collections::HashMap, sync::atomic::AtomicU32};
 
 /// A trait that all script contexts must implement.
-pub trait Context: 'static {}
-impl<T: 'static> Context for T {}
+pub trait Context: 'static + Send + Sync {}
+impl<T: 'static + Send + Sync> Context for T {}
 
 /// The type of a context id
 pub type ContextId = u32;
@@ -137,10 +137,10 @@ impl<P: IntoScriptPluginParams> ContextBuilder<P> {
         content: &[u8],
         context_initializers: &[ContextInitializer<P>],
         pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
-        world: &mut World,
+        world: WorldGuard,
         runtime: &mut P::R,
     ) -> Result<P::C, ScriptError> {
-        WorldGuard::with_static_guard(world, |world| {
+        WorldGuard::with_existing_static_guard(world, |world| {
             ThreadWorldContainer.set_world(world)?;
             (loader)(
                 script,
@@ -160,10 +160,10 @@ impl<P: IntoScriptPluginParams> ContextBuilder<P> {
         previous_context: &mut P::C,
         context_initializers: &[ContextInitializer<P>],
         pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
-        world: &mut World,
+        world: WorldGuard,
         runtime: &mut P::R,
     ) -> Result<(), ScriptError> {
-        WorldGuard::with_static_guard(world, |world| {
+        WorldGuard::with_existing_static_guard(world, |world| {
             ThreadWorldContainer.set_world(world)?;
             (reloader)(
                 script,
