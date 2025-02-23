@@ -25,22 +25,18 @@ impl<'a> MarkdownArgumentVisitor<'a> {
 
 impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
     fn visit_lad_type_id(&mut self, type_id: &ladfile::LadTypeId) {
-        let mut buffer = String::new();
-
         // Write identifier<Generic1TypeIdentifier, Generic2TypeIdentifier>
-        buffer.push_str(&self.ladfile.get_type_identifier(type_id));
+        self.buffer.text(self.ladfile.get_type_identifier(type_id));
         if let Some(generics) = self.ladfile.get_type_generics(type_id) {
-            buffer.push('<');
+            self.buffer.text('<');
             for (i, generic) in generics.iter().enumerate() {
+                self.visit_lad_type_id(&generic.type_id);
                 if i > 0 {
-                    buffer.push_str(", ");
+                    self.buffer.text(", ");
                 }
-                buffer.push_str(&self.ladfile.get_type_identifier(&generic.type_id));
             }
-            buffer.push('>');
+            self.buffer.text('>');
         }
-
-        self.buffer.text(buffer);
     }
 
     fn walk_option(&mut self, inner: &ladfile::LadArgumentKind) {

@@ -1,7 +1,7 @@
 //! The library crate for the mdbook LAD preprocessor.
 #![allow(missing_docs)]
 
-use mdbook::{errors::Error, preprocess::Preprocessor, BookItem};
+use mdbook::{errors::Error, preprocess::Preprocessor};
 use sections::Section;
 mod argument_visitor;
 mod markdown;
@@ -10,6 +10,46 @@ mod sections;
 const LAD_EXTENSION: &str = "lad.json";
 
 pub struct LADPreprocessor;
+
+impl LADPreprocessor {
+    /// Checks if a chapter is a LAD file.
+    fn is_lad_file(chapter: &mdbook::book::Chapter) -> bool {
+        chapter
+            .source_path
+            .as_ref()
+            .and_then(|a| a.file_name())
+            .map(|s| s.to_string_lossy().ends_with(LAD_EXTENSION))
+            .unwrap_or(false)
+    }
+
+    /// Process a chapter that is a LAD file.
+    ///
+    /// `parent` is the optional parent chapter reference,
+    /// and `chapter_index` is the index of the chapter among its siblings.
+    fn process_lad_chapter(
+        chapter: &mdbook::book::Chapter,
+        parent: Option<&mdbook::book::Chapter>,
+        chapter_index: usize,
+    ) -> Result<mdbook::book::Chapter, Error> {
+        let chapter_title = chapter.name.trim_end_matches(".lad.json").to_owned();
+        let ladfile = ladfile::parse_lad_file(&chapter.content)
+            .map_err(|e| Error::new(e).context("Failed to parse LAD file"))?;
+        log::debug!(
+            "Parsed LAD file: {}",
+            serde_json::to_string_pretty(&ladfile).unwrap_or_default()
+        );
+        let new_chapter = Section::Summary {
+            ladfile: &ladfile,
+            title: Some(chapter_title),
+        }
+        .into_chapter(parent, chapter_index);
+        log::debug!(
+            "New chapter: {}",
+            serde_json::to_string_pretty(&new_chapter).unwrap_or_default()
+        );
+        Ok(new_chapter)
+    }
+}
 
 impl Preprocessor for LADPreprocessor {
     fn name(&self) -> &str {
@@ -21,145 +61,68 @@ impl Preprocessor for LADPreprocessor {
         _ctx: &mdbook::preprocess::PreprocessorContext,
         mut book: mdbook::book::Book,
     ) -> mdbook::errors::Result<mdbook::book::Book> {
-        let mut errors = Vec::default();
+        let mut errors = Vec::new();
 
+        // first replace children in parents
         book.for_each_mut(|item| {
             if let mdbook::BookItem::Chapter(parent) = item {
-                let mut replacements = Vec::default();
-                for (ladfile_idx, child) in parent.sub_items.iter().enumerate() {
-                    if let BookItem::Chapter(child) = child {
-                        let is_lad_file = child
-                            .source_path
-                            .as_ref()
-                            .and_then(|a| a.file_name())
-                            .is_some_and(|a| a.to_string_lossy().ends_with(LAD_EXTENSION));
-
-                        if !is_lad_file {
-                            continue;
-                        }
-
-                        let chapter_title =
-                            child.name.clone().trim_end_matches(".lad.json").to_owned();
-
-                        let ladfile = match ladfile::parse_lad_file(&child.content) {
-                            Ok(lad) => lad,
-                            Err(e) => {
-                                log::debug!("Failed to parse LAD file: {:?}", e);
-                                errors.push(Error::new(e).context("Failed to parse LAD file"));
-                                continue;
+                // First, collect the indices and new chapters for LAD file chapters.
+                let replacements: Vec<(usize, mdbook::book::Chapter)> = parent
+                    .sub_items
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(idx, item)| {
+                        if let mdbook::BookItem::Chapter(chapter) = item {
+                            if LADPreprocessor::is_lad_file(chapter) {
+                                match LADPreprocessor::process_lad_chapter(
+                                    chapter,
+                                    Some(parent),
+                                    idx,
+                                ) {
+                                    Ok(new_chapter) => return Some((idx, new_chapter)),
+                                    Err(e) => {
+                                        errors.push(e);
+                                        return None;
+                                    }
+                                }
                             }
-                        };
-
-                        log::debug!(
-                            "Parsed LAD file: {}",
-                            serde_json::to_string_pretty(&ladfile).unwrap_or_default()
-                        );
-
-                        let new_chapter = Section::Summary {
-                            ladfile: &ladfile,
-                            title: Some(chapter_title),
                         }
-                        .into_chapter(Some(parent), ladfile_idx);
+                        None
+                    })
+                    .collect();
 
-                        log::debug!(
-                            "New chapter: {}",
-                            serde_json::to_string_pretty(&new_chapter).unwrap_or_default()
-                        );
-
-                        // replace
-                        replacements.push((ladfile_idx, BookItem::Chapter(new_chapter)));
+                // Then, apply the replacements.
+                for (idx, new_chapter) in replacements {
+                    if let mdbook::BookItem::Chapter(chapter) = &mut parent.sub_items[idx] {
+                        *chapter = new_chapter;
                     }
-                }
-
-                for (idx, replacement) in replacements {
-                    log::debug!(
-                        "Replacing chapter at index {}. With : \n{}",
-                        idx,
-                        serde_json::to_string_pretty(&replacement).unwrap_or_default()
-                    );
-                    parent.sub_items[idx] = replacement;
                 }
             }
         });
 
-        // book.for_each_mut(|item| {
-        //     if let mdbook::BookItem::Chapter(chapter) = item {
-        //         let is_lad_chapter = chapter
-        //             .source_path
-        //             .as_ref()
-        //             .and_then(|a| a.file_name())
-        //             .is_some_and(|a| a.to_string_lossy().ends_with(LAD_EXTENSION));
+        // then try match items themselves
+        book.for_each_mut(|item| {
+            if let mdbook::BookItem::Chapter(chapter) = item {
+                if !LADPreprocessor::is_lad_file(chapter) {
+                    return;
+                }
 
-        //         if !is_lad_chapter {
-        //             log::debug!("Skipping non-LAD chapter: {:?}", chapter.source_path);
-        //             log::trace!(
-        //                 "Non-LAD chapter: {}",
-        //                 serde_json::to_string_pretty(&chapter).unwrap_or_default()
-        //             );
-        //             return;
-        //         }
+                let new_chapter = match LADPreprocessor::process_lad_chapter(chapter, None, 0) {
+                    Ok(new_chapter) => new_chapter,
+                    Err(e) => {
+                        errors.push(e);
+                        return;
+                    }
+                };
 
-        //         let chapter_title = chapter
-        //             .name
-        //             .clone()
-        //             .trim_end_matches(".lad.json")
-        //             .to_owned();
+                *chapter = new_chapter;
+            }
+        });
 
-        //         let lad = match ladfile::parse_lad_file(&chapter.content) {
-        //             Ok(lad) => lad,
-        //             Err(e) => {
-        //                 log::debug!("Failed to parse LAD file: {:?}", e);
-        //                 errors.push(Error::new(e).context("Failed to parse LAD file"));
-        //                 return;
-        //             }
-        //         };
-
-        //         log::debug!(
-        //             "Parsed LAD file: {}",
-        //             serde_json::to_string_pretty(&lad).unwrap_or_default()
-        //         );
-
-        //         let mut new_chapter = Section::Summary {
-        //             ladfile: &lad,
-        //             title: Some(chapter_title),
-        //         }
-        //         .into_chapter(None, 0);
-
-        //         new_chapter.path = new_chapter
-        //             .path
-        //             .map(|m| chapter.path.as_ref().cloned().unwrap_or_default().join(m));
-
-        //         new_chapter.source_path = new_chapter.source_path.map(|m| {
-        //             chapter
-        //                 .source_path
-        //                 .as_ref()
-        //                 .cloned()
-        //                 .unwrap_or_default()
-        //                 .join(m)
-        //         });
-
-        //         new_chapter.parent_names = chapter.parent_names.clone();
-
-        //         // let sections = sections::lad_file_to_sections(&lad, Some(chapter_title));
-
-        //         // let new_chapter = sections::section_to_chapter(
-        //         //     sections,
-        //         //     Some(chapter),
-        //         //     chapter.parent_names.clone(),
-        //         //     chapter.number.clone(),
-        //         //     None,
-        //         //     None,
-        //         // );
-
-        //         // serialize chapter to json
-        //         log::debug!(
-        //             "New chapter: {}",
-        //             serde_json::to_string_pretty(&new_chapter).unwrap_or_default()
-        //         );
-
-        //         *chapter = new_chapter;
-        //     }
-        // });
+        log::debug!(
+            "Book after LAD processing: {}",
+            serde_json::to_string_pretty(&book).unwrap_or_default()
+        );
 
         if !errors.is_empty() {
             // return on first error
