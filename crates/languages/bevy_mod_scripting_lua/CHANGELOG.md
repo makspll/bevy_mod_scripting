@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.7](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_lua-v0.9.6...bevy_mod_scripting_lua-v0.9.7) - 2025-02-23
+
+### Added
+
+- add `construct` global for constructing arbitrary types & `Union` type (#302)
+
 ## [0.9.2](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_lua-v0.9.1...bevy_mod_scripting_lua-v0.9.2) - 2025-02-08
 
 ### Fixed

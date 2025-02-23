@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1](https://github.com/makspll/bevy_mod_scripting/compare/mdbook_lad_preprocessor-v0.1.0...mdbook_lad_preprocessor-v0.1.1) - 2025-02-23
+
+### Added
+
+- add global functions to mdbook, allow documenting arguments and return values (#296)
+- separate `ladfile` into `ladfile_builder` and `ladfile` crates (#293)
+
 ## [0.1.0](https://github.com/makspll/bevy_mod_scripting/releases/tag/mdbook_lad_preprocessor-v0.1.0) - 2025-02-15
 
 ### Added
