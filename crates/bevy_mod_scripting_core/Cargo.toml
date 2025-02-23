@@ -30,10 +30,7 @@ rhai = { version = "1.21", default-features = false, features = [
     "sync",
 ], optional = true }
 
-bevy = { workspace = true, default-features = false, features = [
-    "bevy_asset",
-    "reflect_functions",
-] }
+bevy = { workspace = true, default-features = false, features = ["bevy_asset"] }
 
 thiserror = "1.0.31"
 parking_lot = "0.12.1"

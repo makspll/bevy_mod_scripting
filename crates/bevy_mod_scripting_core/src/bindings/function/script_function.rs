@@ -8,10 +8,7 @@ use crate::{
     error::InteropError,
     ScriptValue,
 };
-use bevy::{
-    prelude::{Reflect, Resource},
-    reflect::func::FunctionError,
-};
+use bevy::prelude::{Reflect, Resource};
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::borrow::Cow;
 use std::collections::{HashMap, VecDeque};
@@ -606,10 +603,7 @@ macro_rules! impl_script_function {
                                             if let Some(default) = <$param>::default_value() {
                                                 default
                                             } else {
-                                                return Err(InteropError::function_call_error(FunctionError::ArgCountMismatch{
-                                                    expected: expected_arg_count,
-                                                    received: received_args_len
-                                                }));
+                                                return Err(InteropError::argument_count_mismatch(expected_arg_count,received_args_len));
                                             }
                                         }
                                     };
@@ -698,10 +692,7 @@ mod test {
                 InteropError::function_interop_error(
                     "my_fn",
                     Namespace::Global,
-                    InteropError::function_call_error(FunctionError::ArgCountMismatch {
-                        expected: 2,
-                        received: 1
-                    })
+                    InteropError::argument_count_mismatch(2, 1)
                 )
             );
         });

@@ -10,7 +10,7 @@ use crate::bindings::{
 use bevy::{
     ecs::component::ComponentId,
     prelude::Entity,
-    reflect::{func::FunctionError, PartialReflect, Reflect},
+    reflect::{PartialReflect, Reflect},
 };
 use std::{
     any::TypeId,
@@ -481,13 +481,6 @@ impl InteropError {
         }))
     }
 
-    /// Thrown when the error happens after a function call, and an error is thrown by bevy.
-    ///
-    /// I.e. mismatch in args, or invalid number of arguments
-    pub fn function_call_error(inner: FunctionError) -> Self {
-        Self(Arc::new(InteropErrorInner::FunctionCallError { inner }))
-    }
-
     /// Thrown when an error happens during argument conversion in a function call
     pub fn function_arg_conversion_error(argument: String, error: InteropError) -> Self {
         Self(Arc::new(InteropErrorInner::FunctionArgConversionError {
@@ -553,6 +546,14 @@ impl InteropError {
         Self(Arc::new(InteropErrorInner::InvalidEnumVariant {
             type_id,
             variant_name: variant_name.to_string(),
+        }))
+    }
+
+    /// Thrown when the number of arguments in a function call does not match.
+    pub fn argument_count_mismatch(expected: usize, got: usize) -> Self {
+        Self(Arc::new(InteropErrorInner::ArgumentCountMismatch {
+            expected,
+            got,
         }))
     }
 }
@@ -684,11 +685,6 @@ pub(crate) enum InteropErrorInner {
         /// The component that was invalid
         component_id: ComponentId,
     },
-    /// Thrown when an error happens in a function call
-    FunctionCallError {
-        /// The inner error that occurred
-        inner: FunctionError,
-    },
     /// Thrown when an error happens during argument conversion in a function call
     MissingFunctionError {
         /// The type that the function was attempted to be called on
@@ -739,6 +735,8 @@ pub(crate) enum InteropErrorInner {
         type_id: TypeId,
         variant_name: String,
     },
+    /// Thrown when the number of arguments in a function call does not match.
+    ArgumentCountMismatch { expected: usize, got: usize },
 }
 
 /// For test purposes
@@ -880,10 +878,6 @@ impl PartialEq for InteropErrorInner {
                 InteropErrorInner::InvalidComponent { component_id: b },
             ) => a == b,
             (
-                InteropErrorInner::FunctionCallError { inner: a },
-                InteropErrorInner::FunctionCallError { inner: b },
-            ) => a == b,
-            (
                 InteropErrorInner::MissingFunctionError {
                     on: a,
                     function_name: _b,
@@ -945,6 +939,16 @@ impl PartialEq for InteropErrorInner {
                 InteropErrorInner::InvalidEnumVariant {
                     type_id: c,
                     variant_name: d,
+                },
+            ) => a == c && b == d,
+            (
+                InteropErrorInner::ArgumentCountMismatch {
+                    expected: a,
+                    got: b,
+                },
+                InteropErrorInner::ArgumentCountMismatch {
+                    expected: c,
+                    got: d,
                 },
             ) => a == c && b == d,
             _ => false,
@@ -1081,12 +1085,6 @@ macro_rules! function_interop_error {
 macro_rules! function_arg_conversion_error {
     ($argument:expr, $error:expr) => {
         format!("Error converting argument {}: {}", $argument, $error)
-    };
-}
-
-macro_rules! function_call_error {
-    ($inner:expr) => {
-        format!("Error in function call: {}", $inner)
     };
 }
 
@@ -1248,9 +1246,6 @@ impl DisplayWithWorld for InteropErrorInner {
             InteropErrorInner::FunctionArgConversionError { argument, error } => {
                 function_arg_conversion_error!(argument, error.display_with_world(world))
             },
-            InteropErrorInner::FunctionCallError { inner } => {
-                function_call_error!(inner)
-            },
             InteropErrorInner::BetterConversionExists{ context } => {
                 better_conversion_exists!(context)
             },
@@ -1275,6 +1270,12 @@ impl DisplayWithWorld for InteropErrorInner {
                     "Invalid enum variant: {} for enum: {}",
                     variant_name,
                     type_id.display_with_world(world)
+                )
+            },
+            InteropErrorInner::ArgumentCountMismatch { expected, got } => {
+                format!(
+                    "Argument count mismatch, expected: {}, got: {}",
+                    expected, got
                 )
             },
         }
@@ -1387,9 +1388,6 @@ impl DisplayWithWorld for InteropErrorInner {
             InteropErrorInner::FunctionArgConversionError { argument, error } => {
                 function_arg_conversion_error!(argument, error.display_without_world())
             },
-            InteropErrorInner::FunctionCallError { inner } => {
-                function_call_error!(inner)
-            },
             InteropErrorInner::BetterConversionExists{ context } => {
                 better_conversion_exists!(context)
             },
@@ -1414,6 +1412,12 @@ impl DisplayWithWorld for InteropErrorInner {
                     "Invalid enum variant: {} for enum: {}",
                     variant_name,
                     type_id.display_without_world()
+                )
+            },
+            InteropErrorInner::ArgumentCountMismatch { expected, got } => {
+                format!(
+                    "Argument count mismatch, expected: {}, got: {}",
+                    expected, got
                 )
             },
         }
