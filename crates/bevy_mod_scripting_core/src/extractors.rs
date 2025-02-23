@@ -43,6 +43,7 @@ pub struct HandlerContext<'w, P: IntoScriptPluginParams> {
 }
 
 impl<'w, P: IntoScriptPluginParams> HandlerContext<'w, P> {
+    /// Invoke a callback in a script immediately.
     pub fn call<C: IntoCallbackLabel>(
         &mut self,
         script_id: ScriptId,
