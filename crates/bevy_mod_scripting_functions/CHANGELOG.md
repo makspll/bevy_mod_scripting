@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.7](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_functions-v0.9.6...bevy_mod_scripting_functions-v0.9.7) - 2025-02-23
+
+### Added
+
+- add `construct` global for constructing arbitrary types & `Union` type (#302)
+
+### Fixed
+
+- remove `reflect_functions` and `file_watcher` flags from bevy dependency (#316)
+
 ## [0.9.4](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_functions-v0.9.3...bevy_mod_scripting_functions-v0.9.4) - 2025-02-12
 
 ### Added

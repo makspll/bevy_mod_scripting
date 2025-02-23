@@ -1,6 +1,6 @@
 [package]
 name = "ladfile_builder"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 license = "MIT OR Apache-2.0"
@@ -17,7 +17,7 @@ bevy_mod_scripting_core = { workspace = true }
 # I don't think bevy has a top level feature for this :C
 bevy = { workspace = true }
 bevy_reflect = { version = "0.15.2", features = ["documentation"] }
-ladfile = { version = "0.2.0", path = "../ladfile" }
+ladfile = { version = "0.3.0", path = "../ladfile" }
 regex = "1.11"
 
 [dev-dependencies]

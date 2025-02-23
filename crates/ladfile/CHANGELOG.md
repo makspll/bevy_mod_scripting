@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.2.0-ladfile...v0.3.0-ladfile) - 2025-02-23
+
+### Added
+
+- add `construct` global for constructing arbitrary types & `Union` type (#302)
+- add global functions to mdbook, allow documenting arguments and return values (#296)
+- separate `ladfile` into `ladfile_builder` and `ladfile` crates (#293)
+
 ## [0.2.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.1.1-ladfile...v0.2.0-ladfile) - 2025-02-15
 
 ### Added
