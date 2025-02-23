@@ -178,7 +178,11 @@ pub(crate) enum Section<'a> {
 
 /// Makes a filename safe to put in links
 pub fn linkify_filename(name: impl Into<String>) -> String {
-    name.into().to_lowercase().replace(" ", "_")
+    name.into()
+        .to_lowercase()
+        .replace(" ", "_")
+        .replace("<", "")
+        .replace(">", "")
 }
 
 impl<'a> Section<'a> {
