@@ -24,8 +24,6 @@ use handler::{CallbackSettings, HandlerFn};
 use runtime::{initialize_runtime, Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
 use script::{ScriptId, Scripts, StaticScripts};
 
-mod extractors;
-
 pub mod asset;
 pub mod bindings;
 pub mod commands;
@@ -33,6 +31,7 @@ pub mod context;
 pub mod docgen;
 pub mod error;
 pub mod event;
+pub mod extractors;
 pub mod handler;
 pub mod reflection_extensions;
 pub mod runtime;
