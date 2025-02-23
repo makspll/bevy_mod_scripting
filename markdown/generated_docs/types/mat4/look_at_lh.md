@@ -1,0 +1,17 @@
+# look\_at\_lh
+
+>  Creates a left-handed view matrix using a camera position, an up direction, and a focal
+>  point.
+>  For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
+>  # Panics
+>  Will panic if `up` is not normalized when `glam_assert` is enabled.
+
+#### Arguments
+
+- **eye** : `Vec3` \- No Documentation 🚧
+- **center** : `Vec3` \- No Documentation 🚧
+- **up** : `Vec3` \- No Documentation 🚧
+
+#### Returns
+
+- **arg0** : `Mat4` \- No Documentation 🚧

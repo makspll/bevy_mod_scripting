@@ -1,0 +1,4 @@
+# Globals
+
+## Globals
+
