@@ -214,6 +214,14 @@ mod test {
         let system_fn = |mut guard: WithWorldGuard<(ResMut<Res>, Query<&'static Comp>)>| {
             let (guard, (_res, _entity)) = guard.get_mut();
             assert_eq!(guard.list_accesses().len(), 2, "Expected 2 accesses");
+            assert!(!guard.claim_read_access(
+                ReflectAccessId::for_resource::<Res>(&guard.as_unsafe_world_cell().unwrap())
+                    .unwrap()
+            ));
+            assert!(!guard.claim_write_access(
+                ReflectAccessId::for_resource::<Res>(&guard.as_unsafe_world_cell().unwrap())
+                    .unwrap()
+            ));
         };
 
         let mut app = bevy::app::App::new();
