@@ -233,4 +233,22 @@ mod test {
         app.finish();
         app.update();
     }
+
+    #[test]
+    #[should_panic]
+    pub fn check_with_world_panics_when_not_only_top_level_param() {
+        let system_fn = |mut guard: WithWorldGuard<(ResMut<Res>, Query<&'static Comp>)>,
+                         _res: ResMut<Res>| {
+            let (_guard, (_res, _entity)) = guard.get_mut();
+        };
+
+        let mut app = bevy::app::App::new();
+        app.add_systems(Update, system_fn);
+        app.insert_resource(Res);
+        app.world_mut().spawn(Comp);
+
+        app.cleanup();
+        app.finish();
+        app.update();
+    }
 }
