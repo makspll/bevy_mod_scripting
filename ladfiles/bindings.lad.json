@@ -2,6 +2,13 @@
   "version": "0.2.0",
   "globals": {},
   "types": {
+    "DynamicFunctionMut": {
+      "identifier": "DynamicScriptFunctionMut",
+      "crate": "bevy_mod_scripting_core",
+      "path": "bevy_mod_scripting_core::bindings::function::script_function::DynamicScriptFunctionMut",
+      "documentation": " A dynamic mutable script function.",
+      "layout": null
+    },
     "FunctionCallContext": {
       "identifier": "FunctionCallContext",
       "crate": "bevy_mod_scripting_core",
@@ -170,7 +177,7 @@
       "path": "bevy_asset::handle::Handle<bevy_asset::assets::LoadedUntypedAsset>",
       "generics": [
         {
-          "type_id": "TypeId(0x37abe3f03cf40cdd6df454afc494e290)",
+          "type_id": "TypeId(0xebc46e731aba58ce7a3c58ec4a058d4b)",
           "name": "A"
         }
       ],
@@ -202,7 +209,7 @@
       "path": "bevy_asset::handle::Handle<bevy_asset::folder::LoadedFolder>",
       "generics": [
         {
-          "type_id": "TypeId(0x244f6aad3fd8183474ccf62a89ed699c)",
+          "type_id": "TypeId(0x85a51f9970736a7dc93f3294066d195d)",
           "name": "A"
         }
       ],
@@ -268,7 +275,7 @@
       "path": "bevy_asset::id::AssetId<bevy_asset::assets::LoadedUntypedAsset>",
       "generics": [
         {
-          "type_id": "TypeId(0x37abe3f03cf40cdd6df454afc494e290)",
+          "type_id": "TypeId(0xebc46e731aba58ce7a3c58ec4a058d4b)",
           "name": "A"
         }
       ],
@@ -302,7 +309,7 @@
       "path": "bevy_asset::id::AssetId<bevy_asset::folder::LoadedFolder>",
       "generics": [
         {
-          "type_id": "TypeId(0x244f6aad3fd8183474ccf62a89ed699c)",
+          "type_id": "TypeId(0x85a51f9970736a7dc93f3294066d195d)",
           "name": "A"
         }
       ],
@@ -5828,13 +5835,6 @@
         }
       ]
     },
-    "bevy_mod_scripting_core::bindings::function::script_function::DynamicScriptFunctionMut": {
-      "identifier": "DynamicScriptFunctionMut",
-      "crate": "bevy_mod_scripting_core",
-      "path": "bevy_mod_scripting_core::bindings::function::script_function::DynamicScriptFunctionMut",
-      "documentation": " A dynamic mutable script function.",
-      "layout": null
-    },
     "bevy_mod_scripting_core::bindings::query::ScriptComponentRegistration": {
       "identifier": "ScriptComponentRegistration",
       "crate": "bevy_mod_scripting_core",
@@ -10183,7 +10183,7 @@
       "path": "smallvec::SmallVec<[bevy_ecs::entity::Entity; 8]>",
       "generics": [
         {
-          "type_id": "TypeId(0xa4fa1b8fdcc821e76644fb03e359cb6c)",
+          "type_id": "TypeId(0x49c81c9a7123310464ca47655247edf0)",
           "name": "T"
         }
       ],
@@ -10470,7 +10470,7 @@
       "return_type": {
         "kind": {
           "interopResult": {
-            "unknown": "bevy_mod_scripting_core::bindings::function::script_function::DynamicScriptFunctionMut"
+            "primitive": "dynamicFunctionMut"
           }
         }
       }

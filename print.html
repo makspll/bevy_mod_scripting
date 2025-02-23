@@ -1194,6 +1194,7 @@ print(my_reference.my_field)
 </div><div style="break-before: page; page-break-before: always;"></div><h1 id="types"><a class="header" href="#types">Types</a></h1>
 <h2 id="types-1"><a class="header" href="#types-1">Types</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Type</th><th>Summary</th></tr></thead><tbody>
+<tr><td><code>DynamicScriptFunctionMut</code></td><td><a href="generated_docs/./types/dynamicscriptfunctionmut.html">A dynamic mutable script function.</a></td></tr>
 <tr><td><code>FunctionCallContext</code></td><td>[The caller context when calling a script function.</td></tr>
 <tr><td>Functions can choose to react to caller preferen...](./types/functioncallcontext.md)</td><td></td></tr>
 <tr><td><code>ReflectReference</code></td><td>[An accessor to a `dyn PartialReflect` struct, stores a base ID of the type and a reflection path</td></tr>
@@ -1440,7 +1441,6 @@ The set of points some distance from a ...</a> |
 | <code>Val</code> | [A wrapper around a value of type `T`.</p>
 <p>This can be used to retrieve a value out of a [`ScriptValue:...](./types/val.md) |
 | <code>Namespace</code> | <a href="generated_docs/./types/namespace.html">A namespace for functions</a> |
-| <code>DynamicScriptFunctionMut</code> | <a href="generated_docs/./types/dynamicscriptfunctionmut.html">A dynamic mutable script function.</a> |
 | <code>ScriptComponentRegistration</code> | <a href="generated_docs/./types/scriptcomponentregistration.html">A registration for a component type.</a> |
 | <code>ScriptQueryBuilder</code> | <a href="generated_docs/./types/scriptquerybuilder.html">A builder for a query.</a> |
 | <code>ScriptQueryResult</code> | <a href="generated_docs/./types/scriptqueryresult.html">A result from a query.</a> |
@@ -1564,22 +1564,29 @@ to its par...</a> |
 | <code>u8</code> | <a href="generated_docs/./types/u8.html">No Documentation 🚧</a> |
 | <code>usize</code> | <a href="generated_docs/./types/usize.html">No Documentation 🚧</a> |
 | <code>Uuid</code> | <a href="generated_docs/./types/uuid.html">No Documentation 🚧</a> |</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="functioncallcontext"><a class="header" href="#functioncallcontext">FunctionCallContext</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="dynamicscriptfunctionmut"><a class="header" href="#dynamicscriptfunctionmut">DynamicScriptFunctionMut</a></h1>
 <p>Opaque Type. 🔒</p>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
+<blockquote>
+<p>A dynamic mutable script function.</p>
+</blockquote>
+<h2 id="functions-1"><a class="header" href="#functions-1">Functions</a></h2>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="functioncallcontext"><a class="header" href="#functioncallcontext">FunctionCallContext</a></h1>
+<p>Opaque Type. 🔒</p>
+<h2 id="description-1"><a class="header" href="#description-1">Description</a></h2>
 <blockquote>
 <p>The caller context when calling a script function.
 Functions can choose to react to caller preferences such as converting 1-indexed numbers to 0-indexed numbers</p>
 </blockquote>
-<h2 id="functions-1"><a class="header" href="#functions-1">Functions</a></h2>
+<h2 id="functions-2"><a class="header" href="#functions-2">Functions</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="reflectreference-1"><a class="header" href="#reflectreference-1">ReflectReference</a></h1>
 <h3 id="reflectreference-2"><a class="header" href="#reflectreference-2">ReflectReference</a></h3>
-<h2 id="description-1"><a class="header" href="#description-1">Description</a></h2>
+<h2 id="description-2"><a class="header" href="#description-2">Description</a></h2>
 <blockquote>
 <p>An accessor to a <code>dyn PartialReflect</code> struct, stores a base ID of the type and a reflection path
 safe to build but to reflect on the value inside you need to ensure aliasing rules are upheld</p>
 </blockquote>
-<h2 id="functions-2"><a class="header" href="#functions-2">Functions</a></h2>
+<h2 id="functions-3"><a class="header" href="#functions-3">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clear(ctxt, s)</code></td><td><a href="generated_docs/types/./reflectreference/clear.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>display_ref(ctxt, s)</code></td><td><a href="generated_docs/types/./reflectreference/display_ref.html">No Documentation 🚧</a></td></tr>
@@ -1634,7 +1641,7 @@ safe to build but to reflect on the value inside you need to ensure aliasing rul
 <ul>
 <li><strong>arg0</strong> : <code>String</code> - No Documentation 🚧</li>
 </ul>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="functions-3"><a class="header" href="#functions-3">functions</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="functions-4"><a class="header" href="#functions-4">functions</a></h1>
 <blockquote>
 <p>No Documentation 🚧</p>
 </blockquote>
@@ -1687,7 +1694,7 @@ safe to build but to reflect on the value inside you need to ensure aliasing rul
 </ul>
 <h4 id="returns-6"><a class="header" href="#returns-6">Returns</a></h4>
 <ul>
-<li><strong>arg0</strong> : <code>DynamicScriptFunctionMut</code> - No Documentation 🚧</li>
+<li><strong>arg0</strong> : <code>DynamicFunctionMut</code> - No Documentation 🚧</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="len-1"><a class="header" href="#len-1">len</a></h1>
 <blockquote>
@@ -1773,72 +1780,72 @@ safe to build but to reflect on the value inside you need to ensure aliasing rul
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="string"><a class="header" href="#string">String</a></h1>
 <p>Opaque Type. 🔒</p>
-<h2 id="description-2"><a class="header" href="#description-2">Description</a></h2>
-<blockquote>
-<p>No Documentation 🚧</p>
-</blockquote>
-<h2 id="functions-4"><a class="header" href="#functions-4">Functions</a></h2>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="cow"><a class="header" href="#cow">Cow</a></h1>
-<p>Opaque Type. 🔒</p>
 <h2 id="description-3"><a class="header" href="#description-3">Description</a></h2>
 <blockquote>
 <p>No Documentation 🚧</p>
 </blockquote>
 <h2 id="functions-5"><a class="header" href="#functions-5">Functions</a></h2>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="arc"><a class="header" href="#arc">Arc</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="cow"><a class="header" href="#cow">Cow</a></h1>
 <p>Opaque Type. 🔒</p>
 <h2 id="description-4"><a class="header" href="#description-4">Description</a></h2>
 <blockquote>
 <p>No Documentation 🚧</p>
 </blockquote>
 <h2 id="functions-6"><a class="header" href="#functions-6">Functions</a></h2>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="vec"><a class="header" href="#vec">Vec</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="arc"><a class="header" href="#arc">Arc</a></h1>
 <p>Opaque Type. 🔒</p>
 <h2 id="description-5"><a class="header" href="#description-5">Description</a></h2>
 <blockquote>
 <p>No Documentation 🚧</p>
 </blockquote>
 <h2 id="functions-7"><a class="header" href="#functions-7">Functions</a></h2>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="vec-1"><a class="header" href="#vec-1">Vec</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="vec"><a class="header" href="#vec">Vec</a></h1>
 <p>Opaque Type. 🔒</p>
 <h2 id="description-6"><a class="header" href="#description-6">Description</a></h2>
 <blockquote>
 <p>No Documentation 🚧</p>
 </blockquote>
 <h2 id="functions-8"><a class="header" href="#functions-8">Functions</a></h2>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="vec-2"><a class="header" href="#vec-2">Vec</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="vec-1"><a class="header" href="#vec-1">Vec</a></h1>
 <p>Opaque Type. 🔒</p>
 <h2 id="description-7"><a class="header" href="#description-7">Description</a></h2>
 <blockquote>
 <p>No Documentation 🚧</p>
 </blockquote>
 <h2 id="functions-9"><a class="header" href="#functions-9">Functions</a></h2>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="vec-3"><a class="header" href="#vec-3">Vec</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="vec-2"><a class="header" href="#vec-2">Vec</a></h1>
 <p>Opaque Type. 🔒</p>
 <h2 id="description-8"><a class="header" href="#description-8">Description</a></h2>
 <blockquote>
 <p>No Documentation 🚧</p>
 </blockquote>
 <h2 id="functions-10"><a class="header" href="#functions-10">Functions</a></h2>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="vec-4"><a class="header" href="#vec-4">Vec</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="vec-3"><a class="header" href="#vec-3">Vec</a></h1>
 <p>Opaque Type. 🔒</p>
 <h2 id="description-9"><a class="header" href="#description-9">Description</a></h2>
 <blockquote>
 <p>No Documentation 🚧</p>
 </blockquote>
 <h2 id="functions-11"><a class="header" href="#functions-11">Functions</a></h2>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="vec-4"><a class="header" href="#vec-4">Vec</a></h1>
+<p>Opaque Type. 🔒</p>
+<h2 id="description-10"><a class="header" href="#description-10">Description</a></h2>
+<blockquote>
+<p>No Documentation 🚧</p>
+</blockquote>
+<h2 id="functions-12"><a class="header" href="#functions-12">Functions</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="assetindex"><a class="header" href="#assetindex">AssetIndex</a></h1>
 <h3 id="assetindex-1"><a class="header" href="#assetindex-1">AssetIndex</a></h3>
 <ul>
 <li><strong>generation</strong> : u32</li>
 <li><strong>index</strong> : u32</li>
 </ul>
-<h2 id="description-10"><a class="header" href="#description-10">Description</a></h2>
+<h2 id="description-11"><a class="header" href="#description-11">Description</a></h2>
 <blockquote>
 <p>A generational runtime-only identifier for a specific [<code>Asset</code>] stored in [<code>Assets</code>]. This is optimized for efficient runtime
 usage and is not suitable for identifying assets across app runs.</p>
 </blockquote>
-<h2 id="functions-12"><a class="header" href="#functions-12">Functions</a></h2>
+<h2 id="functions-13"><a class="header" href="#functions-13">Functions</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="handle"><a class="header" href="#handle">Handle</a></h1>
 <h3 id="strong"><a class="header" href="#strong">Strong</a></h3>
 <ol>
@@ -1847,25 +1854,6 @@ usage and is not suitable for identifying assets across app runs.</p>
 <h3 id="weak"><a class="header" href="#weak">Weak</a></h3>
 <ol>
 <li>bevy_asset::id::AssetId&lt;()&gt;</li>
-</ol>
-<h2 id="description-11"><a class="header" href="#description-11">Description</a></h2>
-<blockquote>
-<p>A strong or weak handle to a specific [<code>Asset</code>]. If a [<code>Handle</code>] is [<code>Handle::Strong</code>], the [<code>Asset</code>] will be kept
-alive until the [<code>Handle</code>] is dropped. If a [<code>Handle</code>] is [<code>Handle::Weak</code>], it does not necessarily reference a live [<code>Asset</code>],
-nor will it keep assets alive.</p>
-<p>[<code>Handle</code>] can be cloned. If a [<code>Handle::Strong</code>] is cloned, the referenced [<code>Asset</code>] will not be freed until <em>all</em> instances
-of the [<code>Handle</code>] are dropped.</p>
-<p>[<code>Handle::Strong</code>] also provides access to useful [<code>Asset</code>] metadata, such as the [<code>AssetPath</code>] (if it exists).</p>
-</blockquote>
-<h2 id="functions-13"><a class="header" href="#functions-13">Functions</a></h2>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="handle-1"><a class="header" href="#handle-1">Handle</a></h1>
-<h3 id="strong-1"><a class="header" href="#strong-1">Strong</a></h3>
-<ol>
-<li>alloc::sync::Arc&lt;bevy_asset::handle::StrongHandle&gt;</li>
-</ol>
-<h3 id="weak-1"><a class="header" href="#weak-1">Weak</a></h3>
-<ol>
-<li>bevy_asset::id::AssetId&lt;bevy_asset::assets::LoadedUntypedAsset&gt;</li>
 </ol>
 <h2 id="description-12"><a class="header" href="#description-12">Description</a></h2>
 <blockquote>
@@ -1877,14 +1865,14 @@ of the [<code>Handle</code>] are dropped.</p>
 <p>[<code>Handle::Strong</code>] also provides access to useful [<code>Asset</code>] metadata, such as the [<code>AssetPath</code>] (if it exists).</p>
 </blockquote>
 <h2 id="functions-14"><a class="header" href="#functions-14">Functions</a></h2>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="handle-2"><a class="header" href="#handle-2">Handle</a></h1>
-<h3 id="strong-2"><a class="header" href="#strong-2">Strong</a></h3>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="handle-1"><a class="header" href="#handle-1">Handle</a></h1>
+<h3 id="strong-1"><a class="header" href="#strong-1">Strong</a></h3>
 <ol>
 <li>alloc::sync::Arc&lt;bevy_asset::handle::StrongHandle&gt;</li>
 </ol>
-<h3 id="weak-2"><a class="header" href="#weak-2">Weak</a></h3>
+<h3 id="weak-1"><a class="header" href="#weak-1">Weak</a></h3>
 <ol>
-<li>bevy_asset::id::AssetId&lt;bevy_asset::folder::LoadedFolder&gt;</li>
+<li>bevy_asset::id::AssetId&lt;bevy_asset::assets::LoadedUntypedAsset&gt;</li>
 </ol>
 <h2 id="description-13"><a class="header" href="#description-13">Description</a></h2>
 <blockquote>
@@ -1896,29 +1884,31 @@ of the [<code>Handle</code>] are dropped.</p>
 <p>[<code>Handle::Strong</code>] also provides access to useful [<code>Asset</code>] metadata, such as the [<code>AssetPath</code>] (if it exists).</p>
 </blockquote>
 <h2 id="functions-15"><a class="header" href="#functions-15">Functions</a></h2>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="handle-2"><a class="header" href="#handle-2">Handle</a></h1>
+<h3 id="strong-2"><a class="header" href="#strong-2">Strong</a></h3>
+<ol>
+<li>alloc::sync::Arc&lt;bevy_asset::handle::StrongHandle&gt;</li>
+</ol>
+<h3 id="weak-2"><a class="header" href="#weak-2">Weak</a></h3>
+<ol>
+<li>bevy_asset::id::AssetId&lt;bevy_asset::folder::LoadedFolder&gt;</li>
+</ol>
+<h2 id="description-14"><a class="header" href="#description-14">Description</a></h2>
+<blockquote>
+<p>A strong or weak handle to a specific [<code>Asset</code>]. If a [<code>Handle</code>] is [<code>Handle::Strong</code>], the [<code>Asset</code>] will be kept
+alive until the [<code>Handle</code>] is dropped. If a [<code>Handle</code>] is [<code>Handle::Weak</code>], it does not necessarily reference a live [<code>Asset</code>],
+nor will it keep assets alive.</p>
+<p>[<code>Handle</code>] can be cloned. If a [<code>Handle::Strong</code>] is cloned, the referenced [<code>Asset</code>] will not be freed until <em>all</em> instances
+of the [<code>Handle</code>] are dropped.</p>
+<p>[<code>Handle::Strong</code>] also provides access to useful [<code>Asset</code>] metadata, such as the [<code>AssetPath</code>] (if it exists).</p>
+</blockquote>
+<h2 id="functions-16"><a class="header" href="#functions-16">Functions</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="assetid"><a class="header" href="#assetid">AssetId</a></h1>
 <h3 id="index"><a class="header" href="#index">Index</a></h3>
 <ul>
 <li><strong>index</strong> : bevy_asset::assets::AssetIndex</li>
 </ul>
 <h3 id="uuid"><a class="header" href="#uuid">Uuid</a></h3>
-<ul>
-<li><strong>uuid</strong> : uuid::Uuid</li>
-</ul>
-<h2 id="description-14"><a class="header" href="#description-14">Description</a></h2>
-<blockquote>
-<p>A unique runtime-only identifier for an [<code>Asset</code>]. This is cheap to [<code>Copy</code>]/[<code>Clone</code>] and is not directly tied to the
-lifetime of the Asset. This means it <em>can</em> point to an [<code>Asset</code>] that no longer exists.</p>
-<p>For an identifier tied to the lifetime of an asset, see <a href="generated_docs/types/%60crate::Handle%60"><code>Handle</code></a>.</p>
-<p>For an "untyped" / "generic-less" id, see [<code>UntypedAssetId</code>].</p>
-</blockquote>
-<h2 id="functions-16"><a class="header" href="#functions-16">Functions</a></h2>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="assetid-1"><a class="header" href="#assetid-1">AssetId</a></h1>
-<h3 id="index-1"><a class="header" href="#index-1">Index</a></h3>
-<ul>
-<li><strong>index</strong> : bevy_asset::assets::AssetIndex</li>
-</ul>
-<h3 id="uuid-1"><a class="header" href="#uuid-1">Uuid</a></h3>
 <ul>
 <li><strong>uuid</strong> : uuid::Uuid</li>
 </ul>
@@ -1930,12 +1920,12 @@ lifetime of the Asset. This means it <em>can</em> point to an [<code>Asset</code
 <p>For an "untyped" / "generic-less" id, see [<code>UntypedAssetId</code>].</p>
 </blockquote>
 <h2 id="functions-17"><a class="header" href="#functions-17">Functions</a></h2>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="assetid-2"><a class="header" href="#assetid-2">AssetId</a></h1>
-<h3 id="index-2"><a class="header" href="#index-2">Index</a></h3>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="assetid-1"><a class="header" href="#assetid-1">AssetId</a></h1>
+<h3 id="index-1"><a class="header" href="#index-1">Index</a></h3>
 <ul>
 <li><strong>index</strong> : bevy_asset::assets::AssetIndex</li>
 </ul>
-<h3 id="uuid-2"><a class="header" href="#uuid-2">Uuid</a></h3>
+<h3 id="uuid-1"><a class="header" href="#uuid-1">Uuid</a></h3>
 <ul>
 <li><strong>uuid</strong> : uuid::Uuid</li>
 </ul>
@@ -1947,9 +1937,26 @@ lifetime of the Asset. This means it <em>can</em> point to an [<code>Asset</code
 <p>For an "untyped" / "generic-less" id, see [<code>UntypedAssetId</code>].</p>
 </blockquote>
 <h2 id="functions-18"><a class="header" href="#functions-18">Functions</a></h2>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="assetid-2"><a class="header" href="#assetid-2">AssetId</a></h1>
+<h3 id="index-2"><a class="header" href="#index-2">Index</a></h3>
+<ul>
+<li><strong>index</strong> : bevy_asset::assets::AssetIndex</li>
+</ul>
+<h3 id="uuid-2"><a class="header" href="#uuid-2">Uuid</a></h3>
+<ul>
+<li><strong>uuid</strong> : uuid::Uuid</li>
+</ul>
+<h2 id="description-17"><a class="header" href="#description-17">Description</a></h2>
+<blockquote>
+<p>A unique runtime-only identifier for an [<code>Asset</code>]. This is cheap to [<code>Copy</code>]/[<code>Clone</code>] and is not directly tied to the
+lifetime of the Asset. This means it <em>can</em> point to an [<code>Asset</code>] that no longer exists.</p>
+<p>For an identifier tied to the lifetime of an asset, see <a href="generated_docs/types/%60crate::Handle%60"><code>Handle</code></a>.</p>
+<p>For an "untyped" / "generic-less" id, see [<code>UntypedAssetId</code>].</p>
+</blockquote>
+<h2 id="functions-19"><a class="header" href="#functions-19">Functions</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="assetpath"><a class="header" href="#assetpath">AssetPath</a></h1>
 <p>Opaque Type. 🔒</p>
-<h2 id="description-17"><a class="header" href="#description-17">Description</a></h2>
+<h2 id="description-18"><a class="header" href="#description-18">Description</a></h2>
 <blockquote>
 <p>Represents a path to an asset in a "virtual filesystem".</p>
 <p>Asset paths consist of three main parts:</p>
@@ -1986,14 +1993,14 @@ This means that the common case of <code>asset_server.load("my_scene.scn")</code
 clones internal owned <a href="generated_docs/types/AssetPath"><code>AssetPaths</code></a>.
 This also means that you should use [<code>AssetPath::parse</code>] in cases where <code>&amp;str</code> is the explicit type.</p>
 </blockquote>
-<h2 id="functions-19"><a class="header" href="#functions-19">Functions</a></h2>
+<h2 id="functions-20"><a class="header" href="#functions-20">Functions</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="name"><a class="header" href="#name">Name</a></h1>
 <h3 id="name-1"><a class="header" href="#name-1">Name</a></h3>
 <ul>
 <li><strong>hash</strong> : u64</li>
 <li><strong>name</strong> : alloc::borrow::Cow<str></li>
 </ul>
-<h2 id="description-18"><a class="header" href="#description-18">Description</a></h2>
+<h2 id="description-19"><a class="header" href="#description-19">Description</a></h2>
 <blockquote>
 <p>Component used to identify an entity. Stores a hash for faster comparisons.</p>
 <p>The hash is eagerly re-computed upon each update to the name.</p>
@@ -2001,7 +2008,7 @@ This also means that you should use [<code>AssetPath::parse</code>] in cases whe
 as multiple entities can have the same name.  [<code>Entity</code>] should be
 used instead as the default unique identifier.</p>
 </blockquote>
-<h2 id="functions-20"><a class="header" href="#functions-20">Functions</a></h2>
+<h2 id="functions-21"><a class="header" href="#functions-21">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./name/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./name/eq.html">No Documentation 🚧</a></td></tr>
@@ -2036,7 +2043,7 @@ used instead as the default unique identifier.</p>
 <ol>
 <li>usize</li>
 </ol>
-<h2 id="description-19"><a class="header" href="#description-19">Description</a></h2>
+<h2 id="description-20"><a class="header" href="#description-20">Description</a></h2>
 <blockquote>
 <p>A value which uniquely identifies the type of a [<code>Component</code>] or [<code>Resource</code>] within a
 [<code>World</code>].</p>
@@ -2056,7 +2063,7 @@ and must not be attempted.</p>
 from a <code>World</code> using [<code>World::component_id()</code>] or via [<code>Components::component_id()</code>]. Access
 to the <code>ComponentId</code> for a [<code>Resource</code>] is available via [<code>Components::resource_id()</code>].</p>
 </blockquote>
-<h2 id="functions-21"><a class="header" href="#functions-21">Functions</a></h2>
+<h2 id="functions-22"><a class="header" href="#functions-22">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./componentid/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./componentid/clone.html">No Documentation 🚧</a></td></tr>
@@ -2135,11 +2142,11 @@ Usually, this value is taken from a counter incremented for each type of compone
 <li><strong>added</strong> : bevy_ecs::component::Tick</li>
 <li><strong>changed</strong> : bevy_ecs::component::Tick</li>
 </ul>
-<h2 id="description-20"><a class="header" href="#description-20">Description</a></h2>
+<h2 id="description-21"><a class="header" href="#description-21">Description</a></h2>
 <blockquote>
 <p>Records when a component or resource was added and when it was last mutably dereferenced (or added).</p>
 </blockquote>
-<h2 id="functions-22"><a class="header" href="#functions-22">Functions</a></h2>
+<h2 id="functions-23"><a class="header" href="#functions-23">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./componentticks/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>is_added(_self, last_run, this_run)</code></td><td>[ Returns `true` if the component or resource was added after the system last ran</td></tr>
@@ -2231,13 +2238,13 @@ component_ticks.set_changed(world.read_change_tick());
 <ul>
 <li><strong>tick</strong> : u32</li>
 </ul>
-<h2 id="description-21"><a class="header" href="#description-21">Description</a></h2>
+<h2 id="description-22"><a class="header" href="#description-22">Description</a></h2>
 <blockquote>
 <p>A value that tracks when a system ran relative to other systems.
 This is used to power change detection.</p>
 <p><em>Note</em> that a system that hasn't been run yet has a <code>Tick</code> of 0.</p>
 </blockquote>
-<h2 id="functions-23"><a class="header" href="#functions-23">Functions</a></h2>
+<h2 id="functions-24"><a class="header" href="#functions-24">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./tick/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./tick/clone.html">No Documentation 🚧</a></td></tr>
@@ -2339,7 +2346,7 @@ This is used to power change detection.</p>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="entity-1"><a class="header" href="#entity-1">Entity</a></h1>
 <p>Opaque Type. 🔒</p>
-<h2 id="description-22"><a class="header" href="#description-22">Description</a></h2>
+<h2 id="description-23"><a class="header" href="#description-23">Description</a></h2>
 <blockquote>
 <p>Lightweight identifier of an <a href="crate::entity">entity</a>.</p>
 <p>The identifier is implemented using a <a href="https://lucassardois.medium.com/generational-indices-guide-8e3c5f7fd594">generational index</a>: a combination of an index and a generation.
@@ -2389,7 +2396,7 @@ fn dispose_expired_food(mut commands: Commands, query: Query&lt;Entity, With&lt;
 # bevy_ecs::system::assert_is_system(dispose_expired_food);
 </code></pre>
 </blockquote>
-<h2 id="functions-24"><a class="header" href="#functions-24">Functions</a></h2>
+<h2 id="functions-25"><a class="header" href="#functions-25">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./entity/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./entity/eq.html">No Documentation 🚧</a></td></tr>
@@ -2513,11 +2520,11 @@ No particular structure is guaranteed for the returned bits.</p>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="entityhash"><a class="header" href="#entityhash">EntityHash</a></h1>
 <h3 id="entityhash-1"><a class="header" href="#entityhash-1">EntityHash</a></h3>
-<h2 id="description-23"><a class="header" href="#description-23">Description</a></h2>
+<h2 id="description-24"><a class="header" href="#description-24">Description</a></h2>
 <blockquote>
 <p>A [<code>BuildHasher</code>] that results in a [<code>EntityHasher</code>].</p>
 </blockquote>
-<h2 id="functions-25"><a class="header" href="#functions-25">Functions</a></h2>
+<h2 id="functions-26"><a class="header" href="#functions-26">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./entityhash/clone.html">No Documentation 🚧</a></td></tr>
 </tbody></table>
@@ -2535,14 +2542,14 @@ No particular structure is guaranteed for the returned bits.</p>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="identifier"><a class="header" href="#identifier">Identifier</a></h1>
 <p>Opaque Type. 🔒</p>
-<h2 id="description-24"><a class="header" href="#description-24">Description</a></h2>
+<h2 id="description-25"><a class="header" href="#description-25">Description</a></h2>
 <blockquote>
 <p>A unified identifier for all entity and similar IDs.</p>
 <p>Has the same size as a <code>u64</code> integer, but the layout is split between a 32-bit low
 segment, a 31-bit high segment, and the significant bit reserved as type flags to denote
 entity kinds.</p>
 </blockquote>
-<h2 id="functions-26"><a class="header" href="#functions-26">Functions</a></h2>
+<h2 id="functions-27"><a class="header" href="#functions-27">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./identifier/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./identifier/eq.html">No Documentation 🚧</a></td></tr>
@@ -2635,12 +2642,12 @@ Does not include the flag bits.</p>
 <ol>
 <li>bevy_ecs::entity::Entity</li>
 </ol>
-<h2 id="description-25"><a class="header" href="#description-25">Description</a></h2>
+<h2 id="description-26"><a class="header" href="#description-26">Description</a></h2>
 <blockquote>
 <p>Wrapper around [<code>Entity</code>] for [<code>RemovedComponents</code>].
 Internally, <code>RemovedComponents</code> uses these as an <code>Events&lt;RemovedComponentEntity&gt;</code>.</p>
 </blockquote>
-<h2 id="functions-27"><a class="header" href="#functions-27">Functions</a></h2>
+<h2 id="functions-28"><a class="header" href="#functions-28">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./removedcomponententity/clone.html">No Documentation 🚧</a></td></tr>
 </tbody></table>
@@ -2658,49 +2665,49 @@ Internally, <code>RemovedComponents</code> uses these as an <code>Events&lt;Remo
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="systemidmarker"><a class="header" href="#systemidmarker">SystemIdMarker</a></h1>
 <h3 id="systemidmarker-1"><a class="header" href="#systemidmarker-1">SystemIdMarker</a></h3>
-<h2 id="description-26"><a class="header" href="#description-26">Description</a></h2>
+<h2 id="description-27"><a class="header" href="#description-27">Description</a></h2>
 <blockquote>
 <p>Marker <a href="generated_docs/types/bevy_ecs::component::Component"><code>Component</code></a> for identifying [<code>SystemId</code>] [<code>Entity</code>]s.</p>
 </blockquote>
-<h2 id="functions-28"><a class="header" href="#functions-28">Functions</a></h2>
+<h2 id="functions-29"><a class="header" href="#functions-29">Functions</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="onadd"><a class="header" href="#onadd">OnAdd</a></h1>
 <h3 id="onadd-1"><a class="header" href="#onadd-1">OnAdd</a></h3>
-<h2 id="description-27"><a class="header" href="#description-27">Description</a></h2>
+<h2 id="description-28"><a class="header" href="#description-28">Description</a></h2>
 <blockquote>
 <p>Trigger emitted when a component is added to an entity. See [<code>crate::component::ComponentHooks::on_add</code>]
 for more information.</p>
 </blockquote>
-<h2 id="functions-29"><a class="header" href="#functions-29">Functions</a></h2>
+<h2 id="functions-30"><a class="header" href="#functions-30">Functions</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="oninsert"><a class="header" href="#oninsert">OnInsert</a></h1>
 <h3 id="oninsert-1"><a class="header" href="#oninsert-1">OnInsert</a></h3>
-<h2 id="description-28"><a class="header" href="#description-28">Description</a></h2>
+<h2 id="description-29"><a class="header" href="#description-29">Description</a></h2>
 <blockquote>
 <p>Trigger emitted when a component is inserted onto an entity. See [<code>crate::component::ComponentHooks::on_insert</code>]
 for more information.</p>
 </blockquote>
-<h2 id="functions-30"><a class="header" href="#functions-30">Functions</a></h2>
+<h2 id="functions-31"><a class="header" href="#functions-31">Functions</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="onremove"><a class="header" href="#onremove">OnRemove</a></h1>
 <h3 id="onremove-1"><a class="header" href="#onremove-1">OnRemove</a></h3>
-<h2 id="description-29"><a class="header" href="#description-29">Description</a></h2>
+<h2 id="description-30"><a class="header" href="#description-30">Description</a></h2>
 <blockquote>
 <p>Trigger emitted when a component is removed from an entity. See [<code>crate::component::ComponentHooks::on_remove</code>]
 for more information.</p>
 </blockquote>
-<h2 id="functions-31"><a class="header" href="#functions-31">Functions</a></h2>
+<h2 id="functions-32"><a class="header" href="#functions-32">Functions</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="onreplace"><a class="header" href="#onreplace">OnReplace</a></h1>
 <h3 id="onreplace-1"><a class="header" href="#onreplace-1">OnReplace</a></h3>
-<h2 id="description-30"><a class="header" href="#description-30">Description</a></h2>
+<h2 id="description-31"><a class="header" href="#description-31">Description</a></h2>
 <blockquote>
 <p>Trigger emitted when a component is replaced on an entity. See [<code>crate::component::ComponentHooks::on_replace</code>]
 for more information.</p>
 </blockquote>
-<h2 id="functions-32"><a class="header" href="#functions-32">Functions</a></h2>
+<h2 id="functions-33"><a class="header" href="#functions-33">Functions</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="children"><a class="header" href="#children">Children</a></h1>
 <h3 id="children-1"><a class="header" href="#children-1">Children</a></h3>
 <ol>
 <li>smallvec::SmallVec&lt;[bevy_ecs::entity::Entity; 8]&gt;</li>
 </ol>
-<h2 id="description-31"><a class="header" href="#description-31">Description</a></h2>
+<h2 id="description-32"><a class="header" href="#description-32">Description</a></h2>
 <blockquote>
 <p>Contains references to the child entities of this entity.</p>
 <p>Each child must contain a <a href="crate::components::parent::Parent"><code>Parent</code></a> component that points back to this entity.
@@ -2709,7 +2716,7 @@ consider using higher level utilities like <a href="crate::child_builder::BuildC
 which are safer and easier to use.</p>
 <p>See <a href="crate::query_extension::HierarchyQueryExt"><code>HierarchyQueryExt</code></a> for hierarchy related methods on <a href="generated_docs/types/bevy_ecs::system::Query"><code>Query</code></a>.</p>
 </blockquote>
-<h2 id="functions-33"><a class="header" href="#functions-33">Functions</a></h2>
+<h2 id="functions-34"><a class="header" href="#functions-34">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>swap(_self, a_index, b_index)</code></td><td><a href="generated_docs/types/./children/swap.html"> Swaps the child at `a_index` with the child at `b_index`.</a></td></tr>
 </tbody></table>
@@ -2732,7 +2739,7 @@ which are safer and easier to use.</p>
 <ol>
 <li>bevy_ecs::entity::Entity</li>
 </ol>
-<h2 id="description-32"><a class="header" href="#description-32">Description</a></h2>
+<h2 id="description-33"><a class="header" href="#description-33">Description</a></h2>
 <blockquote>
 <p>Holds a reference to the parent entity of this entity.
 This component should only be present on entities that actually have a parent entity.</p>
@@ -2741,7 +2748,7 @@ It is hard to set up parent/child relationships manually,
 consider using higher level utilities like <a href="crate::child_builder::BuildChildren::with_children"><code>BuildChildren::with_children</code></a>.</p>
 <p>See <a href="crate::query_extension::HierarchyQueryExt"><code>HierarchyQueryExt</code></a> for hierarchy related methods on <a href="generated_docs/types/bevy_ecs::system::Query"><code>Query</code></a>.</p>
 </blockquote>
-<h2 id="functions-34"><a class="header" href="#functions-34">Functions</a></h2>
+<h2 id="functions-35"><a class="header" href="#functions-35">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./parent/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./parent/eq.html">No Documentation 🚧</a></td></tr>
@@ -2801,11 +2808,11 @@ consider using higher level utilities like <a href="crate::child_builder::BuildC
 <li><strong>previous_parent</strong> : bevy_ecs::entity::Entity</li>
 <li><strong>new_parent</strong> : bevy_ecs::entity::Entity</li>
 </ul>
-<h2 id="description-33"><a class="header" href="#description-33">Description</a></h2>
+<h2 id="description-34"><a class="header" href="#description-34">Description</a></h2>
 <blockquote>
 <p>An <a href="generated_docs/types/bevy_ecs::event::Event"><code>Event</code></a> that is fired whenever there is a change in the world's hierarchy.</p>
 </blockquote>
-<h2 id="functions-35"><a class="header" href="#functions-35">Functions</a></h2>
+<h2 id="functions-36"><a class="header" href="#functions-36">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./hierarchyevent/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./hierarchyevent/clone.html">No Documentation 🚧</a></td></tr>
@@ -2851,11 +2858,11 @@ consider using higher level utilities like <a href="crate::child_builder::BuildC
 <div style="break-before: page; page-break-before: always;"></div><h1 id="buttonstate"><a class="header" href="#buttonstate">ButtonState</a></h1>
 <h3 id="pressed"><a class="header" href="#pressed">Pressed</a></h3>
 <h3 id="released"><a class="header" href="#released">Released</a></h3>
-<h2 id="description-34"><a class="header" href="#description-34">Description</a></h2>
+<h2 id="description-35"><a class="header" href="#description-35">Description</a></h2>
 <blockquote>
 <p>The current "press" state of an element</p>
 </blockquote>
-<h2 id="functions-36"><a class="header" href="#functions-36">Functions</a></h2>
+<h2 id="functions-37"><a class="header" href="#functions-37">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./buttonstate/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./buttonstate/clone.html">No Documentation 🚧</a></td></tr>
@@ -2916,14 +2923,14 @@ consider using higher level utilities like <a href="crate::child_builder::BuildC
 <ul>
 <li><strong>axis_data</strong> : bevy_utils::hashbrown::HashMap&lt;bevy_input::gamepad::GamepadInput, f32, bevy_utils::hashbrown::hash_map::DefaultHashBuilder&gt;</li>
 </ul>
-<h2 id="description-35"><a class="header" href="#description-35">Description</a></h2>
+<h2 id="description-36"><a class="header" href="#description-36">Description</a></h2>
 <blockquote>
 <p>Stores the position data of the input devices of type <code>T</code>.</p>
 <p>The values are stored as <code>f32</code>s, using [<code>Axis::set</code>].
 Use [<code>Axis::get</code>] to retrieve the value clamped between [<code>Axis::MIN</code>] and [<code>Axis::MAX</code>]
 inclusive, or unclamped using [<code>Axis::get_unclamped</code>].</p>
 </blockquote>
-<h2 id="functions-37"><a class="header" href="#functions-37">Functions</a></h2>
+<h2 id="functions-38"><a class="header" href="#functions-38">Functions</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="buttoninput"><a class="header" href="#buttoninput">ButtonInput</a></h1>
 <h3 id="buttoninput-1"><a class="header" href="#buttoninput-1">ButtonInput</a></h3>
 <ul>
@@ -2931,7 +2938,7 @@ inclusive, or unclamped using [<code>Axis::get_unclamped</code>].</p>
 <li><strong>just_pressed</strong> : bevy_utils::hashbrown::HashSet&lt;bevy_input::gamepad::GamepadButton, bevy_utils::hashbrown::hash_map::DefaultHashBuilder&gt;</li>
 <li><strong>just_released</strong> : bevy_utils::hashbrown::HashSet&lt;bevy_input::gamepad::GamepadButton, bevy_utils::hashbrown::hash_map::DefaultHashBuilder&gt;</li>
 </ul>
-<h2 id="description-36"><a class="header" href="#description-36">Description</a></h2>
+<h2 id="description-37"><a class="header" href="#description-37">Description</a></h2>
 <blockquote>
 <p>A "press-able" input of type <code>T</code>.</p>
 <h2 id="usage-1"><a class="header" href="#usage-1">Usage</a></h2>
@@ -3031,7 +3038,7 @@ fn print_keyboard(keyboard: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;) {
 It may be preferable to use <a href="generated_docs/types/bevy_ecs::change_detection::DetectChangesMut::bypass_change_detection"><code>DetectChangesMut::bypass_change_detection</code></a>
 to avoid causing the resource to always be marked as changed.</p>
 </blockquote>
-<h2 id="functions-38"><a class="header" href="#functions-38">Functions</a></h2>
+<h2 id="functions-39"><a class="header" href="#functions-39">Functions</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="axissettings"><a class="header" href="#axissettings">AxisSettings</a></h1>
 <h3 id="axissettings-1"><a class="header" href="#axissettings-1">AxisSettings</a></h3>
 <ul>
@@ -3041,7 +3048,7 @@ to avoid causing the resource to always be marked as changed.</p>
 <li><strong>livezone_lowerbound</strong> : f32</li>
 <li><strong>threshold</strong> : f32</li>
 </ul>
-<h2 id="description-37"><a class="header" href="#description-37">Description</a></h2>
+<h2 id="description-38"><a class="header" href="#description-38">Description</a></h2>
 <blockquote>
 <p>Settings for a [<code>GamepadAxis</code>].</p>
 <p>It is used inside the [<code>GamepadSettings</code>] to define the sensitivity range and
@@ -3053,7 +3060,7 @@ to 0.0.
 Otherwise, values will not be rounded.</p>
 <p>The valid range is <code>[-1.0, 1.0]</code>.</p>
 </blockquote>
-<h2 id="functions-39"><a class="header" href="#functions-39">Functions</a></h2>
+<h2 id="functions-40"><a class="header" href="#functions-40">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clamp(_self, new_value)</code></td><td><a href="generated_docs/types/./axissettings/clamp.html"> Clamps the `raw_value` according to the `AxisSettings`.</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./axissettings/clone.html">No Documentation 🚧</a></td></tr>
@@ -3277,7 +3284,7 @@ Returns the new value of threshold.</p>
 <li><strong>low</strong> : f32</li>
 <li><strong>threshold</strong> : f32</li>
 </ul>
-<h2 id="description-38"><a class="header" href="#description-38">Description</a></h2>
+<h2 id="description-39"><a class="header" href="#description-39">Description</a></h2>
 <blockquote>
 <p>Settings for a [<code>GamepadButton</code>].</p>
 <p>It is used inside the [<code>GamepadSettings</code>] to define the sensitivity range and
@@ -3290,7 +3297,7 @@ threshold for a button axis.</p>
 </ul>
 <p>The valid range is from 0.0 to 1.0, inclusive.</p>
 </blockquote>
-<h2 id="functions-40"><a class="header" href="#functions-40">Functions</a></h2>
+<h2 id="functions-41"><a class="header" href="#functions-41">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./buttonaxissettings/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>filter(_self, new_value, old_value)</code></td><td>[ Filters the `new_value` based on the `old_value`, according to the [`ButtonAxisSettings`].</td></tr>
@@ -3330,7 +3337,7 @@ exceeds the settings threshold, and <code>None</code> otherwise.</p>
 <li><strong>press_threshold</strong> : f32</li>
 <li><strong>release_threshold</strong> : f32</li>
 </ul>
-<h2 id="description-39"><a class="header" href="#description-39">Description</a></h2>
+<h2 id="description-40"><a class="header" href="#description-40">Description</a></h2>
 <blockquote>
 <p>Manages settings for gamepad buttons.</p>
 <p>It is used inside [<code>GamepadSettings</code>] to define the threshold for a [<code>GamepadButton</code>]
@@ -3338,7 +3345,7 @@ to be considered pressed or released. A button is considered pressed if the <cod
 value is surpassed and released if the <code>release_threshold</code> value is undercut.</p>
 <p>Allowed values: <code>0.0 &lt;= ``release_threshold`` &lt;= ``press_threshold`` &lt;= 1.0</code></p>
 </blockquote>
-<h2 id="functions-41"><a class="header" href="#functions-41">Functions</a></h2>
+<h2 id="functions-42"><a class="header" href="#functions-42">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./buttonsettings/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./buttonsettings/eq.html">No Documentation 🚧</a></td></tr>
@@ -3468,7 +3475,7 @@ Returns the new value of the release threshold.</p>
 <li><strong>digital</strong> : bevy_input::button_input::ButtonInput&lt;bevy_input::gamepad::GamepadButton&gt;</li>
 <li><strong>analog</strong> : bevy_input::axis::Axis&lt;bevy_input::gamepad::GamepadInput&gt;</li>
 </ul>
-<h2 id="description-40"><a class="header" href="#description-40">Description</a></h2>
+<h2 id="description-41"><a class="header" href="#description-41">Description</a></h2>
 <blockquote>
 <p>Stores a connected gamepad's metadata such as the name and its [<code>GamepadButton</code>] and [<code>GamepadAxis</code>].</p>
 <p>An entity with this component is spawned automatically after [<code>GamepadConnectionEvent</code>]
@@ -3494,7 +3501,7 @@ fn gamepad_usage_system(gamepads: Query&lt;(&amp;Name, &amp;Gamepad)&gt;) {
 }
 </code></pre>
 </blockquote>
-<h2 id="functions-42"><a class="header" href="#functions-42">Functions</a></h2>
+<h2 id="functions-43"><a class="header" href="#functions-43">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>dpad(_self)</code></td><td><a href="generated_docs/types/./gamepad/dpad.html"> Returns the directional pad as a [`Vec2`]</a></td></tr>
 <tr><td><code>just_pressed(_self, button_type)</code></td><td>[ Returns `true` if the [`GamepadButton`] has been pressed during the current frame.</td></tr>
@@ -3621,14 +3628,14 @@ Note: This function does not imply information regarding the current state of [<
 <ol>
 <li>u8</li>
 </ol>
-<h2 id="description-41"><a class="header" href="#description-41">Description</a></h2>
+<h2 id="description-42"><a class="header" href="#description-42">Description</a></h2>
 <blockquote>
 <p>Represents gamepad input types that are mapped in the range [-1.0, 1.0]</p>
 <h2 id="usage-2"><a class="header" href="#usage-2">Usage</a></h2>
 <p>This is used to determine which axis has changed its value when receiving a
 gamepad axis event. It is also used in the [<code>Gamepad</code>] component.</p>
 </blockquote>
-<h2 id="functions-43"><a class="header" href="#functions-43">Functions</a></h2>
+<h2 id="functions-44"><a class="header" href="#functions-44">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./gamepadaxis/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./gamepadaxis/clone.html">No Documentation 🚧</a></td></tr>
@@ -3678,11 +3685,11 @@ gamepad axis event. It is also used in the [<code>Gamepad</code>] component.</p>
 <li><strong>axis</strong> : bevy_input::gamepad::GamepadAxis</li>
 <li><strong>value</strong> : f32</li>
 </ul>
-<h2 id="description-42"><a class="header" href="#description-42">Description</a></h2>
+<h2 id="description-43"><a class="header" href="#description-43">Description</a></h2>
 <blockquote>
 <p>[<code>GamepadAxis</code>] event triggered by an analog state change</p>
 </blockquote>
-<h2 id="functions-44"><a class="header" href="#functions-44">Functions</a></h2>
+<h2 id="functions-45"><a class="header" href="#functions-45">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./gamepadaxischangedevent/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./gamepadaxischangedevent/eq.html">No Documentation 🚧</a></td></tr>
@@ -3751,14 +3758,14 @@ gamepad axis event. It is also used in the [<code>Gamepad</code>] component.</p>
 <ol>
 <li>u8</li>
 </ol>
-<h2 id="description-43"><a class="header" href="#description-43">Description</a></h2>
+<h2 id="description-44"><a class="header" href="#description-44">Description</a></h2>
 <blockquote>
 <p>Represents gamepad input types that are mapped in the range [0.0, 1.0].</p>
 <h2 id="usage-3"><a class="header" href="#usage-3">Usage</a></h2>
 <p>This is used to determine which button has changed its value when receiving gamepad button events
 It is also used in the [<code>Gamepad</code>] component.</p>
 </blockquote>
-<h2 id="functions-45"><a class="header" href="#functions-45">Functions</a></h2>
+<h2 id="functions-46"><a class="header" href="#functions-46">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./gamepadbutton/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./gamepadbutton/clone.html">No Documentation 🚧</a></td></tr>
@@ -3809,11 +3816,11 @@ It is also used in the [<code>Gamepad</code>] component.</p>
 <li><strong>state</strong> : bevy_input::ButtonState</li>
 <li><strong>value</strong> : f32</li>
 </ul>
-<h2 id="description-44"><a class="header" href="#description-44">Description</a></h2>
+<h2 id="description-45"><a class="header" href="#description-45">Description</a></h2>
 <blockquote>
 <p>[<code>GamepadButton</code>] event triggered by an analog state change</p>
 </blockquote>
-<h2 id="functions-46"><a class="header" href="#functions-46">Functions</a></h2>
+<h2 id="functions-47"><a class="header" href="#functions-47">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./gamepadbuttonchangedevent/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./gamepadbuttonchangedevent/eq.html">No Documentation 🚧</a></td></tr>
@@ -3866,11 +3873,11 @@ It is also used in the [<code>Gamepad</code>] component.</p>
 <li><strong>button</strong> : bevy_input::gamepad::GamepadButton</li>
 <li><strong>state</strong> : bevy_input::ButtonState</li>
 </ul>
-<h2 id="description-45"><a class="header" href="#description-45">Description</a></h2>
+<h2 id="description-46"><a class="header" href="#description-46">Description</a></h2>
 <blockquote>
 <p>[<code>GamepadButton</code>] event triggered by a digital state change</p>
 </blockquote>
-<h2 id="functions-47"><a class="header" href="#functions-47">Functions</a></h2>
+<h2 id="functions-48"><a class="header" href="#functions-48">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./gamepadbuttonstatechangedevent/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./gamepadbuttonstatechangedevent/clone.html">No Documentation 🚧</a></td></tr>
@@ -3936,11 +3943,11 @@ It is also used in the [<code>Gamepad</code>] component.</p>
 <li><strong>product_id</strong> : core::option::Option<u16></li>
 </ul>
 <h3 id="disconnected"><a class="header" href="#disconnected">Disconnected</a></h3>
-<h2 id="description-46"><a class="header" href="#description-46">Description</a></h2>
+<h2 id="description-47"><a class="header" href="#description-47">Description</a></h2>
 <blockquote>
 <p>The connection status of a gamepad.</p>
 </blockquote>
-<h2 id="functions-48"><a class="header" href="#functions-48">Functions</a></h2>
+<h2 id="functions-49"><a class="header" href="#functions-49">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./gamepadconnection/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./gamepadconnection/eq.html">No Documentation 🚧</a></td></tr>
@@ -3976,12 +3983,12 @@ It is also used in the [<code>Gamepad</code>] component.</p>
 <li><strong>gamepad</strong> : bevy_ecs::entity::Entity</li>
 <li><strong>connection</strong> : bevy_input::gamepad::GamepadConnection</li>
 </ul>
-<h2 id="description-47"><a class="header" href="#description-47">Description</a></h2>
+<h2 id="description-48"><a class="header" href="#description-48">Description</a></h2>
 <blockquote>
 <p>A Gamepad connection event. Created when a connection to a gamepad
 is established and when a gamepad is disconnected.</p>
 </blockquote>
-<h2 id="functions-49"><a class="header" href="#functions-49">Functions</a></h2>
+<h2 id="functions-50"><a class="header" href="#functions-50">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./gamepadconnectionevent/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>connected(_self)</code></td><td><a href="generated_docs/types/./gamepadconnectionevent/connected.html"> Is the gamepad connected?</a></td></tr>
@@ -4064,7 +4071,7 @@ is established and when a gamepad is disconnected.</p>
 <ol>
 <li>bevy_input::gamepad::GamepadAxisChangedEvent</li>
 </ol>
-<h2 id="description-48"><a class="header" href="#description-48">Description</a></h2>
+<h2 id="description-49"><a class="header" href="#description-49">Description</a></h2>
 <blockquote>
 <p>A gamepad event.</p>
 <p>This event type is used over the [<code>GamepadConnectionEvent</code>],
@@ -4072,7 +4079,7 @@ is established and when a gamepad is disconnected.</p>
 the in-frame relative ordering of events is important.</p>
 <p>This event is produced by <code>bevy_input</code></p>
 </blockquote>
-<h2 id="functions-50"><a class="header" href="#functions-50">Functions</a></h2>
+<h2 id="functions-51"><a class="header" href="#functions-51">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./gamepadevent/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./gamepadevent/eq.html">No Documentation 🚧</a></td></tr>
@@ -4111,11 +4118,11 @@ the in-frame relative ordering of events is important.</p>
 <ol>
 <li>bevy_input::gamepad::GamepadButton</li>
 </ol>
-<h2 id="description-49"><a class="header" href="#description-49">Description</a></h2>
+<h2 id="description-50"><a class="header" href="#description-50">Description</a></h2>
 <blockquote>
 <p>Encapsulation over [<code>GamepadAxis</code>] and [<code>GamepadButton</code>]</p>
 </blockquote>
-<h2 id="functions-51"><a class="header" href="#functions-51">Functions</a></h2>
+<h2 id="functions-52"><a class="header" href="#functions-52">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./gamepadinput/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./gamepadinput/clone.html">No Documentation 🚧</a></td></tr>
@@ -4164,11 +4171,11 @@ the in-frame relative ordering of events is important.</p>
 <li><strong>strong_motor</strong> : f32</li>
 <li><strong>weak_motor</strong> : f32</li>
 </ul>
-<h2 id="description-50"><a class="header" href="#description-50">Description</a></h2>
+<h2 id="description-51"><a class="header" href="#description-51">Description</a></h2>
 <blockquote>
 <p>The intensity at which a gamepad's force-feedback motors may rumble.</p>
 </blockquote>
-<h2 id="functions-52"><a class="header" href="#functions-52">Functions</a></h2>
+<h2 id="functions-53"><a class="header" href="#functions-53">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./gamepadrumbleintensity/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./gamepadrumbleintensity/eq.html">No Documentation 🚧</a></td></tr>
@@ -4239,7 +4246,7 @@ Clamped within the <code>0.0</code> to <code>1.0</code> range.</p>
 <ul>
 <li><strong>gamepad</strong> : bevy_ecs::entity::Entity</li>
 </ul>
-<h2 id="description-51"><a class="header" href="#description-51">Description</a></h2>
+<h2 id="description-52"><a class="header" href="#description-52">Description</a></h2>
 <blockquote>
 <p>An event that controls force-feedback rumbling of a [<code>Gamepad</code>] <a href="generated_docs/types/Entity"><code>entity</code></a>.</p>
 <h1 id="notes"><a class="header" href="#notes">Notes</a></h1>
@@ -4262,7 +4269,7 @@ fn rumble_gamepad_system(
 }
 </code></pre>
 </blockquote>
-<h2 id="functions-53"><a class="header" href="#functions-53">Functions</a></h2>
+<h2 id="functions-54"><a class="header" href="#functions-54">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./gamepadrumblerequest/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>gamepad(_self)</code></td><td><a href="generated_docs/types/./gamepadrumblerequest/gamepad.html"> Get the [`Entity`] associated with this request.</a></td></tr>
@@ -4301,7 +4308,7 @@ fn rumble_gamepad_system(
 <li><strong>axis_settings</strong> : bevy_utils::hashbrown::HashMap&lt;bevy_input::gamepad::GamepadAxis, bevy_input::gamepad::AxisSettings, bevy_utils::hashbrown::hash_map::DefaultHashBuilder&gt;</li>
 <li><strong>button_axis_settings</strong> : bevy_utils::hashbrown::HashMap&lt;bevy_input::gamepad::GamepadButton, bevy_input::gamepad::ButtonAxisSettings, bevy_utils::hashbrown::hash_map::DefaultHashBuilder&gt;</li>
 </ul>
-<h2 id="description-52"><a class="header" href="#description-52">Description</a></h2>
+<h2 id="description-53"><a class="header" href="#description-53">Description</a></h2>
 <blockquote>
 <p>Gamepad settings component.</p>
 <h2 id="usage-4"><a class="header" href="#usage-4">Usage</a></h2>
@@ -4313,7 +4320,7 @@ are defined, the default settings of each are used as a fallback accordingly.</p
 should register. Events that don't meet the change thresholds defined in [<code>GamepadSettings</code>]
 will not register. To modify these settings, mutate the corresponding component.</p>
 </blockquote>
-<h2 id="functions-54"><a class="header" href="#functions-54">Functions</a></h2>
+<h2 id="functions-55"><a class="header" href="#functions-55">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./gamepadsettings/clone.html">No Documentation 🚧</a></td></tr>
 </tbody></table>
@@ -4336,11 +4343,11 @@ will not register. To modify these settings, mutate the corresponding component.
 <li><strong>axis</strong> : bevy_input::gamepad::GamepadAxis</li>
 <li><strong>value</strong> : f32</li>
 </ul>
-<h2 id="description-53"><a class="header" href="#description-53">Description</a></h2>
+<h2 id="description-54"><a class="header" href="#description-54">Description</a></h2>
 <blockquote>
 <p>[<code>GamepadAxis</code>] changed event unfiltered by [<code>GamepadSettings</code>]</p>
 </blockquote>
-<h2 id="functions-55"><a class="header" href="#functions-55">Functions</a></h2>
+<h2 id="functions-56"><a class="header" href="#functions-56">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./rawgamepadaxischangedevent/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./rawgamepadaxischangedevent/eq.html">No Documentation 🚧</a></td></tr>
@@ -4392,11 +4399,11 @@ will not register. To modify these settings, mutate the corresponding component.
 <li><strong>button</strong> : bevy_input::gamepad::GamepadButton</li>
 <li><strong>value</strong> : f32</li>
 </ul>
-<h2 id="description-54"><a class="header" href="#description-54">Description</a></h2>
+<h2 id="description-55"><a class="header" href="#description-55">Description</a></h2>
 <blockquote>
 <p>[<code>GamepadButton</code>] changed event unfiltered by [<code>GamepadSettings</code>]</p>
 </blockquote>
-<h2 id="functions-56"><a class="header" href="#functions-56">Functions</a></h2>
+<h2 id="functions-57"><a class="header" href="#functions-57">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./rawgamepadbuttonchangedevent/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./rawgamepadbuttonchangedevent/eq.html">No Documentation 🚧</a></td></tr>
@@ -4454,7 +4461,7 @@ will not register. To modify these settings, mutate the corresponding component.
 <ol>
 <li>bevy_input::gamepad::RawGamepadAxisChangedEvent</li>
 </ol>
-<h2 id="description-55"><a class="header" href="#description-55">Description</a></h2>
+<h2 id="description-56"><a class="header" href="#description-56">Description</a></h2>
 <blockquote>
 <p>A raw gamepad event.</p>
 <p>This event type is used over the [<code>GamepadConnectionEvent</code>],
@@ -4462,7 +4469,7 @@ will not register. To modify these settings, mutate the corresponding component.
 the in-frame relative ordering of events is important.</p>
 <p>This event type is used by <code>bevy_input</code> to feed its components.</p>
 </blockquote>
-<h2 id="functions-57"><a class="header" href="#functions-57">Functions</a></h2>
+<h2 id="functions-58"><a class="header" href="#functions-58">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./rawgamepadevent/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./rawgamepadevent/eq.html">No Documentation 🚧</a></td></tr>
@@ -4494,7 +4501,7 @@ the in-frame relative ordering of events is important.</p>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="doubletapgesture"><a class="header" href="#doubletapgesture">DoubleTapGesture</a></h1>
 <h3 id="doubletapgesture-1"><a class="header" href="#doubletapgesture-1">DoubleTapGesture</a></h3>
-<h2 id="description-56"><a class="header" href="#description-56">Description</a></h2>
+<h2 id="description-57"><a class="header" href="#description-57">Description</a></h2>
 <blockquote>
 <p>Double tap gesture.</p>
 <h2 id="platform-specific"><a class="header" href="#platform-specific">Platform-specific</a></h2>
@@ -4503,7 +4510,7 @@ the in-frame relative ordering of events is important.</p>
 <li>On <strong><code>iOS</code></strong>, must be enabled first</li>
 </ul>
 </blockquote>
-<h2 id="functions-58"><a class="header" href="#functions-58">Functions</a></h2>
+<h2 id="functions-59"><a class="header" href="#functions-59">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./doubletapgesture/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./doubletapgesture/eq.html">No Documentation 🚧</a></td></tr>
@@ -4538,7 +4545,7 @@ the in-frame relative ordering of events is important.</p>
 <ol>
 <li>glam::Vec2</li>
 </ol>
-<h2 id="description-57"><a class="header" href="#description-57">Description</a></h2>
+<h2 id="description-58"><a class="header" href="#description-58">Description</a></h2>
 <blockquote>
 <p>Pan gesture.</p>
 <h2 id="platform-specific-1"><a class="header" href="#platform-specific-1">Platform-specific</a></h2>
@@ -4546,7 +4553,7 @@ the in-frame relative ordering of events is important.</p>
 <li>On <strong><code>iOS</code></strong>, must be enabled first</li>
 </ul>
 </blockquote>
-<h2 id="functions-59"><a class="header" href="#functions-59">Functions</a></h2>
+<h2 id="functions-60"><a class="header" href="#functions-60">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./pangesture/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./pangesture/eq.html">No Documentation 🚧</a></td></tr>
@@ -4581,7 +4588,7 @@ the in-frame relative ordering of events is important.</p>
 <ol>
 <li>f32</li>
 </ol>
-<h2 id="description-58"><a class="header" href="#description-58">Description</a></h2>
+<h2 id="description-59"><a class="header" href="#description-59">Description</a></h2>
 <blockquote>
 <p>Two-finger pinch gesture, often used for magnifications.</p>
 <p>Positive delta values indicate magnification (zooming in) and
@@ -4592,7 +4599,7 @@ negative delta values indicate shrinking (zooming out).</p>
 <li>On <strong><code>iOS</code></strong>, must be enabled first</li>
 </ul>
 </blockquote>
-<h2 id="functions-60"><a class="header" href="#functions-60">Functions</a></h2>
+<h2 id="functions-61"><a class="header" href="#functions-61">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./pinchgesture/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./pinchgesture/eq.html">No Documentation 🚧</a></td></tr>
@@ -4627,7 +4634,7 @@ negative delta values indicate shrinking (zooming out).</p>
 <ol>
 <li>f32</li>
 </ol>
-<h2 id="description-59"><a class="header" href="#description-59">Description</a></h2>
+<h2 id="description-60"><a class="header" href="#description-60">Description</a></h2>
 <blockquote>
 <p>Two-finger rotation gesture.</p>
 <p>Positive delta values indicate rotation counterclockwise and
@@ -4638,7 +4645,7 @@ negative delta values indicate rotation clockwise.</p>
 <li>On <strong><code>iOS</code></strong>, must be enabled first</li>
 </ul>
 </blockquote>
-<h2 id="functions-61"><a class="header" href="#functions-61">Functions</a></h2>
+<h2 id="functions-62"><a class="header" href="#functions-62">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./rotationgesture/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./rotationgesture/eq.html">No Documentation 🚧</a></td></tr>
@@ -4987,13 +4994,13 @@ negative delta values indicate rotation clockwise.</p>
 <h3 id="f33"><a class="header" href="#f33">F33</a></h3>
 <h3 id="f34"><a class="header" href="#f34">F34</a></h3>
 <h3 id="f35"><a class="header" href="#f35">F35</a></h3>
-<h2 id="description-60"><a class="header" href="#description-60">Description</a></h2>
+<h2 id="description-61"><a class="header" href="#description-61">Description</a></h2>
 <blockquote>
 <p>The logical key code of a [<code>KeyboardInput</code>].</p>
 <h2 id="technical"><a class="header" href="#technical">Technical</a></h2>
 <p>Its values map 1 to 1 to winit's Key.</p>
 </blockquote>
-<h2 id="functions-62"><a class="header" href="#functions-62">Functions</a></h2>
+<h2 id="functions-63"><a class="header" href="#functions-63">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./key/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./key/clone.html">No Documentation 🚧</a></td></tr>
@@ -5235,7 +5242,7 @@ negative delta values indicate rotation clockwise.</p>
 <h3 id="f33-1"><a class="header" href="#f33-1">F33</a></h3>
 <h3 id="f34-1"><a class="header" href="#f34-1">F34</a></h3>
 <h3 id="f35-1"><a class="header" href="#f35-1">F35</a></h3>
-<h2 id="description-61"><a class="header" href="#description-61">Description</a></h2>
+<h2 id="description-62"><a class="header" href="#description-62">Description</a></h2>
 <blockquote>
 <p>The key code of a [<code>KeyboardInput</code>].</p>
 <h2 id="usage-5"><a class="header" href="#usage-5">Usage</a></h2>
@@ -5251,7 +5258,7 @@ exceptions:</p>
 <h2 id="updating"><a class="header" href="#updating">Updating</a></h2>
 <p>The resource is updated inside of the [<code>keyboard_input_system</code>].</p>
 </blockquote>
-<h2 id="functions-63"><a class="header" href="#functions-63">Functions</a></h2>
+<h2 id="functions-64"><a class="header" href="#functions-64">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./keycode/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./keycode/clone.html">No Documentation 🚧</a></td></tr>
@@ -5296,7 +5303,7 @@ exceptions:</p>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="keyboardfocuslost"><a class="header" href="#keyboardfocuslost">KeyboardFocusLost</a></h1>
 <h3 id="keyboardfocuslost-1"><a class="header" href="#keyboardfocuslost-1">KeyboardFocusLost</a></h3>
-<h2 id="description-62"><a class="header" href="#description-62">Description</a></h2>
+<h2 id="description-63"><a class="header" href="#description-63">Description</a></h2>
 <blockquote>
 <p>Gets generated from <code>bevy_winit::winit_runner</code></p>
 <p>Used for clearing all cached states to avoid having 'stuck' key presses
@@ -5304,7 +5311,7 @@ when, for example, switching between windows with 'Alt-Tab' or using any other
 OS specific key combination that leads to Bevy window losing focus and not receiving any
 input events</p>
 </blockquote>
-<h2 id="functions-64"><a class="header" href="#functions-64">Functions</a></h2>
+<h2 id="functions-65"><a class="header" href="#functions-65">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./keyboardfocuslost/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./keyboardfocuslost/clone.html">No Documentation 🚧</a></td></tr>
@@ -5356,7 +5363,7 @@ input events</p>
 <li><strong>repeat</strong> : bool</li>
 <li><strong>window</strong> : bevy_ecs::entity::Entity</li>
 </ul>
-<h2 id="description-63"><a class="header" href="#description-63">Description</a></h2>
+<h2 id="description-64"><a class="header" href="#description-64">Description</a></h2>
 <blockquote>
 <p>A keyboard input event.</p>
 <p>This event is the translated version of the <code>WindowEvent::KeyboardInput</code> from the <code>winit</code> crate.
@@ -5365,7 +5372,7 @@ It is available to the end user and can be used for game logic.</p>
 <p>The event is consumed inside of the [<code>keyboard_input_system</code>]
 to update the <a href="generated_docs/types/ButtonInput%3CKeyCode%3E"><code>ButtonInput&lt;KeyCode&gt;</code></a> resource.</p>
 </blockquote>
-<h2 id="functions-65"><a class="header" href="#functions-65">Functions</a></h2>
+<h2 id="functions-66"><a class="header" href="#functions-66">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./keyboardinput/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./keyboardinput/clone.html">No Documentation 🚧</a></td></tr>
@@ -5430,7 +5437,7 @@ to update the <a href="generated_docs/types/ButtonInput%3CKeyCode%3E"><code>Butt
 <ol>
 <li>smol_str::SmolStr</li>
 </ol>
-<h2 id="description-64"><a class="header" href="#description-64">Description</a></h2>
+<h2 id="description-65"><a class="header" href="#description-65">Description</a></h2>
 <blockquote>
 <p>Contains the platform-native logical key identifier, known as keysym.</p>
 <p>Exactly what that means differs from platform to platform, but the values are to some degree
@@ -5441,7 +5448,7 @@ enum.</p>
 key identifier to a meaningful [<code>Key</code>] variant. This lets you use [<code>Key</code>], and let the user
 define keybinds which work in the presence of identifiers we haven't mapped for you yet.</p>
 </blockquote>
-<h2 id="functions-66"><a class="header" href="#functions-66">Functions</a></h2>
+<h2 id="functions-67"><a class="header" href="#functions-67">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./nativekey/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./nativekey/clone.html">No Documentation 🚧</a></td></tr>
@@ -5502,7 +5509,7 @@ define keybinds which work in the presence of identifiers we haven't mapped for 
 <ol>
 <li>u32</li>
 </ol>
-<h2 id="description-65"><a class="header" href="#description-65">Description</a></h2>
+<h2 id="description-66"><a class="header" href="#description-66">Description</a></h2>
 <blockquote>
 <p>Contains the platform-native physical key identifier</p>
 <p>The exact values vary from platform to platform (which is part of why this is a per-platform
@@ -5515,7 +5522,7 @@ haven't mapped for you yet, this lets you use [<code>KeyCode</code>] to:</p>
 <li>On non-web platforms, support assigning keybinds to virtually any key through a UI.</li>
 </ul>
 </blockquote>
-<h2 id="functions-67"><a class="header" href="#functions-67">Functions</a></h2>
+<h2 id="functions-68"><a class="header" href="#functions-68">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./nativekeycode/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./nativekeycode/clone.html">No Documentation 🚧</a></td></tr>
@@ -5563,13 +5570,13 @@ haven't mapped for you yet, this lets you use [<code>KeyCode</code>] to:</p>
 <ul>
 <li><strong>delta</strong> : glam::Vec2</li>
 </ul>
-<h2 id="description-66"><a class="header" href="#description-66">Description</a></h2>
+<h2 id="description-67"><a class="header" href="#description-67">Description</a></h2>
 <blockquote>
 <p>Tracks how much the mouse has moved every frame.</p>
 <p>This resource is reset to zero every frame.</p>
 <p>This resource sums the total [<code>MouseMotion</code>] events received this frame.</p>
 </blockquote>
-<h2 id="functions-68"><a class="header" href="#functions-68">Functions</a></h2>
+<h2 id="functions-69"><a class="header" href="#functions-69">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./accumulatedmousemotion/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./accumulatedmousemotion/eq.html">No Documentation 🚧</a></td></tr>
@@ -5605,13 +5612,13 @@ haven't mapped for you yet, this lets you use [<code>KeyCode</code>] to:</p>
 <li><strong>unit</strong> : bevy_input::mouse::MouseScrollUnit</li>
 <li><strong>delta</strong> : glam::Vec2</li>
 </ul>
-<h2 id="description-67"><a class="header" href="#description-67">Description</a></h2>
+<h2 id="description-68"><a class="header" href="#description-68">Description</a></h2>
 <blockquote>
 <p>Tracks how much the mouse has scrolled every frame.</p>
 <p>This resource is reset to zero every frame.</p>
 <p>This resource sums the total [<code>MouseWheel</code>] events received this frame.</p>
 </blockquote>
-<h2 id="functions-69"><a class="header" href="#functions-69">Functions</a></h2>
+<h2 id="functions-70"><a class="header" href="#functions-70">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./accumulatedmousescroll/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./accumulatedmousescroll/eq.html">No Documentation 🚧</a></td></tr>
@@ -5651,7 +5658,7 @@ haven't mapped for you yet, this lets you use [<code>KeyCode</code>] to:</p>
 <ol>
 <li>u16</li>
 </ol>
-<h2 id="description-68"><a class="header" href="#description-68">Description</a></h2>
+<h2 id="description-69"><a class="header" href="#description-69">Description</a></h2>
 <blockquote>
 <p>A button on a mouse device.</p>
 <h2 id="usage-7"><a class="header" href="#usage-7">Usage</a></h2>
@@ -5660,7 +5667,7 @@ resource.</p>
 <h2 id="updating-1"><a class="header" href="#updating-1">Updating</a></h2>
 <p>The resource is updated inside of the [<code>mouse_button_input_system</code>].</p>
 </blockquote>
-<h2 id="functions-70"><a class="header" href="#functions-70">Functions</a></h2>
+<h2 id="functions-71"><a class="header" href="#functions-71">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./mousebutton/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./mousebutton/clone.html">No Documentation 🚧</a></td></tr>
@@ -5710,7 +5717,7 @@ resource.</p>
 <li><strong>state</strong> : bevy_input::ButtonState</li>
 <li><strong>window</strong> : bevy_ecs::entity::Entity</li>
 </ul>
-<h2 id="description-69"><a class="header" href="#description-69">Description</a></h2>
+<h2 id="description-70"><a class="header" href="#description-70">Description</a></h2>
 <blockquote>
 <p>A mouse button input event.</p>
 <p>This event is the translated version of the <code>WindowEvent::MouseInput</code> from the <code>winit</code> crate.</p>
@@ -5718,7 +5725,7 @@ resource.</p>
 <p>The event is read inside of the [<code>mouse_button_input_system</code>]
 to update the [<code>ButtonInput&lt;MouseButton&gt;</code>] resource.</p>
 </blockquote>
-<h2 id="functions-71"><a class="header" href="#functions-71">Functions</a></h2>
+<h2 id="functions-72"><a class="header" href="#functions-72">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./mousebuttoninput/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./mousebuttoninput/clone.html">No Documentation 🚧</a></td></tr>
@@ -5766,7 +5773,7 @@ to update the [<code>ButtonInput&lt;MouseButton&gt;</code>] resource.</p>
 <ul>
 <li><strong>delta</strong> : glam::Vec2</li>
 </ul>
-<h2 id="description-70"><a class="header" href="#description-70">Description</a></h2>
+<h2 id="description-71"><a class="header" href="#description-71">Description</a></h2>
 <blockquote>
 <p>An event reporting the change in physical position of a pointing device.</p>
 <p>This represents raw, unfiltered physical motion.
@@ -5774,7 +5781,7 @@ It is the translated version of <a href="https://docs.rs/winit/latest/winit/even
 <p>All pointing devices connected to a single machine at the same time can emit the event independently.
 However, the event data does not make it possible to distinguish which device it is referring to.</p>
 </blockquote>
-<h2 id="functions-72"><a class="header" href="#functions-72">Functions</a></h2>
+<h2 id="functions-73"><a class="header" href="#functions-73">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./mousemotion/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./mousemotion/eq.html">No Documentation 🚧</a></td></tr>
@@ -5807,14 +5814,14 @@ However, the event data does not make it possible to distinguish which device it
 <div style="break-before: page; page-break-before: always;"></div><h1 id="mousescrollunit"><a class="header" href="#mousescrollunit">MouseScrollUnit</a></h1>
 <h3 id="line"><a class="header" href="#line">Line</a></h3>
 <h3 id="pixel"><a class="header" href="#pixel">Pixel</a></h3>
-<h2 id="description-71"><a class="header" href="#description-71">Description</a></h2>
+<h2 id="description-72"><a class="header" href="#description-72">Description</a></h2>
 <blockquote>
 <p>The scroll unit.</p>
 <p>Describes how a value of a [<code>MouseWheel</code>] event has to be interpreted.</p>
 <p>The value of the event can either be interpreted as the amount of lines or the amount of pixels
 to scroll.</p>
 </blockquote>
-<h2 id="functions-73"><a class="header" href="#functions-73">Functions</a></h2>
+<h2 id="functions-74"><a class="header" href="#functions-74">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./mousescrollunit/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./mousescrollunit/clone.html">No Documentation 🚧</a></td></tr>
@@ -5865,12 +5872,12 @@ to scroll.</p>
 <li><strong>y</strong> : f32</li>
 <li><strong>window</strong> : bevy_ecs::entity::Entity</li>
 </ul>
-<h2 id="description-72"><a class="header" href="#description-72">Description</a></h2>
+<h2 id="description-73"><a class="header" href="#description-73">Description</a></h2>
 <blockquote>
 <p>A mouse wheel event.</p>
 <p>This event is the translated version of the <code>WindowEvent::MouseWheel</code> from the <code>winit</code> crate.</p>
 </blockquote>
-<h2 id="functions-74"><a class="header" href="#functions-74">Functions</a></h2>
+<h2 id="functions-75"><a class="header" href="#functions-75">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./mousewheel/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./mousewheel/eq.html">No Documentation 🚧</a></td></tr>
@@ -5911,11 +5918,11 @@ to scroll.</p>
 <ol>
 <li>f64</li>
 </ol>
-<h2 id="description-73"><a class="header" href="#description-73">Description</a></h2>
+<h2 id="description-74"><a class="header" href="#description-74">Description</a></h2>
 <blockquote>
 <p>A force description of a [<code>Touch</code>] input.</p>
 </blockquote>
-<h2 id="functions-75"><a class="header" href="#functions-75">Functions</a></h2>
+<h2 id="functions-76"><a class="header" href="#functions-76">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./forcetouch/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./forcetouch/eq.html">No Documentation 🚧</a></td></tr>
@@ -5954,7 +5961,7 @@ to scroll.</p>
 <li><strong>force</strong> : core::option::Option&lt;bevy_input::touch::ForceTouch&gt;</li>
 <li><strong>id</strong> : u64</li>
 </ul>
-<h2 id="description-74"><a class="header" href="#description-74">Description</a></h2>
+<h2 id="description-75"><a class="header" href="#description-75">Description</a></h2>
 <blockquote>
 <p>A touch input event.</p>
 <h2 id="logic-1"><a class="header" href="#logic-1">Logic</a></h2>
@@ -5973,7 +5980,7 @@ device against their face.</p>
 <p>This event is the translated version of the <code>WindowEvent::Touch</code> from the <code>winit</code> crate.
 It is available to the end user and can be used for game logic.</p>
 </blockquote>
-<h2 id="functions-76"><a class="header" href="#functions-76">Functions</a></h2>
+<h2 id="functions-77"><a class="header" href="#functions-77">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./touchinput/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./touchinput/eq.html">No Documentation 🚧</a></td></tr>
@@ -6008,7 +6015,7 @@ It is available to the end user and can be used for game logic.</p>
 <h3 id="moved"><a class="header" href="#moved">Moved</a></h3>
 <h3 id="ended"><a class="header" href="#ended">Ended</a></h3>
 <h3 id="canceled"><a class="header" href="#canceled">Canceled</a></h3>
-<h2 id="description-75"><a class="header" href="#description-75">Description</a></h2>
+<h2 id="description-76"><a class="header" href="#description-76">Description</a></h2>
 <blockquote>
 <p>A phase of a [<code>TouchInput</code>].</p>
 <h2 id="usage-9"><a class="header" href="#usage-9">Usage</a></h2>
@@ -6017,7 +6024,7 @@ This includes a phase that indicates that a touch input has started or ended,
 or that a finger has moved. There is also a canceled phase that indicates that
 the system canceled the tracking of the finger.</p>
 </blockquote>
-<h2 id="functions-77"><a class="header" href="#functions-77">Functions</a></h2>
+<h2 id="functions-78"><a class="header" href="#functions-78">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./touchphase/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./touchphase/clone.html">No Documentation 🚧</a></td></tr>
@@ -6066,23 +6073,23 @@ the system canceled the tracking of the finger.</p>
 <li><strong>matrix3</strong> : glam::Mat3</li>
 <li><strong>translation</strong> : glam::Vec3</li>
 </ul>
-<h2 id="description-76"><a class="header" href="#description-76">Description</a></h2>
+<h2 id="description-77"><a class="header" href="#description-77">Description</a></h2>
 <blockquote>
 <p>Reduced-size version of <code>glam::Affine3A</code> for use when storage has
 significant performance impact. Convert to <code>glam::Affine3A</code> to do
 non-trivial calculations.</p>
 </blockquote>
-<h2 id="functions-78"><a class="header" href="#functions-78">Functions</a></h2>
+<h2 id="functions-79"><a class="header" href="#functions-79">Functions</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="aspectratio"><a class="header" href="#aspectratio">AspectRatio</a></h1>
 <h3 id="aspectratio-1"><a class="header" href="#aspectratio-1">AspectRatio</a></h3>
 <ol>
 <li>f32</li>
 </ol>
-<h2 id="description-77"><a class="header" href="#description-77">Description</a></h2>
+<h2 id="description-78"><a class="header" href="#description-78">Description</a></h2>
 <blockquote>
 <p>An <code>AspectRatio</code> is the ratio of width to height.</p>
 </blockquote>
-<h2 id="functions-79"><a class="header" href="#functions-79">Functions</a></h2>
+<h2 id="functions-80"><a class="header" href="#functions-80">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./aspectratio/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./aspectratio/eq.html">No Documentation 🚧</a></td></tr>
@@ -6183,11 +6190,11 @@ non-trivial calculations.</p>
 <li><strong>min</strong> : glam::Vec2</li>
 <li><strong>max</strong> : glam::Vec2</li>
 </ul>
-<h2 id="description-78"><a class="header" href="#description-78">Description</a></h2>
+<h2 id="description-79"><a class="header" href="#description-79">Description</a></h2>
 <blockquote>
 <p>A 2D axis-aligned bounding box, or bounding rectangle</p>
 </blockquote>
-<h2 id="functions-80"><a class="header" href="#functions-80">Functions</a></h2>
+<h2 id="functions-81"><a class="header" href="#functions-81">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>bounding_circle(_self)</code></td><td><a href="generated_docs/types/./aabb2d/bounding_circle.html"> Computes the smallest [`BoundingCircle`] containing this [`Aabb2d`].</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./aabb2d/clone.html">No Documentation 🚧</a></td></tr>
@@ -6253,11 +6260,11 @@ Otherwise, it will be inside the AABB and returned as is.</p>
 <li><strong>center</strong> : glam::Vec2</li>
 <li><strong>circle</strong> : bevy_math::primitives::dim2::Circle</li>
 </ul>
-<h2 id="description-79"><a class="header" href="#description-79">Description</a></h2>
+<h2 id="description-80"><a class="header" href="#description-80">Description</a></h2>
 <blockquote>
 <p>A bounding circle</p>
 </blockquote>
-<h2 id="functions-81"><a class="header" href="#functions-81">Functions</a></h2>
+<h2 id="functions-82"><a class="header" href="#functions-82">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>aabb_2d(_self)</code></td><td><a href="generated_docs/types/./boundingcircle/aabb_2d.html"> Computes the smallest [`Aabb2d`] containing this [`BoundingCircle`].</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./boundingcircle/clone.html">No Documentation 🚧</a></td></tr>
@@ -6336,11 +6343,11 @@ Otherwise, it will be inside the circle and returned as is.</p>
 <li><strong>min</strong> : glam::Vec3A</li>
 <li><strong>max</strong> : glam::Vec3A</li>
 </ul>
-<h2 id="description-80"><a class="header" href="#description-80">Description</a></h2>
+<h2 id="description-81"><a class="header" href="#description-81">Description</a></h2>
 <blockquote>
 <p>A 3D axis-aligned bounding box</p>
 </blockquote>
-<h2 id="functions-82"><a class="header" href="#functions-82">Functions</a></h2>
+<h2 id="functions-83"><a class="header" href="#functions-83">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>bounding_sphere(_self)</code></td><td><a href="generated_docs/types/./aabb3d/bounding_sphere.html"> Computes the smallest [`BoundingSphere`] containing this [`Aabb3d`].</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./aabb3d/clone.html">No Documentation 🚧</a></td></tr>
@@ -6375,11 +6382,11 @@ Otherwise, it will be inside the circle and returned as is.</p>
 <li><strong>center</strong> : glam::Vec3A</li>
 <li><strong>sphere</strong> : bevy_math::primitives::dim3::Sphere</li>
 </ul>
-<h2 id="description-81"><a class="header" href="#description-81">Description</a></h2>
+<h2 id="description-82"><a class="header" href="#description-82">Description</a></h2>
 <blockquote>
 <p>A bounding sphere</p>
 </blockquote>
-<h2 id="functions-83"><a class="header" href="#functions-83">Functions</a></h2>
+<h2 id="functions-84"><a class="header" href="#functions-84">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>aabb_3d(_self)</code></td><td><a href="generated_docs/types/./boundingsphere/aabb_3d.html"> Computes the smallest [`Aabb3d`] containing this [`BoundingSphere`].</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./boundingsphere/clone.html">No Documentation 🚧</a></td></tr>
@@ -6427,11 +6434,11 @@ Otherwise, it will be inside the circle and returned as is.</p>
 <li><strong>ray</strong> : bevy_math::bounding::raycast2d::RayCast2d</li>
 <li><strong>aabb</strong> : bevy_math::bounding::bounded2d::Aabb2d</li>
 </ul>
-<h2 id="description-82"><a class="header" href="#description-82">Description</a></h2>
+<h2 id="description-83"><a class="header" href="#description-83">Description</a></h2>
 <blockquote>
 <p>An intersection test that casts an [<code>Aabb2d</code>] along a ray.</p>
 </blockquote>
-<h2 id="functions-84"><a class="header" href="#functions-84">Functions</a></h2>
+<h2 id="functions-85"><a class="header" href="#functions-85">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>aabb_collision_at(_self, aabb)</code></td><td><a href="generated_docs/types/./aabbcast2d/aabb_collision_at.html"> Get the distance at which the [`Aabb2d`]s collide, if at all.</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./aabbcast2d/clone.html">No Documentation 🚧</a></td></tr>
@@ -6498,11 +6505,11 @@ Otherwise, it will be inside the circle and returned as is.</p>
 <li><strong>ray</strong> : bevy_math::bounding::raycast2d::RayCast2d</li>
 <li><strong>circle</strong> : bevy_math::bounding::bounded2d::BoundingCircle</li>
 </ul>
-<h2 id="description-83"><a class="header" href="#description-83">Description</a></h2>
+<h2 id="description-84"><a class="header" href="#description-84">Description</a></h2>
 <blockquote>
 <p>An intersection test that casts a [<code>BoundingCircle</code>] along a ray.</p>
 </blockquote>
-<h2 id="functions-85"><a class="header" href="#functions-85">Functions</a></h2>
+<h2 id="functions-86"><a class="header" href="#functions-86">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>circle_collision_at(_self, circle)</code></td><td><a href="generated_docs/types/./boundingcirclecast/circle_collision_at.html"> Get the distance at which the [`BoundingCircle`]s collide, if at all.</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./boundingcirclecast/clone.html">No Documentation 🚧</a></td></tr>
@@ -6570,11 +6577,11 @@ Otherwise, it will be inside the circle and returned as is.</p>
 <li><strong>max</strong> : f32</li>
 <li><strong>direction_recip</strong> : glam::Vec2</li>
 </ul>
-<h2 id="description-84"><a class="header" href="#description-84">Description</a></h2>
+<h2 id="description-85"><a class="header" href="#description-85">Description</a></h2>
 <blockquote>
 <p>A raycast intersection test for 2D bounding volumes</p>
 </blockquote>
-<h2 id="functions-86"><a class="header" href="#functions-86">Functions</a></h2>
+<h2 id="functions-87"><a class="header" href="#functions-87">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>aabb_intersection_at(_self, aabb)</code></td><td><a href="generated_docs/types/./raycast2d/aabb_intersection_at.html"> Get the distance of an intersection with an [`Aabb2d`], if any.</a></td></tr>
 <tr><td><code>circle_intersection_at(_self, circle)</code></td><td><a href="generated_docs/types/./raycast2d/circle_intersection_at.html"> Get the distance of an intersection with a [`BoundingCircle`], if any.</a></td></tr>
@@ -6666,11 +6673,11 @@ Otherwise, it will be inside the circle and returned as is.</p>
 <li><strong>ray</strong> : bevy_math::bounding::raycast3d::RayCast3d</li>
 <li><strong>aabb</strong> : bevy_math::bounding::bounded3d::Aabb3d</li>
 </ul>
-<h2 id="description-85"><a class="header" href="#description-85">Description</a></h2>
+<h2 id="description-86"><a class="header" href="#description-86">Description</a></h2>
 <blockquote>
 <p>An intersection test that casts an [<code>Aabb3d</code>] along a ray.</p>
 </blockquote>
-<h2 id="functions-87"><a class="header" href="#functions-87">Functions</a></h2>
+<h2 id="functions-88"><a class="header" href="#functions-88">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>aabb_collision_at(_self, aabb)</code></td><td><a href="generated_docs/types/./aabbcast3d/aabb_collision_at.html"> Get the distance at which the [`Aabb3d`]s collide, if at all.</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./aabbcast3d/clone.html">No Documentation 🚧</a></td></tr>
@@ -6721,11 +6728,11 @@ Otherwise, it will be inside the circle and returned as is.</p>
 <li><strong>ray</strong> : bevy_math::bounding::raycast3d::RayCast3d</li>
 <li><strong>sphere</strong> : bevy_math::bounding::bounded3d::BoundingSphere</li>
 </ul>
-<h2 id="description-86"><a class="header" href="#description-86">Description</a></h2>
+<h2 id="description-87"><a class="header" href="#description-87">Description</a></h2>
 <blockquote>
 <p>An intersection test that casts a [<code>BoundingSphere</code>] along a ray.</p>
 </blockquote>
-<h2 id="functions-88"><a class="header" href="#functions-88">Functions</a></h2>
+<h2 id="functions-89"><a class="header" href="#functions-89">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./boundingspherecast/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>from_ray(sphere, ray, max)</code></td><td><a href="generated_docs/types/./boundingspherecast/from_ray.html"> Construct a [`BoundingSphereCast`] from a [`BoundingSphere`], [`Ray3d`], and max distance.</a></td></tr>
@@ -6778,11 +6785,11 @@ Otherwise, it will be inside the circle and returned as is.</p>
 <li><strong>max</strong> : f32</li>
 <li><strong>direction_recip</strong> : glam::Vec3A</li>
 </ul>
-<h2 id="description-87"><a class="header" href="#description-87">Description</a></h2>
+<h2 id="description-88"><a class="header" href="#description-88">Description</a></h2>
 <blockquote>
 <p>A raycast intersection test for 3D bounding volumes</p>
 </blockquote>
-<h2 id="functions-89"><a class="header" href="#functions-89">Functions</a></h2>
+<h2 id="functions-90"><a class="header" href="#functions-90">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>aabb_intersection_at(_self, aabb)</code></td><td><a href="generated_docs/types/./raycast3d/aabb_intersection_at.html"> Get the distance of an intersection with an [`Aabb3d`], if any.</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./raycast3d/clone.html">No Documentation 🚧</a></td></tr>
@@ -6862,7 +6869,7 @@ Otherwise, it will be inside the circle and returned as is.</p>
 <h3 id="southwest"><a class="header" href="#southwest">SouthWest</a></h3>
 <h3 id="west-1"><a class="header" href="#west-1">West</a></h3>
 <h3 id="northwest"><a class="header" href="#northwest">NorthWest</a></h3>
-<h2 id="description-88"><a class="header" href="#description-88">Description</a></h2>
+<h2 id="description-89"><a class="header" href="#description-89">Description</a></h2>
 <blockquote>
 <p>A compass enum with 8 directions.</p>
 <pre><code class="language-text">         N (North)
@@ -6876,7 +6883,7 @@ W (West) ┼─────► E (East)
          S (South)
 </code></pre>
 </blockquote>
-<h2 id="functions-90"><a class="header" href="#functions-90">Functions</a></h2>
+<h2 id="functions-91"><a class="header" href="#functions-91">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./compassoctant/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./compassoctant/clone.html">No Documentation 🚧</a></td></tr>
@@ -6924,7 +6931,7 @@ W (West) ┼─────► E (East)
 <h3 id="east-2"><a class="header" href="#east-2">East</a></h3>
 <h3 id="south-2"><a class="header" href="#south-2">South</a></h3>
 <h3 id="west-2"><a class="header" href="#west-2">West</a></h3>
-<h2 id="description-89"><a class="header" href="#description-89">Description</a></h2>
+<h2 id="description-90"><a class="header" href="#description-90">Description</a></h2>
 <blockquote>
 <p>A compass enum with 4 directions.</p>
 <pre><code class="language-text">         N (North)
@@ -6938,7 +6945,7 @@ W (West) ┼─────► E (East)
          S (South)
 </code></pre>
 </blockquote>
-<h2 id="functions-91"><a class="header" href="#functions-91">Functions</a></h2>
+<h2 id="functions-92"><a class="header" href="#functions-92">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>assert_receiver_is_total_eq(_self)</code></td><td><a href="generated_docs/types/./compassquadrant/assert_receiver_is_total_eq.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./compassquadrant/clone.html">No Documentation 🚧</a></td></tr>
@@ -7021,11 +7028,11 @@ W (West) ┼─────► E (East)
 <ol>
 <li>f32</li>
 </ol>
-<h2 id="description-90"><a class="header" href="#description-90">Description</a></h2>
+<h2 id="description-91"><a class="header" href="#description-91">Description</a></h2>
 <blockquote>
 <p>Curve functions over the <a href="generated_docs/types/%60Interval::UNIT%60">unit interval</a>, commonly used for easing transitions.</p>
 </blockquote>
-<h2 id="functions-92"><a class="header" href="#functions-92">Functions</a></h2>
+<h2 id="functions-93"><a class="header" href="#functions-93">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./easefunction/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./easefunction/eq.html">No Documentation 🚧</a></td></tr>
@@ -7061,13 +7068,13 @@ W (West) ┼─────► E (East)
 <li><strong>start</strong> : f32</li>
 <li><strong>end</strong> : f32</li>
 </ul>
-<h2 id="description-91"><a class="header" href="#description-91">Description</a></h2>
+<h2 id="description-92"><a class="header" href="#description-92">Description</a></h2>
 <blockquote>
 <p>A nonempty closed interval, possibly unbounded in either direction.</p>
 <p>In other words, the interval may stretch all the way to positive or negative infinity, but it
 will always have some nonempty interior.</p>
 </blockquote>
-<h2 id="functions-93"><a class="header" href="#functions-93">Functions</a></h2>
+<h2 id="functions-94"><a class="header" href="#functions-94">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clamp(_self, value)</code></td><td><a href="generated_docs/types/./interval/clamp.html"> Clamp the given `value` to lie within this interval.</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./interval/clone.html">No Documentation 🚧</a></td></tr>
@@ -7226,11 +7233,11 @@ Equivalently, an interval is bounded if its length is finite.</p>
 <ol>
 <li>glam::Vec2</li>
 </ol>
-<h2 id="description-92"><a class="header" href="#description-92">Description</a></h2>
+<h2 id="description-93"><a class="header" href="#description-93">Description</a></h2>
 <blockquote>
 <p>A normalized vector pointing in a direction in 2D space</p>
 </blockquote>
-<h2 id="functions-94"><a class="header" href="#functions-94">Functions</a></h2>
+<h2 id="functions-95"><a class="header" href="#functions-95">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>as_vec2(_self)</code></td><td><a href="generated_docs/types/./dir2/as_vec2.html"> Returns the inner [`Vec2`]</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./dir2/clone.html">No Documentation 🚧</a></td></tr>
@@ -7466,11 +7473,11 @@ assert_relative_eq!(result2, Dir2::from_xy(0.5_f32.sqrt(), 0.5_f32.sqrt()).unwra
 <ol>
 <li>glam::Vec3</li>
 </ol>
-<h2 id="description-93"><a class="header" href="#description-93">Description</a></h2>
+<h2 id="description-94"><a class="header" href="#description-94">Description</a></h2>
 <blockquote>
 <p>A normalized vector pointing in a direction in 3D space</p>
 </blockquote>
-<h2 id="functions-95"><a class="header" href="#functions-95">Functions</a></h2>
+<h2 id="functions-96"><a class="header" href="#functions-96">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>as_vec3(_self)</code></td><td><a href="generated_docs/types/./dir3/as_vec3.html"> Returns the inner [`Vec3`]</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./dir3/clone.html">No Documentation 🚧</a></td></tr>
@@ -7650,13 +7657,13 @@ assert_relative_eq!(result2, Dir3::from_xyz(0.5_f32.sqrt(), 0.5_f32.sqrt(), 0.0)
 <ol>
 <li>glam::Vec3A</li>
 </ol>
-<h2 id="description-94"><a class="header" href="#description-94">Description</a></h2>
+<h2 id="description-95"><a class="header" href="#description-95">Description</a></h2>
 <blockquote>
 <p>A normalized SIMD vector pointing in a direction in 3D space.</p>
 <p>This type stores a 16 byte aligned [<code>Vec3A</code>].
 This may or may not be faster than [<code>Dir3</code>]: make sure to benchmark!</p>
 </blockquote>
-<h2 id="functions-96"><a class="header" href="#functions-96">Functions</a></h2>
+<h2 id="functions-97"><a class="header" href="#functions-97">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>as_vec3a(_self)</code></td><td><a href="generated_docs/types/./dir3a/as_vec3a.html"> Returns the inner [`Vec3A`]</a></td></tr>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./dir3a/clone.html">No Documentation 🚧</a></td></tr>
@@ -7816,7 +7823,7 @@ assert_relative_eq!(result2, Dir3A::from_xyz(0.5_f32.sqrt(), 0.5_f32.sqrt(), 0.0
 <ol>
 <li>f32</li>
 </ol>
-<h2 id="description-95"><a class="header" href="#description-95">Description</a></h2>
+<h2 id="description-96"><a class="header" href="#description-96">Description</a></h2>
 <blockquote>
 <p>A wrapper for floats that implements [<code>Ord</code>], [<code>Eq</code>], and [<code>Hash</code>] traits.</p>
 <p>This is a work around for the fact that the IEEE 754-2008 standard,
@@ -7826,7 +7833,7 @@ and <code>NaN</code> is not considered equal to any other <code>NaN</code>.</p>
 <p>Wrapping a float with <code>FloatOrd</code> breaks conformance with the standard
 by sorting <code>NaN</code> as less than all other numbers and equal to any other <code>NaN</code>.</p>
 </blockquote>
-<h2 id="functions-97"><a class="header" href="#functions-97">Functions</a></h2>
+<h2 id="functions-98"><a class="header" href="#functions-98">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./floatord/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./floatord/eq.html">No Documentation 🚧</a></td></tr>
@@ -7931,7 +7938,7 @@ by sorting <code>NaN</code> as less than all other numbers and equal to any othe
 <li><strong>rotation</strong> : bevy_math::rotation2d::Rot2</li>
 <li><strong>translation</strong> : glam::Vec2</li>
 </ul>
-<h2 id="description-96"><a class="header" href="#description-96">Description</a></h2>
+<h2 id="description-97"><a class="header" href="#description-97">Description</a></h2>
 <blockquote>
 <p>An isometry in two dimensions, representing a rotation followed by a translation.
 This can often be useful for expressing relative positions and transformations from one position to another.</p>
@@ -7986,7 +7993,7 @@ let relative_iso = circle_iso.inverse() * rectangle_iso;
 let relative_iso = circle_iso.inverse_mul(rectangle_iso);
 </code></pre>
 </blockquote>
-<h2 id="functions-98"><a class="header" href="#functions-98">Functions</a></h2>
+<h2 id="functions-99"><a class="header" href="#functions-99">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./isometry2d/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./isometry2d/eq.html">No Documentation 🚧</a></td></tr>
@@ -8181,7 +8188,7 @@ the inverse once and use that for each transformation.</p>
 <li><strong>rotation</strong> : glam::Quat</li>
 <li><strong>translation</strong> : glam::Vec3A</li>
 </ul>
-<h2 id="description-97"><a class="header" href="#description-97">Description</a></h2>
+<h2 id="description-98"><a class="header" href="#description-98">Description</a></h2>
 <blockquote>
 <p>An isometry in three dimensions, representing a rotation followed by a translation.
 This can often be useful for expressing relative positions and transformations from one position to another.</p>
@@ -8241,7 +8248,7 @@ let relative_iso = sphere_iso.inverse() * cuboid_iso;
 let relative_iso = sphere_iso.inverse_mul(cuboid_iso);
 </code></pre>
 </blockquote>
-<h2 id="functions-99"><a class="header" href="#functions-99">Functions</a></h2>
+<h2 id="functions-100"><a class="header" href="#functions-100">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./isometry3d/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./isometry3d/eq.html">No Documentation 🚧</a></td></tr>
@@ -8392,11 +8399,11 @@ the inverse once and use that for each transformation.</p>
 <li><strong>inner_circle</strong> : bevy_math::primitives::dim2::Circle</li>
 <li><strong>outer_circle</strong> : bevy_math::primitives::dim2::Circle</li>
 </ul>
-<h2 id="description-98"><a class="header" href="#description-98">Description</a></h2>
+<h2 id="description-99"><a class="header" href="#description-99">Description</a></h2>
 <blockquote>
 <p>A primitive shape formed by the region between two circles, also known as a ring.</p>
 </blockquote>
-<h2 id="functions-100"><a class="header" href="#functions-100">Functions</a></h2>
+<h2 id="functions-101"><a class="header" href="#functions-101">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./annulus/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>closest_point(_self, point)</code></td><td>[ Finds the point on the annulus that is closest to the given `point`:</td></tr>
@@ -8492,7 +8499,7 @@ the inverse once and use that for each transformation.</p>
 <li><strong>radius</strong> : f32</li>
 <li><strong>half_angle</strong> : f32</li>
 </ul>
-<h2 id="description-99"><a class="header" href="#description-99">Description</a></h2>
+<h2 id="description-100"><a class="header" href="#description-100">Description</a></h2>
 <blockquote>
 <p>A primitive representing an arc between two points on a circle.</p>
 <p>An arc has no area.
@@ -8506,7 +8513,7 @@ means that the origin may not be within the <code>Arc2d</code>'s convex hull.</p
 <p><strong>Warning:</strong> Arcs with negative angle or radius, or with angle greater than an entire circle, are not officially supported.
 It is recommended to normalize arcs to have an angle in [0, 2π].</p>
 </blockquote>
-<h2 id="functions-101"><a class="header" href="#functions-101">Functions</a></h2>
+<h2 id="functions-102"><a class="header" href="#functions-102">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>angle(_self)</code></td><td><a href="generated_docs/types/./arc2d/angle.html"> Get the angle of the arc</a></td></tr>
 <tr><td><code>apothem(_self)</code></td><td>[ Get the length of the apothem of this arc, that is,</td></tr>
@@ -8768,12 +8775,12 @@ The sagitta is also the sum of the <a href="generated_docs/types/arc2d/Self::rad
 <li><strong>radius</strong> : f32</li>
 <li><strong>half_length</strong> : f32</li>
 </ul>
-<h2 id="description-100"><a class="header" href="#description-100">Description</a></h2>
+<h2 id="description-101"><a class="header" href="#description-101">Description</a></h2>
 <blockquote>
 <p>A 2D capsule primitive, also known as a stadium or pill shape.</p>
 <p>A two-dimensional capsule is defined as a neighborhood of points at a distance (radius) from a line</p>
 </blockquote>
-<h2 id="functions-102"><a class="header" href="#functions-102">Functions</a></h2>
+<h2 id="functions-103"><a class="header" href="#functions-103">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./capsule2d/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./capsule2d/eq.html">No Documentation 🚧</a></td></tr>
@@ -8835,11 +8842,11 @@ The sagitta is also the sum of the <a href="generated_docs/types/arc2d/Self::rad
 <ul>
 <li><strong>radius</strong> : f32</li>
 </ul>
-<h2 id="description-101"><a class="header" href="#description-101">Description</a></h2>
+<h2 id="description-102"><a class="header" href="#description-102">Description</a></h2>
 <blockquote>
 <p>A circle primitive, representing the set of points some distance from the origin</p>
 </blockquote>
-<h2 id="functions-103"><a class="header" href="#functions-103">Functions</a></h2>
+<h2 id="functions-104"><a class="header" href="#functions-104">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./circle/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>closest_point(_self, point)</code></td><td>[ Finds the point on the circle that is closest to the given `point`.</td></tr>
@@ -8917,7 +8924,7 @@ Otherwise, it will be inside the circle and returned as is.</p>
 <ul>
 <li><strong>arc</strong> : bevy_math::primitives::dim2::Arc2d</li>
 </ul>
-<h2 id="description-102"><a class="header" href="#description-102">Description</a></h2>
+<h2 id="description-103"><a class="header" href="#description-103">Description</a></h2>
 <blockquote>
 <p>A primitive representing a circular sector: a pie slice of a circle.</p>
 <p>The segment is positioned so that it always includes [<code>Vec2::Y</code>] and is vertically symmetrical.
@@ -8926,7 +8933,7 @@ The sector is drawn with the center of its circle at the origin [<code>Vec2::ZER
 <p><strong>Warning:</strong> Circular sectors with negative angle or radius, or with angle greater than an entire circle, are not officially supported.
 We recommend normalizing circular sectors to have an angle in [0, 2π].</p>
 </blockquote>
-<h2 id="functions-104"><a class="header" href="#functions-104">Functions</a></h2>
+<h2 id="functions-105"><a class="header" href="#functions-105">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>angle(_self)</code></td><td><a href="generated_docs/types/./circularsector/angle.html"> Get the angle of the sector</a></td></tr>
 <tr><td><code>apothem(_self)</code></td><td>[ Get the length of the apothem of this sector</td></tr>
@@ -9146,7 +9153,7 @@ See [<code>Arc2d::sagitta</code>]</p>
 <ul>
 <li><strong>arc</strong> : bevy_math::primitives::dim2::Arc2d</li>
 </ul>
-<h2 id="description-103"><a class="header" href="#description-103">Description</a></h2>
+<h2 id="description-104"><a class="header" href="#description-104">Description</a></h2>
 <blockquote>
 <p>A primitive representing a circular segment:
 the area enclosed by the arc of a circle and its chord (the line between its endpoints).</p>
@@ -9157,7 +9164,7 @@ When positioning a segment, the <a href="generated_docs/types/Self::apothem"><co
 <p><strong>Warning:</strong> Circular segments with negative angle or radius, or with angle greater than an entire circle, are not officially supported.
 We recommend normalizing circular segments to have an angle in [0, 2π].</p>
 </blockquote>
-<h2 id="functions-105"><a class="header" href="#functions-105">Functions</a></h2>
+<h2 id="functions-106"><a class="header" href="#functions-106">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>angle(_self)</code></td><td><a href="generated_docs/types/./circularsegment/angle.html"> Get the angle of the segment</a></td></tr>
 <tr><td><code>apothem(_self)</code></td><td>[ Get the length of the apothem of this segment,</td></tr>
@@ -9372,11 +9379,11 @@ See [<code>Arc2d::sagitta</code>]</p>
 <ul>
 <li><strong>half_size</strong> : glam::Vec2</li>
 </ul>
-<h2 id="description-104"><a class="header" href="#description-104">Description</a></h2>
+<h2 id="description-105"><a class="header" href="#description-105">Description</a></h2>
 <blockquote>
 <p>An ellipse primitive, which is like a circle, but the width and height can be different</p>
 </blockquote>
-<h2 id="functions-106"><a class="header" href="#functions-106">Functions</a></h2>
+<h2 id="functions-107"><a class="header" href="#functions-107">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./ellipse/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eccentricity(_self)</code></td><td>[ Returns the [eccentricity](https://en.wikipedia.org/wiki/Eccentricity_(mathematics)) of the ellipse.</td></tr>
@@ -9499,12 +9506,12 @@ This corresponds to the two perpendicular radii defining the ellipse.</p>
 <ul>
 <li><strong>direction</strong> : bevy_math::direction::Dir2</li>
 </ul>
-<h2 id="description-105"><a class="header" href="#description-105">Description</a></h2>
+<h2 id="description-106"><a class="header" href="#description-106">Description</a></h2>
 <blockquote>
 <p>An infinite line going through the origin along a direction in 2D space.</p>
 <p>For a finite line: [<code>Segment2d</code>]</p>
 </blockquote>
-<h2 id="functions-107"><a class="header" href="#functions-107">Functions</a></h2>
+<h2 id="functions-108"><a class="header" href="#functions-108">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./line2d/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./line2d/eq.html">No Documentation 🚧</a></td></tr>
@@ -9539,12 +9546,12 @@ This corresponds to the two perpendicular radii defining the ellipse.</p>
 <ul>
 <li><strong>normal</strong> : bevy_math::direction::Dir2</li>
 </ul>
-<h2 id="description-106"><a class="header" href="#description-106">Description</a></h2>
+<h2 id="description-107"><a class="header" href="#description-107">Description</a></h2>
 <blockquote>
 <p>An unbounded plane in 2D space. It forms a separating surface through the origin,
 stretching infinitely far</p>
 </blockquote>
-<h2 id="functions-108"><a class="header" href="#functions-108">Functions</a></h2>
+<h2 id="functions-109"><a class="header" href="#functions-109">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./plane2d/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./plane2d/eq.html">No Documentation 🚧</a></td></tr>
@@ -9596,11 +9603,11 @@ stretching infinitely far</p>
 <ul>
 <li><strong>half_size</strong> : glam::Vec2</li>
 </ul>
-<h2 id="description-107"><a class="header" href="#description-107">Description</a></h2>
+<h2 id="description-108"><a class="header" href="#description-108">Description</a></h2>
 <blockquote>
 <p>A rectangle primitive, which is like a square, except that the width and height can be different</p>
 </blockquote>
-<h2 id="functions-109"><a class="header" href="#functions-109">Functions</a></h2>
+<h2 id="functions-110"><a class="header" href="#functions-110">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./rectangle/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>closest_point(_self, point)</code></td><td>[ Finds the point on the rectangle that is closest to the given `point`.</td></tr>
@@ -9722,11 +9729,11 @@ The resulting <code>Rectangle</code> will be the same size in every direction.</
 <li><strong>circumcircle</strong> : bevy_math::primitives::dim2::Circle</li>
 <li><strong>sides</strong> : u32</li>
 </ul>
-<h2 id="description-108"><a class="header" href="#description-108">Description</a></h2>
+<h2 id="description-109"><a class="header" href="#description-109">Description</a></h2>
 <blockquote>
 <p>A polygon centered on the origin where all vertices lie on a circle, equally far apart.</p>
 </blockquote>
-<h2 id="functions-110"><a class="header" href="#functions-110">Functions</a></h2>
+<h2 id="functions-111"><a class="header" href="#functions-111">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>circumradius(_self)</code></td><td>[ Get the radius of the circumcircle on which all vertices</td></tr>
 <tr><td>of the regular polygon lie](./regularpolygon/circumradius.md)</td><td></td></tr>
@@ -9889,13 +9896,13 @@ from the radius of the circumcircle and a number of sides</p>
 <ul>
 <li><strong>half_diagonals</strong> : glam::Vec2</li>
 </ul>
-<h2 id="description-109"><a class="header" href="#description-109">Description</a></h2>
+<h2 id="description-110"><a class="header" href="#description-110">Description</a></h2>
 <blockquote>
 <p>A rhombus primitive, also known as a diamond shape.
 A four sided polygon, centered on the origin, where opposite sides are parallel but without
 requiring right angles.</p>
 </blockquote>
-<h2 id="functions-111"><a class="header" href="#functions-111">Functions</a></h2>
+<h2 id="functions-112"><a class="header" href="#functions-112">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>circumradius(_self)</code></td><td>[ Get the radius of the circumcircle on which all vertices</td></tr>
 <tr><td>of the rhombus lie](./rhombus/circumradius.md)</td><td></td></tr>
@@ -10031,11 +10038,11 @@ be drawn within the rhombus</p>
 <li><strong>direction</strong> : bevy_math::direction::Dir2</li>
 <li><strong>half_length</strong> : f32</li>
 </ul>
-<h2 id="description-110"><a class="header" href="#description-110">Description</a></h2>
+<h2 id="description-111"><a class="header" href="#description-111">Description</a></h2>
 <blockquote>
 <p>A segment of a line going through the origin along a direction in 2D space.</p>
 </blockquote>
-<h2 id="functions-112"><a class="header" href="#functions-112">Functions</a></h2>
+<h2 id="functions-113"><a class="header" href="#functions-113">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./segment2d/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./segment2d/eq.html">No Documentation 🚧</a></td></tr>
@@ -10110,11 +10117,11 @@ be drawn within the rhombus</p>
 <ul>
 <li><strong>vertices</strong> : [glam::Vec2; 3]</li>
 </ul>
-<h2 id="description-111"><a class="header" href="#description-111">Description</a></h2>
+<h2 id="description-112"><a class="header" href="#description-112">Description</a></h2>
 <blockquote>
 <p>A triangle in 2D space</p>
 </blockquote>
-<h2 id="functions-113"><a class="header" href="#functions-113">Functions</a></h2>
+<h2 id="functions-114"><a class="header" href="#functions-114">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./triangle2d/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./triangle2d/eq.html">No Documentation 🚧</a></td></tr>
@@ -10235,12 +10242,12 @@ by swapping the first and last vertices.</p>
 <li><strong>radius</strong> : f32</li>
 <li><strong>half_length</strong> : f32</li>
 </ul>
-<h2 id="description-112"><a class="header" href="#description-112">Description</a></h2>
+<h2 id="description-113"><a class="header" href="#description-113">Description</a></h2>
 <blockquote>
 <p>A 3D capsule primitive centered on the origin
 A three-dimensional capsule is defined as a surface at a distance (radius) from a line</p>
 </blockquote>
-<h2 id="functions-114"><a class="header" href="#functions-114">Functions</a></h2>
+<h2 id="functions-115"><a class="header" href="#functions-115">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./capsule3d/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./capsule3d/eq.html">No Documentation 🚧</a></td></tr>
@@ -10305,12 +10312,12 @@ of the capsule as a [<code>Cylinder</code>]</p>
 <li><strong>radius</strong> : f32</li>
 <li><strong>height</strong> : f32</li>
 </ul>
-<h2 id="description-113"><a class="header" href="#description-113">Description</a></h2>
+<h2 id="description-114"><a class="header" href="#description-114">Description</a></h2>
 <blockquote>
 <p>A cone primitive centered on the midpoint between the tip of the cone and the center of its base.</p>
 <p>The cone is oriented with its tip pointing towards the Y axis.</p>
 </blockquote>
-<h2 id="functions-115"><a class="header" href="#functions-115">Functions</a></h2>
+<h2 id="functions-116"><a class="header" href="#functions-116">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>base(_self)</code></td><td><a href="generated_docs/types/./cone/base.html"> Get the base of the cone as a [`Circle`]</a></td></tr>
 <tr><td><code>base_area(_self)</code></td><td><a href="generated_docs/types/./cone/base_area.html"> Get the surface area of the base of the cone</a></td></tr>
@@ -10417,13 +10424,13 @@ connecting a point on the base to the apex</p>
 <li><strong>radius_bottom</strong> : f32</li>
 <li><strong>height</strong> : f32</li>
 </ul>
-<h2 id="description-114"><a class="header" href="#description-114">Description</a></h2>
+<h2 id="description-115"><a class="header" href="#description-115">Description</a></h2>
 <blockquote>
 <p>A conical frustum primitive.
 A conical frustum can be created
 by slicing off a section of a cone.</p>
 </blockquote>
-<h2 id="functions-116"><a class="header" href="#functions-116">Functions</a></h2>
+<h2 id="functions-117"><a class="header" href="#functions-117">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./conicalfrustum/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./conicalfrustum/eq.html">No Documentation 🚧</a></td></tr>
@@ -10458,12 +10465,12 @@ by slicing off a section of a cone.</p>
 <ul>
 <li><strong>half_size</strong> : glam::Vec3</li>
 </ul>
-<h2 id="description-115"><a class="header" href="#description-115">Description</a></h2>
+<h2 id="description-116"><a class="header" href="#description-116">Description</a></h2>
 <blockquote>
 <p>A cuboid primitive, which is like a cube, except that the x, y, and z dimensions are not
 required to be the same.</p>
 </blockquote>
-<h2 id="functions-117"><a class="header" href="#functions-117">Functions</a></h2>
+<h2 id="functions-118"><a class="header" href="#functions-118">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./cuboid/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>closest_point(_self, point)</code></td><td>[ Finds the point on the cuboid that is closest to the given `point`.</td></tr>
@@ -10586,11 +10593,11 @@ The resulting <code>Cuboid</code> will be the same size in every direction.</p>
 <li><strong>radius</strong> : f32</li>
 <li><strong>half_height</strong> : f32</li>
 </ul>
-<h2 id="description-116"><a class="header" href="#description-116">Description</a></h2>
+<h2 id="description-117"><a class="header" href="#description-117">Description</a></h2>
 <blockquote>
 <p>A cylinder primitive centered on the origin</p>
 </blockquote>
-<h2 id="functions-118"><a class="header" href="#functions-118">Functions</a></h2>
+<h2 id="functions-119"><a class="header" href="#functions-119">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>base(_self)</code></td><td><a href="generated_docs/types/./cylinder/base.html"> Get the base of the cylinder as a [`Circle`]</a></td></tr>
 <tr><td><code>base_area(_self)</code></td><td><a href="generated_docs/types/./cylinder/base_area.html"> Get the surface area of one base of the cylinder</a></td></tr>
@@ -10680,12 +10687,12 @@ also known as the lateral area</p>
 <ul>
 <li><strong>normal</strong> : bevy_math::direction::Dir3</li>
 </ul>
-<h2 id="description-117"><a class="header" href="#description-117">Description</a></h2>
+<h2 id="description-118"><a class="header" href="#description-118">Description</a></h2>
 <blockquote>
 <p>An unbounded plane in 3D space. It forms a separating surface through the origin,
 stretching infinitely far</p>
 </blockquote>
-<h2 id="functions-119"><a class="header" href="#functions-119">Functions</a></h2>
+<h2 id="functions-120"><a class="header" href="#functions-120">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./infiniteplane3d/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./infiniteplane3d/eq.html">No Documentation 🚧</a></td></tr>
@@ -10796,12 +10803,12 @@ See [<code>isometries_xy</code>] for example usescases.
 <ul>
 <li><strong>direction</strong> : bevy_math::direction::Dir3</li>
 </ul>
-<h2 id="description-118"><a class="header" href="#description-118">Description</a></h2>
+<h2 id="description-119"><a class="header" href="#description-119">Description</a></h2>
 <blockquote>
 <p>An infinite line going through the origin along a direction in 3D space.</p>
 <p>For a finite line: [<code>Segment3d</code>]</p>
 </blockquote>
-<h2 id="functions-120"><a class="header" href="#functions-120">Functions</a></h2>
+<h2 id="functions-121"><a class="header" href="#functions-121">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./line3d/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./line3d/eq.html">No Documentation 🚧</a></td></tr>
@@ -10837,11 +10844,11 @@ See [<code>isometries_xy</code>] for example usescases.
 <li><strong>normal</strong> : bevy_math::direction::Dir3</li>
 <li><strong>half_size</strong> : glam::Vec2</li>
 </ul>
-<h2 id="description-119"><a class="header" href="#description-119">Description</a></h2>
+<h2 id="description-120"><a class="header" href="#description-120">Description</a></h2>
 <blockquote>
 <p>A bounded plane in 3D space. It forms a surface starting from the origin with a defined height and width.</p>
 </blockquote>
-<h2 id="functions-121"><a class="header" href="#functions-121">Functions</a></h2>
+<h2 id="functions-122"><a class="header" href="#functions-122">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./plane3d/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./plane3d/eq.html">No Documentation 🚧</a></td></tr>
@@ -10895,11 +10902,11 @@ See [<code>isometries_xy</code>] for example usescases.
 <li><strong>direction</strong> : bevy_math::direction::Dir3</li>
 <li><strong>half_length</strong> : f32</li>
 </ul>
-<h2 id="description-120"><a class="header" href="#description-120">Description</a></h2>
+<h2 id="description-121"><a class="header" href="#description-121">Description</a></h2>
 <blockquote>
 <p>A segment of a line going through the origin along a direction in 3D space.</p>
 </blockquote>
-<h2 id="functions-122"><a class="header" href="#functions-122">Functions</a></h2>
+<h2 id="functions-123"><a class="header" href="#functions-123">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./segment3d/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./segment3d/eq.html">No Documentation 🚧</a></td></tr>
@@ -10974,11 +10981,11 @@ See [<code>isometries_xy</code>] for example usescases.
 <ul>
 <li><strong>radius</strong> : f32</li>
 </ul>
-<h2 id="description-121"><a class="header" href="#description-121">Description</a></h2>
+<h2 id="description-122"><a class="header" href="#description-122">Description</a></h2>
 <blockquote>
 <p>A sphere primitive, representing the set of all points some distance from the origin</p>
 </blockquote>
-<h2 id="functions-123"><a class="header" href="#functions-123">Functions</a></h2>
+<h2 id="functions-124"><a class="header" href="#functions-124">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./sphere/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>closest_point(_self, point)</code></td><td>[ Finds the point on the sphere that is closest to the given `point`.</td></tr>
@@ -11056,11 +11063,11 @@ Otherwise, it will be inside the sphere and returned as is.</p>
 <ul>
 <li><strong>vertices</strong> : [glam::Vec3; 4]</li>
 </ul>
-<h2 id="description-122"><a class="header" href="#description-122">Description</a></h2>
+<h2 id="description-123"><a class="header" href="#description-123">Description</a></h2>
 <blockquote>
 <p>A tetrahedron primitive.</p>
 </blockquote>
-<h2 id="functions-124"><a class="header" href="#functions-124">Functions</a></h2>
+<h2 id="functions-125"><a class="header" href="#functions-125">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>centroid(_self)</code></td><td>[ Get the centroid of the tetrahedron.</td></tr>
 <tr><td>This function finds the geometric center of the tetrahedron</td><td></td></tr>
@@ -11146,12 +11153,12 @@ away from the fourth vertex.</p>
 <li><strong>minor_radius</strong> : f32</li>
 <li><strong>major_radius</strong> : f32</li>
 </ul>
-<h2 id="description-123"><a class="header" href="#description-123">Description</a></h2>
+<h2 id="description-124"><a class="header" href="#description-124">Description</a></h2>
 <blockquote>
 <p>A torus primitive, often representing a ring or donut shape
 The set of points some distance from a circle centered at the origin</p>
 </blockquote>
-<h2 id="functions-125"><a class="header" href="#functions-125">Functions</a></h2>
+<h2 id="functions-126"><a class="header" href="#functions-126">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./torus/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./torus/eq.html">No Documentation 🚧</a></td></tr>
@@ -11237,11 +11244,11 @@ or <code>major_radius + minor_radius</code></p>
 <ul>
 <li><strong>vertices</strong> : [glam::Vec3; 3]</li>
 </ul>
-<h2 id="description-124"><a class="header" href="#description-124">Description</a></h2>
+<h2 id="description-125"><a class="header" href="#description-125">Description</a></h2>
 <blockquote>
 <p>A 3D triangle primitive.</p>
 </blockquote>
-<h2 id="functions-126"><a class="header" href="#functions-126">Functions</a></h2>
+<h2 id="functions-127"><a class="header" href="#functions-127">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>centroid(_self)</code></td><td>[ Get the centroid of the triangle.</td></tr>
 <tr><td>This function finds the geometric center of the triangle by aver](./triangle3d/centroid.md)</td><td></td></tr>
@@ -11389,11 +11396,11 @@ This indicates that the three vertices are collinear or nearly collinear.</p>
 <li><strong>origin</strong> : glam::Vec2</li>
 <li><strong>direction</strong> : bevy_math::direction::Dir2</li>
 </ul>
-<h2 id="description-125"><a class="header" href="#description-125">Description</a></h2>
+<h2 id="description-126"><a class="header" href="#description-126">Description</a></h2>
 <blockquote>
 <p>An infinite half-line starting at <code>origin</code> and going in <code>direction</code> in 2D space.</p>
 </blockquote>
-<h2 id="functions-127"><a class="header" href="#functions-127">Functions</a></h2>
+<h2 id="functions-128"><a class="header" href="#functions-128">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./ray2d/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./ray2d/eq.html">No Documentation 🚧</a></td></tr>
@@ -11472,11 +11479,11 @@ This indicates that the three vertices are collinear or nearly collinear.</p>
 <li><strong>origin</strong> : glam::Vec3</li>
 <li><strong>direction</strong> : bevy_math::direction::Dir3</li>
 </ul>
-<h2 id="description-126"><a class="header" href="#description-126">Description</a></h2>
+<h2 id="description-127"><a class="header" href="#description-127">Description</a></h2>
 <blockquote>
 <p>An infinite half-line starting at <code>origin</code> and going in <code>direction</code> in 3D space.</p>
 </blockquote>
-<h2 id="functions-128"><a class="header" href="#functions-128">Functions</a></h2>
+<h2 id="functions-129"><a class="header" href="#functions-129">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>clone(_self)</code></td><td><a href="generated_docs/types/./ray3d/clone.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>eq(_self, other)</code></td><td><a href="generated_docs/types/./ray3d/eq.html">No Documentation 🚧</a></td></tr>
@@ -11555,7 +11562,7 @@ This indicates that the three vertices are collinear or nearly collinear.</p>
 <li><strong>min</strong> : glam::IVec2</li>
 <li><strong>max</strong> : glam::IVec2</li>
 </ul>
-<h2 id="description-127"><a class="header" href="#description-127">Description</a></h2>
+<h2 id="description-128"><a class="header" href="#description-128">Description</a></h2>
 <blockquote>
 <p>A rectangle defined by two opposite corners.</p>
 <p>The rectangle is axis aligned, and defined by its minimum and maximum coordinates,
@@ -11565,7 +11572,7 @@ produce invalid results. It is generally recommended to use one of the construct
 methods instead, which will ensure this invariant is met, unless you already have
 the minimum and maximum corners.</p>
 </blockquote>
-<h2 id="functions-129"><a class="header" href="#functions-129">Functions</a></h2>
+<h2 id="functions-130"><a class="header" href="#functions-130">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>as_rect(_self)</code></td><td><a href="generated_docs/types/./irect/as_rect.html"> Returns self as [`Rect`] (f32)</a></td></tr>
 <tr><td><code>as_urect(_self)</code></td><td><a href="generated_docs/types/./irect/as_urect.html"> Returns self as [`URect`] (u32)</a></td></tr>
@@ -12010,7 +12017,7 @@ assert_eq!(r.width(), 5);
 <li><strong>min</strong> : glam::Vec2</li>
 <li><strong>max</strong> : glam::Vec2</li>
 </ul>
-<h2 id="description-128"><a class="header" href="#description-128">Description</a></h2>
+<h2 id="description-129"><a class="header" href="#description-129">Description</a></h2>
 <blockquote>
 <p>A rectangle defined by two opposite corners.</p>
 <p>The rectangle is axis aligned, and defined by its minimum and maximum coordinates,
@@ -12020,7 +12027,7 @@ produce invalid results. It is generally recommended to use one of the construct
 methods instead, which will ensure this invariant is met, unless you already have
 the minimum and maximum corners.</p>
 </blockquote>
-<h2 id="functions-130"><a class="header" href="#functions-130">Functions</a></h2>
+<h2 id="functions-131"><a class="header" href="#functions-131">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>as_irect(_self)</code></td><td><a href="generated_docs/types/./rect/as_irect.html"> Returns self as [`IRect`] (i32)</a></td></tr>
 <tr><td><code>as_urect(_self)</code></td><td><a href="generated_docs/types/./rect/as_urect.html"> Returns self as [`URect`] (u32)</a></td></tr>
@@ -12480,7 +12487,7 @@ assert!((r.width() - 5.).abs() &lt;= 1e-5);
 <li><strong>min</strong> : glam::UVec2</li>
 <li><strong>max</strong> : glam::UVec2</li>
 </ul>
-<h2 id="description-129"><a class="header" href="#description-129">Description</a></h2>
+<h2 id="description-130"><a class="header" href="#description-130">Description</a></h2>
 <blockquote>
 <p>A rectangle defined by two opposite corners.</p>
 <p>The rectangle is axis aligned, and defined by its minimum and maximum coordinates,
@@ -12490,7 +12497,7 @@ produce invalid results. It is generally recommended to use one of the construct
 methods instead, which will ensure this invariant is met, unless you already have
 the minimum and maximum corners.</p>
 </blockquote>
-<h2 id="functions-131"><a class="header" href="#functions-131">Functions</a></h2>
+<h2 id="functions-132"><a class="header" href="#functions-132">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>as_irect(_self)</code></td><td><a href="generated_docs/types/./urect/as_irect.html"> Returns self as [`IRect`] (i32)</a></td></tr>
 <tr><td><code>as_rect(_self)</code></td><td><a href="generated_docs/types/./urect/as_rect.html"> Returns self as [`Rect`] (f32)</a></td></tr>
@@ -12935,7 +12942,7 @@ assert_eq!(r.width(), 5);
 <li><strong>cos</strong> : f32</li>
 <li><strong>sin</strong> : f32</li>
 </ul>
-<h2 id="description-130"><a class="header" href="#description-130">Description</a></h2>
+<h2 id="description-131"><a class="header" href="#description-131">Description</a></h2>
 <blockquote>
 <p>A counterclockwise 2D rotation.</p>
 <h1 id="example-8"><a class="header" href="#example-8">Example</a></h1>
@@ -12958,7 +12965,7 @@ assert_relative_eq!(rotation1 * rotation2, Rot2::degrees(135.0));
 assert_relative_eq!(rotation1 * Vec2::X, Vec2::Y);
 </code></pre>
 </blockquote>
-<h2 id="functions-132"><a class="header" href="#functions-132">Functions</a></h2>
+<h2 id="functions-133"><a class="header" href="#functions-133">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>angle_between(_self, other)</code></td><td><a href="generated_docs/types/./rot2/angle_between.html"> Returns the angle in radians needed to make `self` and `other` coincide.</a></td></tr>
 <tr><td><code>angle_to(_self, other)</code></td><td><a href="generated_docs/types/./rot2/angle_to.html"> Returns the angle in radians needed to make `self` and `other` coincide.</a></td></tr>
@@ -13448,18 +13455,6 @@ assert_relative_eq!(rot1 * rot1, rot3);
 <ol>
 <li>bevy_ecs::entity::Entity</li>
 </ol>
-<h2 id="description-131"><a class="header" href="#description-131">Description</a></h2>
-<blockquote>
-<p>A wrapper around a value of type <code>T</code>.</p>
-<p>This can be used to retrieve a value out of a [<code>ScriptValue::Reference</code>] corresponding to the type <code>T</code>.
-You can also use this to return values from a script function to be allocated directly as a [<code>ScriptValue::Reference</code>].</p>
-</blockquote>
-<h2 id="functions-133"><a class="header" href="#functions-133">Functions</a></h2>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="val-2"><a class="header" href="#val-2">Val</a></h1>
-<h3 id="val-3"><a class="header" href="#val-3">Val</a></h3>
-<ol>
-<li>bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder</li>
-</ol>
 <h2 id="description-132"><a class="header" href="#description-132">Description</a></h2>
 <blockquote>
 <p>A wrapper around a value of type <code>T</code>.</p>
@@ -13467,10 +13462,10 @@ You can also use this to return values from a script function to be allocated di
 You can also use this to return values from a script function to be allocated directly as a [<code>ScriptValue::Reference</code>].</p>
 </blockquote>
 <h2 id="functions-134"><a class="header" href="#functions-134">Functions</a></h2>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="val-4"><a class="header" href="#val-4">Val</a></h1>
-<h3 id="val-5"><a class="header" href="#val-5">Val</a></h3>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="val-2"><a class="header" href="#val-2">Val</a></h1>
+<h3 id="val-3"><a class="header" href="#val-3">Val</a></h3>
 <ol>
-<li>bevy_mod_scripting_core::bindings::query::ScriptQueryResult</li>
+<li>bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder</li>
 </ol>
 <h2 id="description-133"><a class="header" href="#description-133">Description</a></h2>
 <blockquote>
@@ -13479,10 +13474,10 @@ You can also use this to return values from a script function to be allocated di
 You can also use this to return values from a script function to be allocated directly as a [<code>ScriptValue::Reference</code>].</p>
 </blockquote>
 <h2 id="functions-135"><a class="header" href="#functions-135">Functions</a></h2>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="val-6"><a class="header" href="#val-6">Val</a></h1>
-<h3 id="val-7"><a class="header" href="#val-7">Val</a></h3>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="val-4"><a class="header" href="#val-4">Val</a></h1>
+<h3 id="val-5"><a class="header" href="#val-5">Val</a></h3>
 <ol>
-<li>bevy_mod_scripting_core::docgen::info::FunctionInfo</li>
+<li>bevy_mod_scripting_core::bindings::query::ScriptQueryResult</li>
 </ol>
 <h2 id="description-134"><a class="header" href="#description-134">Description</a></h2>
 <blockquote>
@@ -13491,22 +13486,27 @@ You can also use this to return values from a script function to be allocated di
 You can also use this to return values from a script function to be allocated directly as a [<code>ScriptValue::Reference</code>].</p>
 </blockquote>
 <h2 id="functions-136"><a class="header" href="#functions-136">Functions</a></h2>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="val-6"><a class="header" href="#val-6">Val</a></h1>
+<h3 id="val-7"><a class="header" href="#val-7">Val</a></h3>
+<ol>
+<li>bevy_mod_scripting_core::docgen::info::FunctionInfo</li>
+</ol>
+<h2 id="description-135"><a class="header" href="#description-135">Description</a></h2>
+<blockquote>
+<p>A wrapper around a value of type <code>T</code>.</p>
+<p>This can be used to retrieve a value out of a [<code>ScriptValue::Reference</code>] corresponding to the type <code>T</code>.
+You can also use this to return values from a script function to be allocated directly as a [<code>ScriptValue::Reference</code>].</p>
+</blockquote>
+<h2 id="functions-137"><a class="header" href="#functions-137">Functions</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="namespace"><a class="header" href="#namespace">Namespace</a></h1>
 <h3 id="global"><a class="header" href="#global">Global</a></h3>
 <h3 id="ontype"><a class="header" href="#ontype">OnType</a></h3>
 <ol>
 <li>core::any::TypeId</li>
 </ol>
-<h2 id="description-135"><a class="header" href="#description-135">Description</a></h2>
-<blockquote>
-<p>A namespace for functions</p>
-</blockquote>
-<h2 id="functions-137"><a class="header" href="#functions-137">Functions</a></h2>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="dynamicscriptfunctionmut"><a class="header" href="#dynamicscriptfunctionmut">DynamicScriptFunctionMut</a></h1>
-<p>Opaque Type. 🔒</p>
 <h2 id="description-136"><a class="header" href="#description-136">Description</a></h2>
 <blockquote>
-<p>A dynamic mutable script function.</p>
+<p>A namespace for functions</p>
 </blockquote>
 <h2 id="functions-138"><a class="header" href="#functions-138">Functions</a></h2>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="scriptcomponentregistration-1"><a class="header" href="#scriptcomponentregistration-1">ScriptComponentRegistration</a></h1>
