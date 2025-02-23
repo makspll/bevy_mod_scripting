@@ -123,8 +123,22 @@ impl<'w> WorldAccessGuard<'w> {
         self.0.cell.replace(None);
     }
 
+    /// Runs a closure within an isolated access scope, releasing leftover accesses, should only be used in a single-threaded context.
+    ///
+    /// Safety:
+    /// - The caller must ensure it's safe to release any potentially locked accesses.
+    pub(crate) unsafe fn with_access_scope<O, F: FnOnce() -> O>(
+        &self,
+        f: F,
+    ) -> Result<O, InteropError> {
+        self.begin_access_scope()?;
+        let o = f();
+        unsafe { self.end_access_scope()? };
+        Ok(o)
+    }
+
     /// Begins a new access scope. Currently this simply throws an erorr if there are any accesses held. Should only be used in a single-threaded context
-    pub(crate) fn begin_access_scope(&self) -> Result<(), InteropError> {
+    fn begin_access_scope(&self) -> Result<(), InteropError> {
         if self.0.accesses.count_accesses() != 0 {
             return Err(InteropError::invalid_access_count(self.0.accesses.count_accesses(), 0, "When beginning access scope, presumably for a function call, some accesses are still held".to_owned()));
         }
@@ -133,7 +147,7 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     /// Ends the access scope, releasing all accesses. Should only be used in a single-threaded context
-    pub(crate) unsafe fn end_access_scope(&self) -> Result<(), InteropError> {
+    unsafe fn end_access_scope(&self) -> Result<(), InteropError> {
         self.0.accesses.release_all_accesses();
 
         Ok(())

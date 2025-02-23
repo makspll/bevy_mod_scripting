@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.7](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.6...bevy_mod_scripting_core-v0.9.7) - 2025-02-23
+
+### Added
+
+- pre-register reflected components with the world at finalize (#314)
+- create `ScriptingDocgenPlugin` to allow exporting `LAD` files + export BMS bindings (#303)
+- add allocator diagnostics (#305)
+- add `construct` global for constructing arbitrary types & `Union` type (#302)
+- improve warning on missing asset (#295)
+- add global functions to mdbook, allow documenting arguments and return values (#296)
+
+### Fixed
+
+- functions not releasing accesses correctly on error (#315)
+- remove `reflect_functions` and `file_watcher` flags from bevy dependency (#316)
+
 ## [0.9.6](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.5...bevy_mod_scripting_core-v0.9.6) - 2025-02-15
 
 ### Fixed

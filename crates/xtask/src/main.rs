@@ -1372,7 +1372,7 @@ impl Xtasks {
                 .clone()
                 .with_coverage()
                 // github actions has been throwing a lot of OOM SIGTERM's lately
-                .with_max_jobs(4),
+                .with_max_jobs(2),
             subcmd: Xtasks::Test {
                 name: None,
                 package: None,
