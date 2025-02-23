@@ -162,15 +162,18 @@ fn individual_conflicts(conflicts: AccessConflicts) -> FixedBitSet {
 
 fn get_all_access_ids(access: &Access<ComponentId>) -> Vec<(ReflectAccessId, bool)> {
     let mut access_all_read = Access::<ComponentId>::default();
-    access_all_read.read_all_components();
+    access_all_read.read_all();
 
     let mut access_all_write = Access::<ComponentId>::default();
-    access_all_write.write_all_components();
+    access_all_write.write_all();
 
     // read conflicts with each set to figure out the necessary locks
 
-    let read = individual_conflicts(access.get_conflicts(&access_all_read));
+    let mut read = individual_conflicts(access.get_conflicts(&access_all_read));
     let written = individual_conflicts(access.get_conflicts(&access_all_write));
+
+    // remove reads from writes
+    read.difference_with(&written);
 
     let mut result = Vec::new();
     for c in read.ones() {
@@ -187,4 +190,39 @@ fn get_all_access_ids(access: &Access<ComponentId>) -> Vec<(ReflectAccessId, boo
     }
 
     result
+}
+
+#[cfg(test)]
+mod test {
+    use bevy::{
+        app::Update,
+        ecs::{
+            component::Component,
+            system::{Query, Resource},
+        },
+    };
+
+    use super::*;
+    #[derive(Component)]
+    struct Comp;
+
+    #[derive(Resource)]
+    struct Res;
+
+    #[test]
+    pub fn check_with_world_correctly_locks_resource_and_component() {
+        let system_fn = |mut guard: WithWorldGuard<(ResMut<Res>, Query<&'static Comp>)>| {
+            let (guard, (_res, _entity)) = guard.get_mut();
+            assert_eq!(guard.list_accesses().len(), 2, "Expected 2 accesses");
+        };
+
+        let mut app = bevy::app::App::new();
+        app.add_systems(Update, system_fn);
+        app.insert_resource(Res);
+        app.world_mut().spawn(Comp);
+
+        app.cleanup();
+        app.finish();
+        app.update();
+    }
 }
