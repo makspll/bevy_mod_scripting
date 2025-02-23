@@ -34,4 +34,5 @@
 
 # WIP
 
-- [Generated Docs](./ladfiles/bindings.lad.json)
+- [WIP](./Generated/generated-intro.md)
+    - [Generated Docs](./ladfiles/bindings.lad.json)

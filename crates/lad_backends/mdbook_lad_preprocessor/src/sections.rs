@@ -4,153 +4,154 @@ use crate::{
     markdown_vec,
 };
 use ladfile::{
-    ArgumentVisitor, LadArgument, LadFile, LadFunction, LadInstance, LadType, LadTypeLayout,
+    ArgumentVisitor, LadArgument, LadFile, LadFunction, LadInstance, LadType, LadTypeId,
+    LadTypeLayout,
 };
-use mdbook::book::{Chapter, SectionNumber};
-use std::{borrow::Cow, collections::HashSet, path::PathBuf};
+use mdbook::book::Chapter;
+use std::{borrow::Cow, collections::HashSet};
 
-pub(crate) fn section_to_chapter(
-    section: SectionAndChildren,
-    original_chapter: Option<&Chapter>,
-    parent_names: Vec<String>,
-    number: Option<SectionNumber>,
-    root_path: Option<PathBuf>,
-    root_source_path: Option<PathBuf>,
-) -> Chapter {
-    let mut parent_builder = MarkdownBuilder::new();
-    section.section.to_markdown(&mut parent_builder);
+// pub(crate) fn section_to_chapter(
+//     section: SectionAndChildren,
+//     original_chapter: Option<&Chapter>,
+//     parent_names: Vec<String>,
+//     number: Option<SectionNumber>,
+//     root_path: Option<PathBuf>,
+//     root_source_path: Option<PathBuf>,
+// ) -> Chapter {
+//     let mut parent_builder = MarkdownBuilder::new();
+//     section.section.to_markdown(&mut parent_builder);
 
-    // important to reset the extension of the parent, since when we're nesting
-    // we add the filename with .md, but if the parent is being emitted as markdown, then when
-    // we create the child, we will create the `parent.md` file as a folder, then when we emit
-    // the parent itself, the file (directory) will already exist
-    let new_path = root_path
-        .unwrap_or_default()
-        .with_extension("")
-        .join(section.section.file_name());
+//     // important to reset the extension of the parent, since when we're nesting
+//     // we add the filename with .md, but if the parent is being emitted as markdown, then when
+//     // we create the child, we will create the `parent.md` file as a folder, then when we emit
+//     // the parent itself, the file (directory) will already exist
+//     let new_path = root_path
+//         .unwrap_or_default()
+//         .with_extension("")
+//         .join(section.section.file_name());
 
-    let new_source_path = root_source_path
-        .unwrap_or_default()
-        .with_extension("")
-        .join(section.section.file_name());
+//     let new_source_path = root_source_path
+//         .unwrap_or_default()
+//         .with_extension("")
+//         .join(section.section.file_name());
 
-    let current_number = number.clone().unwrap_or_default();
+//     let current_number = number.clone().unwrap_or_default();
 
-    let children_chapters = section
-        .children
-        .into_iter()
-        .enumerate()
-        .map(|(index, child)| {
-            let mut new_number = current_number.clone();
-            new_number.push(index as u32);
-            section_to_chapter(
-                child,
-                None,
-                vec![section.section.title()],
-                Some(new_number),
-                Some(new_path.clone()),
-                Some(new_source_path.clone()),
-            )
-        })
-        .map(mdbook::BookItem::Chapter)
-        .collect();
+//     let children_chapters = section
+//         .children
+//         .into_iter()
+//         .enumerate()
+//         .map(|(index, child)| {
+//             let mut new_number = current_number.clone();
+//             new_number.push(index as u32);
+//             section_to_chapter(
+//                 child,
+//                 None,
+//                 vec![section.section.title()],
+//                 Some(new_number),
+//                 Some(new_path.clone()),
+//                 Some(new_source_path.clone()),
+//             )
+//         })
+//         .map(mdbook::BookItem::Chapter)
+//         .collect();
 
-    if let Some(original) = original_chapter {
-        // override content only
-        log::debug!(
-            "Setting .md extension for chapter paths: {:?}, {:?}.",
-            original.path,
-            original.source_path
-        );
+//     if let Some(original) = original_chapter {
+//         // override content only
+//         log::debug!(
+//             "Setting .md extension for chapter paths: {:?}, {:?}.",
+//             original.path,
+//             original.source_path
+//         );
 
-        Chapter {
-            content: parent_builder.build(),
-            sub_items: children_chapters,
-            path: original.path.as_ref().map(|p| p.with_extension("md")),
-            source_path: original
-                .source_path
-                .as_ref()
-                .map(|p| p.with_extension("md")),
-            ..original.clone()
-        }
-    } else {
-        Chapter {
-            name: section.section.title(),
-            content: parent_builder.build(),
-            number,
-            sub_items: children_chapters,
-            path: Some(new_path),
-            source_path: Some(new_source_path),
-            parent_names,
-        }
-    }
-}
+//         Chapter {
+//             content: parent_builder.build(),
+//             sub_items: children_chapters,
+//             path: original.path.as_ref().map(|p| p.with_extension("md")),
+//             source_path: original
+//                 .source_path
+//                 .as_ref()
+//                 .map(|p| p.with_extension("md")),
+//             ..original.clone()
+//         }
+//     } else {
+//         Chapter {
+//             name: section.section.title(),
+//             content: parent_builder.build(),
+//             number,
+//             sub_items: children_chapters,
+//             path: Some(new_path),
+//             source_path: Some(new_source_path),
+//             parent_names,
+//         }
+//     }
+// }
 
-fn section_to_section_and_children(section: Section<'_>) -> SectionAndChildren<'_> {
-    let children = section
-        .children()
-        .into_iter()
-        .map(section_to_section_and_children)
-        .collect();
+// fn section_to_section_and_children(section: Section<'_>) -> SectionAndChildren<'_> {
+//     let children = section
+//         .children()
+//         .into_iter()
+//         .map(section_to_section_and_children)
+//         .collect();
 
-    SectionAndChildren { children, section }
-}
+//     SectionAndChildren { children, section }
+// }
 
-pub(crate) fn lad_file_to_sections(
-    ladfile: &ladfile::LadFile,
-    title: Option<String>,
-) -> SectionAndChildren<'_> {
-    section_to_section_and_children(Section::Summary { ladfile, title })
-    // build a hierarchy as follows:
-    // - Summary
-    //   - Instances
-    //   - Functions
-    //      - Global Function Detail 1
-    //   - Types
-    //     - Type1
-    //       - Type detail 1
-    //         - Function detail 1
-    //         - Function detail 2
-    // let mut types_children = ladfile
-    //     .types
-    //     .iter()
-    //     .map(|(_, lad_type)| (lad_type, Section::TypeDetail { lad_type, ladfile }))
-    //     .map(|(lad_type, section)| SectionAndChildren {
-    //         section,
-    //         children: lad_type
-    //             .associated_functions
-    //             .iter()
-    //             .filter_map(|f| {
-    //                 let function = ladfile.functions.get(f)?;
-    //                 Some(SectionAndChildren {
-    //                     section: Section::FunctionDetail { function, ladfile },
-    //                     children: vec![],
-    //                 })
-    //             })
-    //             .collect(),
-    //     })
-    //     .collect();
+// pub(crate) fn lad_file_to_sections(
+//     ladfile: &ladfile::LadFile,
+//     title: Option<String>,
+// ) -> SectionAndChildren<'_> {
+//     section_to_section_and_children(Section::Summary { ladfile, title })
+// build a hierarchy as follows:
+// - Summary
+//   - Instances
+//   - Functions
+//      - Global Function Detail 1
+//   - Types
+//     - Type1
+//       - Type detail 1
+//         - Function detail 1
+//         - Function detail 2
+// let mut types_children = ladfile
+//     .types
+//     .iter()
+//     .map(|(_, lad_type)| (lad_type, Section::TypeDetail { lad_type, ladfile }))
+//     .map(|(lad_type, section)| SectionAndChildren {
+//         section,
+//         children: lad_type
+//             .associated_functions
+//             .iter()
+//             .filter_map(|f| {
+//                 let function = ladfile.functions.get(f)?;
+//                 Some(SectionAndChildren {
+//                     section: Section::FunctionDetail { function, ladfile },
+//                     children: vec![],
+//                 })
+//             })
+//             .collect(),
+//     })
+//     .collect();
 
-    // // now add a `functions` subsection before all types, for global functions
+// // now add a `functions` subsection before all types, for global functions
 
-    // SectionAndChildren {
-    //     section: summary,
-    //     children: vec![
-    //         SectionAndChildren {
-    //             section: Section::TypeSummary { ladfile },
-    //             children: types_children,
-    //         },
-    //         SectionAndChildren {
-    //             section: Section::FunctionSummary { ladfile },
-    //             children: vec![],
-    //         },
-    //     ],
-    // }
-}
-pub(crate) struct SectionAndChildren<'a> {
-    section: Section<'a>,
-    children: Vec<SectionAndChildren<'a>>,
-}
+// SectionAndChildren {
+//     section: summary,
+//     children: vec![
+//         SectionAndChildren {
+//             section: Section::TypeSummary { ladfile },
+//             children: types_children,
+//         },
+//         SectionAndChildren {
+//             section: Section::FunctionSummary { ladfile },
+//             children: vec![],
+//         },
+//     ],
+// }
+// }
+// pub(crate) struct SectionAndChildren<'a> {
+//     section: Section<'a>,
+//     children: Vec<SectionAndChildren<'a>>,
+// }
 
 /// Sections which convert to single markdown files
 pub(crate) enum Section<'a> {
@@ -165,6 +166,7 @@ pub(crate) enum Section<'a> {
     /// A link directory to all global instances within the ladfile
     InstancesSummary { ladfile: &'a ladfile::LadFile },
     TypeDetail {
+        lad_type_id: &'a LadTypeId,
         lad_type: &'a LadType,
         ladfile: &'a ladfile::LadFile,
     },
@@ -180,6 +182,48 @@ pub fn linkify_filename(name: impl Into<String>) -> String {
 }
 
 impl<'a> Section<'a> {
+    /// convert into a chapter, including children
+    pub(crate) fn into_chapter(self, parent: Option<&Chapter>, index: usize) -> Chapter {
+        let mut builder = MarkdownBuilder::new();
+        self.to_markdown(&mut builder);
+
+        let default_chapter = Chapter::default();
+        let parent = match parent {
+            Some(parent) => parent,
+            None => &default_chapter,
+        };
+
+        let parent_path = parent.path.clone().unwrap_or_default().with_extension("");
+        let parent_source_path = parent
+            .source_path
+            .clone()
+            .unwrap_or_default()
+            .with_extension("");
+
+        let mut current_number = parent.number.clone().unwrap_or_default();
+        current_number.push(index as u32);
+
+        let mut chapter = Chapter {
+            name: self.title(),
+            content: builder.build(),
+            parent_names: vec![parent.name.clone()],
+            path: Some(parent_path.join(self.file_name())),
+            source_path: Some(parent_source_path.join(self.file_name())),
+            number: Some(current_number),
+            sub_items: vec![],
+        };
+
+        chapter.sub_items = self
+            .children()
+            .into_iter()
+            .enumerate()
+            .map(|(i, c)| c.into_chapter(Some(&chapter), i))
+            .map(mdbook::BookItem::Chapter)
+            .collect();
+
+        chapter
+    }
+
     pub(crate) fn title(&self) -> String {
         match self {
             Section::Summary { title, .. } => {
@@ -189,8 +233,14 @@ impl<'a> Section<'a> {
             Section::FunctionSummary { .. } => "Functions".to_owned(),
             Section::InstancesSummary { .. } => "Globals".to_owned(),
             Section::TypeDetail {
-                lad_type: type_id, ..
-            } => type_id.identifier.clone(),
+                ladfile,
+                lad_type_id,
+                ..
+            } => {
+                let mut visitor = MarkdownArgumentVisitor::new(ladfile);
+                visitor.visit_lad_type_id(lad_type_id);
+                visitor.build()
+            }
             Section::FunctionDetail { function, .. } => function.identifier.to_string(),
         }
     }
@@ -211,7 +261,11 @@ impl<'a> Section<'a> {
             Section::TypeSummary { ladfile } => ladfile
                 .types
                 .iter()
-                .map(|(_, lad_type)| Section::TypeDetail { lad_type, ladfile })
+                .map(|(lad_type_id, lad_type)| Section::TypeDetail {
+                    lad_type,
+                    ladfile,
+                    lad_type_id,
+                })
                 .collect(),
 
             Section::FunctionSummary { ladfile } => {
@@ -233,7 +287,9 @@ impl<'a> Section<'a> {
             Section::InstancesSummary { .. } => {
                 vec![]
             }
-            Section::TypeDetail { lad_type, ladfile } => lad_type
+            Section::TypeDetail {
+                lad_type, ladfile, ..
+            } => lad_type
                 .associated_functions
                 .iter()
                 .filter_map(|f| {
@@ -313,7 +369,9 @@ impl<'a> Section<'a> {
                     functions_directory: "functions".to_owned(),
                 }]
             }
-            Section::TypeDetail { lad_type, ladfile } => {
+            Section::TypeDetail {
+                lad_type, ladfile, ..
+            } => {
                 let functions = lad_type
                     .associated_functions
                     .iter()
@@ -327,7 +385,7 @@ impl<'a> Section<'a> {
                     SectionItem::Description { lad_type },
                     SectionItem::FunctionsSummary {
                         functions,
-                        functions_directory: linkify_filename(&lad_type.identifier),
+                        functions_directory: linkify_filename(self.title()),
                     },
                 ]
             }
