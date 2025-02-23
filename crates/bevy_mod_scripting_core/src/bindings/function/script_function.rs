@@ -589,36 +589,39 @@ macro_rules! impl_script_function {
 
                         $( let $context = caller_context; )?
                         let world = caller_context.world()?;
-                        world.begin_access_scope()?;
-                        let mut current_arg = 0;
+                        // Safety: we're not holding any references to the world, the arguments which might have aliased will always be dropped
+                        let ret: Result<ScriptValue, InteropError> = unsafe {
+                            world.with_access_scope(||{
+                                let mut current_arg = 0;
 
-                        $(
-                            current_arg += 1;
-                            let $param = args.pop_front();
-                            let $param = match $param {
-                                Some($param) => $param,
-                                None => {
-                                    if let Some(default) = <$param>::default_value() {
-                                        default
-                                    } else {
-                                        return Err(InteropError::argument_count_mismatch(expected_arg_count,received_args_len));
-                                    }
-                                }
-                            };
-                            let $param = <$param>::from_script($param, world.clone())
-                                .map_err(|e| InteropError::function_arg_conversion_error(current_arg.to_string(), e))?;
-                        )*
+                                $(
+                                    current_arg += 1;
+                                    let $param = args.pop_front();
+                                    let $param = match $param {
+                                        Some($param) => $param,
+                                        None => {
+                                            if let Some(default) = <$param>::default_value() {
+                                                default
+                                            } else {
+                                                return Err(InteropError::argument_count_mismatch(expected_arg_count,received_args_len));
+                                            }
+                                        }
+                                    };
+                                    let $param = <$param>::from_script($param, world.clone())
+                                        .map_err(|e| InteropError::function_arg_conversion_error(current_arg.to_string(), e))?;
+                                )*
 
-                        let ret = {
-                            let out = self( $( $context,)?  $( $param.into(), )* );
-                            $(
-                                let $out = out?;
-                                let out = $out;
-                            )?
-                            out.into_script(world.clone()).map_err(|e| InteropError::function_arg_conversion_error("return value".to_owned(), e))
+                                let ret = {
+                                    let out = self( $( $context,)?  $( $param.into(), )* );
+                                    $(
+                                        let $out = out?;
+                                        let out = $out;
+                                    )?
+                                    out.into_script(world.clone()).map_err(|e| InteropError::function_arg_conversion_error("return value".to_owned(), e))
+                                };
+                                ret
+                            })?
                         };
-                        // Safety: we're not holding any references to the world, the arguments which might have aliased have been dropped
-                        unsafe { world.end_access_scope()? };
                         ret
                     })();
                     let script_value: ScriptValue = res.into();
@@ -692,6 +695,25 @@ mod test {
                     InteropError::argument_count_mismatch(2, 1)
                 )
             );
+        });
+    }
+
+    #[test]
+    fn test_interrupted_call_releases_access_scope() {
+        #[derive(bevy::prelude::Component, Reflect)]
+        struct Comp;
+
+        let fn_ = |_a: crate::bindings::function::from::Mut<Comp>| 0usize;
+        let script_function = fn_.into_dynamic_script_function().with_name("my_fn");
+
+        with_local_world(|| {
+            let out =
+                script_function.call(vec![ScriptValue::from(1)], FunctionCallContext::default());
+
+            assert!(out.is_err());
+            let world = FunctionCallContext::default().world().unwrap();
+            // assert no access is held
+            assert!(world.list_accesses().is_empty());
         });
     }
 
