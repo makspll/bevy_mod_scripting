@@ -63,7 +63,7 @@ impl<P: IntoScriptPluginParams> CallbackSettings<P> {
         runtime: &mut P::R,
         world: WorldGuard,
     ) -> Result<ScriptValue, ScriptError> {
-        WorldGuard::with_existing_static_guard(world, |world| {
+        let o = WorldGuard::with_existing_static_guard(world.clone(), |world| {
             ThreadWorldContainer.set_world(world)?;
             (handler)(
                 args,
@@ -74,7 +74,8 @@ impl<P: IntoScriptPluginParams> CallbackSettings<P> {
                 pre_handling_initializers,
                 runtime,
             )
-        })
+        });
+        o
     }
 }
 
@@ -179,10 +180,7 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
 }
 
 /// Handles errors caused by script execution and sends them to the error event channel
-pub(crate) fn handle_script_errors<I: Iterator<Item = ScriptError> + Clone>(
-    world: WorldGuard,
-    errors: I,
-) {
+pub fn handle_script_errors<I: Iterator<Item = ScriptError> + Clone>(world: WorldGuard, errors: I) {
     let err = world.with_resource_mut(|mut error_events: Mut<Events<ScriptErrorEvent>>| {
         for error in errors.clone() {
             error_events.send(ScriptErrorEvent { error });

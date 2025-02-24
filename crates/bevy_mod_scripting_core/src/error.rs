@@ -1209,7 +1209,10 @@ macro_rules! unregistered_component_or_resource_type {
 
 macro_rules! missing_script_for_callback {
     ($script_id:expr) => {
-        format!("Could not find script with id: {}", $script_id)
+        format!(
+            "Could not find script with id: {}. Is the script loaded?",
+            $script_id
+        )
     };
 }
 
@@ -1236,7 +1239,7 @@ macro_rules! argument_count_mismatch_msg {
 macro_rules! missing_context_for_callback {
     ($context_id:expr, $script_id:expr) => {
         format!(
-            "Missing context with id: {} for script with id: {}",
+            "Missing context with id: {} for script with id: {}. Was the script loaded?.",
             $context_id, $script_id
         )
     };
@@ -1332,7 +1335,7 @@ impl DisplayWithWorld for InteropErrorInner {
                     .to_owned()
             }
             InteropErrorInner::MissingWorld => {
-                "Missing world. The world was not initialized in the script context.".to_owned()
+                "Missing world. The world was either not initialized, or invalidated.".to_owned()
             },
             InteropErrorInner::FunctionInteropError { function_name, on, error } => {
                 let opt_on = match on {
@@ -1476,7 +1479,7 @@ impl DisplayWithWorld for InteropErrorInner {
                     .to_owned()
             }
             InteropErrorInner::MissingWorld => {
-                "Missing world. The world was not initialized in the script context.".to_owned()
+                "Missing world. The world was either not initialized, or invalidated.".to_owned()
             },
             InteropErrorInner::FunctionInteropError { function_name, on, error } => {
                 let opt_on = match on {

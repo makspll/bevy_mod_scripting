@@ -140,7 +140,7 @@ impl<P: IntoScriptPluginParams> ContextBuilder<P> {
         world: WorldGuard,
         runtime: &mut P::R,
     ) -> Result<P::C, ScriptError> {
-        WorldGuard::with_existing_static_guard(world, |world| {
+        let o = WorldGuard::with_existing_static_guard(world.clone(), |world| {
             ThreadWorldContainer.set_world(world)?;
             (loader)(
                 script,
@@ -149,7 +149,8 @@ impl<P: IntoScriptPluginParams> ContextBuilder<P> {
                 pre_handling_initializers,
                 runtime,
             )
-        })
+        });
+        o
     }
 
     /// reload a context

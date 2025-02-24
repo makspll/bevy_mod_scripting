@@ -230,7 +230,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
                     P::LANGUAGE,
                     self.id
                 );
-                self.reload_context(guard, handler_ctxt, previous_context_id);
+                self.reload_context(guard.clone(), handler_ctxt, previous_context_id);
             }
             None => {
                 let log_context = format!("{}: Loading script: {}", P::LANGUAGE, self.id);
@@ -257,6 +257,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
                         guard.clone(),
                         &mut handler_ctxt.runtime_container.runtime,
                     );
+
                     let mut ctxt = match ctxt {
                         Ok(ctxt) => ctxt,
                         Err(e) => {

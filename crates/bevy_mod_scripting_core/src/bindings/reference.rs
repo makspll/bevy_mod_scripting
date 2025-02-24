@@ -243,7 +243,7 @@ impl ReflectReference {
     ) -> Result<O, InteropError> {
         let access_id = ReflectAccessId::for_reference(self.base.base_id.clone());
         with_access_read!(
-            world.0.accesses,
+            world.inner.accesses,
             access_id,
             "could not access reflect reference",
             { unsafe { self.reflect_unsafe(world.clone()) }.map(f)? }
@@ -260,7 +260,7 @@ impl ReflectReference {
     ) -> Result<O, InteropError> {
         let access_id = ReflectAccessId::for_reference(self.base.base_id.clone());
         with_access_write!(
-            world.0.accesses,
+            world.inner.accesses,
             access_id,
             "Could not access reflect reference mutably",
             { unsafe { self.reflect_mut_unsafe(world.clone()) }.map(f)? }

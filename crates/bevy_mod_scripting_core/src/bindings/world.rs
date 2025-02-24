@@ -40,11 +40,11 @@ use bevy::{
 use std::{
     any::TypeId,
     borrow::Cow,
-    cell::{Cell, RefCell},
+    cell::RefCell,
     collections::HashMap,
     fmt::Debug,
     rc::Rc,
-    sync::Arc,
+    sync::{atomic::AtomicBool, Arc},
 };
 
 /// Prefer to directly using [`WorldAccessGuard`]. If the underlying type changes, this alias will be updated.
@@ -53,18 +53,31 @@ pub type WorldGuard<'w> = WorldAccessGuard<'w>;
 pub type WorldGuardRef<'w> = &'w WorldAccessGuard<'w>;
 
 /// Provides safe access to the world via [`WorldAccess`] permissions, which enforce aliasing rules at runtime in multi-thread environments
-#[derive(Clone)]
-pub struct WorldAccessGuard<'w>(pub(crate) Rc<WorldAccessGuardInner<'w>>);
+#[derive(Clone, Debug)]
+pub struct WorldAccessGuard<'w> {
+    /// The guard this guard pointer represents
+    pub(crate) inner: Rc<WorldAccessGuardInner<'w>>,
+    /// if true the guard is invalid and cannot be used, stored as a second pointer so that this validity can be
+    /// stored separate from the contents of the guard
+    invalid: Rc<AtomicBool>,
+}
 
 /// Used to decrease the stack size of [`WorldAccessGuard`]
 pub(crate) struct WorldAccessGuardInner<'w> {
-    cell: Cell<Option<UnsafeWorldCell<'w>>>,
+    /// Safety: cannot be used unless the scope depth is less than the max valid scope
+    cell: UnsafeWorldCell<'w>,
     // TODO: this is fairly hefty, explore sparse sets, bit fields etc
     pub(crate) accesses: AccessMap,
     /// Cached for convenience, since we need it for most operations, means we don't need to lock the type registry every time
     type_registry: TypeRegistryArc,
     allocator: AppReflectAllocator,
     function_registry: AppScriptFunctionRegistry,
+}
+
+impl std::fmt::Debug for WorldAccessGuardInner<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("WorldAccessGuardInner").finish()
+    }
 }
 
 impl WorldAccessGuard<'static> {
@@ -76,6 +89,29 @@ impl WorldAccessGuard<'static> {
 }
 #[profiling::all_functions]
 impl<'w> WorldAccessGuard<'w> {
+    /// creates a new guard derived from this one, which if invalidated, will not invalidate the original
+    fn scope(&self) -> Self {
+        let mut new_guard = self.clone();
+        new_guard.invalid = Rc::new(
+            new_guard
+                .invalid
+                .load(std::sync::atomic::Ordering::Relaxed)
+                .into(),
+        );
+        new_guard
+    }
+
+    /// Returns true if the guard is valid, false if it is invalid
+    fn is_valid(&self) -> bool {
+        !self.invalid.load(std::sync::atomic::Ordering::Relaxed)
+    }
+
+    /// Invalidates the world access guard, making it and any guards derived from this one unusable.
+    pub fn invalidate(&self) {
+        self.invalid
+            .store(true, std::sync::atomic::Ordering::Relaxed);
+    }
+
     /// Safely allows access to the world for the duration of the closure via a static [`WorldAccessGuard`].
     ///
     /// The guard is invalidated at the end of the closure, meaning the world cannot be accessed at all after the closure ends.
@@ -93,14 +129,15 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     /// Safely allows access to the world for the duration of the closure via a static [`WorldAccessGuard`] using a previously lifetimed world guard.
+    /// Will invalidate the static guard at the end but not the original.
     pub fn with_existing_static_guard<O>(
         guard: WorldAccessGuard<'w>,
         f: impl FnOnce(WorldGuard<'static>) -> O,
     ) -> O {
-        // safety: we invalidate the guard after the closure is called, meaning the world cannot be accessed at all after the 'w lifetime ends
-        let static_guard: WorldAccessGuard<'static> = unsafe { std::mem::transmute(guard) };
+        // safety: we invalidate the guard after the closure is called, meaning the world cannot be accessed at all after the 'w lifetime ends, from the static guard
+        // i.e. even if somebody squirells it away, it will be useless.
+        let static_guard: WorldAccessGuard<'static> = unsafe { std::mem::transmute(guard.scope()) };
         let o = f(static_guard.clone());
-
         static_guard.invalidate();
         o
     }
@@ -121,19 +158,16 @@ impl<'w> WorldAccessGuard<'w> {
         let function_registry = world
             .get_resource_or_init::<AppScriptFunctionRegistry>()
             .clone();
-        let cell = Cell::new(Some(world.as_unsafe_world_cell()));
-        Self(Rc::new(WorldAccessGuardInner {
-            cell,
-            accesses: Default::default(),
-            allocator,
-            type_registry,
-            function_registry,
-        }))
-    }
-
-    /// Invalidates the world access guard, making it unusable.
-    pub fn invalidate(&self) {
-        self.0.cell.replace(None);
+        Self {
+            inner: Rc::new(WorldAccessGuardInner {
+                cell: world.as_unsafe_world_cell(),
+                accesses: Default::default(),
+                allocator,
+                type_registry,
+                function_registry,
+            }),
+            invalid: Rc::new(false.into()),
+        }
     }
 
     /// Runs a closure within an isolated access scope, releasing leftover accesses, should only be used in a single-threaded context.
@@ -152,35 +186,43 @@ impl<'w> WorldAccessGuard<'w> {
 
     /// Begins a new access scope. Currently this simply throws an erorr if there are any accesses held. Should only be used in a single-threaded context
     fn begin_access_scope(&self) -> Result<(), InteropError> {
-        if self.0.accesses.count_accesses() != 0 {
-            return Err(InteropError::invalid_access_count(self.0.accesses.count_accesses(), 0, "When beginning access scope, presumably for a function call, some accesses are still held".to_owned()));
-        }
+        // if self.inner.accesses.count_accesses() != 0 {
+        //     return Err(InteropError::invalid_access_count(self.inner.accesses.count_accesses(), 0, "When beginning access scope, presumably for a function call, some accesses are still held".to_owned()));
+        // }
 
         Ok(())
     }
 
     /// Ends the access scope, releasing all accesses. Should only be used in a single-threaded context
     unsafe fn end_access_scope(&self) -> Result<(), InteropError> {
-        self.0.accesses.release_all_accesses();
+        self.inner.accesses.release_all_accesses();
 
         Ok(())
     }
 
     /// Purely debugging utility to list all accesses currently held.
     pub fn list_accesses(&self) -> Vec<(ReflectAccessId, AccessCount)> {
-        self.0.accesses.list_accesses()
+        self.inner.accesses.list_accesses()
     }
 
     /// Retrieves the underlying unsafe world cell, with no additional guarantees of safety
     /// proceed with caution and only use this if you understand what you're doing
     pub fn as_unsafe_world_cell(&self) -> Result<UnsafeWorldCell<'w>, InteropError> {
-        self.0.cell.get().ok_or_else(InteropError::missing_world)
+        if !self.is_valid() {
+            return Err(InteropError::missing_world());
+        }
+
+        Ok(self.inner.cell)
     }
 
     /// Retrieves the underlying read only unsafe world cell, with no additional guarantees of safety
     /// proceed with caution and only use this if you understand what you're doing
     pub fn as_unsafe_world_cell_readonly(&self) -> Result<UnsafeWorldCell<'w>, InteropError> {
-        self.0.cell.get().ok_or_else(InteropError::missing_world)
+        if !self.is_valid() {
+            return Err(InteropError::missing_world());
+        }
+
+        Ok(self.inner.cell)
     }
 
     /// Gets the component id of the given component or resource
@@ -204,19 +246,19 @@ impl<'w> WorldAccessGuard<'w> {
         &self,
         raid: ReflectAccessId,
     ) -> Option<std::panic::Location<'static>> {
-        self.0.accesses.access_location(raid)
+        self.inner.accesses.access_location(raid)
     }
 
     #[track_caller]
     /// Claims read access to the given type.
     pub fn claim_read_access(&self, raid: ReflectAccessId) -> bool {
-        self.0.accesses.claim_read_access(raid)
+        self.inner.accesses.claim_read_access(raid)
     }
 
     #[track_caller]
     /// Claims write access to the given type.
     pub fn claim_write_access(&self, raid: ReflectAccessId) -> bool {
-        self.0.accesses.claim_write_access(raid)
+        self.inner.accesses.claim_write_access(raid)
     }
 
     /// Releases read or write access to the given type.
@@ -226,12 +268,12 @@ impl<'w> WorldAccessGuard<'w> {
     /// - You can only call this if you previously called one of: [`WorldAccessGuard::claim_read_access`] or [`WorldAccessGuard::claim_write_access`]
     /// - The number of claim and release calls for the same id must always match
     pub unsafe fn release_access(&self, raid: ReflectAccessId) {
-        self.0.accesses.release_access(raid)
+        self.inner.accesses.release_access(raid)
     }
 
     /// Claims global access to the world
     pub fn claim_global_access(&self) -> bool {
-        self.0.accesses.claim_global_access()
+        self.inner.accesses.claim_global_access()
     }
 
     /// Releases global access to the world
@@ -239,22 +281,22 @@ impl<'w> WorldAccessGuard<'w> {
     /// # Safety
     /// - This can only be called safely after all references created using the access have been dropped
     pub unsafe fn release_global_access(&self) {
-        self.0.accesses.release_global_access()
+        self.inner.accesses.release_global_access()
     }
 
     /// Returns the type registry for the world
     pub fn type_registry(&self) -> TypeRegistryArc {
-        self.0.type_registry.clone()
+        self.inner.type_registry.clone()
     }
 
     /// Returns the script allocator for the world
     pub fn allocator(&self) -> AppReflectAllocator {
-        self.0.allocator.clone()
+        self.inner.allocator.clone()
     }
 
     /// Returns the function registry for the world
     pub fn script_function_registry(&self) -> AppScriptFunctionRegistry {
-        self.0.function_registry.clone()
+        self.inner.function_registry.clone()
     }
 
     /// Claims access to the world for the duration of the closure, allowing for global access to the world.
@@ -263,11 +305,15 @@ impl<'w> WorldAccessGuard<'w> {
         &self,
         f: F,
     ) -> Result<O, InteropError> {
-        with_global_access!(self.0.accesses, "Could not claim exclusive world access", {
-            // safety: we have global access for the duration of the closure
-            let world = unsafe { self.as_unsafe_world_cell()?.world_mut() };
-            Ok(f(world))
-        })?
+        with_global_access!(
+            self.inner.accesses,
+            "Could not claim exclusive world access",
+            {
+                // safety: we have global access for the duration of the closure
+                let world = unsafe { self.as_unsafe_world_cell()?.world_mut() };
+                Ok(f(world))
+            }
+        )?
     }
 
     /// Safely accesses the resource by claiming and releasing access to it.
@@ -283,7 +329,7 @@ impl<'w> WorldAccessGuard<'w> {
         let access_id = ReflectAccessId::for_resource::<R>(&cell)?;
 
         with_access_read!(
-            self.0.accesses,
+            self.inner.accesses,
             access_id,
             format!("Could not access resource: {}", std::any::type_name::<R>()),
             {
@@ -311,7 +357,7 @@ impl<'w> WorldAccessGuard<'w> {
         let cell = self.as_unsafe_world_cell()?;
         let access_id = ReflectAccessId::for_resource::<R>(&cell)?;
         with_access_write!(
-            self.0.accesses,
+            self.inner.accesses,
             access_id,
             format!("Could not access resource: {}", std::any::type_name::<R>()),
             {
@@ -336,7 +382,7 @@ impl<'w> WorldAccessGuard<'w> {
         let cell = self.as_unsafe_world_cell()?;
         let access_id = ReflectAccessId::for_component::<T>(&cell)?;
         with_access_read!(
-            self.0.accesses,
+            self.inner.accesses,
             access_id,
             format!("Could not access component: {}", std::any::type_name::<T>()),
             {
@@ -356,7 +402,7 @@ impl<'w> WorldAccessGuard<'w> {
         let access_id = ReflectAccessId::for_component::<T>(&cell)?;
 
         with_access_write!(
-            self.0.accesses,
+            self.inner.accesses,
             access_id,
             format!("Could not access component: {}", std::any::type_name::<T>()),
             {
@@ -828,7 +874,7 @@ impl WorldAccessGuard<'_> {
                 )
             })?;
 
-        with_global_access!(self.0.accesses, "Could not insert element", {
+        with_global_access!(self.inner.accesses, "Could not insert element", {
             let cell = self.as_unsafe_world_cell()?;
             let type_registry = self.type_registry();
             let type_registry = type_registry.read();
@@ -1304,5 +1350,43 @@ mod test {
         let result = world.construct(type_registration, payload, false);
         let expected = Ok::<_, InteropError>(Box::new(SimpleEnum::Unit) as Box<dyn PartialReflect>);
         pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
+    }
+
+    #[test]
+    fn test_scoped_handle_invalidate_doesnt_invalidate_parent() {
+        let mut world = setup_world(|_, _| {});
+        let world = WorldAccessGuard::new(&mut world);
+        let scoped_world = world.scope();
+
+        // can use scoped & normal worlds
+        scoped_world.spawn().unwrap();
+        world.spawn().unwrap();
+        pretty_assertions::assert_eq!(scoped_world.is_valid(), true);
+        pretty_assertions::assert_eq!(world.is_valid(), true);
+
+        scoped_world.invalidate();
+
+        // can only use normal world
+        pretty_assertions::assert_eq!(scoped_world.is_valid(), false);
+        pretty_assertions::assert_eq!(world.is_valid(), true);
+        world.spawn().unwrap();
+    }
+
+    #[test]
+    fn with_existing_static_guard_does_not_invalidate_original() {
+        let mut world = setup_world(|_, _| {});
+        let world = WorldAccessGuard::new(&mut world);
+
+        let mut sneaky_clone = None;
+        WorldAccessGuard::with_existing_static_guard(world.clone(), |g| {
+            pretty_assertions::assert_eq!(g.is_valid(), true);
+            sneaky_clone = Some(g.clone());
+        });
+        pretty_assertions::assert_eq!(world.is_valid(), true, "original world was invalidated");
+        pretty_assertions::assert_eq!(
+            sneaky_clone.map(|c| c.is_valid()),
+            Some(false),
+            "scoped world was not invalidated"
+        );
     }
 }

@@ -43,7 +43,25 @@ pub struct HandlerContext<'w, P: IntoScriptPluginParams> {
 }
 
 impl<'w, P: IntoScriptPluginParams> HandlerContext<'w, P> {
+    /// checks if the script is loaded such that it can be executed.
+    pub fn is_script_fully_loaded(&self, script_id: ScriptId) -> bool {
+        // check script exists in scripts and contexts
+        let script = match self.scripts.scripts.get(&script_id) {
+            Some(script) => script,
+            None => {
+                return false;
+            }
+        };
+
+        self.script_contexts
+            .contexts
+            .contains_key(&script.context_id)
+    }
+
     /// Invoke a callback in a script immediately.
+    ///
+    /// This will return [`crate::error::InteropErrorInner::MissingScript`] or [`crate::error::InteropErrorInner::MissingContext`] errors while the script is loading.
+    /// Run [`Self::is_script_fully_loaded`] before calling the script to ensure the script and context were loaded ahead of time.
     pub fn call<C: IntoCallbackLabel>(
         &mut self,
         script_id: ScriptId,

@@ -21,7 +21,6 @@ use std::{
 };
 
 struct Test {
-    code: String,
     path: PathBuf,
 }
 
@@ -78,7 +77,6 @@ impl Test {
                 });
             },
             self.path.as_os_str().to_str().unwrap(),
-            self.code.as_bytes(),
         )
         .map_err(Failed::from)
     }
@@ -114,13 +112,20 @@ fn visit_dirs(dir: &Path, cb: &mut dyn FnMut(&DirEntry)) -> io::Result<()> {
 
 fn discover_all_tests() -> Vec<Test> {
     let workspace_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let test_root = workspace_root.join("tests").join("data");
+    let assets_root = workspace_root
+        .join("..")
+        .join("..")
+        .join("..")
+        .join("assets");
+    let test_root = assets_root.join("tests");
     let mut test_files = Vec::new();
     visit_dirs(&test_root, &mut |entry| {
         let path = entry.path();
-        let code = fs::read_to_string(&path).unwrap();
         if path.extension().unwrap() == "rhai" {
-            test_files.push(Test { code, path });
+            let relative = path.strip_prefix(&assets_root).unwrap();
+            test_files.push(Test {
+                path: relative.to_path_buf(),
+            });
         }
     })
     .unwrap();

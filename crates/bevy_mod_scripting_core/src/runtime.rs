@@ -3,8 +3,8 @@
 
 use crate::{error::ScriptError, IntoScriptPluginParams};
 use bevy::{
-    ecs::system::Resource,
-    prelude::{NonSendMut, Res},
+    ecs::system::{ResMut, Resource},
+    prelude::Res,
 };
 
 /// A trait that all script runtimes must implement.
@@ -46,7 +46,7 @@ pub struct RuntimeContainer<P: IntoScriptPluginParams> {
 }
 
 pub(crate) fn initialize_runtime<P: IntoScriptPluginParams>(
-    mut runtime: NonSendMut<RuntimeContainer<P>>,
+    mut runtime: ResMut<RuntimeContainer<P>>,
     settings: Res<RuntimeSettings<P>>,
 ) -> Result<(), ScriptError> {
     for initializer in settings.initializers.iter() {
