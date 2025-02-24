@@ -57,7 +57,7 @@ impl CallbackLabel {
 #[macro_export]
 /// Creates a set of callback labels
 macro_rules! callback_labels {
-    ($($name:ident => $label:expr),*) => {
+    ($($name:ident => $label:expr),* $(,)?) => {
 
         $(
             #[doc = "A callback label for the event: "]
@@ -74,7 +74,7 @@ macro_rules! callback_labels {
 
 callback_labels!(
     OnScriptLoaded => "on_script_loaded",
-    OnScriptUnloaded => "on_script_unloaded"
+    OnScriptUnloaded => "on_script_unloaded",
 );
 
 /// A trait for types that can be converted into a callback label
