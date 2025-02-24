@@ -4,9 +4,9 @@ use std::thread::ThreadId;
 use bevy::{
     ecs::{component::ComponentId, world::unsafe_world_cell::UnsafeWorldCell},
     prelude::Resource,
+    utils::hashbrown::HashMap,
 };
-use dashmap::{DashMap, Entry};
-use parking_lot::RwLock;
+use parking_lot::Mutex;
 use smallvec::SmallVec;
 
 use crate::error::InteropError;
@@ -224,162 +224,208 @@ impl From<ReflectAccessId> for ReflectAllocationId {
 
 #[derive(Debug, Default)]
 /// A map of access claims
-pub struct AccessMap {
-    individual_accesses: DashMap<u64, AccessCount>,
-    global_lock: RwLock<AccessCount>,
+pub struct AccessMap(Mutex<AccessMapInner>);
+
+#[derive(Debug, Default, Clone)]
+struct AccessMapInner {
+    individual_accesses: HashMap<u64, AccessCount>,
+    global_lock: AccessCount,
 }
 
 #[profiling::all_functions]
 impl AccessMap {
-    /// Checks if the map is locked exclusively
+    /// Increments the scope and executes operations which will be unrolled at the end.
+    /// Any accesses added inside the scope are rolled back after f() returns.
+    pub fn with_scope<O, F: FnOnce() -> O>(&self, f: F) -> O {
+        // Snapshot the current inner state.
+        let backup = {
+            let inner = self.0.lock();
+            inner.clone()
+        };
+
+        let result = f();
+
+        // Roll back the inner state.
+        {
+            let mut inner = self.0.lock();
+            *inner = backup;
+        }
+
+        result
+    }
+
+    /// Checks if the map is locked exclusively.
     pub fn is_locked_exclusively(&self) -> bool {
-        let global_lock = self.global_lock.read();
-        !global_lock.can_write()
+        let inner = self.0.lock();
+        // If global_lock cannot be written, then it is locked exclusively.
+        !inner.global_lock.can_write()
     }
 
-    /// retrieves the location of the global lock if any
+    /// Retrieves the location of the global lock if any.
     pub fn global_access_location(&self) -> Option<std::panic::Location<'static>> {
-        let global_lock = self.global_lock.read();
-        global_lock.as_location()
+        let inner = self.0.lock();
+        inner.global_lock.as_location()
     }
 
-    /// Tries to claim read access, will return false if somebody else is writing to the same key, or holding a global lock
+    /// Tries to claim read access. Returns false if somebody else is writing to the same key,
+    /// or if a global lock prevents the access.
     #[track_caller]
     pub fn claim_read_access<K: AccessMapKey>(&self, key: K) -> bool {
-        if self.is_locked_exclusively() {
+        let mut inner = self.0.lock();
+
+        if !inner.global_lock.can_write() {
             return false;
         }
 
         let key = key.as_index();
-        let access = self.individual_accesses.try_entry(key);
-        match access.map(Entry::or_default) {
-            Some(mut entry) if entry.can_read() => {
-                entry.read_by.push(ClaimOwner {
-                    id: std::thread::current().id(),
-                    location: *std::panic::Location::caller(),
-                });
-                true
-            }
-            _ => false,
+        let entry = inner.individual_accesses.entry(key).or_default();
+        if entry.can_read() {
+            entry.read_by.push(ClaimOwner {
+                id: std::thread::current().id(),
+                location: *std::panic::Location::caller(),
+            });
+            true
+        } else {
+            false
         }
     }
 
+    /// Tries to claim write access. Returns false if somebody else is reading or writing to the same key,
+    /// or if a global lock prevents the access.
     #[track_caller]
-    /// Tries to claim write access, will return false if somebody else is reading or writing to the same key, or holding a global lock
     pub fn claim_write_access<K: AccessMapKey>(&self, key: K) -> bool {
-        if self.is_locked_exclusively() {
+        let mut inner = self.0.lock();
+
+        if !inner.global_lock.can_write() {
             return false;
         }
+
         let key = key.as_index();
-        let access = self.individual_accesses.try_entry(key);
-        match access.map(Entry::or_default) {
-            Some(mut entry) if entry.can_write() => {
-                entry.read_by.push(ClaimOwner {
-                    id: std::thread::current().id(),
-                    location: *std::panic::Location::caller(),
-                });
-                entry.written = true;
-                true
-            }
-            _ => false,
+        let entry = inner.individual_accesses.entry(key).or_default();
+        if entry.can_write() {
+            entry.read_by.push(ClaimOwner {
+                id: std::thread::current().id(),
+                location: *std::panic::Location::caller(),
+            });
+            entry.written = true;
+            true
+        } else {
+            false
         }
     }
 
-    /// Tries to claim global access. This type of access prevents any other access from happening simulatenously
-    /// Will return false if anybody else is currently accessing any part of the map
+    /// Tries to claim global access. This prevents any other access from happening simultaneously.
+    /// Returns false if any access is currently active.
     #[track_caller]
     pub fn claim_global_access(&self) -> bool {
-        let mut global_lock = self.global_lock.write();
+        let mut inner = self.0.lock();
 
-        if !self.individual_accesses.is_empty() || !global_lock.can_write() {
+        if !inner.individual_accesses.is_empty() || !inner.global_lock.can_write() {
             return false;
         }
-        global_lock.read_by.push(ClaimOwner {
+        inner.global_lock.read_by.push(ClaimOwner {
             id: std::thread::current().id(),
             location: *std::panic::Location::caller(),
         });
-        global_lock.written = true;
+        inner.global_lock.written = true;
         true
     }
 
-    /// Releases an access
+    /// Releases an access.
     ///
     /// # Panics
-    /// if the access is released from a different thread than it was claimed from
+    /// if the access is released from a different thread than it was claimed from.
     pub fn release_access<K: AccessMapKey>(&self, key: K) {
+        let mut inner = self.0.lock();
         let key = key.as_index();
-        let access = self.individual_accesses.entry(key);
-        match access {
-            dashmap::mapref::entry::Entry::Occupied(mut entry) => {
-                let entry_mut = entry.get_mut();
-                entry_mut.written = false;
-                if let Some(p) = entry_mut.read_by.pop() {
-                    assert!(
-                        p.id == std::thread::current().id(),
-                        "Access released from wrong thread, claimed at {}",
-                        p.location.display_location()
-                    );
-                }
-                if entry_mut.readers() == 0 {
-                    entry.remove();
-                }
+
+        if let Some(entry) = inner.individual_accesses.get_mut(&key) {
+            entry.written = false;
+            if let Some(claim) = entry.read_by.pop() {
+                assert!(
+                    claim.id == std::thread::current().id(),
+                    "Access released from wrong thread, claimed at {}",
+                    claim.location.display_location()
+                );
             }
-            dashmap::mapref::entry::Entry::Vacant(_) => {}
+            if entry.readers() == 0 {
+                inner.individual_accesses.remove(&key);
+            }
         }
     }
 
-    /// Releases a global access
+    /// Releases a global access.
     pub fn release_global_access(&self) {
-        let mut global_lock = self.global_lock.write();
-        global_lock.written = false;
-        if let Some(p) = global_lock.read_by.pop() {
+        let mut inner = self.0.lock();
+        inner.global_lock.written = false;
+        if let Some(claim) = inner.global_lock.read_by.pop() {
             assert!(
-                p.id == std::thread::current().id(),
-                "Access released from wrong thread, claimed at {}",
-                p.location.display_location()
+                claim.id == std::thread::current().id(),
+                "Global access released from wrong thread, claimed at {}",
+                claim.location.display_location()
             );
         }
     }
 
-    /// Lists all accesses
+    /// Lists all active accesses.
     pub fn list_accesses<K: AccessMapKey>(&self) -> Vec<(K, AccessCount)> {
-        self.individual_accesses
+        let inner = self.0.lock();
+        inner
+            .individual_accesses
             .iter()
-            .map(|e| (K::from_index(*e.key()), e.value().clone()))
+            .map(|(&key, count)| (K::from_index(key), count.clone()))
             .collect()
     }
 
-    /// Counts the number of accesses
+    /// Counts the number of active individual accesses.
     pub fn count_accesses(&self) -> usize {
-        self.individual_accesses.len()
+        if self.is_locked_exclusively() {
+            1
+        } else {
+            let inner = self.0.lock();
+            inner.individual_accesses.len()
+        }
     }
 
-    /// Releases all accesses
+    /// Releases all accesses.
     pub fn release_all_accesses(&self) {
-        self.individual_accesses.clear();
-        self.release_global_access();
+        let mut inner = self.0.lock();
+        inner.individual_accesses.clear();
+        // Release global access if held.
+        inner.global_lock.written = false;
+        inner.global_lock.read_by.clear();
     }
 
-    /// Accesses the location of a key
+    /// Returns the location where the key was first accessed.
     pub fn access_location<K: AccessMapKey>(
         &self,
         key: K,
     ) -> Option<std::panic::Location<'static>> {
+        let inner = self.0.lock();
         if key.as_index() == 0 {
-            return self.global_access_location();
+            // it blocked by individual access
+            inner.global_lock.as_location().or_else(|| {
+                inner
+                    .individual_accesses
+                    .iter()
+                    .next()
+                    .and_then(|(_, access_count)| access_count.as_location())
+            })
+        } else {
+            inner
+                .individual_accesses
+                .get(&key.as_index())
+                .and_then(|access| access.as_location())
         }
-
-        self.individual_accesses
-            .try_get(&key.as_index())
-            .try_unwrap()
-            .and_then(|access| access.as_location())
     }
 
-    /// Accesses the location of the first access
+    /// Returns the location of the first access among all entries.
     pub fn access_first_location(&self) -> Option<std::panic::Location<'static>> {
-        self.individual_accesses
-            .iter()
-            .find_map(|e| e.value().as_location())
+        let inner = self.0.lock();
+        inner
+            .individual_accesses
+            .values()
+            .find_map(|access| access.as_location())
     }
 }
 
@@ -461,6 +507,7 @@ macro_rules! with_global_access {
 #[cfg(test)]
 mod test {
     use super::*;
+
     #[test]
     fn test_list_accesses() {
         let access_map = AccessMap::default();
@@ -587,5 +634,89 @@ mod test {
         assert_eq!(ReflectAccessId::from_index(2), first_component);
         assert_eq!(ReflectAccessId::from_index(3), second_allocation);
         assert_eq!(ReflectAccessId::from_index(4), second_component);
+    }
+
+    #[test]
+    fn test_with_scope_unrolls_individual_accesses() {
+        let access_map = AccessMap::default();
+        // Claim a read access outside the scope
+        assert!(access_map.claim_read_access(0));
+
+        // Inside with_scope, claim additional accesses
+        access_map.with_scope(|| {
+            assert!(access_map.claim_read_access(1));
+            assert!(access_map.claim_write_access(2));
+            // At this point, individual_accesses contains keys 0, 1 and 2.
+            let accesses = access_map.list_accesses::<u64>();
+            assert_eq!(accesses.len(), 3);
+        });
+
+        // After with_scope returns, accesses claimed inside (keys 1 and 2) are unrolled.
+        let accesses = access_map.list_accesses::<u64>();
+        // Only the access claimed outside (key 0) remains.
+        assert_eq!(accesses.len(), 1);
+        let (k, count) = &accesses[0];
+        assert_eq!(*k, 0);
+        // The outside access remains valid.
+        assert!(count.readers() > 0);
+    }
+
+    #[test]
+    fn test_with_scope_unrolls_global_accesses() {
+        let access_map = AccessMap::default();
+
+        access_map.with_scope(|| {
+            assert!(access_map.claim_global_access());
+            // At this point, global_access is claimed.
+            assert!(!access_map.claim_read_access(0));
+        });
+
+        let accesses = access_map.list_accesses::<u64>();
+        assert_eq!(accesses.len(), 0);
+    }
+
+    #[test]
+    fn count_accesses_counts_globals() {
+        let access_map = AccessMap::default();
+
+        // Initially, no accesses are active.
+        assert_eq!(access_map.count_accesses(), 0);
+
+        // Claim global access. When global access is active,
+        // count_accesses should return 1.
+        assert!(access_map.claim_global_access());
+        assert_eq!(access_map.count_accesses(), 1);
+        access_map.release_global_access();
+
+        // Now claim individual accesses.
+        assert!(access_map.claim_read_access(1));
+        assert!(access_map.claim_write_access(2));
+        // Since two separate keys were claimed, count_accesses should return 2.
+        assert_eq!(access_map.count_accesses(), 2);
+
+        // Cleanup individual accesses.
+        access_map.release_access(1);
+        access_map.release_access(2);
+    }
+
+    #[test]
+    fn location_is_tracked_for_all_types_of_accesses() {
+        let access_map = AccessMap::default();
+
+        assert!(access_map.claim_global_access());
+        assert!(access_map
+            .access_location(ReflectAccessId::for_global())
+            .is_some());
+        access_map.release_global_access();
+
+        // Claim a read access
+        assert!(access_map.claim_read_access(1));
+        assert!(access_map.access_location(1).is_some());
+        access_map.release_access(1);
+
+        // Claim a write access
+        assert!(access_map.claim_write_access(2));
+        assert!(access_map.access_location(2).is_some());
+        access_map.release_access(2);
     }
 }

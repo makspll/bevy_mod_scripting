@@ -530,11 +530,11 @@ impl InteropError {
     }
 
     /// Thrown when an invalid access count is detected
-    pub fn invalid_access_count(count: usize, expected: usize, context: String) -> Self {
+    pub fn invalid_access_count(count: usize, expected: usize, context: impl Display) -> Self {
         Self(Arc::new(InteropErrorInner::InvalidAccessCount {
             count,
             expected,
-            context,
+            context: context.to_string(),
         }))
     }
 
@@ -801,6 +801,22 @@ pub enum InteropErrorInner {
 impl PartialEq for InteropErrorInner {
     fn eq(&self, _other: &Self) -> bool {
         match (self, _other) {
+            (
+                InteropErrorInner::MissingScript { script_id: a },
+                InteropErrorInner::MissingScript { script_id: b },
+            ) => a == b,
+            (
+                InteropErrorInner::InvalidAccessCount {
+                    count: a,
+                    expected: b,
+                    context: c,
+                },
+                InteropErrorInner::InvalidAccessCount {
+                    count: d,
+                    expected: e,
+                    context: f,
+                },
+            ) => a == d && b == e && c == f,
             (InteropErrorInner::StaleWorldAccess, InteropErrorInner::StaleWorldAccess) => true,
             (InteropErrorInner::MissingWorld, InteropErrorInner::MissingWorld) => true,
             (

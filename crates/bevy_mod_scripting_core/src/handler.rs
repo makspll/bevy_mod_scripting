@@ -63,7 +63,7 @@ impl<P: IntoScriptPluginParams> CallbackSettings<P> {
         runtime: &mut P::R,
         world: WorldGuard,
     ) -> Result<ScriptValue, ScriptError> {
-        let o = WorldGuard::with_existing_static_guard(world.clone(), |world| {
+        WorldGuard::with_existing_static_guard(world.clone(), |world| {
             ThreadWorldContainer.set_world(world)?;
             (handler)(
                 args,
@@ -74,8 +74,7 @@ impl<P: IntoScriptPluginParams> CallbackSettings<P> {
                 pre_handling_initializers,
                 runtime,
             )
-        });
-        o
+        })
     }
 }
 

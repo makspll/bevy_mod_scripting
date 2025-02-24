@@ -172,37 +172,38 @@ impl<'w> WorldAccessGuard<'w> {
 
     /// Runs a closure within an isolated access scope, releasing leftover accesses, should only be used in a single-threaded context.
     ///
+    /// Will throw an error if the length of the accesses after the closure is run, is not the same as at the beginning, to prevent safety issues.
+    ///
     /// Safety:
     /// - The caller must ensure it's safe to release any potentially locked accesses.
     pub(crate) unsafe fn with_access_scope<O, F: FnOnce() -> O>(
         &self,
         f: F,
     ) -> Result<O, InteropError> {
-        self.begin_access_scope()?;
-        let o = f();
-        unsafe { self.end_access_scope()? };
+        let length_start = self.inner.accesses.count_accesses();
+        let (o, length_end) = self.inner.accesses.with_scope(|| {
+            let o = f();
+            (o, self.inner.accesses.count_accesses())
+        });
+        if length_start != length_end {
+            return Err(InteropError::invalid_access_count(
+                length_end,
+                length_start,
+                "Component/Resource/Allocation locks (accesses) were not released correctly in an access scope",
+            ));
+        }
+
         Ok(o)
-    }
-
-    /// Begins a new access scope. Currently this simply throws an erorr if there are any accesses held. Should only be used in a single-threaded context
-    fn begin_access_scope(&self) -> Result<(), InteropError> {
-        // if self.inner.accesses.count_accesses() != 0 {
-        //     return Err(InteropError::invalid_access_count(self.inner.accesses.count_accesses(), 0, "When beginning access scope, presumably for a function call, some accesses are still held".to_owned()));
-        // }
-
-        Ok(())
-    }
-
-    /// Ends the access scope, releasing all accesses. Should only be used in a single-threaded context
-    unsafe fn end_access_scope(&self) -> Result<(), InteropError> {
-        self.inner.accesses.release_all_accesses();
-
-        Ok(())
     }
 
     /// Purely debugging utility to list all accesses currently held.
     pub fn list_accesses(&self) -> Vec<(ReflectAccessId, AccessCount)> {
         self.inner.accesses.list_accesses()
+    }
+
+    /// Returns the number of accesses currently held.
+    pub fn access_len(&self) -> usize {
+        self.inner.accesses.count_accesses()
     }
 
     /// Retrieves the underlying unsafe world cell, with no additional guarantees of safety
@@ -1387,6 +1388,42 @@ mod test {
             sneaky_clone.map(|c| c.is_valid()),
             Some(false),
             "scoped world was not invalidated"
+        );
+    }
+
+    #[test]
+    fn test_with_access_scope_success() {
+        let mut world = setup_world(|_, _| {});
+        let guard = WorldAccessGuard::new(&mut world);
+
+        // within the access scope, no extra accesses are claimed
+        let result = unsafe { guard.with_access_scope(|| 100) };
+        assert_eq!(result.unwrap(), 100);
+    }
+
+    #[test]
+    fn test_with_access_scope_error_unreleased_access() {
+        let mut world = setup_world(|_, _| {});
+        let guard = WorldAccessGuard::new(&mut world);
+
+        // Inside the access scope, claim a global access and do not release it.
+        let result: Result<_, InteropError> = unsafe {
+            guard.with_access_scope(|| {
+                // Claim global access which modifies the access count
+                // (simulate an access leak by not calling release_global_access)
+                guard.claim_global_access();
+                // Return a dummy value
+                200
+            })
+        };
+
+        assert_eq!(
+            result,
+            Err(InteropError::invalid_access_count(
+                1,
+                0,
+                "Component/Resource/Allocation locks (accesses) were not released correctly in an access scope"
+            ))
         );
     }
 }
