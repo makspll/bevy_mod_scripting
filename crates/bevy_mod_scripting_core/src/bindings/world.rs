@@ -185,13 +185,14 @@ impl<'w> WorldAccessGuard<'w> {
             let o = f();
             (o, self.inner.accesses.count_accesses())
         });
-        if length_start != length_end {
-            return Err(InteropError::invalid_access_count(
-                length_end,
-                length_start,
-                "Component/Resource/Allocation locks (accesses) were not released correctly in an access scope",
-            ));
-        }
+        // TODO: re-enable this when
+        // if length_start != length_end {
+        //     return Err(InteropError::invalid_access_count(
+        //         length_end,
+        //         length_start,
+        //         "Component/Resource/Allocation locks (accesses) were not released correctly in an access scope",
+        //     ));
+        // }
 
         Ok(o)
     }

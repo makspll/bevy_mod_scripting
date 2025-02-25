@@ -8,8 +8,8 @@ use bevy::{
 };
 
 /// A trait that all script runtimes must implement.
-pub trait Runtime: 'static + Send + Sync {}
-impl<T: 'static + Send + Sync> Runtime for T {}
+pub trait Runtime: Default + 'static + Send + Sync {}
+impl<T: Default + 'static + Send + Sync> Runtime for T {}
 
 /// A function that initializes a runtime.
 pub type RuntimeInitializer<P> =
@@ -43,6 +43,14 @@ impl<P: IntoScriptPluginParams> Clone for RuntimeSettings<P> {
 pub struct RuntimeContainer<P: IntoScriptPluginParams> {
     /// The runtime contained within.
     pub runtime: P::R,
+}
+
+impl<P: IntoScriptPluginParams> Default for RuntimeContainer<P> {
+    fn default() -> Self {
+        Self {
+            runtime: Default::default(),
+        }
+    }
 }
 
 pub(crate) fn initialize_runtime<P: IntoScriptPluginParams>(

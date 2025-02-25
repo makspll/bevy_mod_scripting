@@ -95,6 +95,21 @@ pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
     pub supported_extensions: &'static [&'static str],
 }
 
+impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P> {
+    fn default() -> Self {
+        Self {
+            runtime_settings: Default::default(),
+            callback_handler: CallbackSettings::<P>::default().callback_handler,
+            context_builder: Default::default(),
+            context_assigner: Default::default(),
+            language_mapper: Default::default(),
+            context_initializers: Default::default(),
+            context_pre_handling_initializers: Default::default(),
+            supported_extensions: Default::default(),
+        }
+    }
+}
+
 impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.insert_resource(self.runtime_settings.clone())

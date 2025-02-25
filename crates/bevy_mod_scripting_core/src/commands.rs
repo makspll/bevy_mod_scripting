@@ -5,12 +5,12 @@ use crate::{
     bindings::WorldGuard,
     context::ContextBuilder,
     event::{IntoCallbackLabel, OnScriptLoaded, OnScriptUnloaded},
-    extractors::{HandlerContext, WithWorldGuard},
+    extractors::{with_handler_system_state, HandlerContext},
     handler::{handle_script_errors, CallbackSettings},
     script::{Script, ScriptId, StaticScripts},
     IntoScriptPluginParams,
 };
-use bevy::{asset::Handle, ecs::system::SystemState, log::debug, prelude::Command};
+use bevy::{asset::Handle, log::debug, prelude::Command};
 use std::marker::PhantomData;
 
 /// Deletes a script with the given ID
@@ -33,67 +33,62 @@ impl<P: IntoScriptPluginParams> DeleteScript<P> {
 
 impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
     fn apply(self, world: &mut bevy::prelude::World) {
-        let mut system_state: SystemState<WithWorldGuard<HandlerContext<P>>> =
-            SystemState::new(world);
+        with_handler_system_state(world, |guard, handler_ctxt: &mut HandlerContext<P>| {
+            if let Some(script) = handler_ctxt.scripts.scripts.remove(&self.id) {
+                debug!("Deleting script with id: {}", self.id);
 
-        let mut with_guard = system_state.get_mut(world);
-
-        let (guard, handler_ctxt) = with_guard.get_mut();
-
-        if let Some(script) = handler_ctxt.scripts.scripts.remove(&self.id) {
-            debug!("Deleting script with id: {}", self.id);
-
-            match handler_ctxt.script_contexts.get_mut(script.context_id) {
-                Some(context) => {
-                    // first let the script uninstall itself
-                    match (CallbackSettings::<P>::call)(
-                        handler_ctxt.callback_settings.callback_handler,
-                        vec![],
-                        bevy::ecs::entity::Entity::from_raw(0),
-                        &self.id,
-                        &OnScriptUnloaded::into_callback_label(),
-                        context,
-                        &handler_ctxt
-                            .context_loading_settings
-                            .context_pre_handling_initializers,
-                        &mut handler_ctxt.runtime_container.runtime,
-                        guard.clone(),
-                    ) {
-                        Ok(_) => {}
-                        Err(e) => {
-                            handle_script_errors(
-                                guard,
-                                [e.with_context(format!(
-                                    "Running unload hook for script with id: {}. Language: {}",
-                                    self.id,
-                                    P::LANGUAGE
-                                ))]
-                                .into_iter(),
-                            );
+                match handler_ctxt.script_contexts.get_mut(script.context_id) {
+                    Some(context) => {
+                        // first let the script uninstall itself
+                        match (CallbackSettings::<P>::call)(
+                            handler_ctxt.callback_settings.callback_handler,
+                            vec![],
+                            bevy::ecs::entity::Entity::from_raw(0),
+                            &self.id,
+                            &OnScriptUnloaded::into_callback_label(),
+                            context,
+                            &handler_ctxt
+                                .context_loading_settings
+                                .context_pre_handling_initializers,
+                            &mut handler_ctxt.runtime_container.runtime,
+                            guard.clone(),
+                        ) {
+                            Ok(_) => {}
+                            Err(e) => {
+                                handle_script_errors(
+                                    guard,
+                                    [e.with_context(format!(
+                                        "Running unload hook for script with id: {}. Language: {}",
+                                        self.id,
+                                        P::LANGUAGE
+                                    ))]
+                                    .into_iter(),
+                                );
+                            }
                         }
-                    }
 
-                    debug!("Removing script with id: {}", self.id);
-                    (handler_ctxt.context_loading_settings.assigner.remove)(
-                        script.context_id,
-                        &script,
-                        &mut handler_ctxt.script_contexts,
-                    )
-                }
-                None => {
-                    bevy::log::error!(
-                            "Could not find context with id: {} corresponding to script with id: {}. Removing script without running callbacks.",
+                        debug!("Removing script with id: {}", self.id);
+                        (handler_ctxt.context_loading_settings.assigner.remove)(
                             script.context_id,
-                            self.id
-                        );
-                }
-            };
-        } else {
-            bevy::log::error!(
-                "Attempted to delete script with id: {} but it does not exist, doing nothing!",
-                self.id
-            );
-        }
+                            &script,
+                            &mut handler_ctxt.script_contexts,
+                        )
+                    }
+                    None => {
+                        bevy::log::error!(
+                                "Could not find context with id: {} corresponding to script with id: {}. Removing script without running callbacks.",
+                                script.context_id,
+                                self.id
+                            );
+                    }
+                };
+            } else {
+                bevy::log::error!(
+                    "Attempted to delete script with id: {} but it does not exist, doing nothing!",
+                    self.id
+                );
+            }
+        })
     }
 }
 
@@ -207,86 +202,84 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
 
 impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
     fn apply(self, world: &mut bevy::prelude::World) {
-        let mut system_state: SystemState<WithWorldGuard<HandlerContext<P>>> =
-            SystemState::new(world);
+        with_handler_system_state(world, |guard, handler_ctxt: &mut HandlerContext<P>| {
+            let script = handler_ctxt.scripts.scripts.get(&self.id);
+            let previous_context_id = script.as_ref().map(|s| s.context_id);
+            debug!(
+                "{}: CreateOrUpdateScript command applying (script_id: {}, previous_context_id: {:?})",
+                P::LANGUAGE,
+                self.id,
+                previous_context_id
+            );
 
-        let mut with_guard = system_state.get_mut(world);
+            match previous_context_id {
+                Some(previous_context_id) => {
+                    bevy::log::debug!(
+                        "{}: script with id already has a context: {}",
+                        P::LANGUAGE,
+                        self.id
+                    );
+                    self.reload_context(guard.clone(), handler_ctxt, previous_context_id);
+                }
+                None => {
+                    let log_context = format!("{}: Loading script: {}", P::LANGUAGE, self.id);
 
-        let (guard, handler_ctxt) = with_guard.get_mut();
-
-        let script = handler_ctxt.scripts.scripts.get(&self.id);
-        let previous_context_id = script.as_ref().map(|s| s.context_id);
-        debug!(
-            "{}: CreateOrUpdateScript command applying (script_id: {}, previous_context_id: {:?})",
-            P::LANGUAGE,
-            self.id,
-            previous_context_id
-        );
-
-        match previous_context_id {
-            Some(previous_context_id) => {
-                bevy::log::debug!(
-                    "{}: script with id already has a context: {}",
-                    P::LANGUAGE,
-                    self.id
-                );
-                self.reload_context(guard.clone(), handler_ctxt, previous_context_id);
-            }
-            None => {
-                let log_context = format!("{}: Loading script: {}", P::LANGUAGE, self.id);
-
-                let new_context_id = (handler_ctxt.context_loading_settings.assigner.assign)(
-                    &self.id,
-                    &self.content,
-                    &handler_ctxt.script_contexts,
-                )
-                .unwrap_or_else(|| handler_ctxt.script_contexts.allocate_id());
-                if handler_ctxt.script_contexts.contains(new_context_id) {
-                    self.reload_context(guard, handler_ctxt, new_context_id);
-                } else {
-                    // load new context
-                    bevy::log::debug!("{}", log_context);
-                    let ctxt = (ContextBuilder::<P>::load)(
-                        handler_ctxt.context_loading_settings.loader.load,
+                    let new_context_id = (handler_ctxt.context_loading_settings.assigner.assign)(
                         &self.id,
                         &self.content,
-                        &handler_ctxt.context_loading_settings.context_initializers,
-                        &handler_ctxt
-                            .context_loading_settings
-                            .context_pre_handling_initializers,
-                        guard.clone(),
-                        &mut handler_ctxt.runtime_container.runtime,
-                    );
+                        &handler_ctxt.script_contexts,
+                    )
+                    .unwrap_or_else(|| handler_ctxt.script_contexts.allocate_id());
+                    if handler_ctxt.script_contexts.contains(new_context_id) {
+                        self.reload_context(guard, handler_ctxt, new_context_id);
+                    } else {
+                        // load new context
+                        bevy::log::debug!("{}", log_context);
+                        let ctxt = (ContextBuilder::<P>::load)(
+                            handler_ctxt.context_loading_settings.loader.load,
+                            &self.id,
+                            &self.content,
+                            &handler_ctxt.context_loading_settings.context_initializers,
+                            &handler_ctxt
+                                .context_loading_settings
+                                .context_pre_handling_initializers,
+                            guard.clone(),
+                            &mut handler_ctxt.runtime_container.runtime,
+                        );
 
-                    let mut ctxt = match ctxt {
-                        Ok(ctxt) => ctxt,
-                        Err(e) => {
-                            handle_script_errors(guard, [e.with_context(log_context)].into_iter());
-                            return;
+                        let mut ctxt = match ctxt {
+                            Ok(ctxt) => ctxt,
+                            Err(e) => {
+                                handle_script_errors(
+                                    guard,
+                                    [e.with_context(log_context)].into_iter(),
+                                );
+                                return;
+                            }
+                        };
+
+                        self.run_on_load_callback(handler_ctxt, guard, &mut ctxt);
+
+                        if handler_ctxt
+                            .script_contexts
+                            .insert_with_id(new_context_id, ctxt)
+                            .is_some()
+                        {
+                            bevy::log::warn!("{}: Context with id {} was not expected to exist. Overwriting it with a new context. This might happen if a script is not completely removed.", P::LANGUAGE, new_context_id);
                         }
-                    };
-
-                    self.run_on_load_callback(handler_ctxt, guard, &mut ctxt);
-
-                    if handler_ctxt
-                        .script_contexts
-                        .insert_with_id(new_context_id, ctxt)
-                        .is_some()
-                    {
-                        bevy::log::warn!("{}: Context with id {} was not expected to exist. Overwriting it with a new context. This might happen if a script is not completely removed.", P::LANGUAGE, new_context_id);
                     }
-                }
 
-                handler_ctxt.scripts.scripts.insert(
-                    self.id.clone(),
-                    Script {
-                        id: self.id,
-                        asset: self.asset,
-                        context_id: new_context_id,
-                    },
-                );
+                    handler_ctxt.scripts.scripts.insert(
+                        self.id.clone(),
+                        Script {
+                            id: self.id,
+                            asset: self.asset,
+                            context_id: new_context_id,
+                        },
+                    );
+                }
             }
-        }
+        })
     }
 }
 

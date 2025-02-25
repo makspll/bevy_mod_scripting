@@ -2,7 +2,7 @@
 
 use crate::{
     bindings::{ThreadWorldContainer, WorldContainer, WorldGuard},
-    error::ScriptError,
+    error::{InteropError, ScriptError},
     script::{Script, ScriptId},
     IntoScriptPluginParams,
 };
@@ -92,6 +92,17 @@ pub struct ContextLoadingSettings<P: IntoScriptPluginParams> {
     pub context_pre_handling_initializers: Vec<ContextPreHandlingInitializer<P>>,
 }
 
+impl<P: IntoScriptPluginParams> Default for ContextLoadingSettings<P> {
+    fn default() -> Self {
+        Self {
+            loader: ContextBuilder::default(),
+            assigner: ContextAssigner::default(),
+            context_initializers: Default::default(),
+            context_pre_handling_initializers: Default::default(),
+        }
+    }
+}
+
 impl<T: IntoScriptPluginParams> Clone for ContextLoadingSettings<T> {
     fn clone(&self) -> Self {
         Self {
@@ -127,6 +138,17 @@ pub struct ContextBuilder<P: IntoScriptPluginParams> {
     pub load: ContextLoadFn<P>,
     /// The function to reload a context
     pub reload: ContextReloadFn<P>,
+}
+
+impl<P: IntoScriptPluginParams> Default for ContextBuilder<P> {
+    fn default() -> Self {
+        Self {
+            load: |_, _, _, _, _| Err(InteropError::invariant("no context loader set").into()),
+            reload: |_, _, _, _, _, _| {
+                Err(InteropError::invariant("no context reloader set").into())
+            },
+        }
+    }
 }
 
 impl<P: IntoScriptPluginParams> ContextBuilder<P> {

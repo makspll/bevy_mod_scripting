@@ -73,6 +73,7 @@ function on_click(x,y)
 end
 
 function on_update()
+    info("Lua: updating")
     local cells = fetch_life_state().cells
     local settings = world.get_resource(Settings)
     local dimensions = settings.physical_grid_dimensions

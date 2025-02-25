@@ -8,14 +8,19 @@ use crate::{
     context::ContextPreHandlingInitializer,
     error::{InteropErrorInner, ScriptError},
     event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent},
-    extractors::{HandlerContext, WithWorldGuard},
+    extractors::{EventReaderScope, HandlerContext, WithWorldGuard},
     script::{ScriptComponent, ScriptId},
     IntoScriptPluginParams,
 };
 use bevy::{
-    ecs::{entity::Entity, system::Resource, world::Mut},
+    ecs::{
+        entity::Entity,
+        query::QueryState,
+        system::{Local, Resource, SystemState},
+        world::{Mut, World},
+    },
     log::trace_once,
-    prelude::{EventReader, Events, Query, Ref},
+    prelude::{Events, Ref},
 };
 
 /// A function that handles a callback event
@@ -34,6 +39,14 @@ pub type HandlerFn<P> = fn(
 pub struct CallbackSettings<P: IntoScriptPluginParams> {
     /// The callback handler function
     pub callback_handler: HandlerFn<P>,
+}
+
+impl<P: IntoScriptPluginParams> Default for CallbackSettings<P> {
+    fn default() -> Self {
+        Self {
+            callback_handler: |_, _, _, _, _, _, _| Ok(ScriptValue::Unit),
+        }
+    }
 }
 
 impl<P: IntoScriptPluginParams> Clone for CallbackSettings<P> {
@@ -93,35 +106,68 @@ macro_rules! push_err_and_continue {
 /// Passes events with the specified label to the script callback with the same name and runs the callback.
 ///
 /// If any of the resources required for the handler are missing, the system will log this issue and do nothing.
-#[profiling::function]
 pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
-    mut script_events: EventReader<ScriptCallbackEvent>,
-    entities: Query<(Entity, Ref<ScriptComponent>)>,
+    world: &mut World,
+    mut state: Local<
+        SystemState<(
+            Local<QueryState<(Entity, Ref<ScriptComponent>)>>,
+            EventReaderScope<ScriptCallbackEvent>,
+            WithWorldGuard<HandlerContext<P>>,
+        )>,
+    >,
+) {
+    // we wrap the inner event handler, so that we can immediately re-insert all the resources back.
+    // otherwise this would happen in the next schedule
+    {
+        let (entity_query_state, script_events, handler_ctxt) = state.get_mut(world);
+        event_handler_inner::<L, P>(entity_query_state, script_events, handler_ctxt);
+    }
+    state.apply(world);
+}
+
+#[profiling::function]
+fn event_handler_inner<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
+    mut entity_query_state: Local<QueryState<(Entity, Ref<ScriptComponent>)>>,
+    mut script_events: EventReaderScope<ScriptCallbackEvent>,
     mut handler_ctxt: WithWorldGuard<HandlerContext<P>>,
 ) {
     let (guard, handler_ctxt) = handler_ctxt.get_mut();
     let mut errors = Vec::default();
 
     let events = script_events.read().cloned().collect::<Vec<_>>();
-    let entity_scripts = entities
-        .iter()
-        .map(|(e, s)| (e, s.0.clone()))
-        .chain(
-            // on top of script components we also want to run static scripts
-            // semantically these are just scripts with no entity, in our case we use an invalid entity index 0
-            handler_ctxt
-                .static_scripts
-                .scripts
-                .iter()
-                .map(|s| (Entity::from_raw(0), vec![s.clone()])),
-        )
-        .collect::<Vec<_>>();
+
+    // query entities + chain static scripts
+    let entity_and_static_scripts = guard.with_global_access(|world| {
+        entity_query_state
+            .iter(world)
+            .map(|(e, s)| (e, s.0.clone()))
+            .chain(
+                handler_ctxt
+                    .static_scripts
+                    .scripts
+                    .iter()
+                    .map(|s| (Entity::from_raw(0), vec![s.clone()])),
+            )
+            .collect::<Vec<_>>()
+    });
+
+    let entity_and_static_scripts = match entity_and_static_scripts {
+        Ok(entity_and_static_scripts) => entity_and_static_scripts,
+        Err(e) => {
+            bevy::log::error!(
+                "{}: Failed to query entities with scripts: {}",
+                P::LANGUAGE,
+                e.display_with_world(guard.clone())
+            );
+            return;
+        }
+    };
 
     for event in events
         .into_iter()
         .filter(|e| e.label == L::into_callback_label())
     {
-        for (entity, entity_scripts) in entity_scripts.iter() {
+        for (entity, entity_scripts) in entity_and_static_scripts.iter() {
             for script_id in entity_scripts.iter() {
                 match &event.recipients {
                     crate::event::Recipients::Script(target_script_id)
@@ -204,6 +250,7 @@ mod test {
     use std::{borrow::Cow, collections::HashMap};
 
     use bevy::app::{App, Update};
+    use test_utils::make_test_plugin;
 
     use crate::{
         bindings::script_value::ScriptValue,
@@ -223,28 +270,7 @@ mod test {
         }
     }
 
-    struct TestPlugin;
-
-    impl IntoScriptPluginParams for TestPlugin {
-        type C = TestContext;
-        type R = TestRuntime;
-
-        const LANGUAGE: crate::asset::Language = crate::asset::Language::Unknown;
-
-        fn build_runtime() -> Self::R {
-            TestRuntime {
-                invocations: vec![],
-            }
-        }
-    }
-
-    struct TestRuntime {
-        pub invocations: Vec<(Entity, ScriptId)>,
-    }
-
-    struct TestContext {
-        pub invocations: Vec<ScriptValue>,
-    }
+    make_test_plugin!(crate);
 
     fn setup_app<L: IntoCallbackLabel + 'static, P: IntoScriptPluginParams>(
         handler_fn: HandlerFn<P>,
