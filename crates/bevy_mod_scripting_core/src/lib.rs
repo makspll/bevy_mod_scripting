@@ -209,7 +209,7 @@ impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugi
         self
     }
 
-    fn enable_context_sharing(mut self) -> Self{
+    fn enable_context_sharing(mut self) -> Self {
         self.as_mut().context_assigner = ContextAssigner::new_global_context_assigner();
         self
     }
