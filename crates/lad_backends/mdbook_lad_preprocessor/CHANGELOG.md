@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2](https://github.com/makspll/bevy_mod_scripting/compare/mdbook_lad_preprocessor-v0.1.1...mdbook_lad_preprocessor-v0.1.2) - 2025-02-25
+
+### Added
+
+- *(mdbook)* improve mdbook generics behaviour and fix broken links (#319)
+
 ## [0.1.1](https://github.com/makspll/bevy_mod_scripting/compare/mdbook_lad_preprocessor-v0.1.0...mdbook_lad_preprocessor-v0.1.1) - 2025-02-23
 
 ### Added
