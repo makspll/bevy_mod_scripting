@@ -19,7 +19,7 @@ use bevy::{
         system::{Local, Resource, SystemState},
         world::{Mut, World},
     },
-    log::trace_once,
+    log::{self, trace_once},
     prelude::{Events, Ref},
 };
 
@@ -108,13 +108,11 @@ macro_rules! push_err_and_continue {
 /// If any of the resources required for the handler are missing, the system will log this issue and do nothing.
 pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     world: &mut World,
-    mut state: Local<
-        SystemState<(
-            Local<QueryState<(Entity, Ref<ScriptComponent>)>>,
-            EventReaderScope<ScriptCallbackEvent>,
-            WithWorldGuard<HandlerContext<P>>,
-        )>,
-    >,
+    state: &mut SystemState<(
+        Local<QueryState<(Entity, Ref<ScriptComponent>)>>,
+        EventReaderScope<ScriptCallbackEvent>,
+        WithWorldGuard<HandlerContext<P>>,
+    )>,
 ) {
     // we wrap the inner event handler, so that we can immediately re-insert all the resources back.
     // otherwise this would happen in the next schedule
@@ -132,6 +130,12 @@ fn event_handler_inner<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     mut handler_ctxt: WithWorldGuard<HandlerContext<P>>,
 ) {
     let (guard, handler_ctxt) = handler_ctxt.get_mut();
+    // bevy::log::debug!(
+    //     "{}: scripts:{} contexts:{}",
+    //     P::LANGUAGE,
+    //     handler_ctxt.scripts.scripts.len(),
+    //     handler_ctxt.script_contexts.contexts.len()
+    // );
     let mut errors = Vec::default();
 
     let events = script_events.read().cloned().collect::<Vec<_>>();
@@ -183,15 +187,17 @@ fn event_handler_inner<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
                     {
                         continue
                     }
-                    _ => (),
+                    _ => {}
                 }
 
-                match handler_ctxt.call::<L>(
+                let call_result = handler_ctxt.call::<L>(
                     script_id.clone(),
                     *entity,
                     event.args.clone(),
                     guard.clone(),
-                ) {
+                );
+
+                match call_result {
                     Ok(_) => {}
                     Err(e) => {
                         match e.downcast_interop_inner() {
@@ -249,7 +255,12 @@ pub fn handle_script_errors<I: Iterator<Item = ScriptError> + Clone>(world: Worl
 mod test {
     use std::{borrow::Cow, collections::HashMap};
 
-    use bevy::app::{App, Update};
+    use bevy::{
+        app::{App, Update},
+        asset::AssetPlugin,
+        diagnostic::DiagnosticsPlugin,
+        ecs::world::FromWorld,
+    };
     use test_utils::make_test_plugin;
 
     use crate::{
@@ -544,5 +555,34 @@ mod test {
                 ScriptValue::String("test_script_id".into())
             ]
         );
+    }
+
+    #[test]
+    fn event_handler_reinserts_resources() {
+        let mut app = App::new();
+        app.add_plugins((
+            AssetPlugin::default(),
+            DiagnosticsPlugin,
+            TestPlugin::default(),
+        ));
+
+        assert!(app
+            .world()
+            .get_resource::<Events<ScriptCallbackEvent>>()
+            .is_some());
+
+        let mut local = SystemState::from_world(app.world_mut());
+
+        assert!(!app
+            .world()
+            .get_resource::<Events<ScriptCallbackEvent>>()
+            .is_some());
+
+        event_handler::<OnTestCallback, TestPlugin>(app.world_mut(), &mut local);
+
+        assert!(app
+            .world()
+            .get_resource::<Events<ScriptCallbackEvent>>()
+            .is_some());
     }
 }

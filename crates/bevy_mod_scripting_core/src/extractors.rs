@@ -75,20 +75,23 @@ unsafe impl<T: Resource + Default> SystemParam for ResScope<'_, T> {
     type Item<'world, 'state> = ResScope<'state, T>;
 
     fn init_state(
-        world: &mut World,
+        _world: &mut World,
         system_meta: &mut bevy::ecs::system::SystemMeta,
     ) -> Self::State {
         system_meta.set_has_deferred();
-        (world.remove_resource().unwrap_or_default(), false)
+        (T::default(), false)
     }
 
     unsafe fn get_param<'world, 'state>(
         state: &'state mut Self::State,
         _system_meta: &bevy::ecs::system::SystemMeta,
-        _world: bevy::ecs::world::unsafe_world_cell::UnsafeWorldCell<'world>,
+        world: bevy::ecs::world::unsafe_world_cell::UnsafeWorldCell<'world>,
         _change_tick: bevy::ecs::component::Tick,
     ) -> Self::Item<'world, 'state> {
         state.1 = true;
+        if let Some(mut r) = world.get_resource_mut::<T>() {
+            std::mem::swap(&mut state.0, &mut r);
+        }
         ResScope(&mut state.0)
     }
 
@@ -104,7 +107,7 @@ unsafe impl<T: Resource + Default> SystemParam for ResScope<'_, T> {
     }
 }
 
-/// A version of [`EventReader`] which behaves with the same semantics as [`ResScope`].
+/// A version of [`bevy::ecs::event::EventReader`] which behaves just like [`ResScope`].
 #[derive(SystemParam)]
 pub struct EventReaderScope<'s, T: Event> {
     events: ResScope<'s, Events<T>>,
@@ -359,6 +362,7 @@ mod test {
             component::Component,
             event::{Event, EventReader},
             system::{Query, ResMut, Resource},
+            world::FromWorld,
         },
     };
     use test_utils::make_test_plugin;
@@ -447,5 +451,16 @@ mod test {
 
         // check the resources are re-inserted
         assert!(app.world().contains_resource::<Res>());
+    }
+
+    #[test]
+    pub fn rescope_does_not_remove_until_system_call() {
+        let mut world = World::new();
+        world.insert_resource(Res);
+
+        // this will call init, and that should't remove the resource
+        assert!(world.contains_resource::<Res>());
+        SystemState::<ResScope<Res>>::from_world(&mut world);
+        assert!(world.contains_resource::<Res>());
     }
 }
