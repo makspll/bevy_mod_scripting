@@ -183,8 +183,8 @@ pub trait ConfigureScriptPlugin {
     /// Switch the context assigning strategy to a global context assigner.
     ///
     /// This means that all scripts will share the same context. This is useful for when you want to share data between scripts easilly.
-    /// Be careful however as this also means that scripts can interfere with each other in unexpected ways!.
-    fn enable_context_sharing(self);
+    /// Be careful however as this also means that scripts can interfere with each other in unexpected ways! Including overwriting each other's handlers.
+    fn enable_context_sharing(self) -> Self;
 }
 
 impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugin for P {
@@ -209,8 +209,9 @@ impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugi
         self
     }
 
-    fn enable_context_sharing(mut self) {
+    fn enable_context_sharing(mut self) -> Self{
         self.as_mut().context_assigner = ContextAssigner::new_global_context_assigner();
+        self
     }
 }
 
