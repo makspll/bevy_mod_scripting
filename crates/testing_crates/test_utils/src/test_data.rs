@@ -1,4 +1,5 @@
 use std::alloc::Layout;
+use std::collections::HashMap;
 
 use bevy::asset::AssetPlugin;
 use bevy::ecs::{component::*, world::World};
@@ -124,6 +125,7 @@ pub struct TestResourceWithVariousFields {
     pub float: f32,
     pub bool: bool,
     pub vec_usize: Vec<usize>,
+    pub string_map: HashMap<String, String>,
 }
 
 impl TestResourceWithVariousFields {
@@ -135,6 +137,10 @@ impl TestResourceWithVariousFields {
             float: 69.0,
             bool: true,
             vec_usize: vec![1, 2, 3, 4, 5],
+            string_map: vec![("foo", "bar"), ("zoo", "zed")]
+                .into_iter()
+                .map(|(a, b)| (a.to_owned(), b.to_owned()))
+                .collect(),
         }
     }
 }

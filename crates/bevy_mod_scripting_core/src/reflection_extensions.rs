@@ -419,6 +419,8 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
 
 /// Extension trait for TypeInfos providing additional functionality for working with type information.
 pub trait TypeInfoExtensions {
+    /// Returns the inner type of the map if the type is a map, otherwise
+    fn map_inner_types(&self) -> Option<(TypeId, TypeId)>;
     /// Returns the inner type of the list if the type is a list, otherwise None.
     fn list_inner_type(&self) -> Option<TypeId>;
     /// Returns true if the type is a list.
@@ -450,6 +452,11 @@ impl TypeInfoExtensions for TypeInfo {
 
     fn list_inner_type(&self) -> Option<TypeId> {
         Some(self.as_list().ok()?.item_ty().id())
+    }
+
+    fn map_inner_types(&self) -> Option<(TypeId, TypeId)> {
+        let map = self.as_map().ok()?;
+        Some((map.key_ty().id(), map.value_ty().id()))
     }
 
     fn is_type(&self, crate_name: Option<&str>, type_ident: &str) -> bool {
