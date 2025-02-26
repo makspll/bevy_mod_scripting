@@ -149,6 +149,16 @@ impl TestResourceWithVariousFields {
 
 #[derive(Component, Reflect, PartialEq, Eq, Debug, Default)]
 #[reflect(Component, Default)]
+pub struct UnitStruct;
+
+impl UnitStruct {
+    pub fn init() -> Self {
+        Self
+    }
+}
+
+#[derive(Component, Reflect, PartialEq, Eq, Debug, Default)]
+#[reflect(Component, Default)]
 pub struct SimpleStruct {
     pub foo: usize,
 }
@@ -264,14 +274,15 @@ impl_test_component_ids!(
         CompWithDefault => 2,
         CompWithDefaultAndComponentData => 3,
         CompWithFromWorldAndComponentData => 4,
-        SimpleStruct => 5,
-        SimpleTupleStruct => 6,
-        SimpleEnum => 7,
+        UnitStruct => 5,
+        SimpleStruct => 6,
+        SimpleTupleStruct => 7,
+        SimpleEnum => 8,
     ],
     [
-        TestResource => 8,
-        ResourceWithDefault => 9,
-        TestResourceWithVariousFields => 10,
+        TestResource => 9,
+        ResourceWithDefault => 10,
+        TestResourceWithVariousFields => 11,
     ]
 );
 
