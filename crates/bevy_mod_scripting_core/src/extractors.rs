@@ -151,6 +151,30 @@ pub struct HandlerContext<'s, P: IntoScriptPluginParams> {
 }
 
 impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
+    /// Splits the handler context into its individual components.
+    ///
+    /// Useful if you are needing multiple resources from the handler context.
+    /// Otherwise the borrow checker will prevent you from borrowing the handler context mutably multiple times.
+    pub fn destructure(
+        &mut self,
+    ) -> (
+        &mut CallbackSettings<P>,
+        &mut ContextLoadingSettings<P>,
+        &mut Scripts,
+        &mut RuntimeContainer<P>,
+        &mut ScriptContexts<P>,
+        &mut StaticScripts,
+    ) {
+        (
+            &mut self.callback_settings,
+            &mut self.context_loading_settings,
+            &mut self.scripts,
+            &mut self.runtime_container,
+            &mut self.script_contexts,
+            &mut self.static_scripts,
+        )
+    }
+
     /// Get the callback settings
     pub fn callback_settings(&mut self) -> &mut CallbackSettings<P> {
         &mut self.callback_settings
