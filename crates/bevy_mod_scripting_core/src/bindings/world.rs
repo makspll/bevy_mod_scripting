@@ -172,29 +172,13 @@ impl<'w> WorldAccessGuard<'w> {
 
     /// Runs a closure within an isolated access scope, releasing leftover accesses, should only be used in a single-threaded context.
     ///
-    /// Will throw an error if the length of the accesses after the closure is run, is not the same as at the beginning, to prevent safety issues.
-    ///
     /// Safety:
     /// - The caller must ensure it's safe to release any potentially locked accesses.
     pub(crate) unsafe fn with_access_scope<O, F: FnOnce() -> O>(
         &self,
         f: F,
     ) -> Result<O, InteropError> {
-        let length_start = self.inner.accesses.count_accesses();
-        let (o, length_end) = self.inner.accesses.with_scope(|| {
-            let o = f();
-            (o, self.inner.accesses.count_accesses())
-        });
-        // TODO: re-enable this when
-        // if length_start != length_end {
-        //     return Err(InteropError::invalid_access_count(
-        //         length_end,
-        //         length_start,
-        //         "Component/Resource/Allocation locks (accesses) were not released correctly in an access scope",
-        //     ));
-        // }
-
-        Ok(o)
+        Ok(self.inner.accesses.with_scope(f))
     }
 
     /// Purely debugging utility to list all accesses currently held.
