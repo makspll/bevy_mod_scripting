@@ -2,7 +2,9 @@
 
 use std::{any::TypeId, ffi::OsString, path::PathBuf};
 
-use bevy::reflect::{DynamicEnum, DynamicList, DynamicTuple, DynamicVariant, PartialReflect};
+use bevy::reflect::{
+    DynamicEnum, DynamicList, DynamicMap, DynamicTuple, DynamicVariant, Map, PartialReflect,
+};
 
 use crate::{
     bindings::{function::from::FromScript, WorldGuard},
@@ -97,6 +99,23 @@ impl FromScriptRef for Box<dyn PartialReflect> {
 
                 dynamic_list.set_represented_type(Some(type_info));
                 return Ok(Box::new(dynamic_list));
+            }
+        }
+
+        if let Some((key_type, val_type)) = type_info.map_inner_types() {
+            if let ScriptValue::Map(map) = value {
+                let mut dynamic_map = DynamicMap::default();
+                for (key, val) in map {
+                    let key = Self::from_script_ref(
+                        key_type,
+                        ScriptValue::String(key.into()),
+                        world.clone(),
+                    )?;
+                    let val = Self::from_script_ref(val_type, val, world.clone())?;
+                    dynamic_map.insert_boxed(key, val);
+                }
+                dynamic_map.set_represented_type(Some(type_info));
+                return Ok(Box::new(dynamic_map));
             }
         }
 

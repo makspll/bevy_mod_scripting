@@ -449,6 +449,14 @@ where
                 }
                 Ok(hashmap)
             }
+            ScriptValue::List(list) => {
+                let mut hashmap = std::collections::HashMap::new();
+                for elem in list {
+                    let (key, val) = <(String, V)>::from_script(elem, world.clone())?;
+                    hashmap.insert(key, val);
+                }
+                Ok(hashmap)
+            }
             _ => Err(InteropError::value_mismatch(
                 std::any::TypeId::of::<std::collections::HashMap<String, V>>(),
                 value,
@@ -499,3 +507,44 @@ where
         }
     }
 }
+
+macro_rules! impl_from_script_tuple {
+    ($($ty:ident),*) => {
+        #[allow(non_snake_case)]
+        impl<$($ty: FromScript),*> FromScript for ($($ty,)*)
+        where
+            Self: 'static,
+            $(
+                for<'w> $ty::This<'w>: Into<$ty>,
+            )*
+        {
+            type This<'w> = Self;
+
+            fn from_script(value: ScriptValue, world: WorldGuard<'_>) -> Result<Self, InteropError> {
+                match value {
+                    ScriptValue::List(list) => {
+                        let expected_arg_count = $crate::bindings::function::script_function::count!( $($ty)* );
+                        if list.len() != expected_arg_count {
+                            return Err(InteropError::length_mismatch(expected_arg_count, list.len()));
+                        }
+
+                        let mut iter = list.into_iter();
+                        $(
+                            let next_item = iter.next().ok_or_else(|| InteropError::invariant("list has right amount of elements"))?;
+                            let $ty = $ty::from_script(next_item, world.clone())?.into();
+                        )*
+
+
+                        Ok(($($ty,)*))
+                    }
+                    _ => Err(InteropError::value_mismatch(
+                        std::any::TypeId::of::<Self>(),
+                        value,
+                    )),
+                }
+            }
+        }
+    };
+}
+
+bevy::utils::all_tuples!(impl_from_script_tuple, 1, 14, T);
