@@ -111,7 +111,7 @@ pub enum GameOfLifeCommand {
     /// Stop the game of life by dropping a handle to the game_of_life script
     Stop,
 }
-use bevy_mod_scripting_core::ConfigureScriptPlugin;
+
 // ------------- GAME OF LIFE
 fn game_of_life_app(app: &mut App) -> &mut App {
     app.insert_resource(Time::<Fixed>::from_seconds(UPDATE_FREQUENCY.into()))

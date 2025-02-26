@@ -106,10 +106,6 @@ macro_rules! push_err_and_continue {
 /// Passes events with the specified label to the script callback with the same name and runs the callback.
 ///
 /// If any of the resources required for the handler are missing, the system will log this issue and do nothing.
-#[allow(
-    private_interfaces,
-    reason = "people should not need to use this as a function, they only need the type signature"
-)]
 pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     world: &mut World,
     state: &mut SystemState<(
