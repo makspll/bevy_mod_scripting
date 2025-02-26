@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.9.8](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.7...v0.9.8) - 2025-02-25
+
+### Added
+
+- Allow trailing comma in callback_labels. (#325)
+
+### Fixed
+
+- `enable_context_sharing` not returning the plugin like a real builder
+
 ## [0.9.7](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.6...v0.9.7) - 2025-02-23
 
 ### Added
