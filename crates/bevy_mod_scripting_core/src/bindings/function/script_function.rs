@@ -530,9 +530,11 @@ impl ScriptFunctionRegistry {
 }
 
 macro_rules! count {
-    () => (0usize);
-    ( $x:tt $($xs:tt)* ) => (1usize + count!($($xs)*));
+        () => (0usize);
+        ( $x:tt $($xs:tt)* ) => (1usize + $crate::bindings::function::script_function::count!($($xs)*));
 }
+
+pub(crate) use count;
 
 macro_rules! impl_script_function {
 
