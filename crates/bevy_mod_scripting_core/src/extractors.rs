@@ -53,7 +53,11 @@ pub fn with_handler_system_state<
 ///
 /// This is useful for interacting with scripts, since [`WithWorldGuard`] will ensure scripts cannot gain exclusive access to the world if *any* reads or writes
 /// are claimed on the world. Removing the resource from the world lets you access it in the context of running scripts without blocking exclusive world access.
-pub struct ResScope<'state, T: Resource + Default>(pub &'state mut T);
+///
+/// # Safety
+/// - Because the resource is removed during the `get_param` call, if there is a conflicting resource access, this will be unsafe
+/// - You must ensure you're only using this in combination with system parameters which will not read or write to this resource in `get_param`
+pub(crate) struct ResScope<'state, T: Resource + Default>(pub &'state mut T);
 
 impl<T: Resource + Default> Deref for ResScope<'_, T> {
     type Target = T;
@@ -108,8 +112,12 @@ unsafe impl<T: Resource + Default> SystemParam for ResScope<'_, T> {
 }
 
 /// A version of [`bevy::ecs::event::EventReader`] which behaves just like [`ResScope`].
+///
+/// # Safety
+/// - unsafe to use this in a way which violates the invariants on [`ResScope`].
 #[derive(SystemParam)]
-pub struct EventReaderScope<'s, T: Event> {
+#[doc(hidden)]
+pub(crate) struct EventReaderScope<'s, T: Event> {
     events: ResScope<'s, Events<T>>,
     reader: Local<'s, EventCursor<T>>,
 }
@@ -125,20 +133,50 @@ impl<T: Event> EventReaderScope<'_, T> {
 #[derive(SystemParam)]
 pub struct HandlerContext<'s, P: IntoScriptPluginParams> {
     /// Settings for callbacks
-    pub callback_settings: ResScope<'s, CallbackSettings<P>>,
+    pub(crate) callback_settings: ResScope<'s, CallbackSettings<P>>,
     /// Settings for loading contexts
-    pub context_loading_settings: ResScope<'s, ContextLoadingSettings<P>>,
+    pub(crate) context_loading_settings: ResScope<'s, ContextLoadingSettings<P>>,
     /// Scripts
-    pub scripts: ResScope<'s, Scripts>,
+    pub(crate) scripts: ResScope<'s, Scripts>,
     /// The runtime container
-    pub runtime_container: ResScope<'s, RuntimeContainer<P>>,
+    pub(crate) runtime_container: ResScope<'s, RuntimeContainer<P>>,
     /// The script contexts
-    pub script_contexts: ResScope<'s, ScriptContexts<P>>,
+    pub(crate) script_contexts: ResScope<'s, ScriptContexts<P>>,
     /// List of static scripts
-    pub static_scripts: ResScope<'s, StaticScripts>,
+    pub(crate) static_scripts: ResScope<'s, StaticScripts>,
 }
 
 impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
+    /// Get the callback settings
+    pub fn callback_settings(&mut self) -> &mut CallbackSettings<P> {
+        &mut self.callback_settings
+    }
+
+    /// Get the context loading settings
+    pub fn context_loading_settings(&mut self) -> &mut ContextLoadingSettings<P> {
+        &mut self.context_loading_settings
+    }
+
+    /// Get the scripts
+    pub fn scripts(&mut self) -> &mut Scripts {
+        &mut self.scripts
+    }
+
+    /// Get the runtime container
+    pub fn runtime_container(&mut self) -> &mut RuntimeContainer<P> {
+        &mut self.runtime_container
+    }
+
+    /// Get the script contexts
+    pub fn script_contexts(&mut self) -> &mut ScriptContexts<P> {
+        &mut self.script_contexts
+    }
+
+    /// Get the static scripts
+    pub fn static_scripts(&mut self) -> &mut StaticScripts {
+        &mut self.static_scripts
+    }
+
     /// checks if the script is loaded such that it can be executed.
     pub fn is_script_fully_loaded(&self, script_id: ScriptId) -> bool {
         // check script exists in scripts and contexts

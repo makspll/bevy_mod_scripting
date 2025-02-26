@@ -19,7 +19,7 @@ use bevy::{
         system::{Local, Resource, SystemState},
         world::{Mut, World},
     },
-    log::{self, trace_once},
+    log::trace_once,
     prelude::{Events, Ref},
 };
 
@@ -106,6 +106,10 @@ macro_rules! push_err_and_continue {
 /// Passes events with the specified label to the script callback with the same name and runs the callback.
 ///
 /// If any of the resources required for the handler are missing, the system will log this issue and do nothing.
+#[allow(
+    private_interfaces,
+    reason = "people should not need to use this as a function, they only need the type signature"
+)]
 pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     world: &mut World,
     state: &mut SystemState<(
@@ -130,12 +134,7 @@ fn event_handler_inner<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     mut handler_ctxt: WithWorldGuard<HandlerContext<P>>,
 ) {
     let (guard, handler_ctxt) = handler_ctxt.get_mut();
-    // bevy::log::debug!(
-    //     "{}: scripts:{} contexts:{}",
-    //     P::LANGUAGE,
-    //     handler_ctxt.scripts.scripts.len(),
-    //     handler_ctxt.script_contexts.contexts.len()
-    // );
+
     let mut errors = Vec::default();
 
     let events = script_events.read().cloned().collect::<Vec<_>>();
@@ -568,15 +567,13 @@ mod test {
 
         assert!(app
             .world()
-            .get_resource::<Events<ScriptCallbackEvent>>()
-            .is_some());
+            .contains_resource::<Events<ScriptCallbackEvent>>());
 
         let mut local = SystemState::from_world(app.world_mut());
 
         assert!(!app
             .world()
-            .get_resource::<Events<ScriptCallbackEvent>>()
-            .is_some());
+            .contains_resource::<Events<ScriptCallbackEvent>>());
 
         event_handler::<OnTestCallback, TestPlugin>(app.world_mut(), &mut local);
 
