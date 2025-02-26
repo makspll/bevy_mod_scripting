@@ -656,25 +656,6 @@ impl GlobalNamespace {
             &mut allocator,
         ))
     }
-
-    /// Constructs a hash map. Useful for languages which do not make the distinction between lists and dictionaries.
-    ///
-    /// Arguments:
-    /// * `map_or_list`: The list or map to convert to a hash map.
-    /// Returns:
-    /// * `hashMap`: The converted hash map
-    fn map(
-        map_or_list: Union<HashMap<String, ScriptValue>, Vec<ScriptValue>>,
-    ) -> HashMap<String, ScriptValue> {
-        match map_or_list.into_left() {
-            Ok(map) => map,
-            Err(list) => list
-                .into_iter()
-                .enumerate()
-                .map(|(k, v)| (k.to_string(), v))
-                .collect(),
-        }
-    }
 }
 
 pub fn register_core_functions(app: &mut App) {

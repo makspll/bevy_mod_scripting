@@ -151,9 +151,9 @@ mod test {
             for<'a> T::This<'a>: Into<T>,
         {
             test_is_valid_arg_and_return::<()>();
-            test_is_valid_return::<(T,)>();
-            test_is_valid_return::<(T, T)>();
-            test_is_valid_return::<(T, T, T, T, T, T, T, T, T, T)>();
+            test_is_valid_arg_and_return::<(T,)>();
+            test_is_valid_arg_and_return::<(T, T)>();
+            test_is_valid_arg_and_return::<(T, T, T, T, T, T, T, T, T, T)>();
         }
 
         fn test_option<T>()
