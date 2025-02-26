@@ -115,9 +115,11 @@ unsafe impl<T: Resource + Default> SystemParam for ResScope<'_, T> {
 ///
 /// # Safety
 /// - unsafe to use this in a way which violates the invariants on [`ResScope`].
+/// - This is hidden from docs for a reason, rust doesn't allow expressing `type signature unsafety`
+/// - It is only safe to use when other system parameters do not create aliasing references inside their `get_param` calls
 #[derive(SystemParam)]
 #[doc(hidden)]
-pub(crate) struct EventReaderScope<'s, T: Event> {
+pub struct EventReaderScope<'s, T: Event> {
     events: ResScope<'s, Events<T>>,
     reader: Local<'s, EventCursor<T>>,
 }
