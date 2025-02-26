@@ -1,7 +1,7 @@
 //! Systems which are used to extract the various resources and components used by BMS.
 //!
 //! These are designed to be used to pipe inputs into other systems which require them, while handling any configuration erorrs nicely.
-
+#![allow(deprecated)]
 use std::ops::{Deref, DerefMut};
 
 use bevy::ecs::{
@@ -119,11 +119,13 @@ unsafe impl<T: Resource + Default> SystemParam for ResScope<'_, T> {
 /// - It is only safe to use when other system parameters do not create aliasing references inside their `get_param` calls
 #[derive(SystemParam)]
 #[doc(hidden)]
+#[deprecated(note = "This type is unsafe to use in systems")]
 pub struct EventReaderScope<'s, T: Event> {
     events: ResScope<'s, Events<T>>,
     reader: Local<'s, EventCursor<T>>,
 }
 
+#[allow(deprecated)]
 impl<T: Event> EventReaderScope<'_, T> {
     /// Read all events that happened since the last read
     pub fn read(&mut self) -> EventIterator<'_, T> {

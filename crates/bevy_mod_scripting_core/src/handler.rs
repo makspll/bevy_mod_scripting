@@ -1,5 +1,5 @@
 //! Contains the logic for handling script callback events
-
+#[allow(deprecated)]
 use crate::{
     bindings::{
         pretty_print::DisplayWithWorld, script_value::ScriptValue, ThreadWorldContainer,
@@ -106,6 +106,7 @@ macro_rules! push_err_and_continue {
 /// Passes events with the specified label to the script callback with the same name and runs the callback.
 ///
 /// If any of the resources required for the handler are missing, the system will log this issue and do nothing.
+#[allow(deprecated)]
 pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     world: &mut World,
     state: &mut SystemState<(
@@ -124,6 +125,7 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
 }
 
 #[profiling::function]
+#[allow(deprecated)]
 fn event_handler_inner<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     mut entity_query_state: Local<QueryState<(Entity, Ref<ScriptComponent>)>>,
     mut script_events: EventReaderScope<ScriptCallbackEvent>,
