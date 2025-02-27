@@ -569,7 +569,7 @@ mod test {
 
         let mut local = SystemState::from_world(app.world_mut());
 
-        assert!(!app
+        assert!(app
             .world()
             .contains_resource::<Events<ScriptCallbackEvent>>());
 
