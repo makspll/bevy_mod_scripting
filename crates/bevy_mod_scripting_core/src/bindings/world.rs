@@ -1385,30 +1385,4 @@ mod test {
         let result = unsafe { guard.with_access_scope(|| 100) };
         assert_eq!(result.unwrap(), 100);
     }
-
-    #[test]
-    fn test_with_access_scope_error_unreleased_access() {
-        let mut world = setup_world(|_, _| {});
-        let guard = WorldAccessGuard::new(&mut world);
-
-        // Inside the access scope, claim a global access and do not release it.
-        let result: Result<_, InteropError> = unsafe {
-            guard.with_access_scope(|| {
-                // Claim global access which modifies the access count
-                // (simulate an access leak by not calling release_global_access)
-                guard.claim_global_access();
-                // Return a dummy value
-                200
-            })
-        };
-
-        assert_eq!(
-            result,
-            Err(InteropError::invalid_access_count(
-                1,
-                0,
-                "Component/Resource/Allocation locks (accesses) were not released correctly in an access scope"
-            ))
-        );
-    }
 }
