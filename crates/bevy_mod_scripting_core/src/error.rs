@@ -1,11 +1,15 @@
 //! Errors that can occur when interacting with the scripting system
 
-use crate::bindings::{
-    access_map::{DisplayCodeLocation, ReflectAccessId},
-    function::namespace::Namespace,
-    pretty_print::DisplayWithWorld,
-    script_value::ScriptValue,
-    ReflectBaseType, ReflectReference,
+use crate::{
+    bindings::{
+        access_map::{DisplayCodeLocation, ReflectAccessId},
+        function::namespace::Namespace,
+        pretty_print::DisplayWithWorld,
+        script_value::ScriptValue,
+        ReflectBaseType, ReflectReference,
+    },
+    context::ContextId,
+    script::ScriptId,
 };
 use bevy::{
     ecs::component::ComponentId,
@@ -51,9 +55,9 @@ pub struct ScriptErrorInner {
 /// The kind of error that occurred
 pub enum ErrorKind {
     /// An error that can be displayed
-    Display(Box<dyn std::error::Error + Send + Sync>),
+    Display(Box<dyn std::error::Error + Send + Sync + 'static>),
     /// An error that can be displayed with a world
-    WithWorld(Box<dyn DisplayWithWorld + Send + Sync>),
+    WithWorld(Box<dyn DisplayWithWorld + Send + Sync + 'static>),
 }
 
 impl DisplayWithWorld for ErrorKind {
@@ -85,6 +89,21 @@ impl PartialEq for ScriptErrorInner {
 }
 
 impl ScriptError {
+    /// Tried to downcast a script error to an interop error
+    pub fn downcast_interop_inner(&self) -> Option<&InteropErrorInner> {
+        match self.reason.as_ref() {
+            ErrorKind::WithWorld(display_with_world) => {
+                let any: &dyn DisplayWithWorld = display_with_world.as_ref();
+                if let Some(interop_error) = any.downcast_ref::<InteropError>() {
+                    Some(interop_error.inner())
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
+    }
+
     #[cfg(feature = "mlua_impls")]
     /// Destructures mlua error into a script error, taking care to preserve as much information as possible
     pub fn from_mlua_error(error: mlua::Error) -> Self {
@@ -511,11 +530,11 @@ impl InteropError {
     }
 
     /// Thrown when an invalid access count is detected
-    pub fn invalid_access_count(count: usize, expected: usize, context: String) -> Self {
+    pub fn invalid_access_count(count: usize, expected: usize, context: impl Display) -> Self {
         Self(Arc::new(InteropErrorInner::InvalidAccessCount {
             count,
             expected,
-            context,
+            context: context.to_string(),
         }))
     }
 
@@ -556,15 +575,40 @@ impl InteropError {
             got,
         }))
     }
+
+    /// Thrown if a script could not be found when trying to call a synchronous callback or otherwise
+    pub fn missing_script(script_id: impl Into<ScriptId>) -> Self {
+        Self(Arc::new(InteropErrorInner::MissingScript {
+            script_id: script_id.into(),
+        }))
+    }
+
+    /// Thrown if the required context for an operation is missing.
+    pub fn missing_context(context_id: ContextId, script_id: impl Into<ScriptId>) -> Self {
+        Self(Arc::new(InteropErrorInner::MissingContext {
+            context_id,
+            script_id: script_id.into(),
+        }))
+    }
+
+    /// Returns the inner error
+    pub fn inner(&self) -> &InteropErrorInner {
+        &self.0
+    }
 }
 
 /// For errors to do with reflection, type conversions or other interop issues
 #[derive(Debug)]
-pub(crate) enum InteropErrorInner {
+pub enum InteropErrorInner {
     /// Thrown if a callback requires world access, but is unable to do so due
     StaleWorldAccess,
     /// Thrown if a callback requires world access, but is unable to do so due
     MissingWorld,
+    /// Thrown if a script could not be found when trying to call a synchronous callback.
+    MissingScript {
+        /// The script id that was not found.
+        script_id: ScriptId,
+    },
     /// Thrown if a base type is not registered with the reflection system
     UnregisteredBase {
         /// The base type that was not registered
@@ -732,17 +776,47 @@ pub(crate) enum InteropErrorInner {
     },
     /// New variant for invalid enum variant errors.
     InvalidEnumVariant {
+        /// the enum type id
         type_id: TypeId,
+        /// the variant
         variant_name: String,
     },
     /// Thrown when the number of arguments in a function call does not match.
-    ArgumentCountMismatch { expected: usize, got: usize },
+    ArgumentCountMismatch {
+        /// The number of arguments that were expected
+        expected: usize,
+        /// The number of arguments that were received
+        got: usize,
+    },
+    /// Thrown if the required context for an operation is missing.
+    MissingContext {
+        /// The context that was missing
+        context_id: ContextId,
+        /// The script that was attempting to access the context
+        script_id: ScriptId,
+    },
 }
 
 /// For test purposes
 impl PartialEq for InteropErrorInner {
     fn eq(&self, _other: &Self) -> bool {
         match (self, _other) {
+            (
+                InteropErrorInner::MissingScript { script_id: a },
+                InteropErrorInner::MissingScript { script_id: b },
+            ) => a == b,
+            (
+                InteropErrorInner::InvalidAccessCount {
+                    count: a,
+                    expected: b,
+                    context: c,
+                },
+                InteropErrorInner::InvalidAccessCount {
+                    count: d,
+                    expected: e,
+                    context: f,
+                },
+            ) => a == d && b == e && c == f,
             (InteropErrorInner::StaleWorldAccess, InteropErrorInner::StaleWorldAccess) => true,
             (InteropErrorInner::MissingWorld, InteropErrorInner::MissingWorld) => true,
             (
@@ -951,6 +1025,16 @@ impl PartialEq for InteropErrorInner {
                     got: d,
                 },
             ) => a == c && b == d,
+            (
+                InteropErrorInner::MissingContext {
+                    context_id: a,
+                    script_id: b,
+                },
+                InteropErrorInner::MissingContext {
+                    context_id: c,
+                    script_id: d,
+                },
+            ) => a == c && b == d,
             _ => false,
         }
     }
@@ -1139,6 +1223,44 @@ macro_rules! unregistered_component_or_resource_type {
     };
 }
 
+macro_rules! missing_script_for_callback {
+    ($script_id:expr) => {
+        format!(
+            "Could not find script with id: {}. Is the script loaded?",
+            $script_id
+        )
+    };
+}
+
+// Define a single macro for the invalid enum variant error.
+macro_rules! invalid_enum_variant_msg {
+    ($variant:expr, $enum_display:expr) => {
+        format!(
+            "Invalid enum variant: {} for enum: {}",
+            $variant, $enum_display
+        )
+    };
+}
+
+// Define a single macro for the argument count mismatch error.
+macro_rules! argument_count_mismatch_msg {
+    ($expected:expr, $got:expr) => {
+        format!(
+            "Argument count mismatch, expected: {}, got: {}",
+            $expected, $got
+        )
+    };
+}
+
+macro_rules! missing_context_for_callback {
+    ($context_id:expr, $script_id:expr) => {
+        format!(
+            "Missing context with id: {} for script with id: {}. Was the script loaded?.",
+            $context_id, $script_id
+        )
+    };
+}
+
 impl DisplayWithWorld for InteropErrorInner {
     fn display_with_world(&self, world: crate::bindings::WorldGuard) -> String {
         match self {
@@ -1229,7 +1351,7 @@ impl DisplayWithWorld for InteropErrorInner {
                     .to_owned()
             }
             InteropErrorInner::MissingWorld => {
-                "Missing world. The world was not initialized in the script context.".to_owned()
+                "Missing world. The world was either not initialized, or invalidated.".to_owned()
             },
             InteropErrorInner::FunctionInteropError { function_name, on, error } => {
                 let opt_on = match on {
@@ -1266,16 +1388,18 @@ impl DisplayWithWorld for InteropErrorInner {
                 missing_data_in_constructor!(type_id.display_with_world(world), missing_data_name)
             },
             InteropErrorInner::InvalidEnumVariant { type_id, variant_name } => {
-                format!(
-                    "Invalid enum variant: {} for enum: {}",
-                    variant_name,
-                    type_id.display_with_world(world)
-                )
+                invalid_enum_variant_msg!(variant_name, type_id.display_with_world(world))
             },
             InteropErrorInner::ArgumentCountMismatch { expected, got } => {
-                format!(
-                    "Argument count mismatch, expected: {}, got: {}",
-                    expected, got
+                argument_count_mismatch_msg!(expected, got)
+            },
+            InteropErrorInner::MissingScript { script_id } => {
+                missing_script_for_callback!(script_id)
+            },
+            InteropErrorInner::MissingContext { context_id, script_id } => {
+                missing_context_for_callback!(
+                    context_id,
+                    script_id
                 )
             },
         }
@@ -1371,7 +1495,7 @@ impl DisplayWithWorld for InteropErrorInner {
                     .to_owned()
             }
             InteropErrorInner::MissingWorld => {
-                "Missing world. The world was not initialized in the script context.".to_owned()
+                "Missing world. The world was either not initialized, or invalidated.".to_owned()
             },
             InteropErrorInner::FunctionInteropError { function_name, on, error } => {
                 let opt_on = match on {
@@ -1408,16 +1532,18 @@ impl DisplayWithWorld for InteropErrorInner {
                 missing_data_in_constructor!(type_id.display_without_world(), missing_data_name)
             },
             InteropErrorInner::InvalidEnumVariant { type_id, variant_name } => {
-                format!(
-                    "Invalid enum variant: {} for enum: {}",
-                    variant_name,
-                    type_id.display_without_world()
-                )
+                invalid_enum_variant_msg!(variant_name, type_id.display_without_world())
             },
             InteropErrorInner::ArgumentCountMismatch { expected, got } => {
-                format!(
-                    "Argument count mismatch, expected: {}, got: {}",
-                    expected, got
+                argument_count_mismatch_msg!(expected, got)
+            },
+            InteropErrorInner::MissingScript { script_id } => {
+                missing_script_for_callback!(script_id)
+            },
+            InteropErrorInner::MissingContext { context_id, script_id } => {
+                missing_context_for_callback!(
+                    context_id,
+                    script_id
                 )
             },
         }

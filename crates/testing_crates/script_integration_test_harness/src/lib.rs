@@ -1,16 +1,28 @@
 pub mod test_functions;
 
+use std::{
+    path::PathBuf,
+    time::{Duration, Instant},
+};
+
 use bevy::{
-    app::App,
+    app::{App, Update},
+    asset::{AssetServer, Handle},
+    ecs::{
+        event::{Event, Events},
+        system::{Local, Res},
+        world::Mut,
+    },
     prelude::{Entity, World},
     reflect::TypeRegistry,
 };
 use bevy_mod_scripting_core::{
+    asset::ScriptAsset,
     bindings::{pretty_print::DisplayWithWorld, script_value::ScriptValue, WorldGuard},
-    context::{ContextBuilder, ContextLoadingSettings},
-    event::{IntoCallbackLabel, OnScriptLoaded},
-    handler::CallbackSettings,
-    runtime::RuntimeSettings,
+    callback_labels,
+    event::ScriptErrorEvent,
+    extractors::{HandlerContext, WithWorldGuard},
+    handler::handle_script_errors,
     IntoScriptPluginParams,
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
@@ -25,94 +37,99 @@ pub fn execute_integration_test<
     init: F,
     init_app: G,
     script_id: &str,
-    code: &[u8],
 ) -> Result<(), String> {
+    // set "BEVY_ASSET_ROOT" to the global assets folder, i.e. CARGO_MANIFEST_DIR/../../../assets
+    let mut manifest_dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
+
+    // traverse upwards to find bevy_mod_scripting directory
+    loop {
+        if manifest_dir.ends_with("bevy_mod_scripting") {
+            break;
+        }
+        manifest_dir.pop();
+    }
+
+    std::env::set_var("BEVY_ASSET_ROOT", manifest_dir.clone());
+
     let mut app = setup_integration_test(init);
 
     app.add_plugins(ScriptFunctionsPlugin);
+
     register_test_functions(&mut app);
 
     init_app(&mut app);
 
+    #[derive(Event)]
+    struct TestEventFinished;
+    app.add_event::<TestEventFinished>();
+
+    callback_labels!(
+        OnTest => "on_test"
+    );
+
+    let script_id = script_id.to_owned();
+    let script_id: &'static str = Box::leak(script_id.into_boxed_str());
+
+    let load_system = |server: Res<AssetServer>, mut handle: Local<Handle<ScriptAsset>>| {
+        *handle = server.load(script_id.to_owned());
+    };
+    let run_on_test_callback = |mut with_guard: WithWorldGuard<HandlerContext<P>>| {
+        let (guard, handler_ctxt) = with_guard.get_mut();
+
+        if !handler_ctxt.is_script_fully_loaded(script_id.into()) {
+            return;
+        }
+
+        let res = handler_ctxt.call::<OnTest>(
+            script_id.into(),
+            Entity::from_raw(0),
+            vec![],
+            guard.clone(),
+        );
+        let e = match res {
+            Ok(ScriptValue::Error(e)) => e.into(),
+            Err(e) => e,
+            _ => {
+                match guard.with_resource_mut(|mut events: Mut<Events<TestEventFinished>>| {
+                    events.send(TestEventFinished)
+                }) {
+                    Ok(_) => return,
+                    Err(e) => e.into(),
+                }
+            }
+        };
+        handle_script_errors(guard, vec![e].into_iter())
+    };
+
+    app.add_systems(Update, (load_system, run_on_test_callback));
+
     app.cleanup();
     app.finish();
 
-    let context_settings: ContextLoadingSettings<P> = app
-        .world_mut()
-        .remove_resource()
-        .ok_or("could not find context loading settings")
-        .unwrap();
+    let start = Instant::now(); // start the timer
 
-    let callback_settings: CallbackSettings<P> = app
-        .world_mut()
-        .remove_resource()
-        .ok_or("could not find callback settings")
-        .unwrap();
+    loop {
+        app.update();
 
-    let runtime_settings: RuntimeSettings<P> = app
-        .world_mut()
-        .remove_resource()
-        .ok_or("could not find runtime settings")
-        .unwrap();
+        if start.elapsed() > Duration::from_secs(10) {
+            return Err("Timeout after 10 seconds".into());
+        }
 
-    let mut runtime = P::build_runtime();
-    runtime_settings
-        .initializers
-        .iter()
-        .for_each(|initializer| {
-            (initializer)(&mut runtime).unwrap();
-        });
+        let events_completed = app.world_mut().resource_ref::<Events<TestEventFinished>>();
+        if events_completed.len() > 0 {
+            return Ok(());
+        }
 
-    // load the context as normal
-    let mut loaded_context = (ContextBuilder::<P>::load)(
-        context_settings.loader.load,
-        &(script_id.to_owned()).into(),
-        code,
-        &context_settings.context_initializers,
-        &context_settings.context_pre_handling_initializers,
-        app.world_mut(),
-        &mut runtime,
-    )
-    .map_err(|e| {
-        let world = app.world_mut();
-        e.display_with_world(WorldGuard::new(world))
-    })?;
+        let error_events = app
+            .world_mut()
+            .resource_mut::<Events<ScriptErrorEvent>>()
+            .drain()
+            .collect::<Vec<_>>();
 
-    // call on_script_loaded as normal
-    let val = (CallbackSettings::<P>::call)(
-        callback_settings.callback_handler,
-        vec![],
-        Entity::from_raw(0),
-        &(script_id.to_owned()).into(),
-        &OnScriptLoaded::into_callback_label(),
-        &mut loaded_context,
-        &context_settings.context_pre_handling_initializers,
-        &mut runtime,
-        app.world_mut(),
-    )
-    .map_err(|e| e.display_with_world(WorldGuard::new(app.world_mut())))?;
-
-    if let ScriptValue::Error(e) = val {
-        return Err(e.display_with_world(WorldGuard::new(app.world_mut())));
+        if let Some(event) = error_events.into_iter().next() {
+            return Err(event
+                .error
+                .display_with_world(WorldGuard::new(app.world_mut())));
+        }
     }
-
-    // call on_test callback
-    let val = (CallbackSettings::<P>::call)(
-        callback_settings.callback_handler,
-        vec![],
-        Entity::from_raw(0),
-        &(script_id.to_owned()).into(),
-        &"on_test".into(),
-        &mut loaded_context,
-        &context_settings.context_pre_handling_initializers,
-        &mut runtime,
-        app.world_mut(),
-    )
-    .map_err(|e| e.display_with_world(WorldGuard::new(app.world_mut())))?;
-
-    if let ScriptValue::Error(e) = val {
-        return Err(e.display_with_world(WorldGuard::new(app.world_mut())));
-    }
-
-    Ok(())
 }

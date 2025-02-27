@@ -40,6 +40,7 @@ itertools = "0.13"
 derivative = "2.2"
 profiling = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
+fixedbitset = "0.5"
 
 [dev-dependencies]
 test_utils = { workspace = true }

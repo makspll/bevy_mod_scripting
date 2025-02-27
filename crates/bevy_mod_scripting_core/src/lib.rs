@@ -24,8 +24,6 @@ use handler::{CallbackSettings, HandlerFn};
 use runtime::{initialize_runtime, Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
 use script::{ScriptId, Scripts, StaticScripts};
 
-mod extractors;
-
 pub mod asset;
 pub mod bindings;
 pub mod commands;
@@ -33,6 +31,7 @@ pub mod context;
 pub mod docgen;
 pub mod error;
 pub mod event;
+pub mod extractors;
 pub mod handler;
 pub mod reflection_extensions;
 pub mod runtime;
@@ -96,13 +95,28 @@ pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
     pub supported_extensions: &'static [&'static str],
 }
 
+impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P> {
+    fn default() -> Self {
+        Self {
+            runtime_settings: Default::default(),
+            callback_handler: CallbackSettings::<P>::default().callback_handler,
+            context_builder: Default::default(),
+            context_assigner: Default::default(),
+            language_mapper: Default::default(),
+            context_initializers: Default::default(),
+            context_pre_handling_initializers: Default::default(),
+            supported_extensions: Default::default(),
+        }
+    }
+}
+
 impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.insert_resource(self.runtime_settings.clone())
-            .insert_non_send_resource::<RuntimeContainer<P>>(RuntimeContainer {
+            .insert_resource::<RuntimeContainer<P>>(RuntimeContainer {
                 runtime: P::build_runtime(),
             })
-            .init_non_send_resource::<ScriptContexts<P>>()
+            .init_resource::<ScriptContexts<P>>()
             .insert_resource::<CallbackSettings<P>>(CallbackSettings {
                 callback_handler: self.callback_handler,
             })

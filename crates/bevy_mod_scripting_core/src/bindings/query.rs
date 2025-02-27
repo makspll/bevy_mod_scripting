@@ -190,7 +190,7 @@ impl WorldAccessGuard<'_> {
         &self,
         query: ScriptQueryBuilder,
     ) -> Result<VecDeque<ScriptQueryResult>, InteropError> {
-        with_global_access!(self.0.accesses, "Could not query", {
+        with_global_access!(self.inner.accesses, "Could not query", {
             let world = unsafe { self.as_unsafe_world_cell()?.world_mut() };
             let mut dynamic_query = QueryBuilder::<EntityRef>::new(world);
 

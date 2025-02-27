@@ -161,6 +161,14 @@ pub struct AssetPathToLanguageMapper {
     pub map: fn(&AssetPath) -> Language,
 }
 
+impl Default for AssetPathToLanguageMapper {
+    fn default() -> Self {
+        Self {
+            map: |_| Language::Unknown,
+        }
+    }
+}
+
 /// A cache of asset id's to their script id's. Necessary since when we drop an asset we won't have the ability to get the path from the asset.
 #[derive(Default, Debug, Resource)]
 pub struct ScriptMetadataStore {

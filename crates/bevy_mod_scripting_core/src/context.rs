@@ -2,16 +2,16 @@
 
 use crate::{
     bindings::{ThreadWorldContainer, WorldContainer, WorldGuard},
-    error::ScriptError,
+    error::{InteropError, ScriptError},
     script::{Script, ScriptId},
     IntoScriptPluginParams,
 };
-use bevy::ecs::{entity::Entity, system::Resource, world::World};
+use bevy::ecs::{entity::Entity, system::Resource};
 use std::{collections::HashMap, sync::atomic::AtomicU32};
 
 /// A trait that all script contexts must implement.
-pub trait Context: 'static {}
-impl<T: 'static> Context for T {}
+pub trait Context: 'static + Send + Sync {}
+impl<T: 'static + Send + Sync> Context for T {}
 
 /// The type of a context id
 pub type ContextId = u32;
@@ -92,6 +92,17 @@ pub struct ContextLoadingSettings<P: IntoScriptPluginParams> {
     pub context_pre_handling_initializers: Vec<ContextPreHandlingInitializer<P>>,
 }
 
+impl<P: IntoScriptPluginParams> Default for ContextLoadingSettings<P> {
+    fn default() -> Self {
+        Self {
+            loader: ContextBuilder::default(),
+            assigner: ContextAssigner::default(),
+            context_initializers: Default::default(),
+            context_pre_handling_initializers: Default::default(),
+        }
+    }
+}
+
 impl<T: IntoScriptPluginParams> Clone for ContextLoadingSettings<T> {
     fn clone(&self) -> Self {
         Self {
@@ -129,6 +140,17 @@ pub struct ContextBuilder<P: IntoScriptPluginParams> {
     pub reload: ContextReloadFn<P>,
 }
 
+impl<P: IntoScriptPluginParams> Default for ContextBuilder<P> {
+    fn default() -> Self {
+        Self {
+            load: |_, _, _, _, _| Err(InteropError::invariant("no context loader set").into()),
+            reload: |_, _, _, _, _, _| {
+                Err(InteropError::invariant("no context reloader set").into())
+            },
+        }
+    }
+}
+
 impl<P: IntoScriptPluginParams> ContextBuilder<P> {
     /// load a context
     pub fn load(
@@ -137,10 +159,10 @@ impl<P: IntoScriptPluginParams> ContextBuilder<P> {
         content: &[u8],
         context_initializers: &[ContextInitializer<P>],
         pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
-        world: &mut World,
+        world: WorldGuard,
         runtime: &mut P::R,
     ) -> Result<P::C, ScriptError> {
-        WorldGuard::with_static_guard(world, |world| {
+        WorldGuard::with_existing_static_guard(world.clone(), |world| {
             ThreadWorldContainer.set_world(world)?;
             (loader)(
                 script,
@@ -160,10 +182,10 @@ impl<P: IntoScriptPluginParams> ContextBuilder<P> {
         previous_context: &mut P::C,
         context_initializers: &[ContextInitializer<P>],
         pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
-        world: &mut World,
+        world: WorldGuard,
         runtime: &mut P::R,
     ) -> Result<(), ScriptError> {
-        WorldGuard::with_static_guard(world, |world| {
+        WorldGuard::with_existing_static_guard(world, |world| {
             ThreadWorldContainer.set_world(world)?;
             (reloader)(
                 script,

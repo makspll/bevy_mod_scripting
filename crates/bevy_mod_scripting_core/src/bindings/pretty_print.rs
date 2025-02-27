@@ -12,7 +12,10 @@ use bevy::{
     reflect::{PartialReflect, ReflectRef},
 };
 use itertools::Itertools;
-use std::{any::TypeId, borrow::Cow};
+use std::{
+    any::{Any, TypeId},
+    borrow::Cow,
+};
 
 /// A utility for printing reflect references in a human readable format.
 pub struct ReflectReferencePrinter {
@@ -325,7 +328,7 @@ impl ReflectReferencePrinter {
 
 /// For types which can't be pretty printed without world access.
 /// Implementors should try to print the best value they can, and never panick.
-pub trait DisplayWithWorld: std::fmt::Debug {
+pub trait DisplayWithWorld: std::fmt::Debug + AsAny {
     /// # Warning
     /// Display this type without world access. It is not recommended to use this method for anything other than debugging or necessary trait impl corners.
     /// For many types this will just print type id's with no further information.
@@ -343,6 +346,27 @@ pub trait DisplayWithWorld: std::fmt::Debug {
         self.display_with_world(world)
     }
 }
+
+#[doc(hidden)]
+pub trait AsAny: 'static {
+    fn as_any(&self) -> &dyn Any;
+}
+
+#[doc(hidden)]
+impl<T: DisplayWithWorld + 'static> AsAny for T {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+impl dyn DisplayWithWorld {
+    /// Downcasts the `DisplayWithWorld` trait object to a concrete type.
+    /// Trampoline function to allow downcasting of errors.
+    pub fn downcast_ref<T: 'static>(&self) -> Option<&T> {
+        self.as_any().downcast_ref::<T>()
+    }
+}
+
 #[profiling::all_functions]
 impl DisplayWithWorld for ReflectReference {
     fn display_with_world(&self, world: WorldGuard) -> String {
@@ -524,7 +548,7 @@ impl DisplayWithWorld for ScriptValue {
     }
 }
 #[profiling::all_functions]
-impl<T: DisplayWithWorld> DisplayWithWorld for Vec<T> {
+impl<T: DisplayWithWorld + 'static> DisplayWithWorld for Vec<T> {
     fn display_with_world(&self, world: WorldGuard) -> String {
         let mut string = String::new();
         BracketType::Square.surrounded(&mut string, |string| {
@@ -579,7 +603,7 @@ impl DisplayWithWorld for String {
     }
 }
 #[profiling::all_functions]
-impl<K: DisplayWithWorld, V: DisplayWithWorld> DisplayWithWorld
+impl<K: DisplayWithWorld + 'static, V: DisplayWithWorld + 'static> DisplayWithWorld
     for std::collections::HashMap<K, V>
 {
     fn display_with_world(&self, world: WorldGuard) -> String {
