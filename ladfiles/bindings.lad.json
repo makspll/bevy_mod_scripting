@@ -1,5 +1,5 @@
 {
-  "version": "0.3.0",
+  "version": "0.3.1",
   "globals": {},
   "types": {
     "DynamicFunctionMut": {
@@ -177,7 +177,7 @@
       "path": "bevy_asset::handle::Handle<bevy_asset::assets::LoadedUntypedAsset>",
       "generics": [
         {
-          "type_id": "TypeId(0xfb94bb6d797312516447522431c70635)",
+          "type_id": "TypeId(0xa4e767ed3a91f062bc69d47c9703c78d)",
           "name": "A"
         }
       ],
@@ -209,7 +209,7 @@
       "path": "bevy_asset::handle::Handle<bevy_asset::folder::LoadedFolder>",
       "generics": [
         {
-          "type_id": "TypeId(0xa06053f5c358c81561bcae2246975985)",
+          "type_id": "TypeId(0x4c1e3c7862aba54dfc7aa5e3d6e9108b)",
           "name": "A"
         }
       ],
@@ -275,7 +275,7 @@
       "path": "bevy_asset::id::AssetId<bevy_asset::assets::LoadedUntypedAsset>",
       "generics": [
         {
-          "type_id": "TypeId(0xfb94bb6d797312516447522431c70635)",
+          "type_id": "TypeId(0xa4e767ed3a91f062bc69d47c9703c78d)",
           "name": "A"
         }
       ],
@@ -309,7 +309,7 @@
       "path": "bevy_asset::id::AssetId<bevy_asset::folder::LoadedFolder>",
       "generics": [
         {
-          "type_id": "TypeId(0xa06053f5c358c81561bcae2246975985)",
+          "type_id": "TypeId(0x4c1e3c7862aba54dfc7aa5e3d6e9108b)",
           "name": "A"
         }
       ],
@@ -10183,7 +10183,7 @@
       "path": "smallvec::SmallVec<[bevy_ecs::entity::Entity; 8]>",
       "generics": [
         {
-          "type_id": "TypeId(0x7183d4480fe425f1c7a17e25966b83b3)",
+          "type_id": "TypeId(0xa32f79c7827d6d59a66b75c208b19242)",
           "name": "T"
         }
       ],
@@ -10280,6 +10280,63 @@
     }
   },
   "functions": {
+    "::construct": {
+      "namespace": null,
+      "identifier": "construct",
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "union": [
+              {
+                "val": "bevy_mod_scripting_core::bindings::query::ScriptTypeRegistration"
+              },
+              {
+                "union": [
+                  {
+                    "val": "bevy_mod_scripting_core::bindings::query::ScriptComponentRegistration"
+                  },
+                  {
+                    "val": "bevy_mod_scripting_core::bindings::query::ScriptResourceRegistration"
+                  }
+                ]
+              }
+            ]
+          },
+          "documentation": "The type to construct.",
+          "name": "registration"
+        },
+        {
+          "kind": {
+            "hashMap": [
+              {
+                "primitive": "string"
+              },
+              {
+                "unknown": "bevy_mod_scripting_core::bindings::script_value::ScriptValue"
+              }
+            ]
+          },
+          "documentation": "The values to use to construct the type.",
+          "name": "payload"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "primitive": "reflectReference"
+          }
+        },
+        "documentation": "The constructed type.",
+        "name": "reference"
+      },
+      "documentation": "Attempts to construct the given type, given an arbitrary map of values.\n"
+    },
     "ReflectReference::clear": {
       "namespace": "ReflectReference",
       "identifier": "clear",

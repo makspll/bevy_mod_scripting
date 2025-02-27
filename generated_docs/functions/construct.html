@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Handle&lt;TypeId(0xfb94bb6d797312516447522431c70635)&gt; - Bevy Scripting</title>
+        <title>construct - Bevy Scripting</title>
 
 
         <!-- Custom HTML head -->
@@ -129,7 +129,7 @@
                         <a href="https://github.com/makspll/bevy_mod_scripting" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/generated_docs/types/handletypeid(0xfb94bb6d797312516447522431c70635).md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/generated_docs/functions/construct.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -158,35 +158,30 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="handletypeid0xfb94bb6d797312516447522431c70635"><a class="header" href="#handletypeid0xfb94bb6d797312516447522431c70635">Handle&lt;TypeId(0xfb94bb6d797312516447522431c70635)&gt;</a></h1>
-<h3 id="strong"><a class="header" href="#strong">Strong</a></h3>
-<ol>
-<li>alloc::sync::Arc&lt;bevy_asset::handle::StrongHandle&gt;</li>
-</ol>
-<h3 id="weak"><a class="header" href="#weak">Weak</a></h3>
-<ol>
-<li>bevy_asset::id::AssetId&lt;bevy_asset::assets::LoadedUntypedAsset&gt;</li>
-</ol>
-<h2 id="description"><a class="header" href="#description">Description</a></h2>
+                        <h1 id="construct"><a class="header" href="#construct">construct</a></h1>
 <blockquote>
-<p>A strong or weak handle to a specific [<code>Asset</code>]. If a [<code>Handle</code>] is [<code>Handle::Strong</code>], the [<code>Asset</code>] will be kept
-alive until the [<code>Handle</code>] is dropped. If a [<code>Handle</code>] is [<code>Handle::Weak</code>], it does not necessarily reference a live [<code>Asset</code>],
-nor will it keep assets alive.</p>
-<p>[<code>Handle</code>] can be cloned. If a [<code>Handle::Strong</code>] is cloned, the referenced [<code>Asset</code>] will not be freed until <em>all</em> instances
-of the [<code>Handle</code>] are dropped.</p>
-<p>[<code>Handle::Strong</code>] also provides access to useful [<code>Asset</code>] metadata, such as the [<code>AssetPath</code>] (if it exists).</p>
+<p>Attempts to construct the given type, given an arbitrary map of values.</p>
 </blockquote>
-<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<h4 id="arguments"><a class="header" href="#arguments">Arguments</a></h4>
+<ul>
+<li><strong>ctxt</strong> : <code>FunctionCallContext</code> - No Documentation 🚧</li>
+<li><strong>registration</strong> : <code>ScriptTypeRegistration | ScriptComponentRegistration | ScriptResourceRegistration</code> - The type to construct.</li>
+<li><strong>payload</strong> : <code>HashMap&lt;String, ScriptValue&gt;</code> - The values to use to construct the type.</li>
+</ul>
+<h4 id="returns"><a class="header" href="#returns">Returns</a></h4>
+<ul>
+<li><strong>reference</strong> : <code>ReflectReference</code> - The constructed type.</li>
+</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../generated_docs/types/handle().html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../generated_docs/functions.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../generated_docs/types/handletypeid(0xa06053f5c358c81561bcae2246975985).html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../generated_docs/types.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -196,11 +191,11 @@ of the [<code>Handle</code>] are dropped.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../generated_docs/types/handle().html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../generated_docs/functions.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../generated_docs/types/handletypeid(0xa06053f5c358c81561bcae2246975985).html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../generated_docs/types.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
