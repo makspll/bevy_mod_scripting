@@ -74,6 +74,16 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         self.buffer.text(")");
     }
 
+    fn walk_union(&mut self, inner: &[ladfile::LadArgumentKind]) {
+        // Write `T1 | T2`
+        for (idx, arg) in inner.iter().enumerate() {
+            self.visit(arg);
+            if idx < inner.len() - 1 {
+                self.buffer.text(" | ");
+            }
+        }
+    }
+
     fn walk_array(&mut self, inner: &ladfile::LadArgumentKind, size: usize) {
         // Write [inner; size]
         self.buffer.text("[");

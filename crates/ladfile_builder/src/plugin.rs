@@ -87,6 +87,11 @@ fn generate_lad_file(
         }
     }
 
+    // find functions on the global namespace
+    for (_, function) in function_registry.iter_namespace(Namespace::Global) {
+        builder.add_function_info(function.info.clone());
+    }
+
     let file = builder.build();
 
     let mut path = PathBuf::from("assets");

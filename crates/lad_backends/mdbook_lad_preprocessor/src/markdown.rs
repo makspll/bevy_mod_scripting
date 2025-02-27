@@ -155,7 +155,7 @@ impl IntoMarkdown for Markdown {
                 let clamped_level = level.clamp(&1, &6);
                 let hashes = "#".repeat(*clamped_level as usize);
                 // Escape the text for Markdown
-                builder.append(&format!("{} {}", hashes, text));
+                builder.append(&format!("{hashes} {text}"));
             }
             Markdown::Paragraph {
                 text,
