@@ -11,4 +11,8 @@ additional-js = ["multi-code-block.js"]
 git-repository-url = "https://github.com/makspll/bevy_mod_scripting"
 edit-url-template = "https://github.com/makspll/bevy_mod_scripting/edit/main/docs/{path}"
 
+[output.html.fold]
+enable = true
+level = 1
+
 [preprocessor.lad-preprocessor]

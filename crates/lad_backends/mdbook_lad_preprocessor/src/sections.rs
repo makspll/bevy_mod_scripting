@@ -116,9 +116,9 @@ impl<'a> Section<'a> {
         match self {
             Section::Summary { ladfile, .. } => {
                 vec![
-                    Section::TypeSummary { ladfile },
-                    Section::FunctionSummary { ladfile },
                     Section::InstancesSummary { ladfile },
+                    Section::FunctionSummary { ladfile },
+                    Section::TypeSummary { ladfile },
                 ]
             }
             Section::TypeSummary { ladfile } => ladfile
