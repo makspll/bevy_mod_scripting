@@ -23,7 +23,7 @@ local system_with_name = update:get_system_by_name("my_system")
 
 ## Inserting Systems
 
-To insert a system wou will need to use the `system_builder` global function like below:
+To insert a system you will need to use the `system_builder` global function like below:
 
 ```lua
 local system = system_builder("my_system", script_id)
