@@ -747,6 +747,9 @@ impl ReflectSystem {
 )]
 impl ScriptSystemBuilder {
     /// Specifies the system is to run *after* the given system
+    ///
+    /// Note: this is an experimental feature, and the ordering might not work correctly for script initialized systems
+    ///
     /// Arguments:
     /// * `self_`: The system builder to add the dependency to.
     /// * `system`: The system to run after.
@@ -762,7 +765,10 @@ impl ScriptSystemBuilder {
         Val(builder)
     }
 
-    /// Specifies the system is to run *before* the given system
+    /// Specifies the system is to run *before* the given system.
+    ///
+    /// Note: this is an experimental feature, and the ordering might not work correctly for script initialized systems
+    ///
     /// Arguments:
     /// * `self_`: The system builder to add the dependency to.
     /// * `system`: The system to run before.
