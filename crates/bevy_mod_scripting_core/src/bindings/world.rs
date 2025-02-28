@@ -637,7 +637,7 @@ impl WorldAccessGuard<'_> {
                                 .type_id(),
                         ))
                     })
-                    .collect::<Result<Vec<_>, _>>()?;
+                    .collect::<Result<Vec<_>, InteropError>>()?;
                 let mut dynamic = self.construct_dynamic_struct(&mut payload, fields_iter)?;
                 dynamic.set_represented_type(Some(type_info));
                 Box::new(dynamic)
@@ -654,7 +654,7 @@ impl WorldAccessGuard<'_> {
                             })?
                             .type_id())
                     })
-                    .collect::<Result<Vec<_>, _>>()?;
+                    .collect::<Result<Vec<_>, InteropError>>()?;
 
                 let mut dynamic =
                     self.construct_dynamic_tuple_struct(&mut payload, fields_iter, one_indexed)?;
@@ -673,7 +673,7 @@ impl WorldAccessGuard<'_> {
                             })?
                             .type_id())
                     })
-                    .collect::<Result<Vec<_>, _>>()?;
+                    .collect::<Result<Vec<_>, InteropError>>()?;
 
                 let mut dynamic =
                     self.construct_dynamic_tuple(&mut payload, fields_iter, one_indexed)?;
@@ -714,7 +714,7 @@ impl WorldAccessGuard<'_> {
                                         .type_id(),
                                 ))
                             })
-                            .collect::<Result<Vec<_>, _>>()?;
+                            .collect::<Result<Vec<_>, InteropError>>()?;
 
                         let dynamic = self.construct_dynamic_struct(&mut payload, fields_iter)?;
                         DynamicVariant::Struct(dynamic)
@@ -732,7 +732,7 @@ impl WorldAccessGuard<'_> {
                                     })?
                                     .type_id())
                             })
-                            .collect::<Result<Vec<_>, _>>()?;
+                            .collect::<Result<Vec<_>, InteropError>>()?;
 
                         let dynamic =
                             self.construct_dynamic_tuple(&mut payload, fields_iter, one_indexed)?;

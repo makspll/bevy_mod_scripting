@@ -12,7 +12,10 @@ use crate::{
     script::ScriptId,
 };
 use bevy::{
-    ecs::component::ComponentId,
+    ecs::{
+        component::ComponentId,
+        schedule::{ScheduleBuildError, ScheduleNotInitialized},
+    },
     prelude::Entity,
     reflect::{PartialReflect, Reflect},
 };
@@ -218,6 +221,18 @@ impl DisplayWithWorld for ScriptError {
         } else {
             format!("error: {}.\nContext:{}", self.0.reason, self.0.context)
         }
+    }
+}
+
+impl From<ScheduleBuildError> for InteropError {
+    fn from(value: ScheduleBuildError) -> Self {
+        InteropError::external_error(Box::new(value))
+    }
+}
+
+impl From<ScheduleNotInitialized> for InteropError {
+    fn from(value: ScheduleNotInitialized) -> Self {
+        InteropError::external_error(Box::new(value))
     }
 }
 
@@ -1279,7 +1294,7 @@ macro_rules! missing_context_for_callback {
 
 macro_rules! missing_schedule_error {
     ($schedule:expr) => {
-        format!("Missing schedule: {}. Was it registered?", $schedule)
+        format!("Missing schedule: '{}'. This can happen if you try to access a schedule from within itself. Have all schedules been registered?", $schedule)
     };
 }
 

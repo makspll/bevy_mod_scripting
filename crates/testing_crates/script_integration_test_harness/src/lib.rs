@@ -1,16 +1,18 @@
 pub mod test_functions;
 
 use std::{
+    marker::PhantomData,
     path::PathBuf,
     time::{Duration, Instant},
 };
 
 use bevy::{
-    app::{App, Last, Startup, Update},
+    app::{App, Last, PostUpdate, Startup, Update},
     asset::{AssetServer, Handle},
     ecs::{
         event::{Event, Events},
-        system::{Local, Res},
+        schedule::{IntoSystemConfigs, SystemConfigs},
+        system::{IntoSystem, Local, Res, SystemState},
         world::Mut,
     },
     prelude::{Entity, World},
@@ -23,6 +25,7 @@ use bevy_mod_scripting_core::{
     event::{IntoCallbackLabel, ScriptErrorEvent},
     extractors::{HandlerContext, WithWorldGuard},
     handler::handle_script_errors,
+    script::ScriptId,
     IntoScriptPluginParams,
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
@@ -34,6 +37,26 @@ fn dummy_startup_system<T>() {}
 
 #[derive(Event)]
 struct TestEventFinished;
+
+struct TestCallbackBuilder<P: IntoScriptPluginParams, L: IntoCallbackLabel> {
+    _ph: PhantomData<(P, L)>,
+}
+
+impl<L: IntoCallbackLabel, P: IntoScriptPluginParams> TestCallbackBuilder<P, L> {
+    fn build(script_id: impl Into<ScriptId>) -> SystemConfigs {
+        let script_id = script_id.into();
+        IntoSystem::into_system(
+            move |world: &mut World,
+                  system_state: &mut SystemState<WithWorldGuard<HandlerContext<P>>>| {
+                let with_guard = system_state.get_mut(world);
+                run_test_callback::<P, L>(&script_id.clone(), with_guard);
+                system_state.apply(world);
+            },
+        )
+        .with_name(L::into_callback_label().to_string())
+        .into_configs()
+    }
+}
 
 pub fn execute_integration_test<
     P: IntoScriptPluginParams,
@@ -69,6 +92,7 @@ pub fn execute_integration_test<
 
     callback_labels!(
         OnTest => "on_test",
+        OnTestPostUpdate => "on_test_post_update",
         OnTestLast => "on_test_last",
     );
 
@@ -78,16 +102,14 @@ pub fn execute_integration_test<
     let load_system = |server: Res<AssetServer>, mut handle: Local<Handle<ScriptAsset>>| {
         *handle = server.load(script_id.to_owned());
     };
-    let run_on_test_callback = |with_guard: WithWorldGuard<HandlerContext<P>>| {
-        run_test_callback::<P, OnTest>(script_id, with_guard);
-    };
 
-    let run_on_test_last_callback = |with_guard: WithWorldGuard<HandlerContext<P>>| {
-        run_test_callback::<P, OnTestLast>(script_id, with_guard);
-    };
-
-    app.add_systems(Update, (load_system, run_on_test_callback));
-    app.add_systems(Last, run_on_test_last_callback);
+    app.add_systems(Startup, load_system);
+    app.add_systems(Update, TestCallbackBuilder::<P, OnTest>::build(script_id));
+    app.add_systems(
+        PostUpdate,
+        TestCallbackBuilder::<P, OnTestPostUpdate>::build(script_id),
+    );
+    app.add_systems(Last, TestCallbackBuilder::<P, OnTestLast>::build(script_id));
     app.add_systems(Update, dummy_update_system);
     app.add_systems(Startup, dummy_startup_system::<String>);
 

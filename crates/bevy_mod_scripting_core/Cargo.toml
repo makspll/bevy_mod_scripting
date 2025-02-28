@@ -41,6 +41,7 @@ derivative = "2.2"
 profiling = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
 fixedbitset = "0.5"
+petgraph = "0.6"
 
 [dev-dependencies]
 test_utils = { workspace = true }

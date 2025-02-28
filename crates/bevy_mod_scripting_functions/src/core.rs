@@ -80,15 +80,22 @@ impl World {
         })
     }
 
-    /// Retrieves the schedule with the given name
+    /// Retrieves the schedule with the given name, Also ensures the schedule is initialized before returning it.
     fn get_schedule_by_name(
         ctxt: FunctionCallContext,
         name: String,
     ) -> Result<Option<Val<ReflectSchedule>>, InteropError> {
         profiling::function_scope!("get_schedule_by_name");
         let world = ctxt.world()?;
-        let val = world.get_schedule_by_name(name);
-        Ok(val.map(Into::into))
+        let schedule = match world.get_schedule_by_name(name) {
+            Some(schedule) => schedule,
+            None => return Ok(None),
+        };
+
+        // do two things, check it actually exists
+        world.scope_schedule(&schedule, |world, schedule| schedule.initialize(world))??;
+
+        Ok(Some(schedule.into()))
     }
 
     fn get_component(
@@ -291,7 +298,10 @@ impl World {
                 return Err(InteropError::unsupported_operation(
                     None,
                     None,
-                    "creating a system in this scripting language",
+                    format!(
+                        "creating a system in {} scripting language",
+                        ctxt.language()
+                    ),
                 ))
             }
         };
