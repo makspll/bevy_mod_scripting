@@ -8,11 +8,7 @@
 - add `WithWorldGuard` and `HandlerContext` system parameters (#327)
 - add test for construct using unit struct (#328)
 - support setting hashmaps via reflection (#330)
-- create global `map` for allowing empty hashmap construction (#329)
-
-### Fixed
-
-- remove `map` global and instead allow hashmap `FromScript` from list of tuples (#332)
+- allow hashmap `FromScript` from list of tuples (#332)
 
 ## [0.9.8](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.7...v0.9.8) - 2025-02-25
 
