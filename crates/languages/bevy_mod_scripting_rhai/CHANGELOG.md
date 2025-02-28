@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.9](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_rhai-v0.9.8...bevy_mod_scripting_rhai-v0.9.9) - 2025-02-28
+
+### Added
+
+- Add `GlobalNamespace::system_builder`, `World::add_system` and allow dynamic system creation (#335)
+- add `WithWorldGuard` and `HandlerContext` system parameters (#327)
+- add test for construct using unit struct (#328)
+- support setting hashmaps via reflection (#330)
+
 ## [0.9.7](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_rhai-v0.9.6...bevy_mod_scripting_rhai-v0.9.7) - 2025-02-23
 
 ### Added

@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.9.9](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.8...v0.9.9) - 2025-02-28
+
+### Added
+
+- Add `GlobalNamespace::system_builder`, `World::add_system` and allow dynamic system creation (#335)
+- add `WithWorldGuard` and `HandlerContext` system parameters (#327)
+- add test for construct using unit struct (#328)
+- support setting hashmaps via reflection (#330)
+- allow hashmap `FromScript` from list of tuples (#332)
+
 ## [0.9.8](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.7...v0.9.8) - 2025-02-25
 
 ### Added

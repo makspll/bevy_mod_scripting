@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_derive"
-version = "0.9.8"
+version = "0.9.9"
 edition = "2021"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 license = "MIT OR Apache-2.0"
