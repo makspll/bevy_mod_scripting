@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3](https://github.com/makspll/bevy_mod_scripting/compare/v0.2.2-ladfile_builder...v0.2.3-ladfile_builder) - 2025-02-28
+
+### Added
+
+- *(lad)* export global functions in `lad` exported plugin & add collapsible sections to pre-processor (#334)
+
 ## [0.2.1](https://github.com/makspll/bevy_mod_scripting/compare/v0.2.0-ladfile_builder...v0.2.1-ladfile_builder) - 2025-02-23
 
 ### Added

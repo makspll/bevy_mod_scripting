@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3](https://github.com/makspll/bevy_mod_scripting/compare/mdbook_lad_preprocessor-v0.1.2...mdbook_lad_preprocessor-v0.1.3) - 2025-02-28
+
+### Added
+
+- *(lad)* export global functions in `lad` exported plugin & add collapsible sections to pre-processor (#334)
+
 ## [0.1.2](https://github.com/makspll/bevy_mod_scripting/compare/mdbook_lad_preprocessor-v0.1.1...mdbook_lad_preprocessor-v0.1.2) - 2025-02-25
 
 ### Added
