@@ -3,9 +3,10 @@
 
 Once you have scripts discovered and loaded, you'll want to run them.
 
-At the moment BMS supports two methods of making scripts runnable: 
+At the moment BMS supports three methods of making scripts runnable: 
 - Attaching them to entities via `ScriptComponent`'s
 - Adding static scripts
+- Creating dynamic systems ⚗️ (see [the script systems section](../ScriptSystems/introduction.md))
 
 And then sending script event's which trigger callbacks on the scripts.
 
