@@ -19,8 +19,6 @@ path = "src/lib.rs"
 bevy = { workspace = true, default-features = false }
 rhai = { version = "1.21" }
 bevy_mod_scripting_core = { workspace = true, features = ["rhai_impls"] }
-bevy_mod_scripting_functions = { workspace = true, features = [
-], default-features = false }
 strum = { version = "0.26", features = ["derive"] }
 
 [dev-dependencies]

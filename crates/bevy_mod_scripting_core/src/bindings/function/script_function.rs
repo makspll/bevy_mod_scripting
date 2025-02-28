@@ -1,6 +1,7 @@
 //! Implementations of the [`ScriptFunction`] and [`ScriptFunctionMut`] traits for functions with up to 13 arguments.
 
 use super::{from::FromScript, into::IntoScript, namespace::Namespace};
+use crate::asset::Language;
 use crate::bindings::function::arg_meta::ArgMeta;
 use crate::docgen::info::{FunctionInfo, GetFunctionInfo};
 use crate::{
@@ -38,23 +39,29 @@ pub trait ScriptFunctionMut<'env, Marker> {
 
 /// The caller context when calling a script function.
 /// Functions can choose to react to caller preferences such as converting 1-indexed numbers to 0-indexed numbers
-#[derive(Clone, Copy, Debug, Reflect, Default)]
+#[derive(Clone, Debug, Reflect)]
 #[reflect(opaque)]
 pub struct FunctionCallContext {
-    /// Whether the caller uses 1-indexing on all indexes and expects 0-indexing conversions to be performed.
-    pub convert_to_0_indexed: bool,
+    language: Language,
 }
 impl FunctionCallContext {
     /// Create a new FunctionCallContext with the given 1-indexing conversion preference
-    pub fn new(convert_to_0_indexed: bool) -> Self {
-        Self {
-            convert_to_0_indexed,
-        }
+    pub const fn new(language: Language) -> Self {
+        Self { language }
     }
 
     /// Tries to access the world, returning an error if the world is not available
     pub fn world<'l>(&self) -> Result<WorldGuard<'l>, InteropError> {
         ThreadWorldContainer.try_get_world()
+    }
+    /// Whether the caller uses 1-indexing on all indexes and expects 0-indexing conversions to be performed.
+    pub fn convert_to_0_indexed(&self) -> bool {
+        matches!(&self.language, Language::Lua)
+    }
+
+    /// Gets the scripting language of the caller
+    pub fn language(&self) -> Language {
+        self.language.clone()
     }
 }
 
@@ -589,7 +596,7 @@ macro_rules! impl_script_function {
                         let received_args_len = args.len();
                         let expected_arg_count = count!($($param )*);
 
-                        $( let $context = caller_context; )?
+                        $( let $context = caller_context.clone(); )?
                         let world = caller_context.world()?;
                         // Safety: we're not holding any references to the world, the arguments which might have aliased will always be dropped
                         let ret: Result<ScriptValue, InteropError> = unsafe {
@@ -672,7 +679,10 @@ mod test {
 
         with_local_world(|| {
             let out = script_function
-                .call(vec![ScriptValue::from(1)], FunctionCallContext::default())
+                .call(
+                    vec![ScriptValue::from(1)],
+                    FunctionCallContext::new(Language::Lua),
+                )
                 .unwrap();
 
             assert_eq!(out, ScriptValue::from(1));
@@ -685,8 +695,10 @@ mod test {
         let script_function = fn_.into_dynamic_script_function().with_name("my_fn");
 
         with_local_world(|| {
-            let out =
-                script_function.call(vec![ScriptValue::from(1)], FunctionCallContext::default());
+            let out = script_function.call(
+                vec![ScriptValue::from(1)],
+                FunctionCallContext::new(Language::Lua),
+            );
 
             assert!(out.is_err());
             assert_eq!(
@@ -709,11 +721,13 @@ mod test {
         let script_function = fn_.into_dynamic_script_function().with_name("my_fn");
 
         with_local_world(|| {
-            let out =
-                script_function.call(vec![ScriptValue::from(1)], FunctionCallContext::default());
+            let out = script_function.call(
+                vec![ScriptValue::from(1)],
+                FunctionCallContext::new(Language::Lua),
+            );
 
             assert!(out.is_err());
-            let world = FunctionCallContext::default().world().unwrap();
+            let world = FunctionCallContext::new(Language::Lua).world().unwrap();
             // assert no access is held
             assert!(world.list_accesses().is_empty());
         });

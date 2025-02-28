@@ -12,6 +12,7 @@ use super::{
         script_function::{AppScriptFunctionRegistry, DynamicScriptFunction, FunctionCallContext},
     },
     pretty_print::DisplayWithWorld,
+    schedule::{AppScheduleRegistry, ReflectSchedule},
     script_value::ScriptValue,
     AppReflectAllocator, ReflectBase, ReflectBaseType, ReflectReference,
     ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration,
@@ -70,8 +71,12 @@ pub(crate) struct WorldAccessGuardInner<'w> {
     pub(crate) accesses: AccessMap,
     /// Cached for convenience, since we need it for most operations, means we don't need to lock the type registry every time
     type_registry: TypeRegistryArc,
+    /// The script allocator for the world
     allocator: AppReflectAllocator,
+    /// The function registry for the world
     function_registry: AppScriptFunctionRegistry,
+    /// The schedule registry for the world
+    schedule_registry: AppScheduleRegistry,
 }
 
 impl std::fmt::Debug for WorldAccessGuardInner<'_> {
@@ -158,6 +163,8 @@ impl<'w> WorldAccessGuard<'w> {
         let function_registry = world
             .get_resource_or_init::<AppScriptFunctionRegistry>()
             .clone();
+
+        let schedule_registry = world.get_resource_or_init::<AppScheduleRegistry>().clone();
         Self {
             inner: Rc::new(WorldAccessGuardInner {
                 cell: world.as_unsafe_world_cell(),
@@ -165,6 +172,7 @@ impl<'w> WorldAccessGuard<'w> {
                 allocator,
                 type_registry,
                 function_registry,
+                schedule_registry,
             }),
             invalid: Rc::new(false.into()),
         }
@@ -273,6 +281,11 @@ impl<'w> WorldAccessGuard<'w> {
     /// Returns the type registry for the world
     pub fn type_registry(&self) -> TypeRegistryArc {
         self.inner.type_registry.clone()
+    }
+
+    /// Returns the schedule registry for the world
+    pub fn schedule_registry(&self) -> AppScheduleRegistry {
+        self.inner.schedule_registry.clone()
     }
 
     /// Returns the script allocator for the world
@@ -486,7 +499,7 @@ impl<'w> WorldAccessGuard<'w> {
 
         let mut last_error = None;
         for overload in overload_iter {
-            match overload.call(args.clone(), context) {
+            match overload.call(args.clone(), context.clone()) {
                 Ok(out) => return Ok(out),
                 Err(e) => last_error = Some(e),
             }
@@ -765,6 +778,16 @@ impl WorldAccessGuard<'_> {
             .get_with_short_type_path(&type_name)
             .or_else(|| type_registry.get_with_type_path(&type_name))
             .map(|registration| ScriptTypeRegistration::new(Arc::new(registration.clone())))
+    }
+
+    /// get a schedule by name
+    pub fn get_schedule_by_name(&self, schedule_name: String) -> Option<ReflectSchedule> {
+        let schedule_registry = self.schedule_registry();
+        let schedule_registry = schedule_registry.read();
+
+        schedule_registry
+            .get_schedule_by_name(&schedule_name)
+            .cloned()
     }
 
     /// get a component type registration for the type

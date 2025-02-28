@@ -1,6 +1,7 @@
 use super::reference::LuaReflectReference;
-use bevy_mod_scripting_core::bindings::{
-    function::script_function::FunctionCallContext, script_value::ScriptValue,
+use bevy_mod_scripting_core::{
+    asset::Language,
+    bindings::{function::script_function::FunctionCallContext, script_value::ScriptValue},
 };
 use mlua::{FromLua, IntoLua, Value, Variadic};
 use std::{
@@ -104,9 +105,7 @@ impl FromLua for LuaScriptValue {
 }
 
 /// The context for calling a function from Lua
-pub const LUA_CALLER_CONTEXT: FunctionCallContext = FunctionCallContext {
-    convert_to_0_indexed: true,
-};
+pub const LUA_CALLER_CONTEXT: FunctionCallContext = FunctionCallContext::new(Language::Lua);
 #[profiling::all_functions]
 impl IntoLua for LuaScriptValue {
     fn into_lua(self, lua: &mlua::Lua) -> mlua::Result<mlua::Value> {

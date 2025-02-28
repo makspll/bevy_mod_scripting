@@ -14,6 +14,8 @@ readme = "readme.md"
 [features]
 core_functions = []
 bevy_bindings = []
+lua_bindings = ["bevy_mod_scripting_lua"]
+rhai_bindings = ["bevy_mod_scripting_rhai"]
 
 
 [dependencies]
@@ -33,6 +35,8 @@ uuid = "1.11"
 smol_str = "0.2.2"
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
+bevy_mod_scripting_lua = { path = "../languages/bevy_mod_scripting_lua", optional = true }
+bevy_mod_scripting_rhai = { path = "../languages/bevy_mod_scripting_rhai", optional = true }
 
 [lints]
 workspace = true

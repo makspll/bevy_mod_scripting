@@ -37,7 +37,7 @@ macro_rules! make_test_plugin {
         }
 
         struct TestContext {
-            pub invocations: Vec<ScriptValue>,
+            pub invocations: Vec<$ident::bindings::script_value::ScriptValue>,
         }
     };
 }

@@ -23,7 +23,7 @@ features = ["lua54", "rhai"]
 default = ["core_functions", "bevy_bindings"]
 
 ## lua
-lua = ["bevy_mod_scripting_lua"]
+lua = ["bevy_mod_scripting_lua", "bevy_mod_scripting_functions/lua_bindings"]
 # one of these must be selected
 lua51 = ["bevy_mod_scripting_lua/lua51", "lua"]
 lua52 = ["bevy_mod_scripting_lua/lua52", "lua"]
@@ -45,7 +45,7 @@ mlua_async = ["bevy_mod_scripting_lua?/mlua_async"]
 
 
 ## rhai
-rhai = ["bevy_mod_scripting_rhai"]
+rhai = ["bevy_mod_scripting_rhai", "bevy_mod_scripting_functions/rhai_bindings"]
 
 ## rune
 # rune = ["bevy_mod_scripting_rune"]

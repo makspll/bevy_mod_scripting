@@ -73,6 +73,7 @@ impl Default for LuaScriptingPlugin {
                                 LuaStaticReflectReference(std::any::TypeId::of::<World>()),
                             )
                             .map_err(ScriptError::from_mlua_error)?;
+
                         Ok(())
                     },
                     |_script_id, context: &mut Lua| {
