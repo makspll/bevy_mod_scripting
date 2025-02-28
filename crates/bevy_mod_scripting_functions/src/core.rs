@@ -4,8 +4,11 @@ use std::collections::HashMap;
 
 use bevy::{prelude::*, reflect::ParsedPath};
 use bevy_mod_scripting_core::{
-    bindings::function::{
-        from::Union, namespace::GlobalNamespace, script_function::DynamicScriptFunctionMut,
+    bindings::{
+        function::{
+            from::Union, namespace::GlobalNamespace, script_function::DynamicScriptFunctionMut,
+        },
+        schedule::{ReflectSchedule, ReflectSystem, ScriptSystemBuilder},
     },
     docgen::info::FunctionInfo,
     *,
@@ -75,6 +78,24 @@ impl World {
             }
             None => None,
         })
+    }
+
+    /// Retrieves the schedule with the given name, Also ensures the schedule is initialized before returning it.
+    fn get_schedule_by_name(
+        ctxt: FunctionCallContext,
+        name: String,
+    ) -> Result<Option<Val<ReflectSchedule>>, InteropError> {
+        profiling::function_scope!("get_schedule_by_name");
+        let world = ctxt.world()?;
+        let schedule = match world.get_schedule_by_name(name) {
+            Some(schedule) => schedule,
+            None => return Ok(None),
+        };
+
+        // do two things, check it actually exists
+        world.scope_schedule(&schedule, |world, schedule| schedule.initialize(world))??;
+
+        Ok(Some(schedule.into()))
     }
 
     fn get_component(
@@ -171,7 +192,7 @@ impl World {
     ) -> Result<(), InteropError> {
         profiling::function_scope!("insert_children");
         let world = ctxt.world()?;
-        let index = if ctxt.convert_to_0_indexed {
+        let index = if ctxt.convert_to_0_indexed() {
             index - 1
         } else {
             index
@@ -246,6 +267,47 @@ impl World {
         Ok(Val(query_builder))
     }
 
+    /// Adds the given system to the world.
+    ///
+    /// Arguments:
+    /// * `schedule`: The schedule to add the system to.
+    /// * `builder`: The system builder specifying the system and its dependencies.
+    /// Returns:
+    /// * `system`: The system that was added.
+    fn add_system(
+        ctxt: FunctionCallContext,
+        schedule: Val<ReflectSchedule>,
+        builder: Val<ScriptSystemBuilder>,
+    ) -> Result<Val<ReflectSystem>, InteropError> {
+        profiling::function_scope!("add_system");
+        let world = ctxt.world()?;
+        let system = match ctxt.language() {
+            #[cfg(feature = "lua_bindings")]
+            asset::Language::Lua => world
+                .add_system::<bevy_mod_scripting_lua::LuaScriptingPlugin>(
+                    &schedule,
+                    builder.into_inner(),
+                )?,
+            #[cfg(feature = "rhai_bindings")]
+            asset::Language::Rhai => world
+                .add_system::<bevy_mod_scripting_rhai::RhaiScriptingPlugin>(
+                    &schedule,
+                    builder.into_inner(),
+                )?,
+            _ => {
+                return Err(InteropError::unsupported_operation(
+                    None,
+                    None,
+                    format!(
+                        "creating a system in {} scripting language",
+                        ctxt.language()
+                    ),
+                ))
+            }
+        };
+        Ok(Val(system))
+    }
+
     fn exit(ctxt: FunctionCallContext) -> Result<(), InteropError> {
         profiling::function_scope!("exit");
         let world = ctxt.world()?;
@@ -290,7 +352,7 @@ impl ReflectReference {
     ) -> Result<ScriptValue, InteropError> {
         profiling::function_scope!("get");
         let mut path: ParsedPath = key.try_into()?;
-        if ctxt.convert_to_0_indexed {
+        if ctxt.convert_to_0_indexed() {
             path.convert_to_0_indexed();
         }
         self_.index_path(path);
@@ -308,7 +370,7 @@ impl ReflectReference {
         if let ScriptValue::Reference(mut self_) = self_ {
             let world = ctxt.world()?;
             let mut path: ParsedPath = key.try_into()?;
-            if ctxt.convert_to_0_indexed {
+            if ctxt.convert_to_0_indexed() {
                 path.convert_to_0_indexed();
             }
             self_.index_path(path);
@@ -382,7 +444,7 @@ impl ReflectReference {
 
         let mut key = <Box<dyn PartialReflect>>::from_script_ref(key_type_id, k, world.clone())?;
 
-        if ctxt.convert_to_0_indexed {
+        if ctxt.convert_to_0_indexed() {
             key.convert_to_0_indexed_key();
         }
 
@@ -428,7 +490,7 @@ impl ReflectReference {
 
         let mut key = <Box<dyn PartialReflect>>::from_script_ref(key_type_id, k, world.clone())?;
 
-        if ctxt.convert_to_0_indexed {
+        if ctxt.convert_to_0_indexed() {
             key.convert_to_0_indexed_key();
         }
 
@@ -611,6 +673,121 @@ impl ScriptQueryResult {
 #[script_bindings(
     remote,
     bms_core_path = "bevy_mod_scripting_core",
+    name = "reflect_schedule_functions"
+)]
+impl ReflectSchedule {
+    /// Retrieves all the systems in the schedule.
+    ///
+    /// Arguments:
+    /// * `self_`: The schedule to retrieve the systems from.
+    /// Returns:
+    /// * `systems`: The systems in the schedule.
+    fn systems(
+        ctxt: FunctionCallContext,
+        self_: Ref<ReflectSchedule>,
+    ) -> Result<Vec<Val<ReflectSystem>>, InteropError> {
+        profiling::function_scope!("systems");
+        let world = ctxt.world()?;
+        let systems = world.systems(&self_);
+        Ok(systems?.into_iter().map(Into::into).collect())
+    }
+
+    /// Retrieves the system with the given name in the schedule
+    ///
+    /// Arguments:
+    /// * `self_`: The schedule to retrieve the system from.
+    /// * `name`: The identifier or full path of the system to retrieve.
+    /// Returns:
+    /// * `system`: The system with the given name, if it exists.
+    fn get_system_by_name(
+        ctxt: FunctionCallContext,
+        self_: Ref<ReflectSchedule>,
+        name: String,
+    ) -> Result<Option<Val<ReflectSystem>>, InteropError> {
+        profiling::function_scope!("system_by_name");
+        let world = ctxt.world()?;
+        let system = world.systems(&self_)?;
+        Ok(system
+            .into_iter()
+            .find_map(|s| (s.identifier() == name || s.path() == name).then_some(s.into())))
+    }
+}
+
+#[script_bindings(
+    remote,
+    bms_core_path = "bevy_mod_scripting_core",
+    name = "reflect_system_functions"
+)]
+impl ReflectSystem {
+    /// Retrieves the identifier of the system
+    /// Arguments:
+    /// * `self_`: The system to retrieve the identifier from.
+    /// Returns:
+    /// * `identifier`: The identifier of the system, e.g. `my_system`
+    fn identifier(self_: Ref<ReflectSystem>) -> String {
+        profiling::function_scope!("identifier");
+        self_.identifier().to_string()
+    }
+
+    /// Retrieves the full path of the system
+    /// Arguments:
+    /// * `self_`: The system to retrieve the path from.
+    /// Returns:
+    /// * `path`: The full path of the system, e.g. `my_crate::systems::my_system<T>`
+    fn path(self_: Ref<ReflectSystem>) -> String {
+        profiling::function_scope!("path");
+        self_.path().to_string()
+    }
+}
+
+#[script_bindings(
+    remote,
+    bms_core_path = "bevy_mod_scripting_core",
+    name = "script_system_builder_functions"
+)]
+impl ScriptSystemBuilder {
+    /// Specifies the system is to run *after* the given system
+    ///
+    /// Note: this is an experimental feature, and the ordering might not work correctly for script initialized systems
+    ///
+    /// Arguments:
+    /// * `self_`: The system builder to add the dependency to.
+    /// * `system`: The system to run after.
+    /// Returns:
+    /// * `builder`: The system builder with the dependency added.
+    fn after(
+        self_: Val<ScriptSystemBuilder>,
+        system: Val<ReflectSystem>,
+    ) -> Val<ScriptSystemBuilder> {
+        profiling::function_scope!("after");
+        let mut builder = self_.into_inner();
+        builder.after(system.into_inner());
+        Val(builder)
+    }
+
+    /// Specifies the system is to run *before* the given system.
+    ///
+    /// Note: this is an experimental feature, and the ordering might not work correctly for script initialized systems
+    ///
+    /// Arguments:
+    /// * `self_`: The system builder to add the dependency to.
+    /// * `system`: The system to run before.
+    /// Returns:
+    /// * `builder`: The system builder with the dependency added.
+    fn before(
+        self_: Val<ScriptSystemBuilder>,
+        system: Val<ReflectSystem>,
+    ) -> Val<ScriptSystemBuilder> {
+        profiling::function_scope!("before");
+        let mut builder = self_.into_inner();
+        builder.before(system.into_inner());
+        Val(builder)
+    }
+}
+
+#[script_bindings(
+    remote,
+    bms_core_path = "bevy_mod_scripting_core",
     name = "global_namespace_functions",
     unregistered
 )]
@@ -639,7 +816,7 @@ impl GlobalNamespace {
         };
 
         let world = ctxt.world()?;
-        let one_indexed = ctxt.convert_to_0_indexed;
+        let one_indexed = ctxt.convert_to_0_indexed();
 
         let val = world.construct(registration.clone(), payload, one_indexed)?;
         let allocator = world.allocator();
@@ -655,6 +832,19 @@ impl GlobalNamespace {
             reflect_val,
             &mut allocator,
         ))
+    }
+
+    /// Creates a new script function builder
+    /// Arguments:
+    /// * `callback`: The functio name in the script, this system will call
+    /// * `script_id`: The id of the script
+    /// Returns:
+    /// * `builder`: The new system builder
+    fn system_builder(
+        callback: String,
+        script_id: String,
+    ) -> Result<Val<ScriptSystemBuilder>, InteropError> {
+        Ok(ScriptSystemBuilder::new(callback.into(), script_id.into()).into())
     }
 }
 
@@ -676,6 +866,10 @@ pub fn register_core_functions(app: &mut App) {
 
         register_script_query_builder_functions(world);
         register_script_query_result_functions(world);
+
+        register_reflect_schedule_functions(world);
+        register_reflect_system_functions(world);
+        register_script_system_builder_functions(world);
 
         register_global_namespace_functions(world);
     }

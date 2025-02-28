@@ -1,4 +1,5 @@
 use bevy_mod_scripting_core::{
+    asset::Language,
     bindings::{
         function::script_function::{DynamicScriptFunction, FunctionCallContext},
         script_value::ScriptValue,
@@ -11,9 +12,7 @@ use std::str::FromStr;
 use super::reference::RhaiReflectReference;
 
 /// The default function call context for rhai
-pub const RHAI_CALLER_CONTEXT: FunctionCallContext = FunctionCallContext {
-    convert_to_0_indexed: false,
-};
+pub const RHAI_CALLER_CONTEXT: FunctionCallContext = FunctionCallContext::new(Language::Rhai);
 
 /// A function curried with one argument, i.e. the receiver
 pub struct FunctionWithReceiver {

@@ -1,5 +1,4 @@
 //! Contains the logic for handling script callback events
-#[allow(deprecated)]
 use crate::{
     bindings::{
         pretty_print::DisplayWithWorld, script_value::ScriptValue, ThreadWorldContainer,
@@ -8,7 +7,7 @@ use crate::{
     context::ContextPreHandlingInitializer,
     error::{InteropErrorInner, ScriptError},
     event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent},
-    extractors::{EventReaderScope, HandlerContext, WithWorldGuard},
+    extractors::{HandlerContext, WithWorldGuard},
     script::{ScriptComponent, ScriptId},
     IntoScriptPluginParams,
 };
@@ -109,26 +108,35 @@ macro_rules! push_err_and_continue {
 #[allow(deprecated)]
 pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     world: &mut World,
-    state: &mut SystemState<(
-        Local<QueryState<(Entity, Ref<ScriptComponent>)>>,
-        EventReaderScope<ScriptCallbackEvent>,
-        WithWorldGuard<HandlerContext<P>>,
-    )>,
+    state: &mut EventHandlerSystemState<P>,
 ) {
     // we wrap the inner event handler, so that we can immediately re-insert all the resources back.
     // otherwise this would happen in the next schedule
     {
         let (entity_query_state, script_events, handler_ctxt) = state.get_mut(world);
-        event_handler_inner::<L, P>(entity_query_state, script_events, handler_ctxt);
+        event_handler_inner::<P>(
+            L::into_callback_label(),
+            entity_query_state,
+            script_events,
+            handler_ctxt,
+        );
     }
     state.apply(world);
 }
 
+#[allow(deprecated)]
+pub(crate) type EventHandlerSystemState<'w, 's, P> = SystemState<(
+    Local<'s, QueryState<(Entity, Ref<'w, ScriptComponent>)>>,
+    crate::extractors::EventReaderScope<'s, ScriptCallbackEvent>,
+    WithWorldGuard<'w, 's, HandlerContext<'s, P>>,
+)>;
+
 #[profiling::function]
 #[allow(deprecated)]
-fn event_handler_inner<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
+pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
+    callback_label: CallbackLabel,
     mut entity_query_state: Local<QueryState<(Entity, Ref<ScriptComponent>)>>,
-    mut script_events: EventReaderScope<ScriptCallbackEvent>,
+    mut script_events: crate::extractors::EventReaderScope<ScriptCallbackEvent>,
     mut handler_ctxt: WithWorldGuard<HandlerContext<P>>,
 ) {
     let (guard, handler_ctxt) = handler_ctxt.get_mut();
@@ -164,10 +172,7 @@ fn event_handler_inner<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
         }
     };
 
-    for event in events
-        .into_iter()
-        .filter(|e| e.label == L::into_callback_label())
-    {
+    for event in events.into_iter().filter(|e| e.label == callback_label) {
         for (entity, entity_scripts) in entity_and_static_scripts.iter() {
             for script_id in entity_scripts.iter() {
                 match &event.recipients {
@@ -187,7 +192,8 @@ fn event_handler_inner<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
                     _ => {}
                 }
 
-                let call_result = handler_ctxt.call::<L>(
+                let call_result = handler_ctxt.call_dynamic_label(
+                    &callback_label,
                     script_id.clone(),
                     *entity,
                     event.args.clone(),

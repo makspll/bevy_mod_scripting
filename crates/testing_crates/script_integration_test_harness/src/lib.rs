@@ -1,16 +1,18 @@
 pub mod test_functions;
 
 use std::{
+    marker::PhantomData,
     path::PathBuf,
     time::{Duration, Instant},
 };
 
 use bevy::{
-    app::{App, Update},
+    app::{App, Last, PostUpdate, Startup, Update},
     asset::{AssetServer, Handle},
     ecs::{
         event::{Event, Events},
-        system::{Local, Res},
+        schedule::{IntoSystemConfigs, SystemConfigs},
+        system::{IntoSystem, Local, Res, SystemState},
         world::Mut,
     },
     prelude::{Entity, World},
@@ -20,14 +22,41 @@ use bevy_mod_scripting_core::{
     asset::ScriptAsset,
     bindings::{pretty_print::DisplayWithWorld, script_value::ScriptValue, WorldGuard},
     callback_labels,
-    event::ScriptErrorEvent,
+    event::{IntoCallbackLabel, ScriptErrorEvent},
     extractors::{HandlerContext, WithWorldGuard},
     handler::handle_script_errors,
+    script::ScriptId,
     IntoScriptPluginParams,
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
 use test_functions::register_test_functions;
 use test_utils::test_data::setup_integration_test;
+
+fn dummy_update_system() {}
+fn dummy_startup_system<T>() {}
+
+#[derive(Event)]
+struct TestEventFinished;
+
+struct TestCallbackBuilder<P: IntoScriptPluginParams, L: IntoCallbackLabel> {
+    _ph: PhantomData<(P, L)>,
+}
+
+impl<L: IntoCallbackLabel, P: IntoScriptPluginParams> TestCallbackBuilder<P, L> {
+    fn build(script_id: impl Into<ScriptId>) -> SystemConfigs {
+        let script_id = script_id.into();
+        IntoSystem::into_system(
+            move |world: &mut World,
+                  system_state: &mut SystemState<WithWorldGuard<HandlerContext<P>>>| {
+                let with_guard = system_state.get_mut(world);
+                run_test_callback::<P, L>(&script_id.clone(), with_guard);
+                system_state.apply(world);
+            },
+        )
+        .with_name(L::into_callback_label().to_string())
+        .into_configs()
+    }
+}
 
 pub fn execute_integration_test<
     P: IntoScriptPluginParams,
@@ -59,12 +88,12 @@ pub fn execute_integration_test<
 
     init_app(&mut app);
 
-    #[derive(Event)]
-    struct TestEventFinished;
     app.add_event::<TestEventFinished>();
 
     callback_labels!(
-        OnTest => "on_test"
+        OnTest => "on_test",
+        OnTestPostUpdate => "on_test_post_update",
+        OnTestLast => "on_test_last",
     );
 
     let script_id = script_id.to_owned();
@@ -73,35 +102,16 @@ pub fn execute_integration_test<
     let load_system = |server: Res<AssetServer>, mut handle: Local<Handle<ScriptAsset>>| {
         *handle = server.load(script_id.to_owned());
     };
-    let run_on_test_callback = |mut with_guard: WithWorldGuard<HandlerContext<P>>| {
-        let (guard, handler_ctxt) = with_guard.get_mut();
 
-        if !handler_ctxt.is_script_fully_loaded(script_id.into()) {
-            return;
-        }
-
-        let res = handler_ctxt.call::<OnTest>(
-            script_id.into(),
-            Entity::from_raw(0),
-            vec![],
-            guard.clone(),
-        );
-        let e = match res {
-            Ok(ScriptValue::Error(e)) => e.into(),
-            Err(e) => e,
-            _ => {
-                match guard.with_resource_mut(|mut events: Mut<Events<TestEventFinished>>| {
-                    events.send(TestEventFinished)
-                }) {
-                    Ok(_) => return,
-                    Err(e) => e.into(),
-                }
-            }
-        };
-        handle_script_errors(guard, vec![e].into_iter())
-    };
-
-    app.add_systems(Update, (load_system, run_on_test_callback));
+    app.add_systems(Startup, load_system);
+    app.add_systems(Update, TestCallbackBuilder::<P, OnTest>::build(script_id));
+    app.add_systems(
+        PostUpdate,
+        TestCallbackBuilder::<P, OnTestPostUpdate>::build(script_id),
+    );
+    app.add_systems(Last, TestCallbackBuilder::<P, OnTestLast>::build(script_id));
+    app.add_systems(Update, dummy_update_system);
+    app.add_systems(Startup, dummy_startup_system::<String>);
 
     app.cleanup();
     app.finish();
@@ -115,11 +125,6 @@ pub fn execute_integration_test<
             return Err("Timeout after 10 seconds".into());
         }
 
-        let events_completed = app.world_mut().resource_ref::<Events<TestEventFinished>>();
-        if events_completed.len() > 0 {
-            return Ok(());
-        }
-
         let error_events = app
             .world_mut()
             .resource_mut::<Events<ScriptErrorEvent>>()
@@ -131,5 +136,41 @@ pub fn execute_integration_test<
                 .error
                 .display_with_world(WorldGuard::new(app.world_mut())));
         }
+
+        let events_completed = app.world_mut().resource_ref::<Events<TestEventFinished>>();
+        if events_completed.len() > 0 {
+            return Ok(());
+        }
     }
+}
+
+fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
+    script_id: &str,
+    mut with_guard: WithWorldGuard<'_, '_, HandlerContext<'_, P>>,
+) {
+    let (guard, handler_ctxt) = with_guard.get_mut();
+
+    if !handler_ctxt.is_script_fully_loaded(script_id.to_string().into()) {
+        return;
+    }
+
+    let res = handler_ctxt.call::<C>(
+        script_id.to_string().into(),
+        Entity::from_raw(0),
+        vec![],
+        guard.clone(),
+    );
+    let e = match res {
+        Ok(ScriptValue::Error(e)) => e.into(),
+        Err(e) => e,
+        _ => {
+            match guard.with_resource_mut(|mut events: Mut<Events<TestEventFinished>>| {
+                events.send(TestEventFinished)
+            }) {
+                Ok(_) => return,
+                Err(e) => e.into(),
+            }
+        }
+    };
+    handle_script_errors(guard, vec![e].into_iter())
 }

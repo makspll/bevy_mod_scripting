@@ -1,7 +1,7 @@
 //! Event handlers and event types for scripting.
 
 use crate::{bindings::script_value::ScriptValue, error::ScriptError, script::ScriptId};
-use bevy::{ecs::entity::Entity, prelude::Event};
+use bevy::{ecs::entity::Entity, prelude::Event, reflect::Reflect};
 
 /// An error coming from a script
 #[derive(Debug, Event)]
@@ -14,7 +14,7 @@ pub struct ScriptErrorEvent {
 /// particularly at the start of the string
 ///
 /// a valid callback label starts with a letter or underscore, and contains only ascii characters, as well as disallows some common keywords
-#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+#[derive(Reflect, Clone, PartialEq, Eq, Hash, Debug)]
 pub struct CallbackLabel(String);
 
 impl CallbackLabel {

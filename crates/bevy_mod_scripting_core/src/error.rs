@@ -12,7 +12,10 @@ use crate::{
     script::ScriptId,
 };
 use bevy::{
-    ecs::component::ComponentId,
+    ecs::{
+        component::ComponentId,
+        schedule::{ScheduleBuildError, ScheduleNotInitialized},
+    },
     prelude::Entity,
     reflect::{PartialReflect, Reflect},
 };
@@ -218,6 +221,18 @@ impl DisplayWithWorld for ScriptError {
         } else {
             format!("error: {}.\nContext:{}", self.0.reason, self.0.context)
         }
+    }
+}
+
+impl From<ScheduleBuildError> for InteropError {
+    fn from(value: ScheduleBuildError) -> Self {
+        InteropError::external_error(Box::new(value))
+    }
+}
+
+impl From<ScheduleNotInitialized> for InteropError {
+    fn from(value: ScheduleNotInitialized) -> Self {
+        InteropError::external_error(Box::new(value))
     }
 }
 
@@ -591,6 +606,13 @@ impl InteropError {
         }))
     }
 
+    /// Thrown when a schedule is missing from the registry.
+    pub fn missing_schedule(schedule_name: impl Into<Cow<'static, str>>) -> Self {
+        Self(Arc::new(InteropErrorInner::MissingSchedule {
+            schedule_name: schedule_name.into(),
+        }))
+    }
+
     /// Returns the inner error
     pub fn inner(&self) -> &InteropErrorInner {
         &self.0
@@ -794,6 +816,11 @@ pub enum InteropErrorInner {
         context_id: ContextId,
         /// The script that was attempting to access the context
         script_id: ScriptId,
+    },
+    /// Thrown when a schedule is missing from the registry.
+    MissingSchedule {
+        /// The name of the schedule that was missing
+        schedule_name: Cow<'static, str>,
     },
 }
 
@@ -1035,6 +1062,10 @@ impl PartialEq for InteropErrorInner {
                     script_id: d,
                 },
             ) => a == c && b == d,
+            (
+                InteropErrorInner::MissingSchedule { schedule_name: a },
+                InteropErrorInner::MissingSchedule { schedule_name: b },
+            ) => a == b,
             _ => false,
         }
     }
@@ -1261,6 +1292,12 @@ macro_rules! missing_context_for_callback {
     };
 }
 
+macro_rules! missing_schedule_error {
+    ($schedule:expr) => {
+        format!("Missing schedule: '{}'. This can happen if you try to access a schedule from within itself. Have all schedules been registered?", $schedule)
+    };
+}
+
 impl DisplayWithWorld for InteropErrorInner {
     fn display_with_world(&self, world: crate::bindings::WorldGuard) -> String {
         match self {
@@ -1401,6 +1438,9 @@ impl DisplayWithWorld for InteropErrorInner {
                     context_id,
                     script_id
                 )
+            },
+            InteropErrorInner::MissingSchedule { schedule_name } => {
+                missing_schedule_error!(schedule_name)
             },
         }
     }
@@ -1545,6 +1585,9 @@ impl DisplayWithWorld for InteropErrorInner {
                     context_id,
                     script_id
                 )
+            },
+            InteropErrorInner::MissingSchedule { schedule_name } => {
+                missing_schedule_error!(schedule_name)
             },
         }
     }

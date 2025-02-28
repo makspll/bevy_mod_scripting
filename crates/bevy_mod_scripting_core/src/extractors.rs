@@ -22,7 +22,7 @@ use crate::{
     },
     context::{ContextLoadingSettings, ScriptContexts},
     error::{InteropError, ScriptError},
-    event::IntoCallbackLabel,
+    event::{CallbackLabel, IntoCallbackLabel},
     handler::CallbackSettings,
     runtime::RuntimeContainer,
     script::{ScriptId, Scripts, StaticScripts},
@@ -220,12 +220,10 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
             .contains_key(&script.context_id)
     }
 
-    /// Invoke a callback in a script immediately.
-    ///
-    /// This will return [`crate::error::InteropErrorInner::MissingScript`] or [`crate::error::InteropErrorInner::MissingContext`] errors while the script is loading.
-    /// Run [`Self::is_script_fully_loaded`] before calling the script to ensure the script and context were loaded ahead of time.
-    pub fn call<C: IntoCallbackLabel>(
+    /// Equivalent to [`Self::call`] but with a dynamically passed in label
+    pub fn call_dynamic_label(
         &mut self,
+        label: &CallbackLabel,
         script_id: ScriptId,
         entity: Entity,
         payload: Vec<ScriptValue>,
@@ -254,12 +252,26 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
             payload,
             entity,
             &script_id,
-            &C::into_callback_label(),
+            label,
             context,
             pre_handling_initializers,
             runtime,
             guard,
         )
+    }
+
+    /// Invoke a callback in a script immediately.
+    ///
+    /// This will return [`crate::error::InteropErrorInner::MissingScript`] or [`crate::error::InteropErrorInner::MissingContext`] errors while the script is loading.
+    /// Run [`Self::is_script_fully_loaded`] before calling the script to ensure the script and context were loaded ahead of time.
+    pub fn call<C: IntoCallbackLabel>(
+        &mut self,
+        script_id: ScriptId,
+        entity: Entity,
+        payload: Vec<ScriptValue>,
+        guard: WorldGuard<'_>,
+    ) -> Result<ScriptValue, ScriptError> {
+        self.call_dynamic_label(&C::into_callback_label(), script_id, entity, payload, guard)
     }
 }
 

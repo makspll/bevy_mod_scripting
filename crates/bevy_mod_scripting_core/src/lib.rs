@@ -10,8 +10,8 @@ use asset::{
 use bevy::prelude::*;
 use bindings::{
     function::script_function::AppScriptFunctionRegistry, garbage_collector,
-    script_value::ScriptValue, AppReflectAllocator, ReflectAllocator, ReflectReference,
-    ScriptTypeRegistration,
+    schedule::AppScheduleRegistry, script_value::ScriptValue, AppReflectAllocator,
+    ReflectAllocator, ReflectReference, ScriptTypeRegistration,
 };
 use commands::{AddStaticScript, RemoveStaticScript};
 use context::{
@@ -289,7 +289,8 @@ fn once_per_app_init(app: &mut App) {
         .init_resource::<Scripts>()
         .init_resource::<StaticScripts>()
         .init_asset::<ScriptAsset>()
-        .init_resource::<AppScriptFunctionRegistry>();
+        .init_resource::<AppScriptFunctionRegistry>()
+        .insert_resource(AppScheduleRegistry::new());
 
     app.add_systems(
         PostUpdate,

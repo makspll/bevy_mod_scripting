@@ -7,6 +7,7 @@ use bevy::{
     reflect::{Reflect, TypeRegistration},
 };
 use bevy_mod_scripting_core::{
+    asset::Language,
     bindings::{
         function::{
             namespace::{GlobalNamespace, NamespaceBuilder},
@@ -75,7 +76,7 @@ pub fn register_test_functions(world: &mut App) {
             |s: FunctionCallContext, f: DynamicScriptFunctionMut, reg: String| {
                 let world = s.world().unwrap();
 
-                let result = f.call(vec![], FunctionCallContext::default());
+                let result = f.call(vec![], FunctionCallContext::new(Language::Unknown));
                 let err = match result {
                     Ok(_) => {
                         return Err(InteropError::external_error(
