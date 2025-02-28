@@ -227,10 +227,11 @@
 <p>Scripts asset events are processed within the same frame they are issued. This means the moment an asset is loaded, it should be loaded and ready to use in the <code>Update</code> schedule. Similarly, the moment an asset is deleted, it should be unloaded and no longer usable in the <code>Update</code> schedule.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="attaching-scripts"><a class="header" href="#attaching-scripts">Attaching Scripts</a></h1>
 <p>Once you have scripts discovered and loaded, you'll want to run them.</p>
-<p>At the moment BMS supports two methods of making scripts runnable:</p>
+<p>At the moment BMS supports three methods of making scripts runnable:</p>
 <ul>
 <li>Attaching them to entities via <code>ScriptComponent</code>'s</li>
 <li>Adding static scripts</li>
+<li>Creating dynamic systems ⚗️ (see <a href="Summary/../ScriptSystems/introduction.html">the script systems section</a>)</li>
 </ul>
 <p>And then sending script event's which trigger callbacks on the scripts.</p>
 <h2 id="attaching-scripts-to-entities"><a class="header" href="#attaching-scripts-to-entities">Attaching scripts to entities</a></h2>
@@ -436,6 +437,38 @@ app.add_plugins(plugin);</code></pre>
 <p>Every script is currently identified by a unique ID.</p>
 <p>ID's are derived from the script asset path for scripts loaded via the asset system.</p>
 <p>By default this is an identity mapping, but you can override this by modifying the <code>AssetPathToScriptIdMapper</code> inside the <code>ScriptAssetSettings</code> resource before loading the script.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="script-systems"><a class="header" href="#script-systems">Script Systems</a></h1>
+<div class="warning">
+Script systems are an experimental feature
+</div>
+<p>It's possible within BMS to inject new systems from scripts themselves, although the support is currently limited.</p>
+<p>Systems introduced by scripts cannot run in parallel to other systems, but can be freely inserted between any other rust system (not script systems at the moment) and into any schedule.</p>
+<h2 id="schedules"><a class="header" href="#schedules">Schedules</a></h2>
+<p>Bevy doesn't support reflecting schedules, so BMS rolls it's own schedule registry resource: <code>AppScheduleRegistry</code>, which can be used to add any custom schedules you want to interact with. The default Bevy schedules will be pre-populated for you.</p>
+<p>Once you've registered your schedule you will be able to interact with it in scripts like below:</p>
+<pre><code class="language-lua">local update_schedule = world.get_schedule_by_name("Update")
+local systems = update:systems()
+local system_with_name = update:get_system_by_name("my_system")
+</code></pre>
+<h2 id="inserting-systems"><a class="header" href="#inserting-systems">Inserting Systems</a></h2>
+<p>To insert a system you will need to use the <code>system_builder</code> global function like below:</p>
+<pre><code class="language-lua">local system = system_builder("my_system", script_id)
+    :after(some_Other_system)
+    :before(another_system)
+</code></pre>
+<p>This will let you call <code>world.add_system</code> like so:</p>
+<pre><code class="language-lua">world.add_system(update_schedule,system)
+</code></pre>
+<div class="warning">
+<p>If your event handler running the script is running in a certain schedule, that schedule will be temporarilly removed by Bevy. Meaning you won't be able to modify it from within the script in-flight.</p>
+</div>
+<h2 id="dynamic-system"><a class="header" href="#dynamic-system">Dynamic system</a></h2>
+<p>The system injected will be similar to an event handler, however it will only trigger the specified script, and without any entity, in the above example you'd see the following lua callback:</p>
+<pre><code class="language-lua">function my_system()
+    print("I am a dynamic system")
+end
+</code></pre>
+<p>get triggered every update.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="scripting-reference"><a class="header" href="#scripting-reference">Scripting Reference</a></h1>
 <p>This part of the book covers the user-facing API of the scripting languages supported by BMS. This will be where you will want to forward your script users to get started with scripting in BMS.</p>
 <p>If you are a modder, welcome! 👋, apologies for the rust-centricity of this guide, we are working on it!</p>
@@ -1228,11 +1261,11 @@ print(my_reference.my_field)
 <tr><td><code>Vec&lt;FunctionArgInfo&gt;</code></td><td><a href="generated_docs/./types/vecfunctionarginfo.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>AssetIndex</code></td><td><a href="generated_docs/./types/assetindex.html"> A generational runtime-only identifier for a specific [`Asset`] stored in [`Assets`]. This is optim</a></td></tr>
 <tr><td><code>Handle&lt;()&gt;</code></td><td><a href="generated_docs/./types/handle().html"> A strong or weak handle to a specific [`Asset`]. If a [`Handle`] is [`Handle::Strong`], the [`Asset</a></td></tr>
-<tr><td><code>Handle&lt;TypeId(0xa4e767ed3a91f062bc69d47c9703c78d)&gt;</code></td><td><a href="generated_docs/./types/handletypeid(0xa4e767ed3a91f062bc69d47c9703c78d).html"> A strong or weak handle to a specific [`Asset`]. If a [`Handle`] is [`Handle::Strong`], the [`Asset</a></td></tr>
-<tr><td><code>Handle&lt;TypeId(0x4c1e3c7862aba54dfc7aa5e3d6e9108b)&gt;</code></td><td><a href="generated_docs/./types/handletypeid(0x4c1e3c7862aba54dfc7aa5e3d6e9108b).html"> A strong or weak handle to a specific [`Asset`]. If a [`Handle`] is [`Handle::Strong`], the [`Asset</a></td></tr>
+<tr><td><code>Handle&lt;TypeId(0x381662db52d4cbe63f555639f4436fca)&gt;</code></td><td><a href="generated_docs/./types/handletypeid(0x381662db52d4cbe63f555639f4436fca).html"> A strong or weak handle to a specific [`Asset`]. If a [`Handle`] is [`Handle::Strong`], the [`Asset</a></td></tr>
+<tr><td><code>Handle&lt;TypeId(0x90366261dc99e8cc53345748fef19e84)&gt;</code></td><td><a href="generated_docs/./types/handletypeid(0x90366261dc99e8cc53345748fef19e84).html"> A strong or weak handle to a specific [`Asset`]. If a [`Handle`] is [`Handle::Strong`], the [`Asset</a></td></tr>
 <tr><td><code>AssetId&lt;()&gt;</code></td><td><a href="generated_docs/./types/assetid().html"> A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]</a></td></tr>
-<tr><td><code>AssetId&lt;TypeId(0xa4e767ed3a91f062bc69d47c9703c78d)&gt;</code></td><td><a href="generated_docs/./types/assetidtypeid(0xa4e767ed3a91f062bc69d47c9703c78d).html"> A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]</a></td></tr>
-<tr><td><code>AssetId&lt;TypeId(0x4c1e3c7862aba54dfc7aa5e3d6e9108b)&gt;</code></td><td><a href="generated_docs/./types/assetidtypeid(0x4c1e3c7862aba54dfc7aa5e3d6e9108b).html"> A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]</a></td></tr>
+<tr><td><code>AssetId&lt;TypeId(0x381662db52d4cbe63f555639f4436fca)&gt;</code></td><td><a href="generated_docs/./types/assetidtypeid(0x381662db52d4cbe63f555639f4436fca).html"> A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]</a></td></tr>
+<tr><td><code>AssetId&lt;TypeId(0x90366261dc99e8cc53345748fef19e84)&gt;</code></td><td><a href="generated_docs/./types/assetidtypeid(0x90366261dc99e8cc53345748fef19e84).html"> A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]</a></td></tr>
 <tr><td><code>AssetPath</code></td><td><a href="generated_docs/./types/assetpath.html"> Represents a path to an asset in a "virtual filesystem".   Asset paths consist of three main parts:</a></td></tr>
 <tr><td><code>Name</code></td><td><a href="generated_docs/./types/name.html"> Component used to identify an entity. Stores a hash for faster comparisons.   The hash is eagerly r</a></td></tr>
 <tr><td><code>ComponentId</code></td><td><a href="generated_docs/./types/componentid.html"> A value which uniquely identifies the type of a [`Component`] or [`Resource`] within a  [`World`].   Each time a new `Component` type is registered within a `World` using  e.g. [`World::register_component`]</a></td></tr>
@@ -1765,7 +1798,7 @@ of the [<code>Handle</code>] are dropped.</p>
 <p>[<code>Handle::Strong</code>] also provides access to useful [<code>Asset</code>] metadata, such as the [<code>AssetPath</code>] (if it exists).</p>
 </blockquote>
 <h2 id="functions-16"><a class="header" href="#functions-16">Functions</a></h2>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="handletypeid0xa4e767ed3a91f062bc69d47c9703c78d"><a class="header" href="#handletypeid0xa4e767ed3a91f062bc69d47c9703c78d">Handle&lt;TypeId(0xa4e767ed3a91f062bc69d47c9703c78d)&gt;</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="handletypeid0x381662db52d4cbe63f555639f4436fca"><a class="header" href="#handletypeid0x381662db52d4cbe63f555639f4436fca">Handle&lt;TypeId(0x381662db52d4cbe63f555639f4436fca)&gt;</a></h1>
 <h3 id="strong-1"><a class="header" href="#strong-1">Strong</a></h3>
 <ol>
 <li>alloc::sync::Arc&lt;bevy_asset::handle::StrongHandle&gt;</li>
@@ -1784,7 +1817,7 @@ of the [<code>Handle</code>] are dropped.</p>
 <p>[<code>Handle::Strong</code>] also provides access to useful [<code>Asset</code>] metadata, such as the [<code>AssetPath</code>] (if it exists).</p>
 </blockquote>
 <h2 id="functions-17"><a class="header" href="#functions-17">Functions</a></h2>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="handletypeid0x4c1e3c7862aba54dfc7aa5e3d6e9108b"><a class="header" href="#handletypeid0x4c1e3c7862aba54dfc7aa5e3d6e9108b">Handle&lt;TypeId(0x4c1e3c7862aba54dfc7aa5e3d6e9108b)&gt;</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="handletypeid0x90366261dc99e8cc53345748fef19e84"><a class="header" href="#handletypeid0x90366261dc99e8cc53345748fef19e84">Handle&lt;TypeId(0x90366261dc99e8cc53345748fef19e84)&gt;</a></h1>
 <h3 id="strong-2"><a class="header" href="#strong-2">Strong</a></h3>
 <ol>
 <li>alloc::sync::Arc&lt;bevy_asset::handle::StrongHandle&gt;</li>
@@ -1820,7 +1853,7 @@ lifetime of the Asset. This means it <em>can</em> point to an [<code>Asset</code
 <p>For an "untyped" / "generic-less" id, see [<code>UntypedAssetId</code>].</p>
 </blockquote>
 <h2 id="functions-19"><a class="header" href="#functions-19">Functions</a></h2>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="assetidtypeid0xa4e767ed3a91f062bc69d47c9703c78d"><a class="header" href="#assetidtypeid0xa4e767ed3a91f062bc69d47c9703c78d">AssetId&lt;TypeId(0xa4e767ed3a91f062bc69d47c9703c78d)&gt;</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="assetidtypeid0x381662db52d4cbe63f555639f4436fca"><a class="header" href="#assetidtypeid0x381662db52d4cbe63f555639f4436fca">AssetId&lt;TypeId(0x381662db52d4cbe63f555639f4436fca)&gt;</a></h1>
 <h3 id="index-1"><a class="header" href="#index-1">Index</a></h3>
 <ul>
 <li><strong>index</strong> : bevy_asset::assets::AssetIndex</li>
@@ -1837,7 +1870,7 @@ lifetime of the Asset. This means it <em>can</em> point to an [<code>Asset</code
 <p>For an "untyped" / "generic-less" id, see [<code>UntypedAssetId</code>].</p>
 </blockquote>
 <h2 id="functions-20"><a class="header" href="#functions-20">Functions</a></h2>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="assetidtypeid0x4c1e3c7862aba54dfc7aa5e3d6e9108b"><a class="header" href="#assetidtypeid0x4c1e3c7862aba54dfc7aa5e3d6e9108b">AssetId&lt;TypeId(0x4c1e3c7862aba54dfc7aa5e3d6e9108b)&gt;</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="assetidtypeid0x90366261dc99e8cc53345748fef19e84"><a class="header" href="#assetidtypeid0x90366261dc99e8cc53345748fef19e84">AssetId&lt;TypeId(0x90366261dc99e8cc53345748fef19e84)&gt;</a></h1>
 <h3 id="index-2"><a class="header" href="#index-2">Index</a></h3>
 <ul>
 <li><strong>index</strong> : bevy_asset::assets::AssetIndex</li>

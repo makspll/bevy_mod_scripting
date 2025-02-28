@@ -177,7 +177,7 @@
       "path": "bevy_asset::handle::Handle<bevy_asset::assets::LoadedUntypedAsset>",
       "generics": [
         {
-          "type_id": "TypeId(0xa4e767ed3a91f062bc69d47c9703c78d)",
+          "type_id": "TypeId(0x381662db52d4cbe63f555639f4436fca)",
           "name": "A"
         }
       ],
@@ -209,7 +209,7 @@
       "path": "bevy_asset::handle::Handle<bevy_asset::folder::LoadedFolder>",
       "generics": [
         {
-          "type_id": "TypeId(0x4c1e3c7862aba54dfc7aa5e3d6e9108b)",
+          "type_id": "TypeId(0x90366261dc99e8cc53345748fef19e84)",
           "name": "A"
         }
       ],
@@ -275,7 +275,7 @@
       "path": "bevy_asset::id::AssetId<bevy_asset::assets::LoadedUntypedAsset>",
       "generics": [
         {
-          "type_id": "TypeId(0xa4e767ed3a91f062bc69d47c9703c78d)",
+          "type_id": "TypeId(0x381662db52d4cbe63f555639f4436fca)",
           "name": "A"
         }
       ],
@@ -309,7 +309,7 @@
       "path": "bevy_asset::id::AssetId<bevy_asset::folder::LoadedFolder>",
       "generics": [
         {
-          "type_id": "TypeId(0x4c1e3c7862aba54dfc7aa5e3d6e9108b)",
+          "type_id": "TypeId(0x90366261dc99e8cc53345748fef19e84)",
           "name": "A"
         }
       ],
