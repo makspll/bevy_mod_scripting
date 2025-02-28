@@ -478,7 +478,11 @@ impl WorldAccessGuard<'_> {
 }
 
 #[cfg(test)]
-#[allow(dead_code, unused_imports, reason = "tests are there but not working currently")]
+#[allow(
+    dead_code,
+    unused_imports,
+    reason = "tests are there but not working currently"
+)]
 mod tests {
 
     use bevy::{
