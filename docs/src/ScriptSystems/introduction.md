@@ -27,7 +27,7 @@ To insert a system you will need to use the `system_builder` global function lik
 
 ```lua
 local system = system_builder("my_system", script_id)
-    :after(some_Other_system)
+    :after(some_other_system)
     :before(another_system)
 ```
 
