@@ -83,6 +83,18 @@
       ],
       "layout": null
     },
+    "alloc::vec::Vec<bevy_mod_scripting_core::bindings::function::from::Val<bevy_mod_scripting_core::bindings::schedule::ReflectSystem>>": {
+      "identifier": "Vec",
+      "crate": "alloc",
+      "path": "alloc::vec::Vec<bevy_mod_scripting_core::bindings::function::from::Val<bevy_mod_scripting_core::bindings::schedule::ReflectSystem>>",
+      "generics": [
+        {
+          "type_id": "bevy_mod_scripting_core::bindings::function::from::Val<bevy_mod_scripting_core::bindings::schedule::ReflectSystem>",
+          "name": "T"
+        }
+      ],
+      "layout": null
+    },
     "alloc::vec::Vec<bevy_mod_scripting_core::bindings::function::from::Val<bevy_mod_scripting_core::docgen::info::FunctionInfo>>": {
       "identifier": "Vec",
       "crate": "alloc",
@@ -102,6 +114,18 @@
       "generics": [
         {
           "type_id": "ReflectReference",
+          "name": "T"
+        }
+      ],
+      "layout": null
+    },
+    "alloc::vec::Vec<bevy_mod_scripting_core::bindings::schedule::ReflectSystem>": {
+      "identifier": "Vec",
+      "crate": "alloc",
+      "path": "alloc::vec::Vec<bevy_mod_scripting_core::bindings::schedule::ReflectSystem>",
+      "generics": [
+        {
+          "type_id": "bevy_mod_scripting_core::bindings::schedule::ReflectSystem",
           "name": "T"
         }
       ],
@@ -177,7 +201,7 @@
       "path": "bevy_asset::handle::Handle<bevy_asset::assets::LoadedUntypedAsset>",
       "generics": [
         {
-          "type_id": "TypeId(0x381662db52d4cbe63f555639f4436fca)",
+          "type_id": "TypeId(0x15c6180f604bd295f3cdf1e8ee1677f1)",
           "name": "A"
         }
       ],
@@ -209,7 +233,7 @@
       "path": "bevy_asset::handle::Handle<bevy_asset::folder::LoadedFolder>",
       "generics": [
         {
-          "type_id": "TypeId(0x90366261dc99e8cc53345748fef19e84)",
+          "type_id": "TypeId(0x181a31938cc4134ed745de0cfcd752bd)",
           "name": "A"
         }
       ],
@@ -275,7 +299,7 @@
       "path": "bevy_asset::id::AssetId<bevy_asset::assets::LoadedUntypedAsset>",
       "generics": [
         {
-          "type_id": "TypeId(0x381662db52d4cbe63f555639f4436fca)",
+          "type_id": "TypeId(0x15c6180f604bd295f3cdf1e8ee1677f1)",
           "name": "A"
         }
       ],
@@ -309,7 +333,7 @@
       "path": "bevy_asset::id::AssetId<bevy_asset::folder::LoadedFolder>",
       "generics": [
         {
-          "type_id": "TypeId(0x90366261dc99e8cc53345748fef19e84)",
+          "type_id": "TypeId(0x181a31938cc4134ed745de0cfcd752bd)",
           "name": "A"
         }
       ],
@@ -5793,6 +5817,69 @@
         ]
       }
     },
+    "bevy_mod_scripting_core::bindings::function::from::Val<bevy_mod_scripting_core::bindings::schedule::ReflectSchedule>": {
+      "identifier": "Val",
+      "crate": "bevy_mod_scripting_core",
+      "path": "bevy_mod_scripting_core::bindings::function::from::Val<bevy_mod_scripting_core::bindings::schedule::ReflectSchedule>",
+      "generics": [
+        {
+          "type_id": "bevy_mod_scripting_core::bindings::schedule::ReflectSchedule",
+          "name": "T"
+        }
+      ],
+      "documentation": " A wrapper around a value of type `T`.\n\n This can be used to retrieve a value out of a [`ScriptValue::Reference`] corresponding to the type `T`.\n You can also use this to return values from a script function to be allocated directly as a [`ScriptValue::Reference`].",
+      "layout": {
+        "kind": "TupleStruct",
+        "name": "Val",
+        "fields": [
+          {
+            "type": "bevy_mod_scripting_core::bindings::schedule::ReflectSchedule"
+          }
+        ]
+      }
+    },
+    "bevy_mod_scripting_core::bindings::function::from::Val<bevy_mod_scripting_core::bindings::schedule::ReflectSystem>": {
+      "identifier": "Val",
+      "crate": "bevy_mod_scripting_core",
+      "path": "bevy_mod_scripting_core::bindings::function::from::Val<bevy_mod_scripting_core::bindings::schedule::ReflectSystem>",
+      "generics": [
+        {
+          "type_id": "bevy_mod_scripting_core::bindings::schedule::ReflectSystem",
+          "name": "T"
+        }
+      ],
+      "documentation": " A wrapper around a value of type `T`.\n\n This can be used to retrieve a value out of a [`ScriptValue::Reference`] corresponding to the type `T`.\n You can also use this to return values from a script function to be allocated directly as a [`ScriptValue::Reference`].",
+      "layout": {
+        "kind": "TupleStruct",
+        "name": "Val",
+        "fields": [
+          {
+            "type": "bevy_mod_scripting_core::bindings::schedule::ReflectSystem"
+          }
+        ]
+      }
+    },
+    "bevy_mod_scripting_core::bindings::function::from::Val<bevy_mod_scripting_core::bindings::schedule::ScriptSystemBuilder>": {
+      "identifier": "Val",
+      "crate": "bevy_mod_scripting_core",
+      "path": "bevy_mod_scripting_core::bindings::function::from::Val<bevy_mod_scripting_core::bindings::schedule::ScriptSystemBuilder>",
+      "generics": [
+        {
+          "type_id": "bevy_mod_scripting_core::bindings::schedule::ScriptSystemBuilder",
+          "name": "T"
+        }
+      ],
+      "documentation": " A wrapper around a value of type `T`.\n\n This can be used to retrieve a value out of a [`ScriptValue::Reference`] corresponding to the type `T`.\n You can also use this to return values from a script function to be allocated directly as a [`ScriptValue::Reference`].",
+      "layout": {
+        "kind": "TupleStruct",
+        "name": "Val",
+        "fields": [
+          {
+            "type": "bevy_mod_scripting_core::bindings::schedule::ScriptSystemBuilder"
+          }
+        ]
+      }
+    },
     "bevy_mod_scripting_core::bindings::function::from::Val<bevy_mod_scripting_core::docgen::info::FunctionInfo>": {
       "identifier": "Val",
       "crate": "bevy_mod_scripting_core",
@@ -5918,6 +6005,102 @@
       ],
       "layout": null
     },
+    "bevy_mod_scripting_core::bindings::schedule::ReflectNodeId": {
+      "identifier": "ReflectNodeId",
+      "crate": "bevy_mod_scripting_core",
+      "path": "bevy_mod_scripting_core::bindings::schedule::ReflectNodeId",
+      "layout": null
+    },
+    "bevy_mod_scripting_core::bindings::schedule::ReflectSchedule": {
+      "identifier": "ReflectSchedule",
+      "crate": "bevy_mod_scripting_core",
+      "path": "bevy_mod_scripting_core::bindings::schedule::ReflectSchedule",
+      "documentation": " A reflectable schedule.",
+      "associated_functions": [
+        "bevy_mod_scripting_core::bindings::schedule::ReflectSchedule::get_system_by_name",
+        "bevy_mod_scripting_core::bindings::schedule::ReflectSchedule::systems"
+      ],
+      "layout": {
+        "kind": "Struct",
+        "name": "ReflectSchedule",
+        "fields": [
+          {
+            "name": "type_path",
+            "type": "str"
+          },
+          {
+            "name": "label",
+            "type": "bevy_mod_scripting_core::bindings::schedule::ReflectableScheduleLabel"
+          }
+        ]
+      }
+    },
+    "bevy_mod_scripting_core::bindings::schedule::ReflectSystem": {
+      "identifier": "ReflectSystem",
+      "crate": "bevy_mod_scripting_core",
+      "path": "bevy_mod_scripting_core::bindings::schedule::ReflectSystem",
+      "documentation": " A reflectable system.",
+      "associated_functions": [
+        "bevy_mod_scripting_core::bindings::schedule::ReflectSystem::identifier",
+        "bevy_mod_scripting_core::bindings::schedule::ReflectSystem::path"
+      ],
+      "layout": {
+        "kind": "Struct",
+        "name": "ReflectSystem",
+        "fields": [
+          {
+            "name": "name",
+            "type": "alloc::borrow::Cow<str>"
+          },
+          {
+            "name": "type_id",
+            "type": "core::any::TypeId"
+          },
+          {
+            "name": "node_id",
+            "type": "bevy_mod_scripting_core::bindings::schedule::ReflectNodeId"
+          }
+        ]
+      }
+    },
+    "bevy_mod_scripting_core::bindings::schedule::ReflectableScheduleLabel": {
+      "identifier": "ReflectableScheduleLabel",
+      "crate": "bevy_mod_scripting_core",
+      "path": "bevy_mod_scripting_core::bindings::schedule::ReflectableScheduleLabel",
+      "layout": null
+    },
+    "bevy_mod_scripting_core::bindings::schedule::ScriptSystemBuilder": {
+      "identifier": "ScriptSystemBuilder",
+      "crate": "bevy_mod_scripting_core",
+      "path": "bevy_mod_scripting_core::bindings::schedule::ScriptSystemBuilder",
+      "documentation": " A builder for systems living in scripts",
+      "associated_functions": [
+        "bevy_mod_scripting_core::bindings::schedule::ScriptSystemBuilder::after",
+        "bevy_mod_scripting_core::bindings::schedule::ScriptSystemBuilder::before"
+      ],
+      "layout": {
+        "kind": "Struct",
+        "name": "ScriptSystemBuilder",
+        "fields": [
+          {
+            "name": "name",
+            "type": "bevy_mod_scripting_core::event::CallbackLabel"
+          },
+          {
+            "name": "script_id",
+            "type": "alloc::borrow::Cow<str>"
+          },
+          {
+            "name": "before",
+            "type": "alloc::vec::Vec<bevy_mod_scripting_core::bindings::schedule::ReflectSystem>"
+          },
+          {
+            "name": "after",
+            "type": "alloc::vec::Vec<bevy_mod_scripting_core::bindings::schedule::ReflectSystem>"
+          }
+        ]
+      }
+    },
     "bevy_mod_scripting_core::bindings::script_value::ScriptValue": {
       "identifier": "ScriptValue",
       "crate": "bevy_mod_scripting_core",
@@ -5993,6 +6176,21 @@
           {
             "name": "type_id",
             "type": "core::any::TypeId"
+          }
+        ]
+      }
+    },
+    "bevy_mod_scripting_core::event::CallbackLabel": {
+      "identifier": "CallbackLabel",
+      "crate": "bevy_mod_scripting_core",
+      "path": "bevy_mod_scripting_core::event::CallbackLabel",
+      "documentation": " A string which disallows common invalid characters in callback labels,\n particularly at the start of the string\n\n a valid callback label starts with a letter or underscore, and contains only ascii characters, as well as disallows some common keywords",
+      "layout": {
+        "kind": "TupleStruct",
+        "name": "CallbackLabel",
+        "fields": [
+          {
+            "type": "String"
           }
         ]
       }
@@ -6839,6 +7037,58 @@
           "fields": [
             {
               "type": "bevy_mod_scripting_core::bindings::function::from::Val<bevy_ecs::entity::Entity>"
+            }
+          ]
+        }
+      ]
+    },
+    "core::option::Option<bevy_mod_scripting_core::bindings::function::from::Val<bevy_mod_scripting_core::bindings::schedule::ReflectSchedule>>": {
+      "identifier": "Option",
+      "crate": "core",
+      "path": "core::option::Option<bevy_mod_scripting_core::bindings::function::from::Val<bevy_mod_scripting_core::bindings::schedule::ReflectSchedule>>",
+      "generics": [
+        {
+          "type_id": "bevy_mod_scripting_core::bindings::function::from::Val<bevy_mod_scripting_core::bindings::schedule::ReflectSchedule>",
+          "name": "T"
+        }
+      ],
+      "layout": [
+        {
+          "kind": "Unit",
+          "name": "None"
+        },
+        {
+          "kind": "TupleStruct",
+          "name": "Some",
+          "fields": [
+            {
+              "type": "bevy_mod_scripting_core::bindings::function::from::Val<bevy_mod_scripting_core::bindings::schedule::ReflectSchedule>"
+            }
+          ]
+        }
+      ]
+    },
+    "core::option::Option<bevy_mod_scripting_core::bindings::function::from::Val<bevy_mod_scripting_core::bindings::schedule::ReflectSystem>>": {
+      "identifier": "Option",
+      "crate": "core",
+      "path": "core::option::Option<bevy_mod_scripting_core::bindings::function::from::Val<bevy_mod_scripting_core::bindings::schedule::ReflectSystem>>",
+      "generics": [
+        {
+          "type_id": "bevy_mod_scripting_core::bindings::function::from::Val<bevy_mod_scripting_core::bindings::schedule::ReflectSystem>",
+          "name": "T"
+        }
+      ],
+      "layout": [
+        {
+          "kind": "Unit",
+          "name": "None"
+        },
+        {
+          "kind": "TupleStruct",
+          "name": "Some",
+          "fields": [
+            {
+              "type": "bevy_mod_scripting_core::bindings::function::from::Val<bevy_mod_scripting_core::bindings::schedule::ReflectSystem>"
             }
           ]
         }
@@ -10183,7 +10433,7 @@
       "path": "smallvec::SmallVec<[bevy_ecs::entity::Entity; 8]>",
       "generics": [
         {
-          "type_id": "TypeId(0xa32f79c7827d6d59a66b75c208b19242)",
+          "type_id": "TypeId(0x7fcc15f450e2a43f8cc044734f15101c)",
           "name": "T"
         }
       ],
@@ -10336,6 +10586,36 @@
         "name": "reference"
       },
       "documentation": "Attempts to construct the given type, given an arbitrary map of values.\n"
+    },
+    "::system_builder": {
+      "namespace": null,
+      "identifier": "system_builder",
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "string"
+          },
+          "documentation": "The functio name in the script, this system will call",
+          "name": "callback"
+        },
+        {
+          "kind": {
+            "primitive": "string"
+          },
+          "documentation": "The id of the script",
+          "name": "script_id"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "bevy_mod_scripting_core::bindings::schedule::ScriptSystemBuilder"
+          }
+        },
+        "documentation": "The new system builder",
+        "name": "builder"
+      },
+      "documentation": "Creates a new script function builder"
     },
     "ReflectReference::clear": {
       "namespace": "ReflectReference",
@@ -22861,6 +23141,173 @@
           "primitive": "string"
         }
       }
+    },
+    "bevy_mod_scripting_core::bindings::schedule::ReflectSchedule::get_system_by_name": {
+      "namespace": "bevy_mod_scripting_core::bindings::schedule::ReflectSchedule",
+      "identifier": "get_system_by_name",
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "ref": "bevy_mod_scripting_core::bindings::schedule::ReflectSchedule"
+          },
+          "documentation": "The schedule to retrieve the system from.",
+          "name": "self_"
+        },
+        {
+          "kind": {
+            "primitive": "string"
+          },
+          "documentation": "The identifier or full path of the system to retrieve.",
+          "name": "name"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "option": {
+              "val": "bevy_mod_scripting_core::bindings::schedule::ReflectSystem"
+            }
+          }
+        },
+        "documentation": "The system with the given name, if it exists.",
+        "name": "system"
+      },
+      "documentation": "Retrieves the system with the given name in the schedule\n"
+    },
+    "bevy_mod_scripting_core::bindings::schedule::ReflectSchedule::systems": {
+      "namespace": "bevy_mod_scripting_core::bindings::schedule::ReflectSchedule",
+      "identifier": "systems",
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "ref": "bevy_mod_scripting_core::bindings::schedule::ReflectSchedule"
+          },
+          "documentation": "The schedule to retrieve the systems from.",
+          "name": "self_"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "vec": {
+              "val": "bevy_mod_scripting_core::bindings::schedule::ReflectSystem"
+            }
+          }
+        },
+        "documentation": "The systems in the schedule.",
+        "name": "systems"
+      },
+      "documentation": "Retrieves all the systems in the schedule.\n"
+    },
+    "bevy_mod_scripting_core::bindings::schedule::ReflectSystem::identifier": {
+      "namespace": "bevy_mod_scripting_core::bindings::schedule::ReflectSystem",
+      "identifier": "identifier",
+      "arguments": [
+        {
+          "kind": {
+            "ref": "bevy_mod_scripting_core::bindings::schedule::ReflectSystem"
+          },
+          "documentation": "The system to retrieve the identifier from.",
+          "name": "self_"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "primitive": "string"
+        },
+        "documentation": "The identifier of the system, e.g. `my_system`",
+        "name": "identifier"
+      },
+      "documentation": "Retrieves the identifier of the system"
+    },
+    "bevy_mod_scripting_core::bindings::schedule::ReflectSystem::path": {
+      "namespace": "bevy_mod_scripting_core::bindings::schedule::ReflectSystem",
+      "identifier": "path",
+      "arguments": [
+        {
+          "kind": {
+            "ref": "bevy_mod_scripting_core::bindings::schedule::ReflectSystem"
+          },
+          "documentation": "The system to retrieve the path from.",
+          "name": "self_"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "primitive": "string"
+        },
+        "documentation": "The full path of the system, e.g. `my_crate::systems::my_system<T>`",
+        "name": "path"
+      },
+      "documentation": "Retrieves the full path of the system"
+    },
+    "bevy_mod_scripting_core::bindings::schedule::ScriptSystemBuilder::after": {
+      "namespace": "bevy_mod_scripting_core::bindings::schedule::ScriptSystemBuilder",
+      "identifier": "after",
+      "arguments": [
+        {
+          "kind": {
+            "val": "bevy_mod_scripting_core::bindings::schedule::ScriptSystemBuilder"
+          },
+          "documentation": "The system builder to add the dependency to.",
+          "name": "self_"
+        },
+        {
+          "kind": {
+            "val": "bevy_mod_scripting_core::bindings::schedule::ReflectSystem"
+          },
+          "documentation": "The system to run after.",
+          "name": "system"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "val": "bevy_mod_scripting_core::bindings::schedule::ScriptSystemBuilder"
+        },
+        "documentation": "The system builder with the dependency added.",
+        "name": "builder"
+      },
+      "documentation": "Specifies the system is to run *after* the given system\n\nNote: this is an experimental feature, and the ordering might not work correctly for script initialized systems\n"
+    },
+    "bevy_mod_scripting_core::bindings::schedule::ScriptSystemBuilder::before": {
+      "namespace": "bevy_mod_scripting_core::bindings::schedule::ScriptSystemBuilder",
+      "identifier": "before",
+      "arguments": [
+        {
+          "kind": {
+            "val": "bevy_mod_scripting_core::bindings::schedule::ScriptSystemBuilder"
+          },
+          "documentation": "The system builder to add the dependency to.",
+          "name": "self_"
+        },
+        {
+          "kind": {
+            "val": "bevy_mod_scripting_core::bindings::schedule::ReflectSystem"
+          },
+          "documentation": "The system to run before.",
+          "name": "system"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "val": "bevy_mod_scripting_core::bindings::schedule::ScriptSystemBuilder"
+        },
+        "documentation": "The system builder with the dependency added.",
+        "name": "builder"
+      },
+      "documentation": "Specifies the system is to run *before* the given system.\n\nNote: this is an experimental feature, and the ordering might not work correctly for script initialized systems\n"
     },
     "bevy_time::fixed::Fixed::clone": {
       "namespace": "bevy_time::fixed::Fixed",

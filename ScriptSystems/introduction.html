@@ -174,7 +174,7 @@ local system_with_name = update:get_system_by_name("my_system")
 <h2 id="inserting-systems"><a class="header" href="#inserting-systems">Inserting Systems</a></h2>
 <p>To insert a system you will need to use the <code>system_builder</code> global function like below:</p>
 <pre><code class="language-lua">local system = system_builder("my_system", script_id)
-    :after(some_Other_system)
+    :after(some_other_system)
     :before(another_system)
 </code></pre>
 <p>This will let you call <code>world.add_system</code> like so:</p>

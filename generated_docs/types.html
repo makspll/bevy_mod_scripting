@@ -169,16 +169,18 @@
 <tr><td><code>Arc</code></td><td><a href="./types/arc.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>Vec&lt;Val&lt;Entity&gt;&gt;</code></td><td><a href="./types/vecvalentity.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>Vec&lt;Val&lt;ScriptQueryResult&gt;&gt;</code></td><td><a href="./types/vecvalscriptqueryresult.html">No Documentation 🚧</a></td></tr>
+<tr><td><code>Vec&lt;Val&lt;ReflectSystem&gt;&gt;</code></td><td><a href="./types/vecvalreflectsystem.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>Vec&lt;Val&lt;FunctionInfo&gt;&gt;</code></td><td><a href="./types/vecvalfunctioninfo.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>Vec&lt;ReflectReference&gt;</code></td><td><a href="./types/vecreflectreference.html">No Documentation 🚧</a></td></tr>
+<tr><td><code>Vec&lt;ReflectSystem&gt;</code></td><td><a href="./types/vecreflectsystem.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>Vec&lt;FunctionArgInfo&gt;</code></td><td><a href="./types/vecfunctionarginfo.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>AssetIndex</code></td><td><a href="./types/assetindex.html"> A generational runtime-only identifier for a specific [`Asset`] stored in [`Assets`]. This is optim</a></td></tr>
 <tr><td><code>Handle&lt;()&gt;</code></td><td><a href="./types/handle().html"> A strong or weak handle to a specific [`Asset`]. If a [`Handle`] is [`Handle::Strong`], the [`Asset</a></td></tr>
-<tr><td><code>Handle&lt;TypeId(0x381662db52d4cbe63f555639f4436fca)&gt;</code></td><td><a href="./types/handletypeid(0x381662db52d4cbe63f555639f4436fca).html"> A strong or weak handle to a specific [`Asset`]. If a [`Handle`] is [`Handle::Strong`], the [`Asset</a></td></tr>
-<tr><td><code>Handle&lt;TypeId(0x90366261dc99e8cc53345748fef19e84)&gt;</code></td><td><a href="./types/handletypeid(0x90366261dc99e8cc53345748fef19e84).html"> A strong or weak handle to a specific [`Asset`]. If a [`Handle`] is [`Handle::Strong`], the [`Asset</a></td></tr>
+<tr><td><code>Handle&lt;TypeId(0x15c6180f604bd295f3cdf1e8ee1677f1)&gt;</code></td><td><a href="./types/handletypeid(0x15c6180f604bd295f3cdf1e8ee1677f1).html"> A strong or weak handle to a specific [`Asset`]. If a [`Handle`] is [`Handle::Strong`], the [`Asset</a></td></tr>
+<tr><td><code>Handle&lt;TypeId(0x181a31938cc4134ed745de0cfcd752bd)&gt;</code></td><td><a href="./types/handletypeid(0x181a31938cc4134ed745de0cfcd752bd).html"> A strong or weak handle to a specific [`Asset`]. If a [`Handle`] is [`Handle::Strong`], the [`Asset</a></td></tr>
 <tr><td><code>AssetId&lt;()&gt;</code></td><td><a href="./types/assetid().html"> A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]</a></td></tr>
-<tr><td><code>AssetId&lt;TypeId(0x381662db52d4cbe63f555639f4436fca)&gt;</code></td><td><a href="./types/assetidtypeid(0x381662db52d4cbe63f555639f4436fca).html"> A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]</a></td></tr>
-<tr><td><code>AssetId&lt;TypeId(0x90366261dc99e8cc53345748fef19e84)&gt;</code></td><td><a href="./types/assetidtypeid(0x90366261dc99e8cc53345748fef19e84).html"> A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]</a></td></tr>
+<tr><td><code>AssetId&lt;TypeId(0x15c6180f604bd295f3cdf1e8ee1677f1)&gt;</code></td><td><a href="./types/assetidtypeid(0x15c6180f604bd295f3cdf1e8ee1677f1).html"> A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]</a></td></tr>
+<tr><td><code>AssetId&lt;TypeId(0x181a31938cc4134ed745de0cfcd752bd)&gt;</code></td><td><a href="./types/assetidtypeid(0x181a31938cc4134ed745de0cfcd752bd).html"> A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]</a></td></tr>
 <tr><td><code>AssetPath</code></td><td><a href="./types/assetpath.html"> Represents a path to an asset in a "virtual filesystem".   Asset paths consist of three main parts:</a></td></tr>
 <tr><td><code>Name</code></td><td><a href="./types/name.html"> Component used to identify an entity. Stores a hash for faster comparisons.   The hash is eagerly r</a></td></tr>
 <tr><td><code>ComponentId</code></td><td><a href="./types/componentid.html"> A value which uniquely identifies the type of a [`Component`] or [`Resource`] within a  [`World`].   Each time a new `Component` type is registered within a `World` using  e.g. [`World::register_component`]</a></td></tr>
@@ -296,6 +298,9 @@
 <tr><td><code>Val&lt;Entity&gt;</code></td><td><a href="./types/valentity.html"> A wrapper around a value of type `T`.   This can be used to retrieve a value out of a [`ScriptValue::Reference`]</a></td></tr>
 <tr><td><code>Val&lt;ScriptQueryBuilder&gt;</code></td><td><a href="./types/valscriptquerybuilder.html"> A wrapper around a value of type `T`.   This can be used to retrieve a value out of a [`ScriptValue::Reference`]</a></td></tr>
 <tr><td><code>Val&lt;ScriptQueryResult&gt;</code></td><td><a href="./types/valscriptqueryresult.html"> A wrapper around a value of type `T`.   This can be used to retrieve a value out of a [`ScriptValue::Reference`]</a></td></tr>
+<tr><td><code>Val&lt;ReflectSchedule&gt;</code></td><td><a href="./types/valreflectschedule.html"> A wrapper around a value of type `T`.   This can be used to retrieve a value out of a [`ScriptValue::Reference`]</a></td></tr>
+<tr><td><code>Val&lt;ReflectSystem&gt;</code></td><td><a href="./types/valreflectsystem.html"> A wrapper around a value of type `T`.   This can be used to retrieve a value out of a [`ScriptValue::Reference`]</a></td></tr>
+<tr><td><code>Val&lt;ScriptSystemBuilder&gt;</code></td><td><a href="./types/valscriptsystembuilder.html"> A wrapper around a value of type `T`.   This can be used to retrieve a value out of a [`ScriptValue::Reference`]</a></td></tr>
 <tr><td><code>Val&lt;FunctionInfo&gt;</code></td><td><a href="./types/valfunctioninfo.html"> A wrapper around a value of type `T`.   This can be used to retrieve a value out of a [`ScriptValue::Reference`]</a></td></tr>
 <tr><td><code>Namespace</code></td><td><a href="./types/namespace.html"> A namespace for functions</a></td></tr>
 <tr><td><code>ScriptComponentRegistration</code></td><td><a href="./types/scriptcomponentregistration.html"> A registration for a component type.</a></td></tr>
@@ -303,10 +308,16 @@
 <tr><td><code>ScriptQueryResult</code></td><td><a href="./types/scriptqueryresult.html"> A result from a query.</a></td></tr>
 <tr><td><code>ScriptResourceRegistration</code></td><td><a href="./types/scriptresourceregistration.html"> A registration for a resource type.</a></td></tr>
 <tr><td><code>ScriptTypeRegistration</code></td><td><a href="./types/scripttyperegistration.html"> A wrapper around a `TypeRegistration` that provides additional information about the type.   This i</a></td></tr>
+<tr><td><code>ReflectNodeId</code></td><td><a href="./types/reflectnodeid.html">No Documentation 🚧</a></td></tr>
+<tr><td><code>ReflectSchedule</code></td><td><a href="./types/reflectschedule.html"> A reflectable schedule.</a></td></tr>
+<tr><td><code>ReflectSystem</code></td><td><a href="./types/reflectsystem.html"> A reflectable system.</a></td></tr>
+<tr><td><code>ReflectableScheduleLabel</code></td><td><a href="./types/reflectableschedulelabel.html">No Documentation 🚧</a></td></tr>
+<tr><td><code>ScriptSystemBuilder</code></td><td><a href="./types/scriptsystembuilder.html"> A builder for systems living in scripts</a></td></tr>
 <tr><td><code>ScriptValue</code></td><td><a href="./types/scriptvalue.html"> An abstraction of values that can be passed to and from scripts.  This allows us to re-use logic be</a></td></tr>
 <tr><td><code>FunctionArgInfo</code></td><td><a href="./types/functionarginfo.html"> Information about a function argument.</a></td></tr>
 <tr><td><code>FunctionInfo</code></td><td><a href="./types/functioninfo.html"> Information about a function.</a></td></tr>
 <tr><td><code>FunctionReturnInfo</code></td><td><a href="./types/functionreturninfo.html"> Information about a function return value.</a></td></tr>
+<tr><td><code>CallbackLabel</code></td><td><a href="./types/callbacklabel.html"> A string which disallows common invalid characters in callback labels,  particularly at the start o</a></td></tr>
 <tr><td><code>Fixed</code></td><td><a href="./types/fixed.html"> The fixed timestep game clock following virtual time.   A specialization of the [`Time`] structure. **For method documentation, see  [`Time<Fixed>#impl-Time<Fixed>`]</a></td></tr>
 <tr><td><code>Real</code></td><td><a href="./types/real.html"> Real time clock representing elapsed wall clock time.   A specialization of the [`Time`] structure. **For method documentation, see  [`Time<Real>#impl-Time<Real>`]</a></td></tr>
 <tr><td><code>Stopwatch</code></td><td><a href="./types/stopwatch.html"> A Stopwatch is a struct that tracks elapsed time when started.   Note that in order to advance the </a></td></tr>
@@ -335,6 +346,8 @@
 <tr><td><code>Option&lt;String&gt;</code></td><td><a href="./types/optionstring.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>Option&lt;ForceTouch&gt;</code></td><td><a href="./types/optionforcetouch.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>Option&lt;Val&lt;Entity&gt;&gt;</code></td><td><a href="./types/optionvalentity.html">No Documentation 🚧</a></td></tr>
+<tr><td><code>Option&lt;Val&lt;ReflectSchedule&gt;&gt;</code></td><td><a href="./types/optionvalreflectschedule.html">No Documentation 🚧</a></td></tr>
+<tr><td><code>Option&lt;Val&lt;ReflectSystem&gt;&gt;</code></td><td><a href="./types/optionvalreflectsystem.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>Option&lt;ReflectReference&gt;</code></td><td><a href="./types/optionreflectreference.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>Option&lt;Instant&gt;</code></td><td><a href="./types/optioninstant.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>Option&lt;char&gt;</code></td><td><a href="./types/optionchar.html">No Documentation 🚧</a></td></tr>
@@ -399,7 +412,7 @@
 <tr><td><code>i64</code></td><td><a href="./types/i64.html">A signed 64-bit integer</a></td></tr>
 <tr><td><code>i8</code></td><td><a href="./types/i8.html">A signed 8-bit integer</a></td></tr>
 <tr><td><code>isize</code></td><td><a href="./types/isize.html">A signed pointer-sized integer</a></td></tr>
-<tr><td><code>SmallVec&lt;TypeId(0xa32f79c7827d6d59a66b75c208b19242)&gt;</code></td><td><a href="./types/smallvectypeid(0xa32f79c7827d6d59a66b75c208b19242).html">No Documentation 🚧</a></td></tr>
+<tr><td><code>SmallVec&lt;TypeId(0x7fcc15f450e2a43f8cc044734f15101c)&gt;</code></td><td><a href="./types/smallvectypeid(0x7fcc15f450e2a43f8cc044734f15101c).html">No Documentation 🚧</a></td></tr>
 <tr><td><code>SmolStr</code></td><td><a href="./types/smolstr.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>HashMap&lt;StringScriptValue, &gt;</code></td><td><a href="./types/hashmapstringscriptvalue,_.html">No Documentation 🚧</a></td></tr>
 <tr><td><code>u128</code></td><td><a href="./types/u128.html">An unsigned 128-bit integer</a></td></tr>
@@ -415,7 +428,7 @@
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../generated_docs/functions/construct.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../generated_docs/functions/system_builder.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
@@ -429,7 +442,7 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../generated_docs/functions/construct.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../generated_docs/functions/system_builder.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
