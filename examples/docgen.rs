@@ -1,8 +1,6 @@
 use bevy::prelude::PluginGroup;
 use bevy::{
     app::App,
-    asset::AssetPlugin,
-    hierarchy::HierarchyPlugin,
     render::{
         settings::{RenderCreation, WgpuSettings},
         RenderPlugin,
