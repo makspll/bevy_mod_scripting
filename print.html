@@ -469,6 +469,9 @@ local system_with_name = update:get_system_by_name("my_system")
 end
 </code></pre>
 <p>get triggered every update.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="examples"><a class="header" href="#examples">Examples</a></h1>
+<p>In the future we hope to embedd live WASM code examples into the documentation, for now the best source of example scripts will be our regression test suite available in all supported languages in our <a href="https://github.com/makspll/bevy_mod_scripting/tree/main/assets/tests">github repository</a>.</p>
+<p>For rust examples see <a href="https://github.com/makspll/bevy_mod_scripting/tree/main/examples">this folder</a>.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="scripting-reference"><a class="header" href="#scripting-reference">Scripting Reference</a></h1>
 <p>This part of the book covers the user-facing API of the scripting languages supported by BMS. This will be where you will want to forward your script users to get started with scripting in BMS.</p>
 <p>If you are a modder, welcome! 👋, apologies for the rust-centricity of this guide, we are working on it!</p>
@@ -1146,7 +1149,7 @@ First class functions. Or at least the ability to call an arbitrary function wit
 </ul>
 <h2 id="first-classs-functions"><a class="header" href="#first-classs-functions">First Classs Functions</a></h2>
 <p>They don't necessarily have to be first class from the script POV, but they need to be first class from the POV of the host language. This means that the host language needs to be able to call a function with an arbitrary number of arguments.</p>
-<h3 id="examples"><a class="header" href="#examples">Examples</a></h3>
+<h3 id="examples-1"><a class="header" href="#examples-1">Examples</a></h3>
 <p>Let's say your language supports a <code>Value</code> type which can be returned to the script. And it has a <code>Value::Function</code> variant. The type on the Rust side would look something like this:</p>
 <pre><code class="language-rust ignore">pub enum Value {
     Function(Arc&lt;Fn(&amp;[Value]) -&gt; Value&gt;),
@@ -2947,7 +2950,7 @@ but only one should react, for example when modifying a
 while the window loses focus, [<code>ButtonInput::just_released</code>] will be triggered. Similarly if the window
 regains focus, [<code>ButtonInput::just_pressed</code>] will be triggered.</p>
 <p><code>ButtonInput&lt;GamepadButton&gt;</code> is independent of window focus.</p>
-<h2 id="examples-1"><a class="header" href="#examples-1">Examples</a></h2>
+<h2 id="examples-2"><a class="header" href="#examples-2">Examples</a></h2>
 <p>Reading and checking against the current set of pressed buttons:</p>
 <pre><code class="language-no_run"># use bevy_app::{App, NoopPluginGroup as DefaultPlugins, Update};
 # use bevy_ecs::{prelude::{IntoSystemConfigs, Res, Resource, resource_changed}, schedule::Condition};
@@ -3426,7 +3429,7 @@ Returns the new value of the release threshold.</p>
 <p>An entity with this component is spawned automatically after [<code>GamepadConnectionEvent</code>]
 and updated by [<code>gamepad_event_processing_system</code>].</p>
 <p>See also [<code>GamepadSettings</code>] for configuration.</p>
-<h1 id="examples-2"><a class="header" href="#examples-2">Examples</a></h1>
+<h1 id="examples-3"><a class="header" href="#examples-3">Examples</a></h1>
 <pre><code># use bevy_input::gamepad::{Gamepad, GamepadAxis, GamepadButton};
 # use bevy_ecs::system::Query;
 # use bevy_core::Name;
@@ -11491,7 +11494,7 @@ the minimum and maximum corners.</p>
 <p>The center point of the rectangle.</p>
 <h1 id="rounding-behavior"><a class="header" href="#rounding-behavior">Rounding Behavior</a></h1>
 <p>If the (min + max) contains odd numbers they will be rounded down to the nearest whole number when calculating the center.</p>
-<h1 id="examples-3"><a class="header" href="#examples-3">Examples</a></h1>
+<h1 id="examples-4"><a class="header" href="#examples-4">Examples</a></h1>
 <pre><code># use bevy_math::{IRect, IVec2};
 let r = IRect::new(0, 0, 5, 2); // w=5 h=2
 assert_eq!(r.center(), IVec2::new(2, 1));
@@ -11520,7 +11523,7 @@ assert_eq!(r.center(), IVec2::new(2, 1));
 <div style="break-before: page; page-break-before: always;"></div><h1 id="contains-1"><a class="header" href="#contains-1">contains</a></h1>
 <blockquote>
 <p>Check if a point lies within this rectangle, inclusive of its edges.</p>
-<h1 id="examples-4"><a class="header" href="#examples-4">Examples</a></h1>
+<h1 id="examples-5"><a class="header" href="#examples-5">Examples</a></h1>
 <pre><code># use bevy_math::IRect;
 let r = IRect::new(0, 0, 5, 1); // w=5 h=1
 assert!(r.contains(r.center()));
@@ -11555,7 +11558,7 @@ assert!(r.contains(r.max));
 <p>Create a new rectangle from its center and half-size.</p>
 <h1 id="panics-5"><a class="header" href="#panics-5">Panics</a></h1>
 <p>This method panics if any of the components of the half-size is negative.</p>
-<h1 id="examples-5"><a class="header" href="#examples-5">Examples</a></h1>
+<h1 id="examples-6"><a class="header" href="#examples-6">Examples</a></h1>
 <pre><code># use bevy_math::{IRect, IVec2};
 let r = IRect::from_center_half_size(IVec2::ZERO, IVec2::ONE); // w=2 h=2
 assert_eq!(r.min, IVec2::splat(-1));
@@ -11578,7 +11581,7 @@ assert_eq!(r.max, IVec2::splat(1));
 <p>If the size contains odd numbers they will be rounded down to the nearest whole number.</p>
 <h1 id="panics-6"><a class="header" href="#panics-6">Panics</a></h1>
 <p>This method panics if any of the components of the size is negative.</p>
-<h1 id="examples-6"><a class="header" href="#examples-6">Examples</a></h1>
+<h1 id="examples-7"><a class="header" href="#examples-7">Examples</a></h1>
 <pre><code># use bevy_math::{IRect, IVec2};
 let r = IRect::from_center_size(IVec2::ZERO, IVec2::new(3, 2)); // w=2 h=2
 assert_eq!(r.min, IVec2::splat(-1));
@@ -11599,7 +11602,7 @@ assert_eq!(r.max, IVec2::splat(1));
 <p>Create a new rectangle from two corner points.
 The two points do not need to be the minimum and/or maximum corners.
 They only need to be two opposite corners.</p>
-<h1 id="examples-7"><a class="header" href="#examples-7">Examples</a></h1>
+<h1 id="examples-8"><a class="header" href="#examples-8">Examples</a></h1>
 <pre><code># use bevy_math::{IRect, IVec2};
 // Unit rect from [0,0] to [1,1]
 let r = IRect::from_corners(IVec2::ZERO, IVec2::ONE); // w=1 h=1
@@ -11621,7 +11624,7 @@ let r = IRect::from_corners(IVec2::ONE, IVec2::ZERO); // w=1 h=1
 <p>Rectangle half-size.</p>
 <h1 id="rounding-behavior-2"><a class="header" href="#rounding-behavior-2">Rounding Behavior</a></h1>
 <p>If the full size contains odd numbers they will be rounded down to the nearest whole number when calculating the half size.</p>
-<h1 id="examples-8"><a class="header" href="#examples-8">Examples</a></h1>
+<h1 id="examples-9"><a class="header" href="#examples-9">Examples</a></h1>
 <pre><code># use bevy_math::{IRect, IVec2};
 let r = IRect::new(0, 0, 4, 3); // w=4 h=3
 assert_eq!(r.half_size(), IVec2::new(2, 1));
@@ -11638,7 +11641,7 @@ assert_eq!(r.half_size(), IVec2::new(2, 1));
 <div style="break-before: page; page-break-before: always;"></div><h1 id="height"><a class="header" href="#height">height</a></h1>
 <blockquote>
 <p>Rectangle height (max.y - min.y).</p>
-<h1 id="examples-9"><a class="header" href="#examples-9">Examples</a></h1>
+<h1 id="examples-10"><a class="header" href="#examples-10">Examples</a></h1>
 <pre><code># use bevy_math::IRect;
 let r = IRect::new(0, 0, 5, 1); // w=5 h=1
 assert_eq!(r.height(), 1);
@@ -11658,7 +11661,7 @@ assert_eq!(r.height(), 1);
 A positive expansion value produces a larger rectangle,
 while a negative expansion value produces a smaller rectangle.
 If this would result in zero or negative width or height, [<code>IRect::EMPTY</code>] is returned instead.</p>
-<h1 id="examples-10"><a class="header" href="#examples-10">Examples</a></h1>
+<h1 id="examples-11"><a class="header" href="#examples-11">Examples</a></h1>
 <pre><code># use bevy_math::{IRect, IVec2};
 let r = IRect::new(0, 0, 5, 1); // w=5 h=1
 let r2 = r.inflate(3); // w=11 h=7
@@ -11685,7 +11688,7 @@ assert_eq!(r2.max, IVec2::new(3, 2));
 The intersection is the largest rectangle enclosed in both rectangles. If the intersection
 is empty, this method returns an empty rectangle ([<code>IRect::is_empty()</code>] returns <code>true</code>), but
 the actual values of [<code>IRect::min</code>] and [<code>IRect::max</code>] are implementation-dependent.</p>
-<h1 id="examples-11"><a class="header" href="#examples-11">Examples</a></h1>
+<h1 id="examples-12"><a class="header" href="#examples-12">Examples</a></h1>
 <pre><code># use bevy_math::{IRect, IVec2};
 let r1 = IRect::new(0, 0, 5, 1); // w=5 h=1
 let r2 = IRect::new(1, -1, 3, 3); // w=2 h=4
@@ -11706,7 +11709,7 @@ assert_eq!(r.max, IVec2::new(3, 1));
 <div style="break-before: page; page-break-before: always;"></div><h1 id="is_empty"><a class="header" href="#is_empty">is_empty</a></h1>
 <blockquote>
 <p>Check if the rectangle is empty.</p>
-<h1 id="examples-12"><a class="header" href="#examples-12">Examples</a></h1>
+<h1 id="examples-13"><a class="header" href="#examples-13">Examples</a></h1>
 <pre><code># use bevy_math::{IRect, IVec2};
 let r = IRect::from_corners(IVec2::ZERO, IVec2::new(0, 1)); // w=0 h=1
 assert!(r.is_empty());
@@ -11725,7 +11728,7 @@ assert!(r.is_empty());
 <p>Create a new rectangle from two corner points.
 The two points do not need to be the minimum and/or maximum corners.
 They only need to be two opposite corners.</p>
-<h1 id="examples-13"><a class="header" href="#examples-13">Examples</a></h1>
+<h1 id="examples-14"><a class="header" href="#examples-14">Examples</a></h1>
 <pre><code># use bevy_math::IRect;
 let r = IRect::new(0, 4, 10, 6); // w=10 h=2
 let r = IRect::new(2, 3, 5, -1); // w=3 h=4
@@ -11745,7 +11748,7 @@ let r = IRect::new(2, 3, 5, -1); // w=3 h=4
 <div style="break-before: page; page-break-before: always;"></div><h1 id="size-2"><a class="header" href="#size-2">size</a></h1>
 <blockquote>
 <p>Rectangle size.</p>
-<h1 id="examples-14"><a class="header" href="#examples-14">Examples</a></h1>
+<h1 id="examples-15"><a class="header" href="#examples-15">Examples</a></h1>
 <pre><code># use bevy_math::{IRect, IVec2};
 let r = IRect::new(0, 0, 5, 1); // w=5 h=1
 assert_eq!(r.size(), IVec2::new(5, 1));
@@ -11763,7 +11766,7 @@ assert_eq!(r.size(), IVec2::new(5, 1));
 <blockquote>
 <p>Build a new rectangle formed of the union of this rectangle and another rectangle.
 The union is the smallest rectangle enclosing both rectangles.</p>
-<h1 id="examples-15"><a class="header" href="#examples-15">Examples</a></h1>
+<h1 id="examples-16"><a class="header" href="#examples-16">Examples</a></h1>
 <pre><code># use bevy_math::{IRect, IVec2};
 let r1 = IRect::new(0, 0, 5, 1); // w=5 h=1
 let r2 = IRect::new(1, -1, 3, 3); // w=2 h=4
@@ -11786,7 +11789,7 @@ assert_eq!(r.max, IVec2::new(5, 3));
 <p>Build a new rectangle formed of the union of this rectangle and a point.
 The union is the smallest rectangle enclosing both the rectangle and the point. If the
 point is already inside the rectangle, this method returns a copy of the rectangle.</p>
-<h1 id="examples-16"><a class="header" href="#examples-16">Examples</a></h1>
+<h1 id="examples-17"><a class="header" href="#examples-17">Examples</a></h1>
 <pre><code># use bevy_math::{IRect, IVec2};
 let r = IRect::new(0, 0, 5, 1); // w=5 h=1
 let u = r.union_point(IVec2::new(3, 6));
@@ -11806,7 +11809,7 @@ assert_eq!(u.max, IVec2::new(5, 6));
 <div style="break-before: page; page-break-before: always;"></div><h1 id="width"><a class="header" href="#width">width</a></h1>
 <blockquote>
 <p>Rectangle width (max.x - min.x).</p>
-<h1 id="examples-17"><a class="header" href="#examples-17">Examples</a></h1>
+<h1 id="examples-18"><a class="header" href="#examples-18">Examples</a></h1>
 <pre><code># use bevy_math::IRect;
 let r = IRect::new(0, 0, 5, 1); // w=5 h=1
 assert_eq!(r.width(), 5);
@@ -11886,7 +11889,7 @@ the minimum and maximum corners.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="center-1"><a class="header" href="#center-1">center</a></h1>
 <blockquote>
 <p>The center point of the rectangle.</p>
-<h1 id="examples-18"><a class="header" href="#examples-18">Examples</a></h1>
+<h1 id="examples-19"><a class="header" href="#examples-19">Examples</a></h1>
 <pre><code># use bevy_math::{Rect, Vec2};
 let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
 assert!(r.center().abs_diff_eq(Vec2::new(2.5, 0.5), 1e-5));
@@ -11915,7 +11918,7 @@ assert!(r.center().abs_diff_eq(Vec2::new(2.5, 0.5), 1e-5));
 <div style="break-before: page; page-break-before: always;"></div><h1 id="contains-2"><a class="header" href="#contains-2">contains</a></h1>
 <blockquote>
 <p>Check if a point lies within this rectangle, inclusive of its edges.</p>
-<h1 id="examples-19"><a class="header" href="#examples-19">Examples</a></h1>
+<h1 id="examples-20"><a class="header" href="#examples-20">Examples</a></h1>
 <pre><code># use bevy_math::Rect;
 let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
 assert!(r.contains(r.center()));
@@ -11950,7 +11953,7 @@ assert!(r.contains(r.max));
 <p>Create a new rectangle from its center and half-size.</p>
 <h1 id="panics-7"><a class="header" href="#panics-7">Panics</a></h1>
 <p>This method panics if any of the components of the half-size is negative.</p>
-<h1 id="examples-20"><a class="header" href="#examples-20">Examples</a></h1>
+<h1 id="examples-21"><a class="header" href="#examples-21">Examples</a></h1>
 <pre><code># use bevy_math::{Rect, Vec2};
 let r = Rect::from_center_half_size(Vec2::ZERO, Vec2::ONE); // w=2 h=2
 assert!(r.min.abs_diff_eq(Vec2::splat(-1.), 1e-5));
@@ -11971,7 +11974,7 @@ assert!(r.max.abs_diff_eq(Vec2::splat(1.), 1e-5));
 <p>Create a new rectangle from its center and size.</p>
 <h1 id="panics-8"><a class="header" href="#panics-8">Panics</a></h1>
 <p>This method panics if any of the components of the size is negative.</p>
-<h1 id="examples-21"><a class="header" href="#examples-21">Examples</a></h1>
+<h1 id="examples-22"><a class="header" href="#examples-22">Examples</a></h1>
 <pre><code># use bevy_math::{Rect, Vec2};
 let r = Rect::from_center_size(Vec2::ZERO, Vec2::ONE); // w=1 h=1
 assert!(r.min.abs_diff_eq(Vec2::splat(-0.5), 1e-5));
@@ -11992,7 +11995,7 @@ assert!(r.max.abs_diff_eq(Vec2::splat(0.5), 1e-5));
 <p>Create a new rectangle from two corner points.
 The two points do not need to be the minimum and/or maximum corners.
 They only need to be two opposite corners.</p>
-<h1 id="examples-22"><a class="header" href="#examples-22">Examples</a></h1>
+<h1 id="examples-23"><a class="header" href="#examples-23">Examples</a></h1>
 <pre><code># use bevy_math::{Rect, Vec2};
 // Unit rect from [0,0] to [1,1]
 let r = Rect::from_corners(Vec2::ZERO, Vec2::ONE); // w=1 h=1
@@ -12012,7 +12015,7 @@ let r = Rect::from_corners(Vec2::ONE, Vec2::ZERO); // w=1 h=1
 <div style="break-before: page; page-break-before: always;"></div><h1 id="half_size-1"><a class="header" href="#half_size-1">half_size</a></h1>
 <blockquote>
 <p>Rectangle half-size.</p>
-<h1 id="examples-23"><a class="header" href="#examples-23">Examples</a></h1>
+<h1 id="examples-24"><a class="header" href="#examples-24">Examples</a></h1>
 <pre><code># use bevy_math::{Rect, Vec2};
 let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
 assert!(r.half_size().abs_diff_eq(Vec2::new(2.5, 0.5), 1e-5));
@@ -12029,7 +12032,7 @@ assert!(r.half_size().abs_diff_eq(Vec2::new(2.5, 0.5), 1e-5));
 <div style="break-before: page; page-break-before: always;"></div><h1 id="height-1"><a class="header" href="#height-1">height</a></h1>
 <blockquote>
 <p>Rectangle height (max.y - min.y).</p>
-<h1 id="examples-24"><a class="header" href="#examples-24">Examples</a></h1>
+<h1 id="examples-25"><a class="header" href="#examples-25">Examples</a></h1>
 <pre><code># use bevy_math::Rect;
 let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
 assert!((r.height() - 1.).abs() &lt;= 1e-5);
@@ -12049,7 +12052,7 @@ assert!((r.height() - 1.).abs() &lt;= 1e-5);
 A positive expansion value produces a larger rectangle,
 while a negative expansion value produces a smaller rectangle.
 If this would result in zero or negative width or height, [<code>Rect::EMPTY</code>] is returned instead.</p>
-<h1 id="examples-25"><a class="header" href="#examples-25">Examples</a></h1>
+<h1 id="examples-26"><a class="header" href="#examples-26">Examples</a></h1>
 <pre><code># use bevy_math::{Rect, Vec2};
 let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
 let r2 = r.inflate(3.); // w=11 h=7
@@ -12076,7 +12079,7 @@ assert!(r2.max.abs_diff_eq(Vec2::new(4., 5.), 1e-5));
 The intersection is the largest rectangle enclosed in both rectangles. If the intersection
 is empty, this method returns an empty rectangle ([<code>Rect::is_empty()</code>] returns <code>true</code>), but
 the actual values of [<code>Rect::min</code>] and [<code>Rect::max</code>] are implementation-dependent.</p>
-<h1 id="examples-26"><a class="header" href="#examples-26">Examples</a></h1>
+<h1 id="examples-27"><a class="header" href="#examples-27">Examples</a></h1>
 <pre><code># use bevy_math::{Rect, Vec2};
 let r1 = Rect::new(0., 0., 5., 1.); // w=5 h=1
 let r2 = Rect::new(1., -1., 3., 3.); // w=2 h=4
@@ -12097,7 +12100,7 @@ assert!(r.max.abs_diff_eq(Vec2::new(3., 1.), 1e-5));
 <div style="break-before: page; page-break-before: always;"></div><h1 id="is_empty-1"><a class="header" href="#is_empty-1">is_empty</a></h1>
 <blockquote>
 <p>Check if the rectangle is empty.</p>
-<h1 id="examples-27"><a class="header" href="#examples-27">Examples</a></h1>
+<h1 id="examples-28"><a class="header" href="#examples-28">Examples</a></h1>
 <pre><code># use bevy_math::{Rect, Vec2};
 let r = Rect::from_corners(Vec2::ZERO, Vec2::new(0., 1.)); // w=0 h=1
 assert!(r.is_empty());
@@ -12116,7 +12119,7 @@ assert!(r.is_empty());
 <p>Create a new rectangle from two corner points.
 The two points do not need to be the minimum and/or maximum corners.
 They only need to be two opposite corners.</p>
-<h1 id="examples-28"><a class="header" href="#examples-28">Examples</a></h1>
+<h1 id="examples-29"><a class="header" href="#examples-29">Examples</a></h1>
 <pre><code># use bevy_math::Rect;
 let r = Rect::new(0., 4., 10., 6.); // w=10 h=2
 let r = Rect::new(2., 3., 5., -1.); // w=3 h=4
@@ -12137,7 +12140,7 @@ let r = Rect::new(2., 3., 5., -1.); // w=3 h=4
 <blockquote>
 <p>Build a new rectangle from this one with its coordinates expressed
 relative to <code>other</code> in a normalized ([0..1] x [0..1]) coordinate system.</p>
-<h1 id="examples-29"><a class="header" href="#examples-29">Examples</a></h1>
+<h1 id="examples-30"><a class="header" href="#examples-30">Examples</a></h1>
 <pre><code># use bevy_math::{Rect, Vec2};
 let r = Rect::new(2., 3., 4., 6.);
 let s = Rect::new(0., 0., 10., 10.);
@@ -12160,7 +12163,7 @@ assert_eq!(n.max.y, 0.6);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="size-3"><a class="header" href="#size-3">size</a></h1>
 <blockquote>
 <p>Rectangle size.</p>
-<h1 id="examples-30"><a class="header" href="#examples-30">Examples</a></h1>
+<h1 id="examples-31"><a class="header" href="#examples-31">Examples</a></h1>
 <pre><code># use bevy_math::{Rect, Vec2};
 let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
 assert!(r.size().abs_diff_eq(Vec2::new(5., 1.), 1e-5));
@@ -12178,7 +12181,7 @@ assert!(r.size().abs_diff_eq(Vec2::new(5., 1.), 1e-5));
 <blockquote>
 <p>Build a new rectangle formed of the union of this rectangle and another rectangle.
 The union is the smallest rectangle enclosing both rectangles.</p>
-<h1 id="examples-31"><a class="header" href="#examples-31">Examples</a></h1>
+<h1 id="examples-32"><a class="header" href="#examples-32">Examples</a></h1>
 <pre><code># use bevy_math::{Rect, Vec2};
 let r1 = Rect::new(0., 0., 5., 1.); // w=5 h=1
 let r2 = Rect::new(1., -1., 3., 3.); // w=2 h=4
@@ -12201,7 +12204,7 @@ assert!(r.max.abs_diff_eq(Vec2::new(5., 3.), 1e-5));
 <p>Build a new rectangle formed of the union of this rectangle and a point.
 The union is the smallest rectangle enclosing both the rectangle and the point. If the
 point is already inside the rectangle, this method returns a copy of the rectangle.</p>
-<h1 id="examples-32"><a class="header" href="#examples-32">Examples</a></h1>
+<h1 id="examples-33"><a class="header" href="#examples-33">Examples</a></h1>
 <pre><code># use bevy_math::{Rect, Vec2};
 let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
 let u = r.union_point(Vec2::new(3., 6.));
@@ -12221,7 +12224,7 @@ assert!(u.max.abs_diff_eq(Vec2::new(5., 6.), 1e-5));
 <div style="break-before: page; page-break-before: always;"></div><h1 id="width-1"><a class="header" href="#width-1">width</a></h1>
 <blockquote>
 <p>Rectangle width (max.x - min.x).</p>
-<h1 id="examples-33"><a class="header" href="#examples-33">Examples</a></h1>
+<h1 id="examples-34"><a class="header" href="#examples-34">Examples</a></h1>
 <pre><code># use bevy_math::Rect;
 let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
 assert!((r.width() - 5.).abs() &lt;= 1e-5);
@@ -12315,7 +12318,7 @@ the minimum and maximum corners.</p>
 <p>The center point of the rectangle.</p>
 <h1 id="rounding-behavior-3"><a class="header" href="#rounding-behavior-3">Rounding Behavior</a></h1>
 <p>If the (min + max) contains odd numbers they will be rounded down to the nearest whole number when calculating the center.</p>
-<h1 id="examples-34"><a class="header" href="#examples-34">Examples</a></h1>
+<h1 id="examples-35"><a class="header" href="#examples-35">Examples</a></h1>
 <pre><code># use bevy_math::{URect, UVec2};
 let r = URect::new(0, 0, 4, 2); // w=4 h=2
 assert_eq!(r.center(), UVec2::new(2, 1));
@@ -12344,7 +12347,7 @@ assert_eq!(r.center(), UVec2::new(2, 1));
 <div style="break-before: page; page-break-before: always;"></div><h1 id="contains-3"><a class="header" href="#contains-3">contains</a></h1>
 <blockquote>
 <p>Check if a point lies within this rectangle, inclusive of its edges.</p>
-<h1 id="examples-35"><a class="header" href="#examples-35">Examples</a></h1>
+<h1 id="examples-36"><a class="header" href="#examples-36">Examples</a></h1>
 <pre><code># use bevy_math::URect;
 let r = URect::new(0, 0, 5, 1); // w=5 h=1
 assert!(r.contains(r.center()));
@@ -12379,7 +12382,7 @@ assert!(r.contains(r.max));
 <p>Create a new rectangle from its center and half-size.</p>
 <h1 id="panics-9"><a class="header" href="#panics-9">Panics</a></h1>
 <p>This method panics if any of the components of the half-size is negative or if <code>origin - half_size</code> results in any negatives.</p>
-<h1 id="examples-36"><a class="header" href="#examples-36">Examples</a></h1>
+<h1 id="examples-37"><a class="header" href="#examples-37">Examples</a></h1>
 <pre><code># use bevy_math::{URect, UVec2};
 let r = URect::from_center_half_size(UVec2::ONE, UVec2::ONE); // w=2 h=2
 assert_eq!(r.min, UVec2::splat(0));
@@ -12402,7 +12405,7 @@ assert_eq!(r.max, UVec2::splat(2));
 <p>If the size contains odd numbers they will be rounded down to the nearest whole number.</p>
 <h1 id="panics-10"><a class="header" href="#panics-10">Panics</a></h1>
 <p>This method panics if any of the components of the size is negative or if <code>origin - (size / 2)</code> results in any negatives.</p>
-<h1 id="examples-37"><a class="header" href="#examples-37">Examples</a></h1>
+<h1 id="examples-38"><a class="header" href="#examples-38">Examples</a></h1>
 <pre><code># use bevy_math::{URect, UVec2};
 let r = URect::from_center_size(UVec2::ONE, UVec2::splat(2)); // w=2 h=2
 assert_eq!(r.min, UVec2::splat(0));
@@ -12423,7 +12426,7 @@ assert_eq!(r.max, UVec2::splat(2));
 <p>Create a new rectangle from two corner points.
 The two points do not need to be the minimum and/or maximum corners.
 They only need to be two opposite corners.</p>
-<h1 id="examples-38"><a class="header" href="#examples-38">Examples</a></h1>
+<h1 id="examples-39"><a class="header" href="#examples-39">Examples</a></h1>
 <pre><code># use bevy_math::{URect, UVec2};
 // Unit rect from [0,0] to [1,1]
 let r = URect::from_corners(UVec2::ZERO, UVec2::ONE); // w=1 h=1
@@ -12445,7 +12448,7 @@ let r = URect::from_corners(UVec2::ONE, UVec2::ZERO); // w=1 h=1
 <p>Rectangle half-size.</p>
 <h1 id="rounding-behavior-5"><a class="header" href="#rounding-behavior-5">Rounding Behavior</a></h1>
 <p>If the full size contains odd numbers they will be rounded down to the nearest whole number when calculating the half size.</p>
-<h1 id="examples-39"><a class="header" href="#examples-39">Examples</a></h1>
+<h1 id="examples-40"><a class="header" href="#examples-40">Examples</a></h1>
 <pre><code># use bevy_math::{URect, UVec2};
 let r = URect::new(0, 0, 4, 2); // w=4 h=2
 assert_eq!(r.half_size(), UVec2::new(2, 1));
@@ -12462,7 +12465,7 @@ assert_eq!(r.half_size(), UVec2::new(2, 1));
 <div style="break-before: page; page-break-before: always;"></div><h1 id="height-2"><a class="header" href="#height-2">height</a></h1>
 <blockquote>
 <p>Rectangle height (max.y - min.y).</p>
-<h1 id="examples-40"><a class="header" href="#examples-40">Examples</a></h1>
+<h1 id="examples-41"><a class="header" href="#examples-41">Examples</a></h1>
 <pre><code># use bevy_math::URect;
 let r = URect::new(0, 0, 5, 1); // w=5 h=1
 assert_eq!(r.height(), 1);
@@ -12482,7 +12485,7 @@ assert_eq!(r.height(), 1);
 A positive expansion value produces a larger rectangle,
 while a negative expansion value produces a smaller rectangle.
 If this would result in zero width or height, [<code>URect::EMPTY</code>] is returned instead.</p>
-<h1 id="examples-41"><a class="header" href="#examples-41">Examples</a></h1>
+<h1 id="examples-42"><a class="header" href="#examples-42">Examples</a></h1>
 <pre><code># use bevy_math::{URect, UVec2};
 let r = URect::new(4, 4, 6, 6); // w=2 h=2
 let r2 = r.inflate(1); // w=4 h=4
@@ -12509,7 +12512,7 @@ assert_eq!(r2.max, UVec2::splat(7));
 The intersection is the largest rectangle enclosed in both rectangles. If the intersection
 is empty, this method returns an empty rectangle ([<code>URect::is_empty()</code>] returns <code>true</code>), but
 the actual values of [<code>URect::min</code>] and [<code>URect::max</code>] are implementation-dependent.</p>
-<h1 id="examples-42"><a class="header" href="#examples-42">Examples</a></h1>
+<h1 id="examples-43"><a class="header" href="#examples-43">Examples</a></h1>
 <pre><code># use bevy_math::{URect, UVec2};
 let r1 = URect::new(0, 0, 2, 2); // w=2 h=2
 let r2 = URect::new(1, 1, 3, 3); // w=2 h=2
@@ -12530,7 +12533,7 @@ assert_eq!(r.max, UVec2::new(2, 2));
 <div style="break-before: page; page-break-before: always;"></div><h1 id="is_empty-2"><a class="header" href="#is_empty-2">is_empty</a></h1>
 <blockquote>
 <p>Check if the rectangle is empty.</p>
-<h1 id="examples-43"><a class="header" href="#examples-43">Examples</a></h1>
+<h1 id="examples-44"><a class="header" href="#examples-44">Examples</a></h1>
 <pre><code># use bevy_math::{URect, UVec2};
 let r = URect::from_corners(UVec2::ZERO, UVec2::new(0, 1)); // w=0 h=1
 assert!(r.is_empty());
@@ -12549,7 +12552,7 @@ assert!(r.is_empty());
 <p>Create a new rectangle from two corner points.
 The two points do not need to be the minimum and/or maximum corners.
 They only need to be two opposite corners.</p>
-<h1 id="examples-44"><a class="header" href="#examples-44">Examples</a></h1>
+<h1 id="examples-45"><a class="header" href="#examples-45">Examples</a></h1>
 <pre><code># use bevy_math::URect;
 let r = URect::new(0, 4, 10, 6); // w=10 h=2
 let r = URect::new(2, 4, 5, 0); // w=3 h=4
@@ -12569,7 +12572,7 @@ let r = URect::new(2, 4, 5, 0); // w=3 h=4
 <div style="break-before: page; page-break-before: always;"></div><h1 id="size-4"><a class="header" href="#size-4">size</a></h1>
 <blockquote>
 <p>Rectangle size.</p>
-<h1 id="examples-45"><a class="header" href="#examples-45">Examples</a></h1>
+<h1 id="examples-46"><a class="header" href="#examples-46">Examples</a></h1>
 <pre><code># use bevy_math::{URect, UVec2};
 let r = URect::new(0, 0, 5, 1); // w=5 h=1
 assert_eq!(r.size(), UVec2::new(5, 1));
@@ -12587,7 +12590,7 @@ assert_eq!(r.size(), UVec2::new(5, 1));
 <blockquote>
 <p>Build a new rectangle formed of the union of this rectangle and another rectangle.
 The union is the smallest rectangle enclosing both rectangles.</p>
-<h1 id="examples-46"><a class="header" href="#examples-46">Examples</a></h1>
+<h1 id="examples-47"><a class="header" href="#examples-47">Examples</a></h1>
 <pre><code># use bevy_math::{URect, UVec2};
 let r1 = URect::new(0, 0, 5, 1); // w=5 h=1
 let r2 = URect::new(1, 0, 3, 8); // w=2 h=4
@@ -12610,7 +12613,7 @@ assert_eq!(r.max, UVec2::new(5, 8));
 <p>Build a new rectangle formed of the union of this rectangle and a point.
 The union is the smallest rectangle enclosing both the rectangle and the point. If the
 point is already inside the rectangle, this method returns a copy of the rectangle.</p>
-<h1 id="examples-47"><a class="header" href="#examples-47">Examples</a></h1>
+<h1 id="examples-48"><a class="header" href="#examples-48">Examples</a></h1>
 <pre><code># use bevy_math::{URect, UVec2};
 let r = URect::new(0, 0, 5, 1); // w=5 h=1
 let u = r.union_point(UVec2::new(3, 6));
@@ -12630,7 +12633,7 @@ assert_eq!(u.max, UVec2::new(5, 6));
 <div style="break-before: page; page-break-before: always;"></div><h1 id="width-2"><a class="header" href="#width-2">width</a></h1>
 <blockquote>
 <p>Rectangle width (max.x - min.x).</p>
-<h1 id="examples-48"><a class="header" href="#examples-48">Examples</a></h1>
+<h1 id="examples-49"><a class="header" href="#examples-49">Examples</a></h1>
 <pre><code># use bevy_math::URect;
 let r = URect::new(0, 0, 5, 1); // w=5 h=1
 assert_eq!(r.width(), 5);
@@ -13780,7 +13783,7 @@ theoretically also happen at other times.</p>
 <blockquote>
 <p>A Stopwatch is a struct that tracks elapsed time when started.</p>
 <p>Note that in order to advance the stopwatch <a href="generated_docs/types/Stopwatch::tick"><code>tick</code></a> <strong>MUST</strong> be called.</p>
-<h1 id="examples-49"><a class="header" href="#examples-49">Examples</a></h1>
+<h1 id="examples-50"><a class="header" href="#examples-50">Examples</a></h1>
 <pre><code># use bevy_time::*;
 use std::time::Duration;
 let mut stopwatch = Stopwatch::new();
@@ -13841,7 +13844,7 @@ assert_eq!(stopwatch.elapsed_secs(), 0.0);
 <blockquote>
 <p>Returns the elapsed time since the last <a href="generated_docs/types/stopwatch/Stopwatch::reset"><code>reset</code></a>
 of the stopwatch.</p>
-<h1 id="examples-50"><a class="header" href="#examples-50">Examples</a></h1>
+<h1 id="examples-51"><a class="header" href="#examples-51">Examples</a></h1>
 <pre><code># use bevy_time::*;
 use std::time::Duration;
 let mut stopwatch = Stopwatch::new();
@@ -13864,7 +13867,7 @@ assert_eq!(stopwatch.elapsed(), Duration::from_secs(1));
 <blockquote>
 <p>Returns the elapsed time since the last <a href="generated_docs/types/stopwatch/Stopwatch::reset"><code>reset</code></a>
 of the stopwatch, in seconds.</p>
-<h1 id="examples-51"><a class="header" href="#examples-51">Examples</a></h1>
+<h1 id="examples-52"><a class="header" href="#examples-52">Examples</a></h1>
 <pre><code># use bevy_time::*;
 use std::time::Duration;
 let mut stopwatch = Stopwatch::new();
@@ -13915,7 +13918,7 @@ of the stopwatch, in seconds, as f64.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="is_paused"><a class="header" href="#is_paused">is_paused</a></h1>
 <blockquote>
 <p>Returns <code>true</code> if the stopwatch is paused.</p>
-<h1 id="examples-52"><a class="header" href="#examples-52">Examples</a></h1>
+<h1 id="examples-53"><a class="header" href="#examples-53">Examples</a></h1>
 <pre><code># use bevy_time::*;
 let mut stopwatch = Stopwatch::new();
 assert!(!stopwatch.is_paused());
@@ -13936,7 +13939,7 @@ assert!(!stopwatch.is_paused());
 <div style="break-before: page; page-break-before: always;"></div><h1 id="new-44"><a class="header" href="#new-44">new</a></h1>
 <blockquote>
 <p>Create a new unpaused <code>Stopwatch</code> with no elapsed time.</p>
-<h1 id="examples-53"><a class="header" href="#examples-53">Examples</a></h1>
+<h1 id="examples-54"><a class="header" href="#examples-54">Examples</a></h1>
 <pre><code># use bevy_time::*;
 let stopwatch = Stopwatch::new();
 assert_eq!(stopwatch.elapsed_secs(), 0.0);
@@ -13952,7 +13955,7 @@ assert_eq!(stopwatch.is_paused(), false);
 <blockquote>
 <p>Pauses the stopwatch. Any call to <a href="generated_docs/types/stopwatch/Stopwatch::tick"><code>tick</code></a> while
 paused will not have any effect on the elapsed time.</p>
-<h1 id="examples-54"><a class="header" href="#examples-54">Examples</a></h1>
+<h1 id="examples-55"><a class="header" href="#examples-55">Examples</a></h1>
 <pre><code># use bevy_time::*;
 use std::time::Duration;
 let mut stopwatch = Stopwatch::new();
@@ -13973,7 +13976,7 @@ assert_eq!(stopwatch.elapsed_secs(), 0.0);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="reset"><a class="header" href="#reset">reset</a></h1>
 <blockquote>
 <p>Resets the stopwatch. The reset doesn't affect the paused state of the stopwatch.</p>
-<h1 id="examples-55"><a class="header" href="#examples-55">Examples</a></h1>
+<h1 id="examples-56"><a class="header" href="#examples-56">Examples</a></h1>
 <pre><code># use bevy_time::*;
 use std::time::Duration;
 let mut stopwatch = Stopwatch::new();
@@ -13993,7 +13996,7 @@ assert_eq!(stopwatch.elapsed_secs(), 0.0);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="set_elapsed"><a class="header" href="#set_elapsed">set_elapsed</a></h1>
 <blockquote>
 <p>Sets the elapsed time of the stopwatch.</p>
-<h1 id="examples-56"><a class="header" href="#examples-56">Examples</a></h1>
+<h1 id="examples-57"><a class="header" href="#examples-57">Examples</a></h1>
 <pre><code># use bevy_time::*;
 use std::time::Duration;
 let mut stopwatch = Stopwatch::new();
@@ -14013,7 +14016,7 @@ assert_eq!(stopwatch.elapsed_secs(), 1.0);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="unpause"><a class="header" href="#unpause">unpause</a></h1>
 <blockquote>
 <p>Unpauses the stopwatch. Resume the effect of ticking on elapsed time.</p>
-<h1 id="examples-57"><a class="header" href="#examples-57">Examples</a></h1>
+<h1 id="examples-58"><a class="header" href="#examples-58">Examples</a></h1>
 <pre><code># use bevy_time::*;
 use std::time::Duration;
 let mut stopwatch = Stopwatch::new();
@@ -14801,7 +14804,7 @@ exceeded, and can still be reset at any given point.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="duration"><a class="header" href="#duration">duration</a></h1>
 <blockquote>
 <p>Returns the duration of the timer.</p>
-<h1 id="examples-58"><a class="header" href="#examples-58">Examples</a></h1>
+<h1 id="examples-59"><a class="header" href="#examples-59">Examples</a></h1>
 <pre><code># use bevy_time::*;
 use std::time::Duration;
 let timer = Timer::new(Duration::from_secs(1), TimerMode::Once);
@@ -14821,7 +14824,7 @@ assert_eq!(timer.duration(), Duration::from_secs(1));
 <p>Returns the time elapsed on the timer. Guaranteed to be between 0.0 and <code>duration</code>.
 Will only equal <code>duration</code> when the timer is finished and non repeating.
 See also <a href="generated_docs/types/timer/Stopwatch::elapsed"><code>Stopwatch::elapsed</code></a>.</p>
-<h1 id="examples-59"><a class="header" href="#examples-59">Examples</a></h1>
+<h1 id="examples-60"><a class="header" href="#examples-60">Examples</a></h1>
 <pre><code># use bevy_time::*;
 use std::time::Duration;
 let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
@@ -14880,7 +14883,7 @@ See also <a href="generated_docs/types/timer/Timer::elapsed"><code>Timer::elapse
 <blockquote>
 <p>Returns <code>true</code> if the timer has reached its duration.
 For repeating timers, this method behaves identically to [<code>Timer::just_finished</code>].</p>
-<h1 id="examples-60"><a class="header" href="#examples-60">Examples</a></h1>
+<h1 id="examples-61"><a class="header" href="#examples-61">Examples</a></h1>
 <pre><code># use bevy_time::*;
 use std::time::Duration;
 let mut timer_once = Timer::from_seconds(1.0, TimerMode::Once);
@@ -14908,7 +14911,7 @@ assert!(timer_repeating.finished());
 <div style="break-before: page; page-break-before: always;"></div><h1 id="fraction"><a class="header" href="#fraction">fraction</a></h1>
 <blockquote>
 <p>Returns the fraction of the timer elapsed time (goes from 0.0 to 1.0).</p>
-<h1 id="examples-61"><a class="header" href="#examples-61">Examples</a></h1>
+<h1 id="examples-62"><a class="header" href="#examples-62">Examples</a></h1>
 <pre><code># use bevy_time::*;
 use std::time::Duration;
 let mut timer = Timer::from_seconds(2.0, TimerMode::Once);
@@ -14927,7 +14930,7 @@ assert_eq!(timer.fraction(), 0.25);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="fraction_remaining"><a class="header" href="#fraction_remaining">fraction_remaining</a></h1>
 <blockquote>
 <p>Returns the fraction of the timer remaining time (goes from 1.0 to 0.0).</p>
-<h1 id="examples-62"><a class="header" href="#examples-62">Examples</a></h1>
+<h1 id="examples-63"><a class="header" href="#examples-63">Examples</a></h1>
 <pre><code># use bevy_time::*;
 use std::time::Duration;
 let mut timer = Timer::from_seconds(2.0, TimerMode::Once);
@@ -14963,7 +14966,7 @@ let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="just_finished"><a class="header" href="#just_finished">just_finished</a></h1>
 <blockquote>
 <p>Returns <code>true</code> only on the tick the timer reached its duration.</p>
-<h1 id="examples-63"><a class="header" href="#examples-63">Examples</a></h1>
+<h1 id="examples-64"><a class="header" href="#examples-64">Examples</a></h1>
 <pre><code># use bevy_time::*;
 use std::time::Duration;
 let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
@@ -14984,7 +14987,7 @@ assert!(!timer.just_finished());
 <div style="break-before: page; page-break-before: always;"></div><h1 id="mode-1"><a class="header" href="#mode-1">mode</a></h1>
 <blockquote>
 <p>Returns the mode of the timer.</p>
-<h1 id="examples-64"><a class="header" href="#examples-64">Examples</a></h1>
+<h1 id="examples-65"><a class="header" href="#examples-65">Examples</a></h1>
 <pre><code># use bevy_time::*;
 let mut timer = Timer::from_seconds(1.0, TimerMode::Repeating);
 assert_eq!(timer.mode(), TimerMode::Repeating);
@@ -15016,7 +15019,7 @@ See also <a href="generated_docs/types/timer/Timer::from_seconds"><code>Timer::f
 <blockquote>
 <p>Pauses the Timer. Disables the ticking of the timer.
 See also <a href="generated_docs/types/timer/Stopwatch::pause"><code>Stopwatch::pause</code></a>.</p>
-<h1 id="examples-65"><a class="header" href="#examples-65">Examples</a></h1>
+<h1 id="examples-66"><a class="header" href="#examples-66">Examples</a></h1>
 <pre><code># use bevy_time::*;
 use std::time::Duration;
 let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
@@ -15037,7 +15040,7 @@ assert_eq!(timer.elapsed_secs(), 0.0);
 <blockquote>
 <p>Returns <code>true</code> if the timer is paused.
 See also <a href="generated_docs/types/timer/Stopwatch::is_paused"><code>Stopwatch::is_paused</code></a>.</p>
-<h1 id="examples-66"><a class="header" href="#examples-66">Examples</a></h1>
+<h1 id="examples-67"><a class="header" href="#examples-67">Examples</a></h1>
 <pre><code># use bevy_time::*;
 let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
 assert!(!timer.paused());
@@ -15058,7 +15061,7 @@ assert!(!timer.paused());
 <div style="break-before: page; page-break-before: always;"></div><h1 id="remaining"><a class="header" href="#remaining">remaining</a></h1>
 <blockquote>
 <p>Returns the remaining time using Duration</p>
-<h1 id="examples-67"><a class="header" href="#examples-67">Examples</a></h1>
+<h1 id="examples-68"><a class="header" href="#examples-68">Examples</a></h1>
 <pre><code># use bevy_time::*;
 use std::time::Duration;
 let mut timer = Timer::from_seconds(2.0, TimerMode::Once);
@@ -15077,7 +15080,7 @@ assert_eq!(timer.remaining(), Duration::from_secs_f32(1.5));
 <div style="break-before: page; page-break-before: always;"></div><h1 id="remaining_secs"><a class="header" href="#remaining_secs">remaining_secs</a></h1>
 <blockquote>
 <p>Returns the remaining time in seconds</p>
-<h1 id="examples-68"><a class="header" href="#examples-68">Examples</a></h1>
+<h1 id="examples-69"><a class="header" href="#examples-69">Examples</a></h1>
 <pre><code># use bevy_time::*;
 use std::cmp::Ordering;
 use std::time::Duration;
@@ -15121,7 +15124,7 @@ assert_eq!(timer.elapsed_secs(), 0.0);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="set_duration"><a class="header" href="#set_duration">set_duration</a></h1>
 <blockquote>
 <p>Sets the duration of the timer.</p>
-<h1 id="examples-69"><a class="header" href="#examples-69">Examples</a></h1>
+<h1 id="examples-70"><a class="header" href="#examples-70">Examples</a></h1>
 <pre><code># use bevy_time::*;
 use std::time::Duration;
 let mut timer = Timer::from_seconds(1.5, TimerMode::Once);
@@ -15164,7 +15167,7 @@ assert!(!timer.finished());
 <div style="break-before: page; page-break-before: always;"></div><h1 id="set_mode"><a class="header" href="#set_mode">set_mode</a></h1>
 <blockquote>
 <p>Sets the mode of the timer.</p>
-<h1 id="examples-70"><a class="header" href="#examples-70">Examples</a></h1>
+<h1 id="examples-71"><a class="header" href="#examples-71">Examples</a></h1>
 <pre><code># use bevy_time::*;
 let mut timer = Timer::from_seconds(1.0, TimerMode::Repeating);
 timer.set_mode(TimerMode::Once);
@@ -15186,7 +15189,7 @@ assert_eq!(timer.mode(), TimerMode::Once);
 finished during the last <a href="generated_docs/types/timer/Timer%3CT%3E::tick"><code>tick</code></a> call.
 For non repeating-timers, this method will only ever
 return 0 or 1.</p>
-<h1 id="examples-71"><a class="header" href="#examples-71">Examples</a></h1>
+<h1 id="examples-72"><a class="header" href="#examples-72">Examples</a></h1>
 <pre><code># use bevy_time::*;
 use std::time::Duration;
 let mut timer = Timer::from_seconds(1.0, TimerMode::Repeating);
@@ -15210,7 +15213,7 @@ assert_eq!(timer.times_finished_this_tick(), 0);
 <blockquote>
 <p>Unpauses the Timer. Resumes the ticking of the timer.
 See also <a href="generated_docs/types/timer/Stopwatch::unpause"><code>Stopwatch::unpause()</code></a>.</p>
-<h1 id="examples-72"><a class="header" href="#examples-72">Examples</a></h1>
+<h1 id="examples-73"><a class="header" href="#examples-73">Examples</a></h1>
 <pre><code># use bevy_time::*;
 use std::time::Duration;
 let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
@@ -15390,7 +15393,7 @@ entity which has a Transform. This is done automatically by Bevy-internal system
 <p>This system runs during <a href="generated_docs/types/bevy_app::PostUpdate"><code>PostUpdate</code></a>. If you
 update the [<code>Transform</code>] of an entity in this schedule or after, you will notice a 1 frame lag
 before the [<code>GlobalTransform</code>] is updated.</p>
-<h1 id="examples-73"><a class="header" href="#examples-73">Examples</a></h1>
+<h1 id="examples-74"><a class="header" href="#examples-74">Examples</a></h1>
 <ul>
 <li><a href="https://github.com/bevyengine/bevy/blob/latest/examples/transforms/transform.rs"><code>transform</code></a></li>
 </ul>
@@ -15870,7 +15873,7 @@ frame if it doesn't have a <a href="generated_docs/types/bevy_hierarchy::Parent"
 <p>This system runs during <a href="generated_docs/types/bevy_app::PostUpdate"><code>PostUpdate</code></a>. If you
 update the [<code>Transform</code>] of an entity during this set or after, you will notice a 1 frame lag
 before the [<code>GlobalTransform</code>] is updated.</p>
-<h1 id="examples-74"><a class="header" href="#examples-74">Examples</a></h1>
+<h1 id="examples-75"><a class="header" href="#examples-75">Examples</a></h1>
 <ul>
 <li><a href="https://github.com/bevyengine/bevy/blob/latest/examples/transforms/transform.rs"><code>transform</code></a></li>
 </ul>
@@ -16218,7 +16221,7 @@ resulting [<code>Transform</code>]</p>
 <blockquote>
 <p>Rotates this [<code>Transform</code>] by the given rotation.
 If this [<code>Transform</code>] has a parent, the <code>rotation</code> is relative to the rotation of the parent.</p>
-<h1 id="examples-75"><a class="header" href="#examples-75">Examples</a></h1>
+<h1 id="examples-76"><a class="header" href="#examples-76">Examples</a></h1>
 <ul>
 <li>[<code>3d_rotation</code>]
 [<code>3d_rotation</code>]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/3d_rotation.rs</li>
@@ -16517,7 +16520,7 @@ If this [<code>Transform</code>] has a parent, the <code>point</code> is relativ
 </div><div style="break-before: page; page-break-before: always;"></div><h1 id="abs_diff"><a class="header" href="#abs_diff">abs_diff</a></h1>
 <blockquote>
 <p>Computes the absolute difference between <code>self</code> and <code>other</code>.</p>
-<h1 id="examples-76"><a class="header" href="#examples-76">Examples</a></h1>
+<h1 id="examples-77"><a class="header" href="#examples-77">Examples</a></h1>
 <pre><code>use std::time::Duration;
 assert_eq!(Duration::new(100, 0).abs_diff(Duration::new(80, 0)), Duration::new(20, 0));
 assert_eq!(Duration::new(100, 400_000_000).abs_diff(Duration::new(110, 0)), Duration::new(9, 600_000_000));
@@ -16548,7 +16551,7 @@ assert_eq!(Duration::new(100, 400_000_000).abs_diff(Duration::new(110, 0)), Dura
 <div style="break-before: page; page-break-before: always;"></div><h1 id="as_micros"><a class="header" href="#as_micros">as_micros</a></h1>
 <blockquote>
 <p>Returns the total number of whole microseconds contained by this <code>Duration</code>.</p>
-<h1 id="examples-77"><a class="header" href="#examples-77">Examples</a></h1>
+<h1 id="examples-78"><a class="header" href="#examples-78">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let duration = Duration::new(5, 730_023_852);
 assert_eq!(duration.as_micros(), 5_730_023);
@@ -16565,7 +16568,7 @@ assert_eq!(duration.as_micros(), 5_730_023);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="as_millis"><a class="header" href="#as_millis">as_millis</a></h1>
 <blockquote>
 <p>Returns the total number of whole milliseconds contained by this <code>Duration</code>.</p>
-<h1 id="examples-78"><a class="header" href="#examples-78">Examples</a></h1>
+<h1 id="examples-79"><a class="header" href="#examples-79">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let duration = Duration::new(5, 730_023_852);
 assert_eq!(duration.as_millis(), 5_730);
@@ -16582,7 +16585,7 @@ assert_eq!(duration.as_millis(), 5_730);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="as_nanos"><a class="header" href="#as_nanos">as_nanos</a></h1>
 <blockquote>
 <p>Returns the total number of nanoseconds contained by this <code>Duration</code>.</p>
-<h1 id="examples-79"><a class="header" href="#examples-79">Examples</a></h1>
+<h1 id="examples-80"><a class="header" href="#examples-80">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let duration = Duration::new(5, 730_023_852);
 assert_eq!(duration.as_nanos(), 5_730_023_852);
@@ -16601,7 +16604,7 @@ assert_eq!(duration.as_nanos(), 5_730_023_852);
 <p>Returns the number of <em>whole</em> seconds contained by this <code>Duration</code>.
 The returned value does not include the fractional (nanosecond) part of the
 duration, which can be obtained using [<code>subsec_nanos</code>].</p>
-<h1 id="examples-80"><a class="header" href="#examples-80">Examples</a></h1>
+<h1 id="examples-81"><a class="header" href="#examples-81">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let duration = Duration::new(5, 730_023_852);
 assert_eq!(duration.as_secs(), 5);
@@ -16624,7 +16627,7 @@ including the fractional part, use [<code>as_secs_f64</code>] or [<code>as_secs_
 <blockquote>
 <p>Returns the number of seconds contained by this <code>Duration</code> as <code>f32</code>.
 The returned value includes the fractional (nanosecond) part of the duration.</p>
-<h1 id="examples-81"><a class="header" href="#examples-81">Examples</a></h1>
+<h1 id="examples-82"><a class="header" href="#examples-82">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let dur = Duration::new(2, 700_000_000);
 assert_eq!(dur.as_secs_f32(), 2.7);
@@ -16642,7 +16645,7 @@ assert_eq!(dur.as_secs_f32(), 2.7);
 <blockquote>
 <p>Returns the number of seconds contained by this <code>Duration</code> as <code>f64</code>.
 The returned value includes the fractional (nanosecond) part of the duration.</p>
-<h1 id="examples-82"><a class="header" href="#examples-82">Examples</a></h1>
+<h1 id="examples-83"><a class="header" href="#examples-83">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let dur = Duration::new(2, 700_000_000);
 assert_eq!(dur.as_secs_f64(), 2.7);
@@ -16696,7 +16699,7 @@ assert_eq!(dur.as_secs_f64(), 2.7);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="div_duration_f32"><a class="header" href="#div_duration_f32">div_duration_f32</a></h1>
 <blockquote>
 <p>Divides <code>Duration</code> by <code>Duration</code> and returns <code>f32</code>.</p>
-<h1 id="examples-83"><a class="header" href="#examples-83">Examples</a></h1>
+<h1 id="examples-84"><a class="header" href="#examples-84">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let dur1 = Duration::new(2, 700_000_000);
 let dur2 = Duration::new(5, 400_000_000);
@@ -16715,7 +16718,7 @@ assert_eq!(dur1.div_duration_f32(dur2), 0.5);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="div_duration_f64"><a class="header" href="#div_duration_f64">div_duration_f64</a></h1>
 <blockquote>
 <p>Divides <code>Duration</code> by <code>Duration</code> and returns <code>f64</code>.</p>
-<h1 id="examples-84"><a class="header" href="#examples-84">Examples</a></h1>
+<h1 id="examples-85"><a class="header" href="#examples-85">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let dur1 = Duration::new(2, 700_000_000);
 let dur2 = Duration::new(5, 400_000_000);
@@ -16736,7 +16739,7 @@ assert_eq!(dur1.div_duration_f64(dur2), 0.5);
 <p>Divides <code>Duration</code> by <code>f32</code>.</p>
 <h1 id="panics-13"><a class="header" href="#panics-13">Panics</a></h1>
 <p>This method will panic if result is negative, overflows <code>Duration</code> or not finite.</p>
-<h1 id="examples-85"><a class="header" href="#examples-85">Examples</a></h1>
+<h1 id="examples-86"><a class="header" href="#examples-86">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let dur = Duration::new(2, 700_000_000);
 // note that due to rounding errors result is slightly
@@ -16759,7 +16762,7 @@ assert_eq!(dur.div_f32(3.14e5), Duration::new(0, 8_599));
 <p>Divides <code>Duration</code> by <code>f64</code>.</p>
 <h1 id="panics-14"><a class="header" href="#panics-14">Panics</a></h1>
 <p>This method will panic if result is negative, overflows <code>Duration</code> or not finite.</p>
-<h1 id="examples-86"><a class="header" href="#examples-86">Examples</a></h1>
+<h1 id="examples-87"><a class="header" href="#examples-87">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let dur = Duration::new(2, 700_000_000);
 assert_eq!(dur.div_f64(3.14), Duration::new(0, 859_872_611));
@@ -16791,7 +16794,7 @@ assert_eq!(dur.div_f64(3.14e5), Duration::new(0, 8_599));
 <div style="break-before: page; page-break-before: always;"></div><h1 id="from_micros"><a class="header" href="#from_micros">from_micros</a></h1>
 <blockquote>
 <p>Creates a new <code>Duration</code> from the specified number of microseconds.</p>
-<h1 id="examples-87"><a class="header" href="#examples-87">Examples</a></h1>
+<h1 id="examples-88"><a class="header" href="#examples-88">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let duration = Duration::from_micros(1_000_002);
 assert_eq!(1, duration.as_secs());
@@ -16809,7 +16812,7 @@ assert_eq!(2_000, duration.subsec_nanos());
 <div style="break-before: page; page-break-before: always;"></div><h1 id="from_millis"><a class="header" href="#from_millis">from_millis</a></h1>
 <blockquote>
 <p>Creates a new <code>Duration</code> from the specified number of milliseconds.</p>
-<h1 id="examples-88"><a class="header" href="#examples-88">Examples</a></h1>
+<h1 id="examples-89"><a class="header" href="#examples-89">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let duration = Duration::from_millis(2_569);
 assert_eq!(2, duration.as_secs());
@@ -16831,7 +16834,7 @@ Note: Using this on the return value of <code>as_nanos()</code> might cause unex
 <code>as_nanos()</code> returns a u128, and can return values that do not fit in u64, e.g. 585 years.
 Instead, consider using the pattern <code>Duration::new(d.as_secs(), d.subsec_nanos())</code>
 if you cannot copy/clone the Duration directly.</p>
-<h1 id="examples-89"><a class="header" href="#examples-89">Examples</a></h1>
+<h1 id="examples-90"><a class="header" href="#examples-90">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let duration = Duration::from_nanos(1_000_000_123);
 assert_eq!(1, duration.as_secs());
@@ -16849,7 +16852,7 @@ assert_eq!(123, duration.subsec_nanos());
 <div style="break-before: page; page-break-before: always;"></div><h1 id="from_secs"><a class="header" href="#from_secs">from_secs</a></h1>
 <blockquote>
 <p>Creates a new <code>Duration</code> from the specified number of whole seconds.</p>
-<h1 id="examples-90"><a class="header" href="#examples-90">Examples</a></h1>
+<h1 id="examples-91"><a class="header" href="#examples-91">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let duration = Duration::from_secs(5);
 assert_eq!(5, duration.as_secs());
@@ -16870,7 +16873,7 @@ assert_eq!(0, duration.subsec_nanos());
 as <code>f32</code>.</p>
 <h1 id="panics-15"><a class="header" href="#panics-15">Panics</a></h1>
 <p>This constructor will panic if <code>secs</code> is negative, overflows <code>Duration</code> or not finite.</p>
-<h1 id="examples-91"><a class="header" href="#examples-91">Examples</a></h1>
+<h1 id="examples-92"><a class="header" href="#examples-92">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let res = Duration::from_secs_f32(0.0);
 assert_eq!(res, Duration::new(0, 0));
@@ -16904,7 +16907,7 @@ assert_eq!(res, Duration::new(0, 1));
 as <code>f64</code>.</p>
 <h1 id="panics-16"><a class="header" href="#panics-16">Panics</a></h1>
 <p>This constructor will panic if <code>secs</code> is negative, overflows <code>Duration</code> or not finite.</p>
-<h1 id="examples-92"><a class="header" href="#examples-92">Examples</a></h1>
+<h1 id="examples-93"><a class="header" href="#examples-93">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let res = Duration::from_secs_f64(0.0);
 assert_eq!(res, Duration::new(0, 0));
@@ -16935,7 +16938,7 @@ assert_eq!(res, Duration::new(0, 1));
 <div style="break-before: page; page-break-before: always;"></div><h1 id="is_zero"><a class="header" href="#is_zero">is_zero</a></h1>
 <blockquote>
 <p>Returns true if this <code>Duration</code> spans no time.</p>
-<h1 id="examples-93"><a class="header" href="#examples-93">Examples</a></h1>
+<h1 id="examples-94"><a class="header" href="#examples-94">Examples</a></h1>
 <pre><code>use std::time::Duration;
 assert!(Duration::ZERO.is_zero());
 assert!(Duration::new(0, 0).is_zero());
@@ -16972,7 +16975,7 @@ assert!(!Duration::from_secs(1).is_zero());
 <p>Multiplies <code>Duration</code> by <code>f32</code>.</p>
 <h1 id="panics-17"><a class="header" href="#panics-17">Panics</a></h1>
 <p>This method will panic if result is negative, overflows <code>Duration</code> or not finite.</p>
-<h1 id="examples-94"><a class="header" href="#examples-94">Examples</a></h1>
+<h1 id="examples-95"><a class="header" href="#examples-95">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let dur = Duration::new(2, 700_000_000);
 assert_eq!(dur.mul_f32(3.14), Duration::new(8, 478_000_641));
@@ -16993,7 +16996,7 @@ assert_eq!(dur.mul_f32(3.14e5), Duration::new(847_800, 0));
 <p>Multiplies <code>Duration</code> by <code>f64</code>.</p>
 <h1 id="panics-18"><a class="header" href="#panics-18">Panics</a></h1>
 <p>This method will panic if result is negative, overflows <code>Duration</code> or not finite.</p>
-<h1 id="examples-95"><a class="header" href="#examples-95">Examples</a></h1>
+<h1 id="examples-96"><a class="header" href="#examples-96">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let dur = Duration::new(2, 700_000_000);
 assert_eq!(dur.mul_f64(3.14), Duration::new(8, 478_000_000));
@@ -17018,7 +17021,7 @@ nanoseconds in a second), then it will carry over into the seconds provided.</p>
 <h1 id="panics-19"><a class="header" href="#panics-19">Panics</a></h1>
 <p>This constructor will panic if the carry from the nanoseconds overflows
 the seconds counter.</p>
-<h1 id="examples-96"><a class="header" href="#examples-96">Examples</a></h1>
+<h1 id="examples-97"><a class="header" href="#examples-97">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let five_seconds = Duration::new(5, 0);
 </code></pre>
@@ -17036,7 +17039,7 @@ let five_seconds = Duration::new(5, 0);
 <blockquote>
 <p>Saturating <code>Duration</code> addition. Computes <code>self + other</code>, returning [<code>Duration::MAX</code>]
 if overflow occurred.</p>
-<h1 id="examples-97"><a class="header" href="#examples-97">Examples</a></h1>
+<h1 id="examples-98"><a class="header" href="#examples-98">Examples</a></h1>
 <pre><code>#![feature(duration_constants)]
 use std::time::Duration;
 assert_eq!(Duration::new(0, 0).saturating_add(Duration::new(0, 1)), Duration::new(0, 1));
@@ -17056,7 +17059,7 @@ assert_eq!(Duration::new(1, 0).saturating_add(Duration::new(u64::MAX, 0)), Durat
 <blockquote>
 <p>Saturating <code>Duration</code> multiplication. Computes <code>self * other</code>, returning
 [<code>Duration::MAX</code>] if overflow occurred.</p>
-<h1 id="examples-98"><a class="header" href="#examples-98">Examples</a></h1>
+<h1 id="examples-99"><a class="header" href="#examples-99">Examples</a></h1>
 <pre><code>#![feature(duration_constants)]
 use std::time::Duration;
 assert_eq!(Duration::new(0, 500_000_001).saturating_mul(2), Duration::new(1, 2));
@@ -17076,7 +17079,7 @@ assert_eq!(Duration::new(u64::MAX - 1, 0).saturating_mul(2), Duration::MAX);
 <blockquote>
 <p>Saturating <code>Duration</code> subtraction. Computes <code>self - other</code>, returning [<code>Duration::ZERO</code>]
 if the result would be negative or if overflow occurred.</p>
-<h1 id="examples-99"><a class="header" href="#examples-99">Examples</a></h1>
+<h1 id="examples-100"><a class="header" href="#examples-100">Examples</a></h1>
 <pre><code>use std::time::Duration;
 assert_eq!(Duration::new(0, 1).saturating_sub(Duration::new(0, 0)), Duration::new(0, 1));
 assert_eq!(Duration::new(0, 0).saturating_sub(Duration::new(0, 1)), Duration::ZERO);
@@ -17110,7 +17113,7 @@ assert_eq!(Duration::new(0, 0).saturating_sub(Duration::new(0, 1)), Duration::ZE
 This method does <strong>not</strong> return the length of the duration when
 represented by microseconds. The returned number always represents a
 fractional portion of a second (i.e., it is less than one million).</p>
-<h1 id="examples-100"><a class="header" href="#examples-100">Examples</a></h1>
+<h1 id="examples-101"><a class="header" href="#examples-101">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let duration = Duration::from_micros(1_234_567);
 assert_eq!(duration.as_secs(), 1);
@@ -17131,7 +17134,7 @@ assert_eq!(duration.subsec_micros(), 234_567);
 This method does <strong>not</strong> return the length of the duration when
 represented by milliseconds. The returned number always represents a
 fractional portion of a second (i.e., it is less than one thousand).</p>
-<h1 id="examples-101"><a class="header" href="#examples-101">Examples</a></h1>
+<h1 id="examples-102"><a class="header" href="#examples-102">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let duration = Duration::from_millis(5_432);
 assert_eq!(duration.as_secs(), 5);
@@ -17152,7 +17155,7 @@ assert_eq!(duration.subsec_millis(), 432);
 This method does <strong>not</strong> return the length of the duration when
 represented by nanoseconds. The returned number always represents a
 fractional portion of a second (i.e., it is less than one billion).</p>
-<h1 id="examples-102"><a class="header" href="#examples-102">Examples</a></h1>
+<h1 id="examples-103"><a class="header" href="#examples-103">Examples</a></h1>
 <pre><code>use std::time::Duration;
 let duration = Duration::from_millis(5_010);
 assert_eq!(duration.as_secs(), 5);
@@ -17234,7 +17237,7 @@ or zero duration if that instant is later than this one.</p>
 method saturates. Future versions may reintroduce the panic in some circumstances.
 See [Monotonicity].
 [Monotonicity]: Instant#monotonicity</p>
-<h1 id="examples-103"><a class="header" href="#examples-103">Examples</a></h1>
+<h1 id="examples-104"><a class="header" href="#examples-104">Examples</a></h1>
 <pre><code class="language-no_run">use std::time::{Duration, Instant};
 use std::thread::sleep;
 let now = Instant::now();
@@ -17261,7 +17264,7 @@ println!("{:?}", now.duration_since(new_now)); // 0ns
 method returns a Duration of zero in that case. Future versions may reintroduce the panic.
 See [Monotonicity].
 [Monotonicity]: Instant#monotonicity</p>
-<h1 id="examples-104"><a class="header" href="#examples-104">Examples</a></h1>
+<h1 id="examples-105"><a class="header" href="#examples-105">Examples</a></h1>
 <pre><code class="language-no_run">use std::thread::sleep;
 use std::time::{Duration, Instant};
 let instant = Instant::now();
@@ -17294,7 +17297,7 @@ assert!(instant.elapsed() &gt;= three_secs);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="now"><a class="header" href="#now">now</a></h1>
 <blockquote>
 <p>Returns an instant corresponding to "now".</p>
-<h1 id="examples-105"><a class="header" href="#examples-105">Examples</a></h1>
+<h1 id="examples-106"><a class="header" href="#examples-106">Examples</a></h1>
 <pre><code>use std::time::Instant;
 let now = Instant::now();
 </code></pre>
@@ -17308,7 +17311,7 @@ let now = Instant::now();
 <blockquote>
 <p>Returns the amount of time elapsed from another instant to this one,
 or zero duration if that instant is later than this one.</p>
-<h1 id="examples-106"><a class="header" href="#examples-106">Examples</a></h1>
+<h1 id="examples-107"><a class="header" href="#examples-107">Examples</a></h1>
 <pre><code class="language-no_run">use std::time::{Duration, Instant};
 use std::thread::sleep;
 let now = Instant::now();
@@ -17628,7 +17631,7 @@ println!("{:?}", now.saturating_duration_since(new_now)); // 0ns
 <p>Consumes the atomic and returns the contained value.
 This is safe because passing <code>self</code> by value guarantees that no other threads are
 concurrently accessing the atomic data.</p>
-<h1 id="examples-107"><a class="header" href="#examples-107">Examples</a></h1>
+<h1 id="examples-108"><a class="header" href="#examples-108">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicBool;
 let some_bool = AtomicBool::new(true);
 assert_eq!(some_bool.into_inner(), true);
@@ -17645,7 +17648,7 @@ assert_eq!(some_bool.into_inner(), true);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="new-47"><a class="header" href="#new-47">new</a></h1>
 <blockquote>
 <p>Creates a new <code>AtomicBool</code>.</p>
-<h1 id="examples-108"><a class="header" href="#examples-108">Examples</a></h1>
+<h1 id="examples-109"><a class="header" href="#examples-109">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicBool;
 let atomic_true = AtomicBool::new(true);
 let atomic_false = AtomicBool::new(false);
@@ -17675,7 +17678,7 @@ let atomic_false = AtomicBool::new(false);
 <p>Consumes the atomic and returns the contained value.
 This is safe because passing <code>self</code> by value guarantees that no other threads are
 concurrently accessing the atomic data.</p>
-<h1 id="examples-109"><a class="header" href="#examples-109">Examples</a></h1>
+<h1 id="examples-110"><a class="header" href="#examples-110">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicI16;
 let some_var = AtomicI16::new(5);
 assert_eq!(some_var.into_inner(), 5);
@@ -17692,7 +17695,7 @@ assert_eq!(some_var.into_inner(), 5);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="new-48"><a class="header" href="#new-48">new</a></h1>
 <blockquote>
 <p>Creates a new atomic integer.</p>
-<h1 id="examples-110"><a class="header" href="#examples-110">Examples</a></h1>
+<h1 id="examples-111"><a class="header" href="#examples-111">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicI16;
 let atomic_forty_two = AtomicI16::new(42);
 </code></pre>
@@ -17721,7 +17724,7 @@ let atomic_forty_two = AtomicI16::new(42);
 <p>Consumes the atomic and returns the contained value.
 This is safe because passing <code>self</code> by value guarantees that no other threads are
 concurrently accessing the atomic data.</p>
-<h1 id="examples-111"><a class="header" href="#examples-111">Examples</a></h1>
+<h1 id="examples-112"><a class="header" href="#examples-112">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicI32;
 let some_var = AtomicI32::new(5);
 assert_eq!(some_var.into_inner(), 5);
@@ -17738,7 +17741,7 @@ assert_eq!(some_var.into_inner(), 5);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="new-49"><a class="header" href="#new-49">new</a></h1>
 <blockquote>
 <p>Creates a new atomic integer.</p>
-<h1 id="examples-112"><a class="header" href="#examples-112">Examples</a></h1>
+<h1 id="examples-113"><a class="header" href="#examples-113">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicI32;
 let atomic_forty_two = AtomicI32::new(42);
 </code></pre>
@@ -17767,7 +17770,7 @@ let atomic_forty_two = AtomicI32::new(42);
 <p>Consumes the atomic and returns the contained value.
 This is safe because passing <code>self</code> by value guarantees that no other threads are
 concurrently accessing the atomic data.</p>
-<h1 id="examples-113"><a class="header" href="#examples-113">Examples</a></h1>
+<h1 id="examples-114"><a class="header" href="#examples-114">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicI64;
 let some_var = AtomicI64::new(5);
 assert_eq!(some_var.into_inner(), 5);
@@ -17784,7 +17787,7 @@ assert_eq!(some_var.into_inner(), 5);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="new-50"><a class="header" href="#new-50">new</a></h1>
 <blockquote>
 <p>Creates a new atomic integer.</p>
-<h1 id="examples-114"><a class="header" href="#examples-114">Examples</a></h1>
+<h1 id="examples-115"><a class="header" href="#examples-115">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicI64;
 let atomic_forty_two = AtomicI64::new(42);
 </code></pre>
@@ -17813,7 +17816,7 @@ let atomic_forty_two = AtomicI64::new(42);
 <p>Consumes the atomic and returns the contained value.
 This is safe because passing <code>self</code> by value guarantees that no other threads are
 concurrently accessing the atomic data.</p>
-<h1 id="examples-115"><a class="header" href="#examples-115">Examples</a></h1>
+<h1 id="examples-116"><a class="header" href="#examples-116">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicI8;
 let some_var = AtomicI8::new(5);
 assert_eq!(some_var.into_inner(), 5);
@@ -17830,7 +17833,7 @@ assert_eq!(some_var.into_inner(), 5);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="new-51"><a class="header" href="#new-51">new</a></h1>
 <blockquote>
 <p>Creates a new atomic integer.</p>
-<h1 id="examples-116"><a class="header" href="#examples-116">Examples</a></h1>
+<h1 id="examples-117"><a class="header" href="#examples-117">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicI8;
 let atomic_forty_two = AtomicI8::new(42);
 </code></pre>
@@ -17859,7 +17862,7 @@ let atomic_forty_two = AtomicI8::new(42);
 <p>Consumes the atomic and returns the contained value.
 This is safe because passing <code>self</code> by value guarantees that no other threads are
 concurrently accessing the atomic data.</p>
-<h1 id="examples-117"><a class="header" href="#examples-117">Examples</a></h1>
+<h1 id="examples-118"><a class="header" href="#examples-118">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicIsize;
 let some_var = AtomicIsize::new(5);
 assert_eq!(some_var.into_inner(), 5);
@@ -17876,7 +17879,7 @@ assert_eq!(some_var.into_inner(), 5);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="new-52"><a class="header" href="#new-52">new</a></h1>
 <blockquote>
 <p>Creates a new atomic integer.</p>
-<h1 id="examples-118"><a class="header" href="#examples-118">Examples</a></h1>
+<h1 id="examples-119"><a class="header" href="#examples-119">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicIsize;
 let atomic_forty_two = AtomicIsize::new(42);
 </code></pre>
@@ -17905,7 +17908,7 @@ let atomic_forty_two = AtomicIsize::new(42);
 <p>Consumes the atomic and returns the contained value.
 This is safe because passing <code>self</code> by value guarantees that no other threads are
 concurrently accessing the atomic data.</p>
-<h1 id="examples-119"><a class="header" href="#examples-119">Examples</a></h1>
+<h1 id="examples-120"><a class="header" href="#examples-120">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicU16;
 let some_var = AtomicU16::new(5);
 assert_eq!(some_var.into_inner(), 5);
@@ -17922,7 +17925,7 @@ assert_eq!(some_var.into_inner(), 5);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="new-53"><a class="header" href="#new-53">new</a></h1>
 <blockquote>
 <p>Creates a new atomic integer.</p>
-<h1 id="examples-120"><a class="header" href="#examples-120">Examples</a></h1>
+<h1 id="examples-121"><a class="header" href="#examples-121">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicU16;
 let atomic_forty_two = AtomicU16::new(42);
 </code></pre>
@@ -17951,7 +17954,7 @@ let atomic_forty_two = AtomicU16::new(42);
 <p>Consumes the atomic and returns the contained value.
 This is safe because passing <code>self</code> by value guarantees that no other threads are
 concurrently accessing the atomic data.</p>
-<h1 id="examples-121"><a class="header" href="#examples-121">Examples</a></h1>
+<h1 id="examples-122"><a class="header" href="#examples-122">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicU32;
 let some_var = AtomicU32::new(5);
 assert_eq!(some_var.into_inner(), 5);
@@ -17968,7 +17971,7 @@ assert_eq!(some_var.into_inner(), 5);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="new-54"><a class="header" href="#new-54">new</a></h1>
 <blockquote>
 <p>Creates a new atomic integer.</p>
-<h1 id="examples-122"><a class="header" href="#examples-122">Examples</a></h1>
+<h1 id="examples-123"><a class="header" href="#examples-123">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicU32;
 let atomic_forty_two = AtomicU32::new(42);
 </code></pre>
@@ -17997,7 +18000,7 @@ let atomic_forty_two = AtomicU32::new(42);
 <p>Consumes the atomic and returns the contained value.
 This is safe because passing <code>self</code> by value guarantees that no other threads are
 concurrently accessing the atomic data.</p>
-<h1 id="examples-123"><a class="header" href="#examples-123">Examples</a></h1>
+<h1 id="examples-124"><a class="header" href="#examples-124">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicU64;
 let some_var = AtomicU64::new(5);
 assert_eq!(some_var.into_inner(), 5);
@@ -18014,7 +18017,7 @@ assert_eq!(some_var.into_inner(), 5);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="new-55"><a class="header" href="#new-55">new</a></h1>
 <blockquote>
 <p>Creates a new atomic integer.</p>
-<h1 id="examples-124"><a class="header" href="#examples-124">Examples</a></h1>
+<h1 id="examples-125"><a class="header" href="#examples-125">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicU64;
 let atomic_forty_two = AtomicU64::new(42);
 </code></pre>
@@ -18043,7 +18046,7 @@ let atomic_forty_two = AtomicU64::new(42);
 <p>Consumes the atomic and returns the contained value.
 This is safe because passing <code>self</code> by value guarantees that no other threads are
 concurrently accessing the atomic data.</p>
-<h1 id="examples-125"><a class="header" href="#examples-125">Examples</a></h1>
+<h1 id="examples-126"><a class="header" href="#examples-126">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicU8;
 let some_var = AtomicU8::new(5);
 assert_eq!(some_var.into_inner(), 5);
@@ -18060,7 +18063,7 @@ assert_eq!(some_var.into_inner(), 5);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="new-56"><a class="header" href="#new-56">new</a></h1>
 <blockquote>
 <p>Creates a new atomic integer.</p>
-<h1 id="examples-126"><a class="header" href="#examples-126">Examples</a></h1>
+<h1 id="examples-127"><a class="header" href="#examples-127">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicU8;
 let atomic_forty_two = AtomicU8::new(42);
 </code></pre>
@@ -18089,7 +18092,7 @@ let atomic_forty_two = AtomicU8::new(42);
 <p>Consumes the atomic and returns the contained value.
 This is safe because passing <code>self</code> by value guarantees that no other threads are
 concurrently accessing the atomic data.</p>
-<h1 id="examples-127"><a class="header" href="#examples-127">Examples</a></h1>
+<h1 id="examples-128"><a class="header" href="#examples-128">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicUsize;
 let some_var = AtomicUsize::new(5);
 assert_eq!(some_var.into_inner(), 5);
@@ -18106,7 +18109,7 @@ assert_eq!(some_var.into_inner(), 5);
 <div style="break-before: page; page-break-before: always;"></div><h1 id="new-57"><a class="header" href="#new-57">new</a></h1>
 <blockquote>
 <p>Creates a new atomic integer.</p>
-<h1 id="examples-128"><a class="header" href="#examples-128">Examples</a></h1>
+<h1 id="examples-129"><a class="header" href="#examples-129">Examples</a></h1>
 <pre><code>use std::sync::atomic::AtomicUsize;
 let atomic_forty_two = AtomicUsize::new(42);
 </code></pre>
@@ -48796,7 +48799,7 @@ To truncate to [<code>Vec3A</code>] use [<code>Vec3A::from()</code>].</p>
 <blockquote>
 <p>Returns a 128bit value containing the value.
 The bytes in the UUID will be packed directly into a <code>u128</code>.</p>
-<h1 id="examples-129"><a class="header" href="#examples-129">Examples</a></h1>
+<h1 id="examples-130"><a class="header" href="#examples-130">Examples</a></h1>
 <pre><code># use uuid::Uuid;
 # fn main() -&gt; Result&lt;(), uuid::Error&gt; {
 let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
@@ -48822,7 +48825,7 @@ assert_eq!(
 The bytes in the UUID will be split into two <code>u64</code>.
 The first u64 represents the 64 most significant bits,
 the second one represents the 64 least significant.</p>
-<h1 id="examples-130"><a class="header" href="#examples-130">Examples</a></h1>
+<h1 id="examples-131"><a class="header" href="#examples-131">Examples</a></h1>
 <pre><code># use uuid::Uuid;
 # fn main() -&gt; Result&lt;(), uuid::Error&gt; {
 let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
@@ -48870,7 +48873,7 @@ assert_eq!(
 <blockquote>
 <p>A buffer that can be used for <code>encode_...</code> calls, that is
 guaranteed to be long enough for any of the format adapters.</p>
-<h1 id="examples-131"><a class="header" href="#examples-131">Examples</a></h1>
+<h1 id="examples-132"><a class="header" href="#examples-132">Examples</a></h1>
 <pre><code># use uuid::Uuid;
 let uuid = Uuid::nil();
 assert_eq!(
@@ -48909,7 +48912,7 @@ assert_eq!(
 <div style="break-before: page; page-break-before: always;"></div><h1 id="from_bytes"><a class="header" href="#from_bytes">from_bytes</a></h1>
 <blockquote>
 <p>Creates a UUID using the supplied bytes.</p>
-<h1 id="examples-132"><a class="header" href="#examples-132">Examples</a></h1>
+<h1 id="examples-133"><a class="header" href="#examples-133">Examples</a></h1>
 <p>Basic usage:</p>
 <pre><code># fn main() -&gt; Result&lt;(), uuid::Error&gt; {
 # use uuid::Uuid;
@@ -48940,7 +48943,7 @@ assert_eq!(
 <blockquote>
 <p>Creates a UUID using the supplied bytes in little endian order.
 The individual fields encoded in the buffer will be flipped.</p>
-<h1 id="examples-133"><a class="header" href="#examples-133">Examples</a></h1>
+<h1 id="examples-134"><a class="header" href="#examples-134">Examples</a></h1>
 <p>Basic usage:</p>
 <pre><code># fn main() -&gt; Result&lt;(), uuid::Error&gt; {
 # use uuid::Uuid;
@@ -48970,7 +48973,7 @@ assert_eq!(
 <div style="break-before: page; page-break-before: always;"></div><h1 id="from_u128"><a class="header" href="#from_u128">from_u128</a></h1>
 <blockquote>
 <p>Creates a UUID from a 128bit value.</p>
-<h1 id="examples-134"><a class="header" href="#examples-134">Examples</a></h1>
+<h1 id="examples-135"><a class="header" href="#examples-135">Examples</a></h1>
 <p>Basic usage:</p>
 <pre><code># use uuid::Uuid;
 let v = 0xa1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8u128;
@@ -48996,7 +48999,7 @@ The entire value will be flipped to convert into big-endian order.
 This is based on the endianness of the UUID, rather than the target
 environment so bytes will be flipped on both big and little endian
 machines.</p>
-<h1 id="examples-135"><a class="header" href="#examples-135">Examples</a></h1>
+<h1 id="examples-136"><a class="header" href="#examples-136">Examples</a></h1>
 <p>Basic usage:</p>
 <pre><code># use uuid::Uuid;
 let v = 0xa1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8u128;
@@ -49018,7 +49021,7 @@ assert_eq!(
 <div style="break-before: page; page-break-before: always;"></div><h1 id="from_u64_pair"><a class="header" href="#from_u64_pair">from_u64_pair</a></h1>
 <blockquote>
 <p>Creates a UUID from two 64bit values.</p>
-<h1 id="examples-136"><a class="header" href="#examples-136">Examples</a></h1>
+<h1 id="examples-137"><a class="header" href="#examples-137">Examples</a></h1>
 <p>Basic usage:</p>
 <pre><code># use uuid::Uuid;
 let hi = 0xa1a2a3a4b1b2c1c2u64;
@@ -49057,7 +49060,7 @@ node value as a 6-byte array. For other versions this will return <code>None</co
 <p>Returns the version number of the UUID.
 This represents the algorithm used to generate the value.
 This method is the future-proof alternative to [<code>Uuid::get_version</code>].</p>
-<h1 id="examples-137"><a class="header" href="#examples-137">Examples</a></h1>
+<h1 id="examples-138"><a class="header" href="#examples-138">Examples</a></h1>
 <p>Basic usage:</p>
 <pre><code># use uuid::Uuid;
 # fn main() -&gt; Result&lt;(), uuid::Error&gt; {
@@ -49082,7 +49085,7 @@ assert_eq!(3, my_uuid.get_version_num());
 <div style="break-before: page; page-break-before: always;"></div><h1 id="into_bytes"><a class="header" href="#into_bytes">into_bytes</a></h1>
 <blockquote>
 <p>Consumes self and returns the underlying byte value of the UUID.</p>
-<h1 id="examples-138"><a class="header" href="#examples-138">Examples</a></h1>
+<h1 id="examples-139"><a class="header" href="#examples-139">Examples</a></h1>
 <pre><code># use uuid::Uuid;
 let bytes = [
     0xa1, 0xa2, 0xa3, 0xa4,
@@ -49135,7 +49138,7 @@ The max UUID is a special form of UUID that is specified to have all
 <ul>
 <li><a href="https://www.ietf.org/rfc/rfc9562.html#section-5.10">Max UUID in RFC 9562</a></li>
 </ul>
-<h1 id="examples-139"><a class="header" href="#examples-139">Examples</a></h1>
+<h1 id="examples-140"><a class="header" href="#examples-140">Examples</a></h1>
 <p>Basic usage:</p>
 <pre><code># use uuid::Uuid;
 let uuid = Uuid::max();
@@ -49161,7 +49164,7 @@ custom generator and pass them to the
 instead.
 Note that usage of this method requires the <code>v4</code> feature of this crate
 to be enabled.</p>
-<h1 id="examples-140"><a class="header" href="#examples-140">Examples</a></h1>
+<h1 id="examples-141"><a class="header" href="#examples-141">Examples</a></h1>
 <p>Basic usage:</p>
 <pre><code># use uuid::{Uuid, Version};
 let uuid = Uuid::new_v4();
@@ -49188,7 +49191,7 @@ The nil UUID is a special form of UUID that is specified to have all
 <ul>
 <li><a href="https://www.ietf.org/rfc/rfc9562.html#section-5.9">Nil UUID in RFC 9562</a></li>
 </ul>
-<h1 id="examples-141"><a class="header" href="#examples-141">Examples</a></h1>
+<h1 id="examples-142"><a class="header" href="#examples-142">Examples</a></h1>
 <p>Basic usage:</p>
 <pre><code># use uuid::Uuid;
 let uuid = Uuid::nil();
@@ -49209,7 +49212,7 @@ assert_eq!(
 The bytes will be flipped to convert into little-endian order. This is
 based on the endianness of the UUID, rather than the target environment
 so bytes will be flipped on both big and little endian machines.</p>
-<h1 id="examples-142"><a class="header" href="#examples-142">Examples</a></h1>
+<h1 id="examples-143"><a class="header" href="#examples-143">Examples</a></h1>
 <pre><code>use uuid::Uuid;
 # fn main() -&gt; Result&lt;(), uuid::Error&gt; {
 let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
@@ -49242,7 +49245,7 @@ endian machines.
 Note that this will produce a different result than
 [<code>Uuid::to_fields_le</code>], because the entire UUID is reversed, rather
 than reversing the individual fields in-place.</p>
-<h1 id="examples-143"><a class="header" href="#examples-143">Examples</a></h1>
+<h1 id="examples-144"><a class="header" href="#examples-144">Examples</a></h1>
 <pre><code># use uuid::Uuid;
 # fn main() -&gt; Result&lt;(), uuid::Error&gt; {
 let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
