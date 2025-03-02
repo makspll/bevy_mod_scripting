@@ -11,6 +11,7 @@
 - [Shared Contexts](./Summary/sharing-contexts-between-scripts.md)
 - [Script ID Mapping](./Summary/script-id-mapping.md)
 - [Script Systems](./ScriptSystems/introduction.md)
+- [Examples](./Examples/introduction.md)
 
 # Scripting Reference
 
