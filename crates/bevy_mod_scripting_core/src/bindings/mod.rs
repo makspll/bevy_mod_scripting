@@ -3,6 +3,7 @@
 pub mod access_map;
 pub mod allocator;
 pub mod function;
+pub mod globals;
 pub mod pretty_print;
 pub mod query;
 pub mod reference;

@@ -8,8 +8,8 @@ use bevy::{
 use bevy_mod_scripting_core::{
     asset::{AssetPathToLanguageMapper, Language},
     bindings::{
-        function::namespace::Namespace, script_value::ScriptValue, ThreadWorldContainer,
-        WorldContainer,
+        function::namespace::Namespace, globals::AppScriptGlobalsRegistry,
+        script_value::ScriptValue, ThreadWorldContainer, WorldContainer,
     },
     context::{ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
@@ -95,21 +95,22 @@ impl Default for RhaiScriptingPlugin {
                     |_, context: &mut RhaiScriptContext| {
                         // initialize global functions
                         let world = ThreadWorldContainer.try_get_world()?;
-                        let type_registry = world.type_registry();
-                        let type_registry = type_registry.read();
+                        let globals_registry =
+                            world.with_resource(|r: &AppScriptGlobalsRegistry| r.clone())?;
+                        let globals_registry = globals_registry.read();
 
-                        for registration in type_registry.iter() {
-                            // only do this for non generic types
-                            // we don't want to see `Vec<Entity>:function()` in lua
-                            if !registration.type_info().generics().is_empty() {
-                                continue;
-                            }
-
-                            if let Some(global_name) =
-                                registration.type_info().type_path_table().ident()
-                            {
-                                let ref_ = RhaiStaticReflectReference(registration.type_id());
-                                context.scope.set_or_push(global_name, ref_);
+                        for (key, global) in globals_registry.iter() {
+                            match &global.maker {
+                                Some(maker) => {
+                                    let global = (maker)(world.clone())?;
+                                    context
+                                        .scope
+                                        .set_or_push(key.to_string(), global.into_dynamic()?);
+                                }
+                                None => {
+                                    let ref_ = RhaiStaticReflectReference(global.type_id);
+                                    context.scope.set_or_push(key.to_string(), ref_);
+                                }
                             }
                         }
 

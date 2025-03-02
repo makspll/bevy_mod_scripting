@@ -9,8 +9,9 @@ use bevy::{
         system::{Res, Resource},
     },
 };
-use bevy_mod_scripting_core::bindings::function::{
-    namespace::Namespace, script_function::AppScriptFunctionRegistry,
+use bevy_mod_scripting_core::bindings::{
+    function::{namespace::Namespace, script_function::AppScriptFunctionRegistry},
+    globals::AppScriptGlobalsRegistry,
 };
 
 use crate::LadFileBuilder;
@@ -59,10 +60,12 @@ impl ScriptingDocgenPlugin {
 fn generate_lad_file(
     type_registry: Res<AppTypeRegistry>,
     function_registry: Res<AppScriptFunctionRegistry>,
+    global_registry: Res<AppScriptGlobalsRegistry>,
     settings: Res<LadFileSettings>,
 ) {
     let type_registry = type_registry.read();
     let function_registry = function_registry.read();
+    let global_registry = global_registry.read();
     let mut builder = LadFileBuilder::new(&type_registry);
     builder
         .set_description(settings.description)
@@ -90,6 +93,12 @@ fn generate_lad_file(
     // find functions on the global namespace
     for (_, function) in function_registry.iter_namespace(Namespace::Global) {
         builder.add_function_info(function.info.clone());
+    }
+
+    // find global instances
+
+    for (key, global) in global_registry.iter() {
+        builder.add_instance_dynamic(key.to_string(), global.maker.is_none(), global.type_id);
     }
 
     let file = builder.build();
