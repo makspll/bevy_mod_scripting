@@ -14,9 +14,9 @@
 - A CI check will verify your PR title to make sure it uses a valid conventional prefix like:
     - `feat: {title}` - corresponds to `Added` heading in changelog, backwards compatibile changes
     - `fix: {title}` - corresponds to `Fixed` heading in changelog, fixes bugs or bad behavior
-    - `chore: {title}` - 
-    - `docs: {title}`
-    - `tests: {title}`
+    - `chore: {title}` - does not appear in the changelog, useful for "meta" work that doesn't affect the API
+    - `docs: {title}` - does not appear in the changelog, for docuemntation changes.
+    - `tests: {title}` - does not appear in changelog, purely adds or changes tests.
 - Adding a `!` before the `:` will signify this is also a breaking change
     - This sort of change will cause a `MAJOR` version bump.
 - You can also use scopes to further detail the area your PR is changing i.e.:
