@@ -26,3 +26,7 @@ jobs:
             chore
             test
             docs
+          scopes: |
+            ladfile
+            ladfile_builder
+            bms
