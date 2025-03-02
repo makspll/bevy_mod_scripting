@@ -14,7 +14,7 @@
 
 # Examples
 
-- [Examples] (./Examples/introduction.md)
+- [Examples](./Examples/introduction.md)
 
 # Scripting Reference
 
