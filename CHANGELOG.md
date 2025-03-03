@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.11...v0.10.0) - 2025-03-03
+
+### Fixed
+
+- [**breaking**] script contexts being completely overwritten on a re-load ([#345](https://github.com/makspll/bevy_mod_scripting/pull/345))
+
 ## [0.9.11](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.10...v0.9.11) - 2025-03-03
 
 ### Fixed

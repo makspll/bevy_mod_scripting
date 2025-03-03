@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_rhai-v0.9.11...bevy_mod_scripting_rhai-v0.10.0) - 2025-03-03
+
+### Fixed
+
+- [**breaking**] script contexts being completely overwritten on a re-load ([#345](https://github.com/makspll/bevy_mod_scripting/pull/345))
+
 ## [0.9.10](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_rhai-v0.9.9...bevy_mod_scripting_rhai-v0.9.10) - 2025-03-03
 
 ### Added
