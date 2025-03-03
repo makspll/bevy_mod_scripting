@@ -351,13 +351,36 @@ impl ReflectReference {
         key: ScriptValue,
     ) -> Result<ScriptValue, InteropError> {
         profiling::function_scope!("get");
-        let mut path: ParsedPath = key.try_into()?;
-        if ctxt.convert_to_0_indexed() {
-            path.convert_to_0_indexed();
-        }
-        self_.index_path(path);
         let world = ctxt.world()?;
-        ReflectReference::into_script_ref(self_, world)
+        let is_map = self_.is_map(world.clone());
+        if is_map {
+            let key_type_id = self_.key_type_id(world.clone())?.ok_or_else(|| {
+                InteropError::unsupported_operation(
+                    self_.tail_type_id(world.clone()).unwrap_or_default(),
+                    Some(Box::new(key.clone())),
+                    "Could not get key type id. Are you trying to get element from a type that's not a map?".to_owned(),
+                )
+            })?;
+            let key = <Box<dyn PartialReflect>>::from_script_ref(key_type_id, key, world.clone())?;
+            let result = self_.with_reflect(world.clone(), |s| s.try_get_boxed(key).ok()?)?;
+            if let Some(value) = result {
+                let value_ref = {
+                    let allocator = world.allocator();
+                    let mut allocator = allocator.write();
+                    ReflectReference::new_allocated_boxed_partial_reflect(value, &mut allocator)?
+                };
+                ReflectReference::into_script_ref(value_ref, world)
+            } else {
+                Ok(ScriptValue::Unit)
+            }
+        } else {
+            let mut path: ParsedPath = key.try_into()?;
+            if ctxt.convert_to_0_indexed() {
+                path.convert_to_0_indexed();
+            }
+            self_.index_path(path);
+            ReflectReference::into_script_ref(self_, world)
+        }
     }
 
     fn set(
@@ -420,7 +443,7 @@ impl ReflectReference {
         let reference = {
             let allocator = world.allocator();
             let mut allocator = allocator.write();
-            ReflectReference::new_allocated_boxed_parial_reflect(o, &mut allocator)?
+            ReflectReference::new_allocated_boxed_partial_reflect(o, &mut allocator)?
         };
 
         ReflectReference::into_script_ref(reference, world)
@@ -500,7 +523,7 @@ impl ReflectReference {
                 let reference = {
                     let allocator = world.allocator();
                     let mut allocator = allocator.write();
-                    ReflectReference::new_allocated_boxed_parial_reflect(removed, &mut allocator)?
+                    ReflectReference::new_allocated_boxed_partial_reflect(removed, &mut allocator)?
                 };
                 ReflectReference::into_script_ref(reference, world)
             }

@@ -6,7 +6,7 @@ use bevy_mod_scripting_core::{
         ThreadWorldContainer, WorldContainer,
     },
     error::InteropError,
-    reflection_extensions::{TypeIdExtensions, TypeInfoExtensions},
+    reflection_extensions::TypeIdExtensions,
 };
 use mlua::{MetaMethod, UserData, UserDataMethods};
 
@@ -81,18 +81,13 @@ impl UserData for LuaReflectReference {
                 let key: ScriptValue = key.into();
                 let value: ScriptValue = value.into();
                 let type_id = self_.tail_type_id(world.clone())?.or_fake_id();
-                
+                let is_map = self_.is_map(world.clone());
                 let func_name = {
-                    let type_registry = world.type_registry();
-                    let type_registry = type_registry.read();
-                    let type_info = type_registry.get_type_info(type_id).ok_or_else(|| {
-                        InteropError::missing_type_data(
-                            type_id,
-                            "Type was not registered, could not determine conversion strategy."
-                                .to_owned(),
-                        )
-                    })?;
-                    if type_info.is_map() { "insert" } else { "set" }
+                    if is_map {
+                        "insert"
+                    } else {
+                        "set"
+                    }
                 };
                 let func = world
                     .lookup_function([type_id, TypeId::of::<ReflectReference>()], func_name)

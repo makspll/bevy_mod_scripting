@@ -1,13 +1,15 @@
 //! Various utility functions for working with reflection types.
 
-use crate::{
-    bindings::{ReflectReference, WorldGuard},
-    error::InteropError,
-};
-use bevy::reflect::{PartialReflect, Reflect, ReflectFromReflect, ReflectMut, TypeInfo};
 use std::{
     any::{Any, TypeId},
     cmp::max,
+};
+
+use bevy::reflect::{PartialReflect, Reflect, ReflectFromReflect, ReflectMut, TypeInfo};
+
+use crate::{
+    bindings::{ReflectReference, WorldGuard},
+    error::InteropError,
 };
 /// Extension trait for [`PartialReflect`] providing additional functionality for working with specific types.
 pub trait PartialReflectExt {
@@ -65,6 +67,12 @@ pub trait PartialReflectExt {
         index: Box<dyn PartialReflect>,
         value: Box<dyn PartialReflect>,
     ) -> Result<(), InteropError>;
+
+    /// Gets value of a map using index key, if possible
+    fn try_get_boxed(
+        &self,
+        index: Box<dyn PartialReflect>,
+    ) -> Result<Option<Box<dyn PartialReflect>>, InteropError>;
 
     /// Tries to insert the given value into the type, if the type is a container type.
     /// The insertion will happen at the natural `end` of the container.
@@ -259,6 +267,20 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
                 self.get_represented_type_info().map(|ti| ti.type_id()),
                 Some(value),
                 "insert".to_owned(),
+            )),
+        }
+    }
+
+    fn try_get_boxed(
+        &self,
+        key: Box<dyn PartialReflect>,
+    ) -> Result<Option<Box<dyn PartialReflect>>, InteropError> {
+        match self.reflect_ref() {
+            bevy::reflect::ReflectRef::Map(m) => Ok(m.get(key.as_ref()).map(|v| v.clone_value())),
+            _ => Err(InteropError::unsupported_operation(
+                self.get_represented_type_info().map(|ti| ti.type_id()),
+                Some(key),
+                "get".to_owned(),
             )),
         }
     }
