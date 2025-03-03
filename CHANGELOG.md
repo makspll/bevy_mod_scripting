@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.11](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.10...v0.9.11) - 2025-03-03
+
+### Fixed
+
+- plugin registration order affecting which globals are exported ([#346](https://github.com/makspll/bevy_mod_scripting/pull/346))
+
 ## [0.9.10](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.9...v0.9.10) - 2025-03-03
 
 ### Added
