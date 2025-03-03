@@ -834,12 +834,13 @@ impl GlobalNamespace {
         ))
     }
 
-    /// Creates a new script function builder
+    /// Creates a new script system builder, which can be used to add new systems to the world.
+    ///
     /// Arguments:
-    /// * `callback`: The functio name in the script, this system will call
-    /// * `script_id`: The id of the script
+    /// * `callback`: The function name in the script this system should call when run.
+    /// * `script_id`: The id of the script this system will execute when run.
     /// Returns:
-    /// * `builder`: The new system builder
+    /// * `builder`: The system builder
     fn system_builder(
         callback: String,
         script_id: String,
