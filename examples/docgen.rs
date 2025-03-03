@@ -24,9 +24,9 @@ fn main() -> std::io::Result<()> {
 
     // 1. add the docgen plugin and run your app as normal
     app.add_plugins(ScriptingDocgenPlugin::default());
-    // running the app once like below would do the trick
-    // app.cleanup();
-    // app.finish();
+    app.finish();
+    app.cleanup();
+    // running update once will do the trick
     // app.update();
 
     // or 2. manually trigger the system
