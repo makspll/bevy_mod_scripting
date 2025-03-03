@@ -1,14 +1,16 @@
-use super::script_value::{LuaScriptValue, LUA_CALLER_CONTEXT};
+use std::any::TypeId;
+
 use bevy_mod_scripting_core::{
     bindings::{
         pretty_print::DisplayWithWorld, script_value::ScriptValue, ReflectReference,
         ThreadWorldContainer, WorldContainer,
     },
     error::InteropError,
-    reflection_extensions::TypeIdExtensions,
+    reflection_extensions::{TypeIdExtensions, TypeInfoExtensions},
 };
 use mlua::{MetaMethod, UserData, UserDataMethods};
-use std::any::TypeId;
+
+use super::script_value::{LuaScriptValue, LUA_CALLER_CONTEXT};
 
 /// Lua UserData wrapper for [`bevy_mod_scripting_core::bindings::ReflectReference`].
 /// Acts as a lua reflection interface. Any value which is registered in the type registry can be interacted with using this type.
@@ -79,13 +81,24 @@ impl UserData for LuaReflectReference {
                 let key: ScriptValue = key.into();
                 let value: ScriptValue = value.into();
                 let type_id = self_.tail_type_id(world.clone())?.or_fake_id();
-
+                
+                let func_name = {
+                    let type_registry = world.type_registry();
+                    let type_registry = type_registry.read();
+                    let type_info = type_registry.get_type_info(type_id).ok_or_else(|| {
+                        InteropError::missing_type_data(
+                            type_id,
+                            "Type was not registered, could not determine conversion strategy."
+                                .to_owned(),
+                        )
+                    })?;
+                    if type_info.is_map() { "insert" } else { "set" }
+                };
                 let func = world
-                    .lookup_function([type_id, TypeId::of::<ReflectReference>()], "set")
+                    .lookup_function([type_id, TypeId::of::<ReflectReference>()], func_name)
                     .map_err(|f| {
                         InteropError::missing_function(TypeId::of::<ReflectReference>(), f)
                     })?;
-
                 let out = func.call(
                     vec![ScriptValue::Reference(self_), key, value],
                     LUA_CALLER_CONTEXT,
