@@ -321,6 +321,7 @@ impl World {
     name = "reflect_reference_functions"
 )]
 impl ReflectReference {
+    /// If this type is an enum, will return the name of the variant it represents on the type.
     fn variant_name(
         ctxt: FunctionCallContext,
         s: ReflectReference,
@@ -330,12 +331,14 @@ impl ReflectReference {
         s.variant_name(world)
     }
 
+    /// Displays this reference without printing the exact contents.
     fn display_ref(ctxt: FunctionCallContext, s: ReflectReference) -> Result<String, InteropError> {
         profiling::function_scope!("display_ref");
         let world = ctxt.world()?;
         Ok(s.display_with_world(world))
     }
 
+    /// Displays the "value" of this reference
     fn display_value(
         ctxt: FunctionCallContext,
         s: ReflectReference,
@@ -345,6 +348,43 @@ impl ReflectReference {
         Ok(s.display_value_with_world(world))
     }
 
+    /// Gets and clones the value under the specified key if the underlying type is a map type.
+    fn map_get(
+        ctxt: FunctionCallContext,
+        self_: ReflectReference,
+        key: ScriptValue,
+    ) -> Result<Option<ScriptValue>, InteropError> {
+        profiling::function_scope!("map_get");
+        let world = ctxt.world()?;
+        let key = <Box<dyn PartialReflect>>::from_script_ref(
+            self_.key_type_id(world.clone())?.ok_or_else(|| {
+                InteropError::unsupported_operation(
+                    self_.tail_type_id(world.clone()).unwrap_or_default(),
+                    Some(Box::new(key.clone())),
+                    "Could not get key type id. Are you trying to index into a type that's not a map?".to_owned(),
+                )
+            })?,
+            key,
+            world.clone(),
+        )?;
+        self_.with_reflect_mut(world.clone(), |s| match s.try_map_get(key.as_ref())? {
+            Some(value) => {
+                let reference = {
+                    let allocator = world.allocator();
+                    let mut allocator = allocator.write();
+                    let owned_value = <dyn PartialReflect>::from_reflect(value, world.clone())?;
+                    ReflectReference::new_allocated_boxed(owned_value, &mut allocator)
+                };
+                Ok(Some(ReflectReference::into_script_ref(reference, world)?))
+            }
+            None => Ok(None),
+        })?
+    }
+
+    /// Indexes into the given reference and if the nested type is a reference type, returns a deeper reference, otherwise
+    /// returns the concrete value.
+    ///
+    /// Does not support map types at the moment, for maps see `map_get`
     fn get(
         ctxt: FunctionCallContext,
         mut self_: ReflectReference,
@@ -360,6 +400,7 @@ impl ReflectReference {
         ReflectReference::into_script_ref(self_, world)
     }
 
+    /// Sets the value under the specified path on the underlying value.
     fn set(
         ctxt: FunctionCallContext,
         self_: ScriptValue,
@@ -395,6 +436,7 @@ impl ReflectReference {
         Ok(ScriptValue::Unit)
     }
 
+    /// Pushes the value into the reference, if the reference is an appropriate container type.
     fn push(
         ctxt: FunctionCallContext,
         s: ReflectReference,
@@ -413,6 +455,7 @@ impl ReflectReference {
         s.with_reflect_mut(world, |s| s.try_push_boxed(other))?
     }
 
+    /// Pops the value from the reference, if the reference is an appropriate container type.
     fn pop(ctxt: FunctionCallContext, s: ReflectReference) -> Result<ScriptValue, InteropError> {
         profiling::function_scope!("pop");
         let world = ctxt.world()?;
@@ -426,6 +469,7 @@ impl ReflectReference {
         ReflectReference::into_script_ref(reference, world)
     }
 
+    /// Inserts the value into the reference at the specified index, if the reference is an appropriate container type.
     fn insert(
         ctxt: FunctionCallContext,
         s: ReflectReference,
@@ -461,18 +505,21 @@ impl ReflectReference {
         s.with_reflect_mut(world, |s| s.try_insert_boxed(key, value))?
     }
 
+    /// Clears the container, if the reference is an appropriate container type.
     fn clear(ctxt: FunctionCallContext, s: ReflectReference) -> Result<(), InteropError> {
         profiling::function_scope!("clear");
         let world = ctxt.world()?;
         s.with_reflect_mut(world, |s| s.try_clear())?
     }
 
+    /// Retrieves the length of the reference, if the reference is an appropriate container type.
     fn len(ctxt: FunctionCallContext, s: ReflectReference) -> Result<Option<usize>, InteropError> {
         profiling::function_scope!("len");
         let world = ctxt.world()?;
         s.len(world)
     }
 
+    /// Removes the value at the specified key from the reference, if the reference is an appropriate container type.
     fn remove(
         ctxt: FunctionCallContext,
         s: ReflectReference,
@@ -508,6 +555,9 @@ impl ReflectReference {
         }
     }
 
+    /// Iterates over the reference, if the reference is an appropriate container type.
+    ///
+    /// Returns an "next" iterator function.
     fn iter(
         ctxt: FunctionCallContext,
         s: ReflectReference,
@@ -536,6 +586,7 @@ impl ReflectReference {
         Ok(iter_function.into_dynamic_script_function_mut())
     }
 
+    /// Lists the functions available on the reference.
     fn functions(
         ctxt: FunctionCallContext,
         s: ReflectReference,

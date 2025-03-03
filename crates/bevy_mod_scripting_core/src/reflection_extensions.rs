@@ -11,6 +11,12 @@ use std::{
 };
 /// Extension trait for [`PartialReflect`] providing additional functionality for working with specific types.
 pub trait PartialReflectExt {
+    /// Try to get a reference to the given key in an underyling map, if the type is a map.
+    fn try_map_get(
+        &self,
+        key: &dyn PartialReflect,
+    ) -> Result<Option<&dyn PartialReflect>, InteropError>;
+
     /// Try to remove the value at the given key, if the type supports removing with the given key.
     fn try_remove_boxed(
         &mut self,
@@ -308,6 +314,20 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
                 self.get_represented_type_info().map(|ti| ti.type_id()),
                 None,
                 "clear".to_owned(),
+            )),
+        }
+    }
+
+    fn try_map_get(
+        &self,
+        key: &dyn PartialReflect,
+    ) -> Result<Option<&dyn PartialReflect>, InteropError> {
+        match self.reflect_ref() {
+            bevy::reflect::ReflectRef::Map(m) => Ok(m.get(key)),
+            _ => Err(InteropError::unsupported_operation(
+                self.get_represented_type_info().map(|ti| ti.type_id()),
+                None,
+                "map_get".to_owned(),
             )),
         }
     }
