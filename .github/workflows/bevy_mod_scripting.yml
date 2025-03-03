@@ -128,7 +128,13 @@ jobs:
       - name: Check
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
         run: |
-          ${{ matrix.run_args.command }}
+          # run command using xvfb-run if requires_gpu
+
+          if [[ ${{ matrix.run_args.requires_gpu }} == "true" ]]; then
+            xvfb-run ${{ matrix.run_args.command }}
+          else
+            ${{ matrix.run_args.command }}
+          fi
 
       - name: Upload coverage artifact
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.generates_coverage }}
