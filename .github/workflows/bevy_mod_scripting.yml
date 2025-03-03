@@ -126,15 +126,13 @@ jobs:
           sudo add-apt-repository ppa:kisak/turtle -y
           sudo apt-get install --no-install-recommends libxkbcommon-x11-0 xvfb libgl1-mesa-dri libxcb-xfixes0-dev mesa-vulkan-drivers
       - name: Check
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && !matrix.run_args.requires_gpu }}
         run: |
-          # run command using xvfb-run if requires_gpu
-
-          if [[ ${{ matrix.run_args.requires_gpu }} == "true" ]]; then
-            xvfb-run ${{ matrix.run_args.command }}
-          else
-            ${{ matrix.run_args.command }}
-          fi
+          ${{ matrix.run_args.command }}
+      - name: Check With virtual X11 server
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.requires_gpu }}
+        run: |
+          xvfb-run ${{ matrix.run_args.command }}
 
       - name: Upload coverage artifact
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.generates_coverage }}
