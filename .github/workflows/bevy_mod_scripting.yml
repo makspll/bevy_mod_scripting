@@ -85,20 +85,20 @@ jobs:
       matrix:
        run_args: ${{fromJson(needs.generate-job-matrix.outputs.matrix)}}
     steps:
-      - name: Free Disk Space (Ubuntu)
-        if: runner.os == 'Linux'
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: true
-      # - if: runner.os == 'linux'
-      #   run: |
-      #     sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+      # - name: Free Disk Space (Ubuntu)
+      #   if: runner.os == 'Linux'
+      #   uses: jlumbroso/free-disk-space@main
+      #   with:
+      #     tool-cache: false
+      #     android: true
+      #     dotnet: true
+      #     haskell: true
+      #     large-packages: true
+      #     docker-images: true
+      #     swap-storage: true
+      # # - if: runner.os == 'linux'
+      # #   run: |
+      # #     sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - name: Checkout
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
         uses: actions/checkout@v4
@@ -120,10 +120,19 @@ jobs:
         run: |
           cargo xtask init
 
+      - name: Setup GPU Drivers
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.requires_gpu }}
+        run: |
+          sudo add-apt-repository ppa:kisak/turtle -y
+          sudo apt-get install --no-install-recommends libxkbcommon-x11-0 xvfb libgl1-mesa-dri libxcb-xfixes0-dev mesa-vulkan-drivers
       - name: Check
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && !matrix.run_args.requires_gpu }}
         run: |
           ${{ matrix.run_args.command }}
+      - name: Check With virtual X11 server
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.requires_gpu }}
+        run: |
+          xvfb-run ${{ matrix.run_args.command }}
 
       - name: Upload coverage artifact
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.generates_coverage }}

@@ -155,6 +155,22 @@ impl<'t> LadFileBuilder<'t> {
         self
     }
 
+    /// An untyped version of [`Self::add_instance`].
+    ///
+    /// Adds a global instance to the LAD file.
+    pub fn add_instance_dynamic(
+        &mut self,
+        key: impl Into<Cow<'static, str>>,
+        is_static: bool,
+        type_id: TypeId,
+    ) -> &mut Self {
+        let type_id = self.lad_id_from_type_id(type_id);
+        self.file
+            .globals
+            .insert(key.into(), LadInstance { type_id, is_static });
+        self
+    }
+
     /// Add a type definition to the LAD file.
     ///
     /// Equivalent to calling [`Self::add_type_info`] with `T::type_info()`.

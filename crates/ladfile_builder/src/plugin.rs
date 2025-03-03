@@ -9,8 +9,9 @@ use bevy::{
         system::{Res, Resource},
     },
 };
-use bevy_mod_scripting_core::bindings::function::{
-    namespace::Namespace, script_function::AppScriptFunctionRegistry,
+use bevy_mod_scripting_core::bindings::{
+    function::{namespace::Namespace, script_function::AppScriptFunctionRegistry},
+    globals::AppScriptGlobalsRegistry,
 };
 
 use crate::LadFileBuilder;
@@ -18,6 +19,7 @@ use crate::LadFileBuilder;
 /// Plugin which enables the generation of LAD files at runtime for the purposes of creating documentation and other goodies.
 ///
 /// When added, will automatically generate a LAD file on the Startup schedule
+#[derive(Default)]
 pub struct ScriptingDocgenPlugin(LadFileSettings);
 
 #[derive(Resource, Clone)]
@@ -35,13 +37,13 @@ pub struct LadFileSettings {
     pub pretty: bool,
 }
 
-impl Default for ScriptingDocgenPlugin {
+impl Default for LadFileSettings {
     fn default() -> Self {
-        Self(LadFileSettings {
+        Self {
             path: PathBuf::from("bindings.lad.json"),
             description: "",
             pretty: true,
-        })
+        }
     }
 }
 
@@ -56,13 +58,16 @@ impl ScriptingDocgenPlugin {
     }
 }
 
-fn generate_lad_file(
-    type_registry: Res<AppTypeRegistry>,
-    function_registry: Res<AppScriptFunctionRegistry>,
-    settings: Res<LadFileSettings>,
+/// The function used to generate a ladfile from pre-populated type, function and global registries
+pub fn generate_lad_file(
+    type_registry: &AppTypeRegistry,
+    function_registry: &AppScriptFunctionRegistry,
+    global_registry: &AppScriptGlobalsRegistry,
+    settings: &LadFileSettings,
 ) {
     let type_registry = type_registry.read();
     let function_registry = function_registry.read();
+    let global_registry = global_registry.read();
     let mut builder = LadFileBuilder::new(&type_registry);
     builder
         .set_description(settings.description)
@@ -92,6 +97,12 @@ fn generate_lad_file(
         builder.add_function_info(function.info.clone());
     }
 
+    // find global instances
+
+    for (key, global) in global_registry.iter() {
+        builder.add_instance_dynamic(key.to_string(), global.maker.is_none(), global.type_id);
+    }
+
     let file = builder.build();
 
     let mut path = PathBuf::from("assets");
@@ -117,9 +128,23 @@ fn generate_lad_file(
     }
 }
 
+fn generate_lad_file_system(
+    type_registry: Res<AppTypeRegistry>,
+    function_registry: Res<AppScriptFunctionRegistry>,
+    global_registry: Res<AppScriptGlobalsRegistry>,
+    settings: Res<LadFileSettings>,
+) {
+    generate_lad_file(
+        &type_registry,
+        &function_registry,
+        &global_registry,
+        &settings,
+    );
+}
+
 impl Plugin for ScriptingDocgenPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(self.0.clone());
-        app.add_systems(Startup, generate_lad_file);
+        app.add_systems(Startup, generate_lad_file_system);
     }
 }

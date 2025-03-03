@@ -387,6 +387,7 @@ impl App {
             ),
             os: os.to_string(),
             generates_coverage: self.global_args.coverage,
+            requires_gpu: matches!(self.subcmd, Xtasks::Docs { .. }),
         }
     }
 }
@@ -645,6 +646,8 @@ struct CiMatrixRow {
     os: String,
     /// If this run produces lcov files
     generates_coverage: bool,
+    /// If this step requires a gpu
+    requires_gpu: bool,
 }
 
 impl Xtasks {
