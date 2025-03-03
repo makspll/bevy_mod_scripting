@@ -8,7 +8,8 @@ use super::AppScriptGlobalsRegistry;
 pub struct CoreScriptGlobalsPlugin;
 
 impl Plugin for CoreScriptGlobalsPlugin {
-    fn build(&self, app: &mut bevy::app::App) {
+    fn build(&self, _app: &mut bevy::app::App) {}
+    fn finish(&self, app: &mut bevy::app::App) {
         let global_registry = app
             .world_mut()
             .get_resource_or_init::<AppScriptGlobalsRegistry>()
