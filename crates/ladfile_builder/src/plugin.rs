@@ -19,6 +19,7 @@ use crate::LadFileBuilder;
 /// Plugin which enables the generation of LAD files at runtime for the purposes of creating documentation and other goodies.
 ///
 /// When added, will automatically generate a LAD file on the Startup schedule
+#[derive(Default)]
 pub struct ScriptingDocgenPlugin(LadFileSettings);
 
 #[derive(Resource, Clone)]
@@ -36,13 +37,13 @@ pub struct LadFileSettings {
     pub pretty: bool,
 }
 
-impl Default for ScriptingDocgenPlugin {
+impl Default for LadFileSettings {
     fn default() -> Self {
-        Self(LadFileSettings {
+        Self {
             path: PathBuf::from("bindings.lad.json"),
             description: "",
             pretty: true,
-        })
+        }
     }
 }
 
@@ -57,11 +58,12 @@ impl ScriptingDocgenPlugin {
     }
 }
 
-fn generate_lad_file(
-    type_registry: Res<AppTypeRegistry>,
-    function_registry: Res<AppScriptFunctionRegistry>,
-    global_registry: Res<AppScriptGlobalsRegistry>,
-    settings: Res<LadFileSettings>,
+/// The function used to generate a ladfile from pre-populated type, function and global registries
+pub fn generate_lad_file(
+    type_registry: &AppTypeRegistry,
+    function_registry: &AppScriptFunctionRegistry,
+    global_registry: &AppScriptGlobalsRegistry,
+    settings: &LadFileSettings,
 ) {
     let type_registry = type_registry.read();
     let function_registry = function_registry.read();
@@ -126,9 +128,23 @@ fn generate_lad_file(
     }
 }
 
+fn generate_lad_file_system(
+    type_registry: Res<AppTypeRegistry>,
+    function_registry: Res<AppScriptFunctionRegistry>,
+    global_registry: Res<AppScriptGlobalsRegistry>,
+    settings: Res<LadFileSettings>,
+) {
+    generate_lad_file(
+        &type_registry,
+        &function_registry,
+        &global_registry,
+        &settings,
+    );
+}
+
 impl Plugin for ScriptingDocgenPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(self.0.clone());
-        app.add_systems(Startup, generate_lad_file);
+        app.add_systems(Startup, generate_lad_file_system);
     }
 }
