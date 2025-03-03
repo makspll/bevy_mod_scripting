@@ -4,13 +4,8 @@
 //! reflection gives us access to `dyn PartialReflect` objects via their type name,
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
-use super::{access_map::ReflectAccessId, WorldGuard};
-use crate::{
-    bindings::ReflectAllocationId,
-    error::InteropError,
-    reflection_extensions::{PartialReflectExt, TypeIdExtensions},
-    with_access_read, with_access_write, ReflectAllocator,
-};
+use std::{any::TypeId, fmt::Debug};
+
 use bevy::{
     ecs::{
         change_detection::MutUntyped, component::ComponentId, entity::Entity,
@@ -20,7 +15,14 @@ use bevy::{
     ptr::Ptr,
     reflect::{ParsedPath, PartialReflect, Reflect, ReflectFromPtr, ReflectPath},
 };
-use std::{any::TypeId, fmt::Debug};
+
+use super::{access_map::ReflectAccessId, WorldGuard};
+use crate::{
+    bindings::ReflectAllocationId,
+    error::InteropError,
+    reflection_extensions::{PartialReflectExt, TypeIdExtensions},
+    with_access_read, with_access_write, ReflectAllocator,
+};
 
 /// An accessor to a `dyn PartialReflect` struct, stores a base ID of the type and a reflection path
 /// safe to build but to reflect on the value inside you need to ensure aliasing rules are upheld
@@ -91,6 +93,15 @@ impl ReflectReference {
         })
     }
 
+    /// If this is a reference to a map
+    pub fn is_map(&self, world: WorldGuard) -> bool {
+        self.with_reflect(world, |r| match r.reflect_ref() {
+            bevy::reflect::ReflectRef::Map(_) => true,
+            _ => false,
+        })
+        .unwrap_or_default()
+    }
+
     /// Create a new reference to a value by allocating it.
     ///
     /// You can retrieve the allocator from the world using [`WorldGuard::allocator`].
@@ -115,7 +126,7 @@ impl ReflectReference {
     ///
     /// Prefer using [`Self::new_allocated`] if you have a value that implements [`Reflect`].
     /// Will fail if the value does not have represented type info with a specific type id.
-    pub fn new_allocated_boxed_parial_reflect(
+    pub fn new_allocated_boxed_partial_reflect(
         value: Box<dyn PartialReflect>,
         allocator: &mut ReflectAllocator,
     ) -> Result<ReflectReference, InteropError> {
@@ -594,11 +605,10 @@ impl Iterator for ReflectRefIter {
 mod test {
     use bevy::prelude::{AppTypeRegistry, World};
 
+    use super::*;
     use crate::bindings::{
         function::script_function::AppScriptFunctionRegistry, AppReflectAllocator,
     };
-
-    use super::*;
 
     #[derive(Reflect, Component, Debug, Clone, PartialEq)]
     struct Component(Vec<String>);
