@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.11](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.10...bevy_mod_scripting_core-v0.9.11) - 2025-03-03
+
+### Fixed
+
+- plugin registration order affecting which globals are exported ([#346](https://github.com/makspll/bevy_mod_scripting/pull/346))
+
 ## [0.9.10](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.9.9...bevy_mod_scripting_core-v0.9.10) - 2025-03-03
 
 ### Added
