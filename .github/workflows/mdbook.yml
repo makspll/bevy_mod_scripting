@@ -37,11 +37,14 @@ jobs:
     - name: Rust Cache
       uses: Swatinem/rust-cache@v2.7.3
 
-    - name: Install mdBook
-      run: cargo xtask init --dont-update-ide
+    - name: Setup xtask & GPU drivers
+      run: |
+        cargo xtask init --dont-update-ide
+        sudo add-apt-repository ppa:kisak/turtle -y
+        sudo apt-get install --no-install-recommends libxkbcommon-x11-0 xvfb libgl1-mesa-dri libxcb-xfixes0-dev mesa-vulkan-drivers
 
     - name: Build the book
-      run: cargo xtask docs --no-rust-docs
+      run: xvfb-run cargo xtask docs --no-rust-docs
 
     - name: Deploy to GitHub Pages
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
