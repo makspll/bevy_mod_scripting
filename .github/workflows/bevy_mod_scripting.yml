@@ -85,20 +85,20 @@ jobs:
       matrix:
        run_args: ${{fromJson(needs.generate-job-matrix.outputs.matrix)}}
     steps:
-      - name: Free Disk Space (Ubuntu)
-        if: runner.os == 'Linux'
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: true
-      # - if: runner.os == 'linux'
-      #   run: |
-      #     sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+      # - name: Free Disk Space (Ubuntu)
+      #   if: runner.os == 'Linux'
+      #   uses: jlumbroso/free-disk-space@main
+      #   with:
+      #     tool-cache: false
+      #     android: true
+      #     dotnet: true
+      #     haskell: true
+      #     large-packages: true
+      #     docker-images: true
+      #     swap-storage: true
+      # # - if: runner.os == 'linux'
+      # #   run: |
+      # #     sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - name: Checkout
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
         uses: actions/checkout@v4
@@ -119,6 +119,14 @@ jobs:
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
         run: |
           cargo xtask init
+
+      - name: Setup GPU Passthrough
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.requires_gpu }}
+        run: |
+          sudo apt-get update -y -qq 
+          sudo add-apt-repository ppa:oibaf/graphics-drivers -y 
+          sudo apt-get update 
+          sudo apt install -y xvfb libegl1-mesa libgl1-mesa-dri libxcb-xfixes0-dev mesa-vulkan-drivers 
 
       - name: Check
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}

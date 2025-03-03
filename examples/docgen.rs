@@ -1,13 +1,5 @@
 use bevy::ecs::reflect::AppTypeRegistry;
-use bevy::prelude::PluginGroup;
-use bevy::{
-    app::App,
-    render::{
-        settings::{RenderCreation, WgpuSettings},
-        RenderPlugin,
-    },
-    DefaultPlugins,
-};
+use bevy::{app::App, DefaultPlugins};
 use bevy_mod_scripting::ScriptFunctionsPlugin;
 use bevy_mod_scripting_core::bindings::function::script_function::AppScriptFunctionRegistry;
 use bevy_mod_scripting_core::bindings::globals::core::CoreScriptGlobalsPlugin;
@@ -18,13 +10,7 @@ fn main() -> std::io::Result<()> {
     let mut app = App::new();
     // headless bevy, kinda, I want to include as many plugins as I can which actually
     // provide reflected type definitions, but exclude anything that runs rendering stuff.
-    app.add_plugins((DefaultPlugins.set(RenderPlugin {
-        synchronous_pipeline_compilation: true,
-        render_creation: RenderCreation::Automatic(WgpuSettings {
-            backends: None,
-            ..Default::default()
-        }),
-    }),));
+    app.add_plugins(DefaultPlugins);
 
     // docgen + scripting
     app.add_plugins((
