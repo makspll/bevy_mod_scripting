@@ -156,6 +156,30 @@ impl Plugin for LuaScriptingPlugin {
         self.scripting_plugin.finish(app);
     }
 }
+
+fn load_lua_content_into_context(
+    context: &mut Lua,
+    script_id: &ScriptId,
+    content: &[u8],
+    initializers: &[ContextInitializer<LuaScriptingPlugin>],
+    pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
+) -> Result<(), ScriptError> {
+    initializers
+        .iter()
+        .try_for_each(|init| init(script_id, context))?;
+
+    pre_handling_initializers
+        .iter()
+        .try_for_each(|init| init(script_id, Entity::from_raw(0), context))?;
+
+    context
+        .load(content)
+        .exec()
+        .map_err(ScriptError::from_mlua_error)?;
+
+    Ok(())
+}
+
 #[profiling::function]
 /// Load a lua context from a script
 pub fn lua_context_load(
@@ -170,21 +194,16 @@ pub fn lua_context_load(
     #[cfg(not(feature = "unsafe_lua_modules"))]
     let mut context = Lua::new();
 
-    initializers
-        .iter()
-        .try_for_each(|init| init(script_id, &mut context))?;
-
-    pre_handling_initializers
-        .iter()
-        .try_for_each(|init| init(script_id, Entity::from_raw(0), &mut context))?;
-
-    context
-        .load(content)
-        .exec()
-        .map_err(ScriptError::from_mlua_error)?;
-
+    load_lua_content_into_context(
+        &mut context,
+        script_id,
+        content,
+        initializers,
+        pre_handling_initializers,
+    )?;
     Ok(context)
 }
+
 #[profiling::function]
 /// Reload a lua context from a script
 pub fn lua_context_reload(
@@ -195,12 +214,12 @@ pub fn lua_context_reload(
     pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
     _: &mut (),
 ) -> Result<(), ScriptError> {
-    *old_ctxt = lua_context_load(
+    load_lua_content_into_context(
+        old_ctxt,
         script,
         content,
         initializers,
         pre_handling_initializers,
-        &mut (),
     )?;
     Ok(())
 }
@@ -242,4 +261,50 @@ pub fn lua_handler(
 
     let out = handler.call::<LuaScriptValue>(input)?;
     Ok(out.into())
+}
+
+#[cfg(test)]
+mod test {
+    use mlua::Value;
+
+    use super::*;
+
+    #[test]
+    fn test_reload_doesnt_overwrite_old_context() {
+        let lua = Lua::new();
+        let script_id = ScriptId::from("asd.lua");
+        let initializers = vec![];
+        let pre_handling_initializers = vec![];
+        let mut old_ctxt = lua.clone();
+
+        lua_context_load(
+            &script_id,
+            "function hello_world_from_first_load()
+            
+            end"
+            .as_bytes(),
+            &initializers,
+            &pre_handling_initializers,
+            &mut (),
+        )
+        .unwrap();
+
+        lua_context_reload(
+            &script_id,
+            "function hello_world_from_second_load()
+            
+            end"
+            .as_bytes(),
+            &mut old_ctxt,
+            &initializers,
+            &pre_handling_initializers,
+            &mut (),
+        )
+        .unwrap();
+
+        // assert both functions exist in globals
+        let globals = lua.globals();
+        assert!(globals.get::<Value>("hello_world_from_first_load").is_ok());
+        assert!(globals.get::<Value>("hello_world_from_second_load").is_ok());
+    }
 }
