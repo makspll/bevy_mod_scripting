@@ -179,6 +179,28 @@ impl Plugin for RhaiScriptingPlugin {
     }
 }
 
+// NEW helper function to load content into an existing context without clearing previous definitions.
+fn load_rhai_content_into_context(
+    context: &mut RhaiScriptContext,
+    script: &ScriptId,
+    content: &[u8],
+    initializers: &[ContextInitializer<RhaiScriptingPlugin>],
+    pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
+    runtime: &mut RhaiRuntime,
+) -> Result<(), ScriptError> {
+    let mut ast = runtime.compile(std::str::from_utf8(content)?)?;
+    ast.set_source(script.to_string());
+    initializers
+        .iter()
+        .try_for_each(|init| init(script, context))?;
+    pre_handling_initializers
+        .iter()
+        .try_for_each(|init| init(script, Entity::from_raw(0), context))?;
+    runtime.eval_ast_with_scope(&mut context.scope, &ast)?;
+    // Unlike before, do not clear statements so that definitions persist.
+    Ok(())
+}
+
 /// Load a rhai context from a script.
 pub fn rhai_context_load(
     script: &ScriptId,
@@ -187,29 +209,23 @@ pub fn rhai_context_load(
     pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
     runtime: &mut RhaiRuntime,
 ) -> Result<RhaiScriptContext, ScriptError> {
-    let mut ast = runtime.compile(std::str::from_utf8(content)?)?;
-    ast.set_source(script.to_string());
-
     let mut context = RhaiScriptContext {
-        ast,
+        // Using an empty AST as a placeholder.
+        ast: AST::empty(),
         scope: Scope::new(),
     };
-    initializers
-        .iter()
-        .try_for_each(|init| init(script, &mut context))?;
-
-    pre_handling_initializers
-        .iter()
-        .try_for_each(|init| init(script, Entity::from_raw(0), &mut context))?;
-
-    runtime.eval_ast_with_scope(&mut context.scope, &context.ast)?;
-    // do not invoke top level statements after the first time we run the script
-    context.ast.clear_statements();
-
+    load_rhai_content_into_context(
+        &mut context,
+        script,
+        content,
+        initializers,
+        pre_handling_initializers,
+        runtime,
+    )?;
     Ok(context)
 }
 
-/// Reload a rhai context from a script.
+/// Reload a rhai context from a script. New content is appended to the existing context.
 pub fn rhai_context_reload(
     script: &ScriptId,
     content: &[u8],
@@ -218,14 +234,14 @@ pub fn rhai_context_reload(
     pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
     runtime: &mut RhaiRuntime,
 ) -> Result<(), ScriptError> {
-    *context = rhai_context_load(
+    load_rhai_content_into_context(
+        context,
         script,
         content,
         initializers,
         pre_handling_initializers,
         runtime,
-    )?;
-    Ok(())
+    )
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -276,5 +292,47 @@ pub fn rhai_callback_handler(
                 Err(ScriptError::from(e))
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_reload_doesnt_overwrite_old_context() {
+        let mut runtime = RhaiRuntime::new();
+        let script_id = ScriptId::from("asd.rhai");
+        let initializers: Vec<ContextInitializer<RhaiScriptingPlugin>> = vec![];
+        let pre_handling_initializers: Vec<ContextPreHandlingInitializer<RhaiScriptingPlugin>> =
+            vec![];
+
+        // Load first content defining a function that returns 42.
+        let mut context = rhai_context_load(
+            &script_id,
+            b"let hello = 2;",
+            &initializers,
+            &pre_handling_initializers,
+            &mut runtime,
+        )
+        .unwrap();
+
+        // Reload with additional content defining a second function that returns 24.
+        rhai_context_reload(
+            &script_id,
+            b"let hello2 = 3",
+            &mut context,
+            &initializers,
+            &pre_handling_initializers,
+            &mut runtime,
+        )
+        .unwrap();
+
+        // get first var
+        let hello = context.scope.get_value::<i64>("hello").unwrap();
+        assert_eq!(hello, 2);
+        // get second var
+        let hello2 = context.scope.get_value::<i64>("hello2").unwrap();
+        assert_eq!(hello2, 3);
     }
 }
