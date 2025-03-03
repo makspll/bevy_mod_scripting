@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.10](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.9...v0.9.10) - 2025-03-03
+
+### Added
+
+- add `map_get` function for cloning and returning values on a map ([#343](https://github.com/makspll/bevy_mod_scripting/pull/343))
+- *(bms,ladfile_builder)* introduce app global instance registry and export them in `ladfile_builder` ([#340](https://github.com/makspll/bevy_mod_scripting/pull/340))
+
 ## [0.9.9](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.8...v0.9.9) - 2025-02-28
 
 ### Added

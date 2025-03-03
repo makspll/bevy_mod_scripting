@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.10](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_functions-v0.9.9...bevy_mod_scripting_functions-v0.9.10) - 2025-03-03
+
+### Added
+
+- add `map_get` function for cloning and returning values on a map ([#343](https://github.com/makspll/bevy_mod_scripting/pull/343))
+- *(bms,ladfile_builder)* introduce app global instance registry and export them in `ladfile_builder` ([#340](https://github.com/makspll/bevy_mod_scripting/pull/340))
+
 ## [0.9.9](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_functions-v0.9.8...bevy_mod_scripting_functions-v0.9.9) - 2025-02-28
 
 ### Added

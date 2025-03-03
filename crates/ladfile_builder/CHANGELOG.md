@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.4](https://github.com/makspll/bevy_mod_scripting/compare/v0.2.3-ladfile_builder...v0.2.4-ladfile_builder) - 2025-03-03
+
+### Added
+
+- *(bms,ladfile_builder)* introduce app global instance registry and export them in `ladfile_builder` ([#340](https://github.com/makspll/bevy_mod_scripting/pull/340))
+
 ## [0.2.3](https://github.com/makspll/bevy_mod_scripting/compare/v0.2.2-ladfile_builder...v0.2.3-ladfile_builder) - 2025-02-28
 
 ### Added
