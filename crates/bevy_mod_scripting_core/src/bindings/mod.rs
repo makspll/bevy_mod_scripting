@@ -8,6 +8,7 @@ pub mod pretty_print;
 pub mod query;
 pub mod reference;
 pub mod schedule;
+pub mod script_system;
 pub mod script_value;
 pub mod world;
 
