@@ -797,6 +797,53 @@ impl ReflectSystem {
     name = "script_system_builder_functions"
 )]
 impl ScriptSystemBuilder {
+    /// Requests the component have access to the given component. The component will be added to the
+    /// list of arguments of the callback in the order they're provided.
+    ///
+    /// Arguments:
+    /// * `self_`: The system builder to add the component to.
+    /// * `component`: The component to add.
+    /// Returns:
+    /// * `builder`: The system builder with the component added.
+    fn component(
+        self_: Val<ScriptSystemBuilder>,
+        component: Val<ScriptComponentRegistration>,
+    ) -> Val<ScriptSystemBuilder> {
+        profiling::function_scope!("component");
+        let mut builder = self_.into_inner();
+        builder.component(component.into_inner());
+        builder.into()
+    }
+
+    /// Requests the system have access to the given resource. The resource will be added to the
+    /// list of arguments of the callback in the order they're provided.
+    /// Arguments:
+    /// * `self_`: The system builder to add the resource to.
+    /// * `resource`: The resource to add.
+    /// Returns:
+    /// * `builder`: The system builder with the resource added.
+    fn resource(
+        self_: Val<ScriptSystemBuilder>,
+        resource: Val<ScriptResourceRegistration>,
+    ) -> Val<ScriptSystemBuilder> {
+        profiling::function_scope!("resource");
+        let mut builder = self_.into_inner();
+        builder.resource(resource.into_inner());
+        builder.into()
+    }
+
+    /// Specifies the system is to run exclusively, meaning it can access anything, but will not run in parallel with other systems.
+    /// Arguments:
+    /// * `self_`: The system builder to make exclusive.
+    /// Returns:
+    /// * `builder`: The system builder that is now exclusive.
+    fn exclusive(self_: Val<ScriptSystemBuilder>) -> Val<ScriptSystemBuilder> {
+        profiling::function_scope!("exclusive");
+        let mut builder = self_.into_inner();
+        builder.exclusive(true);
+        builder.into()
+    }
+
     /// Specifies the system is to run *after* the given system
     ///
     /// Note: this is an experimental feature, and the ordering might not work correctly for script initialized systems
