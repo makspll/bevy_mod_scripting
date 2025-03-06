@@ -1,8 +1,9 @@
 //! Script related types, functions and components
 
-use crate::{asset::ScriptAsset, context::ContextId};
+use crate::{asset::ScriptAsset, context::Context};
 use bevy::{asset::Handle, ecs::system::Resource, reflect::Reflect, utils::HashSet};
-use std::{borrow::Cow, collections::HashMap, ops::Deref};
+use parking_lot::Mutex;
+use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc};
 
 /// A unique identifier for a script, by default corresponds to the path of the asset excluding the asset source.
 ///
@@ -44,8 +45,8 @@ pub struct Script {
     pub id: ScriptId,
     /// the asset holding the content of the script if it comes from an asset
     pub asset: Option<Handle<ScriptAsset>>,
-    /// The id of the context this script is currently assigned to
-    pub context_id: ContextId,
+    /// The context of the script, possibly shared with other scripts
+    pub context: Arc<Mutex<dyn Context>>,
 }
 
 /// A collection of scripts, not associated with any entity.

@@ -18,8 +18,8 @@ use bindings::{
 };
 use commands::{AddStaticScript, RemoveStaticScript};
 use context::{
-    Context, ContextAssigner, ContextBuilder, ContextInitializer, ContextLoadingSettings,
-    ContextPreHandlingInitializer, ScriptContexts,
+    Context, ContextAssignmentStrategy, ContextBuilder, ContextInitializer, ContextLoadingSettings,
+    ContextPreHandlingInitializer,
 };
 use error::ScriptError;
 use event::ScriptCallbackEvent;
@@ -83,8 +83,9 @@ pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
     pub callback_handler: HandlerFn<P>,
     /// The context builder for loading contexts
     pub context_builder: ContextBuilder<P>,
-    /// The context assigner for assigning contexts to scripts.
-    pub context_assigner: ContextAssigner<P>,
+
+    /// The strategy for assigning contexts to scripts
+    pub context_assignment_strategy: ContextAssignmentStrategy,
 
     /// The asset path to language mapper for the plugin
     pub language_mapper: AssetPathToLanguageMapper,
@@ -104,7 +105,7 @@ impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P> {
             runtime_settings: Default::default(),
             callback_handler: CallbackSettings::<P>::default().callback_handler,
             context_builder: Default::default(),
-            context_assigner: Default::default(),
+            context_assignment_strategy: Default::default(),
             language_mapper: Default::default(),
             context_initializers: Default::default(),
             context_pre_handling_initializers: Default::default(),
@@ -119,13 +120,12 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
             .insert_resource::<RuntimeContainer<P>>(RuntimeContainer {
                 runtime: P::build_runtime(),
             })
-            .init_resource::<ScriptContexts<P>>()
             .insert_resource::<CallbackSettings<P>>(CallbackSettings {
                 callback_handler: self.callback_handler,
             })
             .insert_resource::<ContextLoadingSettings<P>>(ContextLoadingSettings {
                 loader: self.context_builder.clone(),
-                assigner: self.context_assigner.clone(),
+                assignment_strategy: self.context_assignment_strategy,
                 context_initializers: self.context_initializers.clone(),
                 context_pre_handling_initializers: self.context_pre_handling_initializers.clone(),
             });
@@ -227,7 +227,7 @@ impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugi
     }
 
     fn enable_context_sharing(mut self) -> Self {
-        self.as_mut().context_assigner = ContextAssigner::new_global_context_assigner();
+        self.as_mut().context_assignment_strategy = ContextAssignmentStrategy::Global;
         self
     }
 }
