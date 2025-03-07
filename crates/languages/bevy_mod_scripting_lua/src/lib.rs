@@ -53,7 +53,7 @@ impl Default for LuaScriptingPlugin {
     fn default() -> Self {
         LuaScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
-                context_assigner: Default::default(),
+                context_assignment_strategy: Default::default(),
                 runtime_settings: RuntimeSettings::default(),
                 callback_handler: lua_handler,
                 context_builder: ContextBuilder::<LuaScriptingPlugin> {
@@ -201,7 +201,7 @@ pub fn lua_context_load(
     content: &[u8],
     initializers: &[ContextInitializer<LuaScriptingPlugin>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
-    _: &mut (),
+    _: &(),
 ) -> Result<Lua, ScriptError> {
     #[cfg(feature = "unsafe_lua_modules")]
     let mut context = unsafe { Lua::unsafe_new() };
@@ -226,7 +226,7 @@ pub fn lua_context_reload(
     old_ctxt: &mut Lua,
     initializers: &[ContextInitializer<LuaScriptingPlugin>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
-    _: &mut (),
+    _: &(),
 ) -> Result<(), ScriptError> {
     load_lua_content_into_context(
         old_ctxt,
@@ -248,7 +248,7 @@ pub fn lua_handler(
     callback_label: &CallbackLabel,
     context: &mut Lua,
     pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
-    _: &mut (),
+    _: &(),
 ) -> Result<ScriptValue, bevy_mod_scripting_core::error::ScriptError> {
     pre_handling_initializers
         .iter()
@@ -310,7 +310,7 @@ mod test {
             .as_bytes(),
             &initializers,
             &pre_handling_initializers,
-            &mut (),
+            &(),
         )
         .unwrap();
 
@@ -323,7 +323,7 @@ mod test {
             &mut old_ctxt,
             &initializers,
             &pre_handling_initializers,
-            &mut (),
+            &(),
         )
         .unwrap();
 

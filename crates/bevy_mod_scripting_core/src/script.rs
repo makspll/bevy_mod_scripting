@@ -1,8 +1,9 @@
 //! Script related types, functions and components
 
-use crate::{asset::ScriptAsset, context::ContextId};
+use crate::{asset::ScriptAsset, IntoScriptPluginParams};
 use bevy::{asset::Handle, ecs::system::Resource, reflect::Reflect, utils::HashSet};
-use std::{borrow::Cow, collections::HashMap, ops::Deref};
+use parking_lot::Mutex;
+use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc};
 
 /// A unique identifier for a script, by default corresponds to the path of the asset excluding the asset source.
 ///
@@ -32,20 +33,37 @@ impl ScriptComponent {
 }
 
 /// All the scripts which are currently loaded or loading and their mapping to contexts
-#[derive(Resource, Default, Clone)]
-pub struct Scripts {
-    pub(crate) scripts: HashMap<ScriptId, Script>,
+#[derive(Resource)]
+pub struct Scripts<P: IntoScriptPluginParams> {
+    pub(crate) scripts: HashMap<ScriptId, Script<P>>,
+}
+
+impl<P: IntoScriptPluginParams> Default for Scripts<P> {
+    fn default() -> Self {
+        Self {
+            scripts: Default::default(),
+        }
+    }
 }
 
 /// A script
-#[derive(Clone)]
-pub struct Script {
+pub struct Script<P: IntoScriptPluginParams> {
     /// The id of the script
     pub id: ScriptId,
     /// the asset holding the content of the script if it comes from an asset
     pub asset: Option<Handle<ScriptAsset>>,
-    /// The id of the context this script is currently assigned to
-    pub context_id: ContextId,
+    /// The context of the script, possibly shared with other scripts
+    pub context: Arc<Mutex<P::C>>,
+}
+
+impl<P: IntoScriptPluginParams> Clone for Script<P> {
+    fn clone(&self) -> Self {
+        Self {
+            id: self.id.clone(),
+            asset: self.asset.clone(),
+            context: self.context.clone(),
+        }
+    }
 }
 
 /// A collection of scripts, not associated with any entity.

@@ -34,6 +34,8 @@ impl Test {
             |app| {
                 app.add_plugins(RhaiScriptingPlugin::default());
                 app.add_runtime_initializer::<RhaiScriptingPlugin>(|runtime| {
+                    let mut runtime = runtime.write();
+
                     runtime.register_fn("assert", |a: Dynamic, b: &str| {
                         if !a.is::<bool>() {
                             panic!("Expected a boolean value, but got {:?}", a);

@@ -20,6 +20,7 @@ bevy = { workspace = true, default-features = false }
 rhai = { version = "1.21" }
 bevy_mod_scripting_core = { workspace = true, features = ["rhai_impls"] }
 strum = { version = "0.26", features = ["derive"] }
+parking_lot = "0.12.1"
 
 [dev-dependencies]
 script_integration_test_harness = { workspace = true }

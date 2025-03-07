@@ -12,8 +12,7 @@ pub trait Runtime: Default + 'static + Send + Sync {}
 impl<T: Default + 'static + Send + Sync> Runtime for T {}
 
 /// A function that initializes a runtime.
-pub type RuntimeInitializer<P> =
-    fn(&mut <P as IntoScriptPluginParams>::R) -> Result<(), ScriptError>;
+pub type RuntimeInitializer<P> = fn(&<P as IntoScriptPluginParams>::R) -> Result<(), ScriptError>;
 
 #[derive(Resource)]
 /// Resource storing settings for a scripting plugin regarding runtime initialization & configuration.
@@ -54,11 +53,11 @@ impl<P: IntoScriptPluginParams> Default for RuntimeContainer<P> {
 }
 
 pub(crate) fn initialize_runtime<P: IntoScriptPluginParams>(
-    mut runtime: ResMut<RuntimeContainer<P>>,
+    runtime: ResMut<RuntimeContainer<P>>,
     settings: Res<RuntimeSettings<P>>,
 ) -> Result<(), ScriptError> {
     for initializer in settings.initializers.iter() {
-        (initializer)(&mut runtime.runtime)?;
+        (initializer)(&runtime.runtime)?;
     }
     Ok(())
 }

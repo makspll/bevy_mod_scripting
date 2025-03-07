@@ -8,7 +8,6 @@ use crate::{
         script_value::ScriptValue,
         ReflectBaseType, ReflectReference,
     },
-    context::ContextId,
     script::ScriptId,
 };
 use bevy::{
@@ -599,9 +598,8 @@ impl InteropError {
     }
 
     /// Thrown if the required context for an operation is missing.
-    pub fn missing_context(context_id: ContextId, script_id: impl Into<ScriptId>) -> Self {
+    pub fn missing_context(script_id: impl Into<ScriptId>) -> Self {
         Self(Arc::new(InteropErrorInner::MissingContext {
-            context_id,
             script_id: script_id.into(),
         }))
     }
@@ -812,8 +810,6 @@ pub enum InteropErrorInner {
     },
     /// Thrown if the required context for an operation is missing.
     MissingContext {
-        /// The context that was missing
-        context_id: ContextId,
         /// The script that was attempting to access the context
         script_id: ScriptId,
     },
@@ -1053,15 +1049,9 @@ impl PartialEq for InteropErrorInner {
                 },
             ) => a == c && b == d,
             (
-                InteropErrorInner::MissingContext {
-                    context_id: a,
-                    script_id: b,
-                },
-                InteropErrorInner::MissingContext {
-                    context_id: c,
-                    script_id: d,
-                },
-            ) => a == c && b == d,
+                InteropErrorInner::MissingContext { script_id: b },
+                InteropErrorInner::MissingContext { script_id: d },
+            ) => b == d,
             (
                 InteropErrorInner::MissingSchedule { schedule_name: a },
                 InteropErrorInner::MissingSchedule { schedule_name: b },
@@ -1284,10 +1274,10 @@ macro_rules! argument_count_mismatch_msg {
 }
 
 macro_rules! missing_context_for_callback {
-    ($context_id:expr, $script_id:expr) => {
+    ($script_id:expr) => {
         format!(
-            "Missing context with id: {} for script with id: {}. Was the script loaded?.",
-            $context_id, $script_id
+            "Missing context for script with id: {}. Was the script loaded?.",
+            $script_id
         )
     };
 }
@@ -1433,9 +1423,8 @@ impl DisplayWithWorld for InteropErrorInner {
             InteropErrorInner::MissingScript { script_id } => {
                 missing_script_for_callback!(script_id)
             },
-            InteropErrorInner::MissingContext { context_id, script_id } => {
+            InteropErrorInner::MissingContext { script_id } => {
                 missing_context_for_callback!(
-                    context_id,
                     script_id
                 )
             },
@@ -1580,9 +1569,8 @@ impl DisplayWithWorld for InteropErrorInner {
             InteropErrorInner::MissingScript { script_id } => {
                 missing_script_for_callback!(script_id)
             },
-            InteropErrorInner::MissingContext { context_id, script_id } => {
+            InteropErrorInner::MissingContext { script_id } => {
                 missing_context_for_callback!(
-                    context_id,
                     script_id
                 )
             },
