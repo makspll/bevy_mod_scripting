@@ -188,16 +188,18 @@ fn load_rhai_content_into_context(
     pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
     runtime: &mut RhaiRuntime,
 ) -> Result<(), ScriptError> {
-    let mut ast = runtime.compile(std::str::from_utf8(content)?)?;
-    ast.set_source(script.to_string());
+    context.ast = runtime.compile(std::str::from_utf8(content)?)?;
+    context.ast.set_source(script.to_string());
+
     initializers
         .iter()
         .try_for_each(|init| init(script, context))?;
     pre_handling_initializers
         .iter()
         .try_for_each(|init| init(script, Entity::from_raw(0), context))?;
-    runtime.eval_ast_with_scope(&mut context.scope, &ast)?;
-    // Unlike before, do not clear statements so that definitions persist.
+    runtime.eval_ast_with_scope(&mut context.scope, &context.ast)?;
+
+    context.ast.clear_statements();
     Ok(())
 }
 
