@@ -192,7 +192,7 @@ fn load_rhai_content_into_context(
     runtime: &RhaiRuntime,
 ) -> Result<(), ScriptError> {
     let runtime = runtime.read();
-  
+
     context.ast = runtime.compile(std::str::from_utf8(content)?)?;
     context.ast.set_source(script.to_string());
 
