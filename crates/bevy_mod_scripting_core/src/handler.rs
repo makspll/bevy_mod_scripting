@@ -206,7 +206,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                         match e.downcast_interop_inner() {
                             Some(InteropErrorInner::MissingScript { script_id }) => {
                                 trace_once!(
-                                "{}: Script `{}` on entity `{:?}` is either still loading or doesn't exist, ignoring until the corresponding script is loaded.",
+                                "{}: Script `{}` on entity `{:?}` is either still loading, doesn't exist, or is for another language, ignoring until the corresponding script is loaded.",
                                 P::LANGUAGE,
                                 script_id, entity
                             );

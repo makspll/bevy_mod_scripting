@@ -217,7 +217,10 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
                     bevy::log::debug!("{}: reloading script with id: {}", P::LANGUAGE, self.id);
                     self.reload_context(guard.clone(), handler_ctxt)
                 }
-                None => self.load_context(guard.clone(), handler_ctxt),
+                None => {
+                    bevy::log::debug!("{}: loading script with id: {}", P::LANGUAGE, self.id);
+                    self.load_context(guard.clone(), handler_ctxt)
+                }
             };
 
             let result = result.and_then(|()| {
@@ -231,7 +234,13 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
             });
 
             match result {
-                Ok(_) => {}
+                Ok(_) => {
+                    bevy::log::debug!(
+                        "{}: script with id: {} successfully created or updated",
+                        P::LANGUAGE,
+                        self.id
+                    );
+                }
                 Err(e) => {
                     let phrase = if assigned_shared_context.is_some() {
                         "reloading"
