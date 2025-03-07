@@ -26,6 +26,8 @@ jobs:
             chore
             test
             docs
+            refactor
+
           scopes: |
             ladfile
             ladfile_builder
