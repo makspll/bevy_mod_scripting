@@ -20,7 +20,7 @@ use crate::{
         access_map::ReflectAccessId, pretty_print::DisplayWithWorld, script_value::ScriptValue,
         WorldAccessGuard, WorldGuard,
     },
-    context::{ContextLoadingSettings, ScriptContexts},
+    context::ContextLoadingSettings,
     error::{InteropError, ScriptError},
     event::{CallbackLabel, IntoCallbackLabel},
     handler::CallbackSettings,
@@ -141,11 +141,9 @@ pub struct HandlerContext<'s, P: IntoScriptPluginParams> {
     /// Settings for loading contexts
     pub(crate) context_loading_settings: ResScope<'s, ContextLoadingSettings<P>>,
     /// Scripts
-    pub(crate) scripts: ResScope<'s, Scripts>,
+    pub(crate) scripts: ResScope<'s, Scripts<P>>,
     /// The runtime container
     pub(crate) runtime_container: ResScope<'s, RuntimeContainer<P>>,
-    /// The script contexts
-    pub(crate) script_contexts: ResScope<'s, ScriptContexts<P>>,
     /// List of static scripts
     pub(crate) static_scripts: ResScope<'s, StaticScripts>,
 }
@@ -160,9 +158,8 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
     ) -> (
         &mut CallbackSettings<P>,
         &mut ContextLoadingSettings<P>,
-        &mut Scripts,
+        &mut Scripts<P>,
         &mut RuntimeContainer<P>,
-        &mut ScriptContexts<P>,
         &mut StaticScripts,
     ) {
         (
@@ -170,7 +167,6 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
             &mut self.context_loading_settings,
             &mut self.scripts,
             &mut self.runtime_container,
-            &mut self.script_contexts,
             &mut self.static_scripts,
         )
     }
@@ -186,18 +182,13 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
     }
 
     /// Get the scripts
-    pub fn scripts(&mut self) -> &mut Scripts {
+    pub fn scripts(&mut self) -> &mut Scripts<P> {
         &mut self.scripts
     }
 
     /// Get the runtime container
     pub fn runtime_container(&mut self) -> &mut RuntimeContainer<P> {
         &mut self.runtime_container
-    }
-
-    /// Get the script contexts
-    pub fn script_contexts(&mut self) -> &mut ScriptContexts<P> {
-        &mut self.script_contexts
     }
 
     /// Get the static scripts
@@ -207,38 +198,22 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
 
     /// checks if the script is loaded such that it can be executed.
     pub fn is_script_fully_loaded(&self, script_id: ScriptId) -> bool {
-        // check script exists in scripts and contexts
-        let script = match self.scripts.scripts.get(&script_id) {
-            Some(script) => script,
-            None => {
-                return false;
-            }
-        };
-
-        self.script_contexts
-            .contexts
-            .contains_key(&script.context_id)
+        self.scripts.scripts.contains_key(&script_id)
     }
 
     /// Equivalent to [`Self::call`] but with a dynamically passed in label
     pub fn call_dynamic_label(
-        &mut self,
+        &self,
         label: &CallbackLabel,
-        script_id: ScriptId,
+        script_id: &ScriptId,
         entity: Entity,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
         // find script
-        let script = match self.scripts.scripts.get(&script_id) {
+        let script = match self.scripts.scripts.get(script_id) {
             Some(script) => script,
-            None => return Err(InteropError::missing_script(script_id).into()),
-        };
-
-        // find context
-        let context = match self.script_contexts.contexts.get_mut(&script.context_id) {
-            Some(context) => context,
-            None => return Err(InteropError::missing_context(script.context_id, script_id).into()),
+            None => return Err(InteropError::missing_script(script_id.clone()).into()),
         };
 
         // call the script
@@ -246,14 +221,17 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
         let pre_handling_initializers = &self
             .context_loading_settings
             .context_pre_handling_initializers;
-        let runtime = &mut self.runtime_container.runtime;
+        let runtime = &self.runtime_container.runtime;
+
+        let mut context = script.context.lock();
+
         CallbackSettings::<P>::call(
             handler,
             payload,
             entity,
-            &script_id,
+            script_id,
             label,
-            context,
+            &mut context,
             pre_handling_initializers,
             runtime,
             guard,
@@ -265,8 +243,8 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
     /// This will return [`crate::error::InteropErrorInner::MissingScript`] or [`crate::error::InteropErrorInner::MissingContext`] errors while the script is loading.
     /// Run [`Self::is_script_fully_loaded`] before calling the script to ensure the script and context were loaded ahead of time.
     pub fn call<C: IntoCallbackLabel>(
-        &mut self,
-        script_id: ScriptId,
+        &self,
+        script_id: &ScriptId,
         entity: Entity,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,

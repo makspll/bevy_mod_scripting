@@ -167,7 +167,7 @@ fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
     }
 
     let res = handler_ctxt.call::<C>(
-        script_id.to_string().into(),
+        &script_id.to_string().into(),
         Entity::from_raw(0),
         vec![],
         guard.clone(),

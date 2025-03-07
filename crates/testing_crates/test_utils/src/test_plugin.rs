@@ -26,16 +26,17 @@ macro_rules! make_test_plugin {
 
             fn build_runtime() -> Self::R {
                 TestRuntime {
-                    invocations: vec![],
+                    invocations: vec![].into(),
                 }
             }
         }
 
         #[derive(Default)]
         struct TestRuntime {
-            pub invocations: Vec<(Entity, ScriptId)>,
+            pub invocations: parking_lot::Mutex<Vec<(Entity, ScriptId)>>,
         }
 
+        #[derive(Default)]
         struct TestContext {
             pub invocations: Vec<$ident::bindings::script_value::ScriptValue>,
         }

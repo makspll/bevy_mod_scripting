@@ -23,6 +23,7 @@ use bindings::{
     reference::{ReservedKeyword, RhaiReflectReference, RhaiStaticReflectReference},
     script_value::{FromDynamic, IntoDynamic},
 };
+use parking_lot::RwLock;
 use rhai::{CallFnOptions, Dynamic, Engine, EvalAltResult, Scope, AST};
 
 pub use rhai;
@@ -30,7 +31,7 @@ pub use rhai;
 pub mod bindings;
 
 /// The rhai runtime type.
-pub type RhaiRuntime = Engine;
+pub type RhaiRuntime = RwLock<Engine>;
 
 /// The rhai context type.
 pub struct RhaiScriptContext {
@@ -47,7 +48,7 @@ impl IntoScriptPluginParams for RhaiScriptingPlugin {
     const LANGUAGE: Language = Language::Rhai;
 
     fn build_runtime() -> Self::R {
-        RhaiRuntime::new()
+        Engine::new().into()
     }
 }
 
@@ -67,12 +68,14 @@ impl Default for RhaiScriptingPlugin {
     fn default() -> Self {
         RhaiScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
-                context_assigner: Default::default(),
+                context_assignment_strategy: Default::default(),
                 runtime_settings: RuntimeSettings {
-                    initializers: vec![|runtime: &mut Engine| {
-                        runtime.build_type::<RhaiReflectReference>();
-                        runtime.build_type::<RhaiStaticReflectReference>();
-                        runtime.register_iterator_result::<RhaiReflectReference, _>();
+                    initializers: vec![|runtime: &RhaiRuntime| {
+                        let mut engine = runtime.write();
+
+                        engine.build_type::<RhaiReflectReference>();
+                        engine.build_type::<RhaiStaticReflectReference>();
+                        engine.register_iterator_result::<RhaiReflectReference, _>();
                         Ok(())
                     }],
                 },
@@ -186,8 +189,10 @@ fn load_rhai_content_into_context(
     content: &[u8],
     initializers: &[ContextInitializer<RhaiScriptingPlugin>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
-    runtime: &mut RhaiRuntime,
+    runtime: &RhaiRuntime,
 ) -> Result<(), ScriptError> {
+    let runtime = runtime.read();
+
     context.ast = runtime.compile(std::str::from_utf8(content)?)?;
     context.ast.set_source(script.to_string());
 
@@ -209,7 +214,7 @@ pub fn rhai_context_load(
     content: &[u8],
     initializers: &[ContextInitializer<RhaiScriptingPlugin>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
-    runtime: &mut RhaiRuntime,
+    runtime: &RhaiRuntime,
 ) -> Result<RhaiScriptContext, ScriptError> {
     let mut context = RhaiScriptContext {
         // Using an empty AST as a placeholder.
@@ -234,7 +239,7 @@ pub fn rhai_context_reload(
     context: &mut RhaiScriptContext,
     initializers: &[ContextInitializer<RhaiScriptingPlugin>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
-    runtime: &mut RhaiRuntime,
+    runtime: &RhaiRuntime,
 ) -> Result<(), ScriptError> {
     load_rhai_content_into_context(
         context,
@@ -255,7 +260,7 @@ pub fn rhai_callback_handler(
     callback: &CallbackLabel,
     context: &mut RhaiScriptContext,
     pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
-    runtime: &mut RhaiRuntime,
+    runtime: &RhaiRuntime,
 ) -> Result<ScriptValue, ScriptError> {
     pre_handling_initializers
         .iter()
@@ -274,6 +279,8 @@ pub fn rhai_callback_handler(
         script_id,
         args
     );
+    let runtime = runtime.read();
+
     match runtime.call_fn_with_options::<Dynamic>(
         options,
         &mut context.scope,
@@ -303,7 +310,7 @@ mod test {
 
     #[test]
     fn test_reload_doesnt_overwrite_old_context() {
-        let mut runtime = RhaiRuntime::new();
+        let runtime = RhaiRuntime::new(Engine::new());
         let script_id = ScriptId::from("asd.rhai");
         let initializers: Vec<ContextInitializer<RhaiScriptingPlugin>> = vec![];
         let pre_handling_initializers: Vec<ContextPreHandlingInitializer<RhaiScriptingPlugin>> =
@@ -315,7 +322,7 @@ mod test {
             b"let hello = 2;",
             &initializers,
             &pre_handling_initializers,
-            &mut runtime,
+            &runtime,
         )
         .unwrap();
 
@@ -326,7 +333,7 @@ mod test {
             &mut context,
             &initializers,
             &pre_handling_initializers,
-            &mut runtime,
+            &runtime,
         )
         .unwrap();
 

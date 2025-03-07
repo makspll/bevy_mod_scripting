@@ -334,7 +334,7 @@ impl ScriptSystemBuilder {
                     bevy::log::debug_once!("First call to script system {}", name);
                     match handler_ctxt.call_dynamic_label(
                         &name,
-                        self.script_id.clone(),
+                        &self.script_id,
                         Entity::from_raw(0),
                         vec![],
                         guard.clone(),
