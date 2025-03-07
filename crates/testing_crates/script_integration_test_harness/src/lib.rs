@@ -22,6 +22,7 @@ use bevy_mod_scripting_core::{
     asset::ScriptAsset,
     bindings::{pretty_print::DisplayWithWorld, script_value::ScriptValue, WorldGuard},
     callback_labels,
+    error::{InteropError, ScriptError},
     event::{IntoCallbackLabel, ScriptErrorEvent},
     extractors::{HandlerContext, WithWorldGuard},
     handler::handle_script_errors,
@@ -43,13 +44,14 @@ struct TestCallbackBuilder<P: IntoScriptPluginParams, L: IntoCallbackLabel> {
 }
 
 impl<L: IntoCallbackLabel, P: IntoScriptPluginParams> TestCallbackBuilder<P, L> {
-    fn build(script_id: impl Into<ScriptId>) -> SystemConfigs {
+    fn build(script_id: impl Into<ScriptId>, expect_response: bool) -> SystemConfigs {
         let script_id = script_id.into();
         IntoSystem::into_system(
             move |world: &mut World,
                   system_state: &mut SystemState<WithWorldGuard<HandlerContext<P>>>| {
                 let with_guard = system_state.get_mut(world);
-                run_test_callback::<P, L>(&script_id.clone(), with_guard);
+                let _ = run_test_callback::<P, L>(&script_id.clone(), with_guard, expect_response);
+
                 system_state.apply(world);
             },
         )
@@ -103,13 +105,22 @@ pub fn execute_integration_test<
         *handle = server.load(script_id.to_owned());
     };
 
+    // tests can opt in to this via "__RETURN"
+    let expect_callback_response = script_id.contains("__RETURN");
+
     app.add_systems(Startup, load_system);
-    app.add_systems(Update, TestCallbackBuilder::<P, OnTest>::build(script_id));
+    app.add_systems(
+        Update,
+        TestCallbackBuilder::<P, OnTest>::build(script_id, expect_callback_response),
+    );
     app.add_systems(
         PostUpdate,
-        TestCallbackBuilder::<P, OnTestPostUpdate>::build(script_id),
+        TestCallbackBuilder::<P, OnTestPostUpdate>::build(script_id, expect_callback_response),
     );
-    app.add_systems(Last, TestCallbackBuilder::<P, OnTestLast>::build(script_id));
+    app.add_systems(
+        Last,
+        TestCallbackBuilder::<P, OnTestLast>::build(script_id, expect_callback_response),
+    );
     app.add_systems(Update, dummy_update_system);
     app.add_systems(Startup, dummy_startup_system::<String>);
 
@@ -147,11 +158,12 @@ pub fn execute_integration_test<
 fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
     script_id: &str,
     mut with_guard: WithWorldGuard<'_, '_, HandlerContext<'_, P>>,
-) {
+    expect_response: bool,
+) -> Result<ScriptValue, ScriptError> {
     let (guard, handler_ctxt) = with_guard.get_mut();
 
     if !handler_ctxt.is_script_fully_loaded(script_id.to_string().into()) {
-        return;
+        return Ok(ScriptValue::Unit);
     }
 
     let res = handler_ctxt.call::<C>(
@@ -163,14 +175,20 @@ fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
     let e = match res {
         Ok(ScriptValue::Error(e)) => e.into(),
         Err(e) => e,
-        _ => {
-            match guard.with_resource_mut(|mut events: Mut<Events<TestEventFinished>>| {
-                events.send(TestEventFinished)
-            }) {
-                Ok(_) => return,
-                Err(e) => e.into(),
+        Ok(v) => {
+            if expect_response && !matches!(v, ScriptValue::Bool(true)) {
+                InteropError::external_error(format!("Response from callback {} was either not received or wasn't correct. Expected true, got: {v:?}", C::into_callback_label()).into()).into()
+            } else {
+                match guard.with_resource_mut(|mut events: Mut<Events<TestEventFinished>>| {
+                    events.send(TestEventFinished)
+                }) {
+                    Ok(_) => return Ok(v),
+                    Err(e) => e.into(),
+                }
             }
         }
     };
-    handle_script_errors(guard, vec![e].into_iter())
+    handle_script_errors(guard, vec![e.clone()].into_iter());
+
+    Err(e)
 }

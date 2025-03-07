@@ -3,4 +3,4 @@ let res = world.get_resource.call(res_type);
 
 let popped = res.vec_usize.pop.call();
 
-assert(popped == 5, "Pop did not work");
+assert(popped == 5, "Pop did not work, got " + popped);
