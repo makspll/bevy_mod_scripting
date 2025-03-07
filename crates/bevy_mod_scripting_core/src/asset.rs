@@ -18,6 +18,7 @@ use bevy::{
     reflect::TypePath,
     utils::HashMap,
 };
+use mlua::Table;
 use std::borrow::Cow;
 
 /// Represents a scripting language. Languages which compile into another language should use the target language as their language.
@@ -167,6 +168,13 @@ impl Default for AssetPathToLanguageMapper {
             map: |_| Language::Unknown,
         }
     }
+}
+
+/// stores environments for each script
+#[derive(Default, Debug, Resource)]
+pub struct ScriptEnvironmentStore {
+    /// The map of Script id's to their env
+    pub map: HashMap<ScriptId, Table>,
 }
 
 /// A cache of asset id's to their script id's. Necessary since when we drop an asset we won't have the ability to get the path from the asset.
@@ -349,6 +357,7 @@ pub(crate) fn configure_asset_systems(app: &mut App) -> &mut App {
                 .before(ScriptingSystemSet::ScriptMetadataRemoval),
         ),
     )
+    .init_resource::<ScriptEnvironmentStore>()
     .init_resource::<ScriptMetadataStore>()
     .init_resource::<ScriptAssetSettings>()
     .add_event::<ScriptAssetEvent>();

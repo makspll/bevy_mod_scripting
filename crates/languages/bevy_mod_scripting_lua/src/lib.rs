@@ -5,7 +5,7 @@ use bevy::{
     ecs::{entity::Entity, world::World},
 };
 use bevy_mod_scripting_core::{
-    asset::{AssetPathToLanguageMapper, Language},
+    asset::{AssetPathToLanguageMapper, Language, ScriptEnvironmentStore},
     bindings::{
         function::namespace::Namespace, globals::AppScriptGlobalsRegistry,
         script_value::ScriptValue, ThreadWorldContainer, WorldContainer,
@@ -172,10 +172,24 @@ fn load_lua_content_into_context(
         .iter()
         .try_for_each(|init| init(script_id, Entity::from_raw(0), context))?;
 
+    // isolate the script's globals into an environment
+    let metatable = context.create_table()?;
+    metatable.set("__index", context.globals())?;
+    let env = context.create_table()?;
+    env.set_metatable(Some(metatable));
+
     context
         .load(content)
+        .set_environment(env.clone())
         .exec()
         .map_err(ScriptError::from_mlua_error)?;
+
+    // store the env in the store so we can call BMS event handlers from them
+    let world = ThreadWorldContainer.try_get_world()?;
+    world.with_global_access(move |w| {
+        let map = &mut w.resource_mut::<ScriptEnvironmentStore>().map;
+        map.insert(script_id.clone(), env.clone());
+    })?;
 
     Ok(())
 }
@@ -240,7 +254,18 @@ pub fn lua_handler(
         .iter()
         .try_for_each(|init| init(script_id, entity, context))?;
 
-    let handler: Function = match context.globals().raw_get(callback_label.as_ref()) {
+    // we need the world to access the ScriptEnvironmentStore
+    // we will find the environment that  belongs to this script to call the function
+    let world = ThreadWorldContainer.try_get_world()?;
+    let env = world.with_global_access(|w| {
+        w.resource::<ScriptEnvironmentStore>()
+            .map
+            .get(script_id)
+            .unwrap()
+            .clone()
+    })?;
+
+    let handler: Function = match env.raw_get(callback_label.as_ref()) {
         Ok(handler) => handler,
         // not subscribed to this event type
         Err(_) => {
