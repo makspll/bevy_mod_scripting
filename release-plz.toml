@@ -2,6 +2,7 @@
 dependencies_update = false
 publish_timeout = "30m"
 git_release_enable = false
+changelog_update = false
 git_tag_enable = false
 git_release_body = """
 {{ changelog }}
@@ -31,6 +32,7 @@ commit_parsers = [
 
 [[package]]
 name = "bevy_mod_scripting"
+changelog_update = true
 publish_features = ["lua54"]
 version_group = "main"
 git_release_latest = true
@@ -73,6 +75,7 @@ name = "bevy_mod_scripting_functions"
 version_group = "main"
 
 [[package]]
+changelog_update = true
 name = "ladfile"
 git_release_enable = true
 git_release_latest = false
@@ -81,9 +84,19 @@ git_tag_name = "v{{ version }}-ladfile"
 git_release_name = "v{{ version }}-ladfile"
 
 [[package]]
+changelog_update = true
 name = "ladfile_builder"
 git_release_enable = true
 git_release_latest = false
 git_tag_enable = true
 git_tag_name = "v{{ version }}-ladfile_builder"
 git_release_name = "v{{ version }}-ladfile_builder"
+
+[[package]]
+changelog_update = true
+name = "mdbook_lad_preprocessor"
+git_release_enable = true
+git_release_latest = false
+git_tag_enable = true
+git_tag_name = "v{{ version }}-mdbook_lad_preprocessor"
+git_release_name = "v{{ version }}-mdbook_lad_preprocessor"
