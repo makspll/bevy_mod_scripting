@@ -19,11 +19,13 @@ commit_parsers = [
     { message = "^chore.*", skip = true },
     { message = "^test.*", skip = true },
     { message = "^docs.*", skip = true },
+    { message = ".*[SKIP_CHANGELOG].*", skip = true },
     { message = "^feat", group = "added" },
     { message = "^changed", group = "changed" },
     { message = "^deprecated", group = "deprecated" },
     { message = "^fix", group = "fixed" },
     { message = "^security", group = "security" },
+    { message = "^refactor", group = "refactor" },
     { message = "^.*", group = "other" },
 ]
 
