@@ -20,7 +20,7 @@ use crate::{
         access_map::ReflectAccessId, pretty_print::DisplayWithWorld, script_value::ScriptValue,
         WorldAccessGuard, WorldGuard,
     },
-    context::{ContextLoadingSettings, DowncastContext},
+    context::ContextLoadingSettings,
     error::{InteropError, ScriptError},
     event::{CallbackLabel, IntoCallbackLabel},
     handler::CallbackSettings,
@@ -141,7 +141,7 @@ pub struct HandlerContext<'s, P: IntoScriptPluginParams> {
     /// Settings for loading contexts
     pub(crate) context_loading_settings: ResScope<'s, ContextLoadingSettings<P>>,
     /// Scripts
-    pub(crate) scripts: ResScope<'s, Scripts>,
+    pub(crate) scripts: ResScope<'s, Scripts<P>>,
     /// The runtime container
     pub(crate) runtime_container: ResScope<'s, RuntimeContainer<P>>,
     /// List of static scripts
@@ -158,7 +158,7 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
     ) -> (
         &mut CallbackSettings<P>,
         &mut ContextLoadingSettings<P>,
-        &mut Scripts,
+        &mut Scripts<P>,
         &mut RuntimeContainer<P>,
         &mut StaticScripts,
     ) {
@@ -182,7 +182,7 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
     }
 
     /// Get the scripts
-    pub fn scripts(&mut self) -> &mut Scripts {
+    pub fn scripts(&mut self) -> &mut Scripts<P> {
         &mut self.scripts
     }
 
@@ -224,9 +224,6 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
         let runtime = &self.runtime_container.runtime;
 
         let mut context = script.context.lock();
-        let donwcast_context = context.downcast_mut::<P::C>().ok_or_else(|| {
-            InteropError::unsupported_operation(None, None, "Context is not the correct type")
-        })?;
 
         CallbackSettings::<P>::call(
             handler,
@@ -234,7 +231,7 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
             entity,
             script_id,
             label,
-            donwcast_context,
+            &mut context,
             pre_handling_initializers,
             runtime,
             guard,

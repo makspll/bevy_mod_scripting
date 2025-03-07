@@ -3,7 +3,7 @@
 use crate::{
     asset::ScriptAsset,
     bindings::WorldGuard,
-    context::{ContextBuilder, DowncastContext},
+    context::ContextBuilder,
     error::{InteropError, ScriptError},
     event::{IntoCallbackLabel, OnScriptLoaded, OnScriptUnloaded},
     extractors::{with_handler_system_state, HandlerContext},
@@ -41,17 +41,6 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
 
                 // first let the script uninstall itself
                 let mut context = script.context.lock();
-                let downcast_context = match context.downcast_mut::<P::C>() {
-                    Some(downcast_context) => downcast_context,
-                    None => {
-                        bevy::log::error!(
-                            "{}: Tried to delete script context for id: {}, but the context is of the wrong type for this script plugin.",
-                            P::LANGUAGE,
-                            self.id
-                        );
-                        return;
-                    }
-                };
 
                 match (CallbackSettings::<P>::call)(
                     handler_ctxt.callback_settings.callback_handler,
@@ -59,7 +48,7 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
                     bevy::ecs::entity::Entity::from_raw(0),
                     &self.id,
                     &OnScriptUnloaded::into_callback_label(),
-                    downcast_context,
+                    &mut context,
                     &handler_ctxt
                         .context_loading_settings
                         .context_pre_handling_initializers,
@@ -132,20 +121,12 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
 
         // reload context
         let mut context = existing_script.context.lock();
-        let downcast_context = match context.downcast_mut::<P::C>() {
-            Some(downcast_context) => downcast_context,
-            None => {
-                return Err(InteropError::unsupported_operation(None,None,
-                    "Tried to reload script but the context loaded on it is of the wrong type for this script plugin."
-                ).into());
-            }
-        };
 
         (ContextBuilder::<P>::reload)(
             handler_ctxt.context_loading_settings.loader.reload,
             &self.id,
             &self.content,
-            downcast_context,
+            &mut context,
             &handler_ctxt.context_loading_settings.context_initializers,
             &handler_ctxt
                 .context_loading_settings
@@ -381,7 +362,7 @@ mod test {
                 Ok(ScriptValue::Unit)
             },
         })
-        .insert_resource(Scripts {
+        .insert_resource(Scripts::<DummyPlugin> {
             scripts: Default::default(),
         });
 
@@ -401,7 +382,7 @@ mod test {
     }
 
     fn assert_context_and_script(world: &World, id: &str, context: &str, message: &str) {
-        let scripts = world.get_resource::<Scripts>().unwrap();
+        let scripts = world.get_resource::<Scripts<DummyPlugin>>().unwrap();
 
         let script = scripts
             .scripts
@@ -410,9 +391,8 @@ mod test {
 
         assert_eq!(id, script.id);
         let found_context = script.context.lock();
-        let found_context = &found_context.downcast_ref::<String>().unwrap().to_string();
 
-        assert_eq!(&context, &found_context, "{}", message);
+        assert_eq!(*context, *found_context, "{}", message);
     }
 
     #[test]
@@ -467,7 +447,7 @@ mod test {
         command.apply(world);
 
         // check that the scripts are gone
-        let scripts = world.get_resource::<Scripts>().unwrap();
+        let scripts = world.get_resource::<Scripts<DummyPlugin>>().unwrap();
         assert!(scripts.scripts.is_empty());
     }
 
@@ -535,7 +515,7 @@ mod test {
             "First script context was not updated on second script insert",
         );
 
-        let scripts = app.world().get_resource::<Scripts>().unwrap();
+        let scripts = app.world().get_resource::<Scripts<DummyPlugin>>().unwrap();
         assert!(scripts.scripts.len() == 2);
 
         // delete first script
@@ -559,10 +539,10 @@ mod test {
 
         // check that the scripts are gone, and so is the context
 
-        let scripts = app.world().get_resource::<Scripts>().unwrap();
+        let scripts = app.world().get_resource::<Scripts<DummyPlugin>>().unwrap();
         assert!(scripts.scripts.is_empty());
 
-        let scripts = app.world().get_resource::<Scripts>().unwrap();
+        let scripts = app.world().get_resource::<Scripts<DummyPlugin>>().unwrap();
 
         assert_eq!(scripts.scripts.len(), 0, "scripts weren't removed");
     }

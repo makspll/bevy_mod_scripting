@@ -1,7 +1,5 @@
 //! Traits and types for managing script contexts.
 
-use std::any::Any;
-
 use crate::{
     bindings::{ThreadWorldContainer, WorldContainer, WorldGuard},
     error::{InteropError, ScriptError},
@@ -14,39 +12,8 @@ use bevy::ecs::{entity::Entity, system::Resource};
 ///
 /// Contexts are not required to be `Sync` as they are internally stored behind a `Mutex` but they must satisfy `Send` so they can be
 /// freely sent between threads.
-pub trait Context: 'static + Send {
-    /// Downcast the context to a reference of the given type if it is of that type.
-    fn as_any(&self) -> &dyn Any;
-    /// Downcast the context to a mutable reference of the given type if it is of that type.
-    fn as_any_mut(&mut self) -> &mut dyn Any;
-}
-
-impl<T: 'static + Send> Context for T {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn as_any_mut(&mut self) -> &mut dyn Any {
-        self
-    }
-}
-/// A helper trait for downcasting a context to a reference of a specific type.
-pub trait DowncastContext {
-    /// Downcast the context to a reference of the given type if it is of that type.
-    fn downcast_ref<T: 'static>(&self) -> Option<&T>;
-    /// Downcast the context to a mutable reference of the given type if it is of that type.
-    fn downcast_mut<T: 'static>(&mut self) -> Option<&mut T>;
-}
-
-impl DowncastContext for dyn Context {
-    fn downcast_ref<T: 'static>(&self) -> Option<&T> {
-        self.as_any().downcast_ref()
-    }
-
-    fn downcast_mut<T: 'static>(&mut self) -> Option<&mut T> {
-        self.as_any_mut().downcast_mut()
-    }
-}
+pub trait Context: 'static + Send {}
+impl<T: 'static + Send> Context for T {}
 
 /// Initializer run once after creating a context but before executing it for the first time as well as after re-loading the script
 pub type ContextInitializer<P> =

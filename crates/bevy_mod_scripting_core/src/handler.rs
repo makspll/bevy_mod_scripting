@@ -269,7 +269,7 @@ mod test {
 
     use crate::{
         bindings::script_value::ScriptValue,
-        context::{ContextBuilder, ContextLoadingSettings, DowncastContext},
+        context::{ContextBuilder, ContextLoadingSettings},
         event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent},
         runtime::RuntimeContainer,
         script::{Script, ScriptComponent, ScriptId, Scripts, StaticScripts},
@@ -288,7 +288,7 @@ mod test {
 
     fn setup_app<L: IntoCallbackLabel + 'static>(
         runtime: TestRuntime,
-        scripts: HashMap<ScriptId, Script>,
+        scripts: HashMap<ScriptId, Script<TestPlugin>>,
     ) -> App {
         let mut app = App::new();
 
@@ -303,7 +303,7 @@ mod test {
             },
         });
         app.add_systems(Update, event_handler::<L, TestPlugin>);
-        app.insert_resource::<Scripts>(Scripts { scripts });
+        app.insert_resource::<Scripts<TestPlugin>>(Scripts { scripts });
         app.insert_resource(RuntimeContainer::<TestPlugin> { runtime });
         app.init_resource::<StaticScripts>();
         app.insert_resource(ContextLoadingSettings::<TestPlugin> {
@@ -346,14 +346,13 @@ mod test {
 
         let test_script = app
             .world()
-            .get_resource::<Scripts>()
+            .get_resource::<Scripts<TestPlugin>>()
             .unwrap()
             .scripts
             .get(&test_script_id)
             .unwrap();
 
         let test_context = test_script.context.lock();
-        let test_context = test_context.downcast_ref::<TestContext>().unwrap();
 
         let test_runtime = app
             .world()
@@ -418,7 +417,7 @@ mod test {
 
         app.update();
 
-        let test_scripts = app.world().get_resource::<Scripts>().unwrap();
+        let test_scripts = app.world().get_resource::<Scripts<TestPlugin>>().unwrap();
         let test_runtime = app
             .world()
             .get_resource::<RuntimeContainer<TestPlugin>>()
@@ -426,7 +425,6 @@ mod test {
         let test_runtime = test_runtime.runtime.invocations.lock();
         let script_after = test_scripts.scripts.get(&test_script_id).unwrap();
         let context_after = script_after.context.lock();
-        let context_after = context_after.downcast_ref::<TestContext>().unwrap();
         assert_eq!(
             context_after.invocations,
             vec![
@@ -482,15 +480,13 @@ mod test {
 
         app.update();
 
-        let test_scripts = app.world().get_resource::<Scripts>().unwrap();
+        let test_scripts = app.world().get_resource::<Scripts<TestPlugin>>().unwrap();
         let test_context = test_scripts
             .scripts
             .get(&test_script_id)
             .unwrap()
             .context
             .lock();
-
-        let test_context = test_context.downcast_ref::<TestContext>().unwrap();
 
         assert_eq!(
             test_context.invocations,

@@ -128,7 +128,8 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
                 assignment_strategy: self.context_assignment_strategy,
                 context_initializers: self.context_initializers.clone(),
                 context_pre_handling_initializers: self.context_pre_handling_initializers.clone(),
-            });
+            })
+            .init_resource::<Scripts<P>>();
 
         register_script_plugin_systems::<P>(app);
 
@@ -289,7 +290,6 @@ fn once_per_app_init(app: &mut App) {
     app.add_event::<ScriptErrorEvent>()
         .add_event::<ScriptCallbackEvent>()
         .init_resource::<AppReflectAllocator>()
-        .init_resource::<Scripts>()
         .init_resource::<StaticScripts>()
         .init_asset::<ScriptAsset>()
         .init_resource::<AppScriptFunctionRegistry>()
