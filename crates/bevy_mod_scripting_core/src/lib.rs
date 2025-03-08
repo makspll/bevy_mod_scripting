@@ -326,6 +326,7 @@ fn register_types(app: &mut App) {
     app.register_type::<ScriptValue>();
     app.register_type::<ScriptTypeRegistration>();
     app.register_type::<ReflectReference>();
+    app.register_type::<script::ScriptComponent>();
 }
 
 /// Trait for adding a runtime initializer to an app
