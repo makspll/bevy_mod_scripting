@@ -261,11 +261,14 @@ pub fn lua_handler(
         w.resource::<ScriptEnvironmentStore>()
             .map
             .get(script_id)
-            .unwrap()
-            .clone()
+            .ok_or(ScriptError::new(format!(
+                "Could not find environment for script with ScriptId: {}",
+                script_id
+            )))
+            .cloned()
     })?;
 
-    let handler: Function = match env.raw_get(callback_label.as_ref()) {
+    let handler: Function = match env?.raw_get(callback_label.as_ref()) {
         Ok(handler) => handler,
         // not subscribed to this event type
         Err(_) => {
