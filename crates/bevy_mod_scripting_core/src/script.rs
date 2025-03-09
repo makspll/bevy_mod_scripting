@@ -1,6 +1,7 @@
 //! Script related types, functions and components
 
 use crate::{asset::ScriptAsset, IntoScriptPluginParams};
+use bevy::prelude::ReflectComponent;
 use bevy::{asset::Handle, ecs::system::Resource, reflect::Reflect, utils::HashSet};
 use parking_lot::Mutex;
 use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc};
@@ -11,7 +12,7 @@ use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc};
 pub type ScriptId = Cow<'static, str>;
 
 #[derive(bevy::ecs::component::Component, Reflect, Clone)]
-
+#[reflect(Component)]
 /// A component which identifies the scripts existing on an entity.
 ///
 /// Event handlers search for components with this component to figure out which scripts to run and on which entities.
