@@ -19,6 +19,14 @@ use super::{
 pub trait IntoScript {
     /// Convert this value into a [`ScriptValue`].
     fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError>;
+
+    /// Convert this value into a [`ScriptValue`], returning an error as a ScriptValue if an error occurs.
+    fn into_script_inline_error(self, world: WorldGuard) -> ScriptValue
+    where
+        Self: Sized,
+    {
+        self.into_script(world).unwrap_or_else(ScriptValue::Error)
+    }
 }
 
 impl IntoScript for ScriptValue {

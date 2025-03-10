@@ -314,8 +314,8 @@ unsafe impl<T: SystemParam> SystemParam for WithWorldGuard<'_, '_, T> {
         world: bevy::ecs::world::unsafe_world_cell::UnsafeWorldCell<'world>,
         change_tick: bevy::ecs::component::Tick,
     ) -> Self::Item<'world, 'state> {
-        // read components being read in the state, and lock those accesses in the new world access guard
-        let guard = WorldAccessGuard::new(world.world_mut());
+        // create a guard which can only access the resources/components specified by the system.
+        let guard = WorldAccessGuard::new_exclusive(world.world_mut());
 
         #[allow(
             clippy::panic,
@@ -378,7 +378,7 @@ fn individual_conflicts(conflicts: AccessConflicts) -> FixedBitSet {
     }
 }
 
-fn get_all_access_ids(access: &Access<ComponentId>) -> Vec<(ReflectAccessId, bool)> {
+pub(crate) fn get_all_access_ids(access: &Access<ComponentId>) -> Vec<(ReflectAccessId, bool)> {
     let mut access_all_read = Access::<ComponentId>::default();
     access_all_read.read_all();
 

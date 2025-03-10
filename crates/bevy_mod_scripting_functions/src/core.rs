@@ -8,12 +8,13 @@ use bevy_mod_scripting_core::{
         function::{
             from::Union, namespace::GlobalNamespace, script_function::DynamicScriptFunctionMut,
         },
-        schedule::{ReflectSchedule, ReflectSystem, ScriptSystemBuilder},
+        script_system::ScriptSystemBuilder,
     },
     docgen::info::FunctionInfo,
     *,
 };
 use bevy_mod_scripting_derive::script_bindings;
+use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 use bindings::{
     function::{
         from::{Ref, Val},
@@ -29,7 +30,6 @@ use bindings::{
 };
 use error::InteropError;
 use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
-
 pub fn register_bevy_bindings(app: &mut App) {
     #[cfg(feature = "bevy_bindings")]
     app.add_plugins(crate::bevy_bindings::LuaBevyScriptingPlugin);
@@ -797,22 +797,14 @@ impl ReflectSystem {
     name = "script_system_builder_functions"
 )]
 impl ScriptSystemBuilder {
-    /// Requests the component have access to the given component. The component will be added to the
-    /// list of arguments of the callback in the order they're provided.
-    ///
-    /// Arguments:
-    /// * `self_`: The system builder to add the component to.
-    /// * `component`: The component to add.
-    /// Returns:
-    /// * `builder`: The system builder with the component added.
-    fn component(
+    fn query(
         self_: Val<ScriptSystemBuilder>,
-        component: Val<ScriptComponentRegistration>,
-    ) -> Val<ScriptSystemBuilder> {
-        profiling::function_scope!("component");
+        query: Val<ScriptQueryBuilder>,
+    ) -> Result<Val<ScriptSystemBuilder>, InteropError> {
+        profiling::function_scope!("query");
         let mut builder = self_.into_inner();
-        builder.component(component.into_inner());
-        builder.into()
+        builder.query(query.into_inner());
+        Ok(builder.into())
     }
 
     /// Requests the system have access to the given resource. The resource will be added to the
@@ -859,7 +851,7 @@ impl ScriptSystemBuilder {
     ) -> Val<ScriptSystemBuilder> {
         profiling::function_scope!("after");
         let mut builder = self_.into_inner();
-        builder.after(system.into_inner());
+        builder.after_system(system.into_inner());
         Val(builder)
     }
 
@@ -878,7 +870,7 @@ impl ScriptSystemBuilder {
     ) -> Val<ScriptSystemBuilder> {
         profiling::function_scope!("before");
         let mut builder = self_.into_inner();
-        builder.before(system.into_inner());
+        builder.before_system(system.into_inner());
         Val(builder)
     }
 }

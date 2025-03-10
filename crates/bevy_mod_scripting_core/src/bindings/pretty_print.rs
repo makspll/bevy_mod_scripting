@@ -681,7 +681,7 @@ mod test {
     #[test]
     fn test_type_id() {
         let mut world = setup_world();
-        let world = WorldGuard::new(&mut world);
+        let world = WorldGuard::new_exclusive(&mut world);
 
         let type_id = TypeId::of::<usize>();
         assert_eq!(type_id.display_with_world(world.clone()), "usize");
@@ -700,7 +700,7 @@ mod test {
     #[test]
     fn test_reflect_base_type() {
         let mut world = setup_world();
-        let world = WorldGuard::new(&mut world);
+        let world = WorldGuard::new_exclusive(&mut world);
 
         let type_id = TypeId::of::<usize>();
 
@@ -736,7 +736,7 @@ mod test {
     fn test_reflect_reference() {
         let mut world = setup_world();
 
-        let world = WorldGuard::new(&mut world);
+        let world = WorldGuard::new_exclusive(&mut world);
 
         let type_id = TypeId::of::<usize>();
 
@@ -769,7 +769,7 @@ mod test {
     #[test]
     fn test_hashmap() {
         let mut world = setup_world();
-        let world = WorldGuard::new(&mut world);
+        let world = WorldGuard::new_exclusive(&mut world);
 
         let mut map = std::collections::HashMap::new();
         map.insert("hello".to_owned(), ScriptValue::Bool(true));

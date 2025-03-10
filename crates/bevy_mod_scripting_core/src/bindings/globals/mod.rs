@@ -209,7 +209,7 @@ mod test {
         assert_eq!(registry.len(), 1);
 
         assert_eq!(
-            (registry.get("foo").unwrap().maker.clone().unwrap())(WorldGuard::new(
+            (registry.get("foo").unwrap().maker.clone().unwrap())(WorldGuard::new_exclusive(
                 &mut World::new()
             ))
             .unwrap(),
@@ -220,7 +220,7 @@ mod test {
         assert_eq!(registry.len(), 1);
 
         assert_eq!(
-            (registry.get("foo").unwrap().maker.clone().unwrap())(WorldGuard::new(
+            (registry.get("foo").unwrap().maker.clone().unwrap())(WorldGuard::new_exclusive(
                 &mut World::new()
             ))
             .unwrap(),

@@ -100,3 +100,12 @@ git_release_latest = false
 git_tag_enable = true
 git_tag_name = "v{{ version }}-mdbook_lad_preprocessor"
 git_release_name = "v{{ version }}-mdbook_lad_preprocessor"
+
+[[package]]
+changelog_update = true
+name = "bevy_system_reflection"
+git_release_enable = true
+git_release_latest = false
+git_tag_enable = true
+git_tag_name = "v{{ version }}-bevy_system_reflection"
+git_release_name = "v{{ version }}-bevy_system_reflection"
