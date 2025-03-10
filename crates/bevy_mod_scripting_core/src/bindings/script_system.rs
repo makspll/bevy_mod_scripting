@@ -96,7 +96,7 @@ impl ScriptSystemBuilder {
             name,
             script_id,
             system_params: vec![],
-            is_exclusive: true,
+            is_exclusive: false,
         }
     }
 
