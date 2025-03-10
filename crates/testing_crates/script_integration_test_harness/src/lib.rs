@@ -35,6 +35,8 @@ use test_utils::test_data::setup_integration_test;
 
 fn dummy_update_system() {}
 fn dummy_startup_system<T>() {}
+fn dummy_before_post_update_system() {}
+fn dummy_post_update_system() {}
 
 #[derive(Event)]
 struct TestEventFinished;
@@ -124,6 +126,12 @@ pub fn execute_integration_test<
     app.add_systems(Update, dummy_update_system);
     app.add_systems(Startup, dummy_startup_system::<String>);
 
+    app.add_systems(
+        PostUpdate,
+        dummy_before_post_update_system.before(dummy_post_update_system),
+    );
+    app.add_systems(PostUpdate, dummy_post_update_system);
+
     app.cleanup();
     app.finish();
 
@@ -145,7 +153,7 @@ pub fn execute_integration_test<
         if let Some(event) = error_events.into_iter().next() {
             return Err(event
                 .error
-                .display_with_world(WorldGuard::new(app.world_mut())));
+                .display_with_world(WorldGuard::new_exclusive(app.world_mut())));
         }
 
         let events_completed = app.world_mut().resource_ref::<Events<TestEventFinished>>();

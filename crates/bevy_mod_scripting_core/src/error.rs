@@ -314,8 +314,9 @@ impl Display for MissingResourceError {
 impl std::error::Error for MissingResourceError {}
 
 #[derive(Debug, Clone, PartialEq, Reflect)]
+#[reflect(opaque)]
 /// An error thrown when interoperating with scripting languages.
-pub struct InteropError(#[reflect(ignore)] Arc<InteropErrorInner>);
+pub struct InteropError(Arc<InteropErrorInner>);
 
 impl std::error::Error for InteropError {}
 
@@ -1612,7 +1613,7 @@ mod test {
         let script_function_registry = AppScriptFunctionRegistry::default();
         world.insert_resource(script_function_registry);
 
-        let world_guard = WorldGuard::new(&mut world);
+        let world_guard = WorldGuard::new_exclusive(&mut world);
         assert_eq!(
             error.display_with_world(world_guard),
             format!(

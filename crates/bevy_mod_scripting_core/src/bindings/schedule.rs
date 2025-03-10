@@ -8,112 +8,14 @@ use bevy::{
         Last, PostStartup, PostUpdate, PreStartup, PreUpdate, RunFixedMainLoop, Startup, Update,
     },
     ecs::{
-        schedule::{InternedScheduleLabel, NodeId, Schedule, ScheduleLabel, Schedules},
-        system::{Resource, System, SystemInput},
+        schedule::{Schedule, ScheduleLabel, Schedules},
+        system::Resource,
         world::World,
     },
-    reflect::Reflect,
 };
+use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 use parking_lot::RwLock;
-use std::{any::TypeId, borrow::Cow, collections::HashMap, ops::Deref, sync::Arc};
-
-#[derive(Reflect, Debug, Clone)]
-/// A reflectable system.
-pub struct ReflectSystem {
-    pub(crate) name: Cow<'static, str>,
-    pub(crate) type_id: TypeId,
-    pub(crate) node_id: ReflectNodeId,
-}
-
-#[derive(Reflect, Clone, Debug)]
-#[reflect(opaque)]
-pub(crate) struct ReflectNodeId(pub NodeId);
-
-impl ReflectSystem {
-    /// Creates a reflect system from a system specification
-    pub fn from_system<In: SystemInput + 'static, Out: 'static>(
-        system: &dyn System<In = In, Out = Out>,
-        node_id: NodeId,
-    ) -> Self {
-        ReflectSystem {
-            name: system.name().clone(),
-            type_id: system.type_id(),
-            node_id: ReflectNodeId(node_id),
-        }
-    }
-
-    /// gets the short identifier of the system, i.e. just the function name
-    pub fn identifier(&self) -> &str {
-        // if it contains generics it might contain more than
-        if self.name.contains("<") {
-            self.name
-                .split("<")
-                .next()
-                .unwrap_or_default()
-                .split("::")
-                .last()
-                .unwrap_or_default()
-        } else {
-            self.name.split("::").last().unwrap_or_default()
-        }
-    }
-
-    /// gets the path of the system, i.e. the fully qualified function name
-    pub fn path(&self) -> &str {
-        self.name.as_ref()
-    }
-}
-
-/// A reflectable schedule.
-#[derive(Reflect, Clone, Debug)]
-pub struct ReflectSchedule {
-    /// The name of the schedule.
-    type_path: &'static str,
-    label: ReflectableScheduleLabel,
-}
-
-#[derive(Reflect, Clone, Debug)]
-#[reflect(opaque)]
-struct ReflectableScheduleLabel(InternedScheduleLabel);
-
-impl Deref for ReflectableScheduleLabel {
-    type Target = InternedScheduleLabel;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl From<InternedScheduleLabel> for ReflectableScheduleLabel {
-    fn from(label: InternedScheduleLabel) -> Self {
-        Self(label)
-    }
-}
-
-impl ReflectSchedule {
-    /// Retrieves the name of the schedule.
-    pub fn type_path(&self) -> &'static str {
-        self.type_path
-    }
-
-    /// Retrieves the short identifier of the schedule
-    pub fn identifier(&self) -> &'static str {
-        self.type_path.split("::").last().unwrap_or_default()
-    }
-
-    /// Retrieves the label of the schedule
-    pub fn label(&self) -> &InternedScheduleLabel {
-        &self.label
-    }
-
-    /// Creates a new reflect schedule from a schedule label
-    pub fn from_label<T: ScheduleLabel + 'static>(label: T) -> Self {
-        ReflectSchedule {
-            type_path: std::any::type_name::<T>(),
-            label: label.intern().into(),
-        }
-    }
-}
+use std::{any::TypeId, collections::HashMap, sync::Arc};
 
 #[derive(Default, Clone, Resource)]
 /// A Send + Sync registry of bevy schedules.
@@ -226,7 +128,7 @@ impl WorldAccessGuard<'_> {
             })?;
 
             let mut removed_schedule = schedules
-                .remove(*label.label)
+                .remove(*label.label())
                 .ok_or_else(|| InteropError::missing_schedule(label.identifier()))?;
 
             let result = f(world, &mut removed_schedule);
@@ -240,7 +142,7 @@ impl WorldAccessGuard<'_> {
             })?;
 
             assert!(
-                removed_schedule.label() == *label.label,
+                removed_schedule.label() == *label.label(),
                 "removed schedule label doesn't match the original"
             );
             schedules.insert(removed_schedule);
@@ -253,7 +155,7 @@ impl WorldAccessGuard<'_> {
     pub fn systems(&self, schedule: &ReflectSchedule) -> Result<Vec<ReflectSystem>, InteropError> {
         self.with_resource(|schedules: &Schedules| {
             let schedule = schedules
-                .get(*schedule.label)
+                .get(*schedule.label())
                 .ok_or_else(|| InteropError::missing_schedule(schedule.identifier()))?;
 
             let systems = schedule.systems()?;
@@ -291,7 +193,10 @@ mod tests {
 
     use bevy::{
         app::{App, Update},
-        ecs::{schedule::Schedules, system::IntoSystem},
+        ecs::{
+            schedule::{NodeId, Schedules},
+            system::IntoSystem,
+        },
     };
     use test_utils::make_test_plugin;
 
