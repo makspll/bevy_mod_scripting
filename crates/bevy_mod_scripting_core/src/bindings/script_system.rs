@@ -156,8 +156,7 @@ impl ScriptSystemBuilder {
             // this is quite important, by default systems are placed in a set defined by their TYPE, i.e. in this case
             // all script systems would be the same
             // let set = ScriptSystemSet::next();
-            let mut set_config = IntoSystemSetConfigs::into_configs(set);
-            // apply ordering
+            let mut system_config = IntoSystemConfigs::<IsDynamicScriptSystem<P>>::into_configs(self);            // apply ordering
             for (other, is_before) in before_systems
                 .into_iter()
                 .map(|b| (b, true))
