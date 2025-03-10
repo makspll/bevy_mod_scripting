@@ -106,7 +106,7 @@ fn discover_all_tests() -> Vec<Test> {
     let mut test_files = Vec::new();
     visit_dirs(&test_root, &mut |entry| {
         let path = entry.path();
-        if path.extension().unwrap() == "lua" && path.to_string_lossy().contains("adds_system") {
+        if path.extension().unwrap() == "lua" {
             // only take the path from the assets  bit
             let relative = path.strip_prefix(&assets_root).unwrap();
             test_files.push(Test {
