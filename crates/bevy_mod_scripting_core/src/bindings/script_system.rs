@@ -393,6 +393,8 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
     fn has_deferred(&self) -> bool {
         false
     }
+    
+    
 
     unsafe fn run_unsafe(
         &mut self,
@@ -411,15 +413,21 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         };
 
         let mut payload = Vec::with_capacity(state.system_params.len());
-
-        let guard = WorldAccessGuard::new_non_exclusive(
-            world,
-            state.subset.clone(),
-            state.type_registry.clone(),
-            state.allocator.clone(),
-            state.function_registry.clone(),
-            state.schedule_registry.clone(),
-        );
+        
+        let guard = if self.exclusive { 
+            // safety: we are an exclusive system, therefore the cell allows us to do this 
+            let world = unsafe {world.world_mut()};
+            WorldAccessGuard::new_exclusive(world)
+        } else { 
+            WorldAccessGuard::new_non_exclusive(
+                world,
+                state.subset.clone(),
+                state.type_registry.clone(),
+                state.allocator.clone(),
+                state.function_registry.clone(),
+                state.schedule_registry.clone(),
+            ) 
+        };
 
         // TODO: cache references which don't change once we have benchmarks
         for param in &mut state.system_params {
@@ -614,6 +622,20 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 
     fn default_system_sets(&self) -> Vec<bevy::ecs::schedule::InternedSystemSet> {
         vec![ScriptSystemSet::new(self.name.clone()).intern()]
+    }
+    
+    fn type_id(&self) -> TypeId {
+        TypeId::of::<Self>()
+    }
+
+    
+    fn validate_param(&mut self, world: &World) -> bool {
+        let world_cell = world.as_unsafe_world_cell_readonly();
+        self.update_archetype_component_access(world_cell);
+        // SAFETY:
+        // - We have exclusive access to the entire world.
+        // - `update_archetype_component_access` has been called.
+        unsafe { self.validate_param_unsafe(world_cell) }
     }
 }
 
