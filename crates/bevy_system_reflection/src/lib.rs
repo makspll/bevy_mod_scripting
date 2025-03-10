@@ -196,20 +196,20 @@ pub fn schedule_to_dot_graph(schedule: &Schedule) -> String {
         for edge in graph.hierarchy {
             let from = node_id_map.get(&edge.from).cloned().unwrap_or_else(|| {
                 let mut unknown = writer.node_auto();
-                unknown.set_label(&format!("unknown_child {:?}", edge.from.0));
+                unknown.set_label(&format!("unknown_parent {:?}", edge.from.0));
                 let id = unknown.id();
                 node_id_map.insert(edge.from, id.clone());
                 id
             });
             let to = node_id_map.get(&edge.to).cloned().unwrap_or_else(|| {
                 let mut unknown = writer.node_auto();
-                unknown.set_label(&format!("unknown_parent {:?}", edge.to.0));
+                unknown.set_label(&format!("unknown_child {:?}", edge.to.0));
                 let id = unknown.id();
                 node_id_map.insert(edge.to, id.clone());
                 id
             });
             writer
-                .edge(from, to)
+                .edge(to, from)
                 .attributes()
                 .set_color(dot_writer::Color::Red)
                 .set_label("child of")
@@ -235,7 +235,7 @@ pub fn schedule_to_dot_graph(schedule: &Schedule) -> String {
                 .edge(from, to)
                 .attributes()
                 .set_color(dot_writer::Color::Blue)
-                .set_label("depends on")
+                .set_label("runs before")
                 .set_arrow_head(dot_writer::ArrowType::Normal);
         }
     }

@@ -26,7 +26,7 @@ use bevy::{
         entity::Entity,
         query::{Access, FilteredAccess, FilteredAccessSet, QueryState},
         reflect::AppTypeRegistry,
-        schedule::{IntoSystemConfigs, SystemSet},
+        schedule::{IntoSystemConfigs, IntoSystemSetConfigs, SystemSet},
         system::{IntoSystem, System},
         world::{unsafe_world_cell::UnsafeWorldCell, World},
     },
@@ -49,7 +49,7 @@ impl std::fmt::Debug for ScriptSystemSet {
 }
 
 impl ScriptSystemSet {
-    /// Creates a new script system set with a unique id
+    /// Creates a new script system set
     pub fn new(id: impl Into<Cow<'static, str>>) -> Self {
         Self(id.into())
     }
@@ -139,7 +139,7 @@ impl ScriptSystemBuilder {
         world: WorldGuard,
         schedule: &ReflectSchedule,
     ) -> Result<ReflectSystem, InteropError> {
-        let o = world.scope_schedule(schedule, |world, schedule| {
+        world.scope_schedule(schedule, |world, schedule| {
             // this is different to a normal event handler
             // the system doesn't listen to events
             // it immediately calls a singular script with a predefined payload
@@ -156,8 +156,7 @@ impl ScriptSystemBuilder {
             // this is quite important, by default systems are placed in a set defined by their TYPE, i.e. in this case
             // all script systems would be the same
             // let set = ScriptSystemSet::next();
-            let mut config = IntoSystemConfigs::<IsDynamicScriptSystem<P>>::into_configs(self);
-
+            let mut set_config = IntoSystemSetConfigs::into_configs(set);
             // apply ordering
             for (other, is_before) in before_systems
                 .into_iter()
@@ -167,50 +166,28 @@ impl ScriptSystemBuilder {
                 for default_set in other.default_system_sets() {
                     if is_before {
                         bevy::log::info!("before {default_set:?}");
-                        config = config.before(*default_set);
+                        system_config = system_config.before(*default_set);
                     } else {                        bevy::log::info!("before {default_set:?}");
                         bevy::log::info!("after {default_set:?}");
-                        config = config.after(*default_set);
+                        system_config = system_config.after(*default_set);
                     }
                 }
             }
 
-            schedule.add_systems(config);
+            schedule.add_systems(system_config);
+            // TODO: the node id seems to always be system.len()
+            // if this is slow, we can always just get the node id that way
+            // and let the schedule initialize itself right before it gets run
+            // for now I want to avoid not having the right ID as that'd be a pain
             schedule.initialize(world)?;
-
-            let dot = bevy_system_reflection::schedule_to_dot_graph(schedule);
-
-            std::fs::write(format!("/home/makspll/git/bevy_mod_scripting/{system_name}_post_update.dot"), dot).expect("Unable to write file");
-
             // now find the system
             let (node_id, system) = schedule
                 .systems()?
                 .find(|(_, b)| b.name().deref() == system_name)
                 .ok_or_else(|| InteropError::invariant("After adding the system, it was not found in the schedule, could not return a reference to it"))?;
             
-
-
             Ok(ReflectSystem::from_system(system.as_ref(), node_id))
-
-        })?;
-
-        // #[allow(clippy::expect_used)]
-        // world.with_global_access(|world| {
-
-        //     let mut app = App::new();
-        //     std::mem::swap(app.world_mut(), world);
-
-        //     let dot = bevy_mod_debugdump::schedule_graph_dot(&mut app, PostUpdate, &Settings{
-        //         ..Default::default()
-        //     });
-        //     // save to ./graph.dot
-        //     std::fs::write("/home/makspll/git/bevy_mod_scripting/post_update.dot", dot).expect("Unable to write file");
-
-        //     // swap worlds back
-        //     std::mem::swap(app.world_mut(), world);
-        // }).expect("");
-
-        o
+        })?
     }
 }
 
@@ -407,7 +384,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
     }
 
     fn is_send(&self) -> bool {
-        true
+        !self.is_exclusive()
     }
 
     fn is_exclusive(&self) -> bool {
@@ -638,5 +615,63 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 
     fn default_system_sets(&self) -> Vec<bevy::ecs::schedule::InternedSystemSet> {
         vec![ScriptSystemSet::new(self.name.clone()).intern()]
+    }
+}
+
+
+#[cfg(test)]
+mod test {
+    use bevy::{app::{App, MainScheduleOrder, Update}, asset::AssetPlugin, diagnostic::DiagnosticsPlugin, ecs::schedule::{ScheduleLabel, Schedules}};
+    use test_utils::make_test_plugin;
+
+    use super::*;
+
+
+    make_test_plugin!(crate);
+
+    fn test_system_rust(world: &mut World) {}
+
+    #[test]
+    fn test_script_system_with_existing_system_dependency_can_execute() {
+        let mut app = App::new();
+
+        #[derive(ScheduleLabel, Clone, Debug, Hash, PartialEq, Eq)]
+        struct TestSchedule;
+        
+        app.add_plugins((AssetPlugin::default(), DiagnosticsPlugin,TestPlugin::default()));
+        app.init_schedule(TestSchedule);
+        let mut main_schedule_order = app.world_mut().resource_mut::<MainScheduleOrder>();
+        main_schedule_order.insert_after(Update, TestSchedule);
+        app.add_systems(TestSchedule, test_system_rust);
+        
+        
+        // run the app once
+        app.finish();
+        app.cleanup();
+        app.update();
+
+        // find existing rust system
+        let test_system = app.world_mut().resource_scope::<Schedules,_>(|_, schedules| {
+            let (node_id, system) = schedules.get(TestSchedule)
+                .unwrap()
+                .systems()
+                .unwrap()
+                .find(|(_, system)| {
+                    system.name().contains("test_system_rust")
+                })
+                .unwrap();
+
+            ReflectSystem::from_system(system.as_ref(), node_id)
+        });
+        
+        
+        // now dynamically add script system via builder
+        let mut builder = ScriptSystemBuilder::new("test".into(), "empty_script".into());
+        builder.before_system(test_system);
+
+        let _ = builder.build::<TestPlugin>(WorldAccessGuard::new_exclusive(app.world_mut()), &ReflectSchedule::from_label(TestSchedule)).unwrap();
+        
+        // now re-run app, expect no panicks
+        app.update();
     }
 }
