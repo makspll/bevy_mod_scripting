@@ -15,3 +15,4 @@ bevy_mod_scripting_functions = { workspace = true, features = [
     "lua_bindings",
 ] }
 regex = { version = "1.11" }
+pretty_assertions = "1.*"

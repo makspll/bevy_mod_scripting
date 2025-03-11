@@ -762,6 +762,33 @@ impl ReflectSchedule {
             .into_iter()
             .find_map(|s| (s.identifier() == name || s.path() == name).then_some(s.into())))
     }
+
+    /// Renders the schedule as a dot graph string.
+    ///
+    /// Useful for debugging scheduling.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context
+    /// * `self_`: The schedule to render.
+    /// Returns:
+    /// * `dot`: The dot graph string.
+    fn render_dot(
+        ctxt: FunctionCallContext,
+        self_: Ref<ReflectSchedule>,
+    ) -> Result<String, InteropError> {
+        profiling::function_scope!("render_dot");
+        let world = ctxt.world()?;
+        world.with_resource(|schedules: &Schedules| {
+            let schedule = schedules
+                .get(*self_.label())
+                .ok_or_else(|| InteropError::missing_schedule(self_.identifier()))?;
+            let mut graph = bevy_system_reflection::schedule_to_reflect_graph(schedule);
+            graph.absorb_type_system_sets();
+            graph.sort();
+            let graph = bevy_system_reflection::reflect_graph_to_dot(graph);
+            Ok(graph)
+        })?
+    }
 }
 
 #[script_bindings(
