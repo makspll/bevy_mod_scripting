@@ -37,6 +37,13 @@ fn my_parameterised_system(resourceA, query, resourceB) {
     assert(resourceA.bytes.len() == 6, "Expected 6 bytes, got: " + resourceA.bytes.len());
     assert(resourceB.string == "Initial Value", "Expected 'Initial Value', got: " + resourceB.string);
     assert(query.len() == 2, "Expected 3 results, got: " + query.len());
+    for result in query {
+        components = result.components.call();
+        let componentA = components[0];
+        let componentB = components[1];
+        assert(componentA["_0"] == "Default", "Expected 'Default', got: " + componentA["_0"]);
+        assert(componentB["_0"] == "Default", "Expected 'Default', got: " + componentB["_0"]);
+    }
 }
 
 fn on_test_post_update() {
