@@ -21,7 +21,7 @@ function on_test()
         post_update_schedule,
         system_builder("my_parameterised_system", script_id)
             :resource(ResourceTypeA)
-            :query(world.query():component(ComponentA):with(ComponentB))
+            :query(world.query():component(ComponentA):component(ComponentB))
             :resource(ResourceTypeB)
     )
 
@@ -39,6 +39,14 @@ function my_parameterised_system(resourceA,query,resourceB)
     assert(#resourceA.bytes == 6, "Expected 6 bytes, got: " .. #resourceA.bytes)
     assert(resourceB.string == "Initial Value", "Expected 'Initial Value', got: " .. resourceB.string)
     assert(#query == 2, "Expected 3 results, got: " .. #query)
+    for i,result in pairs(query) do
+        components = result:components()
+        assert(#components == 2, "Expected 2 components, got " .. #components)
+        local componentA = components[1]
+        local componentB = components[2]
+        assert(componentA._1 == "Default", "Expected 'Default', got: " .. componentA._1)
+        assert(componentB._1 == "Default", "Expected 'Default', got: " .. componentA._1)
+    end
 end
 
 

@@ -315,6 +315,8 @@ struct AccessMapInner {
     global_lock: AccessCount,
 }
 
+const GLOBAL_KEY: u64 = 0;
+
 #[profiling::all_functions]
 impl DynamicSystemMeta for AccessMap {
     fn with_scope<O, F: FnOnce() -> O>(&self, f: F) -> O {
@@ -348,6 +350,7 @@ impl DynamicSystemMeta for AccessMap {
 
     #[track_caller]
     fn claim_read_access<K: AccessMapKey>(&self, key: K) -> bool {
+
         let mut inner = self.0.lock();
 
         if !inner.global_lock.can_write() {
@@ -355,6 +358,12 @@ impl DynamicSystemMeta for AccessMap {
         }
 
         let key = key.as_index();
+        if key == GLOBAL_KEY {
+            bevy::log::error!("Trying to claim read access to global key, this is not allowed");
+            return false
+        }
+
+
         let entry = inner.individual_accesses.entry(key).or_default();
         if entry.can_read() {
             entry.read_by.push(ClaimOwner {
@@ -376,6 +385,11 @@ impl DynamicSystemMeta for AccessMap {
         }
 
         let key = key.as_index();
+        if key == GLOBAL_KEY {
+            bevy::log::error!("Trying to claim write access to global key, this is not allowed");
+            return false
+        }
+
         let entry = inner.individual_accesses.entry(key).or_default();
         if entry.can_write() {
             entry.read_by.push(ClaimOwner {
@@ -492,16 +506,23 @@ impl DynamicSystemMeta for AccessMap {
 /// An inverse of [`AccessMap`], It limits the accesses allowed to be claimed to those in a pre-specified subset.
 pub struct SubsetAccessMap {
     inner: AccessMap,
-    subset: HashSet<u64>,
+    subset: Box<dyn Fn(u64) -> bool + Send + Sync + 'static>,
 }
 
 impl SubsetAccessMap {
-    /// Creates a new subset access map with the provided subset.
-    pub fn new(subset: impl IntoIterator<Item = impl AccessMapKey>) -> Self {
+    /// Creates a new subset access map with the provided subset of ID's as well as a exception function.
+    pub fn new(subset: impl IntoIterator<Item = impl AccessMapKey>, exception: impl Fn(u64) -> bool + Send + Sync + 'static) -> Self {
+        let set = subset.into_iter().map(|k| k.as_index()).collect::<HashSet<_>>();
         Self {
             inner: Default::default(),
-            subset: subset.into_iter().map(|k| k.as_index()).collect(),
+            subset: Box::new(move |id| {
+                set.contains(&id) || exception(id)
+            }),
         }
+    }
+
+    fn in_subset(&self, key: u64) -> bool {
+        (self.subset)(key)
     }
 }
 
@@ -519,20 +540,23 @@ impl DynamicSystemMeta for SubsetAccessMap {
     }
 
     fn claim_read_access<K: AccessMapKey>(&self, key: K) -> bool {
-        if !self.subset.contains(&key.as_index()) {
+        if !self.in_subset(key.as_index()) {
             return false;
         }
         self.inner.claim_read_access(key)
     }
 
     fn claim_write_access<K: AccessMapKey>(&self, key: K) -> bool {
-        if !self.subset.contains(&key.as_index()) {
+        if !self.in_subset(key.as_index()) {
             return false;
         }
         self.inner.claim_write_access(key)
     }
 
     fn claim_global_access(&self) -> bool {
+        if !self.in_subset(0) {
+            return false;
+        }
         self.inner.claim_global_access()
     }
 
@@ -753,14 +777,14 @@ mod test {
     fn access_map_list_accesses() {
         let access_map = AccessMap::default();
 
-        access_map.claim_read_access(0);
-        access_map.claim_write_access(1);
+        access_map.claim_read_access(1);
+        access_map.claim_write_access(2);
 
         let accesses = access_map.list_accesses::<u64>();
 
         assert_eq!(accesses.len(), 2);
-        let access_0 = accesses.iter().find(|(k, _)| *k == 0).unwrap();
-        let access_1 = accesses.iter().find(|(k, _)| *k == 1).unwrap();
+        let access_0 = accesses.iter().find(|(k, _)| *k == 1).unwrap();
+        let access_1 = accesses.iter().find(|(k, _)| *k == 2).unwrap();
 
         assert_eq!(access_0.1.readers(), 1);
         assert_eq!(access_1.1.readers(), 1);
@@ -774,17 +798,17 @@ mod test {
         let access_map = AccessMap::default();
         let subset_access_map = SubsetAccessMap {
             inner: access_map,
-            subset: vec![0, 1].into_iter().collect(),
+            subset: Box::new(|id| id == 1 || id == 2),
         };
 
-        subset_access_map.claim_read_access(0);
-        subset_access_map.claim_write_access(1);
+        subset_access_map.claim_read_access(1);
+        subset_access_map.claim_write_access(2);
 
         let accesses = subset_access_map.list_accesses::<u64>();
 
         assert_eq!(accesses.len(), 2);
-        let access_0 = accesses.iter().find(|(k, _)| *k == 0).unwrap();
-        let access_1 = accesses.iter().find(|(k, _)| *k == 1).unwrap();
+        let access_0 = accesses.iter().find(|(k, _)| *k == 1).unwrap();
+        let access_1 = accesses.iter().find(|(k, _)| *k == 2).unwrap();
 
         assert_eq!(access_0.1.readers(), 1);
         assert_eq!(access_1.1.readers(), 1);
@@ -797,10 +821,10 @@ mod test {
     fn access_map_read_access_blocks_write() {
         let access_map = AccessMap::default();
 
-        assert!(access_map.claim_read_access(0));
-        assert!(!access_map.claim_write_access(0));
-        access_map.release_access(0);
-        assert!(access_map.claim_write_access(0));
+        assert!(access_map.claim_read_access(1));
+        assert!(!access_map.claim_write_access(1));
+        access_map.release_access(1);
+        assert!(access_map.claim_write_access(1));
     }
 
     #[test]
@@ -808,23 +832,23 @@ mod test {
         let access_map = AccessMap::default();
         let subset_access_map = SubsetAccessMap {
             inner: access_map,
-            subset: vec![0].into_iter().collect(),
+            subset: Box::new(|id| id == 1),
         };
 
-        assert!(subset_access_map.claim_read_access(0));
-        assert!(!subset_access_map.claim_write_access(0));
-        subset_access_map.release_access(0);
-        assert!(subset_access_map.claim_write_access(0));
+        assert!(subset_access_map.claim_read_access(1));
+        assert!(!subset_access_map.claim_write_access(1));
+        subset_access_map.release_access(1);
+        assert!(subset_access_map.claim_write_access(1));
     }
 
     #[test]
     fn access_map_write_access_blocks_read() {
         let access_map = AccessMap::default();
 
-        assert!(access_map.claim_write_access(0));
-        assert!(!access_map.claim_read_access(0));
-        access_map.release_access(0);
-        assert!(access_map.claim_read_access(0));
+        assert!(access_map.claim_write_access(1));
+        assert!(!access_map.claim_read_access(1));
+        access_map.release_access(1);
+        assert!(access_map.claim_read_access(1));
     }
 
     #[test]
@@ -832,13 +856,13 @@ mod test {
         let access_map = AccessMap::default();
         let subset_access_map = SubsetAccessMap {
             inner: access_map,
-            subset: vec![0].into_iter().collect(),
+            subset: Box::new(|id| id == 1),
         };
 
-        assert!(subset_access_map.claim_write_access(0));
-        assert!(!subset_access_map.claim_read_access(0));
-        subset_access_map.release_access(0);
-        assert!(subset_access_map.claim_read_access(0));
+        assert!(subset_access_map.claim_write_access(1));
+        assert!(!subset_access_map.claim_read_access(1));
+        subset_access_map.release_access(1);
+        assert!(subset_access_map.claim_read_access(1));
     }
 
     #[test]
@@ -846,12 +870,12 @@ mod test {
         let access_map = AccessMap::default();
 
         assert!(access_map.claim_global_access());
-        assert!(!access_map.claim_read_access(0));
-        assert!(!access_map.claim_write_access(0));
+        assert!(!access_map.claim_read_access(1));
+        assert!(!access_map.claim_write_access(1));
         access_map.release_global_access();
-        assert!(access_map.claim_write_access(0));
-        access_map.release_access(0);
-        assert!(access_map.claim_read_access(0));
+        assert!(access_map.claim_write_access(1));
+        access_map.release_access(1);
+        assert!(access_map.claim_read_access(1));
     }
 
     #[test]
@@ -859,7 +883,7 @@ mod test {
         let access_map = AccessMap::default();
         let subset_access_map = SubsetAccessMap {
             inner: access_map,
-            subset: vec![0, 1].into_iter().collect(),
+            subset: Box::new(|id| id == 1 || id == 0),
         };
 
         assert!(subset_access_map.claim_global_access());
@@ -875,11 +899,11 @@ mod test {
     fn access_map_any_access_blocks_global() {
         let access_map = AccessMap::default();
 
-        assert!(access_map.claim_read_access(0));
+        assert!(access_map.claim_read_access(1));
         assert!(!access_map.claim_global_access());
-        access_map.release_access(0);
+        access_map.release_access(1);
 
-        assert!(access_map.claim_write_access(0));
+        assert!(access_map.claim_write_access(1));
         assert!(!access_map.claim_global_access());
     }
 
@@ -888,14 +912,14 @@ mod test {
         let access_map = AccessMap::default();
         let subset_access_map = SubsetAccessMap {
             inner: access_map,
-            subset: vec![0].into_iter().collect(),
+            subset: Box::new(|id| id == 0 || id == 1),
         };
 
-        assert!(subset_access_map.claim_read_access(0));
+        assert!(subset_access_map.claim_read_access(1));
         assert!(!subset_access_map.claim_global_access());
-        subset_access_map.release_access(0);
+        subset_access_map.release_access(1);
 
-        assert!(subset_access_map.claim_write_access(0));
+        assert!(subset_access_map.claim_write_access(1));
         assert!(!subset_access_map.claim_global_access());
     }
 
@@ -904,9 +928,9 @@ mod test {
     fn access_map_releasing_read_access_from_wrong_thread_panics() {
         let access_map = AccessMap::default();
 
-        access_map.claim_read_access(0);
+        access_map.claim_read_access(1);
         std::thread::spawn(move || {
-            access_map.release_access(0);
+            access_map.release_access(1);
         })
         .join()
         .unwrap();
@@ -918,12 +942,12 @@ mod test {
         let access_map = AccessMap::default();
         let subset_access_map = SubsetAccessMap {
             inner: access_map,
-            subset: vec![0].into_iter().collect(),
+            subset:  Box::new(|id| id == 1),
         };
 
-        subset_access_map.claim_read_access(0);
+        subset_access_map.claim_read_access(1);
         std::thread::spawn(move || {
-            subset_access_map.release_access(0);
+            subset_access_map.release_access(1);
         })
         .join()
         .unwrap();
@@ -934,9 +958,9 @@ mod test {
     fn access_map_releasing_write_access_from_wrong_thread_panics() {
         let access_map = AccessMap::default();
 
-        access_map.claim_write_access(0);
+        access_map.claim_write_access(1);
         std::thread::spawn(move || {
-            access_map.release_access(0);
+            access_map.release_access(1);
         })
         .join()
         .unwrap();
@@ -948,12 +972,12 @@ mod test {
         let access_map = AccessMap::default();
         let subset_access_map = SubsetAccessMap {
             inner: access_map,
-            subset: vec![0].into_iter().collect(),
+            subset:  Box::new(|id| id == 1),
         };
 
-        subset_access_map.claim_write_access(0);
+        subset_access_map.claim_write_access(1);
         std::thread::spawn(move || {
-            subset_access_map.release_access(0);
+            subset_access_map.release_access(1);
         })
         .join()
         .unwrap();
@@ -1000,7 +1024,7 @@ mod test {
     fn access_map_with_scope_unrolls_individual_accesses() {
         let access_map = AccessMap::default();
         // Claim a read access outside the scope
-        assert!(access_map.claim_read_access(0));
+        assert!(access_map.claim_read_access(3));
 
         // Inside with_scope, claim additional accesses
         access_map.with_scope(|| {
@@ -1013,10 +1037,10 @@ mod test {
 
         // After with_scope returns, accesses claimed inside (keys 1 and 2) are unrolled.
         let accesses = access_map.list_accesses::<u64>();
-        // Only the access claimed outside (key 0) remains.
+        // Only the access claimed outside (key 3) remains.
         assert_eq!(accesses.len(), 1);
         let (k, count) = &accesses[0];
-        assert_eq!(*k, 0);
+        assert_eq!(*k, 3);
         // The outside access remains valid.
         assert!(count.readers() > 0);
     }
@@ -1026,11 +1050,11 @@ mod test {
         let access_map = AccessMap::default();
         let subset_access_map = SubsetAccessMap {
             inner: access_map,
-            subset: vec![0, 1].into_iter().collect(),
+            subset:  Box::new(|id| id == 1 || id == 2 || id == 3),
         };
 
         // Claim a read access outside the scope
-        assert!(subset_access_map.claim_read_access(0));
+        assert!(subset_access_map.claim_read_access(3));
 
         // Inside with_scope, claim additional accesses
         subset_access_map.with_scope(|| {
@@ -1043,10 +1067,10 @@ mod test {
 
         // After with_scope returns, accesses claimed inside (keys 1 and 2) are unrolled.
         let accesses = subset_access_map.list_accesses::<u64>();
-        // Only the access claimed outside (key 0) remains.
+        // Only the access claimed outside (key 3) remains.
         assert_eq!(accesses.len(), 1);
         let (k, count) = &accesses[0];
-        assert_eq!(*k, 0);
+        assert_eq!(*k, 3);
         // The outside access remains valid.
         assert!(count.readers() > 0);
     }
@@ -1058,7 +1082,7 @@ mod test {
         access_map.with_scope(|| {
             assert!(access_map.claim_global_access());
             // At this point, global_access is claimed.
-            assert!(!access_map.claim_read_access(0));
+            assert!(!access_map.claim_read_access(1));
         });
 
         let accesses = access_map.list_accesses::<u64>();
@@ -1070,13 +1094,13 @@ mod test {
         let access_map = AccessMap::default();
         let subset_access_map = SubsetAccessMap {
             inner: access_map,
-            subset: vec![0].into_iter().collect(),
+            subset:  Box::new(|id| id == 0 || id == 1),
         };
 
         subset_access_map.with_scope(|| {
             assert!(subset_access_map.claim_global_access());
             // At this point, global_access is claimed.
-            assert!(!subset_access_map.claim_read_access(0));
+            assert!(!subset_access_map.claim_read_access(1));
         });
 
         let accesses = subset_access_map.list_accesses::<u64>();
@@ -1112,7 +1136,7 @@ mod test {
         let access_map = AccessMap::default();
         let subset_access_map = SubsetAccessMap {
             inner: access_map,
-            subset: vec![0, 1].into_iter().collect(),
+            subset: Box::new(|id| id == 0 || id == 1 || id == 2),
         };
 
         // Initially, no accesses are active.
@@ -1161,7 +1185,7 @@ mod test {
         let access_map = AccessMap::default();
         let subset_access_map = SubsetAccessMap {
             inner: access_map,
-            subset: vec![0, 1].into_iter().collect(),
+            subset:  Box::new(|id| id == 0 || id == 1 || id == 2),
         };
 
         assert!(subset_access_map.claim_global_access());
@@ -1186,7 +1210,7 @@ mod test {
         let access_map = AccessMap::default();
         let subset_access_map = SubsetAccessMap {
             inner: access_map,
-            subset: vec![1].into_iter().collect(),
+            subset:  Box::new(|id| id == 1),
         };
 
         assert!(!subset_access_map.claim_read_access(2));

@@ -6,7 +6,7 @@
 //! we need wrapper types which have owned and ref variants.
 
 use super::{
-    access_map::{AccessCount, AnyAccessMap, DynamicSystemMeta, ReflectAccessId, SubsetAccessMap},
+    access_map::{AccessCount, AccessMapKey, AnyAccessMap, DynamicSystemMeta, ReflectAccessId, ReflectAccessKind, SubsetAccessMap},
     function::{
         namespace::Namespace,
         script_function::{AppScriptFunctionRegistry, DynamicScriptFunction, FunctionCallContext},
@@ -167,7 +167,11 @@ impl<'w> WorldAccessGuard<'w> {
         Self {
             inner: Rc::new(WorldAccessGuardInner {
                 cell: world,
-                accesses: AnyAccessMap::SubsetAccessMap(SubsetAccessMap::new(subset)),
+                accesses: AnyAccessMap::SubsetAccessMap(SubsetAccessMap::new(
+                        subset ,
+                        // allocations live beyond the world, and can be safely accessed
+                        |id| ReflectAccessId::from_index(id).kind == ReflectAccessKind::Allocation)
+                    ),
                 type_registry: type_registry.0,
                 allocator,
                 function_registry,

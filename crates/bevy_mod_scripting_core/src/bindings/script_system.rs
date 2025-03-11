@@ -1,12 +1,7 @@
 //! everything to do with dynamically added script systems
 
 use super::{
-    access_map::ReflectAccessId,
-    function::{from::Val, into::IntoScript, script_function::AppScriptFunctionRegistry},
-    schedule::{AppScheduleRegistry},
-    script_value::ScriptValue,
-    AppReflectAllocator, ReflectReference, ScriptQueryBuilder, ScriptQueryResult,
-    ScriptResourceRegistration, WorldAccessGuard, WorldGuard,
+    access_map::ReflectAccessId, function::{from::Val, into::IntoScript, script_function::AppScriptFunctionRegistry}, schedule::AppScheduleRegistry, script_value::ScriptValue, AppReflectAllocator, ReflectBaseType, ReflectReference, ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration, WorldAccessGuard, WorldGuard
 };
 use crate::{
     bindings::pretty_print::DisplayWithWorld,
@@ -310,6 +305,8 @@ pub enum ScriptSystemParam {
     EntityQuery {
         /// The internal state of the query
         query: Box<QueryState<Entity, ()>>,
+        /// the components in correct order describing the necessary references
+        components: Vec<(ComponentId, TypeId)>,
     },
 }
 
@@ -445,7 +442,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                     };
                     payload.push(res_ref.into_script_inline_error(guard.clone()));
                 }
-                ScriptSystemParam::EntityQuery { query } => {
+                ScriptSystemParam::EntityQuery { query, components } => {
                     // TODO: is this the right way to use this world cell for queries?
                     let entities = query.iter_unchecked(world).collect::<Vec<_>>();
                     let results = entities
@@ -453,8 +450,12 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                         .map(|entity| {
                             Val(ScriptQueryResult {
                                 entity,
-                                // TODO: components
-                                components: vec![],
+                                components: components.iter().map(|(component_id, type_id)| {
+                                    ReflectReference {
+                                        base: ReflectBaseType { type_id: *type_id, base_id: super::ReflectBase::Component(entity, *component_id) },
+                                        reflect_path: Vec::<OffsetAccess>::default().into(),
+                                    }
+                                }).collect(),
                             })
                         })
                         .collect::<Vec<_>>();
@@ -525,6 +526,9 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                     subset.insert(raid);
                 }
                 ScriptSystemParamDescriptor::EntityQuery(query) => {
+                    let components: Vec<_> = query.components
+                        .iter()
+                        .map(|c| (c.component_id, c.type_registration().type_id())).collect();
                     let query = query.as_query_state::<Entity>(world);
 
                     // Safety: we are not removing
@@ -546,6 +550,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 
                     system_params.push(ScriptSystemParam::EntityQuery {
                         query: query.into(),
+                        components
                     });
                     subset.extend(new_raids);
                 }
@@ -580,7 +585,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         if let Some(state) = &mut self.state {
             for archetype in &archetypes[old_generation..] {
                 for param in &mut state.system_params {
-                    if let ScriptSystemParam::EntityQuery { query } = param {
+                    if let ScriptSystemParam::EntityQuery { query, .. } = param {
                         // SAFETY: The assertion above ensures that the param_state was initialized from `world`.
                         unsafe {
                             query.new_archetype(archetype, &mut self.archetype_component_access)

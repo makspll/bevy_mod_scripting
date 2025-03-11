@@ -136,7 +136,7 @@ impl std::fmt::Display for ScriptTypeRegistration {
 #[reflect(opaque)]
 /// A builder for a query.
 pub struct ScriptQueryBuilder {
-    components: Vec<ScriptComponentRegistration>,
+    pub(crate) components: Vec<ScriptComponentRegistration>,
     with: Vec<ScriptComponentRegistration>,
     without: Vec<ScriptComponentRegistration>,
 }
