@@ -138,10 +138,12 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
 
     fn as_option(&self) -> Result<Option<&dyn PartialReflect>, InteropError> {
         if let bevy::reflect::ReflectRef::Enum(e) = self.reflect_ref() {
-            if let Some(field) = e.field_at(0) {
-                return Ok(Some(field));
-            } else {
-                return Ok(None);
+            if e.is_type(Some("core"), "Option") {
+                if let Some(field) = e.field_at(0) {
+                    return Ok(Some(field));
+                } else {
+                    return Ok(None);
+                }
             }
         }
 
@@ -535,7 +537,13 @@ mod test {
 
     #[test]
     fn test_as_option_none() {
+        #[derive(Reflect)]
+        enum Test {
+            Unit,
+        }
+
         assert!(None::<i32>.as_option().unwrap().is_none());
+        assert!(Test::Unit.as_option().is_err())
     }
 
     #[test]
