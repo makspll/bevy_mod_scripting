@@ -350,7 +350,6 @@ impl DynamicSystemMeta for AccessMap {
 
     #[track_caller]
     fn claim_read_access<K: AccessMapKey>(&self, key: K) -> bool {
-
         let mut inner = self.0.lock();
 
         if !inner.global_lock.can_write() {
@@ -360,9 +359,8 @@ impl DynamicSystemMeta for AccessMap {
         let key = key.as_index();
         if key == GLOBAL_KEY {
             bevy::log::error!("Trying to claim read access to global key, this is not allowed");
-            return false
+            return false;
         }
-
 
         let entry = inner.individual_accesses.entry(key).or_default();
         if entry.can_read() {
@@ -387,7 +385,7 @@ impl DynamicSystemMeta for AccessMap {
         let key = key.as_index();
         if key == GLOBAL_KEY {
             bevy::log::error!("Trying to claim write access to global key, this is not allowed");
-            return false
+            return false;
         }
 
         let entry = inner.individual_accesses.entry(key).or_default();
@@ -511,13 +509,17 @@ pub struct SubsetAccessMap {
 
 impl SubsetAccessMap {
     /// Creates a new subset access map with the provided subset of ID's as well as a exception function.
-    pub fn new(subset: impl IntoIterator<Item = impl AccessMapKey>, exception: impl Fn(u64) -> bool + Send + Sync + 'static) -> Self {
-        let set = subset.into_iter().map(|k| k.as_index()).collect::<HashSet<_>>();
+    pub fn new(
+        subset: impl IntoIterator<Item = impl AccessMapKey>,
+        exception: impl Fn(u64) -> bool + Send + Sync + 'static,
+    ) -> Self {
+        let set = subset
+            .into_iter()
+            .map(|k| k.as_index())
+            .collect::<HashSet<_>>();
         Self {
             inner: Default::default(),
-            subset: Box::new(move |id| {
-                set.contains(&id) || exception(id)
-            }),
+            subset: Box::new(move |id| set.contains(&id) || exception(id)),
         }
     }
 
@@ -942,7 +944,7 @@ mod test {
         let access_map = AccessMap::default();
         let subset_access_map = SubsetAccessMap {
             inner: access_map,
-            subset:  Box::new(|id| id == 1),
+            subset: Box::new(|id| id == 1),
         };
 
         subset_access_map.claim_read_access(1);
@@ -972,7 +974,7 @@ mod test {
         let access_map = AccessMap::default();
         let subset_access_map = SubsetAccessMap {
             inner: access_map,
-            subset:  Box::new(|id| id == 1),
+            subset: Box::new(|id| id == 1),
         };
 
         subset_access_map.claim_write_access(1);
@@ -1050,7 +1052,7 @@ mod test {
         let access_map = AccessMap::default();
         let subset_access_map = SubsetAccessMap {
             inner: access_map,
-            subset:  Box::new(|id| id == 1 || id == 2 || id == 3),
+            subset: Box::new(|id| id == 1 || id == 2 || id == 3),
         };
 
         // Claim a read access outside the scope
@@ -1094,7 +1096,7 @@ mod test {
         let access_map = AccessMap::default();
         let subset_access_map = SubsetAccessMap {
             inner: access_map,
-            subset:  Box::new(|id| id == 0 || id == 1),
+            subset: Box::new(|id| id == 0 || id == 1),
         };
 
         subset_access_map.with_scope(|| {
@@ -1185,7 +1187,7 @@ mod test {
         let access_map = AccessMap::default();
         let subset_access_map = SubsetAccessMap {
             inner: access_map,
-            subset:  Box::new(|id| id == 0 || id == 1 || id == 2),
+            subset: Box::new(|id| id == 0 || id == 1 || id == 2),
         };
 
         assert!(subset_access_map.claim_global_access());
@@ -1210,7 +1212,7 @@ mod test {
         let access_map = AccessMap::default();
         let subset_access_map = SubsetAccessMap {
             inner: access_map,
-            subset:  Box::new(|id| id == 1),
+            subset: Box::new(|id| id == 1),
         };
 
         assert!(!subset_access_map.claim_read_access(2));

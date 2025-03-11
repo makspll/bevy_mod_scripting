@@ -72,7 +72,7 @@ impl Default for RhaiScriptingPlugin {
                 runtime_settings: RuntimeSettings {
                     initializers: vec![|runtime: &RhaiRuntime| {
                         let mut engine = runtime.write();
-                        engine.set_max_expr_depths(999,999);
+                        engine.set_max_expr_depths(999, 999);
                         engine.build_type::<RhaiReflectReference>();
                         engine.build_type::<RhaiStaticReflectReference>();
                         engine.register_iterator_result::<RhaiReflectReference, _>();

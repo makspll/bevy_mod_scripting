@@ -356,7 +356,7 @@ impl ReflectSystemGraph {
             }
         }
 
-        // 
+        //
         let mut dependencies = Vec::new();
         let mut dependents = Vec::new();
         // the relationship expressed is "runs before" i.e. "is depended on by"
@@ -401,7 +401,6 @@ impl ReflectSystemGraph {
             }
         }
 
-
         // remove any edges involving the set to absorb
         self.hierarchy
             .retain(|edge| edge.from.0 != node_id && edge.to.0 != node_id);
@@ -422,10 +421,9 @@ impl ReflectSystemGraph {
     /// type system sets, are not really important to us, for all intents and purposes
     /// they are one and the same as the underlying systems
     /// Adapter and pipe systems might have multiple default system sets attached, but we want all them gone from the graph.
-    /// 
+    ///
     /// Inlines every type system set into its children, replacing anything pointing to those sets by edges to every system contained in the set
     pub fn absorb_type_system_sets(&mut self) {
-
         let type_sets = self
             .nodes
             .iter()
@@ -445,7 +443,6 @@ impl ReflectSystemGraph {
         for node_id in type_sets {
             self.absorb_set(node_id);
         }
-        
     }
 }
 
@@ -523,7 +520,13 @@ mod test {
         let normalize = |s: &str| {
             // trim each line individually from the start, and replace " = " with "=" to deal with formatters
             let lines: Vec<&str> = s.lines().map(|line| line.trim_start()).collect();
-            lines.join("\n").replace(" = ", "").replace(";", "").replace(",", "").trim().to_string()
+            lines
+                .join("\n")
+                .replace(" = ", "")
+                .replace(";", "")
+                .replace(",", "")
+                .trim()
+                .to_string()
         };
 
         // check that the dot graph is as expected

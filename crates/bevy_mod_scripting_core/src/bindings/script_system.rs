@@ -1,7 +1,12 @@
 //! everything to do with dynamically added script systems
 
 use super::{
-    access_map::ReflectAccessId, function::{from::Val, into::IntoScript, script_function::AppScriptFunctionRegistry}, schedule::AppScheduleRegistry, script_value::ScriptValue, AppReflectAllocator, ReflectBaseType, ReflectReference, ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration, WorldAccessGuard, WorldGuard
+    access_map::ReflectAccessId,
+    function::{from::Val, into::IntoScript, script_function::AppScriptFunctionRegistry},
+    schedule::AppScheduleRegistry,
+    script_value::ScriptValue,
+    AppReflectAllocator, ReflectBaseType, ReflectReference, ScriptQueryBuilder, ScriptQueryResult,
+    ScriptResourceRegistration, WorldAccessGuard, WorldGuard,
 };
 use crate::{
     bindings::pretty_print::DisplayWithWorld,
@@ -28,8 +33,8 @@ use bevy::{
     reflect::{OffsetAccess, ParsedPath, Reflect},
     utils::hashbrown::HashSet,
 };
-use std::{any::TypeId, borrow::Cow, hash::Hash, marker::PhantomData, ops::Deref};
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
+use std::{any::TypeId, borrow::Cow, hash::Hash, marker::PhantomData, ops::Deref};
 #[derive(Clone, Hash, PartialEq, Eq)]
 /// a system set for script systems.
 pub struct ScriptSystemSet(Cow<'static, str>);
@@ -390,8 +395,6 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
     fn has_deferred(&self) -> bool {
         false
     }
-    
-    
 
     unsafe fn run_unsafe(
         &mut self,
@@ -410,12 +413,12 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         };
 
         let mut payload = Vec::with_capacity(state.system_params.len());
-        
-        let guard = if self.exclusive { 
-            // safety: we are an exclusive system, therefore the cell allows us to do this 
-            let world = unsafe {world.world_mut()};
+
+        let guard = if self.exclusive {
+            // safety: we are an exclusive system, therefore the cell allows us to do this
+            let world = unsafe { world.world_mut() };
             WorldAccessGuard::new_exclusive(world)
-        } else { 
+        } else {
             WorldAccessGuard::new_non_exclusive(
                 world,
                 state.subset.clone(),
@@ -423,7 +426,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                 state.allocator.clone(),
                 state.function_registry.clone(),
                 state.schedule_registry.clone(),
-            ) 
+            )
         };
 
         // TODO: cache references which don't change once we have benchmarks
@@ -450,12 +453,19 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                         .map(|entity| {
                             Val(ScriptQueryResult {
                                 entity,
-                                components: components.iter().map(|(component_id, type_id)| {
-                                    ReflectReference {
-                                        base: ReflectBaseType { type_id: *type_id, base_id: super::ReflectBase::Component(entity, *component_id) },
+                                components: components
+                                    .iter()
+                                    .map(|(component_id, type_id)| ReflectReference {
+                                        base: ReflectBaseType {
+                                            type_id: *type_id,
+                                            base_id: super::ReflectBase::Component(
+                                                entity,
+                                                *component_id,
+                                            ),
+                                        },
                                         reflect_path: Vec::<OffsetAccess>::default().into(),
-                                    }
-                                }).collect(),
+                                    })
+                                    .collect(),
                             })
                         })
                         .collect::<Vec<_>>();
@@ -526,9 +536,11 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                     subset.insert(raid);
                 }
                 ScriptSystemParamDescriptor::EntityQuery(query) => {
-                    let components: Vec<_> = query.components
+                    let components: Vec<_> = query
+                        .components
                         .iter()
-                        .map(|c| (c.component_id, c.type_registration().type_id())).collect();
+                        .map(|c| (c.component_id, c.type_registration().type_id()))
+                        .collect();
                     let query = query.as_query_state::<Entity>(world);
 
                     // Safety: we are not removing
@@ -550,7 +562,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 
                     system_params.push(ScriptSystemParam::EntityQuery {
                         query: query.into(),
-                        components
+                        components,
                     });
                     subset.extend(new_raids);
                 }
@@ -628,12 +640,11 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
     fn default_system_sets(&self) -> Vec<bevy::ecs::schedule::InternedSystemSet> {
         vec![ScriptSystemSet::new(self.name.clone()).intern()]
     }
-    
+
     fn type_id(&self) -> TypeId {
         TypeId::of::<Self>()
     }
 
-    
     fn validate_param(&mut self, world: &World) -> bool {
         let world_cell = world.as_unsafe_world_cell_readonly();
         self.update_archetype_component_access(world_cell);
@@ -644,14 +655,17 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
     }
 }
 
-
 #[cfg(test)]
 mod test {
-    use bevy::{app::{App, MainScheduleOrder, Update}, asset::AssetPlugin, diagnostic::DiagnosticsPlugin, ecs::schedule::{ScheduleLabel, Schedules}};
+    use bevy::{
+        app::{App, MainScheduleOrder, Update},
+        asset::AssetPlugin,
+        diagnostic::DiagnosticsPlugin,
+        ecs::schedule::{ScheduleLabel, Schedules},
+    };
     use test_utils::make_test_plugin;
 
     use super::*;
-
 
     make_test_plugin!(crate);
 
@@ -663,40 +677,48 @@ mod test {
 
         #[derive(ScheduleLabel, Clone, Debug, Hash, PartialEq, Eq)]
         struct TestSchedule;
-        
-        app.add_plugins((AssetPlugin::default(), DiagnosticsPlugin,TestPlugin::default()));
+
+        app.add_plugins((
+            AssetPlugin::default(),
+            DiagnosticsPlugin,
+            TestPlugin::default(),
+        ));
         app.init_schedule(TestSchedule);
         let mut main_schedule_order = app.world_mut().resource_mut::<MainScheduleOrder>();
         main_schedule_order.insert_after(Update, TestSchedule);
         app.add_systems(TestSchedule, test_system_rust);
-        
-        
+
         // run the app once
         app.finish();
         app.cleanup();
         app.update();
 
         // find existing rust system
-        let test_system = app.world_mut().resource_scope::<Schedules,_>(|_, schedules| {
-            let (node_id, system) = schedules.get(TestSchedule)
-                .unwrap()
-                .systems()
-                .unwrap()
-                .find(|(_, system)| {
-                    system.name().contains("test_system_rust")
-                })
-                .unwrap();
+        let test_system = app
+            .world_mut()
+            .resource_scope::<Schedules, _>(|_, schedules| {
+                let (node_id, system) = schedules
+                    .get(TestSchedule)
+                    .unwrap()
+                    .systems()
+                    .unwrap()
+                    .find(|(_, system)| system.name().contains("test_system_rust"))
+                    .unwrap();
 
-            ReflectSystem::from_system(system.as_ref(), node_id)
-        });
-        
-        
+                ReflectSystem::from_system(system.as_ref(), node_id)
+            });
+
         // now dynamically add script system via builder
         let mut builder = ScriptSystemBuilder::new("test".into(), "empty_script".into());
         builder.before_system(test_system);
 
-        let _ = builder.build::<TestPlugin>(WorldAccessGuard::new_exclusive(app.world_mut()), &ReflectSchedule::from_label(TestSchedule)).unwrap();
-        
+        let _ = builder
+            .build::<TestPlugin>(
+                WorldAccessGuard::new_exclusive(app.world_mut()),
+                &ReflectSchedule::from_label(TestSchedule),
+            )
+            .unwrap();
+
         // now re-run app, expect no panicks
         app.update();
     }

@@ -109,7 +109,15 @@ pub fn register_test_functions(world: &mut App) {
     NamespaceBuilder::<GlobalNamespace>::new_unregistered(world)
         .register("global_hello_world", || Ok("hi!"))
         .register("make_hashmap", |map: HashMap<String, usize>| map)
-        .register("assert_str_eq", |s1: String, s2: String, reason: Option<String>| {
-            pretty_assertions::assert_eq!(s1.trim(), s2.trim(), "Reason Provided: {}", reason.unwrap_or_default())
-        });
+        .register(
+            "assert_str_eq",
+            |s1: String, s2: String, reason: Option<String>| {
+                pretty_assertions::assert_eq!(
+                    s1.trim(),
+                    s2.trim(),
+                    "Reason Provided: {}",
+                    reason.unwrap_or_default()
+                )
+            },
+        );
 }
