@@ -53,6 +53,10 @@ pub fn register_test_functions(world: &mut App) {
             let mut allocator = allocator.write();
             ReflectReference::new_allocated(comp, &mut allocator)
         })
+        .register("_sleep", |time: f64| {
+            std::thread::sleep(std::time::Duration::from_secs_f64(time));
+            Ok(())
+        })
         .register(
             "_get_entity_with_test_component",
             |s: FunctionCallContext, name: String| {
@@ -104,5 +108,8 @@ pub fn register_test_functions(world: &mut App) {
 
     NamespaceBuilder::<GlobalNamespace>::new_unregistered(world)
         .register("global_hello_world", || Ok("hi!"))
-        .register("make_hashmap", |map: HashMap<String, usize>| map);
+        .register("make_hashmap", |map: HashMap<String, usize>| map)
+        .register("assert_str_eq", |s1: String, s2: String, reason: Option<String>| {
+            pretty_assertions::assert_eq!(s1.trim(), s2.trim(), "Reason Provided: {}", reason.unwrap_or_default())
+        });
 }

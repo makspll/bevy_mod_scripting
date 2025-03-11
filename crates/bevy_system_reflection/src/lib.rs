@@ -7,8 +7,7 @@ use bevy::ecs::schedule::{
 };
 use bevy::ecs::system::{System, SystemInput};
 use bevy::reflect::Reflect;
-use bevy::utils::HashSet;
-use bevy::utils::hashbrown::HashMap;
+use bevy::utils::hashbrown::{HashMap, HashSet};
 use dot_writer::{Attributes, DotWriter};
 
 #[derive(Reflect, Debug, Clone)]
@@ -76,7 +75,7 @@ impl ReflectSystem {
     }
 }
 
-#[derive(Reflect, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Reflect, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[reflect(opaque)]
 pub(crate) struct ReflectNodeId(pub NodeId);
 
@@ -158,7 +157,11 @@ impl ReflectSystemSet {
 /// Renders a schedule to a dot graph using the optimized schedule.
 pub fn schedule_to_dot_graph(schedule: &Schedule) -> String {
     let graph = schedule_to_reflect_graph(schedule);
+    reflect_graph_to_dot(graph)
+}
 
+/// Renders a reflectable system graph to a dot graph
+pub fn reflect_graph_to_dot(graph: ReflectSystemGraph) -> String {
     // create a dot graph with:
     // - hierarchy represented by red composition arrows
     // - dependencies represented by blue arrows
@@ -191,7 +194,6 @@ pub fn schedule_to_dot_graph(schedule: &Schedule) -> String {
             }
         }
 
-        // go through hierarchy edges
         // go through hierarchy edges
         for edge in graph.hierarchy {
             let from = node_id_map.get(&edge.from).cloned().unwrap_or_else(|| {
@@ -321,6 +323,132 @@ pub struct ReflectSystemGraph {
     hierarchy: Vec<Edge>,
 }
 
+impl ReflectSystemGraph {
+    /// Sorts the graph nodes and edges.
+    ///
+    /// Useful if you want a stable order and deterministic graphs.
+    pub fn sort(&mut self) {
+        // sort everything in this graph
+        self.nodes.sort_by_key(|node| match node {
+            ReflectSystemGraphNode::System(system) => system.node_id.0,
+            ReflectSystemGraphNode::SystemSet(system_set) => system_set.node_id.0,
+        });
+
+        self.dependencies.sort();
+
+        self.hierarchy.sort();
+    }
+
+    /// removes the set and bridges the edges connecting to it
+    fn absorb_set(&mut self, node_id: NodeId) {
+        // collect hierarchy parents and children in one pass
+        let mut hierarchy_parents = Vec::new();
+        let mut hierarchy_children = Vec::new();
+        // the relation ship expressed by edges is "is child of"
+        for edge in &self.hierarchy {
+            // these are children
+            if edge.to.0 == node_id {
+                hierarchy_children.push(edge.from.clone());
+            }
+            // these are parents
+            if edge.from.0 == node_id {
+                hierarchy_parents.push(edge.to.clone());
+            }
+        }
+
+        // 
+        let mut dependencies = Vec::new();
+        let mut dependents = Vec::new();
+        // the relationship expressed is "runs before" i.e. "is depended on by"
+        for edge in &self.dependencies {
+            if edge.to.0 == node_id {
+                dependencies.push(edge.from.clone());
+            }
+            if edge.from.0 == node_id {
+                dependents.push(edge.to.clone());
+            }
+        }
+
+        let mut new_hierarchy_edges =
+            HashSet::with_capacity(hierarchy_parents.len() * hierarchy_children.len());
+        let mut new_dependency_edges =
+            HashSet::with_capacity(dependencies.len() * dependents.len());
+
+        // each parent, becomes a parent to the sets children
+        for parent in hierarchy_parents.iter() {
+            for child in hierarchy_children.iter() {
+                new_hierarchy_edges.insert(Edge {
+                    from: child.clone(),
+                    to: parent.clone(),
+                });
+            }
+        }
+
+        for child in hierarchy_parents.iter() {
+            // bridge dependencies
+            for dependency in dependencies.iter() {
+                new_dependency_edges.insert(Edge {
+                    from: dependency.clone(),
+                    to: child.clone(),
+                });
+            }
+
+            for dependent in dependents.iter() {
+                new_dependency_edges.insert(Edge {
+                    from: child.clone(),
+                    to: dependent.clone(),
+                });
+            }
+        }
+
+
+        // remove any edges involving the set to absorb
+        self.hierarchy
+            .retain(|edge| edge.from.0 != node_id && edge.to.0 != node_id);
+        self.dependencies
+            .retain(|edge| edge.from.0 != node_id && edge.to.0 != node_id);
+
+        // remove the set from nodes
+        self.nodes.retain(|node| match node {
+            ReflectSystemGraphNode::SystemSet(system_set) => system_set.node_id.0 != node_id,
+            _ => true,
+        });
+
+        // add new bridging edges
+        self.hierarchy.extend(new_hierarchy_edges);
+        self.dependencies.extend(new_dependency_edges);
+    }
+
+    /// type system sets, are not really important to us, for all intents and purposes
+    /// they are one and the same as the underlying systems
+    /// Adapter and pipe systems might have multiple default system sets attached, but we want all them gone from the graph.
+    /// 
+    /// Inlines every type system set into its children, replacing anything pointing to those sets by edges to every system contained in the set
+    pub fn absorb_type_system_sets(&mut self) {
+
+        let type_sets = self
+            .nodes
+            .iter()
+            .filter_map(|node| match node {
+                ReflectSystemGraphNode::SystemSet(system_set) => {
+                    if system_set.type_id.is_some() {
+                        Some(system_set.node_id.0)
+                    } else {
+                        None
+                    }
+                }
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+
+        // yes this is very inefficient, no this isn't a big hot path, these graphs mostly serve a debugging role.
+        for node_id in type_sets {
+            self.absorb_set(node_id);
+        }
+        
+    }
+}
+
 /// A node in the reflectable system graph
 #[derive(Reflect)]
 pub enum ReflectSystemGraphNode {
@@ -331,10 +459,83 @@ pub enum ReflectSystemGraphNode {
 }
 
 /// An edge in the graph
-#[derive(Reflect)]
+#[derive(Reflect, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Edge {
     /// The id of the node this edge is coming from
     from: ReflectNodeId,
     /// The id of the node this edge is going to
     to: ReflectNodeId,
+}
+
+#[cfg(test)]
+mod test {
+    use bevy::{
+        app::Update,
+        ecs::{
+            schedule::{IntoSystemConfigs, IntoSystemSetConfigs},
+            world::World,
+        },
+    };
+
+    use super::*;
+
+    fn system_a() {}
+
+    fn system_b() {}
+
+    fn system_c() {}
+
+    fn system_d() {}
+
+    fn system_e() {}
+
+    const BLESS_MODE: bool = false;
+
+    #[test]
+    fn test_graph_is_as_expected() {
+        // create empty schedule and graph it
+
+        let mut schedule = Schedule::new(Update);
+
+        #[derive(SystemSet, Hash, PartialEq, Eq, PartialOrd, Ord, Debug, Clone, Copy)]
+        enum SystemSet {
+            SystemSetG,
+            SystemSetH,
+        }
+
+        // add a few systems that depend on each other, some via system sets
+
+        schedule
+            .add_systems(system_a)
+            .add_systems(system_b.before(system_a))
+            .add_systems(system_c.after(system_b).before(SystemSet::SystemSetH))
+            .add_systems(system_d.in_set(SystemSet::SystemSetG))
+            .add_systems(system_e.in_set(SystemSet::SystemSetH))
+            .configure_sets(SystemSet::SystemSetG.after(SystemSet::SystemSetH));
+        let mut world = World::new();
+        schedule.initialize(&mut world).unwrap();
+
+        let mut graph = schedule_to_reflect_graph(&schedule);
+        graph.absorb_type_system_sets();
+        graph.sort();
+        let dot = reflect_graph_to_dot(graph);
+
+        let normalize = |s: &str| {
+            // trim each line individually from the start, and replace " = " with "=" to deal with formatters
+            let lines: Vec<&str> = s.lines().map(|line| line.trim_start()).collect();
+            lines.join("\n").replace(" = ", "").replace(";", "").replace(",", "").trim().to_string()
+        };
+
+        // check that the dot graph is as expected
+        // the expected file is found next to the src/lib.rs folder
+        let expected = include_str!("../test_graph.dot");
+        let expected_path = manifest_dir_macros::file_path!("test_graph.dot");
+
+        if BLESS_MODE {
+            std::fs::write(expected_path, normalize(&dot)).unwrap();
+            panic!("Bless mode is active");
+        } else {
+            pretty_assertions::assert_eq!(normalize(&dot), normalize(expected));
+        }
+    }
 }

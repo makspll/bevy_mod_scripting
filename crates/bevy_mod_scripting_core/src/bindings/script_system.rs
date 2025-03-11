@@ -26,7 +26,7 @@ use bevy::{
         entity::Entity,
         query::{Access, FilteredAccess, FilteredAccessSet, QueryState},
         reflect::AppTypeRegistry,
-        schedule::{IntoSystemConfigs, IntoSystemSetConfigs, SystemSet},
+        schedule::{IntoSystemConfigs, SystemSet},
         system::{IntoSystem, System},
         world::{unsafe_world_cell::UnsafeWorldCell, World},
     },
@@ -650,7 +650,7 @@ mod test {
 
     make_test_plugin!(crate);
 
-    fn test_system_rust(world: &mut World) {}
+    fn test_system_rust(_world: &mut World) {}
 
     #[test]
     fn test_script_system_with_existing_system_dependency_can_execute() {

@@ -1,0 +1,15 @@
+digraph {
+node_0 [label="bevy_system_reflection::test::system_a"]
+node_1 [label="bevy_system_reflection::test::system_b"]
+node_2 [label="bevy_system_reflection::test::system_c"]
+node_3 [label="bevy_system_reflection::test::system_d"]
+node_4 [label="bevy_system_reflection::test::system_e"]
+node_5 [label="SystemSet SystemSetH"]
+node_6 [label="SystemSet SystemSetG"]
+node_4 -> node_5 [color=red label="child of" arrowhead=diamond]
+node_3 -> node_6 [color=red label="child of" arrowhead=diamond]
+node_1 -> node_0 [color=blue label="runs before" arrowhead=normal]
+node_1 -> node_2 [color=blue label="runs before" arrowhead=normal]
+node_2 -> node_5 [color=blue label="runs before" arrowhead=normal]
+node_5 -> node_6 [color=blue label="runs before" arrowhead=normal]
+}
