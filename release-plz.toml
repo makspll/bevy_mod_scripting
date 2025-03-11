@@ -1,8 +1,8 @@
 [workspace]
+changelog_path="./CHANGELOG.md"
 dependencies_update = false
 publish_timeout = "30m"
 git_release_enable = false
-changelog_update = false
 git_tag_enable = false
 git_release_body = """
 {{ changelog }}
@@ -32,7 +32,6 @@ commit_parsers = [
 
 [[package]]
 name = "bevy_mod_scripting"
-changelog_update = true
 publish_features = ["lua54"]
 version_group = "main"
 git_release_latest = true
@@ -40,14 +39,6 @@ git_release_enable = true
 git_tag_enable = true
 git_tag_name = "v{{ version }}"
 git_release_name = "v{{ version }}"
-
-changelog_include = [
-    "bevy_mod_scripting_lua",
-    "bevy_mod_scripting_core",
-    "bevy_mod_scripting_rhai",
-    # "bevy_mod_scripting_rune",
-    "bevy_mod_scripting_functions",
-]
 
 [[package]]
 name = "bevy_mod_scripting_lua"
