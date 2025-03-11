@@ -1,17 +1,9 @@
 [workspace]
+changelog_path="./CHANGELOG.md"
 dependencies_update = false
 publish_timeout = "30m"
 git_release_enable = false
 git_tag_enable = false
-git_release_body = """
-{{ changelog }}
-{% if remote.contributors %}
-### Contributors
-{% for contributor in remote.contributors | unique(attribute="username") %}
-* @{{ contributor.username }}
-{% endfor %}
-{% endif %}
-"""
 
 [changelog]
 commit_parsers = [
@@ -26,6 +18,40 @@ commit_parsers = [
     { message = "^security", group = "security" },
     { message = "^.*", group = "other" },
 ]
+body = """
+## [{{ version | trim_start_matches(pat="v") }}]\
+    {%- if release_link -%}\
+        ({{ release_link }})\
+    {% endif %} \
+    - {{ timestamp | date(format="%Y-%m-%d") }}
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | upper_first }}
+
+    {% for commit in commits %}
+        {%- if commit.scope -%}
+            - *({{commit.scope}})* {% if commit.breaking %}[**breaking**] {% endif %}\
+                {{ commit.message }}{{ self::username(commit=commit) }}\
+                {%- if commit.links %} \
+                    ({% for link in commit.links %}[{{link.text}}]({{link.href}}) {% endfor -%})\
+                {% endif %}
+        {% else -%}
+            - {% if commit.breaking %}[**breaking**] {% endif %}{{ commit.message }}{{ self::username(commit=commit) }}{{ self::pr(commit=commit) }}
+        {% endif -%}
+    {% endfor -%}
+{% endfor %}
+{%- if remote.contributors %}
+### Contributors
+{% for contributor in remote.contributors %}
+    * @{{ contributor.username }}
+{%- endfor %}
+{% endif -%}
+{%- macro username(commit) -%}
+    {% if commit.remote.username %} (by @{{ commit.remote.username }}){% endif -%}
+{% endmacro -%}
+{%- macro pr(commit) -%}
+    {% if commit.remote.pr_number %} - #{{ commit.remote.pr_number }}{% endif -%}
+{% endmacro -%}
+"""
 
 [[package]]
 name = "bevy_mod_scripting"
@@ -36,14 +62,6 @@ git_release_enable = true
 git_tag_enable = true
 git_tag_name = "v{{ version }}"
 git_release_name = "v{{ version }}"
-
-changelog_include = [
-    "bevy_mod_scripting_lua",
-    "bevy_mod_scripting_core",
-    "bevy_mod_scripting_rhai",
-    # "bevy_mod_scripting_rune",
-    "bevy_mod_scripting_functions",
-]
 
 [[package]]
 name = "bevy_mod_scripting_lua"
@@ -87,7 +105,6 @@ git_tag_name = "v{{ version }}-ladfile_builder"
 git_release_name = "v{{ version }}-ladfile_builder"
 
 [[package]]
-changelog_update = true
 name = "mdbook_lad_preprocessor"
 git_release_enable = true
 git_release_latest = false
