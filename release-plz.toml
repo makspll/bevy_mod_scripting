@@ -20,7 +20,6 @@ commit_parsers = [
     { message = "^test.*", skip = true },
     { message = "^docs.*", skip = true },
     { message = "^.*SKIP_CHANGELOG.*$", skip = true},
-    { message = "^refactor", group = "refactored"},
     { message = "^feat", group = "added" },
     { message = "^changed", group = "changed" },
     { message = "^deprecated", group = "deprecated" },
