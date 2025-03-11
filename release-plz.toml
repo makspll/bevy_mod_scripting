@@ -1,5 +1,4 @@
 [workspace]
-changelog_path="./CHANGELOG.md"
 dependencies_update = false
 publish_timeout = "30m"
 git_release_enable = false
@@ -20,13 +19,11 @@ commit_parsers = [
     { message = "^chore.*", skip = true },
     { message = "^test.*", skip = true },
     { message = "^docs.*", skip = true },
-    { message = "^.*[SKIP_CHANGELOG].*", skip = true },
     { message = "^feat", group = "added" },
     { message = "^changed", group = "changed" },
     { message = "^deprecated", group = "deprecated" },
     { message = "^fix", group = "fixed" },
     { message = "^security", group = "security" },
-    { message = "^refactor", group = "refactor" },
     { message = "^.*", group = "other" },
 ]
 
@@ -39,6 +36,14 @@ git_release_enable = true
 git_tag_enable = true
 git_tag_name = "v{{ version }}"
 git_release_name = "v{{ version }}"
+
+changelog_include = [
+    "bevy_mod_scripting_lua",
+    "bevy_mod_scripting_core",
+    "bevy_mod_scripting_rhai",
+    # "bevy_mod_scripting_rune",
+    "bevy_mod_scripting_functions",
+]
 
 [[package]]
 name = "bevy_mod_scripting_lua"
@@ -66,7 +71,6 @@ name = "bevy_mod_scripting_functions"
 version_group = "main"
 
 [[package]]
-changelog_update = true
 name = "ladfile"
 git_release_enable = true
 git_release_latest = false
@@ -75,7 +79,6 @@ git_tag_name = "v{{ version }}-ladfile"
 git_release_name = "v{{ version }}-ladfile"
 
 [[package]]
-changelog_update = true
 name = "ladfile_builder"
 git_release_enable = true
 git_release_latest = false
