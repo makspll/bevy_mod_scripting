@@ -20,6 +20,13 @@ function on_test()
         system_builder("custom_system_before", script_id)
             :before(test_system)
     )    
+
+    local script_system_between = world.add_system(
+        post_update_schedule,
+        system_builder("custom_system_between", script_id)
+            :after(test_system)
+            :before(system_after)
+    )
 end
 
 
@@ -39,10 +46,16 @@ function custom_system_after()
     runs[#runs + 1] = "custom_system_after"
 end
 
+function custom_system_between()
+    print("custom_system_between")
+    runs[#runs + 1] = "custom_system_between"
+end
+
 -- runs in the `Last` bevy schedule
 function on_test_last()
-    assert(#runs == 3, "Expected 3 runs, got: " .. #runs)
+    assert(#runs == 4, "Expected 4 runs, got: " .. #runs)
     assert(runs[1] == "custom_system_before", "Expected custom_system_before to run first, got: " .. runs[1])
     assert(runs[2] == "on_test_post_update", "Expected on_test_post_update to run second, got: " .. runs[2])
-    assert(runs[3] == "custom_system_after", "Expected custom_system_after to run third, got: " .. runs[3])
+    assert(runs[3] == "custom_system_between", "Expected custom_system_between to run third, got: " .. runs[3])
+    assert(runs[4] == "custom_system_after", "Expected custom_system_after to run second, got: " .. runs[4])
 end
