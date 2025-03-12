@@ -6,7 +6,7 @@ use super::{
 };
 use crate::{
     bindings::{ReflectReference, WorldGuard},
-    error::InteropError,
+    error::InteropError, private::{no_type_dependencies, self_type_dependency_only},
 };
 use bevy::reflect::{FromReflect, GetTypeRegistration, TypeRegistry, Typed};
 use std::collections::HashMap;
@@ -18,31 +18,6 @@ pub trait GetTypeDependencies {
     fn register_type_dependencies(registry: &mut TypeRegistry);
 }
 
-#[macro_export]
-/// A macro for implementing [`GetTypeDependencies`] for types with no type dependencies.
-macro_rules! no_type_dependencies {
-    ($($path:path),*) => {
-        $(
-            impl $crate::bindings::function::type_dependencies::GetTypeDependencies for $path {
-                fn register_type_dependencies(_registry: &mut bevy::reflect::TypeRegistry) {}
-            }
-        )*
-    };
-}
-
-#[macro_export]
-/// A macro for implementing [`GetTypeDependencies`] for types that only depend on themselves.
-macro_rules! self_type_dependency_only {
-    ($($path:ty),*) => {
-        $(
-            impl $crate::bindings::function::type_dependencies::GetTypeDependencies for $path {
-                fn register_type_dependencies(registry: &mut bevy::reflect::TypeRegistry) {
-                    registry.register::<$path>();
-                }
-            }
-        )*
-    };
-}
 
 macro_rules! recursive_type_dependencies {
     ($( ($path:ty where $($bound:ident : $($bound_val:path);*),* $(,,const $const:ident : $const_ty:ty)? $(=> with $self_:ident)?) ),* )  => {

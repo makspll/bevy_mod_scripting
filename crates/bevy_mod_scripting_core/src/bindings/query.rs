@@ -1,7 +1,7 @@
 //! Utilities for querying the world.
 
-use super::{ReflectReference, WorldAccessGuard};
-use crate::{error::InteropError, with_global_access};
+use super::{with_global_access, ReflectReference, WorldAccessGuard};
+use crate::error::InteropError;
 use bevy::{
     ecs::{
         component::ComponentId,

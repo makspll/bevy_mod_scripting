@@ -10,7 +10,9 @@ use bevy::{ecs::system::Resource, utils::hashbrown::HashMap};
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::{any::TypeId, borrow::Cow, sync::Arc};
 
-pub mod core;
+crate::private::export_all_in_modules!{
+    core
+}
 
 /// A send + sync wrapper around the [`ScriptGlobalsRegistry`].
 #[derive(Default, Resource, Clone)]

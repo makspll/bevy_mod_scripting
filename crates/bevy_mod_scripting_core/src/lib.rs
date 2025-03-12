@@ -40,6 +40,8 @@ pub mod reflection_extensions;
 pub mod runtime;
 pub mod script;
 
+pub(crate) mod private;
+
 #[derive(SystemSet, Hash, Debug, Eq, PartialEq, Clone)]
 /// Labels for various BMS systems
 pub enum ScriptingSystemSet {

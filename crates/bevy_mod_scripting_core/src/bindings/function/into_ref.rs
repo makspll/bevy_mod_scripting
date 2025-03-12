@@ -26,8 +26,8 @@ pub trait IntoScriptRef {
     ) -> Result<ScriptValue, InteropError>;
 }
 
-#[macro_export]
 /// a utility for matching types by their [`std::any::TypeId`]
+#[macro_export]
 macro_rules! match_by_type {
     (match $on:ident {$($id:ident : $ty:ty => $conv:expr),*}) => {
         match $on {
@@ -38,6 +38,8 @@ macro_rules! match_by_type {
         }
     };
 }
+
+pub use match_by_type;
 
 #[macro_export]
 /// Downcasts a reference into a value of a given type or returns an error if the downcast fails.

@@ -82,12 +82,12 @@ impl ReflectType<'_> {
 }
 
 pub(crate) const DEF_PATHS_BMS_FROM_SCRIPT: [&str; 2] = [
-    "bevy_mod_scripting_core::bindings::function::from::FromScript",
-    "bindings::function::from::FromScript",
+    "bevy_mod_scripting_core::bindings::FromScript",
+    "bindings::FromScript",
 ];
 pub(crate) const DEF_PATHS_BMS_INTO_SCRIPT: [&str; 2] = [
-    "bevy_mod_scripting_core::bindings::function::into::IntoScript",
-    "bindings::function::into::IntoScript",
+    "bevy_mod_scripting_core::bindings::IntoScript",
+    "bindings::IntoScript",
 ];
 
 pub(crate) const DEF_PATHS_REFLECT: [&str; 2] =

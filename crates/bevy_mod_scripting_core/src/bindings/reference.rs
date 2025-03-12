@@ -6,10 +6,10 @@
 //! we need wrapper types which have owned and ref variants.
 use super::{access_map::ReflectAccessId, WorldGuard};
 use crate::{
-    bindings::ReflectAllocationId,
+    bindings::{with_access_read, with_access_write, ReflectAllocationId},
     error::InteropError,
     reflection_extensions::{PartialReflectExt, TypeIdExtensions},
-    with_access_read, with_access_write, ReflectAllocator,
+    ReflectAllocator,
 };
 use bevy::{
     ecs::{
