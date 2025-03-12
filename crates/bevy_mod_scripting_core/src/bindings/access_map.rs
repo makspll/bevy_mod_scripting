@@ -713,7 +713,6 @@ impl DisplayCodeLocation for Option<std::panic::Location<'_>> {
     }
 }
 
-#[macro_export]
 /// A macro for claiming access to a value for reading
 macro_rules! with_access_read {
     ($access_map:expr, $id:expr, $msg:expr, $body:block) => {{
@@ -731,7 +730,7 @@ macro_rules! with_access_read {
     }};
 }
 
-#[macro_export]
+pub(crate) use with_access_read;
 /// A macro for claiming access to a value for writing
 macro_rules! with_access_write {
     ($access_map:expr, $id:expr, $msg:expr, $body:block) => {
@@ -748,8 +747,8 @@ macro_rules! with_access_write {
         }
     };
 }
+pub(crate) use with_access_write;
 
-#[macro_export]
 /// A macro for claiming global access
 macro_rules! with_global_access {
     ($access_map:expr, $msg:expr, $body:block) => {
@@ -770,6 +769,8 @@ macro_rules! with_global_access {
         }
     };
 }
+
+pub(crate) use with_global_access;
 
 #[cfg(test)]
 mod test {

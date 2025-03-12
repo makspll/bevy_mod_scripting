@@ -3,8 +3,8 @@
 use std::{ffi::OsString, path::PathBuf};
 
 use crate::{
-    bindings::{script_value::ScriptValue, ReflectReference},
-    docgen::typed_through::TypedThrough,
+    bindings::{ScriptValue, ReflectReference},
+    docgen::TypedThrough,
 };
 
 use super::{

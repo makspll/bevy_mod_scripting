@@ -9,22 +9,15 @@ use super::{
     access_map::{
         AccessCount, AccessMapKey, AnyAccessMap, DynamicSystemMeta, ReflectAccessId,
         ReflectAccessKind, SubsetAccessMap,
-    },
-    function::{
+    }, function::{
         namespace::Namespace,
         script_function::{AppScriptFunctionRegistry, DynamicScriptFunction, FunctionCallContext},
-    },
-    pretty_print::DisplayWithWorld,
-    schedule::AppScheduleRegistry,
-    script_value::ScriptValue,
-    AppReflectAllocator, ReflectBase, ReflectBaseType, ReflectReference,
-    ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration,
+    }, pretty_print::DisplayWithWorld, schedule::AppScheduleRegistry, script_value::ScriptValue, with_global_access, AppReflectAllocator, ReflectBase, ReflectBaseType, ReflectReference, ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration
 };
 use crate::{
-    bindings::function::{from::FromScript, from_ref::FromScriptRef},
+    bindings::{function::{from::FromScript, from_ref::FromScriptRef}, with_access_read, with_access_write},
     error::InteropError,
     reflection_extensions::PartialReflectExt,
-    with_access_read, with_access_write, with_global_access,
 };
 use bevy::{
     app::AppExit,

@@ -2,7 +2,7 @@
 
 use crate::reflection_extensions::{FakeType, TypeIdExtensions};
 
-use super::{
+use crate::bindings::{
     access_map::ReflectAccessId, script_value::ScriptValue, ReflectAllocationId, ReflectBase,
     ReflectBaseType, ReflectReference, WorldGuard,
 };

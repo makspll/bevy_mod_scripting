@@ -1,15 +1,12 @@
 //! Contains the [`FromScriptRef`] trait and its implementations.
 
 use std::{any::TypeId, ffi::OsString, path::PathBuf};
-
 use bevy::reflect::{
     DynamicEnum, DynamicList, DynamicMap, DynamicTuple, DynamicVariant, Map, PartialReflect,
 };
-
 use crate::{
-    bindings::{function::from::FromScript, WorldGuard},
+    bindings::{match_by_type, WorldGuard, FromScript},
     error::InteropError,
-    match_by_type,
     reflection_extensions::TypeInfoExtensions,
     ScriptValue,
 };

@@ -1,13 +1,15 @@
 //! Abstractions to do with dynamic script functions
 
-pub mod arg_meta;
-pub mod from;
-pub mod from_ref;
-pub mod into;
-pub mod into_ref;
-pub mod namespace;
-pub mod script_function;
-pub mod type_dependencies;
+crate::private::export_all_in_modules!{
+    arg_meta,
+    from,
+    from_ref,
+    into,
+    into_ref,
+    namespace,
+    script_function,
+    type_dependencies
+}
 
 #[cfg(test)]
 #[allow(dead_code)]
