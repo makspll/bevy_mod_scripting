@@ -2,11 +2,10 @@
 
 use bevy::{
     app::Plugin,
-    asset::AssetPath,
     ecs::{entity::Entity, world::World},
 };
 use bevy_mod_scripting_core::{
-    asset::{AssetPathToLanguageMapper, Language},
+    asset::Language,
     bindings::{
         function::namespace::Namespace, globals::AppScriptGlobalsRegistry,
         script_value::ScriptValue, ThreadWorldContainer, WorldContainer,
@@ -84,9 +83,6 @@ impl Default for RhaiScriptingPlugin {
                     load: rhai_context_load,
                     reload: rhai_context_reload,
                 },
-                language_mapper: AssetPathToLanguageMapper {
-                    map: rhai_language_mapper,
-                },
                 context_initializers: vec![
                     |_, context: &mut RhaiScriptContext| {
                         context.scope.set_or_push(
@@ -159,16 +155,11 @@ impl Default for RhaiScriptingPlugin {
                     context.scope.set_or_push("script_id", script.to_owned());
                     Ok(())
                 }],
-                supported_extensions: &["rhai"],
+                // already supported by BMS core
+                additional_supported_extensions: &[],
+                language: Language::Rhai,
             },
         }
-    }
-}
-
-fn rhai_language_mapper(path: &AssetPath) -> Language {
-    match path.path().extension().and_then(|ext| ext.to_str()) {
-        Some("rhai") => Language::Rhai,
-        _ => Language::Unknown,
     }
 }
 

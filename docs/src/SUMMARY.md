@@ -16,6 +16,7 @@
 # Scripting Reference
 
 - [Introduction](./ScriptingReference/introduction.md)
+- [Constructing Arbitrary Types](./ScriptingReference/constructing-arbitrary-types.md)
 - [Core Bindings](./ScriptingReference/core-api.md)
     - [World](./ScriptingReference/world.md)
     - [ReflectReference](./ScriptingReference/reflect-reference.md)

@@ -59,6 +59,32 @@ hello_world2("hi from global!");
 
 Note the `new_unregistered` call instead of `new`, this is because `GlobalNamespace` is not a `Reflect` type, and the `new` call also automatically registers the type in the reflection registry.
 
+## Macros
+The above is a bit tedious, so instead you can use the `script_bindings` macro, which applies to impl blocks like so:
+
+```rust,ignore
+#[script_bindings("test_fn")]
+impl TestStruct {
+    /// My docs !!
+    /// 
+    /// Arguments:
+    /// * `_self` - the first argument
+    /// * `arg1` - the second argument
+    /// Returns:
+    /// * `return` - nothing
+    fn test_fn(_self: Ref<TestStruct>, mut arg1: usize) {}
+}
+
+
+pub fn main() {
+    let mut app = App::new();
+    register_test_fn(app.world_mut())
+}
+```
+
+Note the documentation will automatically be picked up and stored for the purposes of reflection and documentation generation, including argument/return type specific docs.
+
+
 ## Context Arguments
 
 Each script function call always receives an additional context argument: `FunctionCallContext`.

@@ -1,11 +1,10 @@
 //! Lua integration for the bevy_mod_scripting system.
 use bevy::{
     app::Plugin,
-    asset::AssetPath,
     ecs::{entity::Entity, world::World},
 };
 use bevy_mod_scripting_core::{
-    asset::{AssetPathToLanguageMapper, Language},
+    asset::Language,
     bindings::{
         function::namespace::Namespace, globals::AppScriptGlobalsRegistry,
         script_value::ScriptValue, ThreadWorldContainer, WorldContainer,
@@ -59,9 +58,6 @@ impl Default for LuaScriptingPlugin {
                 context_builder: ContextBuilder::<LuaScriptingPlugin> {
                     load: lua_context_load,
                     reload: lua_context_reload,
-                },
-                language_mapper: AssetPathToLanguageMapper {
-                    map: lua_language_mapper,
                 },
                 context_initializers: vec![
                     |_script_id, context| {
@@ -134,16 +130,10 @@ impl Default for LuaScriptingPlugin {
                         .map_err(ScriptError::from_mlua_error)?;
                     Ok(())
                 }],
-                supported_extensions: &["lua"],
+                additional_supported_extensions: &[],
+                language: Language::Lua,
             },
         }
-    }
-}
-#[profiling::function]
-fn lua_language_mapper(path: &AssetPath) -> Language {
-    match path.path().extension().and_then(|ext| ext.to_str()) {
-        Some("lua") => Language::Lua,
-        _ => Language::Unknown,
     }
 }
 

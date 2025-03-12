@@ -19,6 +19,10 @@ In order to attach a script and make it runnable simply add a `ScriptComponent` 
 
 When this script is run the `entity` global will represent the entity the script is attached to. This allows you to interact with the entity in your script easilly.
 
+<div class="warning">
+Be wary of path separators, by default script ID's are derived from asset paths, which are platform dependent. Make sure to use `std::path::PathBuf` if you are targetting multiple platforms.
+</div>
+
 ## Making static scripts runnable
 
 Some scripts do not require attaching to an entity. You can run these scripts by loading them first as you would with any other script, then either adding them at app level via `add_static_script` or by issuing a `AddStaticScript` command like so:
