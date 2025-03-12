@@ -1,11 +1,20 @@
 use log::trace;
 use rustc_hir::def_id::LOCAL_CRATE;
+use rustc_middle::ty::TyCtxt;
 use rustc_span::Symbol;
 
 use crate::{
     Args, BevyCtxt, DEF_PATHS_BMS_FROM_SCRIPT, DEF_PATHS_BMS_INTO_SCRIPT,
     DEF_PATHS_GET_TYPE_REGISTRATION, DEF_PATHS_REFLECT, STD_SOURCE_TRAITS,
 };
+
+fn dump_traits(tcx: &TyCtxt) -> String{
+    let mut buffer = String::new();
+    for t in tcx.all_traits() {
+        buffer.push_str(&tcx.def_path_str(t));
+    }
+    buffer
+}
 
 /// Finds and caches relevant traits, if they cannot be found throws an ICE
 pub(crate) fn cache_traits(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
@@ -35,15 +44,17 @@ pub(crate) fn cache_traits(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
 
     if !ctxt.cached_traits.has_all_bms_traits() {
         panic!(
-            "Could not find all bms traits in crate: {}",
-            tcx.crate_name(LOCAL_CRATE)
+            "Could not find all bms traits in crate: {}. Available traits: {}",
+            tcx.crate_name(LOCAL_CRATE),
+            dump_traits(tcx)
         )
     }
 
     if !ctxt.cached_traits.has_all_bevy_traits() {
         panic!(
-            "Could not find all reflect traits in crate: {}, did bootstrapping go wrong?",
-            tcx.crate_name(LOCAL_CRATE)
+            "Could not find all reflect traits in crate: {}, did bootstrapping go wrong?. Available traits: {}",
+            tcx.crate_name(LOCAL_CRATE),
+            dump_traits(tcx)
         )
     }
 
