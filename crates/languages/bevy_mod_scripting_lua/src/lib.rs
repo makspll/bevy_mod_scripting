@@ -134,7 +134,7 @@ impl Default for LuaScriptingPlugin {
                         .map_err(ScriptError::from_mlua_error)?;
                     Ok(())
                 }],
-                supported_extensions: &["lua"],
+                additional_supported_extensions: &["lua"],
             },
         }
     }

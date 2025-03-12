@@ -16,12 +16,12 @@ use bevy::{
         ResMut,
     },
     reflect::TypePath,
-    utils::HashMap,
+    utils::hashbrown::HashMap,
 };
 use std::borrow::Cow;
 
 /// Represents a scripting language. Languages which compile into another language should use the target language as their language.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub enum Language {
     /// The Rhai scripting language
     Rhai,
@@ -32,6 +32,7 @@ pub enum Language {
     /// An external scripting language
     External(Cow<'static, str>),
     /// Set if none of the asset path to language mappers match
+    #[default]
     Unknown,
 }
 
@@ -110,8 +111,8 @@ impl AssetLoader for ScriptAssetLoader {
 pub struct ScriptAssetSettings {
     /// Strategy for mapping asset paths to script ids, by default this is the identity function
     pub script_id_mapper: AssetPathToScriptIdMapper,
-    /// Strategies for mapping asset paths to languages
-    pub script_language_mappers: Vec<AssetPathToLanguageMapper>,
+    /// Mapping from extension to script language
+    pub extension_to_language_map: HashMap<&'static str, Language>,
 
     /// The currently supported asset extensions
     /// Should be updated by each scripting plugin to include the extensions it supports.
@@ -123,15 +124,11 @@ pub struct ScriptAssetSettings {
 impl ScriptAssetSettings {
     /// Selects the language for a given asset path
     pub fn select_script_language(&self, path: &AssetPath) -> Language {
-        for mapper in &self.script_language_mappers {
-            let language = (mapper.map)(path);
-            match language {
-                Language::Unknown => continue,
-                _ => return language,
-            }
-        }
-
-        Language::Unknown
+        let extension = path.path().extension().and_then(|ext| ext.to_str()).unwrap_or_default();
+        self.extension_to_language_map
+            .get(extension)
+            .cloned()
+            .unwrap_or_default()    
     }
 }
 
@@ -141,7 +138,12 @@ impl Default for ScriptAssetSettings {
             script_id_mapper: AssetPathToScriptIdMapper {
                 map: (|path: &AssetPath| path.path().to_string_lossy().into_owned().into()),
             },
-            script_language_mappers: vec![],
+            extension_to_language_map: HashMap::from_iter(vec![
+                ("lua", Language::Lua),
+                ("luau", Language::Lua),
+                ("rhai", Language::Rhai),
+                ("rn", Language::Rune),
+            ]),
             supported_extensions: &[],
         }
     }
@@ -154,20 +156,6 @@ pub struct AssetPathToScriptIdMapper {
     pub map: fn(&AssetPath) -> ScriptId,
 }
 
-#[derive(Clone, Copy)]
-/// Strategy for mapping asset paths to languages
-pub struct AssetPathToLanguageMapper {
-    /// The mapping function
-    pub map: fn(&AssetPath) -> Language,
-}
-
-impl Default for AssetPathToLanguageMapper {
-    fn default() -> Self {
-        Self {
-            map: |_| Language::Unknown,
-        }
-    }
-}
 
 /// A cache of asset id's to their script id's. Necessary since when we drop an asset we won't have the ability to get the path from the asset.
 #[derive(Default, Debug, Resource)]
@@ -393,26 +381,10 @@ mod tests {
             script_id_mapper: AssetPathToScriptIdMapper {
                 map: |path| path.path().to_string_lossy().into_owned().into(),
             },
-            script_language_mappers: vec![
-                AssetPathToLanguageMapper {
-                    map: |path| {
-                        if path.path().extension().unwrap() == "lua" {
-                            Language::Lua
-                        } else {
-                            Language::Unknown
-                        }
-                    },
-                },
-                AssetPathToLanguageMapper {
-                    map: |path| {
-                        if path.path().extension().unwrap() == "rhai" {
-                            Language::Rhai
-                        } else {
-                            Language::Unknown
-                        }
-                    },
-                },
-            ],
+            extension_to_language_map: HashMap::from_iter(vec![
+                ("lua", Language::Lua),
+                ("rhai", Language::Rhai),
+            ]),
         }
     }
 

@@ -30,7 +30,19 @@ To enable hot-loading of assets, you need to enable the necessary bevy features 
 
 Assuming that hot-reloading is enabled for your app, any changes to script assets will automatically be picked up and the scripts re-loaded.
 
-## Manually (re)loading scripts
+## File Extensions
+Normally the set of supported extensions is pre-decided by each language plugin.
+
+I.e. Lua supports ".lua" extensions and Rhai supports ".rhai" extensions.
+
+Scripts are mapped to the corresponding language plugin based on these and so it's important to use them correctly.
+
+If you would like to add more extensions you need to populate them via `app.add_supported_script_extensions`.
+
+## Advanced
+Normally not necessary, but knowing these exist could be useful for more advanced use cases.
+
+### Manually (re)loading scripts
 In order to manually re-load or load a script you can issue the `CreateOrUpdateScript` command:
 
 ```rust,ignore
@@ -39,7 +51,7 @@ CreateOrUpdateScript::<LuaScriptingPlugin>::new("my_script.lua".into(), "print(\
 
 replace `LuaScriptingPlugin` with the scripting plugin you are using.
 
-## Manually Deleting scripts
+### Manually Deleting scripts
 In order to delete a previously loaded script, you will need to issue a `DeleteScript` command like so:
 
 ```rust,ignore
@@ -48,5 +60,5 @@ DeleteScript::<LuaScriptingPlugin>::new("my_script.lua".into())
 
 replace `LuaScriptingPlugin` with the scripting plugin you are using.
 
-## Loading/Unloading timeframe
+### Loading/Unloading timeframe
 Scripts asset events are processed within the same frame they are issued. This means the moment an asset is loaded, it should be loaded and ready to use in the `Update` schedule. Similarly, the moment an asset is deleted, it should be unloaded and no longer usable in the `Update` schedule.

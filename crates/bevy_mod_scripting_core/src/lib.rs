@@ -4,7 +4,7 @@
 
 use crate::event::ScriptErrorEvent;
 use asset::{
-    configure_asset_systems, configure_asset_systems_for_plugin, AssetPathToLanguageMapper,
+    configure_asset_systems, configure_asset_systems_for_plugin,
     Language, ScriptAsset, ScriptAssetLoader, ScriptAssetSettings,
 };
 use bevy::prelude::*;
@@ -87,16 +87,17 @@ pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
     /// The strategy for assigning contexts to scripts
     pub context_assignment_strategy: ContextAssignmentStrategy,
 
-    /// The asset path to language mapper for the plugin
-    pub language_mapper: AssetPathToLanguageMapper,
+    /// The language this plugin declares
+    pub language: Language,
+    /// Supported extensions to be added to the asset settings without the dot
+    /// By default BMS populates a set of extensions for the languages it supports.
+    pub additional_supported_extensions: &'static [&'static str],
 
     /// initializers for the contexts, run when loading the script
     pub context_initializers: Vec<ContextInitializer<P>>,
     /// initializers for the contexts run every time before handling events
     pub context_pre_handling_initializers: Vec<ContextPreHandlingInitializer<P>>,
 
-    /// Supported extensions to be added to the asset settings without the dot
-    pub supported_extensions: &'static [&'static str],
 }
 
 impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P> {
@@ -106,10 +107,10 @@ impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P> {
             callback_handler: CallbackSettings::<P>::default().callback_handler,
             context_builder: Default::default(),
             context_assignment_strategy: Default::default(),
-            language_mapper: Default::default(),
+            language: Default::default(),
             context_initializers: Default::default(),
             context_pre_handling_initializers: Default::default(),
-            supported_extensions: Default::default(),
+            additional_supported_extensions: Default::default(),
         }
     }
 }
@@ -136,13 +137,9 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
         // add extension for the language to the asset loader
         once_per_app_init(app);
 
-        app.add_supported_script_extensions(self.supported_extensions);
-
-        app.world_mut()
-            .resource_mut::<ScriptAssetSettings>()
-            .as_mut()
-            .script_language_mappers
-            .push(self.language_mapper);
+        if !self.additional_supported_extensions.is_empty() {
+            app.add_supported_script_extensions(self.additional_supported_extensions, self.language.clone());
+        }
 
         register_types(app);
     }
@@ -203,6 +200,11 @@ pub trait ConfigureScriptPlugin {
     /// This means that all scripts will share the same context. This is useful for when you want to share data between scripts easilly.
     /// Be careful however as this also means that scripts can interfere with each other in unexpected ways! Including overwriting each other's handlers.
     fn enable_context_sharing(self) -> Self;
+
+    /// Set the set of extensions to be added for the plugin's language.
+    /// 
+    /// This is useful for adding extensions that are not supported by default by BMS.
+    fn set_additional_supported_extensions(self, extensions: &'static [&'static str]) -> Self;
 }
 
 impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugin for P {
@@ -231,6 +233,13 @@ impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugi
         self.as_mut().context_assignment_strategy = ContextAssignmentStrategy::Global;
         self
     }
+
+    fn set_additional_supported_extensions(mut self, extensions: &'static [&'static str]) -> Self {
+        self.as_mut().additional_supported_extensions = extensions;
+        self
+    }
+
+    
 }
 
 fn once_per_app_finalize(app: &mut App) {
@@ -386,11 +395,13 @@ impl ManageStaticScripts for App {
 /// Any changes to the asset settings after that will not be reflected in the asset loader.
 pub trait ConfigureScriptAssetSettings {
     /// Adds a supported extension to the asset settings
-    fn add_supported_script_extensions(&mut self, extensions: &[&'static str]) -> &mut Self;
+    /// 
+    /// This is only valid to call in the plugin building phase, as the asset loader will be created in the `finalize` phase.
+    fn add_supported_script_extensions(&mut self, extensions: &[&'static str], language: Language) -> &mut Self;
 }
 
 impl ConfigureScriptAssetSettings for App {
-    fn add_supported_script_extensions(&mut self, extensions: &[&'static str]) -> &mut Self {
+    fn add_supported_script_extensions(&mut self, extensions: &[&'static str], language: Language) -> &mut Self {
         let mut asset_settings = self
             .world_mut()
             .get_resource_or_init::<ScriptAssetSettings>();
@@ -402,6 +413,9 @@ impl ConfigureScriptAssetSettings for App {
         let new_arr_static = Vec::leak(new_arr);
 
         asset_settings.supported_extensions = new_arr_static;
+        for extension in extensions {
+            asset_settings.extension_to_language_map.insert(*extension, language.clone());
+        }
 
         self
     }

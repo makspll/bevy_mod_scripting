@@ -159,7 +159,7 @@ impl Default for RhaiScriptingPlugin {
                     context.scope.set_or_push("script_id", script.to_owned());
                     Ok(())
                 }],
-                supported_extensions: &["rhai"],
+                additional_supported_extensions: &["rhai"],
             },
         }
     }
