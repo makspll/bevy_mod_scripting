@@ -19,7 +19,8 @@ function my_non_exclusive_system()
     local ResourceType = world.get_type_by_name("TestResource")
     assert_throws(function()
         local res = world.get_resource(ResourceType)
-    end, ".*cannot claim access to.*")
+        local blah = res.blahblah
+    end, ".*annot claim access to.*")
 end
 
 

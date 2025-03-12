@@ -1219,4 +1219,23 @@ mod test {
         assert!(!subset_access_map.claim_write_access(2));
         assert!(!subset_access_map.claim_global_access());
     }
+
+    #[test]
+    fn subset_map_retains_subset_in_scope() {
+        let access_map = AccessMap::default();
+        let subset_access_map = SubsetAccessMap {
+            inner: access_map,
+            subset: Box::new(|id| id == 1),
+        };
+
+        subset_access_map.with_scope(|| {
+            assert!(subset_access_map.claim_read_access(1));
+            assert!(!subset_access_map.claim_read_access(2));
+            assert!(!subset_access_map.claim_write_access(2));
+        });
+
+        assert!(subset_access_map.claim_read_access(1));
+        assert!(!subset_access_map.claim_read_access(2));
+        assert!(!subset_access_map.claim_write_access(2));
+    }
 }

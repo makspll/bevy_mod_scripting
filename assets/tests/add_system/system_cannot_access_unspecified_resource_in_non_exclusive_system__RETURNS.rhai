@@ -13,7 +13,8 @@ fn my_non_exclusive_system() {
     let ResourceType = world.get_type_by_name.call("TestResource");
     assert_throws(|| {
         let res = world.get_resource.call(ResourceType);
-    }, ".*Cannot claim access to.*");
+        let blah = res.blahblah
+    }, ".*annot claim access to.*");
 }
 
 fn on_test_post_update() {
