@@ -1,6 +1,6 @@
 //! Abstractions to help with creating bindings between bevy and scripting languages.
 
-crate::private::export_all_in_modules!{
+crate::private::export_all_in_modules! {
     access_map,
     allocator,
     function,

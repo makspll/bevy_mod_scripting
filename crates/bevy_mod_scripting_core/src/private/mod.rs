@@ -35,7 +35,4 @@ macro_rules! self_type_dependency_only {
     };
 }
 
-
-pub(crate) use {export_all_in_modules, self_type_dependency_only, no_type_dependencies};
-
-
+pub(crate) use {export_all_in_modules, no_type_dependencies, self_type_dependency_only};
