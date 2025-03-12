@@ -24,9 +24,9 @@
         <link rel="stylesheet" href="../fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" href="../highlight.css">
-        <link rel="stylesheet" href="../tomorrow-night.css">
-        <link rel="stylesheet" href="../ayu-highlight.css">
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
 
@@ -162,7 +162,9 @@
 <p>Every script is currently identified by a unique ID.</p>
 <p>ID's are derived from the script asset path for scripts loaded via the asset system.</p>
 <p>By default this is an identity mapping, but you can override this by modifying the <code>AssetPathToScriptIdMapper</code> inside the <code>ScriptAssetSettings</code> resource before loading the script.</p>
-
+<div class="warning">
+Be wary of path separators, by default script ID's are derived from asset paths, which are platform dependent. Make sure to use `std::path::PathBuf` if you are targetting multiple platforms.
+</div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">

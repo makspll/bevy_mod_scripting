@@ -24,9 +24,9 @@
         <link rel="stylesheet" href="../fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" href="../highlight.css">
-        <link rel="stylesheet" href="../tomorrow-night.css">
-        <link rel="stylesheet" href="../ayu-highlight.css">
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
 
@@ -171,6 +171,9 @@
 <p>In order to attach a script and make it runnable simply add a <code>ScriptComponent</code> to an entity</p>
 <pre><code class="language-rust ignore">    commands.entity(my_entity).insert(ScriptComponent::new(vec!["my_script.lua", "my_other_script.lua"]));</code></pre>
 <p>When this script is run the <code>entity</code> global will represent the entity the script is attached to. This allows you to interact with the entity in your script easilly.</p>
+<div class="warning">
+Be wary of path separators, by default script ID's are derived from asset paths, which are platform dependent. Make sure to use `std::path::PathBuf` if you are targetting multiple platforms.
+</div>
 <h2 id="making-static-scripts-runnable"><a class="header" href="#making-static-scripts-runnable">Making static scripts runnable</a></h2>
 <p>Some scripts do not require attaching to an entity. You can run these scripts by loading them first as you would with any other script, then either adding them at app level via <code>add_static_script</code> or by issuing a <code>AddStaticScript</code> command like so:</p>
 <pre><code class="language-rust ignore">    commands.queue(AddStaticScript::new("my_static_script.lua"));</code></pre>

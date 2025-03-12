@@ -24,9 +24,9 @@
         <link rel="stylesheet" href="../fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" href="../highlight.css">
-        <link rel="stylesheet" href="../tomorrow-night.css">
-        <link rel="stylesheet" href="../ayu-highlight.css">
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
 
@@ -162,8 +162,9 @@
 <div class="warning">
 Script systems are an experimental feature
 </div>
-<p>It's possible within BMS to inject new systems from scripts themselves, although the support is currently limited.</p>
-<p>Systems introduced by scripts cannot run in parallel to other systems, but can be freely inserted between any other rust system (not script systems at the moment) and into any schedule.</p>
+<p>It's possible within BMS to inject new systems from within scripts themselves.</p>
+<p>Systems introduced by scripts <em>can</em> run in parallel to other systems, and can be freely inserted between any other system, including other script systems.</p>
+<p>BMS also provides utilities for visualising schedules using dot graphs, allowing low-effort modding frameworks for game authors.</p>
 <h2 id="schedules"><a class="header" href="#schedules">Schedules</a></h2>
 <p>Bevy doesn't support reflecting schedules, so BMS rolls it's own schedule registry resource: <code>AppScheduleRegistry</code>, which can be used to add any custom schedules you want to interact with. The default Bevy schedules will be pre-populated for you.</p>
 <p>Once you've registered your schedule you will be able to interact with it in scripts like below:</p>
@@ -174,6 +175,7 @@ local system_with_name = update:get_system_by_name("my_system")
 <h2 id="inserting-systems"><a class="header" href="#inserting-systems">Inserting Systems</a></h2>
 <p>To insert a system you will need to use the <code>system_builder</code> global function like below:</p>
 <pre><code class="language-lua">local system = system_builder("my_system", script_id)
+    :exclusive()
     :after(some_other_system)
     :before(another_system)
 </code></pre>
@@ -183,8 +185,36 @@ local system_with_name = update:get_system_by_name("my_system")
 <div class="warning">
 <p>If your event handler running the script is running in a certain schedule, that schedule will be temporarilly removed by Bevy. Meaning you won't be able to modify it from within the script in-flight.</p>
 </div>
-<h2 id="dynamic-system"><a class="header" href="#dynamic-system">Dynamic system</a></h2>
-<p>The system injected will be similar to an event handler, however it will only trigger the specified script, and without any entity, in the above example you'd see the following lua callback:</p>
+<h2 id="parameters"><a class="header" href="#parameters">Parameters</a></h2>
+<p>The system builder allows script authors to parameterise systems, using <code>resource</code> and <code>query</code> functions.
+The order in which those functions are called, will define the order in which arguments will be provided to the specified script callback.</p>
+<p>For example:</p>
+<pre><code class="language-lua">system_builder("my_system")
+    :query(
+        world.query()
+            :component(ComponentA)
+            :component(ComponentB)
+            :with(ComponentC)
+            :without(ComponentD)
+    )
+    :resource(ResourceA)
+</code></pre>
+<p>will create a system which calls the specified callback <code>my_system</code> with 2 arguments:</p>
+<ul>
+<li>The <code>ScriptQueryResult</code> for the first query
+<ul>
+<li>With <code>components</code> access to ComponentA and ComponentB</li>
+</ul>
+</li>
+<li>The <code>ReflectReference</code> to <code>ResourceA</code></li>
+</ul>
+<h2 id="exclusive-systems"><a class="header" href="#exclusive-systems">Exclusive systems</a></h2>
+<p>An exclusive system can be created using the <code>exclusive</code> function call on the system builder.</p>
+<p>This allows the system to access everything as in a normal event handler.</p>
+<p>Non-exclusive systems, will only be able to access the set of components and resources as parameterized when building the system. This is why we can run the system in parallel to other non-overlapping systems.</p>
+<p>Exclusive systems on the other hand, cannot run in parallel.</p>
+<h2 id="callback"><a class="header" href="#callback">Callback</a></h2>
+<p>The system injected will be similar to an event handler, however it will only trigger the specified script, and without any entity, in the first example you'd see the following lua callback:</p>
 <pre><code class="language-lua">function my_system()
     print("I am a dynamic system")
 end

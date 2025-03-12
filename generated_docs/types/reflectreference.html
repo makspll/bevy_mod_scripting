@@ -24,9 +24,9 @@
         <link rel="stylesheet" href="../../fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" href="../../highlight.css">
-        <link rel="stylesheet" href="../../tomorrow-night.css">
-        <link rel="stylesheet" href="../../ayu-highlight.css">
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
 
@@ -159,7 +159,7 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="reflectreference"><a class="header" href="#reflectreference">ReflectReference</a></h1>
-<h3 id="reflectreference-1"><a class="header" href="#reflectreference-1">ReflectReference</a></h3>
+<p>Opaque Type. 🔒</p>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
 <p>An accessor to a <code>dyn PartialReflect</code> struct, stores a base ID of the type and a reflection path
@@ -167,19 +167,20 @@ safe to build but to reflect on the value inside you need to ensure aliasing rul
 </blockquote>
 <h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
-<tr><td><code>clear(ctxt, s)</code></td><td><a href="./reflectreference/clear.html">No Documentation 🚧</a></td></tr>
-<tr><td><code>display_ref(ctxt, s)</code></td><td><a href="./reflectreference/display_ref.html">No Documentation 🚧</a></td></tr>
-<tr><td><code>display_value(ctxt, s)</code></td><td><a href="./reflectreference/display_value.html">No Documentation 🚧</a></td></tr>
-<tr><td><code>functions(ctxt, s)</code></td><td><a href="./reflectreference/functions.html">No Documentation 🚧</a></td></tr>
-<tr><td><code>get(ctxt, self_, key)</code></td><td><a href="./reflectreference/get.html">No Documentation 🚧</a></td></tr>
-<tr><td><code>insert(ctxt, s, k, v)</code></td><td><a href="./reflectreference/insert.html">No Documentation 🚧</a></td></tr>
-<tr><td><code>iter(ctxt, s)</code></td><td><a href="./reflectreference/iter.html">No Documentation 🚧</a></td></tr>
-<tr><td><code>len(ctxt, s)</code></td><td><a href="./reflectreference/len.html">No Documentation 🚧</a></td></tr>
-<tr><td><code>pop(ctxt, s)</code></td><td><a href="./reflectreference/pop.html">No Documentation 🚧</a></td></tr>
-<tr><td><code>push(ctxt, s, v)</code></td><td><a href="./reflectreference/push.html">No Documentation 🚧</a></td></tr>
-<tr><td><code>remove(ctxt, s, k)</code></td><td><a href="./reflectreference/remove.html">No Documentation 🚧</a></td></tr>
-<tr><td><code>set(ctxt, self_, key, value)</code></td><td><a href="./reflectreference/set.html">No Documentation 🚧</a></td></tr>
-<tr><td><code>variant_name(ctxt, s)</code></td><td><a href="./reflectreference/variant_name.html">No Documentation 🚧</a></td></tr>
+<tr><td><code>clear(ctxt, s)</code></td><td><a href="./reflectreference/clear.html">Clears the container, if the reference is an appropriate container type.</a></td></tr>
+<tr><td><code>display_ref(ctxt, s)</code></td><td><a href="./reflectreference/display_ref.html">Displays this reference without printing the exact contents.</a></td></tr>
+<tr><td><code>display_value(ctxt, s)</code></td><td><a href="./reflectreference/display_value.html">Displays the "value" of this reference</a></td></tr>
+<tr><td><code>functions(ctxt, s)</code></td><td><a href="./reflectreference/functions.html">Lists the functions available on the reference.</a></td></tr>
+<tr><td><code>get(ctxt, self_, key)</code></td><td><a href="./reflectreference/get.html">Indexes into the given reference and if the nested type is a reference type, returns a deeper refere</a></td></tr>
+<tr><td><code>insert(ctxt, s, k, v)</code></td><td><a href="./reflectreference/insert.html">Inserts the value into the reference at the specified index, if the reference is an appropriate cont</a></td></tr>
+<tr><td><code>iter(ctxt, s)</code></td><td><a href="./reflectreference/iter.html">Iterates over the reference, if the reference is an appropriate container type.  Returns an "next" i</a></td></tr>
+<tr><td><code>len(ctxt, s)</code></td><td><a href="./reflectreference/len.html">Retrieves the length of the reference, if the reference is an appropriate container type.</a></td></tr>
+<tr><td><code>map_get(ctxt, self_, key)</code></td><td><a href="./reflectreference/map_get.html">Gets and clones the value under the specified key if the underlying type is a map type.</a></td></tr>
+<tr><td><code>pop(ctxt, s)</code></td><td><a href="./reflectreference/pop.html">Pops the value from the reference, if the reference is an appropriate container type.</a></td></tr>
+<tr><td><code>push(ctxt, s, v)</code></td><td><a href="./reflectreference/push.html">Pushes the value into the reference, if the reference is an appropriate container type.</a></td></tr>
+<tr><td><code>remove(ctxt, s, k)</code></td><td><a href="./reflectreference/remove.html">Removes the value at the specified key from the reference, if the reference is an appropriate contai</a></td></tr>
+<tr><td><code>set(ctxt, self_, key, value)</code></td><td><a href="./reflectreference/set.html">Sets the value under the specified path on the underlying value.</a></td></tr>
+<tr><td><code>variant_name(ctxt, s)</code></td><td><a href="./reflectreference/variant_name.html">If this type is an enum, will return the name of the variant it represents on the type.</a></td></tr>
 </tbody></table>
 </div>
                     </main>

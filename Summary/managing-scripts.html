@@ -24,9 +24,9 @@
         <link rel="stylesheet" href="../fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" href="../highlight.css">
-        <link rel="stylesheet" href="../tomorrow-night.css">
-        <link rel="stylesheet" href="../ayu-highlight.css">
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
 
@@ -179,15 +179,22 @@
 <h2 id="hot-loading-scripts"><a class="header" href="#hot-loading-scripts">Hot-loading scripts</a></h2>
 <p>To enable hot-loading of assets, you need to enable the necessary bevy features as normal <a href="https://bevy-cheatbook.github.io/assets/hot-reload.html">see the bevy cheatbook for instructions</a>.</p>
 <p>Assuming that hot-reloading is enabled for your app, any changes to script assets will automatically be picked up and the scripts re-loaded.</p>
-<h2 id="manually-reloading-scripts"><a class="header" href="#manually-reloading-scripts">Manually (re)loading scripts</a></h2>
+<h2 id="file-extensions"><a class="header" href="#file-extensions">File Extensions</a></h2>
+<p>Normally the set of supported extensions is pre-decided by each language plugin.</p>
+<p>I.e. Lua supports ".lua" extensions and Rhai supports ".rhai" extensions.</p>
+<p>Scripts are mapped to the corresponding language plugin based on these and so it's important to use them correctly.</p>
+<p>If you would like to add more extensions you need to populate them via <code>app.add_supported_script_extensions</code>.</p>
+<h2 id="advanced"><a class="header" href="#advanced">Advanced</a></h2>
+<p>Normally not necessary, but knowing these exist could be useful for more advanced use cases.</p>
+<h3 id="manually-reloading-scripts"><a class="header" href="#manually-reloading-scripts">Manually (re)loading scripts</a></h3>
 <p>In order to manually re-load or load a script you can issue the <code>CreateOrUpdateScript</code> command:</p>
 <pre><code class="language-rust ignore">CreateOrUpdateScript::&lt;LuaScriptingPlugin&gt;::new("my_script.lua".into(), "print(\"hello world from new script body\")".into(), asset_handle)</code></pre>
 <p>replace <code>LuaScriptingPlugin</code> with the scripting plugin you are using.</p>
-<h2 id="manually-deleting-scripts"><a class="header" href="#manually-deleting-scripts">Manually Deleting scripts</a></h2>
+<h3 id="manually-deleting-scripts"><a class="header" href="#manually-deleting-scripts">Manually Deleting scripts</a></h3>
 <p>In order to delete a previously loaded script, you will need to issue a <code>DeleteScript</code> command like so:</p>
 <pre><code class="language-rust ignore">DeleteScript::&lt;LuaScriptingPlugin&gt;::new("my_script.lua".into())</code></pre>
 <p>replace <code>LuaScriptingPlugin</code> with the scripting plugin you are using.</p>
-<h2 id="loadingunloading-timeframe"><a class="header" href="#loadingunloading-timeframe">Loading/Unloading timeframe</a></h2>
+<h3 id="loadingunloading-timeframe"><a class="header" href="#loadingunloading-timeframe">Loading/Unloading timeframe</a></h3>
 <p>Scripts asset events are processed within the same frame they are issued. This means the moment an asset is loaded, it should be loaded and ready to use in the <code>Update</code> schedule. Similarly, the moment an asset is deleted, it should be unloaded and no longer usable in the <code>Update</code> schedule.</p>
 
                     </main>

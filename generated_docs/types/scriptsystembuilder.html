@@ -24,9 +24,9 @@
         <link rel="stylesheet" href="../../fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" href="../../highlight.css">
-        <link rel="stylesheet" href="../../tomorrow-night.css">
-        <link rel="stylesheet" href="../../ayu-highlight.css">
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
 
@@ -159,13 +159,7 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="scriptsystembuilder"><a class="header" href="#scriptsystembuilder">ScriptSystemBuilder</a></h1>
-<h3 id="scriptsystembuilder-1"><a class="header" href="#scriptsystembuilder-1">ScriptSystemBuilder</a></h3>
-<ul>
-<li><strong>name</strong> : bevy_mod_scripting_core::event::CallbackLabel</li>
-<li><strong>script_id</strong> : alloc::borrow::Cow<str></li>
-<li><strong>before</strong> : alloc::vec::Vec&lt;bevy_mod_scripting_core::bindings::schedule::ReflectSystem&gt;</li>
-<li><strong>after</strong> : alloc::vec::Vec&lt;bevy_mod_scripting_core::bindings::schedule::ReflectSystem&gt;</li>
-</ul>
+<p>Opaque Type. 🔒</p>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
 <p>A builder for systems living in scripts</p>
@@ -174,13 +168,16 @@
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><code>after(self_, system)</code></td><td><a href="./scriptsystembuilder/after.html">Specifies the system is to run *after* the given system  Note: this is an experimental feature, and </a></td></tr>
 <tr><td><code>before(self_, system)</code></td><td><a href="./scriptsystembuilder/before.html">Specifies the system is to run *before* the given system.  Note: this is an experimental feature, an</a></td></tr>
+<tr><td><code>exclusive(self_)</code></td><td><a href="./scriptsystembuilder/exclusive.html">Specifies the system is to run exclusively, meaning it can access anything, but will not run in para</a></td></tr>
+<tr><td><code>query(self_, query)</code></td><td><a href="./scriptsystembuilder/query.html">No Documentation 🚧</a></td></tr>
+<tr><td><code>resource(self_, resource)</code></td><td><a href="./scriptsystembuilder/resource.html">Requests the system have access to the given resource. The resource will be added to the list of arg</a></td></tr>
 </tbody></table>
 </div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../generated_docs/types/reflectableschedulelabel.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../generated_docs/types/scripttyperegistration/type_name.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
@@ -194,7 +191,7 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../generated_docs/types/reflectableschedulelabel.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../generated_docs/types/scripttyperegistration/type_name.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
