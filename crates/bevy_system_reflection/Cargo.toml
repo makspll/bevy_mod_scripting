@@ -1,0 +1,16 @@
+[package]
+name = "bevy_system_reflection"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy = { workspace = true, default-features = false }
+dot-writer = "0.1.4"
+petgraph = "*"
+
+
+[dev-dependencies]
+pretty_assertions = "1.4"
+manifest-dir-macros = "0.1.18"
+[lints]
+workspace = true

@@ -8,12 +8,13 @@ use bevy_mod_scripting_core::{
         function::{
             from::Union, namespace::GlobalNamespace, script_function::DynamicScriptFunctionMut,
         },
-        schedule::{ReflectSchedule, ReflectSystem, ScriptSystemBuilder},
+        script_system::ScriptSystemBuilder,
     },
     docgen::info::FunctionInfo,
     *,
 };
 use bevy_mod_scripting_derive::script_bindings;
+use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 use bindings::{
     function::{
         from::{Ref, Val},
@@ -29,7 +30,6 @@ use bindings::{
 };
 use error::InteropError;
 use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
-
 pub fn register_bevy_bindings(app: &mut App) {
     #[cfg(feature = "bevy_bindings")]
     app.add_plugins(crate::bevy_bindings::LuaBevyScriptingPlugin);
@@ -762,6 +762,33 @@ impl ReflectSchedule {
             .into_iter()
             .find_map(|s| (s.identifier() == name || s.path() == name).then_some(s.into())))
     }
+
+    /// Renders the schedule as a dot graph string.
+    ///
+    /// Useful for debugging scheduling.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context
+    /// * `self_`: The schedule to render.
+    /// Returns:
+    /// * `dot`: The dot graph string.
+    fn render_dot(
+        ctxt: FunctionCallContext,
+        self_: Ref<ReflectSchedule>,
+    ) -> Result<String, InteropError> {
+        profiling::function_scope!("render_dot");
+        let world = ctxt.world()?;
+        world.with_resource(|schedules: &Schedules| {
+            let schedule = schedules
+                .get(*self_.label())
+                .ok_or_else(|| InteropError::missing_schedule(self_.identifier()))?;
+            let mut graph = bevy_system_reflection::schedule_to_reflect_graph(schedule);
+            graph.absorb_type_system_sets();
+            graph.sort();
+            let graph = bevy_system_reflection::reflect_graph_to_dot(graph);
+            Ok(graph)
+        })?
+    }
 }
 
 #[script_bindings(
@@ -797,6 +824,45 @@ impl ReflectSystem {
     name = "script_system_builder_functions"
 )]
 impl ScriptSystemBuilder {
+    fn query(
+        self_: Val<ScriptSystemBuilder>,
+        query: Val<ScriptQueryBuilder>,
+    ) -> Result<Val<ScriptSystemBuilder>, InteropError> {
+        profiling::function_scope!("query");
+        let mut builder = self_.into_inner();
+        builder.query(query.into_inner());
+        Ok(builder.into())
+    }
+
+    /// Requests the system have access to the given resource. The resource will be added to the
+    /// list of arguments of the callback in the order they're provided.
+    /// Arguments:
+    /// * `self_`: The system builder to add the resource to.
+    /// * `resource`: The resource to add.
+    /// Returns:
+    /// * `builder`: The system builder with the resource added.
+    fn resource(
+        self_: Val<ScriptSystemBuilder>,
+        resource: Val<ScriptResourceRegistration>,
+    ) -> Val<ScriptSystemBuilder> {
+        profiling::function_scope!("resource");
+        let mut builder = self_.into_inner();
+        builder.resource(resource.into_inner());
+        builder.into()
+    }
+
+    /// Specifies the system is to run exclusively, meaning it can access anything, but will not run in parallel with other systems.
+    /// Arguments:
+    /// * `self_`: The system builder to make exclusive.
+    /// Returns:
+    /// * `builder`: The system builder that is now exclusive.
+    fn exclusive(self_: Val<ScriptSystemBuilder>) -> Val<ScriptSystemBuilder> {
+        profiling::function_scope!("exclusive");
+        let mut builder = self_.into_inner();
+        builder.exclusive(true);
+        builder.into()
+    }
+
     /// Specifies the system is to run *after* the given system
     ///
     /// Note: this is an experimental feature, and the ordering might not work correctly for script initialized systems
@@ -812,7 +878,7 @@ impl ScriptSystemBuilder {
     ) -> Val<ScriptSystemBuilder> {
         profiling::function_scope!("after");
         let mut builder = self_.into_inner();
-        builder.after(system.into_inner());
+        builder.after_system(system.into_inner());
         Val(builder)
     }
 
@@ -831,7 +897,7 @@ impl ScriptSystemBuilder {
     ) -> Val<ScriptSystemBuilder> {
         profiling::function_scope!("before");
         let mut builder = self_.into_inner();
-        builder.before(system.into_inner());
+        builder.before_system(system.into_inner());
         Val(builder)
     }
 }

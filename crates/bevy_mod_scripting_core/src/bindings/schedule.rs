@@ -1,144 +1,21 @@
 //! Dynamic scheduling from scripts
 
-use std::{
-    any::TypeId,
-    borrow::Cow,
-    collections::HashMap,
-    hash::Hash,
-    ops::Deref,
-    sync::{
-        atomic::{AtomicUsize, Ordering},
-        Arc,
-    },
-};
-
+use super::{script_system::ScriptSystemBuilder, WorldAccessGuard};
+use crate::{error::InteropError, IntoScriptPluginParams};
 use bevy::{
     app::{
         First, FixedFirst, FixedLast, FixedMain, FixedPostUpdate, FixedPreUpdate, FixedUpdate,
         Last, PostStartup, PostUpdate, PreStartup, PreUpdate, RunFixedMainLoop, Startup, Update,
     },
     ecs::{
-        entity::Entity,
-        intern::Interned,
-        schedule::{
-            InternedScheduleLabel, IntoSystemConfigs, NodeId, Schedule, ScheduleLabel, Schedules,
-            SystemSet,
-        },
-        system::{IntoSystem, Resource, System, SystemInput, SystemState},
+        schedule::{Schedule, ScheduleLabel, Schedules},
+        system::Resource,
         world::World,
     },
-    reflect::Reflect,
 };
+use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 use parking_lot::RwLock;
-
-use crate::{
-    error::InteropError,
-    event::CallbackLabel,
-    extractors::{HandlerContext, WithWorldGuard},
-    handler::handle_script_errors,
-    script::ScriptId,
-    IntoScriptPluginParams,
-};
-
-use super::{WorldAccessGuard, WorldGuard};
-
-#[derive(Reflect, Debug, Clone)]
-/// A reflectable system.
-pub struct ReflectSystem {
-    name: Cow<'static, str>,
-    type_id: TypeId,
-    node_id: ReflectNodeId,
-}
-
-#[derive(Reflect, Clone, Debug)]
-#[reflect(opaque)]
-pub(crate) struct ReflectNodeId(pub(crate) NodeId);
-
-impl ReflectSystem {
-    /// Creates a reflect system from a system specification
-    pub fn from_system<In: SystemInput + 'static, Out: 'static>(
-        system: &dyn System<In = In, Out = Out>,
-        node_id: NodeId,
-    ) -> Self {
-        ReflectSystem {
-            name: system.name().clone(),
-            type_id: system.type_id(),
-            node_id: ReflectNodeId(node_id),
-        }
-    }
-
-    /// gets the short identifier of the system, i.e. just the function name
-    pub fn identifier(&self) -> &str {
-        // if it contains generics it might contain more than
-        if self.name.contains("<") {
-            self.name
-                .split("<")
-                .next()
-                .unwrap_or_default()
-                .split("::")
-                .last()
-                .unwrap_or_default()
-        } else {
-            self.name.split("::").last().unwrap_or_default()
-        }
-    }
-
-    /// gets the path of the system, i.e. the fully qualified function name
-    pub fn path(&self) -> &str {
-        self.name.as_ref()
-    }
-}
-
-/// A reflectable schedule.
-#[derive(Reflect, Clone, Debug)]
-pub struct ReflectSchedule {
-    /// The name of the schedule.
-    type_path: &'static str,
-    label: ReflectableScheduleLabel,
-}
-
-#[derive(Reflect, Clone, Debug)]
-#[reflect(opaque)]
-struct ReflectableScheduleLabel(InternedScheduleLabel);
-
-impl Deref for ReflectableScheduleLabel {
-    type Target = InternedScheduleLabel;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl From<InternedScheduleLabel> for ReflectableScheduleLabel {
-    fn from(label: InternedScheduleLabel) -> Self {
-        Self(label)
-    }
-}
-
-impl ReflectSchedule {
-    /// Retrieves the name of the schedule.
-    pub fn type_path(&self) -> &'static str {
-        self.type_path
-    }
-
-    /// Retrieves the short identifier of the schedule
-    pub fn identifier(&self) -> &'static str {
-        self.type_path.split("::").last().unwrap_or_default()
-    }
-
-    /// Retrieves the label of the schedule
-    pub fn label(&self) -> &InternedScheduleLabel {
-        &self.label
-    }
-
-    /// Creates a new reflect schedule from a schedule label
-    pub fn from_label<T: ScheduleLabel + 'static>(label: T) -> Self {
-        ReflectSchedule {
-            type_path: std::any::type_name::<T>(),
-            label: label.intern().into(),
-        }
-    }
-}
+use std::{any::TypeId, collections::HashMap, sync::Arc};
 
 #[derive(Default, Clone, Resource)]
 /// A Send + Sync registry of bevy schedules.
@@ -230,177 +107,6 @@ impl ScheduleRegistry {
     }
 }
 
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
-/// a system set for script systems.
-pub struct ScriptSystemSet(usize);
-
-impl ScriptSystemSet {
-    /// Creates a new script system set with a unique id
-    pub fn next() -> Self {
-        static CURRENT_ID: AtomicUsize = AtomicUsize::new(0);
-        Self(CURRENT_ID.fetch_add(1, Ordering::Relaxed))
-    }
-}
-
-impl SystemSet for ScriptSystemSet {
-    fn dyn_clone(&self) -> bevy::ecs::label::Box<dyn SystemSet> {
-        Box::new(*self)
-    }
-
-    fn as_dyn_eq(&self) -> &dyn bevy::ecs::label::DynEq {
-        self
-    }
-
-    fn dyn_hash(&self, mut state: &mut dyn ::core::hash::Hasher) {
-        self.hash(&mut state);
-    }
-}
-
-/// A builder for systems living in scripts
-#[derive(Reflect)]
-pub struct ScriptSystemBuilder {
-    name: CallbackLabel,
-    script_id: ScriptId,
-    before: Vec<ReflectSystem>,
-    after: Vec<ReflectSystem>,
-}
-
-impl ScriptSystemBuilder {
-    /// Creates a new script system builder
-    pub fn new(name: CallbackLabel, script_id: ScriptId) -> Self {
-        Self {
-            before: vec![],
-            after: vec![],
-            name,
-            script_id,
-        }
-    }
-
-    /// Adds a system to run before the script system
-    pub fn before(&mut self, system: ReflectSystem) -> &mut Self {
-        self.before.push(system);
-        self
-    }
-
-    /// Adds a system to run after the script system
-    pub fn after(&mut self, system: ReflectSystem) -> &mut Self {
-        self.after.push(system);
-        self
-    }
-
-    /// Selects the most granual system set it can for the given system node id or None
-    fn get_individual_system_system_set(
-        node_id: NodeId,
-        schedule: &Schedule,
-    ) -> Option<Interned<dyn SystemSet>> {
-        // if let Some(system) = schedule.graph().get_system_at(node_id) {
-        //     // this only works for normal bevy rust systems
-        //     if let Some(system_set) = system.default_system_sets().first() {
-        //         return Some(system_set.dyn_clone());
-        //     }
-        // }
-        if let Ok(systems) = schedule.systems() {
-            for (system_id, system) in systems {
-                if system_id == node_id {
-                    return system.default_system_sets().first().cloned();
-                }
-            }
-        }
-
-        None
-    }
-
-    /// Builds the system and inserts it into the given schedule
-    #[allow(deprecated)]
-    pub fn build<P: IntoScriptPluginParams>(
-        self,
-        world: WorldGuard,
-        schedule: &ReflectSchedule,
-    ) -> Result<ReflectSystem, InteropError> {
-        world.scope_schedule(schedule, |world, schedule| {
-            // this is different to a normal event handler
-            // the system doesn't listen to events
-            // it immediately calls a singular script with a predefined payload
-            let system_name = format!("script_system_{}", &self.name);
-            let _system = move |world: &mut World,
-                                system_state: &mut SystemState<
-                WithWorldGuard<HandlerContext<P>>,
-            >| {
-                let mut with_guard = system_state.get_mut(world);
-
-                {
-                    let (guard, handler_ctxt) = with_guard.get_mut();
-                    let name = self.name.clone();
-                    bevy::log::debug_once!("First call to script system {}", name);
-                    match handler_ctxt.call_dynamic_label(
-                        &name,
-                        &self.script_id,
-                        Entity::from_raw(0),
-                        vec![],
-                        guard.clone(),
-                    ) {
-                        Ok(_) => {}
-                        Err(err) => {
-                            handle_script_errors(
-                                guard,
-                                vec![err.with_script(self.script_id.clone())].into_iter(),
-                            );
-                        }
-                    };
-                }
-
-                system_state.apply(world);
-            };
-
-            let function_system = IntoSystem::into_system(_system.clone()).with_name(system_name);
-
-            // dummy node id for now
-            let mut reflect_system =
-                ReflectSystem::from_system(&function_system, NodeId::System(0));
-
-            // this is quite important, by default systems are placed in a set defined by their TYPE, i.e. in this case
-            // all script systems would be the same
-            let set = ScriptSystemSet::next();
-            let mut config = IntoSystemConfigs::into_configs(function_system.in_set(set));
-
-            // apply ordering
-            for (other, is_before) in self
-                .before
-                .iter()
-                .map(|b| (b, true))
-                .chain(self.after.iter().map(|a| (a, false)))
-            {
-                match Self::get_individual_system_system_set(other.node_id.0, schedule) {
-                    Some(set) => {
-                        if is_before {
-                            config = config.before(set);
-                        } else {
-                            config = config.after(set);
-                        }
-                    }
-                    None => {
-                        bevy::log::warn!(
-                            "Could not find system set for system {:?}",
-                            other.identifier()
-                        );
-                    }
-                }
-            }
-
-            schedule.configure_sets(set);
-            schedule.add_systems(config);
-
-            schedule.initialize(world)?;
-
-            let node_id = NodeId::System(schedule.systems_len());
-
-            reflect_system.node_id = ReflectNodeId(node_id);
-
-            Ok(reflect_system)
-        })?
-    }
-}
-
 #[profiling::all_functions]
 /// Impls to do with dynamically querying systems and schedules
 impl WorldAccessGuard<'_> {
@@ -422,7 +128,7 @@ impl WorldAccessGuard<'_> {
             })?;
 
             let mut removed_schedule = schedules
-                .remove(*label.label)
+                .remove(*label.label())
                 .ok_or_else(|| InteropError::missing_schedule(label.identifier()))?;
 
             let result = f(world, &mut removed_schedule);
@@ -436,7 +142,7 @@ impl WorldAccessGuard<'_> {
             })?;
 
             assert!(
-                removed_schedule.label() == *label.label,
+                removed_schedule.label() == *label.label(),
                 "removed schedule label doesn't match the original"
             );
             schedules.insert(removed_schedule);
@@ -449,7 +155,7 @@ impl WorldAccessGuard<'_> {
     pub fn systems(&self, schedule: &ReflectSchedule) -> Result<Vec<ReflectSystem>, InteropError> {
         self.with_resource(|schedules: &Schedules| {
             let schedule = schedules
-                .get(*schedule.label)
+                .get(*schedule.label())
                 .ok_or_else(|| InteropError::missing_schedule(schedule.identifier()))?;
 
             let systems = schedule.systems()?;
@@ -487,7 +193,10 @@ mod tests {
 
     use bevy::{
         app::{App, Update},
-        ecs::system::IntoSystem,
+        ecs::{
+            schedule::{NodeId, Schedules},
+            system::IntoSystem,
+        },
     };
     use test_utils::make_test_plugin;
 

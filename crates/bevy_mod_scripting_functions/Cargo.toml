@@ -37,6 +37,7 @@ bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
 bevy_mod_scripting_lua = { path = "../languages/bevy_mod_scripting_lua", optional = true, version = "0.9.11" }
 bevy_mod_scripting_rhai = { path = "../languages/bevy_mod_scripting_rhai", optional = true, version = "0.9.11" }
+bevy_system_reflection = { path = "../bevy_system_reflection", version = "0.1.0" }
 
 [lints]
 workspace = true
