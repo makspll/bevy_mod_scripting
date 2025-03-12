@@ -184,7 +184,6 @@ impl ScriptSystemBuilder {
                 .systems()?
                 .find(|(_, b)| b.name().deref() == system_name)
                 .ok_or_else(|| InteropError::invariant("After adding the system, it was not found in the schedule, could not return a reference to it"))?;
-            
             Ok(ReflectSystem::from_system(system.as_ref(), node_id))
         })?
     }
