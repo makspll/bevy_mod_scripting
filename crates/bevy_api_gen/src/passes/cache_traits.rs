@@ -12,6 +12,7 @@ fn dump_traits(tcx: &TyCtxt) -> String{
     let mut buffer = String::new();
     for t in tcx.all_traits() {
         buffer.push_str(&tcx.def_path_str(t));
+        buffer.push_str(", ");
     }
     buffer
 }

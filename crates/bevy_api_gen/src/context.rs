@@ -86,7 +86,7 @@ pub(crate) const DEF_PATHS_BMS_FROM_SCRIPT: [&str; 2] = [
     "bindings::FromScript",
 ];
 pub(crate) const DEF_PATHS_BMS_INTO_SCRIPT: [&str; 2] = [
-    "bevy_mod_scripting_core::bindings:IntoScript",
+    "bevy_mod_scripting_core::bindings::IntoScript",
     "bindings::IntoScript",
 ];
 
