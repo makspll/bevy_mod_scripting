@@ -1,4 +1,5 @@
-use super::script_value::{LuaScriptValue, LUA_CALLER_CONTEXT};
+use std::any::TypeId;
+
 use bevy_mod_scripting_core::{
     bindings::{
         pretty_print::DisplayWithWorld, script_value::ScriptValue, ReflectReference,
@@ -8,7 +9,8 @@ use bevy_mod_scripting_core::{
     reflection_extensions::TypeIdExtensions,
 };
 use mlua::{MetaMethod, UserData, UserDataMethods};
-use std::any::TypeId;
+
+use super::script_value::{LuaScriptValue, LUA_CALLER_CONTEXT};
 
 /// Lua UserData wrapper for [`bevy_mod_scripting_core::bindings::ReflectReference`].
 /// Acts as a lua reflection interface. Any value which is registered in the type registry can be interacted with using this type.
@@ -79,13 +81,19 @@ impl UserData for LuaReflectReference {
                 let key: ScriptValue = key.into();
                 let value: ScriptValue = value.into();
                 let type_id = self_.tail_type_id(world.clone())?.or_fake_id();
-
+                let is_map = self_.is_map(world.clone());
+                let func_name = {
+                    if is_map {
+                        "insert"
+                    } else {
+                        "set"
+                    }
+                };
                 let func = world
-                    .lookup_function([type_id, TypeId::of::<ReflectReference>()], "set")
+                    .lookup_function([type_id, TypeId::of::<ReflectReference>()], func_name)
                     .map_err(|f| {
                         InteropError::missing_function(TypeId::of::<ReflectReference>(), f)
                     })?;
-
                 let out = func.call(
                     vec![ScriptValue::Reference(self_), key, value],
                     LUA_CALLER_CONTEXT,
