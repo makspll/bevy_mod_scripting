@@ -137,7 +137,6 @@ impl Default for LuaScriptingPlugin {
     }
 }
 
-
 impl Plugin for LuaScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         self.scripting_plugin.build(app);

@@ -124,11 +124,15 @@ pub struct ScriptAssetSettings {
 impl ScriptAssetSettings {
     /// Selects the language for a given asset path
     pub fn select_script_language(&self, path: &AssetPath) -> Language {
-        let extension = path.path().extension().and_then(|ext| ext.to_str()).unwrap_or_default();
+        let extension = path
+            .path()
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .unwrap_or_default();
         self.extension_to_language_map
             .get(extension)
             .cloned()
-            .unwrap_or_default()    
+            .unwrap_or_default()
     }
 }
 
@@ -155,7 +159,6 @@ pub struct AssetPathToScriptIdMapper {
     /// The mapping function
     pub map: fn(&AssetPath) -> ScriptId,
 }
-
 
 /// A cache of asset id's to their script id's. Necessary since when we drop an asset we won't have the ability to get the path from the asset.
 #[derive(Default, Debug, Resource)]
