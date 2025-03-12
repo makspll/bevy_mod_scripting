@@ -93,6 +93,7 @@ members = [
     "crates/ladfile",
     "crates/lad_backends/mdbook_lad_preprocessor",
     "crates/ladfile_builder",
+    "crates/bevy_system_reflection",
 ]
 resolver = "2"
 exclude = ["crates/bevy_api_gen", "crates/macro_tests"]

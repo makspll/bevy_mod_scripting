@@ -4,7 +4,7 @@ use std::thread::ThreadId;
 use bevy::{
     ecs::{component::ComponentId, world::unsafe_world_cell::UnsafeWorldCell},
     prelude::Resource,
-    utils::hashbrown::HashMap,
+    utils::hashbrown::{HashMap, HashSet},
 };
 use parking_lot::Mutex;
 use smallvec::SmallVec;
@@ -226,17 +226,100 @@ impl From<ReflectAccessId> for ReflectAllocationId {
 /// A map of access claims
 pub struct AccessMap(Mutex<AccessMapInner>);
 
+/// A trait for controlling system world access at runtime.
+///
+/// This trait provides methods to claim and release read, write, and global access
+/// to various parts of the world. Implementations of this trait manage internal state
+/// to ensure safe and concurrent access to resources. Methods include scope-based locking,
+/// as well as introspection of access state via code location information.
+pub trait DynamicSystemMeta {
+    /// Executes the provided closure within a temporary access scope.
+    ///
+    /// Any accesses claimed within the scope are rolled back once the closure returns.
+    fn with_scope<O, F: FnOnce() -> O>(&self, f: F) -> O;
+
+    /// Returns `true` if the world is exclusively locked.
+    ///
+    /// When exclusively locked, no additional individual or global accesses may be claimed.
+    fn is_locked_exclusively(&self) -> bool;
+
+    /// Retrieves the code location where the global lock was claimed (if any).
+    ///
+    /// This is useful for debugging conflicts involving the global access lock.
+    fn global_access_location(&self) -> Option<std::panic::Location<'static>>;
+
+    /// Attempts to claim read access for the given key.
+    ///
+    /// Returns `true` if the read access is successfully claimed. The claim will fail if
+    /// the key is currently locked for write or if a global lock is active.
+    #[track_caller]
+    fn claim_read_access<K: AccessMapKey>(&self, key: K) -> bool;
+
+    /// Attempts to claim write access for the given key.
+    ///
+    /// Returns `true` if the write access is successfully claimed. Write access fails if any
+    /// read or write access is active for the key or if a global lock is held.
+    #[track_caller]
+    fn claim_write_access<K: AccessMapKey>(&self, key: K) -> bool;
+
+    /// Attempts to claim a global access lock.
+    ///
+    /// Returns `true` if the global access is successfully claimed. Global access precludes any
+    /// individual accesses until it is released.
+    #[track_caller]
+    fn claim_global_access(&self) -> bool;
+
+    /// Releases an access claimed for the provided key.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the access is released by a thread different from the one that claimed it.
+    fn release_access<K: AccessMapKey>(&self, key: K);
+
+    /// Releases an active global access lock.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the global access is released from a thread other than the one that claimed it.
+    fn release_global_access(&self);
+
+    /// Returns a list of active accesses.
+    ///
+    /// The list is provided as key and corresponding access count pairs.
+    fn list_accesses<K: AccessMapKey>(&self) -> Vec<(K, AccessCount)>;
+
+    /// Returns the number of active individual accesses.
+    ///
+    /// In the case of a global lock, this method considers that as a single active access.
+    fn count_accesses(&self) -> usize;
+
+    /// Releases all active accesses.
+    ///
+    /// Both individual and global accesses will be removed.
+    fn release_all_accesses(&self);
+
+    /// Returns the location where the specified key was first accessed.
+    ///
+    /// This is useful for debugging and tracing access failures.
+    fn access_location<K: AccessMapKey>(&self, key: K) -> Option<std::panic::Location<'static>>;
+
+    /// Returns the location of the first access among all keys.
+    ///
+    /// This can assist in identifying the origin of access conflicts.
+    fn access_first_location(&self) -> Option<std::panic::Location<'static>>;
+}
+
 #[derive(Debug, Default, Clone)]
 struct AccessMapInner {
     individual_accesses: HashMap<u64, AccessCount>,
     global_lock: AccessCount,
 }
 
+const GLOBAL_KEY: u64 = 0;
+
 #[profiling::all_functions]
-impl AccessMap {
-    /// Increments the scope and executes operations which will be unrolled at the end.
-    /// Any accesses added inside the scope are rolled back after f() returns.
-    pub fn with_scope<O, F: FnOnce() -> O>(&self, f: F) -> O {
+impl DynamicSystemMeta for AccessMap {
+    fn with_scope<O, F: FnOnce() -> O>(&self, f: F) -> O {
         // Snapshot the current inner state.
         let backup = {
             let inner = self.0.lock();
@@ -254,23 +337,19 @@ impl AccessMap {
         result
     }
 
-    /// Checks if the map is locked exclusively.
-    pub fn is_locked_exclusively(&self) -> bool {
+    fn is_locked_exclusively(&self) -> bool {
         let inner = self.0.lock();
         // If global_lock cannot be written, then it is locked exclusively.
         !inner.global_lock.can_write()
     }
 
-    /// Retrieves the location of the global lock if any.
-    pub fn global_access_location(&self) -> Option<std::panic::Location<'static>> {
+    fn global_access_location(&self) -> Option<std::panic::Location<'static>> {
         let inner = self.0.lock();
         inner.global_lock.as_location()
     }
 
-    /// Tries to claim read access. Returns false if somebody else is writing to the same key,
-    /// or if a global lock prevents the access.
     #[track_caller]
-    pub fn claim_read_access<K: AccessMapKey>(&self, key: K) -> bool {
+    fn claim_read_access<K: AccessMapKey>(&self, key: K) -> bool {
         let mut inner = self.0.lock();
 
         if !inner.global_lock.can_write() {
@@ -278,6 +357,11 @@ impl AccessMap {
         }
 
         let key = key.as_index();
+        if key == GLOBAL_KEY {
+            bevy::log::error!("Trying to claim read access to global key, this is not allowed");
+            return false;
+        }
+
         let entry = inner.individual_accesses.entry(key).or_default();
         if entry.can_read() {
             entry.read_by.push(ClaimOwner {
@@ -290,10 +374,8 @@ impl AccessMap {
         }
     }
 
-    /// Tries to claim write access. Returns false if somebody else is reading or writing to the same key,
-    /// or if a global lock prevents the access.
     #[track_caller]
-    pub fn claim_write_access<K: AccessMapKey>(&self, key: K) -> bool {
+    fn claim_write_access<K: AccessMapKey>(&self, key: K) -> bool {
         let mut inner = self.0.lock();
 
         if !inner.global_lock.can_write() {
@@ -301,6 +383,11 @@ impl AccessMap {
         }
 
         let key = key.as_index();
+        if key == GLOBAL_KEY {
+            bevy::log::error!("Trying to claim write access to global key, this is not allowed");
+            return false;
+        }
+
         let entry = inner.individual_accesses.entry(key).or_default();
         if entry.can_write() {
             entry.read_by.push(ClaimOwner {
@@ -314,10 +401,8 @@ impl AccessMap {
         }
     }
 
-    /// Tries to claim global access. This prevents any other access from happening simultaneously.
-    /// Returns false if any access is currently active.
     #[track_caller]
-    pub fn claim_global_access(&self) -> bool {
+    fn claim_global_access(&self) -> bool {
         let mut inner = self.0.lock();
 
         if !inner.individual_accesses.is_empty() || !inner.global_lock.can_write() {
@@ -331,11 +416,7 @@ impl AccessMap {
         true
     }
 
-    /// Releases an access.
-    ///
-    /// # Panics
-    /// if the access is released from a different thread than it was claimed from.
-    pub fn release_access<K: AccessMapKey>(&self, key: K) {
+    fn release_access<K: AccessMapKey>(&self, key: K) {
         let mut inner = self.0.lock();
         let key = key.as_index();
 
@@ -354,8 +435,7 @@ impl AccessMap {
         }
     }
 
-    /// Releases a global access.
-    pub fn release_global_access(&self) {
+    fn release_global_access(&self) {
         let mut inner = self.0.lock();
         inner.global_lock.written = false;
         if let Some(claim) = inner.global_lock.read_by.pop() {
@@ -367,8 +447,7 @@ impl AccessMap {
         }
     }
 
-    /// Lists all active accesses.
-    pub fn list_accesses<K: AccessMapKey>(&self) -> Vec<(K, AccessCount)> {
+    fn list_accesses<K: AccessMapKey>(&self) -> Vec<(K, AccessCount)> {
         let inner = self.0.lock();
         inner
             .individual_accesses
@@ -377,8 +456,7 @@ impl AccessMap {
             .collect()
     }
 
-    /// Counts the number of active individual accesses.
-    pub fn count_accesses(&self) -> usize {
+    fn count_accesses(&self) -> usize {
         if self.is_locked_exclusively() {
             1
         } else {
@@ -387,8 +465,7 @@ impl AccessMap {
         }
     }
 
-    /// Releases all accesses.
-    pub fn release_all_accesses(&self) {
+    fn release_all_accesses(&self) {
         let mut inner = self.0.lock();
         inner.individual_accesses.clear();
         // Release global access if held.
@@ -396,11 +473,7 @@ impl AccessMap {
         inner.global_lock.read_by.clear();
     }
 
-    /// Returns the location where the key was first accessed.
-    pub fn access_location<K: AccessMapKey>(
-        &self,
-        key: K,
-    ) -> Option<std::panic::Location<'static>> {
+    fn access_location<K: AccessMapKey>(&self, key: K) -> Option<std::panic::Location<'static>> {
         let inner = self.0.lock();
         if key.as_index() == 0 {
             // it blocked by individual access
@@ -419,13 +492,205 @@ impl AccessMap {
         }
     }
 
-    /// Returns the location of the first access among all entries.
-    pub fn access_first_location(&self) -> Option<std::panic::Location<'static>> {
+    fn access_first_location(&self) -> Option<std::panic::Location<'static>> {
         let inner = self.0.lock();
         inner
             .individual_accesses
             .values()
             .find_map(|access| access.as_location())
+    }
+}
+
+/// An inverse of [`AccessMap`], It limits the accesses allowed to be claimed to those in a pre-specified subset.
+pub struct SubsetAccessMap {
+    inner: AccessMap,
+    subset: Box<dyn Fn(u64) -> bool + Send + Sync + 'static>,
+}
+
+impl SubsetAccessMap {
+    /// Creates a new subset access map with the provided subset of ID's as well as a exception function.
+    pub fn new(
+        subset: impl IntoIterator<Item = impl AccessMapKey>,
+        exception: impl Fn(u64) -> bool + Send + Sync + 'static,
+    ) -> Self {
+        let set = subset
+            .into_iter()
+            .map(|k| k.as_index())
+            .collect::<HashSet<_>>();
+        Self {
+            inner: Default::default(),
+            subset: Box::new(move |id| set.contains(&id) || exception(id)),
+        }
+    }
+
+    fn in_subset(&self, key: u64) -> bool {
+        (self.subset)(key)
+    }
+}
+
+impl DynamicSystemMeta for SubsetAccessMap {
+    fn with_scope<O, F: FnOnce() -> O>(&self, f: F) -> O {
+        self.inner.with_scope(f)
+    }
+
+    fn is_locked_exclusively(&self) -> bool {
+        self.inner.is_locked_exclusively()
+    }
+
+    fn global_access_location(&self) -> Option<std::panic::Location<'static>> {
+        self.inner.global_access_location()
+    }
+
+    fn claim_read_access<K: AccessMapKey>(&self, key: K) -> bool {
+        if !self.in_subset(key.as_index()) {
+            return false;
+        }
+        self.inner.claim_read_access(key)
+    }
+
+    fn claim_write_access<K: AccessMapKey>(&self, key: K) -> bool {
+        if !self.in_subset(key.as_index()) {
+            return false;
+        }
+        self.inner.claim_write_access(key)
+    }
+
+    fn claim_global_access(&self) -> bool {
+        if !self.in_subset(0) {
+            return false;
+        }
+        self.inner.claim_global_access()
+    }
+
+    fn release_access<K: AccessMapKey>(&self, key: K) {
+        self.inner.release_access(key);
+    }
+
+    fn release_global_access(&self) {
+        self.inner.release_global_access();
+    }
+
+    fn list_accesses<K: AccessMapKey>(&self) -> Vec<(K, AccessCount)> {
+        self.inner.list_accesses()
+    }
+
+    fn count_accesses(&self) -> usize {
+        self.inner.count_accesses()
+    }
+
+    fn release_all_accesses(&self) {
+        self.inner.release_all_accesses();
+    }
+
+    fn access_location<K: AccessMapKey>(&self, key: K) -> Option<std::panic::Location<'static>> {
+        self.inner.access_location(key)
+    }
+
+    fn access_first_location(&self) -> Option<std::panic::Location<'static>> {
+        self.inner.access_first_location()
+    }
+}
+
+/// A polymorphic enum for access map types.
+///
+/// Equivalent to `dyn DynamicSystemMeta` for most purposes
+pub enum AnyAccessMap {
+    /// A map which allows any and all accesses to be claimed
+    UnlimitedAccessMap(AccessMap),
+    /// A map which only allows accesses to keys in a pre-specified subset
+    SubsetAccessMap(SubsetAccessMap),
+}
+
+impl DynamicSystemMeta for AnyAccessMap {
+    fn with_scope<O, F: FnOnce() -> O>(&self, f: F) -> O {
+        match self {
+            AnyAccessMap::UnlimitedAccessMap(map) => map.with_scope(f),
+            AnyAccessMap::SubsetAccessMap(map) => map.with_scope(f),
+        }
+    }
+
+    fn is_locked_exclusively(&self) -> bool {
+        match self {
+            AnyAccessMap::UnlimitedAccessMap(map) => map.is_locked_exclusively(),
+            AnyAccessMap::SubsetAccessMap(map) => map.is_locked_exclusively(),
+        }
+    }
+
+    fn global_access_location(&self) -> Option<std::panic::Location<'static>> {
+        match self {
+            AnyAccessMap::UnlimitedAccessMap(map) => map.global_access_location(),
+            AnyAccessMap::SubsetAccessMap(map) => map.global_access_location(),
+        }
+    }
+
+    fn claim_read_access<K: AccessMapKey>(&self, key: K) -> bool {
+        match self {
+            AnyAccessMap::UnlimitedAccessMap(map) => map.claim_read_access(key),
+            AnyAccessMap::SubsetAccessMap(map) => map.claim_read_access(key),
+        }
+    }
+
+    fn claim_write_access<K: AccessMapKey>(&self, key: K) -> bool {
+        match self {
+            AnyAccessMap::UnlimitedAccessMap(map) => map.claim_write_access(key),
+            AnyAccessMap::SubsetAccessMap(map) => map.claim_write_access(key),
+        }
+    }
+
+    fn claim_global_access(&self) -> bool {
+        match self {
+            AnyAccessMap::UnlimitedAccessMap(map) => map.claim_global_access(),
+            AnyAccessMap::SubsetAccessMap(map) => map.claim_global_access(),
+        }
+    }
+
+    fn release_access<K: AccessMapKey>(&self, key: K) {
+        match self {
+            AnyAccessMap::UnlimitedAccessMap(map) => map.release_access(key),
+            AnyAccessMap::SubsetAccessMap(map) => map.release_access(key),
+        }
+    }
+
+    fn release_global_access(&self) {
+        match self {
+            AnyAccessMap::UnlimitedAccessMap(map) => map.release_global_access(),
+            AnyAccessMap::SubsetAccessMap(map) => map.release_global_access(),
+        }
+    }
+
+    fn list_accesses<K: AccessMapKey>(&self) -> Vec<(K, AccessCount)> {
+        match self {
+            AnyAccessMap::UnlimitedAccessMap(map) => map.list_accesses(),
+            AnyAccessMap::SubsetAccessMap(map) => map.list_accesses(),
+        }
+    }
+
+    fn count_accesses(&self) -> usize {
+        match self {
+            AnyAccessMap::UnlimitedAccessMap(map) => map.count_accesses(),
+            AnyAccessMap::SubsetAccessMap(map) => map.count_accesses(),
+        }
+    }
+
+    fn release_all_accesses(&self) {
+        match self {
+            AnyAccessMap::UnlimitedAccessMap(map) => map.release_all_accesses(),
+            AnyAccessMap::SubsetAccessMap(map) => map.release_all_accesses(),
+        }
+    }
+
+    fn access_location<K: AccessMapKey>(&self, key: K) -> Option<std::panic::Location<'static>> {
+        match self {
+            AnyAccessMap::UnlimitedAccessMap(map) => map.access_location(key),
+            AnyAccessMap::SubsetAccessMap(map) => map.access_location(key),
+        }
+    }
+
+    fn access_first_location(&self) -> Option<std::panic::Location<'static>> {
+        match self {
+            AnyAccessMap::UnlimitedAccessMap(map) => map.access_first_location(),
+            AnyAccessMap::SubsetAccessMap(map) => map.access_first_location(),
+        }
     }
 }
 
@@ -452,15 +717,15 @@ impl DisplayCodeLocation for Option<std::panic::Location<'_>> {
 /// A macro for claiming access to a value for reading
 macro_rules! with_access_read {
     ($access_map:expr, $id:expr, $msg:expr, $body:block) => {{
-        if !$access_map.claim_read_access($id) {
+        if !$crate::bindings::access_map::DynamicSystemMeta::claim_read_access($access_map, $id) {
             Err($crate::error::InteropError::cannot_claim_access(
                 $id,
-                $access_map.access_location($id),
+                $crate::bindings::access_map::DynamicSystemMeta::access_location($access_map, $id),
                 $msg,
             ))
         } else {
             let result = $body;
-            $access_map.release_access($id);
+            $crate::bindings::access_map::DynamicSystemMeta::release_access($access_map, $id);
             Ok(result)
         }
     }};
@@ -470,15 +735,15 @@ macro_rules! with_access_read {
 /// A macro for claiming access to a value for writing
 macro_rules! with_access_write {
     ($access_map:expr, $id:expr, $msg:expr, $body:block) => {
-        if !$access_map.claim_write_access($id) {
+        if !$crate::bindings::access_map::DynamicSystemMeta::claim_write_access($access_map, $id) {
             Err($crate::error::InteropError::cannot_claim_access(
                 $id,
-                $access_map.access_location($id),
+                $crate::bindings::access_map::DynamicSystemMeta::access_location($access_map, $id),
                 $msg,
             ))
         } else {
             let result = $body;
-            $access_map.release_access($id);
+            $crate::bindings::access_map::DynamicSystemMeta::release_access($access_map, $id);
             Ok(result)
         }
     };
@@ -488,17 +753,19 @@ macro_rules! with_access_write {
 /// A macro for claiming global access
 macro_rules! with_global_access {
     ($access_map:expr, $msg:expr, $body:block) => {
-        if !$access_map.claim_global_access() {
+        if !$crate::bindings::access_map::DynamicSystemMeta::claim_global_access($access_map) {
             Err($crate::error::InteropError::cannot_claim_access(
                 $crate::bindings::access_map::ReflectAccessId::for_global(),
-                $access_map
-                    .access_location($crate::bindings::access_map::ReflectAccessId::for_global()),
+                $crate::bindings::access_map::DynamicSystemMeta::access_location(
+                    $access_map,
+                    $crate::bindings::access_map::ReflectAccessId::for_global(),
+                ),
                 $msg,
             ))
         } else {
             #[allow(clippy::redundant_closure_call)]
             let result = (|| $body)();
-            $access_map.release_global_access();
+            $crate::bindings::access_map::DynamicSystemMeta::release_global_access($access_map);
             Ok(result)
         }
     };
@@ -509,17 +776,17 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_list_accesses() {
+    fn access_map_list_accesses() {
         let access_map = AccessMap::default();
 
-        access_map.claim_read_access(0);
-        access_map.claim_write_access(1);
+        access_map.claim_read_access(1);
+        access_map.claim_write_access(2);
 
         let accesses = access_map.list_accesses::<u64>();
 
         assert_eq!(accesses.len(), 2);
-        let access_0 = accesses.iter().find(|(k, _)| *k == 0).unwrap();
-        let access_1 = accesses.iter().find(|(k, _)| *k == 1).unwrap();
+        let access_0 = accesses.iter().find(|(k, _)| *k == 1).unwrap();
+        let access_1 = accesses.iter().find(|(k, _)| *k == 2).unwrap();
 
         assert_eq!(access_0.1.readers(), 1);
         assert_eq!(access_1.1.readers(), 1);
@@ -529,58 +796,143 @@ mod test {
     }
 
     #[test]
-    fn test_read_access_blocks_write() {
+    fn subset_access_map_list_accesses() {
         let access_map = AccessMap::default();
+        let subset_access_map = SubsetAccessMap {
+            inner: access_map,
+            subset: Box::new(|id| id == 1 || id == 2),
+        };
 
-        assert!(access_map.claim_read_access(0));
-        assert!(!access_map.claim_write_access(0));
-        access_map.release_access(0);
-        assert!(access_map.claim_write_access(0));
+        subset_access_map.claim_read_access(1);
+        subset_access_map.claim_write_access(2);
+
+        let accesses = subset_access_map.list_accesses::<u64>();
+
+        assert_eq!(accesses.len(), 2);
+        let access_0 = accesses.iter().find(|(k, _)| *k == 1).unwrap();
+        let access_1 = accesses.iter().find(|(k, _)| *k == 2).unwrap();
+
+        assert_eq!(access_0.1.readers(), 1);
+        assert_eq!(access_1.1.readers(), 1);
+
+        assert!(!access_0.1.written);
+        assert!(access_1.1.written);
     }
 
     #[test]
-    fn test_write_access_blocks_read() {
+    fn access_map_read_access_blocks_write() {
         let access_map = AccessMap::default();
 
-        assert!(access_map.claim_write_access(0));
-        assert!(!access_map.claim_read_access(0));
-        access_map.release_access(0);
-        assert!(access_map.claim_read_access(0));
+        assert!(access_map.claim_read_access(1));
+        assert!(!access_map.claim_write_access(1));
+        access_map.release_access(1);
+        assert!(access_map.claim_write_access(1));
     }
 
     #[test]
-    fn test_global_access_blocks_all() {
+    fn subset_access_map_read_access_blocks_write() {
+        let access_map = AccessMap::default();
+        let subset_access_map = SubsetAccessMap {
+            inner: access_map,
+            subset: Box::new(|id| id == 1),
+        };
+
+        assert!(subset_access_map.claim_read_access(1));
+        assert!(!subset_access_map.claim_write_access(1));
+        subset_access_map.release_access(1);
+        assert!(subset_access_map.claim_write_access(1));
+    }
+
+    #[test]
+    fn access_map_write_access_blocks_read() {
+        let access_map = AccessMap::default();
+
+        assert!(access_map.claim_write_access(1));
+        assert!(!access_map.claim_read_access(1));
+        access_map.release_access(1);
+        assert!(access_map.claim_read_access(1));
+    }
+
+    #[test]
+    fn subset_access_map_write_access_blocks_read() {
+        let access_map = AccessMap::default();
+        let subset_access_map = SubsetAccessMap {
+            inner: access_map,
+            subset: Box::new(|id| id == 1),
+        };
+
+        assert!(subset_access_map.claim_write_access(1));
+        assert!(!subset_access_map.claim_read_access(1));
+        subset_access_map.release_access(1);
+        assert!(subset_access_map.claim_read_access(1));
+    }
+
+    #[test]
+    fn access_map_global_access_blocks_all() {
         let access_map = AccessMap::default();
 
         assert!(access_map.claim_global_access());
-        assert!(!access_map.claim_read_access(0));
-        assert!(!access_map.claim_write_access(0));
+        assert!(!access_map.claim_read_access(1));
+        assert!(!access_map.claim_write_access(1));
         access_map.release_global_access();
-        assert!(access_map.claim_write_access(0));
-        access_map.release_access(0);
-        assert!(access_map.claim_read_access(0));
+        assert!(access_map.claim_write_access(1));
+        access_map.release_access(1);
+        assert!(access_map.claim_read_access(1));
     }
 
     #[test]
-    fn any_access_blocks_global() {
+    fn subset_access_map_global_access_blocks_all() {
+        let access_map = AccessMap::default();
+        let subset_access_map = SubsetAccessMap {
+            inner: access_map,
+            subset: Box::new(|id| id == 1 || id == 0),
+        };
+
+        assert!(subset_access_map.claim_global_access());
+        assert!(!subset_access_map.claim_read_access(1));
+        assert!(!subset_access_map.claim_write_access(1));
+        subset_access_map.release_global_access();
+        assert!(subset_access_map.claim_write_access(1));
+        subset_access_map.release_access(1);
+        assert!(subset_access_map.claim_read_access(1));
+    }
+
+    #[test]
+    fn access_map_any_access_blocks_global() {
         let access_map = AccessMap::default();
 
-        assert!(access_map.claim_read_access(0));
+        assert!(access_map.claim_read_access(1));
         assert!(!access_map.claim_global_access());
-        access_map.release_access(0);
+        access_map.release_access(1);
 
-        assert!(access_map.claim_write_access(0));
+        assert!(access_map.claim_write_access(1));
         assert!(!access_map.claim_global_access());
+    }
+
+    #[test]
+    fn subset_map_any_access_blocks_global() {
+        let access_map = AccessMap::default();
+        let subset_access_map = SubsetAccessMap {
+            inner: access_map,
+            subset: Box::new(|id| id == 0 || id == 1),
+        };
+
+        assert!(subset_access_map.claim_read_access(1));
+        assert!(!subset_access_map.claim_global_access());
+        subset_access_map.release_access(1);
+
+        assert!(subset_access_map.claim_write_access(1));
+        assert!(!subset_access_map.claim_global_access());
     }
 
     #[test]
     #[should_panic]
-    fn releasing_read_access_from_wrong_thread_panics() {
+    fn access_map_releasing_read_access_from_wrong_thread_panics() {
         let access_map = AccessMap::default();
 
-        access_map.claim_read_access(0);
+        access_map.claim_read_access(1);
         std::thread::spawn(move || {
-            access_map.release_access(0);
+            access_map.release_access(1);
         })
         .join()
         .unwrap();
@@ -588,19 +940,53 @@ mod test {
 
     #[test]
     #[should_panic]
-    fn releasing_write_access_from_wrong_thread_panics() {
+    fn subset_map_releasing_read_access_from_wrong_thread_panics() {
         let access_map = AccessMap::default();
+        let subset_access_map = SubsetAccessMap {
+            inner: access_map,
+            subset: Box::new(|id| id == 1),
+        };
 
-        access_map.claim_write_access(0);
+        subset_access_map.claim_read_access(1);
         std::thread::spawn(move || {
-            access_map.release_access(0);
+            subset_access_map.release_access(1);
         })
         .join()
         .unwrap();
     }
 
     #[test]
-    fn test_as_and_from_index_for_access_id_non_overlapping() {
+    #[should_panic]
+    fn access_map_releasing_write_access_from_wrong_thread_panics() {
+        let access_map = AccessMap::default();
+
+        access_map.claim_write_access(1);
+        std::thread::spawn(move || {
+            access_map.release_access(1);
+        })
+        .join()
+        .unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn subset_map_releasing_write_access_from_wrong_thread_panics() {
+        let access_map = AccessMap::default();
+        let subset_access_map = SubsetAccessMap {
+            inner: access_map,
+            subset: Box::new(|id| id == 1),
+        };
+
+        subset_access_map.claim_write_access(1);
+        std::thread::spawn(move || {
+            subset_access_map.release_access(1);
+        })
+        .join()
+        .unwrap();
+    }
+
+    #[test]
+    fn as_and_from_index_for_access_id_non_overlapping() {
         let global = ReflectAccessId::for_global();
 
         let first_component = ReflectAccessId {
@@ -637,10 +1023,10 @@ mod test {
     }
 
     #[test]
-    fn test_with_scope_unrolls_individual_accesses() {
+    fn access_map_with_scope_unrolls_individual_accesses() {
         let access_map = AccessMap::default();
         // Claim a read access outside the scope
-        assert!(access_map.claim_read_access(0));
+        assert!(access_map.claim_read_access(3));
 
         // Inside with_scope, claim additional accesses
         access_map.with_scope(|| {
@@ -653,22 +1039,52 @@ mod test {
 
         // After with_scope returns, accesses claimed inside (keys 1 and 2) are unrolled.
         let accesses = access_map.list_accesses::<u64>();
-        // Only the access claimed outside (key 0) remains.
+        // Only the access claimed outside (key 3) remains.
         assert_eq!(accesses.len(), 1);
         let (k, count) = &accesses[0];
-        assert_eq!(*k, 0);
+        assert_eq!(*k, 3);
         // The outside access remains valid.
         assert!(count.readers() > 0);
     }
 
     #[test]
-    fn test_with_scope_unrolls_global_accesses() {
+    fn subset_map_with_scope_unrolls_individual_accesses() {
+        let access_map = AccessMap::default();
+        let subset_access_map = SubsetAccessMap {
+            inner: access_map,
+            subset: Box::new(|id| id == 1 || id == 2 || id == 3),
+        };
+
+        // Claim a read access outside the scope
+        assert!(subset_access_map.claim_read_access(3));
+
+        // Inside with_scope, claim additional accesses
+        subset_access_map.with_scope(|| {
+            assert!(subset_access_map.claim_read_access(1));
+            assert!(subset_access_map.claim_write_access(2));
+            // At this point, individual_accesses contains keys 0, 1 and 2.
+            let accesses = subset_access_map.list_accesses::<u64>();
+            assert_eq!(accesses.len(), 3);
+        });
+
+        // After with_scope returns, accesses claimed inside (keys 1 and 2) are unrolled.
+        let accesses = subset_access_map.list_accesses::<u64>();
+        // Only the access claimed outside (key 3) remains.
+        assert_eq!(accesses.len(), 1);
+        let (k, count) = &accesses[0];
+        assert_eq!(*k, 3);
+        // The outside access remains valid.
+        assert!(count.readers() > 0);
+    }
+
+    #[test]
+    fn access_map_with_scope_unrolls_global_accesses() {
         let access_map = AccessMap::default();
 
         access_map.with_scope(|| {
             assert!(access_map.claim_global_access());
             // At this point, global_access is claimed.
-            assert!(!access_map.claim_read_access(0));
+            assert!(!access_map.claim_read_access(1));
         });
 
         let accesses = access_map.list_accesses::<u64>();
@@ -676,7 +1092,25 @@ mod test {
     }
 
     #[test]
-    fn count_accesses_counts_globals() {
+    fn subset_map_with_scope_unrolls_global_accesses() {
+        let access_map = AccessMap::default();
+        let subset_access_map = SubsetAccessMap {
+            inner: access_map,
+            subset: Box::new(|id| id == 0 || id == 1),
+        };
+
+        subset_access_map.with_scope(|| {
+            assert!(subset_access_map.claim_global_access());
+            // At this point, global_access is claimed.
+            assert!(!subset_access_map.claim_read_access(1));
+        });
+
+        let accesses = subset_access_map.list_accesses::<u64>();
+        assert_eq!(accesses.len(), 0);
+    }
+
+    #[test]
+    fn access_map_count_accesses_counts_globals() {
         let access_map = AccessMap::default();
 
         // Initially, no accesses are active.
@@ -700,7 +1134,35 @@ mod test {
     }
 
     #[test]
-    fn location_is_tracked_for_all_types_of_accesses() {
+    fn subset_map_count_accesses_counts_globals() {
+        let access_map = AccessMap::default();
+        let subset_access_map = SubsetAccessMap {
+            inner: access_map,
+            subset: Box::new(|id| id == 0 || id == 1 || id == 2),
+        };
+
+        // Initially, no accesses are active.
+        assert_eq!(subset_access_map.count_accesses(), 0);
+
+        // Claim global access. When global access is active,
+        // count_accesses should return 1.
+        assert!(subset_access_map.claim_global_access());
+        assert_eq!(subset_access_map.count_accesses(), 1);
+        subset_access_map.release_global_access();
+
+        // Now claim individual accesses.
+        assert!(subset_access_map.claim_read_access(1));
+        assert!(subset_access_map.claim_write_access(2));
+        // Since two separate keys were claimed, count_accesses should return 2.
+        assert_eq!(subset_access_map.count_accesses(), 2);
+
+        // Cleanup individual accesses.
+        subset_access_map.release_access(1);
+        subset_access_map.release_access(2);
+    }
+
+    #[test]
+    fn access_map_location_is_tracked_for_all_types_of_accesses() {
         let access_map = AccessMap::default();
 
         assert!(access_map.claim_global_access());
@@ -718,5 +1180,62 @@ mod test {
         assert!(access_map.claim_write_access(2));
         assert!(access_map.access_location(2).is_some());
         access_map.release_access(2);
+    }
+
+    #[test]
+    fn subset_map_location_is_tracked_for_all_types_of_accesses() {
+        let access_map = AccessMap::default();
+        let subset_access_map = SubsetAccessMap {
+            inner: access_map,
+            subset: Box::new(|id| id == 0 || id == 1 || id == 2),
+        };
+
+        assert!(subset_access_map.claim_global_access());
+        assert!(subset_access_map
+            .access_location(ReflectAccessId::for_global())
+            .is_some());
+        subset_access_map.release_global_access();
+
+        // Claim a read access
+        assert!(subset_access_map.claim_read_access(1));
+        assert!(subset_access_map.access_location(1).is_some());
+        subset_access_map.release_access(1);
+
+        // Claim a write access
+        assert!(subset_access_map.claim_write_access(2));
+        assert!(subset_access_map.access_location(2).is_some());
+        subset_access_map.release_access(2);
+    }
+
+    #[test]
+    fn subset_map_prevents_access_to_out_of_subset_access() {
+        let access_map = AccessMap::default();
+        let subset_access_map = SubsetAccessMap {
+            inner: access_map,
+            subset: Box::new(|id| id == 1),
+        };
+
+        assert!(!subset_access_map.claim_read_access(2));
+        assert!(!subset_access_map.claim_write_access(2));
+        assert!(!subset_access_map.claim_global_access());
+    }
+
+    #[test]
+    fn subset_map_retains_subset_in_scope() {
+        let access_map = AccessMap::default();
+        let subset_access_map = SubsetAccessMap {
+            inner: access_map,
+            subset: Box::new(|id| id == 1),
+        };
+
+        subset_access_map.with_scope(|| {
+            assert!(subset_access_map.claim_read_access(1));
+            assert!(!subset_access_map.claim_read_access(2));
+            assert!(!subset_access_map.claim_write_access(2));
+        });
+
+        assert!(subset_access_map.claim_read_access(1));
+        assert!(!subset_access_map.claim_read_access(2));
+        assert!(!subset_access_map.claim_write_access(2));
     }
 }

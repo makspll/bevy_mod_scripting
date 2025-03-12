@@ -33,7 +33,8 @@ macro_rules! make_test_plugin {
 
         #[derive(Default)]
         struct TestRuntime {
-            pub invocations: parking_lot::Mutex<Vec<(Entity, ScriptId)>>,
+            pub invocations:
+                parking_lot::Mutex<Vec<(bevy::prelude::Entity, $ident::script::ScriptId)>>,
         }
 
         #[derive(Default)]

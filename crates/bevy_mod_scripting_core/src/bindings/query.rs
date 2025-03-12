@@ -3,7 +3,12 @@
 use super::{ReflectReference, WorldAccessGuard};
 use crate::{error::InteropError, with_global_access};
 use bevy::{
-    ecs::{component::ComponentId, entity::Entity},
+    ecs::{
+        component::ComponentId,
+        entity::Entity,
+        query::{QueryData, QueryState},
+        world::World,
+    },
     prelude::{EntityRef, QueryBuilder},
     reflect::{ParsedPath, Reflect, TypeRegistration},
 };
@@ -131,7 +136,7 @@ impl std::fmt::Display for ScriptTypeRegistration {
 #[reflect(opaque)]
 /// A builder for a query.
 pub struct ScriptQueryBuilder {
-    components: Vec<ScriptComponentRegistration>,
+    pub(crate) components: Vec<ScriptComponentRegistration>,
     with: Vec<ScriptComponentRegistration>,
     without: Vec<ScriptComponentRegistration>,
 }
@@ -171,6 +176,27 @@ impl ScriptQueryBuilder {
         self.without.push(without);
         self
     }
+
+    /// Builds the query into a query state as used in systems.
+    pub fn as_query_state<Q: QueryData>(&self, world: &mut World) -> QueryState<Q> {
+        let mut dynamic_query = QueryBuilder::<Q>::new(world);
+        // we don't actually want to fetch the data for components now, only figure out
+        // which entities match the query
+        // so we might be being slightly overkill
+        for c in &self.components {
+            dynamic_query.ref_id(c.component_id());
+        }
+
+        for w in &self.with {
+            dynamic_query.with_id(w.component_id());
+        }
+
+        for without_id in &self.without {
+            dynamic_query.without_id(without_id.component_id());
+        }
+
+        dynamic_query.build()
+    }
 }
 
 #[derive(Clone, Reflect)]
@@ -190,26 +216,9 @@ impl WorldAccessGuard<'_> {
         &self,
         query: ScriptQueryBuilder,
     ) -> Result<VecDeque<ScriptQueryResult>, InteropError> {
-        with_global_access!(self.inner.accesses, "Could not query", {
+        with_global_access!(&self.inner.accesses, "Could not query", {
             let world = unsafe { self.as_unsafe_world_cell()?.world_mut() };
-            let mut dynamic_query = QueryBuilder::<EntityRef>::new(world);
-
-            // we don't actually want to fetch the data for components now, only figure out
-            // which entities match the query
-            // so we might be being slightly overkill
-            for c in &query.components {
-                dynamic_query.ref_id(c.component_id());
-            }
-
-            for w in query.with {
-                dynamic_query.with_id(w.component_id());
-            }
-
-            for without_id in query.without {
-                dynamic_query.without_id(without_id.component_id());
-            }
-
-            let mut built_query = dynamic_query.build();
+            let mut built_query = query.as_query_state::<EntityRef>(world);
             let query_result = built_query.iter(world);
 
             Ok(query_result

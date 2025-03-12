@@ -25,7 +25,7 @@ use error::ScriptError;
 use event::ScriptCallbackEvent;
 use handler::{CallbackSettings, HandlerFn};
 use runtime::{initialize_runtime, Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
-use script::{ScriptId, Scripts, StaticScripts};
+use script::{ScriptComponent, ScriptId, Scripts, StaticScripts};
 
 pub mod asset;
 pub mod bindings;
@@ -326,6 +326,7 @@ fn register_types(app: &mut App) {
     app.register_type::<ScriptValue>();
     app.register_type::<ScriptTypeRegistration>();
     app.register_type::<ReflectReference>();
+    app.register_type::<ScriptComponent>();
 }
 
 /// Trait for adding a runtime initializer to an app

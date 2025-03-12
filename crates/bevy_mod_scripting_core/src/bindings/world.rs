@@ -6,13 +6,16 @@
 //! we need wrapper types which have owned and ref variants.
 
 use super::{
-    access_map::{AccessCount, AccessMap, ReflectAccessId},
+    access_map::{
+        AccessCount, AccessMapKey, AnyAccessMap, DynamicSystemMeta, ReflectAccessId,
+        ReflectAccessKind, SubsetAccessMap,
+    },
     function::{
         namespace::Namespace,
         script_function::{AppScriptFunctionRegistry, DynamicScriptFunction, FunctionCallContext},
     },
     pretty_print::DisplayWithWorld,
-    schedule::{AppScheduleRegistry, ReflectSchedule},
+    schedule::AppScheduleRegistry,
     script_value::ScriptValue,
     AppReflectAllocator, ReflectBase, ReflectBaseType, ReflectReference,
     ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration,
@@ -38,6 +41,7 @@ use bevy::{
         DynamicVariant, ParsedPath, PartialReflect, TypeRegistryArc,
     },
 };
+use bevy_system_reflection::ReflectSchedule;
 use std::{
     any::TypeId,
     borrow::Cow,
@@ -62,13 +66,12 @@ pub struct WorldAccessGuard<'w> {
     /// stored separate from the contents of the guard
     invalid: Rc<AtomicBool>,
 }
-
 /// Used to decrease the stack size of [`WorldAccessGuard`]
 pub(crate) struct WorldAccessGuardInner<'w> {
     /// Safety: cannot be used unless the scope depth is less than the max valid scope
     cell: UnsafeWorldCell<'w>,
     // TODO: this is fairly hefty, explore sparse sets, bit fields etc
-    pub(crate) accesses: AccessMap,
+    pub(crate) accesses: AnyAccessMap,
     /// Cached for convenience, since we need it for most operations, means we don't need to lock the type registry every time
     type_registry: TypeRegistryArc,
     /// The script allocator for the world
@@ -124,7 +127,7 @@ impl<'w> WorldAccessGuard<'w> {
         world: &'w mut World,
         f: impl FnOnce(WorldGuard<'static>) -> O,
     ) -> O {
-        let guard = WorldAccessGuard::new(world);
+        let guard = WorldAccessGuard::new_exclusive(world);
         // safety: we invalidate the guard after the closure is called, meaning the world cannot be accessed at all after the 'w lifetime ends
         let static_guard: WorldAccessGuard<'static> = unsafe { std::mem::transmute(guard) };
         let o = f(static_guard.clone());
@@ -147,6 +150,40 @@ impl<'w> WorldAccessGuard<'w> {
         o
     }
 
+    /// Creates a new [`WorldAccessGuard`] from a possibly non-exclusive access to the world.
+    ///
+    /// It requires specyfing the exact accesses that are allowed to be given out by the guard.
+    /// Those accesses need to be safe to be given out to the script, as the guard will assume that it is safe to give them out in any way.
+    ///
+    /// # Safety
+    /// - The caller must ensure that the accesses in subset are not aliased by any other access
+    /// - If an access is allowed in this subset, but alised by someone else,
+    /// either by being converted to mutable or non mutable reference, this guard will be unsafe.
+    pub unsafe fn new_non_exclusive(
+        world: UnsafeWorldCell<'w>,
+        subset: impl IntoIterator<Item = ReflectAccessId>,
+        type_registry: AppTypeRegistry,
+        allocator: AppReflectAllocator,
+        function_registry: AppScriptFunctionRegistry,
+        schedule_registry: AppScheduleRegistry,
+    ) -> Self {
+        Self {
+            inner: Rc::new(WorldAccessGuardInner {
+                cell: world,
+                accesses: AnyAccessMap::SubsetAccessMap(SubsetAccessMap::new(
+                    subset,
+                    // allocations live beyond the world, and can be safely accessed
+                    |id| ReflectAccessId::from_index(id).kind == ReflectAccessKind::Allocation,
+                )),
+                type_registry: type_registry.0,
+                allocator,
+                function_registry,
+                schedule_registry,
+            }),
+            invalid: Rc::new(false.into()),
+        }
+    }
+
     /// Creates a new [`WorldAccessGuard`] for the given mutable borrow of the world.
     ///
     /// Creating a guard requires that some resources exist in the world, namely:
@@ -155,7 +192,7 @@ impl<'w> WorldAccessGuard<'w> {
     /// - [`AppScriptFunctionRegistry`]
     ///
     /// If these resources do not exist, they will be initialized.
-    pub fn new(world: &'w mut World) -> Self {
+    pub fn new_exclusive(world: &'w mut World) -> Self {
         let type_registry = world.get_resource_or_init::<AppTypeRegistry>().0.clone();
 
         let allocator = world.get_resource_or_init::<AppReflectAllocator>().clone();
@@ -168,7 +205,7 @@ impl<'w> WorldAccessGuard<'w> {
         Self {
             inner: Rc::new(WorldAccessGuardInner {
                 cell: world.as_unsafe_world_cell(),
-                accesses: Default::default(),
+                accesses: AnyAccessMap::UnlimitedAccessMap(Default::default()),
                 allocator,
                 type_registry,
                 function_registry,
@@ -305,7 +342,7 @@ impl<'w> WorldAccessGuard<'w> {
         f: F,
     ) -> Result<O, InteropError> {
         with_global_access!(
-            self.inner.accesses,
+            &self.inner.accesses,
             "Could not claim exclusive world access",
             {
                 // safety: we have global access for the duration of the closure
@@ -328,7 +365,7 @@ impl<'w> WorldAccessGuard<'w> {
         let access_id = ReflectAccessId::for_resource::<R>(&cell)?;
 
         with_access_read!(
-            self.inner.accesses,
+            &self.inner.accesses,
             access_id,
             format!("Could not access resource: {}", std::any::type_name::<R>()),
             {
@@ -356,7 +393,7 @@ impl<'w> WorldAccessGuard<'w> {
         let cell = self.as_unsafe_world_cell()?;
         let access_id = ReflectAccessId::for_resource::<R>(&cell)?;
         with_access_write!(
-            self.inner.accesses,
+            &self.inner.accesses,
             access_id,
             format!("Could not access resource: {}", std::any::type_name::<R>()),
             {
@@ -381,7 +418,7 @@ impl<'w> WorldAccessGuard<'w> {
         let cell = self.as_unsafe_world_cell()?;
         let access_id = ReflectAccessId::for_component::<T>(&cell)?;
         with_access_read!(
-            self.inner.accesses,
+            &self.inner.accesses,
             access_id,
             format!("Could not access component: {}", std::any::type_name::<T>()),
             {
@@ -401,7 +438,7 @@ impl<'w> WorldAccessGuard<'w> {
         let access_id = ReflectAccessId::for_component::<T>(&cell)?;
 
         with_access_write!(
-            self.inner.accesses,
+            &self.inner.accesses,
             access_id,
             format!("Could not access component: {}", std::any::type_name::<T>()),
             {
@@ -883,7 +920,7 @@ impl WorldAccessGuard<'_> {
                 )
             })?;
 
-        with_global_access!(self.inner.accesses, "Could not insert element", {
+        with_global_access!(&self.inner.accesses, "Could not insert element", {
             let cell = self.as_unsafe_world_cell()?;
             let type_registry = self.type_registry();
             let type_registry = type_registry.read();
@@ -1218,7 +1255,7 @@ mod test {
     #[test]
     fn test_construct_struct() {
         let mut world = setup_world(|_, _| {});
-        let world = WorldAccessGuard::new(&mut world);
+        let world = WorldAccessGuard::new_exclusive(&mut world);
 
         let registry = world.type_registry();
         let registry = registry.read();
@@ -1237,7 +1274,7 @@ mod test {
     #[test]
     fn test_construct_tuple_struct() {
         let mut world = setup_world(|_, _| {});
-        let world = WorldAccessGuard::new(&mut world);
+        let world = WorldAccessGuard::new_exclusive(&mut world);
 
         let registry = world.type_registry();
         let registry = registry.read();
@@ -1280,7 +1317,7 @@ mod test {
         });
 
         <usize as GetTypeRegistration>::get_type_registration();
-        let world = WorldAccessGuard::new(&mut world);
+        let world = WorldAccessGuard::new_exclusive(&mut world);
 
         let registry = world.type_registry();
         let registry = registry.read();
@@ -1315,7 +1352,7 @@ mod test {
     #[test]
     fn test_construct_enum() {
         let mut world = setup_world(|_, _| {});
-        let world = WorldAccessGuard::new(&mut world);
+        let world = WorldAccessGuard::new_exclusive(&mut world);
 
         let registry = world.type_registry();
         let registry = registry.read();
@@ -1364,7 +1401,7 @@ mod test {
     #[test]
     fn test_scoped_handle_invalidate_doesnt_invalidate_parent() {
         let mut world = setup_world(|_, _| {});
-        let world = WorldAccessGuard::new(&mut world);
+        let world = WorldAccessGuard::new_exclusive(&mut world);
         let scoped_world = world.scope();
 
         // can use scoped & normal worlds
@@ -1384,7 +1421,7 @@ mod test {
     #[test]
     fn with_existing_static_guard_does_not_invalidate_original() {
         let mut world = setup_world(|_, _| {});
-        let world = WorldAccessGuard::new(&mut world);
+        let world = WorldAccessGuard::new_exclusive(&mut world);
 
         let mut sneaky_clone = None;
         WorldAccessGuard::with_existing_static_guard(world.clone(), |g| {
@@ -1402,7 +1439,7 @@ mod test {
     #[test]
     fn test_with_access_scope_success() {
         let mut world = setup_world(|_, _| {});
-        let guard = WorldAccessGuard::new(&mut world);
+        let guard = WorldAccessGuard::new_exclusive(&mut world);
 
         // within the access scope, no extra accesses are claimed
         let result = unsafe { guard.with_access_scope(|| 100) };
