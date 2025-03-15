@@ -12,7 +12,7 @@ use super::{
     }, function::{
         namespace::Namespace,
         script_function::{AppScriptFunctionRegistry, DynamicScriptFunction, FunctionCallContext},
-    }, pretty_print::DisplayWithWorld, schedule::AppScheduleRegistry, script_value::ScriptValue, with_global_access, AppReflectAllocator, ReflectBase, ReflectBaseType, ReflectReference, ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration
+    }, pretty_print::DisplayWithWorld, schedule::AppScheduleRegistry, script_value::ScriptValue, with_global_access, AppReflectAllocator, ReflectBase, ReflectBaseType, ReflectReference, ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration, Union
 };
 use crate::{
     bindings::{function::{from::FromScript, from_ref::FromScriptRef}, with_access_read, with_access_write},
@@ -542,6 +542,7 @@ impl<'w> WorldAccessGuard<'w> {
 /// Impl block for higher level world methods
 #[profiling::all_functions]
 impl WorldAccessGuard<'_> {
+    
     fn construct_from_script_value(
         &self,
         descriptor: impl Into<Cow<'static, str>>,
@@ -800,7 +801,7 @@ impl WorldAccessGuard<'_> {
         })
     }
 
-    /// get a type registration for the type
+    /// get a type registration for the type, without checking if it's a component or resource
     pub fn get_type_by_name(&self, type_name: String) -> Option<ScriptTypeRegistration> {
         let type_registry = self.type_registry();
         let type_registry = type_registry.read();
@@ -808,6 +809,38 @@ impl WorldAccessGuard<'_> {
             .get_with_short_type_path(&type_name)
             .or_else(|| type_registry.get_with_type_path(&type_name))
             .map(|registration| ScriptTypeRegistration::new(Arc::new(registration.clone())))
+    }
+
+    /// get a type erased type registration for the type including information about whether it's a component or resource
+    pub(crate) fn get_type_registration(&self, registration: ScriptTypeRegistration) -> Result<Union<ScriptTypeRegistration, Union<ScriptComponentRegistration, ScriptResourceRegistration>>, InteropError> {
+
+        let registration = match self.get_resource_type(registration)? {
+            Ok(res) => {
+                return Ok(Union::new_right(Union::new_right(res)));
+            }
+            Err(registration) => registration,
+        };
+
+        let registration = match self.get_component_type(registration)? {
+            Ok(comp) => {
+                return Ok(Union::new_right(Union::new_left(comp)));
+            }
+            Err(registration) => registration,
+        };
+
+        Ok(Union::new_left(registration))
+    }
+
+    /// Similar to [`Self::get_type_by_name`] but returns a type erased [`ScriptTypeRegistration`], [`ScriptComponentRegistration`] or [`ScriptResourceRegistration`] 
+    /// depending on the underlying type and state of the world.
+    pub fn get_type_registration_by_name(&self, type_name: String) -> Result<Option<Union<ScriptTypeRegistration, Union<ScriptComponentRegistration, ScriptResourceRegistration>>>, InteropError> {
+        let val = self.get_type_by_name(type_name);
+        Ok(match val {
+            Some(registration) => {
+                Some(self.get_type_registration(registration)?)
+            }
+            None => None,
+        })
     }
 
     /// get a schedule by name

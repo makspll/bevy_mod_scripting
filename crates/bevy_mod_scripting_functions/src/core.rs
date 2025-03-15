@@ -30,6 +30,7 @@ use bindings::{
 };
 use error::InteropError;
 use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
+
 pub fn register_bevy_bindings(app: &mut App) {
     #[cfg(feature = "bevy_bindings")]
     app.add_plugins(crate::bevy_bindings::LuaBevyScriptingPlugin);
@@ -45,39 +46,20 @@ impl World {
     fn get_type_by_name(
         ctxt: FunctionCallContext,
         type_name: String,
-    ) -> Result<Option<ReflectReference>, InteropError> {
+    ) -> Result<
+        Option<
+            Union<
+                Val<ScriptTypeRegistration>,
+                Union<Val<ScriptComponentRegistration>, Val<ScriptResourceRegistration>>,
+            >,
+        >,
+        InteropError,
+    > {
         profiling::function_scope!("get_type_by_name");
         let world = ctxt.world()?;
-        let val = world.get_type_by_name(type_name);
-
-        Ok(match val {
-            Some(registration) => {
-                let allocator = world.allocator();
-
-                let registration = match world.get_resource_type(registration)? {
-                    Ok(res) => {
-                        let mut allocator = allocator.write();
-                        return Ok(Some(ReflectReference::new_allocated(res, &mut allocator)));
-                    }
-                    Err(registration) => registration,
-                };
-
-                let registration = match world.get_component_type(registration)? {
-                    Ok(comp) => {
-                        let mut allocator = allocator.write();
-                        return Ok(Some(ReflectReference::new_allocated(comp, &mut allocator)));
-                    }
-                    Err(registration) => registration,
-                };
-
-                let mut allocator = allocator.write();
-                Some(ReflectReference::new_allocated(
-                    registration,
-                    &mut allocator,
-                ))
-            }
-            None => None,
-        })
+        world
+            .get_type_registration_by_name(type_name)
+            .map(|v| v.map(|v| v.map_both(Val::from, |u| u.map_both(Val::from, Val::from))))
     }
 
     /// Retrieves the schedule with the given name, Also ensures the schedule is initialized before returning it.
