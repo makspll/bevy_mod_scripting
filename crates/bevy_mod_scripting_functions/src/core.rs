@@ -46,10 +46,20 @@ impl World {
     fn get_type_by_name(
         ctxt: FunctionCallContext,
         type_name: String,
-    ) -> Result<Option<Union<Val<ScriptTypeRegistration>, Union<Val<ScriptComponentRegistration>, Val<ScriptResourceRegistration>>>>, InteropError> {
+    ) -> Result<
+        Option<
+            Union<
+                Val<ScriptTypeRegistration>,
+                Union<Val<ScriptComponentRegistration>, Val<ScriptResourceRegistration>>,
+            >,
+        >,
+        InteropError,
+    > {
         profiling::function_scope!("get_type_by_name");
         let world = ctxt.world()?;
-        world.get_type_registration_by_name(type_name).map(|v| v.map(|v| v.map_both(Val::from, |u| u.map_both(Val::from, Val::from))))
+        world
+            .get_type_registration_by_name(type_name)
+            .map(|v| v.map(|v| v.map_both(Val::from, |u| u.map_both(Val::from, Val::from))))
     }
 
     /// Retrieves the schedule with the given name, Also ensures the schedule is initialized before returning it.
