@@ -168,7 +168,7 @@ While the generated bindings do not cover constructors for every single type tha
     pub my_field: String
 }</code></pre>
 <p>can be constructed from lua like so:</p>
-<pre><code class="language-lua">local MyStruct = world.get_type_by_name("MyStruct")
+<pre><code class="language-lua">local MyStruct = types.MyStruct
 local concrete_my_struct = construct(MyStruct, {
     my_field = "hello"
 })
@@ -179,7 +179,7 @@ local concrete_my_struct = construct(MyStruct, {
 pub struct MyTupleStruct(pub String);</code></pre>
 <p>can be constructed like so:</p>
 <pre><code class="language-lua">
-local MyTupleStruct = world.get_type_by_name("MyTupleStruct")
+local MyTupleStruct = types.MyTupleStruct
 local concrete_my_tuple_struct = construct(MyTupleStruct, {
     _1 = "hello"
 })
@@ -194,7 +194,7 @@ local concrete_my_tuple_struct = construct(MyTupleStruct, {
 }</code></pre>
 <p>can be constructed like so:</p>
 <pre><code class="language-lua">
-local MyEnum = world.get_type_by_name("MyEnum")
+local MyEnum = types.MyEnum
 local variantA = construct(MyEnum, {
     variant = "VariantA",
     field = "hello"
