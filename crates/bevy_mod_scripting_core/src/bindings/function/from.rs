@@ -469,6 +469,17 @@ where
 pub struct Union<T1, T2>(Result<T1, T2>);
 
 impl<T1, T2> Union<T1, T2> {
+    /// Create a new union with the left value.
+    pub fn new_left(value: T1) -> Self {
+        Union(Ok(value))
+    }
+
+    /// Create a new union with the right value.
+    pub fn new_right(value: T2) -> Self {
+        Union(Err(value))
+    }
+
+
     /// Try interpret the union as the left type
     pub fn into_left(self) -> Result<T1, T2> {
         match self.0 {
@@ -482,6 +493,14 @@ impl<T1, T2> Union<T1, T2> {
         match self.0 {
             Err(r) => Ok(r),
             Ok(l) => Err(l),
+        }
+    }
+     
+    /// Map the union to another type
+    pub fn map_both<U1, U2, F: Fn(T1) -> U1, G: Fn(T2) -> U2>(self, f: F, g: G) -> Union<U1, U2> {
+        match self.0 {
+            Ok(t) => Union(Ok(f(t))),
+            Err(t) => Union(Err(g(t))),
         }
     }
 }

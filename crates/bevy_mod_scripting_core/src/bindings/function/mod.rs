@@ -17,17 +17,13 @@ mod test {
     use bevy::reflect::{FromReflect, GetTypeRegistration, Reflect, Typed};
     use bevy_mod_scripting_derive::script_bindings;
 
-    use crate::{
-        bindings::{
+    use crate::bindings::{
             function::{
                 from::{Ref, Union, Val},
                 namespace::IntoNamespace,
                 script_function::AppScriptFunctionRegistry,
-            },
-            script_value::ScriptValue,
-        },
-        docgen::typed_through::TypedThrough,
-    };
+            }, script_value::ScriptValue
+        };
 
     use super::arg_meta::{ScriptArgument, ScriptReturn, TypedScriptArgument, TypedScriptReturn};
 
@@ -137,10 +133,20 @@ mod test {
             test_is_valid_arg::<Ref<'_, T>>();
         }
 
+        fn test_union<T>()
+        where
+            T: TypedScriptArgument + TypedScriptReturn,
+            T::Underlying: FromReflect + Typed + GetTypeRegistration,
+            for<'a> T::This<'a>: Into<T>,
+        {
+            test_is_valid_arg_and_return::<Union<T, T>>();
+            test_is_valid_arg_and_return::<Union<T, Union<T, T>>>();
+        }
+
         fn test_array<T, const N: usize>()
         where
-            T: ScriptArgument + ScriptReturn,
-            T: GetTypeRegistration + FromReflect + TypedThrough + Typed,
+            T: TypedScriptArgument + TypedScriptReturn + 'static,
+            T::Underlying: FromReflect + Typed + GetTypeRegistration,
             for<'a> T::This<'a>: Into<T>,
         {
             test_is_valid_arg_and_return::<[T; N]>();
@@ -148,8 +154,8 @@ mod test {
 
         fn test_tuple<T>()
         where
-            T: ScriptArgument + ScriptReturn,
-            T: GetTypeRegistration + FromReflect + TypedThrough + Typed,
+            T: TypedScriptArgument + TypedScriptReturn + 'static,
+            T::Underlying: FromReflect + Typed + GetTypeRegistration,
             for<'a> T::This<'a>: Into<T>,
         {
             test_is_valid_arg_and_return::<()>();
@@ -160,8 +166,8 @@ mod test {
 
         fn test_option<T>()
         where
-            T: ScriptArgument + ScriptReturn,
-            T: GetTypeRegistration + FromReflect + Typed + TypedThrough,
+            T: TypedScriptArgument + TypedScriptReturn,
+            T::Underlying: FromReflect + Typed + GetTypeRegistration,
             for<'a> T::This<'a>: Into<T>,
         {
             test_is_valid_arg_and_return::<Option<T>>();
@@ -169,8 +175,8 @@ mod test {
 
         fn test_vec<T>()
         where
-            T: ScriptArgument + ScriptReturn,
-            T: GetTypeRegistration + FromReflect + Typed + TypedThrough,
+            T: TypedScriptArgument + TypedScriptReturn + 'static,
+            T::Underlying: FromReflect + Typed + GetTypeRegistration,
             for<'a> T::This<'a>: Into<T>,
         {
             test_is_valid_arg_and_return::<Vec<T>>();
@@ -178,8 +184,8 @@ mod test {
 
         fn test_hashmap<V>()
         where
-            V: ScriptArgument + ScriptReturn,
-            V: GetTypeRegistration + FromReflect + Typed + TypedThrough,
+            V: TypedScriptArgument + TypedScriptReturn + 'static,
+            V::Underlying: FromReflect + Typed + GetTypeRegistration + Eq,
             for<'a> V::This<'a>: Into<V>,
         {
             test_is_valid_arg_and_return::<std::collections::HashMap<String, V>>();

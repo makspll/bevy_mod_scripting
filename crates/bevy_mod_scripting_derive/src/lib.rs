@@ -49,3 +49,16 @@ pub fn script_globals(
 ) -> proc_macro::TokenStream {
     derive::script_globals(args, input)
 }
+
+/// Derive macro for generating `GetTypeDependencies` implementations.
+#[proc_macro_derive(GetTypeDependencies, attributes(get_type_dependencies))]
+pub fn get_type_dependencies(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    derive::get_type_dependencies(input.into()).into()
+}
+
+/// Proc macro equivalent of `GetTypeDependencies` which does not generate a type, purely the impl.
+/// Useful for generating implementations against remote types.
+#[proc_macro]
+pub fn impl_get_type_dependencies(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    derive::get_type_dependencies(input.into()).into()
+}
