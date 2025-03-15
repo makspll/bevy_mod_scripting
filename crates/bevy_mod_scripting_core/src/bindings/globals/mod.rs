@@ -100,11 +100,11 @@ impl ScriptGlobalsRegistry {
         F: Fn(WorldGuard) -> Result<T, InteropError> + 'static + Send + Sync,
     >(
         &mut self,
-        name: Cow<'static, str>,
+        name: impl Into<Cow<'static, str>>,
         maker: F,
     ) -> Option<ScriptGlobal> {
         self.globals.insert(
-            name,
+            name.into(),
             ScriptGlobal {
                 maker: Some(Self::type_erase_maker(maker)),
                 documentation: None,
@@ -122,15 +122,15 @@ impl ScriptGlobalsRegistry {
         F: Fn(WorldGuard) -> Result<T, InteropError> + 'static + Send + Sync,
     >(
         &mut self,
-        name: Cow<'static, str>,
+        name: impl Into<Cow<'static, str>>,
         maker: F,
-        documentation: Cow<'static, str>,
+        documentation: impl Into<Cow<'static, str>>,
     ) -> Option<ScriptGlobal> {
         self.globals.insert(
-            name,
+            name.into(),
             ScriptGlobal {
                 maker: Some(Self::type_erase_maker(maker)),
-                documentation: Some(documentation),
+                documentation: Some(documentation.into()),
                 type_id: TypeId::of::<T>(),
                 type_information: Some(T::through_type_info()),
             },
