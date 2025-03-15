@@ -17,7 +17,7 @@ pub struct MyStruct {
 
 can be constructed from lua like so:
 ```lua
-local MyStruct = world.get_type_by_name("MyStruct")
+local MyStruct = types.MyStruct
 local concrete_my_struct = construct(MyStruct, {
     my_field = "hello"
 })
@@ -33,7 +33,7 @@ pub struct MyTupleStruct(pub String);
 can be constructed like so:
 ```lua
 
-local MyTupleStruct = world.get_type_by_name("MyTupleStruct")
+local MyTupleStruct = types.MyTupleStruct
 local concrete_my_tuple_struct = construct(MyTupleStruct, {
     _1 = "hello"
 })
@@ -53,7 +53,7 @@ pub enum MyEnum {
 can be constructed like so:
 ```lua
 
-local MyEnum = world.get_type_by_name("MyEnum")
+local MyEnum = types.MyEnum
 local variantA = construct(MyEnum, {
     variant = "VariantA",
     field = "hello"
