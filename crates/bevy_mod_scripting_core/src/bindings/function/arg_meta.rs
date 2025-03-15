@@ -3,8 +3,8 @@
 use std::{ffi::OsString, path::PathBuf};
 
 use crate::{
-    bindings::{ScriptValue, ReflectReference},
-    docgen::TypedThrough,
+    bindings::{ReflectReference, ScriptValue},
+    docgen::TypedThrough, error::InteropError,
 };
 
 use super::{
@@ -76,6 +76,8 @@ impl<T1, T2> ArgMeta for Union<T1, T2> {}
 impl<T> ArgMeta for Val<T> {}
 impl<T> ArgMeta for Ref<'_, T> {}
 impl<T> ArgMeta for Mut<'_, T> {}
+
+impl<T> ArgMeta for Result<T, InteropError> {}
 
 impl<T> ArgMeta for Option<T> {
     fn default_value() -> Option<ScriptValue> {

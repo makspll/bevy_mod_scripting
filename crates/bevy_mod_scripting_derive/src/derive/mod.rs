@@ -2,6 +2,7 @@ mod into_script;
 mod script_bindings;
 mod script_globals;
 mod typed_through;
+mod get_type_dependencies;
 
 use proc_macro2::{Span, TokenStream};
 use quote::{quote_spanned, ToTokens};
@@ -10,6 +11,7 @@ use syn::{Ident, ImplItemFn, ItemImpl};
 pub use self::{
     into_script::into_script, script_bindings::script_bindings, script_globals::script_globals,
     typed_through::typed_through,
+    get_type_dependencies::get_type_dependencies
 };
 
 pub(crate) fn impl_fn_to_namespace_builder_registration(fun: &ImplItemFn) -> TokenStream {
