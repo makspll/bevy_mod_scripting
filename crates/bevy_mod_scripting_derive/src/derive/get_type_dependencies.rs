@@ -2,12 +2,9 @@ use proc_macro2::TokenStream;
 use quote::{quote_spanned, ToTokens};
 use syn::{parse_quote, parse_quote_spanned, DeriveInput, WhereClause};
 
-
-
-
 /// Generate a GetTypeDependencies impl like below:
 /// For type:
-/// 
+///
 /// ```rust,ignore
 /// #[derive(GetTypeDependencies)]
 /// #[get_type_dependencies(remote)]
@@ -15,9 +12,9 @@ use syn::{parse_quote, parse_quote_spanned, DeriveInput, WhereClause};
 ///     ...
 /// }
 /// ```
-/// 
+///
 /// ```rust,ignore
-/// impl <T1,T2> GetTypeDependencies for TargetType 
+/// impl <T1,T2> GetTypeDependencies for TargetType
 /// where
 ///     T1: GetTypeDependencies,
 ///     T2: GetTypeDependencies,
@@ -28,7 +25,7 @@ use syn::{parse_quote, parse_quote_spanned, DeriveInput, WhereClause};
 ///     pub fn get_type_dependencies(registry: &mut bevy::reflect::TypeRegistry) {
 ///         T1::get_type_dependencies(registry);
 ///         T2::get_type_dependencies(registry);
-/// 
+///
 ///         registry.register::<TargetType<T1::Underlying, T2::Underlying>>();
 ///     }  
 /// }
@@ -41,15 +38,15 @@ fn get_type_dependencies_from_input(derive_input: DeriveInput) -> TokenStream {
 
     let bms_core = &args.bms_core_path;
 
-    
-    
     let (impl_generics, type_generics, impl_where) = derive_input.generics.split_for_impl();
-    
 
     let name = &derive_input.ident;
-    
-    
-    let generic_names = derive_input.generics.type_params().map(|param| &param.ident).collect::<Vec<_>>();
+
+    let generic_names = derive_input
+        .generics
+        .type_params()
+        .map(|param| &param.ident)
+        .collect::<Vec<_>>();
 
     let type_generics_underlying = if generic_names.is_empty() {
         Default::default()
@@ -67,20 +64,18 @@ fn get_type_dependencies_from_input(derive_input: DeriveInput) -> TokenStream {
         }
     };
 
-    let mut impl_where: WhereClause = impl_where.cloned().unwrap_or_else(|| parse_quote!{where});
+    let mut impl_where: WhereClause = impl_where.cloned().unwrap_or_else(|| parse_quote! {where});
     let mut recursive_registrations = Vec::default();
     for param in derive_input.generics.type_params() {
         let param_name = &param.ident;
         if !args.dont_recurse {
-            impl_where.predicates.push(
-                parse_quote_spanned!(param.ident.span()=> #param_name: GetTypeDependencies),
-            );
-            recursive_registrations.push(
-                quote_spanned! {param.ident.span()=>
-                    <#param_name as GetTypeDependencies>::register_type_dependencies(registry);
-                }
-            );
-        
+            impl_where
+                .predicates
+                .push(parse_quote_spanned!(param.ident.span()=> #param_name: GetTypeDependencies));
+            recursive_registrations.push(quote_spanned! {param.ident.span()=>
+                <#param_name as GetTypeDependencies>::register_type_dependencies(registry);
+            });
+
             impl_where.predicates.push(
                 parse_quote_spanned!(param.ident.span()=> #param_name::Underlying: bevy::reflect::GetTypeRegistration),
             );
@@ -90,8 +85,7 @@ fn get_type_dependencies_from_input(derive_input: DeriveInput) -> TokenStream {
             )
         }
     }
-    
-    
+
     quote_spanned! {derive_input.ident.span()=>
         #[automatically_derived]
         #[allow(clippy::needless_lifetimes)]
@@ -112,12 +106,9 @@ pub fn get_type_dependencies(input: TokenStream) -> TokenStream {
         Ok(input) => input,
         Err(e) => return e.into_compile_error(),
     };
-    
-   get_type_dependencies_from_input(derive_input)
+
+    get_type_dependencies_from_input(derive_input)
 }
-
-
-
 
 struct Args {
     bms_core_path: syn::Path,
@@ -151,12 +142,19 @@ impl Args {
                         dont_recurse = true;
                         Ok(())
                     } else {
-                        Err(syn::Error::new_spanned(meta.path, "unknown attribute, allowed: bms_core_path, underlying"))
+                        Err(syn::Error::new_spanned(
+                            meta.path,
+                            "unknown attribute, allowed: bms_core_path, underlying",
+                        ))
                     }
                 })?;
             }
         }
 
-        Ok(Self { bms_core_path, underlying, dont_recurse })
+        Ok(Self {
+            bms_core_path,
+            underlying,
+            dont_recurse,
+        })
     }
 }
