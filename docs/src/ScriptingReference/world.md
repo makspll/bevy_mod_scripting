@@ -23,6 +23,9 @@ MyType = world.get_type_by_name("MyType")
 if MyType == nil then
     print("MyType not found")
 end
+
+-- OR
+MyType = types.MyType
 ```
 
 ### get_component
