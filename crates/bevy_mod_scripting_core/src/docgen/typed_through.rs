@@ -280,14 +280,15 @@ mod test {
         }
     }
 
-    fn assert_dynamic_through_type_is_info<T: Typed + TypedThrough> () {
+    fn assert_dynamic_through_type_is_val_info<T: Typed + TypedThrough> () {
         let type_info = T::type_info();
         let through_type_info = into_through_type_info(type_info);
 
         match through_type_info {
-            ThroughTypeInfo::TypeInfo(info) => {
-                assert_eq!(info.type_id(), type_info.type_id());
-                assert_eq!(info.type_path(), type_info.type_path());
+            ThroughTypeInfo::UntypedWrapper{through_type, wrapper_kind} => {
+                assert_eq!(wrapper_kind, UntypedWrapperKind::Val);
+                assert_eq!(through_type.type_id(), type_info.type_id());
+                assert_eq!(through_type.type_path(), type_info.type_path());
             }
             _ => panic!("Expected ThroughTypeInfo::TypeInfo"),
         }
@@ -296,47 +297,47 @@ mod test {
     #[test]
     fn test_typed_through_primitives() {
         assert_type_info_is_through::<bool>();
-        assert_dynamic_through_type_is_info::<bool>();
+        assert_dynamic_through_type_is_val_info::<bool>();
         assert_type_info_is_through::<i8>();
-        assert_dynamic_through_type_is_info::<i8>();
+        assert_dynamic_through_type_is_val_info::<i8>();
         assert_type_info_is_through::<i16>();
-        assert_dynamic_through_type_is_info::<i16>();
+        assert_dynamic_through_type_is_val_info::<i16>();
         assert_type_info_is_through::<i32>();
-        assert_dynamic_through_type_is_info::<i32>();
+        assert_dynamic_through_type_is_val_info::<i32>();
         assert_type_info_is_through::<i64>();
-        assert_dynamic_through_type_is_info::<i64>();
+        assert_dynamic_through_type_is_val_info::<i64>();
         assert_type_info_is_through::<i128>();
-        assert_dynamic_through_type_is_info::<i128>();
+        assert_dynamic_through_type_is_val_info::<i128>();
         assert_type_info_is_through::<u8>();
-        assert_dynamic_through_type_is_info::<u8>();
+        assert_dynamic_through_type_is_val_info::<u8>();
         assert_type_info_is_through::<u16>();
-        assert_dynamic_through_type_is_info::<u16>();
+        assert_dynamic_through_type_is_val_info::<u16>();
         assert_type_info_is_through::<u32>();
-        assert_dynamic_through_type_is_info::<u32>();
+        assert_dynamic_through_type_is_val_info::<u32>();
         assert_type_info_is_through::<u64>();
-        assert_dynamic_through_type_is_info::<u64>();
+        assert_dynamic_through_type_is_val_info::<u64>();
         assert_type_info_is_through::<u128>();
-        assert_dynamic_through_type_is_info::<u128>();
+        assert_dynamic_through_type_is_val_info::<u128>();
         assert_type_info_is_through::<f32>();
-        assert_dynamic_through_type_is_info::<f32>();
+        assert_dynamic_through_type_is_val_info::<f32>();
         assert_type_info_is_through::<f64>();
-        assert_dynamic_through_type_is_info::<f64>();
+        assert_dynamic_through_type_is_val_info::<f64>();
         assert_type_info_is_through::<usize>();
-        assert_dynamic_through_type_is_info::<usize>();
+        assert_dynamic_through_type_is_val_info::<usize>();
         assert_type_info_is_through::<isize>();
-        assert_dynamic_through_type_is_info::<isize>();
+        assert_dynamic_through_type_is_val_info::<isize>();
         assert_type_info_is_through::<String>();
-        assert_dynamic_through_type_is_info::<String>();
+        assert_dynamic_through_type_is_val_info::<String>();
         assert_type_info_is_through::<PathBuf>();
-        assert_dynamic_through_type_is_info::<PathBuf>();
+        assert_dynamic_through_type_is_val_info::<PathBuf>();
         assert_type_info_is_through::<OsString>();
-        assert_dynamic_through_type_is_info::<OsString>();
+        assert_dynamic_through_type_is_val_info::<OsString>();
         assert_type_info_is_through::<char>();
-        assert_dynamic_through_type_is_info::<char>();
+        assert_dynamic_through_type_is_val_info::<char>();
         assert_type_info_is_through::<ReflectReference>();
-        assert_dynamic_through_type_is_info::<ReflectReference>();
+        assert_dynamic_through_type_is_val_info::<ReflectReference>();
         assert_type_info_is_through::<&'static str>();
-        assert_dynamic_through_type_is_info::<&'static str>();
+        assert_dynamic_through_type_is_val_info::<&'static str>();
     }
 
     #[test]
