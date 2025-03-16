@@ -14,9 +14,7 @@
 
 ### Fixed
 
-- rhai reloading behavior regression from #345 [SKIP_CHANGELOG] ([#351](https://github.com/makspll/bevy_mod_scripting/pull/351))
 - [**breaking**] script contexts being completely overwritten on a re-load ([#345](https://github.com/makspll/bevy_mod_scripting/pull/345))
-- supported extensions not including default extensions [SKIP_CHANGELOG] ([#373](https://github.com/makspll/bevy_mod_scripting/pull/373))
 - unit enum variants other than `Option::None` being converted into `ScriptValue::Unit` ([#360](https://github.com/makspll/bevy_mod_scripting/pull/360))
 
 ### Other
