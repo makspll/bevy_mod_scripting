@@ -437,17 +437,36 @@ impl IntoMarkdown for SectionItem<'_> {
                 builder.heading(2, "Globals");
 
                 // make a table of instances as a quick reference, make them link to instance details sub-sections
+
+                // first build a non-static instance table
+                let instances = instances.iter().map(|(k,v)| {
+                    let name = k.to_string();
+                    let mut arg_visitor = MarkdownArgumentVisitor::new(ladfile);
+                    arg_visitor.visit(&v.type_kind);
+
+                    (v.is_static, name, arg_visitor.build())
+                }).collect::<Vec<_>>();
+
+                builder.heading(3, "Instances");
+                builder.text("Instances containing actual accessible values.");
                 builder.table(|builder| {
                     builder.headers(vec!["Instance", "Type"]);
-                    for (key, instance) in instances.iter() {
-                        let first_col = key.to_string();
-                        let mut arg_visitor = MarkdownArgumentVisitor::new(ladfile);
-                        arg_visitor.visit(&instance.type_kind);
-                        let printed = arg_visitor.build();
-                        log::info!("Instance: {:?}\n{printed}", instance.type_kind);
+                    for (_, name, instance) in instances.iter().filter(|(a,_,_)| !*a) {
                         builder.row(markdown_vec![
-                            Markdown::new_paragraph(first_col).code(),
-                            Markdown::new_paragraph(printed).code()
+                            Markdown::new_paragraph(name).code(),
+                            Markdown::new_paragraph(instance).code()
+                        ]);
+                    }
+                });
+
+                builder.heading(3, "Static Instances");
+                builder.text("Static type references, existing for the purpose of typed static function calls.");
+                builder.table(|builder| {
+                    builder.headers(vec!["Instance", "Type"]);
+                    for (_, name, instance) in instances.iter().filter(|(a,_,_)| *a) {
+                        builder.row(markdown_vec![
+                            Markdown::new_paragraph(name).code(),
+                            Markdown::new_paragraph(instance).code()
                         ]);
                     }
                 });
