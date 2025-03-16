@@ -205,7 +205,7 @@ impl<'a> Section<'a> {
             }
             Section::InstancesSummary { ladfile } => {
                 let instances = ladfile.globals.iter().collect::<Vec<_>>();
-                vec![SectionItem::InstancesSummary { instances }]
+                vec![SectionItem::InstancesSummary { instances, ladfile}]
             }
             Section::TypeSummary { ladfile } => {
                 let types = ladfile.types.keys().collect::<Vec<_>>();
@@ -297,6 +297,7 @@ pub enum SectionItem<'a> {
         ladfile: &'a ladfile::LadFile,
     },
     InstancesSummary {
+        ladfile: &'a ladfile::LadFile,
         instances: Vec<(&'a Cow<'static, str>, &'a LadInstance)>,
     },
 }
@@ -432,7 +433,7 @@ impl IntoMarkdown for SectionItem<'_> {
                     }
                 });
             }
-            SectionItem::InstancesSummary { instances } => {
+            SectionItem::InstancesSummary { instances, ladfile } => {
                 builder.heading(2, "Globals");
 
                 // make a table of instances as a quick reference, make them link to instance details sub-sections
@@ -440,10 +441,13 @@ impl IntoMarkdown for SectionItem<'_> {
                     builder.headers(vec!["Instance", "Type"]);
                     for (key, instance) in instances.iter() {
                         let first_col = key.to_string();
-
+                        let mut arg_visitor = MarkdownArgumentVisitor::new(ladfile);
+                        arg_visitor.visit(&instance.type_kind);
+                        let printed = arg_visitor.build();
+                        log::info!("Instance: {:?}\n{printed}", instance.type_kind);
                         builder.row(markdown_vec![
                             Markdown::new_paragraph(first_col).code(),
-                            Markdown::new_paragraph(instance.type_id.to_string())
+                            Markdown::new_paragraph(printed).code()
                         ]);
                     }
                 });

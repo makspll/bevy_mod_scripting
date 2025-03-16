@@ -5,7 +5,7 @@ use std::{collections::HashMap, sync::Arc};
 use bevy::{app::Plugin, ecs::reflect::AppTypeRegistry};
 use bevy_mod_scripting_derive::script_globals;
 
-use crate::{bindings::{function::from::{Union, Val}, ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration, WorldGuard}, error::InteropError};
+use crate::{bindings::{function::from::{Union, Val}, ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration, WorldGuard}, docgen::into_through_type_info, error::InteropError};
 
 use super::AppScriptGlobalsRegistry;
 
@@ -38,9 +38,10 @@ fn register_static_core_globals(world: &mut bevy::ecs::world::World) {
 
             if let Some(global_name) = registration.type_info().type_path_table().ident() {
                 let documentation = "A reference to the type, allowing you to call static methods.";
+                let type_info = registration.type_info();
                 global_registry.register_static_documented_dynamic(
                     registration.type_id(),
-                    None,
+                    into_through_type_info(type_info),
                     global_name.into(),
                     documentation.into(),
                 );

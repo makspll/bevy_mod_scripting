@@ -100,7 +100,8 @@ pub fn generate_lad_file(
     // find global instances
 
     for (key, global) in global_registry.iter() {
-        builder.add_instance_dynamic(key.to_string(), global.maker.is_none(), global.type_id);
+        let type_info = global.type_information.clone();
+        builder.add_instance_dynamic(key.to_string(), global.maker.is_none(), type_info);
     }
 
     let file = builder.build();

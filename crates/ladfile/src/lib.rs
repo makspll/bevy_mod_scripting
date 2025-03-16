@@ -93,8 +93,8 @@ impl Default for LadFile {
 /// A LAD global instance
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct LadInstance {
-    /// The type of the instance
-    pub type_id: LadTypeId,
+    /// The kind of the instance
+    pub type_kind: LadTypeKind,
 
     /// whether the instance is static or not
     ///
@@ -154,7 +154,7 @@ pub enum LadFunctionNamespace {
 /// An argument definition used in a LAD file.
 pub struct LadArgument {
     /// The kind and type of argument
-    pub kind: LadArgumentKind,
+    pub kind: LadTypeKind,
 
     /// The provided documentation for this argument. Normally derived from the function docstring.
     #[serde(skip_serializing_if = "Option::is_none", default)]
@@ -166,9 +166,17 @@ pub struct LadArgument {
 }
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-/// The kind of an argument in a LAD file.
+/// The kind of type in a LAD file.
+/// There is a distinction between the "core" identity of a type
+/// and how it's used in various contexts.
+///
+/// for example:
+/// - `Vec<T>` is a list of `T`'s
+/// - `T` IS T
+///
+/// In generating documents, it's convenient to distinguish a few core "containers" to provide useful information.
 #[serde(rename_all = "camelCase")]
-pub enum LadArgumentKind {
+pub enum LadTypeKind {
     /// a `Ref` wrapped argument
     Ref(LadTypeId),
     /// a `Mut` wrapped argument
@@ -176,21 +184,21 @@ pub enum LadArgumentKind {
     /// a `Val` wrapped argument
     Val(LadTypeId),
     /// an `Option` wrapped argument
-    Option(Box<LadArgumentKind>),
+    Option(Box<LadTypeKind>),
     /// a `Vec`
-    Vec(Box<LadArgumentKind>),
+    Vec(Box<LadTypeKind>),
     /// a `HashMap`
-    HashMap(Box<LadArgumentKind>, Box<LadArgumentKind>),
+    HashMap(Box<LadTypeKind>, Box<LadTypeKind>),
     /// A `InteropResult`
-    InteropResult(Box<LadArgumentKind>),
+    InteropResult(Box<LadTypeKind>),
     /// A tuple of arguments
-    Tuple(Vec<LadArgumentKind>),
+    Tuple(Vec<LadTypeKind>),
     /// An array
-    Array(Box<LadArgumentKind>, usize),
+    Array(Box<LadTypeKind>, usize),
     /// A primitive type, implementing `IntoScript` and `FromScript` natively in BMS.
     Primitive(LadBMSPrimitiveKind),
     /// A union of two or more types
-    Union(Vec<LadArgumentKind>),
+    Union(Vec<LadTypeKind>),
     /// An arbitrary type which is either unsupported, doesn't contain type information, or is generally unknown.
     ///
     /// This will be the variant used for external primitives as well.
@@ -226,35 +234,35 @@ pub trait ArgumentVisitor {
     }
 
     /// traverse an `Option` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_option(&mut self, inner: &LadArgumentKind) {
+    fn walk_option(&mut self, inner: &LadTypeKind) {
         self.visit(inner);
     }
 
     /// traverse a `Vec` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_vec(&mut self, inner: &LadArgumentKind) {
+    fn walk_vec(&mut self, inner: &LadTypeKind) {
         self.visit(inner);
     }
 
     /// traverse a `HashMap` wrapped argument, by default calls `visit` on the key and value
-    fn walk_hash_map(&mut self, key: &LadArgumentKind, value: &LadArgumentKind) {
+    fn walk_hash_map(&mut self, key: &LadTypeKind, value: &LadTypeKind) {
         self.visit(key);
         self.visit(value);
     }
 
     /// traverse an `InteropResult` wrapped argument, by default calls `visit` on the inner argument
-    fn walk_interop_result(&mut self, inner: &LadArgumentKind) {
+    fn walk_interop_result(&mut self, inner: &LadTypeKind) {
         self.visit(inner);
     }
 
     /// traverse a tuple of arguments, by default calls `visit` on each argument
-    fn walk_tuple(&mut self, inner: &[LadArgumentKind]) {
+    fn walk_tuple(&mut self, inner: &[LadTypeKind]) {
         for arg in inner {
             self.visit(arg);
         }
     }
 
     /// traverse an array of arguments, by default calls `visit` on the inner argument
-    fn walk_array(&mut self, inner: &LadArgumentKind, size: usize) {
+    fn walk_array(&mut self, inner: &LadTypeKind, size: usize) {
         self.visit(inner);
     }
 
@@ -264,7 +272,7 @@ pub trait ArgumentVisitor {
     }
 
     /// traverse a union of arguments, by default calls `visit` on each argument
-    fn walk_union(&mut self, inner: &[LadArgumentKind]) {
+    fn walk_union(&mut self, inner: &[LadTypeKind]) {
         for arg in inner {
             self.visit(arg);
         }
@@ -280,20 +288,20 @@ pub trait ArgumentVisitor {
     /// Each walk variant will walk over nested kinds, and visit the leaf types.
     ///
     /// If you want to do something with the parent types, you WILL have to override each individual walk method.
-    fn visit(&mut self, kind: &LadArgumentKind) {
+    fn visit(&mut self, kind: &LadTypeKind) {
         match kind {
-            LadArgumentKind::Ref(type_id) => self.walk_ref(type_id),
-            LadArgumentKind::Mut(type_id) => self.walk_mut(type_id),
-            LadArgumentKind::Val(type_id) => self.walk_val(type_id),
-            LadArgumentKind::Option(inner) => self.walk_option(inner),
-            LadArgumentKind::Vec(inner) => self.walk_vec(inner),
-            LadArgumentKind::HashMap(key, value) => self.walk_hash_map(key, value),
-            LadArgumentKind::InteropResult(inner) => self.walk_interop_result(inner),
-            LadArgumentKind::Tuple(inner) => self.walk_tuple(inner),
-            LadArgumentKind::Array(inner, size) => self.walk_array(inner, *size),
-            LadArgumentKind::Primitive(primitive_kind) => self.walk_primitive(primitive_kind),
-            LadArgumentKind::Union(inner) => self.walk_union(inner),
-            LadArgumentKind::Unknown(type_id) => self.walk_unknown(type_id),
+            LadTypeKind::Ref(type_id) => self.walk_ref(type_id),
+            LadTypeKind::Mut(type_id) => self.walk_mut(type_id),
+            LadTypeKind::Val(type_id) => self.walk_val(type_id),
+            LadTypeKind::Option(inner) => self.walk_option(inner),
+            LadTypeKind::Vec(inner) => self.walk_vec(inner),
+            LadTypeKind::HashMap(key, value) => self.walk_hash_map(key, value),
+            LadTypeKind::InteropResult(inner) => self.walk_interop_result(inner),
+            LadTypeKind::Tuple(inner) => self.walk_tuple(inner),
+            LadTypeKind::Array(inner, size) => self.walk_array(inner, *size),
+            LadTypeKind::Primitive(primitive_kind) => self.walk_primitive(primitive_kind),
+            LadTypeKind::Union(inner) => self.walk_union(inner),
+            LadTypeKind::Unknown(type_id) => self.walk_unknown(type_id),
         }
     }
 }

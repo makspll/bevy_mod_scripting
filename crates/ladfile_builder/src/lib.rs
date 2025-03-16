@@ -14,6 +14,7 @@ use bevy_mod_scripting_core::{
     docgen::{
         info::FunctionInfo,
         typed_through::{ThroughTypeInfo, TypedWrapperKind, UntypedWrapperKind},
+        TypedThrough,
     },
     match_by_type,
 };
@@ -143,15 +144,20 @@ impl<'t> LadFileBuilder<'t> {
     ///
     /// If `is_static` is true, the instance will be treated as a static instance
     /// and hence not support method call syntax or method calls (i.e. only functions without a self parameter can be called on them).
-    pub fn add_instance<T: 'static>(
+    pub fn add_instance<T: 'static + TypedThrough>(
         &mut self,
         key: impl Into<Cow<'static, str>>,
         is_static: bool,
     ) -> &mut Self {
-        let type_id = self.lad_id_from_type_id(TypeId::of::<T>());
-        self.file
-            .globals
-            .insert(key.into(), LadInstance { type_id, is_static });
+        let type_info = T::through_type_info();
+        let type_kind = self.lad_type_kind_from_through_type(&type_info);
+        self.file.globals.insert(
+            key.into(),
+            LadInstance {
+                type_kind,
+                is_static,
+            },
+        );
         self
     }
 
@@ -162,12 +168,16 @@ impl<'t> LadFileBuilder<'t> {
         &mut self,
         key: impl Into<Cow<'static, str>>,
         is_static: bool,
-        type_id: TypeId,
+        through_type: ThroughTypeInfo,
     ) -> &mut Self {
-        let type_id = self.lad_id_from_type_id(type_id);
-        self.file
-            .globals
-            .insert(key.into(), LadInstance { type_id, is_static });
+        let type_kind = self.lad_type_kind_from_through_type(&through_type);
+        self.file.globals.insert(
+            key.into(),
+            LadInstance {
+                type_kind,
+                is_static,
+            },
+        );
         self
     }
 
@@ -239,10 +249,8 @@ impl<'t> LadFileBuilder<'t> {
                 .into_iter()
                 .map(|arg| {
                     let kind = match &arg.type_info {
-                        Some(through_type) => {
-                            self.lad_argument_type_from_through_type(through_type)
-                        }
-                        None => LadArgumentKind::Unknown(self.lad_id_from_type_id(arg.type_id)),
+                        Some(through_type) => self.lad_type_kind_from_through_type(through_type),
+                        None => LadTypeKind::Unknown(self.lad_id_from_type_id(arg.type_id)),
                     };
                     LadArgument {
                         kind,
@@ -260,9 +268,9 @@ impl<'t> LadFileBuilder<'t> {
                 kind: function_info
                     .return_info
                     .type_info
-                    .map(|info| self.lad_argument_type_from_through_type(&info))
+                    .map(|info| self.lad_type_kind_from_through_type(&info))
                     .unwrap_or_else(|| {
-                        LadArgumentKind::Unknown(
+                        LadTypeKind::Unknown(
                             self.lad_id_from_type_id(function_info.return_info.type_id),
                         )
                     }),
@@ -550,10 +558,7 @@ impl<'t> LadFileBuilder<'t> {
         LadFunctionId::new_string_id(format!("{}::{}", namespace_string, function_info.name))
     }
 
-    fn lad_argument_type_from_through_type(
-        &mut self,
-        through_type: &ThroughTypeInfo,
-    ) -> LadArgumentKind {
+    fn lad_type_kind_from_through_type(&mut self, through_type: &ThroughTypeInfo) -> LadTypeKind {
         match through_type {
             ThroughTypeInfo::UntypedWrapper {
                 through_type,
@@ -561,58 +566,56 @@ impl<'t> LadFileBuilder<'t> {
                 ..
             } => match wrapper_kind {
                 UntypedWrapperKind::Ref => {
-                    LadArgumentKind::Ref(self.lad_id_from_type_id(through_type.type_id()))
+                    LadTypeKind::Ref(self.lad_id_from_type_id(through_type.type_id()))
                 }
                 UntypedWrapperKind::Mut => {
-                    LadArgumentKind::Mut(self.lad_id_from_type_id(through_type.type_id()))
+                    LadTypeKind::Mut(self.lad_id_from_type_id(through_type.type_id()))
                 }
                 UntypedWrapperKind::Val => {
-                    LadArgumentKind::Val(self.lad_id_from_type_id(through_type.type_id()))
+                    LadTypeKind::Val(self.lad_id_from_type_id(through_type.type_id()))
                 }
             },
             ThroughTypeInfo::TypedWrapper(typed_wrapper_kind) => match typed_wrapper_kind {
-                TypedWrapperKind::Vec(through_type_info) => LadArgumentKind::Vec(Box::new(
-                    self.lad_argument_type_from_through_type(through_type_info),
+                TypedWrapperKind::Vec(through_type_info) => LadTypeKind::Vec(Box::new(
+                    self.lad_type_kind_from_through_type(through_type_info),
                 )),
                 TypedWrapperKind::HashMap(through_type_info, through_type_info1) => {
-                    LadArgumentKind::HashMap(
-                        Box::new(self.lad_argument_type_from_through_type(through_type_info)),
-                        Box::new(self.lad_argument_type_from_through_type(through_type_info1)),
+                    LadTypeKind::HashMap(
+                        Box::new(self.lad_type_kind_from_through_type(through_type_info)),
+                        Box::new(self.lad_type_kind_from_through_type(through_type_info1)),
                     )
                 }
-                TypedWrapperKind::Array(through_type_info, size) => LadArgumentKind::Array(
-                    Box::new(self.lad_argument_type_from_through_type(through_type_info)),
+                TypedWrapperKind::Array(through_type_info, size) => LadTypeKind::Array(
+                    Box::new(self.lad_type_kind_from_through_type(through_type_info)),
                     *size,
                 ),
-                TypedWrapperKind::Option(through_type_info) => LadArgumentKind::Option(Box::new(
-                    self.lad_argument_type_from_through_type(through_type_info),
+                TypedWrapperKind::Option(through_type_info) => LadTypeKind::Option(Box::new(
+                    self.lad_type_kind_from_through_type(through_type_info),
                 )),
-                TypedWrapperKind::InteropResult(through_type_info) => {
-                    LadArgumentKind::InteropResult(Box::new(
-                        self.lad_argument_type_from_through_type(through_type_info),
-                    ))
-                }
-                TypedWrapperKind::Tuple(through_type_infos) => LadArgumentKind::Tuple(
+                TypedWrapperKind::InteropResult(through_type_info) => LadTypeKind::InteropResult(
+                    Box::new(self.lad_type_kind_from_through_type(through_type_info)),
+                ),
+                TypedWrapperKind::Tuple(through_type_infos) => LadTypeKind::Tuple(
                     through_type_infos
                         .iter()
                         .map(|through_type_info| {
-                            self.lad_argument_type_from_through_type(through_type_info)
+                            self.lad_type_kind_from_through_type(through_type_info)
                         })
                         .collect(),
                 ),
-                TypedWrapperKind::Union(through_type_infos) => LadArgumentKind::Union(
+                TypedWrapperKind::Union(through_type_infos) => LadTypeKind::Union(
                     through_type_infos
                         .iter()
                         .map(|through_type_info| {
-                            self.lad_argument_type_from_through_type(through_type_info)
+                            self.lad_type_kind_from_through_type(through_type_info)
                         })
                         .collect(),
                 ),
             },
             ThroughTypeInfo::TypeInfo(type_info) => {
                 match primitive_from_type_id(type_info.type_id()) {
-                    Some(primitive) => LadArgumentKind::Primitive(primitive),
-                    None => LadArgumentKind::Unknown(self.lad_id_from_type_id(type_info.type_id())),
+                    Some(primitive) => LadTypeKind::Primitive(primitive),
+                    None => LadTypeKind::Unknown(self.lad_id_from_type_id(type_info.type_id())),
                 }
             }
         }
@@ -622,18 +625,17 @@ impl<'t> LadFileBuilder<'t> {
 #[cfg(test)]
 mod test {
     use bevy_mod_scripting_core::{
-        bindings::function::{
+        bindings::{function::{
             from::Ref,
             namespace::{GlobalNamespace, IntoNamespace},
-        },
+        }, Union, Val},
         docgen::info::GetFunctionInfo,
     };
     use bevy_reflect::Reflect;
 
     use super::*;
 
-    /// Set to true to put output into test_assets.
-    const BLESS_TEST_FILE: bool = false;
+
 
     /// normalize line endings etc..
     fn normalize_file(file: &mut String) {
@@ -830,6 +832,10 @@ mod test {
         );
     }
 
+
+    /// Set to true to put output into test_assets.
+    const BLESS_TEST_FILE: bool = false;
+
     #[test]
     fn test_serializes_as_expected() {
         let mut type_registry = TypeRegistry::default();
@@ -843,9 +849,21 @@ mod test {
             field2: T,
         }
 
+        impl TypedThrough for StructType<usize> {
+            fn through_type_info() -> ThroughTypeInfo {
+                ThroughTypeInfo::TypeInfo(Self::type_info())
+            }
+        }
+
         #[derive(Reflect)]
         /// I am a unit test type
         struct UnitType;
+
+        impl TypedThrough for UnitType {
+            fn through_type_info() -> ThroughTypeInfo {
+                ThroughTypeInfo::TypeInfo(Self::type_info())
+            }
+        }
 
         #[derive(Reflect)]
         /// I am a tuple test type
@@ -908,8 +926,9 @@ mod test {
             .add_type::<UnitType>()
             .add_type::<TupleStructType>()
             .add_type_info(EnumType::type_info())
-            .add_instance::<StructType<usize>>("my_static_instance", true)
-            .add_instance::<UnitType>("my_non_static_instance", false)
+            .add_instance::<Val<StructType<usize>>>("my_static_instance", true)
+            .add_instance::<Vec<Val<UnitType>>>("my_non_static_instance", false)
+            .add_instance::<HashMap<String, Union<String, String>>>("map", false)
             .build();
 
         // normalize the version so we don't have to update it every time
@@ -927,7 +946,7 @@ mod test {
 
             println!("Blessing test file at {:?}", path_to_test_assets);
             std::fs::write(path_to_test_assets.join("test.lad.json"), &serialized).unwrap();
-            return;
+            panic!("Blessed test file, please rerun the test");
         }
 
         let mut expected = ladfile::EXAMPLE_LADFILE.to_string();

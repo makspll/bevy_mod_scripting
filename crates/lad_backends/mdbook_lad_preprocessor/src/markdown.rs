@@ -174,7 +174,8 @@ impl IntoMarkdown for Markdown {
                 }
 
                 let escaped = if *code {
-                    text.clone()
+                    // this might be a bug in the markdown renderer but we need to escape those for tables
+                    text.clone().replace("|", "\\|")
                 } else {
                     escape_markdown(text, builder.escape)
                 };
@@ -649,7 +650,7 @@ mod tests {
                     .row(vec!["Row 1 Col 1", "Row 1 Col 2"])
                     .row(markdown_vec![
                         "Row 2 Col 1",
-                        Markdown::new_paragraph("some_code").code()
+                        Markdown::new_paragraph("HashMap<String, A | B | C>").code()
                     ]);
             })
             .build();
@@ -679,7 +680,7 @@ mod tests {
             | Header 1 | Header 2 |
             | --- | --- |
             | Row 1 Col 1 | Row 1 Col 2 |
-            | Row 2 Col 1 | `some_code` |
+            | Row 2 Col 1 | `HashMap<String, A | B | C>` |
         "#;
 
         let trimmed_indentation_expected = expected
