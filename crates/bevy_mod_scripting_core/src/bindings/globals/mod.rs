@@ -5,8 +5,8 @@ use super::{
     script_value::ScriptValue,
     WorldGuard,
 };
-use crate::{docgen::typed_through::ThroughTypeInfo, error::InteropError};
-use bevy::{ecs::system::Resource, utils::hashbrown::HashMap};
+use crate::{docgen::{into_through_type_info, typed_through::ThroughTypeInfo}, error::InteropError};
+use bevy::{ecs::system::Resource, reflect::Typed, utils::hashbrown::HashMap};
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::{any::TypeId, borrow::Cow, sync::Arc};
 
@@ -45,7 +45,7 @@ pub struct ScriptGlobal {
     /// The type ID of the global variable.
     pub type_id: TypeId,
     /// Rich type information the global variable.
-    pub type_information: Option<ThroughTypeInfo>,
+    pub type_information: ThroughTypeInfo,
 }
 
 /// A registry of global variables that can be exposed to scripts.
@@ -96,7 +96,7 @@ impl ScriptGlobalsRegistry {
 
     /// Inserts a global into the registry, returns the previous value if it existed
     pub fn register<
-        T: ScriptReturn + 'static,
+        T: ScriptReturn + 'static + Typed,
         F: Fn(WorldGuard) -> Result<T, InteropError> + 'static + Send + Sync,
     >(
         &mut self,
@@ -109,7 +109,7 @@ impl ScriptGlobalsRegistry {
                 maker: Some(Self::type_erase_maker(maker)),
                 documentation: None,
                 type_id: TypeId::of::<T>(),
-                type_information: None,
+                type_information: into_through_type_info(T::type_info()),
             },
         )
     }
@@ -132,20 +132,20 @@ impl ScriptGlobalsRegistry {
                 maker: Some(Self::type_erase_maker(maker)),
                 documentation: Some(documentation.into()),
                 type_id: TypeId::of::<T>(),
-                type_information: Some(T::through_type_info()),
+                type_information: T::through_type_info(),
             },
         )
     }
 
     /// Registers a static global into the registry.
-    pub fn register_static<T: 'static>(&mut self, name: Cow<'static, str>) {
+    pub fn register_static<T: 'static + Typed>(&mut self, name: Cow<'static, str>) {
         self.globals.insert(
             name,
             ScriptGlobal {
                 maker: None,
                 documentation: None,
                 type_id: TypeId::of::<T>(),
-                type_information: None,
+                type_information: into_through_type_info(T::type_info()),
             },
         );
     }
@@ -153,7 +153,7 @@ impl ScriptGlobalsRegistry {
     /// Registers a static global into the registry.
     ///
     /// This is a version of [`Self::register_static`] which stores rich type information regarding the global.
-    pub fn register_static_documented<T: TypedScriptReturn + 'static>(
+    pub fn register_static_documented<T: TypedScriptReturn +'static>(
         &mut self,
         name: Cow<'static, str>,
         documentation: Cow<'static, str>,
@@ -164,7 +164,7 @@ impl ScriptGlobalsRegistry {
                 maker: None,
                 documentation: Some(documentation),
                 type_id: TypeId::of::<T>(),
-                type_information: Some(T::through_type_info()),
+                type_information: T::through_type_info(),
             },
         );
     }
@@ -175,7 +175,7 @@ impl ScriptGlobalsRegistry {
     pub fn register_static_documented_dynamic(
         &mut self,
         type_id: TypeId,
-        type_information: Option<ThroughTypeInfo>,
+        type_information: ThroughTypeInfo,
         name: Cow<'static, str>,
         documentation: Cow<'static, str>,
     ) {

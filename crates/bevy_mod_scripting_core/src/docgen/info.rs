@@ -232,11 +232,9 @@ mod test {
         match &info.arg_info[0].type_info {
             Some(ThroughTypeInfo::UntypedWrapper {
                 through_type,
-                wrapper_type_id,
                 wrapper_kind,
             }) => {
                 assert_eq!(through_type.type_id(), TypeId::of::<i32>());
-                assert_eq!(*wrapper_type_id, TypeId::of::<Ref<'static, i32>>());
                 assert_eq!(*wrapper_kind, UntypedWrapperKind::Ref);
             }
             _ => panic!("Expected UntypedWrapper"),
@@ -245,11 +243,9 @@ mod test {
         match &info.arg_info[1].type_info {
             Some(ThroughTypeInfo::UntypedWrapper {
                 through_type,
-                wrapper_type_id,
                 wrapper_kind,
             }) => {
                 assert_eq!(through_type.type_id(), TypeId::of::<f32>());
-                assert_eq!(*wrapper_type_id, TypeId::of::<Mut<'static, f32>>());
                 assert_eq!(*wrapper_kind, UntypedWrapperKind::Mut);
             }
             _ => panic!("Expected UntypedWrapper"),

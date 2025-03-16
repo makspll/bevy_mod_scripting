@@ -441,6 +441,8 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
 
 /// Extension trait for TypeInfos providing additional functionality for working with type information.
 pub trait TypeInfoExtensions {
+    /// Returns true if the type is a result.
+    fn is_result(&self) -> bool;
     /// Returns the inner type of the map if the type is a map, otherwise
     fn map_inner_types(&self) -> Option<(TypeId, TypeId)>;
     /// Returns the inner type of the list if the type is a list, otherwise None.
@@ -458,6 +460,10 @@ pub trait TypeInfoExtensions {
 impl TypeInfoExtensions for TypeInfo {
     fn is_option(&self) -> bool {
         self.is_type(Some("core"), "Option")
+    }
+
+    fn is_result(&self) -> bool {
+        self.is_type(Some("core"), "Result")
     }
 
     fn is_list(&self) -> bool {

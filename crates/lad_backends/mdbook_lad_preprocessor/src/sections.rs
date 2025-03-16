@@ -16,6 +16,14 @@ fn print_type(ladfile: &LadFile, type_: &LadTypeId) -> String {
     visitor.build()
 }
 
+fn build_escaped_visitor(arg_visitor: MarkdownArgumentVisitor<'_>) -> String {
+    arg_visitor
+        .build()
+        .replace("<", "\\<")
+        .replace(">", "\\>")
+        .replace("|", "\\|")
+}
+
 /// Sections which convert to single markdown files
 pub(crate) enum Section<'a> {
     Summary {
@@ -205,7 +213,12 @@ impl<'a> Section<'a> {
             }
             Section::InstancesSummary { ladfile } => {
                 let instances = ladfile.globals.iter().collect::<Vec<_>>();
-                vec![SectionItem::InstancesSummary { instances }]
+                let types_directory = linkify_filename(Section::TypeSummary { ladfile }.title());
+                vec![SectionItem::InstancesSummary {
+                    instances,
+                    ladfile,
+                    types_directory,
+                }]
             }
             Section::TypeSummary { ladfile } => {
                 let types = ladfile.types.keys().collect::<Vec<_>>();
@@ -297,7 +310,9 @@ pub enum SectionItem<'a> {
         ladfile: &'a ladfile::LadFile,
     },
     InstancesSummary {
+        ladfile: &'a ladfile::LadFile,
         instances: Vec<(&'a Cow<'static, str>, &'a LadInstance)>,
+        types_directory: String,
     },
 }
 
@@ -347,13 +362,13 @@ impl IntoMarkdown for SectionItem<'_> {
             SectionItem::Description {
                 lad_type: description,
             } => {
-                builder.heading(2, "Description").quote(Markdown::Raw {
-                    text: description
+                builder.heading(2, "Description").quote(Markdown::Raw(
+                    description
                         .documentation
                         .as_deref()
                         .unwrap_or(NO_DOCS_STRING)
                         .to_owned(),
-                });
+                ));
             }
             SectionItem::FunctionsSummary {
                 functions,
@@ -432,31 +447,68 @@ impl IntoMarkdown for SectionItem<'_> {
                     }
                 });
             }
-            SectionItem::InstancesSummary { instances } => {
-                builder.heading(2, "Globals");
-
+            SectionItem::InstancesSummary {
+                instances,
+                ladfile,
+                types_directory,
+            } => {
+                builder.heading(2, "Global Values");
+                builder.text("Global values that are accessible anywhere inside scripts. You should avoid naming conflicts with these and trying to overwrite or edit them.");
                 // make a table of instances as a quick reference, make them link to instance details sub-sections
+
+                // first build a non-static instance table
+                let instances = instances
+                    .iter()
+                    .map(|(k, v)| {
+                        let name = k.to_string();
+                        let types_directory = types_directory.clone();
+                        let mut arg_visitor = MarkdownArgumentVisitor::new_with_linkifier(
+                            ladfile,
+                            move |lad_type_id, ladfile| {
+                                let printed_type =
+                                    linkify_filename(print_type(ladfile, &lad_type_id));
+                                Some(format!("./{types_directory}/{printed_type}.md"))
+                            },
+                        );
+                        arg_visitor.visit(&v.type_kind);
+                        let escaped = build_escaped_visitor(arg_visitor);
+                        (v.is_static, name, escaped)
+                    })
+                    .collect::<Vec<_>>();
+
+                builder.heading(3, "Instances");
+                builder.text("Instances containing actual accessible values.");
                 builder.table(|builder| {
                     builder.headers(vec!["Instance", "Type"]);
-                    for (key, instance) in instances.iter() {
-                        let first_col = key.to_string();
-
+                    for (_, name, instance) in instances.iter().filter(|(a, _, _)| !*a) {
                         builder.row(markdown_vec![
-                            Markdown::new_paragraph(first_col).code(),
-                            Markdown::new_paragraph(instance.type_id.to_string())
+                            Markdown::new_paragraph(name).code(),
+                            Markdown::Raw(instance.clone())
+                        ]);
+                    }
+                });
+
+                builder.heading(3, "Static Instances");
+                builder.text("Static type references, existing for the purpose of typed static function calls.");
+                builder.table(|builder| {
+                    builder.headers(vec!["Instance", "Type"]);
+                    for (_, name, instance) in instances.iter().filter(|(a, _, _)| *a) {
+                        builder.row(markdown_vec![
+                            Markdown::new_paragraph(name).code(),
+                            Markdown::Raw(instance.clone())
                         ]);
                     }
                 });
             }
             SectionItem::FunctionDetails { function, ladfile } => {
                 // we don't escape this, this is already markdown
-                builder.quote(Markdown::Raw {
-                    text: function
+                builder.quote(Markdown::Raw(
+                    function
                         .documentation
                         .as_deref()
                         .unwrap_or(NO_DOCS_STRING)
                         .to_owned(),
-                });
+                ));
 
                 builder.heading(4, "Arguments");
                 builder.list(
@@ -498,12 +550,11 @@ fn lad_argument_to_list_elem(
         Markdown::new_paragraph(":"),
         Markdown::new_paragraph(markdown).code(),
         Markdown::new_paragraph("-"),
-        Markdown::Raw {
-            text: arg
-                .documentation
+        Markdown::Raw(
+            arg.documentation
                 .as_deref()
                 .unwrap_or(NO_DOCS_STRING)
                 .to_owned()
-        }
+        )
     ]
 }

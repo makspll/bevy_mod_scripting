@@ -2,11 +2,37 @@
   "version": "{{version}}",
   "globals": {
     "my_static_instance": {
-      "type_id": "ladfile_builder::test::StructType<usize>",
+      "type_kind": {
+        "val": "ladfile_builder::test::StructType<usize>"
+      },
       "is_static": true
     },
     "my_non_static_instance": {
-      "type_id": "ladfile_builder::test::UnitType",
+      "type_kind": {
+        "vec": {
+          "val": "ladfile_builder::test::UnitType"
+        }
+      },
+      "is_static": false
+    },
+    "map": {
+      "type_kind": {
+        "hashMap": [
+          {
+            "primitive": "string"
+          },
+          {
+            "union": [
+              {
+                "primitive": "string"
+              },
+              {
+                "primitive": "string"
+              }
+            ]
+          }
+        ]
+      },
       "is_static": false
     }
   },
