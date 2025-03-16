@@ -148,7 +148,7 @@ impl Default for ScriptAssetSettings {
                 ("rhai", Language::Rhai),
                 ("rn", Language::Rune),
             ]),
-            supported_extensions: &[],
+            supported_extensions: &["lua", "luau", "rhai", "rn"],
         }
     }
 }
