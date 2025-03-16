@@ -434,8 +434,8 @@ impl IntoMarkdown for SectionItem<'_> {
                 });
             }
             SectionItem::InstancesSummary { instances, ladfile } => {
-                builder.heading(2, "Globals");
-
+                builder.heading(2, "Global Values");
+                builder.text("Global values that are accessible anywhere inside scripts. You should avoid naming conflicts with these and trying to overwrite or edit them.");
                 // make a table of instances as a quick reference, make them link to instance details sub-sections
 
                 // first build a non-static instance table
