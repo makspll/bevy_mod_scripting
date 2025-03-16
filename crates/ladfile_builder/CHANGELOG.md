@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.6](https://github.com/makspll/bevy_mod_scripting/compare/v0.2.5-ladfile_builder...v0.2.6-ladfile_builder) - 2025-03-16
+
+### Added
+
+- *(ladfile)* improve globals in LAD format ([#372](https://github.com/makspll/bevy_mod_scripting/pull/372))
+
 ## [0.2.4](https://github.com/makspll/bevy_mod_scripting/compare/v0.2.3-ladfile_builder...v0.2.4-ladfile_builder) - 2025-03-03
 
 ### Added
