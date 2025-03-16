@@ -1,1988 +1,3001 @@
 {
-  "version": "0.3.1",
+  "version": "0.4.0",
   "globals": {
-    "PositionedGlyph": {
-      "type_id": "bevy_text::glyph::PositionedGlyph",
-      "is_static": true
-    },
-    "Ray2d": {
-      "type_id": "bevy_math::ray::Ray2d",
-      "is_static": true
-    },
-    "Quat": {
-      "type_id": "glam::Quat",
-      "is_static": true
-    },
-    "CursorGrabMode": {
-      "type_id": "bevy_window::window::CursorGrabMode",
-      "is_static": true
-    },
-    "RegularPolygon": {
-      "type_id": "bevy_math::primitives::dim2::RegularPolygon",
-      "is_static": true
-    },
-    "AtomicU16": {
-      "type_id": "core::sync::atomic::AtomicU16",
-      "is_static": true
-    },
-    "u8": {
-      "type_id": "u8",
-      "is_static": true
-    },
-    "TextLayoutInfo": {
-      "type_id": "bevy_text::pipeline::TextLayoutInfo",
-      "is_static": true
-    },
-    "LinearRgba": {
-      "type_id": "bevy_color::linear_rgba::LinearRgba",
-      "is_static": true
-    },
-    "CameraRenderGraph": {
-      "type_id": "bevy_render::camera::camera::CameraRenderGraph",
-      "is_static": true
-    },
-    "Cascade": {
-      "type_id": "bevy_pbr::light::Cascade",
-      "is_static": true
-    },
-    "LightProbe": {
-      "type_id": "bevy_pbr::light_probe::LightProbe",
-      "is_static": true
-    },
-    "Aabb": {
-      "type_id": "bevy_render::primitives::Aabb",
-      "is_static": true
-    },
-    "Anchor": {
-      "type_id": "bevy_sprite::sprite::Anchor",
-      "is_static": true
-    },
-    "KeyCode": {
-      "type_id": "bevy_input::keyboard::KeyCode",
-      "is_static": true
-    },
-    "I64Vec2": {
-      "type_id": "glam::I64Vec2",
-      "is_static": true
-    },
-    "GamepadAxis": {
-      "type_id": "bevy_input::gamepad::GamepadAxis",
-      "is_static": true
-    },
-    "GamepadSettings": {
-      "type_id": "bevy_input::gamepad::GamepadSettings",
-      "is_static": true
-    },
-    "GltfSceneExtras": {
-      "type_id": "bevy_gltf::GltfSceneExtras",
-      "is_static": true
-    },
-    "RayCast3d": {
-      "type_id": "bevy_math::bounding::raycast3d::RayCast3d",
-      "is_static": true
-    },
-    "FunctionCallContext": {
-      "type_id": "FunctionCallContext",
-      "is_static": true
-    },
-    "DoubleTapGesture": {
-      "type_id": "bevy_input::gestures::DoubleTapGesture",
-      "is_static": true
-    },
-    "BoundingSphereCast": {
-      "type_id": "bevy_math::bounding::raycast3d::BoundingSphereCast",
-      "is_static": true
-    },
-    "CameraMainTextureUsages": {
-      "type_id": "bevy_render::camera::camera::CameraMainTextureUsages",
-      "is_static": true
-    },
-    "SystemIdMarker": {
-      "type_id": "bevy_ecs::system::system_registry::SystemIdMarker",
-      "is_static": true
-    },
-    "U64Vec2": {
-      "type_id": "glam::U64Vec2",
-      "is_static": true
-    },
-    "Text": {
-      "type_id": "bevy_ui::widget::text::Text",
-      "is_static": true
-    },
-    "GamepadInput": {
-      "type_id": "bevy_input::gamepad::GamepadInput",
-      "is_static": true
-    },
-    "ScriptQueryResult": {
-      "type_id": "bevy_mod_scripting_core::bindings::query::ScriptQueryResult",
-      "is_static": true
-    },
-    "Segment3d": {
-      "type_id": "bevy_math::primitives::dim3::Segment3d",
-      "is_static": true
-    },
-    "Triangle2d": {
-      "type_id": "bevy_math::primitives::dim2::Triangle2d",
-      "is_static": true
-    },
-    "SpatialListener": {
-      "type_id": "bevy_audio::audio::SpatialListener",
-      "is_static": true
-    },
-    "BackgroundColor": {
-      "type_id": "bevy_ui::ui_node::BackgroundColor",
-      "is_static": true
-    },
-    "Mat4": {
-      "type_id": "glam::Mat4",
-      "is_static": true
-    },
-    "MouseScrollUnit": {
-      "type_id": "bevy_input::mouse::MouseScrollUnit",
-      "is_static": true
-    },
-    "MaxTrackSizingFunction": {
-      "type_id": "bevy_ui::ui_node::MaxTrackSizingFunction",
-      "is_static": true
-    },
-    "NodeIndex": {
-      "type_id": "petgraph::graph::NodeIndex",
-      "is_static": true
-    },
-    "ActiveAnimation": {
-      "type_id": "bevy_animation::ActiveAnimation",
-      "is_static": true
-    },
-    "AnimationTransition": {
-      "type_id": "bevy_animation::transition::AnimationTransition",
-      "is_static": true
-    },
-    "PointerLocation": {
-      "type_id": "bevy_picking::pointer::PointerLocation",
-      "is_static": true
-    },
-    "FunctionReturnInfo": {
-      "type_id": "bevy_mod_scripting_core::docgen::info::FunctionReturnInfo",
-      "is_static": true
-    },
-    "Image": {
-      "type_id": "bevy_image::image::Image",
-      "is_static": true
-    },
-    "FocusPolicy": {
-      "type_id": "bevy_ui::focus::FocusPolicy",
-      "is_static": true
-    },
-    "SmaaPreset": {
-      "type_id": "bevy_core_pipeline::smaa::SmaaPreset",
-      "is_static": true
-    },
-    "GlobalVolume": {
-      "type_id": "bevy_audio::audio::GlobalVolume",
-      "is_static": true
-    },
-    "HitData": {
-      "type_id": "bevy_picking::backend::HitData",
-      "is_static": true
-    },
-    "WindowCloseRequested": {
-      "type_id": "bevy_window::event::WindowCloseRequested",
-      "is_static": true
-    },
-    "i16": {
-      "type_id": "i16",
-      "is_static": true
-    },
-    "NodeImageMode": {
-      "type_id": "bevy_ui::widget::image::NodeImageMode",
-      "is_static": true
-    },
-    "Text2d": {
-      "type_id": "bevy_text::text2d::Text2d",
-      "is_static": true
-    },
-    "FunctionArgInfo": {
-      "type_id": "bevy_mod_scripting_core::docgen::info::FunctionArgInfo",
-      "is_static": true
-    },
-    "Affine2": {
-      "type_id": "glam::Affine2",
-      "is_static": true
-    },
-    "TypeId": {
-      "type_id": "core::any::TypeId",
-      "is_static": true
-    },
-    "CursorOptions": {
-      "type_id": "bevy_window::window::CursorOptions",
-      "is_static": true
-    },
-    "GamepadRumbleRequest": {
-      "type_id": "bevy_input::gamepad::GamepadRumbleRequest",
-      "is_static": true
-    },
-    "UVec2": {
-      "type_id": "glam::UVec2",
-      "is_static": true
-    },
-    "Vec3": {
-      "type_id": "glam::Vec3",
-      "is_static": true
-    },
-    "char": {
-      "type_id": "char",
-      "is_static": true
-    },
-    "BoundingSphere": {
-      "type_id": "bevy_math::bounding::bounded3d::BoundingSphere",
-      "is_static": true
-    },
-    "TextBounds": {
-      "type_id": "bevy_text::bounds::TextBounds",
-      "is_static": true
-    },
-    "ButtonAxisSettings": {
-      "type_id": "bevy_input::gamepad::ButtonAxisSettings",
-      "is_static": true
-    },
-    "BoundingCircle": {
-      "type_id": "bevy_math::bounding::bounded2d::BoundingCircle",
-      "is_static": true
-    },
-    "MorphWeights": {
-      "type_id": "bevy_mesh::morph::MorphWeights",
-      "is_static": true
-    },
-    "WindowThemeChanged": {
-      "type_id": "bevy_window::event::WindowThemeChanged",
-      "is_static": true
-    },
-    "ThreadedAnimationGraphs": {
-      "type_id": "bevy_animation::graph::ThreadedAnimationGraphs",
-      "is_static": true
-    },
-    "ComponentTicks": {
-      "type_id": "bevy_ecs::component::ComponentTicks",
-      "is_static": true
-    },
-    "DynamicScriptFunctionMut": {
-      "type_id": "DynamicFunctionMut",
-      "is_static": true
-    },
-    "BloomPrefilter": {
-      "type_id": "bevy_core_pipeline::bloom::settings::BloomPrefilter",
-      "is_static": true
-    },
-    "NonZeroU16": {
-      "type_id": "core::num::NonZeroU16",
-      "is_static": true
-    },
-    "DefaultOpaqueRendererMethod": {
-      "type_id": "bevy_pbr::material::DefaultOpaqueRendererMethod",
-      "is_static": true
-    },
-    "Ime": {
-      "type_id": "bevy_window::event::Ime",
-      "is_static": true
-    },
-    "Visibility": {
-      "type_id": "bevy_render::view::visibility::Visibility",
-      "is_static": true
-    },
-    "RenderAssetUsages": {
-      "type_id": "bevy_asset::render_asset::RenderAssetUsages",
-      "is_static": true
-    },
-    "BorderColor": {
-      "type_id": "bevy_ui::ui_node::BorderColor",
-      "is_static": true
-    },
-    "i32": {
-      "type_id": "i32",
-      "is_static": true
-    },
-    "RepeatedGridTrack": {
-      "type_id": "bevy_ui::ui_node::RepeatedGridTrack",
-      "is_static": true
-    },
-    "TextureSlicer": {
-      "type_id": "bevy_sprite::texture_slice::slicer::TextureSlicer",
-      "is_static": true
-    },
-    "MonitorSelection": {
-      "type_id": "bevy_window::window::MonitorSelection",
-      "is_static": true
-    },
-    "Lcha": {
-      "type_id": "bevy_color::lcha::Lcha",
-      "is_static": true
-    },
-    "DAffine3": {
-      "type_id": "glam::DAffine3",
-      "is_static": true
-    },
-    "PanGesture": {
-      "type_id": "bevy_input::gestures::PanGesture",
-      "is_static": true
-    },
-    "WindowOccluded": {
-      "type_id": "bevy_window::event::WindowOccluded",
-      "is_static": true
-    },
-    "WindowBackendScaleFactorChanged": {
-      "type_id": "bevy_window::event::WindowBackendScaleFactorChanged",
-      "is_static": true
-    },
-    "Sensitivity": {
-      "type_id": "bevy_core_pipeline::fxaa::Sensitivity",
-      "is_static": true
-    },
-    "InfinitePlane3d": {
-      "type_id": "bevy_math::primitives::dim3::InfinitePlane3d",
-      "is_static": true
-    },
-    "Screenshot": {
-      "type_id": "bevy_render::view::window::screenshot::Screenshot",
-      "is_static": true
-    },
-    "GridAutoFlow": {
-      "type_id": "bevy_ui::ui_node::GridAutoFlow",
-      "is_static": true
-    },
-    "AppLifecycle": {
-      "type_id": "bevy_window::event::AppLifecycle",
-      "is_static": true
-    },
-    "PointLight": {
-      "type_id": "bevy_pbr::light::point_light::PointLight",
-      "is_static": true
-    },
-    "Oklaba": {
-      "type_id": "bevy_color::oklaba::Oklaba",
-      "is_static": true
-    },
-    "ColorGrading": {
-      "type_id": "bevy_render::view::ColorGrading",
-      "is_static": true
-    },
-    "AnimationGraph": {
-      "type_id": "bevy_animation::graph::AnimationGraph",
-      "is_static": true
-    },
-    "Arc": {
-      "type_id": "alloc::sync::Arc<bevy_asset::handle::StrongHandle>",
-      "is_static": true
-    },
-    "RemovedComponentEntity": {
-      "type_id": "bevy_ecs::removal_detection::RemovedComponentEntity",
-      "is_static": true
-    },
-    "MouseWheel": {
-      "type_id": "bevy_input::mouse::MouseWheel",
-      "is_static": true
-    },
-    "EnabledButtons": {
-      "type_id": "bevy_window::window::EnabledButtons",
-      "is_static": true
-    },
-    "ContrastAdaptiveSharpening": {
-      "type_id": "bevy_core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpening",
-      "is_static": true
-    },
-    "types": {
-      "type_id": "TypeId(0x57a081164bde06097e37475b4edd7cf5)",
-      "is_static": false
-    },
-    "Mat2": {
-      "type_id": "glam::Mat2",
-      "is_static": true
-    },
-    "Focus": {
-      "type_id": "bevy_a11y::Focus",
-      "is_static": true
-    },
-    "AlphaMode": {
-      "type_id": "bevy_render::alpha::AlphaMode",
-      "is_static": true
-    },
-    "SubCameraView": {
-      "type_id": "bevy_render::camera::camera::SubCameraView",
-      "is_static": true
-    },
-    "DVec4": {
-      "type_id": "glam::DVec4",
-      "is_static": true
-    },
-    "ConicalFrustum": {
-      "type_id": "bevy_math::primitives::dim3::ConicalFrustum",
-      "is_static": true
-    },
-    "Msaa": {
-      "type_id": "bevy_render::view::Msaa",
-      "is_static": true
-    },
-    "Affine3": {
-      "type_id": "bevy_math::affine3::Affine3",
-      "is_static": true
-    },
-    "KeyboardInput": {
-      "type_id": "bevy_input::keyboard::KeyboardInput",
-      "is_static": true
-    },
-    "Namespace": {
-      "type_id": "bevy_mod_scripting_core::bindings::function::namespace::Namespace",
-      "is_static": true
-    },
-    "Aabb2d": {
-      "type_id": "bevy_math::bounding::bounded2d::Aabb2d",
-      "is_static": true
-    },
-    "Vec3A": {
-      "type_id": "glam::Vec3A",
-      "is_static": true
-    },
-    "SceneRoot": {
-      "type_id": "bevy_scene::components::SceneRoot",
-      "is_static": true
-    },
-    "PointerInputPlugin": {
-      "type_id": "bevy_picking::input::PointerInputPlugin",
-      "is_static": true
-    },
-    "I64Vec4": {
-      "type_id": "glam::I64Vec4",
-      "is_static": true
-    },
-    "AtomicBool": {
-      "type_id": "core::sync::atomic::AtomicBool",
-      "is_static": true
-    },
-    "RayCast2d": {
-      "type_id": "bevy_math::bounding::raycast2d::RayCast2d",
-      "is_static": true
-    },
-    "Plane3d": {
-      "type_id": "bevy_math::primitives::dim3::Plane3d",
-      "is_static": true
-    },
-    "BVec4": {
-      "type_id": "glam::BVec4",
-      "is_static": true
-    },
-    "Dir2": {
-      "type_id": "bevy_math::direction::Dir2",
-      "is_static": true
-    },
-    "Torus": {
-      "type_id": "bevy_math::primitives::dim3::Torus",
-      "is_static": true
-    },
-    "DiGraph": {
-      "type_id": "petgraph::graph::DiGraph<bevy_animation::graph::AnimationGraphNode, (), u32>",
-      "is_static": true
-    },
-    "Annulus": {
-      "type_id": "bevy_math::primitives::dim2::Annulus",
-      "is_static": true
-    },
-    "usize": {
-      "type_id": "usize",
-      "is_static": true
-    },
-    "ComponentId": {
-      "type_id": "bevy_ecs::component::ComponentId",
-      "is_static": true
-    },
-    "GlyphAtlasLocation": {
-      "type_id": "bevy_text::glyph::GlyphAtlasLocation",
-      "is_static": true
-    },
-    "JustifySelf": {
-      "type_id": "bevy_ui::ui_node::JustifySelf",
-      "is_static": true
-    },
-    "I64Vec3": {
-      "type_id": "glam::I64Vec3",
-      "is_static": true
-    },
-    "AlphaMode2d": {
-      "type_id": "bevy_sprite::mesh2d::material::AlphaMode2d",
-      "is_static": true
-    },
-    "TextColor": {
-      "type_id": "bevy_text::text::TextColor",
-      "is_static": true
-    },
-    "SkinnedMesh": {
-      "type_id": "bevy_mesh::skinning::SkinnedMesh",
-      "is_static": true
-    },
-    "FlexDirection": {
-      "type_id": "bevy_ui::ui_node::FlexDirection",
-      "is_static": true
-    },
-    "u64": {
-      "type_id": "u64",
-      "is_static": true
-    },
-    "AabbCast2d": {
-      "type_id": "bevy_math::bounding::raycast2d::AabbCast2d",
-      "is_static": true
-    },
-    "Interaction": {
-      "type_id": "bevy_ui::focus::Interaction",
-      "is_static": true
-    },
-    "DVec3": {
-      "type_id": "glam::DVec3",
-      "is_static": true
-    },
-    "Viewport": {
-      "type_id": "bevy_render::camera::camera::Viewport",
-      "is_static": true
-    },
-    "AtomicI64": {
-      "type_id": "core::sync::atomic::AtomicI64",
-      "is_static": true
-    },
-    "GltfMaterialExtras": {
-      "type_id": "bevy_gltf::GltfMaterialExtras",
-      "is_static": true
-    },
-    "Cow": {
-      "type_id": "alloc::borrow::Cow<str>",
-      "is_static": true
-    },
-    "SpotLight": {
-      "type_id": "bevy_pbr::light::spot_light::SpotLight",
-      "is_static": true
-    },
-    "IrradianceVolume": {
-      "type_id": "bevy_pbr::light_probe::irradiance_volume::IrradianceVolume",
-      "is_static": true
-    },
-    "GltfMeshExtras": {
-      "type_id": "bevy_gltf::GltfMeshExtras",
-      "is_static": true
-    },
-    "CursorEntered": {
-      "type_id": "bevy_window::event::CursorEntered",
-      "is_static": true
-    },
-    "Laba": {
-      "type_id": "bevy_color::laba::Laba",
-      "is_static": true
-    },
-    "NonZeroU32": {
-      "type_id": "core::num::NonZeroU32",
-      "is_static": true
-    },
-    "DistanceFog": {
-      "type_id": "bevy_pbr::fog::DistanceFog",
-      "is_static": true
-    },
-    "WindowRef": {
-      "type_id": "bevy_window::window::WindowRef",
-      "is_static": true
-    },
-    "ScrollPosition": {
-      "type_id": "bevy_ui::ui_node::ScrollPosition",
-      "is_static": true
-    },
-    "PickingInteraction": {
-      "type_id": "bevy_picking::focus::PickingInteraction",
-      "is_static": true
-    },
-    "Fixed": {
-      "type_id": "bevy_time::fixed::Fixed",
-      "is_static": true
-    },
-    "CircularSector": {
-      "type_id": "bevy_math::primitives::dim2::CircularSector",
-      "is_static": true
-    },
-    "AnimationPlayer": {
-      "type_id": "bevy_animation::AnimationPlayer",
-      "is_static": true
-    },
-    "Rot2": {
-      "type_id": "bevy_math::rotation2d::Rot2",
-      "is_static": true
-    },
-    "ShaderStorageBuffer": {
-      "type_id": "bevy_render::storage::ShaderStorageBuffer",
-      "is_static": true
-    },
-    "PlaybackSettings": {
-      "type_id": "bevy_audio::audio::PlaybackSettings",
-      "is_static": true
-    },
-    "Color": {
-      "type_id": "bevy_color::color::Color",
-      "is_static": true
-    },
-    "U64Vec3": {
-      "type_id": "glam::U64Vec3",
-      "is_static": true
-    },
-    "Xyza": {
-      "type_id": "bevy_color::xyza::Xyza",
-      "is_static": true
-    },
-    "i8": {
-      "type_id": "i8",
-      "is_static": true
-    },
-    "Oklcha": {
-      "type_id": "bevy_color::oklcha::Oklcha",
-      "is_static": true
-    },
-    "ScriptSystemBuilder": {
-      "type_id": "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder",
-      "is_static": true
-    },
-    "GridTrack": {
-      "type_id": "bevy_ui::ui_node::GridTrack",
-      "is_static": true
-    },
-    "GltfMaterialName": {
-      "type_id": "bevy_gltf::GltfMaterialName",
-      "is_static": true
-    },
-    "GridTrackRepetition": {
-      "type_id": "bevy_ui::ui_node::GridTrackRepetition",
-      "is_static": true
-    },
-    "DQuat": {
-      "type_id": "glam::DQuat",
-      "is_static": true
-    },
-    "DMat2": {
-      "type_id": "glam::DMat2",
-      "is_static": true
-    },
-    "ScriptComponentRegistration": {
-      "type_id": "bevy_mod_scripting_core::bindings::query::ScriptComponentRegistration",
-      "is_static": true
-    },
-    "Tetrahedron": {
-      "type_id": "bevy_math::primitives::dim3::Tetrahedron",
-      "is_static": true
-    },
-    "ScreenSpaceAmbientOcclusionQualityLevel": {
-      "type_id": "bevy_pbr::ssao::ScreenSpaceAmbientOcclusionQualityLevel",
-      "is_static": true
-    },
-    "AnimationTargetId": {
-      "type_id": "bevy_animation::AnimationTargetId",
-      "is_static": true
-    },
-    "FileDragAndDrop": {
-      "type_id": "bevy_window::event::FileDragAndDrop",
-      "is_static": true
-    },
-    "Frustum": {
-      "type_id": "bevy_render::primitives::Frustum",
-      "is_static": true
-    },
-    "SpriteImageMode": {
-      "type_id": "bevy_sprite::sprite::SpriteImageMode",
-      "is_static": true
-    },
-    "TargetCamera": {
-      "type_id": "bevy_ui::ui_node::TargetCamera",
-      "is_static": true
-    },
-    "ClusterConfig": {
-      "type_id": "bevy_pbr::cluster::ClusterConfig",
-      "is_static": true
-    },
-    "WindowResized": {
-      "type_id": "bevy_window::event::WindowResized",
-      "is_static": true
-    },
-    "ClearColorConfig": {
-      "type_id": "bevy_render::camera::clear_color::ClearColorConfig",
-      "is_static": true
-    },
-    "Cylinder": {
-      "type_id": "bevy_math::primitives::dim3::Cylinder",
-      "is_static": true
-    },
-    "Sphere": {
-      "type_id": "bevy_math::primitives::dim3::Sphere",
-      "is_static": true
-    },
-    "DynamicSceneRoot": {
-      "type_id": "bevy_scene::components::DynamicSceneRoot",
-      "is_static": true
-    },
-    "Tonemapping": {
-      "type_id": "bevy_core_pipeline::tonemapping::Tonemapping",
-      "is_static": true
-    },
-    "OnReplace": {
-      "type_id": "bevy_ecs::world::component_constants::OnReplace",
-      "is_static": true
-    },
-    "ColorGradingGlobal": {
-      "type_id": "bevy_render::view::ColorGradingGlobal",
-      "is_static": true
-    },
-    "String": {
-      "type_id": "String",
-      "is_static": true
-    },
-    "DVec2": {
-      "type_id": "glam::DVec2",
-      "is_static": true
-    },
-    "Camera3dDepthLoadOp": {
-      "type_id": "bevy_core_pipeline::core_3d::camera_3d::Camera3dDepthLoadOp",
-      "is_static": true
-    },
-    "ForceTouch": {
-      "type_id": "bevy_input::touch::ForceTouch",
-      "is_static": true
-    },
-    "Gamepad": {
-      "type_id": "bevy_input::gamepad::Gamepad",
-      "is_static": true
-    },
-    "Identifier": {
-      "type_id": "bevy_ecs::identifier::Identifier",
-      "is_static": true
-    },
-    "CascadesFrusta": {
-      "type_id": "bevy_render::primitives::CascadesFrusta",
-      "is_static": true
-    },
-    "ThreadedAnimationGraph": {
-      "type_id": "bevy_animation::graph::ThreadedAnimationGraph",
-      "is_static": true
-    },
-    "ScreenshotCaptured": {
-      "type_id": "bevy_render::view::window::screenshot::ScreenshotCaptured",
-      "is_static": true
-    },
-    "TextureAtlasLayout": {
-      "type_id": "bevy_sprite::texture_atlas::TextureAtlasLayout",
-      "is_static": true
-    },
-    "KeyboardFocusLost": {
-      "type_id": "bevy_input::keyboard::KeyboardFocusLost",
-      "is_static": true
-    },
-    "Parent": {
-      "type_id": "bevy_hierarchy::components::parent::Parent",
-      "is_static": true
-    },
-    "BorderRadius": {
-      "type_id": "bevy_ui::ui_node::BorderRadius",
-      "is_static": true
-    },
-    "RotationGesture": {
-      "type_id": "bevy_input::gestures::RotationGesture",
-      "is_static": true
-    },
-    "UiBoxShadowSamples": {
-      "type_id": "bevy_ui::ui_node::UiBoxShadowSamples",
-      "is_static": true
-    },
-    "isize": {
-      "type_id": "isize",
-      "is_static": true
-    },
-    "GizmoConfig": {
-      "type_id": "bevy_gizmos::config::GizmoConfig",
-      "is_static": true
-    },
-    "ContentSize": {
-      "type_id": "bevy_ui::measurement::ContentSize",
-      "is_static": true
-    },
-    "Affine3A": {
-      "type_id": "glam::Affine3A",
-      "is_static": true
-    },
-    "Virtual": {
-      "type_id": "bevy_time::virt::Virtual",
-      "is_static": true
-    },
-    "Isometry2d": {
-      "type_id": "bevy_math::isometry::Isometry2d",
-      "is_static": true
-    },
-    "Dir3": {
-      "type_id": "bevy_math::direction::Dir3",
-      "is_static": true
-    },
-    "Real": {
-      "type_id": "bevy_time::real::Real",
-      "is_static": true
-    },
-    "InteropError": {
-      "type_id": "bevy_mod_scripting_core::error::InteropError",
-      "is_static": true
-    },
-    "WindowTheme": {
-      "type_id": "bevy_window::window::WindowTheme",
-      "is_static": true
-    },
-    "ScreenSpaceAmbientOcclusion": {
-      "type_id": "bevy_pbr::ssao::ScreenSpaceAmbientOcclusion",
-      "is_static": true
-    },
-    "GamepadConnection": {
-      "type_id": "bevy_input::gamepad::GamepadConnection",
-      "is_static": true
-    },
-    "Mesh3d": {
-      "type_id": "bevy_render::mesh::components::Mesh3d",
-      "is_static": true
-    },
-    "AtomicIsize": {
-      "type_id": "core::sync::atomic::AtomicIsize",
-      "is_static": true
-    },
-    "Capsule3d": {
-      "type_id": "bevy_math::primitives::dim3::Capsule3d",
-      "is_static": true
-    },
-    "AlignSelf": {
-      "type_id": "bevy_ui::ui_node::AlignSelf",
-      "is_static": true
-    },
-    "BVec3A": {
-      "type_id": "glam::BVec3A",
-      "is_static": true
-    },
-    "Aabb3d": {
-      "type_id": "bevy_math::bounding::bounded3d::Aabb3d",
-      "is_static": true
-    },
-    "BVec4A": {
-      "type_id": "glam::BVec4A",
-      "is_static": true
-    },
-    "Window": {
-      "type_id": "bevy_window::window::Window",
-      "is_static": true
-    },
-    "TimerMode": {
-      "type_id": "bevy_time::timer::TimerMode",
-      "is_static": true
-    },
-    "ScalingMode": {
-      "type_id": "bevy_render::camera::projection::ScalingMode",
-      "is_static": true
-    },
-    "FunctionInfo": {
-      "type_id": "bevy_mod_scripting_core::docgen::info::FunctionInfo",
-      "is_static": true
-    },
-    "PinchGesture": {
-      "type_id": "bevy_input::gestures::PinchGesture",
-      "is_static": true
-    },
-    "ScreenSpaceReflections": {
-      "type_id": "bevy_pbr::ssr::ScreenSpaceReflections",
-      "is_static": true
-    },
-    "Display": {
-      "type_id": "bevy_ui::ui_node::Display",
-      "is_static": true
-    },
-    "Capsule2d": {
-      "type_id": "bevy_math::primitives::dim2::Capsule2d",
-      "is_static": true
-    },
-    "GamepadAxisChangedEvent": {
-      "type_id": "bevy_input::gamepad::GamepadAxisChangedEvent",
-      "is_static": true
-    },
-    "Plane2d": {
-      "type_id": "bevy_math::primitives::dim2::Plane2d",
-      "is_static": true
-    },
-    "WindowMoved": {
-      "type_id": "bevy_window::event::WindowMoved",
-      "is_static": true
-    },
-    "Entity": {
-      "type_id": "bevy_ecs::entity::Entity",
-      "is_static": true
-    },
-    "Hsva": {
-      "type_id": "bevy_color::hsva::Hsva",
-      "is_static": true
-    },
-    "Arc2d": {
-      "type_id": "bevy_math::primitives::dim2::Arc2d",
-      "is_static": true
-    },
-    "u32": {
-      "type_id": "u32",
-      "is_static": true
-    },
-    "Mesh2d": {
-      "type_id": "bevy_render::mesh::components::Mesh2d",
-      "is_static": true
-    },
-    "ViewVisibility": {
-      "type_id": "bevy_render::view::visibility::ViewVisibility",
-      "is_static": true
-    },
-    "CustomCursor": {
-      "type_id": "bevy_winit::cursor::CustomCursor",
-      "is_static": true
-    },
-    "AtomicU8": {
-      "type_id": "core::sync::atomic::AtomicU8",
-      "is_static": true
-    },
-    "GamepadConnectionEvent": {
-      "type_id": "bevy_input::gamepad::GamepadConnectionEvent",
-      "is_static": true
-    },
-    "ButtonState": {
-      "type_id": "bevy_input::ButtonState",
-      "is_static": true
-    },
-    "VisibilityRange": {
-      "type_id": "bevy_render::view::visibility::range::VisibilityRange",
-      "is_static": true
-    },
-    "AssetIndex": {
-      "type_id": "bevy_asset::assets::AssetIndex",
-      "is_static": true
-    },
-    "AxisSettings": {
-      "type_id": "bevy_input::gamepad::AxisSettings",
-      "is_static": true
-    },
-    "Vec2": {
-      "type_id": "glam::Vec2",
-      "is_static": true
-    },
-    "Vec4": {
-      "type_id": "glam::Vec4",
-      "is_static": true
-    },
-    "GltfExtras": {
-      "type_id": "bevy_gltf::GltfExtras",
-      "is_static": true
-    },
-    "RayId": {
-      "type_id": "bevy_picking::backend::ray::RayId",
-      "is_static": true
-    },
-    "i128": {
-      "type_id": "i128",
-      "is_static": true
-    },
-    "AtomicI8": {
-      "type_id": "core::sync::atomic::AtomicI8",
-      "is_static": true
-    },
-    "DebandDither": {
-      "type_id": "bevy_core_pipeline::tonemapping::DebandDither",
-      "is_static": true
-    },
-    "WindowClosed": {
-      "type_id": "bevy_window::event::WindowClosed",
-      "is_static": true
-    },
-    "RelativeCursorPosition": {
-      "type_id": "bevy_ui::focus::RelativeCursorPosition",
-      "is_static": true
-    },
-    "CompassOctant": {
-      "type_id": "bevy_math::compass::CompassOctant",
-      "is_static": true
-    },
-    "WindowFocused": {
-      "type_id": "bevy_window::event::WindowFocused",
-      "is_static": true
-    },
-    "CascadesVisibleEntities": {
-      "type_id": "bevy_pbr::bundle::CascadesVisibleEntities",
-      "is_static": true
-    },
-    "ResolvedBorderRadius": {
-      "type_id": "bevy_ui::ui_node::ResolvedBorderRadius",
-      "is_static": true
-    },
-    "Fxaa": {
-      "type_id": "bevy_core_pipeline::fxaa::Fxaa",
-      "is_static": true
-    },
-    "EntityHash": {
-      "type_id": "bevy_ecs::entity::hash::EntityHash",
-      "is_static": true
-    },
-    "ReflectReference": {
-      "type_id": "ReflectReference",
-      "is_static": true
-    },
-    "Duration": {
-      "type_id": "bevy_utils::Duration",
-      "is_static": true
-    },
-    "CircularSegment": {
-      "type_id": "bevy_math::primitives::dim2::CircularSegment",
-      "is_static": true
-    },
-    "Stopwatch": {
-      "type_id": "bevy_time::stopwatch::Stopwatch",
-      "is_static": true
-    },
-    "WindowEvent": {
-      "type_id": "bevy_window::event::WindowEvent",
-      "is_static": true
-    },
-    "Smaa": {
-      "type_id": "bevy_core_pipeline::smaa::Smaa",
-      "is_static": true
-    },
-    "NoFrustumCulling": {
-      "type_id": "bevy_render::view::visibility::NoFrustumCulling",
-      "is_static": true
-    },
-    "Button": {
-      "type_id": "bevy_ui::widget::button::Button",
-      "is_static": true
-    },
-    "RenderTarget": {
-      "type_id": "bevy_render::camera::camera::RenderTarget",
-      "is_static": true
-    },
-    "DAffine2": {
-      "type_id": "glam::DAffine2",
-      "is_static": true
-    },
-    "Monitor": {
-      "type_id": "bevy_window::monitor::Monitor",
-      "is_static": true
-    },
-    "Label": {
-      "type_id": "bevy_ui::widget::label::Label",
-      "is_static": true
-    },
-    "TextureAtlas": {
-      "type_id": "bevy_sprite::texture_atlas::TextureAtlas",
-      "is_static": true
-    },
-    "MouseButton": {
-      "type_id": "bevy_input::mouse::MouseButton",
-      "is_static": true
-    },
-    "Rhombus": {
-      "type_id": "bevy_math::primitives::dim2::Rhombus",
-      "is_static": true
-    },
-    "Key": {
-      "type_id": "bevy_input::keyboard::Key",
-      "is_static": true
-    },
-    "PlaybackMode": {
-      "type_id": "bevy_audio::audio::PlaybackMode",
-      "is_static": true
-    },
-    "UiAntiAlias": {
-      "type_id": "bevy_ui::ui_node::UiAntiAlias",
-      "is_static": true
-    },
-    "UvChannel": {
-      "type_id": "bevy_pbr::pbr_material::UvChannel",
-      "is_static": true
-    },
-    "PrimaryWindow": {
-      "type_id": "bevy_window::window::PrimaryWindow",
-      "is_static": true
-    },
-    "TextLayout": {
-      "type_id": "bevy_text::text::TextLayout",
-      "is_static": true
-    },
-    "GamepadButton": {
-      "type_id": "bevy_input::gamepad::GamepadButton",
-      "is_static": true
-    },
-    "CursorMoved": {
-      "type_id": "bevy_window::event::CursorMoved",
-      "is_static": true
-    },
-    "TextEntity": {
-      "type_id": "bevy_text::text::TextEntity",
-      "is_static": true
-    },
-    "Rect": {
-      "type_id": "bevy_math::rects::rect::Rect",
-      "is_static": true
-    },
-    "PointerInteraction": {
-      "type_id": "bevy_picking::pointer::PointerInteraction",
-      "is_static": true
-    },
-    "ManualTextureViewHandle": {
-      "type_id": "bevy_render::camera::manual_texture_view::ManualTextureViewHandle",
-      "is_static": true
-    },
-    "SyncToRenderWorld": {
-      "type_id": "bevy_render::sync_world::SyncToRenderWorld",
-      "is_static": true
-    },
-    "PointerId": {
-      "type_id": "bevy_picking::pointer::PointerId",
-      "is_static": true
-    },
-    "AabbGizmoConfigGroup": {
-      "type_id": "bevy_gizmos::aabb::AabbGizmoConfigGroup",
-      "is_static": true
-    },
-    "FogFalloff": {
-      "type_id": "bevy_pbr::fog::FogFalloff",
-      "is_static": true
-    },
-    "PickingBehavior": {
-      "type_id": "bevy_picking::PickingBehavior",
-      "is_static": true
-    },
-    "Camera3d": {
-      "type_id": "bevy_core_pipeline::core_3d::camera_3d::Camera3d",
-      "is_static": true
-    },
-    "AnimationTransitions": {
-      "type_id": "bevy_animation::transition::AnimationTransitions",
-      "is_static": true
-    },
-    "GizmoConfigStore": {
-      "type_id": "bevy_gizmos::config::GizmoConfigStore",
-      "is_static": true
-    },
-    "AnimationTarget": {
-      "type_id": "bevy_animation::AnimationTarget",
-      "is_static": true
-    },
-    "OnRemove": {
-      "type_id": "bevy_ecs::world::component_constants::OnRemove",
-      "is_static": true
-    },
-    "Mat3": {
-      "type_id": "glam::Mat3",
-      "is_static": true
-    },
-    "PathBuf": {
-      "type_id": "PathBuf",
-      "is_static": true
-    },
-    "Val": {
-      "type_id": "bevy_ui::geometry::Val",
-      "is_static": true
-    },
-    "AccumulatedMouseMotion": {
-      "type_id": "bevy_input::mouse::AccumulatedMouseMotion",
-      "is_static": true
-    },
-    "Cuboid": {
-      "type_id": "bevy_math::primitives::dim3::Cuboid",
-      "is_static": true
-    },
-    "CursorLeft": {
-      "type_id": "bevy_window::event::CursorLeft",
-      "is_static": true
-    },
-    "UVec3": {
-      "type_id": "glam::UVec3",
-      "is_static": true
-    },
-    "Ellipse": {
-      "type_id": "bevy_math::primitives::dim2::Ellipse",
-      "is_static": true
-    },
-    "OnInsert": {
-      "type_id": "bevy_ecs::world::component_constants::OnInsert",
-      "is_static": true
-    },
-    "ClusterZConfig": {
-      "type_id": "bevy_pbr::cluster::ClusterZConfig",
-      "is_static": true
-    },
-    "NonZeroI16": {
-      "type_id": "core::num::NonZeroI16",
-      "is_static": true
-    },
-    "Uuid": {
-      "type_id": "uuid::Uuid",
-      "is_static": true
-    },
-    "BoundingCircleCast": {
-      "type_id": "bevy_math::bounding::raycast2d::BoundingCircleCast",
-      "is_static": true
-    },
-    "WindowResizeConstraints": {
-      "type_id": "bevy_window::window::WindowResizeConstraints",
-      "is_static": true
-    },
-    "RequestRedraw": {
-      "type_id": "bevy_window::event::RequestRedraw",
-      "is_static": true
-    },
-    "EaseFunction": {
-      "type_id": "bevy_math::curve::easing::EaseFunction",
-      "is_static": true
-    },
-    "TouchInput": {
-      "type_id": "bevy_input::touch::TouchInput",
-      "is_static": true
-    },
-    "ButtonSettings": {
-      "type_id": "bevy_input::gamepad::ButtonSettings",
-      "is_static": true
-    },
-    "HierarchyEvent": {
-      "type_id": "bevy_hierarchy::events::HierarchyEvent",
-      "is_static": true
-    },
-    "NativeKeyCode": {
-      "type_id": "bevy_input::keyboard::NativeKeyCode",
-      "is_static": true
-    },
-    "ScriptTypeRegistration": {
-      "type_id": "bevy_mod_scripting_core::bindings::query::ScriptTypeRegistration",
-      "is_static": true
-    },
-    "ScriptValue": {
-      "type_id": "bevy_mod_scripting_core::bindings::script_value::ScriptValue",
-      "is_static": true
-    },
-    "PerspectiveProjection": {
-      "type_id": "bevy_render::camera::projection::PerspectiveProjection",
-      "is_static": true
-    },
-    "InheritedVisibility": {
-      "type_id": "bevy_render::view::visibility::InheritedVisibility",
-      "is_static": true
-    },
-    "WindowDestroyed": {
-      "type_id": "bevy_window::event::WindowDestroyed",
-      "is_static": true
-    },
-    "LightGizmoColor": {
-      "type_id": "bevy_gizmos::light::LightGizmoColor",
-      "is_static": true
-    },
-    "UiRect": {
-      "type_id": "bevy_ui::geometry::UiRect",
-      "is_static": true
-    },
-    "MouseButtonInput": {
-      "type_id": "bevy_input::mouse::MouseButtonInput",
-      "is_static": true
-    },
-    "AnimationClip": {
-      "type_id": "bevy_animation::AnimationClip",
-      "is_static": true
-    },
-    "GlobalTransform": {
-      "type_id": "bevy_transform::components::global_transform::GlobalTransform",
-      "is_static": true
-    },
-    "JustifyContent": {
-      "type_id": "bevy_ui::ui_node::JustifyContent",
-      "is_static": true
-    },
-    "OnAdd": {
-      "type_id": "bevy_ecs::world::component_constants::OnAdd",
-      "is_static": true
-    },
-    "VolumetricFog": {
-      "type_id": "bevy_pbr::volumetric_fog::VolumetricFog",
-      "is_static": true
-    },
-    "CubemapFrusta": {
-      "type_id": "bevy_render::primitives::CubemapFrusta",
-      "is_static": true
-    },
-    "ShadowFilteringMethod": {
-      "type_id": "bevy_pbr::light::ShadowFilteringMethod",
-      "is_static": true
-    },
-    "AnimationEventTarget": {
-      "type_id": "bevy_animation::AnimationEventTarget",
-      "is_static": true
-    },
-    "Outline": {
-      "type_id": "bevy_ui::ui_node::Outline",
-      "is_static": true
-    },
-    "WindowClosing": {
-      "type_id": "bevy_window::event::WindowClosing",
-      "is_static": true
-    },
-    "PickingPlugin": {
-      "type_id": "bevy_picking::PickingPlugin",
-      "is_static": true
-    },
-    "NotShadowReceiver": {
-      "type_id": "bevy_pbr::light::NotShadowReceiver",
-      "is_static": true
-    },
-    "RawGamepadAxisChangedEvent": {
-      "type_id": "bevy_input::gamepad::RawGamepadAxisChangedEvent",
-      "is_static": true
-    },
-    "Hwba": {
-      "type_id": "bevy_color::hwba::Hwba",
-      "is_static": true
-    },
-    "OrthographicProjection": {
-      "type_id": "bevy_render::camera::projection::OrthographicProjection",
-      "is_static": true
-    },
-    "GamepadEvent": {
-      "type_id": "bevy_input::gamepad::GamepadEvent",
-      "is_static": true
-    },
-    "AlignItems": {
-      "type_id": "bevy_ui::ui_node::AlignItems",
-      "is_static": true
-    },
-    "Camera3dDepthTextureUsage": {
-      "type_id": "bevy_core_pipeline::core_3d::camera_3d::Camera3dDepthTextureUsage",
-      "is_static": true
-    },
-    "SmolStr": {
-      "type_id": "smol_str::SmolStr",
-      "is_static": true
-    },
-    "MeshMorphWeights": {
-      "type_id": "bevy_mesh::morph::MeshMorphWeights",
-      "is_static": true
-    },
-    "RawGamepadButtonChangedEvent": {
-      "type_id": "bevy_input::gamepad::RawGamepadButtonChangedEvent",
-      "is_static": true
-    },
-    "WindowMode": {
-      "type_id": "bevy_window::window::WindowMode",
-      "is_static": true
-    },
-    "AtomicI16": {
-      "type_id": "core::sync::atomic::AtomicI16",
-      "is_static": true
-    },
-    "ReflectSchedule": {
-      "type_id": "bevy_system_reflection::ReflectSchedule",
-      "is_static": true
-    },
-    "URect": {
-      "type_id": "bevy_math::rects::urect::URect",
-      "is_static": true
-    },
-    "CompassQuadrant": {
-      "type_id": "bevy_math::compass::CompassQuadrant",
-      "is_static": true
-    },
-    "NormalPrepass": {
-      "type_id": "bevy_core_pipeline::prepass::NormalPrepass",
-      "is_static": true
-    },
-    "GlobalsUniform": {
-      "type_id": "bevy_render::globals::GlobalsUniform",
-      "is_static": true
-    },
-    "EulerRot": {
-      "type_id": "glam::EulerRot",
-      "is_static": true
-    },
-    "GizmoLineStyle": {
-      "type_id": "bevy_gizmos::config::GizmoLineStyle",
-      "is_static": true
-    },
-    "InternalWindowState": {
-      "type_id": "bevy_window::window::InternalWindowState",
-      "is_static": true
-    },
-    "VisibleEntities": {
-      "type_id": "bevy_render::view::visibility::VisibleEntities",
-      "is_static": true
-    },
-    "Timer": {
-      "type_id": "bevy_time::timer::Timer",
-      "is_static": true
-    },
-    "ColorMaterial": {
-      "type_id": "bevy_sprite::mesh2d::color_material::ColorMaterial",
-      "is_static": true
-    },
-    "BloomCompositeMode": {
-      "type_id": "bevy_core_pipeline::bloom::settings::BloomCompositeMode",
-      "is_static": true
-    },
-    "DeferredPrepass": {
-      "type_id": "bevy_core_pipeline::prepass::DeferredPrepass",
-      "is_static": true
-    },
-    "Camera": {
-      "type_id": "bevy_render::camera::camera::Camera",
-      "is_static": true
-    },
-    "AspectRatio": {
-      "type_id": "bevy_math::aspect_ratio::AspectRatio",
-      "is_static": true
-    },
-    "Rectangle": {
-      "type_id": "bevy_math::primitives::dim2::Rectangle",
-      "is_static": true
-    },
-    "DirectionalLightShadowMap": {
-      "type_id": "bevy_pbr::light::DirectionalLightShadowMap",
-      "is_static": true
-    },
-    "ComputedTextBlock": {
-      "type_id": "bevy_text::text::ComputedTextBlock",
-      "is_static": true
-    },
-    "bool": {
-      "type_id": "bool",
-      "is_static": true
-    },
-    "BVec3": {
-      "type_id": "glam::BVec3",
-      "is_static": true
-    },
-    "BVec2": {
-      "type_id": "glam::BVec2",
-      "is_static": true
-    },
-    "CascadeShadowConfig": {
-      "type_id": "bevy_pbr::light::CascadeShadowConfig",
-      "is_static": true
-    },
-    "u128": {
-      "type_id": "u128",
-      "is_static": true
-    },
-    "IVec4": {
-      "type_id": "glam::IVec4",
-      "is_static": true
-    },
-    "Bloom": {
-      "type_id": "bevy_core_pipeline::bloom::settings::Bloom",
-      "is_static": true
-    },
-    "WindowCreated": {
-      "type_id": "bevy_window::event::WindowCreated",
-      "is_static": true
-    },
-    "DefaultSpatialScale": {
-      "type_id": "bevy_audio::audio::DefaultSpatialScale",
-      "is_static": true
-    },
-    "AtomicI32": {
-      "type_id": "core::sync::atomic::AtomicI32",
-      "is_static": true
-    },
-    "UiScale": {
-      "type_id": "bevy_ui::UiScale",
-      "is_static": true
-    },
-    "JustifyItems": {
-      "type_id": "bevy_ui::ui_node::JustifyItems",
-      "is_static": true
-    },
-    "NotShadowCaster": {
-      "type_id": "bevy_pbr::light::NotShadowCaster",
-      "is_static": true
-    },
-    "RawGamepadEvent": {
-      "type_id": "bevy_input::gamepad::RawGamepadEvent",
-      "is_static": true
-    },
-    "TextSpan": {
-      "type_id": "bevy_text::text::TextSpan",
-      "is_static": true
-    },
-    "WindowLevel": {
-      "type_id": "bevy_window::window::WindowLevel",
-      "is_static": true
-    },
-    "GridPlacement": {
-      "type_id": "bevy_ui::ui_node::GridPlacement",
-      "is_static": true
-    },
-    "Isometry3d": {
-      "type_id": "bevy_math::isometry::Isometry3d",
-      "is_static": true
-    },
-    "IVec3": {
-      "type_id": "glam::IVec3",
-      "is_static": true
-    },
-    "AnimationEvent": {
-      "type_id": "bevy_animation::AnimationEvent",
-      "is_static": true
-    },
-    "PresentMode": {
-      "type_id": "bevy_window::window::PresentMode",
-      "is_static": true
-    },
-    "CompositeAlphaMode": {
-      "type_id": "bevy_window::window::CompositeAlphaMode",
-      "is_static": true
-    },
-    "RangeFull": {
-      "type_id": "core::ops::RangeFull",
-      "is_static": true
-    },
-    "FloatOrd": {
-      "type_id": "bevy_math::float_ord::FloatOrd",
-      "is_static": true
-    },
-    "AtomicUsize": {
-      "type_id": "core::sync::atomic::AtomicUsize",
-      "is_static": true
-    },
-    "CalculatedClip": {
-      "type_id": "bevy_ui::ui_node::CalculatedClip",
-      "is_static": true
-    },
-    "JustifyText": {
-      "type_id": "bevy_text::text::JustifyText",
-      "is_static": true
-    },
-    "AabbCast3d": {
-      "type_id": "bevy_math::bounding::raycast3d::AabbCast3d",
-      "is_static": true
-    },
-    "AccumulatedMouseScroll": {
-      "type_id": "bevy_input::mouse::AccumulatedMouseScroll",
-      "is_static": true
-    },
-    "IRect": {
-      "type_id": "bevy_math::rects::irect::IRect",
-      "is_static": true
-    },
-    "LightGizmoConfigGroup": {
-      "type_id": "bevy_gizmos::light::LightGizmoConfigGroup",
-      "is_static": true
-    },
-    "RenderLayers": {
-      "type_id": "bevy_render::view::visibility::render_layers::RenderLayers",
-      "is_static": true
-    },
-    "Tick": {
-      "type_id": "bevy_ecs::component::Tick",
-      "is_static": true
-    },
-    "DepthOfField": {
-      "type_id": "bevy_core_pipeline::dof::DepthOfField",
-      "is_static": true
-    },
-    "SpatialScale": {
-      "type_id": "bevy_audio::audio::SpatialScale",
-      "is_static": true
-    },
-    "Segment2d": {
-      "type_id": "bevy_math::primitives::dim2::Segment2d",
-      "is_static": true
-    },
-    "Sprite": {
-      "type_id": "bevy_sprite::sprite::Sprite",
-      "is_static": true
-    },
-    "ParallaxMappingMethod": {
-      "type_id": "bevy_pbr::parallax::ParallaxMappingMethod",
-      "is_static": true
-    },
-    "OverflowAxis": {
-      "type_id": "bevy_ui::ui_node::OverflowAxis",
-      "is_static": true
-    },
-    "NativeKey": {
-      "type_id": "bevy_input::keyboard::NativeKey",
-      "is_static": true
-    },
-    "ImageNode": {
-      "type_id": "bevy_ui::widget::image::ImageNode",
-      "is_static": true
-    },
-    "LineBreak": {
-      "type_id": "bevy_text::text::LineBreak",
-      "is_static": true
-    },
-    "PointLightShadowMap": {
-      "type_id": "bevy_pbr::light::PointLightShadowMap",
-      "is_static": true
-    },
-    "Mesh": {
-      "type_id": "bevy_mesh::mesh::Mesh",
-      "is_static": true
-    },
-    "Instant": {
-      "type_id": "bevy_utils::Instant",
-      "is_static": true
-    },
-    "WindowScaleFactorChanged": {
-      "type_id": "bevy_window::event::WindowScaleFactorChanged",
-      "is_static": true
-    },
-    "Indices": {
-      "type_id": "bevy_mesh::index::Indices",
-      "is_static": true
-    },
-    "MinTrackSizingFunction": {
-      "type_id": "bevy_ui::ui_node::MinTrackSizingFunction",
-      "is_static": true
-    },
-    "TimedAnimationEvent": {
-      "type_id": "bevy_animation::TimedAnimationEvent",
-      "is_static": true
-    },
-    "ComputedNode": {
-      "type_id": "bevy_ui::ui_node::ComputedNode",
-      "is_static": true
-    },
-    "MouseMotion": {
-      "type_id": "bevy_input::mouse::MouseMotion",
-      "is_static": true
-    },
-    "Projection": {
-      "type_id": "bevy_render::camera::projection::Projection",
-      "is_static": true
-    },
-    "Srgba": {
-      "type_id": "bevy_color::srgba::Srgba",
-      "is_static": true
-    },
-    "TextFont": {
-      "type_id": "bevy_text::text::TextFont",
-      "is_static": true
-    },
-    "GlyphAtlasInfo": {
-      "type_id": "bevy_text::glyph::GlyphAtlasInfo",
-      "is_static": true
-    },
-    "VolumetricLight": {
-      "type_id": "bevy_pbr::volumetric_fog::VolumetricLight",
-      "is_static": true
-    },
-    "CursorIcon": {
-      "type_id": "bevy_winit::cursor::CursorIcon",
-      "is_static": true
-    },
-    "f32": {
-      "type_id": "f32",
-      "is_static": true
-    },
-    "Mat3A": {
-      "type_id": "glam::Mat3A",
-      "is_static": true
-    },
-    "Range": {
-      "type_id": "core::ops::Range<u32>",
-      "is_static": true
-    },
-    "StandardMaterial": {
-      "type_id": "bevy_pbr::pbr_material::StandardMaterial",
-      "is_static": true
-    },
-    "Dir3A": {
-      "type_id": "bevy_math::direction::Dir3A",
-      "is_static": true
-    },
-    "Name": {
-      "type_id": "bevy_core::name::Name",
-      "is_static": true
-    },
-    "AtomicU32": {
-      "type_id": "core::sync::atomic::AtomicU32",
-      "is_static": true
-    },
-    "GamepadButtonChangedEvent": {
-      "type_id": "bevy_input::gamepad::GamepadButtonChangedEvent",
-      "is_static": true
-    },
-    "Cascades": {
-      "type_id": "bevy_pbr::light::Cascades",
-      "is_static": true
-    },
-    "ReflectableScheduleLabel": {
-      "type_id": "bevy_system_reflection::ReflectableScheduleLabel",
-      "is_static": true
-    },
-    "DepthPrepass": {
-      "type_id": "bevy_core_pipeline::prepass::DepthPrepass",
-      "is_static": true
-    },
-    "ClusterFarZMode": {
-      "type_id": "bevy_pbr::cluster::ClusterFarZMode",
-      "is_static": true
-    },
-    "AssetPath": {
-      "type_id": "bevy_asset::path::AssetPath",
-      "is_static": true
-    },
-    "WindowResolution": {
-      "type_id": "bevy_window::window::WindowResolution",
-      "is_static": true
-    },
-    "Ray3d": {
-      "type_id": "bevy_math::ray::Ray3d",
-      "is_static": true
-    },
-    "Circle": {
-      "type_id": "bevy_math::primitives::dim2::Circle",
-      "is_static": true
-    },
-    "TouchPhase": {
-      "type_id": "bevy_input::touch::TouchPhase",
-      "is_static": true
-    },
-    "Transform": {
-      "type_id": "bevy_transform::components::transform::Transform",
-      "is_static": true
-    },
-    "ColorGradingSection": {
-      "type_id": "bevy_render::view::ColorGradingSection",
-      "is_static": true
-    },
-    "U64Vec4": {
-      "type_id": "glam::U64Vec4",
-      "is_static": true
-    },
-    "IVec2": {
-      "type_id": "glam::IVec2",
-      "is_static": true
-    },
-    "ScriptResourceRegistration": {
-      "type_id": "bevy_mod_scripting_core::bindings::query::ScriptResourceRegistration",
-      "is_static": true
-    },
-    "SpriteSource": {
-      "type_id": "bevy_sprite::SpriteSource",
-      "is_static": true
-    },
-    "DepthOfFieldMode": {
-      "type_id": "bevy_core_pipeline::dof::DepthOfFieldMode",
-      "is_static": true
-    },
-    "RepeatAnimation": {
-      "type_id": "bevy_animation::RepeatAnimation",
-      "is_static": true
-    },
-    "f64": {
-      "type_id": "f64",
-      "is_static": true
-    },
-    "Interval": {
-      "type_id": "bevy_math::curve::interval::Interval",
-      "is_static": true
-    },
-    "OverflowClipMargin": {
-      "type_id": "bevy_ui::ui_node::OverflowClipMargin",
-      "is_static": true
-    },
-    "Overflow": {
-      "type_id": "bevy_ui::ui_node::Overflow",
-      "is_static": true
-    },
-    "Hsla": {
-      "type_id": "bevy_color::hsla::Hsla",
-      "is_static": true
-    },
-    "Line3d": {
-      "type_id": "bevy_math::primitives::dim3::Line3d",
-      "is_static": true
-    },
-    "GamepadRumbleIntensity": {
-      "type_id": "bevy_input::gamepad::GamepadRumbleIntensity",
-      "is_static": true
-    },
-    "FlexWrap": {
-      "type_id": "bevy_ui::ui_node::FlexWrap",
-      "is_static": true
-    },
-    "VisibleMeshEntities": {
-      "type_id": "bevy_pbr::bundle::VisibleMeshEntities",
-      "is_static": true
-    },
-    "DMat3": {
-      "type_id": "glam::DMat3",
-      "is_static": true
-    },
-    "u16": {
-      "type_id": "u16",
-      "is_static": true
-    },
-    "CubemapVisibleEntities": {
-      "type_id": "bevy_pbr::bundle::CubemapVisibleEntities",
-      "is_static": true
-    },
-    "Cone": {
-      "type_id": "bevy_math::primitives::dim3::Cone",
-      "is_static": true
-    },
-    "SliceScaleMode": {
-      "type_id": "bevy_sprite::texture_slice::slicer::SliceScaleMode",
-      "is_static": true
-    },
-    "VideoMode": {
-      "type_id": "bevy_window::monitor::VideoMode",
-      "is_static": true
-    },
-    "MotionVectorPrepass": {
-      "type_id": "bevy_core_pipeline::prepass::MotionVectorPrepass",
-      "is_static": true
-    },
-    "AtomicU64": {
-      "type_id": "core::sync::atomic::AtomicU64",
-      "is_static": true
-    },
-    "PositionType": {
-      "type_id": "bevy_ui::ui_node::PositionType",
+    "AlignContent": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::AlignContent"
+      },
       "is_static": true
     },
     "i64": {
-      "type_id": "i64",
+      "type_kind": {
+        "val": "i64"
+      },
       "is_static": true
     },
-    "DirectionalLight": {
-      "type_id": "bevy_pbr::light::directional_light::DirectionalLight",
+    "u64": {
+      "type_kind": {
+        "val": "u64"
+      },
       "is_static": true
     },
-    "TemporalJitter": {
-      "type_id": "bevy_render::camera::camera::TemporalJitter",
+    "StandardMaterial": {
+      "type_kind": {
+        "val": "bevy_pbr::pbr_material::StandardMaterial"
+      },
       "is_static": true
     },
-    "OpaqueRendererMethod": {
-      "type_id": "bevy_pbr::material::OpaqueRendererMethod",
-      "is_static": true
-    },
-    "ClearColor": {
-      "type_id": "bevy_render::camera::clear_color::ClearColor",
-      "is_static": true
-    },
-    "MipBias": {
-      "type_id": "bevy_render::camera::camera::MipBias",
-      "is_static": true
-    },
-    "SystemCursorIcon": {
-      "type_id": "bevy_window::system_cursor::SystemCursorIcon",
-      "is_static": true
-    },
-    "BorderRect": {
-      "type_id": "bevy_sprite::texture_slice::border_rect::BorderRect",
-      "is_static": true
-    },
-    "ChromaticAberration": {
-      "type_id": "bevy_core_pipeline::post_process::ChromaticAberration",
-      "is_static": true
-    },
-    "Node": {
-      "type_id": "bevy_ui::ui_node::Node",
-      "is_static": true
-    },
-    "WindowPosition": {
-      "type_id": "bevy_window::window::WindowPosition",
-      "is_static": true
-    },
-    "AmbientLight": {
-      "type_id": "bevy_pbr::light::ambient_light::AmbientLight",
-      "is_static": true
-    },
-    "OrderIndependentTransparencySettings": {
-      "type_id": "bevy_core_pipeline::oit::OrderIndependentTransparencySettings",
-      "is_static": true
-    },
-    "Triangle3d": {
-      "type_id": "bevy_math::primitives::dim3::Triangle3d",
-      "is_static": true
-    },
-    "EnvironmentMapLight": {
-      "type_id": "bevy_pbr::light_probe::environment_map::EnvironmentMapLight",
-      "is_static": true
-    },
-    "Exposure": {
-      "type_id": "bevy_render::camera::camera::Exposure",
-      "is_static": true
-    },
-    "Volume": {
-      "type_id": "bevy_audio::audio::Volume",
-      "is_static": true
-    },
-    "Children": {
-      "type_id": "bevy_hierarchy::components::children::Children",
-      "is_static": true
-    },
-    "Camera2d": {
-      "type_id": "bevy_core_pipeline::core_2d::camera_2d::Camera2d",
-      "is_static": true
-    },
-    "ReflectSystem": {
-      "type_id": "bevy_system_reflection::ReflectSystem",
-      "is_static": true
-    },
-    "ScriptQueryBuilder": {
-      "type_id": "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder",
-      "is_static": true
-    },
-    "AlignContent": {
-      "type_id": "bevy_ui::ui_node::AlignContent",
-      "is_static": true
-    },
-    "GamepadButtonStateChangedEvent": {
-      "type_id": "bevy_input::gamepad::GamepadButtonStateChangedEvent",
-      "is_static": true
-    },
-    "ScreenSpaceTransmissionQuality": {
-      "type_id": "bevy_core_pipeline::core_3d::camera_3d::ScreenSpaceTransmissionQuality",
-      "is_static": true
-    },
-    "Line2d": {
-      "type_id": "bevy_math::primitives::dim2::Line2d",
-      "is_static": true
-    },
-    "PointerPress": {
-      "type_id": "bevy_picking::pointer::PointerPress",
-      "is_static": true
-    },
-    "AnimationGraphHandle": {
-      "type_id": "bevy_animation::graph::AnimationGraphHandle",
-      "is_static": true
-    },
-    "TextNodeFlags": {
-      "type_id": "bevy_ui::widget::text::TextNodeFlags",
-      "is_static": true
-    },
-    "UVec4": {
-      "type_id": "glam::UVec4",
-      "is_static": true
-    },
-    "ZIndex": {
-      "type_id": "bevy_ui::ui_node::ZIndex",
-      "is_static": true
-    },
-    "ImageNodeSize": {
-      "type_id": "bevy_ui::widget::image::ImageNodeSize",
-      "is_static": true
-    },
-    "DMat4": {
-      "type_id": "glam::DMat4",
-      "is_static": true
-    },
-    "OverflowClipBox": {
-      "type_id": "bevy_ui::ui_node::OverflowClipBox",
-      "is_static": true
-    },
-    "GizmoLineJoint": {
-      "type_id": "bevy_gizmos::config::GizmoLineJoint",
+    "WindowRef": {
+      "type_kind": {
+        "val": "bevy_window::window::WindowRef"
+      },
       "is_static": true
     },
     "FontSmoothing": {
-      "type_id": "bevy_text::text::FontSmoothing",
+      "type_kind": {
+        "val": "bevy_text::text::FontSmoothing"
+      },
+      "is_static": true
+    },
+    "Dir3A": {
+      "type_kind": {
+        "val": "bevy_math::direction::Dir3A"
+      },
+      "is_static": true
+    },
+    "CubemapVisibleEntities": {
+      "type_kind": {
+        "val": "bevy_pbr::bundle::CubemapVisibleEntities"
+      },
+      "is_static": true
+    },
+    "PointerLocation": {
+      "type_kind": {
+        "val": "bevy_picking::pointer::PointerLocation"
+      },
+      "is_static": true
+    },
+    "CubemapFrusta": {
+      "type_kind": {
+        "val": "bevy_render::primitives::CubemapFrusta"
+      },
+      "is_static": true
+    },
+    "Projection": {
+      "type_kind": {
+        "val": "bevy_render::camera::projection::Projection"
+      },
+      "is_static": true
+    },
+    "ThreadedAnimationGraph": {
+      "type_kind": {
+        "val": "bevy_animation::graph::ThreadedAnimationGraph"
+      },
+      "is_static": true
+    },
+    "RepeatedGridTrack": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::RepeatedGridTrack"
+      },
+      "is_static": true
+    },
+    "Vec3": {
+      "type_kind": {
+        "val": "glam::Vec3"
+      },
+      "is_static": true
+    },
+    "Plane2d": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim2::Plane2d"
+      },
+      "is_static": true
+    },
+    "isize": {
+      "type_kind": {
+        "val": "isize"
+      },
+      "is_static": true
+    },
+    "KeyboardInput": {
+      "type_kind": {
+        "val": "bevy_input::keyboard::KeyboardInput"
+      },
+      "is_static": true
+    },
+    "Affine2": {
+      "type_kind": {
+        "val": "glam::Affine2"
+      },
+      "is_static": true
+    },
+    "Anchor": {
+      "type_kind": {
+        "val": "bevy_sprite::sprite::Anchor"
+      },
+      "is_static": true
+    },
+    "Cone": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim3::Cone"
+      },
+      "is_static": true
+    },
+    "AlphaMode2d": {
+      "type_kind": {
+        "val": "bevy_sprite::mesh2d::material::AlphaMode2d"
+      },
+      "is_static": true
+    },
+    "ClearColorConfig": {
+      "type_kind": {
+        "val": "bevy_render::camera::clear_color::ClearColorConfig"
+      },
+      "is_static": true
+    },
+    "OnRemove": {
+      "type_kind": {
+        "val": "bevy_ecs::world::component_constants::OnRemove"
+      },
+      "is_static": true
+    },
+    "Exposure": {
+      "type_kind": {
+        "val": "bevy_render::camera::camera::Exposure"
+      },
+      "is_static": true
+    },
+    "TextureAtlas": {
+      "type_kind": {
+        "val": "bevy_sprite::texture_atlas::TextureAtlas"
+      },
+      "is_static": true
+    },
+    "VolumetricLight": {
+      "type_kind": {
+        "val": "bevy_pbr::volumetric_fog::VolumetricLight"
+      },
+      "is_static": true
+    },
+    "UVec4": {
+      "type_kind": {
+        "val": "glam::UVec4"
+      },
+      "is_static": true
+    },
+    "CursorEntered": {
+      "type_kind": {
+        "val": "bevy_window::event::CursorEntered"
+      },
+      "is_static": true
+    },
+    "Cuboid": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim3::Cuboid"
+      },
+      "is_static": true
+    },
+    "Timer": {
+      "type_kind": {
+        "val": "bevy_time::timer::Timer"
+      },
+      "is_static": true
+    },
+    "WindowBackendScaleFactorChanged": {
+      "type_kind": {
+        "val": "bevy_window::event::WindowBackendScaleFactorChanged"
+      },
+      "is_static": true
+    },
+    "Viewport": {
+      "type_kind": {
+        "val": "bevy_render::camera::camera::Viewport"
+      },
+      "is_static": true
+    },
+    "IrradianceVolume": {
+      "type_kind": {
+        "val": "bevy_pbr::light_probe::irradiance_volume::IrradianceVolume"
+      },
+      "is_static": true
+    },
+    "ContentSize": {
+      "type_kind": {
+        "val": "bevy_ui::measurement::ContentSize"
+      },
+      "is_static": true
+    },
+    "TextEntity": {
+      "type_kind": {
+        "val": "bevy_text::text::TextEntity"
+      },
+      "is_static": true
+    },
+    "OpaqueRendererMethod": {
+      "type_kind": {
+        "val": "bevy_pbr::material::OpaqueRendererMethod"
+      },
+      "is_static": true
+    },
+    "WindowLevel": {
+      "type_kind": {
+        "val": "bevy_window::window::WindowLevel"
+      },
+      "is_static": true
+    },
+    "SyncToRenderWorld": {
+      "type_kind": {
+        "val": "bevy_render::sync_world::SyncToRenderWorld"
+      },
+      "is_static": true
+    },
+    "AabbGizmoConfigGroup": {
+      "type_kind": {
+        "val": "bevy_gizmos::aabb::AabbGizmoConfigGroup"
+      },
+      "is_static": true
+    },
+    "RepeatAnimation": {
+      "type_kind": {
+        "val": "bevy_animation::RepeatAnimation"
+      },
+      "is_static": true
+    },
+    "CompassOctant": {
+      "type_kind": {
+        "val": "bevy_math::compass::CompassOctant"
+      },
+      "is_static": true
+    },
+    "ButtonState": {
+      "type_kind": {
+        "val": "bevy_input::ButtonState"
+      },
+      "is_static": true
+    },
+    "InternalWindowState": {
+      "type_kind": {
+        "val": "bevy_window::window::InternalWindowState"
+      },
+      "is_static": true
+    },
+    "Sprite": {
+      "type_kind": {
+        "val": "bevy_sprite::sprite::Sprite"
+      },
+      "is_static": true
+    },
+    "AccumulatedMouseMotion": {
+      "type_kind": {
+        "val": "bevy_input::mouse::AccumulatedMouseMotion"
+      },
+      "is_static": true
+    },
+    "CompositeAlphaMode": {
+      "type_kind": {
+        "val": "bevy_window::window::CompositeAlphaMode"
+      },
+      "is_static": true
+    },
+    "EnvironmentMapLight": {
+      "type_kind": {
+        "val": "bevy_pbr::light_probe::environment_map::EnvironmentMapLight"
+      },
+      "is_static": true
+    },
+    "GamepadButtonChangedEvent": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::GamepadButtonChangedEvent"
+      },
+      "is_static": true
+    },
+    "WindowMode": {
+      "type_kind": {
+        "val": "bevy_window::window::WindowMode"
+      },
+      "is_static": true
+    },
+    "AnimationClip": {
+      "type_kind": {
+        "val": "bevy_animation::AnimationClip"
+      },
+      "is_static": true
+    },
+    "PositionType": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::PositionType"
+      },
+      "is_static": true
+    },
+    "SmolStr": {
+      "type_kind": {
+        "val": "smol_str::SmolStr"
+      },
+      "is_static": true
+    },
+    "BorderRect": {
+      "type_kind": {
+        "val": "bevy_sprite::texture_slice::border_rect::BorderRect"
+      },
+      "is_static": true
+    },
+    "BVec3": {
+      "type_kind": {
+        "val": "glam::BVec3"
+      },
+      "is_static": true
+    },
+    "Children": {
+      "type_kind": {
+        "val": "bevy_hierarchy::components::children::Children"
+      },
+      "is_static": true
+    },
+    "NoFrustumCulling": {
+      "type_kind": {
+        "val": "bevy_render::view::visibility::NoFrustumCulling"
+      },
+      "is_static": true
+    },
+    "NormalPrepass": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::prepass::NormalPrepass"
+      },
+      "is_static": true
+    },
+    "Tick": {
+      "type_kind": {
+        "val": "bevy_ecs::component::Tick"
+      },
+      "is_static": true
+    },
+    "GltfExtras": {
+      "type_kind": {
+        "val": "bevy_gltf::GltfExtras"
+      },
+      "is_static": true
+    },
+    "RenderAssetUsages": {
+      "type_kind": {
+        "val": "bevy_asset::render_asset::RenderAssetUsages"
+      },
+      "is_static": true
+    },
+    "Parent": {
+      "type_kind": {
+        "val": "bevy_hierarchy::components::parent::Parent"
+      },
+      "is_static": true
+    },
+    "GamepadButtonStateChangedEvent": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::GamepadButtonStateChangedEvent"
+      },
+      "is_static": true
+    },
+    "ComponentId": {
+      "type_kind": {
+        "val": "bevy_ecs::component::ComponentId"
+      },
+      "is_static": true
+    },
+    "ReflectReference": {
+      "type_kind": {
+        "val": "ReflectReference"
+      },
+      "is_static": true
+    },
+    "GlyphAtlasLocation": {
+      "type_kind": {
+        "val": "bevy_text::glyph::GlyphAtlasLocation"
+      },
+      "is_static": true
+    },
+    "Line3d": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim3::Line3d"
+      },
+      "is_static": true
+    },
+    "DistanceFog": {
+      "type_kind": {
+        "val": "bevy_pbr::fog::DistanceFog"
+      },
+      "is_static": true
+    },
+    "AnimationPlayer": {
+      "type_kind": {
+        "val": "bevy_animation::AnimationPlayer"
+      },
+      "is_static": true
+    },
+    "Triangle2d": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim2::Triangle2d"
+      },
+      "is_static": true
+    },
+    "usize": {
+      "type_kind": {
+        "val": "usize"
+      },
+      "is_static": true
+    },
+    "Mesh": {
+      "type_kind": {
+        "val": "bevy_mesh::mesh::Mesh"
+      },
+      "is_static": true
+    },
+    "SubCameraView": {
+      "type_kind": {
+        "val": "bevy_render::camera::camera::SubCameraView"
+      },
+      "is_static": true
+    },
+    "Ime": {
+      "type_kind": {
+        "val": "bevy_window::event::Ime"
+      },
+      "is_static": true
+    },
+    "Transform": {
+      "type_kind": {
+        "val": "bevy_transform::components::transform::Transform"
+      },
+      "is_static": true
+    },
+    "HitData": {
+      "type_kind": {
+        "val": "bevy_picking::backend::HitData"
+      },
+      "is_static": true
+    },
+    "CascadeShadowConfig": {
+      "type_kind": {
+        "val": "bevy_pbr::light::CascadeShadowConfig"
+      },
+      "is_static": true
+    },
+    "Identifier": {
+      "type_kind": {
+        "val": "bevy_ecs::identifier::Identifier"
+      },
+      "is_static": true
+    },
+    "Isometry3d": {
+      "type_kind": {
+        "val": "bevy_math::isometry::Isometry3d"
+      },
+      "is_static": true
+    },
+    "OverflowClipBox": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::OverflowClipBox"
+      },
+      "is_static": true
+    },
+    "DirectionalLightShadowMap": {
+      "type_kind": {
+        "val": "bevy_pbr::light::DirectionalLightShadowMap"
+      },
+      "is_static": true
+    },
+    "Camera2d": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::core_2d::camera_2d::Camera2d"
+      },
+      "is_static": true
+    },
+    "CursorLeft": {
+      "type_kind": {
+        "val": "bevy_window::event::CursorLeft"
+      },
+      "is_static": true
+    },
+    "TextSpan": {
+      "type_kind": {
+        "val": "bevy_text::text::TextSpan"
+      },
+      "is_static": true
+    },
+    "EaseFunction": {
+      "type_kind": {
+        "val": "bevy_math::curve::easing::EaseFunction"
+      },
+      "is_static": true
+    },
+    "OnInsert": {
+      "type_kind": {
+        "val": "bevy_ecs::world::component_constants::OnInsert"
+      },
+      "is_static": true
+    },
+    "PathBuf": {
+      "type_kind": {
+        "val": "PathBuf"
+      },
+      "is_static": true
+    },
+    "Rhombus": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim2::Rhombus"
+      },
+      "is_static": true
+    },
+    "MinTrackSizingFunction": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::MinTrackSizingFunction"
+      },
+      "is_static": true
+    },
+    "char": {
+      "type_kind": {
+        "val": "char"
+      },
+      "is_static": true
+    },
+    "MipBias": {
+      "type_kind": {
+        "val": "bevy_render::camera::camera::MipBias"
+      },
+      "is_static": true
+    },
+    "ScriptValue": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::bindings::script_value::ScriptValue"
+      },
+      "is_static": true
+    },
+    "I64Vec3": {
+      "type_kind": {
+        "val": "glam::I64Vec3"
+      },
+      "is_static": true
+    },
+    "Hsla": {
+      "type_kind": {
+        "val": "bevy_color::hsla::Hsla"
+      },
+      "is_static": true
+    },
+    "WindowFocused": {
+      "type_kind": {
+        "val": "bevy_window::event::WindowFocused"
+      },
+      "is_static": true
+    },
+    "KeyCode": {
+      "type_kind": {
+        "val": "bevy_input::keyboard::KeyCode"
+      },
+      "is_static": true
+    },
+    "PresentMode": {
+      "type_kind": {
+        "val": "bevy_window::window::PresentMode"
+      },
+      "is_static": true
+    },
+    "AtomicI8": {
+      "type_kind": {
+        "val": "core::sync::atomic::AtomicI8"
+      },
+      "is_static": true
+    },
+    "Frustum": {
+      "type_kind": {
+        "val": "bevy_render::primitives::Frustum"
+      },
+      "is_static": true
+    },
+    "RegularPolygon": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim2::RegularPolygon"
+      },
+      "is_static": true
+    },
+    "i8": {
+      "type_kind": {
+        "val": "i8"
+      },
+      "is_static": true
+    },
+    "RenderTarget": {
+      "type_kind": {
+        "val": "bevy_render::camera::camera::RenderTarget"
+      },
+      "is_static": true
+    },
+    "DQuat": {
+      "type_kind": {
+        "val": "glam::DQuat"
+      },
+      "is_static": true
+    },
+    "DMat2": {
+      "type_kind": {
+        "val": "glam::DMat2"
+      },
+      "is_static": true
+    },
+    "Display": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::Display"
+      },
+      "is_static": true
+    },
+    "ShaderStorageBuffer": {
+      "type_kind": {
+        "val": "bevy_render::storage::ShaderStorageBuffer"
+      },
+      "is_static": true
+    },
+    "VisibilityRange": {
+      "type_kind": {
+        "val": "bevy_render::view::visibility::range::VisibilityRange"
+      },
+      "is_static": true
+    },
+    "ScreenshotCaptured": {
+      "type_kind": {
+        "val": "bevy_render::view::window::screenshot::ScreenshotCaptured"
+      },
+      "is_static": true
+    },
+    "NotShadowCaster": {
+      "type_kind": {
+        "val": "bevy_pbr::light::NotShadowCaster"
+      },
+      "is_static": true
+    },
+    "AtomicIsize": {
+      "type_kind": {
+        "val": "core::sync::atomic::AtomicIsize"
+      },
+      "is_static": true
+    },
+    "Capsule3d": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim3::Capsule3d"
+      },
+      "is_static": true
+    },
+    "LightProbe": {
+      "type_kind": {
+        "val": "bevy_pbr::light_probe::LightProbe"
+      },
+      "is_static": true
+    },
+    "AnimationGraphHandle": {
+      "type_kind": {
+        "val": "bevy_animation::graph::AnimationGraphHandle"
+      },
+      "is_static": true
+    },
+    "JustifySelf": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::JustifySelf"
+      },
+      "is_static": true
+    },
+    "DebandDither": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::tonemapping::DebandDither"
+      },
+      "is_static": true
+    },
+    "AtomicBool": {
+      "type_kind": {
+        "val": "core::sync::atomic::AtomicBool"
+      },
+      "is_static": true
+    },
+    "TouchPhase": {
+      "type_kind": {
+        "val": "bevy_input::touch::TouchPhase"
+      },
+      "is_static": true
+    },
+    "NonZeroU32": {
+      "type_kind": {
+        "val": "core::num::NonZeroU32"
+      },
+      "is_static": true
+    },
+    "IVec4": {
+      "type_kind": {
+        "val": "glam::IVec4"
+      },
+      "is_static": true
+    },
+    "Stopwatch": {
+      "type_kind": {
+        "val": "bevy_time::stopwatch::Stopwatch"
+      },
+      "is_static": true
+    },
+    "RemovedComponentEntity": {
+      "type_kind": {
+        "val": "bevy_ecs::removal_detection::RemovedComponentEntity"
+      },
+      "is_static": true
+    },
+    "Sphere": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim3::Sphere"
+      },
+      "is_static": true
+    },
+    "Vec2": {
+      "type_kind": {
+        "val": "glam::Vec2"
+      },
+      "is_static": true
+    },
+    "TextureSlicer": {
+      "type_kind": {
+        "val": "bevy_sprite::texture_slice::slicer::TextureSlicer"
+      },
+      "is_static": true
+    },
+    "ConicalFrustum": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim3::ConicalFrustum"
+      },
+      "is_static": true
+    },
+    "MeshMorphWeights": {
+      "type_kind": {
+        "val": "bevy_mesh::morph::MeshMorphWeights"
+      },
+      "is_static": true
+    },
+    "u128": {
+      "type_kind": {
+        "val": "u128"
+      },
+      "is_static": true
+    },
+    "U64Vec4": {
+      "type_kind": {
+        "val": "glam::U64Vec4"
+      },
+      "is_static": true
+    },
+    "PickingBehavior": {
+      "type_kind": {
+        "val": "bevy_picking::PickingBehavior"
+      },
+      "is_static": true
+    },
+    "BackgroundColor": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::BackgroundColor"
+      },
+      "is_static": true
+    },
+    "Ray3d": {
+      "type_kind": {
+        "val": "bevy_math::ray::Ray3d"
+      },
+      "is_static": true
+    },
+    "FogFalloff": {
+      "type_kind": {
+        "val": "bevy_pbr::fog::FogFalloff"
+      },
+      "is_static": true
+    },
+    "PointerInteraction": {
+      "type_kind": {
+        "val": "bevy_picking::pointer::PointerInteraction"
+      },
+      "is_static": true
+    },
+    "GridTrackRepetition": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::GridTrackRepetition"
+      },
+      "is_static": true
+    },
+    "GizmoLineJoint": {
+      "type_kind": {
+        "val": "bevy_gizmos::config::GizmoLineJoint"
+      },
+      "is_static": true
+    },
+    "CursorGrabMode": {
+      "type_kind": {
+        "val": "bevy_window::window::CursorGrabMode"
+      },
+      "is_static": true
+    },
+    "Affine3": {
+      "type_kind": {
+        "val": "bevy_math::affine3::Affine3"
+      },
+      "is_static": true
+    },
+    "AssetPath": {
+      "type_kind": {
+        "val": "bevy_asset::path::AssetPath"
+      },
+      "is_static": true
+    },
+    "ThreadedAnimationGraphs": {
+      "type_kind": {
+        "val": "bevy_animation::graph::ThreadedAnimationGraphs"
+      },
+      "is_static": true
+    },
+    "AlignItems": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::AlignItems"
+      },
+      "is_static": true
+    },
+    "GltfMeshExtras": {
+      "type_kind": {
+        "val": "bevy_gltf::GltfMeshExtras"
+      },
+      "is_static": true
+    },
+    "MouseButton": {
+      "type_kind": {
+        "val": "bevy_input::mouse::MouseButton"
+      },
+      "is_static": true
+    },
+    "WindowPosition": {
+      "type_kind": {
+        "val": "bevy_window::window::WindowPosition"
+      },
+      "is_static": true
+    },
+    "DVec2": {
+      "type_kind": {
+        "val": "glam::DVec2"
+      },
+      "is_static": true
+    },
+    "AppLifecycle": {
+      "type_kind": {
+        "val": "bevy_window::event::AppLifecycle"
+      },
+      "is_static": true
+    },
+    "WindowDestroyed": {
+      "type_kind": {
+        "val": "bevy_window::event::WindowDestroyed"
+      },
+      "is_static": true
+    },
+    "ColorMaterial": {
+      "type_kind": {
+        "val": "bevy_sprite::mesh2d::color_material::ColorMaterial"
+      },
+      "is_static": true
+    },
+    "TimedAnimationEvent": {
+      "type_kind": {
+        "val": "bevy_animation::TimedAnimationEvent"
+      },
+      "is_static": true
+    },
+    "SceneRoot": {
+      "type_kind": {
+        "val": "bevy_scene::components::SceneRoot"
+      },
+      "is_static": true
+    },
+    "AtomicI64": {
+      "type_kind": {
+        "val": "core::sync::atomic::AtomicI64"
+      },
+      "is_static": true
+    },
+    "Ellipse": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim2::Ellipse"
+      },
+      "is_static": true
+    },
+    "AnimationTarget": {
+      "type_kind": {
+        "val": "bevy_animation::AnimationTarget"
+      },
+      "is_static": true
+    },
+    "Fxaa": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::fxaa::Fxaa"
+      },
+      "is_static": true
+    },
+    "DefaultOpaqueRendererMethod": {
+      "type_kind": {
+        "val": "bevy_pbr::material::DefaultOpaqueRendererMethod"
+      },
+      "is_static": true
+    },
+    "ImageNode": {
+      "type_kind": {
+        "val": "bevy_ui::widget::image::ImageNode"
+      },
+      "is_static": true
+    },
+    "UiAntiAlias": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::UiAntiAlias"
+      },
+      "is_static": true
+    },
+    "PositionedGlyph": {
+      "type_kind": {
+        "val": "bevy_text::glyph::PositionedGlyph"
+      },
+      "is_static": true
+    },
+    "DeferredPrepass": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::prepass::DeferredPrepass"
+      },
+      "is_static": true
+    },
+    "CameraMainTextureUsages": {
+      "type_kind": {
+        "val": "bevy_render::camera::camera::CameraMainTextureUsages"
+      },
+      "is_static": true
+    },
+    "Text2d": {
+      "type_kind": {
+        "val": "bevy_text::text2d::Text2d"
+      },
+      "is_static": true
+    },
+    "Cylinder": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim3::Cylinder"
+      },
+      "is_static": true
+    },
+    "WindowResolution": {
+      "type_kind": {
+        "val": "bevy_window::window::WindowResolution"
+      },
+      "is_static": true
+    },
+    "WindowResizeConstraints": {
+      "type_kind": {
+        "val": "bevy_window::window::WindowResizeConstraints"
+      },
+      "is_static": true
+    },
+    "Volume": {
+      "type_kind": {
+        "val": "bevy_audio::audio::Volume"
+      },
+      "is_static": true
+    },
+    "Circle": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim2::Circle"
+      },
+      "is_static": true
+    },
+    "ContrastAdaptiveSharpening": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpening"
+      },
+      "is_static": true
+    },
+    "GamepadInput": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::GamepadInput"
+      },
+      "is_static": true
+    },
+    "TextLayoutInfo": {
+      "type_kind": {
+        "val": "bevy_text::pipeline::TextLayoutInfo"
+      },
+      "is_static": true
+    },
+    "BoundingCircleCast": {
+      "type_kind": {
+        "val": "bevy_math::bounding::raycast2d::BoundingCircleCast"
+      },
+      "is_static": true
+    },
+    "ParallaxMappingMethod": {
+      "type_kind": {
+        "val": "bevy_pbr::parallax::ParallaxMappingMethod"
+      },
+      "is_static": true
+    },
+    "Color": {
+      "type_kind": {
+        "val": "bevy_color::color::Color"
+      },
+      "is_static": true
+    },
+    "Interaction": {
+      "type_kind": {
+        "val": "bevy_ui::focus::Interaction"
+      },
+      "is_static": true
+    },
+    "Camera": {
+      "type_kind": {
+        "val": "bevy_render::camera::camera::Camera"
+      },
+      "is_static": true
+    },
+    "Xyza": {
+      "type_kind": {
+        "val": "bevy_color::xyza::Xyza"
+      },
+      "is_static": true
+    },
+    "U64Vec2": {
+      "type_kind": {
+        "val": "glam::U64Vec2"
+      },
+      "is_static": true
+    },
+    "UvChannel": {
+      "type_kind": {
+        "val": "bevy_pbr::pbr_material::UvChannel"
+      },
+      "is_static": true
+    },
+    "GridTrack": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::GridTrack"
+      },
+      "is_static": true
+    },
+    "ViewVisibility": {
+      "type_kind": {
+        "val": "bevy_render::view::visibility::ViewVisibility"
+      },
+      "is_static": true
+    },
+    "JustifyItems": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::JustifyItems"
+      },
+      "is_static": true
+    },
+    "TouchInput": {
+      "type_kind": {
+        "val": "bevy_input::touch::TouchInput"
+      },
+      "is_static": true
+    },
+    "VolumetricFog": {
+      "type_kind": {
+        "val": "bevy_pbr::volumetric_fog::VolumetricFog"
+      },
+      "is_static": true
+    },
+    "BorderColor": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::BorderColor"
+      },
+      "is_static": true
+    },
+    "Vec3A": {
+      "type_kind": {
+        "val": "glam::Vec3A"
+      },
+      "is_static": true
+    },
+    "ScriptSystemBuilder": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder"
+      },
+      "is_static": true
+    },
+    "FunctionCallContext": {
+      "type_kind": {
+        "val": "FunctionCallContext"
+      },
+      "is_static": true
+    },
+    "AabbCast3d": {
+      "type_kind": {
+        "val": "bevy_math::bounding::raycast3d::AabbCast3d"
+      },
+      "is_static": true
+    },
+    "ClusterZConfig": {
+      "type_kind": {
+        "val": "bevy_pbr::cluster::ClusterZConfig"
+      },
+      "is_static": true
+    },
+    "DAffine2": {
+      "type_kind": {
+        "val": "glam::DAffine2"
+      },
+      "is_static": true
+    },
+    "GamepadAxis": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::GamepadAxis"
+      },
+      "is_static": true
+    },
+    "ButtonSettings": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::ButtonSettings"
+      },
+      "is_static": true
+    },
+    "ColorGradingGlobal": {
+      "type_kind": {
+        "val": "bevy_render::view::ColorGradingGlobal"
+      },
+      "is_static": true
+    },
+    "SystemIdMarker": {
+      "type_kind": {
+        "val": "bevy_ecs::system::system_registry::SystemIdMarker"
+      },
+      "is_static": true
+    },
+    "Uuid": {
+      "type_kind": {
+        "val": "uuid::Uuid"
+      },
+      "is_static": true
+    },
+    "i32": {
+      "type_kind": {
+        "val": "i32"
+      },
+      "is_static": true
+    },
+    "Namespace": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::bindings::function::namespace::Namespace"
+      },
+      "is_static": true
+    },
+    "NonZeroI16": {
+      "type_kind": {
+        "val": "core::num::NonZeroI16"
+      },
+      "is_static": true
+    },
+    "Bloom": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::bloom::settings::Bloom"
+      },
+      "is_static": true
+    },
+    "LightGizmoConfigGroup": {
+      "type_kind": {
+        "val": "bevy_gizmos::light::LightGizmoConfigGroup"
+      },
+      "is_static": true
+    },
+    "ImageNodeSize": {
+      "type_kind": {
+        "val": "bevy_ui::widget::image::ImageNodeSize"
+      },
+      "is_static": true
+    },
+    "TextBounds": {
+      "type_kind": {
+        "val": "bevy_text::bounds::TextBounds"
+      },
+      "is_static": true
+    },
+    "PickingInteraction": {
+      "type_kind": {
+        "val": "bevy_picking::focus::PickingInteraction"
+      },
+      "is_static": true
+    },
+    "IVec2": {
+      "type_kind": {
+        "val": "glam::IVec2"
+      },
+      "is_static": true
+    },
+    "Camera3d": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::core_3d::camera_3d::Camera3d"
+      },
+      "is_static": true
+    },
+    "ScalingMode": {
+      "type_kind": {
+        "val": "bevy_render::camera::projection::ScalingMode"
+      },
+      "is_static": true
+    },
+    "WindowMoved": {
+      "type_kind": {
+        "val": "bevy_window::event::WindowMoved"
+      },
+      "is_static": true
+    },
+    "Text": {
+      "type_kind": {
+        "val": "bevy_ui::widget::text::Text"
+      },
+      "is_static": true
+    },
+    "ReflectSchedule": {
+      "type_kind": {
+        "val": "bevy_system_reflection::ReflectSchedule"
+      },
+      "is_static": true
+    },
+    "Cascade": {
+      "type_kind": {
+        "val": "bevy_pbr::light::Cascade"
+      },
+      "is_static": true
+    },
+    "IVec3": {
+      "type_kind": {
+        "val": "glam::IVec3"
+      },
+      "is_static": true
+    },
+    "UVec2": {
+      "type_kind": {
+        "val": "glam::UVec2"
+      },
+      "is_static": true
+    },
+    "ComputedNode": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::ComputedNode"
+      },
+      "is_static": true
+    },
+    "AtomicU32": {
+      "type_kind": {
+        "val": "core::sync::atomic::AtomicU32"
+      },
+      "is_static": true
+    },
+    "SpriteImageMode": {
+      "type_kind": {
+        "val": "bevy_sprite::sprite::SpriteImageMode"
+      },
+      "is_static": true
+    },
+    "UVec3": {
+      "type_kind": {
+        "val": "glam::UVec3"
+      },
+      "is_static": true
+    },
+    "i128": {
+      "type_kind": {
+        "val": "i128"
+      },
+      "is_static": true
+    },
+    "Tetrahedron": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim3::Tetrahedron"
+      },
+      "is_static": true
+    },
+    "UiScale": {
+      "type_kind": {
+        "val": "bevy_ui::UiScale"
+      },
+      "is_static": true
+    },
+    "PickingPlugin": {
+      "type_kind": {
+        "val": "bevy_picking::PickingPlugin"
+      },
+      "is_static": true
+    },
+    "TextFont": {
+      "type_kind": {
+        "val": "bevy_text::text::TextFont"
+      },
+      "is_static": true
+    },
+    "SpotLight": {
+      "type_kind": {
+        "val": "bevy_pbr::light::spot_light::SpotLight"
+      },
+      "is_static": true
+    },
+    "NonZeroU16": {
+      "type_kind": {
+        "val": "core::num::NonZeroU16"
+      },
+      "is_static": true
+    },
+    "PanGesture": {
+      "type_kind": {
+        "val": "bevy_input::gestures::PanGesture"
+      },
+      "is_static": true
+    },
+    "Key": {
+      "type_kind": {
+        "val": "bevy_input::keyboard::Key"
+      },
+      "is_static": true
+    },
+    "Arc2d": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim2::Arc2d"
+      },
+      "is_static": true
+    },
+    "Monitor": {
+      "type_kind": {
+        "val": "bevy_window::monitor::Monitor"
+      },
+      "is_static": true
+    },
+    "PlaybackMode": {
+      "type_kind": {
+        "val": "bevy_audio::audio::PlaybackMode"
+      },
+      "is_static": true
+    },
+    "DynamicScriptFunctionMut": {
+      "type_kind": {
+        "val": "DynamicFunctionMut"
+      },
+      "is_static": true
+    },
+    "GamepadSettings": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::GamepadSettings"
+      },
+      "is_static": true
+    },
+    "ClusterConfig": {
+      "type_kind": {
+        "val": "bevy_pbr::cluster::ClusterConfig"
+      },
+      "is_static": true
+    },
+    "TextColor": {
+      "type_kind": {
+        "val": "bevy_text::text::TextColor"
+      },
+      "is_static": true
+    },
+    "TextLayout": {
+      "type_kind": {
+        "val": "bevy_text::text::TextLayout"
+      },
+      "is_static": true
+    },
+    "AxisSettings": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::AxisSettings"
+      },
+      "is_static": true
+    },
+    "CursorMoved": {
+      "type_kind": {
+        "val": "bevy_window::event::CursorMoved"
+      },
+      "is_static": true
+    },
+    "LinearRgba": {
+      "type_kind": {
+        "val": "bevy_color::linear_rgba::LinearRgba"
+      },
+      "is_static": true
+    },
+    "EnabledButtons": {
+      "type_kind": {
+        "val": "bevy_window::window::EnabledButtons"
+      },
+      "is_static": true
+    },
+    "Rectangle": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim2::Rectangle"
+      },
+      "is_static": true
+    },
+    "Virtual": {
+      "type_kind": {
+        "val": "bevy_time::virt::Virtual"
+      },
+      "is_static": true
+    },
+    "AnimationTargetId": {
+      "type_kind": {
+        "val": "bevy_animation::AnimationTargetId"
+      },
+      "is_static": true
+    },
+    "Label": {
+      "type_kind": {
+        "val": "bevy_ui::widget::label::Label"
+      },
+      "is_static": true
+    },
+    "WindowScaleFactorChanged": {
+      "type_kind": {
+        "val": "bevy_window::event::WindowScaleFactorChanged"
+      },
+      "is_static": true
+    },
+    "CompassQuadrant": {
+      "type_kind": {
+        "val": "bevy_math::compass::CompassQuadrant"
+      },
+      "is_static": true
+    },
+    "Dir3": {
+      "type_kind": {
+        "val": "bevy_math::direction::Dir3"
+      },
+      "is_static": true
+    },
+    "Plane3d": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim3::Plane3d"
+      },
+      "is_static": true
+    },
+    "SpatialListener": {
+      "type_kind": {
+        "val": "bevy_audio::audio::SpatialListener"
+      },
+      "is_static": true
+    },
+    "FunctionReturnInfo": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::docgen::info::FunctionReturnInfo"
+      },
+      "is_static": true
+    },
+    "ScreenSpaceReflections": {
+      "type_kind": {
+        "val": "bevy_pbr::ssr::ScreenSpaceReflections"
+      },
+      "is_static": true
+    },
+    "MouseWheel": {
+      "type_kind": {
+        "val": "bevy_input::mouse::MouseWheel"
+      },
+      "is_static": true
+    },
+    "Triangle3d": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim3::Triangle3d"
+      },
+      "is_static": true
+    },
+    "TimerMode": {
+      "type_kind": {
+        "val": "bevy_time::timer::TimerMode"
+      },
+      "is_static": true
+    },
+    "Gamepad": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::Gamepad"
+      },
+      "is_static": true
+    },
+    "ChromaticAberration": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::post_process::ChromaticAberration"
+      },
+      "is_static": true
+    },
+    "RequestRedraw": {
+      "type_kind": {
+        "val": "bevy_window::event::RequestRedraw"
+      },
+      "is_static": true
+    },
+    "AtomicU8": {
+      "type_kind": {
+        "val": "core::sync::atomic::AtomicU8"
+      },
+      "is_static": true
+    },
+    "SmaaPreset": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::smaa::SmaaPreset"
+      },
+      "is_static": true
+    },
+    "PointLight": {
+      "type_kind": {
+        "val": "bevy_pbr::light::point_light::PointLight"
+      },
+      "is_static": true
+    },
+    "f32": {
+      "type_kind": {
+        "val": "f32"
+      },
+      "is_static": true
+    },
+    "AnimationGraph": {
+      "type_kind": {
+        "val": "bevy_animation::graph::AnimationGraph"
+      },
+      "is_static": true
+    },
+    "OverflowAxis": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::OverflowAxis"
+      },
+      "is_static": true
+    },
+    "AtomicUsize": {
+      "type_kind": {
+        "val": "core::sync::atomic::AtomicUsize"
+      },
+      "is_static": true
+    },
+    "TemporalJitter": {
+      "type_kind": {
+        "val": "bevy_render::camera::camera::TemporalJitter"
+      },
+      "is_static": true
+    },
+    "AmbientLight": {
+      "type_kind": {
+        "val": "bevy_pbr::light::ambient_light::AmbientLight"
+      },
+      "is_static": true
+    },
+    "PointerId": {
+      "type_kind": {
+        "val": "bevy_picking::pointer::PointerId"
+      },
+      "is_static": true
+    },
+    "U64Vec3": {
+      "type_kind": {
+        "val": "glam::U64Vec3"
+      },
+      "is_static": true
+    },
+    "ScriptQueryResult": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::bindings::query::ScriptQueryResult"
+      },
+      "is_static": true
+    },
+    "LineBreak": {
+      "type_kind": {
+        "val": "bevy_text::text::LineBreak"
+      },
+      "is_static": true
+    },
+    "Quat": {
+      "type_kind": {
+        "val": "glam::Quat"
+      },
+      "is_static": true
+    },
+    "SpatialScale": {
+      "type_kind": {
+        "val": "bevy_audio::audio::SpatialScale"
+      },
+      "is_static": true
+    },
+    "ResolvedBorderRadius": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::ResolvedBorderRadius"
+      },
+      "is_static": true
+    },
+    "Ray2d": {
+      "type_kind": {
+        "val": "bevy_math::ray::Ray2d"
+      },
+      "is_static": true
+    },
+    "WindowCreated": {
+      "type_kind": {
+        "val": "bevy_window::event::WindowCreated"
+      },
+      "is_static": true
+    },
+    "URect": {
+      "type_kind": {
+        "val": "bevy_math::rects::urect::URect"
+      },
+      "is_static": true
+    },
+    "WindowResized": {
+      "type_kind": {
+        "val": "bevy_window::event::WindowResized"
+      },
+      "is_static": true
+    },
+    "Mat4": {
+      "type_kind": {
+        "val": "glam::Mat4"
+      },
+      "is_static": true
+    },
+    "UiRect": {
+      "type_kind": {
+        "val": "bevy_ui::geometry::UiRect"
+      },
+      "is_static": true
+    },
+    "BorderRadius": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::BorderRadius"
+      },
+      "is_static": true
+    },
+    "FlexDirection": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::FlexDirection"
+      },
+      "is_static": true
+    },
+    "Hsva": {
+      "type_kind": {
+        "val": "bevy_color::hsva::Hsva"
+      },
+      "is_static": true
+    },
+    "FunctionArgInfo": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::docgen::info::FunctionArgInfo"
+      },
+      "is_static": true
+    },
+    "DoubleTapGesture": {
+      "type_kind": {
+        "val": "bevy_input::gestures::DoubleTapGesture"
+      },
+      "is_static": true
+    },
+    "Srgba": {
+      "type_kind": {
+        "val": "bevy_color::srgba::Srgba"
+      },
+      "is_static": true
+    },
+    "EulerRot": {
+      "type_kind": {
+        "val": "glam::EulerRot"
+      },
+      "is_static": true
+    },
+    "TextNodeFlags": {
+      "type_kind": {
+        "val": "bevy_ui::widget::text::TextNodeFlags"
+      },
+      "is_static": true
+    },
+    "RawGamepadButtonChangedEvent": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::RawGamepadButtonChangedEvent"
+      },
+      "is_static": true
+    },
+    "Screenshot": {
+      "type_kind": {
+        "val": "bevy_render::view::window::screenshot::Screenshot"
+      },
+      "is_static": true
+    },
+    "MaxTrackSizingFunction": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::MaxTrackSizingFunction"
+      },
+      "is_static": true
+    },
+    "FileDragAndDrop": {
+      "type_kind": {
+        "val": "bevy_window::event::FileDragAndDrop"
+      },
+      "is_static": true
+    },
+    "bool": {
+      "type_kind": {
+        "val": "bool"
+      },
+      "is_static": true
+    },
+    "MouseMotion": {
+      "type_kind": {
+        "val": "bevy_input::mouse::MouseMotion"
+      },
+      "is_static": true
+    },
+    "AlphaMode": {
+      "type_kind": {
+        "val": "bevy_render::alpha::AlphaMode"
+      },
+      "is_static": true
+    },
+    "DAffine3": {
+      "type_kind": {
+        "val": "glam::DAffine3"
+      },
+      "is_static": true
+    },
+    "VisibleEntities": {
+      "type_kind": {
+        "val": "bevy_render::view::visibility::VisibleEntities"
+      },
+      "is_static": true
+    },
+    "GltfSceneExtras": {
+      "type_kind": {
+        "val": "bevy_gltf::GltfSceneExtras"
+      },
+      "is_static": true
+    },
+    "RayCast3d": {
+      "type_kind": {
+        "val": "bevy_math::bounding::raycast3d::RayCast3d"
+      },
+      "is_static": true
+    },
+    "AtomicI16": {
+      "type_kind": {
+        "val": "core::sync::atomic::AtomicI16"
+      },
+      "is_static": true
+    },
+    "Sensitivity": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::fxaa::Sensitivity"
+      },
+      "is_static": true
+    },
+    "BloomPrefilter": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::bloom::settings::BloomPrefilter"
+      },
+      "is_static": true
+    },
+    "MouseScrollUnit": {
+      "type_kind": {
+        "val": "bevy_input::mouse::MouseScrollUnit"
+      },
+      "is_static": true
+    },
+    "GltfMaterialExtras": {
+      "type_kind": {
+        "val": "bevy_gltf::GltfMaterialExtras"
+      },
+      "is_static": true
+    },
+    "CircularSegment": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim2::CircularSegment"
+      },
+      "is_static": true
+    },
+    "String": {
+      "type_kind": {
+        "val": "String"
+      },
+      "is_static": true
+    },
+    "BVec2": {
+      "type_kind": {
+        "val": "glam::BVec2"
+      },
+      "is_static": true
+    },
+    "PointLightShadowMap": {
+      "type_kind": {
+        "val": "bevy_pbr::light::PointLightShadowMap"
+      },
+      "is_static": true
+    },
+    "FocusPolicy": {
+      "type_kind": {
+        "val": "bevy_ui::focus::FocusPolicy"
+      },
+      "is_static": true
+    },
+    "MorphWeights": {
+      "type_kind": {
+        "val": "bevy_mesh::morph::MorphWeights"
+      },
+      "is_static": true
+    },
+    "EntityHash": {
+      "type_kind": {
+        "val": "bevy_ecs::entity::hash::EntityHash"
+      },
+      "is_static": true
+    },
+    "AspectRatio": {
+      "type_kind": {
+        "val": "bevy_math::aspect_ratio::AspectRatio"
+      },
+      "is_static": true
+    },
+    "SpriteSource": {
+      "type_kind": {
+        "val": "bevy_sprite::SpriteSource"
+      },
+      "is_static": true
+    },
+    "RelativeCursorPosition": {
+      "type_kind": {
+        "val": "bevy_ui::focus::RelativeCursorPosition"
+      },
+      "is_static": true
+    },
+    "Vec4": {
+      "type_kind": {
+        "val": "glam::Vec4"
+      },
+      "is_static": true
+    },
+    "Arc": {
+      "type_kind": {
+        "val": "alloc::sync::Arc<bevy_asset::handle::StrongHandle>"
+      },
+      "is_static": true
+    },
+    "Dir2": {
+      "type_kind": {
+        "val": "bevy_math::direction::Dir2"
+      },
+      "is_static": true
+    },
+    "DepthPrepass": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::prepass::DepthPrepass"
+      },
+      "is_static": true
+    },
+    "ScriptQueryBuilder": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder"
+      },
+      "is_static": true
+    },
+    "u32": {
+      "type_kind": {
+        "val": "u32"
+      },
+      "is_static": true
+    },
+    "RangeFull": {
+      "type_kind": {
+        "val": "core::ops::RangeFull"
+      },
+      "is_static": true
+    },
+    "SkinnedMesh": {
+      "type_kind": {
+        "val": "bevy_mesh::skinning::SkinnedMesh"
+      },
+      "is_static": true
+    },
+    "DepthOfField": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::dof::DepthOfField"
+      },
+      "is_static": true
+    },
+    "Window": {
+      "type_kind": {
+        "val": "bevy_window::window::Window"
+      },
+      "is_static": true
+    },
+    "JustifyText": {
+      "type_kind": {
+        "val": "bevy_text::text::JustifyText"
+      },
+      "is_static": true
+    },
+    "Instant": {
+      "type_kind": {
+        "val": "bevy_utils::Instant"
+      },
+      "is_static": true
+    },
+    "Mesh2d": {
+      "type_kind": {
+        "val": "bevy_render::mesh::components::Mesh2d"
+      },
+      "is_static": true
+    },
+    "GamepadConnectionEvent": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::GamepadConnectionEvent"
+      },
+      "is_static": true
+    },
+    "Duration": {
+      "type_kind": {
+        "val": "bevy_utils::Duration"
+      },
+      "is_static": true
+    },
+    "GamepadEvent": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::GamepadEvent"
+      },
+      "is_static": true
+    },
+    "GltfMaterialName": {
+      "type_kind": {
+        "val": "bevy_gltf::GltfMaterialName"
+      },
+      "is_static": true
+    },
+    "NativeKeyCode": {
+      "type_kind": {
+        "val": "bevy_input::keyboard::NativeKeyCode"
+      },
+      "is_static": true
+    },
+    "AnimationTransition": {
+      "type_kind": {
+        "val": "bevy_animation::transition::AnimationTransition"
+      },
+      "is_static": true
+    },
+    "AnimationEvent": {
+      "type_kind": {
+        "val": "bevy_animation::AnimationEvent"
+      },
+      "is_static": true
+    },
+    "PrimaryWindow": {
+      "type_kind": {
+        "val": "bevy_window::window::PrimaryWindow"
+      },
+      "is_static": true
+    },
+    "RayCast2d": {
+      "type_kind": {
+        "val": "bevy_math::bounding::raycast2d::RayCast2d"
+      },
+      "is_static": true
+    },
+    "AccumulatedMouseScroll": {
+      "type_kind": {
+        "val": "bevy_input::mouse::AccumulatedMouseScroll"
+      },
+      "is_static": true
+    },
+    "DynamicSceneRoot": {
+      "type_kind": {
+        "val": "bevy_scene::components::DynamicSceneRoot"
+      },
+      "is_static": true
+    },
+    "I64Vec4": {
+      "type_kind": {
+        "val": "glam::I64Vec4"
+      },
+      "is_static": true
+    },
+    "TextureAtlasLayout": {
+      "type_kind": {
+        "val": "bevy_sprite::texture_atlas::TextureAtlasLayout"
+      },
+      "is_static": true
+    },
+    "ForceTouch": {
+      "type_kind": {
+        "val": "bevy_input::touch::ForceTouch"
+      },
+      "is_static": true
+    },
+    "Hwba": {
+      "type_kind": {
+        "val": "bevy_color::hwba::Hwba"
+      },
+      "is_static": true
+    },
+    "ReflectSystem": {
+      "type_kind": {
+        "val": "bevy_system_reflection::ReflectSystem"
+      },
+      "is_static": true
+    },
+    "CircularSector": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim2::CircularSector"
+      },
+      "is_static": true
+    },
+    "GlobalVolume": {
+      "type_kind": {
+        "val": "bevy_audio::audio::GlobalVolume"
+      },
+      "is_static": true
+    },
+    "types": {
+      "type_kind": {
+        "hashMap": [
+          {
+            "primitive": "string"
+          },
+          {
+            "union": [
+              {
+                "val": "bevy_mod_scripting_core::bindings::query::ScriptTypeRegistration"
+              },
+              {
+                "union": [
+                  {
+                    "val": "bevy_mod_scripting_core::bindings::query::ScriptComponentRegistration"
+                  },
+                  {
+                    "val": "bevy_mod_scripting_core::bindings::query::ScriptResourceRegistration"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "is_static": false
+    },
+    "BVec4A": {
+      "type_kind": {
+        "val": "glam::BVec4A"
+      },
+      "is_static": true
+    },
+    "ComponentTicks": {
+      "type_kind": {
+        "val": "bevy_ecs::component::ComponentTicks"
+      },
+      "is_static": true
+    },
+    "Oklcha": {
+      "type_kind": {
+        "val": "bevy_color::oklcha::Oklcha"
+      },
+      "is_static": true
+    },
+    "Smaa": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::smaa::Smaa"
+      },
+      "is_static": true
+    },
+    "ColorGrading": {
+      "type_kind": {
+        "val": "bevy_render::view::ColorGrading"
+      },
+      "is_static": true
+    },
+    "ActiveAnimation": {
+      "type_kind": {
+        "val": "bevy_animation::ActiveAnimation"
+      },
+      "is_static": true
+    },
+    "Affine3A": {
+      "type_kind": {
+        "val": "glam::Affine3A"
+      },
+      "is_static": true
+    },
+    "WindowTheme": {
+      "type_kind": {
+        "val": "bevy_window::window::WindowTheme"
+      },
+      "is_static": true
+    },
+    "Interval": {
+      "type_kind": {
+        "val": "bevy_math::curve::interval::Interval"
+      },
+      "is_static": true
+    },
+    "ScriptResourceRegistration": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::bindings::query::ScriptResourceRegistration"
+      },
+      "is_static": true
+    },
+    "Cascades": {
+      "type_kind": {
+        "val": "bevy_pbr::light::Cascades"
+      },
+      "is_static": true
+    },
+    "ScreenSpaceAmbientOcclusion": {
+      "type_kind": {
+        "val": "bevy_pbr::ssao::ScreenSpaceAmbientOcclusion"
+      },
+      "is_static": true
+    },
+    "ZIndex": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::ZIndex"
+      },
+      "is_static": true
+    },
+    "RayId": {
+      "type_kind": {
+        "val": "bevy_picking::backend::ray::RayId"
+      },
+      "is_static": true
+    },
+    "PerspectiveProjection": {
+      "type_kind": {
+        "val": "bevy_render::camera::projection::PerspectiveProjection"
+      },
+      "is_static": true
+    },
+    "LightGizmoColor": {
+      "type_kind": {
+        "val": "bevy_gizmos::light::LightGizmoColor"
+      },
+      "is_static": true
+    },
+    "Focus": {
+      "type_kind": {
+        "val": "bevy_a11y::Focus"
+      },
+      "is_static": true
+    },
+    "OrthographicProjection": {
+      "type_kind": {
+        "val": "bevy_render::camera::projection::OrthographicProjection"
+      },
+      "is_static": true
+    },
+    "ScreenSpaceAmbientOcclusionQualityLevel": {
+      "type_kind": {
+        "val": "bevy_pbr::ssao::ScreenSpaceAmbientOcclusionQualityLevel"
+      },
+      "is_static": true
+    },
+    "InteropError": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::error::InteropError"
+      },
+      "is_static": true
+    },
+    "Aabb3d": {
+      "type_kind": {
+        "val": "bevy_math::bounding::bounded3d::Aabb3d"
+      },
+      "is_static": true
+    },
+    "ReflectableScheduleLabel": {
+      "type_kind": {
+        "val": "bevy_system_reflection::ReflectableScheduleLabel"
+      },
+      "is_static": true
+    },
+    "SliceScaleMode": {
+      "type_kind": {
+        "val": "bevy_sprite::texture_slice::slicer::SliceScaleMode"
+      },
+      "is_static": true
+    },
+    "OverflowClipMargin": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::OverflowClipMargin"
+      },
+      "is_static": true
+    },
+    "AtomicU64": {
+      "type_kind": {
+        "val": "core::sync::atomic::AtomicU64"
+      },
+      "is_static": true
+    },
+    "VisibleMeshEntities": {
+      "type_kind": {
+        "val": "bevy_pbr::bundle::VisibleMeshEntities"
+      },
+      "is_static": true
+    },
+    "GridPlacement": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::GridPlacement"
+      },
+      "is_static": true
+    },
+    "ComputedTextBlock": {
+      "type_kind": {
+        "val": "bevy_text::text::ComputedTextBlock"
+      },
+      "is_static": true
+    },
+    "OnAdd": {
+      "type_kind": {
+        "val": "bevy_ecs::world::component_constants::OnAdd"
+      },
+      "is_static": true
+    },
+    "BloomCompositeMode": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::bloom::settings::BloomCompositeMode"
+      },
+      "is_static": true
+    },
+    "GlobalTransform": {
+      "type_kind": {
+        "val": "bevy_transform::components::global_transform::GlobalTransform"
+      },
+      "is_static": true
+    },
+    "Msaa": {
+      "type_kind": {
+        "val": "bevy_render::view::Msaa"
+      },
+      "is_static": true
+    },
+    "FlexWrap": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::FlexWrap"
+      },
+      "is_static": true
+    },
+    "Visibility": {
+      "type_kind": {
+        "val": "bevy_render::view::visibility::Visibility"
+      },
+      "is_static": true
+    },
+    "Mat3": {
+      "type_kind": {
+        "val": "glam::Mat3"
+      },
+      "is_static": true
+    },
+    "HierarchyEvent": {
+      "type_kind": {
+        "val": "bevy_hierarchy::events::HierarchyEvent"
+      },
+      "is_static": true
+    },
+    "SystemCursorIcon": {
+      "type_kind": {
+        "val": "bevy_window::system_cursor::SystemCursorIcon"
+      },
+      "is_static": true
+    },
+    "CalculatedClip": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::CalculatedClip"
+      },
+      "is_static": true
+    },
+    "GamepadConnection": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::GamepadConnection"
+      },
+      "is_static": true
+    },
+    "AssetIndex": {
+      "type_kind": {
+        "val": "bevy_asset::assets::AssetIndex"
+      },
+      "is_static": true
+    },
+    "PointerInputPlugin": {
+      "type_kind": {
+        "val": "bevy_picking::input::PointerInputPlugin"
+      },
+      "is_static": true
+    },
+    "ColorGradingSection": {
+      "type_kind": {
+        "val": "bevy_render::view::ColorGradingSection"
+      },
+      "is_static": true
+    },
+    "CascadesVisibleEntities": {
+      "type_kind": {
+        "val": "bevy_pbr::bundle::CascadesVisibleEntities"
+      },
+      "is_static": true
+    },
+    "ButtonAxisSettings": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::ButtonAxisSettings"
+      },
+      "is_static": true
+    },
+    "WindowClosed": {
+      "type_kind": {
+        "val": "bevy_window::event::WindowClosed"
+      },
+      "is_static": true
+    },
+    "DVec3": {
+      "type_kind": {
+        "val": "glam::DVec3"
+      },
+      "is_static": true
+    },
+    "DiGraph": {
+      "type_kind": {
+        "val": "petgraph::graph::DiGraph<bevy_animation::graph::AnimationGraphNode, (), u32>"
+      },
+      "is_static": true
+    },
+    "ScriptComponentRegistration": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::bindings::query::ScriptComponentRegistration"
+      },
+      "is_static": true
+    },
+    "Annulus": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim2::Annulus"
+      },
+      "is_static": true
+    },
+    "i16": {
+      "type_kind": {
+        "val": "i16"
+      },
+      "is_static": true
+    },
+    "GamepadAxisChangedEvent": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::GamepadAxisChangedEvent"
+      },
+      "is_static": true
+    },
+    "BoundingCircle": {
+      "type_kind": {
+        "val": "bevy_math::bounding::bounded2d::BoundingCircle"
+      },
+      "is_static": true
+    },
+    "RenderLayers": {
+      "type_kind": {
+        "val": "bevy_render::view::visibility::render_layers::RenderLayers"
+      },
+      "is_static": true
+    },
+    "Real": {
+      "type_kind": {
+        "val": "bevy_time::real::Real"
+      },
+      "is_static": true
+    },
+    "Overflow": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::Overflow"
+      },
+      "is_static": true
+    },
+    "CameraRenderGraph": {
+      "type_kind": {
+        "val": "bevy_render::camera::camera::CameraRenderGraph"
+      },
+      "is_static": true
+    },
+    "Oklaba": {
+      "type_kind": {
+        "val": "bevy_color::oklaba::Oklaba"
+      },
+      "is_static": true
+    },
+    "Rot2": {
+      "type_kind": {
+        "val": "bevy_math::rotation2d::Rot2"
+      },
+      "is_static": true
+    },
+    "GizmoLineStyle": {
+      "type_kind": {
+        "val": "bevy_gizmos::config::GizmoLineStyle"
+      },
+      "is_static": true
+    },
+    "RotationGesture": {
+      "type_kind": {
+        "val": "bevy_input::gestures::RotationGesture"
+      },
+      "is_static": true
+    },
+    "AnimationEventTarget": {
+      "type_kind": {
+        "val": "bevy_animation::AnimationEventTarget"
+      },
+      "is_static": true
+    },
+    "GridAutoFlow": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::GridAutoFlow"
+      },
+      "is_static": true
+    },
+    "BoundingSphere": {
+      "type_kind": {
+        "val": "bevy_math::bounding::bounded3d::BoundingSphere"
+      },
+      "is_static": true
+    },
+    "FloatOrd": {
+      "type_kind": {
+        "val": "bevy_math::float_ord::FloatOrd"
+      },
+      "is_static": true
+    },
+    "DepthOfFieldMode": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::dof::DepthOfFieldMode"
+      },
+      "is_static": true
+    },
+    "Isometry2d": {
+      "type_kind": {
+        "val": "bevy_math::isometry::Isometry2d"
+      },
+      "is_static": true
+    },
+    "Button": {
+      "type_kind": {
+        "val": "bevy_ui::widget::button::Button"
+      },
+      "is_static": true
+    },
+    "ShadowFilteringMethod": {
+      "type_kind": {
+        "val": "bevy_pbr::light::ShadowFilteringMethod"
+      },
+      "is_static": true
+    },
+    "BVec4": {
+      "type_kind": {
+        "val": "glam::BVec4"
+      },
+      "is_static": true
+    },
+    "ScrollPosition": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::ScrollPosition"
+      },
+      "is_static": true
+    },
+    "GamepadButton": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::GamepadButton"
+      },
+      "is_static": true
+    },
+    "NodeImageMode": {
+      "type_kind": {
+        "val": "bevy_ui::widget::image::NodeImageMode"
+      },
+      "is_static": true
+    },
+    "u16": {
+      "type_kind": {
+        "val": "u16"
+      },
+      "is_static": true
+    },
+    "WindowClosing": {
+      "type_kind": {
+        "val": "bevy_window::event::WindowClosing"
+      },
+      "is_static": true
+    },
+    "CursorOptions": {
+      "type_kind": {
+        "val": "bevy_window::window::CursorOptions"
+      },
+      "is_static": true
+    },
+    "GizmoConfig": {
+      "type_kind": {
+        "val": "bevy_gizmos::config::GizmoConfig"
+      },
+      "is_static": true
+    },
+    "NotShadowReceiver": {
+      "type_kind": {
+        "val": "bevy_pbr::light::NotShadowReceiver"
+      },
+      "is_static": true
+    },
+    "MouseButtonInput": {
+      "type_kind": {
+        "val": "bevy_input::mouse::MouseButtonInput"
+      },
+      "is_static": true
+    },
+    "InfinitePlane3d": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim3::InfinitePlane3d"
+      },
+      "is_static": true
+    },
+    "Node": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::Node"
+      },
+      "is_static": true
+    },
+    "RawGamepadAxisChangedEvent": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::RawGamepadAxisChangedEvent"
+      },
+      "is_static": true
+    },
+    "Rect": {
+      "type_kind": {
+        "val": "bevy_math::rects::rect::Rect"
+      },
+      "is_static": true
+    },
+    "ClearColor": {
+      "type_kind": {
+        "val": "bevy_render::camera::clear_color::ClearColor"
+      },
+      "is_static": true
+    },
+    "Val": {
+      "type_kind": {
+        "val": "bevy_ui::geometry::Val"
+      },
+      "is_static": true
+    },
+    "AtomicU16": {
+      "type_kind": {
+        "val": "core::sync::atomic::AtomicU16"
+      },
+      "is_static": true
+    },
+    "WindowEvent": {
+      "type_kind": {
+        "val": "bevy_window::event::WindowEvent"
+      },
+      "is_static": true
+    },
+    "InheritedVisibility": {
+      "type_kind": {
+        "val": "bevy_render::view::visibility::InheritedVisibility"
+      },
+      "is_static": true
+    },
+    "PointerPress": {
+      "type_kind": {
+        "val": "bevy_picking::pointer::PointerPress"
+      },
+      "is_static": true
+    },
+    "CustomCursor": {
+      "type_kind": {
+        "val": "bevy_winit::cursor::CustomCursor"
+      },
+      "is_static": true
+    },
+    "PlaybackSettings": {
+      "type_kind": {
+        "val": "bevy_audio::audio::PlaybackSettings"
+      },
+      "is_static": true
+    },
+    "KeyboardFocusLost": {
+      "type_kind": {
+        "val": "bevy_input::keyboard::KeyboardFocusLost"
+      },
+      "is_static": true
+    },
+    "BVec3A": {
+      "type_kind": {
+        "val": "glam::BVec3A"
+      },
+      "is_static": true
+    },
+    "GlyphAtlasInfo": {
+      "type_kind": {
+        "val": "bevy_text::glyph::GlyphAtlasInfo"
+      },
+      "is_static": true
+    },
+    "I64Vec2": {
+      "type_kind": {
+        "val": "glam::I64Vec2"
+      },
+      "is_static": true
+    },
+    "NodeIndex": {
+      "type_kind": {
+        "val": "petgraph::graph::NodeIndex"
+      },
+      "is_static": true
+    },
+    "TypeId": {
+      "type_kind": {
+        "val": "core::any::TypeId"
+      },
+      "is_static": true
+    },
+    "Lcha": {
+      "type_kind": {
+        "val": "bevy_color::lcha::Lcha"
+      },
+      "is_static": true
+    },
+    "IRect": {
+      "type_kind": {
+        "val": "bevy_math::rects::irect::IRect"
+      },
+      "is_static": true
+    },
+    "Torus": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim3::Torus"
+      },
+      "is_static": true
+    },
+    "RawGamepadEvent": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::RawGamepadEvent"
+      },
+      "is_static": true
+    },
+    "Entity": {
+      "type_kind": {
+        "val": "bevy_ecs::entity::Entity"
+      },
+      "is_static": true
+    },
+    "OrderIndependentTransparencySettings": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::oit::OrderIndependentTransparencySettings"
+      },
+      "is_static": true
+    },
+    "Cow": {
+      "type_kind": {
+        "val": "alloc::borrow::Cow<str>"
+      },
+      "is_static": true
+    },
+    "Aabb2d": {
+      "type_kind": {
+        "val": "bevy_math::bounding::bounded2d::Aabb2d"
+      },
+      "is_static": true
+    },
+    "JustifyContent": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::JustifyContent"
+      },
+      "is_static": true
+    },
+    "PinchGesture": {
+      "type_kind": {
+        "val": "bevy_input::gestures::PinchGesture"
+      },
+      "is_static": true
+    },
+    "Tonemapping": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::tonemapping::Tonemapping"
+      },
+      "is_static": true
+    },
+    "f64": {
+      "type_kind": {
+        "val": "f64"
+      },
+      "is_static": true
+    },
+    "Capsule2d": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim2::Capsule2d"
+      },
+      "is_static": true
+    },
+    "Segment3d": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim3::Segment3d"
+      },
+      "is_static": true
+    },
+    "AabbCast2d": {
+      "type_kind": {
+        "val": "bevy_math::bounding::raycast2d::AabbCast2d"
+      },
+      "is_static": true
+    },
+    "WindowCloseRequested": {
+      "type_kind": {
+        "val": "bevy_window::event::WindowCloseRequested"
+      },
+      "is_static": true
+    },
+    "OnReplace": {
+      "type_kind": {
+        "val": "bevy_ecs::world::component_constants::OnReplace"
+      },
+      "is_static": true
+    },
+    "NativeKey": {
+      "type_kind": {
+        "val": "bevy_input::keyboard::NativeKey"
+      },
+      "is_static": true
+    },
+    "FunctionInfo": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::docgen::info::FunctionInfo"
+      },
+      "is_static": true
+    },
+    "WindowOccluded": {
+      "type_kind": {
+        "val": "bevy_window::event::WindowOccluded"
+      },
+      "is_static": true
+    },
+    "Aabb": {
+      "type_kind": {
+        "val": "bevy_render::primitives::Aabb"
+      },
+      "is_static": true
+    },
+    "Mesh3d": {
+      "type_kind": {
+        "val": "bevy_render::mesh::components::Mesh3d"
+      },
+      "is_static": true
+    },
+    "CursorIcon": {
+      "type_kind": {
+        "val": "bevy_winit::cursor::CursorIcon"
+      },
+      "is_static": true
+    },
+    "MotionVectorPrepass": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::prepass::MotionVectorPrepass"
+      },
+      "is_static": true
+    },
+    "DirectionalLight": {
+      "type_kind": {
+        "val": "bevy_pbr::light::directional_light::DirectionalLight"
+      },
+      "is_static": true
+    },
+    "DMat3": {
+      "type_kind": {
+        "val": "glam::DMat3"
+      },
+      "is_static": true
+    },
+    "TargetCamera": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::TargetCamera"
+      },
+      "is_static": true
+    },
+    "ClusterFarZMode": {
+      "type_kind": {
+        "val": "bevy_pbr::cluster::ClusterFarZMode"
+      },
+      "is_static": true
+    },
+    "AlignSelf": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::AlignSelf"
+      },
+      "is_static": true
+    },
+    "Name": {
+      "type_kind": {
+        "val": "bevy_core::name::Name"
+      },
+      "is_static": true
+    },
+    "DVec4": {
+      "type_kind": {
+        "val": "glam::DVec4"
+      },
+      "is_static": true
+    },
+    "CascadesFrusta": {
+      "type_kind": {
+        "val": "bevy_render::primitives::CascadesFrusta"
+      },
+      "is_static": true
+    },
+    "Camera3dDepthTextureUsage": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::core_3d::camera_3d::Camera3dDepthTextureUsage"
+      },
+      "is_static": true
+    },
+    "UiBoxShadowSamples": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::UiBoxShadowSamples"
+      },
+      "is_static": true
+    },
+    "ScriptTypeRegistration": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::bindings::query::ScriptTypeRegistration"
+      },
+      "is_static": true
+    },
+    "VideoMode": {
+      "type_kind": {
+        "val": "bevy_window::monitor::VideoMode"
+      },
+      "is_static": true
+    },
+    "Mat2": {
+      "type_kind": {
+        "val": "glam::Mat2"
+      },
+      "is_static": true
+    },
+    "GizmoConfigStore": {
+      "type_kind": {
+        "val": "bevy_gizmos::config::GizmoConfigStore"
+      },
+      "is_static": true
+    },
+    "Camera3dDepthLoadOp": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::core_3d::camera_3d::Camera3dDepthLoadOp"
+      },
+      "is_static": true
+    },
+    "Fixed": {
+      "type_kind": {
+        "val": "bevy_time::fixed::Fixed"
+      },
+      "is_static": true
+    },
+    "Mat3A": {
+      "type_kind": {
+        "val": "glam::Mat3A"
+      },
+      "is_static": true
+    },
+    "Line2d": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim2::Line2d"
+      },
+      "is_static": true
+    },
+    "Laba": {
+      "type_kind": {
+        "val": "bevy_color::laba::Laba"
+      },
+      "is_static": true
+    },
+    "Indices": {
+      "type_kind": {
+        "val": "bevy_mesh::index::Indices"
+      },
+      "is_static": true
+    },
+    "DefaultSpatialScale": {
+      "type_kind": {
+        "val": "bevy_audio::audio::DefaultSpatialScale"
+      },
+      "is_static": true
+    },
+    "ManualTextureViewHandle": {
+      "type_kind": {
+        "val": "bevy_render::camera::manual_texture_view::ManualTextureViewHandle"
+      },
+      "is_static": true
+    },
+    "AtomicI32": {
+      "type_kind": {
+        "val": "core::sync::atomic::AtomicI32"
+      },
+      "is_static": true
+    },
+    "MonitorSelection": {
+      "type_kind": {
+        "val": "bevy_window::window::MonitorSelection"
+      },
+      "is_static": true
+    },
+    "WindowThemeChanged": {
+      "type_kind": {
+        "val": "bevy_window::event::WindowThemeChanged"
+      },
+      "is_static": true
+    },
+    "ScreenSpaceTransmissionQuality": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::core_3d::camera_3d::ScreenSpaceTransmissionQuality"
+      },
+      "is_static": true
+    },
+    "GamepadRumbleRequest": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::GamepadRumbleRequest"
+      },
+      "is_static": true
+    },
+    "Range": {
+      "type_kind": {
+        "val": "core::ops::Range<u32>"
+      },
+      "is_static": true
+    },
+    "DMat4": {
+      "type_kind": {
+        "val": "glam::DMat4"
+      },
+      "is_static": true
+    },
+    "GamepadRumbleIntensity": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::GamepadRumbleIntensity"
+      },
+      "is_static": true
+    },
+    "Segment2d": {
+      "type_kind": {
+        "val": "bevy_math::primitives::dim2::Segment2d"
+      },
+      "is_static": true
+    },
+    "BoundingSphereCast": {
+      "type_kind": {
+        "val": "bevy_math::bounding::raycast3d::BoundingSphereCast"
+      },
+      "is_static": true
+    },
+    "AnimationTransitions": {
+      "type_kind": {
+        "val": "bevy_animation::transition::AnimationTransitions"
+      },
+      "is_static": true
+    },
+    "GlobalsUniform": {
+      "type_kind": {
+        "val": "bevy_render::globals::GlobalsUniform"
+      },
+      "is_static": true
+    },
+    "Image": {
+      "type_kind": {
+        "val": "bevy_image::image::Image"
+      },
+      "is_static": true
+    },
+    "u8": {
+      "type_kind": {
+        "val": "u8"
+      },
+      "is_static": true
+    },
+    "Outline": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::Outline"
+      },
       "is_static": true
     }
   },
@@ -2771,7 +3784,7 @@
       "path": "bevy_asset::handle::Handle<bevy_asset::assets::LoadedUntypedAsset>",
       "generics": [
         {
-          "type_id": "TypeId(0x94ea1dfc3791014a6957e60fb032366d)",
+          "type_id": "TypeId(0xe81bcce256002ac034ffe4f81112e874)",
           "name": "A"
         }
       ],
@@ -2803,7 +3816,7 @@
       "path": "bevy_asset::handle::Handle<bevy_asset::folder::LoadedFolder>",
       "generics": [
         {
-          "type_id": "TypeId(0x6d6aedddccdf1249def7b570c1dbfebe)",
+          "type_id": "TypeId(0xecea453a69f75f90b2457e9f35b3c619)",
           "name": "A"
         }
       ],
@@ -2835,7 +3848,7 @@
       "path": "bevy_asset::handle::Handle<bevy_audio::audio_source::AudioSource>",
       "generics": [
         {
-          "type_id": "TypeId(0x79e28e867ec8ab272eb21b8c8fca98c5)",
+          "type_id": "TypeId(0x813bca5cb3e000247c2078d78eea90c0)",
           "name": "A"
         }
       ],
@@ -2867,7 +3880,7 @@
       "path": "bevy_asset::handle::Handle<bevy_audio::pitch::Pitch>",
       "generics": [
         {
-          "type_id": "TypeId(0x2693416a4947b6a1de067bf0a6602810)",
+          "type_id": "TypeId(0x5f59f8f482a08ccb71a7fc67f172400c)",
           "name": "A"
         }
       ],
@@ -2899,7 +3912,7 @@
       "path": "bevy_asset::handle::Handle<bevy_gizmos::LineGizmo>",
       "generics": [
         {
-          "type_id": "TypeId(0x9a0b9c66531a6d1c5c91bf0a447277da)",
+          "type_id": "TypeId(0x2ba71128ed55eb52f8c4148f951092ed)",
           "name": "A"
         }
       ],
@@ -2931,7 +3944,7 @@
       "path": "bevy_asset::handle::Handle<bevy_gltf::Gltf>",
       "generics": [
         {
-          "type_id": "TypeId(0x65fc3c083114010442a316bd47554a0d)",
+          "type_id": "TypeId(0x5eefba0f9ee16442983c617e9b8246ff)",
           "name": "A"
         }
       ],
@@ -2963,7 +3976,7 @@
       "path": "bevy_asset::handle::Handle<bevy_gltf::GltfMesh>",
       "generics": [
         {
-          "type_id": "TypeId(0x9b9e74edf7bfe5b8fa2da77e3131b3a7)",
+          "type_id": "TypeId(0x1a8f39ca8ca801589df4ff738b7b9c6e)",
           "name": "A"
         }
       ],
@@ -2995,7 +4008,7 @@
       "path": "bevy_asset::handle::Handle<bevy_gltf::GltfNode>",
       "generics": [
         {
-          "type_id": "TypeId(0xbe46a94089384a7f14a8ac3e1017e2cc)",
+          "type_id": "TypeId(0xdd6e4a284b854f86a241ba927db33511)",
           "name": "A"
         }
       ],
@@ -3027,7 +4040,7 @@
       "path": "bevy_asset::handle::Handle<bevy_gltf::GltfPrimitive>",
       "generics": [
         {
-          "type_id": "TypeId(0x9b78674e6912cd7d7496a6f009263705)",
+          "type_id": "TypeId(0x5c8e299e6c0951aefa5bd623065dc1d2)",
           "name": "A"
         }
       ],
@@ -3059,7 +4072,7 @@
       "path": "bevy_asset::handle::Handle<bevy_gltf::GltfSkin>",
       "generics": [
         {
-          "type_id": "TypeId(0x95544a6bfff4fc98063f0ecf37dc5b27)",
+          "type_id": "TypeId(0x29db0104470286b78e6338ce39d5a588)",
           "name": "A"
         }
       ],
@@ -3155,7 +4168,7 @@
       "path": "bevy_asset::handle::Handle<bevy_mesh::skinning::SkinnedMeshInverseBindposes>",
       "generics": [
         {
-          "type_id": "TypeId(0x3d5d2aa9519edf2755febbcdaeb8c951)",
+          "type_id": "TypeId(0x94073d39060f28218ea2b7576ce45aa9)",
           "name": "A"
         }
       ],
@@ -3219,7 +4232,7 @@
       "path": "bevy_asset::handle::Handle<bevy_render::render_resource::shader::Shader>",
       "generics": [
         {
-          "type_id": "TypeId(0x4f39caf020af02ccb51c74ca1e77fe7c)",
+          "type_id": "TypeId(0x59cd30a0db30c055383b0a3533f8b5ce)",
           "name": "A"
         }
       ],
@@ -3283,7 +4296,7 @@
       "path": "bevy_asset::handle::Handle<bevy_scene::dynamic_scene::DynamicScene>",
       "generics": [
         {
-          "type_id": "TypeId(0xda35a80eda3ae57d07e89af0bb90440d)",
+          "type_id": "TypeId(0x7e7380ad2a64373a3eabb9f63bf284bf)",
           "name": "A"
         }
       ],
@@ -3315,7 +4328,7 @@
       "path": "bevy_asset::handle::Handle<bevy_scene::scene::Scene>",
       "generics": [
         {
-          "type_id": "TypeId(0x9fe71fe15d58bb9991aeec94031babbb)",
+          "type_id": "TypeId(0x7bea70cee40b1220551a55b82ac10e97)",
           "name": "A"
         }
       ],
@@ -3411,7 +4424,7 @@
       "path": "bevy_asset::handle::Handle<bevy_text::font::Font>",
       "generics": [
         {
-          "type_id": "TypeId(0x4e2451d161b1fdd0d14755cc520fcff1)",
+          "type_id": "TypeId(0xeafa4c94933f99e8dbc3b1b353a6ea10)",
           "name": "A"
         }
       ],
@@ -3545,7 +4558,7 @@
       "path": "bevy_asset::id::AssetId<bevy_asset::assets::LoadedUntypedAsset>",
       "generics": [
         {
-          "type_id": "TypeId(0x94ea1dfc3791014a6957e60fb032366d)",
+          "type_id": "TypeId(0xe81bcce256002ac034ffe4f81112e874)",
           "name": "A"
         }
       ],
@@ -3579,7 +4592,7 @@
       "path": "bevy_asset::id::AssetId<bevy_asset::folder::LoadedFolder>",
       "generics": [
         {
-          "type_id": "TypeId(0x6d6aedddccdf1249def7b570c1dbfebe)",
+          "type_id": "TypeId(0xecea453a69f75f90b2457e9f35b3c619)",
           "name": "A"
         }
       ],
@@ -3613,7 +4626,7 @@
       "path": "bevy_asset::id::AssetId<bevy_audio::audio_source::AudioSource>",
       "generics": [
         {
-          "type_id": "TypeId(0x79e28e867ec8ab272eb21b8c8fca98c5)",
+          "type_id": "TypeId(0x813bca5cb3e000247c2078d78eea90c0)",
           "name": "A"
         }
       ],
@@ -3647,7 +4660,7 @@
       "path": "bevy_asset::id::AssetId<bevy_audio::pitch::Pitch>",
       "generics": [
         {
-          "type_id": "TypeId(0x2693416a4947b6a1de067bf0a6602810)",
+          "type_id": "TypeId(0x5f59f8f482a08ccb71a7fc67f172400c)",
           "name": "A"
         }
       ],
@@ -3681,7 +4694,7 @@
       "path": "bevy_asset::id::AssetId<bevy_gizmos::LineGizmo>",
       "generics": [
         {
-          "type_id": "TypeId(0x9a0b9c66531a6d1c5c91bf0a447277da)",
+          "type_id": "TypeId(0x2ba71128ed55eb52f8c4148f951092ed)",
           "name": "A"
         }
       ],
@@ -3715,7 +4728,7 @@
       "path": "bevy_asset::id::AssetId<bevy_gltf::Gltf>",
       "generics": [
         {
-          "type_id": "TypeId(0x65fc3c083114010442a316bd47554a0d)",
+          "type_id": "TypeId(0x5eefba0f9ee16442983c617e9b8246ff)",
           "name": "A"
         }
       ],
@@ -3749,7 +4762,7 @@
       "path": "bevy_asset::id::AssetId<bevy_gltf::GltfMesh>",
       "generics": [
         {
-          "type_id": "TypeId(0x9b9e74edf7bfe5b8fa2da77e3131b3a7)",
+          "type_id": "TypeId(0x1a8f39ca8ca801589df4ff738b7b9c6e)",
           "name": "A"
         }
       ],
@@ -3783,7 +4796,7 @@
       "path": "bevy_asset::id::AssetId<bevy_gltf::GltfNode>",
       "generics": [
         {
-          "type_id": "TypeId(0xbe46a94089384a7f14a8ac3e1017e2cc)",
+          "type_id": "TypeId(0xdd6e4a284b854f86a241ba927db33511)",
           "name": "A"
         }
       ],
@@ -3817,7 +4830,7 @@
       "path": "bevy_asset::id::AssetId<bevy_gltf::GltfPrimitive>",
       "generics": [
         {
-          "type_id": "TypeId(0x9b78674e6912cd7d7496a6f009263705)",
+          "type_id": "TypeId(0x5c8e299e6c0951aefa5bd623065dc1d2)",
           "name": "A"
         }
       ],
@@ -3851,7 +4864,7 @@
       "path": "bevy_asset::id::AssetId<bevy_gltf::GltfSkin>",
       "generics": [
         {
-          "type_id": "TypeId(0x95544a6bfff4fc98063f0ecf37dc5b27)",
+          "type_id": "TypeId(0x29db0104470286b78e6338ce39d5a588)",
           "name": "A"
         }
       ],
@@ -3953,7 +4966,7 @@
       "path": "bevy_asset::id::AssetId<bevy_mesh::skinning::SkinnedMeshInverseBindposes>",
       "generics": [
         {
-          "type_id": "TypeId(0x3d5d2aa9519edf2755febbcdaeb8c951)",
+          "type_id": "TypeId(0x94073d39060f28218ea2b7576ce45aa9)",
           "name": "A"
         }
       ],
@@ -4021,7 +5034,7 @@
       "path": "bevy_asset::id::AssetId<bevy_render::render_resource::shader::Shader>",
       "generics": [
         {
-          "type_id": "TypeId(0x4f39caf020af02ccb51c74ca1e77fe7c)",
+          "type_id": "TypeId(0x59cd30a0db30c055383b0a3533f8b5ce)",
           "name": "A"
         }
       ],
@@ -4089,7 +5102,7 @@
       "path": "bevy_asset::id::AssetId<bevy_scene::dynamic_scene::DynamicScene>",
       "generics": [
         {
-          "type_id": "TypeId(0xda35a80eda3ae57d07e89af0bb90440d)",
+          "type_id": "TypeId(0x7e7380ad2a64373a3eabb9f63bf284bf)",
           "name": "A"
         }
       ],
@@ -4123,7 +5136,7 @@
       "path": "bevy_asset::id::AssetId<bevy_scene::scene::Scene>",
       "generics": [
         {
-          "type_id": "TypeId(0x9fe71fe15d58bb9991aeec94031babbb)",
+          "type_id": "TypeId(0x7bea70cee40b1220551a55b82ac10e97)",
           "name": "A"
         }
       ],
@@ -4225,7 +5238,7 @@
       "path": "bevy_asset::id::AssetId<bevy_text::font::Font>",
       "generics": [
         {
-          "type_id": "TypeId(0x4e2451d161b1fdd0d14755cc520fcff1)",
+          "type_id": "TypeId(0xeafa4c94933f99e8dbc3b1b353a6ea10)",
           "name": "A"
         }
       ],
@@ -22706,7 +23719,7 @@
       "path": "smallvec::SmallVec<[bevy_ecs::entity::Entity; 8]>",
       "generics": [
         {
-          "type_id": "TypeId(0x1f678668811f8ef8d0ea32138f475bd3)",
+          "type_id": "TypeId(0x12e300e424c210e1320ef6ff70db1841)",
           "name": "T"
         }
       ],
@@ -22718,7 +23731,7 @@
       "path": "smallvec::SmallVec<[bevy_text::text::TextEntity; 1]>",
       "generics": [
         {
-          "type_id": "TypeId(0x0eb44955667886f4474087b9d92928cf)",
+          "type_id": "TypeId(0x964cd2dcb979dfc4b14b4a2a9a2c6e7a)",
           "name": "T"
         }
       ],
@@ -22730,7 +23743,7 @@
       "path": "smallvec::SmallVec<[bevy_ui::ui_node::GridTrack; 1]>",
       "generics": [
         {
-          "type_id": "TypeId(0x9e980d85660c3abf26ea7532addd2a0f)",
+          "type_id": "TypeId(0x4f7dc4fc037c62db725774ef3ad55cf5)",
           "name": "T"
         }
       ],
