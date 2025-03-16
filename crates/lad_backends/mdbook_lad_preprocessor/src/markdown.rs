@@ -94,9 +94,7 @@ pub enum Markdown {
         headers: Vec<String>,
         rows: Vec<Vec<String>>,
     },
-    Raw {
-        text: String,
-    },
+    Raw(String),
 }
 
 #[allow(dead_code)]
@@ -175,7 +173,7 @@ impl IntoMarkdown for Markdown {
 
                 let escaped = if *code {
                     // this might be a bug in the markdown renderer but we need to escape those for tables
-                    text.clone().replace("|", "\\|")
+                    text.clone()
                 } else {
                     escape_markdown(text, builder.escape)
                 };
@@ -279,7 +277,7 @@ impl IntoMarkdown for Markdown {
                     header_line, separator_line, rows_lines
                 ));
             }
-            Markdown::Raw { text } => {
+            Markdown::Raw(text) => {
                 builder.append(text);
             }
         }

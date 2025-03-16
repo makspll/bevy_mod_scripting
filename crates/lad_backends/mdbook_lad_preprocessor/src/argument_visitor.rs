@@ -1,22 +1,36 @@
 //! Defines a visitor for function arguments of the `LAD` format.
 
-use ladfile::ArgumentVisitor;
+use ladfile::{ArgumentVisitor, LadTypeId};
 
 use crate::markdown::MarkdownBuilder;
 
 pub(crate) struct MarkdownArgumentVisitor<'a> {
     ladfile: &'a ladfile::LadFile,
     buffer: MarkdownBuilder,
+    linkifier: Box<dyn Fn(LadTypeId, &'a ladfile::LadFile) -> Option<String> + 'static>,
 }
 impl<'a> MarkdownArgumentVisitor<'a> {
+    /// Create a new instance of the visitor
     pub fn new(ladfile: &'a ladfile::LadFile) -> Self {
         let mut builder = MarkdownBuilder::new();
         builder.tight_inline().set_escape_mode(false);
         Self {
             ladfile,
             buffer: builder,
+            linkifier: Box::new(|_, _| None),
         }
     }
+
+    /// Create a new instance of the visitor with a custom linkifier function
+    pub fn new_with_linkifier<F: Fn(LadTypeId, &'a ladfile::LadFile) -> Option<String> + 'static>(
+        ladfile: &'a ladfile::LadFile,
+        linkifier: F,
+    ) -> Self {
+        let mut without = Self::new(ladfile);
+        without.linkifier = Box::new(linkifier);
+        without
+    }
+
 
     pub fn build(mut self) -> String {
         self.buffer.build()
@@ -26,8 +40,11 @@ impl<'a> MarkdownArgumentVisitor<'a> {
 impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
     fn visit_lad_type_id(&mut self, type_id: &ladfile::LadTypeId) {
         // Write identifier<Generic1TypeIdentifier, Generic2TypeIdentifier>
-        self.buffer.text(self.ladfile.get_type_identifier(type_id));
-        if let Some(generics) = self.ladfile.get_type_generics(type_id) {
+        let generics = self.ladfile.get_type_generics(type_id);
+
+        let type_identifier = self.ladfile.get_type_identifier(type_id);
+        if let Some(generics) = generics {
+            self.buffer.text(type_identifier);
             self.buffer.text('<');
             for (i, generic) in generics.iter().enumerate() {
                 self.visit_lad_type_id(&generic.type_id);
@@ -36,6 +53,15 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
                 }
             }
             self.buffer.text('>');
+        } else {
+            // link the type 
+            let link_value = (self.linkifier)(type_id.clone(), self.ladfile);
+            let link_display = type_identifier;
+            if let Some(link_value) = link_value {
+                self.buffer.link(link_display, link_value);
+            } else {
+                self.buffer.text(link_display);
+            }
         }
     }
 
@@ -104,6 +130,23 @@ mod test {
         // load test file from ../../../ladfile_builder/test_assets/
         let ladfile = ladfile::EXAMPLE_LADFILE;
         ladfile::parse_lad_file(ladfile).unwrap()
+    }
+
+
+    #[test]
+    fn test_linkifier_visitor_creates_links() {
+        let ladfile = setup_ladfile();
+
+        let mut visitor = MarkdownArgumentVisitor::new_with_linkifier(&ladfile, |type_id, ladfile| {
+            Some
+            (
+                format!("root/{}", ladfile.get_type_identifier(&type_id))
+            )
+        });
+
+        let first_type_id = ladfile.types.first().unwrap().0;
+        visitor.visit_lad_type_id(first_type_id);
+        assert_eq!(visitor.buffer.build(), "[EnumType](root/EnumType)");
     }
 
     #[test]
