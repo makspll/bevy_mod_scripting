@@ -17,7 +17,11 @@ fn print_type(ladfile: &LadFile, type_: &LadTypeId) -> String {
 }
 
 fn build_escaped_visitor(arg_visitor: MarkdownArgumentVisitor<'_>) -> String {
-    arg_visitor.build().replace("<", "\\<").replace(">", "\\>").replace("|", "\\|")
+    arg_visitor
+        .build()
+        .replace("<", "\\<")
+        .replace(">", "\\>")
+        .replace("|", "\\|")
 }
 
 /// Sections which convert to single markdown files
@@ -210,7 +214,11 @@ impl<'a> Section<'a> {
             Section::InstancesSummary { ladfile } => {
                 let instances = ladfile.globals.iter().collect::<Vec<_>>();
                 let types_directory = linkify_filename(Section::TypeSummary { ladfile }.title());
-                vec![SectionItem::InstancesSummary { instances, ladfile, types_directory}]
+                vec![SectionItem::InstancesSummary {
+                    instances,
+                    ladfile,
+                    types_directory,
+                }]
             }
             Section::TypeSummary { ladfile } => {
                 let types = ladfile.types.keys().collect::<Vec<_>>();
@@ -439,29 +447,40 @@ impl IntoMarkdown for SectionItem<'_> {
                     }
                 });
             }
-            SectionItem::InstancesSummary { instances, ladfile, types_directory } => {
+            SectionItem::InstancesSummary {
+                instances,
+                ladfile,
+                types_directory,
+            } => {
                 builder.heading(2, "Global Values");
                 builder.text("Global values that are accessible anywhere inside scripts. You should avoid naming conflicts with these and trying to overwrite or edit them.");
                 // make a table of instances as a quick reference, make them link to instance details sub-sections
 
                 // first build a non-static instance table
-                let instances = instances.iter().map(|(k,v)| {
-                    let name = k.to_string();
-                    let types_directory = types_directory.clone();
-                    let mut arg_visitor = MarkdownArgumentVisitor::new_with_linkifier(ladfile, move |lad_type_id, ladfile| {
-                        let printed_type = linkify_filename(print_type(ladfile, &lad_type_id));
-                        Some(format!("./{types_directory}/{printed_type}.md"))
-                    });
-                    arg_visitor.visit(&v.type_kind);
-                    let escaped = build_escaped_visitor(arg_visitor);
-                    (v.is_static, name, escaped)
-                }).collect::<Vec<_>>();
+                let instances = instances
+                    .iter()
+                    .map(|(k, v)| {
+                        let name = k.to_string();
+                        let types_directory = types_directory.clone();
+                        let mut arg_visitor = MarkdownArgumentVisitor::new_with_linkifier(
+                            ladfile,
+                            move |lad_type_id, ladfile| {
+                                let printed_type =
+                                    linkify_filename(print_type(ladfile, &lad_type_id));
+                                Some(format!("./{types_directory}/{printed_type}.md"))
+                            },
+                        );
+                        arg_visitor.visit(&v.type_kind);
+                        let escaped = build_escaped_visitor(arg_visitor);
+                        (v.is_static, name, escaped)
+                    })
+                    .collect::<Vec<_>>();
 
                 builder.heading(3, "Instances");
                 builder.text("Instances containing actual accessible values.");
                 builder.table(|builder| {
                     builder.headers(vec!["Instance", "Type"]);
-                    for (_, name, instance) in instances.iter().filter(|(a,_,_)| !*a) {
+                    for (_, name, instance) in instances.iter().filter(|(a, _, _)| !*a) {
                         builder.row(markdown_vec![
                             Markdown::new_paragraph(name).code(),
                             Markdown::Raw(instance.clone())
@@ -473,7 +492,7 @@ impl IntoMarkdown for SectionItem<'_> {
                 builder.text("Static type references, existing for the purpose of typed static function calls.");
                 builder.table(|builder| {
                     builder.headers(vec!["Instance", "Type"]);
-                    for (_, name, instance) in instances.iter().filter(|(a,_,_)| *a) {
+                    for (_, name, instance) in instances.iter().filter(|(a, _, _)| *a) {
                         builder.row(markdown_vec![
                             Markdown::new_paragraph(name).code(),
                             Markdown::Raw(instance.clone())
@@ -532,8 +551,7 @@ fn lad_argument_to_list_elem(
         Markdown::new_paragraph(markdown).code(),
         Markdown::new_paragraph("-"),
         Markdown::Raw(
-            arg
-                .documentation
+            arg.documentation
                 .as_deref()
                 .unwrap_or(NO_DOCS_STRING)
                 .to_owned()

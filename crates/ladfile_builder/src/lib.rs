@@ -625,17 +625,18 @@ impl<'t> LadFileBuilder<'t> {
 #[cfg(test)]
 mod test {
     use bevy_mod_scripting_core::{
-        bindings::{function::{
-            from::Ref,
-            namespace::{GlobalNamespace, IntoNamespace},
-        }, Union, Val},
+        bindings::{
+            function::{
+                from::Ref,
+                namespace::{GlobalNamespace, IntoNamespace},
+            },
+            Union, Val,
+        },
         docgen::info::GetFunctionInfo,
     };
     use bevy_reflect::Reflect;
 
     use super::*;
-
-
 
     /// normalize line endings etc..
     fn normalize_file(file: &mut String) {
@@ -831,7 +832,6 @@ mod test {
             "whitespace in between",
         );
     }
-
 
     /// Set to true to put output into test_assets.
     const BLESS_TEST_FILE: bool = false;

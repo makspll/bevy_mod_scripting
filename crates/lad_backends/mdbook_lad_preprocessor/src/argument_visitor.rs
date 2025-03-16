@@ -22,7 +22,9 @@ impl<'a> MarkdownArgumentVisitor<'a> {
     }
 
     /// Create a new instance of the visitor with a custom linkifier function
-    pub fn new_with_linkifier<F: Fn(LadTypeId, &'a ladfile::LadFile) -> Option<String> + 'static>(
+    pub fn new_with_linkifier<
+        F: Fn(LadTypeId, &'a ladfile::LadFile) -> Option<String> + 'static,
+    >(
         ladfile: &'a ladfile::LadFile,
         linkifier: F,
     ) -> Self {
@@ -30,7 +32,6 @@ impl<'a> MarkdownArgumentVisitor<'a> {
         without.linkifier = Box::new(linkifier);
         without
     }
-
 
     pub fn build(mut self) -> String {
         self.buffer.build()
@@ -54,7 +55,7 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
             }
             self.buffer.text('>');
         } else {
-            // link the type 
+            // link the type
             let link_value = (self.linkifier)(type_id.clone(), self.ladfile);
             let link_display = type_identifier;
             if let Some(link_value) = link_value {
@@ -132,17 +133,14 @@ mod test {
         ladfile::parse_lad_file(ladfile).unwrap()
     }
 
-
     #[test]
     fn test_linkifier_visitor_creates_links() {
         let ladfile = setup_ladfile();
 
-        let mut visitor = MarkdownArgumentVisitor::new_with_linkifier(&ladfile, |type_id, ladfile| {
-            Some
-            (
-                format!("root/{}", ladfile.get_type_identifier(&type_id))
-            )
-        });
+        let mut visitor =
+            MarkdownArgumentVisitor::new_with_linkifier(&ladfile, |type_id, ladfile| {
+                Some(format!("root/{}", ladfile.get_type_identifier(&type_id)))
+            });
 
         let first_type_id = ladfile.types.first().unwrap().0;
         visitor.visit_lad_type_id(first_type_id);
@@ -233,7 +231,7 @@ mod test {
             Box::new(LadTypeKind::Primitive(ladfile::LadBMSPrimitiveKind::Bool)),
             Box::new(LadTypeKind::Primitive(ladfile::LadBMSPrimitiveKind::String)),
         ));
-        
+
         assert_eq!(visitor.buffer.build(), "HashMap<bool, String>");
     }
 
@@ -246,17 +244,18 @@ mod test {
 
         visitor.visit(&LadTypeKind::HashMap(
             Box::new(LadTypeKind::Primitive(ladfile::LadBMSPrimitiveKind::Bool)),
-            Box::new(LadTypeKind::Union(
-                vec![
+            Box::new(LadTypeKind::Union(vec![
+                LadTypeKind::Val(first_type_id.clone()),
+                LadTypeKind::Union(vec![
                     LadTypeKind::Val(first_type_id.clone()),
-                    LadTypeKind::Union(vec![
-                        LadTypeKind::Val(first_type_id.clone()),
-                        LadTypeKind::Val(first_type_id.clone()),
-                    ]),
-                ]
-            )),
+                    LadTypeKind::Val(first_type_id.clone()),
+                ]),
+            ])),
         ));
-        assert_eq!(visitor.buffer.build(), "HashMap<bool, EnumType | EnumType | EnumType>");
+        assert_eq!(
+            visitor.buffer.build(),
+            "HashMap<bool, EnumType | EnumType | EnumType>"
+        );
     }
 
     #[test]
