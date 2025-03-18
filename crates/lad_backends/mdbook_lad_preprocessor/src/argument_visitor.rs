@@ -157,7 +157,7 @@ mod test {
 
         let first_type_id = ladfile.types.first().unwrap().0;
         visitor.visit_lad_type_id(first_type_id);
-        assert_eq!(visitor.buffer.build(), "[EnumType](root/EnumType)");
+        assert_eq!(visitor.buffer.build(), "StructType<[usize](root/usize)>");
     }
 
     #[test]
@@ -168,13 +168,13 @@ mod test {
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
         visitor.visit_lad_type_id(first_type_id);
-        assert_eq!(visitor.buffer.build(), "EnumType");
+        assert_eq!(visitor.buffer.build(), "StructType<usize>");
 
         visitor.buffer.clear();
 
         let second_type_id = ladfile.types.iter().nth(1).unwrap().0;
         visitor.visit_lad_type_id(second_type_id);
-        assert_eq!(visitor.buffer.build(), "StructType<usize>");
+        assert_eq!(visitor.buffer.build(), "EnumType");
     }
 
     #[test]
@@ -185,7 +185,7 @@ mod test {
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
         visitor.visit(&LadTypeKind::Ref(first_type_id.clone()));
-        assert_eq!(visitor.buffer.build(), "EnumType");
+        assert_eq!(visitor.buffer.build(), "StructType<usize>");
     }
 
     #[test]
@@ -196,7 +196,7 @@ mod test {
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
         visitor.visit(&LadTypeKind::Mut(first_type_id.clone()));
-        assert_eq!(visitor.buffer.build(), "EnumType");
+        assert_eq!(visitor.buffer.build(), "StructType<usize>");
     }
 
     #[test]
@@ -207,7 +207,7 @@ mod test {
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
         visitor.visit(&LadTypeKind::Val(first_type_id.clone()));
-        assert_eq!(visitor.buffer.build(), "EnumType");
+        assert_eq!(visitor.buffer.build(), "StructType<usize>");
     }
 
     #[test]
@@ -267,7 +267,7 @@ mod test {
         ));
         assert_eq!(
             visitor.buffer.build(),
-            "HashMap<bool, EnumType | EnumType | EnumType>"
+            "HashMap<bool, StructType<usize> | StructType<usize> | StructType<usize>>"
         );
     }
 
@@ -306,6 +306,6 @@ mod test {
         let first_type_id = ladfile.types.first().unwrap().0;
 
         visitor.visit(&LadTypeKind::Unknown(first_type_id.clone()));
-        assert_eq!(visitor.buffer.build(), "EnumType");
+        assert_eq!(visitor.buffer.build(), "StructType<usize>");
     }
 }

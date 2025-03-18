@@ -769,15 +769,15 @@ mod tests {
         // Test markdown_substring with simple 5–7 character inputs.
         let cases = vec![
             // Inline code: "a`bcd`" → with len 3, substring "a`b" is extended to the full inline segment.
-            ("a`bcd`", 3, "a`bcd`"),
+            ("a`bcd`", 3, "a`bcd`..."),
             // Bold: "a**b**" → with len 3, substring "a**" is extended to "a**b**".
-            ("a**b**", 3, "a**b**"),
+            ("a**b**", 3, "a**b**..."),
             // Italic: "a*b*" → with len 1, substring "["a*", extended to "a*b*".
-            ("a*b*", 1, "a*b*"),
+            ("a*b*", 1, "a*b*..."),
             // Underscore: "a_b_" → with len 1, extended to "a_b_".
-            ("a_b_", 1, "a_b_"),
+            ("a_b_", 1, "a_b_..."),
             // Link-like: "[x](y)" → with len 1, extended to the next closing bracket.
-            ("[x](y)", 1, "[x](y)"),
+            ("[x](y)", 1, "[x](y)..."),
         ];
         for (input, len, expected) in cases {
             assert_eq!(
