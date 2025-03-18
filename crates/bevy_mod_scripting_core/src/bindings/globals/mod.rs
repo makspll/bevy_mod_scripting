@@ -5,12 +5,15 @@ use super::{
     script_value::ScriptValue,
     WorldGuard,
 };
-use crate::{docgen::{into_through_type_info, typed_through::ThroughTypeInfo}, error::InteropError};
+use crate::{
+    docgen::{into_through_type_info, typed_through::ThroughTypeInfo},
+    error::InteropError,
+};
 use bevy::{ecs::system::Resource, reflect::Typed, utils::hashbrown::HashMap};
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::{any::TypeId, borrow::Cow, sync::Arc};
 
-crate::private::export_all_in_modules!{
+crate::private::export_all_in_modules! {
     core
 }
 
@@ -48,10 +51,22 @@ pub struct ScriptGlobal {
     pub type_information: ThroughTypeInfo,
 }
 
+/// A dummy global variable that documents globals set via alternative ways.
+pub struct ScriptGlobalDummy {
+    /// The type ID of the global variable.
+    pub type_id: TypeId,
+    /// Rich type information the global variable.
+    pub type_information: Option<ThroughTypeInfo>,
+
+    /// The documentation for the global dummy variable.
+    pub documentation: Option<Cow<'static, str>>,
+}
+
 /// A registry of global variables that can be exposed to scripts.
 #[derive(Default)]
 pub struct ScriptGlobalsRegistry {
     globals: HashMap<Cow<'static, str>, ScriptGlobal>,
+    dummies: HashMap<Cow<'static, str>, ScriptGlobalDummy>,
 }
 
 impl ScriptGlobalsRegistry {
@@ -85,6 +100,11 @@ impl ScriptGlobalsRegistry {
         self.globals.iter_mut()
     }
 
+    /// Iterates over the dummies in the registry
+    pub fn iter_dummies(&self) -> impl Iterator<Item = (&Cow<'static, str>, &ScriptGlobalDummy)> {
+        self.dummies.iter()
+    }
+
     fn type_erase_maker<
         T: ScriptReturn,
         F: Fn(WorldGuard) -> Result<T, InteropError> + Send + Sync + 'static,
@@ -112,6 +132,26 @@ impl ScriptGlobalsRegistry {
                 type_information: into_through_type_info(T::type_info()),
             },
         )
+    }
+
+    /// Registers a dummy global into the registry.
+    /// Dummies are not actually exposed to languages but exist purely for the purpose of documentation.
+    /// This can be useful for globals which you cannot expose normally.
+    ///
+    /// Dummy globals are stored as non-static instances, i.e. they're expected to be values not type references.
+    pub fn register_dummy<T: 'static>(
+        &mut self,
+        name: impl Into<Cow<'static, str>>,
+        documentation: impl Into<Cow<'static, str>>,
+    ) {
+        self.dummies.insert(
+            name.into(),
+            ScriptGlobalDummy {
+                documentation: Some(documentation.into()),
+                type_id: TypeId::of::<T>(),
+                type_information: None,
+            },
+        );
     }
 
     /// Inserts a global into the registry, returns the previous value if it existed.
@@ -153,7 +193,7 @@ impl ScriptGlobalsRegistry {
     /// Registers a static global into the registry.
     ///
     /// This is a version of [`Self::register_static`] which stores rich type information regarding the global.
-    pub fn register_static_documented<T: TypedScriptReturn +'static>(
+    pub fn register_static_documented<T: TypedScriptReturn + 'static>(
         &mut self,
         name: Cow<'static, str>,
         documentation: Cow<'static, str>,

@@ -12,4 +12,5 @@ crate::private::export_all_in_modules! {
     script_system,
     script_value,
     world,
+    type_data
 }

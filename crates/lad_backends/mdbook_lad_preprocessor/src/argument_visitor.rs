@@ -8,6 +8,7 @@ pub(crate) struct MarkdownArgumentVisitor<'a> {
     ladfile: &'a ladfile::LadFile,
     buffer: MarkdownBuilder,
     linkifier: Box<dyn Fn(LadTypeId, &'a ladfile::LadFile) -> Option<String> + 'static>,
+    pub raw_type_id_replacement: Option<&'static str>,
 }
 impl<'a> MarkdownArgumentVisitor<'a> {
     /// Create a new instance of the visitor
@@ -18,6 +19,7 @@ impl<'a> MarkdownArgumentVisitor<'a> {
             ladfile,
             buffer: builder,
             linkifier: Box::new(|_, _| None),
+            raw_type_id_replacement: None,
         }
     }
 
@@ -33,6 +35,12 @@ impl<'a> MarkdownArgumentVisitor<'a> {
         without
     }
 
+    /// Set the raw type id replacement
+    pub fn with_raw_type_id_replacement(mut self, replacement: &'static str) -> Self {
+        self.raw_type_id_replacement = Some(replacement);
+        self
+    }
+
     pub fn build(mut self) -> String {
         self.buffer.build()
     }
@@ -43,15 +51,17 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         // Write identifier<Generic1TypeIdentifier, Generic2TypeIdentifier>
         let generics = self.ladfile.get_type_generics(type_id);
 
-        let type_identifier = self.ladfile.get_type_identifier(type_id);
+        let type_identifier = self
+            .ladfile
+            .get_type_identifier(type_id, self.raw_type_id_replacement);
         if let Some(generics) = generics {
             self.buffer.text(type_identifier);
             self.buffer.text('<');
             for (i, generic) in generics.iter().enumerate() {
-                self.visit_lad_type_id(&generic.type_id);
                 if i > 0 {
                     self.buffer.text(", ");
                 }
+                self.visit_lad_type_id(&generic.type_id);
             }
             self.buffer.text('>');
         } else {
@@ -139,7 +149,10 @@ mod test {
 
         let mut visitor =
             MarkdownArgumentVisitor::new_with_linkifier(&ladfile, |type_id, ladfile| {
-                Some(format!("root/{}", ladfile.get_type_identifier(&type_id)))
+                Some(format!(
+                    "root/{}",
+                    ladfile.get_type_identifier(&type_id, None)
+                ))
             });
 
         let first_type_id = ladfile.types.first().unwrap().0;

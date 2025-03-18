@@ -14,9 +14,9 @@ use bevy::{
 };
 use std::{any::TypeId, collections::VecDeque, sync::Arc};
 
-/// A wrapper around a `TypeRegistration` that provides additional information about the type.
+/// A reference to a type which is not a `Resource` or `Component`.
 ///
-/// This is used as a hook to a rust type from a scripting language. We should be able to easily convert between a type name and a [`ScriptTypeRegistration`].
+/// In general think of this as a handle to a type.
 #[derive(Clone, Reflect)]
 #[reflect(opaque)]
 pub struct ScriptTypeRegistration {
@@ -24,14 +24,18 @@ pub struct ScriptTypeRegistration {
 }
 
 #[derive(Clone, Reflect, Debug)]
-/// A registration for a component type.
+/// A reference to a component type's reflection registration.
+///
+/// In general think of this as a handle to a type.
 pub struct ScriptComponentRegistration {
     pub(crate) registration: ScriptTypeRegistration,
     pub(crate) component_id: ComponentId,
 }
 
 #[derive(Clone, Reflect, Debug)]
-/// A registration for a resource type.
+/// A reference to a resource type's reflection registration.
+///
+/// In general think of this as a handle to a type.
 pub struct ScriptResourceRegistration {
     pub(crate) registration: ScriptTypeRegistration,
     pub(crate) resource_id: ComponentId,
@@ -134,7 +138,25 @@ impl std::fmt::Display for ScriptTypeRegistration {
 
 #[derive(Clone, Default, Reflect)]
 #[reflect(opaque)]
-/// A builder for a query.
+/// The query builder is used to build ECS queries which retrieve spefific components filtered by specific conditions.
+///
+/// For example:
+/// ```rust,ignore
+/// builder.component(componentA)
+///     .component(componentB)
+///     .with(componentC)
+///     .without(componentD)  
+/// ```
+///
+/// Will retrieve entities which:
+/// - Have componentA
+/// - Have componentB
+/// - Have componentC
+/// - Do not have componentD
+///
+/// As well as references to components:
+/// - componentA
+/// - componentB
 pub struct ScriptQueryBuilder {
     pub(crate) components: Vec<ScriptComponentRegistration>,
     with: Vec<ScriptComponentRegistration>,

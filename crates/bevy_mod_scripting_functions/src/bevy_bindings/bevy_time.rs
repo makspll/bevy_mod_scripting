@@ -15,7 +15,8 @@ pub struct BevyTimeScriptingPlugin;
 #[script_bindings(
     remote,
     name = "fixed_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::time::prelude::Fixed {
     fn clone(_self: Ref<bevy::time::prelude::Fixed>) -> Val<bevy::time::prelude::Fixed> {
@@ -29,7 +30,8 @@ impl bevy::time::prelude::Fixed {
 #[script_bindings(
     remote,
     name = "real_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::time::prelude::Real {
     fn clone(_self: Ref<bevy::time::prelude::Real>) -> Val<bevy::time::prelude::Real> {
@@ -43,7 +45,8 @@ impl bevy::time::prelude::Real {
 #[script_bindings(
     remote,
     name = "timer_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::time::prelude::Timer {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::time::prelude::Timer>) -> () {
@@ -408,7 +411,8 @@ impl bevy::time::prelude::Timer {
 #[script_bindings(
     remote,
     name = "timer_mode_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::time::prelude::TimerMode {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::time::prelude::TimerMode>) -> () {
@@ -441,7 +445,8 @@ impl bevy::time::prelude::TimerMode {
 #[script_bindings(
     remote,
     name = "virtual_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::time::prelude::Virtual {
     fn clone(
@@ -457,7 +462,8 @@ impl bevy::time::prelude::Virtual {
 #[script_bindings(
     remote,
     name = "stopwatch_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::time::Stopwatch {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::time::Stopwatch>) -> () {

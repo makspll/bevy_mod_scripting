@@ -15,7 +15,8 @@ pub struct BevyHierarchyScriptingPlugin;
 #[script_bindings(
     remote,
     name = "children_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::hierarchy::prelude::Children {
     ///  Swaps the child at `a_index` with the child at `b_index`.
@@ -36,7 +37,8 @@ impl bevy::hierarchy::prelude::Children {
 #[script_bindings(
     remote,
     name = "parent_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::hierarchy::prelude::Parent {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::hierarchy::prelude::Parent>) -> () {
@@ -70,7 +72,8 @@ impl bevy::hierarchy::prelude::Parent {
 #[script_bindings(
     remote,
     name = "hierarchy_event_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::hierarchy::HierarchyEvent {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::hierarchy::HierarchyEvent>) -> () {

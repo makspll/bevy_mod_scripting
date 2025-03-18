@@ -1,9 +1,9 @@
 use std::borrow::Cow;
 
 /// Takes the first n characters from the markdown, without splitting any formatting.
-pub(crate) fn markdown_substring(markdown: &str, length: usize) -> &str {
+pub(crate) fn markdown_substring(markdown: &str, length: usize) -> String {
     if markdown.len() <= length {
-        return markdown;
+        return markdown.to_string();
     }
     let mut end = length;
     for &(open, close) in &[("`", "`"), ("**", "**"), ("*", "*"), ("_", "_"), ("[", "]")] {
@@ -27,11 +27,14 @@ pub(crate) fn markdown_substring(markdown: &str, length: usize) -> &str {
                     }
                 }
             } else {
-                return markdown;
+                return markdown.to_string();
             }
         }
     }
-    &markdown[..end]
+
+    let trimmed = markdown[..end].to_string();
+    // append ...
+    format!("{}...", trimmed)
 }
 
 /// Escapes Markdown reserved characters in the given text.
@@ -53,17 +56,17 @@ fn escape_markdown(text: &str, escape: bool) -> String {
 }
 
 /// Trait for converting elements into markdown strings.
-pub trait IntoMarkdown {
+pub trait IntoMarkdown: std::fmt::Debug {
     fn to_markdown(&self, builder: &mut MarkdownBuilder);
 }
 
 /// Comprehensive enum representing various Markdown constructs.
-#[derive(Debug, Clone)]
 #[allow(dead_code)]
+#[derive(Debug)]
 pub enum Markdown {
     Heading {
         level: u8,
-        text: String,
+        content: Box<dyn IntoMarkdown>,
     },
     Paragraph {
         text: String,
@@ -77,7 +80,7 @@ pub enum Markdown {
     },
     List {
         ordered: bool,
-        items: Vec<String>,
+        items: Vec<Box<dyn IntoMarkdown>>,
     },
     Quote(String),
     Image {
@@ -85,14 +88,14 @@ pub enum Markdown {
         src: String,
     },
     Link {
-        text: String,
+        text: Box<dyn IntoMarkdown>,
         url: String,
         anchor: bool,
     },
     HorizontalRule,
     Table {
         headers: Vec<String>,
-        rows: Vec<Vec<String>>,
+        rows: Vec<Vec<Box<dyn IntoMarkdown>>>,
     },
     Raw(String),
 }
@@ -102,6 +105,15 @@ impl Markdown {
     pub fn new_paragraph(text: impl Into<String>) -> Self {
         Markdown::Paragraph {
             text: text.into(),
+            bold: false,
+            italic: false,
+            code: false,
+        }
+    }
+
+    pub fn space() -> Self {
+        Markdown::Paragraph {
+            text: " ".to_owned(),
             bold: false,
             italic: false,
             code: false,
@@ -148,12 +160,15 @@ impl Markdown {
 impl IntoMarkdown for Markdown {
     fn to_markdown(&self, builder: &mut MarkdownBuilder) {
         match self {
-            Markdown::Heading { level, text } => {
+            Markdown::Heading { level, content } => {
                 // Clamp the header level to Markdown's 1-6.
                 let clamped_level = level.clamp(&1, &6);
                 let hashes = "#".repeat(*clamped_level as usize);
-                // Escape the text for Markdown
-                builder.append(&format!("{hashes} {text}"));
+                builder.append(&hashes);
+                builder.append(" ");
+                builder.with_tight_inline(|builder| {
+                    content.to_markdown(builder);
+                });
             }
             Markdown::Paragraph {
                 text,
@@ -196,19 +211,24 @@ impl IntoMarkdown for Markdown {
                 builder.append(&format!("```{}\n{}\n```", lang, code));
             }
             Markdown::List { ordered, items } => {
-                let list_output = items
-                    .iter()
-                    .enumerate()
-                    .map(|(i, item)| {
-                        if *ordered {
-                            format!("{}. {}", i + 1, item)
-                        } else {
-                            format!("- {}", item)
-                        }
-                    })
-                    .collect::<Vec<String>>()
-                    .join("\n");
-                builder.append(&list_output);
+                items.iter().enumerate().for_each(|(i, item)| {
+                    if *ordered {
+                        builder.append(&(i + 1).to_string());
+                        builder.append(". ");
+                        builder.with_tight_inline(|builder| {
+                            item.to_markdown(builder);
+                        });
+                    } else {
+                        builder.append("- ");
+                        builder.with_tight_inline(|builder| {
+                            item.to_markdown(builder);
+                        });
+                    }
+
+                    if i < items.len() - 1 {
+                        builder.append("\n");
+                    }
+                });
             }
             Markdown::Quote(text) => {
                 let quote_output = text
@@ -228,6 +248,10 @@ impl IntoMarkdown for Markdown {
             }
             Markdown::Link { text, url, anchor } => {
                 // anchors must be lowercase, only contain letters or dashes
+                builder.append("[");
+                builder.with_tight_inline(|builder| text.to_markdown(builder));
+                builder.append("](");
+
                 let url = if *anchor {
                     // prefix with #
                     format!(
@@ -239,12 +263,9 @@ impl IntoMarkdown for Markdown {
                 } else {
                     url.clone()
                 };
-                // Escape link text while leaving url untouched.
-                builder.append(&format!(
-                    "[{}]({})",
-                    escape_markdown(text, builder.escape),
-                    url
-                ));
+
+                builder.append(&url);
+                builder.append(")");
             }
             Markdown::HorizontalRule => {
                 builder.append("---");
@@ -254,51 +275,63 @@ impl IntoMarkdown for Markdown {
                     return;
                 }
 
-                // Generate a Markdown table:
-                // Header row:
                 let header_line = format!("| {} |", headers.join(" | "));
+                builder.append(&header_line);
+                builder.append("\n");
+
                 // Separator row:
                 let separator_line = format!(
-                    "|{}|",
+                    "|{}|\n",
                     headers
                         .iter()
                         .map(|_| " --- ")
                         .collect::<Vec<&str>>()
                         .join("|")
                 );
-                // Rows:
-                let rows_lines = rows
-                    .iter()
-                    .map(|row| format!("| {} |", row.join(" | ")))
-                    .collect::<Vec<String>>()
-                    .join("\n");
-                builder.append(&format!(
-                    "{}\n{}\n{}",
-                    header_line, separator_line, rows_lines
-                ));
+                builder.append(&separator_line);
+
+                for (row_idx, row) in rows.iter().enumerate() {
+                    builder.append("| ");
+                    for (i, cell) in row.iter().enumerate() {
+                        builder.with_tight_inline(|builder| {
+                            cell.to_markdown(builder);
+                        });
+                        if i < row.len() - 1 {
+                            builder.append(" | ");
+                        }
+                    }
+                    builder.append(" |");
+                    if row_idx < rows.len() - 1 {
+                        builder.append("\n");
+                    }
+                }
             }
             Markdown::Raw(text) => {
                 builder.append(text);
             }
         }
+        builder.separate();
     }
 }
 
 impl IntoMarkdown for &str {
     fn to_markdown(&self, builder: &mut MarkdownBuilder) {
-        builder.append(&escape_markdown(self, builder.escape))
+        builder.append(&escape_markdown(self, builder.escape));
+        builder.separate();
     }
 }
 
 impl IntoMarkdown for String {
     fn to_markdown(&self, builder: &mut MarkdownBuilder) {
-        builder.append(&escape_markdown(self.as_ref(), builder.escape))
+        builder.append(&escape_markdown(self.as_ref(), builder.escape));
+        builder.separate();
     }
 }
 
 impl IntoMarkdown for Cow<'_, str> {
     fn to_markdown(&self, builder: &mut MarkdownBuilder) {
-        builder.append(&escape_markdown(self.as_ref(), builder.escape))
+        builder.append(&escape_markdown(self.as_ref(), builder.escape));
+        builder.separate();
     }
 }
 
@@ -321,27 +354,19 @@ macro_rules! markdown_vec {
 
 impl<T: IntoMarkdown> IntoMarkdown for Vec<T> {
     fn to_markdown(&self, builder: &mut MarkdownBuilder) {
-        for (i, item) in self.iter().enumerate() {
+        for item in self.iter() {
             item.to_markdown(builder);
-            if i < self.len() - 1 {
-                if builder.inline {
-                    builder.append(builder.inline_separator);
-                } else {
-                    builder.append("\n\n");
-                }
-            }
         }
     }
 }
 
 /// Builder pattern for generating comprehensive Markdown documentation.
 /// Now also doubles as the accumulator for the generated markdown.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct MarkdownBuilder {
-    elements: Vec<Markdown>,
     output: String,
     pub inline: bool,
-    pub inline_separator: &'static str,
+    pub tight_inline: bool,
     pub escape: bool,
 }
 
@@ -349,18 +374,43 @@ pub struct MarkdownBuilder {
 impl MarkdownBuilder {
     /// Clears the builder's buffer
     pub fn clear(&mut self) {
-        self.elements.clear();
         self.output.clear();
+    }
+
+    pub fn with_tight_inline<F: FnOnce(&mut MarkdownBuilder)>(&mut self, f: F) {
+        let prev_inline = self.inline;
+        let prev_tight_inline = self.tight_inline;
+        self.tight_inline();
+        f(self);
+        self.inline = prev_inline;
+        self.tight_inline = prev_tight_inline;
     }
 
     /// Creates a new MarkdownBuilder.
     pub fn new() -> Self {
         MarkdownBuilder {
-            elements: Vec::new(),
             output: String::new(),
             inline: false,
-            inline_separator: " ",
+            tight_inline: false,
             escape: true,
+        }
+    }
+
+    // inserts the correct separator
+    // this should be used after each element is added
+    pub fn separate(&mut self) {
+        self.output.push_str(self.separator());
+    }
+
+    fn separator(&self) -> &'static str {
+        if self.inline {
+            if self.tight_inline {
+                ""
+            } else {
+                " "
+            }
+        } else {
+            "\n\n"
         }
     }
 
@@ -376,6 +426,14 @@ impl MarkdownBuilder {
     /// Enables inline mode, which prevents newlines from being inserted for elements that support it
     pub fn inline(&mut self) -> &mut Self {
         self.inline = true;
+        self.tight_inline = false;
+        self
+    }
+
+    /// Disables inline mode.
+    pub fn non_inline(&mut self) -> &mut Self {
+        self.inline = false;
+        self.tight_inline = false;
         self
     }
 
@@ -383,7 +441,7 @@ impl MarkdownBuilder {
     /// Each element will simply be concatenated without any separator.
     pub fn tight_inline(&mut self) -> &mut Self {
         self.inline = true;
-        self.inline_separator = "";
+        self.tight_inline = true;
         self
     }
 
@@ -399,49 +457,54 @@ impl MarkdownBuilder {
     }
 
     /// Adds a heading element (Levels from 1-6).
-    pub fn heading(&mut self, level: u8, text: impl IntoMarkdown) -> &mut Self {
-        let mut builder = MarkdownBuilder::new();
-        builder.inline();
-        text.to_markdown(&mut builder);
-        let text = builder.build();
-
-        self.elements.push(Markdown::Heading {
+    pub fn heading(&mut self, level: u8, text: impl IntoMarkdown + 'static) -> &mut Self {
+        Markdown::Heading {
             level: level.min(6),
-            text,
-        });
+            content: Box::new(text),
+        }
+        .to_markdown(self);
+        self
+    }
+
+    /// Adds a raw markdown element
+    pub fn raw(&mut self, text: impl Into<String>) -> &mut Self {
+        self.append(&text.into());
         self
     }
 
     /// Adds a paragraph element.
     pub fn text(&mut self, text: impl Into<String>) -> &mut Self {
-        self.elements.push(Markdown::Paragraph {
+        Markdown::Paragraph {
             text: text.into(),
             bold: false,
             italic: false,
             code: false,
-        });
+        }
+        .to_markdown(self);
         self
     }
 
     /// Adds a bold element.
     pub fn bold(&mut self, text: impl Into<String>) -> &mut Self {
-        self.elements.push(Markdown::Paragraph {
+        Markdown::Paragraph {
             text: text.into(),
             bold: true,
             italic: false,
             code: false,
-        });
+        }
+        .to_markdown(self);
         self
     }
 
     /// Adds an italic element.
     pub fn italic(&mut self, text: impl Into<String>) -> &mut Self {
-        self.elements.push(Markdown::Paragraph {
+        Markdown::Paragraph {
             text: text.into(),
             bold: false,
             italic: true,
             code: false,
-        });
+        }
+        .to_markdown(self);
         self
     }
 
@@ -451,82 +514,86 @@ impl MarkdownBuilder {
         language: Option<impl Into<String>>,
         code: impl Into<String>,
     ) -> &mut Self {
-        self.elements.push(Markdown::CodeBlock {
+        Markdown::CodeBlock {
             language: language.map(|l| l.into()),
             code: code.into(),
-        });
+        }
+        .to_markdown(self);
         self
     }
 
     /// Adds an inline code element.
     pub fn inline_code(&mut self, code: impl Into<String>) -> &mut Self {
-        self.elements.push(Markdown::Paragraph {
+        Markdown::Paragraph {
             text: code.into(),
             bold: false,
             italic: false,
             code: true,
-        });
+        }
+        .to_markdown(self);
         self
     }
 
     /// Adds a list element.
-    pub fn list(&mut self, ordered: bool, items: Vec<impl IntoMarkdown>) -> &mut Self {
-        let converted_items: Vec<String> = items
-            .into_iter()
-            .map(|s| {
-                let mut builder = MarkdownBuilder::new();
-                builder.inline();
-                s.to_markdown(&mut builder);
-                builder.build()
-            })
-            .collect();
-
-        self.elements.push(Markdown::List {
+    pub fn list(&mut self, ordered: bool, items: Vec<impl IntoMarkdown + 'static>) -> &mut Self {
+        Markdown::List {
             ordered,
-            items: converted_items,
-        });
+            items: items
+                .into_iter()
+                .map(|i| Box::new(i) as Box<dyn IntoMarkdown>)
+                .collect(),
+        }
+        .to_markdown(self);
         self
     }
 
     /// Adds a quote element.
     pub fn quote(&mut self, text: impl IntoMarkdown) -> &mut Self {
         let mut builder = MarkdownBuilder::new();
+        builder.tight_inline();
         text.to_markdown(&mut builder);
-        self.elements.push(Markdown::Quote(builder.build()));
+        Markdown::Quote(builder.build()).to_markdown(self);
         self
     }
 
     /// Adds an image element.
     pub fn image(&mut self, alt: impl Into<String>, src: impl Into<String>) -> &mut Self {
-        self.elements.push(Markdown::Image {
+        Markdown::Image {
             alt: alt.into(),
             src: src.into(),
-        });
+        }
+        .to_markdown(self);
         self
     }
 
     /// Adds a link element.
-    pub fn link(&mut self, text: impl Into<String>, url: impl Into<String>) -> &mut Self {
-        self.elements.push(Markdown::Link {
-            text: text.into(),
+    pub fn link(&mut self, text: impl IntoMarkdown + 'static, url: impl Into<String>) -> &mut Self {
+        Markdown::Link {
+            text: Box::new(text),
             url: url.into(),
             anchor: false,
-        });
+        }
+        .to_markdown(self);
         self
     }
 
-    pub fn section_link(&mut self, text: impl Into<String>, url: impl Into<String>) -> &mut Self {
-        self.elements.push(Markdown::Link {
-            text: text.into(),
+    pub fn section_link(
+        &mut self,
+        text: impl IntoMarkdown + 'static,
+        url: impl Into<String>,
+    ) -> &mut Self {
+        Markdown::Link {
+            text: Box::new(text),
             url: url.into(),
             anchor: true,
-        });
+        }
+        .to_markdown(self);
         self
     }
 
     /// Adds a horizontal rule element.
     pub fn horizontal_rule(&mut self) -> &mut Self {
-        self.elements.push(Markdown::HorizontalRule);
+        Markdown::HorizontalRule.to_markdown(self);
         self
     }
 
@@ -534,38 +601,31 @@ impl MarkdownBuilder {
     pub fn table(&mut self, f: impl FnOnce(&mut TableBuilder)) -> &mut Self {
         let mut builder = TableBuilder::new();
         f(&mut builder);
-        self.elements.push(builder.build());
+        log::info!("Table Builder: {builder:#?}");
+        builder.build().to_markdown(self);
         self
     }
 
     /// Builds the markdown document as a single String by delegating the conversion
     /// of each element to its `into_markdown` implementation.
     pub fn build(&mut self) -> String {
-        let len = self.elements.len();
-        for (i, element) in self.elements.clone().into_iter().enumerate() {
-            element.to_markdown(self);
-            if i < len - 1 {
-                if self.inline {
-                    self.append(self.inline_separator);
-                } else {
-                    self.append("\n\n");
-                }
-            }
-        }
+        // replace inline placeholders with the characters they represent,
+        // at the same time remove multiple consecutive placeholders
         self.output.clone()
     }
 }
 
 impl IntoMarkdown for MarkdownBuilder {
     fn to_markdown(&self, builder: &mut MarkdownBuilder) {
-        *builder = self.clone()
+        builder.append(&self.output);
     }
 }
 
 /// Mini builder for constructing Markdown tables.
+#[derive(Debug)]
 pub struct TableBuilder {
     headers: Vec<String>,
-    rows: Vec<Vec<String>>,
+    rows: Vec<Vec<Box<dyn IntoMarkdown>>>,
 }
 
 impl TableBuilder {
@@ -584,17 +644,12 @@ impl TableBuilder {
     }
 
     /// Adds a row to the table.
-    pub fn row(&mut self, row: Vec<impl IntoMarkdown>) -> &mut Self {
-        let converted = row
-            .into_iter()
-            .map(|r| {
-                let mut builder = MarkdownBuilder::new();
-                builder.inline();
-                r.to_markdown(&mut builder);
-                builder.build()
-            })
-            .collect();
-        self.rows.push(converted);
+    pub fn row(&mut self, row: Vec<impl IntoMarkdown + 'static>) -> &mut Self {
+        self.rows.push(
+            row.into_iter()
+                .map(|r| Box::new(r) as Box<dyn IntoMarkdown>)
+                .collect(),
+        );
         self
     }
 
@@ -632,7 +687,9 @@ mod tests {
                 true,
                 Vec::from_iter(vec![markdown_vec![
                     Markdown::new_paragraph("italic").italic(),
+                    Markdown::space(),
                     Markdown::new_paragraph("bold").bold(),
+                    Markdown::space(),
                     Markdown::new_paragraph("code").code(),
                 ]]),
             )
@@ -649,6 +706,14 @@ mod tests {
                     .row(markdown_vec![
                         "Row 2 Col 1",
                         Markdown::new_paragraph("HashMap<String, A | B | C>").code()
+                    ])
+                    .row(markdown_vec![
+                        "Hello",
+                        Markdown::Link {
+                            text: Box::new("iam a link"),
+                            url: "to a thing".to_owned(),
+                            anchor: false
+                        }
                     ]);
             })
             .build();
@@ -679,6 +744,7 @@ mod tests {
             | --- | --- |
             | Row 1 Col 1 | Row 1 Col 2 |
             | Row 2 Col 1 | `HashMap<String, A | B | C>` |
+            | Hello | [iam a link](to a thing) |
         "#;
 
         let trimmed_indentation_expected = expected

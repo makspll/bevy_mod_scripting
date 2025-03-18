@@ -15,7 +15,8 @@ pub struct BevyTransformScriptingPlugin;
 #[script_bindings(
     remote,
     name = "global_transform_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::transform::components::GlobalTransform {
     ///  Returns the 3d affine transformation matrix as an [`Affine3A`].
@@ -379,7 +380,8 @@ impl bevy::transform::components::GlobalTransform {
 #[script_bindings(
     remote,
     name = "transform_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::transform::components::Transform {
     ///  Equivalent to [`local_z()`][Transform::local_z]

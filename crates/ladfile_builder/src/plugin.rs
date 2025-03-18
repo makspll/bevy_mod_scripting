@@ -7,12 +7,15 @@ use bevy::{
     ecs::{
         reflect::AppTypeRegistry,
         system::{Res, Resource},
+        world::World,
     },
 };
 use bevy_mod_scripting_core::bindings::{
     function::{namespace::Namespace, script_function::AppScriptFunctionRegistry},
     globals::AppScriptGlobalsRegistry,
+    IntoNamespace, MarkAsCore, MarkAsGenerated, MarkAsSignificant,
 };
+use ladfile::{default_importance, LadTypeKind};
 
 use crate::LadFileBuilder;
 
@@ -33,6 +36,11 @@ pub struct LadFileSettings {
     /// The description to use for the LAD file, by default it's empty
     pub description: &'static str,
 
+    /// Whether to exclude types which are not registered.
+    ///
+    /// i.e. `HashMap<T,V>` where `T` or `V` are not registered types
+    pub exclude_types_containing_unregistered: bool,
+
     /// Whether to pretty print the output JSON. By default this is true (slay)
     pub pretty: bool,
 }
@@ -43,17 +51,24 @@ impl Default for LadFileSettings {
             path: PathBuf::from("bindings.lad.json"),
             description: "",
             pretty: true,
+            exclude_types_containing_unregistered: true,
         }
     }
 }
 
 impl ScriptingDocgenPlugin {
     /// Create a new instance of the plugin with the given path
-    pub fn new(path: PathBuf, description: &'static str, pretty: bool) -> Self {
+    pub fn new(
+        path: PathBuf,
+        description: &'static str,
+        exclude_types_containing_unregistered: bool,
+        pretty: bool,
+    ) -> Self {
         Self(LadFileSettings {
             path,
             description,
             pretty,
+            exclude_types_containing_unregistered,
         })
     }
 }
@@ -71,7 +86,23 @@ pub fn generate_lad_file(
     let mut builder = LadFileBuilder::new(&type_registry);
     builder
         .set_description(settings.description)
+        .set_exclude_including_unregistered(settings.exclude_types_containing_unregistered)
         .set_sorted(true);
+
+    // process world as a special value
+    builder.add_nonreflect_type::<World>(
+        Some("bevy_ecs"),
+        r#"The ECS world containing all Components, Resources and Systems. Main point of interaction with a Bevy App."#.trim(),
+    );
+
+    for (_, function) in function_registry.iter_namespace(World::into_namespace()) {
+        builder.add_function_info(function.info.clone());
+    }
+
+    builder.set_insignificance(
+        std::any::TypeId::of::<World>(),
+        (default_importance() / 2) - 1,
+    );
 
     // first of all, iterate over all the types and register them
     for registration in type_registry.iter() {
@@ -83,6 +114,18 @@ pub fn generate_lad_file(
         }
 
         builder.add_type_info(type_info);
+
+        if registration.contains::<MarkAsGenerated>() {
+            builder.mark_generated(registration.type_id());
+        }
+
+        if registration.contains::<MarkAsCore>() {
+            builder.set_insignificance(registration.type_id(), default_importance() / 2);
+        }
+
+        if registration.contains::<MarkAsSignificant>() {
+            builder.set_insignificance(registration.type_id(), default_importance() / 4);
+        }
 
         // find functions on the namespace
         for (_, function) in
@@ -98,10 +141,15 @@ pub fn generate_lad_file(
     }
 
     // find global instances
-
     for (key, global) in global_registry.iter() {
         let type_info = global.type_information.clone();
         builder.add_instance_dynamic(key.to_string(), global.maker.is_none(), type_info);
+    }
+
+    // find global dummies
+    for (key, global) in global_registry.iter_dummies() {
+        let lad_type_id = builder.lad_id_from_type_id(global.type_id);
+        builder.add_instance_manually(key.to_string(), false, LadTypeKind::Val(lad_type_id));
     }
 
     let file = builder.build();

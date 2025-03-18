@@ -15,7 +15,8 @@ pub struct BevyInputScriptingPlugin;
 #[script_bindings(
     remote,
     name = "gamepad_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gamepad::Gamepad {
     ///  Returns the directional pad as a [`Vec2`]
@@ -101,7 +102,8 @@ impl bevy::input::gamepad::Gamepad {
 #[script_bindings(
     remote,
     name = "gamepad_axis_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gamepad::GamepadAxis {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::input::gamepad::GamepadAxis>) -> () {
@@ -134,7 +136,8 @@ impl bevy::input::gamepad::GamepadAxis {
 #[script_bindings(
     remote,
     name = "gamepad_button_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gamepad::GamepadButton {
     fn assert_receiver_is_total_eq(
@@ -169,7 +172,8 @@ impl bevy::input::gamepad::GamepadButton {
 #[script_bindings(
     remote,
     name = "gamepad_settings_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gamepad::GamepadSettings {
     fn clone(
@@ -185,7 +189,8 @@ impl bevy::input::gamepad::GamepadSettings {
 #[script_bindings(
     remote,
     name = "key_code_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::keyboard::KeyCode {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::input::keyboard::KeyCode>) -> () {
@@ -218,7 +223,8 @@ impl bevy::input::keyboard::KeyCode {
 #[script_bindings(
     remote,
     name = "mouse_button_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::mouse::MouseButton {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::input::mouse::MouseButton>) -> () {
@@ -251,7 +257,8 @@ impl bevy::input::mouse::MouseButton {
 #[script_bindings(
     remote,
     name = "touch_input_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::touch::TouchInput {
     fn clone(
@@ -277,7 +284,8 @@ impl bevy::input::touch::TouchInput {
 #[script_bindings(
     remote,
     name = "keyboard_focus_lost_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::keyboard::KeyboardFocusLost {
     fn assert_receiver_is_total_eq(
@@ -312,7 +320,8 @@ impl bevy::input::keyboard::KeyboardFocusLost {
 #[script_bindings(
     remote,
     name = "keyboard_input_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::keyboard::KeyboardInput {
     fn assert_receiver_is_total_eq(
@@ -347,7 +356,8 @@ impl bevy::input::keyboard::KeyboardInput {
 #[script_bindings(
     remote,
     name = "accumulated_mouse_motion_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::mouse::AccumulatedMouseMotion {
     fn clone(
@@ -373,7 +383,8 @@ impl bevy::input::mouse::AccumulatedMouseMotion {
 #[script_bindings(
     remote,
     name = "accumulated_mouse_scroll_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::mouse::AccumulatedMouseScroll {
     fn clone(
@@ -399,7 +410,8 @@ impl bevy::input::mouse::AccumulatedMouseScroll {
 #[script_bindings(
     remote,
     name = "mouse_button_input_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::mouse::MouseButtonInput {
     fn assert_receiver_is_total_eq(
@@ -434,7 +446,8 @@ impl bevy::input::mouse::MouseButtonInput {
 #[script_bindings(
     remote,
     name = "mouse_motion_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::mouse::MouseMotion {
     fn clone(
@@ -460,7 +473,8 @@ impl bevy::input::mouse::MouseMotion {
 #[script_bindings(
     remote,
     name = "mouse_wheel_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::mouse::MouseWheel {
     fn clone(
@@ -486,7 +500,8 @@ impl bevy::input::mouse::MouseWheel {
 #[script_bindings(
     remote,
     name = "gamepad_axis_changed_event_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gamepad::GamepadAxisChangedEvent {
     fn clone(
@@ -526,7 +541,8 @@ impl bevy::input::gamepad::GamepadAxisChangedEvent {
 #[script_bindings(
     remote,
     name = "gamepad_button_changed_event_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gamepad::GamepadButtonChangedEvent {
     fn clone(
@@ -568,7 +584,8 @@ impl bevy::input::gamepad::GamepadButtonChangedEvent {
 #[script_bindings(
     remote,
     name = "gamepad_button_state_changed_event_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gamepad::GamepadButtonStateChangedEvent {
     fn assert_receiver_is_total_eq(
@@ -617,7 +634,8 @@ impl bevy::input::gamepad::GamepadButtonStateChangedEvent {
 #[script_bindings(
     remote,
     name = "gamepad_connection_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gamepad::GamepadConnection {
     fn clone(
@@ -643,7 +661,8 @@ impl bevy::input::gamepad::GamepadConnection {
 #[script_bindings(
     remote,
     name = "gamepad_connection_event_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gamepad::GamepadConnectionEvent {
     fn clone(
@@ -697,7 +716,8 @@ impl bevy::input::gamepad::GamepadConnectionEvent {
 #[script_bindings(
     remote,
     name = "gamepad_event_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gamepad::GamepadEvent {
     fn clone(
@@ -723,7 +743,8 @@ impl bevy::input::gamepad::GamepadEvent {
 #[script_bindings(
     remote,
     name = "gamepad_input_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gamepad::GamepadInput {
     fn assert_receiver_is_total_eq(
@@ -758,7 +779,8 @@ impl bevy::input::gamepad::GamepadInput {
 #[script_bindings(
     remote,
     name = "gamepad_rumble_request_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gamepad::GamepadRumbleRequest {
     fn clone(
@@ -784,7 +806,8 @@ impl bevy::input::gamepad::GamepadRumbleRequest {
 #[script_bindings(
     remote,
     name = "raw_gamepad_axis_changed_event_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gamepad::RawGamepadAxisChangedEvent {
     fn clone(
@@ -824,7 +847,8 @@ impl bevy::input::gamepad::RawGamepadAxisChangedEvent {
 #[script_bindings(
     remote,
     name = "raw_gamepad_button_changed_event_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gamepad::RawGamepadButtonChangedEvent {
     fn clone(
@@ -864,7 +888,8 @@ impl bevy::input::gamepad::RawGamepadButtonChangedEvent {
 #[script_bindings(
     remote,
     name = "raw_gamepad_event_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gamepad::RawGamepadEvent {
     fn clone(
@@ -890,7 +915,8 @@ impl bevy::input::gamepad::RawGamepadEvent {
 #[script_bindings(
     remote,
     name = "pinch_gesture_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gestures::PinchGesture {
     fn clone(
@@ -916,7 +942,8 @@ impl bevy::input::gestures::PinchGesture {
 #[script_bindings(
     remote,
     name = "rotation_gesture_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gestures::RotationGesture {
     fn clone(
@@ -942,7 +969,8 @@ impl bevy::input::gestures::RotationGesture {
 #[script_bindings(
     remote,
     name = "double_tap_gesture_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gestures::DoubleTapGesture {
     fn clone(
@@ -968,7 +996,8 @@ impl bevy::input::gestures::DoubleTapGesture {
 #[script_bindings(
     remote,
     name = "pan_gesture_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gestures::PanGesture {
     fn clone(
@@ -994,7 +1023,8 @@ impl bevy::input::gestures::PanGesture {
 #[script_bindings(
     remote,
     name = "button_state_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::ButtonState {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::input::ButtonState>) -> () {
@@ -1030,7 +1060,8 @@ impl bevy::input::ButtonState {
 #[script_bindings(
     remote,
     name = "button_settings_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gamepad::ButtonSettings {
     fn clone(
@@ -1119,7 +1150,8 @@ impl bevy::input::gamepad::ButtonSettings {
 #[script_bindings(
     remote,
     name = "axis_settings_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gamepad::AxisSettings {
     ///  Clamps the `raw_value` according to the `AxisSettings`.
@@ -1270,7 +1302,8 @@ impl bevy::input::gamepad::AxisSettings {
 #[script_bindings(
     remote,
     name = "button_axis_settings_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gamepad::ButtonAxisSettings {
     fn clone(
@@ -1302,7 +1335,8 @@ impl bevy::input::gamepad::ButtonAxisSettings {
 #[script_bindings(
     remote,
     name = "gamepad_rumble_intensity_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::gamepad::GamepadRumbleIntensity {
     fn clone(
@@ -1348,7 +1382,8 @@ impl bevy::input::gamepad::GamepadRumbleIntensity {
 #[script_bindings(
     remote,
     name = "key_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::keyboard::Key {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::input::keyboard::Key>) -> () {
@@ -1379,7 +1414,8 @@ impl bevy::input::keyboard::Key {
 #[script_bindings(
     remote,
     name = "native_key_code_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::keyboard::NativeKeyCode {
     fn assert_receiver_is_total_eq(
@@ -1414,7 +1450,8 @@ impl bevy::input::keyboard::NativeKeyCode {
 #[script_bindings(
     remote,
     name = "native_key_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::keyboard::NativeKey {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::input::keyboard::NativeKey>) -> () {
@@ -1447,7 +1484,8 @@ impl bevy::input::keyboard::NativeKey {
 #[script_bindings(
     remote,
     name = "mouse_scroll_unit_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::mouse::MouseScrollUnit {
     fn assert_receiver_is_total_eq(
@@ -1482,7 +1520,8 @@ impl bevy::input::mouse::MouseScrollUnit {
 #[script_bindings(
     remote,
     name = "touch_phase_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::touch::TouchPhase {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::input::touch::TouchPhase>) -> () {
@@ -1515,7 +1554,8 @@ impl bevy::input::touch::TouchPhase {
 #[script_bindings(
     remote,
     name = "force_touch_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::input::touch::ForceTouch {
     fn clone(
