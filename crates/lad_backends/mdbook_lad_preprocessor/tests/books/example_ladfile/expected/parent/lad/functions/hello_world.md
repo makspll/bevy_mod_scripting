@@ -1,11 +1,16 @@
-# hello\_world
+# `hello_world`
 
 > No Documentation 🚧
 
 #### Arguments
 
-- **arg1** : `usize` \- No Documentation 🚧
+| Name | Type | Documentation |
+| --- | --- | --- |
+| **arg1** | [usize](parent/lad/functions/../types/usize.md) | No Documentation 🚧 |
 
 #### Returns
 
-- **arg0** : `usize` \- No Documentation 🚧
+| Name | Type | Documentation |
+| --- | --- | --- |
+| **arg0** | [usize](parent/lad/functions/../types/usize.md) | No Documentation 🚧 |
+

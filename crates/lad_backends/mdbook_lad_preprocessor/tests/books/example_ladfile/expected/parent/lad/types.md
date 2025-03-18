@@ -1,10 +1,13 @@
 # Types
 
-## Types
+## Available Types
+
+All registered reflect\-able types which can be constructed and directly manipulated by scripts\.
 
 | Type | Summary |
 | --- | --- |
-| `EnumType` | [No Documentation 🚧](./types/enumtype.md) |
-| `StructType<usize>` | [ I am a struct](./types/structtypeusize.md) |
-| `TupleStructType` | [ I am a tuple test type](./types/tuplestructtype.md) |
-| `UnitType` | [ I am a unit test type](./types/unittype.md) |
+| [`StructType<usize>`](/parent/lad/types/structtypeusize.md) |  I am a struct |
+| [`EnumType`](/parent/lad/types/enumtype.md) | No Documentation 🚧 |
+| [`TupleStructType`](/parent/lad/types/tuplestructtype.md) |  I am a tuple test type |
+| [`UnitType`](/parent/lad/types/unittype.md) |  I am a unit test type |
+
