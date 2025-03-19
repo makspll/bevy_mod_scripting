@@ -171,6 +171,7 @@ impl<'w> WorldAccessGuard<'w> {
         allocator: AppReflectAllocator,
         function_registry: AppScriptFunctionRegistry,
         schedule_registry: AppScheduleRegistry,
+        script_component_registry: AppScriptComponentRegistry,
     ) -> Self {
         Self {
             inner: Rc::new(WorldAccessGuardInner {
@@ -184,6 +185,7 @@ impl<'w> WorldAccessGuard<'w> {
                 allocator,
                 function_registry,
                 schedule_registry,
+                script_component_registry,
             }),
             invalid: Rc::new(false.into()),
         }
@@ -206,6 +208,10 @@ impl<'w> WorldAccessGuard<'w> {
             .get_resource_or_init::<AppScriptFunctionRegistry>()
             .clone();
 
+        let script_component_registry = world
+            .get_resource_or_init::<AppScriptComponentRegistry>()
+            .clone();
+
         let schedule_registry = world.get_resource_or_init::<AppScheduleRegistry>().clone();
         Self {
             inner: Rc::new(WorldAccessGuardInner {
@@ -215,6 +221,7 @@ impl<'w> WorldAccessGuard<'w> {
                 type_registry,
                 function_registry,
                 schedule_registry,
+                script_component_registry,
             }),
             invalid: Rc::new(false.into()),
         }
@@ -328,6 +335,11 @@ impl<'w> WorldAccessGuard<'w> {
     /// Returns the schedule registry for the world
     pub fn schedule_registry(&self) -> AppScheduleRegistry {
         self.inner.schedule_registry.clone()
+    }
+
+    /// Returns the component registry for the world
+    pub fn component_registry(&self) -> AppScriptComponentRegistry {
+        self.inner.script_component_registry.clone()
     }
 
     /// Returns the script allocator for the world
@@ -813,12 +825,12 @@ impl WorldAccessGuard<'_> {
     }
 
     /// get a type registration for the type, without checking if it's a component or resource
-    pub fn get_type_by_name(&self, type_name: String) -> Option<ScriptTypeRegistration> {
+    pub fn get_type_by_name(&self, type_name: &str) -> Option<ScriptTypeRegistration> {
         let type_registry = self.type_registry();
         let type_registry = type_registry.read();
         type_registry
-            .get_with_short_type_path(&type_name)
-            .or_else(|| type_registry.get_with_type_path(&type_name))
+            .get_with_short_type_path(type_name)
+            .or_else(|| type_registry.get_with_type_path(type_name))
             .map(|registration| ScriptTypeRegistration::new(Arc::new(registration.clone())))
     }
 
@@ -864,10 +876,17 @@ impl WorldAccessGuard<'_> {
         >,
         InteropError,
     > {
-        let val = self.get_type_by_name(type_name);
+        let val = self.get_type_by_name(&type_name);
         Ok(match val {
             Some(registration) => Some(self.get_type_registration(registration)?),
-            None => None,
+            None => {
+                // try the component registry
+                let components = self.component_registry();
+                let components = components.read();
+                components
+                    .get(&type_name)
+                    .map(|c| Union::new_right(Union::new_left(c.registration.clone())))
+            }
         })
     }
 
@@ -921,20 +940,25 @@ impl WorldAccessGuard<'_> {
                 )
             })?;
 
+        bevy::log::debug!("found component data");
+
         // we look for ReflectDefault or ReflectFromWorld data then a ReflectComponent data
         let instance = if let Some(default_td) = registration
             .type_registration()
             .type_registration()
             .data::<ReflectDefault>()
         {
+            bevy::log::debug!("found default data");
             default_td.default()
         } else if let Some(from_world_td) = registration
             .type_registration()
             .type_registration()
             .data::<ReflectFromWorld>()
         {
+            bevy::log::debug!("found reflect from world");
             self.with_global_access(|world| from_world_td.from_world(world))?
         } else {
+            bevy::log::debug!("found neither");
             return Err(InteropError::missing_type_data(
                 registration.registration.type_id(),
                 "ReflectDefault or ReflectFromWorld".to_owned(),
@@ -950,6 +974,7 @@ impl WorldAccessGuard<'_> {
                 .map_err(|_| InteropError::missing_entity(entity))?;
             {
                 let registry = type_registry.read();
+                bevy::log::debug!("inserting component instance using component data");
                 component_data.insert(&mut entity, instance.as_partial_reflect(), &registry);
             }
             Ok(())
@@ -1001,12 +1026,23 @@ impl WorldAccessGuard<'_> {
             .get_entity(entity)
             .ok_or_else(|| InteropError::missing_entity(entity))?;
 
+        bevy::log::debug!("Retrieving component with component id: {:?}", component_id);
+
         let component_info = cell
             .components()
             .get_info(component_id)
             .ok_or_else(|| InteropError::invalid_component(component_id))?;
 
-        if entity.contains_id(component_id) {
+        bevy::log::debug!(
+            "Retrieved component with component info: {:?}",
+            component_info
+        );
+
+        if entity.contains_id(component_id)
+            || component_info
+                .type_id()
+                .is_some_and(|t| entity.contains_type_id(t))
+        {
             Ok(Some(ReflectReference {
                 base: ReflectBaseType {
                     type_id: component_info.type_id().ok_or_else(|| {

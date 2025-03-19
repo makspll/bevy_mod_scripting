@@ -445,6 +445,21 @@ impl World {
         let world = ctxt.world()?;
         world.exit()
     }
+
+    /// Registers a new component type with the world.
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `name`: The name of the component type.
+    /// Returns:
+    /// * `registration`: The registration of the new component type if successful.
+    fn register_new_component(
+        ctxt: FunctionCallContext,
+        name: String,
+    ) -> Result<Val<ScriptComponentRegistration>, InteropError> {
+        profiling::function_scope!("register_new_component");
+        let world = ctxt.world()?;
+        world.register_script_component(name).map(Val)
+    }
 }
 
 #[script_bindings(

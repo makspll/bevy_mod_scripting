@@ -13,10 +13,11 @@ use super::{
 
 /// An abstraction of values that can be passed to and from scripts.
 /// This allows us to re-use logic between scripting languages.
-#[derive(Debug, Clone, PartialEq, Reflect)]
+#[derive(Debug, Clone, PartialEq, Reflect, Default)]
 #[reflect(opaque)]
 pub enum ScriptValue {
     /// Represents the absence of a value.
+    #[default]
     Unit,
     /// Represents a boolean value.
     Bool(bool),
