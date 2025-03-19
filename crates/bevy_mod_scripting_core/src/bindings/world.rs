@@ -24,7 +24,7 @@ use super::{
 use crate::{
     bindings::{
         function::{from::FromScript, from_ref::FromScriptRef},
-        with_access_read, with_access_write,
+        with_access_read, with_access_write, ScriptComponent,
     },
     error::InteropError,
     reflection_extensions::PartialReflectExt,
@@ -928,20 +928,6 @@ impl WorldAccessGuard<'_> {
         entity: Entity,
         registration: ScriptComponentRegistration,
     ) -> Result<(), InteropError> {
-        // let cell = self.as_unsafe_world_cell()?;
-        let component_data = registration
-            .type_registration()
-            .type_registration()
-            .data::<ReflectComponent>()
-            .ok_or_else(|| {
-                InteropError::missing_type_data(
-                    registration.registration.type_id(),
-                    "ReflectComponent".to_owned(),
-                )
-            })?;
-
-        bevy::log::debug!("found component data");
-
         // we look for ReflectDefault or ReflectFromWorld data then a ReflectComponent data
         let instance = if let Some(default_td) = registration
             .type_registration()
@@ -965,20 +951,7 @@ impl WorldAccessGuard<'_> {
             ));
         };
 
-        //  TODO: this shouldn't need entire world access it feels
-        self.with_global_access(|world| {
-            let type_registry = self.type_registry();
-
-            let mut entity = world
-                .get_entity_mut(entity)
-                .map_err(|_| InteropError::missing_entity(entity))?;
-            {
-                let registry = type_registry.read();
-                bevy::log::debug!("inserting component instance using component data");
-                component_data.insert(&mut entity, instance.as_partial_reflect(), &registry);
-            }
-            Ok(())
-        })?
+        registration.insert_into_entity(self.clone(), entity, instance)
     }
 
     /// insert the component into the entity
@@ -1038,14 +1011,17 @@ impl WorldAccessGuard<'_> {
             component_info
         );
 
-        if entity.contains_id(component_id)
-            || component_info
-                .type_id()
-                .is_some_and(|t| entity.contains_type_id(t))
-        {
+        if entity.contains_id(component_id) {
+            let type_id = component_info.type_id().or_else(|| {
+                // check its a script component
+                component_info
+                    .name()
+                    .starts_with("Script")
+                    .then_some(TypeId::of::<ScriptComponent>())
+            });
             Ok(Some(ReflectReference {
                 base: ReflectBaseType {
-                    type_id: component_info.type_id().ok_or_else(|| {
+                    type_id: type_id.ok_or_else(|| {
                         InteropError::unsupported_operation(
                             None,
                             None,

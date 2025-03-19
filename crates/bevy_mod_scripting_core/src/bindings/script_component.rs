@@ -6,7 +6,6 @@ use bevy::{
     app::{App, Plugin},
     ecs::{
         component::{Component, ComponentDescriptor, StorageType},
-        reflect::ReflectComponent,
         system::Resource,
     },
     reflect::{prelude::ReflectDefault, GetTypeRegistration, Reflect},
@@ -17,7 +16,7 @@ use std::{alloc::Layout, mem::needs_drop, sync::Arc};
 
 /// A dynamic script component, with script set
 #[derive(Reflect, Clone, Default)]
-#[reflect(Component, Default)]
+#[reflect(Default)]
 pub struct ScriptComponent {
     data: ScriptValue,
 }
@@ -74,6 +73,14 @@ impl WorldAccessGuard<'_> {
         &self,
         component_name: String,
     ) -> Result<ScriptComponentRegistration, InteropError> {
+        if !component_name.starts_with("Script") {
+            return Err(InteropError::unsupported_operation(
+                None,
+                None,
+                "script registered component name must start with 'Script'",
+            ));
+        }
+
         let component_id = self.with_global_access(|w| {
             let descriptor = unsafe {
                 // Safety: same safety guarantees as ComponentDescriptor::new
@@ -127,3 +134,52 @@ impl Plugin for DynamicScriptComponentPlugin {
             .register_type::<ScriptComponent>();
     }
 }
+
+// #[cfg(test)]
+// mod test {
+//     use std::ptr::NonNull;
+
+//     use super::*;
+//     use bevy::{ecs::world::World, ptr::OwningPtr};
+
+//     #[test]
+//     fn test_script_component() {
+//         let mut world = World::new();
+//         let component_name = "MyScriptComponent";
+
+//         #[derive(Reflect, Component)]
+//         struct UnderlyingComponent;
+
+//         // initialize component descriptor dynamically
+//         let descriptor = unsafe {
+//             // Safety: same safety guarantees as ComponentDescriptor::new
+//             // we know the type in advance
+//             // we only use this method to name the component
+//             ComponentDescriptor::new_with_layout(
+//                 component_name,
+//                 UnderlyingComponent::STORAGE_TYPE,
+//                 Layout::new::<UnderlyingComponent>(),
+//                 needs_drop::<UnderlyingComponent>()
+//                     .then_some(|x| x.drop_as::<UnderlyingComponent>()),
+//             )
+//         };
+
+//         // register with the world
+//         let component_id = world.register_component_with_descriptor(descriptor);
+
+//         // insert into the entity
+//         let entity = world.spawn_empty().id();
+//         let mut entity = world.entity_mut(entity);
+
+//         let value = Box::new(UnderlyingComponent);
+//         let value_ref = Box::into_raw(value).cast::<u8>();
+//         let ptr = unsafe { OwningPtr::new(NonNull::new(value_ref).unwrap()) };
+//         unsafe { entity.insert_by_id(component_id, ptr) };
+
+//         // check it gets inserted
+//         assert!(
+//             entity.contains_id(component_id),
+//             "entity does not contain freshly inserted component"
+//         )
+//     }
+// }
