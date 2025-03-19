@@ -286,7 +286,7 @@ impl<'a> Section<'a> {
             }
             SectionData::InstancesSummary => {
                 let instances = self.ladfile.globals.iter().collect::<Vec<_>>();
-                let types_directory = self.parent_path.join("types").to_string_lossy().to_string();
+                let types_directory = PathBuf::from("/").join(self.parent_path.join("types"));
                 vec![SectionItem::InstancesSummary {
                     instances,
                     ladfile: self.ladfile,
@@ -355,11 +355,7 @@ impl<'a> Section<'a> {
                 ]
             }
             SectionData::FunctionDetail { function } => {
-                let types_directory = self
-                    .parent_path
-                    .join("../types")
-                    .to_string_lossy()
-                    .to_string();
+                let types_directory = self.parent_path.join("../types");
                 vec![SectionItem::FunctionDetails {
                     function,
                     ladfile: self.ladfile,
@@ -404,7 +400,7 @@ pub enum SectionItem<'a> {
     FunctionDetails {
         function: &'a LadFunction,
         ladfile: &'a ladfile::LadFile,
-        types_directory: String,
+        types_directory: PathBuf,
     },
     TypesSummary {
         types: Vec<&'a LadTypeId>,
@@ -414,7 +410,7 @@ pub enum SectionItem<'a> {
     InstancesSummary {
         ladfile: &'a ladfile::LadFile,
         instances: Vec<(&'a Cow<'static, str>, &'a LadInstance)>,
-        types_directory: String,
+        types_directory: PathBuf,
     },
 }
 
@@ -576,7 +572,7 @@ impl IntoMarkdown for SectionItem<'_> {
                             move |lad_type_id, ladfile| {
                                 let printed_type =
                                     linkify_filename(print_type(ladfile, &lad_type_id));
-                                Some(format!("/{types_directory}/{printed_type}.md"))
+                                Some(types_directory.join(printed_type).with_extension("md"))
                             },
                         );
                         arg_visitor.visit(&v.type_kind);
@@ -650,7 +646,7 @@ impl IntoMarkdown for SectionItem<'_> {
                             idx,
                             arg,
                             ladfile,
-                            types_directory,
+                            types_directory.clone(),
                             builder,
                         );
                     }
@@ -663,7 +659,7 @@ impl IntoMarkdown for SectionItem<'_> {
                         0,
                         &function.return_type,
                         ladfile,
-                        types_directory,
+                        types_directory.clone(),
                         builder,
                     )
                 });
@@ -676,7 +672,7 @@ fn build_lad_function_argument_row(
     idx: usize,
     arg: &LadArgument,
     ladfile: &LadFile,
-    types_directory: &str,
+    types_directory: PathBuf,
     builder: &mut TableBuilder,
 ) {
     // we exclude function call context as it's not something scripts pass down
@@ -691,7 +687,7 @@ fn build_lad_function_argument_row(
     let mut arg_visitor =
         MarkdownArgumentVisitor::new_with_linkifier(ladfile, move |lad_type_id, ladfile| {
             let printed_type = linkify_filename(print_type(ladfile, &lad_type_id));
-            Some(format!("{}/{}.md", types_directory, printed_type))
+            Some(types_directory.join(printed_type).with_extension("md"))
         });
     arg_visitor.visit(&arg.kind);
     let markdown = build_escaped_visitor(arg_visitor);

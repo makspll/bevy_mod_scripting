@@ -1,5 +1,7 @@
 //! Defines a visitor for function arguments of the `LAD` format.
 
+use std::path::PathBuf;
+
 use ladfile::{ArgumentVisitor, LadTypeId};
 
 use crate::markdown::MarkdownBuilder;
@@ -7,7 +9,7 @@ use crate::markdown::MarkdownBuilder;
 pub(crate) struct MarkdownArgumentVisitor<'a> {
     ladfile: &'a ladfile::LadFile,
     buffer: MarkdownBuilder,
-    linkifier: Box<dyn Fn(LadTypeId, &'a ladfile::LadFile) -> Option<String> + 'static>,
+    linkifier: Box<dyn Fn(LadTypeId, &'a ladfile::LadFile) -> Option<PathBuf> + 'static>,
     pub raw_type_id_replacement: Option<&'static str>,
 }
 impl<'a> MarkdownArgumentVisitor<'a> {
@@ -25,7 +27,7 @@ impl<'a> MarkdownArgumentVisitor<'a> {
 
     /// Create a new instance of the visitor with a custom linkifier function
     pub fn new_with_linkifier<
-        F: Fn(LadTypeId, &'a ladfile::LadFile) -> Option<String> + 'static,
+        F: Fn(LadTypeId, &'a ladfile::LadFile) -> Option<PathBuf> + 'static,
     >(
         ladfile: &'a ladfile::LadFile,
         linkifier: F,
@@ -69,6 +71,23 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
             let link_value = (self.linkifier)(type_id.clone(), self.ladfile);
             let link_display = type_identifier;
             if let Some(link_value) = link_value {
+                // canonicalize to linux paths
+                let link_value = link_value
+                    .components()
+                    .map(|c| match c {
+                        std::path::Component::RootDir => "".to_string(),
+                        std::path::Component::CurDir => ".".to_string(),
+                        std::path::Component::ParentDir => "..".to_string(),
+                        std::path::Component::Prefix(prefix_component) => {
+                            prefix_component.as_os_str().to_string_lossy().to_string()
+                        }
+                        std::path::Component::Normal(os_str) => {
+                            os_str.to_string_lossy().to_string()
+                        }
+                    })
+                    .collect::<Vec<_>>()
+                    .join("/");
+
                 self.buffer.link(link_display, link_value);
             } else {
                 self.buffer.text(link_display);
@@ -149,10 +168,10 @@ mod test {
 
         let mut visitor =
             MarkdownArgumentVisitor::new_with_linkifier(&ladfile, |type_id, ladfile| {
-                Some(format!(
-                    "root/{}",
-                    ladfile.get_type_identifier(&type_id, None)
-                ))
+                Some(
+                    PathBuf::from("root")
+                        .join(ladfile.get_type_identifier(&type_id, None).to_string()),
+                )
             });
 
         let first_type_id = ladfile.types.first().unwrap().0;
