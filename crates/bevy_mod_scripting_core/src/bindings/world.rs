@@ -9,13 +9,23 @@ use super::{
     access_map::{
         AccessCount, AccessMapKey, AnyAccessMap, DynamicSystemMeta, ReflectAccessId,
         ReflectAccessKind, SubsetAccessMap,
-    }, function::{
+    },
+    function::{
         namespace::Namespace,
         script_function::{AppScriptFunctionRegistry, DynamicScriptFunction, FunctionCallContext},
-    }, pretty_print::DisplayWithWorld, schedule::AppScheduleRegistry, script_value::ScriptValue, with_global_access, AppReflectAllocator, ReflectBase, ReflectBaseType, ReflectReference, ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration, Union
+    },
+    pretty_print::DisplayWithWorld,
+    schedule::AppScheduleRegistry,
+    script_value::ScriptValue,
+    with_global_access, AppReflectAllocator, AppScriptComponentRegistry, ReflectBase,
+    ReflectBaseType, ReflectReference, ScriptComponentRegistration, ScriptResourceRegistration,
+    ScriptTypeRegistration, Union,
 };
 use crate::{
-    bindings::{function::{from::FromScript, from_ref::FromScriptRef}, with_access_read, with_access_write},
+    bindings::{
+        function::{from::FromScript, from_ref::FromScriptRef},
+        with_access_read, with_access_write,
+    },
     error::InteropError,
     reflection_extensions::PartialReflectExt,
 };
@@ -73,6 +83,8 @@ pub(crate) struct WorldAccessGuardInner<'w> {
     function_registry: AppScriptFunctionRegistry,
     /// The schedule registry for the world
     schedule_registry: AppScheduleRegistry,
+    /// The registry of script registered components
+    script_component_registry: AppScriptComponentRegistry,
 }
 
 impl std::fmt::Debug for WorldAccessGuardInner<'_> {
@@ -542,7 +554,6 @@ impl<'w> WorldAccessGuard<'w> {
 /// Impl block for higher level world methods
 #[profiling::all_functions]
 impl WorldAccessGuard<'_> {
-    
     fn construct_from_script_value(
         &self,
         descriptor: impl Into<Cow<'static, str>>,
@@ -812,8 +823,16 @@ impl WorldAccessGuard<'_> {
     }
 
     /// get a type erased type registration for the type including information about whether it's a component or resource
-    pub(crate) fn get_type_registration(&self, registration: ScriptTypeRegistration) -> Result<Union<ScriptTypeRegistration, Union<ScriptComponentRegistration, ScriptResourceRegistration>>, InteropError> {
-
+    pub(crate) fn get_type_registration(
+        &self,
+        registration: ScriptTypeRegistration,
+    ) -> Result<
+        Union<
+            ScriptTypeRegistration,
+            Union<ScriptComponentRegistration, ScriptResourceRegistration>,
+        >,
+        InteropError,
+    > {
         let registration = match self.get_resource_type(registration)? {
             Ok(res) => {
                 return Ok(Union::new_right(Union::new_right(res)));
@@ -831,14 +850,23 @@ impl WorldAccessGuard<'_> {
         Ok(Union::new_left(registration))
     }
 
-    /// Similar to [`Self::get_type_by_name`] but returns a type erased [`ScriptTypeRegistration`], [`ScriptComponentRegistration`] or [`ScriptResourceRegistration`] 
+    /// Similar to [`Self::get_type_by_name`] but returns a type erased [`ScriptTypeRegistration`], [`ScriptComponentRegistration`] or [`ScriptResourceRegistration`]
     /// depending on the underlying type and state of the world.
-    pub fn get_type_registration_by_name(&self, type_name: String) -> Result<Option<Union<ScriptTypeRegistration, Union<ScriptComponentRegistration, ScriptResourceRegistration>>>, InteropError> {
+    pub fn get_type_registration_by_name(
+        &self,
+        type_name: String,
+    ) -> Result<
+        Option<
+            Union<
+                ScriptTypeRegistration,
+                Union<ScriptComponentRegistration, ScriptResourceRegistration>,
+            >,
+        >,
+        InteropError,
+    > {
         let val = self.get_type_by_name(type_name);
         Ok(match val {
-            Some(registration) => {
-                Some(self.get_type_registration(registration)?)
-            }
+            Some(registration) => Some(self.get_type_registration(registration)?),
             None => None,
         })
     }
