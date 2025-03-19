@@ -261,7 +261,7 @@ impl IntoMarkdown for Markdown {
                             .replace(|c: char| !c.is_alphabetic(), "")
                     )
                 } else {
-                    url.clone()
+                    url.clone().replace("\\", "/")
                 };
 
                 builder.append(&url);

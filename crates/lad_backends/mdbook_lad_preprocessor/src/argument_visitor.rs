@@ -72,21 +72,7 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
             let link_display = type_identifier;
             if let Some(link_value) = link_value {
                 // canonicalize to linux paths
-                let link_value = link_value
-                    .components()
-                    .map(|c| match c {
-                        std::path::Component::RootDir => "".to_string(),
-                        std::path::Component::CurDir => ".".to_string(),
-                        std::path::Component::ParentDir => "..".to_string(),
-                        std::path::Component::Prefix(prefix_component) => {
-                            prefix_component.as_os_str().to_string_lossy().to_string()
-                        }
-                        std::path::Component::Normal(os_str) => {
-                            os_str.to_string_lossy().to_string().replace("\\", "/")
-                        }
-                    })
-                    .collect::<Vec<_>>()
-                    .join("/");
+                let link_value = link_value.to_string_lossy().to_string().replace("\\", "/");
 
                 self.buffer.link(link_display, link_value);
             } else {
