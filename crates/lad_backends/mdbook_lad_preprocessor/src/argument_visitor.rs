@@ -82,7 +82,7 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
                             prefix_component.as_os_str().to_string_lossy().to_string()
                         }
                         std::path::Component::Normal(os_str) => {
-                            os_str.to_string_lossy().to_string()
+                            os_str.to_string_lossy().to_string().replace("\\", "/")
                         }
                     })
                     .collect::<Vec<_>>()
@@ -169,14 +169,17 @@ mod test {
         let mut visitor =
             MarkdownArgumentVisitor::new_with_linkifier(&ladfile, |type_id, ladfile| {
                 Some(
-                    PathBuf::from("root")
+                    PathBuf::from("root\\asd")
                         .join(ladfile.get_type_identifier(&type_id, None).to_string()),
                 )
             });
 
         let first_type_id = ladfile.types.first().unwrap().0;
         visitor.visit_lad_type_id(first_type_id);
-        assert_eq!(visitor.buffer.build(), "StructType<[usize](root/usize)>");
+        assert_eq!(
+            visitor.buffer.build(),
+            "StructType<[usize](root/asd/usize)>"
+        );
     }
 
     #[test]
