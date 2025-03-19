@@ -16,7 +16,8 @@ use crate::{
         script_value::ScriptValue,
         ReflectReference,
     },
-    error::InteropError, reflection_extensions::TypeInfoExtensions,
+    error::InteropError,
+    reflection_extensions::TypeInfoExtensions,
 };
 
 /// All Through types follow one rule:
@@ -75,8 +76,7 @@ pub enum TypedWrapperKind {
 
 /// A dynamic version of [`TypedThrough`], which can be used to convert a [`TypeInfo`] into a [`ThroughTypeInfo`].
 pub fn into_through_type_info(type_info: &'static TypeInfo) -> ThroughTypeInfo {
-
-    let option = (||{
+    let option = (|| {
         if let Ok(array) = type_info.as_array() {
             let len = array.capacity();
             let inner = array.item_info()?;
@@ -84,10 +84,10 @@ pub fn into_through_type_info(type_info: &'static TypeInfo) -> ThroughTypeInfo {
                 Box::new(into_through_type_info(inner)),
                 len,
             )));
-        } else if let Ok(hash_map) = type_info.as_map()  {
+        } else if let Ok(hash_map) = type_info.as_map() {
             let key_type = hash_map.key_info()?;
             let value_type = hash_map.value_info()?;
-    
+
             return Some(ThroughTypeInfo::TypedWrapper(TypedWrapperKind::HashMap(
                 Box::new(into_through_type_info(key_type)),
                 Box::new(into_through_type_info(value_type)),
@@ -97,7 +97,7 @@ pub fn into_through_type_info(type_info: &'static TypeInfo) -> ThroughTypeInfo {
             return Some(ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Vec(
                 Box::new(into_through_type_info(inner)),
             )));
-        } else if type_info.is_option(){
+        } else if type_info.is_option() {
             let enum_ = type_info.as_enum().ok()?;
             let inner = enum_.variant("Some")?;
             let inner = inner.as_tuple_variant().ok()?;
@@ -110,14 +110,14 @@ pub fn into_through_type_info(type_info: &'static TypeInfo) -> ThroughTypeInfo {
             let enum_ = type_info.as_enum().ok()?;
             // let error_variant = enum_.variant("Err")?;
             // TODO verify error variant is InteropError
-    
+
             let inner = enum_.variant("Ok")?;
             let inner = inner.as_tuple_variant().ok()?;
             let inner = inner.field_at(0)?;
             let inner = inner.type_info()?;
-            return Some(ThroughTypeInfo::TypedWrapper(TypedWrapperKind::InteropResult(
-                Box::new(into_through_type_info(inner)),
-            )));
+            return Some(ThroughTypeInfo::TypedWrapper(
+                TypedWrapperKind::InteropResult(Box::new(into_through_type_info(inner))),
+            ));
         } else if let Ok(tuple) = type_info.as_tuple() {
             let mut tuple_types = Vec::new();
             for i in 0..tuple.field_len() {
@@ -125,12 +125,17 @@ pub fn into_through_type_info(type_info: &'static TypeInfo) -> ThroughTypeInfo {
                 let field_type = field.type_info()?;
                 tuple_types.push(into_through_type_info(field_type));
             }
-            return Some(ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Tuple(tuple_types)));
+            return Some(ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Tuple(
+                tuple_types,
+            )));
         }
         None
     })();
-    
-    option.unwrap_or(ThroughTypeInfo::UntypedWrapper { through_type: type_info, wrapper_kind: UntypedWrapperKind::Val })
+
+    option.unwrap_or(ThroughTypeInfo::UntypedWrapper {
+        through_type: type_info,
+        wrapper_kind: UntypedWrapperKind::Val,
+    })
 }
 
 /// A trait for types that can be converted to a [`ThroughTypeInfo`].
@@ -262,7 +267,6 @@ macro_rules! impl_through_typed_tuple {
 
 bevy::utils::all_tuples!(impl_through_typed_tuple, 0, 13, T);
 
-
 #[cfg(test)]
 mod test {
     use super::*;
@@ -280,12 +284,15 @@ mod test {
         }
     }
 
-    fn assert_dynamic_through_type_is_val_info<T: Typed + TypedThrough> () {
+    fn assert_dynamic_through_type_is_val_info<T: Typed + TypedThrough>() {
         let type_info = T::type_info();
         let through_type_info = into_through_type_info(type_info);
 
         match through_type_info {
-            ThroughTypeInfo::UntypedWrapper{through_type, wrapper_kind} => {
+            ThroughTypeInfo::UntypedWrapper {
+                through_type,
+                wrapper_kind,
+            } => {
                 assert_eq!(wrapper_kind, UntypedWrapperKind::Val);
                 assert_eq!(through_type.type_id(), type_info.type_id());
                 assert_eq!(through_type.type_path(), type_info.type_path());
@@ -379,12 +386,12 @@ mod test {
             into_through_type_info(Vec::<i32>::type_info()),
             ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Vec(..))
         ));
-        
+
         assert!(matches!(
             into_through_type_info(std::collections::HashMap::<i32, f32>::type_info()),
             ThroughTypeInfo::TypedWrapper(TypedWrapperKind::HashMap(..))
         ));
-        
+
         assert!(matches!(
             into_through_type_info(Result::<i32, InteropError>::type_info()),
             ThroughTypeInfo::TypedWrapper(TypedWrapperKind::InteropResult(..))
@@ -403,6 +410,6 @@ mod test {
         assert!(matches!(
             into_through_type_info(<(i32, f32)>::type_info()),
             ThroughTypeInfo::TypedWrapper(TypedWrapperKind::Tuple(..))
-        ));        
+        ));
     }
 }

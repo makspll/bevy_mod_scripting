@@ -25,6 +25,10 @@ pub fn into_script(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// - `remote`: If true the original impl block will be ignored, and only the function registrations will be generated
 /// - `bms_core_path`: If set the path to override bms imports, normally only used internally
 /// - `unregistered`: If set, will use `new_unregistered` instead of `new` for the namespace builder
+/// - `core`: If set, marks the type as `core` using the `MarkAsCore` type data
+/// - `significant`: If set, marks the type as `significant` using the `MarkAsSignificant` type data
+///
+/// It is encouraged to place `significant` markers on your own types, for the purposes of documentation generation.
 #[proc_macro_attribute]
 pub fn script_bindings(
     args: proc_macro::TokenStream,

@@ -15,7 +15,8 @@ pub struct BevyMathScriptingPlugin;
 #[script_bindings(
     remote,
     name = "aspect_ratio_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::AspectRatio {
     fn clone(_self: Ref<bevy::math::AspectRatio>) -> Val<bevy::math::AspectRatio> {
@@ -67,7 +68,8 @@ impl bevy::math::AspectRatio {
 #[script_bindings(
     remote,
     name = "compass_octant_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::CompassOctant {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::math::CompassOctant>) -> () {
@@ -98,7 +100,8 @@ impl bevy::math::CompassOctant {
 #[script_bindings(
     remote,
     name = "compass_quadrant_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::CompassQuadrant {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::math::CompassQuadrant>) -> () {
@@ -131,7 +134,8 @@ impl bevy::math::CompassQuadrant {
 #[script_bindings(
     remote,
     name = "isometry_2_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::Isometry2d {
     fn clone(_self: Ref<bevy::math::Isometry2d>) -> Val<bevy::math::Isometry2d> {
@@ -268,7 +272,8 @@ impl bevy::math::Isometry2d {
 #[script_bindings(
     remote,
     name = "isometry_3_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::Isometry3d {
     fn clone(_self: Ref<bevy::math::Isometry3d>) -> Val<bevy::math::Isometry3d> {
@@ -372,7 +377,8 @@ impl bevy::math::Isometry3d {
 #[script_bindings(
     remote,
     name = "ray_2_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::Ray2d {
     fn clone(_self: Ref<bevy::math::Ray2d>) -> Val<bevy::math::Ray2d> {
@@ -431,7 +437,8 @@ impl bevy::math::Ray2d {
 #[script_bindings(
     remote,
     name = "ray_3_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::Ray3d {
     fn clone(_self: Ref<bevy::math::Ray3d>) -> Val<bevy::math::Ray3d> {
@@ -490,7 +497,8 @@ impl bevy::math::Ray3d {
 #[script_bindings(
     remote,
     name = "rot_2_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::Rot2 {
     ///  Returns the angle in radians needed to make `self` and `other` coincide.
@@ -790,7 +798,8 @@ impl bevy::math::Rot2 {
 #[script_bindings(
     remote,
     name = "dir_2_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::prelude::Dir2 {
     ///  Returns the inner [`Vec2`]
@@ -960,7 +969,8 @@ impl bevy::math::prelude::Dir2 {
 #[script_bindings(
     remote,
     name = "dir_3_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::prelude::Dir3 {
     ///  Returns the inner [`Vec3`]
@@ -1101,7 +1111,8 @@ impl bevy::math::prelude::Dir3 {
 #[script_bindings(
     remote,
     name = "dir_3_a_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::prelude::Dir3A {
     ///  Returns the inner [`Vec3A`]
@@ -1213,7 +1224,8 @@ impl bevy::math::prelude::Dir3A {
 #[script_bindings(
     remote,
     name = "i_rect_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::prelude::IRect {
     ///  Returns self as [`Rect`] (f32)
@@ -1547,7 +1559,8 @@ impl bevy::math::prelude::IRect {
 #[script_bindings(
     remote,
     name = "rect_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::prelude::Rect {
     ///  Returns self as [`IRect`] (i32)
@@ -1890,7 +1903,8 @@ impl bevy::math::prelude::Rect {
 #[script_bindings(
     remote,
     name = "u_rect_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::prelude::URect {
     ///  Returns self as [`IRect`] (i32)
@@ -2224,13 +2238,15 @@ impl bevy::math::prelude::URect {
 #[script_bindings(
     remote,
     name = "affine_3_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::Affine3 {}
 #[script_bindings(
     remote,
     name = "aabb_2_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::bounding::Aabb2d {
     ///  Computes the smallest [`BoundingCircle`] containing this [`Aabb2d`].
@@ -2282,7 +2298,8 @@ impl bevy::math::bounding::Aabb2d {
 #[script_bindings(
     remote,
     name = "bounding_circle_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::bounding::BoundingCircle {
     ///  Computes the smallest [`Aabb2d`] containing this [`BoundingCircle`].
@@ -2339,7 +2356,8 @@ impl bevy::math::bounding::BoundingCircle {
 #[script_bindings(
     remote,
     name = "circle_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Circle {
     fn clone(
@@ -2392,7 +2410,8 @@ impl bevy::math::primitives::Circle {
 #[script_bindings(
     remote,
     name = "annulus_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Annulus {
     fn clone(
@@ -2455,7 +2474,8 @@ impl bevy::math::primitives::Annulus {
 #[script_bindings(
     remote,
     name = "arc_2_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Arc2d {
     ///  Get the angle of the arc
@@ -2607,7 +2627,8 @@ impl bevy::math::primitives::Arc2d {
 #[script_bindings(
     remote,
     name = "capsule_2_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Capsule2d {
     fn clone(
@@ -2652,7 +2673,8 @@ impl bevy::math::primitives::Capsule2d {
 #[script_bindings(
     remote,
     name = "circular_sector_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::CircularSector {
     ///  Get the angle of the sector
@@ -2785,7 +2807,8 @@ impl bevy::math::primitives::CircularSector {
 #[script_bindings(
     remote,
     name = "circular_segment_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::CircularSegment {
     ///  Get the angle of the segment
@@ -2918,7 +2941,8 @@ impl bevy::math::primitives::CircularSegment {
 #[script_bindings(
     remote,
     name = "ellipse_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Ellipse {
     fn clone(
@@ -2988,7 +3012,8 @@ impl bevy::math::primitives::Ellipse {
 #[script_bindings(
     remote,
     name = "line_2_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Line2d {
     fn clone(
@@ -3014,7 +3039,8 @@ impl bevy::math::primitives::Line2d {
 #[script_bindings(
     remote,
     name = "plane_2_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Plane2d {
     fn clone(
@@ -3052,7 +3078,8 @@ impl bevy::math::primitives::Plane2d {
 #[script_bindings(
     remote,
     name = "rectangle_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Rectangle {
     fn clone(
@@ -3142,7 +3169,8 @@ impl bevy::math::primitives::Rectangle {
 #[script_bindings(
     remote,
     name = "regular_polygon_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::RegularPolygon {
     ///  Get the radius of the circumcircle on which all vertices
@@ -3252,7 +3280,8 @@ impl bevy::math::primitives::RegularPolygon {
 #[script_bindings(
     remote,
     name = "rhombus_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Rhombus {
     ///  Get the radius of the circumcircle on which all vertices
@@ -3337,7 +3366,8 @@ impl bevy::math::primitives::Rhombus {
 #[script_bindings(
     remote,
     name = "segment_2_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Segment2d {
     fn clone(
@@ -3395,7 +3425,8 @@ impl bevy::math::primitives::Segment2d {
 #[script_bindings(
     remote,
     name = "triangle_2_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Triangle2d {
     fn clone(
@@ -3469,7 +3500,8 @@ impl bevy::math::primitives::Triangle2d {
 #[script_bindings(
     remote,
     name = "aabb_3_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::bounding::Aabb3d {
     ///  Computes the smallest [`BoundingSphere`] containing this [`Aabb3d`].
@@ -3495,7 +3527,8 @@ impl bevy::math::bounding::Aabb3d {
 #[script_bindings(
     remote,
     name = "bounding_sphere_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::bounding::BoundingSphere {
     ///  Computes the smallest [`Aabb3d`] containing this [`BoundingSphere`].
@@ -3526,7 +3559,8 @@ impl bevy::math::bounding::BoundingSphere {
 #[script_bindings(
     remote,
     name = "sphere_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Sphere {
     fn clone(
@@ -3579,7 +3613,8 @@ impl bevy::math::primitives::Sphere {
 #[script_bindings(
     remote,
     name = "cuboid_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Cuboid {
     fn clone(
@@ -3674,7 +3709,8 @@ impl bevy::math::primitives::Cuboid {
 #[script_bindings(
     remote,
     name = "cylinder_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Cylinder {
     ///  Get the base of the cylinder as a [`Circle`]
@@ -3730,7 +3766,8 @@ impl bevy::math::primitives::Cylinder {
 #[script_bindings(
     remote,
     name = "capsule_3_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Capsule3d {
     fn clone(
@@ -3776,7 +3813,8 @@ impl bevy::math::primitives::Capsule3d {
 #[script_bindings(
     remote,
     name = "cone_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Cone {
     ///  Get the base of the cone as a [`Circle`]
@@ -3838,7 +3876,8 @@ impl bevy::math::primitives::Cone {
 #[script_bindings(
     remote,
     name = "conical_frustum_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::ConicalFrustum {
     fn clone(
@@ -3864,7 +3903,8 @@ impl bevy::math::primitives::ConicalFrustum {
 #[script_bindings(
     remote,
     name = "infinite_plane_3_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::InfinitePlane3d {
     fn clone(
@@ -3948,7 +3988,8 @@ impl bevy::math::primitives::InfinitePlane3d {
 #[script_bindings(
     remote,
     name = "line_3_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Line3d {
     fn clone(
@@ -3974,7 +4015,8 @@ impl bevy::math::primitives::Line3d {
 #[script_bindings(
     remote,
     name = "segment_3_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Segment3d {
     fn clone(
@@ -4032,7 +4074,8 @@ impl bevy::math::primitives::Segment3d {
 #[script_bindings(
     remote,
     name = "torus_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Torus {
     fn clone(
@@ -4083,7 +4126,8 @@ impl bevy::math::primitives::Torus {
 #[script_bindings(
     remote,
     name = "triangle_3_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Triangle3d {
     ///  Get the centroid of the triangle.
@@ -4178,7 +4222,8 @@ impl bevy::math::primitives::Triangle3d {
 #[script_bindings(
     remote,
     name = "ray_cast_2_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::bounding::RayCast2d {
     ///  Get the distance of an intersection with an [`Aabb2d`], if any.
@@ -4254,7 +4299,8 @@ impl bevy::math::bounding::RayCast2d {
 #[script_bindings(
     remote,
     name = "aabb_cast_2_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::bounding::AabbCast2d {
     ///  Get the distance at which the [`Aabb2d`]s collide, if at all.
@@ -4312,7 +4358,8 @@ impl bevy::math::bounding::AabbCast2d {
 #[script_bindings(
     remote,
     name = "bounding_circle_cast_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::bounding::BoundingCircleCast {
     ///  Get the distance at which the [`BoundingCircle`]s collide, if at all.
@@ -4370,7 +4417,8 @@ impl bevy::math::bounding::BoundingCircleCast {
 #[script_bindings(
     remote,
     name = "ray_cast_3_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::bounding::RayCast3d {
     ///  Get the distance of an intersection with an [`Aabb3d`], if any.
@@ -4432,7 +4480,8 @@ impl bevy::math::bounding::RayCast3d {
 #[script_bindings(
     remote,
     name = "aabb_cast_3_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::bounding::AabbCast3d {
     ///  Get the distance at which the [`Aabb3d`]s collide, if at all.
@@ -4474,7 +4523,8 @@ impl bevy::math::bounding::AabbCast3d {
 #[script_bindings(
     remote,
     name = "bounding_sphere_cast_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::bounding::BoundingSphereCast {
     fn clone(
@@ -4516,7 +4566,8 @@ impl bevy::math::bounding::BoundingSphereCast {
 #[script_bindings(
     remote,
     name = "interval_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::curve::interval::Interval {
     ///  Clamp the given `value` to lie within this interval.
@@ -4620,7 +4671,8 @@ impl bevy::math::curve::interval::Interval {
 #[script_bindings(
     remote,
     name = "float_ord_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::FloatOrd {
     fn clone(_self: Ref<bevy::math::FloatOrd>) -> Val<bevy::math::FloatOrd> {
@@ -4676,7 +4728,8 @@ impl bevy::math::FloatOrd {
 #[script_bindings(
     remote,
     name = "plane_3_d_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Plane3d {
     fn clone(
@@ -4716,7 +4769,8 @@ impl bevy::math::primitives::Plane3d {
 #[script_bindings(
     remote,
     name = "tetrahedron_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::primitives::Tetrahedron {
     ///  Get the centroid of the tetrahedron.
@@ -4779,7 +4833,8 @@ impl bevy::math::primitives::Tetrahedron {
 #[script_bindings(
     remote,
     name = "ease_function_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::curve::easing::EaseFunction {
     fn clone(

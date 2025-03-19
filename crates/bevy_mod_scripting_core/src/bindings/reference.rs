@@ -22,8 +22,13 @@ use bevy::{
 };
 use std::{any::TypeId, fmt::Debug};
 
-/// An accessor to a `dyn PartialReflect` struct, stores a base ID of the type and a reflection path
-/// safe to build but to reflect on the value inside you need to ensure aliasing rules are upheld
+/// A reference to an arbitrary reflected instance.
+///
+/// The reference can point to either the ECS, or to the allocator.
+///
+/// References are composed of two parts:
+/// - The base kind, which specifies where the reference points to
+/// - The path, which specifies how to access the value from the base
 #[derive(Debug, Clone, PartialEq, Eq, Reflect)]
 #[reflect(Default, opaque)]
 pub struct ReflectReference {

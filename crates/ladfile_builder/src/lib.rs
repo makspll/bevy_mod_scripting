@@ -1,6 +1,7 @@
 //! Parsing definitions for the LAD (Language Agnostic Decleration) file format.
 pub mod plugin;
 
+use bevy::{ecs::world::World, utils::HashSet};
 use bevy_mod_scripting_core::{
     bindings::{
         function::{
@@ -70,17 +71,24 @@ pub struct LadFileBuilder<'t> {
     type_id_mapping: HashMap<TypeId, LadTypeId>,
     type_registry: &'t TypeRegistry,
     sorted: bool,
+    exclude_types_involving_unregistered_types: bool,
 }
 
 impl<'t> LadFileBuilder<'t> {
-    /// Create a new LAD file builder loaded with primitives.
-    pub fn new(type_registry: &'t TypeRegistry) -> Self {
-        let mut builder = Self {
+    /// Create a new LAD file builder without default primitives.
+    pub fn new_empty(type_registry: &'t TypeRegistry) -> Self {
+        Self {
             file: LadFile::new(),
             type_id_mapping: HashMap::new(),
             type_registry,
             sorted: false,
-        };
+            exclude_types_involving_unregistered_types: false,
+        }
+    }
+
+    /// Create a new LAD file builder loaded with primitives.
+    pub fn new(type_registry: &'t TypeRegistry) -> Self {
+        let mut builder = Self::new_empty(type_registry);
 
         builder
             .add_bms_primitive::<bool>("A boolean value")
@@ -111,6 +119,13 @@ impl<'t> LadFileBuilder<'t> {
         builder
     }
 
+    /// Set whether types involving unregistered types should be excluded.
+    /// I.e. `HashMap<T, V>` with T or V not being registered will be excluded.
+    pub fn set_exclude_including_unregistered(&mut self, exclude: bool) -> &mut Self {
+        self.exclude_types_involving_unregistered_types = exclude;
+        self
+    }
+
     /// Set whether the LAD file should be sorted at build time.
     pub fn set_sorted(&mut self, sorted: bool) -> &mut Self {
         self.sorted = sorted;
@@ -135,6 +150,24 @@ impl<'t> LadFileBuilder<'t> {
                 documentation: docs.into(),
             },
         );
+        self
+    }
+
+    /// Mark a type as generated.
+    pub fn mark_generated(&mut self, type_id: TypeId) -> &mut Self {
+        let type_id = self.lad_id_from_type_id(type_id);
+        if let Some(t) = self.file.types.get_mut(&type_id) {
+            t.generated = true;
+        }
+        self
+    }
+
+    /// Set the insignificance value of a type.
+    pub fn set_insignificance(&mut self, type_id: TypeId, importance: usize) -> &mut Self {
+        let type_id = self.lad_id_from_type_id(type_id);
+        if let Some(t) = self.file.types.get_mut(&type_id) {
+            t.insignificance = importance;
+        }
         self
     }
 
@@ -181,6 +214,54 @@ impl<'t> LadFileBuilder<'t> {
         self
     }
 
+    /// Adds a global instance to the LAD file with a custom lad type kind.
+    pub fn add_instance_manually(
+        &mut self,
+        key: impl Into<Cow<'static, str>>,
+        is_static: bool,
+        type_kind: LadTypeKind,
+    ) -> &mut Self {
+        self.file.globals.insert(
+            key.into(),
+            LadInstance {
+                type_kind,
+                is_static,
+            },
+        );
+        self
+    }
+
+    /// Adds a type which does not implement reflect to the list of types.
+    pub fn add_nonreflect_type<T: 'static>(
+        &mut self,
+        crate_: Option<&str>,
+        documentation: &str,
+    ) -> &mut Self {
+        let path = std::any::type_name::<T>().to_string();
+        let identifier = path
+            .split("::")
+            .last()
+            .map(|o| o.to_owned())
+            .unwrap_or_else(|| path.clone());
+
+        let lad_type_id = self.lad_id_from_type_id(std::any::TypeId::of::<T>());
+        self.file.types.insert(
+            lad_type_id,
+            LadType {
+                identifier,
+                crate_: crate_.map(|s| s.to_owned()),
+                path,
+                generics: vec![],
+                documentation: Some(documentation.trim().to_owned()),
+                associated_functions: vec![],
+                layout: LadTypeLayout::Opaque,
+                generated: false,
+                insignificance: default_importance(),
+            },
+        );
+        self
+    }
+
     /// Add a type definition to the LAD file.
     ///
     /// Equivalent to calling [`Self::add_type_info`] with `T::type_info()`.
@@ -215,6 +296,8 @@ impl<'t> LadFileBuilder<'t> {
                 .map(|s| s.to_owned()),
             path: type_info.type_path_table().path().to_owned(),
             layout: self.lad_layout_from_type_info(type_info),
+            generated: false,
+            insignificance: default_importance(),
         };
         self.file.types.insert(type_id, lad_type);
         self
@@ -293,13 +376,53 @@ impl<'t> LadFileBuilder<'t> {
         self
     }
 
+    fn has_unknowns(&self, type_id: TypeId) -> bool {
+        if primitive_from_type_id(type_id).is_some() {
+            return false;
+        }
+
+        let type_info = match self.type_registry.get_type_info(type_id) {
+            Some(info) => info,
+            None => return true,
+        };
+        let inner_type_ids: Vec<_> = match type_info {
+            TypeInfo::Struct(struct_info) => {
+                struct_info.generics().iter().map(|g| g.type_id()).collect()
+            }
+            TypeInfo::TupleStruct(tuple_struct_info) => tuple_struct_info
+                .generics()
+                .iter()
+                .map(|g| g.type_id())
+                .collect(),
+            TypeInfo::Tuple(tuple_info) => {
+                tuple_info.generics().iter().map(|g| g.type_id()).collect()
+            }
+            TypeInfo::List(list_info) => vec![list_info.item_ty().id()],
+            TypeInfo::Array(array_info) => vec![array_info.item_ty().id()],
+            TypeInfo::Map(map_info) => vec![map_info.key_ty().id(), map_info.value_ty().id()],
+            TypeInfo::Set(set_info) => vec![set_info.value_ty().id()],
+            TypeInfo::Enum(enum_info) => enum_info.generics().iter().map(|g| g.type_id()).collect(),
+            TypeInfo::Opaque(_) => vec![],
+        };
+
+        inner_type_ids.iter().any(|id| self.has_unknowns(*id))
+    }
+
     /// Build the finalized and optimized LAD file.
     pub fn build(&mut self) -> LadFile {
         let mut file = std::mem::replace(&mut self.file, LadFile::new());
-        if self.sorted {
-            file.types.sort_keys();
-            file.functions.sort_keys();
-            file.primitives.sort_keys();
+
+        if self.exclude_types_involving_unregistered_types {
+            let mut to_remove = HashSet::new();
+            for reg in self.type_registry.iter() {
+                let type_id = reg.type_id();
+                if self.has_unknowns(type_id) {
+                    to_remove.insert(self.lad_id_from_type_id(type_id));
+                }
+            }
+
+            // remove those type ids
+            file.types.retain(|id, _| !to_remove.contains(id));
         }
 
         // associate functions on type namespaces with their types
@@ -312,6 +435,39 @@ impl<'t> LadFileBuilder<'t> {
                 }
                 LadFunctionNamespace::Global => {}
             }
+        }
+
+        if self.sorted {
+            file.types.sort_by(|ak, av, bk, bv| {
+                let complexity_a: usize = av
+                    .path
+                    .char_indices()
+                    .filter_map(|(_, c)| (c == '<' || c == ',').then_some(1))
+                    .sum();
+                let complexity_b = bv
+                    .path
+                    .char_indices()
+                    .filter_map(|(_, c)| (c == '<' || c == ',').then_some(1))
+                    .sum();
+
+                let has_functions_a = !av.associated_functions.is_empty();
+                let has_functions_b = !bv.associated_functions.is_empty();
+
+                let ordered_by_name = ak.cmp(bk);
+                let ordered_by_generics_complexity = complexity_a.cmp(&complexity_b);
+                let ordered_by_generated = av.generated.cmp(&bv.generated);
+                let ordered_by_having_functions = has_functions_b.cmp(&has_functions_a);
+                let ordered_by_significance = av.insignificance.cmp(&bv.insignificance);
+
+                ordered_by_significance
+                    .then(ordered_by_having_functions)
+                    .then(ordered_by_generics_complexity)
+                    .then(ordered_by_name)
+                    .then(ordered_by_generated)
+            });
+
+            file.functions.sort_keys();
+            file.primitives.sort_keys();
         }
 
         file
@@ -526,6 +682,11 @@ impl<'t> LadFileBuilder<'t> {
     }
 
     fn lad_id_from_type_id(&mut self, type_id: TypeId) -> LadTypeId {
+        // a special exception
+        if type_id == std::any::TypeId::of::<World>() {
+            return LadTypeId::new_string_id("World".into());
+        }
+
         if let Some(lad_id) = self.type_id_mapping.get(&type_id) {
             return lad_id.clone();
         }
@@ -960,5 +1121,30 @@ mod test {
         let asset = ladfile::EXAMPLE_LADFILE.to_string();
         let deserialized = parse_lad_file(&asset).unwrap();
         assert_eq!(deserialized.version, "{{version}}");
+    }
+
+    #[test]
+    fn test_nested_unregistered_generic_is_removed() {
+        let mut type_registry = TypeRegistry::default();
+
+        #[derive(Reflect)]
+        #[reflect(no_field_bounds, from_reflect = false)]
+        struct StructType<T> {
+            #[reflect(ignore)]
+            phantom: std::marker::PhantomData<T>,
+        }
+
+        #[derive(Reflect)]
+        struct Blah;
+
+        type_registry.register::<StructType<Blah>>();
+
+        let lad_file = LadFileBuilder::new_empty(&type_registry)
+            .set_sorted(true)
+            .set_exclude_including_unregistered(true)
+            .add_type::<StructType<Blah>>()
+            .build();
+
+        assert_eq!(lad_file.types.len(), 0);
     }
 }

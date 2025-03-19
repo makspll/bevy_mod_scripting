@@ -1,5 +1,7 @@
 //! Defines a visitor for function arguments of the `LAD` format.
 
+use std::path::PathBuf;
+
 use ladfile::{ArgumentVisitor, LadTypeId};
 
 use crate::markdown::MarkdownBuilder;
@@ -7,7 +9,8 @@ use crate::markdown::MarkdownBuilder;
 pub(crate) struct MarkdownArgumentVisitor<'a> {
     ladfile: &'a ladfile::LadFile,
     buffer: MarkdownBuilder,
-    linkifier: Box<dyn Fn(LadTypeId, &'a ladfile::LadFile) -> Option<String> + 'static>,
+    linkifier: Box<dyn Fn(LadTypeId, &'a ladfile::LadFile) -> Option<PathBuf> + 'static>,
+    pub raw_type_id_replacement: Option<&'static str>,
 }
 impl<'a> MarkdownArgumentVisitor<'a> {
     /// Create a new instance of the visitor
@@ -18,12 +21,13 @@ impl<'a> MarkdownArgumentVisitor<'a> {
             ladfile,
             buffer: builder,
             linkifier: Box::new(|_, _| None),
+            raw_type_id_replacement: None,
         }
     }
 
     /// Create a new instance of the visitor with a custom linkifier function
     pub fn new_with_linkifier<
-        F: Fn(LadTypeId, &'a ladfile::LadFile) -> Option<String> + 'static,
+        F: Fn(LadTypeId, &'a ladfile::LadFile) -> Option<PathBuf> + 'static,
     >(
         ladfile: &'a ladfile::LadFile,
         linkifier: F,
@@ -31,6 +35,12 @@ impl<'a> MarkdownArgumentVisitor<'a> {
         let mut without = Self::new(ladfile);
         without.linkifier = Box::new(linkifier);
         without
+    }
+
+    /// Set the raw type id replacement
+    pub fn with_raw_type_id_replacement(mut self, replacement: &'static str) -> Self {
+        self.raw_type_id_replacement = Some(replacement);
+        self
     }
 
     pub fn build(mut self) -> String {
@@ -43,15 +53,17 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
         // Write identifier<Generic1TypeIdentifier, Generic2TypeIdentifier>
         let generics = self.ladfile.get_type_generics(type_id);
 
-        let type_identifier = self.ladfile.get_type_identifier(type_id);
+        let type_identifier = self
+            .ladfile
+            .get_type_identifier(type_id, self.raw_type_id_replacement);
         if let Some(generics) = generics {
             self.buffer.text(type_identifier);
             self.buffer.text('<');
             for (i, generic) in generics.iter().enumerate() {
-                self.visit_lad_type_id(&generic.type_id);
                 if i > 0 {
                     self.buffer.text(", ");
                 }
+                self.visit_lad_type_id(&generic.type_id);
             }
             self.buffer.text('>');
         } else {
@@ -59,6 +71,9 @@ impl ArgumentVisitor for MarkdownArgumentVisitor<'_> {
             let link_value = (self.linkifier)(type_id.clone(), self.ladfile);
             let link_display = type_identifier;
             if let Some(link_value) = link_value {
+                // canonicalize to linux paths
+                let link_value = link_value.to_string_lossy().to_string().replace("\\", "/");
+
                 self.buffer.link(link_display, link_value);
             } else {
                 self.buffer.text(link_display);
@@ -139,12 +154,18 @@ mod test {
 
         let mut visitor =
             MarkdownArgumentVisitor::new_with_linkifier(&ladfile, |type_id, ladfile| {
-                Some(format!("root/{}", ladfile.get_type_identifier(&type_id)))
+                Some(
+                    PathBuf::from("root\\asd")
+                        .join(ladfile.get_type_identifier(&type_id, None).to_string()),
+                )
             });
 
         let first_type_id = ladfile.types.first().unwrap().0;
         visitor.visit_lad_type_id(first_type_id);
-        assert_eq!(visitor.buffer.build(), "[EnumType](root/EnumType)");
+        assert_eq!(
+            visitor.buffer.build(),
+            "StructType<[usize](root/asd/usize)>"
+        );
     }
 
     #[test]
@@ -155,13 +176,13 @@ mod test {
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
         visitor.visit_lad_type_id(first_type_id);
-        assert_eq!(visitor.buffer.build(), "EnumType");
+        assert_eq!(visitor.buffer.build(), "StructType<usize>");
 
         visitor.buffer.clear();
 
         let second_type_id = ladfile.types.iter().nth(1).unwrap().0;
         visitor.visit_lad_type_id(second_type_id);
-        assert_eq!(visitor.buffer.build(), "StructType<usize>");
+        assert_eq!(visitor.buffer.build(), "EnumType");
     }
 
     #[test]
@@ -172,7 +193,7 @@ mod test {
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
         visitor.visit(&LadTypeKind::Ref(first_type_id.clone()));
-        assert_eq!(visitor.buffer.build(), "EnumType");
+        assert_eq!(visitor.buffer.build(), "StructType<usize>");
     }
 
     #[test]
@@ -183,7 +204,7 @@ mod test {
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
         visitor.visit(&LadTypeKind::Mut(first_type_id.clone()));
-        assert_eq!(visitor.buffer.build(), "EnumType");
+        assert_eq!(visitor.buffer.build(), "StructType<usize>");
     }
 
     #[test]
@@ -194,7 +215,7 @@ mod test {
         let mut visitor = MarkdownArgumentVisitor::new(&ladfile);
 
         visitor.visit(&LadTypeKind::Val(first_type_id.clone()));
-        assert_eq!(visitor.buffer.build(), "EnumType");
+        assert_eq!(visitor.buffer.build(), "StructType<usize>");
     }
 
     #[test]
@@ -254,7 +275,7 @@ mod test {
         ));
         assert_eq!(
             visitor.buffer.build(),
-            "HashMap<bool, EnumType | EnumType | EnumType>"
+            "HashMap<bool, StructType<usize> | StructType<usize> | StructType<usize>>"
         );
     }
 
@@ -293,6 +314,6 @@ mod test {
         let first_type_id = ladfile.types.first().unwrap().0;
 
         visitor.visit(&LadTypeKind::Unknown(first_type_id.clone()));
-        assert_eq!(visitor.buffer.build(), "EnumType");
+        assert_eq!(visitor.buffer.build(), "StructType<usize>");
     }
 }

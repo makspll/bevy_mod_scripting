@@ -43,6 +43,14 @@ pub fn register_bevy_bindings(app: &mut App) {
     unregistered
 )]
 impl World {
+    /// Returns either a `ScriptComponentRegistration` or `ScriptResourceRegistration` depending on the type of the type requested.
+    /// If the type is neither returns a `ScriptTypeRegistration`.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `type_name`: The name of the type to retrieve.
+    /// Returns:
+    /// * `type`: The registration of the type, if it exists.
     fn get_type_by_name(
         ctxt: FunctionCallContext,
         type_name: String,
@@ -63,6 +71,19 @@ impl World {
     }
 
     /// Retrieves the schedule with the given name, Also ensures the schedule is initialized before returning it.
+    ///
+    /// Schedules in bevy are "containers" for systems, each schedule runs separately and contains different systems.
+    ///
+    /// By default among others bevy contains the following schedules:
+    /// - `Update`: Runs every frame.
+    /// - `PostUpdate`: Runs after the `Update` schedule.
+    /// - `FixedUpdate`: Runs at a fixed rate.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `name`: The name of the schedule to retrieve.
+    /// Returns:
+    /// * `schedule`: The schedule with the given name, if it exists
     fn get_schedule_by_name(
         ctxt: FunctionCallContext,
         name: String,
@@ -80,6 +101,14 @@ impl World {
         Ok(Some(schedule.into()))
     }
 
+    /// Tries to retrieve the given component type on an entity.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `entity`: The entity to retrieve the component from.
+    /// * `registration`: The component to retrieve.
+    /// Returns:
+    /// * `component`: The component on the entity, if it exists.
     fn get_component(
         ctxt: FunctionCallContext,
         entity: Val<Entity>,
@@ -91,6 +120,14 @@ impl World {
         Ok(val)
     }
 
+    /// Checks if the given entity has the given component.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `entity`: The entity to check.
+    /// * `registration`: The component to check for.
+    /// Returns:
+    /// * `has_component`: Whether the entity has the component.
     fn has_component(
         ctxt: FunctionCallContext,
         entity: Val<Entity>,
@@ -101,6 +138,13 @@ impl World {
         world.has_component(*entity, registration.component_id())
     }
 
+    /// Removes the given component from the entity.
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `entity`: The entity to remove the component from.
+    /// * `registration`: The component to remove.
+    /// Returns:
+    /// * `result`: Nothing if the component was removed successfully or didn't exist in the first place.
     fn remove_component(
         ctxt: FunctionCallContext,
         entity: Val<Entity>,
@@ -111,6 +155,12 @@ impl World {
         world.remove_component(*entity, registration.clone())
     }
 
+    /// Retrieves the resource with the given registration.
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `registration`: The registration of the resource to retrieve.
+    /// Returns:
+    /// * `resource`: The resource, if it exists.
     fn get_resource(
         ctxt: FunctionCallContext,
         registration: Val<ScriptResourceRegistration>,
@@ -121,6 +171,13 @@ impl World {
         Ok(val)
     }
 
+    /// Checks if the world has the given resource.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `registration`: The registration of the resource to check for.
+    /// Returns:
+    /// * `has_resource`: Whether the world has the resource.
     fn has_resource(
         ctxt: FunctionCallContext,
         registration: Val<ScriptResourceRegistration>,
@@ -130,6 +187,12 @@ impl World {
         world.has_resource(registration.resource_id())
     }
 
+    /// Removes the given resource from the world.
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `registration`: The resource to remove.
+    /// Returns:
+    /// * `result`: Nothing if the resource was removed successfully or didn't exist in the first place.
     fn remove_resource(
         ctxt: FunctionCallContext,
         registration: Val<ScriptResourceRegistration>,
@@ -139,6 +202,12 @@ impl World {
         world.remove_resource(registration.into_inner())
     }
 
+    /// Adds the given resource to the world.
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `registration`: The resource to add.
+    /// Returns:
+    /// * `result`: Nothing if the resource was added successfully.
     fn add_default_component(
         ctxt: FunctionCallContext,
         entity: Val<Entity>,
@@ -149,12 +218,27 @@ impl World {
         world.add_default_component(*entity, registration.clone())
     }
 
+    /// Spawns a new entity and returns it
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// Returns:
+    /// * `entity`: The newly spawned entity
     fn spawn(ctxt: FunctionCallContext) -> Result<Val<Entity>, InteropError> {
         profiling::function_scope!("spawn");
         let world = ctxt.world()?;
         Ok(Val(world.spawn()?))
     }
 
+    /// Inserts the given component value into the provided entity
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `entity`: The entity to insert the component into.
+    /// * `registration`: The component registration of the component to insert.
+    /// * `value`: The value of the component to insert. Can be constructed using `construct`
+    /// Returns:
+    /// * `result`: Nothing if the component was inserted successfully.
     fn insert_component(
         ctxt: FunctionCallContext,
         entity: Val<Entity>,
@@ -166,6 +250,15 @@ impl World {
         world.insert_component(*entity, registration.into_inner(), value)
     }
 
+    /// Inserts the given children entities into the provided parent entity.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `entity`: The parent entity to receive children
+    /// * `index`: The index to insert the children at
+    /// * `children`: The children entities to insert
+    /// Returns:
+    /// * `result`: Nothing if the children were inserted successfully.
     fn insert_children(
         ctxt: FunctionCallContext,
         entity: Val<Entity>,
@@ -186,6 +279,13 @@ impl World {
         )
     }
 
+    /// Pushes the given children entities into the provided parent entity.
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `entity`: The parent entity to receive children
+    /// * `children`: The children entities to push
+    /// Returns:
+    /// * `result`: Nothing if the children were pushed successfully.
     fn push_children(
         ctxt: FunctionCallContext,
         entity: Val<Entity>,
@@ -199,6 +299,12 @@ impl World {
         )
     }
 
+    /// Retrieves the children of the given entity.
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `entity`: The entity to retrieve the children of.
+    /// Returns:
+    /// * `children`: The children of the entity.
     fn get_children(
         ctxt: FunctionCallContext,
         entity: Val<Entity>,
@@ -209,40 +315,79 @@ impl World {
         Ok(children.into_iter().map(Val).collect::<Vec<_>>())
     }
 
+    /// Retrieves the parent of the given entity.
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `entity`: The entity to retrieve the parent of.
+    /// Returns:
+    /// * `parent`: The parent of the entity
     fn get_parent(
         ctxt: FunctionCallContext,
-        e: Val<Entity>,
+        entity: Val<Entity>,
     ) -> Result<Option<Val<Entity>>, InteropError> {
         profiling::function_scope!("get_parent");
         let world = ctxt.world()?;
-        let parent = world.get_parent(*e)?;
+        let parent = world.get_parent(*entity)?;
         Ok(parent.map(Val))
     }
 
-    fn despawn(ctxt: FunctionCallContext, e: Val<Entity>) -> Result<(), InteropError> {
+    /// Despawns the given entity.
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `entity`: The entity to despawn.
+    fn despawn(ctxt: FunctionCallContext, entity: Val<Entity>) -> Result<(), InteropError> {
         profiling::function_scope!("despawn");
         let world = ctxt.world()?;
-        world.despawn(*e)
+        world.despawn(*entity)
     }
 
-    fn despawn_descendants(ctxt: FunctionCallContext, e: Val<Entity>) -> Result<(), InteropError> {
+    /// Despawn the descendants of the given entity.
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `entity`: The entity to despawn the descendants of.
+    /// Returns:
+    /// * `result`: Nothing if the descendants were despawned successfully.
+    fn despawn_descendants(
+        ctxt: FunctionCallContext,
+        entity: Val<Entity>,
+    ) -> Result<(), InteropError> {
         profiling::function_scope!("despawn_descendants");
         let world = ctxt.world()?;
-        world.despawn_descendants(*e)
+        world.despawn_descendants(*entity)
     }
 
-    fn despawn_recursive(ctxt: FunctionCallContext, e: Val<Entity>) -> Result<(), InteropError> {
+    /// Despawns the entity and all its descendants.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `entity`: The entity to despawn recursively.
+    /// Returns:
+    /// * `result`: Nothing if the entity and its descendants were despawned successfully.
+    fn despawn_recursive(
+        ctxt: FunctionCallContext,
+        entity: Val<Entity>,
+    ) -> Result<(), InteropError> {
         profiling::function_scope!("despawn_recursive");
         let world = ctxt.world()?;
-        world.despawn_recursive(*e)
+        world.despawn_recursive(*entity)
     }
 
+    /// Checks if the given entity exists.
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `entity`: The entity to check.
+    /// Returns:
+    /// * `has_entity`: Whether the entity exists.
     fn has_entity(ctxt: FunctionCallContext, e: Val<Entity>) -> Result<bool, InteropError> {
         profiling::function_scope!("has_entity");
         let world = ctxt.world()?;
         world.has_entity(*e)
     }
 
+    /// Creates a new `ScriptQueryBuilder` which can be used to query the ECS.
+    ///
+    /// Returns:
+    /// * `query`: The new query builder.
     fn query() -> Result<Val<ScriptQueryBuilder>, InteropError> {
         profiling::function_scope!("query");
         let query_builder = ScriptQueryBuilder::default();
@@ -290,6 +435,11 @@ impl World {
         Ok(Val(system))
     }
 
+    /// Quits the program.
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// Returns:
+    /// * `result`: Nothing if the program was exited successfully.
     fn exit(ctxt: FunctionCallContext) -> Result<(), InteropError> {
         profiling::function_scope!("exit");
         let world = ctxt.world()?;
@@ -300,48 +450,81 @@ impl World {
 #[script_bindings(
     remote,
     bms_core_path = "bevy_mod_scripting_core",
-    name = "reflect_reference_functions"
+    name = "reflect_reference_functions",
+    core
 )]
 impl ReflectReference {
     /// If this type is an enum, will return the name of the variant it represents on the type.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `reference`: The reference to get the variant name of.
+    /// Returns:
+    /// * `variant_name`: The name of the variant, if the reference is an enum.
     fn variant_name(
         ctxt: FunctionCallContext,
-        s: ReflectReference,
+        reference: ReflectReference,
     ) -> Result<Option<String>, InteropError> {
         profiling::function_scope!("variant_name");
         let world = ctxt.world()?;
-        s.variant_name(world)
+        reference.variant_name(world)
     }
 
     /// Displays this reference without printing the exact contents.
-    fn display_ref(ctxt: FunctionCallContext, s: ReflectReference) -> Result<String, InteropError> {
+    ///
+    /// This is useful for debugging and logging.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `reference`: The reference to display.
+    /// Returns:
+    /// * `display`: The display string.
+    fn display_ref(
+        ctxt: FunctionCallContext,
+        reference: ReflectReference,
+    ) -> Result<String, InteropError> {
         profiling::function_scope!("display_ref");
         let world = ctxt.world()?;
-        Ok(s.display_with_world(world))
+        Ok(reference.display_with_world(world))
     }
 
     /// Displays the "value" of this reference
+    ///
+    /// This is useful for debugging and logging.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `reference`: The reference to display.
+    /// Returns:
+    /// * `display`: The display string.
     fn display_value(
         ctxt: FunctionCallContext,
-        s: ReflectReference,
+        reference: ReflectReference,
     ) -> Result<String, InteropError> {
         profiling::function_scope!("display_value");
         let world = ctxt.world()?;
-        Ok(s.display_value_with_world(world))
+        Ok(reference.display_value_with_world(world))
     }
 
     /// Gets and clones the value under the specified key if the underlying type is a map type.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `reference`: The reference to index into.
+    /// * `key`: The key to index with.
+    /// Returns:
+    /// * `value`: The value at the key, if the reference is a map.
     fn map_get(
         ctxt: FunctionCallContext,
-        self_: ReflectReference,
+        reference: ReflectReference,
         key: ScriptValue,
     ) -> Result<Option<ScriptValue>, InteropError> {
         profiling::function_scope!("map_get");
         let world = ctxt.world()?;
         let key = <Box<dyn PartialReflect>>::from_script_ref(
-            self_.key_type_id(world.clone())?.ok_or_else(|| {
+            reference.key_type_id(world.clone())?.ok_or_else(|| {
                 InteropError::unsupported_operation(
-                    self_.tail_type_id(world.clone()).unwrap_or_default(),
+                    reference.tail_type_id(world.clone()).unwrap_or_default(),
                     Some(Box::new(key.clone())),
                     "Could not get key type id. Are you trying to index into a type that's not a map?".to_owned(),
                 )
@@ -349,7 +532,7 @@ impl ReflectReference {
             key,
             world.clone(),
         )?;
-        self_.with_reflect_mut(world.clone(), |s| match s.try_map_get(key.as_ref())? {
+        reference.with_reflect_mut(world.clone(), |s| match s.try_map_get(key.as_ref())? {
             Some(value) => {
                 let reference = {
                     let allocator = world.allocator();
@@ -367,9 +550,16 @@ impl ReflectReference {
     /// returns the concrete value.
     ///
     /// Does not support map types at the moment, for maps see `map_get`
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `reference`: The reference to index into.
+    /// * `key`: The key to index with.
+    /// Returns:
+    /// * `value`: The value at the key, if the reference is indexable.
     fn get(
         ctxt: FunctionCallContext,
-        mut self_: ReflectReference,
+        mut reference: ReflectReference,
         key: ScriptValue,
     ) -> Result<ScriptValue, InteropError> {
         profiling::function_scope!("get");
@@ -377,71 +567,93 @@ impl ReflectReference {
         if ctxt.convert_to_0_indexed() {
             path.convert_to_0_indexed();
         }
-        self_.index_path(path);
+        reference.index_path(path);
         let world = ctxt.world()?;
-        ReflectReference::into_script_ref(self_, world)
+        ReflectReference::into_script_ref(reference, world)
     }
 
     /// Sets the value under the specified path on the underlying value.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `reference`: The reference to set the value on.
+    /// * `key`: The key to set the value at.
+    /// * `value`: The value to set.
+    /// Returns:
+    /// * `result`: Nothing if the value was set successfully.
     fn set(
         ctxt: FunctionCallContext,
-        self_: ScriptValue,
+        reference: ScriptValue,
         key: ScriptValue,
         value: ScriptValue,
-    ) -> Result<ScriptValue, InteropError> {
+    ) -> Result<(), InteropError> {
         profiling::function_scope!("set");
-        if let ScriptValue::Reference(mut self_) = self_ {
+        if let ScriptValue::Reference(mut self_) = reference {
             let world = ctxt.world()?;
             let mut path: ParsedPath = key.try_into()?;
             if ctxt.convert_to_0_indexed() {
                 path.convert_to_0_indexed();
             }
             self_.index_path(path);
-            let r: ScriptValue = self_
-                .with_reflect_mut(world.clone(), |r| {
-                    let target_type_id = r
-                        .get_represented_type_info()
-                        .map(|i| i.type_id())
-                        .or_fake_id();
-                    let other = <Box<dyn PartialReflect>>::from_script_ref(
-                        target_type_id,
-                        value,
-                        world.clone(),
-                    )?;
-                    r.try_apply(other.as_partial_reflect())
-                        .map_err(|e| InteropError::external_error(Box::new(e)))?;
-                    Ok::<_, InteropError>(())
-                })
-                .into();
-            return Ok(r);
+            self_.with_reflect_mut(world.clone(), |r| {
+                let target_type_id = r
+                    .get_represented_type_info()
+                    .map(|i| i.type_id())
+                    .or_fake_id();
+                let other = <Box<dyn PartialReflect>>::from_script_ref(
+                    target_type_id,
+                    value,
+                    world.clone(),
+                )?;
+                r.try_apply(other.as_partial_reflect())
+                    .map_err(|e| InteropError::external_error(Box::new(e)))?;
+                Ok::<_, InteropError>(())
+            })??;
         }
-        Ok(ScriptValue::Unit)
+        Ok(())
     }
 
     /// Pushes the value into the reference, if the reference is an appropriate container type.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `reference`: The reference to push the value into.
+    /// * `value`: The value to push.
+    /// Returns:
+    /// * `result`: Nothing if the value was pushed successfully.
     fn push(
         ctxt: FunctionCallContext,
-        s: ReflectReference,
-        v: ScriptValue,
+        reference: ReflectReference,
+        value: ScriptValue,
     ) -> Result<(), InteropError> {
         profiling::function_scope!("push");
         let world = ctxt.world()?;
-        let target_type_id = s.element_type_id(world.clone())?.ok_or_else(|| {
+        let target_type_id = reference.element_type_id(world.clone())?.ok_or_else(|| {
             InteropError::unsupported_operation(
-                s.tail_type_id(world.clone()).unwrap_or_default(),
-                Some(Box::new(v.clone())),
+                reference.tail_type_id(world.clone()).unwrap_or_default(),
+                Some(Box::new(value.clone())),
                 "Could not get element type id. Are you trying to insert elements into a type that's not a list?".to_owned(),
             )
         })?;
-        let other = <Box<dyn PartialReflect>>::from_script_ref(target_type_id, v, world.clone())?;
-        s.with_reflect_mut(world, |s| s.try_push_boxed(other))?
+        let other =
+            <Box<dyn PartialReflect>>::from_script_ref(target_type_id, value, world.clone())?;
+        reference.with_reflect_mut(world, |s| s.try_push_boxed(other))?
     }
 
     /// Pops the value from the reference, if the reference is an appropriate container type.
-    fn pop(ctxt: FunctionCallContext, s: ReflectReference) -> Result<ScriptValue, InteropError> {
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `reference`: The reference to pop the value from.
+    /// Returns:
+    /// * `value`: The value that was popped, if the reference supports popping.
+    fn pop(
+        ctxt: FunctionCallContext,
+        reference: ReflectReference,
+    ) -> Result<ScriptValue, InteropError> {
         profiling::function_scope!("pop");
         let world = ctxt.world()?;
-        let o = s.with_reflect_mut(world.clone(), |s| s.try_pop_boxed())??;
+        let o = reference.with_reflect_mut(world.clone(), |s| s.try_pop_boxed())??;
         let reference = {
             let allocator = world.allocator();
             let mut allocator = allocator.write();
@@ -452,78 +664,108 @@ impl ReflectReference {
     }
 
     /// Inserts the value into the reference at the specified index, if the reference is an appropriate container type.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `reference`: The reference to insert the value into.
+    /// * `key`: The index to insert the value at.
+    /// * `value`: The value to insert.
+    /// Returns:
+    /// * `result`: Nothing if the value was inserted successfully.
     fn insert(
         ctxt: FunctionCallContext,
-        s: ReflectReference,
-        k: ScriptValue,
-        v: ScriptValue,
+        reference: ReflectReference,
+        key: ScriptValue,
+        value: ScriptValue,
     ) -> Result<(), InteropError> {
         profiling::function_scope!("insert");
         let world = ctxt.world()?;
-        let key_type_id = s.key_type_id(world.clone())?.ok_or_else(|| {
+        let key_type_id = reference.key_type_id(world.clone())?.ok_or_else(|| {
             InteropError::unsupported_operation(
-                s.tail_type_id(world.clone()).unwrap_or_default(),
-                Some(Box::new(k.clone())),
+                reference.tail_type_id(world.clone()).unwrap_or_default(),
+                Some(Box::new(key.clone())),
                 "Could not get key type id. Are you trying to insert elements into a type that's not a map?".to_owned(),
             )
         })?;
 
-        let mut key = <Box<dyn PartialReflect>>::from_script_ref(key_type_id, k, world.clone())?;
+        let mut key = <Box<dyn PartialReflect>>::from_script_ref(key_type_id, key, world.clone())?;
 
         if ctxt.convert_to_0_indexed() {
             key.convert_to_0_indexed_key();
         }
 
-        let value_type_id = s.element_type_id(world.clone())?.ok_or_else(|| {
+        let value_type_id = reference.element_type_id(world.clone())?.ok_or_else(|| {
             InteropError::unsupported_operation(
-                s.tail_type_id(world.clone()).unwrap_or_default(),
-                Some(Box::new(v.clone())),
+                reference.tail_type_id(world.clone()).unwrap_or_default(),
+                Some(Box::new(value.clone())),
                 "Could not get element type id. Are you trying to insert elements into a type that's not a map?".to_owned(),
             )
         })?;
 
-        let value = <Box<dyn PartialReflect>>::from_script_ref(value_type_id, v, world.clone())?;
+        let value =
+            <Box<dyn PartialReflect>>::from_script_ref(value_type_id, value, world.clone())?;
 
-        s.with_reflect_mut(world, |s| s.try_insert_boxed(key, value))?
+        reference.with_reflect_mut(world, |s| s.try_insert_boxed(key, value))?
     }
 
     /// Clears the container, if the reference is an appropriate container type.
-    fn clear(ctxt: FunctionCallContext, s: ReflectReference) -> Result<(), InteropError> {
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `reference`: The reference to clear.
+    /// Returns:
+    /// * `result`: Nothing if the reference was cleared
+    fn clear(ctxt: FunctionCallContext, reference: ReflectReference) -> Result<(), InteropError> {
         profiling::function_scope!("clear");
         let world = ctxt.world()?;
-        s.with_reflect_mut(world, |s| s.try_clear())?
+        reference.with_reflect_mut(world, |s| s.try_clear())?
     }
 
     /// Retrieves the length of the reference, if the reference is an appropriate container type.
-    fn len(ctxt: FunctionCallContext, s: ReflectReference) -> Result<Option<usize>, InteropError> {
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `reference`: The reference to get the length of.
+    /// Returns:
+    /// * `len`: The length of the reference, if the reference is a container.
+    fn len(
+        ctxt: FunctionCallContext,
+        reference: ReflectReference,
+    ) -> Result<Option<usize>, InteropError> {
         profiling::function_scope!("len");
         let world = ctxt.world()?;
-        s.len(world)
+        reference.len(world)
     }
 
     /// Removes the value at the specified key from the reference, if the reference is an appropriate container type.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `reference`: The reference to remove the value from.
+    /// * `key`: The key to remove the value at.
+    /// Returns:
+    /// * `result`: The removed value if any
     fn remove(
         ctxt: FunctionCallContext,
-        s: ReflectReference,
-        k: ScriptValue,
+        reference: ReflectReference,
+        key: ScriptValue,
     ) -> Result<ScriptValue, InteropError> {
         profiling::function_scope!("remove");
         let world = ctxt.world()?;
-        let key_type_id = s.key_type_id(world.clone())?.ok_or_else(|| {
+        let key_type_id = reference.key_type_id(world.clone())?.ok_or_else(|| {
             InteropError::unsupported_operation(
-                s.tail_type_id(world.clone()).unwrap_or_default(),
-                Some(Box::new(k.clone())),
+                reference.tail_type_id(world.clone()).unwrap_or_default(),
+                Some(Box::new(key.clone())),
                 "Could not get key type id. Are you trying to remove elements from a type that's not a map?".to_owned(),
             )
         })?;
 
-        let mut key = <Box<dyn PartialReflect>>::from_script_ref(key_type_id, k, world.clone())?;
+        let mut key = <Box<dyn PartialReflect>>::from_script_ref(key_type_id, key, world.clone())?;
 
         if ctxt.convert_to_0_indexed() {
             key.convert_to_0_indexed_key();
         }
 
-        let removed = s.with_reflect_mut(world.clone(), |s| s.try_remove_boxed(key))??;
+        let removed = reference.with_reflect_mut(world.clone(), |s| s.try_remove_boxed(key))??;
         match removed {
             Some(removed) => {
                 let reference = {
@@ -540,14 +782,22 @@ impl ReflectReference {
     /// Iterates over the reference, if the reference is an appropriate container type.
     ///
     /// Returns an "next" iterator function.
+    ///
+    /// The iterator function should be called until it returns `nil` to signal the end of the iteration.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `reference`: The reference to iterate over.
+    /// Returns:
+    /// * `iter`: The iterator function.
     fn iter(
         ctxt: FunctionCallContext,
-        s: ReflectReference,
+        reference: ReflectReference,
     ) -> Result<DynamicScriptFunctionMut, InteropError> {
         profiling::function_scope!("iter");
         let world = ctxt.world()?;
-        let mut len = s.len(world.clone())?.unwrap_or_default();
-        let mut infinite_iter = s.into_iter_infinite();
+        let mut len = reference.len(world.clone())?.unwrap_or_default();
+        let mut infinite_iter = reference.into_iter_infinite();
         let iter_function = move || {
             // world is not thread safe, we can't capture it in the closure
             // or it will also be non-thread safe
@@ -569,13 +819,19 @@ impl ReflectReference {
     }
 
     /// Lists the functions available on the reference.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `reference`: The reference to list the functions of.
+    /// Returns:
+    /// * `functions`: The functions available on the reference.
     fn functions(
         ctxt: FunctionCallContext,
-        s: ReflectReference,
+        reference: ReflectReference,
     ) -> Result<Vec<Val<FunctionInfo>>, InteropError> {
         profiling::function_scope!("functions");
         let world = ctxt.world()?;
-        let type_id = s.tail_type_id(world.clone())?.or_fake_id();
+        let type_id = reference.tail_type_id(world.clone())?.or_fake_id();
         let functions = world
             .get_functions_on_type(type_id)
             .into_iter()
@@ -589,97 +845,165 @@ impl ReflectReference {
 #[script_bindings(
     remote,
     bms_core_path = "bevy_mod_scripting_core",
-    name = "script_type_registration_functions"
+    name = "script_type_registration_functions",
+    core
 )]
 impl ScriptTypeRegistration {
-    fn type_name(s: Ref<ScriptTypeRegistration>) -> String {
+    /// Retrieves the name of the type.
+    ///
+    /// Arguments:
+    /// * `registration`: The type registration.
+    /// Returns:
+    /// * `type_name`: The name of the type.
+    fn type_name(registration: Ref<ScriptTypeRegistration>) -> String {
         profiling::function_scope!("type_name");
-        s.type_name().to_string()
+        registration.type_name().to_string()
     }
 
-    fn short_name(s: Ref<ScriptTypeRegistration>) -> String {
+    /// Retrieves the short name of the type.
+    /// The short name is a more human-readable version of the type name.
+    /// Arguments:
+    /// * `registration`: The type registration.
+    /// Returns:
+    /// * `short_name`: The short name of the
+    fn short_name(registration: Ref<ScriptTypeRegistration>) -> String {
         profiling::function_scope!("short_name");
-        s.short_name().to_string()
+        registration.short_name().to_string()
     }
 }
 
 #[script_bindings(
     remote,
     bms_core_path = "bevy_mod_scripting_core",
-    name = "script_component_registration_functions"
+    name = "script_component_registration_functions",
+    core
 )]
 impl ScriptComponentRegistration {
-    fn type_name(s: Ref<ScriptComponentRegistration>) -> &'static str {
+    /// Retrieves the name of the type.
+    ///
+    /// Arguments:
+    /// * `registration`: The type registration.
+    /// Returns:
+    /// * `type_name`: The name of the type.
+    fn type_name(registration: Ref<ScriptComponentRegistration>) -> &'static str {
         profiling::function_scope!("type_name");
-        s.type_registration().type_name()
+        registration.type_registration().type_name()
     }
 
-    fn short_name(s: Ref<ScriptComponentRegistration>) -> &'static str {
+    /// Retrieves the short name of the type.
+    /// The short name is a more human-readable version of the type name.
+    /// Arguments:
+    /// * `registration`: The type registration.
+    /// Returns:
+    /// * `short_name`: The short name of the
+    fn short_name(registration: Ref<ScriptComponentRegistration>) -> &'static str {
         profiling::function_scope!("short_name");
-        s.type_registration().short_name()
+        registration.type_registration().short_name()
     }
 }
 
 #[script_bindings(
     remote,
     bms_core_path = "bevy_mod_scripting_core",
-    name = "script_resource_registration_functions"
+    name = "script_resource_registration_functions",
+    core
 )]
 impl ScriptResourceRegistration {
-    fn type_name(s: Ref<ScriptResourceRegistration>) -> &'static str {
+    /// Retrieves the name of the type.
+    ///
+    /// Arguments:
+    /// * `registration`: The type registration.
+    /// Returns:
+    /// * `type_name`: The name of the type.
+    fn type_name(registration: Ref<ScriptResourceRegistration>) -> &'static str {
         profiling::function_scope!("type_name");
-        s.type_registration().type_name()
+        registration.type_registration().type_name()
     }
 
-    fn short_name(s: Ref<ScriptResourceRegistration>) -> &'static str {
+    /// Retrieves the short name of the type.
+    /// The short name is a more human-readable version of the type name.
+    /// Arguments:
+    /// * `registration`: The type registration.
+    /// Returns:
+    /// * `short_name`: The short name of the
+    fn short_name(registration: Ref<ScriptResourceRegistration>) -> &'static str {
         profiling::function_scope!("short_name");
-        s.type_registration().short_name()
+        registration.type_registration().short_name()
     }
 }
 
 #[script_bindings(
     remote,
     bms_core_path = "bevy_mod_scripting_core",
-    name = "script_query_builder_functions"
+    name = "script_query_builder_functions",
+    core
 )]
 impl ScriptQueryBuilder {
+    /// Adds a component to be retrieved by the query
+    ///
+    /// Arguments:
+    /// * `query`: The query to add the component to
+    /// * `component`: The component to add
+    /// Returns:
+    /// * `query`: The query with the component added
     fn component(
-        s: Val<ScriptQueryBuilder>,
+        query: Val<ScriptQueryBuilder>,
         components: Val<ScriptComponentRegistration>,
     ) -> Val<ScriptQueryBuilder> {
         profiling::function_scope!("component");
-        let mut builder = s.into_inner();
+        let mut builder = query.into_inner();
         builder.component(components.into_inner());
         Val(builder)
     }
 
+    /// Adds a component to filter the query by. This component will NOT be retrieved.
+    ///
+    /// Arguments:
+    /// * `query`: The query to add the component to
+    /// * `component`: The component to filter by
+    /// Returns:
+    /// * `query`: The query with the component added
     fn with(
-        s: Val<ScriptQueryBuilder>,
+        query: Val<ScriptQueryBuilder>,
         with: Val<ScriptComponentRegistration>,
     ) -> Val<ScriptQueryBuilder> {
         profiling::function_scope!("with");
-        let mut builder = s.into_inner();
+        let mut builder = query.into_inner();
         builder.with_component(with.into_inner());
         Val(builder)
     }
 
+    /// Adds a component to filter the query by. This component will NOT be retrieved.
+    ///
+    /// Arguments:
+    /// * `query`: The query to add the component to
+    /// * `component`: The component to filter by
+    /// Returns:
+    /// * `query`: The query with the component added
     fn without(
-        s: Val<ScriptQueryBuilder>,
+        query: Val<ScriptQueryBuilder>,
         without: Val<ScriptComponentRegistration>,
     ) -> Val<ScriptQueryBuilder> {
         profiling::function_scope!("without");
-        let mut builder = s.into_inner();
+        let mut builder = query.into_inner();
         builder.without_component(without.into_inner());
         Val(builder)
     }
 
+    /// Builds the query and retrieves the entities and component references.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `query`: The query to build.
+    /// Returns:
+    /// * `result`: The entities and component references that match the query.
     fn build(
         ctxt: FunctionCallContext,
-        s: Val<ScriptQueryBuilder>,
+        query: Val<ScriptQueryBuilder>,
     ) -> Result<Vec<Val<ScriptQueryResult>>, InteropError> {
         profiling::function_scope!("build");
         let world = ctxt.world()?;
-        let builder = s.into_inner();
+        let builder = query.into_inner();
         let result = world.query(builder)?;
         let result = result.into_iter().map(Val).collect::<Vec<_>>();
         Ok(result)
@@ -689,57 +1013,73 @@ impl ScriptQueryBuilder {
 #[script_bindings(
     remote,
     bms_core_path = "bevy_mod_scripting_core",
-    name = "script_query_result_functions"
+    name = "script_query_result_functions",
+    core
 )]
 impl ScriptQueryResult {
-    fn entity(s: Ref<ScriptQueryResult>) -> Val<Entity> {
+    /// Retrieves the entity from the query result.
+    ///
+    /// Arguments:
+    /// * `query`: The query result to retrieve the entity from.
+    /// Returns:
+    /// * `entity`: The entity from the query result.
+    fn entity(query: Ref<ScriptQueryResult>) -> Val<Entity> {
         profiling::function_scope!("entity");
-        Val::new(s.entity)
+        Val::new(query.entity)
     }
 
-    fn components(s: Ref<ScriptQueryResult>) -> Vec<ReflectReference> {
+    /// Retrieves the components from the query result.
+    ///
+    /// These are ordered by the order they were added to the query.
+    ///
+    /// Arguments:
+    /// * `query`: The query result to retrieve the components from.
+    /// Returns:
+    /// * `components`: The components from the query result.
+    fn components(query: Ref<ScriptQueryResult>) -> Vec<ReflectReference> {
         profiling::function_scope!("components");
-        s.components.to_vec()
+        query.components.to_vec()
     }
 }
 
 #[script_bindings(
     remote,
     bms_core_path = "bevy_mod_scripting_core",
-    name = "reflect_schedule_functions"
+    name = "reflect_schedule_functions",
+    core
 )]
 impl ReflectSchedule {
     /// Retrieves all the systems in the schedule.
     ///
     /// Arguments:
-    /// * `self_`: The schedule to retrieve the systems from.
+    /// * `schedule`: The schedule to retrieve the systems from.
     /// Returns:
     /// * `systems`: The systems in the schedule.
     fn systems(
         ctxt: FunctionCallContext,
-        self_: Ref<ReflectSchedule>,
+        schedule: Ref<ReflectSchedule>,
     ) -> Result<Vec<Val<ReflectSystem>>, InteropError> {
         profiling::function_scope!("systems");
         let world = ctxt.world()?;
-        let systems = world.systems(&self_);
+        let systems = world.systems(&schedule);
         Ok(systems?.into_iter().map(Into::into).collect())
     }
 
     /// Retrieves the system with the given name in the schedule
     ///
     /// Arguments:
-    /// * `self_`: The schedule to retrieve the system from.
+    /// * `schedule`: The schedule to retrieve the system from.
     /// * `name`: The identifier or full path of the system to retrieve.
     /// Returns:
     /// * `system`: The system with the given name, if it exists.
     fn get_system_by_name(
         ctxt: FunctionCallContext,
-        self_: Ref<ReflectSchedule>,
+        schedule: Ref<ReflectSchedule>,
         name: String,
     ) -> Result<Option<Val<ReflectSystem>>, InteropError> {
         profiling::function_scope!("system_by_name");
         let world = ctxt.world()?;
-        let system = world.systems(&self_)?;
+        let system = world.systems(&schedule)?;
         Ok(system
             .into_iter()
             .find_map(|s| (s.identifier() == name || s.path() == name).then_some(s.into())))
@@ -751,19 +1091,19 @@ impl ReflectSchedule {
     ///
     /// Arguments:
     /// * `ctxt`: The function call context
-    /// * `self_`: The schedule to render.
+    /// * `schedule`: The schedule to render.
     /// Returns:
     /// * `dot`: The dot graph string.
     fn render_dot(
         ctxt: FunctionCallContext,
-        self_: Ref<ReflectSchedule>,
+        schedule: Ref<ReflectSchedule>,
     ) -> Result<String, InteropError> {
         profiling::function_scope!("render_dot");
         let world = ctxt.world()?;
         world.with_resource(|schedules: &Schedules| {
             let schedule = schedules
-                .get(*self_.label())
-                .ok_or_else(|| InteropError::missing_schedule(self_.identifier()))?;
+                .get(*schedule.label())
+                .ok_or_else(|| InteropError::missing_schedule(schedule.identifier()))?;
             let mut graph = bevy_system_reflection::schedule_to_reflect_graph(schedule);
             graph.absorb_type_system_sets();
             graph.sort();
@@ -776,42 +1116,51 @@ impl ReflectSchedule {
 #[script_bindings(
     remote,
     bms_core_path = "bevy_mod_scripting_core",
-    name = "reflect_system_functions"
+    name = "reflect_system_functions",
+    core
 )]
 impl ReflectSystem {
     /// Retrieves the identifier of the system
     /// Arguments:
-    /// * `self_`: The system to retrieve the identifier from.
+    /// * `system`: The system to retrieve the identifier from.
     /// Returns:
     /// * `identifier`: The identifier of the system, e.g. `my_system`
-    fn identifier(self_: Ref<ReflectSystem>) -> String {
+    fn identifier(system: Ref<ReflectSystem>) -> String {
         profiling::function_scope!("identifier");
-        self_.identifier().to_string()
+        system.identifier().to_string()
     }
 
     /// Retrieves the full path of the system
     /// Arguments:
-    /// * `self_`: The system to retrieve the path from.
+    /// * `system`: The system to retrieve the path from.
     /// Returns:
     /// * `path`: The full path of the system, e.g. `my_crate::systems::my_system<T>`
-    fn path(self_: Ref<ReflectSystem>) -> String {
+    fn path(system: Ref<ReflectSystem>) -> String {
         profiling::function_scope!("path");
-        self_.path().to_string()
+        system.path().to_string()
     }
 }
 
 #[script_bindings(
     remote,
     bms_core_path = "bevy_mod_scripting_core",
-    name = "script_system_builder_functions"
+    name = "script_system_builder_functions",
+    core
 )]
 impl ScriptSystemBuilder {
+    /// Adds a query to the system builder.
+    ///
+    /// Arguments:
+    /// * `builder`: The system builder to add the query to.
+    /// * `query`: The query to add.
+    /// Returns:
+    /// * `builder`: The system builder with the query added.
     fn query(
-        self_: Val<ScriptSystemBuilder>,
+        builder: Val<ScriptSystemBuilder>,
         query: Val<ScriptQueryBuilder>,
     ) -> Result<Val<ScriptSystemBuilder>, InteropError> {
         profiling::function_scope!("query");
-        let mut builder = self_.into_inner();
+        let mut builder = builder.into_inner();
         builder.query(query.into_inner());
         Ok(builder.into())
     }
@@ -819,28 +1168,28 @@ impl ScriptSystemBuilder {
     /// Requests the system have access to the given resource. The resource will be added to the
     /// list of arguments of the callback in the order they're provided.
     /// Arguments:
-    /// * `self_`: The system builder to add the resource to.
+    /// * `builder`: The system builder to add the resource to.
     /// * `resource`: The resource to add.
     /// Returns:
     /// * `builder`: The system builder with the resource added.
     fn resource(
-        self_: Val<ScriptSystemBuilder>,
+        builder: Val<ScriptSystemBuilder>,
         resource: Val<ScriptResourceRegistration>,
     ) -> Val<ScriptSystemBuilder> {
         profiling::function_scope!("resource");
-        let mut builder = self_.into_inner();
+        let mut builder = builder.into_inner();
         builder.resource(resource.into_inner());
         builder.into()
     }
 
     /// Specifies the system is to run exclusively, meaning it can access anything, but will not run in parallel with other systems.
     /// Arguments:
-    /// * `self_`: The system builder to make exclusive.
+    /// * `builder`: The system builder to make exclusive.
     /// Returns:
     /// * `builder`: The system builder that is now exclusive.
-    fn exclusive(self_: Val<ScriptSystemBuilder>) -> Val<ScriptSystemBuilder> {
+    fn exclusive(builder: Val<ScriptSystemBuilder>) -> Val<ScriptSystemBuilder> {
         profiling::function_scope!("exclusive");
-        let mut builder = self_.into_inner();
+        let mut builder = builder.into_inner();
         builder.exclusive(true);
         builder.into()
     }
@@ -850,16 +1199,16 @@ impl ScriptSystemBuilder {
     /// Note: this is an experimental feature, and the ordering might not work correctly for script initialized systems
     ///
     /// Arguments:
-    /// * `self_`: The system builder to add the dependency to.
+    /// * `builder`: The system builder to add the dependency to.
     /// * `system`: The system to run after.
     /// Returns:
     /// * `builder`: The system builder with the dependency added.
     fn after(
-        self_: Val<ScriptSystemBuilder>,
+        builder: Val<ScriptSystemBuilder>,
         system: Val<ReflectSystem>,
     ) -> Val<ScriptSystemBuilder> {
         profiling::function_scope!("after");
-        let mut builder = self_.into_inner();
+        let mut builder = builder.into_inner();
         builder.after_system(system.into_inner());
         Val(builder)
     }
@@ -869,16 +1218,16 @@ impl ScriptSystemBuilder {
     /// Note: this is an experimental feature, and the ordering might not work correctly for script initialized systems
     ///
     /// Arguments:
-    /// * `self_`: The system builder to add the dependency to.
+    /// * `builder`: The system builder to add the dependency to.
     /// * `system`: The system to run before.
     /// Returns:
     /// * `builder`: The system builder with the dependency added.
     fn before(
-        self_: Val<ScriptSystemBuilder>,
+        builder: Val<ScriptSystemBuilder>,
         system: Val<ReflectSystem>,
     ) -> Val<ScriptSystemBuilder> {
         profiling::function_scope!("before");
-        let mut builder = self_.into_inner();
+        let mut builder = builder.into_inner();
         builder.before_system(system.into_inner());
         Val(builder)
     }
