@@ -52,7 +52,11 @@ impl LadFile {
     }
 
     /// Retrieves the best type identifier suitable for a type id.
-    pub fn get_type_identifier(&self, type_id: &LadTypeId) -> Cow<'static, str> {
+    pub fn get_type_identifier(
+        &self,
+        type_id: &LadTypeId,
+        raw_type_id_replacement: Option<&'static str>,
+    ) -> Cow<'static, str> {
         if let Some(primitive) = self.primitives.get(type_id) {
             return primitive.kind.lad_type_id().to_string().into();
         }
@@ -60,7 +64,13 @@ impl LadFile {
         self.types
             .get(type_id)
             .map(|t| t.identifier.clone().into())
-            .unwrap_or_else(|| type_id.0.clone())
+            .unwrap_or_else(|| {
+                if let Some(replacement) = raw_type_id_replacement {
+                    replacement.into()
+                } else {
+                    type_id.0.clone()
+                }
+            })
     }
 
     /// Retrieves the generics of a type id if it is a generic type.
@@ -441,7 +451,31 @@ pub struct LadType {
 
     /// The layout or kind of the type.
     pub layout: LadTypeLayout,
+
+    /// If a type is marked as auto generated. Auto generated types might be treated differently by
+    /// backends which generate documentation or other files. For example they might be hidden or put in a separate section.
+    #[serde(default)]
+    pub generated: bool,
+
+    /// An "importance" value. By default all types get a value of 1000.
+    /// A lower insignificance means the type is more important.
+    ///
+    /// Backends can use this value to determine the order in which types are displayed.
+    #[serde(default = "default_importance")]
+    pub insignificance: usize,
 }
+
+/// The default importance value for a type.
+pub fn default_importance() -> usize {
+    1000
+}
+
+// /// A type importance value.
+// pub struct Importance(pub usize)
+
+// impl Default for Importance {
+
+// }
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(untagged)]

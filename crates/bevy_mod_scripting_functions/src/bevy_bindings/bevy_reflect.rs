@@ -15,7 +15,8 @@ pub struct BevyReflectScriptingPlugin;
 #[script_bindings(
     remote,
     name = "atomic_bool_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl std::sync::atomic::AtomicBool {
     ///  Consumes the atomic and returns the contained value.
@@ -50,7 +51,8 @@ impl std::sync::atomic::AtomicBool {
 #[script_bindings(
     remote,
     name = "atomic_i_16_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl std::sync::atomic::AtomicI16 {
     ///  Consumes the atomic and returns the contained value.
@@ -84,7 +86,8 @@ impl std::sync::atomic::AtomicI16 {
 #[script_bindings(
     remote,
     name = "atomic_i_32_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl std::sync::atomic::AtomicI32 {
     ///  Consumes the atomic and returns the contained value.
@@ -118,7 +121,8 @@ impl std::sync::atomic::AtomicI32 {
 #[script_bindings(
     remote,
     name = "atomic_i_64_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl std::sync::atomic::AtomicI64 {
     ///  Consumes the atomic and returns the contained value.
@@ -152,7 +156,8 @@ impl std::sync::atomic::AtomicI64 {
 #[script_bindings(
     remote,
     name = "atomic_i_8_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl std::sync::atomic::AtomicI8 {
     ///  Consumes the atomic and returns the contained value.
@@ -186,7 +191,8 @@ impl std::sync::atomic::AtomicI8 {
 #[script_bindings(
     remote,
     name = "atomic_isize_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl std::sync::atomic::AtomicIsize {
     ///  Consumes the atomic and returns the contained value.
@@ -222,7 +228,8 @@ impl std::sync::atomic::AtomicIsize {
 #[script_bindings(
     remote,
     name = "atomic_u_16_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl std::sync::atomic::AtomicU16 {
     ///  Consumes the atomic and returns the contained value.
@@ -256,7 +263,8 @@ impl std::sync::atomic::AtomicU16 {
 #[script_bindings(
     remote,
     name = "atomic_u_32_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl std::sync::atomic::AtomicU32 {
     ///  Consumes the atomic and returns the contained value.
@@ -290,7 +298,8 @@ impl std::sync::atomic::AtomicU32 {
 #[script_bindings(
     remote,
     name = "atomic_u_64_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl std::sync::atomic::AtomicU64 {
     ///  Consumes the atomic and returns the contained value.
@@ -324,7 +333,8 @@ impl std::sync::atomic::AtomicU64 {
 #[script_bindings(
     remote,
     name = "atomic_u_8_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl std::sync::atomic::AtomicU8 {
     ///  Consumes the atomic and returns the contained value.
@@ -358,7 +368,8 @@ impl std::sync::atomic::AtomicU8 {
 #[script_bindings(
     remote,
     name = "atomic_usize_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl std::sync::atomic::AtomicUsize {
     ///  Consumes the atomic and returns the contained value.
@@ -394,7 +405,8 @@ impl std::sync::atomic::AtomicUsize {
 #[script_bindings(
     remote,
     name = "duration_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::utils::Duration {
     ///  Computes the absolute difference between `self` and `other`.
@@ -932,7 +944,8 @@ impl bevy::utils::Duration {
 #[script_bindings(
     remote,
     name = "instant_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::utils::Instant {
     ///  # Panics
@@ -1081,7 +1094,8 @@ impl bevy::utils::Instant {
 #[script_bindings(
     remote,
     name = "range_full_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl std::ops::RangeFull {
     fn assert_receiver_is_total_eq(_self: Ref<std::ops::RangeFull>) -> () {
@@ -1109,7 +1123,8 @@ impl std::ops::RangeFull {
 #[script_bindings(
     remote,
     name = "quat_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::Quat {
     ///  Returns true if the absolute difference of all elements between `self` and `rhs`
@@ -1650,7 +1665,8 @@ impl bevy::math::Quat {
 #[script_bindings(
     remote,
     name = "vec_3_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::Vec3 {
     ///  Returns a vector containing the absolute value of each element of `self`.
@@ -2610,7 +2626,8 @@ impl bevy::math::Vec3 {
 #[script_bindings(
     remote,
     name = "i_vec_2_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::IVec2 {
     ///  Returns a vector containing the absolute value of each element of `self`.
@@ -3302,7 +3319,8 @@ impl bevy::math::IVec2 {
 #[script_bindings(
     remote,
     name = "i_vec_3_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::IVec3 {
     ///  Returns a vector containing the absolute value of each element of `self`.
@@ -3999,7 +4017,8 @@ impl bevy::math::IVec3 {
 #[script_bindings(
     remote,
     name = "i_vec_4_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::IVec4 {
     ///  Returns a vector containing the absolute value of each element of `self`.
@@ -4679,7 +4698,8 @@ impl bevy::math::IVec4 {
 #[script_bindings(
     remote,
     name = "i_64_vec_2_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::I64Vec2 {
     ///  Returns a vector containing the absolute value of each element of `self`.
@@ -5378,7 +5398,8 @@ impl bevy::math::I64Vec2 {
 #[script_bindings(
     remote,
     name = "i_64_vec_3_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::I64Vec3 {
     ///  Returns a vector containing the absolute value of each element of `self`.
@@ -6081,7 +6102,8 @@ impl bevy::math::I64Vec3 {
 #[script_bindings(
     remote,
     name = "i_64_vec_4_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::I64Vec4 {
     ///  Returns a vector containing the absolute value of each element of `self`.
@@ -6767,7 +6789,8 @@ impl bevy::math::I64Vec4 {
 #[script_bindings(
     remote,
     name = "u_vec_2_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::UVec2 {
     fn add(
@@ -7331,7 +7354,8 @@ impl bevy::math::UVec2 {
 #[script_bindings(
     remote,
     name = "u_vec_3_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::UVec3 {
     fn add(
@@ -7930,7 +7954,8 @@ impl bevy::math::UVec3 {
 #[script_bindings(
     remote,
     name = "u_vec_4_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::UVec4 {
     fn add(
@@ -8512,7 +8537,8 @@ impl bevy::math::UVec4 {
 #[script_bindings(
     remote,
     name = "u_64_vec_2_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::U64Vec2 {
     fn add(
@@ -9079,7 +9105,8 @@ impl bevy::math::U64Vec2 {
 #[script_bindings(
     remote,
     name = "u_64_vec_3_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::U64Vec3 {
     fn add(
@@ -9682,7 +9709,8 @@ impl bevy::math::U64Vec3 {
 #[script_bindings(
     remote,
     name = "u_64_vec_4_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::U64Vec4 {
     fn add(
@@ -10268,7 +10296,8 @@ impl bevy::math::U64Vec4 {
 #[script_bindings(
     remote,
     name = "vec_2_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::Vec2 {
     ///  Returns a vector containing the absolute value of each element of `self`.
@@ -11245,7 +11274,8 @@ impl bevy::math::Vec2 {
 #[script_bindings(
     remote,
     name = "vec_3_a_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::Vec3A {
     ///  Returns a vector containing the absolute value of each element of `self`.
@@ -12217,7 +12247,8 @@ impl bevy::math::Vec3A {
 #[script_bindings(
     remote,
     name = "vec_4_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::Vec4 {
     ///  Returns a vector containing the absolute value of each element of `self`.
@@ -13134,7 +13165,8 @@ impl bevy::math::Vec4 {
 #[script_bindings(
     remote,
     name = "b_vec_2_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::BVec2 {
     ///  Returns true if all the elements are true, false otherwise.
@@ -13206,7 +13238,8 @@ impl bevy::math::BVec2 {
 #[script_bindings(
     remote,
     name = "b_vec_3_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::BVec3 {
     ///  Returns true if all the elements are true, false otherwise.
@@ -13278,7 +13311,8 @@ impl bevy::math::BVec3 {
 #[script_bindings(
     remote,
     name = "b_vec_4_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::BVec4 {
     ///  Returns true if all the elements are true, false otherwise.
@@ -13350,7 +13384,8 @@ impl bevy::math::BVec4 {
 #[script_bindings(
     remote,
     name = "d_vec_2_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::DVec2 {
     ///  Returns a vector containing the absolute value of each element of `self`.
@@ -14332,7 +14367,8 @@ impl bevy::math::DVec2 {
 #[script_bindings(
     remote,
     name = "d_vec_3_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::DVec3 {
     ///  Returns a vector containing the absolute value of each element of `self`.
@@ -15302,7 +15338,8 @@ impl bevy::math::DVec3 {
 #[script_bindings(
     remote,
     name = "d_vec_4_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::DVec4 {
     ///  Returns a vector containing the absolute value of each element of `self`.
@@ -16223,7 +16260,8 @@ impl bevy::math::DVec4 {
 #[script_bindings(
     remote,
     name = "mat_2_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::Mat2 {
     ///  Takes the absolute value of each element in `self`
@@ -16524,7 +16562,8 @@ impl bevy::math::Mat2 {
 #[script_bindings(
     remote,
     name = "mat_3_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::Mat3 {
     ///  Takes the absolute value of each element in `self`
@@ -16981,7 +17020,8 @@ impl bevy::math::Mat3 {
 #[script_bindings(
     remote,
     name = "mat_3_a_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::Mat3A {
     ///  Takes the absolute value of each element in `self`
@@ -17440,7 +17480,8 @@ impl bevy::math::Mat3A {
 #[script_bindings(
     remote,
     name = "mat_4_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::Mat4 {
     ///  Takes the absolute value of each element in `self`
@@ -18215,7 +18256,8 @@ impl bevy::math::Mat4 {
 #[script_bindings(
     remote,
     name = "d_mat_2_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::DMat2 {
     ///  Takes the absolute value of each element in `self`
@@ -18495,7 +18537,8 @@ impl bevy::math::DMat2 {
 #[script_bindings(
     remote,
     name = "d_mat_3_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::DMat3 {
     ///  Takes the absolute value of each element in `self`
@@ -18932,7 +18975,8 @@ impl bevy::math::DMat3 {
 #[script_bindings(
     remote,
     name = "d_mat_4_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::DMat4 {
     ///  Takes the absolute value of each element in `self`
@@ -19659,7 +19703,8 @@ impl bevy::math::DMat4 {
 #[script_bindings(
     remote,
     name = "affine_2_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::Affine2 {
     ///  Returns true if the absolute difference of all elements between `self` and `rhs`
@@ -19894,7 +19939,8 @@ impl bevy::math::Affine2 {
 #[script_bindings(
     remote,
     name = "affine_3_a_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::Affine3A {
     ///  Returns true if the absolute difference of all elements between `self` and `rhs`
@@ -20252,7 +20298,8 @@ impl bevy::math::Affine3A {
 #[script_bindings(
     remote,
     name = "d_affine_2_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::DAffine2 {
     ///  Returns true if the absolute difference of all elements between `self` and `rhs`
@@ -20472,7 +20519,8 @@ impl bevy::math::DAffine2 {
 #[script_bindings(
     remote,
     name = "d_affine_3_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::DAffine3 {
     ///  Returns true if the absolute difference of all elements between `self` and `rhs`
@@ -20804,7 +20852,8 @@ impl bevy::math::DAffine3 {
 #[script_bindings(
     remote,
     name = "d_quat_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::DQuat {
     ///  Returns true if the absolute difference of all elements between `self` and `rhs`
@@ -21317,7 +21366,8 @@ impl bevy::math::DQuat {
 #[script_bindings(
     remote,
     name = "euler_rot_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::EulerRot {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::math::EulerRot>) -> () {
@@ -21345,7 +21395,8 @@ impl bevy::math::EulerRot {
 #[script_bindings(
     remote,
     name = "b_vec_3_a_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::BVec3A {
     ///  Returns true if all the elements are true, false otherwise.
@@ -21410,7 +21461,8 @@ impl bevy::math::BVec3A {
 #[script_bindings(
     remote,
     name = "b_vec_4_a_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::math::BVec4A {
     ///  Returns true if all the elements are true, false otherwise.
@@ -21475,7 +21527,8 @@ impl bevy::math::BVec4A {
 #[script_bindings(
     remote,
     name = "smol_str_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl smol_str::SmolStr {
     fn clone(_self: Ref<smol_str::SmolStr>) -> Val<smol_str::SmolStr> {
@@ -21512,7 +21565,8 @@ impl smol_str::SmolStr {
 #[script_bindings(
     remote,
     name = "uuid_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl uuid::Uuid {
     ///  Returns a 128bit value containing the value.

@@ -17,14 +17,7 @@
 
 - [Introduction](./ScriptingReference/introduction.md)
 - [Constructing Arbitrary Types](./ScriptingReference/constructing-arbitrary-types.md)
-- [Core Bindings](./ScriptingReference/core-api.md)
-    - [World](./ScriptingReference/world.md)
-    - [ReflectReference](./ScriptingReference/reflect-reference.md)
-    - [ScriptTypeRegistration](./ScriptingReference/script-type-registration.md)
-    - [ScriptComponentRegistration](./ScriptingReference/script-component-registration.md)
-    - [ScriptResourceRegistration](./ScriptingReference/script-resource-registration.md)
-    - [ScriptQueryBuilder](./ScriptingReference/script-query-builder.md)
-    - [ScriptQueryResult](./ScriptingReference/script-query-result.md)
+- [Core Bindings](./ladfiles/bindings.lad.json)
 - [Core Callbacks](./ScriptingReference/core-callbacks.md)
 
 # Developing BMS
@@ -34,8 +27,3 @@
 - [New Languages](./Development/AddingLanguages/introduction.md)
     - [Evaluating Feasibility](./Development/AddingLanguages/evaluating-feasibility.md)
     - [Necessary Features](./Development/AddingLanguages/necessary-features.md)
-
-# LAD docs (WIP)
-
-- [Generated Docs](./ladfiles/bindings.lad.json)
-

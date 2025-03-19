@@ -15,7 +15,8 @@ pub struct BevyCoreScriptingPlugin;
 #[script_bindings(
     remote,
     name = "name_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::core::prelude::Name {
     fn clone(_self: Ref<bevy::core::prelude::Name>) -> Val<bevy::core::prelude::Name> {

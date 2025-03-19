@@ -15,7 +15,8 @@ pub struct BevyEcsScriptingPlugin;
 #[script_bindings(
     remote,
     name = "entity_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::ecs::entity::Entity {
     fn clone(_self: Ref<bevy::ecs::entity::Entity>) -> Val<bevy::ecs::entity::Entity> {
@@ -90,31 +91,36 @@ impl bevy::ecs::entity::Entity {
 #[script_bindings(
     remote,
     name = "on_add_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::ecs::world::OnAdd {}
 #[script_bindings(
     remote,
     name = "on_insert_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::ecs::world::OnInsert {}
 #[script_bindings(
     remote,
     name = "on_remove_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::ecs::world::OnRemove {}
 #[script_bindings(
     remote,
     name = "on_replace_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::ecs::world::OnReplace {}
 #[script_bindings(
     remote,
     name = "component_id_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::ecs::component::ComponentId {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::ecs::component::ComponentId>) -> () {
@@ -163,7 +169,8 @@ impl bevy::ecs::component::ComponentId {
 #[script_bindings(
     remote,
     name = "tick_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::ecs::component::Tick {
     fn assert_receiver_is_total_eq(_self: Ref<bevy::ecs::component::Tick>) -> () {
@@ -227,7 +234,8 @@ impl bevy::ecs::component::Tick {
 #[script_bindings(
     remote,
     name = "component_ticks_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::ecs::component::ComponentTicks {
     fn clone(
@@ -305,7 +313,8 @@ impl bevy::ecs::component::ComponentTicks {
 #[script_bindings(
     remote,
     name = "identifier_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::ecs::identifier::Identifier {
     fn clone(
@@ -362,7 +371,8 @@ impl bevy::ecs::identifier::Identifier {
 #[script_bindings(
     remote,
     name = "entity_hash_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::ecs::entity::EntityHash {
     fn clone(
@@ -378,7 +388,8 @@ impl bevy::ecs::entity::EntityHash {
 #[script_bindings(
     remote,
     name = "removed_component_entity_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::ecs::removal_detection::RemovedComponentEntity {
     fn clone(
@@ -394,7 +405,8 @@ impl bevy::ecs::removal_detection::RemovedComponentEntity {
 #[script_bindings(
     remote,
     name = "system_id_marker_functions",
-    bms_core_path = "bevy_mod_scripting_core"
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
 )]
 impl bevy::ecs::system::SystemIdMarker {}
 impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {

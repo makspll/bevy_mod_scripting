@@ -51,10 +51,45 @@ pub fn script_bindings(
         format_ident!("new")
     };
 
+    let mark_as_generated = if args.generated {
+        quote_spanned! {impl_span=>
+
+            let registry = world.get_resource_or_init::<bevy::ecs::reflect::AppTypeRegistry>();
+            let mut registry = registry.write();
+            registry.register_type_data::<#type_ident_with_generics, #bms_core_path::bindings::MarkAsGenerated>();
+        }
+    } else {
+        Default::default()
+    };
+
+    let mark_as_core = if bms_core_path.is_ident("crate") || args.core {
+        quote_spanned! {impl_span=>
+            let registry = world.get_resource_or_init::<bevy::ecs::reflect::AppTypeRegistry>();
+            let mut registry = registry.write();
+            registry.register_type_data::<#type_ident_with_generics, #bms_core_path::bindings::MarkAsCore>();
+        }
+    } else {
+        Default::default()
+    };
+
+    let mark_as_significant = if args.significant {
+        quote_spanned! {impl_span=>
+            let registry = world.get_resource_or_init::<bevy::ecs::reflect::AppTypeRegistry>();
+            let mut registry = registry.write();
+            registry.register_type_data::<#type_ident_with_generics, #bms_core_path::bindings::MarkAsSignificant>();
+        }
+    } else {
+        Default::default()
+    };
+
     let out = quote_spanned! {impl_span=>
         #visibility fn #function_name(world: &mut bevy::ecs::world::World) {
             #bms_core_path::bindings::function::namespace::NamespaceBuilder::<#type_ident_with_generics>::#builder_function_name(world)
                 #(#function_registrations)*;
+
+            #mark_as_generated
+            #mark_as_core
+            #mark_as_significant
         }
 
         #impl_block
@@ -72,6 +107,12 @@ struct Args {
     pub bms_core_path: syn::Path,
     /// If true will use `new_unregistered` instead of `new` for the namespace builder
     pub unregistered: bool,
+    /// If true registers a marker type against the type registry to state that the type is generated (if unregistered is not set)
+    pub generated: bool,
+    /// If true registers a marker type against the type registry to state that the type is core to BMS (if unregistered is not set)
+    pub core: bool,
+    /// If true registers a marker type against the type registry to state that the type is significant (if unregistered is not set)
+    pub significant: bool,
 }
 
 impl syn::parse::Parse for Args {
@@ -83,6 +124,9 @@ impl syn::parse::Parse for Args {
         let mut name = syn::Ident::new("functions", Span::call_site());
         let mut remote = false;
         let mut unregistered = false;
+        let mut generated = false;
+        let mut core = false;
+        let mut significant = false;
         let mut bms_core_path =
             syn::Path::from(syn::Ident::new("bevy_mod_scripting", Span::call_site()));
         bms_core_path.segments.push(syn::PathSegment {
@@ -98,6 +142,15 @@ impl syn::parse::Parse for Args {
                         continue;
                     } else if path.is_ident("unregistered") {
                         unregistered = true;
+                        continue;
+                    } else if path.is_ident("generated") {
+                        generated = true;
+                        continue;
+                    } else if path.is_ident("core") {
+                        core = true;
+                        continue;
+                    } else if path.is_ident("significant") {
+                        significant = true;
                         continue;
                     }
                 }
@@ -136,6 +189,9 @@ impl syn::parse::Parse for Args {
             bms_core_path,
             name,
             unregistered,
+            generated,
+            core,
+            significant,
         })
     }
 }

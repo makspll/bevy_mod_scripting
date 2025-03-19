@@ -37,6 +37,37 @@
     }
   },
   "types": {
+    "ladfile_builder::test::StructType<usize>": {
+      "identifier": "StructType",
+      "crate": "ladfile_builder",
+      "path": "ladfile_builder::test::StructType<usize>",
+      "generics": [
+        {
+          "type_id": "usize",
+          "name": "T"
+        }
+      ],
+      "documentation": " I am a struct",
+      "associated_functions": [
+        "ladfile_builder::test::StructType<usize>::hello_world"
+      ],
+      "layout": {
+        "kind": "Struct",
+        "name": "StructType",
+        "fields": [
+          {
+            "name": "field",
+            "type": "usize"
+          },
+          {
+            "name": "field2",
+            "type": "usize"
+          }
+        ]
+      },
+      "generated": false,
+      "insignificance": 1000
+    },
     "ladfile_builder::test::EnumType": {
       "identifier": "EnumType",
       "crate": "ladfile_builder",
@@ -68,36 +99,9 @@
             }
           ]
         }
-      ]
-    },
-    "ladfile_builder::test::StructType<usize>": {
-      "identifier": "StructType",
-      "crate": "ladfile_builder",
-      "path": "ladfile_builder::test::StructType<usize>",
-      "generics": [
-        {
-          "type_id": "usize",
-          "name": "T"
-        }
       ],
-      "documentation": " I am a struct",
-      "associated_functions": [
-        "ladfile_builder::test::StructType<usize>::hello_world"
-      ],
-      "layout": {
-        "kind": "Struct",
-        "name": "StructType",
-        "fields": [
-          {
-            "name": "field",
-            "type": "usize"
-          },
-          {
-            "name": "field2",
-            "type": "usize"
-          }
-        ]
-      }
+      "generated": false,
+      "insignificance": 1000
     },
     "ladfile_builder::test::TupleStructType": {
       "identifier": "TupleStructType",
@@ -115,7 +119,9 @@
             "type": "String"
           }
         ]
-      }
+      },
+      "generated": false,
+      "insignificance": 1000
     },
     "ladfile_builder::test::UnitType": {
       "identifier": "UnitType",
@@ -125,7 +131,9 @@
       "layout": {
         "kind": "Struct",
         "name": "UnitType"
-      }
+      },
+      "generated": false,
+      "insignificance": 1000
     }
   },
   "functions": {
