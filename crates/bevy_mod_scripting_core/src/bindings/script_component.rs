@@ -91,12 +91,6 @@ impl WorldAccessGuard<'_> {
         }
 
         let component_id = self.with_global_access(|w| {
-            bevy::log::info!(
-                "components present: {}. script: {}. World id: {:?}",
-                w.components().len(),
-                component_registry_read.components.len(),
-                w.id()
-            );
             let descriptor = unsafe {
                 // Safety: same safety guarantees as ComponentDescriptor::new
                 // we know the type in advance
@@ -108,9 +102,7 @@ impl WorldAccessGuard<'_> {
                     needs_drop::<ScriptComponent>().then_some(|x| x.drop_as::<ScriptComponent>()),
                 )
             };
-            let o = w.register_component_with_descriptor(descriptor);
-            bevy::log::info!("components present after: {}", w.components().len());
-            o
+            w.register_component_with_descriptor(descriptor)
         })?;
         drop(component_registry_read);
         let mut component_registry = component_registry.write();
@@ -120,12 +112,6 @@ impl WorldAccessGuard<'_> {
                 <ScriptComponent as GetTypeRegistration>::get_type_registration(),
             )),
             component_id,
-        );
-
-        bevy::log::debug!(
-            "Registering dynamic script component: {}, component id assigned: {:?}",
-            component_name,
-            component_id
         );
 
         let component_info = ScriptComponentInfo {
@@ -153,51 +139,33 @@ impl Plugin for DynamicScriptComponentPlugin {
 
 #[cfg(test)]
 mod test {
-    use std::ptr::NonNull;
-
     use super::*;
-    use bevy::{ecs::world::World, ptr::OwningPtr};
+    use bevy::ecs::world::World;
 
     #[test]
     fn test_script_component() {
         let mut world = World::new();
-        let component_name = "MyScriptComponent";
+        let registration = {
+            let guard = WorldAccessGuard::new_exclusive(&mut world);
 
-        #[derive(Reflect, Component)]
-        struct UnderlyingComponent;
-
-        // initialize component descriptor dynamically
-        let descriptor = unsafe {
-            // Safety: same safety guarantees as ComponentDescriptor::new
-            // we know the type in advance
-            // we only use this method to name the component
-            ComponentDescriptor::new_with_layout(
-                component_name,
-                UnderlyingComponent::STORAGE_TYPE,
-                Layout::new::<UnderlyingComponent>(),
-                needs_drop::<UnderlyingComponent>()
-                    .then_some(|x| x.drop_as::<UnderlyingComponent>()),
-            )
+            guard
+                .register_script_component("ScriptTest".to_string())
+                .unwrap()
         };
 
-        // register with the world
-        let component_id = world.register_component_with_descriptor(descriptor.clone());
-        let component_id_2 = world.register_component_with_descriptor(descriptor);
-        assert_eq!(component_id, component_id_2); // iam getting a double free for this in scritps somehow
+        let registry = world.get_resource::<AppScriptComponentRegistry>().unwrap();
 
-        // insert into the entity
-        let entity = world.spawn_empty().id();
-        let mut entity = world.entity_mut(entity);
+        let registry = registry.read();
+        let info = registry.get("ScriptTest").unwrap();
+        assert_eq!(info.registration.component_id, registration.component_id);
+        assert_eq!(info.name, "ScriptTest");
 
-        let value = Box::new(UnderlyingComponent);
-        let value_ref = Box::into_raw(value).cast::<u8>();
-        let ptr = unsafe { OwningPtr::new(NonNull::new(value_ref).unwrap()) };
-        unsafe { entity.insert_by_id(component_id, ptr) };
+        // can get the component through the world
+        let component = world
+            .components()
+            .get_info(info.registration.component_id)
+            .unwrap();
 
-        // check it gets inserted
-        assert!(
-            entity.contains_id(component_id),
-            "entity does not contain freshly inserted component"
-        )
+        assert_eq!(component.name(), "ScriptTest");
     }
 }

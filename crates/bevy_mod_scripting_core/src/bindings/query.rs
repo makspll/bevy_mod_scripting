@@ -178,8 +178,6 @@ impl ScriptComponentRegistration {
                     )
                 })?;
 
-            bevy::log::debug!("found component data");
-
             //  TODO: this shouldn't need entire world access it feels
             let type_registry = world.type_registry();
             world.with_global_access(|world| {
@@ -188,7 +186,6 @@ impl ScriptComponentRegistration {
                     .map_err(|_| InteropError::missing_entity(entity))?;
                 {
                     let registry = type_registry.read();
-                    bevy::log::debug!("inserting component instance using component data");
                     component_data.insert(&mut entity, instance.as_partial_reflect(), &registry);
                 }
                 Ok(())
