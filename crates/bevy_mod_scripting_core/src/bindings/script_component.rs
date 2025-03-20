@@ -73,13 +73,6 @@ impl WorldAccessGuard<'_> {
         &self,
         component_name: String,
     ) -> Result<ScriptComponentRegistration, InteropError> {
-        if !component_name.starts_with("Script") {
-            return Err(InteropError::unsupported_operation(
-                None,
-                None,
-                "script registered component name must start with 'Script'",
-            ));
-        }
         let component_registry = self.component_registry();
         let component_registry_read = component_registry.read();
         if component_registry_read.get(&component_name).is_some() {

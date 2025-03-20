@@ -24,7 +24,7 @@ use super::{
 use crate::{
     bindings::{
         function::{from::FromScript, from_ref::FromScriptRef},
-        with_access_read, with_access_write, ScriptComponent,
+        with_access_read, with_access_write,
     },
     error::InteropError,
     reflection_extensions::PartialReflectExt,
@@ -978,39 +978,21 @@ impl WorldAccessGuard<'_> {
     pub fn get_component(
         &self,
         entity: Entity,
-        component_id: ComponentId,
+        component_registration: ScriptComponentRegistration,
     ) -> Result<Option<ReflectReference>, InteropError> {
         let cell = self.as_unsafe_world_cell()?;
         let entity = cell
             .get_entity(entity)
             .ok_or_else(|| InteropError::missing_entity(entity))?;
 
-        let component_info = cell
-            .components()
-            .get_info(component_id)
-            .ok_or_else(|| InteropError::invalid_component(component_id))?;
-
-        if entity.contains_id(component_id) {
-            let type_id = component_info.type_id().or_else(|| {
-                // check its a script component
-                component_info
-                    .name()
-                    .starts_with("Script")
-                    .then_some(TypeId::of::<ScriptComponent>())
-            });
+        if entity.contains_id(component_registration.component_id) {
             Ok(Some(ReflectReference {
                 base: ReflectBaseType {
-                    type_id: type_id.ok_or_else(|| {
-                        InteropError::unsupported_operation(
-                            None,
-                            None,
-                            format!(
-                                "Component {} does not have a type id. Such components are not supported by BMS.",
-                                component_id.display_without_world()
-                            ),
-                        )
-                    })?,
-                    base_id: ReflectBase::Component(entity.id(), component_id),
+                    type_id: component_registration.type_registration().type_id(),
+                    base_id: ReflectBase::Component(
+                        entity.id(),
+                        component_registration.component_id,
+                    ),
                 },
                 reflect_path: ParsedPath(vec![]),
             }))
