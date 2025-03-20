@@ -34,7 +34,7 @@ use bevy::{
     ecs::{
         component::{Component, ComponentId},
         entity::Entity,
-        reflect::{AppTypeRegistry, ReflectComponent, ReflectFromWorld, ReflectResource},
+        reflect::{AppTypeRegistry, ReflectFromWorld, ReflectResource},
         system::{Commands, Resource},
         world::{unsafe_world_cell::UnsafeWorldCell, CommandQueue, Mut, World},
     },
@@ -934,17 +934,14 @@ impl WorldAccessGuard<'_> {
             .type_registration()
             .data::<ReflectDefault>()
         {
-            bevy::log::debug!("found default data");
             default_td.default()
         } else if let Some(from_world_td) = registration
             .type_registration()
             .type_registration()
             .data::<ReflectFromWorld>()
         {
-            bevy::log::debug!("found reflect from world");
             self.with_global_access(|world| from_world_td.from_world(world))?
         } else {
-            bevy::log::debug!("found neither");
             return Err(InteropError::missing_type_data(
                 registration.registration.type_id(),
                 "ReflectDefault or ReflectFromWorld".to_owned(),
@@ -988,17 +985,10 @@ impl WorldAccessGuard<'_> {
             .get_entity(entity)
             .ok_or_else(|| InteropError::missing_entity(entity))?;
 
-        bevy::log::debug!("Retrieving component with component id: {:?}", component_id);
-
         let component_info = cell
             .components()
             .get_info(component_id)
             .ok_or_else(|| InteropError::invalid_component(component_id))?;
-
-        bevy::log::debug!(
-            "Retrieved component with component info: {:?}",
-            component_info
-        );
 
         if entity.contains_id(component_id) {
             let type_id = component_info.type_id().or_else(|| {
@@ -1049,25 +1039,7 @@ impl WorldAccessGuard<'_> {
         entity: Entity,
         registration: ScriptComponentRegistration,
     ) -> Result<(), InteropError> {
-        let component_data = registration
-            .type_registration()
-            .type_registration()
-            .data::<ReflectComponent>()
-            .ok_or_else(|| {
-                InteropError::missing_type_data(
-                    registration.registration.type_id(),
-                    "ReflectComponent".to_owned(),
-                )
-            })?;
-
-        //  TODO: this shouldn't need entire world access it feels
-        self.with_global_access(|world| {
-            let mut entity = world
-                .get_entity_mut(entity)
-                .map_err(|_| InteropError::missing_entity(entity))?;
-            component_data.remove(&mut entity);
-            Ok(())
-        })?
+        registration.remove_from_entity(self.clone(), entity)
     }
 
     /// get the given resource

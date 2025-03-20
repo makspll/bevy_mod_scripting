@@ -14,7 +14,7 @@ use bevy::{
 use parking_lot::RwLock;
 use std::{alloc::Layout, mem::needs_drop, sync::Arc};
 
-/// A dynamic script component, with script set
+/// A dynamic script component
 #[derive(Reflect, Clone, Default)]
 #[reflect(Default)]
 pub struct ScriptComponent {

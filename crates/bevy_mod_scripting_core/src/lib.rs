@@ -252,7 +252,6 @@ fn once_per_app_finalize(app: &mut App) {
     if app.world().contains_resource::<BMSFinalized>() {
         return;
     }
-    println!("Running init");
     app.insert_resource(BMSFinalized);
 
     // read extensions from asset settings

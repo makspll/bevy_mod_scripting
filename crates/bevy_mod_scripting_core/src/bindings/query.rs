@@ -129,6 +129,21 @@ impl ScriptComponentRegistration {
         self.registration
     }
 
+    /// Removes an instance of this component from the given entity
+    pub fn remove_from_entity(
+        &self,
+        world: WorldGuard,
+        entity: Entity,
+    ) -> Result<(), InteropError> {
+        world.with_global_access(|world| {
+            let mut entity = world
+                .get_entity_mut(entity)
+                .map_err(|_| InteropError::missing_entity(entity))?;
+            entity.remove_by_id(self.component_id);
+            Ok(())
+        })?
+    }
+
     /// Inserts an instance of this component into the given entity
     ///
     /// Requires whole world access
