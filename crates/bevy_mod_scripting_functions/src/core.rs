@@ -447,9 +447,16 @@ impl World {
     }
 
     /// Registers a new component type with the world.
+    ///
+    /// The component will behave like any other native component for all intents and purposes.
+    /// The type that will be instantiated to back this component will be `ScriptComponent` which contains two fields:
+    /// - `data`
+    ///
+    /// This field can be set to any value and modified freely.
+    ///
     /// Arguments:
     /// * `ctxt`: The function call context.
-    /// * `name`: The name of the component type.
+    /// * `name`: The name of the component type. The name MUST begin with `Script` or an error will be thrown
     /// Returns:
     /// * `registration`: The registration of the new component type if successful.
     fn register_new_component(
