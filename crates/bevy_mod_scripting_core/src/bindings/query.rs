@@ -146,16 +146,19 @@ impl ScriptComponentRegistration {
                 let mut entity = world
                     .get_entity_mut(entity)
                     .map_err(|_| InteropError::missing_entity(entity))?;
-                let mut cast = instance.downcast::<ScriptComponent>().map_err(|v| {
+                let cast = instance.downcast::<ScriptComponent>().map_err(|v| {
                     InteropError::type_mismatch(TypeId::of::<ScriptComponent>(), Some(v.type_id()))
                 })?;
-                let ptr = (cast.as_mut() as *mut ScriptComponent).cast();
+                // the reason we leak the box, is because we don't want to double drop the owning ptr
+
+                let ptr = (Box::leak(cast) as *mut ScriptComponent).cast();
                 // Safety: cannot be null as we just created it from a valid reference
                 let non_null_ptr = unsafe { NonNull::new_unchecked(ptr) };
                 // Safety:
                 // - we know the type is ScriptComponent, as we just created the pointer
                 // - the box will stay valid for the life of this function, and we do not return the ptr
                 // - pointer is alligned correctly
+                // - nothing else will call drop on this
                 let owning_ptr = unsafe { OwningPtr::new(non_null_ptr) };
                 // Safety:
                 // - Owning Ptr is valid as we just created it

@@ -14,12 +14,15 @@ use std::{
     path::{Path, PathBuf},
 };
 
+#[derive(Debug)]
 struct Test {
     path: PathBuf,
 }
 
 impl Test {
     fn execute(self) -> Result<(), Failed> {
+        println!("Running test: {:?}", self.path);
+
         execute_integration_test::<LuaScriptingPlugin, _, _>(
             |world, type_registry| {
                 let _ = world;
@@ -126,10 +129,11 @@ fn main() {
     let args = Arguments::from_args();
 
     // Create a list of tests and/or benchmarks (in this case: two dummy tests).
-    let tests = discover_all_tests()
+    let all_tests = discover_all_tests();
+    println!("discovered {} tests. {:?}", all_tests.len(), all_tests);
+    let tests = all_tests
         .into_iter()
         .map(|t| Trial::test(t.name(), move || t.execute()));
-
     // Run all tests and exit the application appropriatly.
     libtest_mimic::run(&args, tests.collect()).exit();
 }

@@ -80,8 +80,23 @@ impl WorldAccessGuard<'_> {
                 "script registered component name must start with 'Script'",
             ));
         }
+        let component_registry = self.component_registry();
+        let component_registry_read = component_registry.read();
+        if component_registry_read.get(&component_name).is_some() {
+            return Err(InteropError::unsupported_operation(
+                None,
+                None,
+                "script registered component already exists",
+            ));
+        }
 
         let component_id = self.with_global_access(|w| {
+            bevy::log::info!(
+                "components present: {}. script: {}. World id: {:?}",
+                w.components().len(),
+                component_registry_read.components.len(),
+                w.id()
+            );
             let descriptor = unsafe {
                 // Safety: same safety guarantees as ComponentDescriptor::new
                 // we know the type in advance
@@ -93,10 +108,11 @@ impl WorldAccessGuard<'_> {
                     needs_drop::<ScriptComponent>().then_some(|x| x.drop_as::<ScriptComponent>()),
                 )
             };
-            w.register_component_with_descriptor(descriptor)
+            let o = w.register_component_with_descriptor(descriptor);
+            bevy::log::info!("components present after: {}", w.components().len());
+            o
         })?;
-
-        let component_registry = self.component_registry();
+        drop(component_registry_read);
         let mut component_registry = component_registry.write();
 
         let registration = ScriptComponentRegistration::new(
@@ -135,51 +151,53 @@ impl Plugin for DynamicScriptComponentPlugin {
     }
 }
 
-// #[cfg(test)]
-// mod test {
-//     use std::ptr::NonNull;
+#[cfg(test)]
+mod test {
+    use std::ptr::NonNull;
 
-//     use super::*;
-//     use bevy::{ecs::world::World, ptr::OwningPtr};
+    use super::*;
+    use bevy::{ecs::world::World, ptr::OwningPtr};
 
-//     #[test]
-//     fn test_script_component() {
-//         let mut world = World::new();
-//         let component_name = "MyScriptComponent";
+    #[test]
+    fn test_script_component() {
+        let mut world = World::new();
+        let component_name = "MyScriptComponent";
 
-//         #[derive(Reflect, Component)]
-//         struct UnderlyingComponent;
+        #[derive(Reflect, Component)]
+        struct UnderlyingComponent;
 
-//         // initialize component descriptor dynamically
-//         let descriptor = unsafe {
-//             // Safety: same safety guarantees as ComponentDescriptor::new
-//             // we know the type in advance
-//             // we only use this method to name the component
-//             ComponentDescriptor::new_with_layout(
-//                 component_name,
-//                 UnderlyingComponent::STORAGE_TYPE,
-//                 Layout::new::<UnderlyingComponent>(),
-//                 needs_drop::<UnderlyingComponent>()
-//                     .then_some(|x| x.drop_as::<UnderlyingComponent>()),
-//             )
-//         };
+        // initialize component descriptor dynamically
+        let descriptor = unsafe {
+            // Safety: same safety guarantees as ComponentDescriptor::new
+            // we know the type in advance
+            // we only use this method to name the component
+            ComponentDescriptor::new_with_layout(
+                component_name,
+                UnderlyingComponent::STORAGE_TYPE,
+                Layout::new::<UnderlyingComponent>(),
+                needs_drop::<UnderlyingComponent>()
+                    .then_some(|x| x.drop_as::<UnderlyingComponent>()),
+            )
+        };
 
-//         // register with the world
-//         let component_id = world.register_component_with_descriptor(descriptor);
+        // register with the world
+        let component_id = world.register_component_with_descriptor(descriptor.clone());
+        let component_id_2 = world.register_component_with_descriptor(descriptor);
+        assert_eq!(component_id, component_id_2); // iam getting a double free for this in scritps somehow
 
-//         // insert into the entity
-//         let entity = world.spawn_empty().id();
-//         let mut entity = world.entity_mut(entity);
+        // insert into the entity
+        let entity = world.spawn_empty().id();
+        let mut entity = world.entity_mut(entity);
 
-//         let value = Box::new(UnderlyingComponent);
-//         let value_ref = Box::into_raw(value).cast::<u8>();
-//         let ptr = unsafe { OwningPtr::new(NonNull::new(value_ref).unwrap()) };
-//         unsafe { entity.insert_by_id(component_id, ptr) };
+        let value = Box::new(UnderlyingComponent);
+        let value_ref = Box::into_raw(value).cast::<u8>();
+        let ptr = unsafe { OwningPtr::new(NonNull::new(value_ref).unwrap()) };
+        unsafe { entity.insert_by_id(component_id, ptr) };
 
-//         // check it gets inserted
-//         assert!(
-//             entity.contains_id(component_id),
-//             "entity does not contain freshly inserted component"
-//         )
-//     }
-// }
+        // check it gets inserted
+        assert!(
+            entity.contains_id(component_id),
+            "entity does not contain freshly inserted component"
+        )
+    }
+}

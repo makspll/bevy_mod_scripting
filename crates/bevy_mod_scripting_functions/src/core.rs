@@ -1287,7 +1287,7 @@ impl GlobalNamespace {
         let reflect_val = val.try_into_reflect().map_err(|_| {
             InteropError::failed_from_reflect(
                 Some(registration.type_id()),
-                "Could not construct the type".into(),
+                "Could not construct the type",
             )
         })?;
 

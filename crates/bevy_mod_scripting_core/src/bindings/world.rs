@@ -961,31 +961,20 @@ impl WorldAccessGuard<'_> {
         registration: ScriptComponentRegistration,
         value: ReflectReference,
     ) -> Result<(), InteropError> {
-        let component_data = registration
-            .type_registration()
-            .type_registration()
-            .data::<ReflectComponent>()
-            .ok_or_else(|| {
-                InteropError::missing_type_data(
-                    registration.registration.type_id(),
-                    "ReflectComponent".to_owned(),
-                )
-            })?;
+        let instance = <Box<dyn PartialReflect>>::from_script_ref(
+            registration.type_registration().type_id(),
+            ScriptValue::Reference(value),
+            self.clone(),
+        )?;
 
-        with_global_access!(&self.inner.accesses, "Could not insert element", {
-            let cell = self.as_unsafe_world_cell()?;
-            let type_registry = self.type_registry();
-            let type_registry = type_registry.read();
-            let world_mut = unsafe { cell.world_mut() };
-            let mut entity = world_mut
-                .get_entity_mut(entity)
-                .map_err(|_| InteropError::missing_entity(entity))?;
+        let reflect = instance.try_into_reflect().map_err(|v| {
+            InteropError::failed_from_reflect(
+                Some(registration.type_registration().type_id()),
+                format!("instance produced by conversion to target type when inserting component is not a full reflect type: {v:?}"),
+            )
+        })?;
 
-            let ref_ = unsafe { value.reflect_unsafe(self.clone())? };
-            component_data.apply_or_insert(&mut entity, ref_, &type_registry);
-
-            Ok(())
-        })?
+        registration.insert_into_entity(self.clone(), entity, reflect)
     }
 
     /// get the component from the entity
