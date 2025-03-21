@@ -1,15 +1,15 @@
 //! Contains the [`FromScriptRef`] trait and its implementations.
 
-use std::{any::TypeId, ffi::OsString, path::PathBuf};
-use bevy::reflect::{
-    DynamicEnum, DynamicList, DynamicMap, DynamicTuple, DynamicVariant, Map, PartialReflect,
-};
 use crate::{
-    bindings::{match_by_type, WorldGuard, FromScript},
+    bindings::{match_by_type, FromScript, WorldGuard},
     error::InteropError,
     reflection_extensions::TypeInfoExtensions,
     ScriptValue,
 };
+use bevy::reflect::{
+    DynamicEnum, DynamicList, DynamicMap, DynamicTuple, DynamicVariant, Map, PartialReflect,
+};
+use std::{any::TypeId, ffi::OsString, path::PathBuf};
 
 /// Converts from a [`ScriptValue`] to a value equivalent to the given [`TypeId`].
 ///
@@ -56,6 +56,7 @@ impl FromScriptRef for Box<dyn PartialReflect> {
                 tq : String  => return <String>::from_script(value, world).map(|a| Box::new(a) as _),
                 tr : PathBuf => return <PathBuf>::from_script(value, world).map(|a| Box::new(a) as _),
                 ts : OsString=> return <OsString>::from_script(value, world).map(|a| Box::new(a) as _),
+                tsv: ScriptValue => return <ScriptValue>::from_script(value, world).map(|a| Box::new(a) as _),
                 tn : ()      => return <()>::from_script(value, world).map(|a| Box::new(a) as _)
             }
         );

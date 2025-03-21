@@ -116,7 +116,7 @@ impl World {
     ) -> Result<Option<ReflectReference>, InteropError> {
         profiling::function_scope!("get_component");
         let world = ctxt.world()?;
-        let val = world.get_component(*entity, registration.component_id())?;
+        let val = world.get_component(*entity, registration.into_inner())?;
         Ok(val)
     }
 
@@ -444,6 +444,28 @@ impl World {
         profiling::function_scope!("exit");
         let world = ctxt.world()?;
         world.exit()
+    }
+
+    /// Registers a new component type with the world.
+    ///
+    /// The component will behave like any other native component for all intents and purposes.
+    /// The type that will be instantiated to back this component will be `DynamicComponent` which contains just one field:
+    /// - `data`
+    ///
+    /// This field can be set to any value and modified freely.
+    ///
+    /// Arguments:
+    /// * `ctxt`: The function call context.
+    /// * `name`: The name of the component type
+    /// Returns:
+    /// * `registration`: The registration of the new component type if successful.
+    fn register_new_component(
+        ctxt: FunctionCallContext,
+        name: String,
+    ) -> Result<Val<ScriptComponentRegistration>, InteropError> {
+        profiling::function_scope!("register_new_component");
+        let world = ctxt.world()?;
+        world.register_script_component(name).map(Val)
     }
 }
 
@@ -1272,7 +1294,7 @@ impl GlobalNamespace {
         let reflect_val = val.try_into_reflect().map_err(|_| {
             InteropError::failed_from_reflect(
                 Some(registration.type_id()),
-                "Could not construct the type".into(),
+                "Could not construct the type",
             )
         })?;
 

@@ -9,13 +9,23 @@ use super::{
     access_map::{
         AccessCount, AccessMapKey, AnyAccessMap, DynamicSystemMeta, ReflectAccessId,
         ReflectAccessKind, SubsetAccessMap,
-    }, function::{
+    },
+    function::{
         namespace::Namespace,
         script_function::{AppScriptFunctionRegistry, DynamicScriptFunction, FunctionCallContext},
-    }, pretty_print::DisplayWithWorld, schedule::AppScheduleRegistry, script_value::ScriptValue, with_global_access, AppReflectAllocator, ReflectBase, ReflectBaseType, ReflectReference, ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration, Union
+    },
+    pretty_print::DisplayWithWorld,
+    schedule::AppScheduleRegistry,
+    script_value::ScriptValue,
+    with_global_access, AppReflectAllocator, AppScriptComponentRegistry, ReflectBase,
+    ReflectBaseType, ReflectReference, ScriptComponentRegistration, ScriptResourceRegistration,
+    ScriptTypeRegistration, Union,
 };
 use crate::{
-    bindings::{function::{from::FromScript, from_ref::FromScriptRef}, with_access_read, with_access_write},
+    bindings::{
+        function::{from::FromScript, from_ref::FromScriptRef},
+        with_access_read, with_access_write,
+    },
     error::InteropError,
     reflection_extensions::PartialReflectExt,
 };
@@ -24,7 +34,7 @@ use bevy::{
     ecs::{
         component::{Component, ComponentId},
         entity::Entity,
-        reflect::{AppTypeRegistry, ReflectComponent, ReflectFromWorld, ReflectResource},
+        reflect::{AppTypeRegistry, ReflectFromWorld, ReflectResource},
         system::{Commands, Resource},
         world::{unsafe_world_cell::UnsafeWorldCell, CommandQueue, Mut, World},
     },
@@ -73,6 +83,8 @@ pub(crate) struct WorldAccessGuardInner<'w> {
     function_registry: AppScriptFunctionRegistry,
     /// The schedule registry for the world
     schedule_registry: AppScheduleRegistry,
+    /// The registry of script registered components
+    script_component_registry: AppScriptComponentRegistry,
 }
 
 impl std::fmt::Debug for WorldAccessGuardInner<'_> {
@@ -159,6 +171,7 @@ impl<'w> WorldAccessGuard<'w> {
         allocator: AppReflectAllocator,
         function_registry: AppScriptFunctionRegistry,
         schedule_registry: AppScheduleRegistry,
+        script_component_registry: AppScriptComponentRegistry,
     ) -> Self {
         Self {
             inner: Rc::new(WorldAccessGuardInner {
@@ -172,6 +185,7 @@ impl<'w> WorldAccessGuard<'w> {
                 allocator,
                 function_registry,
                 schedule_registry,
+                script_component_registry,
             }),
             invalid: Rc::new(false.into()),
         }
@@ -194,6 +208,10 @@ impl<'w> WorldAccessGuard<'w> {
             .get_resource_or_init::<AppScriptFunctionRegistry>()
             .clone();
 
+        let script_component_registry = world
+            .get_resource_or_init::<AppScriptComponentRegistry>()
+            .clone();
+
         let schedule_registry = world.get_resource_or_init::<AppScheduleRegistry>().clone();
         Self {
             inner: Rc::new(WorldAccessGuardInner {
@@ -203,6 +221,7 @@ impl<'w> WorldAccessGuard<'w> {
                 type_registry,
                 function_registry,
                 schedule_registry,
+                script_component_registry,
             }),
             invalid: Rc::new(false.into()),
         }
@@ -316,6 +335,11 @@ impl<'w> WorldAccessGuard<'w> {
     /// Returns the schedule registry for the world
     pub fn schedule_registry(&self) -> AppScheduleRegistry {
         self.inner.schedule_registry.clone()
+    }
+
+    /// Returns the component registry for the world
+    pub fn component_registry(&self) -> AppScriptComponentRegistry {
+        self.inner.script_component_registry.clone()
     }
 
     /// Returns the script allocator for the world
@@ -542,7 +566,6 @@ impl<'w> WorldAccessGuard<'w> {
 /// Impl block for higher level world methods
 #[profiling::all_functions]
 impl WorldAccessGuard<'_> {
-    
     fn construct_from_script_value(
         &self,
         descriptor: impl Into<Cow<'static, str>>,
@@ -802,18 +825,26 @@ impl WorldAccessGuard<'_> {
     }
 
     /// get a type registration for the type, without checking if it's a component or resource
-    pub fn get_type_by_name(&self, type_name: String) -> Option<ScriptTypeRegistration> {
+    pub fn get_type_by_name(&self, type_name: &str) -> Option<ScriptTypeRegistration> {
         let type_registry = self.type_registry();
         let type_registry = type_registry.read();
         type_registry
-            .get_with_short_type_path(&type_name)
-            .or_else(|| type_registry.get_with_type_path(&type_name))
+            .get_with_short_type_path(type_name)
+            .or_else(|| type_registry.get_with_type_path(type_name))
             .map(|registration| ScriptTypeRegistration::new(Arc::new(registration.clone())))
     }
 
     /// get a type erased type registration for the type including information about whether it's a component or resource
-    pub(crate) fn get_type_registration(&self, registration: ScriptTypeRegistration) -> Result<Union<ScriptTypeRegistration, Union<ScriptComponentRegistration, ScriptResourceRegistration>>, InteropError> {
-
+    pub(crate) fn get_type_registration(
+        &self,
+        registration: ScriptTypeRegistration,
+    ) -> Result<
+        Union<
+            ScriptTypeRegistration,
+            Union<ScriptComponentRegistration, ScriptResourceRegistration>,
+        >,
+        InteropError,
+    > {
         let registration = match self.get_resource_type(registration)? {
             Ok(res) => {
                 return Ok(Union::new_right(Union::new_right(res)));
@@ -831,15 +862,31 @@ impl WorldAccessGuard<'_> {
         Ok(Union::new_left(registration))
     }
 
-    /// Similar to [`Self::get_type_by_name`] but returns a type erased [`ScriptTypeRegistration`], [`ScriptComponentRegistration`] or [`ScriptResourceRegistration`] 
+    /// Similar to [`Self::get_type_by_name`] but returns a type erased [`ScriptTypeRegistration`], [`ScriptComponentRegistration`] or [`ScriptResourceRegistration`]
     /// depending on the underlying type and state of the world.
-    pub fn get_type_registration_by_name(&self, type_name: String) -> Result<Option<Union<ScriptTypeRegistration, Union<ScriptComponentRegistration, ScriptResourceRegistration>>>, InteropError> {
-        let val = self.get_type_by_name(type_name);
+    pub fn get_type_registration_by_name(
+        &self,
+        type_name: String,
+    ) -> Result<
+        Option<
+            Union<
+                ScriptTypeRegistration,
+                Union<ScriptComponentRegistration, ScriptResourceRegistration>,
+            >,
+        >,
+        InteropError,
+    > {
+        let val = self.get_type_by_name(&type_name);
         Ok(match val {
-            Some(registration) => {
-                Some(self.get_type_registration(registration)?)
+            Some(registration) => Some(self.get_type_registration(registration)?),
+            None => {
+                // try the component registry
+                let components = self.component_registry();
+                let components = components.read();
+                components
+                    .get(&type_name)
+                    .map(|c| Union::new_right(Union::new_left(c.registration.clone())))
             }
-            None => None,
         })
     }
 
@@ -881,18 +928,6 @@ impl WorldAccessGuard<'_> {
         entity: Entity,
         registration: ScriptComponentRegistration,
     ) -> Result<(), InteropError> {
-        // let cell = self.as_unsafe_world_cell()?;
-        let component_data = registration
-            .type_registration()
-            .type_registration()
-            .data::<ReflectComponent>()
-            .ok_or_else(|| {
-                InteropError::missing_type_data(
-                    registration.registration.type_id(),
-                    "ReflectComponent".to_owned(),
-                )
-            })?;
-
         // we look for ReflectDefault or ReflectFromWorld data then a ReflectComponent data
         let instance = if let Some(default_td) = registration
             .type_registration()
@@ -913,19 +948,7 @@ impl WorldAccessGuard<'_> {
             ));
         };
 
-        //  TODO: this shouldn't need entire world access it feels
-        self.with_global_access(|world| {
-            let type_registry = self.type_registry();
-
-            let mut entity = world
-                .get_entity_mut(entity)
-                .map_err(|_| InteropError::missing_entity(entity))?;
-            {
-                let registry = type_registry.read();
-                component_data.insert(&mut entity, instance.as_partial_reflect(), &registry);
-            }
-            Ok(())
-        })?
+        registration.insert_into_entity(self.clone(), entity, instance)
     }
 
     /// insert the component into the entity
@@ -935,63 +958,41 @@ impl WorldAccessGuard<'_> {
         registration: ScriptComponentRegistration,
         value: ReflectReference,
     ) -> Result<(), InteropError> {
-        let component_data = registration
-            .type_registration()
-            .type_registration()
-            .data::<ReflectComponent>()
-            .ok_or_else(|| {
-                InteropError::missing_type_data(
-                    registration.registration.type_id(),
-                    "ReflectComponent".to_owned(),
-                )
-            })?;
+        let instance = <Box<dyn PartialReflect>>::from_script_ref(
+            registration.type_registration().type_id(),
+            ScriptValue::Reference(value),
+            self.clone(),
+        )?;
 
-        with_global_access!(&self.inner.accesses, "Could not insert element", {
-            let cell = self.as_unsafe_world_cell()?;
-            let type_registry = self.type_registry();
-            let type_registry = type_registry.read();
-            let world_mut = unsafe { cell.world_mut() };
-            let mut entity = world_mut
-                .get_entity_mut(entity)
-                .map_err(|_| InteropError::missing_entity(entity))?;
+        let reflect = instance.try_into_reflect().map_err(|v| {
+            InteropError::failed_from_reflect(
+                Some(registration.type_registration().type_id()),
+                format!("instance produced by conversion to target type when inserting component is not a full reflect type: {v:?}"),
+            )
+        })?;
 
-            let ref_ = unsafe { value.reflect_unsafe(self.clone())? };
-            component_data.apply_or_insert(&mut entity, ref_, &type_registry);
-
-            Ok(())
-        })?
+        registration.insert_into_entity(self.clone(), entity, reflect)
     }
 
     /// get the component from the entity
     pub fn get_component(
         &self,
         entity: Entity,
-        component_id: ComponentId,
+        component_registration: ScriptComponentRegistration,
     ) -> Result<Option<ReflectReference>, InteropError> {
         let cell = self.as_unsafe_world_cell()?;
         let entity = cell
             .get_entity(entity)
             .ok_or_else(|| InteropError::missing_entity(entity))?;
 
-        let component_info = cell
-            .components()
-            .get_info(component_id)
-            .ok_or_else(|| InteropError::invalid_component(component_id))?;
-
-        if entity.contains_id(component_id) {
+        if entity.contains_id(component_registration.component_id) {
             Ok(Some(ReflectReference {
                 base: ReflectBaseType {
-                    type_id: component_info.type_id().ok_or_else(|| {
-                        InteropError::unsupported_operation(
-                            None,
-                            None,
-                            format!(
-                                "Component {} does not have a type id. Such components are not supported by BMS.",
-                                component_id.display_without_world()
-                            ),
-                        )
-                    })?,
-                    base_id: ReflectBase::Component(entity.id(), component_id),
+                    type_id: component_registration.type_registration().type_id(),
+                    base_id: ReflectBase::Component(
+                        entity.id(),
+                        component_registration.component_id,
+                    ),
                 },
                 reflect_path: ParsedPath(vec![]),
             }))
@@ -1020,25 +1021,7 @@ impl WorldAccessGuard<'_> {
         entity: Entity,
         registration: ScriptComponentRegistration,
     ) -> Result<(), InteropError> {
-        let component_data = registration
-            .type_registration()
-            .type_registration()
-            .data::<ReflectComponent>()
-            .ok_or_else(|| {
-                InteropError::missing_type_data(
-                    registration.registration.type_id(),
-                    "ReflectComponent".to_owned(),
-                )
-            })?;
-
-        //  TODO: this shouldn't need entire world access it feels
-        self.with_global_access(|world| {
-            let mut entity = world
-                .get_entity_mut(entity)
-                .map_err(|_| InteropError::missing_entity(entity))?;
-            component_data.remove(&mut entity);
-            Ok(())
-        })?
+        registration.remove_from_entity(self.clone(), entity)
     }
 
     /// get the given resource

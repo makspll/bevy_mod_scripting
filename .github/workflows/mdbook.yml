@@ -9,6 +9,7 @@ on:
       - 'docs/**'
       - 'crates/xtask/**'
       - '.github/workflows/mdbook.yml'
+      - 'crates/bevy_mod_scripting_functions/**'
   pull_request:
     branches:
       - "**"
@@ -16,6 +17,7 @@ on:
       - 'docs/**'
       - 'crates/xtask/**'
       - '.github/workflows/mdbook.yml'
+      - 'crates/bevy_mod_scripting_functions/**'
 
 jobs:
 

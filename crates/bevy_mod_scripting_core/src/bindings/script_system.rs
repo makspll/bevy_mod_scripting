@@ -5,8 +5,9 @@ use super::{
     function::{from::Val, into::IntoScript, script_function::AppScriptFunctionRegistry},
     schedule::AppScheduleRegistry,
     script_value::ScriptValue,
-    AppReflectAllocator, ReflectBaseType, ReflectReference, ScriptQueryBuilder, ScriptQueryResult,
-    ScriptResourceRegistration, WorldAccessGuard, WorldGuard,
+    AppReflectAllocator, AppScriptComponentRegistry, ReflectBaseType, ReflectReference,
+    ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration, WorldAccessGuard,
+    WorldGuard,
 };
 use crate::{
     bindings::pretty_print::DisplayWithWorld,
@@ -288,6 +289,7 @@ struct ScriptSystemState {
     type_registry: AppTypeRegistry,
     function_registry: AppScriptFunctionRegistry,
     schedule_registry: AppScheduleRegistry,
+    component_registry: AppScriptComponentRegistry,
     allocator: AppReflectAllocator,
     subset: HashSet<ReflectAccessId>,
     callback_label: CallbackLabel,
@@ -424,6 +426,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                 state.allocator.clone(),
                 state.function_registry.clone(),
                 state.schedule_registry.clone(),
+                state.component_registry.clone(),
             )
         };
 
@@ -577,6 +580,9 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                 .clone(),
             schedule_registry: world.get_resource_or_init::<AppScheduleRegistry>().clone(),
             allocator: world.get_resource_or_init::<AppReflectAllocator>().clone(),
+            component_registry: world
+                .get_resource_or_init::<AppScriptComponentRegistry>()
+                .clone(),
             subset,
             callback_label: self.name.to_string().into(),
             system_params,

@@ -102,6 +102,7 @@ fn into_script_ref(
             },
             tr : PathBuf => return downcast_into_value!(r, PathBuf).clone().into_script(world),
             ts : OsString=> return downcast_into_value!(r, OsString).clone().into_script(world),
+            tsv: ScriptValue=> return Ok(downcast_into_value!(r, ScriptValue).clone()),
             tn : ()      => return Ok(ScriptValue::Unit)
         }
     );

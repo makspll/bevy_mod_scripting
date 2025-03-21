@@ -14,7 +14,8 @@ use bindings::{
     globals::{core::CoreScriptGlobalsPlugin, AppScriptGlobalsRegistry},
     schedule::AppScheduleRegistry,
     script_value::ScriptValue,
-    AppReflectAllocator, ReflectAllocator, ReflectReference, ScriptTypeRegistration,
+    AppReflectAllocator, DynamicScriptComponentPlugin, ReflectAllocator, ReflectReference,
+    ScriptTypeRegistration,
 };
 use commands::{AddStaticScript, RemoveStaticScript};
 use context::{
@@ -312,7 +313,7 @@ fn once_per_app_init(app: &mut App) {
         ((garbage_collector).in_set(ScriptingSystemSet::GarbageCollection),),
     );
 
-    app.add_plugins(CoreScriptGlobalsPlugin);
+    app.add_plugins((CoreScriptGlobalsPlugin, DynamicScriptComponentPlugin));
 
     configure_asset_systems(app);
 }
