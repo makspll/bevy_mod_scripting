@@ -174,6 +174,7 @@ impl ReflectReferencePrinter {
             }
             id if id == TypeId::of::<char>() => downcast_case!(v, output, char),
             id if id == TypeId::of::<bool>() => downcast_case!(v, output, bool),
+            id if id == TypeId::of::<ScriptValue>() => downcast_case!(v, output, ScriptValue),
             _ => {
                 output.push_str(
                     v.get_represented_type_info()
@@ -654,7 +655,7 @@ impl<K: DisplayWithWorld + 'static, V: DisplayWithWorld + 'static> DisplayWithWo
 
 #[cfg(test)]
 mod test {
-    use bevy::prelude::AppTypeRegistry;
+    use bevy::{prelude::AppTypeRegistry, reflect::Reflect};
 
     use crate::bindings::{
         function::script_function::AppScriptFunctionRegistry, AppReflectAllocator,
@@ -777,5 +778,30 @@ mod test {
         assert_eq!(map.display_with_world(world.clone()), "{hello: true}");
 
         assert_eq!(map.display_value_with_world(world.clone()), "{hello: true}");
+    }
+
+    #[test]
+    fn test_script_value_in_reference() {
+        let mut world = setup_world();
+        let world = WorldGuard::new_exclusive(&mut world);
+
+        #[derive(Reflect)]
+        struct Test {
+            val: ScriptValue,
+        }
+
+        let test = Test {
+            val: ScriptValue::Bool(true),
+        };
+
+        let allocator = world.allocator();
+        let mut allocator_write = allocator.write();
+
+        let reflect_reference = ReflectReference::new_allocated(test, &mut allocator_write);
+        drop(allocator_write);
+        assert_eq!(
+            reflect_reference.display_value_with_world(world.clone()),
+            "{val: Reflect(ScriptValue(Bool(true)))}"
+        );
     }
 }
