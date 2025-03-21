@@ -20,10 +20,13 @@ Although Bevy doesn't directly support scripting, efforts are underway to incorp
 - Script management via commands
 - Hot loading
 - Support for multiple scripting languages
-- All script bindings managed in one place (`ScriptDynamicFunctionRegistry`)
+- Extremely flexible bindings
+    - Attach bindings to ANY reflect implementing types including foreign types.
+    - Globals and bindings are set in one place and translated to all supported languages
+    - Broad set of core Bevy bindings generated for you
+- Dynamic systems & components registerable from scripts
 - Customizable event driven communication between bevy and scripts (`on_update`, `on_init` etc..)
-- Automatically generated bevy bindings
-- ~Documentation generation~ temporarilly on hold[^1]
+- Documentation generation
 
 ## Support
 
