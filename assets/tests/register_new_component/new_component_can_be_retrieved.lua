@@ -1,6 +1,6 @@
 local NewComponent = world.register_new_component("ScriptComponentA")
 assert(NewComponent ~= nil, "Failed to register new component")
-assert(NewComponent:short_name() == "ScriptComponent", "Unexpected component type")
+assert(NewComponent:short_name() == "DynamicComponent", "Unexpected component type")
 
 
 local new_entity = world.spawn()

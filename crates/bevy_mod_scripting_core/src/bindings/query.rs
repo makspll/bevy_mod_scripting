@@ -1,6 +1,6 @@
 //! Utilities for querying the world.
 
-use super::{with_global_access, ReflectReference, ScriptComponent, WorldAccessGuard, WorldGuard};
+use super::{with_global_access, DynamicComponent, ReflectReference, WorldAccessGuard, WorldGuard};
 use crate::error::InteropError;
 use bevy::{
     ecs::{
@@ -107,7 +107,7 @@ impl ScriptComponentRegistration {
     pub fn new(registration: ScriptTypeRegistration, component_id: ComponentId) -> Self {
         Self {
             is_dynamic_script_component: registration.type_id()
-                == std::any::TypeId::of::<ScriptComponent>(),
+                == std::any::TypeId::of::<DynamicComponent>(),
             registration,
             component_id,
         }
@@ -161,12 +161,12 @@ impl ScriptComponentRegistration {
                 let mut entity = world
                     .get_entity_mut(entity)
                     .map_err(|_| InteropError::missing_entity(entity))?;
-                let cast = instance.downcast::<ScriptComponent>().map_err(|v| {
-                    InteropError::type_mismatch(TypeId::of::<ScriptComponent>(), Some(v.type_id()))
+                let cast = instance.downcast::<DynamicComponent>().map_err(|v| {
+                    InteropError::type_mismatch(TypeId::of::<DynamicComponent>(), Some(v.type_id()))
                 })?;
                 // the reason we leak the box, is because we don't want to double drop the owning ptr
 
-                let ptr = (Box::leak(cast) as *mut ScriptComponent).cast();
+                let ptr = (Box::leak(cast) as *mut DynamicComponent).cast();
                 // Safety: cannot be null as we just created it from a valid reference
                 let non_null_ptr = unsafe { NonNull::new_unchecked(ptr) };
                 // Safety:

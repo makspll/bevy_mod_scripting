@@ -69,6 +69,8 @@ impl CoreGlobals {
     /// A cache of types normally available through the `world.get_type_by_name` function.
     ///
     /// You can use this to avoid having to store type references.
+    ///
+    /// Note that this cache will NOT contain types manually registered by scripts via `register_new_component`.
     fn types(
         guard: WorldGuard,
     ) -> Result<

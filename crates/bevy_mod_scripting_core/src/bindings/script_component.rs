@@ -17,19 +17,19 @@ use std::{alloc::Layout, mem::needs_drop, sync::Arc};
 /// A dynamic script component
 #[derive(Reflect, Clone, Default)]
 #[reflect(Default)]
-pub struct ScriptComponent {
+pub struct DynamicComponent {
     data: ScriptValue,
 }
 
 /// Some metadata about dynamic script components
-pub struct ScriptComponentInfo {
+pub struct DynamicComponentInfo {
     /// The name of the component
     pub name: String,
     /// The type registration for the component
     pub registration: ScriptComponentRegistration,
 }
 
-impl Component for ScriptComponent {
+impl Component for DynamicComponent {
     const STORAGE_TYPE: StorageType = StorageType::Table;
 }
 
@@ -52,17 +52,17 @@ impl AppScriptComponentRegistry {
 #[derive(Default)]
 /// A registry of dynamically registered script components
 pub struct ScriptComponentRegistry {
-    components: HashMap<String, ScriptComponentInfo>,
+    components: HashMap<String, DynamicComponentInfo>,
 }
 
 impl ScriptComponentRegistry {
     /// Registers a dynamic script component, possibly overwriting an existing one
-    pub fn register(&mut self, info: ScriptComponentInfo) {
+    pub fn register(&mut self, info: DynamicComponentInfo) {
         self.components.insert(info.name.clone(), info);
     }
 
     /// Gets a dynamic script component by name
-    pub fn get(&self, name: &str) -> Option<&ScriptComponentInfo> {
+    pub fn get(&self, name: &str) -> Option<&DynamicComponentInfo> {
         self.components.get(name)
     }
 }
@@ -90,9 +90,9 @@ impl WorldAccessGuard<'_> {
                 // we only use this method to name the component
                 ComponentDescriptor::new_with_layout(
                     component_name.clone(),
-                    ScriptComponent::STORAGE_TYPE,
-                    Layout::new::<ScriptComponent>(),
-                    needs_drop::<ScriptComponent>().then_some(|x| x.drop_as::<ScriptComponent>()),
+                    DynamicComponent::STORAGE_TYPE,
+                    Layout::new::<DynamicComponent>(),
+                    needs_drop::<DynamicComponent>().then_some(|x| x.drop_as::<DynamicComponent>()),
                 )
             };
             w.register_component_with_descriptor(descriptor)
@@ -102,12 +102,12 @@ impl WorldAccessGuard<'_> {
 
         let registration = ScriptComponentRegistration::new(
             ScriptTypeRegistration::new(Arc::new(
-                <ScriptComponent as GetTypeRegistration>::get_type_registration(),
+                <DynamicComponent as GetTypeRegistration>::get_type_registration(),
             )),
             component_id,
         );
 
-        let component_info = ScriptComponentInfo {
+        let component_info = DynamicComponentInfo {
             name: component_name.clone(),
             registration: registration.clone(),
         };
@@ -126,7 +126,7 @@ pub(crate) struct DynamicScriptComponentPlugin;
 impl Plugin for DynamicScriptComponentPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<AppScriptComponentRegistry>()
-            .register_type::<ScriptComponent>();
+            .register_type::<DynamicComponent>();
     }
 }
 

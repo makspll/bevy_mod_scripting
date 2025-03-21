@@ -2,7 +2,7 @@ function on_test()
     local NewComponent = world.register_new_component("ScriptComponentA")
 
     local new_entity = world.spawn()
-    world.insert_component(new_entity, NewComponent, construct(types.ScriptComponent, {
+    world.insert_component(new_entity, NewComponent, construct(types.DynamicComponent, {
         data = "Hello World"
     }))
 
