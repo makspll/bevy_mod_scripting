@@ -1505,12 +1505,9 @@ impl Xtasks {
         if cfg!(target_os = "windows") {
             Self::run_system_command(
                 &app_settings,
-                "powershell",
+                "pwsh",
                 "Failed to install bencher",
                 vec![
-                    "-ExecutionPolicy",
-                    "Bypass",
-                    "-NoProfile",
                     "-Command",
                     "irm https://bencher.dev/download/install-cli.ps1 | iex",
                 ],
