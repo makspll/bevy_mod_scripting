@@ -167,29 +167,29 @@
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
-<tr><td><a href="./world/has_component.html">has_component</a></td><td>Checks if the given entity has the given component.</td></tr>
-<tr><td><a href="./world/push_children.html">push_children</a></td><td>Pushes the given children entities into the provided parent entity.</td></tr>
-<tr><td><a href="./world/despawn.html">despawn</a></td><td>Despawns the given entity.</td></tr>
-<tr><td><a href="./world/despawn_recursive.html">despawn_recursive</a></td><td>Despawns the entity and all its descendants.</td></tr>
-<tr><td><a href="./world/spawn.html">spawn</a></td><td>Spawns a new entity and returns it</td></tr>
-<tr><td><a href="./world/get_children.html">get_children</a></td><td>Retrieves the children of the given entity.</td></tr>
-<tr><td><a href="./world/get_type_by_name.html">get_type_by_name</a></td><td>Returns either a `ScriptComponentRegistration` or `ScriptResourceRegistration` depending on the type...</td></tr>
-<tr><td><a href="./world/insert_children.html">insert_children</a></td><td>Inserts the given children entities into the provided parent entity.</td></tr>
-<tr><td><a href="./world/get_schedule_by_name.html">get_schedule_by_name</a></td><td>Retrieves the schedule with the given name, Also ensures the schedule is initialized before returnin...</td></tr>
-<tr><td><a href="./world/exit.html">exit</a></td><td>Quits the program.</td></tr>
-<tr><td><a href="./world/insert_component.html">insert_component</a></td><td>Inserts the given component value into the provided entity</td></tr>
-<tr><td><a href="./world/has_entity.html">has_entity</a></td><td>Checks if the given entity exists.</td></tr>
-<tr><td><a href="./world/get_component.html">get_component</a></td><td>Tries to retrieve the given component type on an entity.</td></tr>
-<tr><td><a href="./world/remove_component.html">remove_component</a></td><td>Removes the given component from the entity.</td></tr>
-<tr><td><a href="./world/query.html">query</a></td><td>Creates a new `ScriptQueryBuilder` which can be used to query the ECS.  Returns: * `query`: The new query builder.</td></tr>
-<tr><td><a href="./world/get_resource.html">get_resource</a></td><td>Retrieves the resource with the given registration.</td></tr>
-<tr><td><a href="./world/add_system.html">add_system</a></td><td>Adds the given system to the world.</td></tr>
-<tr><td><a href="./world/add_default_component.html">add_default_component</a></td><td>Adds the given resource to the world.</td></tr>
 <tr><td><a href="./world/has_resource.html">has_resource</a></td><td>Checks if the world has the given resource.</td></tr>
+<tr><td><a href="./world/insert_children.html">insert_children</a></td><td>Inserts the given children entities into the provided parent entity.</td></tr>
+<tr><td><a href="./world/remove_component.html">remove_component</a></td><td>Removes the given component from the entity.</td></tr>
 <tr><td><a href="./world/get_parent.html">get_parent</a></td><td>Retrieves the parent of the given entity.</td></tr>
 <tr><td><a href="./world/despawn_descendants.html">despawn_descendants</a></td><td>Despawn the descendants of the given entity.</td></tr>
+<tr><td><a href="./world/insert_component.html">insert_component</a></td><td>Inserts the given component value into the provided entity</td></tr>
+<tr><td><a href="./world/get_component.html">get_component</a></td><td>Tries to retrieve the given component type on an entity.</td></tr>
+<tr><td><a href="./world/add_system.html">add_system</a></td><td>Adds the given system to the world.</td></tr>
+<tr><td><a href="./world/query.html">query</a></td><td>Creates a new `ScriptQueryBuilder` which can be used to query the ECS.  Returns: * `query`: The new query builder.</td></tr>
+<tr><td><a href="./world/exit.html">exit</a></td><td>Quits the program.</td></tr>
+<tr><td><a href="./world/get_children.html">get_children</a></td><td>Retrieves the children of the given entity.</td></tr>
+<tr><td><a href="./world/despawn_recursive.html">despawn_recursive</a></td><td>Despawns the entity and all its descendants.</td></tr>
+<tr><td><a href="./world/push_children.html">push_children</a></td><td>Pushes the given children entities into the provided parent entity.</td></tr>
 <tr><td><a href="./world/register_new_component.html">register_new_component</a></td><td>Registers a new component type with the world.  The component will behave like any other native comp...</td></tr>
+<tr><td><a href="./world/get_type_by_name.html">get_type_by_name</a></td><td>Returns either a `ScriptComponentRegistration` or `ScriptResourceRegistration` depending on the type...</td></tr>
+<tr><td><a href="./world/despawn.html">despawn</a></td><td>Despawns the given entity.</td></tr>
+<tr><td><a href="./world/get_resource.html">get_resource</a></td><td>Retrieves the resource with the given registration.</td></tr>
+<tr><td><a href="./world/add_default_component.html">add_default_component</a></td><td>Adds the given resource to the world.</td></tr>
 <tr><td><a href="./world/remove_resource.html">remove_resource</a></td><td>Removes the given resource from the world.</td></tr>
+<tr><td><a href="./world/spawn.html">spawn</a></td><td>Spawns a new entity and returns it</td></tr>
+<tr><td><a href="./world/get_schedule_by_name.html">get_schedule_by_name</a></td><td>Retrieves the schedule with the given name, Also ensures the schedule is initialized before returnin...</td></tr>
+<tr><td><a href="./world/has_component.html">has_component</a></td><td>Checks if the given entity has the given component.</td></tr>
+<tr><td><a href="./world/has_entity.html">has_entity</a></td><td>Checks if the given entity exists.</td></tr>
 </tbody></table>
 </div>
                     </main>
@@ -200,7 +200,7 @@
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/world/has_component.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/world/has_resource.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -214,7 +214,7 @@
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/world/has_component.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/world/has_resource.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
