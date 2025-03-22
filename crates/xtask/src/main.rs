@@ -349,6 +349,9 @@ impl App {
             Xtasks::Install { binary } => {
                 cmd.arg("install").arg(binary.as_ref());
             }
+            Xtasks::Bench {} => {
+                cmd.arg("bench");
+            }
         }
 
         cmd
@@ -634,6 +637,8 @@ enum Xtasks {
     /// ]
     ///
     CiMatrix,
+    /// Runs bencher in dry mode by default if not on the main branch
+    Bench {},
 }
 
 #[derive(Serialize, Clone)]
@@ -709,6 +714,7 @@ impl Xtasks {
                 bevy_features,
             } => Self::codegen(app_settings, output_dir, bevy_features),
             Xtasks::Install { binary } => Self::install(app_settings, binary),
+            Xtasks::Bench {} => Self::bench(app_settings),
         }?;
 
         Ok("".into())
@@ -1208,6 +1214,77 @@ impl Xtasks {
         Ok(())
     }
 
+    fn bench(app_settings: GlobalArgs) -> Result<()> {
+        // first of all figure out which branch we're on
+        // run // git rev-parse --abbrev-ref HEAD
+
+        let command = Command::new("git")
+            .args(["rev-parse", "--abbrev-ref", "HEAD"])
+            .current_dir(Self::workspace_dir(&app_settings).unwrap())
+            .output()
+            .with_context(|| "Trying to figure out which branch we're on in benchmarking")?;
+        let branch = String::from_utf8(command.stdout)?;
+
+        let is_main = branch.trim() == "main";
+
+        // figure out if we're running in github actions
+        let github_token = std::env::var("GITHUB_TOKEN").ok();
+
+        // get testbed
+        // we want this to be a combination of
+        // is_github_ci?
+        // OS
+        // machine id
+
+        let os = std::env::consts::OS;
+
+        let testbed = format!(
+            "{os}{}",
+            github_token.is_some().then_some("-gha").unwrap_or_default()
+        );
+
+        // also figure out if we're on a fork
+
+        let token = std::env::var("BENCHER_API_TOKEN").ok();
+
+        let mut bencher_cmd = Command::new("bencher");
+        bencher_cmd
+            .stdout(std::process::Stdio::inherit())
+            .stderr(std::process::Stdio::inherit())
+            .current_dir(Self::workspace_dir(&app_settings).unwrap())
+            .arg("run")
+            .args(["--project", "bms"])
+            .args(["--branch", &format!("\"{branch}\"")])
+            .args(["--token", &token.unwrap_or_default()])
+            .args(["--testbed", &testbed])
+            .args(["--build-time"])
+            .args(["--threshold-measure", "latency"])
+            .args(["--threshold-test", "t_test"])
+            .args(["--threshold-max-sample-size", "64"])
+            .args(["--threshold-upper-boundary", "0.99"])
+            .args(["--thresholds-reset"])
+            .args(["--err"]);
+
+        if let Some(token) = github_token {
+            bencher_cmd.args(["--github-actions", &token]);
+        }
+
+        if !is_main {
+            bencher_cmd.args(["--dry-run"]);
+        }
+
+        bencher_cmd
+            .args(["--adapter", "rust_criterion"])
+            .arg("cargo bench --features=lua54");
+
+        let out = bencher_cmd.output()?;
+        if !out.status.success() {
+            bail!("Failed to run bencher: {:?}", out);
+        }
+
+        Ok(())
+    }
+
     fn set_cargo_coverage_settings() {
         // This makes local dev hell
         // std::env::set_var("CARGO_INCREMENTAL", "0");
@@ -1367,6 +1444,13 @@ impl Xtasks {
                 open: false,
                 no_rust_docs: false,
             },
+        });
+
+        // also run a benchmark
+        // on non-main branches this will just dry run
+        output.push(App {
+            global_args: default_args.clone(),
+            subcmd: Xtasks::Bench {},
         });
 
         // and finally run tests with coverage
