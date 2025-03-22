@@ -1508,6 +1508,9 @@ impl Xtasks {
                 "powershell",
                 "Failed to install bencher",
                 vec![
+                    "-ExecutionPolicy",
+                    "Bypass",
+                    "-NoProfile",
                     "-Command",
                     "irm https://bencher.dev/download/install-cli.ps1 | iex",
                 ],
