@@ -1251,7 +1251,6 @@ impl Xtasks {
         bencher_cmd
             .stdout(std::process::Stdio::inherit())
             .stderr(std::process::Stdio::inherit())
-            .current_dir(workspace_dir)
             .arg("run")
             .args(["--project", "bms"])
             .args(["--branch", &format!("\"{branch}\"")])
