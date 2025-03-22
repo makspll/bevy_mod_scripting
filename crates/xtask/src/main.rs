@@ -812,29 +812,29 @@ impl Xtasks {
 
         args.push(command.to_owned());
 
-        if command != "fmt" && command != "bevy-api-gen" && command != "run" && command != "install"
-        {
+        if command != "fmt" && command != "bevy-api-gen" && command != "install" {
             // fmt doesn't care about features, workspaces or profiles
+            if command != "run" {
+                args.push("--workspace".to_owned());
 
-            args.push("--workspace".to_owned());
+                if let Some(profile) = app_settings.profile.as_ref() {
+                    let use_profile = if profile == "ephemeral-build" && app_settings.coverage {
+                        // use special profile for coverage as it needs debug information
+                        // but also don't want it too slow
+                        "ephemeral-coverage"
+                    } else {
+                        profile
+                    };
 
-            if let Some(profile) = app_settings.profile.as_ref() {
-                let use_profile = if profile == "ephemeral-build" && app_settings.coverage {
-                    // use special profile for coverage as it needs debug information
-                    // but also don't want it too slow
-                    "ephemeral-coverage"
-                } else {
-                    profile
-                };
+                    if !app_settings.coverage {
+                        args.push("--profile".to_owned());
+                        args.push(use_profile.to_owned());
+                    }
 
-                if !app_settings.coverage {
-                    args.push("--profile".to_owned());
-                    args.push(use_profile.to_owned());
-                }
-
-                if let Some(jobs) = app_settings.jobs {
-                    args.push("--jobs".to_owned());
-                    args.push(jobs.to_string());
+                    if let Some(jobs) = app_settings.jobs {
+                        args.push("--jobs".to_owned());
+                        args.push(jobs.to_string());
+                    }
                 }
             }
 
