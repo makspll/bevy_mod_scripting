@@ -4,6 +4,11 @@ version = "0.1.0"
 edition = "2021"
 publish = false
 
+[features]
+default = ["lua", "rhai"]
+lua = ["bevy_mod_scripting_lua", "bevy_mod_scripting_functions/lua_bindings"]
+rhai = ["bevy_mod_scripting_rhai", "bevy_mod_scripting_functions/rhai_bindings"]
+
 [dependencies]
 bevy = { workspace = true }
 test_utils = { workspace = true }
@@ -11,8 +16,9 @@ bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_functions = { workspace = true, features = [
     "bevy_bindings",
     "core_functions",
-    "rhai_bindings",
-    "lua_bindings",
 ] }
 regex = { version = "1.11" }
 pretty_assertions = "1.*"
+bevy_mod_scripting_lua = { path = "../../languages/bevy_mod_scripting_lua", optional = true }
+bevy_mod_scripting_rhai = { path = "../../languages/bevy_mod_scripting_rhai", optional = true }
+criterion = "0.5"

@@ -46,14 +46,5 @@ smol_str = "0.2.2"
 smallvec = "1.13"
 profiling = { workspace = true }
 
-[dev-dependencies]
-script_integration_test_harness = { workspace = true }
-libtest-mimic = "0.8"
-regex = "1.11"
-
-[[test]]
-name = "lua_tests"
-harness = false
-
 [lints]
 workspace = true
