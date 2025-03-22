@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Run Xtask initializer
+        run: |
+          cargo xtask init
       - uses: bencherdev/bencher@main
       - name: Track base branch benchmarks with Bencher
         run: |
