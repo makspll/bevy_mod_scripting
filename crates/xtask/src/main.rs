@@ -1256,7 +1256,7 @@ impl Xtasks {
             .args(["--branch", &format!("\"{branch}\"")])
             .args(["--token", &token.unwrap_or_default()])
             .args(["--testbed", &testbed])
-            .args(["--build-time"])
+            // .args(["--build-time"])
             .args(["--threshold-measure", "latency"])
             .args(["--threshold-test", "t_test"])
             .args(["--threshold-max-sample-size", "64"])
