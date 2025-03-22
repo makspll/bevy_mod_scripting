@@ -1223,7 +1223,7 @@ impl Xtasks {
             .current_dir(workspace_dir.clone())
             .output()
             .with_context(|| "Trying to figure out which branch we're on in benchmarking")?;
-        let branch = String::from_utf8(command.stdout)?;
+        let branch = String::from_utf8(command.stdout)?.trim().replace("\n", "");
 
         let is_main = branch.trim() == "main";
 
