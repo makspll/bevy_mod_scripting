@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.10.1](https://github.com/makspll/bevy_mod_scripting/compare/v0.10.0...v0.10.1) - 2025-03-22
+
+### Added
+
+- Add initial benchmarks, integrate them into CI & add getters/settters for `Scripts` resource ([#381](https://github.com/makspll/bevy_mod_scripting/pull/381))
+- :sparkles: Dynamic Script Components, `register_new_component` binding, `remove_component` no longer requires `ReflectComponent` data ([#379](https://github.com/makspll/bevy_mod_scripting/pull/379))
+- add ScriptValue override for printing opaque values ([#380](https://github.com/makspll/bevy_mod_scripting/pull/380))
+- overhaul mdbook preprocessor, prettify generated docs, support dummy globals ([#377](https://github.com/makspll/bevy_mod_scripting/pull/377))
+
 ## [0.10.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.9.11...v0.10.0) - 2025-03-16
 
 ### Added
