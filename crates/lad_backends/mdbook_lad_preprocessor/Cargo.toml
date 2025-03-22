@@ -1,6 +1,6 @@
 [package]
 name = "mdbook_lad_preprocessor"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 license = "MIT OR Apache-2.0"
@@ -15,7 +15,7 @@ readme = "readme.md"
 [dependencies]
 clap = "4"
 mdbook = "0.4"
-ladfile = { path = "../../ladfile", version = "0.4.0" }
+ladfile = { path = "../../ladfile", version = "0.5.0" }
 env_logger = "0.11"
 log = "0.4"
 serde_json = "1.0"
