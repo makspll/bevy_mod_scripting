@@ -39,6 +39,44 @@ pub struct Scripts<P: IntoScriptPluginParams> {
     pub(crate) scripts: HashMap<ScriptId, Script<P>>,
 }
 
+impl<P: IntoScriptPluginParams> Scripts<P> {
+    /// Inserts a script into the collection
+    pub fn insert(&mut self, script: Script<P>) {
+        self.scripts.insert(script.id.clone(), script);
+    }
+
+    /// Removes a script from the collection, returning `true` if the script was in the collection, `false` otherwise
+    pub fn remove<S: Into<ScriptId>>(&mut self, script: S) -> bool {
+        self.scripts.remove(&script.into()).is_some()
+    }
+
+    /// Checks if a script is in the collection
+    /// Returns `true` if the script is in the collection, `false` otherwise
+    pub fn contains<S: Into<ScriptId>>(&self, script: S) -> bool {
+        self.scripts.contains_key(&script.into())
+    }
+
+    /// Returns a reference to the script with the given id
+    pub fn get<S: Into<ScriptId>>(&self, script: S) -> Option<&Script<P>> {
+        self.scripts.get(&script.into())
+    }
+
+    /// Returns a mutable reference to the script with the given id
+    pub fn get_mut<S: Into<ScriptId>>(&mut self, script: S) -> Option<&mut Script<P>> {
+        self.scripts.get_mut(&script.into())
+    }
+
+    /// Returns an iterator over the scripts
+    pub fn iter(&self) -> impl Iterator<Item = &Script<P>> {
+        self.scripts.values()
+    }
+
+    /// Returns a mutable iterator over the scripts
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Script<P>> {
+        self.scripts.values_mut()
+    }
+}
+
 impl<P: IntoScriptPluginParams> Default for Scripts<P> {
     fn default() -> Self {
         Self {

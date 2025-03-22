@@ -22,14 +22,5 @@ bevy_mod_scripting_core = { workspace = true, features = ["rhai_impls"] }
 strum = { version = "0.26", features = ["derive"] }
 parking_lot = "0.12.1"
 
-[dev-dependencies]
-script_integration_test_harness = { workspace = true }
-libtest-mimic = "0.8"
-regex = "1.11"
-
-[[test]]
-name = "rhai_tests"
-harness = false
-
 [lints]
 workspace = true

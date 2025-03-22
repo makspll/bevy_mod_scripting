@@ -7,13 +7,13 @@ use std::{
 };
 
 use bevy::{
-    app::{App, Last, PostUpdate, Startup, Update},
+    app::{Last, Plugin, PostUpdate, Startup, Update},
     asset::{AssetServer, Handle},
     ecs::{
         event::{Event, Events},
         schedule::{IntoSystemConfigs, SystemConfigs},
         system::{IntoSystem, Local, Res, SystemState},
-        world::Mut,
+        world::{FromWorld, Mut},
     },
     prelude::{Entity, World},
     reflect::TypeRegistry,
@@ -27,7 +27,7 @@ use bevy_mod_scripting_core::{
     extractors::{HandlerContext, WithWorldGuard},
     handler::handle_script_errors,
     script::ScriptId,
-    IntoScriptPluginParams,
+    IntoScriptPluginParams, ScriptingPlugin,
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
 use test_functions::register_test_functions;
@@ -37,6 +37,33 @@ fn dummy_update_system() {}
 fn dummy_startup_system<T>() {}
 fn dummy_before_post_update_system() {}
 fn dummy_post_update_system() {}
+
+pub trait Benchmarker: 'static + Send + Sync {
+    fn bench(
+        &self,
+        label: &str,
+        f: &dyn Fn() -> Result<ScriptValue, ScriptError>,
+    ) -> Result<ScriptValue, ScriptError>;
+
+    fn clone_box(&self) -> Box<dyn Benchmarker>;
+}
+
+#[derive(Clone)]
+pub struct NoOpBenchmarker;
+
+impl Benchmarker for NoOpBenchmarker {
+    fn bench(
+        &self,
+        _label: &str,
+        f: &dyn Fn() -> Result<ScriptValue, ScriptError>,
+    ) -> Result<ScriptValue, ScriptError> {
+        f()
+    }
+
+    fn clone_box(&self) -> Box<dyn Benchmarker> {
+        Box::new(self.clone())
+    }
+}
 
 #[derive(Event)]
 struct TestEventFinished;
@@ -62,13 +89,124 @@ impl<L: IntoCallbackLabel, P: IntoScriptPluginParams> TestCallbackBuilder<P, L> 
     }
 }
 
+#[cfg(feature = "lua")]
+pub fn make_test_lua_plugin() -> bevy_mod_scripting_lua::LuaScriptingPlugin {
+    use bevy_mod_scripting_core::{bindings::WorldContainer, ConfigureScriptPlugin};
+    use bevy_mod_scripting_lua::{mlua, LuaScriptingPlugin};
+
+    LuaScriptingPlugin::default().add_context_initializer(
+        |_, ctxt: &mut bevy_mod_scripting_lua::mlua::Lua| {
+            let globals = ctxt.globals();
+            globals.set(
+                "assert_throws",
+                ctxt.create_function(|_lua, (f, reg): (mlua::Function, String)| {
+                    let world =
+                        bevy_mod_scripting_core::bindings::ThreadWorldContainer.try_get_world()?;
+                    let result = f.call::<()>(mlua::MultiValue::new());
+                    let err = match result {
+                        Ok(_) => {
+                            return Err(mlua::Error::external(
+                                "Expected function to throw error, but it did not.",
+                            ))
+                        }
+                        Err(e) => ScriptError::from_mlua_error(e).display_with_world(world),
+                    };
+
+                    let regex = regex::Regex::new(&reg).unwrap();
+                    if regex.is_match(&err) {
+                        Ok(())
+                    } else {
+                        Err(mlua::Error::external(format!(
+                            "Expected error message to match the regex: \n{}\n\nBut got:\n{}",
+                            regex.as_str(),
+                            err
+                        )))
+                    }
+                })?,
+            )?;
+            Ok(())
+        },
+    )
+}
+
+#[cfg(feature = "rhai")]
+pub fn make_test_rhai_plugin() -> bevy_mod_scripting_rhai::RhaiScriptingPlugin {
+    use bevy_mod_scripting_core::{
+        bindings::{ThreadWorldContainer, WorldContainer},
+        ConfigureScriptPlugin,
+    };
+    use bevy_mod_scripting_rhai::{
+        rhai::{Dynamic, EvalAltResult, FnPtr, NativeCallContext},
+        RhaiScriptingPlugin,
+    };
+
+    RhaiScriptingPlugin::default().add_runtime_initializer(|runtime| {
+        let mut runtime = runtime.write();
+
+        runtime.register_fn("assert", |a: Dynamic, b: &str| {
+            if !a.is::<bool>() {
+                panic!("Expected a boolean value, but got {:?}", a);
+            }
+            if !a.as_bool().unwrap() {
+                panic!("Assertion failed. {}", b);
+            }
+        });
+
+        runtime.register_fn("assert", |a: Dynamic| {
+            if !a.is::<bool>() {
+                panic!("Expected a boolean value, but got {:?}", a);
+            }
+            if !a.as_bool().unwrap() {
+                panic!("Assertion failed");
+            }
+        });
+        runtime.register_fn(
+            "assert_throws",
+            |ctxt: NativeCallContext, fn_: FnPtr, regex: String| {
+                let world = ThreadWorldContainer.try_get_world()?;
+                let args: [Dynamic; 0] = [];
+                let result = fn_.call_within_context::<()>(&ctxt, args);
+                match result {
+                    Ok(_) => panic!("Expected function to throw error, but it did not."),
+                    Err(e) => {
+                        let e = ScriptError::from_rhai_error(*e);
+                        let err = e.display_with_world(world);
+                        let regex = regex::Regex::new(&regex).unwrap();
+                        if regex.is_match(&err) {
+                            Ok::<(), Box<EvalAltResult>>(())
+                        } else {
+                            panic!(
+                                "Expected error message to match the regex: \n{}\n\nBut got:\n{}",
+                                regex.as_str(),
+                                err
+                            )
+                        }
+                    }
+                }
+            },
+        );
+        Ok(())
+    })
+}
+
+#[cfg(feature = "lua")]
+pub fn execute_lua_integration_test(script_id: &str) -> Result<(), String> {
+    let plugin = make_test_lua_plugin();
+    execute_integration_test(plugin, |_, _| {}, script_id)
+}
+
+#[cfg(feature = "rhai")]
+pub fn execute_rhai_integration_test(script_id: &str) -> Result<(), String> {
+    let plugin = make_test_rhai_plugin();
+    execute_integration_test(plugin, |_, _| {}, script_id)
+}
+
 pub fn execute_integration_test<
-    P: IntoScriptPluginParams,
+    P: IntoScriptPluginParams + Plugin + AsMut<ScriptingPlugin<P>>,
     F: FnOnce(&mut World, &mut TypeRegistry),
-    G: FnOnce(&mut App),
 >(
+    plugin: P,
     init: F,
-    init_app: G,
     script_id: &str,
 ) -> Result<(), String> {
     // set "BEVY_ASSET_ROOT" to the global assets folder, i.e. CARGO_MANIFEST_DIR/../../../assets
@@ -86,11 +224,9 @@ pub fn execute_integration_test<
 
     let mut app = setup_integration_test(init);
 
-    app.add_plugins(ScriptFunctionsPlugin);
+    app.add_plugins((ScriptFunctionsPlugin, plugin));
 
     register_test_functions(&mut app);
-
-    init_app(&mut app);
 
     app.add_event::<TestEventFinished>();
 
@@ -180,6 +316,7 @@ fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
         vec![],
         guard.clone(),
     );
+
     let e = match res {
         Ok(ScriptValue::Error(e)) => e.into(),
         Err(e) => e,
@@ -196,7 +333,132 @@ fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
             }
         }
     };
+
     handle_script_errors(guard, vec![e.clone()].into_iter());
 
     Err(e)
+}
+
+#[cfg(feature = "lua")]
+pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(
+    script_id: &str,
+    label: &str,
+    criterion: &mut criterion::BenchmarkGroup<M>,
+) -> Result<(), String> {
+    use bevy_mod_scripting_lua::mlua::Function;
+
+    let plugin = make_test_lua_plugin();
+    run_plugin_benchmark(
+        plugin,
+        script_id,
+        label,
+        criterion,
+        |ctxt, _runtime, label, criterion| {
+            let bencher: Function = ctxt.globals().get("bench").map_err(|e| e.to_string())?;
+            criterion.bench_function(label, |c| {
+                c.iter(|| {
+                    bencher.call::<()>(()).unwrap();
+                })
+            });
+            Ok(())
+        },
+    )
+}
+
+#[cfg(feature = "rhai")]
+pub fn run_rhai_benchmark<M: criterion::measurement::Measurement>(
+    script_id: &str,
+    label: &str,
+    criterion: &mut criterion::BenchmarkGroup<M>,
+) -> Result<(), String> {
+    use bevy_mod_scripting_rhai::rhai::Dynamic;
+
+    let plugin = make_test_rhai_plugin();
+    run_plugin_benchmark(
+        plugin,
+        script_id,
+        label,
+        criterion,
+        |ctxt, runtime, label, criterion| {
+            let runtime = runtime.read();
+            const ARGS: [usize; 0] = [];
+            criterion.bench_function(label, |c| {
+                c.iter(|| {
+                    let _ = runtime
+                        .call_fn::<Dynamic>(&mut ctxt.scope, &ctxt.ast, "bench", ARGS)
+                        .unwrap();
+                })
+            });
+            Ok(())
+        },
+    )
+}
+
+pub fn run_plugin_benchmark<P, F, M: criterion::measurement::Measurement>(
+    plugin: P,
+    script_id: &str,
+    label: &str,
+    criterion: &mut criterion::BenchmarkGroup<M>,
+    bench_fn: F,
+) -> Result<(), String>
+where
+    P: IntoScriptPluginParams + Plugin,
+    F: Fn(&mut P::C, &P::R, &str, &mut criterion::BenchmarkGroup<M>) -> Result<(), String>,
+{
+    use bevy_mod_scripting_core::bindings::{
+        ThreadWorldContainer, WorldAccessGuard, WorldContainer,
+    };
+
+    let mut app = setup_integration_test(|_, _| {});
+
+    app.add_plugins((ScriptFunctionsPlugin, plugin));
+    register_test_functions(&mut app);
+
+    let script_id = script_id.to_owned();
+    let script_id_clone = script_id.clone();
+    app.add_systems(
+        Startup,
+        move |server: Res<AssetServer>, mut handle: Local<Handle<ScriptAsset>>| {
+            *handle = server.load(script_id_clone.to_owned());
+        },
+    );
+
+    // finalize
+    app.cleanup();
+    app.finish();
+
+    let timer = Instant::now();
+
+    let mut state = SystemState::<WithWorldGuard<HandlerContext<P>>>::from_world(app.world_mut());
+
+    loop {
+        app.update();
+
+        let mut handler_ctxt = state.get_mut(app.world_mut());
+        let (guard, context) = handler_ctxt.get_mut();
+
+        if context.is_script_fully_loaded(script_id.clone().into()) {
+            let script = context
+                .scripts()
+                .get_mut(script_id.to_owned())
+                .ok_or_else(|| String::from("Could not find scripts resource"))?;
+            let ctxt_arc = script.context.clone();
+            let mut ctxt_locked = ctxt_arc.lock();
+
+            let runtime = &context.runtime_container().runtime;
+
+            return WorldAccessGuard::with_existing_static_guard(guard, |guard| {
+                // Ensure the world is available via ThreadWorldContainer
+                ThreadWorldContainer
+                    .set_world(guard.clone())
+                    .map_err(|e| e.display_with_world(guard))?;
+                // Pass the locked context to the closure for benchmarking its Lua (or generic) part
+                bench_fn(&mut ctxt_locked, runtime, label, criterion)
+            });
+        }
+        state.apply(app.world_mut());
+        if timer.elapsed() > Duration::from_secs(30) {
+            return Err("Timeout after 30 seconds".into());
+        }
+    }
 }

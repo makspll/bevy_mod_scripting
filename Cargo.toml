@@ -22,8 +22,10 @@ features = ["lua54", "rhai"]
 [features]
 default = ["core_functions", "bevy_bindings"]
 
-## lua
-lua = ["bevy_mod_scripting_lua", "bevy_mod_scripting_functions/lua_bindings"]
+lua = [
+    "bevy_mod_scripting_lua",
+    "bevy_mod_scripting_functions/lua_bindings",
+] ## lua
 # one of these must be selected
 lua51 = ["bevy_mod_scripting_lua/lua51", "lua"]
 lua52 = ["bevy_mod_scripting_lua/lua52", "lua"]
@@ -76,8 +78,12 @@ clap = { version = "4.1", features = ["derive"] }
 rand = "0.8.5"
 bevy_console = "0.13"
 # rhai-rand = "0.1"
+criterion = { version = "0.5" }
 ansi-parser = "0.9"
 ladfile_builder = { path = "crates/ladfile_builder", version = "0.2.6" }
+script_integration_test_harness = { workspace = true }
+test_utils = { workspace = true }
+libtest-mimic = "0.8"
 
 [workspace]
 members = [
@@ -149,3 +155,11 @@ todo = "deny"
 
 [workspace.lints.rust]
 missing_docs = "deny"
+
+[[bench]]
+name = "benchmarks"
+harness = false
+
+[[test]]
+name = "script_tests"
+harness = false
