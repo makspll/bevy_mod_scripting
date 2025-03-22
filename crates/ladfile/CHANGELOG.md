@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.4.0-ladfile...v0.5.0-ladfile) - 2025-03-22
+
+### Added
+
+- overhaul mdbook preprocessor, prettify generated docs, support dummy globals ([#377](https://github.com/makspll/bevy_mod_scripting/pull/377))
+
 ## [0.4.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.3.1-ladfile...v0.4.0-ladfile) - 2025-03-16
 
 ### Added

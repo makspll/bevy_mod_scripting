@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_functions"
-version = "0.10.0"
+version = "0.10.1"
 edition = "2021"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 license = "MIT OR Apache-2.0"
@@ -35,8 +35,8 @@ uuid = "1.11"
 smol_str = "0.2.2"
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_mod_scripting_lua = { path = "../languages/bevy_mod_scripting_lua", optional = true, version = "0.10.0" }
-bevy_mod_scripting_rhai = { path = "../languages/bevy_mod_scripting_rhai", optional = true, version = "0.10.0" }
+bevy_mod_scripting_lua = { path = "../languages/bevy_mod_scripting_lua", optional = true, version = "0.10.1" }
+bevy_mod_scripting_rhai = { path = "../languages/bevy_mod_scripting_rhai", optional = true, version = "0.10.1" }
 bevy_system_reflection = { path = "../bevy_system_reflection", version = "0.1.0" }
 
 [lints]
