@@ -1217,10 +1217,10 @@ impl Xtasks {
     fn bench(app_settings: GlobalArgs) -> Result<()> {
         // first of all figure out which branch we're on
         // run // git rev-parse --abbrev-ref HEAD
-
+        let workspace_dir = Self::workspace_dir(&app_settings).unwrap();
         let command = Command::new("git")
             .args(["rev-parse", "--abbrev-ref", "HEAD"])
-            .current_dir(Self::workspace_dir(&app_settings).unwrap())
+            .current_dir(workspace_dir)
             .output()
             .with_context(|| "Trying to figure out which branch we're on in benchmarking")?;
         let branch = String::from_utf8(command.stdout)?;
@@ -1251,7 +1251,7 @@ impl Xtasks {
         bencher_cmd
             .stdout(std::process::Stdio::inherit())
             .stderr(std::process::Stdio::inherit())
-            .current_dir(Self::workspace_dir(&app_settings).unwrap())
+            .current_dir(workspace_dir)
             .arg("run")
             .args(["--project", "bms"])
             .args(["--branch", &format!("\"{branch}\"")])
@@ -1277,7 +1277,9 @@ impl Xtasks {
             .args(["--adapter", "rust_criterion"])
             .arg("cargo bench --features=lua54");
 
-        let out = bencher_cmd.output()?;
+        let out = bencher_cmd
+            .output()
+            .with_context(|| "Could not trigger bencher command")?;
         if !out.status.success() {
             bail!("Failed to run bencher: {:?}", out);
         }
