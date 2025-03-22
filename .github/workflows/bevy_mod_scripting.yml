@@ -81,6 +81,7 @@ jobs:
       pull-requests: write
       contents: write
       issues: write
+      checks: write
     name: Check - ${{ matrix.run_args.name }}
     runs-on: ${{ matrix.run_args.os }}
     strategy:

@@ -255,7 +255,7 @@ pub(crate) fn dispatch_script_asset_events(
     }
 }
 
-/// Listens to [`ScriptAssetEvent::Removed`] events and removes the corresponding script metadata
+/// Listens to [`ScriptAssetEvent::Removed`] events and removes the corresponding script metadata.
 pub(crate) fn remove_script_metadata(
     mut events: EventReader<ScriptAssetEvent>,
     mut asset_path_map: ResMut<ScriptMetadataStore>,
