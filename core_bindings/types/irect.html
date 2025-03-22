@@ -177,26 +177,26 @@ the minimum and maximum corners.</p>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
-<tr><td><a href="./irect/inflate.html">inflate</a></td><td>Create a new rectangle by expanding it evenly on all sides.  A positive expansion value produces a ...</td></tr>
-<tr><td><a href="./irect/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./irect/assert_receiver_is_total_eq.html">assert_receiver_is_total_eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./irect/is_empty.html">is_empty</a></td><td>Check if the rectangle is empty.  # Examples  ```  # use bevy_math::{IRect, IVec2};  let r = IRect::from_corners(IVec2::ZERO, IVec2::new(0, 1)); // w=0 h=1  assert!(r.is_empty());  ```</td></tr>
-<tr><td><a href="./irect/from_corners.html">from_corners</a></td><td>Create a new rectangle from two corner points.  The two points do not need to be the minimum and/or...</td></tr>
-<tr><td><a href="./irect/intersect.html">intersect</a></td><td>Build a new rectangle formed of the intersection of this rectangle and another rectangle.  The inte...</td></tr>
-<tr><td><a href="./irect/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./irect/as_urect.html">as_urect</a></td><td>Returns self as [`URect`] (u32)</td></tr>
-<tr><td><a href="./irect/center.html">center</a></td><td>The center point of the rectangle.  # Rounding Behavior  If the (min + max) contains odd numbers th...</td></tr>
-<tr><td><a href="./irect/new.html">new</a></td><td>Create a new rectangle from two corner points.  The two points do not need to be the minimum and/or...</td></tr>
 <tr><td><a href="./irect/as_rect.html">as_rect</a></td><td>Returns self as [`Rect`] (f32)</td></tr>
-<tr><td><a href="./irect/contains.html">contains</a></td><td>Check if a point lies within this rectangle, inclusive of its edges.  # Examples  ```  # use bevy_math::IRect;  let r = IRect::new(0, 0, 5, 1); // w=5 h=1  assert!(r.contains(r.center()));  assert!(r.contains(r.min));  assert!(r.contains(r.max));  ```</td></tr>
+<tr><td><a href="./irect/assert_receiver_is_total_eq.html">assert_receiver_is_total_eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./irect/center.html">center</a></td><td>The center point of the rectangle.  # Rounding Behavior  If the (min + max) contains odd numbers th...</td></tr>
+<tr><td><a href="./irect/from_corners.html">from_corners</a></td><td>Create a new rectangle from two corner points.  The two points do not need to be the minimum and/or...</td></tr>
+<tr><td><a href="./irect/new.html">new</a></td><td>Create a new rectangle from two corner points.  The two points do not need to be the minimum and/or...</td></tr>
+<tr><td><a href="./irect/inflate.html">inflate</a></td><td>Create a new rectangle by expanding it evenly on all sides.  A positive expansion value produces a ...</td></tr>
+<tr><td><a href="./irect/intersect.html">intersect</a></td><td>Build a new rectangle formed of the intersection of this rectangle and another rectangle.  The inte...</td></tr>
+<tr><td><a href="./irect/is_empty.html">is_empty</a></td><td>Check if the rectangle is empty.  # Examples  ```  # use bevy_math::{IRect, IVec2};  let r = IRect::from_corners(IVec2::ZERO, IVec2::new(0, 1)); // w=0 h=1  assert!(r.is_empty());  ```</td></tr>
+<tr><td><a href="./irect/size.html">size</a></td><td>Rectangle size.  # Examples  ```  # use bevy_math::{IRect, IVec2};  let r = IRect::new(0, 0, 5, 1); // w=5 h=1  assert_eq!(r.size(), IVec2::new(5, 1));  `...</td></tr>
+<tr><td><a href="./irect/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./irect/half_size.html">half_size</a></td><td>Rectangle half-size.  # Rounding Behavior  If the full size contains odd numbers they will be round...</td></tr>
 <tr><td><a href="./irect/height.html">height</a></td><td>Rectangle height (max.y - min.y).  # Examples  ```  # use bevy_math::IRect;  let r = IRect::new(0, 0, 5, 1); // w=5 h=1  assert_eq!(r.height(), 1);  `...</td></tr>
 <tr><td><a href="./irect/width.html">width</a></td><td>Rectangle width (max.x - min.x).  # Examples  ```  # use bevy_math::IRect;  let r = IRect::new(0, 0, 5, 1); // w=5 h=1  assert_eq!(r.width(), 5);  `...</td></tr>
-<tr><td><a href="./irect/from_center_size.html">from_center_size</a></td><td>Create a new rectangle from its center and size.  # Rounding Behavior  If the size contains odd num...</td></tr>
+<tr><td><a href="./irect/as_urect.html">as_urect</a></td><td>Returns self as [`URect`] (u32)</td></tr>
+<tr><td><a href="./irect/contains.html">contains</a></td><td>Check if a point lies within this rectangle, inclusive of its edges.  # Examples  ```  # use bevy_math::IRect;  let r = IRect::new(0, 0, 5, 1); // w=5 h=1  assert!(r.contains(r.center()));  assert!(r.contains(r.min));  assert!(r.contains(r.max));  ```</td></tr>
 <tr><td><a href="./irect/union_point.html">union_point</a></td><td>Build a new rectangle formed of the union of this rectangle and a point.  The union is the smallest...</td></tr>
 <tr><td><a href="./irect/union.html">union</a></td><td>Build a new rectangle formed of the union of this rectangle and another rectangle.  The union is th...</td></tr>
-<tr><td><a href="./irect/half_size.html">half_size</a></td><td>Rectangle half-size.  # Rounding Behavior  If the full size contains odd numbers they will be round...</td></tr>
+<tr><td><a href="./irect/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./irect/from_center_size.html">from_center_size</a></td><td>Create a new rectangle from its center and size.  # Rounding Behavior  If the size contains odd num...</td></tr>
 <tr><td><a href="./irect/from_center_half_size.html">from_center_half_size</a></td><td>Create a new rectangle from its center and half-size.  # Panics  This method panics if any of the c...</td></tr>
-<tr><td><a href="./irect/size.html">size</a></td><td>Rectangle size.  # Examples  ```  # use bevy_math::{IRect, IVec2};  let r = IRect::new(0, 0, 5, 1); // w=5 h=1  assert_eq!(r.size(), IVec2::new(5, 1));  `...</td></tr>
 </tbody></table>
 </div>
                     </main>
@@ -207,7 +207,7 @@ the minimum and maximum corners.</p>
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/irect/inflate.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/irect/as_rect.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -221,7 +221,7 @@ the minimum and maximum corners.</p>
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/irect/inflate.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/irect/as_rect.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
