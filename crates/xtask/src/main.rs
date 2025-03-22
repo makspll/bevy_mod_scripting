@@ -8,7 +8,6 @@ use std::{
     collections::{HashMap, HashSet},
     ffi::{OsStr, OsString},
     io::Write,
-    os::unix::process::CommandExt,
     path::{Path, PathBuf},
     process::Command,
     str::FromStr,
