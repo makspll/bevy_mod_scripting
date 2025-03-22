@@ -1253,7 +1253,7 @@ impl Xtasks {
             .stderr(std::process::Stdio::inherit())
             .arg("run")
             .args(["--project", "bms"])
-            .args(["--branch", &format!("\"{branch}\"")])
+            .args(["--branch", &branch])
             .args(["--token", &token.unwrap_or_default()])
             .args(["--testbed", &testbed])
             // .args(["--build-time"])
