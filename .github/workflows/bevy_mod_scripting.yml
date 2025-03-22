@@ -16,7 +16,9 @@ env:
   IMAGE_NAME: bevy-mod-scripting
   CODEGEN_BRANCH_NAME: __update-bevy-bindings-${{ github.head_ref || github.ref_name }}
   GH_TOKEN: ${{ github.token }}
-
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  BENCHER_API_TOKEN: ${{ secrets.BENCHER_API_TOKEN }}
+  
 concurrency:
   # Use github.run_id on main branch
   # Use github.event.pull_request.number on pull requests, so it's unique per pull request
@@ -72,9 +74,6 @@ jobs:
           echo "Convert to single line JSON"
           jq -c . matrix.json > matrix-one-line.json
           echo "matrix=$(cat matrix-one-line.json)" >> $GITHUB_OUTPUT
-env:
-  BENCHER_API_TOKEN: ${{ secrets.BENCHER_API_TOKEN }}
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   check:  
     needs: [check-needs-run, generate-job-matrix]
