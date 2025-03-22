@@ -1276,6 +1276,8 @@ impl Xtasks {
             .args(["--adapter", "rust_criterion"])
             .arg("cargo bench --features=lua54");
 
+        log::info!("Running bencher command: {:?}", bencher_cmd);
+
         let out = bencher_cmd
             .output()
             .with_context(|| "Could not trigger bencher command")?;
