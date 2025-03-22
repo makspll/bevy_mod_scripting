@@ -27,8 +27,8 @@ jobs:
           --threshold-upper-boundary 0.99 \
           --thresholds-reset \
           --err \
-          --adapter json \
+          --adapter rust_criterion \
           --github-actions '${{ secrets.GITHUB_TOKEN }}'
         env:
           BENCHER_CMD: |
-            bencher run --adapter rust_criterion "cargo bench --features lua54"
+            cargo bench --features lua54
