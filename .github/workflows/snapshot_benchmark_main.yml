@@ -1,6 +1,6 @@
 on:
   push:
-    branches: **
+    branches: "fix/bencher"
 
 jobs:
   benchmark_base_branch:
@@ -19,7 +19,7 @@ jobs:
           bencher run \
           --project bms \
           --token '${{ secrets.BENCHER_API_TOKEN }}' \
-          --branch test \
+          --branch "fix/bencher" \
           --testbed ubuntu-latest \
           --threshold-measure latency \
           --threshold-test t_test \
