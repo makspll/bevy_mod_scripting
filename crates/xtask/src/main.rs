@@ -1501,31 +1501,22 @@ impl Xtasks {
         // install bencher
         // linux curl --proto '=https' --tlsv1.2 -sSfL https://bencher.dev/download/install-cli.sh | sh
         // windows irm https://bencher.dev/download/install-cli.ps1 | iex
-
-        if cfg!(target_os = "windows") {
-            Self::run_system_command(
-                &app_settings,
-                "pwsh",
-                "Failed to install bencher",
-                vec![
-                    "-Command",
-                    "irm https://bencher.dev/download/install-cli.ps1 | iex",
-                ],
-                None,
-            )?;
-        } else {
-            Self::run_system_command(
-                &app_settings,
-                "sh",
-                "Failed to install bencher",
-                vec![
-                    "-c",
-                    "curl --proto '=https' --tlsv1.2 -sSfL https://bencher.dev/download/install-cli.sh | sh",
-                ],
-                None,
-            )?;
-        }
-
+        Self::run_system_command(
+            &app_settings,
+            "cargo",
+            "Failed to install bencher",
+            vec![
+                "install",
+                "--git",
+                "https://github.com/bencherdev/bencher",
+                "--branch",
+                "main",
+                "--locked",
+                "--force",
+                "bencher_cli",
+            ],
+            None,
+        )?;
         // install cargo mdbook
         Self::run_system_command(
             &app_settings,
