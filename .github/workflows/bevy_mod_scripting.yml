@@ -72,6 +72,9 @@ jobs:
           echo "Convert to single line JSON"
           jq -c . matrix.json > matrix-one-line.json
           echo "matrix=$(cat matrix-one-line.json)" >> $GITHUB_OUTPUT
+env:
+  BENCHER_API_TOKEN: ${{ secrets.BENCHER_API_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   check:  
     needs: [check-needs-run, generate-job-matrix]
