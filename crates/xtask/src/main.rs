@@ -1220,7 +1220,7 @@ impl Xtasks {
         let workspace_dir = Self::workspace_dir(&app_settings).unwrap();
         let command = Command::new("git")
             .args(["rev-parse", "--abbrev-ref", "HEAD"])
-            .current_dir(workspace_dir)
+            .current_dir(workspace_dir.clone())
             .output()
             .with_context(|| "Trying to figure out which branch we're on in benchmarking")?;
         let branch = String::from_utf8(command.stdout)?;
