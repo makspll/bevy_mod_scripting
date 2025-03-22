@@ -28,6 +28,11 @@ Although Bevy doesn't directly support scripting, efforts are underway to incorp
 - Customizable event driven communication between bevy and scripts (`on_update`, `on_init` etc..)
 - Documentation generation
 
+## Benchmarks
+BMS applies continuous benchmarking and the latest benchmark results can be found over at [bencher.dev](https://bencher.dev/perf/bms).
+
+The tested scripts themselves are placed in the `assets/benchmarks` directory.
+
 ## Support
 
 The languages currently supported are as follows:
