@@ -26,4 +26,4 @@ jobs:
           --err \
           --adapter json \
           --github-actions '${{ secrets.GITHUB_TOKEN }}' \
-          bencher mock
+          bencher run --adapter rust_criterion "cargo bench --features lua54"
