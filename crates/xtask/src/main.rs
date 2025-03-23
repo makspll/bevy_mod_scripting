@@ -1399,7 +1399,7 @@ impl Xtasks {
             bail!("Failed to list testbeds: {:?}", testbeds);
         }
 
-        let testbeds = parse_list_of_dicts(testbeds.stdout)
+        let mut testbeds = parse_list_of_dicts(testbeds.stdout)
             .with_context(|| "reading testbeds")?
             .into_iter()
             .map(|p| {
@@ -1409,6 +1409,7 @@ impl Xtasks {
             })
             .filter(|(name, _)| name.contains("gha"))
             .collect::<Vec<_>>();
+        testbeds.sort();
 
         let group_to_benchmark_map: HashMap<_, Vec<_>> =
             benchmarks
@@ -1422,7 +1423,7 @@ impl Xtasks {
         // create plot using
         // bencher plot create --x-axis date_time --branches main --testbeds <uuids> --benchmarks <uuids> --measures latency
 
-        for (group, uuids) in group_to_benchmark_map {
+        for (group, uuids) in group_to_benchmark_map.iter().sorted() {
             for (testbed_name, testbed_uuid) in testbeds.iter() {
                 let without_gha = testbed_name.replace("-gha", "");
                 let plot_name = format!("{without_gha} {group}");
@@ -1442,7 +1443,7 @@ impl Xtasks {
                     .args(["--measures", LATENCY_MEASURE_UUID])
                     .args(["--token", &token.clone().unwrap_or_default()]);
 
-                for benchmark_uuid in &uuids {
+                for benchmark_uuid in uuids {
                     bencher_cmd.arg("--benchmarks").arg(benchmark_uuid);
                 }
 
