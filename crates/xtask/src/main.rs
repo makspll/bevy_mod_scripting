@@ -349,11 +349,11 @@ impl App {
             Xtasks::Install { binary } => {
                 cmd.arg("install").arg(binary.as_ref());
             }
-            Xtasks::Bench { publish: execute } => {
+            Xtasks::Bench { publish } => {
                 cmd.arg("bench");
 
-                if execute {
-                    cmd.arg("--execute");
+                if publish {
+                    cmd.arg("--publish");
                 }
             }
         }
