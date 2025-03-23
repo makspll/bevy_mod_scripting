@@ -16,7 +16,7 @@ fn make_path(step_keys, index) {
     let key = step_keys[index];
     let nested = make_path(step_keys, index + 1);
     let obj = #{};
-    obj[key] = nested;
+    obj.set(key,nested);
     return obj;
 };
 
