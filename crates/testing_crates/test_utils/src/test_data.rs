@@ -23,6 +23,20 @@ impl TestComponent {
     }
 }
 
+#[derive(Component, Reflect, PartialEq, Eq, Debug, Default)]
+#[reflect(Component)]
+pub struct GenericComponent<T: Default> {
+    pub value: T,
+}
+
+impl GenericComponent<String> {
+    pub fn init() -> Self {
+        Self {
+            value: "Initial Value".to_string(),
+        }
+    }
+}
+
 /// Test Resource with Reflect and ReflectResource registered
 #[derive(Resource, Reflect, Default, PartialEq, Eq, Debug)]
 #[reflect(Resource)]
@@ -278,11 +292,12 @@ impl_test_component_ids!(
         SimpleStruct => 6,
         SimpleTupleStruct => 7,
         SimpleEnum => 8,
+        GenericComponent<String> => 9,
     ],
     [
-        TestResource => 9,
-        ResourceWithDefault => 10,
-        TestResourceWithVariousFields => 11,
+        TestResource => 10,
+        ResourceWithDefault => 11,
+        TestResourceWithVariousFields => 12,
     ]
 );
 
