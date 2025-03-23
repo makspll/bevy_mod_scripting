@@ -142,7 +142,7 @@ pub fn make_test_rhai_plugin() -> bevy_mod_scripting_rhai::RhaiScriptingPlugin {
 
     RhaiScriptingPlugin::default().add_runtime_initializer(|runtime| {
         let mut runtime = runtime.write();
-
+        runtime.set_max_call_levels(1000);
         runtime.register_fn("assert", |a: Dynamic, b: &str| {
             if !a.is::<bool>() {
                 panic!("Expected a boolean value, but got {:?}", a);
