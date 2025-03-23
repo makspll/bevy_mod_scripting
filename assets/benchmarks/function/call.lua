@@ -1,0 +1,3 @@
+function bench()
+    noop()
+end

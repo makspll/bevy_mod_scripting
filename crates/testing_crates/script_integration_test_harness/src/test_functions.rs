@@ -18,7 +18,7 @@ use bevy_mod_scripting_core::{
         },
         pretty_print::DisplayWithWorld,
         ReflectReference, ScriptComponentRegistration, ScriptResourceRegistration,
-        ScriptTypeRegistration,
+        ScriptTypeRegistration, ScriptValue,
     },
     error::InteropError,
 };
@@ -137,6 +137,11 @@ pub fn register_test_functions(world: &mut App) {
             *rng = ChaCha12Rng::from_seed(seed);
         })
         .register("make_hashmap", |map: HashMap<String, usize>| map)
+        .register("noop", || {})
+        .register(
+            "noop_4_args",
+            |_a: ScriptValue, _b: ScriptValue, _c: ScriptValue, _d: ScriptValue| {},
+        )
         .register(
             "assert_str_eq",
             |s1: String, s2: String, reason: Option<String>| {
