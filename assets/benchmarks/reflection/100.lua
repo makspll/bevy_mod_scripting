@@ -24,6 +24,9 @@ local current_reference = nil
 local steps = 10
 local step_keys = {}
 function pre_bench()
+    step_keys = {}
+    current_reference = nil
+    
     -- Choose keys for every step.
     for i = 1, steps do
         local key = keys[random_int(1, #keys)]

@@ -25,6 +25,9 @@ let steps = 100;
 let step_keys = [];
 
 fn pre_bench() {
+    step_keys = [];
+    current_reference = ();
+
     // Choose keys for every step.
     for i in 0 .. steps {
         let key = keys[random_int.call(0, keys.len() - 1)];
