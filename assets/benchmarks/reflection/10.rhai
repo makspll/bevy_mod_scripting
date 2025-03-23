@@ -1,4 +1,4 @@
-let Component = world.register_new_component_.call("DeepComponent");
+let Component = world.register_new_component.call("DeepComponent");
 let new_entity = world.spawn_.call();
 
 reseed.call();
