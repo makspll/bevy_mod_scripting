@@ -21,7 +21,7 @@ end
 
 
 local current_reference = nil
-local steps = 100
+local steps = 10
 local step_keys = {}
 function pre_bench()
     step_keys = {}
