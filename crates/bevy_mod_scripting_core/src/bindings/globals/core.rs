@@ -87,13 +87,12 @@ impl CoreGlobals {
         let type_registry = type_registry.read();
         let mut type_cache = HashMap::<String, _>::default();
         for registration in type_registry.iter() {
-            if let Some(ident) = registration.type_info().type_path_table().ident() {
-                let registration = ScriptTypeRegistration::new(Arc::new(registration.clone()));
-                let registration = guard.clone().get_type_registration(registration)?;
-                let registration =
-                    registration.map_both(Val::from, |u| u.map_both(Val::from, Val::from));
-                type_cache.insert(ident.to_string(), registration);
-            }
+            let type_path = registration.type_info().type_path_table().short_path();
+            let registration = ScriptTypeRegistration::new(Arc::new(registration.clone()));
+            let registration = guard.clone().get_type_registration(registration)?;
+            let registration =
+                registration.map_both(Val::from, |u| u.map_both(Val::from, Val::from));
+            type_cache.insert(type_path.to_owned(), registration);
         }
 
         Ok(type_cache)

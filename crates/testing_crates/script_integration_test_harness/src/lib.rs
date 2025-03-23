@@ -38,33 +38,6 @@ fn dummy_startup_system<T>() {}
 fn dummy_before_post_update_system() {}
 fn dummy_post_update_system() {}
 
-pub trait Benchmarker: 'static + Send + Sync {
-    fn bench(
-        &self,
-        label: &str,
-        f: &dyn Fn() -> Result<ScriptValue, ScriptError>,
-    ) -> Result<ScriptValue, ScriptError>;
-
-    fn clone_box(&self) -> Box<dyn Benchmarker>;
-}
-
-#[derive(Clone)]
-pub struct NoOpBenchmarker;
-
-impl Benchmarker for NoOpBenchmarker {
-    fn bench(
-        &self,
-        _label: &str,
-        f: &dyn Fn() -> Result<ScriptValue, ScriptError>,
-    ) -> Result<ScriptValue, ScriptError> {
-        f()
-    }
-
-    fn clone_box(&self) -> Box<dyn Benchmarker> {
-        Box::new(self.clone())
-    }
-}
-
 #[derive(Event)]
 struct TestEventFinished;
 
