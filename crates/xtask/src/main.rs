@@ -1224,8 +1224,8 @@ impl Xtasks {
     }
 
     fn bench(app_settings: GlobalArgs, execute: bool) -> Result<()> {
-        // first of all figure out which branch we're on
-        // run // git rev-parse --abbrev-ref HEAD
+        // // first of all figure out which branch we're on
+        // // run // git rev-parse --abbrev-ref HEAD
         let workspace_dir = Self::workspace_dir(&app_settings).unwrap();
         let command = Command::new("git")
             .args(["rev-parse", "--abbrev-ref", "HEAD"])
@@ -1273,8 +1273,8 @@ impl Xtasks {
             .args(["--thresholds-reset"])
             .args(["--err"]);
 
-        if let Some(token) = github_token {
-            bencher_cmd.args(["--github-actions", &token]);
+        if let Some(token) = &github_token {
+            bencher_cmd.args(["--github-actions", token]);
         }
 
         if !is_main || !execute {
@@ -1295,7 +1295,7 @@ impl Xtasks {
         }
 
         // if we're on linux and publishing and on main synch graphs
-        if os == "linux" && is_main && execute {
+        if os == "linux" && is_main && execute && github_token.is_some() {
             Self::synch_bencher_graphs()?;
         }
 
@@ -1307,13 +1307,26 @@ impl Xtasks {
         // this produces list of objects each containing a `uuid` and `name`
 
         let parse_list_of_dicts = |bytes: Vec<u8>| {
-            serde_json::from_slice::<Vec<HashMap<String, String>>>(&bytes)
+            if bytes.is_empty() {
+                bail!("Empty input");
+            }
+            serde_json::from_slice::<Vec<HashMap<String, serde_json::Value>>>(&bytes)
+                .map(|map| {
+                    map.into_iter()
+                        .map(|map| {
+                            map.into_iter()
+                                .map(|(k, v)| (k, v.as_str().unwrap_or_default().to_string()))
+                                .collect::<HashMap<_, _>>()
+                        })
+                        .collect::<Vec<_>>()
+                })
                 .with_context(|| "Could not parse bencher output")
         };
 
         let token = std::env::var("BENCHER_API_TOKEN").ok();
         let mut bencher_cmd = Command::new("bencher");
         let benchmarks = bencher_cmd
+            .stdout(std::process::Stdio::piped())
             .arg("benchmark")
             .args(["list", "bms"])
             .args(["--token", &token.clone().unwrap_or_default()])
@@ -1324,7 +1337,8 @@ impl Xtasks {
         }
 
         // parse teh name and uuid pairs
-        let benchmarks = parse_list_of_dicts(benchmarks.stdout)?
+        let benchmarks = parse_list_of_dicts(benchmarks.stdout)
+            .with_context(|| "Reading benchmarks")?
             .into_iter()
             .map(|p| {
                 let name = p.get("name").expect("no name in project");
@@ -1337,7 +1351,7 @@ impl Xtasks {
         // then bencher plot delete bms <uuid>
 
         let bencher_cmd = Command::new("bencher")
-            .stdout(std::process::Stdio::inherit())
+            .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::inherit())
             .args(["plot", "list", "bms"])
             .args(["--token", &token.clone().unwrap_or_default()])
@@ -1348,9 +1362,11 @@ impl Xtasks {
             bail!("Failed to list plots: {:?}", bencher_cmd);
         }
 
-        let plots = parse_list_of_dicts(bencher_cmd.stdout)?
+        let plots = parse_list_of_dicts(bencher_cmd.stdout)
+            .with_context(|| "reading plots")?
             .into_iter()
             .map(|p| {
+                log::info!("Plot to delete: {:?}", p);
                 let uuid = p.get("uuid").expect("no uuid in plot");
                 uuid.clone()
             })
@@ -1376,11 +1392,15 @@ impl Xtasks {
             .output()
             .with_context(|| "Could not list testbeds")?;
 
+        const MAIN_BRANCH_UUID: &str = "1d70a4e3-d416-43fc-91bd-4b1c8f9e9580";
+        const LATENCY_MEASURE_UUID: &str = "6820b034-5163-4cdd-95f5-5640dd0ff298";
+
         if !testbeds.status.success() {
             bail!("Failed to list testbeds: {:?}", testbeds);
         }
 
-        let testbeds = parse_list_of_dicts(testbeds.stdout)?
+        let testbeds = parse_list_of_dicts(testbeds.stdout)
+            .with_context(|| "reading testbeds")?
             .into_iter()
             .map(|p| {
                 let name = p.get("name").expect("no name in testbed");
@@ -1409,19 +1429,24 @@ impl Xtasks {
 
                 let window_months = 12;
                 let window_seconds = window_months * 30 * 24 * 60 * 60;
-                let bencher_cmd = Command::new("bencher")
+                let mut bencher_cmd = Command::new("bencher");
+                bencher_cmd
                     .stdout(std::process::Stdio::inherit())
                     .stderr(std::process::Stdio::inherit())
                     .args(["plot", "create", "bms"])
                     .args(["--title", &plot_name])
-                    .arg("--upper-boundary")
                     .args(["--x-axis", "date_time"])
                     .args(["--window", &window_seconds.to_string()])
-                    .args(["--branches", "main"])
+                    .args(["--branches", MAIN_BRANCH_UUID])
                     .args(["--testbeds", testbed_uuid])
-                    .args(["--benchmarks", &uuids.join(",")])
-                    .args(["--measures", "latency"])
-                    .args(["--token", &token.clone().unwrap_or_default()])
+                    .args(["--measures", LATENCY_MEASURE_UUID])
+                    .args(["--token", &token.clone().unwrap_or_default()]);
+
+                for benchmark_uuid in &uuids {
+                    bencher_cmd.arg("--benchmarks").arg(benchmark_uuid);
+                }
+
+                let bencher_cmd = bencher_cmd
                     .output()
                     .with_context(|| "Could not create plot")?;
 
