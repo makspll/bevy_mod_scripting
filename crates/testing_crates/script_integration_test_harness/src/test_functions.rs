@@ -1,4 +1,7 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
 
 use bevy::{
     app::App,
@@ -19,7 +22,15 @@ use bevy_mod_scripting_core::{
     },
     error::InteropError,
 };
+use rand::{Rng, SeedableRng};
+use rand_chacha::ChaCha12Rng;
 use test_utils::test_data::EnumerateTestComponents;
+
+// lazy lock rng state
+static RNG: std::sync::LazyLock<Mutex<ChaCha12Rng>> = std::sync::LazyLock::new(|| {
+    let seed = [42u8; 32];
+    Mutex::new(ChaCha12Rng::from_seed(seed))
+});
 
 pub fn register_test_functions(world: &mut App) {
     let world = world.world_mut();
@@ -108,6 +119,23 @@ pub fn register_test_functions(world: &mut App) {
 
     NamespaceBuilder::<GlobalNamespace>::new_unregistered(world)
         .register("global_hello_world", || Ok("hi!"))
+        .register("random", |start: Option<u32>, end: Option<u32>| {
+            let start = start.unwrap_or(0);
+            let end = end.unwrap_or(1);
+            let mut rng = RNG.lock().unwrap();
+            rng.random_range::<u32, _>(start..=end)
+        })
+        .register("random_int", |start: Option<i32>, end: Option<i32>| {
+            let start = start.unwrap_or(0);
+            let end = end.unwrap_or(1);
+            let mut rng = RNG.lock().unwrap();
+            rng.random_range::<i32, _>(start..=end)
+        })
+        .register("reseed", || {
+            let seed = [42u8; 32];
+            let mut rng = RNG.lock().unwrap();
+            *rng = ChaCha12Rng::from_seed(seed);
+        })
         .register("make_hashmap", |map: HashMap<String, usize>| map)
         .register(
             "assert_str_eq",

@@ -349,8 +349,12 @@ impl App {
             Xtasks::Install { binary } => {
                 cmd.arg("install").arg(binary.as_ref());
             }
-            Xtasks::Bench {} => {
+            Xtasks::Bench { publish: execute } => {
                 cmd.arg("bench");
+
+                if execute {
+                    cmd.arg("--execute");
+                }
             }
         }
 
@@ -638,7 +642,12 @@ enum Xtasks {
     ///
     CiMatrix,
     /// Runs bencher in dry mode by default if not on the main branch
-    Bench {},
+    /// To publish main branch defaults set publish mode to true
+    Bench {
+        /// Publish the benchmarks when on main
+        #[clap(long, default_value = "false", help = "Publish the benchmarks")]
+        publish: bool,
+    },
 }
 
 #[derive(Serialize, Clone)]
@@ -714,7 +723,7 @@ impl Xtasks {
                 bevy_features,
             } => Self::codegen(app_settings, output_dir, bevy_features),
             Xtasks::Install { binary } => Self::install(app_settings, binary),
-            Xtasks::Bench {} => Self::bench(app_settings),
+            Xtasks::Bench { publish: execute } => Self::bench(app_settings, execute),
         }?;
 
         Ok("".into())
@@ -1214,7 +1223,7 @@ impl Xtasks {
         Ok(())
     }
 
-    fn bench(app_settings: GlobalArgs) -> Result<()> {
+    fn bench(app_settings: GlobalArgs, execute: bool) -> Result<()> {
         // first of all figure out which branch we're on
         // run // git rev-parse --abbrev-ref HEAD
         let workspace_dir = Self::workspace_dir(&app_settings).unwrap();
@@ -1268,7 +1277,7 @@ impl Xtasks {
             bencher_cmd.args(["--github-actions", &token]);
         }
 
-        if !is_main {
+        if !is_main || !execute {
             bencher_cmd.args(["--dry-run"]);
         }
 
@@ -1453,7 +1462,7 @@ impl Xtasks {
         // on non-main branches this will just dry run
         output.push(App {
             global_args: default_args.clone(),
-            subcmd: Xtasks::Bench {},
+            subcmd: Xtasks::Bench { publish: true },
         });
 
         // and finally run tests with coverage
