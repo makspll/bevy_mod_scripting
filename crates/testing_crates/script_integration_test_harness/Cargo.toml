@@ -22,3 +22,5 @@ pretty_assertions = "1.*"
 bevy_mod_scripting_lua = { path = "../../languages/bevy_mod_scripting_lua", optional = true }
 bevy_mod_scripting_rhai = { path = "../../languages/bevy_mod_scripting_rhai", optional = true }
 criterion = "0.5"
+rand = "0.9"
+rand_chacha = "0.9"

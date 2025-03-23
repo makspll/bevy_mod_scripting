@@ -349,8 +349,12 @@ impl App {
             Xtasks::Install { binary } => {
                 cmd.arg("install").arg(binary.as_ref());
             }
-            Xtasks::Bench {} => {
+            Xtasks::Bench { publish } => {
                 cmd.arg("bench");
+
+                if publish {
+                    cmd.arg("--publish");
+                }
             }
         }
 
@@ -638,7 +642,12 @@ enum Xtasks {
     ///
     CiMatrix,
     /// Runs bencher in dry mode by default if not on the main branch
-    Bench {},
+    /// To publish main branch defaults set publish mode to true
+    Bench {
+        /// Publish the benchmarks when on main
+        #[clap(long, default_value = "false", help = "Publish the benchmarks")]
+        publish: bool,
+    },
 }
 
 #[derive(Serialize, Clone)]
@@ -714,7 +723,7 @@ impl Xtasks {
                 bevy_features,
             } => Self::codegen(app_settings, output_dir, bevy_features),
             Xtasks::Install { binary } => Self::install(app_settings, binary),
-            Xtasks::Bench {} => Self::bench(app_settings),
+            Xtasks::Bench { publish: execute } => Self::bench(app_settings, execute),
         }?;
 
         Ok("".into())
@@ -1214,7 +1223,7 @@ impl Xtasks {
         Ok(())
     }
 
-    fn bench(app_settings: GlobalArgs) -> Result<()> {
+    fn bench(app_settings: GlobalArgs, execute: bool) -> Result<()> {
         // first of all figure out which branch we're on
         // run // git rev-parse --abbrev-ref HEAD
         let workspace_dir = Self::workspace_dir(&app_settings).unwrap();
@@ -1268,7 +1277,7 @@ impl Xtasks {
             bencher_cmd.args(["--github-actions", &token]);
         }
 
-        if !is_main {
+        if !is_main || !execute {
             bencher_cmd.args(["--dry-run"]);
         }
 
@@ -1283,6 +1292,143 @@ impl Xtasks {
             .with_context(|| "Could not trigger bencher command")?;
         if !out.status.success() {
             bail!("Failed to run bencher: {:?}", out);
+        }
+
+        // if we're on linux and publishing and on main synch graphs
+        if os == "linux" && is_main && execute {
+            Self::synch_bencher_graphs()?;
+        }
+
+        Ok(())
+    }
+
+    fn synch_bencher_graphs() -> Result<()> {
+        // first run `bencher benchmark list bms
+        // this produces list of objects each containing a `uuid` and `name`
+
+        let parse_list_of_dicts = |bytes: Vec<u8>| {
+            serde_json::from_slice::<Vec<HashMap<String, String>>>(&bytes)
+                .with_context(|| "Could not parse bencher output")
+        };
+
+        let token = std::env::var("BENCHER_API_TOKEN").ok();
+        let mut bencher_cmd = Command::new("bencher");
+        let benchmarks = bencher_cmd
+            .arg("benchmark")
+            .args(["list", "bms"])
+            .args(["--token", &token.clone().unwrap_or_default()])
+            .output()
+            .with_context(|| "Could not list benchmarks")?;
+        if !benchmarks.status.success() {
+            bail!("Failed to list benchmarks: {:?}", benchmarks);
+        }
+
+        // parse teh name and uuid pairs
+        let benchmarks = parse_list_of_dicts(benchmarks.stdout)?
+            .into_iter()
+            .map(|p| {
+                let name = p.get("name").expect("no name in project");
+                let uuid = p.get("uuid").expect("no uuid in project");
+                (name.clone(), uuid.clone())
+            })
+            .collect::<Vec<_>>();
+
+        // delete all plots using bencher plot list bms to get "uuid's"
+        // then bencher plot delete bms <uuid>
+
+        let bencher_cmd = Command::new("bencher")
+            .stdout(std::process::Stdio::inherit())
+            .stderr(std::process::Stdio::inherit())
+            .args(["plot", "list", "bms"])
+            .args(["--token", &token.clone().unwrap_or_default()])
+            .output()
+            .with_context(|| "Could not list plots")?;
+
+        if !bencher_cmd.status.success() {
+            bail!("Failed to list plots: {:?}", bencher_cmd);
+        }
+
+        let plots = parse_list_of_dicts(bencher_cmd.stdout)?
+            .into_iter()
+            .map(|p| {
+                let uuid = p.get("uuid").expect("no uuid in plot");
+                uuid.clone()
+            })
+            .collect::<Vec<_>>();
+
+        for uuid in plots {
+            let bencher_cmd = Command::new("bencher")
+                .stdout(std::process::Stdio::inherit())
+                .stderr(std::process::Stdio::inherit())
+                .args(["plot", "delete", "bms", &uuid])
+                .args(["--token", &token.clone().unwrap_or_default()])
+                .output()
+                .with_context(|| "Could not delete plot")?;
+
+            if !bencher_cmd.status.success() {
+                bail!("Failed to delete plot: {:?}", bencher_cmd);
+            }
+        }
+        let testbeds = Command::new("bencher")
+            .arg("testbed")
+            .args(["list", "bms"])
+            .args(["--token", &token.clone().unwrap_or_default()])
+            .output()
+            .with_context(|| "Could not list testbeds")?;
+
+        if !testbeds.status.success() {
+            bail!("Failed to list testbeds: {:?}", testbeds);
+        }
+
+        let testbeds = parse_list_of_dicts(testbeds.stdout)?
+            .into_iter()
+            .map(|p| {
+                let name = p.get("name").expect("no name in testbed");
+                let uuid = p.get("uuid").expect("no uuid in testbed");
+                (name.clone(), uuid.clone())
+            })
+            .filter(|(name, _)| name.contains("gha"))
+            .collect::<Vec<_>>();
+
+        let group_to_benchmark_map: HashMap<_, Vec<_>> =
+            benchmarks
+                .iter()
+                .fold(HashMap::new(), |mut acc, (name, uuid)| {
+                    let group = name.split('/').next().unwrap_or_default();
+                    acc.entry(group.to_owned()).or_default().push(uuid.clone());
+                    acc
+                });
+
+        // create plot using
+        // bencher plot create --x-axis date_time --branches main --testbeds <uuids> --benchmarks <uuids> --measures latency
+
+        for (group, uuids) in group_to_benchmark_map {
+            for (testbed_name, testbed_uuid) in testbeds.iter() {
+                let without_gha = testbed_name.replace("-gha", "");
+                let plot_name = format!("{without_gha} {group}");
+
+                let window_months = 12;
+                let window_seconds = window_months * 30 * 24 * 60 * 60;
+                let bencher_cmd = Command::new("bencher")
+                    .stdout(std::process::Stdio::inherit())
+                    .stderr(std::process::Stdio::inherit())
+                    .args(["plot", "create", "bms"])
+                    .args(["--title", &plot_name])
+                    .arg("--upper-boundary")
+                    .args(["--x-axis", "date_time"])
+                    .args(["--window", &window_seconds.to_string()])
+                    .args(["--branches", "main"])
+                    .args(["--testbeds", testbed_uuid])
+                    .args(["--benchmarks", &uuids.join(",")])
+                    .args(["--measures", "latency"])
+                    .args(["--token", &token.clone().unwrap_or_default()])
+                    .output()
+                    .with_context(|| "Could not create plot")?;
+
+                if !bencher_cmd.status.success() {
+                    bail!("Failed to create plot: {:?}", bencher_cmd);
+                }
+            }
         }
 
         Ok(())
@@ -1453,7 +1599,7 @@ impl Xtasks {
         // on non-main branches this will just dry run
         output.push(App {
             global_args: default_args.clone(),
-            subcmd: Xtasks::Bench {},
+            subcmd: Xtasks::Bench { publish: true },
         });
 
         // and finally run tests with coverage

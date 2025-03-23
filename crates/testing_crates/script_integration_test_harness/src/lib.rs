@@ -142,7 +142,7 @@ pub fn make_test_rhai_plugin() -> bevy_mod_scripting_rhai::RhaiScriptingPlugin {
 
     RhaiScriptingPlugin::default().add_runtime_initializer(|runtime| {
         let mut runtime = runtime.write();
-
+        runtime.set_max_call_levels(1000);
         runtime.register_fn("assert", |a: Dynamic, b: &str| {
             if !a.is::<bool>() {
                 panic!("Expected a boolean value, but got {:?}", a);
@@ -355,7 +355,11 @@ pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(
         criterion,
         |ctxt, _runtime, label, criterion| {
             let bencher: Function = ctxt.globals().get("bench").map_err(|e| e.to_string())?;
+            let pre_bencher: Option<Function> = ctxt.globals().get("pre_bench").ok();
             criterion.bench_function(label, |c| {
+                if let Some(pre_bencher) = &pre_bencher {
+                    pre_bencher.call::<()>(()).unwrap();
+                }
                 c.iter(|| {
                     bencher.call::<()>(()).unwrap();
                 })
@@ -382,7 +386,14 @@ pub fn run_rhai_benchmark<M: criterion::measurement::Measurement>(
         |ctxt, runtime, label, criterion| {
             let runtime = runtime.read();
             const ARGS: [usize; 0] = [];
+            let has_pre_bench = ctxt.ast.iter_functions().any(|f| f.name == "pre_bench");
             criterion.bench_function(label, |c| {
+                // call "pre_bench" if any
+                if has_pre_bench {
+                    let _ = runtime
+                        .call_fn::<Dynamic>(&mut ctxt.scope, &ctxt.ast, "pre_bench", ARGS)
+                        .unwrap();
+                }
                 c.iter(|| {
                     let _ = runtime
                         .call_fn::<Dynamic>(&mut ctxt.scope, &ctxt.ast, "bench", ARGS)
