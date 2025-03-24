@@ -1233,7 +1233,13 @@ impl Xtasks {
 
     fn bench(app_settings: GlobalArgs) -> Result<()> {
         Self::run_workspace_command(
-            &app_settings,
+            // run with just lua54
+            &app_settings.with_features(Features::new(vec![
+                Feature::Lua54,
+                Feature::Rhai,
+                Feature::CoreFunctions,
+                Feature::BevyBindings,
+            ])),
             "bench",
             "Failed to run benchmarks",
             Vec::<String>::default(),
