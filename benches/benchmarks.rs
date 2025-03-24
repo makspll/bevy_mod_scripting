@@ -1,9 +1,7 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, time::Duration};
 
 use bevy::utils::HashMap;
-use criterion::{
-    criterion_group, criterion_main, measurement::Measurement, BenchmarkGroup, Criterion,
-};
+use criterion::{criterion_main, measurement::Measurement, BenchmarkGroup, Criterion};
 use script_integration_test_harness::{run_lua_benchmark, run_rhai_benchmark};
 use test_utils::{discover_all_tests, Test};
 
@@ -91,5 +89,10 @@ fn script_benchmarks(criterion: &mut Criterion) {
     }
 }
 
-criterion_group!(benches, script_benchmarks);
+pub fn benches() {
+    let mut criterion: criterion::Criterion<_> = (criterion::Criterion::default())
+        .configure_from_args()
+        .measurement_time(Duration::from_secs(10));
+    script_benchmarks(&mut criterion);
+}
 criterion_main!(benches);
