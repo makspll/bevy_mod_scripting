@@ -9,7 +9,7 @@ use std::{
     ffi::{OsStr, OsString},
     io::Write,
     path::{Path, PathBuf},
-    process::Command,
+    process::{Command, Output},
     str::FromStr,
 };
 use strum::{IntoEnumIterator, VariantNames};
@@ -349,12 +349,15 @@ impl App {
             Xtasks::Install { binary } => {
                 cmd.arg("install").arg(binary.as_ref());
             }
-            Xtasks::Bench { publish } => {
-                cmd.arg("bench");
+            Xtasks::Bencher { publish } => {
+                cmd.arg("bencher");
 
                 if publish {
                     cmd.arg("--publish");
                 }
+            }
+            Xtasks::Bench {} => {
+                cmd.arg("bench");
             }
         }
 
@@ -643,11 +646,13 @@ enum Xtasks {
     CiMatrix,
     /// Runs bencher in dry mode by default if not on the main branch
     /// To publish main branch defaults set publish mode to true
-    Bench {
+    Bencher {
         /// Publish the benchmarks when on main
         #[clap(long, default_value = "false", help = "Publish the benchmarks")]
         publish: bool,
     },
+    /// Runs criterion benchmarks generates json required to be published by bencher and generates html performance report
+    Bench {},
 }
 
 #[derive(Serialize, Clone)]
@@ -723,7 +728,8 @@ impl Xtasks {
                 bevy_features,
             } => Self::codegen(app_settings, output_dir, bevy_features),
             Xtasks::Install { binary } => Self::install(app_settings, binary),
-            Xtasks::Bench { publish: execute } => Self::bench(app_settings, execute),
+            Xtasks::Bencher { publish } => Self::bencher(app_settings, publish),
+            Xtasks::Bench {} => Self::bench(app_settings),
         }?;
 
         Ok("".into())
@@ -811,7 +817,7 @@ impl Xtasks {
         context: &str,
         add_args: I,
         dir: Option<&Path>,
-    ) -> Result<()> {
+    ) -> Result<Output> {
         let coverage_mode = app_settings
             .coverage
             .then_some("with coverage")
@@ -878,7 +884,7 @@ impl Xtasks {
 
         let output = cmd.output().with_context(|| context.to_owned())?;
         match output.status.code() {
-            Some(0) => Ok(()),
+            Some(0) => Ok(output),
             _ => bail!(
                 "{} failed with exit code: {}. Features: {}",
                 context,
@@ -1223,7 +1229,20 @@ impl Xtasks {
         Ok(())
     }
 
-    fn bench(app_settings: GlobalArgs, execute: bool) -> Result<()> {
+    fn bench(app_settings: GlobalArgs) -> Result<()> {
+        Self::run_workspace_command(
+            &app_settings,
+            "bench",
+            "Failed to run benchmarks",
+            Vec::<String>::default(),
+            None,
+        )
+        .with_context(|| "when executing criterion benchmarks")?;
+
+        Ok(())
+    }
+
+    fn bencher(app_settings: GlobalArgs, publish: bool) -> Result<()> {
         // // first of all figure out which branch we're on
         // // run // git rev-parse --abbrev-ref HEAD
         let workspace_dir = Self::workspace_dir(&app_settings).unwrap();
@@ -1277,13 +1296,13 @@ impl Xtasks {
             bencher_cmd.args(["--github-actions", token]);
         }
 
-        if !is_main || !execute {
+        if !is_main || !publish {
             bencher_cmd.args(["--dry-run"]);
         }
 
         bencher_cmd
             .args(["--adapter", "rust_criterion"])
-            .arg("cargo bench --features=lua54");
+            .arg("cargo xtask bench");
 
         log::info!("Running bencher command: {:?}", bencher_cmd);
 
@@ -1295,7 +1314,7 @@ impl Xtasks {
         }
 
         // if we're on linux and publishing and on main synch graphs
-        if os == "linux" && is_main && execute && github_token.is_some() {
+        if os == "linux" && is_main && publish && github_token.is_some() {
             Self::synch_bencher_graphs()?;
         }
 
@@ -1625,7 +1644,7 @@ impl Xtasks {
         // on non-main branches this will just dry run
         output.push(App {
             global_args: default_args.clone(),
-            subcmd: Xtasks::Bench { publish: true },
+            subcmd: Xtasks::Bencher { publish: true },
         });
 
         // and finally run tests with coverage
