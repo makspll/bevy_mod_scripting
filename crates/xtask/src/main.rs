@@ -696,8 +696,10 @@ impl Xtasks {
                 let mut rows = Vec::default();
                 for os in <CiOs as strum::VariantArray>::VARIANTS {
                     for row in output.iter() {
-                        let step_should_run_on_main_os =
-                            matches!(row.subcmd, Xtasks::Build | Xtasks::Docs { .. });
+                        let step_should_run_on_main_os = matches!(
+                            row.subcmd,
+                            Xtasks::Build | Xtasks::Docs { .. } | Xtasks::Bencher { .. }
+                        );
                         let is_coverage_step = row.global_args.coverage;
 
                         if !os.is_main_os() && step_should_run_on_main_os {
@@ -1638,6 +1640,13 @@ impl Xtasks {
                 open: false,
                 no_rust_docs: false,
             },
+        });
+
+        // also run a benchmark
+        // on non-main branches this will just dry run
+        output.push(App {
+            global_args: default_args.clone(),
+            subcmd: Xtasks::Bencher { publish: true },
         });
 
         // and finally run tests with coverage
