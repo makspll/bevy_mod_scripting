@@ -1640,13 +1640,6 @@ impl Xtasks {
             },
         });
 
-        // also run a benchmark
-        // on non-main branches this will just dry run
-        output.push(App {
-            global_args: default_args.clone(),
-            subcmd: Xtasks::Bencher { publish: true },
-        });
-
         // and finally run tests with coverage
         output.push(App {
             global_args: default_args
