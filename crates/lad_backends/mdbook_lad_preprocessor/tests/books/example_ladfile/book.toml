@@ -8,6 +8,6 @@ description = "Documentation for the Bevy Scripting library"
 
 
 [preprocessor.lad-preprocessor]
-
+root = "root"
 
 [output.markdown]

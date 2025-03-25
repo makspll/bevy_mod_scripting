@@ -10,6 +10,24 @@ mod argument_visitor;
 mod markdown;
 mod sections;
 
+#[derive(Debug)]
+struct Options {
+    pub root: String,
+}
+
+impl From<&PreprocessorContext> for Options {
+    fn from(context: &PreprocessorContext) -> Self {
+        let root = context
+            .config
+            .get_preprocessor("lad-preprocessor")
+            .and_then(|t| t.get("root"))
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_owned())
+            .unwrap_or_default();
+        Options { root }
+    }
+}
+
 const LAD_EXTENSION: &str = "lad.json";
 
 pub struct LADPreprocessor;
@@ -31,6 +49,7 @@ impl LADPreprocessor {
     /// and `chapter_index` is the index of the chapter among its siblings.
     fn process_lad_chapter(
         _context: &PreprocessorContext,
+        options: &Options,
         chapter: &mdbook::book::Chapter,
         parent: Option<&mdbook::book::Chapter>,
         chapter_index: usize,
@@ -45,8 +64,10 @@ impl LADPreprocessor {
 
         let parent_path = parent
             .and_then(|p| p.path.clone())
-            .unwrap_or_default()
+            .unwrap_or_else(|| options.root.clone().into())
             .with_extension("");
+
+        log::debug!("Parent path: {:?}", parent_path);
 
         let new_chapter = Section::new(
             parent_path,
@@ -75,6 +96,9 @@ impl Preprocessor for LADPreprocessor {
         mut book: mdbook::book::Book,
     ) -> mdbook::errors::Result<mdbook::book::Book> {
         let mut errors = Vec::new();
+        let options = Options::from(context);
+
+        log::debug!("Options: {:?}", options);
 
         // first replace children in parents
         book.for_each_mut(|item| {
@@ -89,6 +113,7 @@ impl Preprocessor for LADPreprocessor {
                             if LADPreprocessor::is_lad_file(chapter) {
                                 match LADPreprocessor::process_lad_chapter(
                                     context,
+                                    &options,
                                     chapter,
                                     Some(parent),
                                     idx,
@@ -122,6 +147,7 @@ impl Preprocessor for LADPreprocessor {
                 }
                 let new_chapter = match LADPreprocessor::process_lad_chapter(
                     context,
+                    &options,
                     chapter,
                     None,
                     chapter
