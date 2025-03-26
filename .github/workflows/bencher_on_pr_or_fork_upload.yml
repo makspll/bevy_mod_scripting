@@ -49,6 +49,6 @@ jobs:
           --testbed linux-gha \
           --err \
           --adapter rust_criterion \
-          --github-actions '${{ secrets.GITHUB_TOKEN }}' \
+          --github-actions '${{ secrets.BENCHER_GITHUB_TOKEN }}' \
           --ci-number "$PR_NUMBER" \
           --file "$BENCHMARK_RESULTS"
