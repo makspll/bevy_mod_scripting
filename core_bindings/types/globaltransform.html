@@ -195,34 +195,34 @@ before the [<code>GlobalTransform</code>] is updated.</p>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
-<tr><td><a href="./globaltransform/translation.html">translation</a></td><td>Get the translation as a [`Vec3`].</td></tr>
-<tr><td><a href="./globaltransform/up.html">up</a></td><td>Return the local up vector (Y).</td></tr>
-<tr><td><a href="./globaltransform/left.html">left</a></td><td>Return the local left vector (-X).</td></tr>
-<tr><td><a href="./globaltransform/scale.html">scale</a></td><td>Get the scale as a [`Vec3`].  The transform is expected to be non-degenerate and without shearing, or the output will be invalid.  Some of the computations overlap with `to_scale_rotation_translation`, which means you should use  it instead if you also need rotation.</td></tr>
-<tr><td><a href="./globaltransform/from_scale.html">from_scale</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./globaltransform/back.html">back</a></td><td>Return the local back vector (Z).</td></tr>
-<tr><td><a href="./globaltransform/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="./globaltransform/from_translation.html">from_translation</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./globaltransform/compute_matrix.html">compute_matrix</a></td><td>Returns the 3d affine transformation matrix as a [`Mat4`].</td></tr>
-<tr><td><a href="./globaltransform/mul.html">mul</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./globaltransform/from_scale.html">from_scale</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="./globaltransform/mul-2.html">mul-2</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./globaltransform/mul-1.html">mul-1</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./globaltransform/to_isometry.html">to_isometry</a></td><td>Returns the isometric part of the transformation as an [isometry]. Any scaling done by the  transformation will be ignored.  The transform is expected to be non-degenerate and without shearing, or the output  will be invalid.  [isometry]...</td></tr>
-<tr><td><a href="./globaltransform/forward.html">forward</a></td><td>Return the local forward vector (-Z).</td></tr>
-<tr><td><a href="./globaltransform/down.html">down</a></td><td>Return the local down vector (-Y).</td></tr>
 <tr><td><a href="./globaltransform/mul_transform.html">mul_transform</a></td><td>Multiplies `self` with `transform` component by component, returning the  resulting [`GlobalTransform`]...</td></tr>
+<tr><td><a href="./globaltransform/down.html">down</a></td><td>Return the local down vector (-Y).</td></tr>
+<tr><td><a href="./globaltransform/up.html">up</a></td><td>Return the local up vector (Y).</td></tr>
 <tr><td><a href="./globaltransform/transform_point.html">transform_point</a></td><td>Transforms the given point from local space to global space, applying shear, scale, rotation and tr...</td></tr>
-<tr><td><a href="./globaltransform/rotation.html">rotation</a></td><td>Get the rotation as a [`Quat`].  The transform is expected to be non-degenerate and without shearing, or the output will be invalid.  # Warning  This is calculated using `to_scale_rotation_translation`, meaning that you  should probably use it directly if you also need translation or scale.</td></tr>
-<tr><td><a href="./globaltransform/translation_vec3a.html">translation_vec3a</a></td><td>Get the translation as a [`Vec3A`].</td></tr>
-<tr><td><a href="./globaltransform/compute_transform.html">compute_transform</a></td><td>Returns the transformation as a [`Transform`].  The transform is expected to be non-degenerate and without shearing, or the output  will be invalid.</td></tr>
-<tr><td><a href="./globaltransform/from_rotation.html">from_rotation</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./globaltransform/from_xyz.html">from_xyz</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./globaltransform/forward.html">forward</a></td><td>Return the local forward vector (-Z).</td></tr>
+<tr><td><a href="./globaltransform/left.html">left</a></td><td>Return the local left vector (-X).</td></tr>
 <tr><td><a href="./globaltransform/reparented_to.html">reparented_to</a></td><td>Returns the [`Transform`] `self` would have if it was a child of an entity  with the `parent` [`GlobalTransform`...</td></tr>
-<tr><td><a href="./globaltransform/radius_vec3a.html">radius_vec3a</a></td><td>Get an upper bound of the radius from the given `extents`.</td></tr>
-<tr><td><a href="./globaltransform/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./globaltransform/right.html">right</a></td><td>Return the local right vector (X).</td></tr>
 <tr><td><a href="./globaltransform/affine.html">affine</a></td><td>Returns the 3d affine transformation matrix as an [`Affine3A`].</td></tr>
 <tr><td><a href="./globaltransform/from_isometry.html">from_isometry</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./globaltransform/rotation.html">rotation</a></td><td>Get the rotation as a [`Quat`].  The transform is expected to be non-degenerate and without shearing, or the output will be invalid.  # Warning  This is calculated using `to_scale_rotation_translation`, meaning that you  should probably use it directly if you also need translation or scale.</td></tr>
+<tr><td><a href="./globaltransform/to_isometry.html">to_isometry</a></td><td>Returns the isometric part of the transformation as an [isometry]. Any scaling done by the  transformation will be ignored.  The transform is expected to be non-degenerate and without shearing, or the output  will be invalid.  [isometry]...</td></tr>
+<tr><td><a href="./globaltransform/mul.html">mul</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./globaltransform/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./globaltransform/from_rotation.html">from_rotation</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./globaltransform/from_xyz.html">from_xyz</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./globaltransform/compute_transform.html">compute_transform</a></td><td>Returns the transformation as a [`Transform`].  The transform is expected to be non-degenerate and without shearing, or the output  will be invalid.</td></tr>
+<tr><td><a href="./globaltransform/translation.html">translation</a></td><td>Get the translation as a [`Vec3`].</td></tr>
+<tr><td><a href="./globaltransform/mul-1.html">mul-1</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./globaltransform/right.html">right</a></td><td>Return the local right vector (X).</td></tr>
+<tr><td><a href="./globaltransform/radius_vec3a.html">radius_vec3a</a></td><td>Get an upper bound of the radius from the given `extents`.</td></tr>
+<tr><td><a href="./globaltransform/compute_matrix.html">compute_matrix</a></td><td>Returns the 3d affine transformation matrix as a [`Mat4`].</td></tr>
+<tr><td><a href="./globaltransform/back.html">back</a></td><td>Return the local back vector (Z).</td></tr>
+<tr><td><a href="./globaltransform/translation_vec3a.html">translation_vec3a</a></td><td>Get the translation as a [`Vec3A`].</td></tr>
+<tr><td><a href="./globaltransform/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./globaltransform/scale.html">scale</a></td><td>Get the scale as a [`Vec3`].  The transform is expected to be non-degenerate and without shearing, or the output will be invalid.  Some of the computations overlap with `to_scale_rotation_translation`, which means you should use  it instead if you also need rotation.</td></tr>
 </tbody></table>
 </div>
                     </main>
@@ -233,7 +233,7 @@ before the [<code>GlobalTransform</code>] is updated.</p>
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/globaltransform/translation.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/globaltransform/from_translation.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -247,7 +247,7 @@ before the [<code>GlobalTransform</code>] is updated.</p>
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/globaltransform/translation.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/globaltransform/from_translation.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

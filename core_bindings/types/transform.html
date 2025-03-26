@@ -197,58 +197,58 @@ before the [<code>GlobalTransform</code>] is updated.</p>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
-<tr><td><a href="./transform/forward.html">forward</a></td><td>Equivalent to [`-local_z()`][Transform::local_z]</td></tr>
-<tr><td><a href="./transform/from_xyz.html">from_xyz</a></td><td>Creates a new [`Transform`] at the position `(x, y, z)`. In 2d, the `z` component  is used for z-ordering elements: higher `z`-value will be in front of lower  `z`-value.</td></tr>
-<tr><td><a href="./transform/to_isometry.html">to_isometry</a></td><td>Get the [isometry] defined by this transform's rotation and translation, ignoring scale.  [isometry...</td></tr>
-<tr><td><a href="./transform/transform_point.html">transform_point</a></td><td>Transforms the given `point`, applying scale, rotation and translation.  If this [`Transform`] has an ancestor entity with a [`Transform`]...</td></tr>
-<tr><td><a href="./transform/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./transform/rotate_local_y.html">rotate_local_y</a></td><td>Rotates this [`Transform`] around its local `Y` axis by `angle` (in radians).</td></tr>
-<tr><td><a href="./transform/is_finite.html">is_finite</a></td><td>Returns `true` if, and only if, translation, rotation and scale all are  finite. If any of them con...</td></tr>
-<tr><td><a href="./transform/rotate_local.html">rotate_local</a></td><td>Rotates this [`Transform`] by the given `rotation`.  The `rotation` is relative to this [`Transform...</td></tr>
-<tr><td><a href="./transform/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./transform/local_z.html">local_z</a></td><td>Get the unit vector in the local `Z` direction.</td></tr>
-<tr><td><a href="./transform/with_translation.html">with_translation</a></td><td>Returns this [`Transform`] with a new translation.</td></tr>
-<tr><td><a href="./transform/left.html">left</a></td><td>Equivalent to [`-local_x()`][Transform::local_x()]</td></tr>
-<tr><td><a href="./transform/from_rotation.html">from_rotation</a></td><td>Creates a new [`Transform`], with `rotation`. Translation will be 0 and scale 1 on  all axes.</td></tr>
-<tr><td><a href="./transform/rotate_local_axis.html">rotate_local_axis</a></td><td>Rotates this [`Transform`] around its local `axis` by `angle` (in radians).</td></tr>
-<tr><td><a href="./transform/from_scale.html">from_scale</a></td><td>Creates a new [`Transform`], with `scale`. Translation will be 0 and rotation 0 on  all axes.</td></tr>
-<tr><td><a href="./transform/mul-1.html">mul-1</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./transform/from_isometry.html">from_isometry</a></td><td>Creates a new [`Transform`] that is equivalent to the given [isometry].  [isometry]: Isometry3d</td></tr>
-<tr><td><a href="./transform/rotate_y.html">rotate_y</a></td><td>Rotates this [`Transform`] around the `Y` axis by `angle` (in radians).  If this [`Transform`] has ...</td></tr>
-<tr><td><a href="./transform/rotate.html">rotate</a></td><td>Rotates this [`Transform`] by the given rotation.  If this [`Transform`] has a parent, the `rotation`...</td></tr>
-<tr><td><a href="./transform/compute_affine.html">compute_affine</a></td><td>Returns the 3d affine transformation matrix from this transforms translation,  rotation, and scale.</td></tr>
-<tr><td><a href="./transform/rotate_axis.html">rotate_axis</a></td><td>Rotates this [`Transform`] around the given `axis` by `angle` (in radians).  If this [`Transform`] ...</td></tr>
-<tr><td><a href="./transform/rotate_z.html">rotate_z</a></td><td>Rotates this [`Transform`] around the `Z` axis by `angle` (in radians).  If this [`Transform`] has ...</td></tr>
-<tr><td><a href="./transform/local_y.html">local_y</a></td><td>Get the unit vector in the local `Y` direction.</td></tr>
-<tr><td><a href="./transform/local_x.html">local_x</a></td><td>Get the unit vector in the local `X` direction.</td></tr>
-<tr><td><a href="./transform/rotate_x.html">rotate_x</a></td><td>Rotates this [`Transform`] around the `X` axis by `angle` (in radians).  If this [`Transform`] has ...</td></tr>
-<tr><td><a href="./transform/from_matrix.html">from_matrix</a></td><td>Extracts the translation, rotation, and scale from `matrix`. It must be a 3d affine  transformation...</td></tr>
-<tr><td><a href="./transform/mul_transform.html">mul_transform</a></td><td>Multiplies `self` with `transform` component by component, returning the  resulting [`Transform`]</td></tr>
-<tr><td><a href="./transform/mul.html">mul</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./transform/up.html">up</a></td><td>Equivalent to [`local_y()`][Transform::local_y]</td></tr>
-<tr><td><a href="./transform/down.html">down</a></td><td>Equivalent to [`-local_y()`][Transform::local_y]</td></tr>
-<tr><td><a href="./transform/rotate_local_z.html">rotate_local_z</a></td><td>Rotates this [`Transform`] around its local `Z` axis by `angle` (in radians).</td></tr>
 <tr><td><a href="./transform/compute_matrix.html">compute_matrix</a></td><td>Returns the 3d affine transformation matrix from this transforms translation,  rotation, and scale.</td></tr>
-<tr><td><a href="./transform/from_translation.html">from_translation</a></td><td>Creates a new [`Transform`], with `translation`. Rotation will be 0 and scale 1 on  all axes.</td></tr>
-<tr><td><a href="./transform/rotate_around.html">rotate_around</a></td><td>Rotates this [`Transform`] around a `point` in space.  If this [`Transform`] has a parent, the `point`...</td></tr>
-<tr><td><a href="./transform/back.html">back</a></td><td>Equivalent to [`local_z()`][Transform::local_z]</td></tr>
-<tr><td><a href="./transform/right.html">right</a></td><td>Equivalent to [`local_x()`][Transform::local_x()]</td></tr>
-<tr><td><a href="./transform/with_scale.html">with_scale</a></td><td>Returns this [`Transform`] with a new scale.</td></tr>
-<tr><td><a href="./transform/with_rotation.html">with_rotation</a></td><td>Returns this [`Transform`] with a new rotation.</td></tr>
-<tr><td><a href="./transform/mul-2.html">mul-2</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./transform/rotate_local_x.html">rotate_local_x</a></td><td>Rotates this [`Transform`] around its local `X` axis by `angle` (in radians).</td></tr>
+<tr><td><a href="./transform/transform_point.html">transform_point</a></td><td>Transforms the given `point`, applying scale, rotation and translation.  If this [`Transform`] has an ancestor entity with a [`Transform`]...</td></tr>
+<tr><td><a href="./transform/rotate_local_z.html">rotate_local_z</a></td><td>Rotates this [`Transform`] around its local `Z` axis by `angle` (in radians).</td></tr>
+<tr><td><a href="./transform/from_scale.html">from_scale</a></td><td>Creates a new [`Transform`], with `scale`. Translation will be 0 and rotation 0 on  all axes.</td></tr>
 <tr><td><a href="./transform/translate_around.html">translate_around</a></td><td>Translates this [`Transform`] around a `point` in space.  If this [`Transform`] has a parent, the `point`...</td></tr>
+<tr><td><a href="./transform/up.html">up</a></td><td>Equivalent to [`local_y()`][Transform::local_y]</td></tr>
+<tr><td><a href="./transform/rotate_local_axis.html">rotate_local_axis</a></td><td>Rotates this [`Transform`] around its local `axis` by `angle` (in radians).</td></tr>
+<tr><td><a href="./transform/with_rotation.html">with_rotation</a></td><td>Returns this [`Transform`] with a new rotation.</td></tr>
+<tr><td><a href="./transform/left.html">left</a></td><td>Equivalent to [`-local_x()`][Transform::local_x()]</td></tr>
+<tr><td><a href="./transform/local_y.html">local_y</a></td><td>Get the unit vector in the local `Y` direction.</td></tr>
+<tr><td><a href="./transform/local_z.html">local_z</a></td><td>Get the unit vector in the local `Z` direction.</td></tr>
+<tr><td><a href="./transform/from_isometry.html">from_isometry</a></td><td>Creates a new [`Transform`] that is equivalent to the given [isometry].  [isometry]: Isometry3d</td></tr>
+<tr><td><a href="./transform/from_rotation.html">from_rotation</a></td><td>Creates a new [`Transform`], with `rotation`. Translation will be 0 and scale 1 on  all axes.</td></tr>
+<tr><td><a href="./transform/rotate.html">rotate</a></td><td>Rotates this [`Transform`] by the given rotation.  If this [`Transform`] has a parent, the `rotation`...</td></tr>
+<tr><td><a href="./transform/mul_transform.html">mul_transform</a></td><td>Multiplies `self` with `transform` component by component, returning the  resulting [`Transform`]</td></tr>
+<tr><td><a href="./transform/rotate_y.html">rotate_y</a></td><td>Rotates this [`Transform`] around the `Y` axis by `angle` (in radians).  If this [`Transform`] has ...</td></tr>
+<tr><td><a href="./transform/rotate_local_y.html">rotate_local_y</a></td><td>Rotates this [`Transform`] around its local `Y` axis by `angle` (in radians).</td></tr>
+<tr><td><a href="./transform/rotate_x.html">rotate_x</a></td><td>Rotates this [`Transform`] around the `X` axis by `angle` (in radians).  If this [`Transform`] has ...</td></tr>
+<tr><td><a href="./transform/rotate_axis.html">rotate_axis</a></td><td>Rotates this [`Transform`] around the given `axis` by `angle` (in radians).  If this [`Transform`] ...</td></tr>
+<tr><td><a href="./transform/from_xyz.html">from_xyz</a></td><td>Creates a new [`Transform`] at the position `(x, y, z)`. In 2d, the `z` component  is used for z-ordering elements: higher `z`-value will be in front of lower  `z`-value.</td></tr>
+<tr><td><a href="./transform/rotate_around.html">rotate_around</a></td><td>Rotates this [`Transform`] around a `point` in space.  If this [`Transform`] has a parent, the `point`...</td></tr>
+<tr><td><a href="./transform/from_matrix.html">from_matrix</a></td><td>Extracts the translation, rotation, and scale from `matrix`. It must be a 3d affine  transformation...</td></tr>
+<tr><td><a href="./transform/forward.html">forward</a></td><td>Equivalent to [`-local_z()`][Transform::local_z]</td></tr>
+<tr><td><a href="./transform/compute_affine.html">compute_affine</a></td><td>Returns the 3d affine transformation matrix from this transforms translation,  rotation, and scale.</td></tr>
+<tr><td><a href="./transform/right.html">right</a></td><td>Equivalent to [`local_x()`][Transform::local_x()]</td></tr>
+<tr><td><a href="./transform/with_translation.html">with_translation</a></td><td>Returns this [`Transform`] with a new translation.</td></tr>
+<tr><td><a href="./transform/to_isometry.html">to_isometry</a></td><td>Get the [isometry] defined by this transform's rotation and translation, ignoring scale.  [isometry...</td></tr>
+<tr><td><a href="./transform/local_x.html">local_x</a></td><td>Get the unit vector in the local `X` direction.</td></tr>
+<tr><td><a href="./transform/rotate_local.html">rotate_local</a></td><td>Rotates this [`Transform`] by the given `rotation`.  The `rotation` is relative to this [`Transform...</td></tr>
+<tr><td><a href="./transform/is_finite.html">is_finite</a></td><td>Returns `true` if, and only if, translation, rotation and scale all are  finite. If any of them con...</td></tr>
+<tr><td><a href="./transform/rotate_local_x.html">rotate_local_x</a></td><td>Rotates this [`Transform`] around its local `X` axis by `angle` (in radians).</td></tr>
+<tr><td><a href="./transform/rotate_z.html">rotate_z</a></td><td>Rotates this [`Transform`] around the `Z` axis by `angle` (in radians).  If this [`Transform`] has ...</td></tr>
+<tr><td><a href="./transform/back.html">back</a></td><td>Equivalent to [`local_z()`][Transform::local_z]</td></tr>
+<tr><td><a href="./transform/from_translation.html">from_translation</a></td><td>Creates a new [`Transform`], with `translation`. Rotation will be 0 and scale 1 on  all axes.</td></tr>
+<tr><td><a href="./transform/mul.html">mul</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./transform/mul-2.html">mul-2</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./transform/with_scale.html">with_scale</a></td><td>Returns this [`Transform`] with a new scale.</td></tr>
+<tr><td><a href="./transform/down.html">down</a></td><td>Equivalent to [`-local_y()`][Transform::local_y]</td></tr>
+<tr><td><a href="./transform/mul-1.html">mul-1</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./transform/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./transform/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
 </tbody></table>
 </div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/globaltransform/from_isometry.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/globaltransform/scale.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/transform/forward.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/transform/compute_matrix.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -258,11 +258,11 @@ before the [<code>GlobalTransform</code>] is updated.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/globaltransform/from_isometry.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/globaltransform/scale.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/transform/forward.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/transform/compute_matrix.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
