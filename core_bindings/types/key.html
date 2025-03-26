@@ -1,0 +1,545 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Key - Bevy Scripting</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Documentation for the Bevy Scripting library">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="../../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Bevy Scripting</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/makspll/bevy_mod_scripting" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/core_bindings/types/key.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="key"><a class="header" href="#key"><code>Key</code></a></h1>
+<h3 id="character"><a class="header" href="#character">Character</a></h3>
+<ol>
+<li>smol_str::SmolStr</li>
+</ol>
+<h3 id="unidentified"><a class="header" href="#unidentified">Unidentified</a></h3>
+<ol>
+<li>bevy_input::keyboard::NativeKey</li>
+</ol>
+<h3 id="dead"><a class="header" href="#dead">Dead</a></h3>
+<ol>
+<li>core::option::Option<char></li>
+</ol>
+<h3 id="alt"><a class="header" href="#alt">Alt</a></h3>
+<h3 id="altgraph"><a class="header" href="#altgraph">AltGraph</a></h3>
+<h3 id="capslock"><a class="header" href="#capslock">CapsLock</a></h3>
+<h3 id="control"><a class="header" href="#control">Control</a></h3>
+<h3 id="fn"><a class="header" href="#fn">Fn</a></h3>
+<h3 id="fnlock"><a class="header" href="#fnlock">FnLock</a></h3>
+<h3 id="numlock"><a class="header" href="#numlock">NumLock</a></h3>
+<h3 id="scrolllock"><a class="header" href="#scrolllock">ScrollLock</a></h3>
+<h3 id="shift"><a class="header" href="#shift">Shift</a></h3>
+<h3 id="symbol"><a class="header" href="#symbol">Symbol</a></h3>
+<h3 id="symbollock"><a class="header" href="#symbollock">SymbolLock</a></h3>
+<h3 id="meta"><a class="header" href="#meta">Meta</a></h3>
+<h3 id="hyper"><a class="header" href="#hyper">Hyper</a></h3>
+<h3 id="super"><a class="header" href="#super">Super</a></h3>
+<h3 id="enter"><a class="header" href="#enter">Enter</a></h3>
+<h3 id="tab"><a class="header" href="#tab">Tab</a></h3>
+<h3 id="space"><a class="header" href="#space">Space</a></h3>
+<h3 id="arrowdown"><a class="header" href="#arrowdown">ArrowDown</a></h3>
+<h3 id="arrowleft"><a class="header" href="#arrowleft">ArrowLeft</a></h3>
+<h3 id="arrowright"><a class="header" href="#arrowright">ArrowRight</a></h3>
+<h3 id="arrowup"><a class="header" href="#arrowup">ArrowUp</a></h3>
+<h3 id="end"><a class="header" href="#end">End</a></h3>
+<h3 id="home"><a class="header" href="#home">Home</a></h3>
+<h3 id="pagedown"><a class="header" href="#pagedown">PageDown</a></h3>
+<h3 id="pageup"><a class="header" href="#pageup">PageUp</a></h3>
+<h3 id="backspace"><a class="header" href="#backspace">Backspace</a></h3>
+<h3 id="clear"><a class="header" href="#clear">Clear</a></h3>
+<h3 id="copy"><a class="header" href="#copy">Copy</a></h3>
+<h3 id="crsel"><a class="header" href="#crsel">CrSel</a></h3>
+<h3 id="cut"><a class="header" href="#cut">Cut</a></h3>
+<h3 id="delete"><a class="header" href="#delete">Delete</a></h3>
+<h3 id="eraseeof"><a class="header" href="#eraseeof">EraseEof</a></h3>
+<h3 id="exsel"><a class="header" href="#exsel">ExSel</a></h3>
+<h3 id="insert"><a class="header" href="#insert">Insert</a></h3>
+<h3 id="paste"><a class="header" href="#paste">Paste</a></h3>
+<h3 id="redo"><a class="header" href="#redo">Redo</a></h3>
+<h3 id="undo"><a class="header" href="#undo">Undo</a></h3>
+<h3 id="accept"><a class="header" href="#accept">Accept</a></h3>
+<h3 id="again"><a class="header" href="#again">Again</a></h3>
+<h3 id="attn"><a class="header" href="#attn">Attn</a></h3>
+<h3 id="cancel"><a class="header" href="#cancel">Cancel</a></h3>
+<h3 id="contextmenu"><a class="header" href="#contextmenu">ContextMenu</a></h3>
+<h3 id="escape"><a class="header" href="#escape">Escape</a></h3>
+<h3 id="execute"><a class="header" href="#execute">Execute</a></h3>
+<h3 id="find"><a class="header" href="#find">Find</a></h3>
+<h3 id="help"><a class="header" href="#help">Help</a></h3>
+<h3 id="pause"><a class="header" href="#pause">Pause</a></h3>
+<h3 id="play"><a class="header" href="#play">Play</a></h3>
+<h3 id="props"><a class="header" href="#props">Props</a></h3>
+<h3 id="select"><a class="header" href="#select">Select</a></h3>
+<h3 id="zoomin"><a class="header" href="#zoomin">ZoomIn</a></h3>
+<h3 id="zoomout"><a class="header" href="#zoomout">ZoomOut</a></h3>
+<h3 id="brightnessdown"><a class="header" href="#brightnessdown">BrightnessDown</a></h3>
+<h3 id="brightnessup"><a class="header" href="#brightnessup">BrightnessUp</a></h3>
+<h3 id="eject"><a class="header" href="#eject">Eject</a></h3>
+<h3 id="logoff"><a class="header" href="#logoff">LogOff</a></h3>
+<h3 id="power"><a class="header" href="#power">Power</a></h3>
+<h3 id="poweroff"><a class="header" href="#poweroff">PowerOff</a></h3>
+<h3 id="printscreen"><a class="header" href="#printscreen">PrintScreen</a></h3>
+<h3 id="hibernate"><a class="header" href="#hibernate">Hibernate</a></h3>
+<h3 id="standby"><a class="header" href="#standby">Standby</a></h3>
+<h3 id="wakeup"><a class="header" href="#wakeup">WakeUp</a></h3>
+<h3 id="allcandidates"><a class="header" href="#allcandidates">AllCandidates</a></h3>
+<h3 id="alphanumeric"><a class="header" href="#alphanumeric">Alphanumeric</a></h3>
+<h3 id="codeinput"><a class="header" href="#codeinput">CodeInput</a></h3>
+<h3 id="compose"><a class="header" href="#compose">Compose</a></h3>
+<h3 id="convert"><a class="header" href="#convert">Convert</a></h3>
+<h3 id="finalmode"><a class="header" href="#finalmode">FinalMode</a></h3>
+<h3 id="groupfirst"><a class="header" href="#groupfirst">GroupFirst</a></h3>
+<h3 id="grouplast"><a class="header" href="#grouplast">GroupLast</a></h3>
+<h3 id="groupnext"><a class="header" href="#groupnext">GroupNext</a></h3>
+<h3 id="groupprevious"><a class="header" href="#groupprevious">GroupPrevious</a></h3>
+<h3 id="modechange"><a class="header" href="#modechange">ModeChange</a></h3>
+<h3 id="nextcandidate"><a class="header" href="#nextcandidate">NextCandidate</a></h3>
+<h3 id="nonconvert"><a class="header" href="#nonconvert">NonConvert</a></h3>
+<h3 id="previouscandidate"><a class="header" href="#previouscandidate">PreviousCandidate</a></h3>
+<h3 id="process"><a class="header" href="#process">Process</a></h3>
+<h3 id="singlecandidate"><a class="header" href="#singlecandidate">SingleCandidate</a></h3>
+<h3 id="hangulmode"><a class="header" href="#hangulmode">HangulMode</a></h3>
+<h3 id="hanjamode"><a class="header" href="#hanjamode">HanjaMode</a></h3>
+<h3 id="junjamode"><a class="header" href="#junjamode">JunjaMode</a></h3>
+<h3 id="eisu"><a class="header" href="#eisu">Eisu</a></h3>
+<h3 id="hankaku"><a class="header" href="#hankaku">Hankaku</a></h3>
+<h3 id="hiragana"><a class="header" href="#hiragana">Hiragana</a></h3>
+<h3 id="hiraganakatakana"><a class="header" href="#hiraganakatakana">HiraganaKatakana</a></h3>
+<h3 id="kanamode"><a class="header" href="#kanamode">KanaMode</a></h3>
+<h3 id="kanjimode"><a class="header" href="#kanjimode">KanjiMode</a></h3>
+<h3 id="katakana"><a class="header" href="#katakana">Katakana</a></h3>
+<h3 id="romaji"><a class="header" href="#romaji">Romaji</a></h3>
+<h3 id="zenkaku"><a class="header" href="#zenkaku">Zenkaku</a></h3>
+<h3 id="zenkakuhankaku"><a class="header" href="#zenkakuhankaku">ZenkakuHankaku</a></h3>
+<h3 id="soft1"><a class="header" href="#soft1">Soft1</a></h3>
+<h3 id="soft2"><a class="header" href="#soft2">Soft2</a></h3>
+<h3 id="soft3"><a class="header" href="#soft3">Soft3</a></h3>
+<h3 id="soft4"><a class="header" href="#soft4">Soft4</a></h3>
+<h3 id="channeldown"><a class="header" href="#channeldown">ChannelDown</a></h3>
+<h3 id="channelup"><a class="header" href="#channelup">ChannelUp</a></h3>
+<h3 id="close"><a class="header" href="#close">Close</a></h3>
+<h3 id="mailforward"><a class="header" href="#mailforward">MailForward</a></h3>
+<h3 id="mailreply"><a class="header" href="#mailreply">MailReply</a></h3>
+<h3 id="mailsend"><a class="header" href="#mailsend">MailSend</a></h3>
+<h3 id="mediaclose"><a class="header" href="#mediaclose">MediaClose</a></h3>
+<h3 id="mediafastforward"><a class="header" href="#mediafastforward">MediaFastForward</a></h3>
+<h3 id="mediapause"><a class="header" href="#mediapause">MediaPause</a></h3>
+<h3 id="mediaplay"><a class="header" href="#mediaplay">MediaPlay</a></h3>
+<h3 id="mediaplaypause"><a class="header" href="#mediaplaypause">MediaPlayPause</a></h3>
+<h3 id="mediarecord"><a class="header" href="#mediarecord">MediaRecord</a></h3>
+<h3 id="mediarewind"><a class="header" href="#mediarewind">MediaRewind</a></h3>
+<h3 id="mediastop"><a class="header" href="#mediastop">MediaStop</a></h3>
+<h3 id="mediatracknext"><a class="header" href="#mediatracknext">MediaTrackNext</a></h3>
+<h3 id="mediatrackprevious"><a class="header" href="#mediatrackprevious">MediaTrackPrevious</a></h3>
+<h3 id="new"><a class="header" href="#new">New</a></h3>
+<h3 id="open"><a class="header" href="#open">Open</a></h3>
+<h3 id="print"><a class="header" href="#print">Print</a></h3>
+<h3 id="save"><a class="header" href="#save">Save</a></h3>
+<h3 id="spellcheck"><a class="header" href="#spellcheck">SpellCheck</a></h3>
+<h3 id="key11"><a class="header" href="#key11">Key11</a></h3>
+<h3 id="key12"><a class="header" href="#key12">Key12</a></h3>
+<h3 id="audiobalanceleft"><a class="header" href="#audiobalanceleft">AudioBalanceLeft</a></h3>
+<h3 id="audiobalanceright"><a class="header" href="#audiobalanceright">AudioBalanceRight</a></h3>
+<h3 id="audiobassboostdown"><a class="header" href="#audiobassboostdown">AudioBassBoostDown</a></h3>
+<h3 id="audiobassboosttoggle"><a class="header" href="#audiobassboosttoggle">AudioBassBoostToggle</a></h3>
+<h3 id="audiobassboostup"><a class="header" href="#audiobassboostup">AudioBassBoostUp</a></h3>
+<h3 id="audiofaderfront"><a class="header" href="#audiofaderfront">AudioFaderFront</a></h3>
+<h3 id="audiofaderrear"><a class="header" href="#audiofaderrear">AudioFaderRear</a></h3>
+<h3 id="audiosurroundmodenext"><a class="header" href="#audiosurroundmodenext">AudioSurroundModeNext</a></h3>
+<h3 id="audiotrebledown"><a class="header" href="#audiotrebledown">AudioTrebleDown</a></h3>
+<h3 id="audiotrebleup"><a class="header" href="#audiotrebleup">AudioTrebleUp</a></h3>
+<h3 id="audiovolumedown"><a class="header" href="#audiovolumedown">AudioVolumeDown</a></h3>
+<h3 id="audiovolumeup"><a class="header" href="#audiovolumeup">AudioVolumeUp</a></h3>
+<h3 id="audiovolumemute"><a class="header" href="#audiovolumemute">AudioVolumeMute</a></h3>
+<h3 id="microphonetoggle"><a class="header" href="#microphonetoggle">MicrophoneToggle</a></h3>
+<h3 id="microphonevolumedown"><a class="header" href="#microphonevolumedown">MicrophoneVolumeDown</a></h3>
+<h3 id="microphonevolumeup"><a class="header" href="#microphonevolumeup">MicrophoneVolumeUp</a></h3>
+<h3 id="microphonevolumemute"><a class="header" href="#microphonevolumemute">MicrophoneVolumeMute</a></h3>
+<h3 id="speechcorrectionlist"><a class="header" href="#speechcorrectionlist">SpeechCorrectionList</a></h3>
+<h3 id="speechinputtoggle"><a class="header" href="#speechinputtoggle">SpeechInputToggle</a></h3>
+<h3 id="launchapplication1"><a class="header" href="#launchapplication1">LaunchApplication1</a></h3>
+<h3 id="launchapplication2"><a class="header" href="#launchapplication2">LaunchApplication2</a></h3>
+<h3 id="launchcalendar"><a class="header" href="#launchcalendar">LaunchCalendar</a></h3>
+<h3 id="launchcontacts"><a class="header" href="#launchcontacts">LaunchContacts</a></h3>
+<h3 id="launchmail"><a class="header" href="#launchmail">LaunchMail</a></h3>
+<h3 id="launchmediaplayer"><a class="header" href="#launchmediaplayer">LaunchMediaPlayer</a></h3>
+<h3 id="launchmusicplayer"><a class="header" href="#launchmusicplayer">LaunchMusicPlayer</a></h3>
+<h3 id="launchphone"><a class="header" href="#launchphone">LaunchPhone</a></h3>
+<h3 id="launchscreensaver"><a class="header" href="#launchscreensaver">LaunchScreenSaver</a></h3>
+<h3 id="launchspreadsheet"><a class="header" href="#launchspreadsheet">LaunchSpreadsheet</a></h3>
+<h3 id="launchwebbrowser"><a class="header" href="#launchwebbrowser">LaunchWebBrowser</a></h3>
+<h3 id="launchwebcam"><a class="header" href="#launchwebcam">LaunchWebCam</a></h3>
+<h3 id="launchwordprocessor"><a class="header" href="#launchwordprocessor">LaunchWordProcessor</a></h3>
+<h3 id="browserback"><a class="header" href="#browserback">BrowserBack</a></h3>
+<h3 id="browserfavorites"><a class="header" href="#browserfavorites">BrowserFavorites</a></h3>
+<h3 id="browserforward"><a class="header" href="#browserforward">BrowserForward</a></h3>
+<h3 id="browserhome"><a class="header" href="#browserhome">BrowserHome</a></h3>
+<h3 id="browserrefresh"><a class="header" href="#browserrefresh">BrowserRefresh</a></h3>
+<h3 id="browsersearch"><a class="header" href="#browsersearch">BrowserSearch</a></h3>
+<h3 id="browserstop"><a class="header" href="#browserstop">BrowserStop</a></h3>
+<h3 id="appswitch"><a class="header" href="#appswitch">AppSwitch</a></h3>
+<h3 id="call"><a class="header" href="#call">Call</a></h3>
+<h3 id="camera"><a class="header" href="#camera">Camera</a></h3>
+<h3 id="camerafocus"><a class="header" href="#camerafocus">CameraFocus</a></h3>
+<h3 id="endcall"><a class="header" href="#endcall">EndCall</a></h3>
+<h3 id="goback"><a class="header" href="#goback">GoBack</a></h3>
+<h3 id="gohome"><a class="header" href="#gohome">GoHome</a></h3>
+<h3 id="headsethook"><a class="header" href="#headsethook">HeadsetHook</a></h3>
+<h3 id="lastnumberredial"><a class="header" href="#lastnumberredial">LastNumberRedial</a></h3>
+<h3 id="notification"><a class="header" href="#notification">Notification</a></h3>
+<h3 id="mannermode"><a class="header" href="#mannermode">MannerMode</a></h3>
+<h3 id="voicedial"><a class="header" href="#voicedial">VoiceDial</a></h3>
+<h3 id="tv"><a class="header" href="#tv">TV</a></h3>
+<h3 id="tv3dmode"><a class="header" href="#tv3dmode">TV3DMode</a></h3>
+<h3 id="tvantennacable"><a class="header" href="#tvantennacable">TVAntennaCable</a></h3>
+<h3 id="tvaudiodescription"><a class="header" href="#tvaudiodescription">TVAudioDescription</a></h3>
+<h3 id="tvaudiodescriptionmixdown"><a class="header" href="#tvaudiodescriptionmixdown">TVAudioDescriptionMixDown</a></h3>
+<h3 id="tvaudiodescriptionmixup"><a class="header" href="#tvaudiodescriptionmixup">TVAudioDescriptionMixUp</a></h3>
+<h3 id="tvcontentsmenu"><a class="header" href="#tvcontentsmenu">TVContentsMenu</a></h3>
+<h3 id="tvdataservice"><a class="header" href="#tvdataservice">TVDataService</a></h3>
+<h3 id="tvinput"><a class="header" href="#tvinput">TVInput</a></h3>
+<h3 id="tvinputcomponent1"><a class="header" href="#tvinputcomponent1">TVInputComponent1</a></h3>
+<h3 id="tvinputcomponent2"><a class="header" href="#tvinputcomponent2">TVInputComponent2</a></h3>
+<h3 id="tvinputcomposite1"><a class="header" href="#tvinputcomposite1">TVInputComposite1</a></h3>
+<h3 id="tvinputcomposite2"><a class="header" href="#tvinputcomposite2">TVInputComposite2</a></h3>
+<h3 id="tvinputhdmi1"><a class="header" href="#tvinputhdmi1">TVInputHDMI1</a></h3>
+<h3 id="tvinputhdmi2"><a class="header" href="#tvinputhdmi2">TVInputHDMI2</a></h3>
+<h3 id="tvinputhdmi3"><a class="header" href="#tvinputhdmi3">TVInputHDMI3</a></h3>
+<h3 id="tvinputhdmi4"><a class="header" href="#tvinputhdmi4">TVInputHDMI4</a></h3>
+<h3 id="tvinputvga1"><a class="header" href="#tvinputvga1">TVInputVGA1</a></h3>
+<h3 id="tvmediacontext"><a class="header" href="#tvmediacontext">TVMediaContext</a></h3>
+<h3 id="tvnetwork"><a class="header" href="#tvnetwork">TVNetwork</a></h3>
+<h3 id="tvnumberentry"><a class="header" href="#tvnumberentry">TVNumberEntry</a></h3>
+<h3 id="tvpower"><a class="header" href="#tvpower">TVPower</a></h3>
+<h3 id="tvradioservice"><a class="header" href="#tvradioservice">TVRadioService</a></h3>
+<h3 id="tvsatellite"><a class="header" href="#tvsatellite">TVSatellite</a></h3>
+<h3 id="tvsatellitebs"><a class="header" href="#tvsatellitebs">TVSatelliteBS</a></h3>
+<h3 id="tvsatellitecs"><a class="header" href="#tvsatellitecs">TVSatelliteCS</a></h3>
+<h3 id="tvsatellitetoggle"><a class="header" href="#tvsatellitetoggle">TVSatelliteToggle</a></h3>
+<h3 id="tvterrestrialanalog"><a class="header" href="#tvterrestrialanalog">TVTerrestrialAnalog</a></h3>
+<h3 id="tvterrestrialdigital"><a class="header" href="#tvterrestrialdigital">TVTerrestrialDigital</a></h3>
+<h3 id="tvtimer"><a class="header" href="#tvtimer">TVTimer</a></h3>
+<h3 id="avrinput"><a class="header" href="#avrinput">AVRInput</a></h3>
+<h3 id="avrpower"><a class="header" href="#avrpower">AVRPower</a></h3>
+<h3 id="colorf0red"><a class="header" href="#colorf0red">ColorF0Red</a></h3>
+<h3 id="colorf1green"><a class="header" href="#colorf1green">ColorF1Green</a></h3>
+<h3 id="colorf2yellow"><a class="header" href="#colorf2yellow">ColorF2Yellow</a></h3>
+<h3 id="colorf3blue"><a class="header" href="#colorf3blue">ColorF3Blue</a></h3>
+<h3 id="colorf4grey"><a class="header" href="#colorf4grey">ColorF4Grey</a></h3>
+<h3 id="colorf5brown"><a class="header" href="#colorf5brown">ColorF5Brown</a></h3>
+<h3 id="closedcaptiontoggle"><a class="header" href="#closedcaptiontoggle">ClosedCaptionToggle</a></h3>
+<h3 id="dimmer"><a class="header" href="#dimmer">Dimmer</a></h3>
+<h3 id="displayswap"><a class="header" href="#displayswap">DisplaySwap</a></h3>
+<h3 id="dvr"><a class="header" href="#dvr">DVR</a></h3>
+<h3 id="exit"><a class="header" href="#exit">Exit</a></h3>
+<h3 id="favoriteclear0"><a class="header" href="#favoriteclear0">FavoriteClear0</a></h3>
+<h3 id="favoriteclear1"><a class="header" href="#favoriteclear1">FavoriteClear1</a></h3>
+<h3 id="favoriteclear2"><a class="header" href="#favoriteclear2">FavoriteClear2</a></h3>
+<h3 id="favoriteclear3"><a class="header" href="#favoriteclear3">FavoriteClear3</a></h3>
+<h3 id="favoriterecall0"><a class="header" href="#favoriterecall0">FavoriteRecall0</a></h3>
+<h3 id="favoriterecall1"><a class="header" href="#favoriterecall1">FavoriteRecall1</a></h3>
+<h3 id="favoriterecall2"><a class="header" href="#favoriterecall2">FavoriteRecall2</a></h3>
+<h3 id="favoriterecall3"><a class="header" href="#favoriterecall3">FavoriteRecall3</a></h3>
+<h3 id="favoritestore0"><a class="header" href="#favoritestore0">FavoriteStore0</a></h3>
+<h3 id="favoritestore1"><a class="header" href="#favoritestore1">FavoriteStore1</a></h3>
+<h3 id="favoritestore2"><a class="header" href="#favoritestore2">FavoriteStore2</a></h3>
+<h3 id="favoritestore3"><a class="header" href="#favoritestore3">FavoriteStore3</a></h3>
+<h3 id="guide"><a class="header" href="#guide">Guide</a></h3>
+<h3 id="guidenextday"><a class="header" href="#guidenextday">GuideNextDay</a></h3>
+<h3 id="guidepreviousday"><a class="header" href="#guidepreviousday">GuidePreviousDay</a></h3>
+<h3 id="info"><a class="header" href="#info">Info</a></h3>
+<h3 id="instantreplay"><a class="header" href="#instantreplay">InstantReplay</a></h3>
+<h3 id="link"><a class="header" href="#link">Link</a></h3>
+<h3 id="listprogram"><a class="header" href="#listprogram">ListProgram</a></h3>
+<h3 id="livecontent"><a class="header" href="#livecontent">LiveContent</a></h3>
+<h3 id="lock"><a class="header" href="#lock">Lock</a></h3>
+<h3 id="mediaapps"><a class="header" href="#mediaapps">MediaApps</a></h3>
+<h3 id="mediaaudiotrack"><a class="header" href="#mediaaudiotrack">MediaAudioTrack</a></h3>
+<h3 id="medialast"><a class="header" href="#medialast">MediaLast</a></h3>
+<h3 id="mediaskipbackward"><a class="header" href="#mediaskipbackward">MediaSkipBackward</a></h3>
+<h3 id="mediaskipforward"><a class="header" href="#mediaskipforward">MediaSkipForward</a></h3>
+<h3 id="mediastepbackward"><a class="header" href="#mediastepbackward">MediaStepBackward</a></h3>
+<h3 id="mediastepforward"><a class="header" href="#mediastepforward">MediaStepForward</a></h3>
+<h3 id="mediatopmenu"><a class="header" href="#mediatopmenu">MediaTopMenu</a></h3>
+<h3 id="navigatein"><a class="header" href="#navigatein">NavigateIn</a></h3>
+<h3 id="navigatenext"><a class="header" href="#navigatenext">NavigateNext</a></h3>
+<h3 id="navigateout"><a class="header" href="#navigateout">NavigateOut</a></h3>
+<h3 id="navigateprevious"><a class="header" href="#navigateprevious">NavigatePrevious</a></h3>
+<h3 id="nextfavoritechannel"><a class="header" href="#nextfavoritechannel">NextFavoriteChannel</a></h3>
+<h3 id="nextuserprofile"><a class="header" href="#nextuserprofile">NextUserProfile</a></h3>
+<h3 id="ondemand"><a class="header" href="#ondemand">OnDemand</a></h3>
+<h3 id="pairing"><a class="header" href="#pairing">Pairing</a></h3>
+<h3 id="pinpdown"><a class="header" href="#pinpdown">PinPDown</a></h3>
+<h3 id="pinpmove"><a class="header" href="#pinpmove">PinPMove</a></h3>
+<h3 id="pinptoggle"><a class="header" href="#pinptoggle">PinPToggle</a></h3>
+<h3 id="pinpup"><a class="header" href="#pinpup">PinPUp</a></h3>
+<h3 id="playspeeddown"><a class="header" href="#playspeeddown">PlaySpeedDown</a></h3>
+<h3 id="playspeedreset"><a class="header" href="#playspeedreset">PlaySpeedReset</a></h3>
+<h3 id="playspeedup"><a class="header" href="#playspeedup">PlaySpeedUp</a></h3>
+<h3 id="randomtoggle"><a class="header" href="#randomtoggle">RandomToggle</a></h3>
+<h3 id="rclowbattery"><a class="header" href="#rclowbattery">RcLowBattery</a></h3>
+<h3 id="recordspeednext"><a class="header" href="#recordspeednext">RecordSpeedNext</a></h3>
+<h3 id="rfbypass"><a class="header" href="#rfbypass">RfBypass</a></h3>
+<h3 id="scanchannelstoggle"><a class="header" href="#scanchannelstoggle">ScanChannelsToggle</a></h3>
+<h3 id="screenmodenext"><a class="header" href="#screenmodenext">ScreenModeNext</a></h3>
+<h3 id="settings"><a class="header" href="#settings">Settings</a></h3>
+<h3 id="splitscreentoggle"><a class="header" href="#splitscreentoggle">SplitScreenToggle</a></h3>
+<h3 id="stbinput"><a class="header" href="#stbinput">STBInput</a></h3>
+<h3 id="stbpower"><a class="header" href="#stbpower">STBPower</a></h3>
+<h3 id="subtitle"><a class="header" href="#subtitle">Subtitle</a></h3>
+<h3 id="teletext"><a class="header" href="#teletext">Teletext</a></h3>
+<h3 id="videomodenext"><a class="header" href="#videomodenext">VideoModeNext</a></h3>
+<h3 id="wink"><a class="header" href="#wink">Wink</a></h3>
+<h3 id="zoomtoggle"><a class="header" href="#zoomtoggle">ZoomToggle</a></h3>
+<h3 id="f1"><a class="header" href="#f1">F1</a></h3>
+<h3 id="f2"><a class="header" href="#f2">F2</a></h3>
+<h3 id="f3"><a class="header" href="#f3">F3</a></h3>
+<h3 id="f4"><a class="header" href="#f4">F4</a></h3>
+<h3 id="f5"><a class="header" href="#f5">F5</a></h3>
+<h3 id="f6"><a class="header" href="#f6">F6</a></h3>
+<h3 id="f7"><a class="header" href="#f7">F7</a></h3>
+<h3 id="f8"><a class="header" href="#f8">F8</a></h3>
+<h3 id="f9"><a class="header" href="#f9">F9</a></h3>
+<h3 id="f10"><a class="header" href="#f10">F10</a></h3>
+<h3 id="f11"><a class="header" href="#f11">F11</a></h3>
+<h3 id="f12"><a class="header" href="#f12">F12</a></h3>
+<h3 id="f13"><a class="header" href="#f13">F13</a></h3>
+<h3 id="f14"><a class="header" href="#f14">F14</a></h3>
+<h3 id="f15"><a class="header" href="#f15">F15</a></h3>
+<h3 id="f16"><a class="header" href="#f16">F16</a></h3>
+<h3 id="f17"><a class="header" href="#f17">F17</a></h3>
+<h3 id="f18"><a class="header" href="#f18">F18</a></h3>
+<h3 id="f19"><a class="header" href="#f19">F19</a></h3>
+<h3 id="f20"><a class="header" href="#f20">F20</a></h3>
+<h3 id="f21"><a class="header" href="#f21">F21</a></h3>
+<h3 id="f22"><a class="header" href="#f22">F22</a></h3>
+<h3 id="f23"><a class="header" href="#f23">F23</a></h3>
+<h3 id="f24"><a class="header" href="#f24">F24</a></h3>
+<h3 id="f25"><a class="header" href="#f25">F25</a></h3>
+<h3 id="f26"><a class="header" href="#f26">F26</a></h3>
+<h3 id="f27"><a class="header" href="#f27">F27</a></h3>
+<h3 id="f28"><a class="header" href="#f28">F28</a></h3>
+<h3 id="f29"><a class="header" href="#f29">F29</a></h3>
+<h3 id="f30"><a class="header" href="#f30">F30</a></h3>
+<h3 id="f31"><a class="header" href="#f31">F31</a></h3>
+<h3 id="f32"><a class="header" href="#f32">F32</a></h3>
+<h3 id="f33"><a class="header" href="#f33">F33</a></h3>
+<h3 id="f34"><a class="header" href="#f34">F34</a></h3>
+<h3 id="f35"><a class="header" href="#f35">F35</a></h3>
+<h2 id="description"><a class="header" href="#description">Description</a></h2>
+<blockquote>
+<p>The logical key code of a [<code>KeyboardInput</code>].</p>
+<h2 id="technical"><a class="header" href="#technical">Technical</a></h2>
+<p>Its values map 1 to 1 to winit's Key.</p>
+</blockquote>
+<h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
+<p>For function details and documentation, click on the function link.</p>
+<div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
+<tr><td><a href="./key/assert_receiver_is_total_eq.html">assert_receiver_is_total_eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./key/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./key/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
+</tbody></table>
+</div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../core_bindings/types/rotationgesture/clone.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../core_bindings/types/key/assert_receiver_is_total_eq.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../core_bindings/types/rotationgesture/clone.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../core_bindings/types/key/assert_receiver_is_total_eq.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../multi-code-block.js"></script>
+
+
+    </div>
+    </body>
+</html>
