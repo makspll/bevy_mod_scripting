@@ -16,4 +16,3 @@ enable = true
 level = 1
 
 [preprocessor.lad-preprocessor]
-root = "bevy_mod_scripting"

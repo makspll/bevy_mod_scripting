@@ -12,20 +12,11 @@ mod markdown;
 mod sections;
 
 #[derive(Debug)]
-struct Options {
-    pub root: String,
-}
+struct Options {}
 
 impl From<&PreprocessorContext> for Options {
-    fn from(context: &PreprocessorContext) -> Self {
-        let root = context
-            .config
-            .get_preprocessor("lad-preprocessor")
-            .and_then(|t| t.get("root"))
-            .and_then(|v| v.as_str())
-            .map(|s| s.to_owned())
-            .unwrap_or_default();
-        Options { root }
+    fn from(_context: &PreprocessorContext) -> Self {
+        Options {}
     }
 }
 
