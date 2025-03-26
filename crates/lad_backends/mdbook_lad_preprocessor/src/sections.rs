@@ -286,7 +286,7 @@ impl<'a> Section<'a> {
             }
             SectionData::InstancesSummary => {
                 let instances = self.ladfile.globals.iter().collect::<Vec<_>>();
-                let types_directory = PathBuf::from("/").join(self.parent_path.join("types"));
+                let types_directory = PathBuf::from("./types");
                 vec![SectionItem::InstancesSummary {
                     instances,
                     ladfile: self.ladfile,
@@ -355,7 +355,7 @@ impl<'a> Section<'a> {
                 ]
             }
             SectionData::FunctionDetail { function } => {
-                let types_directory = self.parent_path.join("../types");
+                let types_directory = PathBuf::from("../types");
                 vec![SectionItem::FunctionDetails {
                     function,
                     ladfile: self.ladfile,
