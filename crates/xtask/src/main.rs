@@ -51,8 +51,7 @@ enum Feature {
     // Rune,
 
     // Profiling
-    #[strum(serialize = "bevy/trace_tracy")]
-    Tracy,
+    ProfileWithTracy,
 }
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, strum::EnumIter)]
@@ -101,10 +100,10 @@ impl IntoFeatureGroup for Feature {
             Feature::MluaAsync
             | Feature::MluaMacros
             | Feature::MluaSerialize
-            | Feature::UnsafeLuaModules
-            | Feature::Tracy => FeatureGroup::ForExternalCrate,
-            Feature::BevyBindings | Feature::CoreFunctions => FeatureGroup::BMSFeature,
-            // don't use wildcard here, we want to be explicit
+            | Feature::UnsafeLuaModules => FeatureGroup::ForExternalCrate,
+            Feature::BevyBindings | Feature::CoreFunctions | Feature::ProfileWithTracy => {
+                FeatureGroup::BMSFeature
+            } // don't use wildcard here, we want to be explicit
         }
     }
 }
@@ -119,7 +118,6 @@ impl Default for Features {
             Feature::Lua54,
             Feature::CoreFunctions,
             Feature::BevyBindings,
-            Feature::Tracy,
         ])
     }
 }
@@ -356,8 +354,19 @@ impl App {
                     cmd.arg("--publish");
                 }
             }
-            Xtasks::Bench {} => {
+            Xtasks::Bench {
+                name,
+                enable_profiling: profile,
+            } => {
                 cmd.arg("bench");
+
+                if let Some(name) = name {
+                    cmd.arg("--name").arg(name);
+                }
+
+                if profile {
+                    cmd.arg("--profile");
+                }
             }
         }
 
@@ -652,7 +661,14 @@ enum Xtasks {
         publish: bool,
     },
     /// Runs criterion benchmarks generates json required to be published by bencher and generates html performance report
-    Bench {},
+    Bench {
+        /// Whether or not to enable tracy profiling
+        #[clap(long, default_value = "false", help = "Enable tracy profiling")]
+        enable_profiling: bool,
+        /// The name argument passed to `cargo bench`, can be used in combination with profile to selectively profile benchmarks
+        #[clap(long, help = "The name argument passed to `cargo bench`")]
+        name: Option<String>,
+    },
 }
 
 #[derive(Serialize, Clone)]
@@ -731,7 +747,10 @@ impl Xtasks {
             } => Self::codegen(app_settings, output_dir, bevy_features),
             Xtasks::Install { binary } => Self::install(app_settings, binary),
             Xtasks::Bencher { publish } => Self::bencher(app_settings, publish),
-            Xtasks::Bench {} => Self::bench(app_settings),
+            Xtasks::Bench {
+                name,
+                enable_profiling,
+            } => Self::bench(app_settings, enable_profiling, name),
         }?;
 
         Ok("".into())
@@ -1231,18 +1250,34 @@ impl Xtasks {
         Ok(())
     }
 
-    fn bench(app_settings: GlobalArgs) -> Result<()> {
+    fn bench(app_settings: GlobalArgs, profile: bool, name: Option<String>) -> Result<()> {
+        log::info!("Profiling enabled: {profile}");
+
+        let mut features = vec![
+            Feature::Lua54,
+            Feature::Rhai,
+            Feature::CoreFunctions,
+            Feature::BevyBindings,
+        ];
+
+        if profile {
+            std::env::set_var("ENABLE_PROFILING", "1");
+            // features.push(Feature::BevyTracy);
+            features.push(Feature::ProfileWithTracy);
+        }
+
+        let args = if let Some(name) = name {
+            vec!["--".to_owned(), name]
+        } else {
+            vec![]
+        };
+
         Self::run_workspace_command(
             // run with just lua54
-            &app_settings.with_features(Features::new(vec![
-                Feature::Lua54,
-                Feature::Rhai,
-                Feature::CoreFunctions,
-                Feature::BevyBindings,
-            ])),
+            &app_settings.with_features(Features::new(features)),
             "bench",
             "Failed to run benchmarks",
-            Vec::<String>::default(),
+            args,
             None,
         )
         .with_context(|| "when executing criterion benchmarks")?;

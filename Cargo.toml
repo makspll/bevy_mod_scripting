@@ -53,6 +53,9 @@ rhai = ["bevy_mod_scripting_rhai", "bevy_mod_scripting_functions/rhai_bindings"]
 ## rune
 # rune = ["bevy_mod_scripting_rune"]
 
+### Profiling
+profile_with_tracy = ["bevy/trace_tracy"]
+
 [dependencies]
 bevy = { workspace = true }
 bevy_mod_scripting_core = { workspace = true }
@@ -85,6 +88,7 @@ ladfile_builder = { path = "crates/ladfile_builder", version = "0.2.6" }
 script_integration_test_harness = { workspace = true }
 test_utils = { workspace = true }
 libtest-mimic = "0.8"
+tracing-tracy = "0.11"
 
 [workspace]
 members = [

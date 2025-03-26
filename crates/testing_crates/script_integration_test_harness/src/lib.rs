@@ -318,6 +318,7 @@ pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(
     label: &str,
     criterion: &mut criterion::BenchmarkGroup<M>,
 ) -> Result<(), String> {
+    use bevy::utils::tracing;
     use bevy_mod_scripting_lua::mlua::Function;
 
     let plugin = make_test_lua_plugin();
@@ -333,6 +334,7 @@ pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(
                 if let Some(pre_bencher) = &pre_bencher {
                     pre_bencher.call::<()>(()).unwrap();
                 }
+                tracing::info_span!("profiling_iter", label);
                 c.iter(|| {
                     bencher.call::<()>(()).unwrap();
                 })
@@ -348,6 +350,7 @@ pub fn run_rhai_benchmark<M: criterion::measurement::Measurement>(
     label: &str,
     criterion: &mut criterion::BenchmarkGroup<M>,
 ) -> Result<(), String> {
+    use bevy::utils::tracing;
     use bevy_mod_scripting_rhai::rhai::Dynamic;
 
     let plugin = make_test_rhai_plugin();
@@ -367,6 +370,8 @@ pub fn run_rhai_benchmark<M: criterion::measurement::Measurement>(
                         .call_fn::<Dynamic>(&mut ctxt.scope, &ctxt.ast, "pre_bench", ARGS)
                         .unwrap();
                 }
+                tracing::info_span!("profiling_iter", label);
+
                 c.iter(|| {
                     let _ = runtime
                         .call_fn::<Dynamic>(&mut ctxt.scope, &ctxt.ast, "bench", ARGS)

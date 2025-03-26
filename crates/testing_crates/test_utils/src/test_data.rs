@@ -346,7 +346,7 @@ pub fn setup_integration_test<F: FnOnce(&mut World, &mut TypeRegistry)>(init: F)
         HierarchyPlugin,
         DiagnosticsPlugin,
         LogPlugin {
-            filter: "bevy_mod_scripting_core=debug".to_string(),
+            filter: "bevy_mod_scripting_core=trace".to_string(),
             ..Default::default()
         },
     ));

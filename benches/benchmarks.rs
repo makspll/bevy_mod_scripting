@@ -1,13 +1,17 @@
-use std::{path::PathBuf, time::Duration};
-
-use bevy::utils::HashMap;
+use bevy::log::tracing_subscriber;
+use bevy::log::tracing_subscriber::layer::SubscriberExt;
+use bevy::utils::{tracing, HashMap};
 use criterion::{criterion_main, measurement::Measurement, BenchmarkGroup, Criterion};
 use script_integration_test_harness::{run_lua_benchmark, run_rhai_benchmark};
+use std::{path::PathBuf, sync::LazyLock, time::Duration};
 use test_utils::{discover_all_tests, Test};
 
 extern crate bevy_mod_scripting;
 extern crate script_integration_test_harness;
 extern crate test_utils;
+
+static ENABLE_PROFILING: LazyLock<bool> =
+    LazyLock::new(|| std::env::var("ENABLE_PROFILING").is_ok());
 
 pub trait BenchmarkExecutor {
     fn benchmark_group(&self) -> String;
@@ -89,10 +93,33 @@ fn script_benchmarks(criterion: &mut Criterion) {
     }
 }
 
+fn maybe_with_profiler(f: impl Fn(bool)) {
+    if *ENABLE_PROFILING {
+        println!("profiling enabled, make sure to run tracy. If using it across windows/WSL you can use something like `tracy-capture.exe -o output.tracy -a localhost` on windows");
+        // set global tracing subscriber so bevy doesn't set it itself first
+        let subscriber = tracing_subscriber::Registry::default();
+        let tracy_layer = tracing_tracy::TracyLayer::default();
+
+        let subscriber = subscriber.with(tracy_layer);
+
+        tracing::subscriber::set_global_default(subscriber).unwrap();
+
+        let _ = tracing_tracy::client::span!("test2");
+        tracing::info_span!("test");
+
+        f(true);
+    } else {
+        f(false);
+    }
+}
+
 pub fn benches() {
-    let mut criterion: criterion::Criterion<_> = (criterion::Criterion::default())
-        .configure_from_args()
-        .measurement_time(Duration::from_secs(10));
-    script_benchmarks(&mut criterion);
+    maybe_with_profiler(|_profiler| {
+        let mut criterion: criterion::Criterion<_> = (criterion::Criterion::default())
+            .configure_from_args()
+            .measurement_time(Duration::from_secs(10));
+
+        script_benchmarks(&mut criterion);
+    });
 }
 criterion_main!(benches);

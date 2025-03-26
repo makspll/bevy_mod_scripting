@@ -103,7 +103,7 @@ impl DynamicScriptFunction {
         args: I,
         context: FunctionCallContext,
     ) -> Result<ScriptValue, InteropError> {
-        profiling::scope!("Dynamic Call ", self.name().to_string());
+        profiling::scope!("Dynamic Call ", self.name().deref());
         let args = args.into_iter().collect::<VecDeque<_>>();
         // should we be inlining call errors into the return value?
         let return_val = (self.func)(context, args);
@@ -159,7 +159,7 @@ impl DynamicScriptFunctionMut {
         args: I,
         context: FunctionCallContext,
     ) -> Result<ScriptValue, InteropError> {
-        profiling::scope!("Dynamic Call Mut", self.name().to_string());
+        profiling::scope!("Dynamic Call Mut", self.name().deref());
         let args = args.into_iter().collect::<VecDeque<_>>();
         // should we be inlining call errors into the return value?
         let mut write = self.func.write();
