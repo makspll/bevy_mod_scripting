@@ -6,6 +6,7 @@ use mdbook::{
     preprocess::{Preprocessor, PreprocessorContext},
 };
 use sections::{Section, SectionData};
+use std::sync::OnceLock;
 mod argument_visitor;
 mod markdown;
 mod sections;
@@ -29,6 +30,8 @@ impl From<&PreprocessorContext> for Options {
 }
 
 const LAD_EXTENSION: &str = "lad.json";
+// global for options
+static OPTIONS: OnceLock<Options> = OnceLock::new();
 
 pub struct LADPreprocessor;
 
@@ -49,7 +52,6 @@ impl LADPreprocessor {
     /// and `chapter_index` is the index of the chapter among its siblings.
     fn process_lad_chapter(
         _context: &PreprocessorContext,
-        options: &Options,
         chapter: &mdbook::book::Chapter,
         parent: Option<&mdbook::book::Chapter>,
         chapter_index: usize,
@@ -64,7 +66,7 @@ impl LADPreprocessor {
 
         let parent_path = parent
             .and_then(|p| p.path.clone())
-            .unwrap_or_else(|| options.root.clone().into())
+            .unwrap_or_default()
             .with_extension("");
 
         log::debug!("Parent path: {:?}", parent_path);
@@ -99,6 +101,9 @@ impl Preprocessor for LADPreprocessor {
         let options = Options::from(context);
 
         log::debug!("Options: {:?}", options);
+        OPTIONS
+            .set(options)
+            .map_err(|_| mdbook::errors::Error::msg("could not initialize options"))?;
 
         // first replace children in parents
         book.for_each_mut(|item| {
@@ -113,7 +118,6 @@ impl Preprocessor for LADPreprocessor {
                             if LADPreprocessor::is_lad_file(chapter) {
                                 match LADPreprocessor::process_lad_chapter(
                                     context,
-                                    &options,
                                     chapter,
                                     Some(parent),
                                     idx,
@@ -147,7 +151,6 @@ impl Preprocessor for LADPreprocessor {
                 }
                 let new_chapter = match LADPreprocessor::process_lad_chapter(
                     context,
-                    &options,
                     chapter,
                     None,
                     chapter
