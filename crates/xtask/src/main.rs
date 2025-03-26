@@ -1356,6 +1356,7 @@ impl Xtasks {
             .stdout(std::process::Stdio::piped())
             .arg("benchmark")
             .args(["list", "bms"])
+            .args(["--per-page", "255"])
             .args(["--token", &token.clone().unwrap_or_default()])
             .output()
             .with_context(|| "Could not list benchmarks")?;
