@@ -89,6 +89,7 @@ script_integration_test_harness = { workspace = true }
 test_utils = { workspace = true }
 libtest-mimic = "0.8"
 tracing-tracy = "0.11"
+regex = "1.11"
 
 [workspace]
 members = [

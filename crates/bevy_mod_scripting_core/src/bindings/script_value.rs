@@ -41,6 +41,7 @@ pub enum ScriptValue {
     Error(InteropError),
 }
 
+#[profiling::all_functions]
 impl ScriptValue {
     /// Returns the contained string if this is a string variant otherwise returns the original value.
     pub fn as_string(self) -> Result<Cow<'static, str>, Self> {
@@ -68,66 +69,77 @@ impl ScriptValue {
     }
 }
 
+#[profiling::all_functions]
 impl From<()> for ScriptValue {
     fn from(_: ()) -> Self {
         ScriptValue::Unit
     }
 }
 
+#[profiling::all_functions]
 impl From<bool> for ScriptValue {
     fn from(value: bool) -> Self {
         ScriptValue::Bool(value)
     }
 }
 
+#[profiling::all_functions]
 impl From<i64> for ScriptValue {
     fn from(value: i64) -> Self {
         ScriptValue::Integer(value)
     }
 }
 
+#[profiling::all_functions]
 impl From<f64> for ScriptValue {
     fn from(value: f64) -> Self {
         ScriptValue::Float(value)
     }
 }
 
+#[profiling::all_functions]
 impl From<&'static str> for ScriptValue {
     fn from(value: &'static str) -> Self {
         ScriptValue::String(value.into())
     }
 }
 
+#[profiling::all_functions]
 impl From<String> for ScriptValue {
     fn from(value: String) -> Self {
         ScriptValue::String(value.into())
     }
 }
 
+#[profiling::all_functions]
 impl From<Cow<'static, str>> for ScriptValue {
     fn from(value: Cow<'static, str>) -> Self {
         ScriptValue::String(value)
     }
 }
 
+#[profiling::all_functions]
 impl From<Vec<ScriptValue>> for ScriptValue {
     fn from(value: Vec<ScriptValue>) -> Self {
         ScriptValue::List(value)
     }
 }
 
+#[profiling::all_functions]
 impl From<ReflectReference> for ScriptValue {
     fn from(value: ReflectReference) -> Self {
         ScriptValue::Reference(value)
     }
 }
 
+#[profiling::all_functions]
 impl From<InteropError> for ScriptValue {
     fn from(value: InteropError) -> Self {
         ScriptValue::Error(value)
     }
 }
 
+#[profiling::all_functions]
 impl<T: Into<ScriptValue>> From<Option<T>> for ScriptValue {
     fn from(value: Option<T>) -> Self {
         match value {
@@ -137,6 +149,7 @@ impl<T: Into<ScriptValue>> From<Option<T>> for ScriptValue {
     }
 }
 
+#[profiling::all_functions]
 impl<T: Into<ScriptValue>, E: Into<InteropError>> From<Result<T, E>> for ScriptValue {
     fn from(value: Result<T, E>) -> Self {
         match value {

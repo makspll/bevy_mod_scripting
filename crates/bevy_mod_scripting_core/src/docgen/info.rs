@@ -34,6 +34,7 @@ impl Default for FunctionInfo {
     }
 }
 
+#[profiling::all_functions]
 impl FunctionInfo {
     /// Create a new function info with default values.
     pub fn new() -> Self {
@@ -108,6 +109,7 @@ pub struct FunctionArgInfo {
     pub type_info: Option<ThroughTypeInfo>,
 }
 
+#[profiling::all_functions]
 impl FunctionArgInfo {
     /// Create a new function argument info with a name.
     pub fn with_name(mut self, name: Cow<'static, str>) -> Self {
@@ -145,6 +147,7 @@ impl Default for FunctionReturnInfo {
     }
 }
 
+#[profiling::all_functions]
 impl FunctionReturnInfo {
     /// Create a new function return info for a specific type.
     pub fn new_for<T: TypedThrough + 'static>() -> Self {
@@ -157,6 +160,7 @@ impl FunctionReturnInfo {
 
 macro_rules! impl_documentable {
     ($( $param:ident ),*) => {
+        #[profiling::all_functions]
         impl<$($param,)* F, O> GetFunctionInfo<fn($($param),*) -> O> for F
             where
             F: Fn($($param),*) -> O,

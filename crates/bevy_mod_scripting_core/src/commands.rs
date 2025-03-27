@@ -94,6 +94,7 @@ pub struct CreateOrUpdateScript<P: IntoScriptPluginParams> {
     _ph: std::marker::PhantomData<fn(P::R, P::C)>,
 }
 
+#[profiling::all_functions]
 impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     /// Creates a new CreateOrUpdateScript command with the given ID, content and asset
     pub fn new(id: ScriptId, content: Box<[u8]>, asset: Option<Handle<ScriptAsset>>) -> Self {
@@ -169,6 +170,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     }
 }
 
+#[profiling::all_functions]
 impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
     fn apply(self, world: &mut bevy::prelude::World) {
         with_handler_system_state(world, |guard, handler_ctxt: &mut HandlerContext<P>| {
@@ -293,6 +295,7 @@ impl RemoveStaticScript {
     }
 }
 
+#[profiling::all_functions]
 impl Command for RemoveStaticScript {
     fn apply(self, world: &mut bevy::prelude::World) {
         let mut static_scripts = world.get_resource_or_init::<StaticScripts>();

@@ -44,6 +44,7 @@ pub trait ScriptFunctionMut<'env, Marker> {
 pub struct FunctionCallContext {
     language: Language,
 }
+
 impl FunctionCallContext {
     /// Create a new FunctionCallContext with the given 1-indexing conversion preference
     pub const fn new(language: Language) -> Self {
@@ -51,15 +52,18 @@ impl FunctionCallContext {
     }
 
     /// Tries to access the world, returning an error if the world is not available
+    #[profiling::function]
     pub fn world<'l>(&self) -> Result<WorldGuard<'l>, InteropError> {
         ThreadWorldContainer.try_get_world()
     }
     /// Whether the caller uses 1-indexing on all indexes and expects 0-indexing conversions to be performed.
+    #[profiling::function]
     pub fn convert_to_0_indexed(&self) -> bool {
         matches!(&self.language, Language::Lua)
     }
 
     /// Gets the scripting language of the caller
+    #[profiling::function]
     pub fn language(&self) -> Language {
         self.language.clone()
     }
@@ -94,6 +98,7 @@ pub struct DynamicScriptFunctionMut {
     >,
 }
 
+#[profiling::all_functions]
 impl DynamicScriptFunction {
     /// Call the function with the given arguments and caller context.
     ///
@@ -150,6 +155,7 @@ impl DynamicScriptFunction {
     }
 }
 
+#[profiling::all_functions]
 impl DynamicScriptFunctionMut {
     /// Call the function with the given arguments and caller context.
     ///
@@ -283,6 +289,7 @@ impl DerefMut for AppScriptFunctionRegistry {
 /// A thread-safe reference counted wrapper around a [`ScriptFunctionRegistry`]
 pub struct ScriptFunctionRegistryArc(pub Arc<RwLock<ScriptFunctionRegistry>>);
 
+#[profiling::all_functions]
 impl ScriptFunctionRegistryArc {
     /// claim a read lock on the registry
     pub fn read(&self) -> RwLockReadGuard<ScriptFunctionRegistry> {
@@ -593,6 +600,7 @@ macro_rules! impl_script_function {
 
                 let func = (move |caller_context: FunctionCallContext, mut args: VecDeque<ScriptValue> | {
                     let res: Result<ScriptValue, InteropError> = (|| {
+                        profiling::scope!("script function call mechanism");
                         let received_args_len = args.len();
                         let expected_arg_count = count!($($param )*);
 
@@ -603,29 +611,37 @@ macro_rules! impl_script_function {
                             world.with_access_scope(||{
                                 let mut current_arg = 0;
 
-                                $(
-                                    current_arg += 1;
-                                    let $param = args.pop_front();
-                                    let $param = match $param {
-                                        Some($param) => $param,
-                                        None => {
-                                            if let Some(default) = <$param>::default_value() {
-                                                default
-                                            } else {
-                                                return Err(InteropError::argument_count_mismatch(expected_arg_count,received_args_len));
+                                $(let $param = {
+                                        profiling::scope!("argument conversion", &format!("argument #{}", current_arg));
+                                        current_arg += 1;
+                                        let $param = args.pop_front();
+                                        let $param = match $param {
+                                            Some($param) => $param,
+                                            None => {
+                                                if let Some(default) = <$param>::default_value() {
+                                                    default
+                                                } else {
+                                                    return Err(InteropError::argument_count_mismatch(expected_arg_count,received_args_len));
+                                                }
                                             }
-                                        }
+                                        };
+                                        let $param = <$param>::from_script($param, world.clone())
+                                            .map_err(|e| InteropError::function_arg_conversion_error(current_arg.to_string(), e))?;
+                                        $param
                                     };
-                                    let $param = <$param>::from_script($param, world.clone())
-                                        .map_err(|e| InteropError::function_arg_conversion_error(current_arg.to_string(), e))?;
                                 )*
 
                                 let ret = {
-                                    let out = self( $( $context,)?  $( $param.into(), )* );
+                                    let out = {
+                                        profiling::scope!("function call");
+                                        self( $( $context,)?  $( $param.into(), )* )
+                                    };
+
                                     $(
                                         let $out = out?;
                                         let out = $out;
                                     )?
+                                    profiling::scope!("return type conversion");
                                     out.into_script(world.clone()).map_err(|e| InteropError::function_arg_conversion_error("return value".to_owned(), e))
                                 };
                                 ret

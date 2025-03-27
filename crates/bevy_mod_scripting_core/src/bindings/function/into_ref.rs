@@ -54,6 +54,7 @@ macro_rules! downcast_into_value {
     };
 }
 
+#[profiling::all_functions]
 impl IntoScriptRef for ReflectReference {
     #[profiling::function]
     fn into_script_ref(
@@ -63,6 +64,7 @@ impl IntoScriptRef for ReflectReference {
         self_.with_reflect(world.clone(), |r| into_script_ref(self_.clone(), r, world))?
     }
 }
+
 #[profiling::function]
 fn into_script_ref(
     mut self_: ReflectReference,

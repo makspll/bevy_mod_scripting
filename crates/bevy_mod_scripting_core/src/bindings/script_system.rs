@@ -49,6 +49,7 @@ impl std::fmt::Debug for ScriptSystemSet {
     }
 }
 
+#[profiling::all_functions]
 impl ScriptSystemSet {
     /// Creates a new script system set
     pub fn new(id: impl Into<Cow<'static, str>>) -> Self {
@@ -56,6 +57,7 @@ impl ScriptSystemSet {
     }
 }
 
+#[profiling::all_functions]
 impl SystemSet for ScriptSystemSet {
     fn dyn_clone(&self) -> bevy::ecs::label::Box<dyn SystemSet> {
         Box::new(self.clone())
@@ -88,6 +90,7 @@ pub struct ScriptSystemBuilder {
     is_exclusive: bool,
 }
 
+#[profiling::all_functions]
 impl ScriptSystemBuilder {
     /// Creates a new script system builder
     pub fn new(name: CallbackLabel, script_id: ScriptId) -> Self {
@@ -197,6 +200,7 @@ struct DynamicHandlerContext<'w, P: IntoScriptPluginParams> {
     runtime_container: &'w RuntimeContainer<P>,
 }
 
+#[profiling::all_functions]
 impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
     #[allow(
         clippy::expect_used,
@@ -345,6 +349,7 @@ pub struct DynamicScriptSystem<P: IntoScriptPluginParams> {
 /// A marker type distinguishing between vanilla and script system types
 pub struct IsDynamicScriptSystem<P>(PhantomData<fn() -> P>);
 
+#[profiling::all_functions]
 impl<P: IntoScriptPluginParams> IntoSystem<(), (), IsDynamicScriptSystem<P>>
     for ScriptSystemBuilder
 {
@@ -366,6 +371,7 @@ impl<P: IntoScriptPluginParams> IntoSystem<(), (), IsDynamicScriptSystem<P>>
     }
 }
 
+#[profiling::all_functions]
 impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
     type In = ();
 

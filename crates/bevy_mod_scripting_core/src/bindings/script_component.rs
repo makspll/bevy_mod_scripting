@@ -37,6 +37,7 @@ impl Component for DynamicComponent {
 #[derive(Clone, Resource, Default)]
 pub struct AppScriptComponentRegistry(pub Arc<RwLock<ScriptComponentRegistry>>);
 
+#[profiling::all_functions]
 impl AppScriptComponentRegistry {
     /// Reads the underlying registry
     pub fn read(&self) -> parking_lot::RwLockReadGuard<ScriptComponentRegistry> {
@@ -55,6 +56,7 @@ pub struct ScriptComponentRegistry {
     components: HashMap<String, DynamicComponentInfo>,
 }
 
+#[profiling::all_functions]
 impl ScriptComponentRegistry {
     /// Registers a dynamic script component, possibly overwriting an existing one
     pub fn register(&mut self, info: DynamicComponentInfo) {
@@ -67,6 +69,7 @@ impl ScriptComponentRegistry {
     }
 }
 
+#[profiling::all_functions]
 impl WorldAccessGuard<'_> {
     /// Registers a dynamic script component, and returns a reference to its registration
     pub fn register_script_component(

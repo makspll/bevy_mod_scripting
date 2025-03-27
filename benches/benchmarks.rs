@@ -1,8 +1,19 @@
-use bevy::log::tracing_subscriber;
 use bevy::log::tracing_subscriber::layer::SubscriberExt;
-use bevy::utils::{tracing, HashMap};
+use bevy::log::{tracing_subscriber, Level};
+use bevy::reflect::Reflect;
+use bevy::utils::tracing;
+use bevy::utils::tracing::span;
+use bevy_mod_scripting_core::bindings::{
+    FromScript, IntoScript, Mut, Ref, ReflectReference, ScriptValue, Val,
+};
 use criterion::{criterion_main, measurement::Measurement, BenchmarkGroup, Criterion};
-use script_integration_test_harness::{run_lua_benchmark, run_rhai_benchmark};
+use criterion::{BatchSize, BenchmarkFilter};
+use regex::Regex;
+use script_integration_test_harness::test_functions::rand::Rng;
+use script_integration_test_harness::{
+    perform_benchmark_with_generator, run_lua_benchmark, run_rhai_benchmark,
+};
+use std::collections::HashMap;
 use std::{path::PathBuf, sync::LazyLock, time::Duration};
 use test_utils::{discover_all_tests, Test};
 
@@ -65,10 +76,24 @@ impl BenchmarkExecutor for Test {
     }
 }
 
-fn script_benchmarks(criterion: &mut Criterion) {
+fn script_benchmarks(criterion: &mut Criterion, filter: Option<Regex>) {
     // find manifest dir
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let tests = discover_all_tests(manifest_dir, |p| p.starts_with("benchmarks"));
+    let tests = discover_all_tests(manifest_dir, |p| {
+        p.path.starts_with("benchmarks")
+            && if let Some(filter) = &filter {
+                let matching = filter.is_match(&p.benchmark_name());
+                if !matching {
+                    println!(
+                        "Skipping benchmark: '{}'. due to filter: '{filter}'",
+                        p.benchmark_name()
+                    );
+                };
+                matching
+            } else {
+                true
+            }
+    });
 
     // group by benchmark group
     let mut grouped: HashMap<String, Vec<Test>> =
@@ -83,9 +108,16 @@ fn script_benchmarks(criterion: &mut Criterion) {
     }
 
     for (group, tests) in grouped {
+        println!("Running benchmarks for group: {}", group);
         let mut benchmark_group = criterion.benchmark_group(group);
 
         for t in tests {
+            println!("Running benchmark: {}", t.benchmark_name());
+            span!(
+                Level::INFO,
+                "Benchmark harness for test",
+                test_name = &t.benchmark_name()
+            );
             t.execute(&mut benchmark_group);
         }
 
@@ -104,13 +136,109 @@ fn maybe_with_profiler(f: impl Fn(bool)) {
 
         tracing::subscriber::set_global_default(subscriber).unwrap();
 
-        let _ = tracing_tracy::client::span!("test2");
-        tracing::info_span!("test");
-
         f(true);
     } else {
         f(false);
     }
+}
+
+/// benchmarks measuring conversion time for script values and other things
+fn conversion_benchmarks(criterion: &mut Criterion) {
+    let mut group = criterion.benchmark_group("conversions");
+
+    #[derive(Reflect)]
+    struct ReflectyVal(pub u32);
+
+    perform_benchmark_with_generator(
+        "ScriptValue::List",
+        &|rng, _| {
+            let mut array = Vec::new();
+            for _ in 0..10 {
+                array.push(ScriptValue::Integer(rng.random()));
+            }
+            ScriptValue::List(array)
+        },
+        &|w, i| {
+            let i = i.into_script(w.clone()).unwrap();
+            let _ = Vec::<ScriptValue>::from_script(i, w).unwrap();
+        },
+        &mut group,
+        BatchSize::SmallInput,
+    );
+
+    perform_benchmark_with_generator(
+        "ScriptValue::Map",
+        &|rng, _| {
+            let mut map = HashMap::default();
+            for _ in 0..10 {
+                map.insert(
+                    rng.random::<u32>().to_string(),
+                    ScriptValue::Integer(rng.random()),
+                );
+            }
+            ScriptValue::Map(map)
+        },
+        &|w, i| {
+            let i = i.into_script(w.clone()).unwrap();
+            let _ = HashMap::<String, ScriptValue>::from_script(i, w).unwrap();
+        },
+        &mut group,
+        BatchSize::SmallInput,
+    );
+
+    perform_benchmark_with_generator(
+        "ScriptValue::Reference::from_into",
+        &|rng, world| {
+            let allocator = world.allocator();
+            let mut allocator = allocator.write();
+            ReflectReference::new_allocated(ReflectyVal(rng.random()), &mut allocator)
+        },
+        &|w, i| {
+            let i = i.into_script(w.clone()).unwrap();
+            let _ = ReflectReference::from_script(i, w).unwrap();
+        },
+        &mut group,
+        BatchSize::SmallInput,
+    );
+
+    perform_benchmark_with_generator(
+        "Val<T>::from_into",
+        &|rng, _| Val::new(ReflectyVal(rng.random::<u32>())),
+        &|w, i| {
+            let v = i.into_script(w.clone()).unwrap();
+            Val::<ReflectyVal>::from_script(v, w).unwrap();
+        },
+        &mut group,
+        BatchSize::SmallInput,
+    );
+
+    perform_benchmark_with_generator(
+        "Ref<T>::from",
+        &|rng, w| {
+            Val::new(ReflectyVal(rng.random::<u32>()))
+                .into_script(w)
+                .unwrap()
+        },
+        &|w, i| {
+            Ref::<ReflectyVal>::from_script(i, w).unwrap();
+        },
+        &mut group,
+        BatchSize::SmallInput,
+    );
+
+    perform_benchmark_with_generator(
+        "Mut<T>::from",
+        &|rng, w| {
+            Val::new(ReflectyVal(rng.random::<u32>()))
+                .into_script(w)
+                .unwrap()
+        },
+        &|w, i| {
+            Mut::<ReflectyVal>::from_script(i, w).unwrap();
+        },
+        &mut group,
+        BatchSize::SmallInput,
+    );
 }
 
 pub fn benches() {
@@ -118,8 +246,25 @@ pub fn benches() {
         let mut criterion: criterion::Criterion<_> = (criterion::Criterion::default())
             .configure_from_args()
             .measurement_time(Duration::from_secs(10));
+        let arguments = std::env::args()
+            .skip(1) // the executable name
+            .filter(|a| !a.starts_with("-"))
+            .collect::<Vec<String>>();
 
-        script_benchmarks(&mut criterion);
+        // take first argument as .*<val>.* regex for benchmarks
+        // criterion will already have that as a filter, but we want to make sure we're on the same page
+        let filter = if let Some(n) = arguments.first() {
+            println!("using filter: '{n}'");
+            let regex = Regex::new(n).unwrap();
+            let filter = BenchmarkFilter::Regex(regex.clone());
+            criterion = criterion.with_benchmark_filter(filter);
+            Some(regex)
+        } else {
+            None
+        };
+
+        script_benchmarks(&mut criterion, filter);
+        conversion_benchmarks(&mut criterion);
     });
 }
 criterion_main!(benches);

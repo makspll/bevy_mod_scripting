@@ -39,6 +39,7 @@ pub struct Scripts<P: IntoScriptPluginParams> {
     pub(crate) scripts: HashMap<ScriptId, Script<P>>,
 }
 
+#[profiling::all_functions]
 impl<P: IntoScriptPluginParams> Scripts<P> {
     /// Inserts a script into the collection
     pub fn insert(&mut self, script: Script<P>) {
@@ -113,6 +114,7 @@ pub struct StaticScripts {
     pub(crate) scripts: HashSet<ScriptId>,
 }
 
+#[profiling::all_functions]
 impl StaticScripts {
     /// Inserts a static script into the collection
     pub fn insert<S: Into<ScriptId>>(&mut self, script: S) {

@@ -26,11 +26,13 @@ pub struct CoreScriptGlobalsPlugin;
 impl Plugin for CoreScriptGlobalsPlugin {
     fn build(&self, _app: &mut bevy::app::App) {}
     fn finish(&self, app: &mut bevy::app::App) {
+        profiling::function_scope!("app finish");
         register_static_core_globals(app.world_mut());
         register_core_globals(app.world_mut());
     }
 }
 
+#[profiling::function]
 fn register_static_core_globals(world: &mut bevy::ecs::world::World) {
     let global_registry = world
         .get_resource_or_init::<AppScriptGlobalsRegistry>()
@@ -83,6 +85,7 @@ impl CoreGlobals {
         >,
         InteropError,
     > {
+        profiling::function_scope!("registering core globals");
         let type_registry = guard.type_registry();
         let type_registry = type_registry.read();
         let mut type_cache = HashMap::<String, _>::default();

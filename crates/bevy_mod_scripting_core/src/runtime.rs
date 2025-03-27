@@ -52,6 +52,7 @@ impl<P: IntoScriptPluginParams> Default for RuntimeContainer<P> {
     }
 }
 
+#[profiling::function]
 pub(crate) fn initialize_runtime<P: IntoScriptPluginParams>(
     runtime: ResMut<RuntimeContainer<P>>,
     settings: Res<RuntimeSettings<P>>,

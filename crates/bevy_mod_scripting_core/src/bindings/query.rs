@@ -47,6 +47,7 @@ pub struct ScriptResourceRegistration {
     pub(crate) resource_id: ComponentId,
 }
 
+#[profiling::all_functions]
 impl ScriptTypeRegistration {
     /// Creates a new [`ScriptTypeRegistration`] from a [`TypeRegistration`].
     pub fn new(registration: Arc<TypeRegistration>) -> Self {
@@ -76,6 +77,8 @@ impl ScriptTypeRegistration {
         &self.registration
     }
 }
+
+#[profiling::all_functions]
 impl ScriptResourceRegistration {
     /// Creates a new [`ScriptResourceRegistration`] from a [`ScriptTypeRegistration`] and a [`ComponentId`].
     pub fn new(registration: ScriptTypeRegistration, resource_id: ComponentId) -> Self {
@@ -102,6 +105,7 @@ impl ScriptResourceRegistration {
     }
 }
 
+#[profiling::all_functions]
 impl ScriptComponentRegistration {
     /// Creates a new [`ScriptComponentRegistration`] from a [`ScriptTypeRegistration`] and a [`ComponentId`].
     pub fn new(registration: ScriptTypeRegistration, component_id: ComponentId) -> Self {
@@ -250,6 +254,7 @@ pub struct ScriptQueryBuilder {
     without: Vec<ScriptComponentRegistration>,
 }
 
+#[profiling::all_functions]
 impl ScriptQueryBuilder {
     /// Adds components to the query.
     pub fn components(&mut self, components: Vec<ScriptComponentRegistration>) -> &mut Self {

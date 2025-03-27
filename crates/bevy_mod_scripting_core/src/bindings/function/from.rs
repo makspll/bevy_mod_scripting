@@ -32,6 +32,7 @@ pub trait FromScript {
         Self: Sized;
 }
 
+#[profiling::all_functions]
 impl FromScript for ScriptValue {
     type This<'w> = Self;
     fn from_script(value: ScriptValue, _world: WorldGuard) -> Result<Self, InteropError> {
@@ -39,6 +40,7 @@ impl FromScript for ScriptValue {
     }
 }
 
+#[profiling::all_functions]
 impl FromScript for () {
     type This<'w> = Self;
     fn from_script(_value: ScriptValue, _world: WorldGuard) -> Result<Self, InteropError> {
@@ -46,6 +48,7 @@ impl FromScript for () {
     }
 }
 
+#[profiling::all_functions]
 impl FromScript for bool {
     type This<'w> = Self;
     #[profiling::function]
@@ -70,6 +73,7 @@ impl FromScript for bool {
 macro_rules! impl_from_with_downcast {
     ($($ty:ty),*) => {
         $(
+            #[profiling::all_functions]
             impl FromScript for $ty {
                 type This<'w> = Self;
                 #[profiling::function]
@@ -92,6 +96,7 @@ impl_from_with_downcast!(i8, i16, i32, i64, i128, u8, u16, u32, u64, u128, f32, 
 macro_rules! impl_from_stringlike {
     ($($ty:ty),*) => {
         $(
+            #[profiling::all_functions]
             impl FromScript for $ty {
                 type This<'w> = Self;
                 #[profiling::function]
@@ -109,6 +114,7 @@ macro_rules! impl_from_stringlike {
 
 impl_from_stringlike!(String, PathBuf, OsString);
 
+#[profiling::all_functions]
 impl FromScript for char {
     type This<'w> = Self;
     #[profiling::function]
@@ -133,6 +139,7 @@ impl FromScript for char {
     }
 }
 
+#[profiling::all_functions]
 impl FromScript for ReflectReference {
     type This<'w> = Self;
     #[profiling::function]
@@ -154,6 +161,7 @@ impl FromScript for ReflectReference {
 #[derive(Reflect)]
 pub struct Val<T>(pub T);
 
+#[profiling::all_functions]
 impl<T> Val<T> {
     /// Create a new `Val` with the given value.
     pub fn new(value: T) -> Self {
@@ -186,6 +194,7 @@ impl<T> From<T> for Val<T> {
     }
 }
 
+#[profiling::all_functions]
 impl<T: FromReflect> FromScript for Val<T> {
     type This<'w> = Self;
     #[profiling::function]
@@ -230,6 +239,7 @@ impl<T> Deref for Ref<'_, T> {
     }
 }
 
+#[profiling::all_functions]
 impl<T: FromReflect> FromScript for Ref<'_, T> {
     type This<'a> = Ref<'a, T>;
     #[profiling::function]
@@ -302,6 +312,7 @@ impl<'a, T> From<&'a mut T> for Mut<'a, T> {
     }
 }
 
+#[profiling::all_functions]
 impl<T: FromReflect> FromScript for Mut<'_, T> {
     type This<'w> = Mut<'w, T>;
     #[profiling::function]
@@ -337,6 +348,7 @@ impl<T: FromReflect> FromScript for Mut<'_, T> {
     }
 }
 
+#[profiling::all_functions]
 impl<T: FromScript> FromScript for Option<T>
 where
     for<'w> T::This<'w>: Into<T>,
@@ -351,6 +363,7 @@ where
     }
 }
 
+#[profiling::all_functions]
 impl<T: FromScript + 'static> FromScript for Vec<T>
 where
     for<'w> T::This<'w>: Into<T>,
@@ -374,6 +387,7 @@ where
     }
 }
 
+#[profiling::all_functions]
 impl<T: FromScript + 'static, const N: usize> FromScript for [T; N]
 where
     for<'w> T::This<'w>: Into<T>,
@@ -399,6 +413,7 @@ where
     }
 }
 
+#[profiling::all_functions]
 impl FromScript for DynamicScriptFunctionMut {
     type This<'w> = Self;
     #[profiling::function]
@@ -416,6 +431,7 @@ impl FromScript for DynamicScriptFunctionMut {
     }
 }
 
+#[profiling::all_functions]
 impl FromScript for DynamicScriptFunction {
     type This<'w> = Self;
     #[profiling::function]
@@ -433,6 +449,7 @@ impl FromScript for DynamicScriptFunction {
     }
 }
 
+#[profiling::all_functions]
 impl<V> FromScript for std::collections::HashMap<String, V>
 where
     V: FromScript + 'static,
@@ -468,6 +485,7 @@ where
 /// A union of two or more (by nesting unions) types.
 pub struct Union<T1, T2>(Result<T1, T2>);
 
+#[profiling::all_functions]
 impl<T1, T2> Union<T1, T2> {
     /// Create a new union with the left value.
     pub fn new_left(value: T1) -> Self {
@@ -478,7 +496,6 @@ impl<T1, T2> Union<T1, T2> {
     pub fn new_right(value: T2) -> Self {
         Union(Err(value))
     }
-
 
     /// Try interpret the union as the left type
     pub fn into_left(self) -> Result<T1, T2> {
@@ -495,7 +512,7 @@ impl<T1, T2> Union<T1, T2> {
             Ok(l) => Err(l),
         }
     }
-     
+
     /// Map the union to another type
     pub fn map_both<U1, U2, F: Fn(T1) -> U1, G: Fn(T2) -> U2>(self, f: F, g: G) -> Union<U1, U2> {
         match self.0 {
@@ -505,6 +522,7 @@ impl<T1, T2> Union<T1, T2> {
     }
 }
 
+#[profiling::all_functions]
 impl<T1: FromScript, T2: FromScript> FromScript for Union<T1, T2>
 where
     for<'a> T1::This<'a>: Into<T1>,
@@ -530,6 +548,7 @@ where
 macro_rules! impl_from_script_tuple {
     ($($ty:ident),*) => {
         #[allow(non_snake_case)]
+        #[profiling::all_functions]
         impl<$($ty: FromScript),*> FromScript for ($($ty,)*)
         where
             Self: 'static,

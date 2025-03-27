@@ -117,6 +117,7 @@ impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P> {
     }
 }
 
+#[profiling::all_functions]
 impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.insert_resource(self.runtime_settings.clone())

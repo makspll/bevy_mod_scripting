@@ -46,7 +46,7 @@ fn main() {
     let args = Arguments::from_args();
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
 
-    let tests = discover_all_tests(manifest_dir, |p| p.starts_with("tests"))
+    let tests = discover_all_tests(manifest_dir, |p| p.path.starts_with("tests"))
         .into_iter()
         .map(|t| Trial::test(t.name(), move || t.execute()))
         .collect::<Vec<_>>();

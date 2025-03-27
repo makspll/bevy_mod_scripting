@@ -44,6 +44,7 @@ pub struct ScheduleRegistry {
     schedules: HashMap<TypeId, ReflectSchedule>,
 }
 
+#[profiling::all_functions]
 impl ScheduleRegistry {
     /// Creates a new schedule registry containing all default bevy schedules.
     pub fn new() -> Self {

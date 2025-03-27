@@ -73,6 +73,7 @@ pub struct ScriptAssetLoader {
     pub preprocessor: Option<Box<dyn Fn(&mut [u8]) -> Result<(), ScriptError> + Send + Sync>>,
 }
 
+#[profiling::all_functions]
 impl AssetLoader for ScriptAssetLoader {
     type Asset = ScriptAsset;
 
@@ -121,6 +122,7 @@ pub struct ScriptAssetSettings {
     pub supported_extensions: &'static [&'static str],
 }
 
+#[profiling::all_functions]
 impl ScriptAssetSettings {
     /// Selects the language for a given asset path
     pub fn select_script_language(&self, path: &AssetPath) -> Language {
@@ -178,6 +180,7 @@ pub struct ScriptMetadata {
     pub language: Language,
 }
 
+#[profiling::all_functions]
 impl ScriptMetadataStore {
     /// Inserts a new metadata entry
     pub fn insert(&mut self, id: AssetId<ScriptAsset>, meta: ScriptMetadata) {
@@ -202,6 +205,7 @@ impl ScriptMetadataStore {
 }
 
 /// Converts incoming asset events, into internal script asset events, also loads and inserts metadata for newly added scripts
+#[profiling::function]
 pub(crate) fn dispatch_script_asset_events(
     mut events: EventReader<AssetEvent<ScriptAsset>>,
     mut script_asset_events: EventWriter<ScriptAssetEvent>,
@@ -256,6 +260,7 @@ pub(crate) fn dispatch_script_asset_events(
 }
 
 /// Listens to [`ScriptAssetEvent::Removed`] events and removes the corresponding script metadata.
+#[profiling::function]
 pub(crate) fn remove_script_metadata(
     mut events: EventReader<ScriptAssetEvent>,
     mut asset_path_map: ResMut<ScriptMetadataStore>,
@@ -273,6 +278,7 @@ pub(crate) fn remove_script_metadata(
 /// Listens to [`ScriptAssetEvent`] events and dispatches [`CreateOrUpdateScript`] and [`DeleteScript`] commands accordingly.
 ///
 /// Allows for hot-reloading of scripts.
+#[profiling::function]
 pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
     mut events: EventReader<ScriptAssetEvent>,
     script_assets: Res<Assets<ScriptAsset>>,
@@ -321,6 +327,7 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
 }
 
 /// Setup all the asset systems for the scripting plugin and the dependencies
+#[profiling::function]
 pub(crate) fn configure_asset_systems(app: &mut App) -> &mut App {
     // these should be in the same set as bevy's asset systems
     // currently this is in the PreUpdate set
@@ -348,6 +355,7 @@ pub(crate) fn configure_asset_systems(app: &mut App) -> &mut App {
 }
 
 /// Setup all the asset systems for the scripting plugin and the dependencies
+#[profiling::function]
 pub(crate) fn configure_asset_systems_for_plugin<P: IntoScriptPluginParams>(
     app: &mut App,
 ) -> &mut App {

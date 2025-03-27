@@ -93,6 +93,7 @@ impl std::fmt::Debug for WorldAccessGuardInner<'_> {
     }
 }
 
+#[profiling::all_functions]
 impl WorldAccessGuard<'static> {
     /// Shortens the lifetime of the guard to the given lifetime.
     pub(crate) fn shorten_lifetime<'w>(self) -> WorldGuard<'w> {
@@ -241,6 +242,11 @@ impl<'w> WorldAccessGuard<'w> {
     /// Purely debugging utility to list all accesses currently held.
     pub fn list_accesses(&self) -> Vec<(ReflectAccessId, AccessCount)> {
         self.inner.accesses.list_accesses()
+    }
+
+    /// Should only really be used for testing purposes
+    pub unsafe fn release_all_accesses(&self) {
+        self.inner.accesses.release_all_accesses();
     }
 
     /// Returns the number of accesses currently held.

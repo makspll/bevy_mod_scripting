@@ -1417,6 +1417,7 @@ impl Xtasks {
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::inherit())
             .args(["plot", "list", "bms"])
+            .args(["--per-page", "255"])
             .args(["--token", &token.clone().unwrap_or_default()])
             .output()
             .with_context(|| "Could not list plots")?;
@@ -1448,31 +1449,18 @@ impl Xtasks {
                 bail!("Failed to delete plot: {:?}", bencher_cmd);
             }
         }
-        let testbeds = Command::new("bencher")
-            .arg("testbed")
-            .args(["list", "bms"])
-            .args(["--token", &token.clone().unwrap_or_default()])
-            .output()
-            .with_context(|| "Could not list testbeds")?;
 
         const MAIN_BRANCH_UUID: &str = "1d70a4e3-d416-43fc-91bd-4b1c8f9e9580";
         const LATENCY_MEASURE_UUID: &str = "6820b034-5163-4cdd-95f5-5640dd0ff298";
+        const LINUX_GHA_TESTBED: &str = "467e8580-a67a-435e-a602-b167541f332c";
+        const MACOS_GHA_TESTBAD: &str = "f8aab940-27d2-4b52-93df-4518fe68abfb";
+        const WINDOWS_GHA_TESTBED: &str = "be8ff546-31d3-40c4-aacc-763e5e8a09c4";
 
-        if !testbeds.status.success() {
-            bail!("Failed to list testbeds: {:?}", testbeds);
-        }
-
-        let mut testbeds = parse_list_of_dicts(testbeds.stdout)
-            .with_context(|| "reading testbeds")?
-            .into_iter()
-            .map(|p| {
-                let name = p.get("name").expect("no name in testbed");
-                let uuid = p.get("uuid").expect("no uuid in testbed");
-                (name.clone(), uuid.clone())
-            })
-            .filter(|(name, _)| name.contains("gha"))
-            .collect::<Vec<_>>();
-        testbeds.sort();
+        let testbeds = [
+            ("linux-gha", LINUX_GHA_TESTBED),
+            ("macos-gha", MACOS_GHA_TESTBAD),
+            ("windows-gha", WINDOWS_GHA_TESTBED),
+        ];
 
         let group_to_benchmark_map: HashMap<_, Vec<_>> =
             benchmarks

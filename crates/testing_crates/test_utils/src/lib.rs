@@ -45,7 +45,7 @@ fn visit_dirs(dir: &Path, cb: &mut dyn FnMut(&DirEntry)) -> io::Result<()> {
     Ok(())
 }
 
-pub fn discover_all_tests(manifest_dir: PathBuf, filter: impl Fn(&Path) -> bool) -> Vec<Test> {
+pub fn discover_all_tests(manifest_dir: PathBuf, filter: impl Fn(&Test) -> bool) -> Vec<Test> {
     let assets_root = manifest_dir.join("assets");
     let mut test_files = Vec::new();
     visit_dirs(&assets_root, &mut |entry| {
@@ -60,13 +60,15 @@ pub fn discover_all_tests(manifest_dir: PathBuf, filter: impl Fn(&Path) -> bool)
         {
             // only take the path from the assets  bit
             let relative = path.strip_prefix(&assets_root).unwrap();
-            if !filter(relative) {
-                return;
-            }
-            test_files.push(Test {
+            let test = Test {
                 path: relative.to_path_buf(),
                 kind,
-            });
+            };
+
+            if !filter(&test) {
+                return;
+            }
+            test_files.push(test);
         }
     })
     .unwrap();
