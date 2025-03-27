@@ -142,6 +142,10 @@ impl Features {
         )
     }
 
+    fn without(self, feature: Feature) -> Self {
+        Self(self.0.into_iter().filter(|f| *f != feature).collect())
+    }
+
     fn to_cargo_args(&self) -> Vec<String> {
         if self.0.is_empty() {
             vec![]
@@ -1625,7 +1629,7 @@ impl Xtasks {
 
         let default_args = app_settings
             .clone()
-            .with_features(Features::all_features())
+            .with_features(Features::all_features().without(Feature::ProfileWithTracy))
             .with_profile(
                 app_settings
                     .profile
