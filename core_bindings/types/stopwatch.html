@@ -189,17 +189,17 @@ assert_eq!(stopwatch.elapsed_secs(), 0.0);
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
-<tr><td><a href="./stopwatch/is_paused.html">is_paused</a></td><td>Returns `true` if the stopwatch is paused.  # Examples  ```  # use bevy_time::*;  let mut stopwatch = Stopwatch::new();  assert!(!stopwatch.is_paused());  stopwatch.pause();  assert!(stopwatch.is_paused());  stopwatch.unpause();  assert!(!stopwatch.is_paused());  ```</td></tr>
-<tr><td><a href="./stopwatch/elapsed_secs_f64.html">elapsed_secs_f64</a></td><td>Returns the elapsed time since the last [`reset`](Stopwatch::reset)  of the stopwatch, in seconds, as f64.  # See Also  [`elapsed`](Stopwatch::elapsed)...</td></tr>
+<tr><td><a href="./stopwatch/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="./stopwatch/reset.html">reset</a></td><td>Resets the stopwatch. The reset doesn't affect the paused state of the stopwatch.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut stopwatch = Stopwatch::new();  stopwatch.tick(Duration::from_secs_f32(1.5));  stopwatch.reset();  assert_eq!(stopwatch.elapsed_secs(), 0.0);  ```</td></tr>
 <tr><td><a href="./stopwatch/new.html">new</a></td><td>Create a new unpaused `Stopwatch` with no elapsed time.  # Examples  ```  # use bevy_time::*;  let stopwatch = Stopwatch::new();  assert_eq!(stopwatch.elapsed_secs(), 0.0);  assert_eq!(stopwatch.is_paused(), false);  ```</td></tr>
-<tr><td><a href="./stopwatch/unpause.html">unpause</a></td><td>Unpauses the stopwatch. Resume the effect of ticking on elapsed time.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut stopwatch = Stopwatch::new();  stopwatch.pause();  stopwatch.tick(Duration::from_secs_f32(1.0));  stopwatch.unpause();  stopwatch.tick(Duration::from_secs_f32(1.0));  assert!(!stopwatch.is_paused());  assert_eq!(stopwatch.elapsed_secs(), 1.0);  ```</td></tr>
-<tr><td><a href="./stopwatch/elapsed_secs.html">elapsed_secs</a></td><td>Returns the elapsed time since the last [`reset`](Stopwatch::reset)  of the stopwatch, in seconds.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut stopwatch = Stopwatch::new();  stopwatch.tick(Duration::from_secs(1));  assert_eq!(stopwatch.elapsed_secs(), 1.0);  ```  # See Also  [`elapsed`](Stopwatch::elapsed)...</td></tr>
 <tr><td><a href="./stopwatch/elapsed.html">elapsed</a></td><td>Returns the elapsed time since the last [`reset`](Stopwatch::reset)  of the stopwatch.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut stopwatch = Stopwatch::new();  stopwatch.tick(Duration::from_secs(1));  assert_eq!(stopwatch.elapsed(), Duration::from_secs(1));  ```  # See Also  [`elapsed_secs`](Stopwatch::elapsed_secs)...</td></tr>
+<tr><td><a href="./stopwatch/unpause.html">unpause</a></td><td>Unpauses the stopwatch. Resume the effect of ticking on elapsed time.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut stopwatch = Stopwatch::new();  stopwatch.pause();  stopwatch.tick(Duration::from_secs_f32(1.0));  stopwatch.unpause();  stopwatch.tick(Duration::from_secs_f32(1.0));  assert!(!stopwatch.is_paused());  assert_eq!(stopwatch.elapsed_secs(), 1.0);  ```</td></tr>
+<tr><td><a href="./stopwatch/is_paused.html">is_paused</a></td><td>Returns `true` if the stopwatch is paused.  # Examples  ```  # use bevy_time::*;  let mut stopwatch = Stopwatch::new();  assert!(!stopwatch.is_paused());  stopwatch.pause();  assert!(stopwatch.is_paused());  stopwatch.unpause();  assert!(!stopwatch.is_paused());  ```</td></tr>
 <tr><td><a href="./stopwatch/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./stopwatch/assert_receiver_is_total_eq.html">assert_receiver_is_total_eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./stopwatch/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./stopwatch/elapsed_secs.html">elapsed_secs</a></td><td>Returns the elapsed time since the last [`reset`](Stopwatch::reset)  of the stopwatch, in seconds.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut stopwatch = Stopwatch::new();  stopwatch.tick(Duration::from_secs(1));  assert_eq!(stopwatch.elapsed_secs(), 1.0);  ```  # See Also  [`elapsed`](Stopwatch::elapsed)...</td></tr>
+<tr><td><a href="./stopwatch/elapsed_secs_f64.html">elapsed_secs_f64</a></td><td>Returns the elapsed time since the last [`reset`](Stopwatch::reset)  of the stopwatch, in seconds, as f64.  # See Also  [`elapsed`](Stopwatch::elapsed)...</td></tr>
 <tr><td><a href="./stopwatch/set_elapsed.html">set_elapsed</a></td><td>Sets the elapsed time of the stopwatch.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut stopwatch = Stopwatch::new();  stopwatch.set_elapsed(Duration::from_secs_f32(1.0));  assert_eq!(stopwatch.elapsed_secs(), 1.0);  ```</td></tr>
+<tr><td><a href="./stopwatch/assert_receiver_is_total_eq.html">assert_receiver_is_total_eq</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="./stopwatch/pause.html">pause</a></td><td>Pauses the stopwatch. Any call to [`tick`](Stopwatch::tick) while  paused will not have any effect on the elapsed time.  # Examples  ```  # use bevy_time::*;  use std::time::Duration;  let mut stopwatch = Stopwatch::new();  stopwatch.pause();  stopwatch.tick(Duration::from_secs_f32(1.5));  assert!(stopwatch.is_paused());  assert_eq!(stopwatch.elapsed_secs(), 0.0);  ```</td></tr>
 </tbody></table>
 </div>
@@ -211,7 +211,7 @@ assert_eq!(stopwatch.elapsed_secs(), 0.0);
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/stopwatch/is_paused.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/stopwatch/eq.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -225,7 +225,7 @@ assert_eq!(stopwatch.elapsed_secs(), 0.0);
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/stopwatch/is_paused.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/stopwatch/eq.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
