@@ -20,7 +20,9 @@ use bevy::{
 };
 use bevy_mod_scripting_core::{
     asset::ScriptAsset,
-    bindings::{pretty_print::DisplayWithWorld, script_value::ScriptValue, WorldGuard},
+    bindings::{
+        pretty_print::DisplayWithWorld, script_value::ScriptValue, WorldAccessGuard, WorldGuard,
+    },
     callback_labels,
     error::{InteropError, ScriptError},
     event::{IntoCallbackLabel, ScriptErrorEvent},
@@ -30,7 +32,9 @@ use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
-use test_functions::register_test_functions;
+use criterion::{measurement::Measurement, BatchSize};
+use rand::SeedableRng;
+use test_functions::{register_test_functions, RNG};
 use test_utils::test_data::setup_integration_test;
 
 fn dummy_update_system() {}
@@ -318,7 +322,7 @@ pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(
     label: &str,
     criterion: &mut criterion::BenchmarkGroup<M>,
 ) -> Result<(), String> {
-    use bevy::utils::tracing;
+    use bevy::{log::Level, utils::tracing};
     use bevy_mod_scripting_lua::mlua::Function;
 
     let plugin = make_test_lua_plugin();
@@ -334,8 +338,8 @@ pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(
                 if let Some(pre_bencher) = &pre_bencher {
                     pre_bencher.call::<()>(()).unwrap();
                 }
-                tracing::info_span!("profiling_iter", label);
                 c.iter(|| {
+                    tracing::event!(Level::TRACE, "profiling_iter {}", label);
                     bencher.call::<()>(()).unwrap();
                 })
             });
@@ -350,7 +354,7 @@ pub fn run_rhai_benchmark<M: criterion::measurement::Measurement>(
     label: &str,
     criterion: &mut criterion::BenchmarkGroup<M>,
 ) -> Result<(), String> {
-    use bevy::utils::tracing;
+    use bevy::{log::Level, utils::tracing};
     use bevy_mod_scripting_rhai::rhai::Dynamic;
 
     let plugin = make_test_rhai_plugin();
@@ -370,9 +374,9 @@ pub fn run_rhai_benchmark<M: criterion::measurement::Measurement>(
                         .call_fn::<Dynamic>(&mut ctxt.scope, &ctxt.ast, "pre_bench", ARGS)
                         .unwrap();
                 }
-                tracing::info_span!("profiling_iter", label);
 
                 c.iter(|| {
+                    tracing::event!(Level::TRACE, "profiling_iter {}", label);
                     let _ = runtime
                         .call_fn::<Dynamic>(&mut ctxt.scope, &ctxt.ast, "bench", ARGS)
                         .unwrap();
@@ -447,7 +451,49 @@ where
         }
         state.apply(app.world_mut());
         if timer.elapsed() > Duration::from_secs(30) {
-            return Err("Timeout after 30 seconds".into());
+            return Err("Timeout after 30 seconds, could not load script".into());
         }
     }
+}
+
+pub fn perform_benchmark_with_generator<
+    M: Measurement,
+    I,
+    G: Fn(&mut rand_chacha::ChaCha12Rng, WorldAccessGuard) -> I,
+    B: Fn(WorldAccessGuard, I),
+>(
+    label: &str,
+    generator: &G,
+    bench_fn: &B,
+    group: &mut criterion::BenchmarkGroup<M>,
+    batch_size: BatchSize,
+) {
+    let mut world = std::mem::take(setup_integration_test(|_, _| {}).world_mut());
+
+    let world_guard = WorldAccessGuard::new_exclusive(&mut world);
+    let mut rng_guard = RNG.lock().unwrap();
+    *rng_guard = rand_chacha::ChaCha12Rng::from_seed([42u8; 32]);
+    drop(rng_guard);
+    group.bench_function(label, |c| {
+        c.iter_batched(
+            || {
+                let mut rng_guard = RNG.lock().unwrap();
+                unsafe { world_guard.release_all_accesses() };
+                {
+                    let allocator = world_guard.allocator();
+                    let mut allocator = allocator.write();
+                    allocator.clean_garbage_allocations();
+                }
+                (
+                    generator(&mut rng_guard, world_guard.clone()),
+                    world_guard.clone(),
+                )
+            },
+            |(i, w)| {
+                bevy::utils::tracing::event!(bevy::log::Level::TRACE, "profiling_iter {}", label);
+                bench_fn(w, i)
+            },
+            batch_size,
+        );
+    });
 }

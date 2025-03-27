@@ -44,6 +44,7 @@ impl<T: ?Sized + 'static> IntoNamespace for T {
 }
 
 /// A type which implements [`IntoNamespace`] by always converting to the global namespace
+#[profiling::all_functions]
 impl Namespace {
     /// Returns the prefix for this namespace
     pub fn prefix(self) -> Cow<'static, str> {
@@ -70,6 +71,7 @@ pub struct NamespaceBuilder<'a, N> {
     pub world: &'a mut World,
 }
 
+#[profiling::all_functions]
 impl<'a, S: IntoNamespace> NamespaceBuilder<'a, S> {
     /// Creates a new `NamespaceBuilder` that will register functions in the namespace corresponding to the given type
     /// It will also register the type itself in the type registry.

@@ -21,6 +21,7 @@ crate::private::export_all_in_modules! {
 #[derive(Default, Resource, Clone)]
 pub struct AppScriptGlobalsRegistry(Arc<RwLock<ScriptGlobalsRegistry>>);
 
+#[profiling::all_functions]
 impl AppScriptGlobalsRegistry {
     /// Returns a reference to the inner [`ScriptGlobalsRegistry`].
     pub fn read(&self) -> RwLockReadGuard<ScriptGlobalsRegistry> {
@@ -69,6 +70,7 @@ pub struct ScriptGlobalsRegistry {
     dummies: HashMap<Cow<'static, str>, ScriptGlobalDummy>,
 }
 
+#[profiling::all_functions]
 impl ScriptGlobalsRegistry {
     /// Gets the global with the given name
     pub fn get(&self, name: &str) -> Option<&ScriptGlobal> {

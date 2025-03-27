@@ -27,10 +27,12 @@ use rand_chacha::ChaCha12Rng;
 use test_utils::test_data::EnumerateTestComponents;
 
 // lazy lock rng state
-static RNG: std::sync::LazyLock<Mutex<ChaCha12Rng>> = std::sync::LazyLock::new(|| {
+pub static RNG: std::sync::LazyLock<Mutex<ChaCha12Rng>> = std::sync::LazyLock::new(|| {
     let seed = [42u8; 32];
     Mutex::new(ChaCha12Rng::from_seed(seed))
 });
+
+pub use rand;
 
 pub fn register_test_functions(world: &mut App) {
     let world = world.world_mut();
