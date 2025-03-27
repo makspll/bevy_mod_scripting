@@ -30,7 +30,7 @@ Although Bevy doesn't directly support scripting, efforts are underway to incorp
 - Documentation generation
 
 ## Benchmarks
-BMS applies continuous benchmarking and the latest benchmark results can be found over at [bencher.dev](https://bencher.dev/perf/bms).
+BMS applies continuous benchmarking and the latest benchmark results can be found over at [bencher.dev](https://bencher.dev/console/projects/bms/plots).
 
 The tested scripts themselves are placed in the `assets/benchmarks` directory.
 
