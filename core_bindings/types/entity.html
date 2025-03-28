@@ -213,24 +213,24 @@ fn dispose_expired_food(mut commands: Commands, query: Query&lt;Entity, With&lt;
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
-<tr><td><a href="./entity/from_raw.html">from_raw</a></td><td>Creates a new entity ID with the specified `index` and a generation of 1.  # Note  Spawning a speci...</td></tr>
-<tr><td><a href="./entity/generation.html">generation</a></td><td>Returns the generation of this Entity's index. The generation is incremented each time an  entity w...</td></tr>
 <tr><td><a href="./entity/to_bits.html">to_bits</a></td><td>Convert to a form convenient for passing outside of rust.  Only useful for identifying entities wit...</td></tr>
+<tr><td><a href="./entity/generation.html">generation</a></td><td>Returns the generation of this Entity's index. The generation is incremented each time an  entity w...</td></tr>
 <tr><td><a href="./entity/from_bits.html">from_bits</a></td><td>Reconstruct an `Entity` previously destructured with [`Entity::to_bits`].  Only useful when applied to results from `to_bits` in the same instance of an application.  # Panics  This method will likely panic if given `u64` values that did not come from [`Entity::to_bits`]...</td></tr>
+<tr><td><a href="./entity/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./entity/from_raw.html">from_raw</a></td><td>Creates a new entity ID with the specified `index` and a generation of 1.  # Note  Spawning a speci...</td></tr>
 <tr><td><a href="./entity/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="./entity/index.html">index</a></td><td>Return a transiently unique identifier.  No two simultaneously-live entities share the same index, ...</td></tr>
-<tr><td><a href="./entity/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
 </tbody></table>
 </div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/tick/get.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/tick/is_newer_than.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/entity/from_raw.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/entity/to_bits.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -240,11 +240,11 @@ fn dispose_expired_food(mut commands: Commands, query: Query&lt;Entity, With&lt;
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/tick/get.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/tick/is_newer_than.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/entity/from_raw.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/entity/to_bits.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
