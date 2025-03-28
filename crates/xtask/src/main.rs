@@ -752,7 +752,10 @@ impl Xtasks {
             Xtasks::Bench {
                 name,
                 enable_profiling,
-            } => Self::bench(app_settings, enable_profiling, name),
+            } => {
+                let _ = Self::bench(app_settings, enable_profiling, name, false)?;
+                Ok(())
+            }
         }?;
 
         Ok("".into())
@@ -840,6 +843,7 @@ impl Xtasks {
         context: &str,
         add_args: I,
         dir: Option<&Path>,
+        capture_streams_in_output: bool,
     ) -> Result<Output> {
         let coverage_mode = app_settings
             .coverage
@@ -898,10 +902,12 @@ impl Xtasks {
         };
 
         let mut cmd = Command::new("cargo");
-        cmd.args(args)
-            .stdout(std::process::Stdio::inherit())
-            .stderr(std::process::Stdio::inherit())
-            .current_dir(working_dir);
+        cmd.args(args).current_dir(working_dir);
+
+        if !capture_streams_in_output {
+            cmd.stdout(std::process::Stdio::inherit())
+                .stderr(std::process::Stdio::inherit());
+        }
 
         info!("Using command: {:?}", cmd);
 
@@ -925,6 +931,7 @@ impl Xtasks {
             "Failed to build workspace",
             vec!["--all-targets"],
             None,
+            false,
         )?;
         Ok(())
     }
@@ -943,6 +950,7 @@ impl Xtasks {
             "Failed to run clippy",
             clippy_args,
             None,
+            false,
         )?;
 
         if ide_mode {
@@ -956,6 +964,7 @@ impl Xtasks {
             "Failed to run cargo fmt",
             vec!["--all", "--", "--check"],
             None,
+            false,
         )?;
 
         Ok(())
@@ -983,6 +992,7 @@ impl Xtasks {
             "Failed to run clippy on codegen crate",
             clippy_args,
             None,
+            false,
         )?;
 
         // TODO: for now do nothing, it's difficult to get rust analyzer to accept the nightly version
@@ -1124,6 +1134,7 @@ impl Xtasks {
                 "-v",
             ],
             Some(&bevy_dir),
+            false,
         )?;
 
         // collect
@@ -1142,6 +1153,7 @@ impl Xtasks {
                 "-v",
             ],
             Some(&bevy_dir),
+            false,
         )?;
 
         Ok(())
@@ -1234,6 +1246,7 @@ impl Xtasks {
                 "Failed to build crates.io docs",
                 args,
                 None,
+                false,
             )?;
         }
 
@@ -1252,7 +1265,12 @@ impl Xtasks {
         Ok(())
     }
 
-    fn bench(app_settings: GlobalArgs, profile: bool, name: Option<String>) -> Result<()> {
+    fn bench(
+        app_settings: GlobalArgs,
+        profile: bool,
+        name: Option<String>,
+        capture_streams_in_output: bool,
+    ) -> Result<Output> {
         log::info!("Profiling enabled: {profile}");
 
         let mut features = vec![
@@ -1274,17 +1292,18 @@ impl Xtasks {
             vec![]
         };
 
-        Self::run_workspace_command(
+        let output = Self::run_workspace_command(
             // run with just lua54
             &app_settings.with_features(Features::new(features)),
             "bench",
             "Failed to run benchmarks",
             args,
             None,
+            capture_streams_in_output,
         )
         .with_context(|| "when executing criterion benchmarks")?;
 
-        Ok(())
+        Ok(output)
     }
 
     fn bencher(app_settings: GlobalArgs, publish: bool) -> Result<()> {
@@ -1320,6 +1339,13 @@ impl Xtasks {
 
         let token = std::env::var("BENCHER_API_TOKEN").ok();
 
+        // first of all run bench, and save output to a file
+
+        let result = Self::bench(app_settings, false, None, true)?;
+        let bench_file_path = PathBuf::from("./bencher_output.txt");
+        let mut file = std::fs::File::create(&bench_file_path)?;
+        file.write_all(&result.stdout)?;
+
         let mut bencher_cmd = Command::new("bencher");
         bencher_cmd
             .stdout(std::process::Stdio::inherit())
@@ -1347,7 +1373,8 @@ impl Xtasks {
 
         bencher_cmd
             .args(["--adapter", "rust_criterion"])
-            .arg("cargo xtask bench");
+            .arg("--file")
+            .arg(bench_file_path);
 
         log::info!("Running bencher command: {:?}", bencher_cmd);
 
@@ -1547,6 +1574,7 @@ impl Xtasks {
             "Failed to run tests",
             test_args,
             None,
+            false,
         )?;
 
         // generate coverage report and lcov file
@@ -1880,6 +1908,7 @@ impl Xtasks {
             "Failed to run example",
             vec!["--example", example.as_str()],
             None,
+            false,
         )?;
 
         Ok(())
