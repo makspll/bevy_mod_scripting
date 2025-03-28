@@ -2,10 +2,11 @@ use super::reference::LuaReflectReference;
 use bevy_mod_scripting_core::{
     asset::Language,
     bindings::{function::script_function::FunctionCallContext, script_value::ScriptValue},
+    error::InteropError,
 };
 use mlua::{FromLua, IntoLua, Value, Variadic};
 use std::{
-    collections::HashMap,
+    collections::{HashMap, VecDeque},
     ops::{Deref, DerefMut},
 };
 
@@ -51,6 +52,20 @@ impl FromLua for LuaScriptValue {
             Value::Integer(i) => ScriptValue::Integer(i as i64),
             Value::Number(n) => ScriptValue::Float(n),
             Value::String(s) => ScriptValue::String(s.to_str()?.to_owned().into()),
+            Value::Function(f) => ScriptValue::Function(
+                (move |_context: FunctionCallContext, args: VecDeque<ScriptValue>| {
+                    println!("Lua function called with args: {:?}", args);
+                    match f.call::<LuaScriptValue>(
+                        args.into_iter()
+                            .map(LuaScriptValue)
+                            .collect::<Variadic<_>>(),
+                    ) {
+                        Ok(v) => v.0,
+                        Err(e) => ScriptValue::Error(InteropError::external_error(Box::new(e))),
+                    }
+                })
+                .into(),
+            ),
             Value::Table(table) => {
                 // check the key types, if strings then it's a map
                 let mut iter = table.pairs::<Value, LuaScriptValue>();
