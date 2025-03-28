@@ -340,13 +340,16 @@ pub fn setup_integration_test<F: FnOnce(&mut World, &mut TypeRegistry)>(init: F)
     // first setup all normal test components and resources
     let mut app = setup_app(init);
 
+    let log_level =
+        std::env::var("RUST_LOG").unwrap_or_else(|_| "bevy_mod_scripting_core=debug".to_string());
+
     app.add_plugins((
         MinimalPlugins,
         AssetPlugin::default(),
         HierarchyPlugin,
         DiagnosticsPlugin,
         LogPlugin {
-            filter: "bevy_mod_scripting_core=trace".to_string(),
+            filter: log_level,
             ..Default::default()
         },
     ));

@@ -1284,6 +1284,8 @@ impl Xtasks {
             std::env::set_var("ENABLE_PROFILING", "1");
             // features.push(Feature::BevyTracy);
             features.push(Feature::ProfileWithTracy);
+        } else {
+            std::env::set_var("RUST_LOG", "bevy_mod_scripting=error");
         }
 
         let args = if let Some(name) = name {
