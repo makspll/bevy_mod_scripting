@@ -10,18 +10,20 @@ use bevy::{
     app::{Last, Plugin, PostUpdate, Startup, Update},
     asset::{AssetServer, Handle},
     ecs::{
+        component::Component,
         event::{Event, Events},
         schedule::{IntoSystemConfigs, SystemConfigs},
-        system::{IntoSystem, Local, Res, SystemState},
+        system::{IntoSystem, Local, Res, Resource, SystemState},
         world::{FromWorld, Mut},
     },
     prelude::{Entity, World},
-    reflect::TypeRegistry,
+    reflect::{Reflect, TypeRegistry},
 };
 use bevy_mod_scripting_core::{
     asset::ScriptAsset,
     bindings::{
-        pretty_print::DisplayWithWorld, script_value::ScriptValue, WorldAccessGuard, WorldGuard,
+        pretty_print::DisplayWithWorld, script_value::ScriptValue, ReflectAccessId,
+        WorldAccessGuard, WorldGuard,
     },
     callback_labels,
     error::{InteropError, ScriptError},
@@ -33,7 +35,7 @@ use bevy_mod_scripting_core::{
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
 use criterion::{measurement::Measurement, BatchSize};
-use rand::SeedableRng;
+use rand::{Rng, SeedableRng};
 use test_functions::{register_test_functions, RNG};
 use test_utils::test_data::setup_integration_test;
 
@@ -468,7 +470,23 @@ pub fn perform_benchmark_with_generator<
     group: &mut criterion::BenchmarkGroup<M>,
     batch_size: BatchSize,
 ) {
+    #[derive(Reflect, Component, Resource)]
+    struct Fake1;
+    #[derive(Reflect, Component, Resource)]
+    struct Fake2;
+    #[derive(Reflect, Resource)]
+    struct Fake3;
+    #[derive(Reflect, Resource)]
+    struct Fake4;
+    #[derive(Reflect, Resource)]
+    struct Fake5;
+
     let mut world = std::mem::take(setup_integration_test(|_, _| {}).world_mut());
+    let f1 = world.register_component::<Fake1>();
+    let f2 = world.register_component::<Fake2>();
+    let f3 = world.register_resource::<Fake3>();
+    let f4 = world.register_resource::<Fake4>();
+    let f5 = world.register_resource::<Fake5>();
 
     let world_guard = WorldAccessGuard::new_exclusive(&mut world);
     let mut rng_guard = RNG.lock().unwrap();
@@ -484,6 +502,20 @@ pub fn perform_benchmark_with_generator<
                     let mut allocator = allocator.write();
                     allocator.clean_garbage_allocations();
                 }
+
+                // lock a random amount of fake components/resources, to make benchmarks more natural
+                for _ in 0..rng_guard.random_range(0..=5) {
+                    // pick random component
+                    match rng_guard.random_range(0..=4) {
+                        0 => world_guard.claim_write_access(ReflectAccessId::for_component_id(f1)),
+                        1 => world_guard.claim_write_access(ReflectAccessId::for_component_id(f2)),
+                        2 => world_guard.claim_write_access(ReflectAccessId::for_component_id(f3)),
+                        3 => world_guard.claim_write_access(ReflectAccessId::for_component_id(f4)),
+                        4 => world_guard.claim_write_access(ReflectAccessId::for_component_id(f5)),
+                        _ => false,
+                    };
+                }
+
                 (
                     generator(&mut rng_guard, world_guard.clone()),
                     world_guard.clone(),
