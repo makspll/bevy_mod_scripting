@@ -33,7 +33,7 @@ bevy = { workspace = true, default-features = false, features = ["bevy_asset"] }
 thiserror = "1.0.31"
 parking_lot = "0.12.1"
 dashmap = "6"
-smallvec = { version = "1.11", features = ["union"] }
+smallvec = "1.11"
 itertools = "0.13"
 derivative = "2.2"
 profiling = { workspace = true }
