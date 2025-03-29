@@ -258,8 +258,8 @@ You can opt-in to receive this argument in your own function definitions by addi
 <h2 id="reserved-functions"><a class="header" href="#reserved-functions">Reserved Functions</a></h2>
 <p>There are a few reserved functions that you can override by registering them on a specific type:</p>
 <div class="table-wrapper"><table><thead><tr><th>Function Name</th><th>Description</th><th>Overridable?</th><th>Has Default Implementation?</th></tr></thead><tbody>
-<tr><td>get</td><td>a getter function, used for indexing into a type</td><td>✅</td><td>✅</td></tr>
-<tr><td>set</td><td>a setter function, used for setting a value on a type</td><td>✅</td><td>✅</td></tr>
+<tr><td>get</td><td>a getter function, used for indexing into a type</td><td>❌</td><td>✅</td></tr>
+<tr><td>set</td><td>a setter function, used for setting a value on a type</td><td>❌</td><td>✅</td></tr>
 <tr><td>sub</td><td>a subtraction function, used for subtracting two values</td><td>✅</td><td>❌</td></tr>
 <tr><td>add</td><td>an addition function, used for adding two values</td><td>✅</td><td>❌</td></tr>
 <tr><td>mul</td><td>a multiplication function, used for multiplying two values</td><td>✅</td><td>❌</td></tr>
@@ -275,6 +275,7 @@ You can opt-in to receive this argument in your own function definitions by addi
 </tbody></table>
 </div>
 <p>In this context <code>overridable</code> indicates whether language implementations will look for a specific function on your type before looking at the generic <code>ReflectReference</code> namespace. You can still remove the existing registration for these functions on the <code>ReflectReference</code> namespace if you want to replace them with your own implementation.</p>
+<p>Note the <code>ReflectReference</code> namespace is special, in that functions defined on it, act like a fallback and hence apply to ALL references.</p>
 
                     </main>
 
