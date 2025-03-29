@@ -67,7 +67,7 @@ bevy_mod_scripting_derive = { workspace = true }
 
 [workspace.dependencies]
 profiling = { version = "1.0" }
-bevy = { version = "0.15.2", default-features = false }
+bevy = { version = "0.15.3", default-features = false }
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.11.0" }
 bevy_mod_scripting_functions = { path = "crates/bevy_mod_scripting_functions", version = "0.11.0", default-features = false }
 bevy_mod_scripting_derive = { path = "crates/bevy_mod_scripting_derive", version = "0.11.0" }
