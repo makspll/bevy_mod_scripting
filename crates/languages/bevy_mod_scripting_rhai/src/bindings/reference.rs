@@ -232,7 +232,7 @@ impl RhaiOperator {
     }
 }
 
-/// An iterator over a [`ReflectReference`] that implements [`IntoIterator`] for Rhai
+/// An iterator over a [`ReflectReference`] that implements [`IntoIterator`] for Rhai.
 pub struct RhaiReflectRefIter {
     next_func: DynamicScriptFunctionMut,
 }
