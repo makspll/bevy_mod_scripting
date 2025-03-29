@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.11.1](https://github.com/makspll/bevy_mod_scripting/compare/v0.11.0...v0.11.1) - 2025-03-29
+
+### Added
+
+- bump bevy to 0.15.3 ([#401](https://github.com/makspll/bevy_mod_scripting/pull/401))
+
 ## [0.11.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.10.0...v0.11.0) - 2025-03-29
 
 ### Added
