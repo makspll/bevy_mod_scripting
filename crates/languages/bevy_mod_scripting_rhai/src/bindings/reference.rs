@@ -291,12 +291,12 @@ impl CustomType for RhaiReflectReference {
     fn build(mut builder: rhai::TypeBuilder<Self>) {
         builder
             .with_name(std::any::type_name::<RhaiReflectReference>())
-            .with_indexer_get(|self_: &mut Self, _index: Dynamic| {
+            .with_indexer_get(|self_: &mut Self, index: Dynamic| {
                 let world = ThreadWorldContainer.try_get_world()?;
                 let self_ = &self_.0;
                 let type_id = self_.tail_type_id(world.clone())?.or_fake_id();
 
-                let key: ScriptValue = ScriptValue::from_dynamic(_index)?;
+                let key: ScriptValue = ScriptValue::from_dynamic(index)?;
                 let key = match key.as_string() {
                     Ok(string) => {
                         match world
@@ -312,39 +312,29 @@ impl CustomType for RhaiReflectReference {
                     Err(key) => key,
                 };
 
-                let func = world
-                    .lookup_function([type_id, TypeId::of::<ReflectReference>()], "get")
-                    .map_err(|_| InteropError::missing_function(type_id, "get".to_owned()))?;
+                // call the default magic getter
+                let registry = world.script_function_registry();
+                let registry = registry.read();
 
-                let out = func.call(
-                    vec![ScriptValue::Reference(self_.clone()), key],
-                    RHAI_CALLER_CONTEXT,
-                )?;
+                let out = registry
+                    .magic_functions
+                    .get(RHAI_CALLER_CONTEXT, self_.clone(), key)?;
 
                 out.into_dynamic()
             })
-            .with_indexer_set(|self_: &mut Self, _index: Dynamic, _value: Dynamic| {
+            .with_indexer_set(|self_: &mut Self, index: Dynamic, value: Dynamic| {
                 let world = ThreadWorldContainer.try_get_world()?;
                 let self_ = self_.0.clone();
-                let key = ScriptValue::from_dynamic(_index)?;
-                let value = ScriptValue::from_dynamic(_value)?;
-                let type_id = self_.tail_type_id(world.clone())?.or_fake_id();
+                let key = ScriptValue::from_dynamic(index)?;
+                let value = ScriptValue::from_dynamic(value)?;
 
-                let func = world
-                    .lookup_function([type_id, TypeId::of::<ReflectReference>()], "set")
-                    .map_err(|f| {
-                        InteropError::missing_function(TypeId::of::<ReflectReference>(), f)
-                    })?;
+                let registry = world.script_function_registry();
+                let registry = registry.read();
 
-                let out = func.call(
-                    vec![ScriptValue::Reference(self_), key, value],
-                    RHAI_CALLER_CONTEXT,
-                )?;
-
-                match out {
-                    ScriptValue::Error(interop_error) => Err(interop_error)?,
-                    _ => Ok(()),
-                }
+                registry
+                    .magic_functions
+                    .set(RHAI_CALLER_CONTEXT, self_, key, value)?;
+                Ok(())
             })
             .with_fn(
                 RhaiOperator::Sub.function_name(),

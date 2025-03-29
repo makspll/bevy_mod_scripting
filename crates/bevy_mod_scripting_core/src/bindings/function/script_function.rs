@@ -1,5 +1,6 @@
 //! Implementations of the [`ScriptFunction`] and [`ScriptFunctionMut`] traits for functions with up to 13 arguments.
 
+use super::MagicFunctions;
 use super::{from::FromScript, into::IntoScript, namespace::Namespace};
 use crate::asset::Language;
 use crate::bindings::function::arg_meta::ArgMeta;
@@ -16,7 +17,6 @@ use std::collections::{HashMap, VecDeque};
 use std::hash::Hash;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
-
 #[diagnostic::on_unimplemented(
     message = "This function does not fulfil the requirements to be a script callable function. All arguments must implement the ScriptArgument trait and all return values must implement the ScriptReturn trait",
     note = "If you're trying to return a non-primitive type, you might need to use Val<T> Ref<T> or Mut<T> wrappers"
@@ -315,6 +315,8 @@ pub struct FunctionKey {
 /// A registry of dynamic script functions
 pub struct ScriptFunctionRegistry {
     functions: HashMap<FunctionKey, DynamicScriptFunction>,
+    /// A registry of magic functions
+    pub magic_functions: MagicFunctions,
 }
 
 #[profiling::all_functions]

@@ -141,8 +141,8 @@ There are a few reserved functions that you can override by registering them on 
 
 | Function Name | Description | Overridable? | Has Default Implementation? |
 |---------------|-------------| ------------ | --------------------------- |
-| get | a getter function, used for indexing into a type | ✅ | ✅ |
-| set | a setter function, used for setting a value on a type | ✅ | ✅ |
+| get | a getter function, used for indexing into a type | ❌ | ✅ |
+| set | a setter function, used for setting a value on a type | ❌ | ✅ |
 | sub | a subtraction function, used for subtracting two values | ✅ | ❌ |
 | add | an addition function, used for adding two values | ✅ | ❌ |
 | mul | a multiplication function, used for multiplying two values | ✅ | ❌ |
@@ -157,3 +157,5 @@ There are a few reserved functions that you can override by registering them on 
 | display_value | a display function, used for displaying a mutable reference to a value | ❌ | ✅ |
 
 In this context `overridable` indicates whether language implementations will look for a specific function on your type before looking at the generic `ReflectReference` namespace. You can still remove the existing registration for these functions on the `ReflectReference` namespace if you want to replace them with your own implementation.
+
+Note the `ReflectReference` namespace is special, in that functions defined on it, act like a fallback and hence apply to ALL references.

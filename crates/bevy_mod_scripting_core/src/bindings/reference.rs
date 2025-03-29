@@ -28,7 +28,9 @@ use std::{any::TypeId, fmt::Debug};
 ///
 /// References are composed of two parts:
 /// - The base kind, which specifies where the reference points to
-/// - The path, which specifies how to access the value from the base
+/// - The path, which specifies how to access the value from the base.
+///
+/// Bindings defined on this type, apply to ALL references.
 #[derive(Debug, Clone, PartialEq, Eq, Reflect)]
 #[reflect(Default, opaque)]
 pub struct ReflectReference {

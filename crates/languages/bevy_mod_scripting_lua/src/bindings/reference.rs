@@ -57,15 +57,13 @@ impl UserData for LuaReflectReference {
                     Err(key) => key,
                 };
 
-                let func = world
-                    .lookup_function([type_id, TypeId::of::<ReflectReference>()], "get")
-                    .map_err(|f| {
-                        InteropError::missing_function(TypeId::of::<ReflectReference>(), f)
-                    })?;
+                // call the default magic getter
+                let registry = world.script_function_registry();
+                let registry = registry.read();
 
-                // call the function with the key
-                let out =
-                    func.call(vec![ScriptValue::Reference(self_), key], LUA_CALLER_CONTEXT)?;
+                let out = registry
+                    .magic_functions
+                    .get(LUA_CALLER_CONTEXT, self_, key)?;
                 Ok(LuaScriptValue(out))
             },
         );
@@ -78,20 +76,15 @@ impl UserData for LuaReflectReference {
                 let self_: ReflectReference = self_.into();
                 let key: ScriptValue = key.into();
                 let value: ScriptValue = value.into();
-                let type_id = self_.tail_type_id(world.clone())?.or_fake_id();
 
-                let func = world
-                    .lookup_function([type_id, TypeId::of::<ReflectReference>()], "set")
-                    .map_err(|f| {
-                        InteropError::missing_function(TypeId::of::<ReflectReference>(), f)
-                    })?;
+                let registry = world.script_function_registry();
+                let registry = registry.read();
 
-                let out = func.call(
-                    vec![ScriptValue::Reference(self_), key, value],
-                    LUA_CALLER_CONTEXT,
-                )?;
+                registry
+                    .magic_functions
+                    .set(LUA_CALLER_CONTEXT, self_, key, value)?;
 
-                Ok(LuaScriptValue(out))
+                Ok(())
             },
         );
 
