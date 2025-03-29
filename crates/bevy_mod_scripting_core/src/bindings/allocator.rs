@@ -6,12 +6,12 @@ use bevy::{
     ecs::system::{Res, Resource},
     prelude::ResMut,
     reflect::PartialReflect,
+    utils::hashbrown::HashMap,
 };
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::{
     cell::UnsafeCell,
     cmp::Ordering,
-    collections::HashMap,
     fmt::{Display, Formatter},
     hash::Hasher,
     sync::{atomic::AtomicU64, Arc},
