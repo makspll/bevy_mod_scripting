@@ -27,6 +27,7 @@ jobs:
             test
             docs
             refactor
+            perf
 
           scopes: |
             ladfile
