@@ -17,8 +17,8 @@ use bevy_mod_scripting_core::{
             script_function::{DynamicScriptFunctionMut, FunctionCallContext},
         },
         pretty_print::DisplayWithWorld,
-        ReflectReference, ScriptComponentRegistration, ScriptResourceRegistration,
-        ScriptTypeRegistration, ScriptValue,
+        DynamicScriptFunction, ReflectReference, ScriptComponentRegistration,
+        ScriptResourceRegistration, ScriptTypeRegistration, ScriptValue,
     },
     error::InteropError,
 };
@@ -144,6 +144,7 @@ pub fn register_test_functions(world: &mut App) {
             "noop_4_args",
             |_a: ScriptValue, _b: ScriptValue, _c: ScriptValue, _d: ScriptValue| {},
         )
+        .register("into_script_function", |f: DynamicScriptFunction| f)
         .register(
             "assert_str_eq",
             |s1: String, s2: String, reason: Option<String>| {
