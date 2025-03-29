@@ -1,5 +1,7 @@
 //! A map of access claims used to safely and dynamically access the world.
 
+use std::hash::{BuildHasherDefault, Hasher};
+
 use bevy::{
     ecs::{component::ComponentId, world::unsafe_world_cell::UnsafeWorldCell},
     prelude::Resource,
@@ -315,9 +317,34 @@ pub trait DynamicSystemMeta {
     fn access_first_location(&self) -> Option<std::panic::Location<'static>>;
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Default)]
+/// A hash function which doesn't do much. for maps which expect very small hashes.
+/// Assumes only needs to hash u64 values, unsafe otherwise
+struct SmallIdentityHash(u64);
+impl Hasher for SmallIdentityHash {
+    fn finish(&self) -> u64 {
+        self.0
+    }
+
+    fn write(&mut self, bytes: &[u8]) {
+        // concat all bytes via &&
+        // this is a bit of a hack, but it works for our use case
+        // and is faster than using a hash function
+        #[allow(clippy::expect_used, reason = "cannot handle this panic otherwise")]
+        let arr: &[u8; 8] = bytes.try_into().expect("this hasher only supports u64");
+        // depending on endianess
+
+        #[cfg(target_endian = "big")]
+        let word = u64::from_be_bytes(*arr);
+        #[cfg(target_endian = "little")]
+        let word = u64::from_le_bytes(*arr);
+        self.0 = word
+    }
+}
+
+#[derive(Default, Debug, Clone)]
 struct AccessMapInner {
-    individual_accesses: HashMap<u64, AccessCount>,
+    individual_accesses: HashMap<u64, AccessCount, BuildHasherDefault<SmallIdentityHash>>,
     global_lock: AccessCount,
 }
 
@@ -795,6 +822,8 @@ pub(crate) use with_global_access;
 
 #[cfg(test)]
 mod test {
+    use std::hash::Hash;
+
     use super::*;
 
     #[test]
@@ -1199,5 +1228,13 @@ mod test {
         assert!(subset_access_map.claim_read_access(1));
         assert!(!subset_access_map.claim_read_access(2));
         assert!(!subset_access_map.claim_write_access(2));
+    }
+
+    #[test]
+    fn test_hasher_on_u64() {
+        let mut hasher = SmallIdentityHash::default();
+        let value = 42u64;
+        value.hash(&mut hasher);
+        assert_eq!(hasher.finish(), 42);
     }
 }
