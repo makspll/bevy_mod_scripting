@@ -5,15 +5,14 @@
 ### Added
 
 - allow the conversion of lua functions into `ScriptValue` via `DynamicScriptFunction` ([#396](https://github.com/makspll/bevy_mod_scripting/pull/396))
-- improve tracing spans, add `profile_with_tracy` feature flag ([#394](https://github.com/makspll/bevy_mod_scripting/pull/394))
+- improve tracing spans, add more benchmarks ([#394](https://github.com/makspll/bevy_mod_scripting/pull/394))
 - add `profile_with_tracy` feature which plays nicely with bevy's `bevy/trace_tracy` feature ([#393](https://github.com/makspll/bevy_mod_scripting/pull/393))
 - Add initial benchmarks, integrate them into CI & add getters/settters for `Scripts` resource ([#381](https://github.com/makspll/bevy_mod_scripting/pull/381))
 - :sparkles: Dynamic Script Components, `register_new_component` binding, `remove_component` no longer requires `ReflectComponent` data ([#379](https://github.com/makspll/bevy_mod_scripting/pull/379))
-- optimize `get` and `set` functions, add `MagicFunctions` sub-registry ([#397](https://github.com/makspll/bevy_mod_scripting/pull/397))
+- [**breaking**] optimize `get` and `set` functions, add `MagicFunctions` sub-registry ([#397](https://github.com/makspll/bevy_mod_scripting/pull/397))
 - optimize access map ([#395](https://github.com/makspll/bevy_mod_scripting/pull/395))
 - add ScriptValue override for printing opaque values ([#380](https://github.com/makspll/bevy_mod_scripting/pull/380))
 - overhaul mdbook preprocessor, prettify generated docs, support dummy globals ([#377](https://github.com/makspll/bevy_mod_scripting/pull/377))
-- [**breaking**] bump bersion
 
 ### Fixed
 
