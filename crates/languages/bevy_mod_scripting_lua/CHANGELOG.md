@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_lua-v0.10.0...bevy_mod_scripting_lua-v0.11.0) - 2025-03-29
+
+### Added
+
+- optimize `get` and `set` functions, add `MagicFunctions` sub-registry ([#397](https://github.com/makspll/bevy_mod_scripting/pull/397))
+- allow the conversion of lua functions into `ScriptValue` via `DynamicScriptFunction` ([#396](https://github.com/makspll/bevy_mod_scripting/pull/396))
+- Add initial benchmarks, integrate them into CI & add getters/settters for `Scripts` resource ([#381](https://github.com/makspll/bevy_mod_scripting/pull/381))
+- :sparkles: Dynamic Script Components, `register_new_component` binding, `remove_component` no longer requires `ReflectComponent` data ([#379](https://github.com/makspll/bevy_mod_scripting/pull/379))
+
 ## [0.10.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_lua-v0.9.11...bevy_mod_scripting_lua-v0.10.0) - 2025-03-16
 
 ### Added
