@@ -1,3 +1,7 @@
+<div class="warning">
+    This section needs work and is not fully accurate as is.
+</div>
+
 # Necessary Features
 
 In order for a language to be called "implemented" in BMS, it needs to support the following features:

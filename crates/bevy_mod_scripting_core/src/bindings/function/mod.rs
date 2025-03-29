@@ -1,6 +1,6 @@
 //! Abstractions to do with dynamic script functions
 
-crate::private::export_all_in_modules!{
+crate::private::export_all_in_modules! {
     arg_meta,
     from,
     from_ref,
@@ -8,7 +8,8 @@ crate::private::export_all_in_modules!{
     into_ref,
     namespace,
     script_function,
-    type_dependencies
+    type_dependencies,
+    magic_functions
 }
 
 #[cfg(test)]
@@ -18,12 +19,13 @@ mod test {
     use bevy_mod_scripting_derive::script_bindings;
 
     use crate::bindings::{
-            function::{
-                from::{Ref, Union, Val},
-                namespace::IntoNamespace,
-                script_function::AppScriptFunctionRegistry,
-            }, script_value::ScriptValue
-        };
+        function::{
+            from::{Ref, Union, Val},
+            namespace::IntoNamespace,
+            script_function::AppScriptFunctionRegistry,
+        },
+        script_value::ScriptValue,
+    };
 
     use super::arg_meta::{ScriptArgument, ScriptReturn, TypedScriptArgument, TypedScriptReturn};
 

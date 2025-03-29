@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use bevy::{prelude::*, reflect::ParsedPath};
+use bevy::prelude::*;
 use bevy_mod_scripting_core::{
     bindings::{
         function::{
@@ -24,9 +24,8 @@ use bindings::{
     },
     pretty_print::DisplayWithWorld,
     script_value::ScriptValue,
-    ReflectReference, ReflectionPathExt, ScriptComponentRegistration, ScriptQueryBuilder,
-    ScriptQueryResult, ScriptResourceRegistration, ScriptTypeRegistration, ThreadWorldContainer,
-    WorldContainer,
+    ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder, ScriptQueryResult,
+    ScriptResourceRegistration, ScriptTypeRegistration, ThreadWorldContainer, WorldContainer,
 };
 use error::InteropError;
 use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
@@ -566,73 +565,6 @@ impl ReflectReference {
             }
             None => Ok(None),
         })?
-    }
-
-    /// Indexes into the given reference and if the nested type is a reference type, returns a deeper reference, otherwise
-    /// returns the concrete value.
-    ///
-    /// Does not support map types at the moment, for maps see `map_get`
-    ///
-    /// Arguments:
-    /// * `ctxt`: The function call context.
-    /// * `reference`: The reference to index into.
-    /// * `key`: The key to index with.
-    /// Returns:
-    /// * `value`: The value at the key, if the reference is indexable.
-    fn get(
-        ctxt: FunctionCallContext,
-        mut reference: ReflectReference,
-        key: ScriptValue,
-    ) -> Result<ScriptValue, InteropError> {
-        profiling::function_scope!("get");
-        let mut path: ParsedPath = key.try_into()?;
-        if ctxt.convert_to_0_indexed() {
-            path.convert_to_0_indexed();
-        }
-        reference.index_path(path);
-        let world = ctxt.world()?;
-        ReflectReference::into_script_ref(reference, world)
-    }
-
-    /// Sets the value under the specified path on the underlying value.
-    ///
-    /// Arguments:
-    /// * `ctxt`: The function call context.
-    /// * `reference`: The reference to set the value on.
-    /// * `key`: The key to set the value at.
-    /// * `value`: The value to set.
-    /// Returns:
-    /// * `result`: Nothing if the value was set successfully.
-    fn set(
-        ctxt: FunctionCallContext,
-        reference: ScriptValue,
-        key: ScriptValue,
-        value: ScriptValue,
-    ) -> Result<(), InteropError> {
-        profiling::function_scope!("set");
-        if let ScriptValue::Reference(mut self_) = reference {
-            let world = ctxt.world()?;
-            let mut path: ParsedPath = key.try_into()?;
-            if ctxt.convert_to_0_indexed() {
-                path.convert_to_0_indexed();
-            }
-            self_.index_path(path);
-            self_.with_reflect_mut(world.clone(), |r| {
-                let target_type_id = r
-                    .get_represented_type_info()
-                    .map(|i| i.type_id())
-                    .or_fake_id();
-                let other = <Box<dyn PartialReflect>>::from_script_ref(
-                    target_type_id,
-                    value,
-                    world.clone(),
-                )?;
-                r.try_apply(other.as_partial_reflect())
-                    .map_err(|e| InteropError::external_error(Box::new(e)))?;
-                Ok::<_, InteropError>(())
-            })??;
-        }
-        Ok(())
     }
 
     /// Pushes the value into the reference, if the reference is an appropriate container type.
