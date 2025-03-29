@@ -297,11 +297,7 @@ impl<'a> Section<'a> {
                 let types = self.ladfile.types.keys().collect::<Vec<_>>();
                 vec![SectionItem::TypesSummary {
                     types,
-                    types_directory: self
-                        .parent_path
-                        .join(linkify_filename(self.title()))
-                        .to_string_lossy()
-                        .to_string(),
+                    types_directory: PathBuf::from("./types").to_string_lossy().to_string(),
                     ladfile: self.ladfile,
                 }]
             }
@@ -540,7 +536,7 @@ impl IntoMarkdown for SectionItem<'_> {
                         link_builder.link(
                             Markdown::new_paragraph(printed_type_pretty).code(),
                             format!(
-                                "/{types_directory}/{}.md",
+                                "./{types_directory}/{}.md",
                                 linkify_filename(printed_type_for_url)
                             ),
                         );
