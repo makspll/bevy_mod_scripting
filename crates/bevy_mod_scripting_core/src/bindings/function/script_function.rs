@@ -11,9 +11,10 @@ use crate::{
     ScriptValue,
 };
 use bevy::prelude::{Reflect, Resource};
+use bevy::utils::hashbrown::HashMap;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::borrow::Cow;
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 use std::hash::Hash;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
