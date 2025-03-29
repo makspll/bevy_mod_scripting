@@ -1518,7 +1518,7 @@ impl Xtasks {
                     .stderr(std::process::Stdio::inherit())
                     .args(["plot", "create", "bms"])
                     .args(["--title", &plot_name])
-                    .args(["--x-axis", "date_time"])
+                    .args(["--x-axis", "version"])
                     .args(["--window", &window_seconds.to_string()])
                     .args(["--branches", MAIN_BRANCH_UUID])
                     .args(["--testbeds", testbed_uuid])
