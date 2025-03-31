@@ -96,7 +96,7 @@ pub fn generate_lad_file(
     );
 
     for (_, function) in function_registry.iter_namespace(World::into_namespace()) {
-        builder.add_function_info(function.info.clone());
+        builder.add_function_info(&function.info);
     }
 
     builder.set_insignificance(
@@ -131,13 +131,13 @@ pub fn generate_lad_file(
         for (_, function) in
             function_registry.iter_namespace(Namespace::OnType(type_info.type_id()))
         {
-            builder.add_function_info(function.info.clone());
+            builder.add_function_info(&function.info);
         }
     }
 
     // find functions on the global namespace
     for (_, function) in function_registry.iter_namespace(Namespace::Global) {
-        builder.add_function_info(function.info.clone());
+        builder.add_function_info(&function.info);
     }
 
     // find global instances

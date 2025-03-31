@@ -122,8 +122,6 @@ impl Default for RhaiScriptingPlugin {
                             let name = key.name.clone();
                             if ReservedKeyword::is_reserved_keyword(&name) {
                                 let new_name = format!("{}_", name);
-                                let mut function = function.clone();
-                                function.info.name = new_name.clone().into();
                                 re_insertions.push((key.namespace, new_name, function.clone()));
                             }
                         }

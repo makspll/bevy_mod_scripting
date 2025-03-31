@@ -1,6 +1,6 @@
 //! Contains functions defined by the [`bevy_mod_scripting_core`] crate
 
-use std::collections::HashMap;
+use std::{collections::HashMap, ops::Deref};
 
 use bevy::prelude::*;
 use bevy_mod_scripting_core::{
@@ -789,7 +789,7 @@ impl ReflectReference {
         let functions = world
             .get_functions_on_type(type_id)
             .into_iter()
-            .map(|(_, v)| Val::new(v.info))
+            .map(|(_, v)| Val::new(v.info.deref().clone()))
             .collect::<Vec<_>>();
         // convert to info
         Ok(functions)

@@ -319,16 +319,17 @@ impl<'t> LadFileBuilder<'t> {
     /// ```
     ///
     /// And then removes them from the original block, instead putting it in each argument / return docstring
-    pub fn add_function_info(&mut self, function_info: FunctionInfo) -> &mut Self {
+    pub fn add_function_info(&mut self, function_info: &FunctionInfo) -> &mut Self {
         let default_docstring = Cow::Owned("".into());
         let (main_docstring, arg_docstrings, return_docstring) =
             Self::split_docstring(function_info.docs.as_ref().unwrap_or(&default_docstring));
 
-        let function_id = self.lad_function_id_from_info(&function_info);
+        let function_id = self.lad_function_id_from_info(function_info);
         let lad_function = LadFunction {
-            identifier: function_info.name,
+            identifier: function_info.name.clone(),
             arguments: function_info
                 .arg_info
+                .clone()
                 .into_iter()
                 .map(|arg| {
                     let kind = match &arg.type_info {
@@ -351,6 +352,7 @@ impl<'t> LadFileBuilder<'t> {
                 kind: function_info
                     .return_info
                     .type_info
+                    .clone()
                     .map(|info| self.lad_type_kind_from_through_type(&info))
                     .unwrap_or_else(|| {
                         LadTypeKind::Unknown(
@@ -1080,9 +1082,9 @@ mod test {
         let mut lad_file = LadFileBuilder::new(&type_registry)
             .set_description("## Hello gentlemen\n I am  markdown file.\n - hello\n - world")
             .set_sorted(true)
-            .add_function_info(function_info)
-            .add_function_info(global_function_info)
-            .add_function_info(function_with_complex_args_info)
+            .add_function_info(&function_info)
+            .add_function_info(&global_function_info)
+            .add_function_info(&function_with_complex_args_info)
             .add_type::<StructType<usize>>()
             .add_type::<UnitType>()
             .add_type::<TupleStructType>()
