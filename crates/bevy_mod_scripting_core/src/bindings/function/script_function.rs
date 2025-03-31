@@ -70,24 +70,24 @@ impl FunctionCallContext {
     }
 }
 
-#[derive(Clone, Reflect)]
+#[derive(Reflect, Clone)]
 #[reflect(opaque)]
 /// A dynamic script function.
 pub struct DynamicScriptFunction {
     /// The meta information about the function
-    pub info: FunctionInfo,
+    pub info: Arc<FunctionInfo>,
     // TODO: info about the function, this is hard right now because of non 'static lifetimes in wrappers, we can't use TypePath etc
     func: Arc<
         dyn Fn(FunctionCallContext, VecDeque<ScriptValue>) -> ScriptValue + Send + Sync + 'static,
     >,
 }
 
-#[derive(Clone, Reflect)]
+#[derive(Reflect, Clone)]
 #[reflect(opaque)]
 /// A dynamic mutable script function.
 pub struct DynamicScriptFunctionMut {
     /// The meta information about the function
-    pub info: FunctionInfo,
+    pub info: Arc<FunctionInfo>,
     func: Arc<
         RwLock<
             // I'd rather consume an option or something instead of having the RWLock but I just wanna get this release out
@@ -129,30 +129,9 @@ impl DynamicScriptFunction {
     }
 
     /// Set the meta information about the function
-    pub fn with_info(self, info: FunctionInfo) -> Self {
-        Self { info, ..self }
-    }
-
-    /// Set the name of the function
-    pub fn with_name<N: Into<Cow<'static, str>>>(self, name: N) -> Self {
-        Self {
-            info: FunctionInfo {
-                name: name.into(),
-                ..self.info
-            },
-            func: self.func,
-        }
-    }
-
-    /// Set the namespace of the function
-    pub fn with_namespace(self, namespace: Namespace) -> Self {
-        Self {
-            info: FunctionInfo {
-                namespace,
-                ..self.info
-            },
-            func: self.func,
-        }
+    pub fn with_info(mut self, info: FunctionInfo) -> Self {
+        self.info = Arc::new(info);
+        self
     }
 }
 
@@ -187,30 +166,9 @@ impl DynamicScriptFunctionMut {
     }
 
     /// Set the meta information about the function
-    pub fn with_info(self, info: FunctionInfo) -> Self {
-        Self { info, ..self }
-    }
-
-    /// Set the name of the function
-    pub fn with_name<N: Into<Cow<'static, str>>>(self, name: N) -> Self {
-        Self {
-            info: FunctionInfo {
-                name: name.into(),
-                ..self.info
-            },
-            func: self.func,
-        }
-    }
-
-    /// Set the namespace of the function
-    pub fn with_namespace(self, namespace: Namespace) -> Self {
-        Self {
-            info: FunctionInfo {
-                namespace,
-                ..self.info
-            },
-            func: self.func,
-        }
+    pub fn with_info(mut self, info: FunctionInfo) -> Self {
+        self.info = Arc::new(info);
+        self
     }
 }
 
@@ -248,10 +206,11 @@ where
 {
     fn from(fn_: F) -> Self {
         DynamicScriptFunction {
-            info: FunctionInfo::default(),
+            info: FunctionInfo::default()
+                .with_name(std::any::type_name::<F>())
+                .into(),
             func: Arc::new(fn_),
         }
-        .with_name(std::any::type_name::<F>())
     }
 }
 
@@ -261,10 +220,11 @@ where
 {
     fn from(fn_: F) -> Self {
         DynamicScriptFunctionMut {
-            info: FunctionInfo::default(),
+            info: FunctionInfo::default()
+                .with_name(std::any::type_name::<F>())
+                .into(),
             func: Arc::new(RwLock::new(fn_)),
         }
-        .with_name(std::any::type_name::<F>())
     }
 }
 
@@ -711,7 +671,7 @@ mod test {
     #[test]
     fn test_invalid_amount_of_args_errors_nicely() {
         let fn_ = |a: usize, b: usize| a + b;
-        let script_function = fn_.into_dynamic_script_function().with_name("my_fn");
+        let script_function = fn_.into_dynamic_script_function();
 
         with_local_world(|| {
             let out = script_function.call(
@@ -723,7 +683,7 @@ mod test {
             assert_eq!(
                 out.unwrap_err(),
                 InteropError::function_interop_error(
-                    "my_fn",
+                    "<bevy_mod_scripting_core::bindings::function::script_function::test::test_invalid_amount_of_args_errors_nicely::{{closure}} as bevy_mod_scripting_core::bindings::function::script_function::ScriptFunction<fn(usize, usize) -> usize>>::into_dynamic_script_function::{{closure}}",
                     Namespace::Global,
                     InteropError::argument_count_mismatch(2, 1)
                 )
@@ -737,7 +697,7 @@ mod test {
         struct Comp;
 
         let fn_ = |_a: crate::bindings::function::from::Mut<Comp>| 0usize;
-        let script_function = fn_.into_dynamic_script_function().with_name("my_fn");
+        let script_function = fn_.into_dynamic_script_function();
 
         with_local_world(|| {
             let out = script_function.call(

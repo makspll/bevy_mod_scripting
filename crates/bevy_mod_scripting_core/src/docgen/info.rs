@@ -58,6 +58,18 @@ impl FunctionInfo {
         }
     }
 
+    /// Set the name of the function info.
+    pub fn with_name(mut self, name: impl Into<Cow<'static, str>>) -> Self {
+        self.name = name.into();
+        self
+    }
+
+    /// Set the namespace of the function info.
+    pub fn with_namespace(mut self, namespace: Namespace) -> Self {
+        self.namespace = namespace;
+        self
+    }
+
     /// Add an argument to the function info.
     pub fn add_arg<T: ArgMeta + TypedThrough + 'static>(
         mut self,
