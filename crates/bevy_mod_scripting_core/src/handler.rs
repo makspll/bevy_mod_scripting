@@ -6,7 +6,10 @@ use crate::{
     },
     context::ContextPreHandlingInitializer,
     error::{InteropErrorInner, ScriptError},
-    event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent},
+    event::{
+        CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent,
+        ScriptErrorEvent,
+    },
     extractors::{HandlerContext, WithWorldGuard},
     script::{ScriptComponent, ScriptId},
     IntoScriptPluginParams,
@@ -200,6 +203,17 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                     guard.clone(),
                 );
 
+                if event.trigger_response {
+                    send_callback_response(
+                        guard.clone(),
+                        ScriptCallbackResponseEvent::new(
+                            callback_label.clone(),
+                            script_id.clone(),
+                            call_result.clone(),
+                        ),
+                    );
+                }
+
                 match call_result {
                     Ok(_) => {}
                     Err(e) => {
@@ -231,6 +245,20 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     }
 
     handle_script_errors(guard, errors.into_iter());
+}
+
+/// Sends a callback response event to the world
+pub fn send_callback_response(world: WorldGuard, response: ScriptCallbackResponseEvent) {
+    let err = world.with_resource_mut(|mut events: Mut<Events<ScriptCallbackResponseEvent>>| {
+        events.send(response);
+    });
+
+    if let Err(err) = err {
+        bevy::log::error!(
+            "Failed to send script callback response: {}",
+            err.display_with_world(world.clone())
+        );
+    }
 }
 
 /// Handles errors caused by script execution and sends them to the error event channel
@@ -286,6 +314,27 @@ mod test {
 
     make_test_plugin!(crate);
 
+    fn assert_response_events(
+        app: &mut World,
+        expected: impl Iterator<Item = ScriptCallbackResponseEvent>,
+    ) {
+        let mut events = app
+            .get_resource_mut::<Events<ScriptCallbackResponseEvent>>()
+            .unwrap();
+        let responses = events.drain().collect::<Vec<_>>();
+        let expected: Vec<_> = expected.collect();
+        assert_eq!(
+            responses.len(),
+            expected.len(),
+            "Incorrect amount of events received"
+        );
+        for (a, b) in responses.iter().zip(expected.iter()) {
+            assert_eq!(a.label, b.label);
+            assert_eq!(a.script, b.script);
+            assert_eq!(a.response, b.response);
+        }
+    }
+
     fn setup_app<L: IntoCallbackLabel + 'static>(
         runtime: TestRuntime,
         scripts: HashMap<ScriptId, Script<TestPlugin>>,
@@ -293,6 +342,7 @@ mod test {
         let mut app = App::new();
 
         app.add_event::<ScriptCallbackEvent>();
+        app.add_event::<ScriptCallbackResponseEvent>();
         app.add_event::<ScriptErrorEvent>();
         app.insert_resource::<CallbackSettings<TestPlugin>>(CallbackSettings {
             callback_handler: |args, entity, script, _, ctxt, _, runtime| {
@@ -321,6 +371,43 @@ mod test {
     }
 
     #[test]
+    fn test_handler_emits_response_events() {
+        let test_script_id = Cow::Borrowed("test_script");
+        let test_script = Script {
+            id: test_script_id.clone(),
+            asset: None,
+            context: Arc::new(Mutex::new(TestContext::default())),
+        };
+        let scripts = HashMap::from_iter(vec![(test_script_id.clone(), test_script.clone())]);
+        let runtime = TestRuntime {
+            invocations: vec![].into(),
+        };
+        let mut app = setup_app::<OnTestCallback>(runtime, scripts);
+        app.world_mut()
+            .spawn(ScriptComponent(vec![test_script_id.clone()]));
+
+        app.world_mut().send_event(
+            ScriptCallbackEvent::new(
+                OnTestCallback::into_callback_label(),
+                vec![ScriptValue::String("test_args".into())],
+                crate::event::Recipients::All,
+            )
+            .with_response(),
+        );
+        app.update();
+
+        assert_response_events(
+            app.world_mut(),
+            vec![ScriptCallbackResponseEvent::new(
+                OnTestCallback::into_callback_label(),
+                test_script_id.clone(),
+                Ok(ScriptValue::Unit),
+            )]
+            .into_iter(),
+        );
+    }
+
+    #[test]
     fn test_handler_called_with_right_args() {
         let test_script_id = Cow::Borrowed("test_script");
         let test_script = Script {
@@ -343,35 +430,37 @@ mod test {
             vec![ScriptValue::String("test_args".into())],
         ));
         app.update();
+        {
+            let test_script = app
+                .world()
+                .get_resource::<Scripts<TestPlugin>>()
+                .unwrap()
+                .scripts
+                .get(&test_script_id)
+                .unwrap();
 
-        let test_script = app
-            .world()
-            .get_resource::<Scripts<TestPlugin>>()
-            .unwrap()
-            .scripts
-            .get(&test_script_id)
-            .unwrap();
+            let test_context = test_script.context.lock();
 
-        let test_context = test_script.context.lock();
+            let test_runtime = app
+                .world()
+                .get_resource::<RuntimeContainer<TestPlugin>>()
+                .unwrap();
 
-        let test_runtime = app
-            .world()
-            .get_resource::<RuntimeContainer<TestPlugin>>()
-            .unwrap();
+            assert_eq!(
+                test_context.invocations,
+                vec![ScriptValue::String("test_args".into())]
+            );
 
-        assert_eq!(
-            test_context.invocations,
-            vec![ScriptValue::String("test_args".into())]
-        );
-
-        let runtime_invocations = test_runtime.runtime.invocations.lock();
-        assert_eq!(
-            runtime_invocations
-                .iter()
-                .map(|(e, s)| (*e, s.clone()))
-                .collect::<Vec<_>>(),
-            vec![(test_entity_id, test_script_id.clone())]
-        );
+            let runtime_invocations = test_runtime.runtime.invocations.lock();
+            assert_eq!(
+                runtime_invocations
+                    .iter()
+                    .map(|(e, s)| (*e, s.clone()))
+                    .collect::<Vec<_>>(),
+                vec![(test_entity_id, test_script_id.clone())]
+            );
+        }
+        assert_response_events(app.world_mut(), vec![].into_iter());
     }
 
     #[test]
@@ -416,33 +505,35 @@ mod test {
         ));
 
         app.update();
+        {
+            let test_scripts = app.world().get_resource::<Scripts<TestPlugin>>().unwrap();
+            let test_runtime = app
+                .world()
+                .get_resource::<RuntimeContainer<TestPlugin>>()
+                .unwrap();
+            let test_runtime = test_runtime.runtime.invocations.lock();
+            let script_after = test_scripts.scripts.get(&test_script_id).unwrap();
+            let context_after = script_after.context.lock();
+            assert_eq!(
+                context_after.invocations,
+                vec![
+                    ScriptValue::String("test_args_script".into()),
+                    ScriptValue::String("test_args_entity".into())
+                ]
+            );
 
-        let test_scripts = app.world().get_resource::<Scripts<TestPlugin>>().unwrap();
-        let test_runtime = app
-            .world()
-            .get_resource::<RuntimeContainer<TestPlugin>>()
-            .unwrap();
-        let test_runtime = test_runtime.runtime.invocations.lock();
-        let script_after = test_scripts.scripts.get(&test_script_id).unwrap();
-        let context_after = script_after.context.lock();
-        assert_eq!(
-            context_after.invocations,
-            vec![
-                ScriptValue::String("test_args_script".into()),
-                ScriptValue::String("test_args_entity".into())
-            ]
-        );
-
-        assert_eq!(
-            test_runtime
-                .iter()
-                .map(|(e, s)| (*e, s.clone()))
-                .collect::<Vec<_>>(),
-            vec![
-                (test_entity_id, test_script_id.clone()),
-                (test_entity_id, test_script_id.clone())
-            ]
-        );
+            assert_eq!(
+                test_runtime
+                    .iter()
+                    .map(|(e, s)| (*e, s.clone()))
+                    .collect::<Vec<_>>(),
+                vec![
+                    (test_entity_id, test_script_id.clone()),
+                    (test_entity_id, test_script_id.clone())
+                ]
+            );
+        }
+        assert_response_events(app.world_mut(), vec![].into_iter());
     }
 
     #[test]
@@ -479,22 +570,24 @@ mod test {
         ));
 
         app.update();
+        {
+            let test_scripts = app.world().get_resource::<Scripts<TestPlugin>>().unwrap();
+            let test_context = test_scripts
+                .scripts
+                .get(&test_script_id)
+                .unwrap()
+                .context
+                .lock();
 
-        let test_scripts = app.world().get_resource::<Scripts<TestPlugin>>().unwrap();
-        let test_context = test_scripts
-            .scripts
-            .get(&test_script_id)
-            .unwrap()
-            .context
-            .lock();
-
-        assert_eq!(
-            test_context.invocations,
-            vec![
-                ScriptValue::String("test_args_script".into()),
-                ScriptValue::String("test_script_id".into())
-            ]
-        );
+            assert_eq!(
+                test_context.invocations,
+                vec![
+                    ScriptValue::String("test_args_script".into()),
+                    ScriptValue::String("test_script_id".into())
+                ]
+            );
+        }
+        assert_response_events(app.world_mut(), vec![].into_iter());
     }
 
     #[test]
