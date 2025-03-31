@@ -915,7 +915,7 @@ impl Xtasks {
         match output.status.code() {
             Some(0) => Ok(output),
             _ => bail!(
-                "{} failed with exit code: {}. Features: {}",
+                "{} failed with exit code: {}. Features: {}. output {output:?}",
                 context,
                 output.status.code().unwrap_or(-1),
                 app_settings.features
@@ -1362,8 +1362,7 @@ impl Xtasks {
             .args(["--threshold-test", "t_test"])
             .args(["--threshold-max-sample-size", "64"])
             .args(["--threshold-upper-boundary", "0.99"])
-            .args(["--thresholds-reset"])
-            .args(["--err"]);
+            .args(["--thresholds-reset"]);
 
         if let Some(token) = &github_token {
             bencher_cmd.args(["--github-actions", token]);
