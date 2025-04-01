@@ -23,7 +23,7 @@ use context::{
     ContextPreHandlingInitializer,
 };
 use error::ScriptError;
-use event::ScriptCallbackEvent;
+use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent};
 use handler::{CallbackSettings, HandlerFn};
 use runtime::{initialize_runtime, Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
 use script::{ScriptComponent, ScriptId, Scripts, StaticScripts};
@@ -302,6 +302,7 @@ fn once_per_app_init(app: &mut App) {
 
     app.add_event::<ScriptErrorEvent>()
         .add_event::<ScriptCallbackEvent>()
+        .add_event::<ScriptCallbackResponseEvent>()
         .init_resource::<AppReflectAllocator>()
         .init_resource::<StaticScripts>()
         .init_asset::<ScriptAsset>()

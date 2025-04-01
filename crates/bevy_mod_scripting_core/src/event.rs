@@ -128,6 +128,7 @@ pub enum Recipients {
 
 /// A callback event meant to trigger a callback in a subset/set of scripts in the world with the given arguments
 #[derive(Clone, Event, Debug)]
+#[non_exhaustive]
 pub struct ScriptCallbackEvent {
     /// The label of the callback
     pub label: CallbackLabel,
@@ -135,6 +136,8 @@ pub struct ScriptCallbackEvent {
     pub recipients: Recipients,
     /// The arguments to the callback
     pub args: Vec<ScriptValue>,
+    /// Whether the callback should emit a response event
+    pub trigger_response: bool,
 }
 
 impl ScriptCallbackEvent {
@@ -148,12 +151,48 @@ impl ScriptCallbackEvent {
             label: label.into(),
             args,
             recipients,
+            trigger_response: false,
         }
+    }
+
+    /// Marks this event as expecting a response.
+    ///
+    /// When set, an `ScriptCallbackResponse` event will be emitted when the callback is completed with the result of the callback IF the callback was executed.
+    pub fn with_response(mut self) -> Self {
+        self.trigger_response = true;
+        self
     }
 
     /// Creates a new callback event with the given label, arguments and all scripts as recipients
     pub fn new_for_all<L: Into<CallbackLabel>>(label: L, args: Vec<ScriptValue>) -> Self {
         Self::new(label, args, Recipients::All)
+    }
+}
+
+/// Event published when a script completes a callback, and a response is requested
+#[derive(Clone, Event, Debug)]
+#[non_exhaustive]
+pub struct ScriptCallbackResponseEvent {
+    /// the label of the callback
+    pub label: CallbackLabel,
+    /// the script that replied
+    pub script: ScriptId,
+    /// the response received
+    pub response: Result<ScriptValue, ScriptError>,
+}
+
+impl ScriptCallbackResponseEvent {
+    /// Creates a new callback response event with the given label, script and response
+    pub fn new<L: Into<CallbackLabel>>(
+        label: L,
+        script: ScriptId,
+        response: Result<ScriptValue, ScriptError>,
+    ) -> Self {
+        Self {
+            label: label.into(),
+            script,
+            response,
+        }
     }
 }
 
