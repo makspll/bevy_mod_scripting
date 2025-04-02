@@ -33,6 +33,7 @@ use std::{any::TypeId, fmt::Debug};
 /// Bindings defined on this type, apply to ALL references.
 #[derive(Debug, Clone, PartialEq, Eq, Reflect)]
 #[reflect(Default, opaque)]
+#[non_exhaustive]
 pub struct ReflectReference {
     /// The base type and id of the value we want to access
     pub base: ReflectBaseType,
@@ -124,19 +125,10 @@ impl ReflectReference {
         value: Box<dyn PartialReflect>,
         allocator: &mut ReflectAllocator,
     ) -> Result<ReflectReference, InteropError> {
-        match value.get_represented_type_info() {
-            Some(i) => {
-                let id = allocator.allocate_boxed(value);
-                Ok(ReflectReference {
-                    base: ReflectBaseType {
-                        type_id: i.type_id(),
-                        base_id: ReflectBase::Owned(id),
-                    },
-                    reflect_path: ParsedPath(Vec::default()),
-                })
-            }
-            None => Err(InteropError::unsupported_operation(None, Some(value), "Tried to create a reference to a partial reflect value with no represented type info")),
-        }
+        Ok(ReflectReference {
+            base: ReflectBaseType::new_allocated_base_partial(value, allocator)?,
+            reflect_path: ParsedPath(Vec::default()),
+        })
     }
 
     /// Create a new reference to a value by allocating it.
@@ -144,25 +136,16 @@ impl ReflectReference {
         value: Box<dyn Reflect>,
         allocator: &mut ReflectAllocator,
     ) -> ReflectReference {
-        let type_id = value.type_id();
-        let id = allocator.allocate_boxed(value.into_partial_reflect());
         ReflectReference {
-            base: ReflectBaseType {
-                type_id,
-                base_id: ReflectBase::Owned(id),
-            },
+            base: ReflectBaseType::new_allocated_base(value, allocator),
             reflect_path: ParsedPath(Vec::default()),
         }
     }
 
     /// Create a new reference to resource
     pub fn new_resource_ref<T: Resource>(world: WorldGuard) -> Result<Self, InteropError> {
-        let reflect_id = ReflectAccessId::for_resource::<T>(&world.as_unsafe_world_cell()?)?;
         Ok(Self {
-            base: ReflectBaseType {
-                type_id: TypeId::of::<T>(),
-                base_id: ReflectBase::Resource(reflect_id.into()),
-            },
+            base: ReflectBaseType::new_resource_base::<T>(world)?,
             reflect_path: ParsedPath(Vec::default()),
         })
     }
@@ -172,12 +155,8 @@ impl ReflectReference {
         entity: Entity,
         world: WorldGuard,
     ) -> Result<Self, InteropError> {
-        let reflect_id = ReflectAccessId::for_component::<T>(&world.as_unsafe_world_cell()?)?;
         Ok(Self {
-            base: ReflectBaseType {
-                type_id: TypeId::of::<T>(),
-                base_id: ReflectBase::Component(entity, reflect_id.into()),
-            },
+            base: ReflectBaseType::new_component_base::<T>(entity, world)?,
             reflect_path: ParsedPath(Vec::default()),
         })
     }
@@ -407,6 +386,7 @@ impl ReflectReference {
             self.base.type_id,
             "Invariant violated"
         );
+
         let base = unsafe { from_ptr_data.as_reflect_mut(ptr.into_inner()) };
         drop(type_registry);
         self.walk_path_mut(base.as_partial_reflect_mut())
@@ -435,9 +415,70 @@ impl ReflectReference {
 /// The type id and base id of the value we want to access
 pub struct ReflectBaseType {
     /// The type id of the value we want to access
-    pub type_id: TypeId,
+    /// This MUST always be inline with the type id we are pointing to
+    pub(crate) type_id: TypeId,
     /// The base kind of the value we want to access
     pub base_id: ReflectBase,
+}
+
+impl ReflectBaseType {
+    #[inline]
+    /// Returns the type id of the value pointed to by the base
+    pub fn type_id(&self) -> TypeId {
+        self.type_id
+    }
+
+    /// Create a new reflection base pointing to a component on the given entity
+    pub fn new_component_base<T: Component>(
+        entity: Entity,
+        world: WorldGuard,
+    ) -> Result<Self, InteropError> {
+        let reflect_id = ReflectAccessId::for_component::<T>(&world.as_unsafe_world_cell()?)?;
+        Ok(Self {
+            type_id: TypeId::of::<T>(),
+            base_id: ReflectBase::Component(entity, reflect_id.into()),
+        })
+    }
+
+    /// Create a new reflection base pointing to a resource
+    pub fn new_resource_base<T: Resource>(world: WorldGuard) -> Result<Self, InteropError> {
+        let reflect_id = ReflectAccessId::for_resource::<T>(&world.as_unsafe_world_cell()?)?;
+        Ok(Self {
+            type_id: TypeId::of::<T>(),
+            base_id: ReflectBase::Resource(reflect_id.into()),
+        })
+    }
+
+    /// Create a new reflection base pointing to a value which will be allocated in the allocator
+    pub fn new_allocated_base(value: Box<dyn Reflect>, allocator: &mut ReflectAllocator) -> Self {
+        let type_id = value.type_id();
+        let id = allocator.allocate_boxed(value.into_partial_reflect());
+        Self {
+            type_id,
+            base_id: ReflectBase::Owned(id),
+        }
+    }
+
+    /// Create a new reflection base pointing to a value which will be allocated in the allocator
+    pub fn new_allocated_base_partial(
+        value: Box<dyn PartialReflect>,
+        allocator: &mut ReflectAllocator,
+    ) -> Result<Self, InteropError> {
+        match value.get_represented_type_info() {
+            Some(i) => {
+                let id = allocator.allocate_boxed(value);
+                Ok(Self {
+                    type_id: i.type_id(),
+                    base_id: ReflectBase::Owned(id),
+                })
+            }
+            None => Err(InteropError::unsupported_operation(
+                None,
+                Some(value),
+                "Tried to create a reference base to a partial reflect value with no represented type info",
+            )),
+        }
+    }
 }
 
 /// The Id of the kind of reflection base being pointed to
