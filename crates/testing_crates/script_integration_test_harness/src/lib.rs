@@ -411,7 +411,12 @@ where
 
     let mut app = setup_integration_test(|_, _| {});
 
-    app.add_plugins((ScriptFunctionsPlugin, plugin));
+    app.add_plugins((
+        ScriptFunctionsPlugin,
+        CoreScriptGlobalsPlugin::default(),
+        BMSScriptingInfrastructurePlugin,
+        plugin,
+    ));
     register_test_functions(&mut app);
 
     let script_id = script_id.to_owned();
