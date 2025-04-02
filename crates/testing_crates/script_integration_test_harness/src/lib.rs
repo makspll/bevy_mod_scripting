@@ -22,8 +22,8 @@ use bevy::{
 use bevy_mod_scripting_core::{
     asset::ScriptAsset,
     bindings::{
-        pretty_print::DisplayWithWorld, script_value::ScriptValue, ReflectAccessId,
-        WorldAccessGuard, WorldGuard,
+        pretty_print::DisplayWithWorld, script_value::ScriptValue, CoreScriptGlobalsPlugin,
+        ReflectAccessId, WorldAccessGuard, WorldGuard,
     },
     callback_labels,
     error::{InteropError, ScriptError},
@@ -31,7 +31,7 @@ use bevy_mod_scripting_core::{
     extractors::{HandlerContext, WithWorldGuard},
     handler::handle_script_errors,
     script::ScriptId,
-    IntoScriptPluginParams, ScriptingPlugin,
+    BMSScriptingInfrastructurePlugin, IntoScriptPluginParams, ScriptingPlugin,
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
 use criterion::{measurement::Measurement, BatchSize};
@@ -203,7 +203,12 @@ pub fn execute_integration_test<
 
     let mut app = setup_integration_test(init);
 
-    app.add_plugins((ScriptFunctionsPlugin, plugin));
+    app.add_plugins((
+        ScriptFunctionsPlugin,
+        CoreScriptGlobalsPlugin::default(),
+        BMSScriptingInfrastructurePlugin,
+        plugin,
+    ));
 
     register_test_functions(&mut app);
 

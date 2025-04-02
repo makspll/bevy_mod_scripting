@@ -301,6 +301,7 @@ mod test {
         event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent},
         runtime::RuntimeContainer,
         script::{Script, ScriptComponent, ScriptId, Scripts, StaticScripts},
+        BMSScriptingInfrastructurePlugin,
     };
 
     use super::*;
@@ -597,6 +598,7 @@ mod test {
             AssetPlugin::default(),
             DiagnosticsPlugin,
             TestPlugin::default(),
+            BMSScriptingInfrastructurePlugin,
         ));
 
         assert!(app
