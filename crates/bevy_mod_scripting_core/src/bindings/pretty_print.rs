@@ -123,7 +123,7 @@ impl ReflectReferencePrinter {
     }
 
     fn pretty_print_base(base: &ReflectBaseType, world: Option<WorldGuard>, out: &mut String) {
-        let type_id = base.type_id;
+        let type_id = base.type_id();
         let type_path = if let Some(world) = world {
             type_id.display_with_world(world.clone())
         } else {
