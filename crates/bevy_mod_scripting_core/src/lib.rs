@@ -10,9 +10,8 @@ use asset::{
 use bevy::prelude::*;
 use bindings::{
     function::script_function::AppScriptFunctionRegistry, garbage_collector,
-    globals::AppScriptGlobalsRegistry, schedule::AppScheduleRegistry, script_value::ScriptValue,
-    AppReflectAllocator, DynamicScriptComponentPlugin, ReflectAllocator, ReflectReference,
-    ScriptTypeRegistration,
+    schedule::AppScheduleRegistry, script_value::ScriptValue, AppReflectAllocator,
+    DynamicScriptComponentPlugin, ReflectAllocator, ReflectReference, ScriptTypeRegistration,
 };
 use commands::{AddStaticScript, RemoveStaticScript};
 use context::{
@@ -252,6 +251,7 @@ fn pre_register_componnents(app: &mut App) {
 
 /// A plugin defining shared settings between various scripting plugins
 /// It is necessary to register this plugin for any of them to work
+#[derive(Default)]
 pub struct BMSScriptingInfrastructurePlugin;
 
 impl Plugin for BMSScriptingInfrastructurePlugin {
@@ -263,7 +263,6 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
             .init_resource::<StaticScripts>()
             .init_asset::<ScriptAsset>()
             .init_resource::<AppScriptFunctionRegistry>()
-            .init_resource::<AppScriptGlobalsRegistry>()
             .insert_resource(AppScheduleRegistry::new());
 
         app.add_systems(
