@@ -16,7 +16,7 @@ fn main() -> std::io::Result<()> {
     app.add_plugins((
         // normally the global plugin is included as part of each scripting plugin, here we just take
         // the definitions by themselves
-        CoreScriptGlobalsPlugin,
+        CoreScriptGlobalsPlugin::default(),
         ScriptFunctionsPlugin,
     ));
 

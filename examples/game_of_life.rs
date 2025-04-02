@@ -15,13 +15,13 @@ use bevy::{
     window::{PrimaryWindow, WindowResized},
 };
 use bevy_console::{make_layer, AddConsoleCommand, ConsoleCommand, ConsoleOpen, ConsolePlugin};
-use bevy_mod_scripting::ScriptFunctionsPlugin;
+use bevy_mod_scripting::{BMSPlugin, ScriptFunctionsPlugin};
 use bevy_mod_scripting_core::{
     asset::ScriptAsset,
     bindings::{
         function::namespace::{GlobalNamespace, NamespaceBuilder},
         script_value::ScriptValue,
-        AllocatorDiagnosticPlugin,
+        AllocatorDiagnosticPlugin, CoreScriptGlobalsPlugin,
     },
     callback_labels,
     commands::AddStaticScript,
@@ -115,12 +115,7 @@ pub enum GameOfLifeCommand {
 // ------------- GAME OF LIFE
 fn game_of_life_app(app: &mut App) -> &mut App {
     app.insert_resource(Time::<Fixed>::from_seconds(UPDATE_FREQUENCY.into()))
-        .add_plugins((
-            // for scripting
-            LuaScriptingPlugin::default(),
-            RhaiScriptingPlugin::default(),
-            ScriptFunctionsPlugin,
-        ))
+        .add_plugins(BMSPlugin)
         .register_type::<LifeState>()
         .register_type::<Settings>()
         .init_resource::<Settings>()

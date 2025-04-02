@@ -12,6 +12,15 @@ categories = ["game-development"]
 readme = "readme.md"
 
 [features]
+bevy_core = ["bevy_bindings"]
+bevy_ecs = ["bevy_bindings"]
+bevy_hierarchy = ["bevy_bindings"]
+bevy_input = ["bevy_bindings"]
+bevy_math = ["bevy_bindings"]
+bevy_reflect = ["bevy_bindings"]
+bevy_time = ["bevy_bindings"]
+bevy_transform = ["bevy_bindings"]
+
 core_functions = []
 bevy_bindings = []
 lua_bindings = ["bevy_mod_scripting_lua"]
@@ -19,17 +28,7 @@ rhai_bindings = ["bevy_mod_scripting_rhai"]
 
 
 [dependencies]
-bevy = { workspace = true, features = [
-    "bevy_asset",
-    "bevy_animation",
-    "bevy_core_pipeline",
-    "bevy_ui",
-    "bevy_pbr",
-    "bevy_render",
-    "bevy_text",
-    "bevy_sprite",
-    "multi_threaded",
-] }
+bevy = { workspace = true }
 profiling = { workspace = true }
 uuid = "1.11"
 smol_str = "0.2.2"

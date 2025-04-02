@@ -5,6 +5,7 @@ use std::{collections::HashMap, sync::Arc};
 use bevy::{
     app::Plugin,
     ecs::{entity::Entity, reflect::AppTypeRegistry, world::World},
+    reflect::TypeRegistration,
 };
 use bevy_mod_scripting_derive::script_globals;
 
@@ -20,14 +21,37 @@ use crate::{
 
 use super::AppScriptGlobalsRegistry;
 
-/// A plugin introducing core globals for the BMS framework
-pub struct CoreScriptGlobalsPlugin;
+/// A plugin introducing core globals for the BMS framework.
+///
+/// By default all types added to the type registry are present as globals, you can customize this behavior
+/// by providing a filter function
+pub struct CoreScriptGlobalsPlugin {
+    /// the filter function used to determine which types are registered as globals
+    /// When `true` for the given type registration, the type will be registered as a global.
+    _filter: fn(&TypeRegistration) -> bool,
+
+    /// Whether to register static references to types
+    /// By default static type references such as `Vec3` or `Mat3` are accessible directly from the global namespace.
+    register_static_references: bool,
+}
+
+impl Default for CoreScriptGlobalsPlugin {
+    fn default() -> Self {
+        Self {
+            _filter: |_| true,
+            register_static_references: true,
+        }
+    }
+}
 
 impl Plugin for CoreScriptGlobalsPlugin {
     fn build(&self, _app: &mut bevy::app::App) {}
     fn finish(&self, app: &mut bevy::app::App) {
         profiling::function_scope!("app finish");
-        register_static_core_globals(app.world_mut());
+
+        if self.register_static_references {
+            register_static_core_globals(app.world_mut());
+        }
         register_core_globals(app.world_mut());
     }
 }

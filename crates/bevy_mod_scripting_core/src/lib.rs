@@ -9,11 +9,8 @@ use asset::{
 };
 use bevy::prelude::*;
 use bindings::{
-    function::script_function::AppScriptFunctionRegistry,
-    garbage_collector,
-    globals::{core::CoreScriptGlobalsPlugin, AppScriptGlobalsRegistry},
-    schedule::AppScheduleRegistry,
-    script_value::ScriptValue,
+    function::script_function::AppScriptFunctionRegistry, garbage_collector,
+    globals::AppScriptGlobalsRegistry, schedule::AppScheduleRegistry, script_value::ScriptValue,
     AppReflectAllocator, DynamicScriptComponentPlugin, ReflectAllocator, ReflectReference,
     ScriptTypeRegistration,
 };
@@ -137,9 +134,6 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
 
         register_script_plugin_systems::<P>(app);
 
-        // add extension for the language to the asset loader
-        once_per_app_init(app);
-
         if !self.additional_supported_extensions.is_empty() {
             app.add_supported_script_extensions(
                 self.additional_supported_extensions,
@@ -148,10 +142,6 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
         }
 
         register_types(app);
-    }
-
-    fn finish(&self, app: &mut App) {
-        once_per_app_finalize(app);
     }
 }
 
@@ -246,36 +236,6 @@ impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugi
     }
 }
 
-fn once_per_app_finalize(app: &mut App) {
-    #[derive(Resource)]
-    struct BMSFinalized;
-
-    if app.world().contains_resource::<BMSFinalized>() {
-        return;
-    }
-    app.insert_resource(BMSFinalized);
-
-    // read extensions from asset settings
-    let asset_settings_extensions = app
-        .world_mut()
-        .get_resource_or_init::<ScriptAssetSettings>()
-        .supported_extensions;
-
-    // convert extensions to static array
-    bevy::log::info!(
-        "Initializing BMS with Supported extensions: {:?}",
-        asset_settings_extensions
-    );
-
-    app.register_asset_loader(ScriptAssetLoader {
-        extensions: asset_settings_extensions,
-        preprocessor: None,
-    });
-
-    // pre-register component id's
-    pre_register_componnents(app);
-}
-
 /// Ensures all types with `ReflectComponent` type data are pre-registered with component ID's
 fn pre_register_componnents(app: &mut App) {
     let type_registry = app
@@ -290,34 +250,54 @@ fn pre_register_componnents(app: &mut App) {
     }
 }
 
-// One of registration of things that need to be done only once per app
-fn once_per_app_init(app: &mut App) {
-    #[derive(Resource)]
-    struct BMSInitialized;
+/// A plugin defining shared settings between various scripting plugins
+/// It is necessary to register this plugin for any of them to work
+pub struct BMSScriptingInfrastructurePlugin;
 
-    if app.world().contains_resource::<BMSInitialized>() {
-        return;
+impl Plugin for BMSScriptingInfrastructurePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_event::<ScriptErrorEvent>()
+            .add_event::<ScriptCallbackEvent>()
+            .add_event::<ScriptCallbackResponseEvent>()
+            .init_resource::<AppReflectAllocator>()
+            .init_resource::<StaticScripts>()
+            .init_asset::<ScriptAsset>()
+            .init_resource::<AppScriptFunctionRegistry>()
+            .init_resource::<AppScriptGlobalsRegistry>()
+            .insert_resource(AppScheduleRegistry::new());
+
+        app.add_systems(
+            PostUpdate,
+            ((garbage_collector).in_set(ScriptingSystemSet::GarbageCollection),),
+        );
+
+        configure_asset_systems(app);
+
+        DynamicScriptComponentPlugin.build(app);
     }
-    app.insert_resource(BMSInitialized);
 
-    app.add_event::<ScriptErrorEvent>()
-        .add_event::<ScriptCallbackEvent>()
-        .add_event::<ScriptCallbackResponseEvent>()
-        .init_resource::<AppReflectAllocator>()
-        .init_resource::<StaticScripts>()
-        .init_asset::<ScriptAsset>()
-        .init_resource::<AppScriptFunctionRegistry>()
-        .init_resource::<AppScriptGlobalsRegistry>()
-        .insert_resource(AppScheduleRegistry::new());
+    fn finish(&self, app: &mut App) {
+        // read extensions from asset settings
+        let asset_settings_extensions = app
+            .world_mut()
+            .get_resource_or_init::<ScriptAssetSettings>()
+            .supported_extensions;
 
-    app.add_systems(
-        PostUpdate,
-        ((garbage_collector).in_set(ScriptingSystemSet::GarbageCollection),),
-    );
+        // convert extensions to static array
+        bevy::log::info!(
+            "Initializing BMS with Supported extensions: {:?}",
+            asset_settings_extensions
+        );
 
-    app.add_plugins((CoreScriptGlobalsPlugin, DynamicScriptComponentPlugin));
+        app.register_asset_loader(ScriptAssetLoader {
+            extensions: asset_settings_extensions,
+            preprocessor: None,
+        });
 
-    configure_asset_systems(app);
+        // pre-register component id's
+        pre_register_componnents(app);
+        DynamicScriptComponentPlugin.finish(app);
+    }
 }
 
 /// Systems registered per-language
@@ -450,7 +430,7 @@ mod test {
             .resource_mut::<ScriptAssetSettings>()
             .supported_extensions = &["lua", "rhai"];
 
-        once_per_app_finalize(&mut app);
+        BMSScriptingInfrastructurePlugin.finish(&mut app);
 
         let asset_loader = app
             .world()
@@ -482,7 +462,7 @@ mod test {
 
         assert!(app.world_mut().component_id::<Comp>().is_none());
 
-        once_per_app_finalize(&mut app);
+        BMSScriptingInfrastructurePlugin.finish(&mut app);
 
         assert!(app.world_mut().component_id::<Comp>().is_some());
     }
