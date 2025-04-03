@@ -1,7 +1,6 @@
 #![allow(missing_docs)]
 
 use ::bevy::prelude::*;
-#[cfg(feature = "bevy_bindings")]
 pub mod bevy_bindings;
 pub mod core;
 pub use core::*;

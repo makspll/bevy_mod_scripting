@@ -23,7 +23,6 @@ features = ["lua54", "rhai"]
 [features]
 default = [
     "core_functions",
-    "bevy_bindings",
     "bevy_core_bindings",
     "bevy_ecs_bindings",
     "bevy_hierarchy_bindings",
@@ -49,8 +48,6 @@ luau = ["bevy_mod_scripting_lua/luau", "lua"]
 
 # bindings 
 core_functions = ["bevy_mod_scripting_functions/core_functions"]
-bevy_bindings = ["bevy_mod_scripting_functions/bevy_bindings"]
-
 bevy_core_bindings = ["bevy_mod_scripting_functions/bevy_core"]
 bevy_ecs_bindings = ["bevy_mod_scripting_functions/bevy_ecs"]
 bevy_hierarchy_bindings = ["bevy_mod_scripting_functions/bevy_hierarchy"]
