@@ -236,7 +236,7 @@ impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugi
 }
 
 /// Ensures all types with `ReflectComponent` type data are pre-registered with component ID's
-fn pre_register_componnents(app: &mut App) {
+fn pre_register_components(app: &mut App) {
     let type_registry = app
         .world_mut()
         .get_resource_or_init::<AppTypeRegistry>()
@@ -294,7 +294,7 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
         });
 
         // pre-register component id's
-        pre_register_componnents(app);
+        pre_register_components(app);
         DynamicScriptComponentPlugin.finish(app);
     }
 }
