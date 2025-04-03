@@ -1324,17 +1324,12 @@ impl Xtasks {
     ) -> Result<Output> {
         log::info!("Profiling enabled: {profile}");
 
-        let mut features = vec![
-            Feature::Lua54,
-            Feature::Rhai,
-            Feature::CoreFunctions,
-            Feature::BevyBindings,
-        ];
+        let mut features = Features::default();
 
         if profile {
             std::env::set_var("ENABLE_PROFILING", "1");
             // features.push(Feature::BevyTracy);
-            features.push(Feature::ProfileWithTracy);
+            features.0.insert(Feature::ProfileWithTracy);
         } else {
             std::env::set_var("RUST_LOG", "bevy_mod_scripting=error");
         }
@@ -1347,7 +1342,7 @@ impl Xtasks {
 
         let output = Self::run_workspace_command(
             // run with just lua54
-            &app_settings.with_features(Features::new(features)),
+            &app_settings.with_features(features),
             "bench",
             "Failed to run benchmarks",
             args,

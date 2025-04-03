@@ -28,7 +28,6 @@ pub use bevy_mod_scripting_functions::*;
 
 plugin_group! {
     pub struct BMSPlugin {
-        :CoreScriptGlobalsPlugin,
         :ScriptFunctionsPlugin,
         :CoreScriptGlobalsPlugin,
         :BMSScriptingInfrastructurePlugin,
