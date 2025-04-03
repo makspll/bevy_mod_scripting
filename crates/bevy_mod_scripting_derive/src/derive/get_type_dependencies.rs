@@ -119,7 +119,7 @@ struct Args {
 
 impl Args {
     fn parse(attrs: &[syn::Attribute]) -> syn::Result<Self> {
-        let mut bms_core_path = parse_quote!(bevy_mod_scripting_core);
+        let mut bms_core_path = parse_quote!(::bevy_mod_scripting::core);
         let mut underlying = None;
         let mut dont_recurse = false;
 
