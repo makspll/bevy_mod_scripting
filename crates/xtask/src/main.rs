@@ -32,7 +32,6 @@ use strum::{IntoEnumIterator, VariantNames};
 #[strum(serialize_all = "snake_case")]
 enum Feature {
     // bindings
-    BevyBindings,
     CoreFunctions,
     BevyCoreBindings,
     BevyEcsBindings,
@@ -120,9 +119,7 @@ impl IntoFeatureGroup for Feature {
             | Feature::BevyReflectBindings
             | Feature::BevyTimeBindings
             | Feature::BevyTransformBindings => FeatureGroup::BMSFeatureNotInPowerset,
-            Feature::BevyBindings | Feature::CoreFunctions | Feature::ProfileWithTracy => {
-                FeatureGroup::BMSFeature
-            } // don't use wildcard here, we want to be explicit
+            Feature::CoreFunctions | Feature::ProfileWithTracy => FeatureGroup::BMSFeature, // don't use wildcard here, we want to be explicit
         }
     }
 }
@@ -136,7 +133,6 @@ impl Default for Features {
         Features::new(vec![
             Feature::Lua54,
             Feature::CoreFunctions,
-            Feature::BevyBindings,
             Feature::BevyCoreBindings,
             Feature::BevyEcsBindings,
             Feature::BevyHierarchyBindings,
