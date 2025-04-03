@@ -277,7 +277,7 @@ pub fn execute_integration_test<
         }
 
         let events_completed = app.world_mut().resource_ref::<Events<TestEventFinished>>();
-        if events_completed.len() > 0 {
+        if !events_completed.is_empty() {
             return Ok(());
         }
     }
