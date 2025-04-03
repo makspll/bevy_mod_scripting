@@ -13,17 +13,13 @@ Choose the language features you wish enabled and add them to the features block
 
 ## Bevy Plugin
 
-The next step is to add the BMS plugin to your application, on top of any other extras you want included in your app:
+The next step is to add the BMS plugin to your application.
 
 ```rust,ignore
-app.add_plugins((
-    LuaScriptingPlugin::default(),
-    ScriptFunctionsPlugin
-));
+app.add_plugins(BMSPlugin);
 ```
 
-The above is how you'd setup BMS for Lua, if you want to use another language, simply use a corresponding plugin from the integration crate.
-
+You can modify each of the plugins contained within the plugin group using `set(MySubPlugin)`.
 
 ## Language Features
 

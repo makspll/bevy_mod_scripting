@@ -159,3 +159,12 @@ There are a few reserved functions that you can override by registering them on 
 In this context `overridable` indicates whether language implementations will look for a specific function on your type before looking at the generic `ReflectReference` namespace. You can still remove the existing registration for these functions on the `ReflectReference` namespace if you want to replace them with your own implementation.
 
 Note the `ReflectReference` namespace is special, in that functions defined on it, act like a fallback and hence apply to ALL references.
+
+
+## Globals
+
+By default, each type registered with the type registry, has the following set:
+- a static reference in the global namespace, i.e.: `Vec3`, `Mat3`
+- an entry in the `types` global type cache, i.e.: `types.Vec3`, `types.Mat3`
+
+You can filter the types included by customising the `CoreScriptGlobalsPlugin`

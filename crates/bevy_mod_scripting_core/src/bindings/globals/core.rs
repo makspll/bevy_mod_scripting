@@ -28,11 +28,11 @@ use super::AppScriptGlobalsRegistry;
 pub struct CoreScriptGlobalsPlugin {
     /// the filter function used to determine which types are registered as globals
     /// When `true` for the given type registration, the type will be registered as a global.
-    filter: fn(&TypeRegistration) -> bool,
+    pub filter: fn(&TypeRegistration) -> bool,
 
     /// Whether to register static references to types
     /// By default static type references such as `Vec3` or `Mat3` are accessible directly from the global namespace.
-    register_static_references: bool,
+    pub register_static_references: bool,
 }
 
 impl Default for CoreScriptGlobalsPlugin {
