@@ -31,10 +31,11 @@
         <!-- Custom theme stylesheets -->
 
 
-        <!-- Provide site root to javascript -->
+        <!-- Provide site root and default themes to javascript -->
         <script>
-            var path_to_root = "../../";
-            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+            const path_to_root = "../../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc.js"></script>
@@ -44,8 +45,8 @@
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
-                var theme = localStorage.getItem('mdbook-theme');
-                var sidebar = localStorage.getItem('mdbook-sidebar');
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
 
                 if (theme.startsWith('"') && theme.endsWith('"')) {
                     localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
@@ -59,7 +60,8 @@
 
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script>
-            var theme;
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
             const html = document.documentElement;
@@ -72,8 +74,8 @@
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            var sidebar = null;
-            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
@@ -109,6 +111,7 @@
                             <i class="fa fa-paint-brush"></i>
                         </button>
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
@@ -190,44 +193,44 @@ assert_relative_eq!(rotation1 * Vec2::X, Vec2::Y);
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
-<tr><td><a href="./rot2/from_sin_cos.html">from_sin_cos</a></td><td>Creates a [`Rot2`] from the sine and cosine of an angle in radians.  The rotation is only valid if `sin * sin + cos * cos == 1.0`.  # Panics  Panics if `sin * sin + cos * cos != 1.0` when the `glam_assert` feature is enabled.</td></tr>
-<tr><td><a href="./rot2/length_recip.html">length_recip</a></td><td>Computes `1.0 / self.length()`.  For valid results, `self` must _not_ have a length of zero.</td></tr>
-<tr><td><a href="./rot2/slerp.html">slerp</a></td><td>Performs a spherical linear interpolation between `self` and `end`  based on the value `s`.  This c...</td></tr>
-<tr><td><a href="./rot2/degrees.html">degrees</a></td><td>Creates a [`Rot2`] from a counterclockwise angle in degrees.  # Note  The input rotation will always be clamped to the range `(-180°, 180°]...</td></tr>
 <tr><td><a href="./rot2/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./rot2/length_squared.html">length_squared</a></td><td>Computes the squared length or norm of the complex number used to represent the rotation.  This is ...</td></tr>
-<tr><td><a href="./rot2/sin_cos.html">sin_cos</a></td><td>Returns the sine and cosine of the rotation angle in radians.</td></tr>
-<tr><td><a href="./rot2/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./rot2/nlerp.html">nlerp</a></td><td>Performs a linear interpolation between `self` and `rhs` based on  the value `s`, and normalizes th...</td></tr>
+<tr><td><a href="./rot2/mul-2.html">mul-2</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./rot2/normalize.html">normalize</a></td><td>Returns `self` with a length of `1.0`.  Note that [`Rot2`] should typically already be normalized by design.  Manual normalization is only needed when successive operations result in  accumulated floating point error, or if the rotation was constructed  with invalid values.  # Panics  Panics if `self` has a length of zero, NaN, or infinity when debug assertions are enabled.</td></tr>
 <tr><td><a href="./rot2/mul-1.html">mul-1</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./rot2/slerp.html">slerp</a></td><td>Performs a spherical linear interpolation between `self` and `end`  based on the value `s`.  This c...</td></tr>
+<tr><td><a href="./rot2/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./rot2/mul.html">mul</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./rot2/is_finite.html">is_finite</a></td><td>Returns `true` if the rotation is neither infinite nor NaN.</td></tr>
+<tr><td><a href="./rot2/as_turn_fraction.html">as_turn_fraction</a></td><td>Returns the rotation as a fraction of a full 360 degree turn.</td></tr>
+<tr><td><a href="./rot2/sin_cos.html">sin_cos</a></td><td>Returns the sine and cosine of the rotation angle in radians.</td></tr>
 <tr><td><a href="./rot2/inverse.html">inverse</a></td><td>Returns the inverse of the rotation. This is also the conjugate  of the unit complex number represe...</td></tr>
 <tr><td><a href="./rot2/is_nan.html">is_nan</a></td><td>Returns `true` if the rotation is NaN.</td></tr>
-<tr><td><a href="./rot2/is_near_identity.html">is_near_identity</a></td><td>Returns `true` if the rotation is near [`Rot2::IDENTITY`].</td></tr>
-<tr><td><a href="./rot2/angle_between.html">angle_between</a></td><td>Returns the angle in radians needed to make `self` and `other` coincide.</td></tr>
-<tr><td><a href="./rot2/fast_renormalize.html">fast_renormalize</a></td><td>Returns `self` after an approximate normalization, assuming the value is already nearly normalized....</td></tr>
-<tr><td><a href="./rot2/length.html">length</a></td><td>Computes the length or norm of the complex number used to represent the rotation.  The length is ty...</td></tr>
-<tr><td><a href="./rot2/normalize.html">normalize</a></td><td>Returns `self` with a length of `1.0`.  Note that [`Rot2`] should typically already be normalized by design.  Manual normalization is only needed when successive operations result in  accumulated floating point error, or if the rotation was constructed  with invalid values.  # Panics  Panics if `self` has a length of zero, NaN, or infinity when debug assertions are enabled.</td></tr>
-<tr><td><a href="./rot2/as_radians.html">as_radians</a></td><td>Returns the rotation in radians in the `(-pi, pi]` range.</td></tr>
-<tr><td><a href="./rot2/is_finite.html">is_finite</a></td><td>Returns `true` if the rotation is neither infinite nor NaN.</td></tr>
-<tr><td><a href="./rot2/mul-2.html">mul-2</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./rot2/as_degrees.html">as_degrees</a></td><td>Returns the rotation in degrees in the `(-180, 180]` range.</td></tr>
-<tr><td><a href="./rot2/turn_fraction.html">turn_fraction</a></td><td>Creates a [`Rot2`] from a counterclockwise fraction of a full turn of 360 degrees.  # Note  The input rotation will always be clamped to the range `(-50%, 50%]...</td></tr>
-<tr><td><a href="./rot2/as_turn_fraction.html">as_turn_fraction</a></td><td>Returns the rotation as a fraction of a full 360 degree turn.</td></tr>
-<tr><td><a href="./rot2/is_normalized.html">is_normalized</a></td><td>Returns whether `self` has a length of `1.0` or not.  Uses a precision threshold of approximately `1e-4`...</td></tr>
-<tr><td><a href="./rot2/angle_to.html">angle_to</a></td><td>Returns the angle in radians needed to make `self` and `other` coincide.</td></tr>
 <tr><td><a href="./rot2/radians.html">radians</a></td><td>Creates a [`Rot2`] from a counterclockwise angle in radians.  # Note  The input rotation will always be clamped to the range `(-π, π]...</td></tr>
-<tr><td><a href="./rot2/mul.html">mul</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./rot2/angle_to.html">angle_to</a></td><td>Returns the angle in radians needed to make `self` and `other` coincide.</td></tr>
+<tr><td><a href="./rot2/is_normalized.html">is_normalized</a></td><td>Returns whether `self` has a length of `1.0` or not.  Uses a precision threshold of approximately `1e-4`...</td></tr>
+<tr><td><a href="./rot2/is_near_identity.html">is_near_identity</a></td><td>Returns `true` if the rotation is near [`Rot2::IDENTITY`].</td></tr>
+<tr><td><a href="./rot2/turn_fraction.html">turn_fraction</a></td><td>Creates a [`Rot2`] from a counterclockwise fraction of a full turn of 360 degrees.  # Note  The input rotation will always be clamped to the range `(-50%, 50%]...</td></tr>
+<tr><td><a href="./rot2/degrees.html">degrees</a></td><td>Creates a [`Rot2`] from a counterclockwise angle in degrees.  # Note  The input rotation will always be clamped to the range `(-180°, 180°]...</td></tr>
+<tr><td><a href="./rot2/from_sin_cos.html">from_sin_cos</a></td><td>Creates a [`Rot2`] from the sine and cosine of an angle in radians.  The rotation is only valid if `sin * sin + cos * cos == 1.0`.  # Panics  Panics if `sin * sin + cos * cos != 1.0` when the `glam_assert` feature is enabled.</td></tr>
+<tr><td><a href="./rot2/as_degrees.html">as_degrees</a></td><td>Returns the rotation in degrees in the `(-180, 180]` range.</td></tr>
+<tr><td><a href="./rot2/length_squared.html">length_squared</a></td><td>Computes the squared length or norm of the complex number used to represent the rotation.  This is ...</td></tr>
+<tr><td><a href="./rot2/fast_renormalize.html">fast_renormalize</a></td><td>Returns `self` after an approximate normalization, assuming the value is already nearly normalized....</td></tr>
+<tr><td><a href="./rot2/as_radians.html">as_radians</a></td><td>Returns the rotation in radians in the `(-pi, pi]` range.</td></tr>
+<tr><td><a href="./rot2/angle_between.html">angle_between</a></td><td>Returns the angle in radians needed to make `self` and `other` coincide.</td></tr>
+<tr><td><a href="./rot2/length_recip.html">length_recip</a></td><td>Computes `1.0 / self.length()`.  For valid results, `self` must _not_ have a length of zero.</td></tr>
+<tr><td><a href="./rot2/nlerp.html">nlerp</a></td><td>Performs a linear interpolation between `self` and `rhs` based on  the value `s`, and normalizes th...</td></tr>
+<tr><td><a href="./rot2/length.html">length</a></td><td>Computes the length or norm of the complex number used to represent the rotation.  The length is ty...</td></tr>
 </tbody></table>
 </div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/urect/union.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/urect/width.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/rot2/from_sin_cos.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/rot2/eq.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -237,11 +240,11 @@ assert_relative_eq!(rotation1 * Vec2::X, Vec2::Y);
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/urect/union.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/urect/width.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/rot2/from_sin_cos.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/rot2/eq.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

@@ -31,10 +31,11 @@
         <!-- Custom theme stylesheets -->
 
 
-        <!-- Provide site root to javascript -->
+        <!-- Provide site root and default themes to javascript -->
         <script>
-            var path_to_root = "../";
-            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc.js"></script>
@@ -44,8 +45,8 @@
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
-                var theme = localStorage.getItem('mdbook-theme');
-                var sidebar = localStorage.getItem('mdbook-sidebar');
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
 
                 if (theme.startsWith('"') && theme.endsWith('"')) {
                     localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
@@ -59,7 +60,8 @@
 
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script>
-            var theme;
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
             const html = document.documentElement;
@@ -72,8 +74,8 @@
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            var sidebar = null;
-            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
@@ -109,6 +111,7 @@
                             <i class="fa fa-paint-brush"></i>
                         </button>
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
@@ -165,12 +168,9 @@
 </code></pre>
 <p>Choose the language features you wish enabled and add them to the features block.</p>
 <h2 id="bevy-plugin"><a class="header" href="#bevy-plugin">Bevy Plugin</a></h2>
-<p>The next step is to add the BMS plugin to your application, on top of any other extras you want included in your app:</p>
-<pre><code class="language-rust ignore">app.add_plugins((
-    LuaScriptingPlugin::default(),
-    ScriptFunctionsPlugin
-));</code></pre>
-<p>The above is how you'd setup BMS for Lua, if you want to use another language, simply use a corresponding plugin from the integration crate.</p>
+<p>The next step is to add the BMS plugin to your application.</p>
+<pre><code class="language-rust ignore">app.add_plugins(BMSPlugin);</code></pre>
+<p>You can modify each of the plugins contained within the plugin group using <code>set(MySubPlugin)</code>.</p>
 <h2 id="language-features"><a class="header" href="#language-features">Language Features</a></h2>
 <p>Each language supported by BMS can be switched-on via feature flag as below:</p>
 <div class="table-wrapper"><table><thead><tr><th>Language</th><th>Feature Flag</th></tr></thead><tbody>
@@ -190,7 +190,14 @@
 <p>By default all of the useful features are enabled, but you may disable them if you wish if you are only needing BMS for script lifecycle management, and want to populate the bindings yourself.</p>
 <div class="table-wrapper"><table><thead><tr><th>Feature</th><th>Description</th></tr></thead><tbody>
 <tr><td>core_functions</td><td>If enabled, will enable all core functions, i.e. bevy integrations which let you interact with Bevy via reflection</td></tr>
-<tr><td>bevy_bindings</td><td>If enabled, populates the function registry with additiona automatically generated bevy bindings. This includes functions on <code>glam</code> and <code>bevy::ecs</code> types. These are useful but will slow down compilation considerably.</td></tr>
+<tr><td>bevy_core_bindings</td><td>Enables bindings for the <code>bevy_core</code> module</td></tr>
+<tr><td>bevy_ecs_bindings</td><td>Enables bindings for the <code>bevy_ecs</code> module</td></tr>
+<tr><td>bevy_hierarchy_bindings</td><td>Enables bindings for the <code>bevy_hierarchy</code> module</td></tr>
+<tr><td>bevy_input_bindings</td><td>Enables bindings for the <code>bevy_input</code> module</td></tr>
+<tr><td>bevy_math_bindings</td><td>Enables bindings for the <code>bevy_math</code> module</td></tr>
+<tr><td>bevy_reflect_bindings</td><td>Enables bindings for the <code>bevy_reflect</code> module</td></tr>
+<tr><td>bevy_time_bindings</td><td>Enables bindings for the <code>bevy_time</code> module</td></tr>
+<tr><td>bevy_transform_bindings</td><td>Enables bindings for the <code>bevy_transform</code> module</td></tr>
 <tr><td>mlua_async</td><td>Enables <code>mlua/async</code></td></tr>
 <tr><td>mlua_serialize</td><td>Enables <code>mlua/serialize</code></td></tr>
 <tr><td>mlua_macros</td><td>Enables <code>mlua/macros</code></td></tr>

@@ -31,10 +31,11 @@
         <!-- Custom theme stylesheets -->
 
 
-        <!-- Provide site root to javascript -->
+        <!-- Provide site root and default themes to javascript -->
         <script>
-            var path_to_root = "../";
-            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc.js"></script>
@@ -44,8 +45,8 @@
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
-                var theme = localStorage.getItem('mdbook-theme');
-                var sidebar = localStorage.getItem('mdbook-sidebar');
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
 
                 if (theme.startsWith('"') && theme.endsWith('"')) {
                     localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
@@ -59,7 +60,8 @@
 
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script>
-            var theme;
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
             const html = document.documentElement;
@@ -72,8 +74,8 @@
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            var sidebar = null;
-            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
@@ -109,6 +111,7 @@
                             <i class="fa fa-paint-brush"></i>
                         </button>
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
@@ -736,9 +739,9 @@
 <tr><td><a href="././types/optionu16.html"><code>Option&lt;u16&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/optionu32.html"><code>Option&lt;u32&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/optionusize.html"><code>Option&lt;usize&gt;</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/smallvectypeid(0x0927d79ac4cfb15dbc272cbede8fcda1).html"><code>SmallVec&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/smallvectypeid(0xaf2a6e85670c2517c9fb75aa940e64f7).html"><code>SmallVec&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/smallvectypeid(0x56abb1841d51c7a42a0b55001c2de7c7).html"><code>SmallVec&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/smallvectypeid(0x89d5833b866ccf0210970013d15afddc).html"><code>SmallVec&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/smallvectypeid(0x077a68277617b47d822d72b24559605d).html"><code>SmallVec&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/smallvectypeid(0x615811da325216bdfd79950e64fd837a).html"><code>SmallVec&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/smallvectypeid(0xc02b4f0291ef0aad60339b7367f351ef).html"><code>SmallVec&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/vec(bevy_ecs::entity::entity,_bevy_picking::backend::hitdata).html"><code>Vec&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/vecrange.html"><code>Vec&lt;Range&gt;</code></a></td><td>No Documentation 🚧</td></tr>

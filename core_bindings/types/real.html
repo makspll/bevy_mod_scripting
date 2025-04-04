@@ -31,10 +31,11 @@
         <!-- Custom theme stylesheets -->
 
 
-        <!-- Provide site root to javascript -->
+        <!-- Provide site root and default themes to javascript -->
         <script>
-            var path_to_root = "../../";
-            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+            const path_to_root = "../../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc.js"></script>
@@ -44,8 +45,8 @@
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
-                var theme = localStorage.getItem('mdbook-theme');
-                var sidebar = localStorage.getItem('mdbook-sidebar');
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
 
                 if (theme.startsWith('"') && theme.endsWith('"')) {
                     localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
@@ -59,7 +60,8 @@
 
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script>
-            var theme;
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
             const html = document.documentElement;
@@ -72,8 +74,8 @@
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            var sidebar = null;
-            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
@@ -109,6 +111,7 @@
                             <i class="fa fa-paint-brush"></i>
                         </button>
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
@@ -172,7 +175,7 @@
 [<code>Time&lt;Real&gt;#impl-Time&lt;Real&gt;</code>].</strong></p>
 <p>It is automatically inserted as a resource by
 <a href="crate::TimePlugin"><code>TimePlugin</code></a> and updated with time instants according
-to <a href="crate::TimeUpdateStrategy"><code>TimeUpdateStrategy</code></a>.<sup class="footnote-reference"><a href="#disclaimer">1</a></sup></p>
+to <a href="crate::TimeUpdateStrategy"><code>TimeUpdateStrategy</code></a>.<sup class="footnote-reference" id="fr-disclaimer-1"><a href="#footnote-disclaimer">1</a></sup></p>
 <p>Note:
 Using <a href="crate::TimeUpdateStrategy::ManualDuration"><code>TimeUpdateStrategy::ManualDuration</code></a>
 allows for mocking the wall clock for testing purposes.
@@ -181,7 +184,7 @@ represent "wall clock" time as intended.</p>
 <p>The <a href="Time::delta"><code>delta()</code></a> and <a href="Time::elapsed"><code>elapsed()</code></a> values of this
 clock should be used for anything which deals specifically with real time
 (wall clock time). It will not be affected by relative game speed
-adjustments, pausing or other adjustments.<sup class="footnote-reference"><a href="#disclaimer">1</a></sup></p>
+adjustments, pausing or other adjustments.<sup class="footnote-reference" id="fr-disclaimer-2"><a href="#footnote-disclaimer">1</a></sup></p>
 <p>The clock does not count time from <a href="Time::startup"><code>startup()</code></a> to
 <a href="Time::first_update()"><code>first_update()</code></a> into elapsed, but instead will
 start counting time from the first update call. <a href="Time::delta"><code>delta()</code></a> and
@@ -192,17 +195,18 @@ theoretically also happen at other times.</p>
 <p>[<code>Instant</code>]s for <a href="Time::startup"><code>startup()</code></a>,
 <a href="Time::first_update"><code>first_update()</code></a> and
 <a href="Time::last_update"><code>last_update()</code></a> are recorded and accessible.</p>
-<div class="footnote-definition" id="disclaimer"><sup class="footnote-definition-label">1</sup>
-<p>When using <a href="crate::TimeUpdateStrategy::ManualDuration"><code>TimeUpdateStrategy::ManualDuration</code></a>,
-[<code>Time&lt;Real&gt;#impl-Time&lt;Real&gt;</code>] is only a <em>mock</em> of wall clock time.</p>
-</div>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><a href="./real/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
 </tbody></table>
-</div>
+</div><hr>
+<ol class="footnote-definition"><li id="footnote-disclaimer">
+<p>When using <a href="crate::TimeUpdateStrategy::ManualDuration"><code>TimeUpdateStrategy::ManualDuration</code></a>,
+[<code>Time&lt;Real&gt;#impl-Time&lt;Real&gt;</code>] is only a <em>mock</em> of wall clock time. <a href="#fr-disclaimer-1">↩</a> <a href="#fr-disclaimer-2">↩2</a></p>
+</li>
+</ol>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
