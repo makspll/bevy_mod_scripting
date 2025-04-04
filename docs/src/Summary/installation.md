@@ -13,17 +13,13 @@ Choose the language features you wish enabled and add them to the features block
 
 ## Bevy Plugin
 
-The next step is to add the BMS plugin to your application, on top of any other extras you want included in your app:
+The next step is to add the BMS plugin to your application.
 
 ```rust,ignore
-app.add_plugins((
-    LuaScriptingPlugin::default(),
-    ScriptFunctionsPlugin
-));
+app.add_plugins(BMSPlugin);
 ```
 
-The above is how you'd setup BMS for Lua, if you want to use another language, simply use a corresponding plugin from the integration crate.
-
+You can modify each of the plugins contained within the plugin group using `set(MySubPlugin)`.
 
 ## Language Features
 
@@ -50,7 +46,14 @@ By default all of the useful features are enabled, but you may disable them if y
 | Feature | Description |
 | ---- | ---- | 
 | core_functions | If enabled, will enable all core functions, i.e. bevy integrations which let you interact with Bevy via reflection |
-| bevy_bindings | If enabled, populates the function registry with additiona automatically generated bevy bindings. This includes functions on `glam` and `bevy::ecs` types. These are useful but will slow down compilation considerably. |
+| bevy_core_bindings | Enables bindings for the `bevy_core` module |
+| bevy_ecs_bindings | Enables bindings for the `bevy_ecs` module |
+| bevy_hierarchy_bindings | Enables bindings for the `bevy_hierarchy` module |
+| bevy_input_bindings | Enables bindings for the `bevy_input` module |
+| bevy_math_bindings | Enables bindings for the `bevy_math` module |
+| bevy_reflect_bindings | Enables bindings for the `bevy_reflect` module |
+| bevy_time_bindings | Enables bindings for the `bevy_time` module |
+| bevy_transform_bindings | Enables bindings for the `bevy_transform` module |
 | mlua_async | Enables `mlua/async`|
 | mlua_serialize | Enables `mlua/serialize` |
 | mlua_macros | Enables `mlua/macros` |

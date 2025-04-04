@@ -31,6 +31,17 @@ use strum::{IntoEnumIterator, VariantNames};
 )]
 #[strum(serialize_all = "snake_case")]
 enum Feature {
+    // bindings
+    CoreFunctions,
+    BevyCoreBindings,
+    BevyEcsBindings,
+    BevyHierarchyBindings,
+    BevyInputBindings,
+    BevyMathBindings,
+    BevyReflectBindings,
+    BevyTimeBindings,
+    BevyTransformBindings,
+
     // Lua
     Lua51,
     Lua52,
@@ -39,8 +50,6 @@ enum Feature {
     Luajit,
     Luajit52,
     Luau,
-    BevyBindings,
-    CoreFunctions,
     UnsafeLuaModules,
     MluaSerialize,
     MluaMacros,
@@ -61,6 +70,7 @@ enum FeatureGroup {
     // RuneExclusive,
     ForExternalCrate,
     BMSFeature,
+    BMSFeatureNotInPowerset,
 }
 
 impl FeatureGroup {
@@ -101,9 +111,15 @@ impl IntoFeatureGroup for Feature {
             | Feature::MluaMacros
             | Feature::MluaSerialize
             | Feature::UnsafeLuaModules => FeatureGroup::ForExternalCrate,
-            Feature::BevyBindings | Feature::CoreFunctions | Feature::ProfileWithTracy => {
-                FeatureGroup::BMSFeature
-            } // don't use wildcard here, we want to be explicit
+            Feature::BevyCoreBindings
+            | Feature::BevyEcsBindings
+            | Feature::BevyHierarchyBindings
+            | Feature::BevyInputBindings
+            | Feature::BevyMathBindings
+            | Feature::BevyReflectBindings
+            | Feature::BevyTimeBindings
+            | Feature::BevyTransformBindings => FeatureGroup::BMSFeatureNotInPowerset,
+            Feature::CoreFunctions | Feature::ProfileWithTracy => FeatureGroup::BMSFeature, // don't use wildcard here, we want to be explicit
         }
     }
 }
@@ -117,7 +133,14 @@ impl Default for Features {
         Features::new(vec![
             Feature::Lua54,
             Feature::CoreFunctions,
-            Feature::BevyBindings,
+            Feature::BevyCoreBindings,
+            Feature::BevyEcsBindings,
+            Feature::BevyHierarchyBindings,
+            Feature::BevyInputBindings,
+            Feature::BevyMathBindings,
+            Feature::BevyReflectBindings,
+            Feature::BevyTimeBindings,
+            Feature::BevyTransformBindings,
         ])
     }
 }
@@ -140,6 +163,29 @@ impl Features {
                 .cloned()
                 .collect(),
         )
+    }
+
+    fn display_no_default(self) -> String {
+        let default_features = Self::default().0;
+
+        let excluded_default_features = default_features
+            .difference(&self.0)
+            .map(|f| format!("-{f}"))
+            .collect::<Vec<_>>();
+
+        let mut features = self
+            .0
+            .into_iter()
+            .filter(|f| !default_features.contains(f))
+            .map(|f| f.to_string())
+            .collect::<Vec<_>>();
+
+        features.sort();
+        excluded_default_features
+            .into_iter()
+            .chain(features)
+            .collect::<Vec<_>>()
+            .join(",")
     }
 
     fn without(self, feature: Feature) -> Self {
@@ -174,6 +220,7 @@ impl Features {
 
 impl std::fmt::Display for Features {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // exclude default features
         for (i, feature) in self.0.iter().sorted().enumerate() {
             if i > 0 {
                 write!(f, ",")?;
@@ -405,7 +452,7 @@ impl App {
                 if self.global_args.features == Features::all_features() {
                     "all features".to_owned()
                 } else {
-                    self.global_args.features.to_string()
+                    self.global_args.features.display_no_default()
                 }
             ),
             os: os.to_string(),
@@ -1273,17 +1320,12 @@ impl Xtasks {
     ) -> Result<Output> {
         log::info!("Profiling enabled: {profile}");
 
-        let mut features = vec![
-            Feature::Lua54,
-            Feature::Rhai,
-            Feature::CoreFunctions,
-            Feature::BevyBindings,
-        ];
+        let mut features = Features::default();
 
         if profile {
             std::env::set_var("ENABLE_PROFILING", "1");
             // features.push(Feature::BevyTracy);
-            features.push(Feature::ProfileWithTracy);
+            features.0.insert(Feature::ProfileWithTracy);
         } else {
             std::env::set_var("RUST_LOG", "bevy_mod_scripting=error");
         }
@@ -1296,7 +1338,7 @@ impl Xtasks {
 
         let output = Self::run_workspace_command(
             // run with just lua54
-            &app_settings.with_features(Features::new(features)),
+            &app_settings.with_features(features),
             "bench",
             "Failed to run benchmarks",
             args,
@@ -1677,6 +1719,12 @@ impl Xtasks {
                 feature_set.0.extend(f.iter().cloned());
             }
 
+            // include all features which are excluded from powersetting
+            if let Some(f) = grouped.get(&FeatureGroup::BMSFeatureNotInPowerset) {
+                feature_set.0.extend(f.iter().cloned());
+            }
+
+            // replace args with powerset
             output.push(App {
                 global_args: default_args.clone().with_features(feature_set.clone()),
                 subcmd: Xtasks::Build,

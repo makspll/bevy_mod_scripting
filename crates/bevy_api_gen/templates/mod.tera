@@ -4,17 +4,8 @@
 #![cfg_attr(rustfmt, rustfmt_skip)]
 {% filter prettyplease %}
 {%- for crate in crates %}
+    #[cfg(feature="{{crate.name}}")]
     pub mod {{ crate.name }};
 {% endfor -%}
 
-pub struct {{ api_name }};
-
-impl ::bevy::app::Plugin for {{ api_name }} {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
-        {% for crate in crates %}
-        {% set crate_name = crate.name %}
-        {{ crate_name }}::{{ "ScriptingPlugin" | prefix(val=crate_name) | convert_case(case="upper_camel")}}.build(app);
-        {% endfor %}
-    }
-}
 {% endfilter %}

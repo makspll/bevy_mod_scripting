@@ -675,6 +675,8 @@ mod test {
     };
     use test_utils::make_test_plugin;
 
+    use crate::BMSScriptingInfrastructurePlugin;
+
     use super::*;
 
     make_test_plugin!(crate);
@@ -692,6 +694,7 @@ mod test {
             AssetPlugin::default(),
             DiagnosticsPlugin,
             TestPlugin::default(),
+            BMSScriptingInfrastructurePlugin,
         ));
         app.init_schedule(TestSchedule);
         let mut main_schedule_order = app.world_mut().resource_mut::<MainScheduleOrder>();

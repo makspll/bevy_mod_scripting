@@ -1,10 +1,11 @@
 //! Core globals exposed by the BMS framework
 
-use std::{collections::HashMap, sync::Arc};
+use std::{cell::RefCell, collections::HashMap, sync::Arc};
 
 use bevy::{
     app::Plugin,
     ecs::{entity::Entity, reflect::AppTypeRegistry, world::World},
+    reflect::TypeRegistration,
 };
 use bevy_mod_scripting_derive::script_globals;
 
@@ -20,20 +21,55 @@ use crate::{
 
 use super::AppScriptGlobalsRegistry;
 
-/// A plugin introducing core globals for the BMS framework
-pub struct CoreScriptGlobalsPlugin;
+/// A plugin introducing core globals for the BMS framework.
+///
+/// By default all types added to the type registry are present as globals, you can customize this behavior
+/// by providing a filter function
+pub struct CoreScriptGlobalsPlugin {
+    /// the filter function used to determine which types are registered as globals
+    /// When `true` for the given type registration, the type will be registered as a global.
+    pub filter: fn(&TypeRegistration) -> bool,
+
+    /// Whether to register static references to types
+    /// By default static type references such as `Vec3` or `Mat3` are accessible directly from the global namespace.
+    pub register_static_references: bool,
+}
+
+impl Default for CoreScriptGlobalsPlugin {
+    fn default() -> Self {
+        Self {
+            filter: |_| true,
+            register_static_references: true,
+        }
+    }
+}
+
+thread_local! {
+    static GLOBAL_OPTS: RefCell<fn(&TypeRegistration) -> bool> = RefCell::new(|_| true);
+}
 
 impl Plugin for CoreScriptGlobalsPlugin {
-    fn build(&self, _app: &mut bevy::app::App) {}
+    fn build(&self, app: &mut bevy::app::App) {
+        app.init_resource::<AppScriptGlobalsRegistry>();
+    }
     fn finish(&self, app: &mut bevy::app::App) {
         profiling::function_scope!("app finish");
-        register_static_core_globals(app.world_mut());
+
+        if self.register_static_references {
+            register_static_core_globals(app.world_mut(), self.filter);
+        }
+
+        // TODO: add ability to make the generated function receive generic payload
+        GLOBAL_OPTS.replace(self.filter);
         register_core_globals(app.world_mut());
     }
 }
 
 #[profiling::function]
-fn register_static_core_globals(world: &mut bevy::ecs::world::World) {
+fn register_static_core_globals(
+    world: &mut bevy::ecs::world::World,
+    filter: fn(&TypeRegistration) -> bool,
+) {
     let global_registry = world
         .get_resource_or_init::<AppScriptGlobalsRegistry>()
         .clone();
@@ -42,7 +78,7 @@ fn register_static_core_globals(world: &mut bevy::ecs::world::World) {
     let type_registry = type_registry.read();
 
     // find all reflectable types without generics
-    for registration in type_registry.iter() {
+    for registration in type_registry.iter().filter(|r| filter(r)) {
         if !registration.type_info().generics().is_empty() {
             continue;
         }
@@ -89,7 +125,8 @@ impl CoreGlobals {
         let type_registry = guard.type_registry();
         let type_registry = type_registry.read();
         let mut type_cache = HashMap::<String, _>::default();
-        for registration in type_registry.iter() {
+        let filter = GLOBAL_OPTS.with(|opts| *opts.borrow());
+        for registration in type_registry.iter().filter(|r| filter(r)) {
             let type_path = registration.type_info().type_path_table().short_path();
             let registration = ScriptTypeRegistration::new(Arc::new(registration.clone()));
             let registration = guard.clone().get_type_registration(registration)?;
@@ -99,5 +136,49 @@ impl CoreGlobals {
         }
 
         Ok(type_cache)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use bevy::{app::App, reflect::Reflect};
+
+    #[test]
+    fn test_register_globals() {
+        let mut app = App::new();
+
+        // register a type
+        #[derive(Debug, Clone, Reflect)]
+        struct TestType;
+        app.register_type::<TestType>();
+        let plugin = CoreScriptGlobalsPlugin::default();
+        plugin.build(&mut app);
+        plugin.finish(&mut app);
+        let globals = app
+            .world()
+            .get_resource::<AppScriptGlobalsRegistry>()
+            .unwrap()
+            .read();
+        assert!(globals.get("TestType").is_some());
+
+        // now do the same but with a filter
+        let mut app = App::new();
+        let plugin = CoreScriptGlobalsPlugin {
+            filter: |_| false,
+            register_static_references: true,
+        };
+        plugin.build(&mut app);
+        plugin.finish(&mut app);
+
+        let globals = app
+            .world()
+            .get_resource::<AppScriptGlobalsRegistry>()
+            .unwrap()
+            .read();
+
+        // check that the type is not registered
+        assert!(globals.len() == 1);
+        assert!(globals.get("types").is_some());
     }
 }
