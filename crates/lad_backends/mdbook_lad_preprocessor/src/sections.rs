@@ -622,6 +622,7 @@ impl IntoMarkdown for SectionItem<'_> {
                         </div>
                     "#.trim(),
                     );
+                    builder.append("\n\n");
                 }
 
                 // we don't escape this, this is already markdown
