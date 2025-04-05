@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting"
-version = "0.11.1"
+version = "0.12.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -76,8 +76,8 @@ profile_with_tracy = ["bevy/trace_tracy"]
 [dependencies]
 bevy = { workspace = true }
 bevy_mod_scripting_core = { workspace = true }
-bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", version = "0.11.1", optional = true }
-bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.11.1", optional = true }
+bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", version = "0.12.0", optional = true }
+bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.12.0", optional = true }
 # bevy_mod_scripting_rune = { path = "crates/languages/bevy_mod_scripting_rune", version = "0.9.0-alpha.2", optional = true }
 bevy_mod_scripting_functions = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
@@ -85,9 +85,9 @@ bevy_mod_scripting_derive = { workspace = true }
 [workspace.dependencies]
 profiling = { version = "1.0" }
 bevy = { version = "0.15.3", default-features = false }
-bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.11.1" }
-bevy_mod_scripting_functions = { path = "crates/bevy_mod_scripting_functions", version = "0.11.1", default-features = false }
-bevy_mod_scripting_derive = { path = "crates/bevy_mod_scripting_derive", version = "0.11.1" }
+bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.12.0" }
+bevy_mod_scripting_functions = { path = "crates/bevy_mod_scripting_functions", version = "0.12.0", default-features = false }
+bevy_mod_scripting_derive = { path = "crates/bevy_mod_scripting_derive", version = "0.12.0" }
 
 # test utilities
 script_integration_test_harness = { path = "crates/testing_crates/script_integration_test_harness" }
@@ -101,7 +101,7 @@ bevy_console = "0.13"
 # rhai-rand = "0.1"
 criterion = { version = "0.5" }
 ansi-parser = "0.9"
-ladfile_builder = { path = "crates/ladfile_builder", version = "0.3.1" }
+ladfile_builder = { path = "crates/ladfile_builder", version = "0.3.2" }
 script_integration_test_harness = { workspace = true }
 test_utils = { workspace = true }
 libtest-mimic = "0.8"
