@@ -536,7 +536,7 @@ impl<'w> WorldAccessGuard<'w> {
     /// checks if a given entity exists and is valid
     pub fn is_valid_entity(&self, entity: Entity) -> Result<bool, InteropError> {
         let cell = self.as_unsafe_world_cell()?;
-        Ok(cell.get_entity(entity).is_some())
+        Ok(cell.get_entity(entity).is_some() && entity.index() != 0)
     }
 
     /// Tries to call a fitting overload of the function with the given name and in the type id's namespace based on the arguments provided.
