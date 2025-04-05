@@ -1169,7 +1169,13 @@ macro_rules! invalid_index {
 
 macro_rules! missing_entity {
     ($entity:expr) => {
-        format!("Missing or invalid entity: {}", $entity)
+        {
+            if ($entity.index() == 0) {
+                format!("Invalid entity: {}. Are you trying to use an entity in a callback in which it's unavailable?", $entity)
+            } else {
+                format!("Missing or invalid entity: {}", $entity)
+            }
+        }
     };
 }
 
