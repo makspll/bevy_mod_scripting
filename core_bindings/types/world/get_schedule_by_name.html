@@ -165,14 +165,17 @@
 <div class="warning">
                             This function is impure, it might potentially try to access anything in the world.
                             If you are using it in the context of a script system, it might cause access errors.
-                        </div>> Retrieves the schedule with the given name, Also ensures the schedule is initialized before returning it.
-> 
-> Schedules in bevy are "containers" for systems, each schedule runs separately and contains different systems.
-> 
-> By default among others bevy contains the following schedules:
-> - `Update`: Runs every frame.
-> - `PostUpdate`: Runs after the `Update` schedule.
-> - `FixedUpdate`: Runs at a fixed rate.
+                        </div>
+<blockquote>
+<p>Retrieves the schedule with the given name, Also ensures the schedule is initialized before returning it.</p>
+<p>Schedules in bevy are "containers" for systems, each schedule runs separately and contains different systems.</p>
+<p>By default among others bevy contains the following schedules:</p>
+<ul>
+<li><code>Update</code>: Runs every frame.</li>
+<li><code>PostUpdate</code>: Runs after the <code>Update</code> schedule.</li>
+<li><code>FixedUpdate</code>: Runs at a fixed rate.</li>
+</ul>
+</blockquote>
 <h4 id="arguments"><a class="header" href="#arguments">Arguments</a></h4>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Documentation</th></tr></thead><tbody>
 <tr><td><strong>name</strong></td><td><a href="../types/string.html">String</a></td><td>The name of the schedule to retrieve.</td></tr>
@@ -187,11 +190,11 @@
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../../core_bindings/types/world/despawn_recursive.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../../core_bindings/types/world/get_parent.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../../core_bindings/types/world/has_resource.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../../core_bindings/types/world/despawn.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -201,11 +204,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../../core_bindings/types/world/despawn_recursive.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../../core_bindings/types/world/get_parent.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../../core_bindings/types/world/has_resource.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../../core_bindings/types/world/despawn.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
