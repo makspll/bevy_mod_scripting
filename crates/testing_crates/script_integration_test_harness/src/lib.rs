@@ -14,10 +14,12 @@ use bevy::{
         event::{Event, Events},
         schedule::{IntoSystemConfigs, SystemConfigs},
         system::{IntoSystem, Local, Res, Resource, SystemState},
-        world::{FromWorld, Mut},
+        world::{Command, FromWorld, Mut},
     },
+    log::Level,
     prelude::{Entity, World},
     reflect::{Reflect, TypeRegistry},
+    utils::tracing,
 };
 use bevy_mod_scripting_core::{
     asset::ScriptAsset,
@@ -26,6 +28,7 @@ use bevy_mod_scripting_core::{
         ReflectAccessId, WorldAccessGuard, WorldGuard,
     },
     callback_labels,
+    commands::CreateOrUpdateScript,
     error::{InteropError, ScriptError},
     event::{IntoCallbackLabel, ScriptErrorEvent},
     extractors::{HandlerContext, WithWorldGuard},
@@ -65,6 +68,22 @@ impl<L: IntoCallbackLabel, P: IntoScriptPluginParams> TestCallbackBuilder<P, L> 
         )
         .with_name(L::into_callback_label().to_string())
         .into_configs()
+    }
+}
+
+pub fn install_test_plugin<P: IntoScriptPluginParams + Plugin>(
+    app: &mut bevy::app::App,
+    plugin: P,
+    include_test_functions: bool,
+) {
+    app.add_plugins((
+        ScriptFunctionsPlugin,
+        CoreScriptGlobalsPlugin::default(),
+        BMSScriptingInfrastructurePlugin,
+        plugin,
+    ));
+    if include_test_functions {
+        register_test_functions(app);
     }
 }
 
@@ -203,14 +222,7 @@ pub fn execute_integration_test<
 
     let mut app = setup_integration_test(init);
 
-    app.add_plugins((
-        ScriptFunctionsPlugin,
-        CoreScriptGlobalsPlugin::default(),
-        BMSScriptingInfrastructurePlugin,
-        plugin,
-    ));
-
-    register_test_functions(&mut app);
+    install_test_plugin(&mut app, plugin, true);
 
     app.add_event::<TestEventFinished>();
 
@@ -411,13 +423,7 @@ where
 
     let mut app = setup_integration_test(|_, _| {});
 
-    app.add_plugins((
-        ScriptFunctionsPlugin,
-        CoreScriptGlobalsPlugin::default(),
-        BMSScriptingInfrastructurePlugin,
-        plugin,
-    ));
-    register_test_functions(&mut app);
+    install_test_plugin(&mut app, plugin, true);
 
     let script_id = script_id.to_owned();
     let script_id_clone = script_id.clone();
@@ -466,6 +472,55 @@ where
             return Err("Timeout after 30 seconds, could not load script".into());
         }
     }
+}
+
+pub fn run_plugin_script_load_benchmark<
+    P: IntoScriptPluginParams + Plugin + FromWorld,
+    M: Measurement,
+>(
+    plugin: P,
+    benchmark_id: &str,
+    content: &str,
+    criterion: &mut criterion::BenchmarkGroup<M>,
+    script_id_generator: impl Fn(u64) -> String,
+    reload_probability: f32,
+) {
+    let mut app = setup_integration_test(|_, _| {});
+    install_test_plugin(&mut app, plugin, false);
+    let mut rng_guard = RNG.lock().unwrap();
+    *rng_guard = rand_chacha::ChaCha12Rng::from_seed([42u8; 32]);
+    drop(rng_guard);
+    criterion.bench_function(benchmark_id, |c| {
+        c.iter_batched(
+            || {
+                let mut rng = RNG.lock().unwrap();
+                let is_reload = rng.random_range(0f32..=1f32) < reload_probability;
+                let random_id = if is_reload { 0 } else { rng.random::<u64>() };
+
+                let random_script_id = script_id_generator(random_id);
+                // we manually load the script inside a command
+                let content = content.to_string().into_boxed_str();
+                (
+                    CreateOrUpdateScript::<P>::new(
+                        random_script_id.into(),
+                        content.clone().into(),
+                        None,
+                    ),
+                    is_reload,
+                )
+            },
+            |(command, _is_reload)| {
+                tracing::event!(
+                    Level::TRACE,
+                    "profiling_iter {} is reload?: {}",
+                    benchmark_id,
+                    _is_reload
+                );
+                command.apply(app.world_mut());
+            },
+            BatchSize::LargeInput,
+        );
+    });
 }
 
 pub fn perform_benchmark_with_generator<
