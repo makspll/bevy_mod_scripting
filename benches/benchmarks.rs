@@ -11,7 +11,8 @@ use criterion::{BatchSize, BenchmarkFilter};
 use regex::Regex;
 use script_integration_test_harness::test_functions::rand::Rng;
 use script_integration_test_harness::{
-    perform_benchmark_with_generator, run_lua_benchmark, run_rhai_benchmark,
+    make_test_lua_plugin, make_test_rhai_plugin, perform_benchmark_with_generator,
+    run_lua_benchmark, run_plugin_script_load_benchmark, run_rhai_benchmark,
 };
 use std::collections::HashMap;
 use std::{path::PathBuf, sync::LazyLock, time::Duration};
@@ -241,6 +242,34 @@ fn conversion_benchmarks(criterion: &mut Criterion) {
     );
 }
 
+fn script_load_benchmarks(criterion: &mut Criterion) {
+    let mut group = criterion.benchmark_group("loading");
+    let reload_probability = 0.5;
+    // lua
+    let plugin = make_test_lua_plugin();
+    let content = include_str!("../assets/macro_benchmarks/loading/empty.lua");
+    run_plugin_script_load_benchmark(
+        plugin,
+        "empty Lua",
+        content,
+        &mut group,
+        |rand| format!("{rand}.lua"),
+        reload_probability,
+    );
+
+    // rhai
+    let plugin = make_test_rhai_plugin();
+    let content = include_str!("../assets/macro_benchmarks/loading/empty.rhai");
+    run_plugin_script_load_benchmark(
+        plugin,
+        "empty Rhai",
+        content,
+        &mut group,
+        |rand| format!("{rand}.rhai"),
+        reload_probability,
+    );
+}
+
 pub fn benches() {
     maybe_with_profiler(|_profiler| {
         let mut criterion: criterion::Criterion<_> = (criterion::Criterion::default())
@@ -265,6 +294,7 @@ pub fn benches() {
 
         script_benchmarks(&mut criterion, filter);
         conversion_benchmarks(&mut criterion);
+        script_load_benchmarks(&mut criterion);
     });
 }
 criterion_main!(benches);
