@@ -51,6 +51,7 @@ pub(crate) enum SectionData<'a> {
         lad_type: &'a LadType,
     },
     FunctionDetail {
+        types_directory: PathBuf,
         function: &'a LadFunction,
     },
 }
@@ -214,7 +215,10 @@ impl<'a> Section<'a> {
                         Section::new(
                             child_parent_path.clone(),
                             self.ladfile,
-                            SectionData::FunctionDetail { function },
+                            SectionData::FunctionDetail {
+                                function,
+                                types_directory: PathBuf::from("../types"),
+                            },
                         )
                     })
                     .collect()
@@ -230,7 +234,10 @@ impl<'a> Section<'a> {
                     Some(Section::new(
                         child_parent_path.clone(),
                         self.ladfile,
-                        SectionData::FunctionDetail { function },
+                        SectionData::FunctionDetail {
+                            function,
+                            types_directory: PathBuf::from("../../types"),
+                        },
                     ))
                 })
                 .collect(),
@@ -350,12 +357,14 @@ impl<'a> Section<'a> {
                     },
                 ]
             }
-            SectionData::FunctionDetail { function } => {
-                let types_directory = PathBuf::from("../types");
+            SectionData::FunctionDetail {
+                function,
+                ref types_directory,
+            } => {
                 vec![SectionItem::FunctionDetails {
                     function,
                     ladfile: self.ladfile,
-                    types_directory,
+                    types_directory: types_directory.clone(),
                 }]
             }
         }
