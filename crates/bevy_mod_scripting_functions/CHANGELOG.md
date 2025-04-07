@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_functions-v0.11.1...bevy_mod_scripting_functions-v0.12.0) - 2025-04-07
+
+### Added
+
+- [**breaking**] Add `BMSPlugin` group, feature flag for bindings per bevy crate & add script global filter options ([#408](https://github.com/makspll/bevy_mod_scripting/pull/408))
+
 ## [0.11.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_functions-v0.10.0...bevy_mod_scripting_functions-v0.11.0) - 2025-03-29
 
 ### Added

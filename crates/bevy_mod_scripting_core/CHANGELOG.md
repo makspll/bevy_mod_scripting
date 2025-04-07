@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.11.1...bevy_mod_scripting_core-v0.12.0) - 2025-04-07
+
+### Added
+
+- improve errors when entity is unavailable ([#410](https://github.com/makspll/bevy_mod_scripting/pull/410))
+- [**breaking**] Add `BMSPlugin` group, feature flag for bindings per bevy crate & add script global filter options ([#408](https://github.com/makspll/bevy_mod_scripting/pull/408))
+- add option to emit response event on each callback  & `RunScriptCallback` command for "once-off" callbacks ([#403](https://github.com/makspll/bevy_mod_scripting/pull/403))
+
+### Fixed
+
+- `lua54` feature being forced ([#413](https://github.com/makspll/bevy_mod_scripting/pull/413))
+
+### Other
+
+- refactor `ReflectReference` internally ([#406](https://github.com/makspll/bevy_mod_scripting/pull/406))
+- reduces size of `ScriptValue` to 64 bytes, moves some dynamic function methods into function info ([#404](https://github.com/makspll/bevy_mod_scripting/pull/404))
+
 ## [0.11.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.10.0...bevy_mod_scripting_core-v0.11.0) - 2025-03-29
 
 ### Added

@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.12.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.11.1...v0.12.0) - 2025-04-07
+
+### Added
+
+- improve errors when entity is unavailable ([#410](https://github.com/makspll/bevy_mod_scripting/pull/410))
+- [**breaking**] Add `BMSPlugin` group, feature flag for bindings per bevy crate & add script global filter options ([#408](https://github.com/makspll/bevy_mod_scripting/pull/408))
+- add option to emit response event on each callback  & `RunScriptCallback` command for "once-off" callbacks ([#403](https://github.com/makspll/bevy_mod_scripting/pull/403))
+
+### Fixed
+
+- `lua54` feature being forced ([#413](https://github.com/makspll/bevy_mod_scripting/pull/413))
+
+### Other
+
+- add script loading benchmark ([#411](https://github.com/makspll/bevy_mod_scripting/pull/411))
+- refactor `ReflectReference` internally ([#406](https://github.com/makspll/bevy_mod_scripting/pull/406))
+- reduces size of `ScriptValue` to 64 bytes, moves some dynamic function methods into function info ([#404](https://github.com/makspll/bevy_mod_scripting/pull/404))
+
 ## [0.11.1](https://github.com/makspll/bevy_mod_scripting/compare/v0.11.0...v0.11.1) - 2025-03-29
 
 ### Added

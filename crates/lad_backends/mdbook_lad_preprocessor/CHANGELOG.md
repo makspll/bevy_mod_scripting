@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.7](https://github.com/makspll/bevy_mod_scripting/compare/v0.1.6-mdbook_lad_preprocessor...v0.1.7-mdbook_lad_preprocessor) - 2025-04-07
+
+### Added
+
+- improve errors when entity is unavailable ([#410](https://github.com/makspll/bevy_mod_scripting/pull/410))
+
+### Fixed
+
+- links in type functions ([#412](https://github.com/makspll/bevy_mod_scripting/pull/412))
+
 ## [0.1.6](https://github.com/makspll/bevy_mod_scripting/compare/v0.1.5-mdbook_lad_preprocessor...v0.1.6-mdbook_lad_preprocessor) - 2025-03-29
 
 ### Fixed
