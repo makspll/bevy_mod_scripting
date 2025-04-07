@@ -25,9 +25,7 @@ mlua_impls = ["mlua"]
 rhai_impls = ["rhai"]
 
 [dependencies]
-mlua = { version = "0.10", default-features = false, optional = true, features = [
-    "lua54",
-] }
+mlua = { version = "0.10", default-features = false, optional = true }
 rhai = { version = "1.21", default-features = false, features = [
     "sync",
 ], optional = true }
