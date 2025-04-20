@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.12.1](https://github.com/makspll/bevy_mod_scripting/compare/v0.12.0...v0.12.1) - 2025-04-20
+
+### Other
+
+- Update 0.12.0.md
+- Update 0.12.0.md
+- Update CHANGELOG.md
+- Update 0.12.0.md
+- Create 0.12.0.md
+
 ## [0.12.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.11.1...v0.12.0) - 2025-04-07
 
 ### Added
