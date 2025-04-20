@@ -6,11 +6,12 @@
 
 - improve errors when entity is unavailable ([#410](https://github.com/makspll/bevy_mod_scripting/pull/410))
 - [**breaking**] Add `BMSPlugin` group, feature flag for bindings per bevy crate & add script global filter options ([#408](https://github.com/makspll/bevy_mod_scripting/pull/408))
+    - The CoreScriptGlobalsPlugin now also stores options for filtering registered globals, which can be changed.
 - add option to emit response event on each callback  & `RunScriptCallback` command for "once-off" callbacks ([#403](https://github.com/makspll/bevy_mod_scripting/pull/403))
-
 ### Fixed
 
 - `lua54` feature being forced ([#413](https://github.com/makspll/bevy_mod_scripting/pull/413))
+- `GetTypeDependency` derive macro using the wrong path for `bms_core` ([#409](https://github.com/makspll/bevy_mod_scripting/pull/409))
 
 ### Other
 
