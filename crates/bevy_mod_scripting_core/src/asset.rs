@@ -225,6 +225,14 @@ pub(crate) fn dispatch_script_asset_events(
                         let script_id = converter(path);
 
                         let language = settings.select_script_language(path);
+                        if language == Language::Unknown {
+                            let extension = path
+                                .path()
+                                .extension()
+                                .and_then(|ext| ext.to_str())
+                                .unwrap_or_default();
+                            warn!("A script {:?} was added but its language is unknown. Consider adding the {:?} extension to the `ScriptAssetSettings`.", &script_id, extension);
+                        }
                         let metadata = ScriptMetadata {
                             asset_id: *id,
                             script_id,
