@@ -6,7 +6,7 @@ use crate::{
     context::ContextBuilder,
     error::{InteropError, ScriptError},
     event::{
-        CallbackLabel, IntoCallbackLabel, OnScriptLoaded, OnScriptUnloaded, OnScriptReloaded,
+        CallbackLabel, IntoCallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded,
         ScriptCallbackResponseEvent,
     },
     extractors::{with_handler_system_state, HandlerContext},
@@ -273,10 +273,10 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
                     OnScriptReloaded::into_callback_label(),
                     vec![ScriptValue::Bool(false), state],
                     false,
-                ).apply(world);
+                )
+                .apply(world);
             }
         }
-
     }
 }
 
