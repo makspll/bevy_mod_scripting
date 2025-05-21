@@ -6,7 +6,7 @@ use crate::{
     context::ContextBuilder,
     error::{InteropError, ScriptError},
     event::{
-        CallbackLabel, IntoCallbackLabel, OnScriptLoaded, OnScriptUnloaded,
+        CallbackLabel, IntoCallbackLabel, OnScriptLoaded, OnScriptUnloaded, OnScriptReloaded,
         ScriptCallbackResponseEvent,
     },
     extractors::{with_handler_system_state, HandlerContext},
@@ -150,6 +150,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
 #[profiling::all_functions]
 impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
     fn apply(self, world: &mut bevy::prelude::World) {
+        let mut reload_state = None;
         let success = with_handler_system_state(
             world,
             |guard, handler_ctxt: &mut HandlerContext<P>| {
@@ -194,6 +195,28 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
                             // it can potentially be loaded but without a successful script reload but that
                             // leaves us in an okay state
                             handler_ctxt.scripts.scripts.insert(self.id.clone(), script);
+                        } else {
+                            match handler_ctxt.call_dynamic_label(
+                                &OnScriptReloaded::into_callback_label(),
+                                &self.id,
+                                Entity::from_raw(0),
+                                vec![ScriptValue::Bool(true)],
+                                guard.clone(),
+                            ) {
+                                Ok(state) => {
+                                    reload_state = Some(state);
+                                }
+                                Err(err) => {
+                                    handle_script_errors(
+                                        guard.clone(),
+                                        vec![err
+                                            .with_script(self.id.clone())
+                                            .with_context(P::LANGUAGE)
+                                            .with_context("saving reload state")]
+                                        .into_iter(),
+                                    );
+                                }
+                            }
                         }
                         bevy::log::debug!("{}: reloading script with id: {}", P::LANGUAGE, self.id);
                         self.reload_context(guard.clone(), handler_ctxt)
@@ -235,14 +258,25 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
         // immediately run command for callback, but only if loading went fine
         if success {
             RunScriptCallback::<P>::new(
-                self.id,
+                self.id.clone(),
                 Entity::from_raw(0),
                 OnScriptLoaded::into_callback_label(),
                 vec![],
                 false,
             )
-            .apply(world)
+            .apply(world);
+
+            if let Some(state) = reload_state {
+                RunScriptCallback::<P>::new(
+                    self.id,
+                    Entity::from_raw(0),
+                    OnScriptReloaded::into_callback_label(),
+                    vec![ScriptValue::Bool(false), state],
+                    false,
+                ).apply(world);
+            }
         }
+
     }
 }
 

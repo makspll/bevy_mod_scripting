@@ -2,9 +2,10 @@
 
 On top of callbacks which are registered by your application, BMS provides a set of core callbacks which are always available.
 
-The two core callbacks are:
+The three core callbacks are:
 - `on_script_loaded`
 - `on_script_unloaded`
+- `on_script_reloaded`
 
 ## `on_script_loaded`
 
@@ -28,5 +29,26 @@ This callback will not have access to the `entity` variable, as when the script 
 ```lua
 function on_script_unloaded()
     print("Goodbye world")
+end
+```
+
+## `on_script_reloaded`
+
+This will be called twice: right before and after a script is reloaded.
+
+The first parameter `save` informs you whether it is time to save a value or restore it.
+
+Before the reload, it is called with one argument: `true`. After the script is reloaded, it is called with two parameters: the first is `false` and the second is value returned from before.
+
+```lua
+mode = 1
+function on_script_reloaded(save, value)
+    if save then
+        print("Before I go, take this.")
+        return mode
+    else
+        print("I'm back. Where was I?")
+        mode = value
+    end
 end
 ```
