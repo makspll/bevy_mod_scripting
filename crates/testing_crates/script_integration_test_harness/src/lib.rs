@@ -1,40 +1,40 @@
 pub mod test_functions;
 
 use std::{
-    marker::PhantomData,
-    path::PathBuf,
-    time::{Duration, Instant},
+	marker::PhantomData,
+	path::PathBuf,
+	time::{Duration, Instant},
 };
 
 use bevy::{
-    app::{Last, Plugin, PostUpdate, Startup, Update},
-    asset::{AssetServer, Handle},
-    ecs::{
-        component::Component,
-        event::{Event, Events},
-        schedule::{IntoSystemConfigs, SystemConfigs},
-        system::{IntoSystem, Local, Res, Resource, SystemState},
-        world::{Command, FromWorld, Mut},
-    },
-    log::Level,
-    prelude::{Entity, World},
-    reflect::{Reflect, TypeRegistry},
-    utils::tracing,
+	app::{Last, Plugin, PostUpdate, Startup, Update},
+	asset::{AssetServer, Handle},
+	ecs::{
+		component::Component,
+		event::{Event, Events},
+		prelude::{Command, Resource},
+		schedule::ScheduleConfigs,
+		system::{BoxedSystem, InfallibleSystemWrapper, IntoSystem, Local, Res, SystemState},
+		world::{FromWorld, Mut},
+	},
+	log::{tracing, tracing::event, Level},
+	prelude::{BevyError, Entity, IntoScheduleConfigs, World},
+	reflect::{Reflect, TypeRegistry},
 };
 use bevy_mod_scripting_core::{
-    asset::ScriptAsset,
-    bindings::{
-        pretty_print::DisplayWithWorld, script_value::ScriptValue, CoreScriptGlobalsPlugin,
-        ReflectAccessId, WorldAccessGuard, WorldGuard,
-    },
-    callback_labels,
-    commands::CreateOrUpdateScript,
-    error::{InteropError, ScriptError},
-    event::{IntoCallbackLabel, ScriptErrorEvent},
-    extractors::{HandlerContext, WithWorldGuard},
-    handler::handle_script_errors,
-    script::ScriptId,
-    BMSScriptingInfrastructurePlugin, IntoScriptPluginParams, ScriptingPlugin,
+	asset::ScriptAsset,
+	bindings::{
+		pretty_print::DisplayWithWorld, script_value::ScriptValue, CoreScriptGlobalsPlugin,
+		ReflectAccessId, WorldAccessGuard, WorldGuard,
+	},
+	callback_labels,
+	commands::CreateOrUpdateScript,
+	error::{InteropError, ScriptError},
+	event::{IntoCallbackLabel, ScriptErrorEvent},
+	extractors::{HandlerContext, WithWorldGuard},
+	handler::handle_script_errors,
+	script::ScriptId,
+	BMSScriptingInfrastructurePlugin, IntoScriptPluginParams, ScriptingPlugin,
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
 use criterion::{measurement::Measurement, BatchSize};
@@ -55,9 +55,12 @@ struct TestCallbackBuilder<P: IntoScriptPluginParams, L: IntoCallbackLabel> {
 }
 
 impl<L: IntoCallbackLabel, P: IntoScriptPluginParams> TestCallbackBuilder<P, L> {
-    fn build(script_id: impl Into<ScriptId>, expect_response: bool) -> SystemConfigs {
+    fn build(
+        script_id: impl Into<ScriptId>,
+        expect_response: bool,
+    ) -> ScheduleConfigs<BoxedSystem<(), Result<(), BevyError>>> {
         let script_id = script_id.into();
-        IntoSystem::into_system(
+        let system = Box::new(InfallibleSystemWrapper::new(IntoSystem::into_system(
             move |world: &mut World,
                   system_state: &mut SystemState<WithWorldGuard<HandlerContext<P>>>| {
                 let with_guard = system_state.get_mut(world);
@@ -65,9 +68,9 @@ impl<L: IntoCallbackLabel, P: IntoScriptPluginParams> TestCallbackBuilder<P, L> 
 
                 system_state.apply(world);
             },
-        )
-        .with_name(L::into_callback_label().to_string())
-        .into_configs()
+        ).with_name(L::into_callback_label().to_string())));
+
+        system.into_configs()
     }
 }
 
@@ -130,12 +133,12 @@ pub fn make_test_lua_plugin() -> bevy_mod_scripting_lua::LuaScriptingPlugin {
 #[cfg(feature = "rhai")]
 pub fn make_test_rhai_plugin() -> bevy_mod_scripting_rhai::RhaiScriptingPlugin {
     use bevy_mod_scripting_core::{
-        bindings::{ThreadWorldContainer, WorldContainer},
-        ConfigureScriptPlugin,
+	    bindings::{ThreadWorldContainer, WorldContainer},
+	    ConfigureScriptPlugin,
     };
     use bevy_mod_scripting_rhai::{
-        rhai::{Dynamic, EvalAltResult, FnPtr, NativeCallContext},
-        RhaiScriptingPlugin,
+	    rhai::{Dynamic, EvalAltResult, FnPtr, NativeCallContext},
+	    RhaiScriptingPlugin,
     };
 
     RhaiScriptingPlugin::default().add_runtime_initializer(|runtime| {
@@ -341,7 +344,7 @@ pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(
     label: &str,
     criterion: &mut criterion::BenchmarkGroup<M>,
 ) -> Result<(), String> {
-    use bevy::{log::Level, utils::tracing};
+    use bevy::log::Level;
     use bevy_mod_scripting_lua::mlua::Function;
 
     let plugin = make_test_lua_plugin();
@@ -373,7 +376,7 @@ pub fn run_rhai_benchmark<M: criterion::measurement::Measurement>(
     label: &str,
     criterion: &mut criterion::BenchmarkGroup<M>,
 ) -> Result<(), String> {
-    use bevy::{log::Level, utils::tracing};
+    use bevy::log::Level;
     use bevy_mod_scripting_rhai::rhai::Dynamic;
 
     let plugin = make_test_rhai_plugin();
@@ -418,7 +421,7 @@ where
     F: Fn(&mut P::C, &P::R, &str, &mut criterion::BenchmarkGroup<M>) -> Result<(), String>,
 {
     use bevy_mod_scripting_core::bindings::{
-        ThreadWorldContainer, WorldAccessGuard, WorldContainer,
+	    ThreadWorldContainer, WorldAccessGuard, WorldContainer,
     };
 
     let mut app = setup_integration_test(|_, _| {});
@@ -587,7 +590,7 @@ pub fn perform_benchmark_with_generator<
                 )
             },
             |(i, w)| {
-                bevy::utils::tracing::event!(bevy::log::Level::TRACE, "profiling_iter {}", label);
+                event!(bevy::log::Level::TRACE, "profiling_iter {}", label);
                 bench_fn(w, i)
             },
             batch_size,
