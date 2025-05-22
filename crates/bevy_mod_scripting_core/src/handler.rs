@@ -18,11 +18,11 @@ use bevy::{
     ecs::{
         entity::Entity,
         query::QueryState,
-        system::{Local, Resource, SystemState},
+        system::{Local, SystemState},
         world::{Mut, World},
     },
     log::trace_once,
-    prelude::{Events, Ref},
+    prelude::{Events, Ref, Resource},
 };
 
 /// A function that handles a callback event

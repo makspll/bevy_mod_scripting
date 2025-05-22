@@ -1,24 +1,24 @@
 //! Systems and resources for handling script assets and events
 
+use std::borrow::Cow;
+
+use bevy::{
+    app::{App, PreUpdate},
+    asset::{Asset, AssetEvent, AssetId, AssetLoader, AssetPath, Assets},
+    log::{debug, info, trace, warn},
+    platform::collections::HashMap,
+    prelude::{
+        Commands, Event, EventReader, EventWriter, IntoScheduleConfigs, Res, ResMut, Resource,
+    },
+    reflect::TypePath,
+};
+
 use crate::{
     commands::{CreateOrUpdateScript, DeleteScript},
     error::ScriptError,
     script::ScriptId,
     IntoScriptPluginParams, ScriptingSystemSet,
 };
-use bevy::{
-    app::{App, PreUpdate},
-    asset::{Asset, AssetEvent, AssetId, AssetLoader, AssetPath, Assets},
-    ecs::system::Resource,
-    log::{debug, info, trace, warn},
-    prelude::{
-        Commands, Event, EventReader, EventWriter, IntoSystemConfigs, IntoSystemSetConfigs, Res,
-        ResMut,
-    },
-    reflect::TypePath,
-    utils::hashbrown::HashMap,
-};
-use std::borrow::Cow;
 
 /// Represents a scripting language. Languages which compile into another language should use the target language as their language.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
@@ -231,7 +231,7 @@ pub(crate) fn dispatch_script_asset_events(
                             language,
                         };
                         debug!("Script loaded, populating metadata: {:?}:", metadata);
-                        script_asset_events.send(ScriptAssetEvent::Added(metadata.clone()));
+                        script_asset_events.write(ScriptAssetEvent::Added(metadata.clone()));
                         metadata_store.insert(*id, metadata);
                     } else {
                         warn!("A script was added but it's asset was not found, failed to compute metadata. This script will not be loaded. Did you forget to store `Handle<ScriptAsset>` somewhere?. {}", id);
@@ -241,7 +241,7 @@ pub(crate) fn dispatch_script_asset_events(
             AssetEvent::Removed { id } => {
                 if let Some(metadata) = metadata_store.get(*id) {
                     debug!("Script removed: {:?}", metadata);
-                    script_asset_events.send(ScriptAssetEvent::Removed(metadata.clone()));
+                    script_asset_events.write(ScriptAssetEvent::Removed(metadata.clone()));
                 } else {
                     warn!("Script metadata not found for removed script asset: {}. Cannot properly clean up script", id);
                 }
@@ -249,7 +249,7 @@ pub(crate) fn dispatch_script_asset_events(
             AssetEvent::Modified { id } => {
                 if let Some(metadata) = metadata_store.get(*id) {
                     debug!("Script modified: {:?}", metadata);
-                    script_asset_events.send(ScriptAssetEvent::Modified(metadata.clone()));
+                    script_asset_events.write(ScriptAssetEvent::Modified(metadata.clone()));
                 } else {
                     warn!("Script metadata not found for modified script asset: {}. Cannot properly update script", id);
                 }
@@ -572,9 +572,9 @@ mod tests {
     struct DummyPlugin;
 
     impl IntoScriptPluginParams for DummyPlugin {
-        type R = ();
-        type C = ();
         const LANGUAGE: Language = Language::Lua;
+        type C = ();
+        type R = ();
 
         fn build_runtime() -> Self::R {}
     }

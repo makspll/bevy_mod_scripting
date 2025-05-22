@@ -1,12 +1,13 @@
-use std::alloc::Layout;
-use std::collections::HashMap;
+use std::{alloc::Layout, collections::HashMap};
 
-use bevy::asset::AssetPlugin;
-use bevy::diagnostic::DiagnosticsPlugin;
-use bevy::ecs::{component::*, world::World};
-use bevy::log::LogPlugin;
-use bevy::prelude::*;
-use bevy::reflect::*;
+use bevy::{
+	asset::AssetPlugin,
+	diagnostic::DiagnosticsPlugin,
+	ecs::{component::*, world::World},
+	log::LogPlugin,
+	prelude::*,
+	reflect::*,
+};
 
 /// Test component with Reflect and ReflectComponent registered
 #[derive(Component, Reflect, PartialEq, Eq, Debug)]
@@ -312,6 +313,8 @@ fn init_world<F: FnOnce(&mut World, &mut TypeRegistry)>(world: &mut World, init:
                 StorageType::Table,
                 Layout::new::<usize>(),
                 None,
+                true,
+                ComponentCloneBehavior::Default,
             ))
         };
     }
@@ -346,7 +349,6 @@ pub fn setup_integration_test<F: FnOnce(&mut World, &mut TypeRegistry)>(init: F)
     app.add_plugins((
         MinimalPlugins,
         AssetPlugin::default(),
-        HierarchyPlugin,
         DiagnosticsPlugin,
         LogPlugin {
             filter: log_level,
@@ -358,9 +360,9 @@ pub fn setup_integration_test<F: FnOnce(&mut World, &mut TypeRegistry)>(init: F)
 
 #[cfg(test)]
 mod test {
-    use super::*;
+	use super::*;
 
-    #[test]
+	#[test]
     fn setup_works() {
         setup_world(|_, _| {});
     }

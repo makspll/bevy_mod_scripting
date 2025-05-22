@@ -72,7 +72,7 @@ impl Default for LuaScriptingPlugin {
 
                         Ok(())
                     },
-                    |_script_id, context: &mut Lua| {
+                    |_script_id, context| {
                         // set static globals
                         let world = ThreadWorldContainer.try_get_world()?;
                         let globals_registry =

@@ -14,7 +14,6 @@ readme = "readme.md"
 [dependencies]
 bevy = { workspace = true, default-features = false }
 dot-writer = "0.1.4"
-petgraph = "0.6"
 
 
 [dev-dependencies]
