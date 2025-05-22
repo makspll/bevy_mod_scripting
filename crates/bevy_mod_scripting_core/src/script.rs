@@ -1,10 +1,16 @@
 //! Script related types, functions and components
 
-use crate::{asset::ScriptAsset, IntoScriptPluginParams};
-use bevy::prelude::ReflectComponent;
-use bevy::{asset::Handle, ecs::system::Resource, reflect::Reflect, utils::HashSet};
-use parking_lot::Mutex;
 use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc};
+
+use bevy::{
+    asset::Handle,
+    platform::collections::HashSet,
+    prelude::{ReflectComponent, Resource},
+    reflect::Reflect,
+};
+use parking_lot::Mutex;
+
+use crate::{asset::ScriptAsset, IntoScriptPluginParams};
 
 /// A unique identifier for a script, by default corresponds to the path of the asset excluding the asset source.
 ///
