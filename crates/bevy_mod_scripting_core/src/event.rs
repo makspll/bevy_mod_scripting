@@ -75,6 +75,7 @@ macro_rules! callback_labels {
 callback_labels!(
     OnScriptLoaded => "on_script_loaded",
     OnScriptUnloaded => "on_script_unloaded",
+    OnScriptReloaded => "on_script_reloaded",
 );
 
 /// A trait for types that can be converted into a callback label
