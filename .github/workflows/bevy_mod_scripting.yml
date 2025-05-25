@@ -170,6 +170,7 @@ jobs:
       contents: write
       pull-requests: write
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'makspll'
     steps:
     - name: Checkout
       uses: actions/checkout@v4
