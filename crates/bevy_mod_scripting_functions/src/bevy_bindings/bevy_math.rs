@@ -4560,7 +4560,7 @@ impl bevy::math::bounding::BoundingSphereCast {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl bevy::math::curve::interval::Interval {
+impl bevy::math::curve::Interval {
     ///  Clamp the given `value` to lie within this interval.
     fn clamp(_self: Val<bevy::math::curve::interval::Interval>, value: f32) -> f32 {
         let output: f32 = bevy::math::curve::interval::Interval::clamp(

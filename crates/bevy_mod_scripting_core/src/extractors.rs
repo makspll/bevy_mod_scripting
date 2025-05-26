@@ -11,7 +11,7 @@ use bevy::{
         event::{Event, EventCursor, EventIterator, Events},
         query::{Access, AccessConflicts},
         storage::SparseSetIndex,
-        system::{Local, SystemParam, SystemState},
+        system::{Local, SystemParam, SystemState, SystemParamValidationError},
         world::World,
     },
     prelude::Resource
@@ -368,8 +368,8 @@ unsafe impl<T: SystemParam> SystemParam for WithWorldGuard<'_, '_, T> {
         state: &Self::State,
         system_meta: &bevy::ecs::system::SystemMeta,
         world: bevy::ecs::world::unsafe_world_cell::UnsafeWorldCell,
-    ) -> bool {
-        T::validate_param(&state.0, system_meta, world).is_ok()
+    ) -> Result<(), SystemParamValidationError> {
+        T::validate_param(&state.0, system_meta, world)
     }
 }
 

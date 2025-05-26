@@ -28,7 +28,7 @@ use bevy::{
         query::{Access, FilteredAccess, FilteredAccessSet, QueryState},
         reflect::AppTypeRegistry,
         schedule::{
-            SystemSet, Infallible, graph::GraphInfo,
+            SystemSet, Infallible
         },
         system::{IntoSystem, System, SystemParamValidationError},
         world::{unsafe_world_cell::UnsafeWorldCell, World},

@@ -28,6 +28,9 @@ rhai_bindings = ["bevy_mod_scripting_rhai"]
 
 [dependencies]
 bevy = { workspace = true }
+bevy_math = { workspace = true, features = ["curve"]}
+bevy_reflect = { workspace = true, features = ["smol_str"]}
+bevy_input = { workspace = true, features = ["smol_str"]}
 profiling = { workspace = true }
 uuid = "1.11"
 smol_str = "0.2.2"

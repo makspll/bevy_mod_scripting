@@ -818,10 +818,10 @@ impl WorldAccessGuard<'_> {
         // try to construct type from reflect
         // TODO: it would be nice to have a <dyn PartialReflect>::from_reflect_with_fallback equivalent, that does exactly that
         // only using this as it's already there and convenient, the clone variant hitting will be confusing to end users
-        Ok(<dyn PartialReflect>::from_reflect_or_clone(
+        <dyn PartialReflect>::from_reflect_or_clone(
             dynamic.as_ref(),
             self.clone(),
-        ))
+        )
     }
 
     /// Spawns a new entity in the world

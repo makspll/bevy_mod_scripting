@@ -214,7 +214,7 @@ impl ReflectReference {
 
         self.with_reflect(world.clone(), |r| {
             <dyn PartialReflect>::from_reflect_or_clone(r, world.clone())
-        })
+        })?
     }
 
     /// The way to access the value of the reference, that is the pointed-to value.
