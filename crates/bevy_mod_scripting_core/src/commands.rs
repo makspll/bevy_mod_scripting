@@ -212,7 +212,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
                                         vec![err
                                             .with_script(self.id.clone())
                                             .with_context(P::LANGUAGE)
-                                            .with_context("saving reload state")]
+                                            .with_context("saving reload state (shared-context)")]
                                         .into_iter(),
                                     );
                                 }
@@ -222,6 +222,27 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
                         self.reload_context(guard.clone(), handler_ctxt)
                     }
                     None => {
+                        match handler_ctxt.call_dynamic_label(
+                            &OnScriptReloaded::into_callback_label(),
+                            &self.id,
+                            Entity::from_raw(0),
+                            vec![ScriptValue::Bool(true)],
+                            guard.clone(),
+                        ) {
+                            Ok(state) => {
+                                reload_state = Some(state);
+                            }
+                            Err(err) => {
+                                handle_script_errors(
+                                    guard.clone(),
+                                    vec![err
+                                        .with_script(self.id.clone())
+                                        .with_context(P::LANGUAGE)
+                                        .with_context("saving reload state")]
+                                    .into_iter(),
+                                );
+                            }
+                        }
                         bevy::log::debug!("{}: loading script with id: {}", P::LANGUAGE, self.id);
                         self.load_context(guard.clone(), handler_ctxt)
                     }
