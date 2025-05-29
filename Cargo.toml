@@ -107,7 +107,7 @@ test_utils = { workspace = true }
 libtest-mimic = "0.8"
 tracing-tracy = "0.11"
 regex = "1.11"
-bevy_console = { git = "https://github.com/RichoDemus/bevy-console" }
+bevy_console = "0.14"
 
 [workspace]
 members = [
