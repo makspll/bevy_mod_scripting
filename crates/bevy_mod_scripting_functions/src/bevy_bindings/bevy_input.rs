@@ -1191,22 +1191,6 @@ impl bevy::input::gamepad::AxisSettings {
             .into();
         output
     }
-    ///  Filters the `new_value` based on the `old_value`, according to the [`AxisSettings`].
-    ///  Returns the clamped `new_value` if the change exceeds the settings threshold,
-    ///  and `None` otherwise.
-    fn filter(
-        _self: Ref<bevy::input::gamepad::AxisSettings>,
-        new_value: f32,
-        old_value: std::option::Option<f32>,
-    ) -> std::option::Option<f32> {
-        let output: std::option::Option<f32> = bevy::input::gamepad::AxisSettings::filter(
-                &_self,
-                new_value,
-                old_value,
-            )
-            .into();
-        output
-    }
     ///  Get the value below which negative inputs will be rounded down to -1.0.
     fn livezone_lowerbound(_self: Ref<bevy::input::gamepad::AxisSettings>) -> f32 {
         let output: f32 = bevy::input::gamepad::AxisSettings::livezone_lowerbound(&_self)
@@ -1311,22 +1295,6 @@ impl bevy::input::gamepad::ButtonAxisSettings {
     ) -> Val<bevy::input::gamepad::ButtonAxisSettings> {
         let output: Val<bevy::input::gamepad::ButtonAxisSettings> = <bevy::input::gamepad::ButtonAxisSettings as std::clone::Clone>::clone(
                 &_self,
-            )
-            .into();
-        output
-    }
-    ///  Filters the `new_value` based on the `old_value`, according to the [`ButtonAxisSettings`].
-    ///  Returns the clamped `new_value`, according to the [`ButtonAxisSettings`], if the change
-    ///  exceeds the settings threshold, and `None` otherwise.
-    fn filter(
-        _self: Ref<bevy::input::gamepad::ButtonAxisSettings>,
-        new_value: f32,
-        old_value: std::option::Option<f32>,
-    ) -> std::option::Option<f32> {
-        let output: std::option::Option<f32> = bevy::input::gamepad::ButtonAxisSettings::filter(
-                &_self,
-                new_value,
-                old_value,
             )
             .into();
         output

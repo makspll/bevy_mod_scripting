@@ -408,7 +408,7 @@ impl std::sync::atomic::AtomicUsize {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl bevy::utils::Duration {
+impl std::time::Duration {
     ///  Computes the absolute difference between `self` and `other`.
     ///  # Examples
     ///  ```
@@ -417,10 +417,10 @@ impl bevy::utils::Duration {
     ///  assert_eq!(Duration::new(100, 400_000_000).abs_diff(Duration::new(110, 0)), Duration::new(9, 600_000_000));
     ///  ```
     fn abs_diff(
-        _self: Val<bevy::utils::Duration>,
-        other: Val<bevy::utils::Duration>,
-    ) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = bevy::utils::Duration::abs_diff(
+        _self: Val<std::time::Duration>,
+        other: Val<std::time::Duration>,
+    ) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = std::time::Duration::abs_diff(
                 _self.into_inner(),
                 other.into_inner(),
             )
@@ -428,11 +428,11 @@ impl bevy::utils::Duration {
         output
     }
     fn add(
-        _self: Val<bevy::utils::Duration>,
-        rhs: Val<bevy::utils::Duration>,
-    ) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = <bevy::utils::Duration as std::ops::Add<
-            bevy::utils::Duration,
+        _self: Val<std::time::Duration>,
+        rhs: Val<std::time::Duration>,
+    ) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = <std::time::Duration as std::ops::Add<
+            std::time::Duration,
         >>::add(_self.into_inner(), rhs.into_inner())
             .into();
         output
@@ -444,8 +444,8 @@ impl bevy::utils::Duration {
     ///  let duration = Duration::new(5, 730_023_852);
     ///  assert_eq!(duration.as_micros(), 5_730_023);
     ///  ```
-    fn as_micros(_self: Ref<bevy::utils::Duration>) -> u128 {
-        let output: u128 = bevy::utils::Duration::as_micros(&_self).into();
+    fn as_micros(_self: Ref<std::time::Duration>) -> u128 {
+        let output: u128 = std::time::Duration::as_micros(&_self).into();
         output
     }
     ///  Returns the total number of whole milliseconds contained by this `Duration`.
@@ -455,8 +455,8 @@ impl bevy::utils::Duration {
     ///  let duration = Duration::new(5, 730_023_852);
     ///  assert_eq!(duration.as_millis(), 5_730);
     ///  ```
-    fn as_millis(_self: Ref<bevy::utils::Duration>) -> u128 {
-        let output: u128 = bevy::utils::Duration::as_millis(&_self).into();
+    fn as_millis(_self: Ref<std::time::Duration>) -> u128 {
+        let output: u128 = std::time::Duration::as_millis(&_self).into();
         output
     }
     ///  Returns the total number of nanoseconds contained by this `Duration`.
@@ -466,8 +466,8 @@ impl bevy::utils::Duration {
     ///  let duration = Duration::new(5, 730_023_852);
     ///  assert_eq!(duration.as_nanos(), 5_730_023_852);
     ///  ```
-    fn as_nanos(_self: Ref<bevy::utils::Duration>) -> u128 {
-        let output: u128 = bevy::utils::Duration::as_nanos(&_self).into();
+    fn as_nanos(_self: Ref<std::time::Duration>) -> u128 {
+        let output: u128 = std::time::Duration::as_nanos(&_self).into();
         output
     }
     ///  Returns the number of _whole_ seconds contained by this `Duration`.
@@ -484,8 +484,8 @@ impl bevy::utils::Duration {
     ///  [`as_secs_f64`]: Duration::as_secs_f64
     ///  [`as_secs_f32`]: Duration::as_secs_f32
     ///  [`subsec_nanos`]: Duration::subsec_nanos
-    fn as_secs(_self: Ref<bevy::utils::Duration>) -> u64 {
-        let output: u64 = bevy::utils::Duration::as_secs(&_self).into();
+    fn as_secs(_self: Ref<std::time::Duration>) -> u64 {
+        let output: u64 = std::time::Duration::as_secs(&_self).into();
         output
     }
     ///  Returns the number of seconds contained by this `Duration` as `f32`.
@@ -496,8 +496,8 @@ impl bevy::utils::Duration {
     ///  let dur = Duration::new(2, 700_000_000);
     ///  assert_eq!(dur.as_secs_f32(), 2.7);
     ///  ```
-    fn as_secs_f32(_self: Ref<bevy::utils::Duration>) -> f32 {
-        let output: f32 = bevy::utils::Duration::as_secs_f32(&_self).into();
+    fn as_secs_f32(_self: Ref<std::time::Duration>) -> f32 {
+        let output: f32 = std::time::Duration::as_secs_f32(&_self).into();
         output
     }
     ///  Returns the number of seconds contained by this `Duration` as `f64`.
@@ -508,26 +508,26 @@ impl bevy::utils::Duration {
     ///  let dur = Duration::new(2, 700_000_000);
     ///  assert_eq!(dur.as_secs_f64(), 2.7);
     ///  ```
-    fn as_secs_f64(_self: Ref<bevy::utils::Duration>) -> f64 {
-        let output: f64 = bevy::utils::Duration::as_secs_f64(&_self).into();
+    fn as_secs_f64(_self: Ref<std::time::Duration>) -> f64 {
+        let output: f64 = std::time::Duration::as_secs_f64(&_self).into();
         output
     }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::utils::Duration>) -> () {
-        let output: () = <bevy::utils::Duration as std::cmp::Eq>::assert_receiver_is_total_eq(
+    fn assert_receiver_is_total_eq(_self: Ref<std::time::Duration>) -> () {
+        let output: () = <std::time::Duration as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::utils::Duration>) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = <bevy::utils::Duration as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
+    fn clone(_self: Ref<std::time::Duration>) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = <std::time::Duration as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
-    fn div(_self: Val<bevy::utils::Duration>, rhs: u32) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = <bevy::utils::Duration as std::ops::Div<
+    fn div(_self: Val<std::time::Duration>, rhs: u32) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = <std::time::Duration as std::ops::Div<
             u32,
         >>::div(_self.into_inner(), rhs)
             .into();
@@ -542,10 +542,10 @@ impl bevy::utils::Duration {
     ///  assert_eq!(dur1.div_duration_f32(dur2), 0.5);
     ///  ```
     fn div_duration_f32(
-        _self: Val<bevy::utils::Duration>,
-        rhs: Val<bevy::utils::Duration>,
+        _self: Val<std::time::Duration>,
+        rhs: Val<std::time::Duration>,
     ) -> f32 {
-        let output: f32 = bevy::utils::Duration::div_duration_f32(
+        let output: f32 = std::time::Duration::div_duration_f32(
                 _self.into_inner(),
                 rhs.into_inner(),
             )
@@ -561,10 +561,10 @@ impl bevy::utils::Duration {
     ///  assert_eq!(dur1.div_duration_f64(dur2), 0.5);
     ///  ```
     fn div_duration_f64(
-        _self: Val<bevy::utils::Duration>,
-        rhs: Val<bevy::utils::Duration>,
+        _self: Val<std::time::Duration>,
+        rhs: Val<std::time::Duration>,
     ) -> f64 {
-        let output: f64 = bevy::utils::Duration::div_duration_f64(
+        let output: f64 = std::time::Duration::div_duration_f64(
                 _self.into_inner(),
                 rhs.into_inner(),
             )
@@ -584,10 +584,10 @@ impl bevy::utils::Duration {
     ///  assert_eq!(dur.div_f32(3.14e5), Duration::new(0, 8_599));
     ///  ```
     fn div_f32(
-        _self: Val<bevy::utils::Duration>,
+        _self: Val<std::time::Duration>,
         rhs: f32,
-    ) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = bevy::utils::Duration::div_f32(
+    ) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = std::time::Duration::div_f32(
                 _self.into_inner(),
                 rhs,
             )
@@ -605,19 +605,19 @@ impl bevy::utils::Duration {
     ///  assert_eq!(dur.div_f64(3.14e5), Duration::new(0, 8_599));
     ///  ```
     fn div_f64(
-        _self: Val<bevy::utils::Duration>,
+        _self: Val<std::time::Duration>,
         rhs: f64,
-    ) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = bevy::utils::Duration::div_f64(
+    ) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = std::time::Duration::div_f64(
                 _self.into_inner(),
                 rhs,
             )
             .into();
         output
     }
-    fn eq(_self: Ref<bevy::utils::Duration>, other: Ref<bevy::utils::Duration>) -> bool {
-        let output: bool = <bevy::utils::Duration as std::cmp::PartialEq<
-            bevy::utils::Duration,
+    fn eq(_self: Ref<std::time::Duration>, other: Ref<std::time::Duration>) -> bool {
+        let output: bool = <std::time::Duration as std::cmp::PartialEq<
+            std::time::Duration,
         >>::eq(&_self, &other)
             .into();
         output
@@ -630,8 +630,8 @@ impl bevy::utils::Duration {
     ///  assert_eq!(1, duration.as_secs());
     ///  assert_eq!(2_000, duration.subsec_nanos());
     ///  ```
-    fn from_micros(micros: u64) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = bevy::utils::Duration::from_micros(
+    fn from_micros(micros: u64) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = std::time::Duration::from_micros(
                 micros,
             )
             .into();
@@ -645,8 +645,8 @@ impl bevy::utils::Duration {
     ///  assert_eq!(2, duration.as_secs());
     ///  assert_eq!(569_000_000, duration.subsec_nanos());
     ///  ```
-    fn from_millis(millis: u64) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = bevy::utils::Duration::from_millis(
+    fn from_millis(millis: u64) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = std::time::Duration::from_millis(
                 millis,
             )
             .into();
@@ -664,8 +664,8 @@ impl bevy::utils::Duration {
     ///  assert_eq!(1, duration.as_secs());
     ///  assert_eq!(123, duration.subsec_nanos());
     ///  ```
-    fn from_nanos(nanos: u64) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = bevy::utils::Duration::from_nanos(nanos)
+    fn from_nanos(nanos: u64) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = std::time::Duration::from_nanos(nanos)
             .into();
         output
     }
@@ -677,8 +677,8 @@ impl bevy::utils::Duration {
     ///  assert_eq!(5, duration.as_secs());
     ///  assert_eq!(0, duration.subsec_nanos());
     ///  ```
-    fn from_secs(secs: u64) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = bevy::utils::Duration::from_secs(secs)
+    fn from_secs(secs: u64) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = std::time::Duration::from_secs(secs)
             .into();
         output
     }
@@ -706,8 +706,8 @@ impl bevy::utils::Duration {
     ///  let res = Duration::from_secs_f32(0.999e-9);
     ///  assert_eq!(res, Duration::new(0, 1));
     ///  ```
-    fn from_secs_f32(secs: f32) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = bevy::utils::Duration::from_secs_f32(
+    fn from_secs_f32(secs: f32) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = std::time::Duration::from_secs_f32(
                 secs,
             )
             .into();
@@ -737,8 +737,8 @@ impl bevy::utils::Duration {
     ///  let res = Duration::from_secs_f64(0.999e-9);
     ///  assert_eq!(res, Duration::new(0, 1));
     ///  ```
-    fn from_secs_f64(secs: f64) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = bevy::utils::Duration::from_secs_f64(
+    fn from_secs_f64(secs: f64) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = std::time::Duration::from_secs_f64(
                 secs,
             )
             .into();
@@ -756,12 +756,12 @@ impl bevy::utils::Duration {
     ///  assert!(!Duration::from_nanos(1).is_zero());
     ///  assert!(!Duration::from_secs(1).is_zero());
     ///  ```
-    fn is_zero(_self: Ref<bevy::utils::Duration>) -> bool {
-        let output: bool = bevy::utils::Duration::is_zero(&_self).into();
+    fn is_zero(_self: Ref<std::time::Duration>) -> bool {
+        let output: bool = std::time::Duration::is_zero(&_self).into();
         output
     }
-    fn mul(_self: Val<bevy::utils::Duration>, rhs: u32) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = <bevy::utils::Duration as std::ops::Mul<
+    fn mul(_self: Val<std::time::Duration>, rhs: u32) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = <std::time::Duration as std::ops::Mul<
             u32,
         >>::mul(_self.into_inner(), rhs)
             .into();
@@ -778,10 +778,10 @@ impl bevy::utils::Duration {
     ///  assert_eq!(dur.mul_f32(3.14e5), Duration::new(847_800, 0));
     ///  ```
     fn mul_f32(
-        _self: Val<bevy::utils::Duration>,
+        _self: Val<std::time::Duration>,
         rhs: f32,
-    ) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = bevy::utils::Duration::mul_f32(
+    ) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = std::time::Duration::mul_f32(
                 _self.into_inner(),
                 rhs,
             )
@@ -799,10 +799,10 @@ impl bevy::utils::Duration {
     ///  assert_eq!(dur.mul_f64(3.14e5), Duration::new(847_800, 0));
     ///  ```
     fn mul_f64(
-        _self: Val<bevy::utils::Duration>,
+        _self: Val<std::time::Duration>,
         rhs: f64,
-    ) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = bevy::utils::Duration::mul_f64(
+    ) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = std::time::Duration::mul_f64(
                 _self.into_inner(),
                 rhs,
             )
@@ -821,8 +821,8 @@ impl bevy::utils::Duration {
     ///  use std::time::Duration;
     ///  let five_seconds = Duration::new(5, 0);
     ///  ```
-    fn new(secs: u64, nanos: u32) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = bevy::utils::Duration::new(secs, nanos)
+    fn new(secs: u64, nanos: u32) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = std::time::Duration::new(secs, nanos)
             .into();
         output
     }
@@ -836,10 +836,10 @@ impl bevy::utils::Duration {
     ///  assert_eq!(Duration::new(1, 0).saturating_add(Duration::new(u64::MAX, 0)), Duration::MAX);
     ///  ```
     fn saturating_add(
-        _self: Val<bevy::utils::Duration>,
-        rhs: Val<bevy::utils::Duration>,
-    ) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = bevy::utils::Duration::saturating_add(
+        _self: Val<std::time::Duration>,
+        rhs: Val<std::time::Duration>,
+    ) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = std::time::Duration::saturating_add(
                 _self.into_inner(),
                 rhs.into_inner(),
             )
@@ -856,10 +856,10 @@ impl bevy::utils::Duration {
     ///  assert_eq!(Duration::new(u64::MAX - 1, 0).saturating_mul(2), Duration::MAX);
     ///  ```
     fn saturating_mul(
-        _self: Val<bevy::utils::Duration>,
+        _self: Val<std::time::Duration>,
         rhs: u32,
-    ) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = bevy::utils::Duration::saturating_mul(
+    ) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = std::time::Duration::saturating_mul(
                 _self.into_inner(),
                 rhs,
             )
@@ -875,10 +875,10 @@ impl bevy::utils::Duration {
     ///  assert_eq!(Duration::new(0, 0).saturating_sub(Duration::new(0, 1)), Duration::ZERO);
     ///  ```
     fn saturating_sub(
-        _self: Val<bevy::utils::Duration>,
-        rhs: Val<bevy::utils::Duration>,
-    ) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = bevy::utils::Duration::saturating_sub(
+        _self: Val<std::time::Duration>,
+        rhs: Val<std::time::Duration>,
+    ) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = std::time::Duration::saturating_sub(
                 _self.into_inner(),
                 rhs.into_inner(),
             )
@@ -886,11 +886,11 @@ impl bevy::utils::Duration {
         output
     }
     fn sub(
-        _self: Val<bevy::utils::Duration>,
-        rhs: Val<bevy::utils::Duration>,
-    ) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = <bevy::utils::Duration as std::ops::Sub<
-            bevy::utils::Duration,
+        _self: Val<std::time::Duration>,
+        rhs: Val<std::time::Duration>,
+    ) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = <std::time::Duration as std::ops::Sub<
+            std::time::Duration,
         >>::sub(_self.into_inner(), rhs.into_inner())
             .into();
         output
@@ -906,8 +906,8 @@ impl bevy::utils::Duration {
     ///  assert_eq!(duration.as_secs(), 1);
     ///  assert_eq!(duration.subsec_micros(), 234_567);
     ///  ```
-    fn subsec_micros(_self: Ref<bevy::utils::Duration>) -> u32 {
-        let output: u32 = bevy::utils::Duration::subsec_micros(&_self).into();
+    fn subsec_micros(_self: Ref<std::time::Duration>) -> u32 {
+        let output: u32 = std::time::Duration::subsec_micros(&_self).into();
         output
     }
     ///  Returns the fractional part of this `Duration`, in whole milliseconds.
@@ -921,8 +921,8 @@ impl bevy::utils::Duration {
     ///  assert_eq!(duration.as_secs(), 5);
     ///  assert_eq!(duration.subsec_millis(), 432);
     ///  ```
-    fn subsec_millis(_self: Ref<bevy::utils::Duration>) -> u32 {
-        let output: u32 = bevy::utils::Duration::subsec_millis(&_self).into();
+    fn subsec_millis(_self: Ref<std::time::Duration>) -> u32 {
+        let output: u32 = std::time::Duration::subsec_millis(&_self).into();
         output
     }
     ///  Returns the fractional part of this `Duration`, in nanoseconds.
@@ -936,8 +936,8 @@ impl bevy::utils::Duration {
     ///  assert_eq!(duration.as_secs(), 5);
     ///  assert_eq!(duration.subsec_nanos(), 10_000_000);
     ///  ```
-    fn subsec_nanos(_self: Ref<bevy::utils::Duration>) -> u32 {
-        let output: u32 = bevy::utils::Duration::subsec_nanos(&_self).into();
+    fn subsec_nanos(_self: Ref<std::time::Duration>) -> u32 {
+        let output: u32 = std::time::Duration::subsec_nanos(&_self).into();
         output
     }
 }
@@ -947,29 +947,29 @@ impl bevy::utils::Duration {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl bevy::utils::Instant {
+impl bevy::platform::time::Instant {
     ///  # Panics
     ///  This function may panic if the resulting point in time cannot be represented by the
     ///  underlying data structure. See [`Instant::checked_add`] for a version without panic.
     fn add(
-        _self: Val<bevy::utils::Instant>,
-        other: Val<bevy::utils::Duration>,
-    ) -> Val<bevy::utils::Instant> {
-        let output: Val<bevy::utils::Instant> = <bevy::utils::Instant as std::ops::Add<
-            bevy::utils::Duration,
+        _self: Val<bevy::platform::time::Instant>,
+        other: Val<std::time::Duration>,
+    ) -> Val<bevy::platform::time::Instant> {
+        let output: Val<bevy::platform::time::Instant> = <bevy::platform::time::Instant as std::ops::Add<
+            std::time::Duration,
         >>::add(_self.into_inner(), other.into_inner())
             .into();
         output
     }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::utils::Instant>) -> () {
-        let output: () = <bevy::utils::Instant as std::cmp::Eq>::assert_receiver_is_total_eq(
+    fn assert_receiver_is_total_eq(_self: Ref<bevy::platform::time::Instant>) -> () {
+        let output: () = <bevy::platform::time::Instant as std::cmp::Eq>::assert_receiver_is_total_eq(
                 &_self,
             )
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::utils::Instant>) -> Val<bevy::utils::Instant> {
-        let output: Val<bevy::utils::Instant> = <bevy::utils::Instant as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
+    fn clone(_self: Ref<bevy::platform::time::Instant>) -> Val<bevy::platform::time::Instant> {
+        let output: Val<bevy::platform::time::Instant> = <bevy::platform::time::Instant as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
                 &_self,
             )
             .into();
@@ -993,10 +993,10 @@ impl bevy::utils::Instant {
     ///  println!("{:?}", now.duration_since(new_now)); // 0ns
     ///  ```
     fn duration_since(
-        _self: Ref<bevy::utils::Instant>,
-        earlier: Val<bevy::utils::Instant>,
-    ) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = bevy::utils::Instant::duration_since(
+        _self: Ref<bevy::platform::time::Instant>,
+        earlier: Val<bevy::platform::time::Instant>,
+    ) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = bevy::platform::time::Instant::duration_since(
                 &_self,
                 earlier.into_inner(),
             )
@@ -1018,14 +1018,14 @@ impl bevy::utils::Instant {
     ///  sleep(three_secs);
     ///  assert!(instant.elapsed() >= three_secs);
     ///  ```
-    fn elapsed(_self: Ref<bevy::utils::Instant>) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = bevy::utils::Instant::elapsed(&_self)
+    fn elapsed(_self: Ref<bevy::platform::time::Instant>) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = bevy::platform::time::Instant::elapsed(&_self)
             .into();
         output
     }
-    fn eq(_self: Ref<bevy::utils::Instant>, other: Ref<bevy::utils::Instant>) -> bool {
-        let output: bool = <bevy::utils::Instant as std::cmp::PartialEq<
-            bevy::utils::Instant,
+    fn eq(_self: Ref<bevy::platform::time::Instant>, other: Ref<bevy::platform::time::Instant>) -> bool {
+        let output: bool = <bevy::platform::time::Instant as std::cmp::PartialEq<
+            bevy::platform::time::Instant,
         >>::eq(&_self, &other)
             .into();
         output
@@ -1036,8 +1036,8 @@ impl bevy::utils::Instant {
     ///  use std::time::Instant;
     ///  let now = Instant::now();
     ///  ```
-    fn now() -> Val<bevy::utils::Instant> {
-        let output: Val<bevy::utils::Instant> = bevy::utils::Instant::now().into();
+    fn now() -> Val<bevy::platform::time::Instant> {
+        let output: Val<bevy::platform::time::Instant> = bevy::platform::time::Instant::now().into();
         output
     }
     ///  Returns the amount of time elapsed from another instant to this one,
@@ -1053,10 +1053,10 @@ impl bevy::utils::Instant {
     ///  println!("{:?}", now.saturating_duration_since(new_now)); // 0ns
     ///  ```
     fn saturating_duration_since(
-        _self: Ref<bevy::utils::Instant>,
-        earlier: Val<bevy::utils::Instant>,
-    ) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = bevy::utils::Instant::saturating_duration_since(
+        _self: Ref<bevy::platform::time::Instant>,
+        earlier: Val<bevy::platform::time::Instant>,
+    ) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = bevy::platform::time::Instant::saturating_duration_since(
                 &_self,
                 earlier.into_inner(),
             )
@@ -1064,11 +1064,11 @@ impl bevy::utils::Instant {
         output
     }
     fn sub(
-        _self: Val<bevy::utils::Instant>,
-        other: Val<bevy::utils::Duration>,
-    ) -> Val<bevy::utils::Instant> {
-        let output: Val<bevy::utils::Instant> = <bevy::utils::Instant as std::ops::Sub<
-            bevy::utils::Duration,
+        _self: Val<bevy::platform::time::Instant>,
+        other: Val<std::time::Duration>,
+    ) -> Val<bevy::platform::time::Instant> {
+        let output: Val<bevy::platform::time::Instant> = <bevy::platform::time::Instant as std::ops::Sub<
+            std::time::Duration,
         >>::sub(_self.into_inner(), other.into_inner())
             .into();
         output
@@ -1081,11 +1081,11 @@ impl bevy::utils::Instant {
     ///  See [Monotonicity].
     ///  [Monotonicity]: Instant#monotonicity
     fn sub(
-        _self: Val<bevy::utils::Instant>,
-        other: Val<bevy::utils::Instant>,
-    ) -> Val<bevy::utils::Duration> {
-        let output: Val<bevy::utils::Duration> = <bevy::utils::Instant as std::ops::Sub<
-            bevy::utils::Instant,
+        _self: Val<bevy::platform::time::Instant>,
+        other: Val<bevy::platform::time::Instant>,
+    ) -> Val<std::time::Duration> {
+        let output: Val<std::time::Duration> = <bevy::platform::time::Instant as std::ops::Sub<
+            bevy::platform::time::Instant,
         >>::sub(_self.into_inner(), other.into_inner())
             .into();
         output

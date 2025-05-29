@@ -1,12 +1,13 @@
 //! An allocator used to control the lifetime of allocations
 
+use bevy::prelude::Resource;
 use bevy::{
     app::{App, Plugin, PostUpdate},
     diagnostic::{Diagnostic, DiagnosticPath, Diagnostics, RegisterDiagnostic},
-    ecs::system::{Res, Resource},
+	ecs::system::Res,
+	platform::collections::HashMap,
     prelude::ResMut,
     reflect::PartialReflect,
-    utils::hashbrown::HashMap,
 };
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::{
