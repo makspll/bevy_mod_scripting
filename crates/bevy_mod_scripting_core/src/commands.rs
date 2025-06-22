@@ -315,6 +315,7 @@ impl<P: IntoScriptPluginParams> Command for RunScriptCallback<P> {
                 send_callback_response(
                     guard.clone(),
                     ScriptCallbackResponseEvent::new(
+                        self.entity,
                         self.callback,
                         self.id.clone(),
                         result.clone(),
@@ -569,6 +570,7 @@ mod test {
         assert_response_events(
             app.world_mut(),
             vec![ScriptCallbackResponseEvent::new(
+                Entity::from_raw(0),
                 OnScriptLoaded::into_callback_label(),
                 "script".into(),
                 Ok(ScriptValue::Unit),

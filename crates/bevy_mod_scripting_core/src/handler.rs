@@ -207,6 +207,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                     send_callback_response(
                         guard.clone(),
                         ScriptCallbackResponseEvent::new(
+                            *entity,
                             callback_label.clone(),
                             script_id.clone(),
                             call_result.clone(),
@@ -384,8 +385,10 @@ mod test {
             invocations: vec![].into(),
         };
         let mut app = setup_app::<OnTestCallback>(runtime, scripts);
-        app.world_mut()
-            .spawn(ScriptComponent(vec![test_script_id.clone()]));
+        let entity = app
+            .world_mut()
+            .spawn(ScriptComponent(vec![test_script_id.clone()]))
+            .id();
 
         app.world_mut().send_event(
             ScriptCallbackEvent::new(
@@ -400,6 +403,7 @@ mod test {
         assert_response_events(
             app.world_mut(),
             vec![ScriptCallbackResponseEvent::new(
+                entity,
                 OnTestCallback::into_callback_label(),
                 test_script_id.clone(),
                 Ok(ScriptValue::Unit),
