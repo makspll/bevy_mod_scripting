@@ -36,9 +36,12 @@ end
 
 This will be called twice: right before and after a script is reloaded.
 
-The first parameter `save` informs you whether it is time to save a value or restore it.
+The first parameter `save` informs whether it is time to save a value or restore it.
 
-Before the reload, it is called with one argument: `true`. After the script is reloaded, it is called with two parameters: the first is `false` and the second is value returned from before.
+Before the script reload, `on_script_reloaded` is called with two arguments:
+`true`, `nil`. The value returned is kept. After the script reload,
+`on_script_reloaded` is called with two arguments: `false` and the value
+returned from the preceding call. 
 
 ```lua
 mode = 1
@@ -52,3 +55,5 @@ function on_script_reloaded(save, value)
     end
 end
 ```
+
+Using `on_script_reloaded` one can make a script reload event not disrupt the current script state.
