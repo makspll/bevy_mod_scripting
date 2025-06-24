@@ -233,14 +233,17 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
                                 reload_state = Some(state);
                             }
                             Err(err) => {
-                                handle_script_errors(
-                                    guard.clone(),
-                                    vec![err
-                                        .with_script(self.id.clone())
-                                        .with_context(P::LANGUAGE)
-                                        .with_context("saving reload state")]
-                                    .into_iter(),
-                                );
+                                let missing_script = err.downcast_interop_inner().map(|e| matches!(e, crate::error::InteropErrorInner::MissingScript { .. })).unwrap_or(false);
+                                if !missing_script {
+                                    handle_script_errors(
+                                        guard.clone(),
+                                        vec![err
+                                            .with_script(self.id.clone())
+                                            .with_context(P::LANGUAGE)
+                                            .with_context("saving reload state")]
+                                        .into_iter(),
+                                    );
+                                }
                             }
                         }
                         bevy::log::debug!("{}: loading script with id: {}", P::LANGUAGE, self.id);
