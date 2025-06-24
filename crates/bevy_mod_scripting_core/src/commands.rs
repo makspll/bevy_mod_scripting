@@ -200,7 +200,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
                                 &OnScriptReloaded::into_callback_label(),
                                 &self.id,
                                 Entity::from_raw(0),
-                                vec![ScriptValue::Bool(true)],
+                                vec![ScriptValue::Bool(true), ScriptValue::Unit],
                                 guard.clone(),
                             ) {
                                 Ok(state) => {
@@ -226,7 +226,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
                             &OnScriptReloaded::into_callback_label(),
                             &self.id,
                             Entity::from_raw(0),
-                            vec![ScriptValue::Bool(true)],
+                            vec![ScriptValue::Bool(true), ScriptValue::Unit],
                             guard.clone(),
                         ) {
                             Ok(state) => {
