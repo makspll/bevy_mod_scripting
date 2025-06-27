@@ -21,9 +21,10 @@ use bevy::{
     utils::hashbrown::HashMap,
 };
 use std::{borrow::Cow, collections::VecDeque};
+use serde::{Deserialize, Serialize};
 
 /// Represents a scripting language. Languages which compile into another language should use the target language as their language.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Serialize, Deserialize)]
 pub enum Language {
     /// The Rhai scripting language
     Rhai,
@@ -66,6 +67,13 @@ pub(crate) enum ScriptAssetEvent {
     Modified(ScriptMetadata),
 }
 
+/// Script settings
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ScriptSettings {
+    /// Define the language for a script or use the extension if None.
+    pub language: Option<Language>,
+}
+
 #[derive(Default)]
 /// A loader for script assets
 pub struct ScriptAssetLoader {
@@ -79,14 +87,14 @@ pub struct ScriptAssetLoader {
 impl AssetLoader for ScriptAssetLoader {
     type Asset = ScriptAsset;
 
-    type Settings = ();
+    type Settings = ScriptSettings;
 
     type Error = ScriptError;
 
     async fn load(
         &self,
         reader: &mut dyn bevy::asset::io::Reader,
-        _settings: &Self::Settings,
+        settings: &Self::Settings,
         load_context: &mut bevy::asset::LoadContext<'_>,
     ) -> Result<Self::Asset, Self::Error> {
         let mut content = Vec::new();
@@ -97,14 +105,18 @@ impl AssetLoader for ScriptAssetLoader {
         if let Some(processor) = &self.preprocessor {
             processor(&mut content)?;
         }
-        let language = match load_context.path().extension().and_then(|e| e.to_str()).unwrap_or_default() {
-            "lua" => Language::Lua,
-            "rhai" => Language::Rhai,
-            x => {
-                warn!("Unknown language for {:?}", load_context.path().display());
-                Language::Unknown
-            }
-        };
+        let language = settings
+            .language
+            .clone()
+            .unwrap_or_else(||
+                match load_context.path().extension().and_then(|e| e.to_str()).unwrap_or_default() {
+                    "lua" => Language::Lua,
+                    "rhai" => Language::Rhai,
+                    x => {
+                        warn!("Unknown language for {:?}", load_context.path().display());
+                        Language::Unknown
+                    }
+                });
         let asset = ScriptAsset {
             content: content.into_boxed_slice(),
             language,
@@ -117,61 +129,6 @@ impl AssetLoader for ScriptAssetLoader {
     }
 }
 
-// #[derive(Clone, Resource)]
-// /// Settings to do with script assets and how they are handled
-// pub struct ScriptAssetSettings {
-//     /// Strategy for mapping asset paths to script ids, by default this is the identity function
-//     pub script_id_mapper: AssetPathToScriptIdMapper,
-//     /// Mapping from extension to script language
-//     pub extension_to_language_map: HashMap<&'static str, Language>,
-
-//     /// The currently supported asset extensions
-//     /// Should be updated by each scripting plugin to include the extensions it supports.
-//     ///
-//     /// Will be used to populate the script asset loader with the supported extensions
-//     pub supported_extensions: &'static [&'static str],
-// }
-
-// #[profiling::all_functions]
-// impl ScriptAssetSettings {
-//     /// Selects the language for a given asset path
-//     pub fn select_script_language(&self, path: &AssetPath) -> Language {
-//         let extension = path
-//             .path()
-//             .extension()
-//             .and_then(|ext| ext.to_str())
-//             .unwrap_or_default();
-//         self.extension_to_language_map
-//             .get(extension)
-//             .cloned()
-//             .unwrap_or_default()
-//     }
-// }
-
-// impl Default for ScriptAssetSettings {
-//     fn default() -> Self {
-//         Self {
-//             script_id_mapper: AssetPathToScriptIdMapper {
-//                 // map: (|path: &AssetPath| path.path().to_string_lossy().into_owned().into()),
-//                 map: (|path: &AssetPath| path.id()),
-//             },
-//             extension_to_language_map: HashMap::from_iter(vec![
-//                 ("lua", Language::Lua),
-//                 ("luau", Language::Lua),
-//                 ("rhai", Language::Rhai),
-//                 ("rn", Language::Rune),
-//             ]),
-//             supported_extensions: &["lua", "luau", "rhai", "rn"],
-//         }
-//     }
-// }
-
-// /// Strategy for mapping asset paths to script ids, by default this is the identity function
-// #[derive(Clone, Copy)]
-// pub struct AssetPathToScriptIdMapper {
-//     /// The mapping function
-//     pub map: fn(&AssetPath) -> ScriptId,
-// }
 
 /// A cache of asset id's to their script id's. Necessary since when we drop an asset we won't have the ability to get the path from the asset.
 #[derive(Default, Debug, Resource)]
