@@ -4,6 +4,7 @@ use std::{collections::HashMap, ops::Deref};
 
 use bevy::prelude::*;
 use bevy_mod_scripting_core::{
+    script::ScriptId,
     bindings::{
         function::{
             from::Union, namespace::GlobalNamespace, script_function::DynamicScriptFunctionMut,

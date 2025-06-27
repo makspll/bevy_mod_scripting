@@ -5,7 +5,7 @@
 use crate::event::ScriptErrorEvent;
 use asset::{
     configure_asset_systems, configure_asset_systems_for_plugin, Language, ScriptAsset,
-    ScriptAssetLoader, ScriptAssetSettings,
+    ScriptAssetLoader, //ScriptAssetSettings,
 };
 use bevy::prelude::*;
 use bindings::{
@@ -277,17 +277,17 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
 
     fn finish(&self, app: &mut App) {
         // read extensions from asset settings
-        let asset_settings_extensions = app
-            .world_mut()
-            .get_resource_or_init::<ScriptAssetSettings>()
-            .supported_extensions;
+        // let asset_settings_extensions = app
+        //     .world_mut()
+        //     // .get_resource_or_init::<ScriptAssetSettings>()
+        //     .supported_extensions;
 
-        // convert extensions to static array
-        bevy::log::info!(
-            "Initializing BMS with Supported extensions: {:?}",
-            asset_settings_extensions
-        );
-
+        // // convert extensions to static array
+        // bevy::log::info!(
+        //     "Initializing BMS with Supported extensions: {:?}",
+        //     asset_settings_extensions
+        // );
+        let asset_settings_extensions = &["lua", "luau", "rhai", "rn"];
         app.register_asset_loader(ScriptAssetLoader {
             extensions: asset_settings_extensions,
             preprocessor: None,
@@ -394,24 +394,25 @@ impl ConfigureScriptAssetSettings for App {
         extensions: &[&'static str],
         language: Language,
     ) -> &mut Self {
-        let mut asset_settings = self
-            .world_mut()
-            .get_resource_or_init::<ScriptAssetSettings>();
+        todo!()
+        // let mut asset_settings = self
+        //     .world_mut()
+        //     .get_resource_or_init::<ScriptAssetSettings>();
 
-        let mut new_arr = Vec::from(asset_settings.supported_extensions);
+        // let mut new_arr = Vec::from(asset_settings.supported_extensions);
 
-        new_arr.extend(extensions);
+        // new_arr.extend(extensions);
 
-        let new_arr_static = Vec::leak(new_arr);
+        // let new_arr_static = Vec::leak(new_arr);
 
-        asset_settings.supported_extensions = new_arr_static;
-        for extension in extensions {
-            asset_settings
-                .extension_to_language_map
-                .insert(*extension, language.clone());
-        }
+        // asset_settings.supported_extensions = new_arr_static;
+        // for extension in extensions {
+        //     asset_settings
+        //         .extension_to_language_map
+        //         .insert(*extension, language.clone());
+        // }
 
-        self
+        // self
     }
 }
 

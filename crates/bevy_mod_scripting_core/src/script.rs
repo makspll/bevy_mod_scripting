@@ -2,14 +2,14 @@
 
 use crate::{asset::ScriptAsset, IntoScriptPluginParams};
 use bevy::prelude::ReflectComponent;
-use bevy::{asset::Handle, ecs::system::Resource, reflect::Reflect, utils::HashSet};
+use bevy::{asset::{AssetId, Handle}, ecs::system::Resource, reflect::Reflect, utils::HashSet};
 use parking_lot::Mutex;
 use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc};
 
 /// A unique identifier for a script, by default corresponds to the path of the asset excluding the asset source.
 ///
 /// I.e. an asset with the path `path/to/asset.ext` will have the script id `path/to/asset.ext`
-pub type ScriptId = Cow<'static, str>;
+pub type ScriptId = AssetId<ScriptAsset>;
 
 #[derive(bevy::ecs::component::Component, Reflect, Clone)]
 #[reflect(Component)]

@@ -1,6 +1,7 @@
 //! Commands for creating, updating and deleting scripts
 
 use crate::{
+    AssetId,
     asset::ScriptAsset,
     bindings::{ScriptValue, WorldGuard},
     context::ContextBuilder,
@@ -21,14 +22,14 @@ use std::{marker::PhantomData, sync::Arc};
 /// Deletes a script with the given ID
 pub struct DeleteScript<P: IntoScriptPluginParams> {
     /// The ID of the script to delete
-    pub id: ScriptId,
+    pub id: AssetId<ScriptAsset>,
     /// hack to make this Send, C does not need to be Send since it is not stored in the command
     pub _ph: PhantomData<fn(P::C, P::R)>,
 }
 
 impl<P: IntoScriptPluginParams> DeleteScript<P> {
     /// Creates a new DeleteScript command with the given ID
-    pub fn new(id: ScriptId) -> Self {
+    pub fn new(id: AssetId<ScriptAsset>) -> Self {
         Self {
             id,
             _ph: PhantomData,
@@ -249,7 +250,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
 /// Runs a callback on the script with the given ID if it exists
 pub struct RunScriptCallback<P: IntoScriptPluginParams> {
     /// The ID of the script to run the callback on
-    pub id: ScriptId,
+    pub id: AssetId<ScriptAsset>,
     /// The entity to use for the callback
     pub entity: Entity,
     /// The callback to run
@@ -267,7 +268,7 @@ pub struct RunScriptCallback<P: IntoScriptPluginParams> {
 impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
     /// Creates a new RunCallbackCommand with the given ID, callback and arguments
     pub fn new(
-        id: ScriptId,
+        id: AssetId<ScriptAsset>,
         entity: Entity,
         callback: CallbackLabel,
         args: Vec<ScriptValue>,

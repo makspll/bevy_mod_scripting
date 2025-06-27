@@ -53,8 +53,8 @@ impl std::fmt::Display for Language {
 pub struct ScriptAsset {
     /// The body of the script
     pub content: Box<[u8]>,
-    /// The virtual filesystem path of the asset, used to map to the script Id for asset backed scripts
-    pub asset_path: AssetPath<'static>,
+    /// The language of the script
+    pub language: Language,
 }
 
 #[derive(Event, Debug, Clone)]
@@ -97,7 +97,7 @@ impl AssetLoader for ScriptAssetLoader {
         }
         let asset = ScriptAsset {
             content: content.into_boxed_slice(),
-            asset_path: load_context.asset_path().to_owned(),
+            language: Language::Lua,
         };
         Ok(asset)
     }
@@ -107,60 +107,61 @@ impl AssetLoader for ScriptAssetLoader {
     }
 }
 
-#[derive(Clone, Resource)]
-/// Settings to do with script assets and how they are handled
-pub struct ScriptAssetSettings {
-    /// Strategy for mapping asset paths to script ids, by default this is the identity function
-    pub script_id_mapper: AssetPathToScriptIdMapper,
-    /// Mapping from extension to script language
-    pub extension_to_language_map: HashMap<&'static str, Language>,
+// #[derive(Clone, Resource)]
+// /// Settings to do with script assets and how they are handled
+// pub struct ScriptAssetSettings {
+//     /// Strategy for mapping asset paths to script ids, by default this is the identity function
+//     pub script_id_mapper: AssetPathToScriptIdMapper,
+//     /// Mapping from extension to script language
+//     pub extension_to_language_map: HashMap<&'static str, Language>,
 
-    /// The currently supported asset extensions
-    /// Should be updated by each scripting plugin to include the extensions it supports.
-    ///
-    /// Will be used to populate the script asset loader with the supported extensions
-    pub supported_extensions: &'static [&'static str],
-}
+//     /// The currently supported asset extensions
+//     /// Should be updated by each scripting plugin to include the extensions it supports.
+//     ///
+//     /// Will be used to populate the script asset loader with the supported extensions
+//     pub supported_extensions: &'static [&'static str],
+// }
 
-#[profiling::all_functions]
-impl ScriptAssetSettings {
-    /// Selects the language for a given asset path
-    pub fn select_script_language(&self, path: &AssetPath) -> Language {
-        let extension = path
-            .path()
-            .extension()
-            .and_then(|ext| ext.to_str())
-            .unwrap_or_default();
-        self.extension_to_language_map
-            .get(extension)
-            .cloned()
-            .unwrap_or_default()
-    }
-}
+// #[profiling::all_functions]
+// impl ScriptAssetSettings {
+//     /// Selects the language for a given asset path
+//     pub fn select_script_language(&self, path: &AssetPath) -> Language {
+//         let extension = path
+//             .path()
+//             .extension()
+//             .and_then(|ext| ext.to_str())
+//             .unwrap_or_default();
+//         self.extension_to_language_map
+//             .get(extension)
+//             .cloned()
+//             .unwrap_or_default()
+//     }
+// }
 
-impl Default for ScriptAssetSettings {
-    fn default() -> Self {
-        Self {
-            script_id_mapper: AssetPathToScriptIdMapper {
-                map: (|path: &AssetPath| path.path().to_string_lossy().into_owned().into()),
-            },
-            extension_to_language_map: HashMap::from_iter(vec![
-                ("lua", Language::Lua),
-                ("luau", Language::Lua),
-                ("rhai", Language::Rhai),
-                ("rn", Language::Rune),
-            ]),
-            supported_extensions: &["lua", "luau", "rhai", "rn"],
-        }
-    }
-}
+// impl Default for ScriptAssetSettings {
+//     fn default() -> Self {
+//         Self {
+//             script_id_mapper: AssetPathToScriptIdMapper {
+//                 // map: (|path: &AssetPath| path.path().to_string_lossy().into_owned().into()),
+//                 map: (|path: &AssetPath| path.id()),
+//             },
+//             extension_to_language_map: HashMap::from_iter(vec![
+//                 ("lua", Language::Lua),
+//                 ("luau", Language::Lua),
+//                 ("rhai", Language::Rhai),
+//                 ("rn", Language::Rune),
+//             ]),
+//             supported_extensions: &["lua", "luau", "rhai", "rn"],
+//         }
+//     }
+// }
 
-/// Strategy for mapping asset paths to script ids, by default this is the identity function
-#[derive(Clone, Copy)]
-pub struct AssetPathToScriptIdMapper {
-    /// The mapping function
-    pub map: fn(&AssetPath) -> ScriptId,
-}
+// /// Strategy for mapping asset paths to script ids, by default this is the identity function
+// #[derive(Clone, Copy)]
+// pub struct AssetPathToScriptIdMapper {
+//     /// The mapping function
+//     pub map: fn(&AssetPath) -> ScriptId,
+// }
 
 /// A cache of asset id's to their script id's. Necessary since when we drop an asset we won't have the ability to get the path from the asset.
 #[derive(Default, Debug, Resource)]
@@ -174,8 +175,8 @@ pub struct ScriptMetadataStore {
 pub struct ScriptMetadata {
     /// The asset id of the script
     pub asset_id: AssetId<ScriptAsset>,
-    /// The script id of the script
-    pub script_id: ScriptId,
+    // The script id of the script
+    // pub script_id: ScriptId,
     /// The language of the script
     pub language: Language,
 }
@@ -211,7 +212,7 @@ pub(crate) fn dispatch_script_asset_events(
     mut script_asset_events: EventWriter<ScriptAssetEvent>,
     assets: Res<Assets<ScriptAsset>>,
     mut metadata_store: ResMut<ScriptMetadataStore>,
-    settings: Res<ScriptAssetSettings>,
+    // settings: Res<ScriptAssetSettings>,
 ) {
     for event in events.read() {
         match event {
@@ -220,23 +221,24 @@ pub(crate) fn dispatch_script_asset_events(
                 if !metadata_store.contains(*id) {
                     let asset = assets.get(*id);
                     if let Some(asset) = asset {
-                        let path = &asset.asset_path;
-                        let converter = settings.script_id_mapper.map;
-                        let script_id = converter(path);
+                        // let path = &asset.asset_path;
+                        // let converter = settings.script_id_mapper.map;
+                        // let script_id = converter(path);
 
-                        let language = settings.select_script_language(path);
-                        if language == Language::Unknown {
-                            let extension = path
-                                .path()
-                                .extension()
-                                .and_then(|ext| ext.to_str())
-                                .unwrap_or_default();
-                            warn!("A script {:?} was added but its language is unknown. Consider adding the {:?} extension to the `ScriptAssetSettings`.", &script_id, extension);
+                        // let language = settings.select_script_language(path);
+                        let language = &asset.language;
+                        if *language == Language::Unknown {
+                            // let extension = path
+                            //     .path()
+                            //     .extension()
+                            //     .and_then(|ext| ext.to_str())
+                            //     .unwrap_or_default();
+                            // warn!("A script {:?} was added but its language is unknown. Consider adding the {:?} extension to the `ScriptAssetSettings`.", &script_id, extension);
                         }
                         let metadata = ScriptMetadata {
                             asset_id: *id,
-                            script_id,
-                            language,
+                            // script_id,
+                            language: language.clone(),
                         };
                         debug!("Script loaded, populating metadata: {:?}:", metadata);
                         script_asset_events.send(ScriptAssetEvent::Added(metadata.clone()));
@@ -309,26 +311,26 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
             ScriptAssetEvent::Added(_) | ScriptAssetEvent::Modified(_) => {
                 if metadata.language != P::LANGUAGE {
                     trace!(
-                        "{}: Script asset with id: {} is for a different langauge than this sync system. Skipping.",
+                        "{}: Script asset {} is for a different langauge than this sync system. Skipping.",
                         P::LANGUAGE,
-                        metadata.script_id
+                        metadata.asset_id
                     );
                     continue;
                 }
 
-                info!("{}: Loading Script: {:?}", P::LANGUAGE, metadata.script_id,);
+                info!("{}: Loading Script: {:?}", P::LANGUAGE, metadata.asset_id,);
 
                 if let Some(asset) = script_assets.get(metadata.asset_id) {
                     commands.queue(CreateOrUpdateScript::<P>::new(
-                        metadata.script_id.clone(),
+                        metadata.asset_id.clone(),
                         asset.content.clone(),
                         Some(script_assets.reserve_handle().clone_weak()),
                     ));
                 }
             }
             ScriptAssetEvent::Removed(_) => {
-                info!("{}: Deleting Script: {:?}", P::LANGUAGE, metadata.script_id,);
-                commands.queue(DeleteScript::<P>::new(metadata.script_id.clone()));
+                info!("{}: Deleting Script: {:?}", P::LANGUAGE, metadata.asset_id,);
+                commands.queue(DeleteScript::<P>::new(metadata.asset_id.clone()));
             }
         };
     }
@@ -356,7 +358,7 @@ pub(crate) fn configure_asset_systems(app: &mut App) -> &mut App {
         ),
     )
     .init_resource::<ScriptMetadataStore>()
-    .init_resource::<ScriptAssetSettings>()
+    // .init_resource::<ScriptAssetSettings>()
     .add_event::<ScriptAssetEvent>();
 
     app
