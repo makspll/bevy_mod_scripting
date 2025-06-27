@@ -17,11 +17,11 @@ impl<T: 'static + Send> Context for T {}
 
 /// Initializer run once after creating a context but before executing it for the first time as well as after re-loading the script
 pub type ContextInitializer<P> =
-    fn(&str, &mut <P as IntoScriptPluginParams>::C) -> Result<(), ScriptError>;
+    fn(&ScriptId, &mut <P as IntoScriptPluginParams>::C) -> Result<(), ScriptError>;
 
 /// Initializer run every time before executing or loading/re-loading a script
 pub type ContextPreHandlingInitializer<P> =
-    fn(&str, Entity, &mut <P as IntoScriptPluginParams>::C) -> Result<(), ScriptError>;
+    fn(&ScriptId, Entity, &mut <P as IntoScriptPluginParams>::C) -> Result<(), ScriptError>;
 
 /// Settings concerning the creation and assignment of script contexts as well as their initialization.
 #[derive(Resource)]

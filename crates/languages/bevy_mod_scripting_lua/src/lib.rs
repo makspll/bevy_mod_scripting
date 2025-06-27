@@ -126,7 +126,7 @@ impl Default for LuaScriptingPlugin {
                         .map_err(ScriptError::from_mlua_error)?;
                     context
                         .globals()
-                        .set("script_id", script_id)
+                        .set("script_id", script_id.to_string())
                         .map_err(ScriptError::from_mlua_error)?;
                     Ok(())
                 }],

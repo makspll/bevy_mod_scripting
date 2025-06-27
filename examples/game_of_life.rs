@@ -55,6 +55,8 @@ fn run_script_cmd(
     mut log: ConsoleCommand<GameOfLifeCommand>,
     mut commands: Commands,
     mut loaded_scripts: ResMut<LoadedScripts>,
+    asset_server: Res<AssetServer>,
+    mut script_handle: Local<Option<Handle<ScriptAsset>>>,
 ) {
     if let Some(Ok(command)) = log.take() {
         match command {
@@ -69,12 +71,14 @@ fn run_script_cmd(
                 );
 
                 let script_path = format!("scripts/game_of_life.{}", language);
+                *script_handle = Some(asset_server.load(script_path));
+                let script_id = script_handle.as_ref().unwrap().id();
                 if !use_static_script {
                     bevy::log::info!("Spawning an entity with ScriptComponent");
-                    commands.spawn(ScriptComponent::new(vec![script_path]));
+                    commands.spawn(ScriptComponent::new(vec![script_id]));
                 } else {
                     bevy::log::info!("Using static script instead of spawning an entity");
-                    commands.queue(AddStaticScript::new(script_path))
+                    commands.queue(AddStaticScript::new(script_id))
                 }
             }
             GameOfLifeCommand::Stop => {

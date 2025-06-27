@@ -8,7 +8,7 @@ use std::{
 
 use bevy::{
     app::{Last, Plugin, PostUpdate, Startup, Update},
-    asset::{AssetServer, Handle},
+    asset::{AssetServer, Handle, AssetPath, AssetId},
     ecs::{
         component::Component,
         event::{Event, Events},
@@ -55,13 +55,15 @@ struct TestCallbackBuilder<P: IntoScriptPluginParams, L: IntoCallbackLabel> {
 }
 
 impl<L: IntoCallbackLabel, P: IntoScriptPluginParams> TestCallbackBuilder<P, L> {
-    fn build(script_id: impl Into<ScriptId>, expect_response: bool) -> SystemConfigs {
-        let script_id = script_id.into();
+    fn build<'a>(script_path: impl Into<AssetPath<'a>>, expect_response: bool) -> SystemConfigs {
+        let script_path = script_path.into().into_owned();
         IntoSystem::into_system(
             move |world: &mut World,
                   system_state: &mut SystemState<WithWorldGuard<HandlerContext<P>>>| {
+                      let script_id = world.resource::<AssetServer>().load(script_path.clone()).id();
+
                 let with_guard = system_state.get_mut(world);
-                let _ = run_test_callback::<P, L>(&script_id.clone(), with_guard, expect_response);
+                let _ = run_test_callback::<P, L>(&script_id, with_guard, expect_response);
 
                 system_state.apply(world);
             },
@@ -296,18 +298,18 @@ pub fn execute_integration_test<
 }
 
 fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
-    script_id: &str,
+    script_id: &ScriptId,
     mut with_guard: WithWorldGuard<'_, '_, HandlerContext<'_, P>>,
     expect_response: bool,
 ) -> Result<ScriptValue, ScriptError> {
     let (guard, handler_ctxt) = with_guard.get_mut();
 
-    if !handler_ctxt.is_script_fully_loaded(script_id.to_string().into()) {
+    if !handler_ctxt.is_script_fully_loaded(*script_id) {
         return Ok(ScriptValue::Unit);
     }
 
     let res = handler_ctxt.call::<C>(
-        &script_id.to_string().into(),
+        &script_id,
         Entity::from_raw(0),
         vec![],
         guard.clone(),
@@ -406,9 +408,9 @@ pub fn run_rhai_benchmark<M: criterion::measurement::Measurement>(
     )
 }
 
-pub fn run_plugin_benchmark<P, F, M: criterion::measurement::Measurement>(
+pub fn run_plugin_benchmark<'a, P, F, M: criterion::measurement::Measurement>(
     plugin: P,
-    script_id: &str,
+    script_path: impl Into<AssetPath<'a>>,
     label: &str,
     criterion: &mut criterion::BenchmarkGroup<M>,
     bench_fn: F,
@@ -425,14 +427,22 @@ where
 
     install_test_plugin(&mut app, plugin, true);
 
-    let script_id = script_id.to_owned();
-    let script_id_clone = script_id.clone();
-    app.add_systems(
-        Startup,
-        move |server: Res<AssetServer>, mut handle: Local<Handle<ScriptAsset>>| {
-            *handle = server.load(script_id_clone.to_owned());
-        },
-    );
+    // let script_id = script_id.to_owned();
+    // let script_id_clone = script_id.clone();
+
+
+    let script_path = script_path.into();
+    let script_handle = app.world().resource::<AssetServer>().load(script_path);
+    let script_id = script_handle.id();
+
+
+    // app.add_systems(
+    //     Startup,
+    //     move |server: Res<AssetServer>, mut handle: Local<Handle<ScriptAsset>>| {
+    //         *handle = server.load(script_id_clone.to_owned());
+    //         handle.id()
+    //     },
+    // );
 
     // finalize
     app.cleanup();
@@ -482,7 +492,7 @@ pub fn run_plugin_script_load_benchmark<
     benchmark_id: &str,
     content: &str,
     criterion: &mut criterion::BenchmarkGroup<M>,
-    script_id_generator: impl Fn(u64) -> String,
+    script_id_generator: impl Fn(u64) -> AssetId<ScriptAsset>,
     reload_probability: f32,
 ) {
     let mut app = setup_integration_test(|_, _| {});
@@ -502,7 +512,7 @@ pub fn run_plugin_script_load_benchmark<
                 let content = content.to_string().into_boxed_str();
                 (
                     CreateOrUpdateScript::<P>::new(
-                        random_script_id.into(),
+                        random_script_id,
                         content.clone().into(),
                         None,
                     ),

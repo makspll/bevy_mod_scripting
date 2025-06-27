@@ -95,9 +95,17 @@ impl AssetLoader for ScriptAssetLoader {
         if let Some(processor) = &self.preprocessor {
             processor(&mut content)?;
         }
+        let language = match load_context.path().extension().and_then(|e| e.to_str()).unwrap_or_default() {
+            "lua" => Language::Lua,
+            "rhai" => Language::Rhai,
+            x => {
+                warn!("Unknown language for {:?}", load_context.path().display());
+                Language::Unknown
+            }
+        };
         let asset = ScriptAsset {
             content: content.into_boxed_slice(),
-            language: Language::Lua,
+            language,
         };
         Ok(asset)
     }
