@@ -19,6 +19,7 @@ use bevy::{
 use fixedbitset::FixedBitSet;
 
 use crate::{
+    ScriptAsset,
     bindings::{
         access_map::ReflectAccessId, pretty_print::DisplayWithWorld, script_value::ScriptValue,
         WorldAccessGuard, WorldGuard,
@@ -208,16 +209,16 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
     pub fn call_dynamic_label(
         &self,
         label: &CallbackLabel,
-        script_id: &ScriptId,
+        script_id: &Handle<ScriptAsset>,
         entity: Entity,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
         // find script
-        let script = match self.scripts.scripts.get(script_id) {
+        let script = match self.scripts.scripts.get(&script_id.id()) {
             Some(script) => script,
             // NOTE: It'd be nice to use a handle here because then we have the path.
-            None => return Err(InteropError::missing_script(Handle::Weak(script_id.clone())).into()),
+            None => return Err(InteropError::missing_script(script_id.clone()).into()),
         };
 
         // call the script
@@ -248,7 +249,7 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
     /// Run [`Self::is_script_fully_loaded`] before calling the script to ensure the script and context were loaded ahead of time.
     pub fn call<C: IntoCallbackLabel>(
         &self,
-        script_id: &ScriptId,
+        script_id: &Handle<ScriptAsset>,
         entity: Entity,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,

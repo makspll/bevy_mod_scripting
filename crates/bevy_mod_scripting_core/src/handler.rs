@@ -31,7 +31,7 @@ use bevy::{
 pub type HandlerFn<P> = fn(
     args: Vec<ScriptValue>,
     entity: Entity,
-    script_id: &ScriptId,
+    script_id: &Handle<ScriptAsset>,
     callback: &CallbackLabel,
     context: &mut <P as IntoScriptPluginParams>::C,
     pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
@@ -73,7 +73,7 @@ impl<P: IntoScriptPluginParams> CallbackSettings<P> {
         handler: HandlerFn<P>,
         args: Vec<ScriptValue>,
         entity: Entity,
-        script_id: &ScriptId,
+        script_id: &Handle<ScriptAsset>,
         callback: &CallbackLabel,
         script_ctxt: &mut P::C,
         pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
@@ -199,7 +199,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
 
                 let call_result = handler_ctxt.call_dynamic_label(
                     &callback_label,
-                    &script_id.id(),
+                    &script_id,
                     *entity,
                     event.args.clone(),
                     guard.clone(),

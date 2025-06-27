@@ -9,7 +9,7 @@ use crate::{
         script_value::ScriptValue,
         ReflectBaseType, ReflectReference,
     },
-    script::ScriptId,
+    script::{DisplayProxy, ScriptId},
 };
 use bevy::{
     asset::Handle,
@@ -1255,17 +1255,10 @@ macro_rules! unregistered_component_or_resource_type {
 
 macro_rules! missing_script_for_callback {
     ($script_id:expr) => {
-        if let Some(path) = $script_id.path() {
-            format!(
-                "Could not find script with path: {}. Is the script loaded?",
-                path
-            )
-        } else {
-            format!(
-                "Could not find script with id: {}. Is the script loaded?",
-                $script_id.id()
-            )
-        }
+        format!(
+            "Could not find script {}. Is the script loaded?",
+            $script_id.display()
+        )
     };
 }
 

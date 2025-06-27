@@ -5,7 +5,7 @@ use crate::{
     ScriptComponent,
     commands::{CreateOrUpdateScript, DeleteScript},
     error::ScriptError,
-    script::ScriptId,
+    script::{DisplayProxy, ScriptId},
     IntoScriptPluginParams, ScriptingSystemSet,
 };
 use bevy::{
@@ -151,23 +151,23 @@ pub struct ScriptMetadata {
 #[profiling::all_functions]
 impl ScriptMetadataStore {
     /// Inserts a new metadata entry
-    pub fn insert(&mut self, id: AssetId<ScriptAsset>, meta: ScriptMetadata) {
+    pub fn insert(&mut self, id: ScriptId, meta: ScriptMetadata) {
         // TODO: new generations of assets are not going to have the same ID as the old one
         self.map.insert(id, meta);
     }
 
     /// Gets a metadata entry
-    pub fn get(&self, id: AssetId<ScriptAsset>) -> Option<&ScriptMetadata> {
+    pub fn get(&self, id: ScriptId) -> Option<&ScriptMetadata> {
         self.map.get(&id)
     }
 
     /// Removes a metadata entry
-    pub fn remove(&mut self, id: AssetId<ScriptAsset>) -> Option<ScriptMetadata> {
+    pub fn remove(&mut self, id: ScriptId) -> Option<ScriptMetadata> {
         self.map.remove(&id)
     }
 
     /// Checks if the store contains a metadata entry
-    pub fn contains(&self, id: AssetId<ScriptAsset>) -> bool {
+    pub fn contains(&self, id: ScriptId) -> bool {
         self.map.contains_key(&id)
     }
 }
@@ -291,7 +291,7 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
                     info!("{}: Loading static script: {:?}", P::LANGUAGE, metadata.asset_id,);
                     if let Some(asset) = script_assets.get(metadata.asset_id) {
                         commands.queue(CreateOrUpdateScript::<P>::new(
-                            metadata.asset_id.clone(),
+                            Handle::Weak(metadata.asset_id.clone()),
                             asset.content.clone(),
                             Some(script_assets.reserve_handle().clone_weak()),
                         ));
@@ -308,20 +308,20 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
 
 pub(crate) fn eval_script<P: IntoScriptPluginParams>(
     script_comps: Query<&ScriptComponent, Added<ScriptComponent>>,
-    mut script_queue: Local<VecDeque<ScriptId>>,
+    mut script_queue: Local<VecDeque<Handle<ScriptAsset>>>,
     script_assets: Res<Assets<ScriptAsset>>,
     asset_server: Res<AssetServer>,
     mut commands: Commands,
     ) {
     for script_comp in &script_comps {
         for handle in &script_comp.0 {
-            script_queue.push_back(handle.id());
+            script_queue.push_back(handle.clone_weak());
         }
     }
     while ! script_queue.is_empty() {
-        let script_ready = script_queue.front().map(|script_id| match asset_server.load_state(*script_id) {
+        let script_ready = script_queue.front().map(|script_id| match asset_server.load_state(&*script_id) {
             LoadState::Failed(e) => {
-                warn!("Failed to load script {}", &script_id);
+                warn!("Failed to load script {}", script_id.display());
                 true
             }
             LoadState::Loaded => true,
@@ -340,12 +340,12 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
         //     _ => false
         // }) {
         if let Some(script_id) = script_queue.pop_front() {
-            if let Some(asset) = script_assets.get(script_id) {
+            if let Some(asset) = script_assets.get(&script_id) {
                 if asset.language == P::LANGUAGE {
                     commands.queue(CreateOrUpdateScript::<P>::new(
                         script_id,
                         asset.content.clone(),
-                        Some(Handle::Weak(script_id)),
+                        None,
                     ));
                 }
             } else {

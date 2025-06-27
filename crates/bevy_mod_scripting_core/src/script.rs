@@ -2,14 +2,53 @@
 
 use crate::{asset::ScriptAsset, IntoScriptPluginParams};
 use bevy::prelude::ReflectComponent;
-use bevy::{asset::{AssetId, Handle}, ecs::system::Resource, reflect::Reflect, utils::HashSet};
+use bevy::{asset::{Asset, AssetId, Handle}, ecs::system::Resource, reflect::Reflect, utils::HashSet};
 use parking_lot::Mutex;
-use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc};
+use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc, fmt};
 
 /// A unique identifier for a script, by default corresponds to the path of the asset excluding the asset source.
 ///
 /// I.e. an asset with the path `path/to/asset.ext` will have the script id `path/to/asset.ext`
 pub type ScriptId = AssetId<ScriptAsset>;
+
+/// Display the path of a script or its asset ID.
+pub struct HandleDisplay<'a, T: Asset>(&'a Handle<T>);
+
+impl<'a, A: Asset> fmt::Display for HandleDisplay<'a, A> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(path) = self.0.path() {
+            write!(f, "path {}", path)
+        } else {
+            write!(f, "id {}", self.0.id())
+        }
+    }
+}
+
+impl<'a, A: Asset> fmt::Debug for HandleDisplay<'a, A> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(path) = self.0.path() {
+            write!(f, "path {:?}", path)
+        } else {
+            write!(f, "id {:?}", self.0.id())
+        }
+    }
+}
+
+/// Make a type display-able.
+pub trait DisplayProxy {
+    /// The type that does the displaying.
+    type D<'a>: fmt::Display + fmt::Debug where Self: 'a;
+    /// Return a display-able reference.
+    fn display<'a>(&'a self) -> Self::D<'a>;
+}
+
+impl<A: Asset> DisplayProxy for Handle<A> {
+    type D<'a> = HandleDisplay<'a, A>;
+
+    fn display<'a>(&'a self) -> Self::D<'a> {
+        HandleDisplay(self)
+    }
+}
 
 #[derive(bevy::ecs::component::Component, Reflect, Clone)]
 #[reflect(Component)]
@@ -43,7 +82,7 @@ pub struct Scripts<P: IntoScriptPluginParams> {
 impl<P: IntoScriptPluginParams> Scripts<P> {
     /// Inserts a script into the collection
     pub fn insert(&mut self, script: Script<P>) {
-        self.scripts.insert(script.id.clone(), script);
+        self.scripts.insert(script.id.id(), script);
     }
 
     /// Removes a script from the collection, returning `true` if the script was in the collection, `false` otherwise
@@ -89,7 +128,8 @@ impl<P: IntoScriptPluginParams> Default for Scripts<P> {
 /// A script
 pub struct Script<P: IntoScriptPluginParams> {
     /// The id of the script
-    pub id: ScriptId,
+    pub id: Handle<ScriptAsset>,
+    /// TODO: Let's remove asset if possible.
     /// the asset holding the content of the script if it comes from an asset
     pub asset: Option<Handle<ScriptAsset>>,
     /// The context of the script, possibly shared with other scripts

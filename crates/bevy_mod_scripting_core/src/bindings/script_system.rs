@@ -283,7 +283,7 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
             handler,
             payload,
             entity,
-            &script_id.id(),
+            script_id,
             label,
             &mut context,
             pre_handling_initializers,
