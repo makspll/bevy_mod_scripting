@@ -24,10 +24,10 @@ use bevy_mod_scripting_core::{
         AllocatorDiagnosticPlugin, CoreScriptGlobalsPlugin,
     },
     callback_labels,
-    commands::AddStaticScript,
+    commands::{DeleteScript, AddStaticScript},
     event::ScriptCallbackEvent,
     handler::event_handler,
-    script::ScriptComponent,
+    script::{ScriptId, ScriptComponent},
 };
 use bevy_mod_scripting_lua::LuaScriptingPlugin;
 use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
@@ -56,6 +56,8 @@ fn run_script_cmd(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut script_handle: Local<Option<Handle<ScriptAsset>>>,
+    script_comps: Query<Entity, With<ScriptComponent>>,
+    mut static_scripts_created: Local<Vec<ScriptId>>,
 ) {
     if let Some(Ok(command)) = log.take() {
         match command {
@@ -64,10 +66,7 @@ fn run_script_cmd(
                 use_static_script,
             } => {
                 // create an entity with the script component
-                bevy::log::info!(
-                    "Starting game of life spawning entity with the game_of_life.{} script",
-                    language
-                );
+                bevy::log::info!("Using game of life script game_of_life.{}", language);
 
                 let script_path = format!("scripts/game_of_life.{}", language);
                 if !use_static_script {
@@ -75,7 +74,9 @@ fn run_script_cmd(
                     commands.spawn(ScriptComponent::new(vec![asset_server.load(script_path)]));
                 } else {
                     bevy::log::info!("Using static script instead of spawning an entity");
-                    commands.queue(AddStaticScript::new(asset_server.load(script_path)))
+                    let handle = asset_server.load(script_path);
+                    static_scripts_created.push(handle.id());
+                    commands.queue(AddStaticScript::new(handle))
                 }
             }
             GameOfLifeCommand::Stop => {
@@ -83,10 +84,16 @@ fn run_script_cmd(
                 bevy::log::info!("Stopping game of life by dropping the handles to all scripts");
 
 
+                for id in &script_comps {
+                    commands.entity(id).despawn();
+                }
+
                 // you could also do
-                // commands.queue(DeleteScript::<LuaScriptingPlugin>::new(
-                //     "scripts/game_of_life.lua".into(),
-                // ));
+                for script_id in static_scripts_created.drain(..) {
+                    commands.queue(DeleteScript::<LuaScriptingPlugin>::new(
+                        script_id
+                    ));
+                }
                 // as this will retain your script asset and handle
             }
         }

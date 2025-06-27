@@ -1,6 +1,8 @@
 //! Systems and resources for handling script assets and events
 
 use crate::{
+    StaticScripts,
+    ScriptComponent,
     commands::{CreateOrUpdateScript, DeleteScript},
     error::ScriptError,
     script::ScriptId,
@@ -8,17 +10,17 @@ use crate::{
 };
 use bevy::{
     app::{App, PreUpdate},
-    asset::{Asset, AssetEvent, AssetId, AssetLoader, AssetPath, Assets},
+    asset::{Asset, AssetEvent, AssetId, AssetLoader, AssetPath, Assets, LoadState},
     ecs::system::Resource,
     log::{debug, info, trace, warn},
     prelude::{
         Commands, Event, EventReader, EventWriter, IntoSystemConfigs, IntoSystemSetConfigs, Res,
-        ResMut,
+        ResMut, Added, Query, Local, Handle, AssetServer,
     },
     reflect::TypePath,
     utils::hashbrown::HashMap,
 };
-use std::borrow::Cow;
+use std::{borrow::Cow, collections::VecDeque};
 
 /// Represents a scripting language. Languages which compile into another language should use the target language as their language.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
@@ -300,6 +302,7 @@ pub(crate) fn remove_script_metadata(
 pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
     mut events: EventReader<ScriptAssetEvent>,
     script_assets: Res<Assets<ScriptAsset>>,
+    static_scripts: Res<StaticScripts>,
     mut commands: Commands,
 ) {
     for event in events.read() {
@@ -326,14 +329,16 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
                     continue;
                 }
 
-                info!("{}: Loading Script: {:?}", P::LANGUAGE, metadata.asset_id,);
 
-                if let Some(asset) = script_assets.get(metadata.asset_id) {
-                    commands.queue(CreateOrUpdateScript::<P>::new(
-                        metadata.asset_id.clone(),
-                        asset.content.clone(),
-                        Some(script_assets.reserve_handle().clone_weak()),
-                    ));
+                if static_scripts.iter().any(|handle| handle.id() == metadata.asset_id) {
+                    info!("{}: Loading static script: {:?}", P::LANGUAGE, metadata.asset_id,);
+                    if let Some(asset) = script_assets.get(metadata.asset_id) {
+                        commands.queue(CreateOrUpdateScript::<P>::new(
+                            metadata.asset_id.clone(),
+                            asset.content.clone(),
+                            Some(script_assets.reserve_handle().clone_weak()),
+                        ));
+                    }
                 }
             }
             ScriptAssetEvent::Removed(_) => {
@@ -341,6 +346,57 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
                 commands.queue(DeleteScript::<P>::new(metadata.asset_id.clone()));
             }
         };
+    }
+}
+
+pub(crate) fn eval_script<P: IntoScriptPluginParams>(
+    script_comps: Query<&ScriptComponent, Added<ScriptComponent>>,
+    mut script_queue: Local<VecDeque<ScriptId>>,
+    script_assets: Res<Assets<ScriptAsset>>,
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
+    ) {
+    for script_comp in &script_comps {
+        for handle in &script_comp.0 {
+            script_queue.push_back(handle.id());
+        }
+    }
+    while ! script_queue.is_empty() {
+        let script_ready = script_queue.front().map(|script_id| match asset_server.load_state(*script_id) {
+            LoadState::Failed(e) => {
+                warn!("Failed to load script {}", &script_id);
+                true
+            }
+            LoadState::Loaded => true,
+            _ => false
+        }).unwrap_or(false);
+        if ! script_ready {
+            break;
+        }
+        // NOTE: Maybe once pop_front_if is stabalized.
+        // if let Some(script_id) = script_queue.pop_front_if(|script_id| match asset_server.load_state(script_id) {
+        //     LoadState::Failed(e) => {
+        //         warn!("Failed to load script {}", &script_id);
+        //         true
+        //     }
+        //     LoadState::Loaded => true,
+        //     _ => false
+        // }) {
+        if let Some(script_id) = script_queue.pop_front() {
+            if let Some(asset) = script_assets.get(script_id) {
+                commands.queue(CreateOrUpdateScript::<P>::new(
+                    script_id,
+                    asset.content.clone(),
+                    Some(Handle::Weak(script_id)),
+                ));
+            } else {
+                // This is probably a load failure. What to do? We've already
+                // provided a warning on failure. Doing nothing is fine then we
+                // process the next one.
+            }
+        } else {
+            break;
+        }
     }
 }
 
@@ -379,7 +435,7 @@ pub(crate) fn configure_asset_systems_for_plugin<P: IntoScriptPluginParams>(
 ) -> &mut App {
     app.add_systems(
         PreUpdate,
-        sync_script_data::<P>.in_set(ScriptingSystemSet::ScriptCommandDispatch),
+        (eval_script::<P>, sync_script_data::<P>).in_set(ScriptingSystemSet::ScriptCommandDispatch),
     );
     app
 }
