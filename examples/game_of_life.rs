@@ -57,7 +57,8 @@ fn run_script_cmd(
     asset_server: Res<AssetServer>,
     mut script_handle: Local<Option<Handle<ScriptAsset>>>,
     script_comps: Query<Entity, With<ScriptComponent>>,
-    mut static_scripts_created: Local<Vec<ScriptId>>,
+    mut static_lua_scripts: Local<Vec<ScriptId>>,
+    mut static_rhai_scripts: Local<Vec<ScriptId>>,
 ) {
     if let Some(Ok(command)) = log.take() {
         match command {
@@ -75,7 +76,11 @@ fn run_script_cmd(
                 } else {
                     bevy::log::info!("Using static script instead of spawning an entity");
                     let handle = asset_server.load(script_path);
-                    static_scripts_created.push(handle.id());
+                    if language == "lua" {
+                        static_lua_scripts.push(handle.id());
+                    } else {
+                        static_rhai_scripts.push(handle.id());
+                    }
                     commands.queue(AddStaticScript::new(handle))
                 }
             }
@@ -88,13 +93,17 @@ fn run_script_cmd(
                     commands.entity(id).despawn();
                 }
 
-                // you could also do
-                for script_id in static_scripts_created.drain(..) {
+                for script_id in static_lua_scripts.drain(..) {
                     commands.queue(DeleteScript::<LuaScriptingPlugin>::new(
                         script_id
                     ));
                 }
-                // as this will retain your script asset and handle
+
+                for script_id in static_rhai_scripts.drain(..) {
+                    commands.queue(DeleteScript::<RhaiScriptingPlugin>::new(
+                        script_id
+                    ));
+                }
             }
         }
     }

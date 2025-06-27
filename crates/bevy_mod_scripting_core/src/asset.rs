@@ -384,11 +384,13 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
         // }) {
         if let Some(script_id) = script_queue.pop_front() {
             if let Some(asset) = script_assets.get(script_id) {
-                commands.queue(CreateOrUpdateScript::<P>::new(
-                    script_id,
-                    asset.content.clone(),
-                    Some(Handle::Weak(script_id)),
-                ));
+                if asset.language == P::LANGUAGE {
+                    commands.queue(CreateOrUpdateScript::<P>::new(
+                        script_id,
+                        asset.content.clone(),
+                        Some(Handle::Weak(script_id)),
+                    ));
+                }
             } else {
                 // This is probably a load failure. What to do? We've already
                 // provided a warning on failure. Doing nothing is fine then we

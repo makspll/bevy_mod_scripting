@@ -84,6 +84,10 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         }
     }
 
+    fn script_name(&self) -> String {
+        self.asset.as_ref().and_then(|handle| handle.path().map(|p| p.to_string())).unwrap_or_else(|| self.id.to_string())
+    }
+
     fn reload_context(
         &self,
         guard: WorldGuard,
@@ -215,7 +219,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
                     handle_script_errors(
                         guard,
                         vec![err
-                            .with_script(self.id.clone())
+                            .with_script(self.script_name())
                             .with_context(P::LANGUAGE)
                             .with_context(phrase)]
                         .into_iter(),
