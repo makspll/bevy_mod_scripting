@@ -1,6 +1,7 @@
 pub mod test_functions;
 
 use std::{
+    fs,
     marker::PhantomData,
     path::PathBuf,
     time::{Duration, Instant},
@@ -8,21 +9,21 @@ use std::{
 
 use bevy::{
     app::{Last, Plugin, PostUpdate, Startup, Update},
-    asset::{AssetServer, Handle},
+    asset::{AssetServer, Handle, AssetPath, LoadState, Assets},
     ecs::{
         component::Component,
         event::{Event, Events},
         schedule::{IntoSystemConfigs, SystemConfigs},
-        system::{IntoSystem, Local, Res, Resource, SystemState},
+        system::{IntoSystem, Resource, SystemState},
         world::{Command, FromWorld, Mut},
     },
     log::Level,
-    prelude::{Entity, World},
+    prelude::{World},
     reflect::{Reflect, TypeRegistry},
     utils::tracing,
 };
 use bevy_mod_scripting_core::{
-    asset::ScriptAsset,
+    asset::{ScriptAsset},
     bindings::{
         pretty_print::DisplayWithWorld, script_value::ScriptValue, CoreScriptGlobalsPlugin,
         ReflectAccessId, WorldAccessGuard, WorldGuard,
@@ -33,7 +34,7 @@ use bevy_mod_scripting_core::{
     event::{IntoCallbackLabel, ScriptErrorEvent},
     extractors::{HandlerContext, WithWorldGuard},
     handler::handle_script_errors,
-    script::ScriptId,
+    script::{ScriptComponent, ScriptId, DisplayProxy, ScriptContextProvider, ContextKey},
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams, ScriptingPlugin,
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
@@ -55,13 +56,14 @@ struct TestCallbackBuilder<P: IntoScriptPluginParams, L: IntoCallbackLabel> {
 }
 
 impl<L: IntoCallbackLabel, P: IntoScriptPluginParams> TestCallbackBuilder<P, L> {
-    fn build(script_id: impl Into<ScriptId>, expect_response: bool) -> SystemConfigs {
-        let script_id = script_id.into();
+    fn build<'a>(context_key: impl Into<ContextKey>, expect_response: bool) -> SystemConfigs {
+        let context_key = context_key.into();
         IntoSystem::into_system(
             move |world: &mut World,
                   system_state: &mut SystemState<WithWorldGuard<HandlerContext<P>>>| {
+
                 let with_guard = system_state.get_mut(world);
-                let _ = run_test_callback::<P, L>(&script_id.clone(), with_guard, expect_response);
+                let _ = run_test_callback::<P, L>(&context_key, with_guard, expect_response);
 
                 system_state.apply(world);
             },
@@ -92,7 +94,7 @@ pub fn make_test_lua_plugin() -> bevy_mod_scripting_lua::LuaScriptingPlugin {
     use bevy_mod_scripting_core::{bindings::WorldContainer, ConfigureScriptPlugin};
     use bevy_mod_scripting_lua::{mlua, LuaScriptingPlugin};
 
-    LuaScriptingPlugin::default().add_context_initializer(
+    LuaScriptingPlugin::default().enable_context_sharing().add_context_initializer(
         |_, ctxt: &mut bevy_mod_scripting_lua::mlua::Lua| {
             let globals = ctxt.globals();
             globals.set(
@@ -199,14 +201,15 @@ pub fn execute_rhai_integration_test(script_id: &str) -> Result<(), String> {
     execute_integration_test(plugin, |_, _| {}, script_id)
 }
 
-pub fn execute_integration_test<
+pub fn execute_integration_test<'a,
     P: IntoScriptPluginParams + Plugin + AsMut<ScriptingPlugin<P>>,
     F: FnOnce(&mut World, &mut TypeRegistry),
 >(
     plugin: P,
     init: F,
-    script_id: &str,
+    script_id: impl Into<AssetPath<'a>>,
 ) -> Result<(), String> {
+    let script_id = script_id.into();
     // set "BEVY_ASSET_ROOT" to the global assets folder, i.e. CARGO_MANIFEST_DIR/../../../assets
     let mut manifest_dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
 
@@ -232,28 +235,39 @@ pub fn execute_integration_test<
         OnTestLast => "on_test_last",
     );
 
-    let script_id = script_id.to_owned();
-    let script_id: &'static str = Box::leak(script_id.into_boxed_str());
-
-    let load_system = |server: Res<AssetServer>, mut handle: Local<Handle<ScriptAsset>>| {
-        *handle = server.load(script_id.to_owned());
-    };
+    let script_path = script_id.clone_owned();
 
     // tests can opt in to this via "__RETURN"
-    let expect_callback_response = script_id.contains("__RETURN");
-
-    app.add_systems(Startup, load_system);
+    let expect_callback_response = script_id.path().to_str().map(|s| s.contains("__RETURN")).unwrap_or(false);
+    // The following code did not work, possibly because of the asynchronous
+    // nature of AssetServer.
+    //
+    // ```
+    // let handle = app.world_mut().resource_mut::<AssetServer>().load(&script_path);
+    // app.world_mut().spawn(ScriptComponent::new([handle.clone()]));
+    // ```
+    let handle = {
+        let mut script_dir = manifest_dir.clone();
+        script_dir.push("assets");
+        script_dir.push(script_id.path());
+        // Read the contents and don't do anything async.
+        let content = fs::read_to_string(&script_dir).map_err(|io| format!("io error {io} for path {script_dir:?}"))?;
+        let mut script = ScriptAsset::from(content);
+        script.language = P::LANGUAGE;
+        app.world_mut().resource_mut::<Assets<ScriptAsset>>().add(script)
+    };
+    app.world_mut().spawn(ScriptComponent::new([handle.clone()]));
     app.add_systems(
         Update,
-        TestCallbackBuilder::<P, OnTest>::build(script_id, expect_callback_response),
+        TestCallbackBuilder::<P, OnTest>::build(handle.clone(), expect_callback_response),
     );
     app.add_systems(
         PostUpdate,
-        TestCallbackBuilder::<P, OnTestPostUpdate>::build(script_id, expect_callback_response),
+        TestCallbackBuilder::<P, OnTestPostUpdate>::build(handle.clone(), expect_callback_response),
     );
     app.add_systems(
         Last,
-        TestCallbackBuilder::<P, OnTestLast>::build(script_id, expect_callback_response),
+        TestCallbackBuilder::<P, OnTestLast>::build(handle.clone(), expect_callback_response),
     );
     app.add_systems(Update, dummy_update_system);
     app.add_systems(Startup, dummy_startup_system::<String>);
@@ -283,6 +297,10 @@ pub fn execute_integration_test<
             .collect::<Vec<_>>();
 
         if let Some(event) = error_events.into_iter().next() {
+            // eprintln!("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx");
+            // if ! app.world().resource::<AssetServer>().load_state(&handle).is_loaded() {
+            //     continue;
+            // }
             return Err(event
                 .error
                 .display_with_world(WorldGuard::new_exclusive(app.world_mut())));
@@ -296,19 +314,18 @@ pub fn execute_integration_test<
 }
 
 fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
-    script_id: &str,
+    context_key: &ContextKey,
     mut with_guard: WithWorldGuard<'_, '_, HandlerContext<'_, P>>,
     expect_response: bool,
 ) -> Result<ScriptValue, ScriptError> {
     let (guard, handler_ctxt) = with_guard.get_mut();
 
-    if !handler_ctxt.is_script_fully_loaded(script_id.to_string().into()) {
-        return Ok(ScriptValue::Unit);
-    }
+    // if !handler_ctxt.is_script_fully_loaded(*script_id) {
+    //     return Ok(ScriptValue::Unit);
+    // }
 
     let res = handler_ctxt.call::<C>(
-        &script_id.to_string().into(),
-        Entity::from_raw(0),
+        context_key,
         vec![],
         guard.clone(),
     );
@@ -406,9 +423,9 @@ pub fn run_rhai_benchmark<M: criterion::measurement::Measurement>(
     )
 }
 
-pub fn run_plugin_benchmark<P, F, M: criterion::measurement::Measurement>(
+pub fn run_plugin_benchmark<'a, P, F, M: criterion::measurement::Measurement>(
     plugin: P,
-    script_id: &str,
+    script_path: impl Into<AssetPath<'a>>,
     label: &str,
     criterion: &mut criterion::BenchmarkGroup<M>,
     bench_fn: F,
@@ -425,14 +442,10 @@ where
 
     install_test_plugin(&mut app, plugin, true);
 
-    let script_id = script_id.to_owned();
-    let script_id_clone = script_id.clone();
-    app.add_systems(
-        Startup,
-        move |server: Res<AssetServer>, mut handle: Local<Handle<ScriptAsset>>| {
-            *handle = server.load(script_id_clone.to_owned());
-        },
-    );
+    let script_path = script_path.into();
+    let script_handle = app.world().resource::<AssetServer>().load(script_path);
+    let script_id = script_handle.id();
+    let entity = app.world_mut().spawn(ScriptComponent(vec![script_handle.clone()])).id();
 
     // finalize
     app.cleanup();
@@ -442,36 +455,48 @@ where
 
     let mut state = SystemState::<WithWorldGuard<HandlerContext<P>>>::from_world(app.world_mut());
 
+    // Wait until script is loaded.
+    loop {
+        app.update();
+        match app.world().resource::<AssetServer>().load_state(script_id) {
+            _ => continue,
+            LoadState::Loaded => break,
+            LoadState::Failed(e) => {
+                return Err(format!("Failed to load script {}: {e}", script_handle.display()));
+            }
+        }
+    }
+
     loop {
         app.update();
 
         let mut handler_ctxt = state.get_mut(app.world_mut());
         let (guard, context) = handler_ctxt.get_mut();
+        let context_key = ContextKey {
+            entity: Some(entity),
+            script_id: Some(Handle::Weak(script_id)),
+            domain: None,
+        };
 
-        if context.is_script_fully_loaded(script_id.clone().into()) {
-            let script = context
-                .scripts()
-                .get_mut(script_id.to_owned())
-                .ok_or_else(|| String::from("Could not find scripts resource"))?;
-            let ctxt_arc = script.context.clone();
-            let mut ctxt_locked = ctxt_arc.lock();
+        let ctxt_arc = context.script_context().get(&context_key).cloned().unwrap();
+        let mut ctxt_locked = ctxt_arc.lock();
 
-            let runtime = &context.runtime_container().runtime;
+        let runtime = &context.runtime_container().runtime;
 
-            return WorldAccessGuard::with_existing_static_guard(guard, |guard| {
-                // Ensure the world is available via ThreadWorldContainer
-                ThreadWorldContainer
-                    .set_world(guard.clone())
-                    .map_err(|e| e.display_with_world(guard))?;
-                // Pass the locked context to the closure for benchmarking its Lua (or generic) part
-                bench_fn(&mut ctxt_locked, runtime, label, criterion)
-            });
-        }
+        let _ = WorldAccessGuard::with_existing_static_guard(guard, |guard| {
+            // Ensure the world is available via ThreadWorldContainer
+            ThreadWorldContainer
+                .set_world(guard.clone())
+                .map_err(|e| e.display_with_world(guard))?;
+            // Pass the locked context to the closure for benchmarking its Lua (or generic) part
+            bench_fn(&mut ctxt_locked, runtime, label, criterion)
+        });
         state.apply(app.world_mut());
         if timer.elapsed() > Duration::from_secs(30) {
             return Err("Timeout after 30 seconds, could not load script".into());
         }
     }
+    Ok(())
 }
 
 pub fn run_plugin_script_load_benchmark<
@@ -482,7 +507,6 @@ pub fn run_plugin_script_load_benchmark<
     benchmark_id: &str,
     content: &str,
     criterion: &mut criterion::BenchmarkGroup<M>,
-    script_id_generator: impl Fn(u64) -> String,
     reload_probability: f32,
 ) {
     let mut app = setup_integration_test(|_, _| {});
@@ -495,17 +519,11 @@ pub fn run_plugin_script_load_benchmark<
             || {
                 let mut rng = RNG.lock().unwrap();
                 let is_reload = rng.random_range(0f32..=1f32) < reload_probability;
-                let random_id = if is_reload { 0 } else { rng.random::<u64>() };
-
-                let random_script_id = script_id_generator(random_id);
-                // we manually load the script inside a command
-                let content = content.to_string().into_boxed_str();
+                let random_id = if is_reload { 0 } else { rng.random::<u128>() };
+                let random_script_id: ScriptId = ScriptId::from(uuid::Builder::from_random_bytes(random_id.to_le_bytes()).into_uuid());
+                // We manually load the script inside a command.
                 (
-                    CreateOrUpdateScript::<P>::new(
-                        random_script_id.into(),
-                        content.clone().into(),
-                        None,
-                    ),
+                    CreateOrUpdateScript::<P>::new(random_script_id).with_content(content),
                     is_reload,
                 )
             },

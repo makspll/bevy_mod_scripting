@@ -1,6 +1,7 @@
 //! Errors that can occur when interacting with the scripting system
 
 use crate::{
+    ScriptAsset,
     bindings::{
         access_map::{DisplayCodeLocation, ReflectAccessId},
         function::namespace::Namespace,
@@ -8,9 +9,10 @@ use crate::{
         script_value::ScriptValue,
         ReflectBaseType, ReflectReference,
     },
-    script::ScriptId,
+    script::{DisplayProxy, ContextKey},
 };
 use bevy::{
+    asset::Handle,
     ecs::{
         component::ComponentId,
         schedule::{ScheduleBuildError, ScheduleNotInitialized},
@@ -592,16 +594,16 @@ impl InteropError {
     }
 
     /// Thrown if a script could not be found when trying to call a synchronous callback or otherwise
-    pub fn missing_script(script_id: impl Into<ScriptId>) -> Self {
+    pub fn missing_script(script_id: impl Into<Handle<ScriptAsset>>) -> Self {
         Self(Arc::new(InteropErrorInner::MissingScript {
             script_id: script_id.into(),
         }))
     }
 
     /// Thrown if the required context for an operation is missing.
-    pub fn missing_context(script_id: impl Into<ScriptId>) -> Self {
+    pub fn missing_context(context_key: impl Into<ContextKey>) -> Self {
         Self(Arc::new(InteropErrorInner::MissingContext {
-            script_id: script_id.into(),
+            context_key: context_key.into(),
         }))
     }
 
@@ -628,7 +630,7 @@ pub enum InteropErrorInner {
     /// Thrown if a script could not be found when trying to call a synchronous callback.
     MissingScript {
         /// The script id that was not found.
-        script_id: ScriptId,
+        script_id: Handle<ScriptAsset>,
     },
     /// Thrown if a base type is not registered with the reflection system
     UnregisteredBase {
@@ -812,7 +814,7 @@ pub enum InteropErrorInner {
     /// Thrown if the required context for an operation is missing.
     MissingContext {
         /// The script that was attempting to access the context
-        script_id: ScriptId,
+        context_key: ContextKey,
     },
     /// Thrown when a schedule is missing from the registry.
     MissingSchedule {
@@ -1050,8 +1052,8 @@ impl PartialEq for InteropErrorInner {
                 },
             ) => a == c && b == d,
             (
-                InteropErrorInner::MissingContext { script_id: b },
-                InteropErrorInner::MissingContext { script_id: d },
+                InteropErrorInner::MissingContext { context_key: b },
+                InteropErrorInner::MissingContext { context_key: d },
             ) => b == d,
             (
                 InteropErrorInner::MissingSchedule { schedule_name: a },
@@ -1254,8 +1256,8 @@ macro_rules! unregistered_component_or_resource_type {
 macro_rules! missing_script_for_callback {
     ($script_id:expr) => {
         format!(
-            "Could not find script with id: {}. Is the script loaded?",
-            $script_id
+            "Could not find script {}. Is the script loaded?",
+            $script_id.display()
         )
     };
 }
@@ -1281,10 +1283,10 @@ macro_rules! argument_count_mismatch_msg {
 }
 
 macro_rules! missing_context_for_callback {
-    ($script_id:expr) => {
+    ($context_key:expr) => {
         format!(
-            "Missing context for script with id: {}. Was the script loaded?.",
-            $script_id
+            "Missing context for {}. Was the script loaded?.",
+            $context_key
         )
     };
 }
@@ -1430,9 +1432,9 @@ impl DisplayWithWorld for InteropErrorInner {
             InteropErrorInner::MissingScript { script_id } => {
                 missing_script_for_callback!(script_id)
             },
-            InteropErrorInner::MissingContext { script_id } => {
+            InteropErrorInner::MissingContext { context_key } => {
                 missing_context_for_callback!(
-                    script_id
+                    context_key
                 )
             },
             InteropErrorInner::MissingSchedule { schedule_name } => {
@@ -1576,9 +1578,9 @@ impl DisplayWithWorld for InteropErrorInner {
             InteropErrorInner::MissingScript { script_id } => {
                 missing_script_for_callback!(script_id)
             },
-            InteropErrorInner::MissingContext { script_id } => {
+            InteropErrorInner::MissingContext { context_key } => {
                 missing_context_for_callback!(
-                    script_id
+                    context_key
                 )
             },
             InteropErrorInner::MissingSchedule { schedule_name } => {

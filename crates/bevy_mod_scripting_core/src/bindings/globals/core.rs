@@ -53,7 +53,7 @@ impl Plugin for CoreScriptGlobalsPlugin {
         app.init_resource::<AppScriptGlobalsRegistry>();
     }
     fn finish(&self, app: &mut bevy::app::App) {
-        profiling::function_scope!("app finish");
+        // profiling::function_scope!("app finish");
 
         if self.register_static_references {
             register_static_core_globals(app.world_mut(), self.filter);
@@ -121,7 +121,7 @@ impl CoreGlobals {
         >,
         InteropError,
     > {
-        profiling::function_scope!("registering core globals");
+        // profiling::function_scope!("registering core globals");
         let type_registry = guard.type_registry();
         let type_registry = type_registry.read();
         let mut type_cache = HashMap::<String, _>::default();

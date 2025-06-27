@@ -4,7 +4,6 @@ use std::collections::HashMap;
 use bevy::asset::AssetPlugin;
 use bevy::diagnostic::DiagnosticsPlugin;
 use bevy::ecs::{component::*, world::World};
-use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use bevy::reflect::*;
 
@@ -340,7 +339,7 @@ pub fn setup_integration_test<F: FnOnce(&mut World, &mut TypeRegistry)>(init: F)
     // first setup all normal test components and resources
     let mut app = setup_app(init);
 
-    let log_level =
+    let _log_level =
         std::env::var("RUST_LOG").unwrap_or_else(|_| "bevy_mod_scripting_core=debug".to_string());
 
     app.add_plugins((
@@ -348,10 +347,10 @@ pub fn setup_integration_test<F: FnOnce(&mut World, &mut TypeRegistry)>(init: F)
         AssetPlugin::default(),
         HierarchyPlugin,
         DiagnosticsPlugin,
-        LogPlugin {
-            filter: log_level,
-            ..Default::default()
-        },
+        // bevy::log::LogPlugin {
+        //     filter: log_level,
+        //     ..Default::default()
+        // },
     ));
     app
 }

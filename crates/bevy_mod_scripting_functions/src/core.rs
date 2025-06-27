@@ -11,6 +11,7 @@ use bevy_mod_scripting_core::{
         script_system::ScriptSystemBuilder,
     },
     docgen::info::FunctionInfo,
+    script::Domain,
     *,
 };
 use bevy_mod_scripting_derive::script_bindings;
@@ -1261,8 +1262,9 @@ impl GlobalNamespace {
     fn system_builder(
         callback: String,
         script_id: String,
+        domain: Option<String>,
     ) -> Result<Val<ScriptSystemBuilder>, InteropError> {
-        Ok(ScriptSystemBuilder::new(callback.into(), script_id.into()).into())
+        Ok(ScriptSystemBuilder::new(callback.into(), script_id.into(), domain.map(|x| Domain::new(x))).into())
     }
 }
 

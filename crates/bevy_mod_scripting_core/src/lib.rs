@@ -5,9 +5,9 @@
 use crate::event::ScriptErrorEvent;
 use asset::{
     configure_asset_systems, configure_asset_systems_for_plugin, Language, ScriptAsset,
-    ScriptAssetLoader, ScriptAssetSettings,
+    ScriptAssetLoader, ScriptQueue
 };
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 use bindings::{
     function::script_function::AppScriptFunctionRegistry, garbage_collector,
     schedule::AppScheduleRegistry, script_value::ScriptValue, AppReflectAllocator,
@@ -22,7 +22,7 @@ use error::ScriptError;
 use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent};
 use handler::{CallbackSettings, HandlerFn};
 use runtime::{initialize_runtime, Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
-use script::{ScriptComponent, ScriptId, Scripts, StaticScripts};
+use script::{ScriptComponent, StaticScripts, ScriptContext};
 
 pub mod asset;
 pub mod bindings;
@@ -128,8 +128,15 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
                 assignment_strategy: self.context_assignment_strategy,
                 context_initializers: self.context_initializers.clone(),
                 context_pre_handling_initializers: self.context_pre_handling_initializers.clone(),
-            })
-            .init_resource::<Scripts<P>>();
+            });
+        if !app.world().contains_resource::<ScriptContext::<P>>() {
+            app.insert_resource(
+                if self.context_assignment_strategy.is_global() {
+                    ScriptContext::<P>::shared()
+                } else {
+                    ScriptContext::<P>::default()
+                });
+        }
 
         register_script_plugin_systems::<P>(app);
 
@@ -261,6 +268,7 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
             .add_event::<ScriptCallbackResponseEvent>()
             .init_resource::<AppReflectAllocator>()
             .init_resource::<StaticScripts>()
+            .init_resource::<ScriptQueue>()
             .init_asset::<ScriptAsset>()
             .init_resource::<AppScriptFunctionRegistry>()
             .insert_resource(AppScheduleRegistry::new());
@@ -276,24 +284,11 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
     }
 
     fn finish(&self, app: &mut App) {
-        // read extensions from asset settings
-        let asset_settings_extensions = app
-            .world_mut()
-            .get_resource_or_init::<ScriptAssetSettings>()
-            .supported_extensions;
-
-        // convert extensions to static array
-        bevy::log::info!(
-            "Initializing BMS with Supported extensions: {:?}",
-            asset_settings_extensions
-        );
-
-        app.register_asset_loader(ScriptAssetLoader {
-            extensions: asset_settings_extensions,
-            preprocessor: None,
-        });
-
-        // pre-register component id's
+        // Read extensions.
+        let language_extensions = app.world_mut().remove_resource::<LanguageExtensions>()
+            .unwrap_or_default();
+        app.register_asset_loader(ScriptAssetLoader::new(language_extensions));
+        // Pre-register component IDs.
         pre_register_components(app);
         DynamicScriptComponentPlugin.finish(app);
     }
@@ -311,7 +306,7 @@ fn register_script_plugin_systems<P: IntoScriptPluginParams>(app: &mut App) {
         .in_set(ScriptingSystemSet::RuntimeInitialization),
     );
 
-    configure_asset_systems_for_plugin::<P>(app);
+    app.add_plugins(configure_asset_systems_for_plugin::<P>);
 }
 
 /// Register all types that need to be accessed via reflection
@@ -353,21 +348,21 @@ pub trait ManageStaticScripts {
     /// Registers a script id as a static script.
     ///
     /// Event handlers will run these scripts on top of the entity scripts.
-    fn add_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self;
+    fn add_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self;
 
     /// Removes a script id from the list of static scripts.
     ///
     /// Does nothing if the script id is not in the list.
-    fn remove_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self;
+    fn remove_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self;
 }
 
 impl ManageStaticScripts for App {
-    fn add_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self {
+    fn add_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self {
         AddStaticScript::new(script_id.into()).apply(self.world_mut());
         self
     }
 
-    fn remove_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self {
+    fn remove_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self {
         RemoveStaticScript::new(script_id.into()).apply(self.world_mut());
         self
     }
@@ -388,29 +383,33 @@ pub trait ConfigureScriptAssetSettings {
     ) -> &mut Self;
 }
 
+/// Collect the language extensions supported during initialization.
+///
+/// NOTE: This resource is removed after plugin setup.
+#[derive(Debug, Resource, Deref, DerefMut)]
+pub struct LanguageExtensions(HashMap<&'static str, Language>);
+
+impl Default for LanguageExtensions {
+    fn default() -> Self {
+        LanguageExtensions([("lua", Language::Lua),
+                            ("rhai", Language::Rhai),
+                            ("rn", Language::Rune)].into_iter().collect())
+    }
+}
+
 impl ConfigureScriptAssetSettings for App {
     fn add_supported_script_extensions(
         &mut self,
         extensions: &[&'static str],
         language: Language,
     ) -> &mut Self {
-        let mut asset_settings = self
+        let mut language_extensions  = self
             .world_mut()
-            .get_resource_or_init::<ScriptAssetSettings>();
+            .get_resource_or_init::<LanguageExtensions>();
 
-        let mut new_arr = Vec::from(asset_settings.supported_extensions);
-
-        new_arr.extend(extensions);
-
-        let new_arr_static = Vec::leak(new_arr);
-
-        asset_settings.supported_extensions = new_arr_static;
         for extension in extensions {
-            asset_settings
-                .extension_to_language_map
-                .insert(*extension, language.clone());
+            language_extensions.insert(extension, language.clone());
         }
-
         self
     }
 }
@@ -422,12 +421,7 @@ mod test {
     #[tokio::test]
     async fn test_asset_extensions_correctly_accumulate() {
         let mut app = App::new();
-        app.init_resource::<ScriptAssetSettings>();
         app.add_plugins(AssetPlugin::default());
-
-        app.world_mut()
-            .resource_mut::<ScriptAssetSettings>()
-            .supported_extensions = &["lua", "rhai"];
 
         BMSScriptingInfrastructurePlugin.finish(&mut app);
 

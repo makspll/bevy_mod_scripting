@@ -17,7 +17,7 @@ use bevy_mod_scripting_core::{
     event::CallbackLabel,
     reflection_extensions::PartialReflectExt,
     runtime::RuntimeSettings,
-    script::ScriptId,
+    script::{ContextKey, DisplayProxy},
     IntoScriptPluginParams, ScriptingPlugin,
 };
 use bindings::{
@@ -150,13 +150,18 @@ impl Default for RhaiScriptingPlugin {
                         Ok(())
                     },
                 ],
-                context_pre_handling_initializers: vec![|script, entity, context| {
+                context_pre_handling_initializers: vec![|context_key, context| {
                     let world = ThreadWorldContainer.try_get_world()?;
-                    context.scope.set_or_push(
-                        "entity",
-                        RhaiReflectReference(<Entity>::allocate(Box::new(entity), world)),
-                    );
-                    context.scope.set_or_push("script_id", script.to_owned());
+
+                    if let Some(entity) = context_key.entity {
+                        context.scope.set_or_push(
+                            "entity",
+                            RhaiReflectReference(<Entity>::allocate(Box::new(entity), world)),
+                        );
+                    }
+                    if let Some(script_id) = context_key.script_id.as_ref() {
+                        context.scope.set_or_push("script_id", script_id.to_owned());
+                    }
                     Ok(())
                 }],
                 // already supported by BMS core
@@ -180,7 +185,7 @@ impl Plugin for RhaiScriptingPlugin {
 // NEW helper function to load content into an existing context without clearing previous definitions.
 fn load_rhai_content_into_context(
     context: &mut RhaiScriptContext,
-    script: &ScriptId,
+    context_key: &ContextKey,
     content: &[u8],
     initializers: &[ContextInitializer<RhaiScriptingPlugin>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
@@ -189,14 +194,16 @@ fn load_rhai_content_into_context(
     let runtime = runtime.read();
 
     context.ast = runtime.compile(std::str::from_utf8(content)?)?;
-    context.ast.set_source(script.to_string());
+    if let Some(script) = context_key.script_id.as_ref() {
+        context.ast.set_source(script.display().to_string());
+    }
 
     initializers
         .iter()
-        .try_for_each(|init| init(script, context))?;
+        .try_for_each(|init| init(context_key, context))?;
     pre_handling_initializers
         .iter()
-        .try_for_each(|init| init(script, Entity::from_raw(0), context))?;
+        .try_for_each(|init| init(context_key, context))?;
     runtime.eval_ast_with_scope(&mut context.scope, &context.ast)?;
 
     context.ast.clear_statements();
@@ -205,7 +212,7 @@ fn load_rhai_content_into_context(
 
 /// Load a rhai context from a script.
 pub fn rhai_context_load(
-    script: &ScriptId,
+    context_key: &ContextKey,
     content: &[u8],
     initializers: &[ContextInitializer<RhaiScriptingPlugin>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
@@ -218,7 +225,7 @@ pub fn rhai_context_load(
     };
     load_rhai_content_into_context(
         &mut context,
-        script,
+        context_key,
         content,
         initializers,
         pre_handling_initializers,
@@ -229,7 +236,7 @@ pub fn rhai_context_load(
 
 /// Reload a rhai context from a script. New content is appended to the existing context.
 pub fn rhai_context_reload(
-    script: &ScriptId,
+    context_key: &ContextKey,
     content: &[u8],
     context: &mut RhaiScriptContext,
     initializers: &[ContextInitializer<RhaiScriptingPlugin>],
@@ -238,7 +245,7 @@ pub fn rhai_context_reload(
 ) -> Result<(), ScriptError> {
     load_rhai_content_into_context(
         context,
-        script,
+        context_key,
         content,
         initializers,
         pre_handling_initializers,
@@ -250,8 +257,7 @@ pub fn rhai_context_reload(
 /// The rhai callback handler.
 pub fn rhai_callback_handler(
     args: Vec<ScriptValue>,
-    entity: Entity,
-    script_id: &ScriptId,
+    context_key: &ContextKey,
     callback: &CallbackLabel,
     context: &mut RhaiScriptContext,
     pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
@@ -259,7 +265,7 @@ pub fn rhai_callback_handler(
 ) -> Result<ScriptValue, ScriptError> {
     pre_handling_initializers
         .iter()
-        .try_for_each(|init| init(script_id, entity, context))?;
+        .try_for_each(|init| init(context_key, context))?;
 
     // we want the call to be able to impact the scope
     let options = CallFnOptions::new().rewind_scope(false);
@@ -269,9 +275,9 @@ pub fn rhai_callback_handler(
         .collect::<Result<Vec<_>, _>>()?;
 
     bevy::log::trace!(
-        "Calling callback {} in script {} with args: {:?}",
+        "Calling callback {} in context {} with args: {:?}",
         callback,
-        script_id,
+        context_key,
         args
     );
     let runtime = runtime.read();
@@ -287,8 +293,8 @@ pub fn rhai_callback_handler(
         Err(e) => {
             if let EvalAltResult::ErrorFunctionNotFound(_, _) = e.unwrap_inner() {
                 bevy::log::trace!(
-                    "Script {} is not subscribed to callback {} with the provided arguments.",
-                    script_id,
+                    "Context {} is not subscribed to callback {} with the provided arguments.",
+                    context_key,
                     callback
                 );
                 Ok(ScriptValue::Unit)
@@ -306,14 +312,14 @@ mod test {
     #[test]
     fn test_reload_doesnt_overwrite_old_context() {
         let runtime = RhaiRuntime::new(Engine::new());
-        let script_id = ScriptId::from("asd.rhai");
+        let context_key = ContextKey::default();
         let initializers: Vec<ContextInitializer<RhaiScriptingPlugin>> = vec![];
         let pre_handling_initializers: Vec<ContextPreHandlingInitializer<RhaiScriptingPlugin>> =
             vec![];
 
         // Load first content defining a function that returns 42.
         let mut context = rhai_context_load(
-            &script_id,
+            &context_key,
             b"let hello = 2;",
             &initializers,
             &pre_handling_initializers,
@@ -323,7 +329,7 @@ mod test {
 
         // Reload with additional content defining a second function that returns 24.
         rhai_context_reload(
-            &script_id,
+            &context_key,
             b"let hello2 = 3",
             &mut context,
             &initializers,
