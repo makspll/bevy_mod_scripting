@@ -4,14 +4,17 @@
 #![allow(deprecated)]
 use std::ops::{Deref, DerefMut};
 
-use bevy::ecs::{
-    component::ComponentId,
-    entity::Entity,
-    event::{Event, EventCursor, EventIterator, Events},
-    query::{Access, AccessConflicts},
-    storage::SparseSetIndex,
-    system::{Local, Resource, SystemParam, SystemState},
-    world::World,
+use bevy::{
+    asset::Handle,
+    ecs::{
+        component::ComponentId,
+        entity::Entity,
+        event::{Event, EventCursor, EventIterator, Events},
+        query::{Access, AccessConflicts},
+        storage::SparseSetIndex,
+        system::{Local, Resource, SystemParam, SystemState},
+        world::World,
+    }
 };
 use fixedbitset::FixedBitSet;
 
@@ -213,7 +216,8 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
         // find script
         let script = match self.scripts.scripts.get(script_id) {
             Some(script) => script,
-            None => return Err(InteropError::missing_script(script_id.clone()).into()),
+            // NOTE: It'd be nice to use a handle here because then we have the path.
+            None => return Err(InteropError::missing_script(Handle::Weak(script_id.clone())).into()),
         };
 
         // call the script

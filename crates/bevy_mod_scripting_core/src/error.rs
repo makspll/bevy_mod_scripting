@@ -1,6 +1,7 @@
 //! Errors that can occur when interacting with the scripting system
 
 use crate::{
+    ScriptAsset,
     bindings::{
         access_map::{DisplayCodeLocation, ReflectAccessId},
         function::namespace::Namespace,
@@ -11,6 +12,7 @@ use crate::{
     script::ScriptId,
 };
 use bevy::{
+    asset::Handle,
     ecs::{
         component::ComponentId,
         schedule::{ScheduleBuildError, ScheduleNotInitialized},
@@ -592,7 +594,7 @@ impl InteropError {
     }
 
     /// Thrown if a script could not be found when trying to call a synchronous callback or otherwise
-    pub fn missing_script(script_id: impl Into<ScriptId>) -> Self {
+    pub fn missing_script(script_id: impl Into<Handle<ScriptAsset>>) -> Self {
         Self(Arc::new(InteropErrorInner::MissingScript {
             script_id: script_id.into(),
         }))
@@ -628,7 +630,7 @@ pub enum InteropErrorInner {
     /// Thrown if a script could not be found when trying to call a synchronous callback.
     MissingScript {
         /// The script id that was not found.
-        script_id: ScriptId,
+        script_id: Handle<ScriptAsset>,
     },
     /// Thrown if a base type is not registered with the reflection system
     UnregisteredBase {
@@ -1253,10 +1255,17 @@ macro_rules! unregistered_component_or_resource_type {
 
 macro_rules! missing_script_for_callback {
     ($script_id:expr) => {
-        format!(
-            "Could not find script with id: {}. Is the script loaded?",
-            $script_id
-        )
+        if let Some(path) = $script_id.path() {
+            format!(
+                "Could not find script with path: {}. Is the script loaded?",
+                path
+            )
+        } else {
+            format!(
+                "Could not find script with id: {}. Is the script loaded?",
+                $script_id.id()
+            )
+        }
     };
 }
 

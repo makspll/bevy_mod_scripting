@@ -107,7 +107,8 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
 
         (ContextBuilder::<P>::reload)(
             handler_ctxt.context_loading_settings.loader.reload,
-            &self.id,
+            // &self.id,
+            &Handle::Weak(self.id),
             &self.content,
             &mut context,
             &handler_ctxt.context_loading_settings.context_initializers,
@@ -128,7 +129,8 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     ) -> Result<(), ScriptError> {
         let context = (ContextBuilder::<P>::load)(
             handler_ctxt.context_loading_settings.loader.load,
-            &self.id,
+            // &self.id,
+            &Handle::Weak(self.id),
             &self.content,
             &handler_ctxt.context_loading_settings.context_initializers,
             &handler_ctxt

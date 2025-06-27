@@ -10,6 +10,7 @@ use super::{
     WorldGuard,
 };
 use crate::{
+    ScriptAsset,
     bindings::pretty_print::DisplayWithWorld,
     context::ContextLoadingSettings,
     error::{InteropError, ScriptError},
@@ -21,6 +22,7 @@ use crate::{
     IntoScriptPluginParams,
 };
 use bevy::{
+    asset::Handle,
     prelude::AssetServer,
     ecs::{
         archetype::{ArchetypeComponentId, ArchetypeGeneration},
@@ -257,13 +259,13 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
     pub fn call_dynamic_label(
         &self,
         label: &CallbackLabel,
-        script_id: &ScriptId,
+        script_id: &Handle<ScriptAsset>,
         entity: Entity,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
         // find script
-        let script = match self.scripts.scripts.get(script_id) {
+        let script = match self.scripts.scripts.get(&script_id.id()) {
             Some(script) => script,
             None => return Err(InteropError::missing_script(script_id.clone()).into()),
         };
@@ -281,7 +283,7 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
             handler,
             payload,
             entity,
-            script_id,
+            &script_id.id(),
             label,
             &mut context,
             pre_handling_initializers,
@@ -425,8 +427,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         let mut payload = Vec::with_capacity(state.system_params.len());
         let script_id = {
             let asset_server = world.world().resource::<AssetServer>();
-            let handle = asset_server.load(&*self.target_script);
-            handle.id()
+            asset_server.load(&*self.target_script)
         };
         let guard = if self.exclusive {
             // safety: we are an exclusive system, therefore the cell allows us to do this

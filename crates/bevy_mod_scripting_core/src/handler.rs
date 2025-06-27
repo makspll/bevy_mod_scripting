@@ -1,5 +1,6 @@
 //! Contains the logic for handling script callback events
 use crate::{
+    ScriptAsset,
     bindings::{
         pretty_print::DisplayWithWorld, script_value::ScriptValue, ThreadWorldContainer,
         WorldContainer, WorldGuard,
@@ -15,6 +16,7 @@ use crate::{
     IntoScriptPluginParams,
 };
 use bevy::{
+    asset::Handle,
     ecs::{
         entity::Entity,
         query::QueryState,
@@ -219,11 +221,19 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                     Err(e) => {
                         match e.downcast_interop_inner() {
                             Some(InteropErrorInner::MissingScript { script_id }) => {
-                                trace_once!(
-                                "{}: Script `{}` on entity `{:?}` is either still loading, doesn't exist, or is for another language, ignoring until the corresponding script is loaded.",
-                                P::LANGUAGE,
-                                script_id, entity
-                            );
+                                if let Some(path) = script_id.path() {
+                                    trace_once!(
+                                        "{}: Script path `{}` on entity `{:?}` is either still loading, doesn't exist, or is for another language, ignoring until the corresponding script is loaded.",
+                                        P::LANGUAGE,
+                                        path, entity
+                                    );
+                                } else {
+                                    trace_once!(
+                                        "{}: Script id `{}` on entity `{:?}` is either still loading, doesn't exist, or is for another language, ignoring until the corresponding script is loaded.",
+                                        P::LANGUAGE,
+                                        script_id.id(), entity
+                                    );
+                                }
                                 continue;
                             }
                             Some(InteropErrorInner::MissingContext { .. }) => {
