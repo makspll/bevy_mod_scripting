@@ -353,21 +353,21 @@ pub trait ManageStaticScripts {
     /// Registers a script id as a static script.
     ///
     /// Event handlers will run these scripts on top of the entity scripts.
-    fn add_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self;
+    fn add_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self;
 
     /// Removes a script id from the list of static scripts.
     ///
     /// Does nothing if the script id is not in the list.
-    fn remove_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self;
+    fn remove_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self;
 }
 
 impl ManageStaticScripts for App {
-    fn add_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self {
+    fn add_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self {
         AddStaticScript::new(script_id.into()).apply(self.world_mut());
         self
     }
 
-    fn remove_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self {
+    fn remove_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self {
         RemoveStaticScript::new(script_id.into()).apply(self.world_mut());
         self
     }

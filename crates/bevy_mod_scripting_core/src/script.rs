@@ -16,10 +16,10 @@ pub type ScriptId = AssetId<ScriptAsset>;
 /// A component which identifies the scripts existing on an entity.
 ///
 /// Event handlers search for components with this component to figure out which scripts to run and on which entities.
-pub struct ScriptComponent(pub Vec<ScriptId>);
+pub struct ScriptComponent(pub Vec<Handle<ScriptAsset>>);
 
 impl Deref for ScriptComponent {
-    type Target = Vec<ScriptId>;
+    type Target = Vec<Handle<ScriptAsset>>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -28,7 +28,7 @@ impl Deref for ScriptComponent {
 
 impl ScriptComponent {
     /// Creates a new [`ScriptComponent`] with the given ScriptID's
-    pub fn new<S: Into<ScriptId>, I: IntoIterator<Item = S>>(components: I) -> Self {
+    pub fn new<S: Into<Handle<ScriptAsset>>, I: IntoIterator<Item = S>>(components: I) -> Self {
         Self(components.into_iter().map(Into::into).collect())
     }
 }
@@ -111,29 +111,29 @@ impl<P: IntoScriptPluginParams> Clone for Script<P> {
 /// Useful for `global` or `static` scripts which operate over a larger scope than a single entity.
 #[derive(Default, Resource)]
 pub struct StaticScripts {
-    pub(crate) scripts: HashSet<ScriptId>,
+    pub(crate) scripts: HashSet<Handle<ScriptAsset>>,
 }
 
 #[profiling::all_functions]
 impl StaticScripts {
     /// Inserts a static script into the collection
-    pub fn insert<S: Into<ScriptId>>(&mut self, script: S) {
+    pub fn insert<S: Into<Handle<ScriptAsset>>>(&mut self, script: S) {
         self.scripts.insert(script.into());
     }
 
     /// Removes a static script from the collection, returning `true` if the script was in the collection, `false` otherwise
-    pub fn remove<S: Into<ScriptId>>(&mut self, script: S) -> bool {
+    pub fn remove<S: Into<Handle<ScriptAsset>>>(&mut self, script: S) -> bool {
         self.scripts.remove(&script.into())
     }
 
     /// Checks if a static script is in the collection
     /// Returns `true` if the script is in the collection, `false` otherwise
-    pub fn contains<S: Into<ScriptId>>(&self, script: S) -> bool {
+    pub fn contains<S: Into<Handle<ScriptAsset>>>(&self, script: S) -> bool {
         self.scripts.contains(&script.into())
     }
 
     /// Returns an iterator over the static scripts
-    pub fn iter(&self) -> impl Iterator<Item = &ScriptId> {
+    pub fn iter(&self) -> impl Iterator<Item = &Handle<ScriptAsset>> {
         self.scripts.iter()
     }
 }

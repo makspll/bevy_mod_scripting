@@ -54,7 +54,6 @@ fn console_app(app: &mut App) -> &mut App {
 fn run_script_cmd(
     mut log: ConsoleCommand<GameOfLifeCommand>,
     mut commands: Commands,
-    mut loaded_scripts: ResMut<LoadedScripts>,
     asset_server: Res<AssetServer>,
     mut script_handle: Local<Option<Handle<ScriptAsset>>>,
 ) {
@@ -71,22 +70,18 @@ fn run_script_cmd(
                 );
 
                 let script_path = format!("scripts/game_of_life.{}", language);
-                *script_handle = Some(asset_server.load(script_path));
-                let script_id = script_handle.as_ref().unwrap().id();
                 if !use_static_script {
                     bevy::log::info!("Spawning an entity with ScriptComponent");
-                    commands.spawn(ScriptComponent::new(vec![script_id]));
+                    commands.spawn(ScriptComponent::new(vec![asset_server.load(script_path)]));
                 } else {
                     bevy::log::info!("Using static script instead of spawning an entity");
-                    commands.queue(AddStaticScript::new(script_id))
+                    commands.queue(AddStaticScript::new(asset_server.load(script_path)))
                 }
             }
             GameOfLifeCommand::Stop => {
                 // we can simply drop the handle, or manually delete, I'll just drop the handle
                 bevy::log::info!("Stopping game of life by dropping the handles to all scripts");
 
-                // I am not mapping the handles to the script names, so I'll just clear the entire list
-                loaded_scripts.0.clear();
 
                 // you could also do
                 // commands.queue(DeleteScript::<LuaScriptingPlugin>::new(
@@ -123,8 +118,7 @@ fn game_of_life_app(app: &mut App) -> &mut App {
         .register_type::<LifeState>()
         .register_type::<Settings>()
         .init_resource::<Settings>()
-        .init_resource::<LoadedScripts>()
-        .add_systems(Startup, (init_game_of_life_state, load_script_assets))
+        .add_systems(Startup, init_game_of_life_state)
         .add_systems(Update, (sync_window_size, send_on_click))
         .add_systems(
             FixedUpdate,
@@ -149,9 +143,6 @@ pub struct LifeState {
     pub cells: Vec<u8>,
 }
 
-#[derive(Debug, Resource, Default)]
-pub struct LoadedScripts(pub Vec<Handle<ScriptAsset>>);
-
 #[derive(Reflect, Resource)]
 #[reflect(Resource)]
 pub struct Settings {
@@ -172,17 +163,6 @@ impl Default for Settings {
             display_grid_dimensions: (0, 0),
         }
     }
-}
-
-/// Prepares any scripts by loading them and storing the handles.
-pub fn load_script_assets(
-    asset_server: Res<AssetServer>,
-    mut loaded_scripts: ResMut<LoadedScripts>,
-) {
-    loaded_scripts.0.extend(vec![
-        asset_server.load("scripts/game_of_life.lua"),
-        asset_server.load("scripts/game_of_life.rhai"),
-    ]);
 }
 
 pub fn register_script_functions(app: &mut App) -> &mut App {

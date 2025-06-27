@@ -338,12 +338,12 @@ impl<P: IntoScriptPluginParams> Command for RunScriptCallback<P> {
 /// Adds a static script to the collection of static scripts
 pub struct AddStaticScript {
     /// The ID of the script to add
-    id: ScriptId,
+    id: Handle<ScriptAsset>,
 }
 
 impl AddStaticScript {
     /// Creates a new AddStaticScript command with the given ID
-    pub fn new(id: impl Into<ScriptId>) -> Self {
+    pub fn new(id: impl Into<Handle<ScriptAsset>>) -> Self {
         Self { id: id.into() }
     }
 }
@@ -358,12 +358,12 @@ impl Command for AddStaticScript {
 /// Removes a static script from the collection of static scripts
 pub struct RemoveStaticScript {
     /// The ID of the script to remove
-    id: ScriptId,
+    id: Handle<ScriptAsset>,
 }
 
 impl RemoveStaticScript {
     /// Creates a new RemoveStaticScript command with the given ID
-    pub fn new(id: ScriptId) -> Self {
+    pub fn new(id: Handle<ScriptAsset>) -> Self {
         Self { id }
     }
 }

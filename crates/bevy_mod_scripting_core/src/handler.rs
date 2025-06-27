@@ -180,7 +180,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
             for script_id in entity_scripts.iter() {
                 match &event.recipients {
                     crate::event::Recipients::Script(target_script_id)
-                        if target_script_id != script_id =>
+                        if *target_script_id != script_id.id() =>
                     {
                         continue
                     }
@@ -197,7 +197,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
 
                 let call_result = handler_ctxt.call_dynamic_label(
                     &callback_label,
-                    script_id,
+                    &script_id.id(),
                     *entity,
                     event.args.clone(),
                     guard.clone(),
@@ -208,7 +208,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                         guard.clone(),
                         ScriptCallbackResponseEvent::new(
                             callback_label.clone(),
-                            script_id.clone(),
+                            script_id.id(),
                             call_result.clone(),
                         ),
                     );
@@ -234,9 +234,15 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                             }
                             _ => {}
                         }
-                        let e = e
-                            .with_script(script_id.clone())
-                            .with_context(format!("Event handling for: Language: {}", P::LANGUAGE));
+                        let e = {
+
+                            if let Some(path) = script_id.path() {
+                                e.with_script(path)
+                            } else {
+                                e
+                            }
+                            .with_context(format!("Event handling for: Language: {}", P::LANGUAGE))
+                        };
                         push_err_and_continue!(errors, Err(e));
                     }
                 };
