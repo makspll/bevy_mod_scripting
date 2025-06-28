@@ -41,6 +41,17 @@
         <script src="../../toc.js"></script>
     </head>
     <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
     <div id="body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
@@ -118,7 +129,7 @@
                             <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
                         </ul>
-                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
                             <i class="fa fa-search"></i>
                         </button>
                     </div>
@@ -176,17 +187,17 @@ will always have some nonempty interior.</p>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
-<tr><td><a href="./interval/start.html">start</a></td><td>Get the start of this interval.</td></tr>
-<tr><td><a href="./interval/has_finite_start.html">has_finite_start</a></td><td>Returns `true` if this interval has a finite start.</td></tr>
-<tr><td><a href="./interval/length.html">length</a></td><td>Get the length of this interval. Note that the result may be infinite (`f32::INFINITY`).</td></tr>
 <tr><td><a href="./interval/end.html">end</a></td><td>Get the end of this interval.</td></tr>
-<tr><td><a href="./interval/is_bounded.html">is_bounded</a></td><td>Returns `true` if this interval is bounded — that is, if both its start and end are finite.  Equi...</td></tr>
-<tr><td><a href="./interval/clamp.html">clamp</a></td><td>Clamp the given `value` to lie within this interval.</td></tr>
-<tr><td><a href="./interval/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./interval/contains.html">contains</a></td><td>Returns `true` if `item` is contained in this interval.</td></tr>
-<tr><td><a href="./interval/contains_interval.html">contains_interval</a></td><td>Returns `true` if the other interval is contained in this interval.  This is non-strict: each inter...</td></tr>
-<tr><td><a href="./interval/has_finite_end.html">has_finite_end</a></td><td>Returns `true` if this interval has a finite end.</td></tr>
 <tr><td><a href="./interval/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./interval/is_bounded.html">is_bounded</a></td><td>Returns `true` if this interval is bounded — that is, if both its start and end are finite.  Equi...</td></tr>
+<tr><td><a href="./interval/has_finite_end.html">has_finite_end</a></td><td>Returns `true` if this interval has a finite end.</td></tr>
+<tr><td><a href="./interval/clamp.html">clamp</a></td><td>Clamp the given `value` to lie within this interval.</td></tr>
+<tr><td><a href="./interval/contains_interval.html">contains_interval</a></td><td>Returns `true` if the other interval is contained in this interval.  This is non-strict: each inter...</td></tr>
+<tr><td><a href="./interval/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./interval/length.html">length</a></td><td>Get the length of this interval. Note that the result may be infinite (`f32::INFINITY`).</td></tr>
+<tr><td><a href="./interval/has_finite_start.html">has_finite_start</a></td><td>Returns `true` if this interval has a finite start.</td></tr>
+<tr><td><a href="./interval/contains.html">contains</a></td><td>Returns `true` if `item` is contained in this interval.</td></tr>
+<tr><td><a href="./interval/start.html">start</a></td><td>Get the start of this interval.</td></tr>
 </tbody></table>
 </div>
                     </main>
@@ -197,7 +208,7 @@ will always have some nonempty interior.</p>
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/interval/start.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/interval/end.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -211,7 +222,7 @@ will always have some nonempty interior.</p>
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/interval/start.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/interval/end.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

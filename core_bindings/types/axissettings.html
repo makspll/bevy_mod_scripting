@@ -41,6 +41,17 @@
         <script src="../../toc.js"></script>
     </head>
     <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
     <div id="body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
@@ -118,7 +129,7 @@
                             <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
                         </ul>
-                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
                             <i class="fa fa-search"></i>
                         </button>
                     </div>
@@ -186,19 +197,19 @@ Otherwise, values will not be rounded.</p>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><a href="./axissettings/threshold.html">threshold</a></td><td>Get the minimum value by which input must change before the change is registered.</td></tr>
-<tr><td><a href="./axissettings/livezone_lowerbound.html">livezone_lowerbound</a></td><td>Get the value below which negative inputs will be rounded down to -1.0.</td></tr>
-<tr><td><a href="./axissettings/deadzone_lowerbound.html">deadzone_lowerbound</a></td><td>Get the value above which inputs will be rounded up to 0.0.</td></tr>
-<tr><td><a href="./axissettings/set_livezone_lowerbound.html">set_livezone_lowerbound</a></td><td>Try to set the value below which negative inputs will be rounded down to -1.0.  If the value passed...</td></tr>
-<tr><td><a href="./axissettings/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./axissettings/set_deadzone_lowerbound.html">set_deadzone_lowerbound</a></td><td>Try to set the value above which inputs will be rounded up to 0.0.  If the value passed is less tha...</td></tr>
-<tr><td><a href="./axissettings/set_threshold.html">set_threshold</a></td><td>Try to set the minimum value by which input must change before the changes will be applied.  If the...</td></tr>
-<tr><td><a href="./axissettings/set_livezone_upperbound.html">set_livezone_upperbound</a></td><td>Try to set the value above which inputs will be rounded up to 1.0.  If the value passed is negative...</td></tr>
-<tr><td><a href="./axissettings/set_deadzone_upperbound.html">set_deadzone_upperbound</a></td><td>Try to set the value below which positive inputs will be rounded down to 0.0.  If the value passed ...</td></tr>
-<tr><td><a href="./axissettings/filter.html">filter</a></td><td>Filters the `new_value` based on the `old_value`, according to the [`AxisSettings`].  Returns the clamped `new_value` if the change exceeds the settings threshold,  and `None` otherwise.</td></tr>
-<tr><td><a href="./axissettings/livezone_upperbound.html">livezone_upperbound</a></td><td>Get the value above which inputs will be rounded up to 1.0.</td></tr>
-<tr><td><a href="./axissettings/clamp.html">clamp</a></td><td>Clamps the `raw_value` according to the `AxisSettings`.</td></tr>
 <tr><td><a href="./axissettings/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./axissettings/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./axissettings/set_threshold.html">set_threshold</a></td><td>Try to set the minimum value by which input must change before the changes will be applied.  If the...</td></tr>
+<tr><td><a href="./axissettings/set_livezone_lowerbound.html">set_livezone_lowerbound</a></td><td>Try to set the value below which negative inputs will be rounded down to -1.0.  If the value passed...</td></tr>
+<tr><td><a href="./axissettings/clamp.html">clamp</a></td><td>Clamps the `raw_value` according to the `AxisSettings`.</td></tr>
+<tr><td><a href="./axissettings/set_deadzone_upperbound.html">set_deadzone_upperbound</a></td><td>Try to set the value below which positive inputs will be rounded down to 0.0.  If the value passed ...</td></tr>
+<tr><td><a href="./axissettings/deadzone_lowerbound.html">deadzone_lowerbound</a></td><td>Get the value above which inputs will be rounded up to 0.0.</td></tr>
+<tr><td><a href="./axissettings/livezone_upperbound.html">livezone_upperbound</a></td><td>Get the value above which inputs will be rounded up to 1.0.</td></tr>
+<tr><td><a href="./axissettings/filter.html">filter</a></td><td>Filters the `new_value` based on the `old_value`, according to the [`AxisSettings`].  Returns the clamped `new_value` if the change exceeds the settings threshold,  and `None` otherwise.</td></tr>
+<tr><td><a href="./axissettings/set_deadzone_lowerbound.html">set_deadzone_lowerbound</a></td><td>Try to set the value above which inputs will be rounded up to 0.0.  If the value passed is less tha...</td></tr>
 <tr><td><a href="./axissettings/deadzone_upperbound.html">deadzone_upperbound</a></td><td>Get the value below which positive inputs will be rounded down to 0.0.</td></tr>
+<tr><td><a href="./axissettings/livezone_lowerbound.html">livezone_lowerbound</a></td><td>Get the value below which negative inputs will be rounded down to -1.0.</td></tr>
+<tr><td><a href="./axissettings/set_livezone_upperbound.html">set_livezone_upperbound</a></td><td>Try to set the value above which inputs will be rounded up to 1.0.  If the value passed is negative...</td></tr>
 </tbody></table>
 </div>
                     </main>

@@ -41,6 +41,17 @@
         <script src="../../toc.js"></script>
     </head>
     <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
     <div id="body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
@@ -118,7 +129,7 @@
                             <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
                         </ul>
-                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
                             <i class="fa fa-search"></i>
                         </button>
                     </div>
@@ -179,13 +190,13 @@ value is surpassed and released if the <code>release_threshold</code> value is u
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><a href="./buttonsettings/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./buttonsettings/set_press_threshold.html">set_press_threshold</a></td><td>Try to set the button input threshold above which the button is considered pressed.  If the value p...</td></tr>
+<tr><td><a href="./buttonsettings/is_pressed.html">is_pressed</a></td><td>Returns `true` if the button is pressed.  A button is considered pressed if the `value` passed is g...</td></tr>
+<tr><td><a href="./buttonsettings/is_released.html">is_released</a></td><td>Returns `true` if the button is released.  A button is considered released if the `value` passed is...</td></tr>
+<tr><td><a href="./buttonsettings/set_release_threshold.html">set_release_threshold</a></td><td>Try to set the button input threshold below which the button is considered released. If the  value ...</td></tr>
+<tr><td><a href="./buttonsettings/release_threshold.html">release_threshold</a></td><td>Get the button input threshold below which the button is considered released.</td></tr>
 <tr><td><a href="./buttonsettings/press_threshold.html">press_threshold</a></td><td>Get the button input threshold above which the button is considered pressed.</td></tr>
 <tr><td><a href="./buttonsettings/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./buttonsettings/is_released.html">is_released</a></td><td>Returns `true` if the button is released.  A button is considered released if the `value` passed is...</td></tr>
-<tr><td><a href="./buttonsettings/is_pressed.html">is_pressed</a></td><td>Returns `true` if the button is pressed.  A button is considered pressed if the `value` passed is g...</td></tr>
-<tr><td><a href="./buttonsettings/release_threshold.html">release_threshold</a></td><td>Get the button input threshold below which the button is considered released.</td></tr>
-<tr><td><a href="./buttonsettings/set_press_threshold.html">set_press_threshold</a></td><td>Try to set the button input threshold above which the button is considered pressed.  If the value p...</td></tr>
-<tr><td><a href="./buttonsettings/set_release_threshold.html">set_release_threshold</a></td><td>Try to set the button input threshold below which the button is considered released. If the  value ...</td></tr>
 </tbody></table>
 </div>
                     </main>
