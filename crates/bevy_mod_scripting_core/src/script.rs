@@ -129,9 +129,6 @@ impl<P: IntoScriptPluginParams> Default for Scripts<P> {
 pub struct Script<P: IntoScriptPluginParams> {
     /// The id of the script
     pub id: Handle<ScriptAsset>,
-    /// TODO: Let's remove asset if possible.
-    /// the asset holding the content of the script if it comes from an asset
-    pub asset: Option<Handle<ScriptAsset>>,
     /// The context of the script, possibly shared with other scripts
     pub context: Arc<Mutex<P::C>>,
 }
@@ -140,7 +137,6 @@ impl<P: IntoScriptPluginParams> Clone for Script<P> {
     fn clone(&self) -> Self {
         Self {
             id: self.id.clone(),
-            asset: self.asset.clone(),
             context: self.context.clone(),
         }
     }

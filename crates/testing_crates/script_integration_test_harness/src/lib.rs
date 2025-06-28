@@ -515,7 +515,6 @@ pub fn run_plugin_script_load_benchmark<
                     CreateOrUpdateScript::<P>::new(
                         Handle::Weak(random_script_id),
                         content.clone().into(),
-                        None,
                     ),
                     is_reload,
                 )

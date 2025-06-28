@@ -173,8 +173,7 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
                         info!("{}: Loading static script: {:?}", P::LANGUAGE, id);
                         commands.queue(CreateOrUpdateScript::<P>::new(
                             Handle::Weak(*id),
-                            asset.content.clone(),
-                            Some(script_assets.reserve_handle().clone_weak()),
+                            asset.content.clone(), // Cloning seems bad!
                         ));
                     }
                 }
@@ -228,7 +227,6 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
                     commands.queue(CreateOrUpdateScript::<P>::new(
                         script_id,
                         asset.content.clone(),
-                        None,
                     ));
                 }
             } else {

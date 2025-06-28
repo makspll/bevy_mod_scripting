@@ -67,7 +67,6 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
 pub struct CreateOrUpdateScript<P: IntoScriptPluginParams> {
     id: Handle<ScriptAsset>,
     content: Box<[u8]>,
-    asset: Option<Handle<ScriptAsset>>,
     // Hack to make this Send, C does not need to be Send since it is not stored in the command
     _ph: std::marker::PhantomData<fn(P::R, P::C)>,
 }
@@ -75,11 +74,10 @@ pub struct CreateOrUpdateScript<P: IntoScriptPluginParams> {
 #[profiling::all_functions]
 impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     /// Creates a new CreateOrUpdateScript command with the given ID, content and asset
-    pub fn new(id: Handle<ScriptAsset>, content: Box<[u8]>, asset: Option<Handle<ScriptAsset>>) -> Self {
+    pub fn new(id: Handle<ScriptAsset>, content: Box<[u8]>) -> Self {
         Self {
             id,
             content,
-            asset,
             _ph: std::marker::PhantomData,
         }
     }
@@ -145,7 +143,6 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         handler_ctxt.scripts.insert(
             Script {
                 id: self.id.clone(),
-                asset: self.asset.clone(),
                 context,
             },
         );
@@ -194,7 +191,6 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
                             // make a new script with the shared context
                             let script = Script {
                                 id: self.id.clone(),
-                                asset: self.asset.clone(),
                                 context: assigned_shared_context.clone(),
                             };
                             // it can potentially be loaded but without a successful script reload but that
