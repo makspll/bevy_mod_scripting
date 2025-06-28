@@ -5,7 +5,7 @@
 use std::ops::{Deref, DerefMut};
 
 use bevy::{
-    asset::Handle,
+    asset::{LoadState, Handle},
     ecs::{
         component::ComponentId,
         entity::Entity,
@@ -14,7 +14,8 @@ use bevy::{
         storage::SparseSetIndex,
         system::{Local, Resource, SystemParam, SystemState},
         world::World,
-    }
+    },
+    prelude::{AssetServer, Query, Res},
 };
 use fixedbitset::FixedBitSet;
 
@@ -29,7 +30,7 @@ use crate::{
     event::{CallbackLabel, IntoCallbackLabel},
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{ScriptId, Scripts, StaticScripts},
+    script::{ScriptId, StaticScripts, Script},
     IntoScriptPluginParams,
 };
 
@@ -51,16 +52,24 @@ pub fn with_handler_system_state<
     o
 }
 
-/// Semantics of [`bevy::ecs::change_detection::Res`] but doesn't claim read or write on the world by removing the resource from it ahead of time.
+/// Semantics of [`bevy::ecs::change_detection::Res`] but doesn't claim read or
+/// write on the world by removing the resource from it ahead of time.
 ///
 /// Similar to using [`World::resource_scope`].
 ///
-/// This is useful for interacting with scripts, since [`WithWorldGuard`] will ensure scripts cannot gain exclusive access to the world if *any* reads or writes
-/// are claimed on the world. Removing the resource from the world lets you access it in the context of running scripts without blocking exclusive world access.
+/// This is useful for interacting with scripts, since [`WithWorldGuard`] will
+/// ensure scripts cannot gain exclusive access to the world if *any* reads or
+/// writes are claimed on the world. Removing the resource from the world lets
+/// you access it in the context of running scripts without blocking exclusive
+/// world access.
 ///
 /// # Safety
-/// - Because the resource is removed during the `get_param` call, if there is a conflicting resource access, this will be unsafe
-/// - You must ensure you're only using this in combination with system parameters which will not read or write to this resource in `get_param`
+///
+/// - Because the resource is removed during the `get_param` call, if there is a
+///   conflicting resource access, this will be unsafe
+///
+/// - You must ensure you're only using this in combination with system
+///   parameters which will not read or write to this resource in `get_param`
 pub(crate) struct ResScope<'state, T: Resource + Default>(pub &'state mut T);
 
 impl<T: Resource + Default> Deref for ResScope<'_, T> {
@@ -140,16 +149,17 @@ impl<T: Event> EventReaderScope<'_, T> {
 /// Context for systems which handle events for scripts
 #[derive(SystemParam)]
 pub struct HandlerContext<'s, P: IntoScriptPluginParams> {
+    // pub(crate) scripts: Query<'w, 's, &'static mut Script<P>>,
     /// Settings for callbacks
     pub(crate) callback_settings: ResScope<'s, CallbackSettings<P>>,
     /// Settings for loading contexts
     pub(crate) context_loading_settings: ResScope<'s, ContextLoadingSettings<P>>,
-    /// Scripts
-    pub(crate) scripts: ResScope<'s, Scripts<P>>,
     /// The runtime container
     pub(crate) runtime_container: ResScope<'s, RuntimeContainer<P>>,
     /// List of static scripts
     pub(crate) static_scripts: ResScope<'s, StaticScripts>,
+    /// The asset server
+    pub(crate) asset_server: Res<'s, AssetServer>, // Not default.
 }
 
 impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
@@ -162,14 +172,12 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
     ) -> (
         &mut CallbackSettings<P>,
         &mut ContextLoadingSettings<P>,
-        &mut Scripts<P>,
         &mut RuntimeContainer<P>,
         &mut StaticScripts,
     ) {
         (
             &mut self.callback_settings,
             &mut self.context_loading_settings,
-            &mut self.scripts,
             &mut self.runtime_container,
             &mut self.static_scripts,
         )
@@ -185,11 +193,6 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
         &mut self.context_loading_settings
     }
 
-    /// Get the scripts
-    pub fn scripts(&mut self) -> &mut Scripts<P> {
-        &mut self.scripts
-    }
-
     /// Get the runtime container
     pub fn runtime_container(&mut self) -> &mut RuntimeContainer<P> {
         &mut self.runtime_container
@@ -202,7 +205,7 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
 
     /// checks if the script is loaded such that it can be executed.
     pub fn is_script_fully_loaded(&self, script_id: ScriptId) -> bool {
-        self.scripts.scripts.contains_key(&script_id)
+        matches!(self.asset_server.load_state(script_id), LoadState::Loaded)
     }
 
     /// Equivalent to [`Self::call`] but with a dynamically passed in label
@@ -215,11 +218,12 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
         // find script
-        let script = match self.scripts.scripts.get(&script_id.id()) {
-            Some(script) => script,
-            // NOTE: It'd be nice to use a handle here because then we have the path.
-            None => return Err(InteropError::missing_script(script_id.clone()).into()),
-        };
+        let mut context = self.scripts
+                         .get(entity)
+                         .ok()
+                         .and_then(|script|
+                                   script.contexts.get(&script_id.id()))
+                         .ok_or_else(|| InteropError::missing_script(script_id.clone()))?;
 
         // call the script
         let handler = self.callback_settings.callback_handler;
@@ -228,7 +232,7 @@ impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
             .context_pre_handling_initializers;
         let runtime = &self.runtime_container.runtime;
 
-        let mut context = script.context.lock();
+        let mut context = context.lock();
 
         CallbackSettings::<P>::call(
             handler,

@@ -18,12 +18,12 @@ use crate::{
     extractors::get_all_access_ids,
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{ScriptId, Scripts},
+    script::{ScriptId, Script},
     IntoScriptPluginParams,
 };
 use bevy::{
     asset::Handle,
-    prelude::AssetServer,
+    prelude::{Query, AssetServer},
     ecs::{
         archetype::{ArchetypeComponentId, ArchetypeGeneration},
         component::{ComponentId, Tick},
@@ -199,7 +199,7 @@ impl ScriptSystemBuilder {
 }
 
 struct DynamicHandlerContext<'w, P: IntoScriptPluginParams> {
-    scripts: &'w Scripts<P>,
+    // scripts: &'w QueryState<&'static Script<P>>,
     callback_settings: &'w CallbackSettings<P>,
     context_loading_settings: &'w ContextLoadingSettings<P>,
     runtime_container: &'w RuntimeContainer<P>,
@@ -213,9 +213,8 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
     )]
     pub fn init_param(world: &mut World, system: &mut FilteredAccessSet<ComponentId>) {
         let mut access = FilteredAccess::<ComponentId>::matches_nothing();
-        let scripts_res_id = world
-            .resource_id::<Scripts<P>>()
-            .expect("Scripts resource not found");
+        // let scripts_res_id = world
+        //     .query::<&Script<P>>();
         let callback_settings_res_id = world
             .resource_id::<CallbackSettings<P>>()
             .expect("CallbackSettings resource not found");
@@ -226,7 +225,7 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
             .resource_id::<RuntimeContainer<P>>()
             .expect("RuntimeContainer resource not found");
 
-        access.add_resource_read(scripts_res_id);
+        access.add_component_read(world.component_id::<Script<P>>().unwrap());
         access.add_resource_read(callback_settings_res_id);
         access.add_resource_read(context_loading_settings_res_id);
         access.add_resource_read(runtime_container_res_id);
@@ -241,7 +240,6 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
     pub fn get_param(system: &UnsafeWorldCell<'w>) -> Self {
         unsafe {
             Self {
-                scripts: system.get_resource().expect("Scripts resource not found"),
                 callback_settings: system
                     .get_resource()
                     .expect("CallbackSettings resource not found"),
@@ -263,11 +261,20 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
         entity: Entity,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
+        script_component_id: ComponentId,
     ) -> Result<ScriptValue, ScriptError> {
         // find script
-        let script = match self.scripts.scripts.get(&script_id.id()) {
-            Some(script) => script,
-            None => return Err(InteropError::missing_script(script_id.clone()).into()),
+
+        let access = ReflectAccessId::for_component_id(script_component_id);
+        // It'd be nice to have the component id for Script<P> somewhere.
+        let context = if guard.claim_read_access(access) {
+            let world = guard.as_unsafe_world_cell_readonly()?;
+            let world = unsafe { world.world() };
+            let maybe_context = world.get::<Script<P>>(entity).and_then(|script| script.contexts.get(&script_id.id())).map(|context| context.clone());
+            unsafe { guard.release_access(access) };
+            maybe_context.ok_or_else(||InteropError::missing_script(script_id.clone()))?
+        } else {
+            return Err(InteropError::missing_script(script_id.clone()).into());
         };
 
         // call the script
@@ -277,7 +284,7 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
             .context_pre_handling_initializers;
         let runtime = &self.runtime_container.runtime;
 
-        let mut context = script.context.lock();
+        let mut context = context.lock();
 
         CallbackSettings::<P>::call(
             handler,
@@ -503,6 +510,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             Entity::from_raw(0),
             payload,
             guard.clone(),
+            world.components().component_id::<Script<P>>().expect("Script<P> component id"),
         );
 
         // TODO: emit error events via commands, maybe accumulate in state instead and use apply
