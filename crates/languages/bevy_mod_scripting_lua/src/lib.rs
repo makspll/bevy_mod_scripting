@@ -275,13 +275,14 @@ mod test {
     #[test]
     fn test_reload_doesnt_overwrite_old_context() {
         let lua = Lua::new();
-        let script_id = ScriptId::from("asd.lua");
+        let script_id: ScriptId = ScriptId::from(uuid::Uuid::new_v4());
         let initializers = vec![];
         let pre_handling_initializers = vec![];
         let mut old_ctxt = lua.clone();
+        let handle = Handle::Weak(script_id);
 
         lua_context_load(
-            &script_id,
+            &handle,
             "function hello_world_from_first_load()
             
             end"
@@ -293,7 +294,7 @@ mod test {
         .unwrap();
 
         lua_context_reload(
-            &script_id,
+            &handle,
             "function hello_world_from_second_load()
             
             end"
