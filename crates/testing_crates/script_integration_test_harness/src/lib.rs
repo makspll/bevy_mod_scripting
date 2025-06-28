@@ -299,7 +299,7 @@ pub fn execute_integration_test<'a,
 
 fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
     script_id: &ScriptId,
-    mut with_guard: WithWorldGuard<'_, '_, HandlerContext<'_, P>>,
+    mut with_guard: WithWorldGuard<'_, '_, HandlerContext<'_, '_, P>>,
     expect_response: bool,
 ) -> Result<ScriptValue, ScriptError> {
     let (guard, handler_ctxt) = with_guard.get_mut();
@@ -434,6 +434,7 @@ where
     let script_path = script_path.into();
     let script_handle = app.world().resource::<AssetServer>().load(script_path);
     let script_id = script_handle.id();
+    let entity = app.world_mut().spawn(ScriptComponent(vec![script_handle])).id();
 
 
     // app.add_systems(
@@ -459,11 +460,11 @@ where
         let (guard, context) = handler_ctxt.get_mut();
 
         if context.is_script_fully_loaded(script_id.clone().into()) {
-            let script = context
-                .scripts()
-                .get_mut(script_id.to_owned())
-                .ok_or_else(|| String::from("Could not find scripts resource"))?;
-            let ctxt_arc = script.context.clone();
+            let script_context = context
+                .scripts.get(entity).ok()
+                .and_then(|script| script.contexts.get(&script_id))
+                .ok_or_else(|| String::from("Could not find script"))?;
+            let ctxt_arc = script_context.clone();
             let mut ctxt_locked = ctxt_arc.lock();
 
             let runtime = &context.runtime_container().runtime;

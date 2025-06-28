@@ -150,7 +150,8 @@ impl<T: Event> EventReaderScope<'_, T> {
 /// Context for systems which handle events for scripts
 #[derive(SystemParam)]
 pub struct HandlerContext<'w, 's, P: IntoScriptPluginParams> {
-    pub(crate) scripts: Query<'w, 's, &'static mut Script<P>>,
+    /// Query for `Script<P>`s
+    pub scripts: Query<'w, 's, &'static mut Script<P>>,
     /// Settings for callbacks
     pub(crate) callback_settings: ResScope<'s, CallbackSettings<P>>,
     /// Settings for loading contexts
