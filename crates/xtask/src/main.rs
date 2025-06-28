@@ -1111,7 +1111,7 @@ impl Xtasks {
         let bevy_version = metadata
             .packages
             .iter()
-            .find(|p| p.name == "bevy")
+            .find(|p| p.name.as_str() == "bevy")
             .expect("Could not find bevy package in metadata")
             .version
             .clone();
@@ -1250,7 +1250,7 @@ impl Xtasks {
             let package = metadata
                 .packages
                 .iter()
-                .find(|p| p.name == "bevy_mod_scripting")
+                .find(|p| p.name.as_str() == "bevy_mod_scripting")
                 .expect("Could not find bevy_mod_scripting package in metadata");
 
             info!("Building with root package: {}", package.name);
