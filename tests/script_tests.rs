@@ -16,16 +16,19 @@ trait TestExecutor {
 
 impl TestExecutor for Test {
     fn execute(self) -> Result<(), Failed> {
-        println!("Running test: {:?}", self.path);
 
         match self.kind {
-            TestKind::Lua => execute_lua_integration_test(&self.path.to_string_lossy())?,
+            TestKind::Lua => {
+                println!("Running test: {:?}", self.path);
+                execute_lua_integration_test(&self.path.to_string_lossy())?
+            },
             TestKind::Rhai => {
                 if cfg!(feature = "rhai") {
+                    println!("Running test: {:?}", self.path);
                     #[cfg(feature = "rhai")]
                     script_integration_test_harness::execute_rhai_integration_test(&self.path.to_string_lossy())?
                 } else {
-                    panic!("no 'rhai' feature")
+                    println!("Skipping test: {:?}", self.path);
                 }
             },
 
