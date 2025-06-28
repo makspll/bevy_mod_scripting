@@ -55,16 +55,18 @@ impl std::fmt::Display for Language {
 #[derive(Asset, TypePath, Clone)]
 pub struct ScriptAsset {
     /// The body of the script
-    pub content: Box<[u8]>,
+    pub content: Box<[u8]>, // Any chance a Cow<'static, ?> could work here?
     /// The language of the script
     pub language: Language,
 }
 
-#[derive(Event, Debug, Clone)]
-pub(crate) enum ScriptAssetEvent {
-    Added(ScriptMetadata),
-    Removed(ScriptMetadata),
-    Modified(ScriptMetadata),
+impl From<String> for ScriptAsset {
+    fn from(s: String) -> ScriptAsset {
+        ScriptAsset {
+            content: s.into_bytes().into_boxed_slice(),
+            language: Language::default(),
+        }
+    }
 }
 
 /// Script settings
@@ -112,6 +114,7 @@ impl AssetLoader for ScriptAssetLoader {
                 match load_context.path().extension().and_then(|e| e.to_str()).unwrap_or_default() {
                     "lua" => Language::Lua,
                     "rhai" => Language::Rhai,
+                    "rn" => Language::Rune,
                     x => {
                         warn!("Unknown language for {:?}", load_context.path().display());
                         Language::Unknown
@@ -129,178 +132,58 @@ impl AssetLoader for ScriptAssetLoader {
     }
 }
 
-
-/// A cache of asset id's to their script id's. Necessary since when we drop an asset we won't have the ability to get the path from the asset.
-#[derive(Default, Debug, Resource)]
-pub struct ScriptMetadataStore {
-    /// The map of asset id's to their metadata
-    pub map: HashMap<AssetId<ScriptAsset>, ScriptMetadata>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-/// Metadata for a script asset
-pub struct ScriptMetadata {
-    /// The asset id of the script
-    pub asset_id: AssetId<ScriptAsset>,
-    // The script id of the script
-    // pub script_id: ScriptId,
-    /// The language of the script
-    pub language: Language,
-}
-
-#[profiling::all_functions]
-impl ScriptMetadataStore {
-    /// Inserts a new metadata entry
-    pub fn insert(&mut self, id: ScriptId, meta: ScriptMetadata) {
-        // TODO: new generations of assets are not going to have the same ID as the old one
-        self.map.insert(id, meta);
-    }
-
-    /// Gets a metadata entry
-    pub fn get(&self, id: ScriptId) -> Option<&ScriptMetadata> {
-        self.map.get(&id)
-    }
-
-    /// Removes a metadata entry
-    pub fn remove(&mut self, id: ScriptId) -> Option<ScriptMetadata> {
-        self.map.remove(&id)
-    }
-
-    /// Checks if the store contains a metadata entry
-    pub fn contains(&self, id: ScriptId) -> bool {
-        self.map.contains_key(&id)
-    }
-}
-
-/// Converts incoming asset events, into internal script asset events, also loads and inserts metadata for newly added scripts
-#[profiling::function]
-pub(crate) fn dispatch_script_asset_events(
-    mut events: EventReader<AssetEvent<ScriptAsset>>,
-    mut script_asset_events: EventWriter<ScriptAssetEvent>,
-    assets: Res<Assets<ScriptAsset>>,
-    mut metadata_store: ResMut<ScriptMetadataStore>,
-    // settings: Res<ScriptAssetSettings>,
-) {
-    for event in events.read() {
-        match event {
-            AssetEvent::LoadedWithDependencies { id } | AssetEvent::Added { id } => {
-                // these can occur multiple times, we only send one added event though
-                if !metadata_store.contains(*id) {
-                    let asset = assets.get(*id);
-                    if let Some(asset) = asset {
-                        // let path = &asset.asset_path;
-                        // let converter = settings.script_id_mapper.map;
-                        // let script_id = converter(path);
-
-                        // let language = settings.select_script_language(path);
-                        let language = &asset.language;
-                        if *language == Language::Unknown {
-                            // let extension = path
-                            //     .path()
-                            //     .extension()
-                            //     .and_then(|ext| ext.to_str())
-                            //     .unwrap_or_default();
-                            // warn!("A script {:?} was added but its language is unknown. Consider adding the {:?} extension to the `ScriptAssetSettings`.", &script_id, extension);
-                        }
-                        let metadata = ScriptMetadata {
-                            asset_id: *id,
-                            // script_id,
-                            language: language.clone(),
-                        };
-                        debug!("Script loaded, populating metadata: {:?}:", metadata);
-                        script_asset_events.send(ScriptAssetEvent::Added(metadata.clone()));
-                        metadata_store.insert(*id, metadata);
-                    } else {
-                        warn!("A script was added but it's asset was not found, failed to compute metadata. This script will not be loaded. Did you forget to store `Handle<ScriptAsset>` somewhere?. {}", id);
-                    }
-                }
-            }
-            AssetEvent::Removed { id } => {
-                if let Some(metadata) = metadata_store.get(*id) {
-                    debug!("Script removed: {:?}", metadata);
-                    script_asset_events.send(ScriptAssetEvent::Removed(metadata.clone()));
-                } else {
-                    warn!("Script metadata not found for removed script asset: {}. Cannot properly clean up script", id);
-                }
-            }
-            AssetEvent::Modified { id } => {
-                if let Some(metadata) = metadata_store.get(*id) {
-                    debug!("Script modified: {:?}", metadata);
-                    script_asset_events.send(ScriptAssetEvent::Modified(metadata.clone()));
-                } else {
-                    warn!("Script metadata not found for modified script asset: {}. Cannot properly update script", id);
-                }
-            }
-            _ => {}
-        }
-    }
-}
-
-/// Listens to [`ScriptAssetEvent::Removed`] events and removes the corresponding script metadata.
-#[profiling::function]
-pub(crate) fn remove_script_metadata(
-    mut events: EventReader<ScriptAssetEvent>,
-    mut asset_path_map: ResMut<ScriptMetadataStore>,
-) {
-    for event in events.read() {
-        if let ScriptAssetEvent::Removed(metadata) = event {
-            let previous = asset_path_map.remove(metadata.asset_id);
-            if let Some(previous) = previous {
-                debug!("Removed script metadata: {:?}", previous);
-            }
-        }
-    }
-}
-
-/// Listens to [`ScriptAssetEvent`] events and dispatches [`CreateOrUpdateScript`] and [`DeleteScript`] commands accordingly.
+/// Listens to [`AssetEvent`] events and dispatches [`CreateOrUpdateScript`] and [`DeleteScript`] commands accordingly.
 ///
 /// Allows for hot-reloading of scripts.
 #[profiling::function]
 pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
-    mut events: EventReader<ScriptAssetEvent>,
+    mut events: EventReader<AssetEvent<ScriptAsset>>,
     script_assets: Res<Assets<ScriptAsset>>,
     static_scripts: Res<StaticScripts>,
+    asset_server: Res<AssetServer>,
     mut commands: Commands,
 ) {
     for event in events.read() {
-        let metadata = match event {
-            ScriptAssetEvent::Added(script_metadata)
-            | ScriptAssetEvent::Removed(script_metadata)
-            | ScriptAssetEvent::Modified(script_metadata) => script_metadata,
-        };
-
-        if metadata.language != P::LANGUAGE {
-            continue;
-        }
 
         trace!("{}: Received script asset event: {:?}", P::LANGUAGE, event);
         match event {
             // emitted when a new script asset is loaded for the first time
-            ScriptAssetEvent::Added(_) | ScriptAssetEvent::Modified(_) => {
-                if metadata.language != P::LANGUAGE {
-                    trace!(
-                        "{}: Script asset {} is for a different langauge than this sync system. Skipping.",
-                        P::LANGUAGE,
-                        metadata.asset_id
-                    );
-                    continue;
-                }
+            AssetEvent::LoadedWithDependencies { id } | AssetEvent::Added { id } | AssetEvent::Modified{ id } => {
+                if let Some(asset) = script_assets.get(*id) {
+                    if asset.language != P::LANGUAGE {
+                        match asset_server.get_path(*id) {
+                            Some(path) => {
+                                trace!(
+                                    "{}: Script path {} is for a different langauge than this sync system. Skipping.",
+                                    P::LANGUAGE,
+                                    path);
+                            }
+                            None => {
+                                trace!(
+                                    "{}: Script id {} is for a different langauge than this sync system. Skipping.",
+                                    P::LANGUAGE,
+                                    id);
+                            }
+                        }
+                        continue;
+                    }
 
 
-                if static_scripts.iter().any(|handle| handle.id() == metadata.asset_id) {
-                    info!("{}: Loading static script: {:?}", P::LANGUAGE, metadata.asset_id,);
-                    if let Some(asset) = script_assets.get(metadata.asset_id) {
+                    if static_scripts.iter().any(|handle| handle.id() == *id) {
+                        info!("{}: Loading static script: {:?}", P::LANGUAGE, id);
                         commands.queue(CreateOrUpdateScript::<P>::new(
-                            Handle::Weak(metadata.asset_id.clone()),
+                            Handle::Weak(*id),
                             asset.content.clone(),
                             Some(script_assets.reserve_handle().clone_weak()),
                         ));
                     }
                 }
             }
-            ScriptAssetEvent::Removed(_) => {
-                info!("{}: Deleting Script: {:?}", P::LANGUAGE, metadata.asset_id,);
-                commands.queue(DeleteScript::<P>::new(metadata.asset_id.clone()));
+            AssetEvent::Removed{ id } => {
+                info!("{}: Deleting Script: {:?}", P::LANGUAGE, id);
+                commands.queue(DeleteScript::<P>::new(id.clone()));
+            }
+            AssetEvent::Unused { id } => {
             }
         };
     }
@@ -364,13 +247,14 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
 pub(crate) fn configure_asset_systems(app: &mut App) -> &mut App {
     // these should be in the same set as bevy's asset systems
     // currently this is in the PreUpdate set
-    app.add_systems(
-        PreUpdate,
-        (
-            dispatch_script_asset_events.in_set(ScriptingSystemSet::ScriptAssetDispatch),
-            remove_script_metadata.in_set(ScriptingSystemSet::ScriptMetadataRemoval),
-        ),
-    )
+    app
+        // .add_systems(
+        //     PreUpdate,
+        //     (
+        //         dispatch_script_asset_events.in_set(ScriptingSystemSet::ScriptAssetDispatch),
+        //         remove_script_metadata.in_set(ScriptingSystemSet::ScriptMetadataRemoval),
+        //     ),
+        // )
     .configure_sets(
         PreUpdate,
         (
@@ -379,10 +263,7 @@ pub(crate) fn configure_asset_systems(app: &mut App) -> &mut App {
                 .after(ScriptingSystemSet::ScriptAssetDispatch)
                 .before(ScriptingSystemSet::ScriptMetadataRemoval),
         ),
-    )
-    .init_resource::<ScriptMetadataStore>()
-    // .init_resource::<ScriptAssetSettings>()
-    .add_event::<ScriptAssetEvent>();
+    );
 
     app
 }
