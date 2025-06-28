@@ -5,8 +5,6 @@ use std::path::PathBuf;
 use libtest_mimic::{Arguments, Failed, Trial};
 use script_integration_test_harness::{
     execute_lua_integration_test,
-    #[cfg(feature = "rhai")]
-    execute_rhai_integration_test,
 };
 
 use test_utils::{discover_all_tests, Test, TestKind};
@@ -23,10 +21,12 @@ impl TestExecutor for Test {
         match self.kind {
             TestKind::Lua => execute_lua_integration_test(&self.path.to_string_lossy())?,
             TestKind::Rhai => {
-                #[cfg(feature = "rhai")]
-                execute_rhai_integration_test(&self.path.to_string_lossy())?
-                #[cfg(not(feature = "rhai"))]
-                panic!("no 'rhai' feature")
+                if cfg!(feature = "rhai") {
+                    #[cfg(feature = "rhai")]
+                    script_integration_test_harness::execute_rhai_integration_test(&self.path.to_string_lossy())?
+                } else {
+                    panic!("no 'rhai' feature")
+                }
             },
 
         }

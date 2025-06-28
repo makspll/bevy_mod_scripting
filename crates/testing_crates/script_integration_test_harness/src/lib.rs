@@ -17,7 +17,7 @@ use bevy::{
         world::{Command, FromWorld, Mut},
     },
     log::Level,
-    prelude::{Entity, World},
+    prelude::{Entity, World, Commands},
     reflect::{Reflect, TypeRegistry},
     utils::tracing,
 };
@@ -33,7 +33,7 @@ use bevy_mod_scripting_core::{
     event::{IntoCallbackLabel, ScriptErrorEvent},
     extractors::{HandlerContext, WithWorldGuard},
     handler::handle_script_errors,
-    script::ScriptId,
+    script::{ScriptComponent, ScriptId},
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams, ScriptingPlugin,
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
@@ -201,14 +201,15 @@ pub fn execute_rhai_integration_test(script_id: &str) -> Result<(), String> {
     execute_integration_test(plugin, |_, _| {}, script_id)
 }
 
-pub fn execute_integration_test<
+pub fn execute_integration_test<'a,
     P: IntoScriptPluginParams + Plugin + AsMut<ScriptingPlugin<P>>,
     F: FnOnce(&mut World, &mut TypeRegistry),
 >(
     plugin: P,
     init: F,
-    script_id: &str,
+    script_id: impl Into<AssetPath<'a>>,
 ) -> Result<(), String> {
+    let script_id = script_id.into();
     // set "BEVY_ASSET_ROOT" to the global assets folder, i.e. CARGO_MANIFEST_DIR/../../../assets
     let mut manifest_dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
 
@@ -234,28 +235,27 @@ pub fn execute_integration_test<
         OnTestLast => "on_test_last",
     );
 
-    let script_id = script_id.to_owned();
-    let script_id: &'static str = Box::leak(script_id.into_boxed_str());
-
-    let load_system = |server: Res<AssetServer>, mut handle: Local<Handle<ScriptAsset>>| {
-        *handle = server.load(script_id.to_owned());
-    };
+    let script_path = script_id.clone_owned();
 
     // tests can opt in to this via "__RETURN"
-    let expect_callback_response = script_id.contains("__RETURN");
+    let expect_callback_response = script_id.path().to_str().map(|s| s.contains("__RETURN")).unwrap_or(false);
+    let load_system = move |server: Res<AssetServer>, mut commands: Commands| {
+        commands.spawn(ScriptComponent::new([server.load(script_path.clone())]));
+    };
+
 
     app.add_systems(Startup, load_system);
     app.add_systems(
         Update,
-        TestCallbackBuilder::<P, OnTest>::build(script_id, expect_callback_response),
+        TestCallbackBuilder::<P, OnTest>::build(&script_id, expect_callback_response),
     );
     app.add_systems(
         PostUpdate,
-        TestCallbackBuilder::<P, OnTestPostUpdate>::build(script_id, expect_callback_response),
+        TestCallbackBuilder::<P, OnTestPostUpdate>::build(&script_id, expect_callback_response),
     );
     app.add_systems(
         Last,
-        TestCallbackBuilder::<P, OnTestLast>::build(script_id, expect_callback_response),
+        TestCallbackBuilder::<P, OnTestLast>::build(&script_id, expect_callback_response),
     );
     app.add_systems(Update, dummy_update_system);
     app.add_systems(Startup, dummy_startup_system::<String>);
