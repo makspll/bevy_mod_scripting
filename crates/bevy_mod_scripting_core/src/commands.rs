@@ -10,7 +10,7 @@ use crate::{
         CallbackLabel, IntoCallbackLabel, OnScriptLoaded, OnScriptUnloaded,
         ScriptCallbackResponseEvent,
     },
-    extractors::{with_handler_system_state, HandlerContext},
+    extractors::{with_handler_system_state, HandlerContext, WithWorldGuard},
     handler::{handle_script_errors, send_callback_response},
     script::{Script, ScriptId, Scripts, StaticScripts, DisplayProxy},
     IntoScriptPluginParams,
@@ -66,6 +66,7 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
 /// If script comes from an asset, expects it to be loaded, otherwise this command will fail to process the script.
 pub struct CreateOrUpdateScript<P: IntoScriptPluginParams> {
     id: Handle<ScriptAsset>,
+    // It feels like we're using a Box, which requires a clone merely to satisfy the Command trait.
     content: Box<[u8]>,
     // Hack to make this Send, C does not need to be Send since it is not stored in the command
     _ph: std::marker::PhantomData<fn(P::R, P::C)>,
@@ -85,13 +86,14 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     // fn script_name(&self) -> String {
     //     self.asset.as_ref().and_then(|handle| handle.path().map(|p| p.to_string())).unwrap_or_else(|| self.id.to_string())
     // }
-
+    //
     fn reload_context(
-        &self,
+        id: &Handle<ScriptAsset>,
+        content: &[u8],
         guard: WorldGuard,
         handler_ctxt: &HandlerContext<P>,
     ) -> Result<(), ScriptError> {
-        let existing_script = match handler_ctxt.scripts.scripts.get(&self.id.id()) {
+        let existing_script = match handler_ctxt.scripts.scripts.get(&id.id()) {
             Some(script) => script,
             None => {
                 return Err(
@@ -105,9 +107,8 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
 
         (ContextBuilder::<P>::reload)(
             handler_ctxt.context_loading_settings.loader.reload,
-            // &self.id,
-            &self.id,
-            &self.content,
+            &id,
+            content,
             &mut context,
             &handler_ctxt.context_loading_settings.context_initializers,
             &handler_ctxt
@@ -121,15 +122,15 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     }
 
     fn load_context(
-        &self,
+        id: &Handle<ScriptAsset>,
+        content: &[u8],
         guard: WorldGuard,
         handler_ctxt: &mut HandlerContext<P>,
     ) -> Result<(), ScriptError> {
         let context = (ContextBuilder::<P>::load)(
             handler_ctxt.context_loading_settings.loader.load,
-            // &self.id,
-            &self.id,
-            &self.content,
+            &id,
+            content,
             &handler_ctxt.context_loading_settings.context_initializers,
             &handler_ctxt
                 .context_loading_settings
@@ -142,13 +143,98 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
 
         handler_ctxt.scripts.insert(
             Script {
-                id: self.id.clone(),
+                id: id.clone(),
                 context,
             },
         );
         Ok(())
     }
+
+    pub(crate) fn create_or_update_script(
+        id: &Handle<ScriptAsset>,
+        content: &[u8],
+        guard: WorldGuard, handler_ctxt: &mut HandlerContext<P>) -> bool {
+
+        let is_new_script = !handler_ctxt.scripts.contains_key(&id.id());
+
+        let assigned_shared_context =
+            match handler_ctxt.context_loading_settings.assignment_strategy {
+                crate::context::ContextAssignmentStrategy::Individual => None,
+                crate::context::ContextAssignmentStrategy::Global => {
+                    let is_new_context = handler_ctxt.scripts.scripts.is_empty();
+                    if !is_new_context {
+                        handler_ctxt
+                            .scripts
+                            .scripts
+                            .values()
+                            .next()
+                            .map(|s| s.context.clone())
+                    } else {
+                        None
+                    }
+                }
+            };
+
+        debug!(
+            "{}: CreateOrUpdateScript command applying (script {}, new context?: {}, new script?: {})",
+            P::LANGUAGE,
+            id.display(),
+            assigned_shared_context.is_none(),
+            is_new_script
+        );
+
+        let result = match &assigned_shared_context {
+            Some(assigned_shared_context) => {
+                if is_new_script {
+                    // this will happen when sharing contexts
+                    // make a new script with the shared context
+                    let script = Script {
+                        // NOTE: We don't want script handles to be strong, right?
+                        id: id.clone_weak(),
+                        context: assigned_shared_context.clone(),
+                    };
+                    // it can potentially be loaded but without a successful script reload but that
+                    // leaves us in an okay state
+                    handler_ctxt.scripts.insert(script);
+                }
+                bevy::log::debug!("{}: reloading script {}", P::LANGUAGE, id.display());
+                Self::reload_context(id, content, guard.clone(), handler_ctxt)
+            }
+            None => {
+                bevy::log::debug!("{}: loading script {}", P::LANGUAGE, id.display());
+                Self::load_context(id, content, guard.clone(), handler_ctxt)
+            }
+        };
+
+        let phrase = if assigned_shared_context.is_some() {
+            "reloading"
+        } else {
+            "loading"
+        };
+
+        if let Err(err) = result {
+            handle_script_errors(
+                guard,
+                vec![err
+                     .with_script(id.display())
+                     .with_context(P::LANGUAGE)
+                     .with_context(phrase)]
+                    .into_iter(),
+            );
+            return false;
+        }
+
+        bevy::log::debug!(
+            "{}: script {} successfully created or updated",
+            P::LANGUAGE,
+            id.display()
+        );
+
+        true
+    }
+
 }
+
 
 #[profiling::all_functions]
 impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
@@ -156,84 +242,9 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
         let success = with_handler_system_state(
             world,
             |guard, handler_ctxt: &mut HandlerContext<P>| {
-                let is_new_script = !handler_ctxt.scripts.scripts.contains_key(&self.id.id());
-
-                let assigned_shared_context =
-                    match handler_ctxt.context_loading_settings.assignment_strategy {
-                        crate::context::ContextAssignmentStrategy::Individual => None,
-                        crate::context::ContextAssignmentStrategy::Global => {
-                            let is_new_context = handler_ctxt.scripts.scripts.is_empty();
-                            if !is_new_context {
-                                handler_ctxt
-                                    .scripts
-                                    .scripts
-                                    .values()
-                                    .next()
-                                    .map(|s| s.context.clone())
-                            } else {
-                                None
-                            }
-                        }
-                    };
-
-                debug!(
-                    "{}: CreateOrUpdateScript command applying (script {}, new context?: {}, new script?: {})",
-                    P::LANGUAGE,
-                    self.id.display(),
-                    assigned_shared_context.is_none(),
-                    is_new_script
-                );
-
-                let result = match &assigned_shared_context {
-                    Some(assigned_shared_context) => {
-                        if is_new_script {
-                            // this will happen when sharing contexts
-                            // make a new script with the shared context
-                            let script = Script {
-                                id: self.id.clone(),
-                                context: assigned_shared_context.clone(),
-                            };
-                            // it can potentially be loaded but without a successful script reload but that
-                            // leaves us in an okay state
-                            handler_ctxt.scripts.insert(script);
-                        }
-                        bevy::log::debug!("{}: reloading script {}", P::LANGUAGE, self.id.display());
-                        self.reload_context(guard.clone(), handler_ctxt)
-                    }
-                    None => {
-                        bevy::log::debug!("{}: loading script {}", P::LANGUAGE, self.id.display());
-                        self.load_context(guard.clone(), handler_ctxt)
-                    }
-                };
-
-                let phrase = if assigned_shared_context.is_some() {
-                    "reloading"
-                } else {
-                    "loading"
-                };
-
-                if let Err(err) = result {
-                    handle_script_errors(
-                        guard,
-                        vec![err
-                            .with_script(self.id.display())
-                            .with_context(P::LANGUAGE)
-                            .with_context(phrase)]
-                        .into_iter(),
-                    );
-                    return false;
-                }
-
-                bevy::log::debug!(
-                    "{}: script {} successfully created or updated",
-                    P::LANGUAGE,
-                    self.id.display()
-                );
-
-                true
-            },
-        );
-
+               Self::create_or_update_script(&self.id, &self.content,
+                                             guard, handler_ctxt)
+            });
         // immediately run command for callback, but only if loading went fine
         if success {
             RunScriptCallback::<P>::new(
@@ -247,6 +258,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
         }
     }
 }
+
 
 /// Runs a callback on the script with the given ID if it exists
 pub struct RunScriptCallback<P: IntoScriptPluginParams> {
