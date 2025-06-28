@@ -133,7 +133,7 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
 pub(crate) type EventHandlerSystemState<'w, 's, P> = SystemState<(
     Local<'s, QueryState<(Entity, Ref<'w, ScriptComponent>)>>,
     crate::extractors::EventReaderScope<'s, ScriptCallbackEvent>,
-    WithWorldGuard<'w, 's, HandlerContext<'s, P>>,
+    WithWorldGuard<'w, 's, HandlerContext<'w, 's, P>>,
 )>;
 
 #[profiling::function]

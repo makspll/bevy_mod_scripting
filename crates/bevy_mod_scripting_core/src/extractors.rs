@@ -146,10 +146,11 @@ impl<T: Event> EventReaderScope<'_, T> {
     }
 }
 
+
 /// Context for systems which handle events for scripts
 #[derive(SystemParam)]
-pub struct HandlerContext<'s, P: IntoScriptPluginParams> {
-    // pub(crate) scripts: Query<'w, 's, &'static mut Script<P>>,
+pub struct HandlerContext<'w, 's, P: IntoScriptPluginParams> {
+    pub(crate) scripts: Query<'w, 's, &'static mut Script<P>>,
     /// Settings for callbacks
     pub(crate) callback_settings: ResScope<'s, CallbackSettings<P>>,
     /// Settings for loading contexts
@@ -159,10 +160,10 @@ pub struct HandlerContext<'s, P: IntoScriptPluginParams> {
     /// List of static scripts
     pub(crate) static_scripts: ResScope<'s, StaticScripts>,
     /// The asset server
-    pub(crate) asset_server: Res<'s, AssetServer>, // Not default.
+    pub(crate) asset_server: Res<'w, AssetServer>, // No Default.
 }
 
-impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
+impl<'w: 's, 's, P: IntoScriptPluginParams> HandlerContext<'w, 's, P> {
     /// Splits the handler context into its individual components.
     ///
     /// Useful if you are needing multiple resources from the handler context.
