@@ -191,37 +191,37 @@ the minimum and maximum corners.</p>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
-<tr><td><a href="./urect/height.html">height</a></td><td>Rectangle height (max.y - min.y).  # Examples  ```  # use bevy_math::URect;  let r = URect::new(0, 0, 5, 1); // w=5 h=1  assert_eq!(r.height(), 1);  `...</td></tr>
-<tr><td><a href="./urect/contains.html">contains</a></td><td>Check if a point lies within this rectangle, inclusive of its edges.  # Examples  ```  # use bevy_math::URect;  let r = URect::new(0, 0, 5, 1); // w=5 h=1  assert!(r.contains(r.center()));  assert!(r.contains(r.min));  assert!(r.contains(r.max));  ```</td></tr>
-<tr><td><a href="./urect/union_point.html">union_point</a></td><td>Build a new rectangle formed of the union of this rectangle and a point.  The union is the smallest...</td></tr>
-<tr><td><a href="./urect/from_corners.html">from_corners</a></td><td>Create a new rectangle from two corner points.  The two points do not need to be the minimum and/or...</td></tr>
-<tr><td><a href="./urect/union.html">union</a></td><td>Build a new rectangle formed of the union of this rectangle and another rectangle.  The union is th...</td></tr>
-<tr><td><a href="./urect/as_irect.html">as_irect</a></td><td>Returns self as [`IRect`] (i32)</td></tr>
-<tr><td><a href="./urect/as_rect.html">as_rect</a></td><td>Returns self as [`Rect`] (f32)</td></tr>
-<tr><td><a href="./urect/inflate.html">inflate</a></td><td>Create a new rectangle by expanding it evenly on all sides.  A positive expansion value produces a ...</td></tr>
-<tr><td><a href="./urect/intersect.html">intersect</a></td><td>Build a new rectangle formed of the intersection of this rectangle and another rectangle.  The inte...</td></tr>
 <tr><td><a href="./urect/from_center_half_size.html">from_center_half_size</a></td><td>Create a new rectangle from its center and half-size.  # Panics  This method panics if any of the c...</td></tr>
-<tr><td><a href="./urect/size.html">size</a></td><td>Rectangle size.  # Examples  ```  # use bevy_math::{URect, UVec2};  let r = URect::new(0, 0, 5, 1); // w=5 h=1  assert_eq!(r.size(), UVec2::new(5, 1));  `...</td></tr>
-<tr><td><a href="./urect/center.html">center</a></td><td>The center point of the rectangle.  # Rounding Behavior  If the (min + max) contains odd numbers th...</td></tr>
-<tr><td><a href="./urect/from_center_size.html">from_center_size</a></td><td>Create a new rectangle from its center and size.  # Rounding Behavior  If the size contains odd num...</td></tr>
-<tr><td><a href="./urect/half_size.html">half_size</a></td><td>Rectangle half-size.  # Rounding Behavior  If the full size contains odd numbers they will be round...</td></tr>
-<tr><td><a href="./urect/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./urect/new.html">new</a></td><td>Create a new rectangle from two corner points.  The two points do not need to be the minimum and/or...</td></tr>
-<tr><td><a href="./urect/width.html">width</a></td><td>Rectangle width (max.x - min.x).  # Examples  ```  # use bevy_math::URect;  let r = URect::new(0, 0, 5, 1); // w=5 h=1  assert_eq!(r.width(), 5);  `...</td></tr>
 <tr><td><a href="./urect/is_empty.html">is_empty</a></td><td>Check if the rectangle is empty.  # Examples  ```  # use bevy_math::{URect, UVec2};  let r = URect::from_corners(UVec2::ZERO, UVec2::new(0, 1)); // w=0 h=1  assert!(r.is_empty());  ```</td></tr>
-<tr><td><a href="./urect/assert_receiver_is_total_eq.html">assert_receiver_is_total_eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./urect/union.html">union</a></td><td>Build a new rectangle formed of the union of this rectangle and another rectangle.  The union is th...</td></tr>
+<tr><td><a href="./urect/from_corners.html">from_corners</a></td><td>Create a new rectangle from two corner points.  The two points do not need to be the minimum and/or...</td></tr>
+<tr><td><a href="./urect/size.html">size</a></td><td>Rectangle size.  # Examples  ```  # use bevy_math::{URect, UVec2};  let r = URect::new(0, 0, 5, 1); // w=5 h=1  assert_eq!(r.size(), UVec2::new(5, 1));  `...</td></tr>
 <tr><td><a href="./urect/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./urect/center.html">center</a></td><td>The center point of the rectangle.  # Rounding Behavior  If the (min + max) contains odd numbers th...</td></tr>
+<tr><td><a href="./urect/contains.html">contains</a></td><td>Check if a point lies within this rectangle, inclusive of its edges.  # Examples  ```  # use bevy_math::URect;  let r = URect::new(0, 0, 5, 1); // w=5 h=1  assert!(r.contains(r.center()));  assert!(r.contains(r.min));  assert!(r.contains(r.max));  ```</td></tr>
+<tr><td><a href="./urect/as_rect.html">as_rect</a></td><td>Returns self as [`Rect`] (f32)</td></tr>
+<tr><td><a href="./urect/assert_receiver_is_total_eq.html">assert_receiver_is_total_eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./urect/intersect.html">intersect</a></td><td>Build a new rectangle formed of the intersection of this rectangle and another rectangle.  The inte...</td></tr>
+<tr><td><a href="./urect/inflate.html">inflate</a></td><td>Create a new rectangle by expanding it evenly on all sides.  A positive expansion value produces a ...</td></tr>
+<tr><td><a href="./urect/union_point.html">union_point</a></td><td>Build a new rectangle formed of the union of this rectangle and a point.  The union is the smallest...</td></tr>
+<tr><td><a href="./urect/height.html">height</a></td><td>Rectangle height (max.y - min.y).  # Examples  ```  # use bevy_math::URect;  let r = URect::new(0, 0, 5, 1); // w=5 h=1  assert_eq!(r.height(), 1);  `...</td></tr>
+<tr><td><a href="./urect/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./urect/width.html">width</a></td><td>Rectangle width (max.x - min.x).  # Examples  ```  # use bevy_math::URect;  let r = URect::new(0, 0, 5, 1); // w=5 h=1  assert_eq!(r.width(), 5);  `...</td></tr>
+<tr><td><a href="./urect/as_irect.html">as_irect</a></td><td>Returns self as [`IRect`] (i32)</td></tr>
+<tr><td><a href="./urect/new.html">new</a></td><td>Create a new rectangle from two corner points.  The two points do not need to be the minimum and/or...</td></tr>
+<tr><td><a href="./urect/half_size.html">half_size</a></td><td>Rectangle half-size.  # Rounding Behavior  If the full size contains odd numbers they will be round...</td></tr>
+<tr><td><a href="./urect/from_center_size.html">from_center_size</a></td><td>Create a new rectangle from its center and size.  # Rounding Behavior  If the size contains odd num...</td></tr>
 </tbody></table>
 </div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/rect/inflate.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/rect/center.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/urect/height.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/urect/from_center_half_size.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -231,11 +231,11 @@ the minimum and maximum corners.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/rect/inflate.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/rect/center.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/urect/height.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/urect/from_center_half_size.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
