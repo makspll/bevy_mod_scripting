@@ -106,14 +106,14 @@ impl StaticScripts {
     }
 
     /// Removes a static script from the collection, returning `true` if the script was in the collection, `false` otherwise
-    pub fn remove<S: Into<Handle<ScriptAsset>>>(&mut self, script: S) -> bool {
-        self.scripts.remove(&script.into())
+    pub fn remove(&mut self, script_id: &ScriptId) -> bool {
+        self.scripts.extract_if(|handle| handle.id() == *script_id).next().is_some()
     }
 
     /// Checks if a static script is in the collection
     /// Returns `true` if the script is in the collection, `false` otherwise
-    pub fn contains<S: Into<Handle<ScriptAsset>>>(&self, script: S) -> bool {
-        self.scripts.contains(&script.into())
+    pub fn contains(&self, script_id: &ScriptId) -> bool {
+        self.scripts.iter().any(|handle| handle.id() == *script_id)
     }
 
     /// Returns an iterator over the static scripts

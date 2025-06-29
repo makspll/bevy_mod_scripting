@@ -15,7 +15,7 @@ use bevy::{
     log::{debug, info, trace, warn},
     prelude::{
         Commands, Event, EventReader, EventWriter, IntoSystemConfigs, IntoSystemSetConfigs, Res,
-        ResMut, Added, Query, Local, Handle, AssetServer,
+        ResMut, Added, Query, Local, Handle, AssetServer, Entity,
     },
     reflect::TypePath,
     utils::hashbrown::HashMap,
@@ -139,7 +139,7 @@ impl AssetLoader for ScriptAssetLoader {
 pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
     mut events: EventReader<AssetEvent<ScriptAsset>>,
     script_assets: Res<Assets<ScriptAsset>>,
-    static_scripts: Res<StaticScripts>,
+    mut static_scripts: ResMut<StaticScripts>,
     asset_server: Res<AssetServer>,
     mut commands: Commands,
 ) {
@@ -179,8 +179,9 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
                 }
             }
             AssetEvent::Removed{ id } => {
-                info!("{}: Deleting Script: {:?}", P::LANGUAGE, id);
-                commands.queue(DeleteScript::<P>::new(id.clone()));
+                if static_scripts.remove(id) {
+                    info!("{}: Removing static script {:?}", P::LANGUAGE, id);
+                }
             }
             AssetEvent::Unused { id } => {
             }
@@ -189,19 +190,19 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
 }
 
 pub(crate) fn eval_script<P: IntoScriptPluginParams>(
-    script_comps: Query<&ScriptComponent, Added<ScriptComponent>>,
-    mut script_queue: Local<VecDeque<Handle<ScriptAsset>>>,
+    script_comps: Query<(Entity, &ScriptComponent), Added<ScriptComponent>>,
+    mut script_queue: Local<VecDeque<(Entity, Handle<ScriptAsset>)>>,
     script_assets: Res<Assets<ScriptAsset>>,
     asset_server: Res<AssetServer>,
     mut commands: Commands,
     ) {
-    for script_comp in &script_comps {
+    for (id, script_comp) in &script_comps {
         for handle in &script_comp.0 {
-            script_queue.push_back(handle.clone_weak());
+            script_queue.push_back((id, handle.clone_weak()));
         }
     }
     while ! script_queue.is_empty() {
-        let script_ready = script_queue.front().map(|script_id| match asset_server.load_state(&*script_id) {
+        let script_ready = script_queue.front().map(|(_, script_id)| match asset_server.load_state(&*script_id) {
             LoadState::Failed(e) => {
                 warn!("Failed to load script {}", script_id.display());
                 true
@@ -221,10 +222,10 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
         //     LoadState::Loaded => true,
         //     _ => false
         // }) {
-        if let Some(script_id) = script_queue.pop_front() {
+        if let Some((id, script_id)) = script_queue.pop_front() {
             if let Some(asset) = script_assets.get(&script_id) {
                 if asset.language == P::LANGUAGE {
-                    commands.queue(CreateOrUpdateScript::<P>::new(
+                    commands.entity(id).queue(CreateOrUpdateScript::<P>::new(
                         script_id,
                         asset.content.clone(),
                     ));

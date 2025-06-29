@@ -49,16 +49,15 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
         )
         .apply(world);
 
-        todo!()
-        // let mut scripts = world.get_resource_or_init::<Scripts<P>>();
-        // if scripts.remove(self.id.clone()) {
-        //     debug!("Deleted script with id: {}", self.id);
-        // } else {
-        //     bevy::log::error!(
-        //         "Attempted to delete script with id: {} but it does not exist, doing nothing!",
-        //         self.id
-        //     );
-        // }
+        let mut scripts = world.get_resource_or_init::<StaticScripts>();
+        if scripts.remove(&self.id) {
+            debug!("Deleted script with id: {}", self.id);
+        } else {
+            bevy::log::error!(
+                "Attempted to delete script with id: {} but it does not exist, doing nothing!",
+                self.id
+            );
+        }
     }
 }
 
@@ -136,7 +135,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     }
 
     pub(crate) fn create_or_update_script(
-        entity: Entity,
+        entity: Option<Entity>,
         id: &Handle<ScriptAsset>,
         content: &[u8],
         guard: WorldGuard,
@@ -280,33 +279,34 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
 #[profiling::all_functions]
 impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
     fn apply(self, world: &mut bevy::prelude::World) {
-        todo!()
-        // let result = with_handler_system_state(
-        //     world,
-        //     |guard, handler_ctxt: &mut HandlerContext<P>| {
-        //        Self::create_or_update_script(&self.id, &self.content,
-        //                                      guard, handler_ctxt)
-        //     });
+        // todo!()
+        let result = with_handler_system_state(
+            world,
+            |guard, handler_ctxt: &mut HandlerContext<P>| {
+               Self::create_or_update_script(None, &self.id, &self.content,
+                                             guard, handler_ctxt)
+            });
 
-        // // immediately run command for callback, but only if loading went fine
-        // match result {
-        //     Ok(maybe_context) => {
-        //         let maybe_entity = maybe_context.map(|context|
-        //             world.spawn(Script {
-        //                 contexts: [(self.id.id(), context)].collect()
-        //             }).id());
+        // immediately run command for callback, but only if loading went fine
+        match result {
+            Ok(_maybe_script) => {
+                assert!(world.resource::<crate::ContextLoadingSettings<P>>().assignment_strategy.is_global());
+                // let maybe_entity = maybe_context.map(|context|
+                //     world.spawn(Script {
+                //         contexts: [(self.id.id(), context)].collect()
+                //     }).id());
 
-        //         RunScriptCallback::<P>::new(
-        //             self.id,
-        //             maybe_entity.unwrap_or(Entity::from_raw(0)),
-        //             OnScriptLoaded::into_callback_label(),
-        //             vec![],
-        //             false,
-        //         )
-        //             .apply(world)
-        //     }
-        //     Err(_) => ()
-        // }
+                RunScriptCallback::<P>::new(
+                    self.id,
+                    Entity::from_raw(0),
+                    OnScriptLoaded::into_callback_label(),
+                    vec![],
+                    false,
+                )
+                    .apply(world)
+            }
+            Err(_) => ()
+        }
     }
 }
 
@@ -316,18 +316,22 @@ impl<P: IntoScriptPluginParams> EntityCommand for CreateOrUpdateScript<P> {
         let result = with_handler_system_state(
             world,
             |guard, handler_ctxt: &mut HandlerContext<P>| {
-               Self::create_or_update_script(entity, &self.id, &self.content,
+               Self::create_or_update_script(Some(entity), &self.id, &self.content,
                                              guard, handler_ctxt)
             });
 
         // immediately run command for callback, but only if loading went fine
         match result {
             Ok(maybe_script) => {
-                let maybe_entity = maybe_script.map(|script| world.spawn(script).id());
+                // if ! world.resource::<crate::ContextLoadingSettings<P>>().assignment_strategy.is_global() {
+                if let Some(script) = maybe_script {
+                    world.entity_mut(entity).insert(script);
+                }
+                // }
 
                 RunScriptCallback::<P>::new(
                     self.id,
-                    maybe_entity.unwrap_or(Entity::from_raw(0)),
+                    entity,
                     OnScriptLoaded::into_callback_label(),
                     vec![],
                     false,
@@ -465,7 +469,7 @@ impl RemoveStaticScript {
 impl Command for RemoveStaticScript {
     fn apply(self, world: &mut bevy::prelude::World) {
         let mut static_scripts = world.get_resource_or_init::<StaticScripts>();
-        static_scripts.remove(self.id);
+        static_scripts.remove(&self.id.id());
     }
 }
 

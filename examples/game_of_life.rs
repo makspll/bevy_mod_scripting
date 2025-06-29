@@ -17,6 +17,7 @@ use bevy::{
 use bevy_console::{make_layer, AddConsoleCommand, ConsoleCommand, ConsoleOpen, ConsolePlugin};
 use bevy_mod_scripting::{BMSPlugin, ScriptFunctionsPlugin};
 use bevy_mod_scripting_core::{
+    ConfigureScriptPlugin,
     asset::ScriptAsset,
     bindings::{
         function::namespace::{GlobalNamespace, NamespaceBuilder},
@@ -132,6 +133,7 @@ pub enum GameOfLifeCommand {
 // ------------- GAME OF LIFE
 fn game_of_life_app(app: &mut App) -> &mut App {
     app.insert_resource(Time::<Fixed>::from_seconds(UPDATE_FREQUENCY.into()))
+        // .add_plugins(BMSPlugin.set(LuaScriptingPlugin::default().enable_context_sharing()))
         .add_plugins(BMSPlugin)
         .register_type::<LifeState>()
         .register_type::<Settings>()
