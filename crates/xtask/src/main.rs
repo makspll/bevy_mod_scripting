@@ -225,7 +225,7 @@ impl std::fmt::Display for Features {
             if i > 0 {
                 write!(f, ",")?;
             }
-            write!(f, "{}", feature)?;
+            write!(f, "{feature}")?;
         }
         std::result::Result::Ok(())
     }
@@ -242,7 +242,7 @@ impl From<String> for Features {
             .split(',')
             .map(|f| {
                 Feature::from_str(f).unwrap_or_else(|_| {
-                    eprintln!("Unknown feature: '{}'", f);
+                    eprintln!("Unknown feature: '{f}'");
                     std::process::exit(1);
                 })
             })
@@ -892,17 +892,18 @@ impl Xtasks {
         dir: Option<&Path>,
         capture_streams_in_output: bool,
     ) -> Result<Output> {
-        let coverage_mode = app_settings
-            .coverage
-            .then_some("with coverage")
-            .unwrap_or_default();
+        let coverage_mode = if app_settings.coverage {
+            "with coverage"
+        } else {
+            Default::default()
+        };
 
         info!("Running workspace command {coverage_mode}: {command}");
 
         let mut args = vec![];
 
         if let Some(ref toolchain) = app_settings.override_toolchain {
-            args.push(format!("+{}", toolchain));
+            args.push(format!("+{toolchain}"));
         }
 
         args.push(command.to_owned());
@@ -1128,7 +1129,7 @@ impl Xtasks {
                 "clone",
                 "https://github.com/bevyengine/bevy",
                 "--branch",
-                format!("v{}", bevy_version).as_str(),
+                format!("v{bevy_version}").as_str(),
                 "--depth",
                 "1",
                 ".",
@@ -1150,7 +1151,7 @@ impl Xtasks {
             &bevy_repo_app_settings,
             "git",
             "Failed to checkout bevy tag",
-            vec!["checkout", format!("v{}", bevy_version).as_str()],
+            vec!["checkout", format!("v{bevy_version}").as_str()],
             Some(&bevy_dir),
         )?;
 
@@ -1376,7 +1377,11 @@ impl Xtasks {
 
         let testbed = format!(
             "{os}{}",
-            github_token.is_some().then_some("-gha").unwrap_or_default()
+            if github_token.is_some() {
+                "-gha"
+            } else {
+                Default::default()
+            }
         );
 
         // also figure out if we're on a fork
@@ -1988,7 +1993,7 @@ fn pop_cargo_env() -> Result<()> {
 
     for (key, value) in env.iter() {
         if key.starts_with("CARGO_") && !exclude_list.contains(&(key.as_str())) {
-            let new_key = format!("MAIN_{}", key);
+            let new_key = format!("MAIN_{key}");
             std::env::set_var(new_key, value);
             std::env::remove_var(key);
         }
@@ -2023,7 +2028,7 @@ fn try_main() -> Result<()> {
 
 fn main() {
     if let Err(e) = try_main() {
-        eprintln!("{:?}", e);
+        eprintln!("{e:?}");
         std::process::exit(1);
     }
 }
