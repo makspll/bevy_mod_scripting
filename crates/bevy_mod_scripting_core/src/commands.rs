@@ -446,7 +446,7 @@ mod test {
         .init_resource::<StaticScripts>()
         .insert_resource(CallbackSettings::<DummyPlugin> {
             callback_handler: |_, _, _, callback, c, _, _| {
-                c.push_str(format!(" callback-ran-{}", callback).as_str());
+                c.push_str(format!(" callback-ran-{callback}").as_str());
                 Ok(ScriptValue::Unit)
             },
         })
@@ -480,7 +480,7 @@ mod test {
         assert_eq!(id, script.id);
         let found_context = script.context.lock();
 
-        assert_eq!(*context, *found_context, "{}", message);
+        assert_eq!(*context, *found_context, "{message}");
     }
 
     fn assert_response_events(
@@ -496,13 +496,12 @@ mod test {
         assert_eq!(
             responses.len(),
             expected.len(),
-            "Incorrect amount of events received {}",
-            context
+            "Incorrect amount of events received {context}"
         );
         for (a, b) in responses.iter().zip(expected.iter()) {
-            assert_eq!(a.label, b.label, "{}", context);
-            assert_eq!(a.script, b.script, "{}", context);
-            assert_eq!(a.response, b.response, "{}", context);
+            assert_eq!(a.label, b.label, "{context}");
+            assert_eq!(a.script, b.script, "{context}");
+            assert_eq!(a.response, b.response, "{context}");
         }
     }
 

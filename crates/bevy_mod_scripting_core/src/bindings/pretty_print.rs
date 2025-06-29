@@ -90,7 +90,7 @@ impl ReflectReferencePrinter {
 
             if let Some(tail_type_id) = tail_type_id {
                 let type_path = tail_type_id.display_with_world(world);
-                pretty_path.push_str(&format!(" -> {}", type_path));
+                pretty_path.push_str(&format!(" -> {type_path}"));
             }
         } else {
             Self::pretty_print_base(&self.reference.base, None, &mut pretty_path);
@@ -111,7 +111,7 @@ impl ReflectReferencePrinter {
                         self.pretty_print_value_inner(r, &mut output);
                     })
                     .unwrap_or_else(|e| {
-                        output.push_str(&format!("<Error in printing: {}>", e));
+                        output.push_str(&format!("<Error in printing: {e}>"));
                     });
             }
             None => {
@@ -131,12 +131,12 @@ impl ReflectReferencePrinter {
         };
 
         let base_kind = match base.base_id {
-            ReflectBase::Component(e, _) => format!("Component on entity {}", e),
+            ReflectBase::Component(e, _) => format!("Component on entity {e}"),
             ReflectBase::Resource(_) => "Resource".to_owned(),
-            ReflectBase::Owned(ref id) => format!("Allocation({})", id),
+            ReflectBase::Owned(ref id) => format!("Allocation({id})"),
         };
 
-        out.push_str(&format!("{}({})", base_kind, type_path));
+        out.push_str(&format!("{base_kind}({type_path})"));
     }
 
     /// Pretty prints a value of an opaque type.
@@ -317,7 +317,7 @@ impl ReflectReferencePrinter {
             // for function_reflection from bevy or other feature gated things
             #[allow(unreachable_patterns)]
             _ => {
-                output.push_str(&format!("{:?}", v));
+                output.push_str(&format!("{v:?}"));
             }
         }
     }
@@ -414,7 +414,7 @@ impl DisplayWithWorld for ComponentId {
             .map(|info| info.name());
 
         match component_name {
-            Some(n) => format!("ComponentOrResource({})", n),
+            Some(n) => format!("ComponentOrResource({n})"),
             None => "ComponentOrResource(<Unknown>)".to_owned(),
         }
     }
@@ -450,14 +450,14 @@ impl DisplayWithWorld for ReflectAccessId {
                     if let Some(allocation) = allocator.get(&allocation_id) {
                         let ptr = allocation.get_ptr();
                         let val = unsafe { &*ptr };
-                        let o = format!("Allocation({:?})", val);
+                        let o = format!("Allocation({val:?})");
                         unsafe { world.release_access(raid) };
                         o
                     } else {
-                        format!("Allocation({})", allocation_id)
+                        format!("Allocation({allocation_id})")
                     }
                 } else {
-                    format!("Allocation({})", allocation_id)
+                    format!("Allocation({allocation_id})")
                 }
             }
             super::access_map::ReflectAccessKind::Global => "Global".to_owned(),
@@ -491,7 +491,7 @@ impl DisplayWithWorld for TypeId {
     }
 
     fn display_without_world(&self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 }
 #[profiling::all_functions]
@@ -687,7 +687,7 @@ mod test {
         let type_id = TypeId::of::<usize>();
         assert_eq!(type_id.display_with_world(world.clone()), "usize");
         assert_eq!(type_id.display_value_with_world(world.clone()), "usize");
-        assert_eq!(type_id.display_without_world(), format!("{:?}", type_id));
+        assert_eq!(type_id.display_without_world(), format!("{type_id:?}"));
 
         let type_id = TypeId::of::<FakeType>();
         assert_eq!(type_id.display_with_world(world.clone()), "Unknown Type");
@@ -695,7 +695,7 @@ mod test {
             type_id.display_value_with_world(world.clone()),
             "Unknown Type"
         );
-        assert_eq!(type_id.display_without_world(), format!("{:?}", type_id));
+        assert_eq!(type_id.display_without_world(), format!("{type_id:?}"));
     }
 
     #[test]
@@ -729,7 +729,7 @@ mod test {
                 type_id,
             }
             .display_without_world(),
-            format!("Allocation(0)({:?})", type_id)
+            format!("Allocation(0)({type_id:?})")
         );
     }
 
@@ -763,7 +763,7 @@ mod test {
 
         assert_eq!(
             reflect_reference.display_without_world(),
-            format!("<Reference to Allocation({id})({:?})>", type_id)
+            format!("<Reference to Allocation({id})({type_id:?})>")
         );
     }
 

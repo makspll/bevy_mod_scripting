@@ -40,7 +40,7 @@ fn visit_dirs(dir: &Path, cb: &mut dyn FnMut(&DirEntry)) -> io::Result<()> {
             }
         }
     } else {
-        panic!("Not a directory: {:?}", dir);
+        panic!("Not a directory: {dir:?}");
     }
     Ok(())
 }
