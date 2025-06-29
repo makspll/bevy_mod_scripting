@@ -22,7 +22,7 @@ use error::ScriptError;
 use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent};
 use handler::{CallbackSettings, HandlerFn};
 use runtime::{initialize_runtime, Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
-use script::{ScriptComponent, ScriptId, StaticScripts, SharedContext};
+use script::{ScriptComponent, ScriptId, StaticScripts, SharedContext, Scripts};
 
 pub mod asset;
 pub mod bindings;
@@ -129,6 +129,7 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
                 context_initializers: self.context_initializers.clone(),
                 context_pre_handling_initializers: self.context_pre_handling_initializers.clone(),
             })
+            .init_resource::<Scripts<P>>()
             .init_resource::<SharedContext<P>>();
 
         register_script_plugin_systems::<P>(app);

@@ -30,7 +30,7 @@ use crate::{
     event::{CallbackLabel, IntoCallbackLabel},
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{ScriptId, StaticScripts, Script, SharedContext, DisplayProxy},
+    script::{ScriptId, StaticScripts, SharedContext, DisplayProxy, Scripts, ScriptContextProvider},
     IntoScriptPluginParams,
 };
 
@@ -150,8 +150,6 @@ impl<T: Event> EventReaderScope<'_, T> {
 /// Context for systems which handle events for scripts
 #[derive(SystemParam)]
 pub struct HandlerContext<'s, P: IntoScriptPluginParams> {
-    // Query for `Script<P>`s
-    // pub scripts: Query<'w, 's, &'static mut Script<P>>,
     /// Settings for callbacks
     pub(crate) callback_settings: ResScope<'s, CallbackSettings<P>>,
     /// Settings for loading contexts
@@ -160,10 +158,10 @@ pub struct HandlerContext<'s, P: IntoScriptPluginParams> {
     pub(crate) runtime_container: ResScope<'s, RuntimeContainer<P>>,
     /// List of static scripts
     pub(crate) static_scripts: ResScope<'s, StaticScripts>,
+    /// List of static scripts
+    pub(crate) scripts: ResScope<'s, Scripts<P>>,
     /// Shared context if it exists
     pub(crate) shared_context: ResScope<'s, SharedContext<P>>,
-    // The asset server
-    // pub(crate) asset_server: ResScope<'w, AssetServer>, // No Default.
 }
 
 impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
@@ -228,20 +226,9 @@ impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
         // find script
-        let context = if self.context_loading_settings.assignment_strategy.is_global() {
-            let Some(context) = self.shared_context.as_ref() else {
-                return Err(InteropError::missing_context(script_id.clone()).into());
-                };
-            context
-        } else {
-            todo!()
+        let Some(context) = self.shared_context.get(Some(entity), &script_id.id(), None) else {
+            return Err(InteropError::missing_context(script_id.clone()).into());
         };
-        // let mut context = self.scripts
-        //                  .get(entity)
-        //                  .ok()
-        //                  .and_then(|script|
-        //                            script.contexts.get(&script_id.id()))
-        //                  .ok_or_else(|| InteropError::missing_script(script_id.clone()))?;
 
         // call the script
         let handler = self.callback_settings.callback_handler;

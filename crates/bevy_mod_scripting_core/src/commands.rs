@@ -12,10 +12,10 @@ use crate::{
     },
     extractors::{with_handler_system_state, HandlerContext, WithWorldGuard},
     handler::{handle_script_errors, send_callback_response},
-    script::{Script, ScriptId, StaticScripts, DisplayProxy},
+    script::{ScriptId, StaticScripts, DisplayProxy, ScriptContextProvider},
     IntoScriptPluginParams,
 };
-use bevy::{asset::Handle, ecs::entity::Entity, log::debug, prelude::{EntityCommand, Command}};
+use bevy::{asset::Handle, ecs::entity::Entity, log::{warn, debug}, prelude::{EntityCommand, Command}};
 use parking_lot::Mutex;
 use std::{marker::PhantomData, sync::Arc};
 
@@ -139,7 +139,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         id: &Handle<ScriptAsset>,
         content: &[u8],
         guard: WorldGuard,
-        handler_ctxt: &mut HandlerContext<P>) -> Result<Option<Script<P>>, ScriptError> {
+        handler_ctxt: &mut HandlerContext<P>) -> Result<(), ScriptError> {
         // let (is_new_script, is_new_context)= {
         //     let maybe_entity = handler_ctxt.scripts.get(entity);
         //     let has_context = maybe_entity.map(|script| script.contexts.contains_key(&id.id())).unwrap_or(false);
@@ -189,7 +189,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         // };
 
         let phrase;
-        let result = match handler_ctxt.shared_context.clone() {
+        let result = match handler_ctxt.shared_context.get(entity, &id.id(), None) {
             Some(context) => {
                 bevy::log::debug!("{}: reloading script {}", P::LANGUAGE, id.display());
                 // if is_new_script {
@@ -247,8 +247,8 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         match result {
             Ok(maybe_context) => {
                 if let Some(context) = maybe_context {
-                    if assignment_strategy.is_global() && handler_ctxt.shared_context.is_none() {
-                        **handler_ctxt.shared_context = Some(Arc::new(Mutex::new(context)));
+                    if !handler_ctxt.shared_context.insert(entity, &id.id(), None, context) {
+                        warn!("Unable to insert script context for entity {:?} script {}.", entity, id.display());
                     }
                 }
 
@@ -257,7 +257,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
                     P::LANGUAGE,
                     id.display()
                 );
-                Ok(None)// none until individual context support added.
+                Ok(())// none until individual context support added.
             }
             Err(err) => {
                 handle_script_errors(
@@ -289,12 +289,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
 
         // immediately run command for callback, but only if loading went fine
         match result {
-            Ok(_maybe_script) => {
-                assert!(world.resource::<crate::ContextLoadingSettings<P>>().assignment_strategy.is_global());
-                // let maybe_entity = maybe_context.map(|context|
-                //     world.spawn(Script {
-                //         contexts: [(self.id.id(), context)].collect()
-                //     }).id());
+            Ok(_) => {
 
                 RunScriptCallback::<P>::new(
                     self.id,
@@ -323,11 +318,6 @@ impl<P: IntoScriptPluginParams> EntityCommand for CreateOrUpdateScript<P> {
         // immediately run command for callback, but only if loading went fine
         match result {
             Ok(maybe_script) => {
-                // if ! world.resource::<crate::ContextLoadingSettings<P>>().assignment_strategy.is_global() {
-                if let Some(script) = maybe_script {
-                    world.entity_mut(entity).insert(script);
-                }
-                // }
 
                 RunScriptCallback::<P>::new(
                     self.id,

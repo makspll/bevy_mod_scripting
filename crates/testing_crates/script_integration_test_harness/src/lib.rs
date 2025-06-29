@@ -34,7 +34,7 @@ use bevy_mod_scripting_core::{
     event::{IntoCallbackLabel, ScriptErrorEvent},
     extractors::{HandlerContext, WithWorldGuard},
     handler::handle_script_errors,
-    script::{ScriptComponent, ScriptId, DisplayProxy},
+    script::{ScriptComponent, ScriptId, DisplayProxy, ScriptContextProvider},
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams, ScriptingPlugin,
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
@@ -477,7 +477,7 @@ where
         //         .scripts.get(entity).ok()
         //         .and_then(|script| script.contexts.get(&script_id))
         //         .ok_or_else(|| String::from("Could not find script"))?;
-            let ctxt_arc = context.shared_context().clone().unwrap();
+            let ctxt_arc = context.shared_context().get(Some(entity), &script_id, None).cloned().unwrap();
             let mut ctxt_locked = ctxt_arc.lock();
 
             let runtime = &context.runtime_container().runtime;

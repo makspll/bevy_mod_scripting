@@ -160,7 +160,7 @@ name = "game_of_life"
 path = "examples/game_of_life.rs"
 required-features = [
     "lua54",
-    "rhai",
+    # "rhai",
     "bevy/file_watcher",
     "bevy/multi_threaded",
 ]

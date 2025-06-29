@@ -18,7 +18,7 @@ use crate::{
     extractors::get_all_access_ids,
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{ScriptId, Script},
+    script::{ScriptId, Scripts, ScriptContextProvider},
     IntoScriptPluginParams,
 };
 use bevy::{
@@ -199,7 +199,7 @@ impl ScriptSystemBuilder {
 }
 
 struct DynamicHandlerContext<'w, P: IntoScriptPluginParams> {
-    // scripts: &'w QueryState<&'static Script<P>>,
+    scripts: &'w Scripts<P>,
     callback_settings: &'w CallbackSettings<P>,
     context_loading_settings: &'w ContextLoadingSettings<P>,
     runtime_container: &'w RuntimeContainer<P>,
@@ -225,7 +225,6 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
             .resource_id::<RuntimeContainer<P>>()
             .expect("RuntimeContainer resource not found");
 
-        access.add_component_read(world.component_id::<Script<P>>().unwrap());
         access.add_resource_read(callback_settings_res_id);
         access.add_resource_read(context_loading_settings_res_id);
         access.add_resource_read(runtime_container_res_id);
@@ -240,6 +239,9 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
     pub fn get_param(system: &UnsafeWorldCell<'w>) -> Self {
         unsafe {
             Self {
+                scripts: system
+                    .get_resource()
+                    .expect("Scripts resource not found"),
                 callback_settings: system
                     .get_resource()
                     .expect("CallbackSettings resource not found"),
@@ -261,20 +263,23 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
         entity: Entity,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
-        script_component_id: ComponentId,
     ) -> Result<ScriptValue, ScriptError> {
         // find script
 
-        let access = ReflectAccessId::for_component_id(script_component_id);
+        // let access = ReflectAccessId::for_component_id(script_component_id);
         // It'd be nice to have the component id for Script<P> somewhere.
-        let context = if guard.claim_read_access(access) {
-            let world = guard.as_unsafe_world_cell_readonly()?;
-            let world = unsafe { world.world() };
-            let maybe_context = world.get::<Script<P>>(entity).and_then(|script| script.contexts.get(&script_id.id())).map(|context| context.clone());
-            unsafe { guard.release_access(access) };
-            maybe_context.ok_or_else(||InteropError::missing_script(script_id.clone()))?
-        } else {
-            return Err(InteropError::missing_script(script_id.clone()).into());
+        // let context = if guard.claim_read_access(access) {
+            todo!();
+            // let world = guard.as_unsafe_world_cell_readonly()?;
+            // let world = unsafe { world.world() };
+            // let maybe_context = world.get::<Script<P>>(entity).and_then(|script| script.contexts.get(&script_id.id())).map(|context| context.clone());
+            // unsafe { guard.release_access(access) };
+            // maybe_context.ok_or_else(||InteropError::missing_script(script_id.clone()))?
+        // } else {
+        //     return Err(InteropError::missing_script(script_id.clone()).into());
+        // };
+        let Some(context) = self.scripts.get(Some(entity), &script_id.id(), None) else {
+            return Err(InteropError::missing_context(script_id.clone()).into());
         };
 
         // call the script
@@ -510,7 +515,6 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             Entity::from_raw(0),
             payload,
             guard.clone(),
-            world.components().component_id::<Script<P>>().expect("Script<P> component id"),
         );
 
         // TODO: emit error events via commands, maybe accumulate in state instead and use apply
