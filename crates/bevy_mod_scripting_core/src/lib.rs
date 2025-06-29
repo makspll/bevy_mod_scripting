@@ -128,12 +128,13 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
                 assignment_strategy: self.context_assignment_strategy,
                 context_initializers: self.context_initializers.clone(),
                 context_pre_handling_initializers: self.context_pre_handling_initializers.clone(),
-            });
-        if self.context_assignment_strategy.is_global() {
-            app.init_resource::<ScriptContext<P>>();
-        } else {
-            app.insert_resource(ScriptContext::<P>::Entity(EntityContext::default()));
-        }
+            })
+            .insert_resource(
+                if self.context_assignment_strategy.is_global() {
+                    ScriptContext::<P>::shared()
+                } else {
+                    ScriptContext::<P>::per_entity()
+                });
 
         register_script_plugin_systems::<P>(app);
 

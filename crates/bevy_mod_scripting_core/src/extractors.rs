@@ -224,7 +224,7 @@ impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
         // find script
-        let Some(context) = self.script_context.get(Some(entity), &script_id.id(), None) else {
+        let Some(context) = self.script_context.get(Some(entity), &script_id.id(), &None) else {
             return Err(InteropError::missing_context(script_id.clone()).into());
         };
 

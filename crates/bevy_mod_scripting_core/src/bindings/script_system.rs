@@ -278,7 +278,7 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
         // } else {
         //     return Err(InteropError::missing_script(script_id.clone()).into());
         // };
-        let Some(context) = self.script_context.get(Some(entity), &script_id.id(), None) else {
+        let Some(context) = self.script_context.get(Some(entity), &script_id.id(), &None) else {
             return Err(InteropError::missing_context(script_id.clone()).into());
         };
 

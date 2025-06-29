@@ -459,7 +459,7 @@ where
         let mut handler_ctxt = state.get_mut(app.world_mut());
         let (guard, context) = handler_ctxt.get_mut();
 
-        let ctxt_arc = context.script_context().get(Some(entity), &script_id, None).cloned().unwrap();
+        let ctxt_arc = context.script_context().get(Some(entity), &script_id, &None).cloned().unwrap();
         let mut ctxt_locked = ctxt_arc.lock();
 
         let runtime = &context.runtime_container().runtime;
