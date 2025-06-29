@@ -12,6 +12,7 @@ use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc, fmt};
 pub type ScriptId = AssetId<ScriptAsset>;
 
 /// Display the path of a script or its asset ID.
+#[doc(hidden)]
 pub struct HandleDisplay<'a, T: Asset>(&'a Handle<T>);
 
 impl<'a, A: Asset> fmt::Display for HandleDisplay<'a, A> {
@@ -94,7 +95,8 @@ pub enum ScriptContext<P: IntoScriptPluginParams> {
     Shared(SharedContext<P>),
     /// One script context per entity
     ///
-    /// Stores by entity or as a shared context
+    /// Stores context by entity with a shared context as a last resort when no
+    /// entity is provided.
     Entity(EntityContext<P>, SharedContext<P>)
 }
 
