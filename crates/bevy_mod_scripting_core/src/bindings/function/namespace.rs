@@ -50,7 +50,7 @@ impl Namespace {
     pub fn prefix(self) -> Cow<'static, str> {
         match self {
             Namespace::Global => Cow::Borrowed(""),
-            Namespace::OnType(type_id) => Cow::Owned(format!("{:?}::", type_id)),
+            Namespace::OnType(type_id) => Cow::Owned(format!("{type_id:?}::")),
         }
     }
 

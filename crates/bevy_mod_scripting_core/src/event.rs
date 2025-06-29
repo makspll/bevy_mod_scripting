@@ -302,7 +302,7 @@ mod test {
             '|', '\\', ':', ';', '"', '\'', '<', '>', ',', '.', '?', '/', '`', '~',
         ];
         bad_chars.iter().for_each(|char| {
-            assert_eq!(super::CallbackLabel::new(&format!("bad{}", char)), None);
+            assert_eq!(super::CallbackLabel::new(&format!("bad{char}")), None);
         });
     }
 
@@ -314,7 +314,7 @@ mod test {
             ',', '.', '?', '/', '`', '~',
         ];
         bad_chars.iter().for_each(|char| {
-            assert_eq!(super::CallbackLabel::new(&format!("{}bad", char)), None);
+            assert_eq!(super::CallbackLabel::new(&format!("{char}bad")), None);
         });
     }
 

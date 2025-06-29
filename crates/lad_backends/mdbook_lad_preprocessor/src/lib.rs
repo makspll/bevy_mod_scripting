@@ -60,7 +60,7 @@ impl LADPreprocessor {
             .unwrap_or_default()
             .with_extension("");
 
-        log::debug!("Parent path: {:?}", parent_path);
+        log::debug!("Parent path: {parent_path:?}");
 
         let new_chapter = Section::new(
             parent_path,
@@ -91,7 +91,7 @@ impl Preprocessor for LADPreprocessor {
         let mut errors = Vec::new();
         let options = Options::from(context);
 
-        log::debug!("Options: {:?}", options);
+        log::debug!("Options: {options:?}");
         OPTIONS
             .set(options)
             .map_err(|_| mdbook::errors::Error::msg("could not initialize options"))?;
@@ -169,7 +169,7 @@ impl Preprocessor for LADPreprocessor {
         if !errors.is_empty() {
             // return on first error
             for error in errors {
-                log::error!("{}", error);
+                log::error!("{error}");
                 Err(error)?;
             }
         }

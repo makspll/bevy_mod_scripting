@@ -83,8 +83,7 @@ fn test_on_example_ladfile() {
         let book_file = book_dir.join(relative_path);
         assert!(
             book_files.contains(&book_file),
-            "File not found: {:?}",
-            book_file
+            "File not found: {book_file:?}"
         );
         let expected_content =
             std::fs::read_to_string(&expected_file).expect("failed to read file");
