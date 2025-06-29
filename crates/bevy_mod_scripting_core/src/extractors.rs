@@ -30,7 +30,7 @@ use crate::{
     event::{CallbackLabel, IntoCallbackLabel},
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{ScriptId, StaticScripts, SharedContext, DisplayProxy, Scripts, ScriptContextProvider},
+    script::{ScriptId, StaticScripts, ScriptContext, DisplayProxy, ScriptContextProvider},
     IntoScriptPluginParams,
 };
 
@@ -158,10 +158,8 @@ pub struct HandlerContext<'s, P: IntoScriptPluginParams> {
     pub(crate) runtime_container: ResScope<'s, RuntimeContainer<P>>,
     /// List of static scripts
     pub(crate) static_scripts: ResScope<'s, StaticScripts>,
-    /// List of static scripts
-    pub(crate) scripts: ResScope<'s, Scripts<P>>,
-    /// Shared context if it exists
-    pub(crate) shared_context: ResScope<'s, SharedContext<P>>,
+    /// Script context
+    pub(crate) script_context: ResScope<'s, ScriptContext<P>>,
 }
 
 impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
@@ -206,8 +204,8 @@ impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
     }
 
     /// Get the static scripts
-    pub fn shared_context(&mut self) -> &mut SharedContext<P> {
-        &mut self.shared_context
+    pub fn script_context(&mut self) -> &mut ScriptContext<P> {
+        &mut self.script_context
     }
 
     // /// checks if the script is loaded such that it can be executed.
@@ -226,7 +224,7 @@ impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
         // find script
-        let Some(context) = self.shared_context.get(Some(entity), &script_id.id(), None) else {
+        let Some(context) = self.script_context.get(Some(entity), &script_id.id(), None) else {
             return Err(InteropError::missing_context(script_id.clone()).into());
         };
 

@@ -93,41 +93,46 @@ pub enum ScriptContext<P: IntoScriptPluginParams> {
     /// One shared script context
     Shared(SharedContext<P>),
     /// One script context per entity
-    PerEntity(Scripts<P>)
+    Entity(EntityContext<P>)
+}
+
+impl<P: IntoScriptPluginParams> Default for ScriptContext<P> {
+    fn default() -> Self {
+        Self::Shared(SharedContext::default())
+    }
 }
 
 impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for ScriptContext<P> {
     fn get(&self, id: Option<Entity>, script_id: &ScriptId, domain: Domain) -> Option<&Arc<Mutex<P::C>>> {
         match self {
             ScriptContext::Shared(a) => a.get(id, script_id, domain),
-            ScriptContext::PerEntity(a) => a.get(id, script_id, domain),
+            ScriptContext::Entity(a) => a.get(id, script_id, domain),
         }
     }
     fn insert(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: Domain, context: P::C) -> bool {
         match self {
             ScriptContext::Shared(a) => a.insert(id, script_id, domain, context),
-            ScriptContext::PerEntity(a) => a.insert(id, script_id, domain, context),
+            ScriptContext::Entity(a) => a.insert(id, script_id, domain, context),
         }
     }
     fn contains(&self, id: Option<Entity>, script_id: &ScriptId, domain: Domain) -> bool {
         match self {
             ScriptContext::Shared(a) => a.contains(id, script_id, domain),
-            ScriptContext::PerEntity(a) => a.contains(id, script_id, domain),
+            ScriptContext::Entity(a) => a.contains(id, script_id, domain),
         }
     }
 }
 
 /// Stores the script context.
-#[derive(Resource)]
-pub struct Scripts<P: IntoScriptPluginParams>(HashMap<Entity, Arc<Mutex<P::C>>>);
+pub struct EntityContext<P: IntoScriptPluginParams>(HashMap<Entity, Arc<Mutex<P::C>>>);
 
-impl<P: IntoScriptPluginParams> Default for Scripts<P> {
+impl<P: IntoScriptPluginParams> Default for EntityContext<P> {
     fn default() -> Self {
         Self(HashMap::new())
     }
 }
 
-impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for Scripts<P> {
+impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for EntityContext<P> {
     fn get(&self, id: Option<Entity>, script_id: &ScriptId, domain: Domain) -> Option<&Arc<Mutex<P::C>>> {
         id.and_then(|id| self.0.get(&id))
     }
@@ -144,7 +149,6 @@ impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for Scripts<P> {
 }
 
 /// Contains the shared context.
-#[derive(Resource)]
 pub struct SharedContext<P: IntoScriptPluginParams>(pub Option<Arc<Mutex<P::C>>>);
 
 impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for SharedContext<P> {

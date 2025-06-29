@@ -189,7 +189,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         // };
 
         let phrase;
-        let result = match handler_ctxt.shared_context.get(entity, &id.id(), None) {
+        let result = match handler_ctxt.script_context.get(entity, &id.id(), None) {
             Some(context) => {
                 bevy::log::debug!("{}: reloading script {}", P::LANGUAGE, id.display());
                 // if is_new_script {
@@ -247,7 +247,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         match result {
             Ok(maybe_context) => {
                 if let Some(context) = maybe_context {
-                    if !handler_ctxt.shared_context.insert(entity, &id.id(), None, context) {
+                    if !handler_ctxt.script_context.insert(entity, &id.id(), None, context) {
                         warn!("Unable to insert script context for entity {:?} script {}.", entity, id.display());
                     }
                 }

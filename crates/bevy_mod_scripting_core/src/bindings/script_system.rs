@@ -18,7 +18,7 @@ use crate::{
     extractors::get_all_access_ids,
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{ScriptId, Scripts, ScriptContextProvider},
+    script::{ScriptId, ScriptContextProvider, ScriptContext},
     IntoScriptPluginParams,
 };
 use bevy::{
@@ -199,7 +199,7 @@ impl ScriptSystemBuilder {
 }
 
 struct DynamicHandlerContext<'w, P: IntoScriptPluginParams> {
-    scripts: &'w Scripts<P>,
+    script_context: &'w ScriptContext<P>,
     callback_settings: &'w CallbackSettings<P>,
     context_loading_settings: &'w ContextLoadingSettings<P>,
     runtime_container: &'w RuntimeContainer<P>,
@@ -239,7 +239,7 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
     pub fn get_param(system: &UnsafeWorldCell<'w>) -> Self {
         unsafe {
             Self {
-                scripts: system
+                script_context: system
                     .get_resource()
                     .expect("Scripts resource not found"),
                 callback_settings: system
@@ -278,7 +278,7 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
         // } else {
         //     return Err(InteropError::missing_script(script_id.clone()).into());
         // };
-        let Some(context) = self.scripts.get(Some(entity), &script_id.id(), None) else {
+        let Some(context) = self.script_context.get(Some(entity), &script_id.id(), None) else {
             return Err(InteropError::missing_context(script_id.clone()).into());
         };
 

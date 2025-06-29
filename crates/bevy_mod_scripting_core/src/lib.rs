@@ -22,7 +22,7 @@ use error::ScriptError;
 use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent};
 use handler::{CallbackSettings, HandlerFn};
 use runtime::{initialize_runtime, Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
-use script::{ScriptComponent, ScriptId, StaticScripts, SharedContext, Scripts};
+use script::{ScriptComponent, ScriptId, StaticScripts, ScriptContext, EntityContext};
 
 pub mod asset;
 pub mod bindings;
@@ -128,9 +128,12 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
                 assignment_strategy: self.context_assignment_strategy,
                 context_initializers: self.context_initializers.clone(),
                 context_pre_handling_initializers: self.context_pre_handling_initializers.clone(),
-            })
-            .init_resource::<Scripts<P>>()
-            .init_resource::<SharedContext<P>>();
+            });
+        if self.context_assignment_strategy.is_global() {
+            app.init_resource::<ScriptContext<P>>();
+        } else {
+            app.insert_resource(ScriptContext::<P>::Entity(EntityContext::default()));
+        }
 
         register_script_plugin_systems::<P>(app);
 

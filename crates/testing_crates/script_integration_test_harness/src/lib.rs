@@ -428,23 +428,10 @@ where
 
     install_test_plugin(&mut app, plugin, true);
 
-    // let script_id = script_id.to_owned();
-    // let script_id_clone = script_id.clone();
-
-
     let script_path = script_path.into();
     let script_handle = app.world().resource::<AssetServer>().load(script_path);
     let script_id = script_handle.id();
     let entity = app.world_mut().spawn(ScriptComponent(vec![script_handle.clone()])).id();
-
-
-    // app.add_systems(
-    //     Startup,
-    //     move |server: Res<AssetServer>, mut handle: Local<Handle<ScriptAsset>>| {
-    //         *handle = server.load(script_id_clone.to_owned());
-    //         handle.id()
-    //     },
-    // );
 
     // finalize
     app.cleanup();
@@ -472,25 +459,19 @@ where
         let mut handler_ctxt = state.get_mut(app.world_mut());
         let (guard, context) = handler_ctxt.get_mut();
 
-        // if context.is_script_fully_loaded(script_id.clone().into()) {
-        //     let script_context = context
-        //         .scripts.get(entity).ok()
-        //         .and_then(|script| script.contexts.get(&script_id))
-        //         .ok_or_else(|| String::from("Could not find script"))?;
-            let ctxt_arc = context.shared_context().get(Some(entity), &script_id, None).cloned().unwrap();
-            let mut ctxt_locked = ctxt_arc.lock();
+        let ctxt_arc = context.script_context().get(Some(entity), &script_id, None).cloned().unwrap();
+        let mut ctxt_locked = ctxt_arc.lock();
 
-            let runtime = &context.runtime_container().runtime;
+        let runtime = &context.runtime_container().runtime;
 
-            return WorldAccessGuard::with_existing_static_guard(guard, |guard| {
-                // Ensure the world is available via ThreadWorldContainer
-                ThreadWorldContainer
-                    .set_world(guard.clone())
-                    .map_err(|e| e.display_with_world(guard))?;
-                // Pass the locked context to the closure for benchmarking its Lua (or generic) part
-                bench_fn(&mut ctxt_locked, runtime, label, criterion)
-            });
-        // }
+        return WorldAccessGuard::with_existing_static_guard(guard, |guard| {
+            // Ensure the world is available via ThreadWorldContainer
+            ThreadWorldContainer
+                .set_world(guard.clone())
+                .map_err(|e| e.display_with_world(guard))?;
+            // Pass the locked context to the closure for benchmarking its Lua (or generic) part
+            bench_fn(&mut ctxt_locked, runtime, label, criterion)
+        });
         state.apply(app.world_mut());
         if timer.elapsed() > Duration::from_secs(30) {
             return Err("Timeout after 30 seconds, could not load script".into());
