@@ -2017,6 +2017,11 @@ fn try_main() -> Result<()> {
         .init();
     pop_cargo_env()?;
     let args = App::try_parse()?;
+    info!(
+        "Default toolchain: {:?}",
+        args.global_args.override_toolchain
+    );
+
     let out = args.subcmd.run(args.global_args)?;
     // push any output to stdout
     if !out.is_empty() {
