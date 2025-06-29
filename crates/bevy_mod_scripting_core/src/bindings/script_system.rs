@@ -560,7 +560,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                         reason = "WIP, to be dealt with in validate params better, but panic will still remain"
                     )]
                     if subset.contains(&raid) {
-                        panic!("Duplicate resource access in system: {:?}.", raid);
+                        panic!("Duplicate resource access in system: {raid:?}.");
                     }
                     subset.insert(raid);
                 }

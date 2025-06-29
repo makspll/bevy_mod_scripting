@@ -336,7 +336,7 @@ mod tests {
             LoadState::NotLoaded => panic!("Asset not loaded"),
             LoadState::Loaded => {}
             LoadState::Failed(asset_load_error) => {
-                panic!("Asset load failed: {:?}", asset_load_error)
+                panic!("Asset load failed: {asset_load_error:?}")
             }
             _ => panic!("Unexpected load state"),
         }
@@ -437,7 +437,7 @@ mod tests {
                               mut event_target: ResMut<EventTarget>| {
             println!("Reading asset events this frame");
             for event in reader.read() {
-                println!("{:?}", event);
+                println!("{event:?}");
                 if matches!(
                     (event_target.event, event),
                     (AssetEvent::Added { .. }, AssetEvent::Added { .. })
