@@ -141,110 +141,124 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         content: &[u8],
         guard: WorldGuard,
         handler_ctxt: &mut HandlerContext<P>) -> Result<Option<Script<P>>, ScriptError> {
-        let (is_new_script, is_new_context)= {
-            let maybe_entity = handler_ctxt.scripts.get(entity);
-            let has_context = maybe_entity.map(|script| script.contexts.contains_key(&id.id())).unwrap_or(false);
-            (maybe_entity.is_err(), !has_context)
-        };
+        // let (is_new_script, is_new_context)= {
+        //     let maybe_entity = handler_ctxt.scripts.get(entity);
+        //     let has_context = maybe_entity.map(|script| script.contexts.contains_key(&id.id())).unwrap_or(false);
+        //     (maybe_entity.is_err(), !has_context)
+        // };
+        let assignment_strategy = handler_ctxt.context_loading_settings.assignment_strategy;
+        // let assigned_shared_context: Option<Arc<Mutex<P::C>>> =
+        //     match assignment_strategy {
+        //         crate::context::ContextAssignmentStrategy::Individual => todo!(),//None,
+        //         crate::context::ContextAssignmentStrategy::Global => {
 
-        let assigned_shared_context =
-            match handler_ctxt.context_loading_settings.assignment_strategy {
-                crate::context::ContextAssignmentStrategy::Individual => None,
-                crate::context::ContextAssignmentStrategy::Global => {
-                    handler_ctxt.scripts.iter()
-                        .next()
-                        .and_then(|s| s.contexts.values().next())
-                        .map(|c| c.clone())
-                    // let is_new_context = handler_ctxt.scripts.scripts.is_empty();
-                    // if !is_new_context {
-                    //     handler_ctxt
-                    //         .scripts
-                    //         .scripts
-                    //         .values()
-                    //         .next()
-                    //         .map(|s| s.context.clone())
-                    // } else {
-                    //     None
-                    // }
-                }
-            };
+        //             if handler_ctxt.shared_context.is_none() {
+        //                     let handle: Handle<ScriptAsset> = Handle::default();
+        //                     handler_ctxt.shared_context = Self::load_context(&handle, b"", guard.clone(), handler_ctxt);
+        //             }
+        //             handler_ctxt.shared_context.clone();
+        //             // handler_ctxt.scripts.iter()
+        //             //     .next()
+        //             //     .and_then(|s| s.contexts.values().next())
+        //             //     .map(|c| c.clone())
+        //             // let is_new_context = handler_ctxt.scripts.scripts.is_empty();
+        //             // if !is_new_context {
+        //             //     handler_ctxt
+        //             //         .scripts
+        //             //         .scripts
+        //             //         .values()
+        //             //         .next()
+        //             //         .map(|s| s.context.clone())
+        //             // } else {
+        //             //     None
+        //             // }
+        //         }
+        //     };
 
-        debug!(
-            "{}: CreateOrUpdateScript command applying (script {}, new context?: {}, new script?: {})",
-            P::LANGUAGE,
-            id.display(),
-            assigned_shared_context.is_none(),
-            is_new_script
-        );
+        // debug!(
+        //     "{}: CreateOrUpdateScript command applying (script {}, new context?: {}, new script?: {})",
+        //     P::LANGUAGE,
+        //     id.display(),
+        //     assigned_shared_context.is_none(),
+        //     is_new_script
+        // );
 
-        let phrase = if assigned_shared_context.is_some() {
-            "reloading"
-        } else {
-            "loading"
-        };
+        // let phrase = if assigned_shared_context.is_some() {
+        //     "reloading"
+        // } else {
+        //     "loading"
+        // };
 
-
-        let result = match assigned_shared_context {
-            Some(assigned_shared_context) => {
+        let phrase;
+        let result = match handler_ctxt.shared_context.clone() {
+            Some(context) => {
                 bevy::log::debug!("{}: reloading script {}", P::LANGUAGE, id.display());
-                if is_new_script {
-                    // This will happen when sharing contexts.
-                    // Make a new script with the shared context.
-                    // let mut script = Script {
-                    //     // NOTE: We don't want script handles to be strong, right?
-                    //     // id: id.clone_weak(),
-                    //     contexts: [(id.id(), assigned_shared_context)]
-                    //         .into_iter()
-                    //         .collect(),
-                    // };
-                    let context_arc = assigned_shared_context.clone();
-                    let mut context = context_arc.lock();
-                    // it can potentially be loaded but without a successful script reload but that
-                    // leaves us in an okay state
-                    // handler_ctxt.scripts.insert(script);
-                    Self::reload_context(id, content, &mut context, guard.clone(), handler_ctxt)
-                        .map(|_| Some(Script::<P> {
-                            contexts: [(id.id(), assigned_shared_context)].into_iter().collect()
-                        }))
+                // if is_new_script {
+                //     // This will happen when sharing contexts.
+                //     // Make a new script with the shared context.
+                //     // let mut script = Script {
+                //     //     // NOTE: We don't want script handles to be strong, right?
+                //     //     // id: id.clone_weak(),
+                //     //     contexts: [(id.id(), assigned_shared_context)]
+                //     //         .into_iter()
+                //     //         .collect(),
+                //     // };
+                //     let context_arc = assigned_shared_context.clone();
+                //     let mut context = context_arc.lock();
+                //     // it can potentially be loaded but without a successful script reload but that
+                //     // leaves us in an okay state
+                //     // handler_ctxt.scripts.insert(script);
+                //     Self::reload_context(id, content, &mut context, guard.clone(), handler_ctxt)
+                //         .map(|_| Some(Script::<P> {
+                //             contexts: [(id.id(), assigned_shared_context)].into_iter().collect()
+                //         }))
 
-                } else {
-                    let mut context = if is_new_context {
-                        assigned_shared_context.clone()
-                    } else {
-                        let script = handler_ctxt.scripts.get(entity).unwrap();
-                        script.contexts.get(&id.id()).unwrap().clone()
-                    };
+                // } else {
+                    // let mut context = if is_new_context {
+                    //     assigned_shared_context.clone()
+                    // } else {
+                    //     let script = handler_ctxt.scripts.get(entity).unwrap();
+                    //     script.contexts.get(&id.id()).unwrap().clone()
+                    // };
                     let mut lcontext = context.lock();
-                    Self::reload_context(id, content, &mut lcontext, guard.clone(), handler_ctxt)
-                        .map(|_| {
-                            if is_new_context {
-                                let mut script = handler_ctxt.scripts.get_mut(entity).unwrap();
-                                script.contexts.insert(id.id(), assigned_shared_context);
-                            }
-                            None
-                        })
-                }
+                phrase = "reloading";
+                Self::reload_context(id, content, &mut lcontext, guard.clone(), handler_ctxt).map(|_| None)
+                        // .map(|_| {
+                        //     if is_new_context {
+                        //         let mut script = handler_ctxt.scripts.get_mut(entity).unwrap();
+                        //         script.contexts.insert(id.id(), assigned_shared_context);
+                        //     }
+                        //     None
+                        // })
+                // }
                 // Self::reload_context(id, content, guard.clone(), handler_ctxt).map(|_| None)
             }
             None => {
                 bevy::log::debug!("{}: loading script {}", P::LANGUAGE, id.display());
-                Self::load_context(id, content, guard.clone(), handler_ctxt)
-                    .map(|context|
-                        Some(Script::<P> {
-                            contexts: [(id.id(), Arc::new(Mutex::new(context)))].into_iter().collect()
-                        })
-                    )
+                phrase = "loading";
+                Self::load_context(id, content, guard.clone(), handler_ctxt).map(Some)
+                    // .map(|context|
+                    //     Some(Script::<P> {
+                    //         contexts: [(id.id(), Arc::new(Mutex::new(context)))].into_iter().collect()
+                    //     })
+                    // )
             }
         };
 
         match result {
-            ok @ Ok(_) => {
+            Ok(maybe_context) => {
+                if let Some(context) = maybe_context {
+                    if assignment_strategy.is_global() && handler_ctxt.shared_context.is_none() {
+                        **handler_ctxt.shared_context = Some(Arc::new(Mutex::new(context)));
+                    }
+                }
+
                 bevy::log::debug!(
                     "{}: script {} successfully created or updated",
                     P::LANGUAGE,
                     id.display()
                 );
-                ok
+                Ok(None)// none until individual context support added.
             }
             Err(err) => {
                 handle_script_errors(
@@ -374,14 +388,14 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
 impl<P: IntoScriptPluginParams> Command for RunScriptCallback<P> {
     fn apply(self, world: &mut bevy::prelude::World) {
         with_handler_system_state(world, |guard, handler_ctxt: &mut HandlerContext<P>| {
-            if !handler_ctxt.is_script_fully_loaded(self.id.id()) {
-                bevy::log::error!(
-                    "{}: Cannot apply callback command, as script {} does not exist. Ignoring.",
-                    P::LANGUAGE,
-                    self.id.display()
-                );
-                return;
-            }
+            // if !handler_ctxt.is_script_fully_loaded(self.id.id()) {
+            //     bevy::log::error!(
+            //         "{}: Cannot apply callback command, as script {} does not exist. Ignoring.",
+            //         P::LANGUAGE,
+            //         self.id.display()
+            //     );
+            //     return;
+            // }
 
             let result = handler_ctxt.call_dynamic_label(
                 &self.callback,

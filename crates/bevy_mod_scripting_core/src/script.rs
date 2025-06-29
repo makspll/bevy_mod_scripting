@@ -1,7 +1,7 @@
 //! Script related types, functions and components
 
 use crate::{asset::ScriptAsset, IntoScriptPluginParams};
-use bevy::prelude::{Component, ReflectComponent};
+use bevy::prelude::{Component, ReflectComponent, Deref, DerefMut};
 use bevy::{asset::{Asset, AssetId, Handle}, ecs::system::Resource, reflect::Reflect, utils::HashSet};
 use parking_lot::Mutex;
 use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc, fmt};
@@ -119,6 +119,16 @@ impl StaticScripts {
     /// Returns an iterator over the static scripts
     pub fn iter(&self) -> impl Iterator<Item = &Handle<ScriptAsset>> {
         self.scripts.iter()
+    }
+}
+
+/// Contains the shared context.
+#[derive(Resource, Deref, DerefMut)]
+pub struct SharedContext<P: IntoScriptPluginParams>(pub Option<Arc<Mutex<P::C>>>);
+
+impl<P: IntoScriptPluginParams> Default for SharedContext<P> {
+    fn default() -> Self {
+        Self(None)
     }
 }
 

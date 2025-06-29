@@ -165,3 +165,10 @@ pub enum ContextAssignmentStrategy {
     /// Share contexts with all other scripts
     Global,
 }
+
+impl ContextAssignmentStrategy {
+    /// Returns true if there is one global context.
+    pub fn is_global(&self) -> bool {
+        matches!(self, ContextAssignmentStrategy::Global)
+    }
+}

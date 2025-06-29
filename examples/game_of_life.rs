@@ -30,6 +30,7 @@ use bevy_mod_scripting_core::{
     script::{ScriptId, ScriptComponent},
 };
 use bevy_mod_scripting_lua::LuaScriptingPlugin;
+#[cfg(feature = "rhai")]
 use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
 use clap::Parser;
 
@@ -99,6 +100,7 @@ fn run_script_cmd(
                     ));
                 }
 
+                #[cfg(feature = "rhai")]
                 for script_id in static_rhai_scripts.drain(..) {
                     commands.queue(DeleteScript::<RhaiScriptingPlugin>::new(
                         script_id
@@ -143,8 +145,10 @@ fn game_of_life_app(app: &mut App) -> &mut App {
                 send_on_update.after(update_rendered_state),
                 (
                     event_handler::<OnUpdate, LuaScriptingPlugin>,
+                    #[cfg(feature = "rhai")]
                     event_handler::<OnUpdate, RhaiScriptingPlugin>,
                     event_handler::<OnClick, LuaScriptingPlugin>,
+                    #[cfg(feature = "rhai")]
                     event_handler::<OnClick, RhaiScriptingPlugin>,
                 )
                     .after(send_on_update),

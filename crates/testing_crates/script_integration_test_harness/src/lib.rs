@@ -4,11 +4,12 @@ use std::{
     marker::PhantomData,
     path::PathBuf,
     time::{Duration, Instant},
+    sync::{Arc,Mutex},
 };
 
 use bevy::{
     app::{Last, Plugin, PostUpdate, Startup, Update},
-    asset::{AssetServer, Handle, AssetPath, AssetId},
+    asset::{AssetServer, Handle, AssetPath, AssetId, LoadState},
     ecs::{
         component::Component,
         event::{Event, Events},
@@ -33,7 +34,7 @@ use bevy_mod_scripting_core::{
     event::{IntoCallbackLabel, ScriptErrorEvent},
     extractors::{HandlerContext, WithWorldGuard},
     handler::handle_script_errors,
-    script::{ScriptComponent, ScriptId},
+    script::{ScriptComponent, ScriptId, DisplayProxy},
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams, ScriptingPlugin,
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
@@ -94,7 +95,7 @@ pub fn make_test_lua_plugin() -> bevy_mod_scripting_lua::LuaScriptingPlugin {
     use bevy_mod_scripting_core::{bindings::WorldContainer, ConfigureScriptPlugin};
     use bevy_mod_scripting_lua::{mlua, LuaScriptingPlugin};
 
-    LuaScriptingPlugin::default().add_context_initializer(
+    LuaScriptingPlugin::default().enable_context_sharing().add_context_initializer(
         |_, ctxt: &mut bevy_mod_scripting_lua::mlua::Lua| {
             let globals = ctxt.globals();
             globals.set(
@@ -299,14 +300,14 @@ pub fn execute_integration_test<'a,
 
 fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
     script_id: &ScriptId,
-    mut with_guard: WithWorldGuard<'_, '_, HandlerContext<'_, '_, P>>,
+    mut with_guard: WithWorldGuard<'_, '_, HandlerContext<'_, P>>,
     expect_response: bool,
 ) -> Result<ScriptValue, ScriptError> {
     let (guard, handler_ctxt) = with_guard.get_mut();
 
-    if !handler_ctxt.is_script_fully_loaded(*script_id) {
-        return Ok(ScriptValue::Unit);
-    }
+    // if !handler_ctxt.is_script_fully_loaded(*script_id) {
+    //     return Ok(ScriptValue::Unit);
+    // }
 
     let res = handler_ctxt.call::<C>(
         &Handle::Weak(*script_id),
@@ -434,7 +435,7 @@ where
     let script_path = script_path.into();
     let script_handle = app.world().resource::<AssetServer>().load(script_path);
     let script_id = script_handle.id();
-    let entity = app.world_mut().spawn(ScriptComponent(vec![script_handle])).id();
+    let entity = app.world_mut().spawn(ScriptComponent(vec![script_handle.clone()])).id();
 
 
     // app.add_systems(
@@ -453,18 +454,30 @@ where
 
     let mut state = SystemState::<WithWorldGuard<HandlerContext<P>>>::from_world(app.world_mut());
 
+    /// Wait until script is loaded.
+    loop {
+        app.update();
+        match app.world().resource::<AssetServer>().load_state(script_id) {
+            _ => continue,
+            LoadState::Loaded => break,
+            LoadState::Failed(e) => {
+                return Err(format!("Failed to load script {}: {e}", script_handle.display()));
+            }
+        }
+    }
+
     loop {
         app.update();
 
         let mut handler_ctxt = state.get_mut(app.world_mut());
         let (guard, context) = handler_ctxt.get_mut();
 
-        if context.is_script_fully_loaded(script_id.clone().into()) {
-            let script_context = context
-                .scripts.get(entity).ok()
-                .and_then(|script| script.contexts.get(&script_id))
-                .ok_or_else(|| String::from("Could not find script"))?;
-            let ctxt_arc = script_context.clone();
+        // if context.is_script_fully_loaded(script_id.clone().into()) {
+        //     let script_context = context
+        //         .scripts.get(entity).ok()
+        //         .and_then(|script| script.contexts.get(&script_id))
+        //         .ok_or_else(|| String::from("Could not find script"))?;
+            let ctxt_arc = context.shared_context().clone().unwrap();
             let mut ctxt_locked = ctxt_arc.lock();
 
             let runtime = &context.runtime_container().runtime;
@@ -477,7 +490,7 @@ where
                 // Pass the locked context to the closure for benchmarking its Lua (or generic) part
                 bench_fn(&mut ctxt_locked, runtime, label, criterion)
             });
-        }
+        // }
         state.apply(app.world_mut());
         if timer.elapsed() > Duration::from_secs(30) {
             return Err("Timeout after 30 seconds, could not load script".into());

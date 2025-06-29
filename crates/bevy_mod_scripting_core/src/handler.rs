@@ -133,7 +133,7 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
 pub(crate) type EventHandlerSystemState<'w, 's, P> = SystemState<(
     Local<'s, QueryState<(Entity, Ref<'w, ScriptComponent>)>>,
     crate::extractors::EventReaderScope<'s, ScriptCallbackEvent>,
-    WithWorldGuard<'w, 's, HandlerContext<'w, 's, P>>,
+    WithWorldGuard<'w, 's, HandlerContext<'s, P>>,
 )>;
 
 #[profiling::function]
@@ -168,7 +168,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     let entity_and_static_scripts = match entity_and_static_scripts {
         Ok(entity_and_static_scripts) => entity_and_static_scripts,
         Err(e) => {
-            bevy::log::error!(
+            bevy::log::error_once!(
                 "{}: Failed to query entities with scripts: {}",
                 P::LANGUAGE,
                 e.display_with_world(guard.clone())

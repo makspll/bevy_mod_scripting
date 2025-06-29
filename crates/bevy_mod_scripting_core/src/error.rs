@@ -601,7 +601,7 @@ impl InteropError {
     }
 
     /// Thrown if the required context for an operation is missing.
-    pub fn missing_context(script_id: impl Into<ScriptId>) -> Self {
+    pub fn missing_context(script_id: impl Into<Handle<ScriptAsset>>) -> Self {
         Self(Arc::new(InteropErrorInner::MissingContext {
             script_id: script_id.into(),
         }))
@@ -814,7 +814,7 @@ pub enum InteropErrorInner {
     /// Thrown if the required context for an operation is missing.
     MissingContext {
         /// The script that was attempting to access the context
-        script_id: ScriptId,
+        script_id: Handle<ScriptAsset>,
     },
     /// Thrown when a schedule is missing from the registry.
     MissingSchedule {
@@ -1285,8 +1285,8 @@ macro_rules! argument_count_mismatch_msg {
 macro_rules! missing_context_for_callback {
     ($script_id:expr) => {
         format!(
-            "Missing context for script with id: {}. Was the script loaded?.",
-            $script_id
+            "Missing context for script {}. Was the script loaded?.",
+            $script_id.display()
         )
     };
 }

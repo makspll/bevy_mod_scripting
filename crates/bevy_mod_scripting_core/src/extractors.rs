@@ -30,7 +30,7 @@ use crate::{
     event::{CallbackLabel, IntoCallbackLabel},
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{ScriptId, StaticScripts, Script},
+    script::{ScriptId, StaticScripts, Script, SharedContext, DisplayProxy},
     IntoScriptPluginParams,
 };
 
@@ -149,9 +149,9 @@ impl<T: Event> EventReaderScope<'_, T> {
 
 /// Context for systems which handle events for scripts
 #[derive(SystemParam)]
-pub struct HandlerContext<'w, 's, P: IntoScriptPluginParams> {
-    /// Query for `Script<P>`s
-    pub scripts: Query<'w, 's, &'static mut Script<P>>,
+pub struct HandlerContext<'s, P: IntoScriptPluginParams> {
+    // Query for `Script<P>`s
+    // pub scripts: Query<'w, 's, &'static mut Script<P>>,
     /// Settings for callbacks
     pub(crate) callback_settings: ResScope<'s, CallbackSettings<P>>,
     /// Settings for loading contexts
@@ -160,11 +160,13 @@ pub struct HandlerContext<'w, 's, P: IntoScriptPluginParams> {
     pub(crate) runtime_container: ResScope<'s, RuntimeContainer<P>>,
     /// List of static scripts
     pub(crate) static_scripts: ResScope<'s, StaticScripts>,
-    /// The asset server
-    pub(crate) asset_server: Res<'w, AssetServer>, // No Default.
+    /// Shared context if it exists
+    pub(crate) shared_context: ResScope<'s, SharedContext<P>>,
+    // The asset server
+    // pub(crate) asset_server: ResScope<'w, AssetServer>, // No Default.
 }
 
-impl<'w: 's, 's, P: IntoScriptPluginParams> HandlerContext<'w, 's, P> {
+impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
     /// Splits the handler context into its individual components.
     ///
     /// Useful if you are needing multiple resources from the handler context.
@@ -205,10 +207,16 @@ impl<'w: 's, 's, P: IntoScriptPluginParams> HandlerContext<'w, 's, P> {
         &mut self.static_scripts
     }
 
-    /// checks if the script is loaded such that it can be executed.
-    pub fn is_script_fully_loaded(&self, script_id: ScriptId) -> bool {
-        matches!(self.asset_server.load_state(script_id), LoadState::Loaded)
+    /// Get the static scripts
+    pub fn shared_context(&mut self) -> &mut SharedContext<P> {
+        &mut self.shared_context
     }
+
+    // /// checks if the script is loaded such that it can be executed.
+    // pub fn is_script_fully_loaded(&self, script_id: ScriptId) -> bool {
+    //     todo!()
+    //     // matches!(self.asset_server.load_state(script_id), LoadState::Loaded)
+    // }
 
     /// Equivalent to [`Self::call`] but with a dynamically passed in label
     pub fn call_dynamic_label(
@@ -220,12 +228,20 @@ impl<'w: 's, 's, P: IntoScriptPluginParams> HandlerContext<'w, 's, P> {
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
         // find script
-        let mut context = self.scripts
-                         .get(entity)
-                         .ok()
-                         .and_then(|script|
-                                   script.contexts.get(&script_id.id()))
-                         .ok_or_else(|| InteropError::missing_script(script_id.clone()))?;
+        let context = if self.context_loading_settings.assignment_strategy.is_global() {
+            let Some(context) = self.shared_context.as_ref() else {
+                return Err(InteropError::missing_context(script_id.clone()).into());
+                };
+            context
+        } else {
+            todo!()
+        };
+        // let mut context = self.scripts
+        //                  .get(entity)
+        //                  .ok()
+        //                  .and_then(|script|
+        //                            script.contexts.get(&script_id.id()))
+        //                  .ok_or_else(|| InteropError::missing_script(script_id.clone()))?;
 
         // call the script
         let handler = self.callback_settings.callback_handler;
