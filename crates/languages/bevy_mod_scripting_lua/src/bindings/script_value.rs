@@ -54,7 +54,7 @@ impl FromLua for LuaScriptValue {
             Value::String(s) => ScriptValue::String(s.to_str()?.to_owned().into()),
             Value::Function(f) => ScriptValue::Function(
                 (move |_context: FunctionCallContext, args: VecDeque<ScriptValue>| {
-                    println!("Lua function called with args: {:?}", args);
+                    println!("Lua function called with args: {args:?}");
                     match f.call::<LuaScriptValue>(
                         args.into_iter()
                             .map(LuaScriptValue)

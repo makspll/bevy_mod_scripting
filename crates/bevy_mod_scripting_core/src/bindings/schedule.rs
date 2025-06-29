@@ -307,7 +307,7 @@ mod tests {
                 if let Some(system) = graph.get_system_at(node_id) {
                     system.name().clone().to_string()
                 } else if let Some(system_set) = graph.get_set_at(node_id) {
-                    format!("{:?}", system_set).to_string()
+                    format!("{system_set:?}").to_string()
                 } else {
                     // try schedule systems
                     let mut default = format!("{node_id:?}").to_string();
@@ -352,10 +352,7 @@ mod tests {
         for &(exp_from, exp_to) in expected_edges {
             assert!(
                 found_edges.contains(&(exp_from.to_owned(), exp_to.to_owned())),
-                "Expected edge ({} -> {}) not found. Found edges: {:?}",
-                exp_from,
-                exp_to,
-                found_edges
+                "Expected edge ({exp_from} -> {exp_to}) not found. Found edges: {found_edges:?}"
             );
         }
 
