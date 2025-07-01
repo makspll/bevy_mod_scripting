@@ -4,7 +4,8 @@ use crate::{asset::ScriptAsset, IntoScriptPluginParams};
 use bevy::prelude::{Component, ReflectComponent, Deref, DerefMut, Entity};
 use bevy::{asset::{Asset, AssetId, Handle}, ecs::system::Resource, reflect::Reflect, utils::HashSet};
 use parking_lot::Mutex;
-use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc, fmt};
+use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc, fmt, hash::{Hash, Hasher, BuildHasher}};
+use bevy::utils::hashbrown::hash_map::DefaultHashBuilder;
 
 mod script_context;
 mod shared_context;
@@ -61,6 +62,10 @@ impl<A: Asset> DisplayProxy for Handle<A> {
         HandleDisplay(self)
     }
 }
+
+/// Defines the domain of a script
+#[derive(Component)]
+pub struct ScriptDomain(pub Domain);
 
 #[derive(bevy::ecs::component::Component, Reflect, Clone)]
 #[reflect(Component)]

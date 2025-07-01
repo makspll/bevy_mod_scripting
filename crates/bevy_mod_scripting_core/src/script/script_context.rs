@@ -12,6 +12,8 @@ pub type Domain = Cow<'static, str>;
 
 /// A generic script context provider
 pub trait ScriptContextProvider<P: IntoScriptPluginParams> {
+    /// Hash for context.
+    fn hash(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64>;
     /// Get the context.
     fn get(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<&Arc<Mutex<P::C>>>;
     /// Insert a context.
@@ -67,6 +69,17 @@ impl<P: IntoScriptPluginParams> Default for ScriptContext<P> {
 }
 
 impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for ScriptContext<P> {
+
+    fn hash(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64> {
+        match self {
+            ScriptContext::Shared(a) => a.hash(id, script_id, domain),
+            ScriptContext::ScriptId(a) => a.hash(id, script_id, domain),
+            ScriptContext::Entity(a, b) => a.hash(id, script_id, domain)
+                                            .or_else(|| b.hash(id, script_id, domain)),
+            ScriptContext::Domain(a, b) => a.hash(id, script_id, domain)
+                                            .or_else(|| b.hash(id, script_id, domain)),
+        }
+    }
     fn get(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<&Arc<Mutex<P::C>>> {
         match self {
             ScriptContext::Shared(a) => a.get(id, script_id, domain),

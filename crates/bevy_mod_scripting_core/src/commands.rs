@@ -23,15 +23,17 @@ use std::{marker::PhantomData, sync::Arc};
 pub struct DeleteScript<P: IntoScriptPluginParams> {
     /// The ID of the script to delete
     pub id: AssetId<ScriptAsset>,
+    domain: Option<Domain>,
     /// hack to make this Send, C does not need to be Send since it is not stored in the command
     pub _ph: PhantomData<fn(P::C, P::R)>,
 }
 
 impl<P: IntoScriptPluginParams> DeleteScript<P> {
     /// Creates a new DeleteScript command with the given ID
-    pub fn new(id: AssetId<ScriptAsset>) -> Self {
+    pub fn new(id: AssetId<ScriptAsset>, domain: Option<Domain>) -> Self {
         Self {
             id,
+            domain,
             _ph: PhantomData,
         }
     }
@@ -39,12 +41,11 @@ impl<P: IntoScriptPluginParams> DeleteScript<P> {
 
 impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
     fn apply(self, world: &mut bevy::prelude::World) {
-        let domain = world.resource::<Assets<ScriptAsset>>().get(self.id).and_then(|x| x.domain);
         // first apply unload callback
         RunScriptCallback::<P>::new(
             Handle::Weak(self.id.clone()),
             Entity::from_raw(0),
-            domain,
+            self.domain,
             OnScriptUnloaded::into_callback_label(),
             vec![],
             false,

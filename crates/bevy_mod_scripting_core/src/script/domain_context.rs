@@ -10,6 +10,13 @@ impl<P: IntoScriptPluginParams> Default for DomainContext<P> {
 }
 
 impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for DomainContext<P> {
+    fn hash(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64> {
+        domain.as_ref().map(|d| {
+            let mut hasher = DefaultHashBuilder::default().build_hasher();
+            d.hash(&mut hasher);
+            hasher.finish()
+        })
+    }
     fn get(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<&Arc<Mutex<P::C>>> {
         domain.as_ref().and_then(|id| self.0.get(id))
     }

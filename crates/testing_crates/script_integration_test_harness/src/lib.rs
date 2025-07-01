@@ -312,6 +312,7 @@ fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
     let res = handler_ctxt.call::<C>(
         &Handle::Weak(*script_id),
         Entity::from_raw(0),
+        &None,
         vec![],
         guard.clone(),
     );
@@ -510,6 +511,7 @@ pub fn run_plugin_script_load_benchmark<
                     CreateOrUpdateScript::<P>::new(
                         Handle::Weak(random_script_id),
                         content.clone().into(),
+                        None,
                     ),
                     is_reload,
                 )

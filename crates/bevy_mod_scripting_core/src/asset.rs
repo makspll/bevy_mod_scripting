@@ -5,7 +5,7 @@ use crate::{
     ScriptComponent,
     commands::{CreateOrUpdateScript, DeleteScript},
     error::ScriptError,
-    script::{DisplayProxy, ScriptId, Domain},
+    script::{DisplayProxy, ScriptId, Domain, ScriptDomain},
     IntoScriptPluginParams, ScriptingSystemSet,
 };
 use bevy::{
@@ -58,8 +58,6 @@ pub struct ScriptAsset {
     pub content: Box<[u8]>, // Any chance a Cow<'static, ?> could work here?
     /// The language of the script
     pub language: Language,
-    /// The domain if any the script will run in
-    pub domain: Option<Domain>,
 }
 
 impl From<String> for ScriptAsset {
@@ -67,7 +65,6 @@ impl From<String> for ScriptAsset {
         ScriptAsset {
             content: s.into_bytes().into_boxed_slice(),
             language: Language::default(),
-            domain: None,
         }
     }
 }
@@ -77,8 +74,6 @@ impl From<String> for ScriptAsset {
 pub struct ScriptSettings {
     /// Define the language for a script or use the extension if None.
     pub language: Option<Language>,
-    /// Specify the domain for the script.
-    pub domain: Option<Domain>,
 }
 
 #[derive(Default)]
@@ -128,7 +123,6 @@ impl AssetLoader for ScriptAssetLoader {
         let asset = ScriptAsset {
             content: content.into_boxed_slice(),
             language,
-            domain: settings.domain.clone(),
         };
         Ok(asset)
     }
@@ -179,7 +173,7 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
                         commands.queue(CreateOrUpdateScript::<P>::new(
                             Handle::Weak(*id),
                             asset.content.clone(), // Cloning seems bad!
-                            asset.domain.clone(),
+                            None, // No domain for static scripts.
                         ));
                     }
                 }
@@ -196,19 +190,19 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
 }
 
 pub(crate) fn eval_script<P: IntoScriptPluginParams>(
-    script_comps: Query<(Entity, &ScriptComponent), Added<ScriptComponent>>,
-    mut script_queue: Local<VecDeque<(Entity, Handle<ScriptAsset>)>>,
+    script_comps: Query<(Entity, &ScriptComponent, Option<&ScriptDomain>), Added<ScriptComponent>>,
+    mut script_queue: Local<VecDeque<(Entity, Handle<ScriptAsset>, Option<Domain>)>>,
     script_assets: Res<Assets<ScriptAsset>>,
     asset_server: Res<AssetServer>,
     mut commands: Commands,
     ) {
-    for (id, script_comp) in &script_comps {
+    for (id, script_comp, domain_maybe) in &script_comps {
         for handle in &script_comp.0 {
-            script_queue.push_back((id, handle.clone_weak()));
+            script_queue.push_back((id, handle.clone_weak(), domain_maybe.map(|x| x.0.clone())));
         }
     }
     while ! script_queue.is_empty() {
-        let script_ready = script_queue.front().map(|(_, script_id)| match asset_server.load_state(&*script_id) {
+        let script_ready = script_queue.front().map(|(_, script_id, _)| match asset_server.load_state(&*script_id) {
             LoadState::Failed(e) => {
                 warn!("Failed to load script {}", script_id.display());
                 true
@@ -228,13 +222,13 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
         //     LoadState::Loaded => true,
         //     _ => false
         // }) {
-        if let Some((id, script_id)) = script_queue.pop_front() {
+        if let Some((id, script_id, domain_maybe)) = script_queue.pop_front() {
             if let Some(asset) = script_assets.get(&script_id) {
                 if asset.language == P::LANGUAGE {
                     commands.entity(id).queue(CreateOrUpdateScript::<P>::new(
                         script_id,
                         asset.content.clone(),
-                        asset.domain.clone(),
+                        domain_maybe
                     ));
                 }
             } else {

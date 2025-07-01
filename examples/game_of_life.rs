@@ -97,14 +97,16 @@ fn run_script_cmd(
 
                 for script_id in static_lua_scripts.drain(..) {
                     commands.queue(DeleteScript::<LuaScriptingPlugin>::new(
-                        script_id
+                        script_id,
+                        None,
                     ));
                 }
 
                 #[cfg(feature = "rhai")]
                 for script_id in static_rhai_scripts.drain(..) {
                     commands.queue(DeleteScript::<RhaiScriptingPlugin>::new(
-                        script_id
+                        script_id,
+                        None,
                     ));
                 }
             }
