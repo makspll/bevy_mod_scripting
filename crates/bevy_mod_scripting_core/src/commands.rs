@@ -12,10 +12,10 @@ use crate::{
     },
     extractors::{with_handler_system_state, HandlerContext, WithWorldGuard},
     handler::{handle_script_errors, send_callback_response},
-    script::{ScriptId, StaticScripts, DisplayProxy, ScriptContextProvider},
+    script::{ScriptId, StaticScripts, DisplayProxy, ScriptContextProvider, Domain},
     IntoScriptPluginParams,
 };
-use bevy::{asset::Handle, ecs::entity::Entity, log::{warn, debug}, prelude::{EntityCommand, Command}};
+use bevy::{asset::{Assets, Handle}, ecs::entity::Entity, log::{warn, debug}, prelude::{EntityCommand, Command}};
 use parking_lot::Mutex;
 use std::{marker::PhantomData, sync::Arc};
 
@@ -39,10 +39,12 @@ impl<P: IntoScriptPluginParams> DeleteScript<P> {
 
 impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
     fn apply(self, world: &mut bevy::prelude::World) {
+        let domain = world.resource::<Assets<ScriptAsset>>().get(self.id).and_then(|x| x.domain);
         // first apply unload callback
         RunScriptCallback::<P>::new(
             Handle::Weak(self.id.clone()),
             Entity::from_raw(0),
+            domain,
             OnScriptUnloaded::into_callback_label(),
             vec![],
             false,
@@ -68,6 +70,7 @@ pub struct CreateOrUpdateScript<P: IntoScriptPluginParams> {
     id: Handle<ScriptAsset>,
     // It feels like we're using a Box, which requires a clone merely to satisfy the Command trait.
     content: Box<[u8]>,
+    domain: Option<Domain>,
     // Hack to make this Send, C does not need to be Send since it is not stored in the command
     _ph: std::marker::PhantomData<fn(P::R, P::C)>,
 }
@@ -75,10 +78,11 @@ pub struct CreateOrUpdateScript<P: IntoScriptPluginParams> {
 #[profiling::all_functions]
 impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     /// Creates a new CreateOrUpdateScript command with the given ID, content and asset
-    pub fn new(id: Handle<ScriptAsset>, content: Box<[u8]>) -> Self {
+    pub fn new(id: Handle<ScriptAsset>, content: Box<[u8]>, domain: Option<Domain>) -> Self {
         Self {
             id,
             content,
+            domain,
             _ph: std::marker::PhantomData,
         }
     }
@@ -138,109 +142,25 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         entity: Option<Entity>,
         id: &Handle<ScriptAsset>,
         content: &[u8],
+        domain: &Option<Domain>,
         guard: WorldGuard,
         handler_ctxt: &mut HandlerContext<P>) -> Result<(), ScriptError> {
-        // let (is_new_script, is_new_context)= {
-        //     let maybe_entity = handler_ctxt.scripts.get(entity);
-        //     let has_context = maybe_entity.map(|script| script.contexts.contains_key(&id.id())).unwrap_or(false);
-        //     (maybe_entity.is_err(), !has_context)
-        // };
         let assignment_strategy = handler_ctxt.context_loading_settings.assignment_strategy;
-        // let assigned_shared_context: Option<Arc<Mutex<P::C>>> =
-        //     match assignment_strategy {
-        //         crate::context::ContextAssignmentStrategy::Individual => todo!(),//None,
-        //         crate::context::ContextAssignmentStrategy::Global => {
-
-        //             if handler_ctxt.shared_context.is_none() {
-        //                     let handle: Handle<ScriptAsset> = Handle::default();
-        //                     handler_ctxt.shared_context = Self::load_context(&handle, b"", guard.clone(), handler_ctxt);
-        //             }
-        //             handler_ctxt.shared_context.clone();
-        //             // handler_ctxt.scripts.iter()
-        //             //     .next()
-        //             //     .and_then(|s| s.contexts.values().next())
-        //             //     .map(|c| c.clone())
-        //             // let is_new_context = handler_ctxt.scripts.scripts.is_empty();
-        //             // if !is_new_context {
-        //             //     handler_ctxt
-        //             //         .scripts
-        //             //         .scripts
-        //             //         .values()
-        //             //         .next()
-        //             //         .map(|s| s.context.clone())
-        //             // } else {
-        //             //     None
-        //             // }
-        //         }
-        //     };
-
-        // debug!(
-        //     "{}: CreateOrUpdateScript command applying (script {}, new context?: {}, new script?: {})",
-        //     P::LANGUAGE,
-        //     id.display(),
-        //     assigned_shared_context.is_none(),
-        //     is_new_script
-        // );
-
-        // let phrase = if assigned_shared_context.is_some() {
-        //     "reloading"
-        // } else {
-        //     "loading"
-        // };
 
         let phrase;
-        let result = match handler_ctxt.script_context.get(entity, &id.id(), &None) {
+        let result = match handler_ctxt.script_context.get(entity, &id.id(), domain) {
             Some(context) => {
                 bevy::log::debug!("{}: reloading script {}", P::LANGUAGE, id.display());
-                // if is_new_script {
-                //     // This will happen when sharing contexts.
-                //     // Make a new script with the shared context.
-                //     // let mut script = Script {
-                //     //     // NOTE: We don't want script handles to be strong, right?
-                //     //     // id: id.clone_weak(),
-                //     //     contexts: [(id.id(), assigned_shared_context)]
-                //     //         .into_iter()
-                //     //         .collect(),
-                //     // };
-                //     let context_arc = assigned_shared_context.clone();
-                //     let mut context = context_arc.lock();
-                //     // it can potentially be loaded but without a successful script reload but that
-                //     // leaves us in an okay state
-                //     // handler_ctxt.scripts.insert(script);
-                //     Self::reload_context(id, content, &mut context, guard.clone(), handler_ctxt)
-                //         .map(|_| Some(Script::<P> {
-                //             contexts: [(id.id(), assigned_shared_context)].into_iter().collect()
-                //         }))
-
-                // } else {
-                    // let mut context = if is_new_context {
-                    //     assigned_shared_context.clone()
-                    // } else {
-                    //     let script = handler_ctxt.scripts.get(entity).unwrap();
-                    //     script.contexts.get(&id.id()).unwrap().clone()
-                    // };
-                    let mut lcontext = context.lock();
+                let mut lcontext = context.lock();
                 phrase = "reloading";
-                Self::reload_context(id, content, &mut lcontext, guard.clone(), handler_ctxt).map(|_| None)
-                        // .map(|_| {
-                        //     if is_new_context {
-                        //         let mut script = handler_ctxt.scripts.get_mut(entity).unwrap();
-                        //         script.contexts.insert(id.id(), assigned_shared_context);
-                        //     }
-                        //     None
-                        // })
-                // }
-                // Self::reload_context(id, content, guard.clone(), handler_ctxt).map(|_| None)
+                Self::reload_context(id, content, &mut lcontext, guard.clone(), handler_ctxt)
+                    .map(|_| None)
             }
             None => {
                 bevy::log::debug!("{}: loading script {}", P::LANGUAGE, id.display());
                 phrase = "loading";
-                Self::load_context(id, content, guard.clone(), handler_ctxt).map(Some)
-                    // .map(|context|
-                    //     Some(Script::<P> {
-                    //         contexts: [(id.id(), Arc::new(Mutex::new(context)))].into_iter().collect()
-                    //     })
-                    // )
+                Self::load_context(id, content, guard.clone(), handler_ctxt)
+                    .map(Some)
             }
         };
 
@@ -248,7 +168,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
             Ok(maybe_context) => {
                 if let Some(context) = maybe_context {
                     if handler_ctxt.script_context.insert(entity, &id.id(), &None, context).is_err() {
-                        warn!("Unable to insert script context for entity {:?} script {}.", entity, id.display());
+                        warn!("Unable to insert script context for entity {:?} with script {}.", entity, id.display());
                     }
                 }
 
@@ -283,7 +203,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
         let result = with_handler_system_state(
             world,
             |guard, handler_ctxt: &mut HandlerContext<P>| {
-               Self::create_or_update_script(None, &self.id, &self.content,
+               Self::create_or_update_script(None, &self.id, &self.content, &self.domain,
                                              guard, handler_ctxt)
             });
 
@@ -294,6 +214,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
                 RunScriptCallback::<P>::new(
                     self.id,
                     Entity::from_raw(0),
+                    self.domain,
                     OnScriptLoaded::into_callback_label(),
                     vec![],
                     false,
@@ -311,7 +232,7 @@ impl<P: IntoScriptPluginParams> EntityCommand for CreateOrUpdateScript<P> {
         let result = with_handler_system_state(
             world,
             |guard, handler_ctxt: &mut HandlerContext<P>| {
-               Self::create_or_update_script(Some(entity), &self.id, &self.content,
+               Self::create_or_update_script(Some(entity), &self.id, &self.content, &self.domain,
                                              guard, handler_ctxt)
             });
 
@@ -322,6 +243,7 @@ impl<P: IntoScriptPluginParams> EntityCommand for CreateOrUpdateScript<P> {
                 RunScriptCallback::<P>::new(
                     self.id,
                     entity,
+                    self.domain,
                     OnScriptLoaded::into_callback_label(),
                     vec![],
                     false,
@@ -340,6 +262,8 @@ pub struct RunScriptCallback<P: IntoScriptPluginParams> {
     pub id: Handle<ScriptAsset>,
     /// The entity to use for the callback
     pub entity: Entity,
+    /// The domain if any
+    pub domain: Option<Domain>,
     /// The callback to run
     pub callback: CallbackLabel,
     /// optional context passed down to errors
@@ -357,6 +281,7 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
     pub fn new(
         id: Handle<ScriptAsset>,
         entity: Entity,
+        domain: Option<Domain>,
         callback: CallbackLabel,
         args: Vec<ScriptValue>,
         trigger_response: bool,
@@ -364,6 +289,7 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
         Self {
             id,
             entity,
+            domain,
             context: None,
             callback,
             args,
@@ -395,6 +321,7 @@ impl<P: IntoScriptPluginParams> Command for RunScriptCallback<P> {
                 &self.callback,
                 &self.id,
                 self.entity,
+                &self.domain,
                 self.args,
                 guard.clone(),
             );

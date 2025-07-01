@@ -194,13 +194,18 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                     {
                         continue
                     }
-                    _ => {}
+                    crate::event::Recipients::Domain(_domain) =>
+                    {
+                        todo!()
+                    }
+                    crate::event::Recipients::All => ()
                 }
 
                 let call_result = handler_ctxt.call_dynamic_label(
                     &callback_label,
                     &script_id,
                     *entity,
+
                     event.args.clone(),
                     guard.clone(),
                 );

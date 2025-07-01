@@ -30,7 +30,7 @@ use crate::{
     event::{CallbackLabel, IntoCallbackLabel},
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{ScriptId, StaticScripts, ScriptContext, DisplayProxy, ScriptContextProvider},
+    script::{ScriptId, StaticScripts, ScriptContext, DisplayProxy, ScriptContextProvider, Domain},
     IntoScriptPluginParams,
 };
 
@@ -220,11 +220,12 @@ impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
         label: &CallbackLabel,
         script_id: &Handle<ScriptAsset>,
         entity: Entity,
+        domain: &Option<Domain>,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
         // find script
-        let Some(context) = self.script_context.get(Some(entity), &script_id.id(), &None) else {
+        let Some(context) = self.script_context.get(Some(entity), &script_id.id(), domain) else {
             return Err(InteropError::missing_context(script_id.clone()).into());
         };
 
@@ -258,10 +259,11 @@ impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
         &self,
         script_id: &Handle<ScriptAsset>,
         entity: Entity,
+        domain: &Option<Domain>,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
-        self.call_dynamic_label(&C::into_callback_label(), script_id, entity, payload, guard)
+        self.call_dynamic_label(&C::into_callback_label(), script_id, entity, domain, payload, guard)
     }
 }
 

@@ -6,6 +6,17 @@ use bevy::{asset::{Asset, AssetId, Handle}, ecs::system::Resource, reflect::Refl
 use parking_lot::Mutex;
 use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc, fmt};
 
+mod script_context;
+mod shared_context;
+mod entity_context;
+mod domain_context;
+mod scriptid_context;
+pub use script_context::*;
+pub use shared_context::*;
+pub use entity_context::*;
+pub use domain_context::*;
+pub use scriptid_context::*;
+
 /// A unique identifier for a script, by default corresponds to the path of the asset excluding the asset source.
 ///
 /// I.e. an asset with the path `path/to/asset.ext` will have the script id `path/to/asset.ext`
@@ -70,123 +81,6 @@ impl ScriptComponent {
     /// Creates a new [`ScriptComponent`] with the given ScriptID's
     pub fn new<S: Into<Handle<ScriptAsset>>, I: IntoIterator<Item = S>>(components: I) -> Self {
         Self(components.into_iter().map(Into::into).collect())
-    }
-}
-
-/// A kind of catch all type for script context selection
-///
-/// I believe this is what the original ScriptId was intended to be.
-pub type Domain = Option<Cow<'static, str>>;
-
-/// A generic script context provider
-pub trait ScriptContextProvider<P: IntoScriptPluginParams> {
-    /// Get the context.
-    fn get(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Domain) -> Option<&Arc<Mutex<P::C>>>;
-    /// Insert a context.
-    fn insert(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Domain, context: P::C) -> Result<(), P::C>;
-    /// Returns true if there is a context.
-    fn contains(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Domain) -> bool;
-}
-
-#[derive(Resource)]
-/// Keeps track of contexts
-pub enum ScriptContext<P: IntoScriptPluginParams> {
-    /// One shared script context
-    Shared(SharedContext<P>),
-    /// One script context per entity
-    ///
-    /// Stores context by entity with a shared context as a last resort when no
-    /// entity is provided.
-    Entity(EntityContext<P>, SharedContext<P>)
-}
-
-impl<P: IntoScriptPluginParams> ScriptContext<P> {
-    /// Use a shared script context
-    pub fn shared() -> Self {
-        Self::Shared(SharedContext::default())
-    }
-    /// Use one script ontext per entity
-    pub fn per_entity() -> Self {
-        Self::Entity(EntityContext::default(), SharedContext::default())
-    }
-}
-
-impl<P: IntoScriptPluginParams> Default for ScriptContext<P> {
-    fn default() -> Self {
-        Self::shared()
-    }
-}
-
-impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for ScriptContext<P> {
-    fn get(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Domain) -> Option<&Arc<Mutex<P::C>>> {
-        match self {
-            ScriptContext::Shared(a) => a.get(id, script_id, domain),
-            ScriptContext::Entity(a, b) => a.get(id, script_id, domain)
-                                            .or_else(|| b.get(id, script_id, domain)),
-        }
-    }
-    fn insert(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Domain, context: P::C) -> Result<(), P::C> {
-        match self {
-            ScriptContext::Shared(a) => a.insert(id, script_id, domain, context),
-            ScriptContext::Entity(a, b) => match a.insert(id, script_id, domain, context) {
-                Ok(()) => Ok(()),
-                Err(context) => b.insert(id, script_id, domain, context)
-            }
-        }
-    }
-    fn contains(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Domain) -> bool {
-        match self {
-            ScriptContext::Shared(a) => a.contains(id, script_id, domain),
-            ScriptContext::Entity(a, b) => a.contains(id, script_id, domain) || b.contains(id, script_id, domain),
-        }
-    }
-}
-
-/// Stores the script context by entity.
-pub struct EntityContext<P: IntoScriptPluginParams>(HashMap<Entity, Arc<Mutex<P::C>>>);
-
-impl<P: IntoScriptPluginParams> Default for EntityContext<P> {
-    fn default() -> Self {
-        Self(HashMap::new())
-    }
-}
-
-impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for EntityContext<P> {
-    fn get(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Domain) -> Option<&Arc<Mutex<P::C>>> {
-        id.and_then(|id| self.0.get(&id))
-    }
-    fn insert(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Domain, context: P::C) -> Result<(), P::C> {
-        if let Some(id) = id {
-            self.0.insert(id, Arc::new(Mutex::new(context)));
-            Ok(())
-        } else {
-            Err(context)
-        }
-    }
-    fn contains(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Domain) -> bool {
-        id.map(|id| self.0.contains_key(&id)).unwrap_or(false)
-    }
-}
-
-/// Contains the shared context.
-pub struct SharedContext<P: IntoScriptPluginParams>(pub Option<Arc<Mutex<P::C>>>);
-
-impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for SharedContext<P> {
-    fn get(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Domain) -> Option<&Arc<Mutex<P::C>>> {
-        self.0.as_ref()
-    }
-    fn insert(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Domain, context: P::C) -> Result<(), P::C> {
-        self.0 = Some(Arc::new(Mutex::new(context)));
-        Ok(())
-    }
-    fn contains(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Domain) -> bool {
-        self.0.is_some()
-    }
-}
-
-impl<P: IntoScriptPluginParams> Default for SharedContext<P> {
-    fn default() -> Self {
-        Self(None)
     }
 }
 

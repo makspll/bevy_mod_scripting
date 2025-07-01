@@ -5,7 +5,7 @@ use crate::{
     ScriptComponent,
     commands::{CreateOrUpdateScript, DeleteScript},
     error::ScriptError,
-    script::{DisplayProxy, ScriptId},
+    script::{DisplayProxy, ScriptId, Domain},
     IntoScriptPluginParams, ScriptingSystemSet,
 };
 use bevy::{
@@ -58,6 +58,8 @@ pub struct ScriptAsset {
     pub content: Box<[u8]>, // Any chance a Cow<'static, ?> could work here?
     /// The language of the script
     pub language: Language,
+    /// The domain if any the script will run in
+    pub domain: Option<Domain>,
 }
 
 impl From<String> for ScriptAsset {
@@ -65,6 +67,7 @@ impl From<String> for ScriptAsset {
         ScriptAsset {
             content: s.into_bytes().into_boxed_slice(),
             language: Language::default(),
+            domain: None,
         }
     }
 }
@@ -74,6 +77,8 @@ impl From<String> for ScriptAsset {
 pub struct ScriptSettings {
     /// Define the language for a script or use the extension if None.
     pub language: Option<Language>,
+    /// Specify the domain for the script.
+    pub domain: Option<Domain>,
 }
 
 #[derive(Default)]
@@ -123,6 +128,7 @@ impl AssetLoader for ScriptAssetLoader {
         let asset = ScriptAsset {
             content: content.into_boxed_slice(),
             language,
+            domain: settings.domain.clone(),
         };
         Ok(asset)
     }
@@ -154,13 +160,13 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
                         match asset_server.get_path(*id) {
                             Some(path) => {
                                 trace!(
-                                    "{}: Script path {} is for a different langauge than this sync system. Skipping.",
+                                    "{}: Script path {} is for a different language than this sync system. Skipping.",
                                     P::LANGUAGE,
                                     path);
                             }
                             None => {
                                 trace!(
-                                    "{}: Script id {} is for a different langauge than this sync system. Skipping.",
+                                    "{}: Script id {} is for a different language than this sync system. Skipping.",
                                     P::LANGUAGE,
                                     id);
                             }
@@ -168,12 +174,12 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
                         continue;
                     }
 
-
                     if static_scripts.iter().any(|handle| handle.id() == *id) {
                         info!("{}: Loading static script: {:?}", P::LANGUAGE, id);
                         commands.queue(CreateOrUpdateScript::<P>::new(
                             Handle::Weak(*id),
                             asset.content.clone(), // Cloning seems bad!
+                            asset.domain.clone(),
                         ));
                     }
                 }
@@ -228,6 +234,7 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
                     commands.entity(id).queue(CreateOrUpdateScript::<P>::new(
                         script_id,
                         asset.content.clone(),
+                        asset.domain.clone(),
                     ));
                 }
             } else {

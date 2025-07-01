@@ -1262,8 +1262,9 @@ impl GlobalNamespace {
     fn system_builder(
         callback: String,
         script_id: String,
+        domain: Option<String>,
     ) -> Result<Val<ScriptSystemBuilder>, InteropError> {
-        Ok(ScriptSystemBuilder::new(callback.into(), script_id.into()).into())
+        Ok(ScriptSystemBuilder::new(callback.into(), script_id.into(), domain.map(|x| x.into())).into())
     }
 }
 

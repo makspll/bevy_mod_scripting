@@ -18,7 +18,7 @@ use crate::{
     extractors::get_all_access_ids,
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{ScriptId, ScriptContextProvider, ScriptContext},
+    script::{ScriptId, ScriptContextProvider, ScriptContext, Domain},
     IntoScriptPluginParams,
 };
 use bevy::{
@@ -89,6 +89,7 @@ type ScriptPath = Cow<'static, str>;
 pub struct ScriptSystemBuilder {
     pub(crate) name: CallbackLabel,
     pub(crate) script_id: ScriptPath,
+    domain: Option<Domain>,
     before: Vec<ReflectSystem>,
     after: Vec<ReflectSystem>,
     system_params: Vec<ScriptSystemParamDescriptor>,
@@ -98,12 +99,13 @@ pub struct ScriptSystemBuilder {
 #[profiling::all_functions]
 impl ScriptSystemBuilder {
     /// Creates a new script system builder
-    pub fn new(name: CallbackLabel, script_id: ScriptPath) -> Self {
+    pub fn new(name: CallbackLabel, script_id: ScriptPath, domain: Option<Domain>) -> Self {
         Self {
             before: vec![],
             after: vec![],
             name,
             script_id,
+            domain,
             system_params: vec![],
             is_exclusive: false,
         }
@@ -261,6 +263,7 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
         label: &CallbackLabel,
         script_id: &Handle<ScriptAsset>,
         entity: Entity,
+        domain: &Option<Domain>,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
@@ -278,7 +281,7 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
         // } else {
         //     return Err(InteropError::missing_script(script_id.clone()).into());
         // };
-        let Some(context) = self.script_context.get(Some(entity), &script_id.id(), &None) else {
+        let Some(context) = self.script_context.get(Some(entity), &script_id.id(), domain) else {
             return Err(InteropError::missing_context(script_id.clone()).into());
         };
 
@@ -360,6 +363,7 @@ pub struct DynamicScriptSystem<P: IntoScriptPluginParams> {
     archetype_generation: ArchetypeGeneration,
     system_param_descriptors: Vec<ScriptSystemParamDescriptor>,
     state: Option<ScriptSystemState>,
+    domain: Option<Domain>,
     _marker: std::marker::PhantomData<fn() -> P>,
 }
 
@@ -381,6 +385,7 @@ impl<P: IntoScriptPluginParams> IntoSystem<(), (), IsDynamicScriptSystem<P>>
             last_run: Default::default(),
             target_script: builder.script_id,
             state: None,
+            domain: None,
             component_access_set: Default::default(),
             archetype_component_access: Default::default(),
             _marker: Default::default(),
@@ -513,6 +518,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             // &self.target_script,
             &script_id,
             Entity::from_raw(0),
+            &self.domain,
             payload,
             guard.clone(),
         );
