@@ -268,19 +268,6 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
         // find script
-
-        // let access = ReflectAccessId::for_component_id(script_component_id);
-        // It'd be nice to have the component id for Script<P> somewhere.
-        // let context = if guard.claim_read_access(access) {
-            todo!();
-            // let world = guard.as_unsafe_world_cell_readonly()?;
-            // let world = unsafe { world.world() };
-            // let maybe_context = world.get::<Script<P>>(entity).and_then(|script| script.contexts.get(&script_id.id())).map(|context| context.clone());
-            // unsafe { guard.release_access(access) };
-            // maybe_context.ok_or_else(||InteropError::missing_script(script_id.clone()))?
-        // } else {
-        //     return Err(InteropError::missing_script(script_id.clone()).into());
-        // };
         let Some(context) = self.script_context.get(Some(entity), &script_id.id(), domain) else {
             return Err(InteropError::missing_context(script_id.clone()).into());
         };

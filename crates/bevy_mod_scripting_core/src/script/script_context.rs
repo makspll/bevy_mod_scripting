@@ -12,14 +12,19 @@ pub type Domain = Cow<'static, str>;
 
 /// A generic script context provider
 pub trait ScriptContextProvider<P: IntoScriptPluginParams> {
-    /// Hash for context.
-    fn hash(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64>;
     /// Get the context.
     fn get(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<&Arc<Mutex<P::C>>>;
     /// Insert a context.
+    ///
+    /// If the context cannot be inserted, it is returned as an `Err`.
     fn insert(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>, context: P::C) -> Result<(), P::C>;
     /// Returns true if there is a context.
     fn contains(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool;
+    /// Hash for context.
+    ///
+    /// Useful for tracking what context will be returned by `get()` without
+    /// requiring that `P::C` impl `Hash` and cheaper too.
+    fn hash(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64>;
 }
 
 #[derive(Resource)]
@@ -31,6 +36,9 @@ pub enum ScriptContext<P: IntoScriptPluginParams> {
     ///
     /// Stores context by entity with a shared context as a last resort when no
     /// entity is provided.
+    ///
+    /// TODO: Should check for entity despawns and remove from this
+    /// EntityContext.
     Entity(EntityContext<P>, SharedContext<P>),
     /// Domain contexts or shared context
     ///
@@ -39,7 +47,8 @@ pub enum ScriptContext<P: IntoScriptPluginParams> {
     Domain(DomainContext<P>, SharedContext<P>),
     /// A script context per script
     ScriptId(ScriptIdContext<P>),
-    // NOTE: We could also have the following:
+    // NOTE: We could also have the following which would support domains;
+    // failing that entities; failing that a shared context.
     // DomainEntity(DomainContext<P>, EntityContext<P>, SharedContext<P>),
 }
 
@@ -69,17 +78,6 @@ impl<P: IntoScriptPluginParams> Default for ScriptContext<P> {
 }
 
 impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for ScriptContext<P> {
-
-    fn hash(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64> {
-        match self {
-            ScriptContext::Shared(a) => a.hash(id, script_id, domain),
-            ScriptContext::ScriptId(a) => a.hash(id, script_id, domain),
-            ScriptContext::Entity(a, b) => a.hash(id, script_id, domain)
-                                            .or_else(|| b.hash(id, script_id, domain)),
-            ScriptContext::Domain(a, b) => a.hash(id, script_id, domain)
-                                            .or_else(|| b.hash(id, script_id, domain)),
-        }
-    }
     fn get(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<&Arc<Mutex<P::C>>> {
         match self {
             ScriptContext::Shared(a) => a.get(id, script_id, domain),
@@ -110,6 +108,16 @@ impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for ScriptContext<P> {
             ScriptContext::ScriptId(a) => a.contains(id, script_id, domain),
             ScriptContext::Entity(a, b) => a.contains(id, script_id, domain) || b.contains(id, script_id, domain),
             ScriptContext::Domain(a, b) => a.contains(id, script_id, domain) || b.contains(id, script_id, domain),
+        }
+    }
+    fn hash(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64> {
+        match self {
+            ScriptContext::Shared(a) => a.hash(id, script_id, domain),
+            ScriptContext::ScriptId(a) => a.hash(id, script_id, domain),
+            ScriptContext::Entity(a, b) => a.hash(id, script_id, domain)
+                                            .or_else(|| b.hash(id, script_id, domain)),
+            ScriptContext::Domain(a, b) => a.hash(id, script_id, domain)
+                                            .or_else(|| b.hash(id, script_id, domain)),
         }
     }
 }

@@ -12,7 +12,7 @@ use crate::{
         ScriptErrorEvent,
     },
     extractors::{HandlerContext, WithWorldGuard},
-    script::{ScriptComponent, ScriptId, ScriptDomain, Domain},
+    script::{ScriptComponent, ScriptId, ScriptDomain, Domain, ScriptContextProvider},
     IntoScriptPluginParams,
 };
 use bevy::{
@@ -143,12 +143,13 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     callback_label: CallbackLabel,
     mut entity_query_state: Local<QueryState<(Entity, Ref<ScriptComponent>, Option<Ref<ScriptDomain>>)>>,
     mut script_events: crate::extractors::EventReaderScope<ScriptCallbackEvent>,
+    // script_context_provider: Res<ScriptContextProvider<P>>,
     mut handler_ctxt: WithWorldGuard<HandlerContext<P>>,
 ) {
+    const NO_ENTITY: Entity = Entity::from_raw(0);
     let (guard, handler_ctxt) = handler_ctxt.get_mut();
 
     let mut errors = Vec::default();
-
     let events = script_events.read().cloned().collect::<Vec<_>>();
 
     // query entities + chain static scripts
@@ -161,7 +162,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                     .static_scripts
                     .scripts
                     .iter()
-                    .map(|s| (Entity::from_raw(0), vec![s.clone()], None)),
+                    .map(|s| (NO_ENTITY, vec![s.clone()], None)),
             )
             .collect::<Vec<_>>()
     });
@@ -180,7 +181,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
 
     // TODO: Instead of `Domain` we should limit calls by `Context` but I don't
     // think we've got a hash for that.
-    let mut called_domain: HashSet<Domain> = HashSet::new();
+    let mut called_contexts: HashSet<u64> = HashSet::new();
     for event in events.into_iter().filter(|e| e.label == callback_label) {
         for (entity, entity_scripts, domain) in entity_and_static_scripts.iter() {
             for script_id in entity_scripts.iter() {
@@ -207,12 +208,14 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                     _ => ()
 
                 }
-                if let Some(domain) = domain {
-                    if called_domain.contains(domain) {
-                        // Only call a domain once. Not once per script.
+                let context_hash = handler_ctxt.script_context.hash((*entity != NO_ENTITY).then_some(*entity),
+                                                                    &script_id.id(),
+                                                                    domain);
+                if let Some(hash) = context_hash {
+                    if !called_contexts.insert(hash) {
+                        // Only call a context once. Not once per script.
                         continue;
                     }
-                    called_domain.insert(domain.clone());
                 }
 
 
