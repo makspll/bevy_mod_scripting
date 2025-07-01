@@ -143,7 +143,6 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     callback_label: CallbackLabel,
     mut entity_query_state: Local<QueryState<(Entity, Ref<ScriptComponent>, Option<Ref<ScriptDomain>>)>>,
     mut script_events: crate::extractors::EventReaderScope<ScriptCallbackEvent>,
-    // script_context_provider: Res<ScriptContextProvider<P>>,
     mut handler_ctxt: WithWorldGuard<HandlerContext<P>>,
 ) {
     const NO_ENTITY: Entity = Entity::from_raw(0);
@@ -179,8 +178,16 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
         }
     };
 
-    // TODO: Instead of `Domain` we should limit calls by `Context` but I don't
-    // think we've got a hash for that.
+    // Keep track of the contexts that have been called. Don't duplicate the
+    // calls on account of multiple matches.
+    //
+    // If I have five scripts all in one shared context, and I fire a call to
+    // `Recipients::All`, then I want that call to go to the shared context
+    // once.
+    //
+    // If I have four scripts in three different contexts, and I fire a call to
+    // `Recipients::All`, then I want that call to be evaluated three times,
+    // once in each context.
     let mut called_contexts: HashSet<u64> = HashSet::new();
     for event in events.into_iter().filter(|e| e.label == callback_label) {
         for (entity, entity_scripts, domain) in entity_and_static_scripts.iter() {
@@ -213,11 +220,10 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                                                                     domain);
                 if let Some(hash) = context_hash {
                     if !called_contexts.insert(hash) {
-                        // Only call a context once. Not once per script.
+                        // Only call a context once, not once per script.
                         continue;
                     }
                 }
-
 
                 let call_result = handler_ctxt.call_dynamic_label(
                     &callback_label,
