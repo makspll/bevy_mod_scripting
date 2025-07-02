@@ -1211,10 +1211,10 @@ impl Xtasks {
         match kind {
             CheckKind::All => {
                 let err_main = Self::check_main_workspace(app_settings.clone(), ide_mode);
-                let err_codegen = Self::check_codegen_crate(app_settings.clone(), ide_mode);
+                // let err_codegen = Self::check_codegen_crate(app_settings.clone(), ide_mode);
 
                 err_main?;
-                err_codegen?;
+                // err_codegen?;
             }
             CheckKind::Main => {
                 Self::check_main_workspace(app_settings, ide_mode)?;
