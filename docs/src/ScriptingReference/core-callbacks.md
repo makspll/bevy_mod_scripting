@@ -29,31 +29,26 @@ This callback will not have access to the `entity` variable, as when the script 
 ```lua
 function on_script_unloaded()
     print("Goodbye world")
+    return "house key"
 end
 ```
 
 ## `on_script_reloaded`
 
-This will be called twice: right before and after a script is reloaded.
+Called right after `on_script_loaded` but only if the script was reloaded. 
+The callback is passed a state argument, this state is exactly what is returned by the script through `on_script_unloaded` before a reload happens.
 
-The first parameter `save` informs whether it is time to save a value or restore it.
-
-Before the script reload, `on_script_reloaded` is called with two arguments:
-`true`, `nil`. The value returned is kept. After the script reload,
-`on_script_reloaded` is called with two arguments: `false` and the value
-returned from the preceding call. 
+This callback does not have access to the `entity` variable.
 
 ```lua
 mode = 1
-function on_script_reloaded(save, value)
-    if save then
-        print("Before I go, take this.")
-        return mode
+function on_script_reloaded(value)
+    if value then
+        print("I'm back. Thanks for the keys!")
     else
-        print("I'm back. Where was I?")
-        mode = value
+        print('I have not saved any state before unloading')
     end
 end
 ```
 
-Using `on_script_reloaded` one can make a script reload event not disrupt the current script state.
+Using `on_script_reloaded` one can make a script reload preserve its current state.
