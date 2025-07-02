@@ -1,10 +1,14 @@
 use super::*;
-use crate::{asset::ScriptAsset, IntoScriptPluginParams};
-use bevy::prelude::{Component, ReflectComponent, Deref, DerefMut, Entity};
-use bevy::{asset::{Asset, AssetId, Handle}, ecs::system::Resource, reflect::Reflect, utils::HashSet};
-use parking_lot::Mutex;
-use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc, fmt};
 
+use crate::{asset::ScriptAsset, IntoScriptPluginParams};
+use bevy::prelude::{Component, ReflectComponent, Deref, DerefMut, Entity, Resource};
+use bevy::{asset::{Asset, AssetId, Handle}, reflect::Reflect};
+use parking_lot::Mutex;
+use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc, fmt, hash::{Hash, Hasher, BuildHasher}};
+use bevy::platform::{
+    collections::HashSet,
+    hash::FixedState,
+};
 /// A kind of catch all type for script context selection
 ///
 /// I believe this is what the original ScriptId was intended to be.

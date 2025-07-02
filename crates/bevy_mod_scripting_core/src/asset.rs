@@ -11,14 +11,13 @@ use crate::{
 use bevy::{
     app::{App, PreUpdate},
     asset::{Asset, AssetEvent, AssetId, AssetLoader, AssetPath, Assets, LoadState},
-    ecs::system::Resource,
     log::{debug, info, trace, warn},
     prelude::{
-        Commands, Event, EventReader, EventWriter, IntoSystemConfigs, IntoSystemSetConfigs, Res,
-        ResMut, Added, Query, Local, Handle, AssetServer, Entity,
+        Commands, Event, EventReader, EventWriter, IntoScheduleConfigs, Res,
+        ResMut, Added, Query, Local, Handle, AssetServer, Entity, Resource
     },
     reflect::TypePath,
-    utils::hashbrown::HashMap,
+    platform::collections::HashMap,
 };
 use std::{borrow::Cow, collections::VecDeque};
 use serde::{Deserialize, Serialize};
@@ -132,7 +131,6 @@ impl AssetLoader for ScriptAssetLoader {
     }
 }
 
-/// Listens to [`AssetEvent`] events and dispatches [`CreateOrUpdateScript`] and [`DeleteScript`] commands accordingly.
 ///
 /// Allows for hot-reloading of scripts.
 #[profiling::function]
@@ -486,9 +484,9 @@ mod tests {
     struct DummyPlugin;
 
     impl IntoScriptPluginParams for DummyPlugin {
-        type R = ();
-        type C = ();
         const LANGUAGE: Language = Language::Lua;
+        type C = ();
+        type R = ();
 
         fn build_runtime() -> Self::R {}
     }

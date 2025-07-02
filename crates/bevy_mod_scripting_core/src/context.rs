@@ -8,8 +8,8 @@ use crate::{
     IntoScriptPluginParams,
 };
 use bevy::{
-    ecs::{entity::Entity, system::Resource},
-    asset::Handle,
+    ecs::entity::Entity,
+    prelude::{Handle, Resource},
 };
 
 /// A trait that all script contexts must implement.

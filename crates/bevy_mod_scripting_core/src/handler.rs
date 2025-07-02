@@ -20,12 +20,12 @@ use bevy::{
     ecs::{
         entity::Entity,
         query::QueryState,
-        system::{Local, Resource, SystemState},
+        system::{Local, SystemState},
         world::{Mut, World},
     },
     log::trace_once,
-    prelude::{Events, Ref},
-    utils::HashSet,
+    prelude::{Events, Ref, Resource},
+    platform::collections::HashSet,
 };
 
 /// A function that handles a callback event

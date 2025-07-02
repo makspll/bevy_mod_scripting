@@ -12,7 +12,7 @@ impl<P: IntoScriptPluginParams> Default for EntityContext<P> {
 impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for EntityContext<P> {
     fn hash(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64> {
         id.map(|id| {
-            let mut hasher = DefaultHashBuilder::default().build_hasher();
+            let mut hasher = FixedState::default().build_hasher();
             id.hash(&mut hasher);
             hasher.finish()
         })

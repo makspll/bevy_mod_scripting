@@ -191,18 +191,18 @@ macro_rules! impl_documentable {
     };
 }
 
-bevy::utils::all_tuples!(impl_documentable, 0, 13, T);
+variadics_please::all_tuples!(impl_documentable, 0, 13, T);
 
 #[cfg(test)]
 mod test {
-    use crate::{
-        bindings::function::from::{Mut, Ref, Val},
-        docgen::typed_through::UntypedWrapperKind,
-    };
+	use crate::{
+		bindings::function::from::{Mut, Ref, Val},
+		docgen::typed_through::UntypedWrapperKind,
+	};
 
-    use super::*;
+	use super::*;
 
-    #[test]
+	#[test]
     fn test_get_function_info() {
         fn test_fn(a: i32, b: f32) -> f64 {
             (a as f64) + (b as f64)

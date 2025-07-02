@@ -15,7 +15,7 @@ use crate::{
     script::{ScriptId, StaticScripts, DisplayProxy, ScriptContextProvider, Domain},
     IntoScriptPluginParams,
 };
-use bevy::{asset::{Assets, Handle}, ecs::entity::Entity, log::{warn, debug}, prelude::{EntityCommand, Command}};
+use bevy::{asset::{Assets, Handle}, ecs::entity::Entity, log::{warn, debug}, prelude::{EntityCommand, Command, EntityWorldMut}};
 use parking_lot::Mutex;
 use std::{marker::PhantomData, sync::Arc};
 
@@ -229,7 +229,9 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
 
 #[profiling::all_functions]
 impl<P: IntoScriptPluginParams> EntityCommand for CreateOrUpdateScript<P> {
-    fn apply(self, entity: Entity, world: &mut bevy::prelude::World) {
+    fn apply(self, entity_world: EntityWorldMut<'_>) {
+        let entity = entity_world.id();
+        let world = entity_world.into_world_mut();
         let result = with_handler_system_state(
             world,
             |guard, handler_ctxt: &mut HandlerContext<P>| {

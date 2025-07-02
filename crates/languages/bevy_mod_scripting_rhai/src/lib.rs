@@ -22,13 +22,12 @@ use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
 };
 use bindings::{
-    reference::{ReservedKeyword, RhaiReflectReference, RhaiStaticReflectReference},
-    script_value::{FromDynamic, IntoDynamic},
+	reference::{ReservedKeyword, RhaiReflectReference, RhaiStaticReflectReference},
+	script_value::{FromDynamic, IntoDynamic},
 };
 use parking_lot::RwLock;
-use rhai::{CallFnOptions, Dynamic, Engine, EvalAltResult, Scope, AST};
-
 pub use rhai;
+use rhai::{CallFnOptions, Dynamic, Engine, EvalAltResult, Scope, AST};
 /// Bindings for rhai.
 pub mod bindings;
 
@@ -72,7 +71,7 @@ impl Default for RhaiScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
                 context_assignment_strategy: Default::default(),
                 runtime_settings: RuntimeSettings {
-                    initializers: vec![|runtime: &RhaiRuntime| {
+                    initializers: vec![|runtime| {
                         let mut engine = runtime.write();
                         engine.set_max_expr_depths(999, 999);
                         engine.build_type::<RhaiReflectReference>();
@@ -87,14 +86,14 @@ impl Default for RhaiScriptingPlugin {
                     reload: rhai_context_reload,
                 },
                 context_initializers: vec![
-                    |_, context: &mut RhaiScriptContext| {
+                    |_, context| {
                         context.scope.set_or_push(
                             "world",
                             RhaiStaticReflectReference(std::any::TypeId::of::<World>()),
                         );
                         Ok(())
                     },
-                    |_, context: &mut RhaiScriptContext| {
+                    |_, context| {
                         // initialize global functions
                         let world = ThreadWorldContainer.try_get_world()?;
                         let globals_registry =
@@ -302,9 +301,9 @@ pub fn rhai_callback_handler(
 
 #[cfg(test)]
 mod test {
-    use super::*;
+	use super::*;
 
-    #[test]
+	#[test]
     fn test_reload_doesnt_overwrite_old_context() {
         let runtime = RhaiRuntime::new(Engine::new());
         let script_id = ScriptId::from("asd.rhai");
