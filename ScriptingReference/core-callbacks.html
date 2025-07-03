@@ -174,10 +174,11 @@
                     <main>
                         <h1 id="core-callbacks"><a class="header" href="#core-callbacks">Core Callbacks</a></h1>
 <p>On top of callbacks which are registered by your application, BMS provides a set of core callbacks which are always available.</p>
-<p>The two core callbacks are:</p>
+<p>The three core callbacks are:</p>
 <ul>
 <li><code>on_script_loaded</code></li>
 <li><code>on_script_unloaded</code></li>
+<li><code>on_script_reloaded</code></li>
 </ul>
 <h2 id="on_script_loaded"><a class="header" href="#on_script_loaded"><code>on_script_loaded</code></a></h2>
 <p>This will be called right after a script has been loaded or reloaded. This is a good place to initialize your script. You should avoid placing a lot of logic into the global body of your script, and instead put it into this callback. Otherwise errors in the initialization will fail the loading of the script.</p>
@@ -188,12 +189,27 @@ function on_script_loaded()
 end
 </code></pre>
 <h2 id="on_script_unloaded"><a class="header" href="#on_script_unloaded"><code>on_script_unloaded</code></a></h2>
-<p>This will be called right before a script is unloaded. This is a good place to clean up any resources that your script has allocated. Note this is not called when a script is reloaded, only when it is being removed from the system.</p>
+<p>This will be called right before a script is unloaded. This is a good place to clean up any resources that your script has allocated. This is called both before a script is removed as well as before a script is reloaded. If you want to preserve the state of your script across reloads, you can return a value from this callback, which will be passed to <code>on_script_reloaded</code> when the script is reloaded.</p>
 <p>This callback will not have access to the <code>entity</code> variable, as when the script is being unloaded it might not be attached to an entity.</p>
 <pre><code class="language-lua">function on_script_unloaded()
     print("Goodbye world")
+    return "house key"
 end
 </code></pre>
+<h2 id="on_script_reloaded"><a class="header" href="#on_script_reloaded"><code>on_script_reloaded</code></a></h2>
+<p>Called right after <code>on_script_loaded</code> but only if the script was reloaded.
+The callback is passed a state argument, this state is exactly what is returned by the script through <code>on_script_unloaded</code> before a reload happens.</p>
+<p>This callback does not have access to the <code>entity</code> variable.</p>
+<pre><code class="language-lua">mode = 1
+function on_script_reloaded(value)
+    if value then
+        print("I'm back. Thanks for the keys!")
+    else
+        print('I have not saved any state before unloading')
+    end
+end
+</code></pre>
+<p>Using <code>on_script_reloaded</code> one can make a script reload preserve its current state.</p>
 
                     </main>
 
