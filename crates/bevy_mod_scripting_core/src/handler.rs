@@ -1,5 +1,6 @@
 //! Contains the logic for handling script callback events
 use crate::{
+    ScriptAsset,
     bindings::{
         pretty_print::DisplayWithWorld, script_value::ScriptValue, ThreadWorldContainer,
         WorldContainer, WorldGuard,
@@ -11,25 +12,27 @@ use crate::{
         ScriptErrorEvent,
     },
     extractors::{HandlerContext, WithWorldGuard},
-    script::{ScriptComponent, ScriptId},
+    script::{ScriptComponent, ScriptId, ScriptDomain, Domain, ScriptContextProvider},
     IntoScriptPluginParams,
 };
 use bevy::{
+    asset::Handle,
     ecs::{
         entity::Entity,
         query::QueryState,
-        system::{Local, Resource, SystemState},
+        system::{Local, SystemState},
         world::{Mut, World},
     },
     log::trace_once,
-    prelude::{Events, Ref},
+    prelude::{Events, Ref, Resource},
+    platform::collections::HashSet,
 };
 
 /// A function that handles a callback event
 pub type HandlerFn<P> = fn(
     args: Vec<ScriptValue>,
     entity: Entity,
-    script_id: &ScriptId,
+    script_id: &Handle<ScriptAsset>,
     callback: &CallbackLabel,
     context: &mut <P as IntoScriptPluginParams>::C,
     pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
@@ -71,7 +74,7 @@ impl<P: IntoScriptPluginParams> CallbackSettings<P> {
         handler: HandlerFn<P>,
         args: Vec<ScriptValue>,
         entity: Entity,
-        script_id: &ScriptId,
+        script_id: &Handle<ScriptAsset>,
         callback: &CallbackLabel,
         script_ctxt: &mut P::C,
         pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
@@ -129,7 +132,7 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
 
 #[allow(deprecated)]
 pub(crate) type EventHandlerSystemState<'w, 's, P> = SystemState<(
-    Local<'s, QueryState<(Entity, Ref<'w, ScriptComponent>)>>,
+    Local<'s, QueryState<(Entity, Ref<'w, ScriptComponent>, Option<Ref<'w, ScriptDomain>>)>>,
     crate::extractors::EventReaderScope<'s, ScriptCallbackEvent>,
     WithWorldGuard<'w, 's, HandlerContext<'s, P>>,
 )>;
@@ -138,27 +141,27 @@ pub(crate) type EventHandlerSystemState<'w, 's, P> = SystemState<(
 #[allow(deprecated)]
 pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     callback_label: CallbackLabel,
-    mut entity_query_state: Local<QueryState<(Entity, Ref<ScriptComponent>)>>,
+    mut entity_query_state: Local<QueryState<(Entity, Ref<ScriptComponent>, Option<Ref<ScriptDomain>>)>>,
     mut script_events: crate::extractors::EventReaderScope<ScriptCallbackEvent>,
     mut handler_ctxt: WithWorldGuard<HandlerContext<P>>,
 ) {
+    const NO_ENTITY: Entity = Entity::from_raw(0);
     let (guard, handler_ctxt) = handler_ctxt.get_mut();
 
     let mut errors = Vec::default();
-
     let events = script_events.read().cloned().collect::<Vec<_>>();
 
     // query entities + chain static scripts
     let entity_and_static_scripts = guard.with_global_access(|world| {
         entity_query_state
             .iter(world)
-            .map(|(e, s)| (e, s.0.clone()))
+            .map(|(e, s, d)| (e, s.0.clone(), d.map(|x| x.0.clone())))
             .chain(
                 handler_ctxt
                     .static_scripts
                     .scripts
                     .iter()
-                    .map(|s| (Entity::from_raw(0), vec![s.clone()])),
+                    .map(|s| (NO_ENTITY, vec![s.clone()], None)),
             )
             .collect::<Vec<_>>()
     });
@@ -166,7 +169,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     let entity_and_static_scripts = match entity_and_static_scripts {
         Ok(entity_and_static_scripts) => entity_and_static_scripts,
         Err(e) => {
-            bevy::log::error!(
+            bevy::log::error_once!(
                 "{}: Failed to query entities with scripts: {}",
                 P::LANGUAGE,
                 e.display_with_world(guard.clone())
@@ -175,12 +178,23 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
         }
     };
 
+    // Keep track of the contexts that have been called. Don't duplicate the
+    // calls on account of multiple matches.
+    //
+    // If I have five scripts all in one shared context, and I fire a call to
+    // `Recipients::All`, then I want that call to go to the shared context
+    // once.
+    //
+    // If I have four scripts in three different contexts, and I fire a call to
+    // `Recipients::All`, then I want that call to be evaluated three times,
+    // once in each context.
+    let mut called_contexts: HashSet<u64> = HashSet::new();
     for event in events.into_iter().filter(|e| e.label == callback_label) {
-        for (entity, entity_scripts) in entity_and_static_scripts.iter() {
+        for (entity, entity_scripts, domain) in entity_and_static_scripts.iter() {
             for script_id in entity_scripts.iter() {
                 match &event.recipients {
                     crate::event::Recipients::Script(target_script_id)
-                        if target_script_id != script_id =>
+                        if *target_script_id != script_id.id() =>
                     {
                         continue
                     }
@@ -192,13 +206,30 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                     {
                         continue
                     }
-                    _ => {}
+                    crate::event::Recipients::Domain(target_domain)
+                        if domain.as_ref().map(|x| *x != *target_domain).unwrap_or(false) =>
+                    {
+                        continue
+                    }
+                    crate::event::Recipients::All => (),
+                    _ => ()
+
+                }
+                let context_hash = handler_ctxt.script_context.hash((*entity != NO_ENTITY).then_some(*entity),
+                                                                    &script_id.id(),
+                                                                    domain);
+                if let Some(hash) = context_hash {
+                    if !called_contexts.insert(hash) {
+                        // Only call a context once, not once per script.
+                        continue;
+                    }
                 }
 
                 let call_result = handler_ctxt.call_dynamic_label(
                     &callback_label,
-                    script_id,
+                    &script_id,
                     *entity,
+                    domain,
                     event.args.clone(),
                     guard.clone(),
                 );
@@ -208,7 +239,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                         guard.clone(),
                         ScriptCallbackResponseEvent::new(
                             callback_label.clone(),
-                            script_id.clone(),
+                            script_id.id(),
                             call_result.clone(),
                         ),
                     );
@@ -219,11 +250,19 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                     Err(e) => {
                         match e.downcast_interop_inner() {
                             Some(InteropErrorInner::MissingScript { script_id }) => {
-                                trace_once!(
-                                "{}: Script `{}` on entity `{:?}` is either still loading, doesn't exist, or is for another language, ignoring until the corresponding script is loaded.",
-                                P::LANGUAGE,
-                                script_id, entity
-                            );
+                                if let Some(path) = script_id.path() {
+                                    trace_once!(
+                                        "{}: Script path `{}` on entity `{:?}` is either still loading, doesn't exist, or is for another language, ignoring until the corresponding script is loaded.",
+                                        P::LANGUAGE,
+                                        path, entity
+                                    );
+                                } else {
+                                    trace_once!(
+                                        "{}: Script id `{}` on entity `{:?}` is either still loading, doesn't exist, or is for another language, ignoring until the corresponding script is loaded.",
+                                        P::LANGUAGE,
+                                        script_id.id(), entity
+                                    );
+                                }
                                 continue;
                             }
                             Some(InteropErrorInner::MissingContext { .. }) => {
@@ -234,9 +273,15 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                             }
                             _ => {}
                         }
-                        let e = e
-                            .with_script(script_id.clone())
-                            .with_context(format!("Event handling for: Language: {}", P::LANGUAGE));
+                        let e = {
+
+                            if let Some(path) = script_id.path() {
+                                e.with_script(path)
+                            } else {
+                                e
+                            }
+                            .with_context(format!("Event handling for: Language: {}", P::LANGUAGE))
+                        };
                         push_err_and_continue!(errors, Err(e));
                     }
                 };

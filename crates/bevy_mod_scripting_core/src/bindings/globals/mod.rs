@@ -1,15 +1,15 @@
 //! Contains abstractions for exposing "globals" to scripts, in a language-agnostic way.
 
 use super::{
-    function::arg_meta::{ScriptReturn, TypedScriptReturn},
-    script_value::ScriptValue,
-    WorldGuard,
+	function::arg_meta::{ScriptReturn, TypedScriptReturn},
+	script_value::ScriptValue,
+	WorldGuard,
 };
 use crate::{
-    docgen::{into_through_type_info, typed_through::ThroughTypeInfo},
-    error::InteropError,
+	docgen::{into_through_type_info, typed_through::ThroughTypeInfo},
+	error::InteropError,
 };
-use bevy::{ecs::system::Resource, reflect::Typed, utils::hashbrown::HashMap};
+use bevy::{platform::collections::HashMap, prelude::Resource, reflect::Typed};
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::{any::TypeId, borrow::Cow, sync::Arc};
 
@@ -235,11 +235,11 @@ impl ScriptGlobalsRegistry {
 
 #[cfg(test)]
 mod test {
-    use bevy::ecs::world::World;
+	use bevy::ecs::world::World;
 
-    use super::*;
+	use super::*;
 
-    #[test]
+	#[test]
     fn test_script_globals_registry() {
         let mut registry = ScriptGlobalsRegistry::default();
 

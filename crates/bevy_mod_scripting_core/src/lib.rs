@@ -5,7 +5,7 @@
 use crate::event::ScriptErrorEvent;
 use asset::{
     configure_asset_systems, configure_asset_systems_for_plugin, Language, ScriptAsset,
-    ScriptAssetLoader, ScriptAssetSettings,
+    ScriptAssetLoader, //ScriptAssetSettings,
 };
 use bevy::prelude::*;
 use bindings::{
@@ -22,7 +22,7 @@ use error::ScriptError;
 use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent};
 use handler::{CallbackSettings, HandlerFn};
 use runtime::{initialize_runtime, Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
-use script::{ScriptComponent, ScriptId, Scripts, StaticScripts};
+use script::{ScriptComponent, ScriptId, StaticScripts, ScriptContext, EntityContext};
 
 pub mod asset;
 pub mod bindings;
@@ -129,7 +129,12 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
                 context_initializers: self.context_initializers.clone(),
                 context_pre_handling_initializers: self.context_pre_handling_initializers.clone(),
             })
-            .init_resource::<Scripts<P>>();
+            .insert_resource(
+                if self.context_assignment_strategy.is_global() {
+                    ScriptContext::<P>::shared()
+                } else {
+                    ScriptContext::<P>::per_entity()
+                });
 
         register_script_plugin_systems::<P>(app);
 
@@ -277,17 +282,17 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
 
     fn finish(&self, app: &mut App) {
         // read extensions from asset settings
-        let asset_settings_extensions = app
-            .world_mut()
-            .get_resource_or_init::<ScriptAssetSettings>()
-            .supported_extensions;
+        // let asset_settings_extensions = app
+        //     .world_mut()
+        //     // .get_resource_or_init::<ScriptAssetSettings>()
+        //     .supported_extensions;
 
-        // convert extensions to static array
-        bevy::log::info!(
-            "Initializing BMS with Supported extensions: {:?}",
-            asset_settings_extensions
-        );
-
+        // // convert extensions to static array
+        // bevy::log::info!(
+        //     "Initializing BMS with Supported extensions: {:?}",
+        //     asset_settings_extensions
+        // );
+        let asset_settings_extensions = &["lua", "luau", "rhai", "rn"];
         app.register_asset_loader(ScriptAssetLoader {
             extensions: asset_settings_extensions,
             preprocessor: None,
@@ -353,21 +358,21 @@ pub trait ManageStaticScripts {
     /// Registers a script id as a static script.
     ///
     /// Event handlers will run these scripts on top of the entity scripts.
-    fn add_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self;
+    fn add_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self;
 
     /// Removes a script id from the list of static scripts.
     ///
     /// Does nothing if the script id is not in the list.
-    fn remove_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self;
+    fn remove_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self;
 }
 
 impl ManageStaticScripts for App {
-    fn add_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self {
+    fn add_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self {
         AddStaticScript::new(script_id.into()).apply(self.world_mut());
         self
     }
 
-    fn remove_static_script(&mut self, script_id: impl Into<ScriptId>) -> &mut Self {
+    fn remove_static_script(&mut self, script_id: impl Into<Handle<ScriptAsset>>) -> &mut Self {
         RemoveStaticScript::new(script_id.into()).apply(self.world_mut());
         self
     }
@@ -394,24 +399,25 @@ impl ConfigureScriptAssetSettings for App {
         extensions: &[&'static str],
         language: Language,
     ) -> &mut Self {
-        let mut asset_settings = self
-            .world_mut()
-            .get_resource_or_init::<ScriptAssetSettings>();
+        todo!()
+        // let mut asset_settings = self
+        //     .world_mut()
+        //     .get_resource_or_init::<ScriptAssetSettings>();
 
-        let mut new_arr = Vec::from(asset_settings.supported_extensions);
+        // let mut new_arr = Vec::from(asset_settings.supported_extensions);
 
-        new_arr.extend(extensions);
+        // new_arr.extend(extensions);
 
-        let new_arr_static = Vec::leak(new_arr);
+        // let new_arr_static = Vec::leak(new_arr);
 
-        asset_settings.supported_extensions = new_arr_static;
-        for extension in extensions {
-            asset_settings
-                .extension_to_language_map
-                .insert(*extension, language.clone());
-        }
+        // asset_settings.supported_extensions = new_arr_static;
+        // for extension in extensions {
+        //     asset_settings
+        //         .extension_to_language_map
+        //         .insert(*extension, language.clone());
+        // }
 
-        self
+        // self
     }
 }
 

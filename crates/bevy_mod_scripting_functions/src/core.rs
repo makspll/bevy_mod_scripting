@@ -4,28 +4,28 @@ use std::{collections::HashMap, ops::Deref};
 
 use bevy::prelude::*;
 use bevy_mod_scripting_core::{
-    bindings::{
-        function::{
-            from::Union, namespace::GlobalNamespace, script_function::DynamicScriptFunctionMut,
-        },
-        script_system::ScriptSystemBuilder,
-    },
-    docgen::info::FunctionInfo,
-    *,
+	bindings::{
+		function::{
+			from::Union, namespace::GlobalNamespace, script_function::DynamicScriptFunctionMut,
+		},
+		script_system::ScriptSystemBuilder,
+	},
+	docgen::info::FunctionInfo,
+	*,
 };
 use bevy_mod_scripting_derive::script_bindings;
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 use bindings::{
-    function::{
-        from::{Ref, Val},
-        from_ref::FromScriptRef,
-        into_ref::IntoScriptRef,
-        script_function::{FunctionCallContext, ScriptFunctionMut},
-    },
-    pretty_print::DisplayWithWorld,
-    script_value::ScriptValue,
-    ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder, ScriptQueryResult,
-    ScriptResourceRegistration, ScriptTypeRegistration, ThreadWorldContainer, WorldContainer,
+	function::{
+		from::{Ref, Val},
+		from_ref::FromScriptRef,
+		into_ref::IntoScriptRef,
+		script_function::{FunctionCallContext, ScriptFunctionMut},
+	},
+	pretty_print::DisplayWithWorld,
+	script_value::ScriptValue,
+	ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder, ScriptQueryResult,
+	ScriptResourceRegistration, ScriptTypeRegistration, ThreadWorldContainer, WorldContainer,
 };
 use error::InteropError;
 use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
@@ -1261,8 +1261,9 @@ impl GlobalNamespace {
     fn system_builder(
         callback: String,
         script_id: String,
+        domain: Option<String>,
     ) -> Result<Val<ScriptSystemBuilder>, InteropError> {
-        Ok(ScriptSystemBuilder::new(callback.into(), script_id.into()).into())
+        Ok(ScriptSystemBuilder::new(callback.into(), script_id.into(), domain.map(|x| x.into())).into())
     }
 }
 

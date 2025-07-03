@@ -13,7 +13,7 @@ BMS also provides utilities for visualising schedules using dot graphs, allowing
 
 ## Schedules
 
-Bevy doesn't support reflecting schedules, so BMS rolls it's own schedule registry resource: `AppScheduleRegistry`, which can be used to add any custom schedules you want to interact with. The default Bevy schedules will be pre-populated for you.
+Bevy doesn't support reflecting schedules, so BMS rolls its own schedule registry resource: `AppScheduleRegistry`, which can be used to add any custom schedules you want to interact with. The default Bevy schedules will be pre-populated for you.
 
 Once you've registered your schedule you will be able to interact with it in scripts like below:
 

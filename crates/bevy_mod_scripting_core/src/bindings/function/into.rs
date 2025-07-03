@@ -199,4 +199,4 @@ macro_rules! impl_into_script_tuple {
 }
 }
 
-bevy::utils::all_tuples!(impl_into_script_tuple, 1, 14, T);
+variadics_please::all_tuples!(impl_into_script_tuple, 1, 14, T);

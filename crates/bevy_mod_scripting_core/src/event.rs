@@ -1,6 +1,6 @@
 //! Event handlers and event types for scripting.
 
-use crate::{bindings::script_value::ScriptValue, error::ScriptError, script::ScriptId};
+use crate::{bindings::script_value::ScriptValue, error::ScriptError, script::{Domain, ScriptId}};
 use bevy::{ecs::entity::Entity, prelude::Event, reflect::Reflect};
 
 /// An error coming from a script
@@ -122,6 +122,8 @@ pub enum Recipients {
     Script(ScriptId),
     /// The event is to be handled by all the scripts on the specified entity
     Entity(Entity),
+    /// The event is to be handled by a specific domain
+    Domain(Domain),
     /// The event is to be handled by all the scripts of one language
     Language(crate::asset::Language),
 }
