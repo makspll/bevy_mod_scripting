@@ -76,6 +76,7 @@ jobs:
           echo "matrix=$(cat matrix-one-line.json)" >> $GITHUB_OUTPUT
 
   check-is-fork:
+    runs-on: ubuntu-latest
     outputs:
       is_fork: ${{ steps.check-fork.outputs.is_fork }}
     steps:
