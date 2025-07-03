@@ -6,7 +6,7 @@ on:
 
 jobs:
   benchmark_fork_pr_branch:
-    name: Run Fork PR Benchmarks
+    name: Run PR Benchmarks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
