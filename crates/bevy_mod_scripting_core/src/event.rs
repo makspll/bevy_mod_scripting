@@ -57,9 +57,10 @@ impl CallbackLabel {
 #[macro_export]
 /// Creates a set of callback labels
 macro_rules! callback_labels {
-    ($($name:ident => $label:expr),* $(,)?) => {
+    ($($(#[doc = $doc:expr])* $name:ident => $label:expr),* $(,)?) => {
 
         $(
+            $(#[doc = $doc])*
             #[doc = "A callback label for the event: "]
             #[doc = stringify!($label)]
             pub struct $name;
@@ -73,8 +74,13 @@ macro_rules! callback_labels {
 }
 
 callback_labels!(
+    /// Fired when a script is successfully loaded
     OnScriptLoaded => "on_script_loaded",
+    /// Fired when a script is unloaded before a reload, if a value is returned, it will be passed to the `on_script_reloaded` callback
     OnScriptUnloaded => "on_script_unloaded",
+    /// Fired when a script is reloaded (loaded after being unloaded)
+    /// This callback receives the value returned by the `on_script_unloaded` callback if any were returned
+    OnScriptReloaded => "on_script_reloaded",
 );
 
 /// A trait for types that can be converted into a callback label
