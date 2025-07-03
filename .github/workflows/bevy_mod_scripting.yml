@@ -118,15 +118,15 @@ jobs:
       # #   run: |
       # #     sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - name: Checkout
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks == 'true' || needs.check-is-fork.outputs.is_fork != 'true') }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') }}
         uses: actions/checkout@v4
       - uses: actions-rs/toolchain@v1
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks == 'true' || needs.check-is-fork.outputs.is_fork != 'true') }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') }}
         with:
           toolchain: stable
           override: true
       - name: Rust Cache
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks == 'true' || needs.check-is-fork.outputs.is_fork != 'true') }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') }}
         uses: Swatinem/rust-cache@v2.7.7
         with:
           # reasoning: we want to cache xtask, most of the jobs in the matrix will be sped up a good bit thanks to that 
@@ -134,33 +134,33 @@ jobs:
           cache-all-crates: true
 
       - name: Setup
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks == 'true' || needs.check-is-fork.outputs.is_fork != 'true') }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') }}
         run: |
           cargo xtask init
 
       - name: Setup GPU Drivers
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks == 'true' || needs.check-is-fork.outputs.is_fork != 'true') && matrix.run_args.requires_gpu }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') && matrix.run_args.requires_gpu }}
         run: |
           sudo add-apt-repository ppa:kisak/turtle -y
           sudo apt-get install --no-install-recommends libxkbcommon-x11-0 xvfb libgl1-mesa-dri libxcb-xfixes0-dev mesa-vulkan-drivers
       - name: Check
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks == 'true' || needs.check-is-fork.outputs.is_fork != 'true') && !matrix.run_args.requires_gpu }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') && !matrix.run_args.requires_gpu }}
         run: |
           ${{ matrix.run_args.command }}
       - name: Check With virtual X11 server
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks == 'true' || needs.check-is-fork.outputs.is_fork != 'true') && matrix.run_args.requires_gpu }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') && matrix.run_args.requires_gpu }}
         run: |
           xvfb-run ${{ matrix.run_args.command }}
 
       - name: Upload coverage artifact
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks == 'true' || needs.check-is-fork.outputs.is_fork != 'true') && matrix.run_args.generates_coverage }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') && matrix.run_args.generates_coverage }}
         uses: actions/upload-artifact@v4
         with:
           name: code-coverage-report
           path: target/coverage/html/
 
       - name: Update coverage badge
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks == 'true' || needs.check-is-fork.outputs.is_fork != 'true') && matrix.run_args.generates_coverage }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') && matrix.run_args.generates_coverage }}
         continue-on-error: true
         run: |
           git checkout -b chore/_update-coverage-badge || git checkout chore/_update-coverage-badge
