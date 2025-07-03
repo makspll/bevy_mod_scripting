@@ -179,6 +179,8 @@ impl ScriptCallbackEvent {
 #[derive(Clone, Event, Debug)]
 #[non_exhaustive]
 pub struct ScriptCallbackResponseEvent {
+    /// the entity that the script was invoked on,
+    pub entity: Entity,
     /// the label of the callback
     pub label: CallbackLabel,
     /// the script that replied
@@ -190,11 +192,13 @@ pub struct ScriptCallbackResponseEvent {
 impl ScriptCallbackResponseEvent {
     /// Creates a new callback response event with the given label, script and response
     pub fn new<L: Into<CallbackLabel>>(
+        entity: Entity,
         label: L,
         script: ScriptId,
         response: Result<ScriptValue, ScriptError>,
     ) -> Self {
         Self {
+            entity,
             label: label.into(),
             script,
             response,
