@@ -14,7 +14,7 @@ impl Plugin for ScriptFunctionsPlugin {
         register_bevy_bindings(app);
         register_core_functions(app);
 
-        // TODO: if bevy ever does this itself we should remove this
+        // TODO: if bevy ever does this itself we should remove this.
         app.world_mut().register_component::<Parent>();
         app.world_mut().register_component::<Children>();
     }

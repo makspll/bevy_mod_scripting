@@ -75,18 +75,18 @@ jobs:
           jq -c . matrix.json > matrix-one-line.json
           echo "matrix=$(cat matrix-one-line.json)" >> $GITHUB_OUTPUT
 
-    check-is-fork:
-      outputs:
-        is_fork: ${{ steps.check-fork.outputs.is_fork }}
-      steps:
-        - name: Check if fork
-          id: check-fork
-          run: | 
-            if [ "${{ github.repository }}" != "${{ github.event.pull_request.head.repo.full_name }}" ]; then
-              echo "is_fork=true" >> $GITHUB_OUTPUT
-            else
-              echo "is_fork=false" >> $GITHUB_OUTPUT
-            fi
+  check-is-fork:
+    outputs:
+      is_fork: ${{ steps.check-fork.outputs.is_fork }}
+    steps:
+      - name: Check if fork
+        id: check-fork
+        run: | 
+          if [ "${{ github.repository }}" != "${{ github.event.pull_request.head.repo.full_name }}" ]; then
+            echo "is_fork=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_fork=false" >> $GITHUB_OUTPUT
+          fi
   check:  
     needs: [check-needs-run, generate-job-matrix, check-is-fork]
     permissions:
