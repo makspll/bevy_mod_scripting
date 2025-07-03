@@ -225,7 +225,7 @@ impl std::fmt::Display for Features {
             if i > 0 {
                 write!(f, ",")?;
             }
-            write!(f, "{}", feature)?;
+            write!(f, "{feature}")?;
         }
         std::result::Result::Ok(())
     }
@@ -242,7 +242,7 @@ impl From<String> for Features {
             .split(',')
             .map(|f| {
                 Feature::from_str(f).unwrap_or_else(|_| {
-                    eprintln!("Unknown feature: '{}'", f);
+                    eprintln!("Unknown feature: '{f}'");
                     std::process::exit(1);
                 })
             })
@@ -457,6 +457,7 @@ impl App {
             ),
             os: os.to_string(),
             generates_coverage: self.global_args.coverage,
+            run_on_forks: !matches!(self.subcmd, Xtasks::Bencher { .. } | Xtasks::Bench { .. }),
             requires_gpu: matches!(self.subcmd, Xtasks::Docs { .. }),
         }
     }
@@ -734,6 +735,8 @@ struct CiMatrixRow {
     generates_coverage: bool,
     /// If this step requires a gpu
     requires_gpu: bool,
+    /// if it should run on fork PR's
+    run_on_forks: bool,
 }
 
 impl Xtasks {
@@ -856,7 +859,7 @@ impl Xtasks {
         add_args: I,
         dir: Option<&Path>,
     ) -> Result<()> {
-        info!("Running system command: {}", command);
+        info!("Running system command: {command}");
 
         let working_dir = match dir {
             Some(d) => Self::relative_workspace_dir(app_settings, d)?,
@@ -869,10 +872,10 @@ impl Xtasks {
             .stderr(std::process::Stdio::inherit())
             .current_dir(working_dir);
 
-        info!("Using command: {:?}", cmd);
+        info!("Using command: {cmd:?}");
 
         let output = cmd.output();
-        info!("Command output: {:?}", output);
+        info!("Command output: {output:?}");
         let output = output.with_context(|| context.to_owned())?;
         match output.status.code() {
             Some(0) => Ok(()),
@@ -892,17 +895,18 @@ impl Xtasks {
         dir: Option<&Path>,
         capture_streams_in_output: bool,
     ) -> Result<Output> {
-        let coverage_mode = app_settings
-            .coverage
-            .then_some("with coverage")
-            .unwrap_or_default();
+        let coverage_mode = if app_settings.coverage {
+            "with coverage"
+        } else {
+            Default::default()
+        };
 
         info!("Running workspace command {coverage_mode}: {command}");
 
         let mut args = vec![];
 
         if let Some(ref toolchain) = app_settings.override_toolchain {
-            args.push(format!("+{}", toolchain));
+            args.push(format!("+{toolchain}"));
         }
 
         args.push(command.to_owned());
@@ -956,7 +960,7 @@ impl Xtasks {
                 .stderr(std::process::Stdio::inherit());
         }
 
-        info!("Using command: {:?}", cmd);
+        info!("Using command: {cmd:?}");
 
         let output = cmd.output().with_context(|| context.to_owned())?;
         match output.status.code() {
@@ -1083,7 +1087,7 @@ impl Xtasks {
             Self::relative_workspace_dir(&main_workspace_app_settings, "target/codegen/bevy")?;
         let bevy_target_dir = bevy_dir.join("target");
         // clear the bevy target dir if it exists
-        info!("Clearing bevy target dir: {:?}", bevy_target_dir);
+        info!("Clearing bevy target dir: {bevy_target_dir:?}");
         if bevy_target_dir.exists() {
             std::fs::remove_dir_all(&bevy_target_dir)?;
         }
@@ -1111,7 +1115,7 @@ impl Xtasks {
         let bevy_version = metadata
             .packages
             .iter()
-            .find(|p| p.name == "bevy")
+            .find(|p| p.name.as_str() == "bevy")
             .expect("Could not find bevy package in metadata")
             .version
             .clone();
@@ -1128,7 +1132,7 @@ impl Xtasks {
                 "clone",
                 "https://github.com/bevyengine/bevy",
                 "--branch",
-                format!("v{}", bevy_version).as_str(),
+                format!("v{bevy_version}").as_str(),
                 "--depth",
                 "1",
                 ".",
@@ -1150,7 +1154,7 @@ impl Xtasks {
             &bevy_repo_app_settings,
             "git",
             "Failed to checkout bevy tag",
-            vec!["checkout", format!("v{}", bevy_version).as_str()],
+            vec!["checkout", format!("v{bevy_version}").as_str()],
             Some(&bevy_dir),
         )?;
 
@@ -1250,7 +1254,7 @@ impl Xtasks {
             let package = metadata
                 .packages
                 .iter()
-                .find(|p| p.name == "bevy_mod_scripting")
+                .find(|p| p.name.as_str() == "bevy_mod_scripting")
                 .expect("Could not find bevy_mod_scripting package in metadata");
 
             info!("Building with root package: {}", package.name);
@@ -1266,7 +1270,7 @@ impl Xtasks {
                 .get("features")
                 .expect("no 'features' in docs.rs metadata");
 
-            info!("Using docs.rs metadata: {:?}", docs_rs);
+            info!("Using docs.rs metadata: {docs_rs:?}");
             let string_list = features
                 .as_array()
                 .expect("docs.rs metadata is not an array")
@@ -1376,7 +1380,11 @@ impl Xtasks {
 
         let testbed = format!(
             "{os}{}",
-            github_token.is_some().then_some("-gha").unwrap_or_default()
+            if github_token.is_some() {
+                "-gha"
+            } else {
+                Default::default()
+            }
         );
 
         // also figure out if we're on a fork
@@ -1419,7 +1427,7 @@ impl Xtasks {
             .arg("--file")
             .arg(bench_file_path);
 
-        log::info!("Running bencher command: {:?}", bencher_cmd);
+        log::info!("Running bencher command: {bencher_cmd:?}");
 
         let out = bencher_cmd
             .output()
@@ -1502,7 +1510,7 @@ impl Xtasks {
             .with_context(|| "reading plots")?
             .into_iter()
             .map(|p| {
-                log::info!("Plot to delete: {:?}", p);
+                log::info!("Plot to delete: {p:?}");
                 let uuid = p.get("uuid").expect("no uuid in plot");
                 uuid.clone()
             })
@@ -1696,7 +1704,7 @@ impl Xtasks {
 
         // start with longest to compile all first
         powersets.reverse();
-        info!("Powerset: {:?}", powersets);
+        info!("Powerset: {powersets:?}");
 
         let default_args = app_settings
             .clone()
@@ -1731,7 +1739,7 @@ impl Xtasks {
             })
         }
 
-        log::info!("Powerset command combinations: {:?}", output);
+        log::info!("Powerset command combinations: {output:?}");
 
         // next run a full lint check with all features
         output.push(App {
@@ -1896,8 +1904,7 @@ impl Xtasks {
 
             // if the file already exists, merge the settings otherwise create it
             info!(
-                "Merging vscode settings at {:?}. With overrides generated by template.",
-                vscode_settings_path
+                "Merging vscode settings at {vscode_settings_path:?}. With overrides generated by template."
             );
             if vscode_settings_path.exists() {
                 let existing_settings = std::fs::read_to_string(&vscode_settings_path)?;
@@ -1930,7 +1937,7 @@ impl Xtasks {
         {
             for (key, value) in overrides {
                 // simply replace
-                info!("Replacing json key: {} with value: {}", key, value);
+                info!("Replacing json key: {key} with value: {value}");
                 target.insert(key.clone(), value.clone());
             }
         } else {
@@ -1988,7 +1995,7 @@ fn pop_cargo_env() -> Result<()> {
 
     for (key, value) in env.iter() {
         if key.starts_with("CARGO_") && !exclude_list.contains(&(key.as_str())) {
-            let new_key = format!("MAIN_{}", key);
+            let new_key = format!("MAIN_{key}");
             std::env::set_var(new_key, value);
             std::env::remove_var(key);
         }
@@ -2012,6 +2019,11 @@ fn try_main() -> Result<()> {
         .init();
     pop_cargo_env()?;
     let args = App::try_parse()?;
+    info!(
+        "Default toolchain: {:?}",
+        args.global_args.override_toolchain
+    );
+
     let out = args.subcmd.run(args.global_args)?;
     // push any output to stdout
     if !out.is_empty() {
@@ -2023,7 +2035,7 @@ fn try_main() -> Result<()> {
 
 fn main() {
     if let Err(e) = try_main() {
-        eprintln!("{:?}", e);
+        eprintln!("{e:?}");
         std::process::exit(1);
     }
 }

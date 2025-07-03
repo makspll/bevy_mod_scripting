@@ -1,6 +1,6 @@
 #![allow(missing_docs)]
 
-use ::bevy::prelude::*;
+use bevy::prelude::*;
 pub mod bevy_bindings;
 pub mod core;
 pub use core::*;

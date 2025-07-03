@@ -146,16 +146,16 @@ pub fn make_test_rhai_plugin() -> bevy_mod_scripting_rhai::RhaiScriptingPlugin {
         runtime.set_max_call_levels(1000);
         runtime.register_fn("assert", |a: Dynamic, b: &str| {
             if !a.is::<bool>() {
-                panic!("Expected a boolean value, but got {:?}", a);
+                panic!("Expected a boolean value, but got {a:?}");
             }
             if !a.as_bool().unwrap() {
-                panic!("Assertion failed. {}", b);
+                panic!("Assertion failed. {b}");
             }
         });
 
         runtime.register_fn("assert", |a: Dynamic| {
             if !a.is::<bool>() {
-                panic!("Expected a boolean value, but got {:?}", a);
+                panic!("Expected a boolean value, but got {a:?}");
             }
             if !a.as_bool().unwrap() {
                 panic!("Assertion failed");

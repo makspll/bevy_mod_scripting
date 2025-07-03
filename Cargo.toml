@@ -148,9 +148,9 @@ codegen-units = 8
 incremental = false
 debug = false
 
-[profile.ephemeral-coverage]
-inherits = "ephemeral-build"
-debug = true
+# [profile.ephemeral-coverage]
+# inherits = "ephemeral-build"
+# debug = true
 
 [profile.release-with-debug]
 inherits = "release"

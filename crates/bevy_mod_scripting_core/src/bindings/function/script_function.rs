@@ -463,7 +463,7 @@ impl ScriptFunctionRegistry {
                 if i == 0 {
                     self.get_function(namespace, name.clone())
                 } else {
-                    let name: Cow<'static, str> = format!("{}-{i}", name).into();
+                    let name: Cow<'static, str> = format!("{name}-{i}").into();
                     self.get_function(namespace, name)
                 }
             })

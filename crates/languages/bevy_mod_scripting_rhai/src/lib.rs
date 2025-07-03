@@ -122,7 +122,7 @@ impl Default for RhaiScriptingPlugin {
                         for (key, function) in script_function_registry.iter_all() {
                             let name = key.name.clone();
                             if ReservedKeyword::is_reserved_keyword(&name) {
-                                let new_name = format!("{}_", name);
+                                let new_name = format!("{name}_");
                                 let mut new_function = function.clone();
                                 let new_info =
                                     function.info.deref().clone().with_name(new_name.clone());

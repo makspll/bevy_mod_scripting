@@ -110,7 +110,7 @@ fn script_benchmarks(criterion: &mut Criterion, filter: Option<Regex>) {
     }
 
     for (group, tests) in grouped {
-        println!("Running benchmarks for group: {}", group);
+        println!("Running benchmarks for group: {group}");
         let mut benchmark_group = criterion.benchmark_group(group);
 
         for t in tests {

@@ -1108,7 +1108,7 @@ mod test {
                 .join("ladfile")
                 .join("test_assets");
 
-            println!("Blessing test file at {:?}", path_to_test_assets);
+            println!("Blessing test file at {path_to_test_assets:?}");
             std::fs::write(path_to_test_assets.join("test.lad.json"), &serialized).unwrap();
             panic!("Blessed test file, please rerun the test");
         }

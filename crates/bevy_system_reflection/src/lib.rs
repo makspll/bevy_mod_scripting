@@ -151,7 +151,7 @@ impl ReflectSystemSet {
     pub fn from_set(set: &dyn SystemSet, node_id: NodeId) -> Self {
         ReflectSystemSet {
             node_id: ReflectNodeId(node_id),
-            debug: format!("{:?}", set),
+            debug: format!("{set:?}"),
             type_id: set.system_type(),
         }
     }
