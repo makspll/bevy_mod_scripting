@@ -22,7 +22,7 @@ end
 
 ## `on_script_unloaded`
 
-This will be called right before a script is unloaded. This is a good place to clean up any resources that your script has allocated. Note this is not called when a script is reloaded, only when it is being removed from the system.
+This will be called right before a script is unloaded. This is a good place to clean up any resources that your script has allocated. This is called both before a script is removed as well as before a script is reloaded. If you want to preserve the state of your script across reloads, you can return a value from this callback, which will be passed to `on_script_reloaded` when the script is reloaded.
 
 This callback will not have access to the `entity` variable, as when the script is being unloaded it might not be attached to an entity.
 
