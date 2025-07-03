@@ -457,6 +457,7 @@ impl App {
             ),
             os: os.to_string(),
             generates_coverage: self.global_args.coverage,
+            run_on_forks: !matches!(self.subcmd, Xtasks::Bencher { .. } | Xtasks::Bench { .. }),
             requires_gpu: matches!(self.subcmd, Xtasks::Docs { .. }),
         }
     }
@@ -734,6 +735,8 @@ struct CiMatrixRow {
     generates_coverage: bool,
     /// If this step requires a gpu
     requires_gpu: bool,
+    /// if it should run on fork PR's
+    run_on_forks: bool,
 }
 
 impl Xtasks {

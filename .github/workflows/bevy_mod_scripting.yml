@@ -103,15 +103,15 @@ jobs:
       # #   run: |
       # #     sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - name: Checkout
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.run_on_forks == 'true' }}
         uses: actions/checkout@v4
       - uses: actions-rs/toolchain@v1
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.run_on_forks == 'true' }}
         with:
           toolchain: stable
           override: true
       - name: Rust Cache
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.run_on_forks == 'true' }}
         uses: Swatinem/rust-cache@v2.7.7
         with:
           # reasoning: we want to cache xtask, most of the jobs in the matrix will be sped up a good bit thanks to that 
@@ -119,33 +119,33 @@ jobs:
           cache-all-crates: true
 
       - name: Setup
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.run_on_forks == 'true' }}
         run: |
           cargo xtask init
 
       - name: Setup GPU Drivers
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.requires_gpu }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.run_on_forks == 'true' && matrix.run_args.requires_gpu }}
         run: |
           sudo add-apt-repository ppa:kisak/turtle -y
           sudo apt-get install --no-install-recommends libxkbcommon-x11-0 xvfb libgl1-mesa-dri libxcb-xfixes0-dev mesa-vulkan-drivers
       - name: Check
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && !matrix.run_args.requires_gpu }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.run_on_forks == 'true' && !matrix.run_args.requires_gpu }}
         run: |
           ${{ matrix.run_args.command }}
       - name: Check With virtual X11 server
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.requires_gpu }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.run_on_forks == 'true' && matrix.run_args.requires_gpu }}
         run: |
           xvfb-run ${{ matrix.run_args.command }}
 
       - name: Upload coverage artifact
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.generates_coverage }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.run_on_forks == 'true' && matrix.run_args.generates_coverage }}
         uses: actions/upload-artifact@v4
         with:
           name: code-coverage-report
           path: target/coverage/html/
 
       - name: Update coverage badge
-        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.generates_coverage }}
+        if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && matrix.run_args.run_on_forks == 'true' && matrix.run_args.generates_coverage }}
         continue-on-error: true
         run: |
           git checkout -b chore/_update-coverage-badge || git checkout chore/_update-coverage-badge
@@ -164,44 +164,3 @@ jobs:
             PRNUMBER=$(cat pr_number.txt)
             gh pr merge $PRNUMBER --squash
           fi
-  generate_bindings:
-    name: Bindings - Synchronise
-    permissions:
-      contents: write
-      pull-requests: write
-    runs-on: ubuntu-latest
-    if: github.repository_owner == 'makspll'
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        ref: ${{ github.head_ref || github.ref_name }}
-    - name: Rust Cache
-      if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
-      uses: Swatinem/rust-cache@v2.7.7
-      with:
-        # reasoning: we want to cache xtask, most of the jobs in the matrix will be sped up a good bit thanks to that 
-        save-if: ${{ github.ref == 'refs/heads/main' }}
-        cache-all-crates: true
-    - name: Setup Bot GitHub Credentials
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "41898282+github-actions[bot]@users.noreply.github.com" 
-    - name: Setup
-      run: |
-        cargo xtask init
-    - name: Generate Bindings
-      run: |
-        cargo xtask codegen
-    - name: Check for changes
-      id: check_changes
-      run: |
-        if [[ -n $(git status --porcelain) ]]; then
-            echo "changes=true" >> "$GITHUB_OUTPUT"; 
-        fi
-    - name: Commit Changes
-      if: steps.check_changes.outputs.changes
-      run: |
-        git add -A
-        git commit -m "chore(codegen): update bevy bindings"
-        git push
