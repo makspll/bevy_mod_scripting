@@ -3,11 +3,12 @@
 use std::ops::Deref;
 
 use bevy::{
+    asset::Handle,
     app::Plugin,
     ecs::{entity::Entity, world::World},
 };
 use bevy_mod_scripting_core::{
-    asset::Language,
+    asset::{Language, ScriptAsset},
     bindings::{
         function::namespace::Namespace, globals::AppScriptGlobalsRegistry,
         script_value::ScriptValue, ThreadWorldContainer, WorldContainer,
@@ -17,7 +18,7 @@ use bevy_mod_scripting_core::{
     event::CallbackLabel,
     reflection_extensions::PartialReflectExt,
     runtime::RuntimeSettings,
-    script::ScriptId,
+    script::{DisplayProxy, ScriptId},
     IntoScriptPluginParams, ScriptingPlugin,
 };
 use bindings::{
@@ -180,7 +181,7 @@ impl Plugin for RhaiScriptingPlugin {
 // NEW helper function to load content into an existing context without clearing previous definitions.
 fn load_rhai_content_into_context(
     context: &mut RhaiScriptContext,
-    script: &ScriptId,
+    script: &Handle<ScriptAsset>,
     content: &[u8],
     initializers: &[ContextInitializer<RhaiScriptingPlugin>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
@@ -189,7 +190,7 @@ fn load_rhai_content_into_context(
     let runtime = runtime.read();
 
     context.ast = runtime.compile(std::str::from_utf8(content)?)?;
-    context.ast.set_source(script.to_string());
+    context.ast.set_source(script.display().to_string());
 
     initializers
         .iter()
@@ -205,7 +206,7 @@ fn load_rhai_content_into_context(
 
 /// Load a rhai context from a script.
 pub fn rhai_context_load(
-    script: &ScriptId,
+    script: &Handle<ScriptAsset>,
     content: &[u8],
     initializers: &[ContextInitializer<RhaiScriptingPlugin>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
@@ -229,7 +230,7 @@ pub fn rhai_context_load(
 
 /// Reload a rhai context from a script. New content is appended to the existing context.
 pub fn rhai_context_reload(
-    script: &ScriptId,
+    script: &Handle<ScriptAsset>,
     content: &[u8],
     context: &mut RhaiScriptContext,
     initializers: &[ContextInitializer<RhaiScriptingPlugin>],
@@ -251,7 +252,7 @@ pub fn rhai_context_reload(
 pub fn rhai_callback_handler(
     args: Vec<ScriptValue>,
     entity: Entity,
-    script_id: &ScriptId,
+    script_id: &Handle<ScriptAsset>,
     callback: &CallbackLabel,
     context: &mut RhaiScriptContext,
     pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
@@ -271,7 +272,7 @@ pub fn rhai_callback_handler(
     bevy::log::trace!(
         "Calling callback {} in script {} with args: {:?}",
         callback,
-        script_id,
+        script_id.display(),
         args
     );
     let runtime = runtime.read();
@@ -288,7 +289,7 @@ pub fn rhai_callback_handler(
             if let EvalAltResult::ErrorFunctionNotFound(_, _) = e.unwrap_inner() {
                 bevy::log::trace!(
                     "Script {} is not subscribed to callback {} with the provided arguments.",
-                    script_id,
+                    script_id.display(),
                     callback
                 );
                 Ok(ScriptValue::Unit)

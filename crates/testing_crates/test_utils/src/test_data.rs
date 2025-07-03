@@ -348,10 +348,10 @@ pub fn setup_integration_test<F: FnOnce(&mut World, &mut TypeRegistry)>(init: F)
         AssetPlugin::default(),
         HierarchyPlugin,
         DiagnosticsPlugin,
-        LogPlugin {
-            filter: log_level,
-            ..Default::default()
-        },
+        // LogPlugin {
+        //     filter: log_level,
+        //     ..Default::default()
+        // },
     ));
     app
 }
