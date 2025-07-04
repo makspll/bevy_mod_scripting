@@ -488,7 +488,6 @@ pub fn run_plugin_script_load_benchmark<
     benchmark_id: &str,
     content: &str,
     criterion: &mut criterion::BenchmarkGroup<M>,
-    script_id_generator: impl Fn(u64) -> AssetId<ScriptAsset>,
     reload_probability: f32,
 ) {
     let mut app = setup_integration_test(|_, _| {});
@@ -502,10 +501,8 @@ pub fn run_plugin_script_load_benchmark<
                 let mut rng = RNG.lock().unwrap();
                 let is_reload = rng.random_range(0f32..=1f32) < reload_probability;
                 let random_id = if is_reload { 0 } else { rng.random::<u128>() };
-
-                // let random_script_id = script_id_generator(random_id);
                 let random_script_id: ScriptId = ScriptId::from(uuid::Builder::from_random_bytes(random_id.to_le_bytes()).into_uuid());
-                // we manually load the script inside a command
+                // We manually load the script inside a command.
                 let content = content.to_string().into_boxed_str();
                 (
                     CreateOrUpdateScript::<P>::new(

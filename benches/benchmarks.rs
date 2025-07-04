@@ -253,7 +253,6 @@ fn script_load_benchmarks(criterion: &mut Criterion) {
         "empty Lua",
         content,
         &mut group,
-        |rand| format!("{rand}.lua"),
         reload_probability,
     );
 
@@ -265,7 +264,6 @@ fn script_load_benchmarks(criterion: &mut Criterion) {
         "empty Rhai",
         content,
         &mut group,
-        |rand| format!("{rand}.rhai"),
         reload_probability,
     );
 }
