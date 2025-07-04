@@ -3,7 +3,7 @@ use crate::{asset::ScriptAsset, IntoScriptPluginParams};
 use bevy::prelude::{Component, ReflectComponent, Deref, DerefMut, Entity};
 use bevy::{asset::{Asset, AssetId, Handle}, ecs::system::Resource, reflect::Reflect, utils::HashSet};
 use parking_lot::Mutex;
-use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc, fmt};
+use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc, fmt, marker::PhantomData};
 
 /// A kind of catch all type for script context selection
 ///
@@ -32,6 +32,8 @@ pub trait ScriptContextProvider<P: IntoScriptPluginParams> {
 pub enum ScriptContext<P: IntoScriptPluginParams> {
     /// One shared script context
     Shared(SharedContext<P>),
+    /// One shared script context with domains
+    DomainShared(Or<DomainContext<P>, SharedContext<P>>),
     /// One script context per entity
     ///
     /// Stores context by entity with a shared context as a last resort when no
@@ -39,17 +41,18 @@ pub enum ScriptContext<P: IntoScriptPluginParams> {
     ///
     /// TODO: Should check for entity despawns and remove from this
     /// EntityContext.
-    Entity(EntityContext<P>, SharedContext<P>),
+    Entity(Or<EntityContext<P>, SharedContext<P>>),
+    /// One script context per entity with domains
+    DomainEntity(Or<DomainContext<P>, Or<EntityContext<P>, SharedContext<P>>>),
     /// Domain contexts or shared context
     ///
     /// Stores context by domain with a shared context as a last resort when no
     /// domain is provided.
-    Domain(DomainContext<P>, SharedContext<P>),
+    Domain(Or<DomainContext<P>, SharedContext<P>>),
     /// A script context per script
-    ScriptId(ScriptIdContext<P>),
-    // NOTE: We could also have the following which would support domains;
-    // failing that entities; failing that a shared context.
-    // DomainEntity(DomainContext<P>, EntityContext<P>, SharedContext<P>),
+    ScriptId(Or<ScriptIdContext<P>, SharedContext<P>>),
+    /// A script context per script with domains
+    DomainScriptId(Or<DomainContext<P>, Or<ScriptIdContext<P>, SharedContext<P>>>),
 }
 
 impl<P: IntoScriptPluginParams> ScriptContext<P> {
@@ -57,68 +60,88 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
     pub fn shared() -> Self {
         Self::Shared(SharedContext::default())
     }
+    /// If a domain is given, use that first.
+    pub fn with_domains(self) -> Self {
+        match self {
+            ScriptContext::Shared(a) => ScriptContext::DomainShared(Or(DomainContext::default(), a)),
+            ScriptContext::Entity(a) => ScriptContext::DomainEntity(Or(DomainContext::default(), a)),
+            ScriptContext::ScriptId(a) => ScriptContext::DomainScriptId(Or(DomainContext::default(), a)),
+            _ => panic!("Expected `Shared`, `Entity`, or `ScriptId` for with_domains"),
+        }
+    }
     /// Domain contexts or a shared context
-    pub fn with_domains() -> Self {
-        Self::Domain(DomainContext::default(), SharedContext::default())
+    pub fn domains() -> Self {
+        Self::Domain(Or(DomainContext::default(), SharedContext::default()))
     }
-    /// Use one script ontext per entity
+    /// Use one script context per entity
     pub fn per_entity() -> Self {
-        Self::Entity(EntityContext::default(), SharedContext::default())
+        Self::Entity(Or(EntityContext::default(), SharedContext::default()))
     }
-    /// Use one script ontext per entity
+    /// Use one script context per entity
     pub fn per_script() -> Self {
-        Self::ScriptId(ScriptIdContext::default())
+        Self::ScriptId(Or(ScriptIdContext::default(), SharedContext::default()))
     }
 }
 
+/// Use one script context per entity by default; see [ScriptContext::per_script].
 impl<P: IntoScriptPluginParams> Default for ScriptContext<P> {
     fn default() -> Self {
-        Self::shared()
+        Self::per_script()
     }
+}
+
+struct Or<T, U>(T, U);
+
+impl<T: ScriptContextProvider<P>, U: ScriptContextProvider<P>, P: IntoScriptPluginParams> ScriptContextProvider<P> for Or<T, U> {
+    #[inline]
+    fn get(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<&Arc<Mutex<P::C>>> {
+        self.0.get(id, script_id, domain).or_else(|| self.1.get(id, script_id, domain))
+    }
+    #[inline]
+    fn insert(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>, context: P::C) -> Result<(), P::C> {
+        match self.0.insert(id, script_id, domain, context) {
+            Ok(()) => Ok(()),
+            Err(context) => self.1.insert(id, script_id, domain, context)
+        }
+    }
+    #[inline]
+    fn contains(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool {
+        self.0.contains(id, script_id, domain) || self.1.contains(id, script_id, domain)
+    }
+    #[inline]
+    fn hash(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64> {
+        self.0.hash(id, script_id, domain)
+              .or_else(|| self.1.hash(id, script_id, domain))
+    }
+}
+
+macro_rules! delegate_to_variants {
+    (
+        $(
+            fn $fn_name:ident ($self:ty, $( $arg:ident : $arg_ty:ty ),* ) -> $ret:ty
+        ),* $(,)?
+    ) => {
+        $(
+            fn $fn_name(self: $self, $( $arg: $arg_ty ),*) -> $ret {
+                match self {
+                    ScriptContext::Shared(a) => a.$fn_name($( $arg ),*),
+                    ScriptContext::ScriptId(a) => a.$fn_name($( $arg ),*),
+                    ScriptContext::Entity(a) => a.$fn_name($( $arg ),*),
+                    ScriptContext::Domain(a) => a.$fn_name($( $arg ),*),
+                    ScriptContext::DomainShared(a) => a.$fn_name($( $arg ),*),
+                    ScriptContext::DomainScriptId(a) => a.$fn_name($( $arg ),*),
+                    ScriptContext::DomainEntity(a) => a.$fn_name($( $arg ),*),
+                }
+            }
+        )*
+    };
 }
 
 impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for ScriptContext<P> {
-    fn get(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<&Arc<Mutex<P::C>>> {
-        match self {
-            ScriptContext::Shared(a) => a.get(id, script_id, domain),
-            ScriptContext::ScriptId(a) => a.get(id, script_id, domain),
-            ScriptContext::Entity(a, b) => a.get(id, script_id, domain)
-                                            .or_else(|| b.get(id, script_id, domain)),
-            ScriptContext::Domain(a, b) => a.get(id, script_id, domain)
-                                            .or_else(|| b.get(id, script_id, domain)),
-        }
-    }
-    fn insert(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>, context: P::C) -> Result<(), P::C> {
-        match self {
-            ScriptContext::Shared(a) => a.insert(id, script_id, domain, context),
-            ScriptContext::ScriptId(a) => a.insert(id, script_id, domain, context),
-            ScriptContext::Entity(a, b) => match a.insert(id, script_id, domain, context) {
-                Ok(()) => Ok(()),
-                Err(context) => b.insert(id, script_id, domain, context)
-            }
-            ScriptContext::Domain(a, b) => match a.insert(id, script_id, domain, context) {
-                Ok(()) => Ok(()),
-                Err(context) => b.insert(id, script_id, domain, context)
-            }
-        }
-    }
-    fn contains(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool {
-        match self {
-            ScriptContext::Shared(a) => a.contains(id, script_id, domain),
-            ScriptContext::ScriptId(a) => a.contains(id, script_id, domain),
-            ScriptContext::Entity(a, b) => a.contains(id, script_id, domain) || b.contains(id, script_id, domain),
-            ScriptContext::Domain(a, b) => a.contains(id, script_id, domain) || b.contains(id, script_id, domain),
-        }
-    }
-    fn hash(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64> {
-        match self {
-            ScriptContext::Shared(a) => a.hash(id, script_id, domain),
-            ScriptContext::ScriptId(a) => a.hash(id, script_id, domain),
-            ScriptContext::Entity(a, b) => a.hash(id, script_id, domain)
-                                            .or_else(|| b.hash(id, script_id, domain)),
-            ScriptContext::Domain(a, b) => a.hash(id, script_id, domain)
-                                            .or_else(|| b.hash(id, script_id, domain)),
-        }
+    delegate_to_variants! {
+        fn get(&Self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<&Arc<Mutex<P::C>>>,
+        fn contains(&Self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool,
+        fn hash(&Self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64>,
+        fn insert(&mut Self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>, context: P::C) -> Result<(), P::C>,
     }
 }
-
