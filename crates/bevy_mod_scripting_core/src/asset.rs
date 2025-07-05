@@ -300,19 +300,6 @@ mod tests {
         app
     }
 
-    fn make_test_settings() -> ScriptAssetSettings {
-        ScriptAssetSettings {
-            supported_extensions: &[],
-            script_id_mapper: AssetPathToScriptIdMapper {
-                map: |path| path.path().to_string_lossy().into_owned().into(),
-            },
-            extension_to_language_map: HashMap::from_iter(vec![
-                ("lua", Language::Lua),
-                ("rhai", Language::Rhai),
-            ]),
-        }
-    }
-
     fn load_asset(app: &mut App, path: &str) -> Handle<ScriptAsset> {
         let handle = app.world_mut().resource::<AssetServer>().load(path);
 
@@ -402,22 +389,6 @@ mod tests {
     }
 
     #[test]
-    fn test_metadata_store() {
-        let mut store = ScriptMetadataStore::default();
-        let id = AssetId::invalid();
-        let meta = ScriptMetadata {
-            asset_id: AssetId::invalid(),
-            script_id: "test".into(),
-            language: Language::Lua,
-        };
-
-        store.insert(id, meta.clone());
-        assert_eq!(store.get(id), Some(&meta));
-
-        assert_eq!(store.remove(id), Some(meta));
-    }
-
-    #[test]
     fn test_script_asset_settings_select_language() {
         let settings = make_test_settings();
 
@@ -493,60 +464,6 @@ mod tests {
         fn build_runtime() -> Self::R {}
     }
 
-    #[test]
-    fn test_asset_metadata_systems() {
-        // test metadata flow
-        let mut app = init_loader_test(ScriptAssetLoader {
-            extensions: &[],
-            preprocessor: None,
-        });
-        app.world_mut().insert_resource(make_test_settings());
-        configure_asset_systems(&mut app);
-
-        // update untill the asset event gets dispatched
-        let asset_server: &AssetServer = app.world().resource::<AssetServer>();
-        let handle = asset_server.load("test_assets/test_script.lua");
-        run_app_untill_asset_event(
-            &mut app,
-            AssetEvent::LoadedWithDependencies {
-                id: AssetId::invalid(),
-            },
-        );
-        let asset_id = handle.id();
-
-        // we expect the metadata to be inserted now, in the same frame as the asset is loaded
-        let metadata = app
-            .world()
-            .get_resource::<ScriptMetadataStore>()
-            .unwrap()
-            .get(asset_id)
-            .expect("Metadata not found");
-
-        assert_eq!(metadata.script_id, "test_assets/test_script.lua");
-        assert_eq!(metadata.language, Language::Lua);
-
-        // ----------------- REMOVING -----------------
-
-        // we drop the handle and wait untill the first asset event is dispatched
-        drop(handle);
-
-        run_app_untill_asset_event(
-            &mut app,
-            AssetEvent::Removed {
-                id: AssetId::invalid(),
-            },
-        );
-
-        // we expect the metadata to be removed now, in the same frame as the asset is removed
-        let metadata_len = app
-            .world()
-            .get_resource::<ScriptMetadataStore>()
-            .unwrap()
-            .map
-            .len();
-
-        assert_eq!(metadata_len, 0);
-    }
 
     // #[test]
     // fn test_syncing_assets() {
