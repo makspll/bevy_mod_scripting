@@ -24,6 +24,9 @@ pub trait ScriptContextProvider<P: IntoScriptPluginParams> {
     ///
     /// Useful for tracking what context will be returned by `get()` without
     /// requiring that `P::C` impl `Hash` and cheaper too.
+    ///
+    /// Note: The existence of the hash does not imply the context exists. It
+    /// only declares what its hash will be.
     fn hash(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64>;
 }
 
