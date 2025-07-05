@@ -4,7 +4,6 @@
 
 ### Added
 
-- [**breaking**] Create 0.13.0.md and bump versions
 - Include Entity in `ScriptCallbackResponseEvent` ([#425](https://github.com/makspll/bevy_mod_scripting/pull/425))
 - Add on_script_reloaded callback. ([#421](https://github.com/makspll/bevy_mod_scripting/pull/421))
 - Warn on unknown language. ([#418](https://github.com/makspll/bevy_mod_scripting/pull/418))
