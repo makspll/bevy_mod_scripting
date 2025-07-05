@@ -5,7 +5,7 @@
 use std::ops::{Deref, DerefMut};
 
 use bevy::{
-    asset::{LoadState, Handle},
+    asset::{LoadState, Handle, Assets},
     ecs::{
         component::ComponentId,
         entity::Entity,
@@ -160,6 +160,8 @@ pub struct HandlerContext<'s, P: IntoScriptPluginParams> {
     pub(crate) static_scripts: ResScope<'s, StaticScripts>,
     /// Script context
     pub(crate) script_context: ResScope<'s, ScriptContext<P>>,
+    /// Scripts
+    pub(crate) scripts: ResScope<'s, Assets<ScriptAsset>>,
 }
 
 impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {

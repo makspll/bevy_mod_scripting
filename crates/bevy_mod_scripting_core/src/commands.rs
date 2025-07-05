@@ -70,7 +70,7 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
 pub struct CreateOrUpdateScript<P: IntoScriptPluginParams> {
     id: Handle<ScriptAsset>,
     // It feels like we're using a Box, which requires a clone merely to satisfy the Command trait.
-    content: Box<[u8]>,
+    content: Option<Box<[u8]>>,
     domain: Option<Domain>,
     // Hack to make this Send, C does not need to be Send since it is not stored in the command
     _ph: std::marker::PhantomData<fn(P::R, P::C)>,
@@ -79,7 +79,7 @@ pub struct CreateOrUpdateScript<P: IntoScriptPluginParams> {
 #[profiling::all_functions]
 impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     /// Creates a new CreateOrUpdateScript command with the given ID, content and asset
-    pub fn new(id: Handle<ScriptAsset>, content: Box<[u8]>, domain: Option<Domain>) -> Self {
+    pub fn new(id: Handle<ScriptAsset>, content: Option<Box<[u8]>>, domain: Option<Domain>) -> Self {
         Self {
             id,
             content,
@@ -121,7 +121,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         id: &Handle<ScriptAsset>,
         content: &[u8],
         guard: WorldGuard,
-        handler_ctxt: &mut HandlerContext<P>,
+        handler_ctxt: &HandlerContext<P>,
     ) -> Result<P::C, ScriptError> {
         let context = (ContextBuilder::<P>::load)(
             handler_ctxt.context_loading_settings.loader.load,
@@ -142,24 +142,33 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     pub(crate) fn create_or_update_script(
         entity: Option<Entity>,
         id: &Handle<ScriptAsset>,
-        content: &[u8],
+        content: Option<&[u8]>,
         domain: &Option<Domain>,
         guard: WorldGuard,
         handler_ctxt: &mut HandlerContext<P>) -> Result<(), ScriptError> {
         let assignment_strategy = handler_ctxt.context_loading_settings.assignment_strategy;
 
+        let Some(content) = content.or_else(|| handler_ctxt.scripts.get(id).map(|script| &*script.content)) else {
+            warn!("No content for script {} to create or update", id.display());
+            return Err(ScriptError::new(InteropError::missing_script(
+                id.clone(),
+            )));
+        };
         let phrase;
+        let success;
         let result = match handler_ctxt.script_context.get(entity, &id.id(), domain) {
             Some(context) => {
                 bevy::log::debug!("{}: reloading script {}", P::LANGUAGE, id.display());
                 let mut lcontext = context.lock();
                 phrase = "reloading";
+                success = "updated";
                 Self::reload_context(id, content, &mut lcontext, guard.clone(), handler_ctxt)
                     .map(|_| None)
             }
             None => {
                 bevy::log::debug!("{}: loading script {}", P::LANGUAGE, id.display());
                 phrase = "loading";
+                success = "created";
                 Self::load_context(id, content, guard.clone(), handler_ctxt)
                     .map(Some)
             }
@@ -174,9 +183,10 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
                 }
 
                 bevy::log::debug!(
-                    "{}: script {} successfully created or updated",
+                    "{}: script {} successfully {}",
                     P::LANGUAGE,
-                    id.display()
+                    id.display(),
+                    success,
                 );
                 Ok(())// none until individual context support added.
             }
@@ -204,7 +214,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
         let result = with_handler_system_state(
             world,
             |guard, handler_ctxt: &mut HandlerContext<P>| {
-               Self::create_or_update_script(None, &self.id, &self.content, &self.domain,
+               Self::create_or_update_script(None, &self.id, self.content.as_deref(), &self.domain,
                                              guard, handler_ctxt)
             });
 
@@ -233,7 +243,7 @@ impl<P: IntoScriptPluginParams> EntityCommand for CreateOrUpdateScript<P> {
         let result = with_handler_system_state(
             world,
             |guard, handler_ctxt: &mut HandlerContext<P>| {
-               Self::create_or_update_script(Some(entity), &self.id, &self.content, &self.domain,
+               Self::create_or_update_script(Some(entity), &self.id, self.content.as_deref(), &self.domain,
                                              guard, handler_ctxt)
             });
 
@@ -429,7 +439,7 @@ mod test {
                         init(name, &mut context)?;
                     }
                     for init in pre_run_init {
-                        init(name, Entity::from_raw(0), &mut context)?;
+                        init(name, None, &mut context)?;
                     }
                     Ok(context)
                 },
@@ -439,7 +449,7 @@ mod test {
                         init(name, existing)?;
                     }
                     for init in pre_run_init {
-                        init(name, Entity::from_raw(0), existing)?;
+                        init(name, None, existing)?;
                     }
                     Ok(())
                 },
@@ -484,13 +494,13 @@ mod test {
     fn assert_context_and_script(world: &World, id: &str, context: &str, message: &str) {
         let scripts = world.get_resource::<ScriptContext<DummyPlugin>>().unwrap();
 
-        let context = scripts.get(None, &Handle::default(), &None)
+        let context_arc = scripts.get(None, &Handle::default().id(), &None)
             .unwrap_or_else(|| panic!("Context not found {message}"));
 
         // assert_eq!(id, script.id);
-        let found_context = context.lock();
+        let found_context = context_arc.lock();
 
-        assert_eq!(*context, *found_context, "{message}");
+        assert_eq!(context, found_context.as_str(), "{message}");
     }
 
     fn assert_response_events(
@@ -520,8 +530,10 @@ mod test {
         let mut app = setup_app();
 
         let content = "content".as_bytes().to_vec().into_boxed_slice();
-        let command = CreateOrUpdateScript::<DummyPlugin>::new("script".into(), content, None);
-        command.apply(app.world_mut());
+        let handle = Handle::default();
+        let command = CreateOrUpdateScript::<DummyPlugin>::new(handle.clone(), content, None);
+        // command.apply(app.world_mut());
+        Command::apply(command, app.world_mut());
 
         // check script
         assert_context_and_script(
@@ -533,8 +545,9 @@ mod test {
 
         // update the script
         let content = "new content".as_bytes().to_vec().into_boxed_slice();
-        let command = CreateOrUpdateScript::<DummyPlugin>::new("script".into(), content, None);
-        command.apply(app.world_mut());
+        let script = Handle::default();
+        let command = CreateOrUpdateScript::<DummyPlugin>::new(script.clone(), content, None);
+        Command::apply(command, app.world_mut());
 
         // check script
         assert_context_and_script(
@@ -546,9 +559,10 @@ mod test {
 
         // create second script
         let content = "content2".as_bytes().to_vec().into_boxed_slice();
-        let command = CreateOrUpdateScript::<DummyPlugin>::new("script2".into(), content, None);
+        let script2 = Handle::default();
+        let command = CreateOrUpdateScript::<DummyPlugin>::new(script2.clone(), content, None);
 
-        command.apply(app.world_mut());
+        Command::apply(command, app.world_mut());
 
         // check second script
         assert_context_and_script(
@@ -560,8 +574,9 @@ mod test {
 
         // run a specific callback on the first script
         RunScriptCallback::<DummyPlugin>::new(
-            "script".into(),
-            Entity::from_raw(0),
+            script.clone(),
+            None,
+            None,
             OnScriptLoaded::into_callback_label(),
             vec![],
             true,
@@ -580,7 +595,7 @@ mod test {
             app.world_mut(),
             vec![ScriptCallbackResponseEvent::new(
                 OnScriptLoaded::into_callback_label(),
-                "script".into(),
+                script.id(),
                 Ok(ScriptValue::Unit),
             )]
             .into_iter(),
@@ -588,15 +603,15 @@ mod test {
         );
 
         // delete both scripts
-        let command = DeleteScript::<DummyPlugin>::new("script".into());
+        let command = DeleteScript::<DummyPlugin>::new(script.id(), None);
         command.apply(app.world_mut());
-        let command = DeleteScript::<DummyPlugin>::new("script2".into());
+        let command = DeleteScript::<DummyPlugin>::new(script2.id(), None);
         command.apply(app.world_mut());
 
         // check that the scripts are gone
         let scripts = app
             .world_mut()
-            .get_resource::<Scripts<DummyPlugin>>()
+            .get_resource::<StaticScripts>()
             .unwrap();
         assert!(scripts.scripts.is_empty());
 
@@ -605,6 +620,15 @@ mod test {
             vec![].into_iter(),
             "did not expect response events",
         );
+    }
+
+    fn add_script(app: &mut App, content: impl Into<String>) -> Handle<ScriptAsset> {
+        app.world_mut().resource_mut::<Assets<ScriptAsset>>().add(ScriptAsset::from(content.into()))
+    }
+
+    fn update_script(app: &mut App, handle: AssetId<ScriptAsset>, content: impl Into<String>) {
+        let mut script_asset = app.world_mut().resource_mut::<Assets<ScriptAsset>>().get_mut(handle).unwrap();
+        script_asset.bytes = content.into().into_vec().into_boxed_slice();
     }
 
     #[test]
@@ -620,8 +644,8 @@ mod test {
         settings.assignment_strategy = crate::context::ContextAssignmentStrategy::Global;
 
         // create a script
-        let content = "content".as_bytes().to_vec().into_boxed_slice();
-        let command = CreateOrUpdateScript::<DummyPlugin>::new("script".into(), content, None);
+        let script = add_script(&mut app, "content");
+        let command = CreateOrUpdateScript::<DummyPlugin>::new(script.clone(), None, None);
 
         command.apply(app.world_mut());
 
@@ -635,8 +659,8 @@ mod test {
 
         // update the script
 
-        let content = "new content".as_bytes().to_vec().into_boxed_slice();
-        let command = CreateOrUpdateScript::<DummyPlugin>::new("script".into(), content, None);
+        update_script(&mut app, script.id(), "new content");
+        let command = CreateOrUpdateScript::<DummyPlugin>::new(script.clone(), None, None);
 
         command.apply(app.world_mut());
 
@@ -651,8 +675,8 @@ mod test {
 
         // create second script
 
-        let content = "content2".as_bytes().to_vec().into_boxed_slice();
-        let command = CreateOrUpdateScript::<DummyPlugin>::new("script2".into(), content, None);
+        let script2 = add_script(&mut app, "content2");
+        let command = CreateOrUpdateScript::<DummyPlugin>::new(script2.clone(), None, None);
 
         command.apply(app.world_mut());
 
@@ -671,7 +695,7 @@ mod test {
             "First script context was not updated on second script insert",
         );
 
-        let scripts = app.world().get_resource::<Scripts<DummyPlugin>>().unwrap();
+        let scripts = app.world().get_resource::<StaticScripts<DummyPlugin>>().unwrap();
         assert!(scripts.scripts.len() == 2);
 
         // delete first script
@@ -695,10 +719,10 @@ mod test {
 
         // check that the scripts are gone, and so is the context
 
-        let scripts = app.world().get_resource::<Scripts<DummyPlugin>>().unwrap();
+        let scripts = app.world().get_resource::<StaticScripts<DummyPlugin>>().unwrap();
         assert!(scripts.scripts.is_empty());
 
-        let scripts = app.world().get_resource::<Scripts<DummyPlugin>>().unwrap();
+        let scripts = app.world().get_resource::<StaticScripts<DummyPlugin>>().unwrap();
 
         assert_eq!(scripts.scripts.len(), 0, "scripts weren't removed");
         assert_response_events(
