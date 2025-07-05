@@ -30,11 +30,9 @@ codegen-units = 8
 incremental = false
 debug = false
 
-# [rust-analyzer.rustc]
-# source = "discover"
 
-# [package.metadata.rust-analyzer]
-# rustc_private = true
+[package.metadata.rust-analyzer]
+rustc_private = true
 
 [dependencies]
 log = "0.4"

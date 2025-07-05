@@ -41,8 +41,8 @@ impl bevy::time::prelude::Timer {
     ///  let timer = Timer::new(Duration::from_secs(1), TimerMode::Once);
     ///  assert_eq!(timer.duration(), Duration::from_secs(1));
     ///  ```
-    fn duration(_self: Ref<bevy::time::prelude::Timer>) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = bevy::time::prelude::Timer::duration(
+    fn duration(_self: Ref<bevy::time::prelude::Timer>) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = bevy::time::prelude::Timer::duration(
                 &_self,
             )
             .into();
@@ -59,8 +59,8 @@ impl bevy::time::prelude::Timer {
     ///  timer.tick(Duration::from_secs_f32(0.5));
     ///  assert_eq!(timer.elapsed(), Duration::from_secs_f32(0.5));
     ///  ```
-    fn elapsed(_self: Ref<bevy::time::prelude::Timer>) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = bevy::time::prelude::Timer::elapsed(
+    fn elapsed(_self: Ref<bevy::time::prelude::Timer>) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = bevy::time::prelude::Timer::elapsed(
                 &_self,
             )
             .into();
@@ -178,7 +178,7 @@ impl bevy::time::prelude::Timer {
     ///  Creates a new timer with a given duration.
     ///  See also [`Timer::from_seconds`](Timer::from_seconds).
     fn new(
-        duration: Val<core::time::Duration>,
+        duration: Val<::core::time::Duration>,
         mode: Val<bevy::time::prelude::TimerMode>,
     ) -> Val<bevy::time::prelude::Timer> {
         let output: Val<bevy::time::prelude::Timer> = bevy::time::prelude::Timer::new(
@@ -228,8 +228,8 @@ impl bevy::time::prelude::Timer {
     ///  timer.tick(Duration::from_secs_f32(0.5));
     ///  assert_eq!(timer.remaining(), Duration::from_secs_f32(1.5));
     ///  ```
-    fn remaining(_self: Ref<bevy::time::prelude::Timer>) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = bevy::time::prelude::Timer::remaining(
+    fn remaining(_self: Ref<bevy::time::prelude::Timer>) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = bevy::time::prelude::Timer::remaining(
                 &_self,
             )
             .into();
@@ -278,7 +278,7 @@ impl bevy::time::prelude::Timer {
     ///  ```
     fn set_duration(
         mut _self: Mut<bevy::time::prelude::Timer>,
-        duration: Val<core::time::Duration>,
+        duration: Val<::core::time::Duration>,
     ) -> () {
         let output: () = bevy::time::prelude::Timer::set_duration(
                 &mut _self,
@@ -301,7 +301,7 @@ impl bevy::time::prelude::Timer {
     ///  ```
     fn set_elapsed(
         mut _self: Mut<bevy::time::prelude::Timer>,
-        time: Val<core::time::Duration>,
+        time: Val<::core::time::Duration>,
     ) -> () {
         let output: () = bevy::time::prelude::Timer::set_elapsed(
                 &mut _self,
@@ -402,8 +402,8 @@ impl bevy::time::Stopwatch {
     ///  # See Also
     ///  [`elapsed_secs`](Stopwatch::elapsed_secs) - if an `f32` value is desirable instead.
     ///  [`elapsed_secs_f64`](Stopwatch::elapsed_secs_f64) - if an `f64` is desirable instead.
-    fn elapsed(_self: Ref<bevy::time::Stopwatch>) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = bevy::time::Stopwatch::elapsed(&_self)
+    fn elapsed(_self: Ref<bevy::time::Stopwatch>) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = bevy::time::Stopwatch::elapsed(&_self)
             .into();
         output
     }
@@ -501,7 +501,7 @@ impl bevy::time::Stopwatch {
     ///  ```
     fn set_elapsed(
         mut _self: Mut<bevy::time::Stopwatch>,
-        time: Val<core::time::Duration>,
+        time: Val<::core::time::Duration>,
     ) -> () {
         let output: () = bevy::time::Stopwatch::set_elapsed(
                 &mut _self,

@@ -263,8 +263,8 @@ impl bevy::math::Ray2d {
         _self: Ref<bevy::math::Ray2d>,
         plane_origin: Val<bevy::math::prelude::Vec2>,
         plane: Val<bevy::math::primitives::Plane2d>,
-    ) -> core::option::Option<f32> {
-        let output: core::option::Option<f32> = bevy::math::Ray2d::intersect_plane(
+    ) -> ::core::option::Option<f32> {
+        let output: ::core::option::Option<f32> = bevy::math::Ray2d::intersect_plane(
                 &_self,
                 plane_origin.into_inner(),
                 plane.into_inner(),
@@ -309,8 +309,8 @@ impl bevy::math::Ray3d {
         _self: Ref<bevy::math::Ray3d>,
         plane_origin: Val<bevy::math::prelude::Vec3>,
         plane: Val<bevy::math::primitives::InfinitePlane3d>,
-    ) -> core::option::Option<f32> {
-        let output: core::option::Option<f32> = bevy::math::Ray3d::intersect_plane(
+    ) -> ::core::option::Option<f32> {
+        let output: ::core::option::Option<f32> = bevy::math::Ray3d::intersect_plane(
                 &_self,
                 plane_origin.into_inner(),
                 plane.into_inner(),
@@ -3740,8 +3740,8 @@ impl bevy::math::bounding::RayCast2d {
     fn aabb_intersection_at(
         _self: Ref<bevy::math::bounding::RayCast2d>,
         aabb: Ref<bevy::math::bounding::Aabb2d>,
-    ) -> core::option::Option<f32> {
-        let output: core::option::Option<f32> = bevy::math::bounding::RayCast2d::aabb_intersection_at(
+    ) -> ::core::option::Option<f32> {
+        let output: ::core::option::Option<f32> = bevy::math::bounding::RayCast2d::aabb_intersection_at(
                 &_self,
                 &aabb,
             )
@@ -3752,8 +3752,8 @@ impl bevy::math::bounding::RayCast2d {
     fn circle_intersection_at(
         _self: Ref<bevy::math::bounding::RayCast2d>,
         circle: Ref<bevy::math::bounding::BoundingCircle>,
-    ) -> core::option::Option<f32> {
-        let output: core::option::Option<f32> = bevy::math::bounding::RayCast2d::circle_intersection_at(
+    ) -> ::core::option::Option<f32> {
+        let output: ::core::option::Option<f32> = bevy::math::bounding::RayCast2d::circle_intersection_at(
                 &_self,
                 &circle,
             )
@@ -3808,8 +3808,8 @@ impl bevy::math::bounding::AabbCast2d {
     fn aabb_collision_at(
         _self: Ref<bevy::math::bounding::AabbCast2d>,
         aabb: Val<bevy::math::bounding::Aabb2d>,
-    ) -> core::option::Option<f32> {
-        let output: core::option::Option<f32> = bevy::math::bounding::AabbCast2d::aabb_collision_at(
+    ) -> ::core::option::Option<f32> {
+        let output: ::core::option::Option<f32> = bevy::math::bounding::AabbCast2d::aabb_collision_at(
                 &_self,
                 aabb.into_inner(),
             )
@@ -3858,8 +3858,8 @@ impl bevy::math::bounding::BoundingCircleCast {
     fn circle_collision_at(
         _self: Ref<bevy::math::bounding::BoundingCircleCast>,
         circle: Val<bevy::math::bounding::BoundingCircle>,
-    ) -> core::option::Option<f32> {
-        let output: core::option::Option<f32> = bevy::math::bounding::BoundingCircleCast::circle_collision_at(
+    ) -> ::core::option::Option<f32> {
+        let output: ::core::option::Option<f32> = bevy::math::bounding::BoundingCircleCast::circle_collision_at(
                 &_self,
                 circle.into_inner(),
             )
@@ -3908,8 +3908,8 @@ impl bevy::math::bounding::RayCast3d {
     fn aabb_intersection_at(
         _self: Ref<bevy::math::bounding::RayCast3d>,
         aabb: Ref<bevy::math::bounding::Aabb3d>,
-    ) -> core::option::Option<f32> {
-        let output: core::option::Option<f32> = bevy::math::bounding::RayCast3d::aabb_intersection_at(
+    ) -> ::core::option::Option<f32> {
+        let output: ::core::option::Option<f32> = bevy::math::bounding::RayCast3d::aabb_intersection_at(
                 &_self,
                 &aabb,
             )
@@ -3942,8 +3942,8 @@ impl bevy::math::bounding::RayCast3d {
     fn sphere_intersection_at(
         _self: Ref<bevy::math::bounding::RayCast3d>,
         sphere: Ref<bevy::math::bounding::BoundingSphere>,
-    ) -> core::option::Option<f32> {
-        let output: core::option::Option<f32> = bevy::math::bounding::RayCast3d::sphere_intersection_at(
+    ) -> ::core::option::Option<f32> {
+        let output: ::core::option::Option<f32> = bevy::math::bounding::RayCast3d::sphere_intersection_at(
                 &_self,
                 &sphere,
             )
@@ -3962,8 +3962,8 @@ impl bevy::math::bounding::AabbCast3d {
     fn aabb_collision_at(
         _self: Ref<bevy::math::bounding::AabbCast3d>,
         aabb: Val<bevy::math::bounding::Aabb3d>,
-    ) -> core::option::Option<f32> {
-        let output: core::option::Option<f32> = bevy::math::bounding::AabbCast3d::aabb_collision_at(
+    ) -> ::core::option::Option<f32> {
+        let output: ::core::option::Option<f32> = bevy::math::bounding::AabbCast3d::aabb_collision_at(
                 &_self,
                 aabb.into_inner(),
             )
@@ -4010,8 +4010,8 @@ impl bevy::math::bounding::BoundingSphereCast {
     fn sphere_collision_at(
         _self: Ref<bevy::math::bounding::BoundingSphereCast>,
         sphere: Val<bevy::math::bounding::BoundingSphere>,
-    ) -> core::option::Option<f32> {
-        let output: core::option::Option<f32> = bevy::math::bounding::BoundingSphereCast::sphere_collision_at(
+    ) -> ::core::option::Option<f32> {
+        let output: ::core::option::Option<f32> = bevy::math::bounding::BoundingSphereCast::sphere_collision_at(
                 &_self,
                 sphere.into_inner(),
             )

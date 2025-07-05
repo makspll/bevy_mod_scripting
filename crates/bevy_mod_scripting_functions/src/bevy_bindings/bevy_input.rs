@@ -75,8 +75,8 @@ impl bevy::input::gamepad::Gamepad {
     ///  [vendor]: Self::vendor_id
     fn product_id(
         _self: Ref<bevy::input::gamepad::Gamepad>,
-    ) -> core::option::Option<u16> {
-        let output: core::option::Option<u16> = bevy::input::gamepad::Gamepad::product_id(
+    ) -> ::core::option::Option<u16> {
+        let output: ::core::option::Option<u16> = bevy::input::gamepad::Gamepad::product_id(
                 &_self,
             )
             .into();
@@ -93,8 +93,8 @@ impl bevy::input::gamepad::Gamepad {
     ///  Returns the USB vendor ID as assigned by the USB-IF, if available.
     fn vendor_id(
         _self: Ref<bevy::input::gamepad::Gamepad>,
-    ) -> core::option::Option<u16> {
-        let output: core::option::Option<u16> = bevy::input::gamepad::Gamepad::vendor_id(
+    ) -> ::core::option::Option<u16> {
+        let output: ::core::option::Option<u16> = bevy::input::gamepad::Gamepad::vendor_id(
                 &_self,
             )
             .into();

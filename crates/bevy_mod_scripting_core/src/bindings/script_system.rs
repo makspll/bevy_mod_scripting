@@ -27,14 +27,12 @@ use bevy::{
         entity::Entity,
         query::{Access, FilteredAccess, FilteredAccessSet, QueryState},
         reflect::AppTypeRegistry,
-        schedule::{
-            SystemSet, Infallible
-        },
+        schedule::SystemSet,
         system::{IntoSystem, System, SystemParamValidationError},
         world::{unsafe_world_cell::UnsafeWorldCell, World},
     },
     platform::collections::HashSet,
-    prelude::{BevyError, IntoScheduleConfigs},
+    prelude::IntoScheduleConfigs,
     reflect::{OffsetAccess, ParsedPath, Reflect},
 };
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
@@ -163,8 +161,10 @@ impl ScriptSystemBuilder {
 
             // this is quite important, by default systems are placed in a set defined by their TYPE, i.e. in this case
             // all script systems would be the same
-            // let set = ScriptSystemSet::next();
-            let mut system_config = <ScriptSystemBuilder as IntoScheduleConfigs<Box<(dyn System<In = (), Out = Result<(), BevyError>> + 'static)>, (Infallible, IsDynamicScriptSystem<P>)>>::into_configs(self);            // apply ordering
+
+            let system: DynamicScriptSystem<P> = IntoSystem::into_system(self);
+            let mut system_config = system.into_configs();
+            // let mut system_config = <ScriptSystemBuilder as IntoScheduleConfigs<Box<(dyn System<In = (), Out = Result<(), BevyError>> + 'static)>, (Infallible, IsDynamicScriptSystem<P>)>>::into_configs(self);            // apply ordering
             for (other, is_before) in before_systems
                 .into_iter()
                 .map(|b| (b, true))

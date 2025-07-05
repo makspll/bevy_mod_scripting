@@ -18,7 +18,7 @@ pub struct BevyReflectScriptingPlugin;
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl core::sync::atomic::AtomicBool {
+impl ::core::sync::atomic::AtomicBool {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -28,8 +28,10 @@ impl core::sync::atomic::AtomicBool {
     ///  let some_bool = AtomicBool::new(true);
     ///  assert_eq!(some_bool.into_inner(), true);
     ///  ```
-    fn into_inner(_self: Val<core::sync::atomic::AtomicBool>) -> bool {
-        let output: bool = core::sync::atomic::AtomicBool::into_inner(_self.into_inner())
+    fn into_inner(_self: Val<::core::sync::atomic::AtomicBool>) -> bool {
+        let output: bool = ::core::sync::atomic::AtomicBool::into_inner(
+                _self.into_inner(),
+            )
             .into();
         output
     }
@@ -40,8 +42,8 @@ impl core::sync::atomic::AtomicBool {
     ///  let atomic_true = AtomicBool::new(true);
     ///  let atomic_false = AtomicBool::new(false);
     ///  ```
-    fn new(v: bool) -> Val<core::sync::atomic::AtomicBool> {
-        let output: Val<core::sync::atomic::AtomicBool> = core::sync::atomic::AtomicBool::new(
+    fn new(v: bool) -> Val<::core::sync::atomic::AtomicBool> {
+        let output: Val<::core::sync::atomic::AtomicBool> = ::core::sync::atomic::AtomicBool::new(
                 v,
             )
             .into();
@@ -54,7 +56,7 @@ impl core::sync::atomic::AtomicBool {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl core::sync::atomic::AtomicI16 {
+impl ::core::sync::atomic::AtomicI16 {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -64,8 +66,8 @@ impl core::sync::atomic::AtomicI16 {
     /// let some_var = AtomicI16::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<core::sync::atomic::AtomicI16>) -> i16 {
-        let output: i16 = core::sync::atomic::AtomicI16::into_inner(_self.into_inner())
+    fn into_inner(_self: Val<::core::sync::atomic::AtomicI16>) -> i16 {
+        let output: i16 = ::core::sync::atomic::AtomicI16::into_inner(_self.into_inner())
             .into();
         output
     }
@@ -75,8 +77,8 @@ impl core::sync::atomic::AtomicI16 {
     /// use std::sync::atomic::AtomicI16;
     /// let atomic_forty_two = AtomicI16::new(42);
     ///  ```
-    fn new(v: i16) -> Val<core::sync::atomic::AtomicI16> {
-        let output: Val<core::sync::atomic::AtomicI16> = core::sync::atomic::AtomicI16::new(
+    fn new(v: i16) -> Val<::core::sync::atomic::AtomicI16> {
+        let output: Val<::core::sync::atomic::AtomicI16> = ::core::sync::atomic::AtomicI16::new(
                 v,
             )
             .into();
@@ -89,7 +91,7 @@ impl core::sync::atomic::AtomicI16 {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl core::sync::atomic::AtomicI32 {
+impl ::core::sync::atomic::AtomicI32 {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -99,8 +101,8 @@ impl core::sync::atomic::AtomicI32 {
     /// let some_var = AtomicI32::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<core::sync::atomic::AtomicI32>) -> i32 {
-        let output: i32 = core::sync::atomic::AtomicI32::into_inner(_self.into_inner())
+    fn into_inner(_self: Val<::core::sync::atomic::AtomicI32>) -> i32 {
+        let output: i32 = ::core::sync::atomic::AtomicI32::into_inner(_self.into_inner())
             .into();
         output
     }
@@ -110,8 +112,8 @@ impl core::sync::atomic::AtomicI32 {
     /// use std::sync::atomic::AtomicI32;
     /// let atomic_forty_two = AtomicI32::new(42);
     ///  ```
-    fn new(v: i32) -> Val<core::sync::atomic::AtomicI32> {
-        let output: Val<core::sync::atomic::AtomicI32> = core::sync::atomic::AtomicI32::new(
+    fn new(v: i32) -> Val<::core::sync::atomic::AtomicI32> {
+        let output: Val<::core::sync::atomic::AtomicI32> = ::core::sync::atomic::AtomicI32::new(
                 v,
             )
             .into();
@@ -124,7 +126,7 @@ impl core::sync::atomic::AtomicI32 {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl core::sync::atomic::AtomicI64 {
+impl ::core::sync::atomic::AtomicI64 {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -134,8 +136,8 @@ impl core::sync::atomic::AtomicI64 {
     /// let some_var = AtomicI64::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<core::sync::atomic::AtomicI64>) -> i64 {
-        let output: i64 = core::sync::atomic::AtomicI64::into_inner(_self.into_inner())
+    fn into_inner(_self: Val<::core::sync::atomic::AtomicI64>) -> i64 {
+        let output: i64 = ::core::sync::atomic::AtomicI64::into_inner(_self.into_inner())
             .into();
         output
     }
@@ -145,8 +147,8 @@ impl core::sync::atomic::AtomicI64 {
     /// use std::sync::atomic::AtomicI64;
     /// let atomic_forty_two = AtomicI64::new(42);
     ///  ```
-    fn new(v: i64) -> Val<core::sync::atomic::AtomicI64> {
-        let output: Val<core::sync::atomic::AtomicI64> = core::sync::atomic::AtomicI64::new(
+    fn new(v: i64) -> Val<::core::sync::atomic::AtomicI64> {
+        let output: Val<::core::sync::atomic::AtomicI64> = ::core::sync::atomic::AtomicI64::new(
                 v,
             )
             .into();
@@ -159,7 +161,7 @@ impl core::sync::atomic::AtomicI64 {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl core::sync::atomic::AtomicI8 {
+impl ::core::sync::atomic::AtomicI8 {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -169,8 +171,8 @@ impl core::sync::atomic::AtomicI8 {
     /// let some_var = AtomicI8::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<core::sync::atomic::AtomicI8>) -> i8 {
-        let output: i8 = core::sync::atomic::AtomicI8::into_inner(_self.into_inner())
+    fn into_inner(_self: Val<::core::sync::atomic::AtomicI8>) -> i8 {
+        let output: i8 = ::core::sync::atomic::AtomicI8::into_inner(_self.into_inner())
             .into();
         output
     }
@@ -180,8 +182,8 @@ impl core::sync::atomic::AtomicI8 {
     /// use std::sync::atomic::AtomicI8;
     /// let atomic_forty_two = AtomicI8::new(42);
     ///  ```
-    fn new(v: i8) -> Val<core::sync::atomic::AtomicI8> {
-        let output: Val<core::sync::atomic::AtomicI8> = core::sync::atomic::AtomicI8::new(
+    fn new(v: i8) -> Val<::core::sync::atomic::AtomicI8> {
+        let output: Val<::core::sync::atomic::AtomicI8> = ::core::sync::atomic::AtomicI8::new(
                 v,
             )
             .into();
@@ -194,7 +196,7 @@ impl core::sync::atomic::AtomicI8 {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl core::sync::atomic::AtomicIsize {
+impl ::core::sync::atomic::AtomicIsize {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -204,8 +206,8 @@ impl core::sync::atomic::AtomicIsize {
     /// let some_var = AtomicIsize::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<core::sync::atomic::AtomicIsize>) -> isize {
-        let output: isize = core::sync::atomic::AtomicIsize::into_inner(
+    fn into_inner(_self: Val<::core::sync::atomic::AtomicIsize>) -> isize {
+        let output: isize = ::core::sync::atomic::AtomicIsize::into_inner(
                 _self.into_inner(),
             )
             .into();
@@ -217,8 +219,8 @@ impl core::sync::atomic::AtomicIsize {
     /// use std::sync::atomic::AtomicIsize;
     /// let atomic_forty_two = AtomicIsize::new(42);
     ///  ```
-    fn new(v: isize) -> Val<core::sync::atomic::AtomicIsize> {
-        let output: Val<core::sync::atomic::AtomicIsize> = core::sync::atomic::AtomicIsize::new(
+    fn new(v: isize) -> Val<::core::sync::atomic::AtomicIsize> {
+        let output: Val<::core::sync::atomic::AtomicIsize> = ::core::sync::atomic::AtomicIsize::new(
                 v,
             )
             .into();
@@ -231,7 +233,7 @@ impl core::sync::atomic::AtomicIsize {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl core::sync::atomic::AtomicU16 {
+impl ::core::sync::atomic::AtomicU16 {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -241,8 +243,8 @@ impl core::sync::atomic::AtomicU16 {
     /// let some_var = AtomicU16::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<core::sync::atomic::AtomicU16>) -> u16 {
-        let output: u16 = core::sync::atomic::AtomicU16::into_inner(_self.into_inner())
+    fn into_inner(_self: Val<::core::sync::atomic::AtomicU16>) -> u16 {
+        let output: u16 = ::core::sync::atomic::AtomicU16::into_inner(_self.into_inner())
             .into();
         output
     }
@@ -252,8 +254,8 @@ impl core::sync::atomic::AtomicU16 {
     /// use std::sync::atomic::AtomicU16;
     /// let atomic_forty_two = AtomicU16::new(42);
     ///  ```
-    fn new(v: u16) -> Val<core::sync::atomic::AtomicU16> {
-        let output: Val<core::sync::atomic::AtomicU16> = core::sync::atomic::AtomicU16::new(
+    fn new(v: u16) -> Val<::core::sync::atomic::AtomicU16> {
+        let output: Val<::core::sync::atomic::AtomicU16> = ::core::sync::atomic::AtomicU16::new(
                 v,
             )
             .into();
@@ -266,7 +268,7 @@ impl core::sync::atomic::AtomicU16 {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl core::sync::atomic::AtomicU32 {
+impl ::core::sync::atomic::AtomicU32 {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -276,8 +278,8 @@ impl core::sync::atomic::AtomicU32 {
     /// let some_var = AtomicU32::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<core::sync::atomic::AtomicU32>) -> u32 {
-        let output: u32 = core::sync::atomic::AtomicU32::into_inner(_self.into_inner())
+    fn into_inner(_self: Val<::core::sync::atomic::AtomicU32>) -> u32 {
+        let output: u32 = ::core::sync::atomic::AtomicU32::into_inner(_self.into_inner())
             .into();
         output
     }
@@ -287,8 +289,8 @@ impl core::sync::atomic::AtomicU32 {
     /// use std::sync::atomic::AtomicU32;
     /// let atomic_forty_two = AtomicU32::new(42);
     ///  ```
-    fn new(v: u32) -> Val<core::sync::atomic::AtomicU32> {
-        let output: Val<core::sync::atomic::AtomicU32> = core::sync::atomic::AtomicU32::new(
+    fn new(v: u32) -> Val<::core::sync::atomic::AtomicU32> {
+        let output: Val<::core::sync::atomic::AtomicU32> = ::core::sync::atomic::AtomicU32::new(
                 v,
             )
             .into();
@@ -301,7 +303,7 @@ impl core::sync::atomic::AtomicU32 {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl core::sync::atomic::AtomicU64 {
+impl ::core::sync::atomic::AtomicU64 {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -311,8 +313,8 @@ impl core::sync::atomic::AtomicU64 {
     /// let some_var = AtomicU64::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<core::sync::atomic::AtomicU64>) -> u64 {
-        let output: u64 = core::sync::atomic::AtomicU64::into_inner(_self.into_inner())
+    fn into_inner(_self: Val<::core::sync::atomic::AtomicU64>) -> u64 {
+        let output: u64 = ::core::sync::atomic::AtomicU64::into_inner(_self.into_inner())
             .into();
         output
     }
@@ -322,8 +324,8 @@ impl core::sync::atomic::AtomicU64 {
     /// use std::sync::atomic::AtomicU64;
     /// let atomic_forty_two = AtomicU64::new(42);
     ///  ```
-    fn new(v: u64) -> Val<core::sync::atomic::AtomicU64> {
-        let output: Val<core::sync::atomic::AtomicU64> = core::sync::atomic::AtomicU64::new(
+    fn new(v: u64) -> Val<::core::sync::atomic::AtomicU64> {
+        let output: Val<::core::sync::atomic::AtomicU64> = ::core::sync::atomic::AtomicU64::new(
                 v,
             )
             .into();
@@ -336,7 +338,7 @@ impl core::sync::atomic::AtomicU64 {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl core::sync::atomic::AtomicU8 {
+impl ::core::sync::atomic::AtomicU8 {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -346,8 +348,8 @@ impl core::sync::atomic::AtomicU8 {
     /// let some_var = AtomicU8::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<core::sync::atomic::AtomicU8>) -> u8 {
-        let output: u8 = core::sync::atomic::AtomicU8::into_inner(_self.into_inner())
+    fn into_inner(_self: Val<::core::sync::atomic::AtomicU8>) -> u8 {
+        let output: u8 = ::core::sync::atomic::AtomicU8::into_inner(_self.into_inner())
             .into();
         output
     }
@@ -357,8 +359,8 @@ impl core::sync::atomic::AtomicU8 {
     /// use std::sync::atomic::AtomicU8;
     /// let atomic_forty_two = AtomicU8::new(42);
     ///  ```
-    fn new(v: u8) -> Val<core::sync::atomic::AtomicU8> {
-        let output: Val<core::sync::atomic::AtomicU8> = core::sync::atomic::AtomicU8::new(
+    fn new(v: u8) -> Val<::core::sync::atomic::AtomicU8> {
+        let output: Val<::core::sync::atomic::AtomicU8> = ::core::sync::atomic::AtomicU8::new(
                 v,
             )
             .into();
@@ -371,7 +373,7 @@ impl core::sync::atomic::AtomicU8 {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl core::sync::atomic::AtomicUsize {
+impl ::core::sync::atomic::AtomicUsize {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -381,8 +383,8 @@ impl core::sync::atomic::AtomicUsize {
     /// let some_var = AtomicUsize::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<core::sync::atomic::AtomicUsize>) -> usize {
-        let output: usize = core::sync::atomic::AtomicUsize::into_inner(
+    fn into_inner(_self: Val<::core::sync::atomic::AtomicUsize>) -> usize {
+        let output: usize = ::core::sync::atomic::AtomicUsize::into_inner(
                 _self.into_inner(),
             )
             .into();
@@ -394,8 +396,8 @@ impl core::sync::atomic::AtomicUsize {
     /// use std::sync::atomic::AtomicUsize;
     /// let atomic_forty_two = AtomicUsize::new(42);
     ///  ```
-    fn new(v: usize) -> Val<core::sync::atomic::AtomicUsize> {
-        let output: Val<core::sync::atomic::AtomicUsize> = core::sync::atomic::AtomicUsize::new(
+    fn new(v: usize) -> Val<::core::sync::atomic::AtomicUsize> {
+        let output: Val<::core::sync::atomic::AtomicUsize> = ::core::sync::atomic::AtomicUsize::new(
                 v,
             )
             .into();
@@ -408,7 +410,7 @@ impl core::sync::atomic::AtomicUsize {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl core::time::Duration {
+impl ::core::time::Duration {
     ///  Computes the absolute difference between `self` and `other`.
     ///  # Examples
     ///  ```
@@ -417,10 +419,10 @@ impl core::time::Duration {
     ///  assert_eq!(Duration::new(100, 400_000_000).abs_diff(Duration::new(110, 0)), Duration::new(9, 600_000_000));
     ///  ```
     fn abs_diff(
-        _self: Val<core::time::Duration>,
-        other: Val<core::time::Duration>,
-    ) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = core::time::Duration::abs_diff(
+        _self: Val<::core::time::Duration>,
+        other: Val<::core::time::Duration>,
+    ) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = ::core::time::Duration::abs_diff(
                 _self.into_inner(),
                 other.into_inner(),
             )
@@ -434,8 +436,8 @@ impl core::time::Duration {
     ///  let duration = Duration::new(5, 730_023_852);
     ///  assert_eq!(duration.as_micros(), 5_730_023);
     ///  ```
-    fn as_micros(_self: Ref<core::time::Duration>) -> u128 {
-        let output: u128 = core::time::Duration::as_micros(&_self).into();
+    fn as_micros(_self: Ref<::core::time::Duration>) -> u128 {
+        let output: u128 = ::core::time::Duration::as_micros(&_self).into();
         output
     }
     ///  Returns the total number of whole milliseconds contained by this `Duration`.
@@ -445,8 +447,8 @@ impl core::time::Duration {
     ///  let duration = Duration::new(5, 730_023_852);
     ///  assert_eq!(duration.as_millis(), 5_730);
     ///  ```
-    fn as_millis(_self: Ref<core::time::Duration>) -> u128 {
-        let output: u128 = core::time::Duration::as_millis(&_self).into();
+    fn as_millis(_self: Ref<::core::time::Duration>) -> u128 {
+        let output: u128 = ::core::time::Duration::as_millis(&_self).into();
         output
     }
     ///  Returns the total number of nanoseconds contained by this `Duration`.
@@ -456,8 +458,8 @@ impl core::time::Duration {
     ///  let duration = Duration::new(5, 730_023_852);
     ///  assert_eq!(duration.as_nanos(), 5_730_023_852);
     ///  ```
-    fn as_nanos(_self: Ref<core::time::Duration>) -> u128 {
-        let output: u128 = core::time::Duration::as_nanos(&_self).into();
+    fn as_nanos(_self: Ref<::core::time::Duration>) -> u128 {
+        let output: u128 = ::core::time::Duration::as_nanos(&_self).into();
         output
     }
     ///  Returns the number of _whole_ seconds contained by this `Duration`.
@@ -474,8 +476,8 @@ impl core::time::Duration {
     ///  [`as_secs_f64`]: Duration::as_secs_f64
     ///  [`as_secs_f32`]: Duration::as_secs_f32
     ///  [`subsec_nanos`]: Duration::subsec_nanos
-    fn as_secs(_self: Ref<core::time::Duration>) -> u64 {
-        let output: u64 = core::time::Duration::as_secs(&_self).into();
+    fn as_secs(_self: Ref<::core::time::Duration>) -> u64 {
+        let output: u64 = ::core::time::Duration::as_secs(&_self).into();
         output
     }
     ///  Returns the number of seconds contained by this `Duration` as `f32`.
@@ -486,8 +488,8 @@ impl core::time::Duration {
     ///  let dur = Duration::new(2, 700_000_000);
     ///  assert_eq!(dur.as_secs_f32(), 2.7);
     ///  ```
-    fn as_secs_f32(_self: Ref<core::time::Duration>) -> f32 {
-        let output: f32 = core::time::Duration::as_secs_f32(&_self).into();
+    fn as_secs_f32(_self: Ref<::core::time::Duration>) -> f32 {
+        let output: f32 = ::core::time::Duration::as_secs_f32(&_self).into();
         output
     }
     ///  Returns the number of seconds contained by this `Duration` as `f64`.
@@ -498,8 +500,8 @@ impl core::time::Duration {
     ///  let dur = Duration::new(2, 700_000_000);
     ///  assert_eq!(dur.as_secs_f64(), 2.7);
     ///  ```
-    fn as_secs_f64(_self: Ref<core::time::Duration>) -> f64 {
-        let output: f64 = core::time::Duration::as_secs_f64(&_self).into();
+    fn as_secs_f64(_self: Ref<::core::time::Duration>) -> f64 {
+        let output: f64 = ::core::time::Duration::as_secs_f64(&_self).into();
         output
     }
     ///  Divides `Duration` by `Duration` and returns `f32`.
@@ -511,10 +513,10 @@ impl core::time::Duration {
     ///  assert_eq!(dur1.div_duration_f32(dur2), 0.5);
     ///  ```
     fn div_duration_f32(
-        _self: Val<core::time::Duration>,
-        rhs: Val<core::time::Duration>,
+        _self: Val<::core::time::Duration>,
+        rhs: Val<::core::time::Duration>,
     ) -> f32 {
-        let output: f32 = core::time::Duration::div_duration_f32(
+        let output: f32 = ::core::time::Duration::div_duration_f32(
                 _self.into_inner(),
                 rhs.into_inner(),
             )
@@ -530,10 +532,10 @@ impl core::time::Duration {
     ///  assert_eq!(dur1.div_duration_f64(dur2), 0.5);
     ///  ```
     fn div_duration_f64(
-        _self: Val<core::time::Duration>,
-        rhs: Val<core::time::Duration>,
+        _self: Val<::core::time::Duration>,
+        rhs: Val<::core::time::Duration>,
     ) -> f64 {
-        let output: f64 = core::time::Duration::div_duration_f64(
+        let output: f64 = ::core::time::Duration::div_duration_f64(
                 _self.into_inner(),
                 rhs.into_inner(),
             )
@@ -552,8 +554,11 @@ impl core::time::Duration {
     ///  assert_eq!(dur.div_f32(3.14), Duration::new(0, 859_872_580));
     ///  assert_eq!(dur.div_f32(3.14e5), Duration::new(0, 8_599));
     ///  ```
-    fn div_f32(_self: Val<core::time::Duration>, rhs: f32) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = core::time::Duration::div_f32(
+    fn div_f32(
+        _self: Val<::core::time::Duration>,
+        rhs: f32,
+    ) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = ::core::time::Duration::div_f32(
                 _self.into_inner(),
                 rhs,
             )
@@ -570,8 +575,11 @@ impl core::time::Duration {
     ///  assert_eq!(dur.div_f64(3.14), Duration::new(0, 859_872_611));
     ///  assert_eq!(dur.div_f64(3.14e5), Duration::new(0, 8_599));
     ///  ```
-    fn div_f64(_self: Val<core::time::Duration>, rhs: f64) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = core::time::Duration::div_f64(
+    fn div_f64(
+        _self: Val<::core::time::Duration>,
+        rhs: f64,
+    ) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = ::core::time::Duration::div_f64(
                 _self.into_inner(),
                 rhs,
             )
@@ -586,8 +594,10 @@ impl core::time::Duration {
     ///  assert_eq!(1, duration.as_secs());
     ///  assert_eq!(2_000, duration.subsec_nanos());
     ///  ```
-    fn from_micros(micros: u64) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = core::time::Duration::from_micros(micros)
+    fn from_micros(micros: u64) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = ::core::time::Duration::from_micros(
+                micros,
+            )
             .into();
         output
     }
@@ -599,8 +609,10 @@ impl core::time::Duration {
     ///  assert_eq!(2, duration.as_secs());
     ///  assert_eq!(569_000_000, duration.subsec_nanos());
     ///  ```
-    fn from_millis(millis: u64) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = core::time::Duration::from_millis(millis)
+    fn from_millis(millis: u64) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = ::core::time::Duration::from_millis(
+                millis,
+            )
             .into();
         output
     }
@@ -616,8 +628,10 @@ impl core::time::Duration {
     ///  assert_eq!(1, duration.as_secs());
     ///  assert_eq!(123, duration.subsec_nanos());
     ///  ```
-    fn from_nanos(nanos: u64) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = core::time::Duration::from_nanos(nanos)
+    fn from_nanos(nanos: u64) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = ::core::time::Duration::from_nanos(
+                nanos,
+            )
             .into();
         output
     }
@@ -629,8 +643,8 @@ impl core::time::Duration {
     ///  assert_eq!(5, duration.as_secs());
     ///  assert_eq!(0, duration.subsec_nanos());
     ///  ```
-    fn from_secs(secs: u64) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = core::time::Duration::from_secs(secs)
+    fn from_secs(secs: u64) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = ::core::time::Duration::from_secs(secs)
             .into();
         output
     }
@@ -658,8 +672,10 @@ impl core::time::Duration {
     ///  let res = Duration::from_secs_f32(0.999e-9);
     ///  assert_eq!(res, Duration::new(0, 1));
     ///  ```
-    fn from_secs_f32(secs: f32) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = core::time::Duration::from_secs_f32(secs)
+    fn from_secs_f32(secs: f32) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = ::core::time::Duration::from_secs_f32(
+                secs,
+            )
             .into();
         output
     }
@@ -687,8 +703,10 @@ impl core::time::Duration {
     ///  let res = Duration::from_secs_f64(0.999e-9);
     ///  assert_eq!(res, Duration::new(0, 1));
     ///  ```
-    fn from_secs_f64(secs: f64) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = core::time::Duration::from_secs_f64(secs)
+    fn from_secs_f64(secs: f64) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = ::core::time::Duration::from_secs_f64(
+                secs,
+            )
             .into();
         output
     }
@@ -704,8 +722,8 @@ impl core::time::Duration {
     ///  assert!(!Duration::from_nanos(1).is_zero());
     ///  assert!(!Duration::from_secs(1).is_zero());
     ///  ```
-    fn is_zero(_self: Ref<core::time::Duration>) -> bool {
-        let output: bool = core::time::Duration::is_zero(&_self).into();
+    fn is_zero(_self: Ref<::core::time::Duration>) -> bool {
+        let output: bool = ::core::time::Duration::is_zero(&_self).into();
         output
     }
     ///  Multiplies `Duration` by `f32`.
@@ -718,8 +736,11 @@ impl core::time::Duration {
     ///  assert_eq!(dur.mul_f32(3.14), Duration::new(8, 478_000_641));
     ///  assert_eq!(dur.mul_f32(3.14e5), Duration::new(847_800, 0));
     ///  ```
-    fn mul_f32(_self: Val<core::time::Duration>, rhs: f32) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = core::time::Duration::mul_f32(
+    fn mul_f32(
+        _self: Val<::core::time::Duration>,
+        rhs: f32,
+    ) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = ::core::time::Duration::mul_f32(
                 _self.into_inner(),
                 rhs,
             )
@@ -736,8 +757,11 @@ impl core::time::Duration {
     ///  assert_eq!(dur.mul_f64(3.14), Duration::new(8, 478_000_000));
     ///  assert_eq!(dur.mul_f64(3.14e5), Duration::new(847_800, 0));
     ///  ```
-    fn mul_f64(_self: Val<core::time::Duration>, rhs: f64) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = core::time::Duration::mul_f64(
+    fn mul_f64(
+        _self: Val<::core::time::Duration>,
+        rhs: f64,
+    ) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = ::core::time::Duration::mul_f64(
                 _self.into_inner(),
                 rhs,
             )
@@ -756,8 +780,11 @@ impl core::time::Duration {
     ///  use std::time::Duration;
     ///  let five_seconds = Duration::new(5, 0);
     ///  ```
-    fn new(secs: u64, nanos: u32) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = core::time::Duration::new(secs, nanos)
+    fn new(secs: u64, nanos: u32) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = ::core::time::Duration::new(
+                secs,
+                nanos,
+            )
             .into();
         output
     }
@@ -771,10 +798,10 @@ impl core::time::Duration {
     ///  assert_eq!(Duration::new(1, 0).saturating_add(Duration::new(u64::MAX, 0)), Duration::MAX);
     ///  ```
     fn saturating_add(
-        _self: Val<core::time::Duration>,
-        rhs: Val<core::time::Duration>,
-    ) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = core::time::Duration::saturating_add(
+        _self: Val<::core::time::Duration>,
+        rhs: Val<::core::time::Duration>,
+    ) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = ::core::time::Duration::saturating_add(
                 _self.into_inner(),
                 rhs.into_inner(),
             )
@@ -791,10 +818,10 @@ impl core::time::Duration {
     ///  assert_eq!(Duration::new(u64::MAX - 1, 0).saturating_mul(2), Duration::MAX);
     ///  ```
     fn saturating_mul(
-        _self: Val<core::time::Duration>,
+        _self: Val<::core::time::Duration>,
         rhs: u32,
-    ) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = core::time::Duration::saturating_mul(
+    ) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = ::core::time::Duration::saturating_mul(
                 _self.into_inner(),
                 rhs,
             )
@@ -810,10 +837,10 @@ impl core::time::Duration {
     ///  assert_eq!(Duration::new(0, 0).saturating_sub(Duration::new(0, 1)), Duration::ZERO);
     ///  ```
     fn saturating_sub(
-        _self: Val<core::time::Duration>,
-        rhs: Val<core::time::Duration>,
-    ) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = core::time::Duration::saturating_sub(
+        _self: Val<::core::time::Duration>,
+        rhs: Val<::core::time::Duration>,
+    ) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = ::core::time::Duration::saturating_sub(
                 _self.into_inner(),
                 rhs.into_inner(),
             )
@@ -831,8 +858,8 @@ impl core::time::Duration {
     ///  assert_eq!(duration.as_secs(), 1);
     ///  assert_eq!(duration.subsec_micros(), 234_567);
     ///  ```
-    fn subsec_micros(_self: Ref<core::time::Duration>) -> u32 {
-        let output: u32 = core::time::Duration::subsec_micros(&_self).into();
+    fn subsec_micros(_self: Ref<::core::time::Duration>) -> u32 {
+        let output: u32 = ::core::time::Duration::subsec_micros(&_self).into();
         output
     }
     ///  Returns the fractional part of this `Duration`, in whole milliseconds.
@@ -846,8 +873,8 @@ impl core::time::Duration {
     ///  assert_eq!(duration.as_secs(), 5);
     ///  assert_eq!(duration.subsec_millis(), 432);
     ///  ```
-    fn subsec_millis(_self: Ref<core::time::Duration>) -> u32 {
-        let output: u32 = core::time::Duration::subsec_millis(&_self).into();
+    fn subsec_millis(_self: Ref<::core::time::Duration>) -> u32 {
+        let output: u32 = ::core::time::Duration::subsec_millis(&_self).into();
         output
     }
     ///  Returns the fractional part of this `Duration`, in nanoseconds.
@@ -861,8 +888,8 @@ impl core::time::Duration {
     ///  assert_eq!(duration.as_secs(), 5);
     ///  assert_eq!(duration.subsec_nanos(), 10_000_000);
     ///  ```
-    fn subsec_nanos(_self: Ref<core::time::Duration>) -> u32 {
-        let output: u32 = core::time::Duration::subsec_nanos(&_self).into();
+    fn subsec_nanos(_self: Ref<::core::time::Duration>) -> u32 {
+        let output: u32 = ::core::time::Duration::subsec_nanos(&_self).into();
         output
     }
 }
@@ -872,7 +899,7 @@ impl core::time::Duration {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl std::time::Instant {
+impl ::std::time::Instant {
     ///  Returns the amount of time elapsed from another instant to this one,
     ///  or zero duration if that instant is later than this one.
     ///  # Panics
@@ -891,10 +918,10 @@ impl std::time::Instant {
     ///  println!("{:?}", now.duration_since(new_now)); // 0ns
     ///  ```
     fn duration_since(
-        _self: Ref<std::time::Instant>,
-        earlier: Val<std::time::Instant>,
-    ) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = std::time::Instant::duration_since(
+        _self: Ref<::std::time::Instant>,
+        earlier: Val<::std::time::Instant>,
+    ) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = ::std::time::Instant::duration_since(
                 &_self,
                 earlier.into_inner(),
             )
@@ -916,8 +943,8 @@ impl std::time::Instant {
     ///  sleep(three_secs);
     ///  assert!(instant.elapsed() >= three_secs);
     ///  ```
-    fn elapsed(_self: Ref<std::time::Instant>) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = std::time::Instant::elapsed(&_self)
+    fn elapsed(_self: Ref<::std::time::Instant>) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = ::std::time::Instant::elapsed(&_self)
             .into();
         output
     }
@@ -927,8 +954,8 @@ impl std::time::Instant {
     ///  use std::time::Instant;
     ///  let now = Instant::now();
     ///  ```
-    fn now() -> Val<std::time::Instant> {
-        let output: Val<std::time::Instant> = std::time::Instant::now().into();
+    fn now() -> Val<::std::time::Instant> {
+        let output: Val<::std::time::Instant> = ::std::time::Instant::now().into();
         output
     }
     ///  Returns the amount of time elapsed from another instant to this one,
@@ -944,10 +971,10 @@ impl std::time::Instant {
     ///  println!("{:?}", now.saturating_duration_since(new_now)); // 0ns
     ///  ```
     fn saturating_duration_since(
-        _self: Ref<std::time::Instant>,
-        earlier: Val<std::time::Instant>,
-    ) -> Val<core::time::Duration> {
-        let output: Val<core::time::Duration> = std::time::Instant::saturating_duration_since(
+        _self: Ref<::std::time::Instant>,
+        earlier: Val<::std::time::Instant>,
+    ) -> Val<::core::time::Duration> {
+        let output: Val<::core::time::Duration> = ::std::time::Instant::saturating_duration_since(
                 &_self,
                 earlier.into_inner(),
             )
@@ -961,30 +988,14 @@ impl std::time::Instant {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl core::ops::RangeFull {}
+impl ::core::ops::RangeFull {}
 #[script_bindings(
     remote,
     name = "type_id_functions",
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl core::any::TypeId {
-    ///  Returns the `TypeId` of the type this generic function has been
-    ///  instantiated with.
-    ///  # Examples
-    ///  ```
-    ///  use std::any::{Any, TypeId};
-    ///  fn is_string<T: ?Sized + Any>(_s: &T) -> bool {
-    ///      TypeId::of::<String>() == TypeId::of::<T>()
-    ///  }
-    ///  assert_eq!(is_string(&0), false);
-    ///  assert_eq!(is_string(&"cookie monster".to_string()), true);
-    ///  ```
-    fn of() -> Val<core::any::TypeId> {
-        let output: Val<core::any::TypeId> = core::any::TypeId::of().into();
-        output
-    }
-}
+impl ::core::any::TypeId {}
 #[script_bindings(
     remote,
     name = "quat_functions",
@@ -2256,7 +2267,7 @@ impl bevy::math::Vec3 {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl core::net::SocketAddr {
+impl ::core::net::SocketAddr {
     ///  Returns [`true`] if the [IP address] in this `SocketAddr` is an
     ///  [`IPv4` address], and [`false`] otherwise.
     ///  [IP address]: IpAddr
@@ -2268,8 +2279,8 @@ impl core::net::SocketAddr {
     ///  assert_eq!(socket.is_ipv4(), true);
     ///  assert_eq!(socket.is_ipv6(), false);
     ///  ```
-    fn is_ipv4(_self: Ref<core::net::SocketAddr>) -> bool {
-        let output: bool = core::net::SocketAddr::is_ipv4(&_self).into();
+    fn is_ipv4(_self: Ref<::core::net::SocketAddr>) -> bool {
+        let output: bool = ::core::net::SocketAddr::is_ipv4(&_self).into();
         output
     }
     ///  Returns [`true`] if the [IP address] in this `SocketAddr` is an
@@ -2283,8 +2294,8 @@ impl core::net::SocketAddr {
     ///  assert_eq!(socket.is_ipv4(), false);
     ///  assert_eq!(socket.is_ipv6(), true);
     ///  ```
-    fn is_ipv6(_self: Ref<core::net::SocketAddr>) -> bool {
-        let output: bool = core::net::SocketAddr::is_ipv6(&_self).into();
+    fn is_ipv6(_self: Ref<::core::net::SocketAddr>) -> bool {
+        let output: bool = ::core::net::SocketAddr::is_ipv6(&_self).into();
         output
     }
     ///  Returns the port number associated with this socket address.
@@ -2294,8 +2305,8 @@ impl core::net::SocketAddr {
     ///  let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080);
     ///  assert_eq!(socket.port(), 8080);
     ///  ```
-    fn port(_self: Ref<core::net::SocketAddr>) -> u16 {
-        let output: u16 = core::net::SocketAddr::port(&_self).into();
+    fn port(_self: Ref<::core::net::SocketAddr>) -> u16 {
+        let output: u16 = ::core::net::SocketAddr::port(&_self).into();
         output
     }
     ///  Changes the port number associated with this socket address.
@@ -2306,8 +2317,8 @@ impl core::net::SocketAddr {
     ///  socket.set_port(1025);
     ///  assert_eq!(socket.port(), 1025);
     ///  ```
-    fn set_port(mut _self: Mut<core::net::SocketAddr>, new_port: u16) -> () {
-        let output: () = core::net::SocketAddr::set_port(&mut _self, new_port).into();
+    fn set_port(mut _self: Mut<::core::net::SocketAddr>, new_port: u16) -> () {
+        let output: () = ::core::net::SocketAddr::set_port(&mut _self, new_port).into();
         output
     }
 }
@@ -23888,21 +23899,22 @@ impl bevy::math::BVec4A {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl smol_str::SmolStr {
-    fn is_empty(_self: Ref<smol_str::SmolStr>) -> bool {
-        let output: bool = smol_str::SmolStr::is_empty(&_self).into();
+impl ::smol_str::SmolStr {
+    fn is_empty(_self: Ref<::smol_str::SmolStr>) -> bool {
+        let output: bool = ::smol_str::SmolStr::is_empty(&_self).into();
         output
     }
-    fn is_heap_allocated(_self: Ref<smol_str::SmolStr>) -> bool {
-        let output: bool = smol_str::SmolStr::is_heap_allocated(&_self).into();
+    fn is_heap_allocated(_self: Ref<::smol_str::SmolStr>) -> bool {
+        let output: bool = ::smol_str::SmolStr::is_heap_allocated(&_self).into();
         output
     }
-    fn len(_self: Ref<smol_str::SmolStr>) -> usize {
-        let output: usize = smol_str::SmolStr::len(&_self).into();
+    fn len(_self: Ref<::smol_str::SmolStr>) -> usize {
+        let output: usize = ::smol_str::SmolStr::len(&_self).into();
         output
     }
-    fn to_string(_self: Ref<smol_str::SmolStr>) -> std::string::String {
-        let output: std::string::String = smol_str::SmolStr::to_string(&_self).into();
+    fn to_string(_self: Ref<::smol_str::SmolStr>) -> ::std::string::String {
+        let output: ::std::string::String = ::smol_str::SmolStr::to_string(&_self)
+            .into();
         output
     }
 }
@@ -23912,7 +23924,7 @@ impl smol_str::SmolStr {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl uuid::Uuid {
+impl ::uuid::Uuid {
     ///  Returns a 128bit value containing the value.
     ///  The bytes in the UUID will be packed directly into a `u128`.
     ///  # Examples
@@ -23927,8 +23939,8 @@ impl uuid::Uuid {
     ///  # Ok(())
     ///  # }
     ///  ```
-    fn as_u128(_self: Ref<uuid::Uuid>) -> u128 {
-        let output: u128 = uuid::Uuid::as_u128(&_self).into();
+    fn as_u128(_self: Ref<::uuid::Uuid>) -> u128 {
+        let output: u128 = ::uuid::Uuid::as_u128(&_self).into();
         output
     }
     ///  Returns two 64bit values containing the value.
@@ -23947,8 +23959,8 @@ impl uuid::Uuid {
     ///  # Ok(())
     ///  # }
     ///  ```
-    fn as_u64_pair(_self: Ref<uuid::Uuid>) -> (u64, u64) {
-        let output: (u64, u64) = uuid::Uuid::as_u64_pair(&_self).into();
+    fn as_u64_pair(_self: Ref<::uuid::Uuid>) -> (u64, u64) {
+        let output: (u64, u64) = ::uuid::Uuid::as_u64_pair(&_self).into();
         output
     }
     ///  A buffer that can be used for `encode_...` calls, that is
@@ -23972,7 +23984,7 @@ impl uuid::Uuid {
     ///  );
     ///  ```
     fn encode_buffer() -> [u8; 45] {
-        let output: [u8; 45] = uuid::Uuid::encode_buffer().into();
+        let output: [u8; 45] = ::uuid::Uuid::encode_buffer().into();
         output
     }
     ///  Creates a UUID using the supplied bytes.
@@ -23995,8 +24007,8 @@ impl uuid::Uuid {
     ///  # Ok(())
     ///  # }
     ///  ```
-    fn from_bytes(bytes: [u8; 16]) -> Val<uuid::Uuid> {
-        let output: Val<uuid::Uuid> = uuid::Uuid::from_bytes(bytes).into();
+    fn from_bytes(bytes: [u8; 16]) -> Val<::uuid::Uuid> {
+        let output: Val<::uuid::Uuid> = ::uuid::Uuid::from_bytes(bytes).into();
         output
     }
     ///  Creates a UUID using the supplied bytes in little endian order.
@@ -24020,8 +24032,8 @@ impl uuid::Uuid {
     ///  # Ok(())
     ///  # }
     ///  ```
-    fn from_bytes_le(b: [u8; 16]) -> Val<uuid::Uuid> {
-        let output: Val<uuid::Uuid> = uuid::Uuid::from_bytes_le(b).into();
+    fn from_bytes_le(b: [u8; 16]) -> Val<::uuid::Uuid> {
+        let output: Val<::uuid::Uuid> = ::uuid::Uuid::from_bytes_le(b).into();
         output
     }
     ///  Creates a UUID from a 128bit value.
@@ -24036,8 +24048,8 @@ impl uuid::Uuid {
     ///      uuid.hyphenated().to_string(),
     ///  );
     ///  ```
-    fn from_u128(v: u128) -> Val<uuid::Uuid> {
-        let output: Val<uuid::Uuid> = uuid::Uuid::from_u128(v).into();
+    fn from_u128(v: u128) -> Val<::uuid::Uuid> {
+        let output: Val<::uuid::Uuid> = ::uuid::Uuid::from_u128(v).into();
         output
     }
     ///  Creates a UUID from a 128bit value in little-endian order.
@@ -24056,8 +24068,8 @@ impl uuid::Uuid {
     ///      uuid.hyphenated().to_string(),
     ///  );
     ///  ```
-    fn from_u128_le(v: u128) -> Val<uuid::Uuid> {
-        let output: Val<uuid::Uuid> = uuid::Uuid::from_u128_le(v).into();
+    fn from_u128_le(v: u128) -> Val<::uuid::Uuid> {
+        let output: Val<::uuid::Uuid> = ::uuid::Uuid::from_u128_le(v).into();
         output
     }
     ///  Creates a UUID from two 64bit values.
@@ -24073,19 +24085,19 @@ impl uuid::Uuid {
     ///      uuid.hyphenated().to_string(),
     ///  );
     ///  ```
-    fn from_u64_pair(high_bits: u64, low_bits: u64) -> Val<uuid::Uuid> {
-        let output: Val<uuid::Uuid> = uuid::Uuid::from_u64_pair(high_bits, low_bits)
+    fn from_u64_pair(high_bits: u64, low_bits: u64) -> Val<::uuid::Uuid> {
+        let output: Val<::uuid::Uuid> = ::uuid::Uuid::from_u64_pair(high_bits, low_bits)
             .into();
         output
     }
     ///  If the UUID is the correct version (v1, or v6) this will return the
     ///  node value as a 6-byte array. For other versions this will return `None`.
     fn get_node_id(
-        _self: Ref<uuid::Uuid>,
+        _self: Ref<::uuid::Uuid>,
     ) -> bevy::reflect::erased_serde::__private::serde::__private::Option<[u8; 6]> {
         let output: bevy::reflect::erased_serde::__private::serde::__private::Option<
             [u8; 6],
-        > = uuid::Uuid::get_node_id(&_self).into();
+        > = ::uuid::Uuid::get_node_id(&_self).into();
         output
     }
     ///  Returns the version number of the UUID.
@@ -24103,8 +24115,8 @@ impl uuid::Uuid {
     ///  ```
     ///  # References
     ///  * [Version Field in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-4.2)
-    fn get_version_num(_self: Ref<uuid::Uuid>) -> usize {
-        let output: usize = uuid::Uuid::get_version_num(&_self).into();
+    fn get_version_num(_self: Ref<::uuid::Uuid>) -> usize {
+        let output: usize = ::uuid::Uuid::get_version_num(&_self).into();
         output
     }
     ///  Consumes self and returns the underlying byte value of the UUID.
@@ -24120,18 +24132,18 @@ impl uuid::Uuid {
     ///  let uuid = Uuid::from_bytes(bytes);
     ///  assert_eq!(bytes, uuid.into_bytes());
     ///  ```
-    fn into_bytes(_self: Val<uuid::Uuid>) -> [u8; 16] {
-        let output: [u8; 16] = uuid::Uuid::into_bytes(_self.into_inner()).into();
+    fn into_bytes(_self: Val<::uuid::Uuid>) -> [u8; 16] {
+        let output: [u8; 16] = ::uuid::Uuid::into_bytes(_self.into_inner()).into();
         output
     }
     ///  Tests if the UUID is max (all ones).
-    fn is_max(_self: Ref<uuid::Uuid>) -> bool {
-        let output: bool = uuid::Uuid::is_max(&_self).into();
+    fn is_max(_self: Ref<::uuid::Uuid>) -> bool {
+        let output: bool = ::uuid::Uuid::is_max(&_self).into();
         output
     }
     ///  Tests if the UUID is nil (all zeros).
-    fn is_nil(_self: Ref<uuid::Uuid>) -> bool {
-        let output: bool = uuid::Uuid::is_nil(&_self).into();
+    fn is_nil(_self: Ref<::uuid::Uuid>) -> bool {
+        let output: bool = ::uuid::Uuid::is_nil(&_self).into();
         output
     }
     ///  The 'max UUID' (all ones).
@@ -24149,8 +24161,8 @@ impl uuid::Uuid {
     ///      uuid.hyphenated().to_string(),
     ///  );
     ///  ```
-    fn max() -> Val<uuid::Uuid> {
-        let output: Val<uuid::Uuid> = uuid::Uuid::max().into();
+    fn max() -> Val<::uuid::Uuid> {
+        let output: Val<::uuid::Uuid> = ::uuid::Uuid::max().into();
         output
     }
     ///  Creates a random UUID.
@@ -24173,8 +24185,8 @@ impl uuid::Uuid {
     ///  * [UUID Version 4 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.4)
     ///  [`getrandom`]: https://crates.io/crates/getrandom
     ///  [from_random_bytes]: struct.Builder.html#method.from_random_bytes
-    fn new_v4() -> Val<uuid::Uuid> {
-        let output: Val<uuid::Uuid> = uuid::Uuid::new_v4().into();
+    fn new_v4() -> Val<::uuid::Uuid> {
+        let output: Val<::uuid::Uuid> = ::uuid::Uuid::new_v4().into();
         output
     }
     ///  The 'nil UUID' (all zeros).
@@ -24192,8 +24204,8 @@ impl uuid::Uuid {
     ///      uuid.hyphenated().to_string(),
     ///  );
     ///  ```
-    fn nil() -> Val<uuid::Uuid> {
-        let output: Val<uuid::Uuid> = uuid::Uuid::nil().into();
+    fn nil() -> Val<::uuid::Uuid> {
+        let output: Val<::uuid::Uuid> = ::uuid::Uuid::nil().into();
         output
     }
     ///  Returns the bytes of the UUID in little-endian order.
@@ -24215,8 +24227,8 @@ impl uuid::Uuid {
     ///  # Ok(())
     ///  # }
     ///  ```
-    fn to_bytes_le(_self: Ref<uuid::Uuid>) -> [u8; 16] {
-        let output: [u8; 16] = uuid::Uuid::to_bytes_le(&_self).into();
+    fn to_bytes_le(_self: Ref<::uuid::Uuid>) -> [u8; 16] {
+        let output: [u8; 16] = ::uuid::Uuid::to_bytes_le(&_self).into();
         output
     }
     ///  Returns a 128bit little-endian value containing the value.
@@ -24239,8 +24251,8 @@ impl uuid::Uuid {
     ///  # Ok(())
     ///  # }
     ///  ```
-    fn to_u128_le(_self: Ref<uuid::Uuid>) -> u128 {
-        let output: u128 = uuid::Uuid::to_u128_le(&_self).into();
+    fn to_u128_le(_self: Ref<::uuid::Uuid>) -> u128 {
+        let output: u128 = ::uuid::Uuid::to_u128_le(&_self).into();
         output
     }
 }
