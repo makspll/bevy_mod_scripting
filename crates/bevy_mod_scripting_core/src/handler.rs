@@ -333,7 +333,7 @@ mod test {
 
     use bevy::{
         app::{App, Update},
-        asset::AssetPlugin,
+        asset::{Assets, AssetPlugin},
         diagnostic::DiagnosticsPlugin,
         ecs::world::FromWorld,
     };
@@ -383,8 +383,8 @@ mod test {
 
     fn setup_app<L: IntoCallbackLabel + 'static>(
         runtime: TestRuntime,
-        scripts: HashMap<ScriptId, Script<TestPlugin>>,
-    ) -> App {
+        scripts: Vec<ScriptAsset>,
+    ) -> (App, Vec<Handle<ScriptAsset>>) {
         let mut app = App::new();
 
         app.add_event::<ScriptCallbackEvent>();
@@ -399,7 +399,12 @@ mod test {
             },
         });
         app.add_systems(Update, event_handler::<L, TestPlugin>);
-        app.insert_resource::<Scripts<TestPlugin>>(Scripts { scripts });
+        let handles = {
+            let world = app.world_mut();
+            let mut script_assets = world.resource_mut::<Assets<ScriptAsset>>();
+            scripts.iter().map(|s| script_assets.add(s)).collect()
+        };
+        app.insert_resource::<StaticScripts<TestPlugin>>(StaticScripts { scripts: handles.clone() });
         app.insert_resource(RuntimeContainer::<TestPlugin> { runtime });
         app.init_resource::<StaticScripts>();
         app.insert_resource(ContextLoadingSettings::<TestPlugin> {
@@ -413,22 +418,17 @@ mod test {
         });
         app.finish();
         app.cleanup();
-        app
+        (app, handles)
     }
 
     #[test]
     fn test_handler_emits_response_events() {
-        let test_script_id = Cow::Borrowed("test_script");
-        let test_script = Script {
-            id: test_script_id.clone(),
-            asset: None,
-            context: Arc::new(Mutex::new(TestContext::default())),
-        };
-        let scripts = HashMap::from_iter(vec![(test_script_id.clone(), test_script.clone())]);
         let runtime = TestRuntime {
             invocations: vec![].into(),
         };
-        let mut app = setup_app::<OnTestCallback>(runtime, scripts);
+        let scripts = vec![ScriptAsset::from("")];
+        let (mut app, handles) = setup_app::<OnTestCallback>(runtime, scripts);
+        let test_script_id = &handles[0];
         app.world_mut()
             .spawn(ScriptComponent(vec![test_script_id.clone()]));
 
@@ -455,17 +455,12 @@ mod test {
 
     #[test]
     fn test_handler_called_with_right_args() {
-        let test_script_id = Cow::Borrowed("test_script");
-        let test_script = Script {
-            id: test_script_id.clone(),
-            asset: None,
-            context: Arc::new(Mutex::new(TestContext::default())),
-        };
-        let scripts = HashMap::from_iter(vec![(test_script_id.clone(), test_script.clone())]);
+        let scripts = vec![ScriptAsset::from("")];
         let runtime = TestRuntime {
             invocations: vec![].into(),
         };
-        let mut app = setup_app::<OnTestCallback>(runtime, scripts);
+        let (mut app, handles) = setup_app::<OnTestCallback>(runtime, scripts);
+        let test_script_id = &handles[0];
         let test_entity_id = app
             .world_mut()
             .spawn(ScriptComponent(vec![test_script_id.clone()]))
@@ -479,7 +474,7 @@ mod test {
         {
             let test_script = app
                 .world()
-                .get_resource::<Scripts<TestPlugin>>()
+                .get_resource::<StaticScripts<TestPlugin>>()
                 .unwrap()
                 .scripts
                 .get(&test_script_id)
@@ -511,27 +506,15 @@ mod test {
 
     #[test]
     fn test_handler_called_on_right_recipients() {
-        let test_script_id = Cow::Borrowed("test_script");
-        let test_script = Script {
-            id: test_script_id.clone(),
-            asset: None,
-            context: Arc::new(Mutex::new(TestContext::default())),
-        };
-        let scripts = HashMap::from_iter(vec![
-            (test_script_id.clone(), test_script.clone()),
-            (
-                "wrong".into(),
-                Script {
-                    id: "wrong".into(),
-                    asset: None,
-                    context: Arc::new(Mutex::new(TestContext::default())),
-                },
-            ),
-        ]);
-
         let runtime = TestRuntime {
             invocations: vec![].into(),
         };
+        let scripts = vec![ScriptAsset::from(""),
+                           ScriptAsset::from("wrong"),
+        ];
+        let (mut app, handles) = setup_app::<OnTestCallback>(runtime, scripts);
+        let test_script_id = &handles[0];
+
         let mut app = setup_app::<OnTestCallback>(runtime, scripts);
         let test_entity_id = app
             .world_mut()
@@ -552,7 +535,7 @@ mod test {
 
         app.update();
         {
-            let test_scripts = app.world().get_resource::<Scripts<TestPlugin>>().unwrap();
+            let test_scripts = app.world().get_resource::<StaticScripts<TestPlugin>>().unwrap();
             let test_runtime = app
                 .world()
                 .get_resource::<RuntimeContainer<TestPlugin>>()
@@ -584,20 +567,12 @@ mod test {
 
     #[test]
     fn test_handler_called_for_static_scripts() {
-        let test_script_id = Cow::Borrowed("test_script");
-
-        let scripts = HashMap::from_iter(vec![(
-            test_script_id.clone(),
-            Script {
-                id: test_script_id.clone(),
-                asset: None,
-                context: Arc::new(Mutex::new(TestContext::default())),
-            },
-        )]);
         let runtime = TestRuntime {
             invocations: vec![].into(),
         };
-        let mut app = setup_app::<OnTestCallback>(runtime, scripts);
+        let scripts = vec![ScriptAsset::from("")];
+        let (mut app, handles) = setup_app::<OnTestCallback>(runtime, scripts);
+        let test_script_id = &handles[0];
 
         app.world_mut().insert_resource(StaticScripts {
             scripts: vec![test_script_id.clone()].into_iter().collect(),
@@ -617,7 +592,7 @@ mod test {
 
         app.update();
         {
-            let test_scripts = app.world().get_resource::<Scripts<TestPlugin>>().unwrap();
+            let test_scripts = app.world().get_resource::<StaticScripts<TestPlugin>>().unwrap();
             let test_context = test_scripts
                 .scripts
                 .get(&test_script_id)

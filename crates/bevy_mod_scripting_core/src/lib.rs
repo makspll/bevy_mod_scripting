@@ -428,12 +428,7 @@ mod test {
     #[tokio::test]
     async fn test_asset_extensions_correctly_accumulate() {
         let mut app = App::new();
-        app.init_resource::<ScriptAssetSettings>();
         app.add_plugins(AssetPlugin::default());
-
-        app.world_mut()
-            .resource_mut::<ScriptAssetSettings>()
-            .supported_extensions = &["lua", "rhai"];
 
         BMSScriptingInfrastructurePlugin.finish(&mut app);
 

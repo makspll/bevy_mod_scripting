@@ -1,6 +1,7 @@
 pub mod test_functions;
 
 use std::{
+    fs,
     marker::PhantomData,
     path::PathBuf,
     time::{Duration, Instant},
@@ -9,7 +10,7 @@ use std::{
 
 use bevy::{
     app::{Last, Plugin, PostUpdate, Startup, Update},
-    asset::{AssetServer, Handle, AssetPath, AssetId, LoadState},
+    asset::{AssetServer, Handle, AssetPath, AssetId, LoadState, Assets},
     ecs::{
         component::Component,
         event::{Event, Events},
@@ -23,7 +24,7 @@ use bevy::{
     utils::tracing,
 };
 use bevy_mod_scripting_core::{
-    asset::ScriptAsset,
+    asset::{Language, ScriptAsset},
     bindings::{
         pretty_print::DisplayWithWorld, script_value::ScriptValue, CoreScriptGlobalsPlugin,
         ReflectAccessId, WorldAccessGuard, WorldGuard,
@@ -56,12 +57,10 @@ struct TestCallbackBuilder<P: IntoScriptPluginParams, L: IntoCallbackLabel> {
 }
 
 impl<L: IntoCallbackLabel, P: IntoScriptPluginParams> TestCallbackBuilder<P, L> {
-    fn build<'a>(script_path: impl Into<AssetPath<'a>>, expect_response: bool) -> SystemConfigs {
-        let script_path = script_path.into().into_owned();
+    fn build<'a>(script_id: Handle<ScriptAsset>, expect_response: bool) -> SystemConfigs {
         IntoSystem::into_system(
             move |world: &mut World,
                   system_state: &mut SystemState<WithWorldGuard<HandlerContext<P>>>| {
-                      let script_id = world.resource::<AssetServer>().load(script_path.clone()).id();
 
                 let with_guard = system_state.get_mut(world);
                 let _ = run_test_callback::<P, L>(&script_id, with_guard, expect_response);
@@ -240,23 +239,35 @@ pub fn execute_integration_test<'a,
 
     // tests can opt in to this via "__RETURN"
     let expect_callback_response = script_id.path().to_str().map(|s| s.contains("__RETURN")).unwrap_or(false);
-    let load_system = move |server: Res<AssetServer>, mut commands: Commands| {
-        commands.spawn(ScriptComponent::new([server.load(script_path.clone())]));
+    // The following code did not work, possibly because of the asynchronous
+    // nature of AssetServer.
+    //
+    // ```
+    // let handle = app.world_mut().resource_mut::<AssetServer>().load(&script_path);
+    // app.world_mut().spawn(ScriptComponent::new([handle.clone()]));
+    // ```
+    let handle = {
+        let mut script_dir = manifest_dir.clone();
+        script_dir.push("assets");
+        script_dir.push(script_id.path());
+        // Read the contents and don't do anything async.
+        let content = fs::read_to_string(&script_dir).map_err(|io| format!("io error {io} for path {script_dir:?}"))?;
+        let mut script = ScriptAsset::from(content);
+        script.language = P::LANGUAGE;
+        app.world_mut().resource_mut::<Assets<ScriptAsset>>().add(script)
     };
-
-
-    app.add_systems(Startup, load_system);
+    app.world_mut().spawn(ScriptComponent::new([handle.clone()]));
     app.add_systems(
         Update,
-        TestCallbackBuilder::<P, OnTest>::build(&script_id, expect_callback_response),
+        TestCallbackBuilder::<P, OnTest>::build(handle.clone(), expect_callback_response),
     );
     app.add_systems(
         PostUpdate,
-        TestCallbackBuilder::<P, OnTestPostUpdate>::build(&script_id, expect_callback_response),
+        TestCallbackBuilder::<P, OnTestPostUpdate>::build(handle.clone(), expect_callback_response),
     );
     app.add_systems(
         Last,
-        TestCallbackBuilder::<P, OnTestLast>::build(&script_id, expect_callback_response),
+        TestCallbackBuilder::<P, OnTestLast>::build(handle.clone(), expect_callback_response),
     );
     app.add_systems(Update, dummy_update_system);
     app.add_systems(Startup, dummy_startup_system::<String>);
@@ -286,6 +297,10 @@ pub fn execute_integration_test<'a,
             .collect::<Vec<_>>();
 
         if let Some(event) = error_events.into_iter().next() {
+            // eprintln!("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx");
+            // if ! app.world().resource::<AssetServer>().load_state(&handle).is_loaded() {
+            //     continue;
+            // }
             return Err(event
                 .error
                 .display_with_world(WorldGuard::new_exclusive(app.world_mut())));
@@ -299,7 +314,7 @@ pub fn execute_integration_test<'a,
 }
 
 fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
-    script_id: &ScriptId,
+    script_id: &Handle<ScriptAsset>,
     mut with_guard: WithWorldGuard<'_, '_, HandlerContext<'_, P>>,
     expect_response: bool,
 ) -> Result<ScriptValue, ScriptError> {
@@ -310,8 +325,8 @@ fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
     // }
 
     let res = handler_ctxt.call::<C>(
-        &Handle::Weak(*script_id),
-        Entity::from_raw(0),
+        script_id,
+        None,
         &None,
         vec![],
         guard.clone(),
@@ -503,11 +518,11 @@ pub fn run_plugin_script_load_benchmark<
                 let random_id = if is_reload { 0 } else { rng.random::<u128>() };
                 let random_script_id: ScriptId = ScriptId::from(uuid::Builder::from_random_bytes(random_id.to_le_bytes()).into_uuid());
                 // We manually load the script inside a command.
-                let content = content.to_string().into_boxed_str();
+                let content = content.to_string().into_bytes().into_boxed_slice();
                 (
                     CreateOrUpdateScript::<P>::new(
                         Handle::Weak(random_script_id),
-                        content.clone().into(),
+                        Some(content.clone().into()),
                         None,
                     ),
                     is_reload,
