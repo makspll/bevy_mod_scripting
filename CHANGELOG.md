@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.13.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.12.0...v0.13.0) - 2025-07-05
+
+### Added
+
+- [**breaking**] Create 0.13.0.md and bump versions
+- Include Entity in `ScriptCallbackResponseEvent` ([#425](https://github.com/makspll/bevy_mod_scripting/pull/425))
+- Add on_script_reloaded callback. ([#421](https://github.com/makspll/bevy_mod_scripting/pull/421))
+- Warn on unknown language. ([#418](https://github.com/makspll/bevy_mod_scripting/pull/418))
+
+### Other
+
+- Update 0.12.0.md
+- Update 0.12.0.md
+- Update CHANGELOG.md
+- Update 0.12.0.md
+- Create 0.12.0.md
+
 ## [0.12.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.11.1...v0.12.0) - 2025-04-07
 
 ### Added
