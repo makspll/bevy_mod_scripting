@@ -18,12 +18,12 @@ use crate::{
     extractors::get_all_access_ids,
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{ScriptId, ScriptContextProvider, ScriptContext, Domain},
+    script::{ScriptContextProvider, ScriptContext, Domain},
     IntoScriptPluginParams,
 };
 use bevy::{
     asset::Handle,
-    prelude::{Query, AssetServer},
+    prelude::AssetServer,
     ecs::{
         archetype::{ArchetypeComponentId, ArchetypeGeneration},
         component::{ComponentId, Tick},

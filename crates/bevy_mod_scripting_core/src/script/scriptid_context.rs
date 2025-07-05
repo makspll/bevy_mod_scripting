@@ -11,7 +11,7 @@ impl<P: IntoScriptPluginParams> Default for ScriptIdContext<P> {
 
 impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for ScriptIdContext<P> {
     fn hash(&self, _id: Option<Entity>, script_id: &ScriptId, _domain: &Option<Domain>) -> Option<u64> {
-        Some(DefaultHashBuilder::default().hash_one(&script_id))
+        Some(DefaultHashBuilder::default().hash_one(script_id))
     }
     fn get(&self, _id: Option<Entity>, script_id: &ScriptId, _domain: &Option<Domain>) -> Option<&Arc<Mutex<P::C>>> {
         self.0.get(script_id)

@@ -22,7 +22,7 @@ use error::ScriptError;
 use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent};
 use handler::{CallbackSettings, HandlerFn};
 use runtime::{initialize_runtime, Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
-use script::{ScriptComponent, ScriptId, StaticScripts, ScriptContext, EntityContext};
+use script::{ScriptComponent, StaticScripts, ScriptContext};
 
 pub mod asset;
 pub mod bindings;

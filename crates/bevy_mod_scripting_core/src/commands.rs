@@ -10,14 +10,13 @@ use crate::{
         CallbackLabel, IntoCallbackLabel, OnScriptLoaded, OnScriptUnloaded,
         ScriptCallbackResponseEvent,
     },
-    extractors::{with_handler_system_state, HandlerContext, WithWorldGuard},
+    extractors::{with_handler_system_state, HandlerContext},
     handler::{handle_script_errors, send_callback_response},
-    script::{ScriptId, StaticScripts, DisplayProxy, ScriptContextProvider, Domain, ScriptContext},
+    script::{StaticScripts, DisplayProxy, ScriptContextProvider, Domain},
     IntoScriptPluginParams,
 };
-use bevy::{asset::{Assets, Handle}, ecs::entity::Entity, log::{warn, debug}, prelude::{EntityCommand, Command}};
-use parking_lot::Mutex;
-use std::{marker::PhantomData, sync::Arc};
+use bevy::{asset::Handle, ecs::entity::Entity, log::{warn, debug}, prelude::{EntityCommand, Command}};
+use std::marker::PhantomData;
 
 /// Deletes a script with the given ID
 pub struct DeleteScript<P: IntoScriptPluginParams> {
@@ -43,7 +42,7 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
     fn apply(self, world: &mut bevy::prelude::World) {
         // first apply unload callback
         RunScriptCallback::<P>::new(
-            Handle::Weak(self.id.clone()),
+            Handle::Weak(self.id),
             None,
             self.domain,
             OnScriptUnloaded::into_callback_label(),
@@ -105,7 +104,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
 
         (ContextBuilder::<P>::reload)(
             handler_ctxt.context_loading_settings.loader.reload,
-            &id,
+            id,
             content,
             context,
             &handler_ctxt.context_loading_settings.context_initializers,
@@ -125,7 +124,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     ) -> Result<P::C, ScriptError> {
         let context = (ContextBuilder::<P>::load)(
             handler_ctxt.context_loading_settings.loader.load,
-            &id,
+            id,
             content,
             &handler_ctxt.context_loading_settings.context_initializers,
             &handler_ctxt
@@ -219,20 +218,17 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
             });
 
         // immediately run command for callback, but only if loading went fine
-        match result {
-            Ok(_) => {
+        if let Ok(_) = result {
 
-                RunScriptCallback::<P>::new(
-                    self.id,
-                    None,
-                    self.domain,
-                    OnScriptLoaded::into_callback_label(),
-                    vec![],
-                    false,
-                )
-                    .apply(world)
-            }
-            Err(_) => ()
+            RunScriptCallback::<P>::new(
+                self.id,
+                None,
+                self.domain,
+                OnScriptLoaded::into_callback_label(),
+                vec![],
+                false,
+            )
+                .apply(world)
         }
     }
 }
@@ -248,20 +244,17 @@ impl<P: IntoScriptPluginParams> EntityCommand for CreateOrUpdateScript<P> {
             });
 
         // immediately run command for callback, but only if loading went fine
-        match result {
-            Ok(maybe_script) => {
+        if let Ok(maybe_script) = result {
 
-                RunScriptCallback::<P>::new(
-                    self.id,
-                    Some(entity),
-                    self.domain,
-                    OnScriptLoaded::into_callback_label(),
-                    vec![],
-                    false,
-                )
-                    .apply(world)
-            }
-            Err(_) => ()
+            RunScriptCallback::<P>::new(
+                self.id,
+                Some(entity),
+                self.domain,
+                OnScriptLoaded::into_callback_label(),
+                vec![],
+                false,
+            )
+                .apply(world)
         }
     }
 }
@@ -404,14 +397,13 @@ impl Command for RemoveStaticScript {
 #[cfg(test)]
 mod test {
     use bevy::{
-        app::App,
-        ecs::event::Events,
         log::{Level, LogPlugin},
-        prelude::{Entity, World},
+        prelude::*,
     };
 
     use crate::{
         asset::Language,
+        script::ScriptContext,
         bindings::script_value::ScriptValue,
         context::{ContextBuilder, ContextLoadingSettings},
         handler::CallbackSettings,

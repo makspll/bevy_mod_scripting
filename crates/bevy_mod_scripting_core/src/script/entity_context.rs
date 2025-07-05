@@ -11,7 +11,7 @@ impl<P: IntoScriptPluginParams> Default for EntityContext<P> {
 
 impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for EntityContext<P> {
     fn hash(&self, id: Option<Entity>, _script_id: &ScriptId, _domain: &Option<Domain>) -> Option<u64> {
-        id.map(|id| DefaultHashBuilder::default().hash_one(&id))
+        id.map(|id| DefaultHashBuilder::default().hash_one(id))
     }
     fn get(&self, id: Option<Entity>, _script_id: &ScriptId, _domain: &Option<Domain>) -> Option<&Arc<Mutex<P::C>>> {
         id.and_then(|id| self.0.get(&id))

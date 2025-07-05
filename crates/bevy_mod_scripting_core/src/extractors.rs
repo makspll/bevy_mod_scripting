@@ -5,7 +5,7 @@
 use std::ops::{Deref, DerefMut};
 
 use bevy::{
-    asset::{LoadState, Handle, Assets},
+    asset::{Handle, Assets},
     ecs::{
         component::ComponentId,
         entity::Entity,
@@ -15,7 +15,6 @@ use bevy::{
         system::{Local, Resource, SystemParam, SystemState},
         world::World,
     },
-    prelude::{AssetServer, Query, Res},
 };
 use fixedbitset::FixedBitSet;
 
@@ -30,7 +29,7 @@ use crate::{
     event::{CallbackLabel, IntoCallbackLabel},
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{ScriptId, StaticScripts, ScriptContext, DisplayProxy, ScriptContextProvider, Domain},
+    script::{StaticScripts, ScriptContext, DisplayProxy, ScriptContextProvider, Domain},
     IntoScriptPluginParams,
 };
 

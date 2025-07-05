@@ -1,7 +1,7 @@
 //! Script related types, functions and components
 
 use crate::{asset::ScriptAsset, IntoScriptPluginParams};
-use bevy::prelude::{Component, ReflectComponent, Deref, DerefMut, Entity};
+use bevy::prelude::{Component, ReflectComponent, Entity};
 use bevy::{asset::{Asset, AssetId, Handle}, ecs::system::Resource, reflect::Reflect, utils::HashSet};
 use parking_lot::Mutex;
 use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc, fmt, hash::{Hash, Hasher, BuildHasher}};
@@ -30,7 +30,7 @@ pub struct HandleDisplay<'a, T: Asset>(&'a Handle<T>);
 impl<'a, A: Asset> fmt::Display for HandleDisplay<'a, A> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(path) = self.0.path() {
-            write!(f, "path {}", path)
+            write!(f, "path {path}")
         } else {
             write!(f, "id {}", self.0.id())
         }
@@ -40,7 +40,7 @@ impl<'a, A: Asset> fmt::Display for HandleDisplay<'a, A> {
 impl<'a, A: Asset> fmt::Debug for HandleDisplay<'a, A> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(path) = self.0.path() {
-            write!(f, "path {:?}", path)
+            write!(f, "path {path:?}")
         } else {
             write!(f, "id {:?}", self.0.id())
         }

@@ -4,7 +4,6 @@ use crate::{
     ScriptAsset,
     bindings::{ThreadWorldContainer, WorldContainer, WorldGuard},
     error::{InteropError, ScriptError},
-    script::ScriptId,
     IntoScriptPluginParams,
 };
 use bevy::{

@@ -3,22 +3,20 @@
 use crate::{
     StaticScripts,
     ScriptComponent,
-    commands::{CreateOrUpdateScript, DeleteScript},
+    commands::CreateOrUpdateScript,
     error::ScriptError,
-    script::{DisplayProxy, ScriptId, Domain, ScriptDomain},
+    script::{DisplayProxy, Domain, ScriptDomain},
     IntoScriptPluginParams, ScriptingSystemSet,
 };
 use bevy::{
     app::{App, PreUpdate},
-    asset::{Asset, AssetEvent, AssetId, AssetLoader, AssetPath, Assets, LoadState},
-    ecs::system::Resource,
-    log::{debug, info, trace, warn, error},
+    asset::{Asset, AssetEvent, AssetLoader, Assets, LoadState},
+    log::{info, trace, warn, error},
     prelude::{
-        Commands, Event, EventReader, EventWriter, IntoSystemConfigs, IntoSystemSetConfigs, Res,
+        Commands, EventReader, IntoSystemConfigs, IntoSystemSetConfigs, Res,
         ResMut, Added, Query, Local, Handle, AssetServer, Entity,
     },
     reflect::TypePath,
-    utils::hashbrown::HashMap,
 };
 use std::{borrow::Cow, collections::VecDeque};
 use serde::{Deserialize, Serialize};
@@ -212,7 +210,7 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
         let script_ready = script_queue
             .front()
             .map(|(_, script_id, _)| {
-                script_assets.contains(script_id.id()) || match asset_server.load_state(&*script_id) {
+                script_assets.contains(script_id.id()) || match asset_server.load_state(script_id) {
                     LoadState::NotLoaded => false,
                     LoadState::Loading => false,
                     LoadState::Loaded => true,
@@ -295,6 +293,7 @@ mod tests {
     use bevy::{
         app::{App, Update},
         asset::{AssetApp, AssetPlugin, AssetServer, Assets, Handle, LoadState},
+        prelude::Resource,
         MinimalPlugins,
     };
 

@@ -12,7 +12,7 @@ use crate::{
         ScriptErrorEvent,
     },
     extractors::{HandlerContext, WithWorldGuard},
-    script::{ScriptComponent, ScriptId, ScriptDomain, Domain, ScriptContextProvider},
+    script::{ScriptComponent, ScriptDomain, ScriptContextProvider},
     IntoScriptPluginParams,
 };
 use bevy::{
@@ -227,7 +227,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
 
                 let call_result = handler_ctxt.call_dynamic_label(
                     &callback_label,
-                    &script_id,
+                    script_id,
                     *entity,
                     domain,
                     event.args.clone(),

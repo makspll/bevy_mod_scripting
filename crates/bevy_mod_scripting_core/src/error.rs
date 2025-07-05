@@ -9,7 +9,7 @@ use crate::{
         script_value::ScriptValue,
         ReflectBaseType, ReflectReference,
     },
-    script::{DisplayProxy, ScriptId},
+    script::DisplayProxy,
 };
 use bevy::{
     asset::Handle,
