@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_core"
-version = "0.12.0"
+version = "0.13.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -29,19 +29,15 @@ mlua = { version = "0.10", default-features = false, optional = true }
 rhai = { version = "1.21", default-features = false, features = [
     "sync",
 ], optional = true }
-bevy = { workspace = true, default-features = false, features = ["bevy_asset"] }
-thiserror = "1.0.31"
+bevy = { workspace = true, default-features = false, features = ["bevy_asset", "std"] }
 parking_lot = "0.12.1"
-dashmap = "6"
 smallvec = "1.11"
-itertools = "0.13"
-derivative = "2.2"
+itertools = "0.14"
 profiling = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
 fixedbitset = "0.5"
-petgraph = "0.6"
-bevy_mod_debugdump = "0.12"
 bevy_system_reflection = { path = "../bevy_system_reflection", version = "0.1.1" }
+variadics_please = "1.1.0"
 
 [dev-dependencies]
 test_utils = { workspace = true }

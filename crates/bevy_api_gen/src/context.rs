@@ -94,7 +94,7 @@ pub(crate) const DEF_PATHS_REFLECT: [&str; 2] =
     ["bevy_reflect::PartialReflect", "reflect::PartialReflect"];
 pub(crate) const DEF_PATHS_GET_TYPE_REGISTRATION: [&str; 2] = [
     "bevy_reflect::GetTypeRegistration",
-    "reflect::GetTypeRegistration",
+    "type_registry::GetTypeRegistration",
 ];
 
 /// A collection of traits which we search for in the codebase, some are included purely for the methods they provide,
@@ -132,12 +132,26 @@ pub(crate) struct CachedTraits {
 }
 
 impl CachedTraits {
-    pub(crate) fn has_all_bms_traits(&self) -> bool {
-        self.bms_into_script.is_some() && self.bms_from_script.is_some()
+    pub(crate) fn missing_bms_traits(&self) -> Vec<&'static str> {
+        let mut missing = Vec::new();
+        if self.bms_into_script.is_none() {
+            missing.extend(DEF_PATHS_BMS_INTO_SCRIPT);
+        }
+        if self.bms_from_script.is_none() {
+            missing.extend(DEF_PATHS_BMS_FROM_SCRIPT);
+        }
+        missing
     }
 
-    pub(crate) fn has_all_bevy_traits(&self) -> bool {
-        self.bevy_reflect_reflect.is_some() && self.bevy_reflect_get_type_registration.is_some()
+    pub(crate) fn missing_bevy_traits(&self) -> Vec<&'static str> {
+        let mut missing = Vec::new();
+        if self.bevy_reflect_reflect.is_none() {
+            missing.extend(DEF_PATHS_REFLECT);
+        }
+        if self.bevy_reflect_get_type_registration.is_none() {
+            missing.extend(DEF_PATHS_GET_TYPE_REGISTRATION);
+        }
+        missing
     }
 
     // pub(crate) fn has_all_std_source_traits(&self) -> bool {

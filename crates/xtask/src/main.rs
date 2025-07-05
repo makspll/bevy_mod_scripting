@@ -598,6 +598,13 @@ struct CodegenTemplateArgs {
     self_is_bms_lua: bool,
 }
 
+fn fetch_default_bevy_features() -> String {
+    let path = "codegen_bevy_features.txt";
+    std::fs::read_to_string(path)
+        .with_context(|| format!("Failed to read default bevy features from {path}"))
+        .unwrap()
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, clap::Subcommand, strum::AsRefStr)]
 #[clap(
     name = "xtask",
@@ -677,7 +684,7 @@ enum Xtasks {
 
         #[clap(
             long,
-            default_value = "bevy_asset,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded",
+            default_value = fetch_default_bevy_features(),
             help = "The features to enable for the bevy crate"
         )]
         bevy_features: Vec<String>,

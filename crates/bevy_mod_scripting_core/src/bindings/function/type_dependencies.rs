@@ -1,11 +1,11 @@
 //! This module contains the [`GetTypeDependencies`] trait and its implementations for various types.
 
 use super::{
-    from::{Mut, Ref, Union, Val},
-    script_function::FunctionCallContext, DynamicScriptFunction, DynamicScriptFunctionMut,
+	from::{Mut, Ref, Union, Val},
+	script_function::FunctionCallContext, DynamicScriptFunction, DynamicScriptFunctionMut,
 };
 use crate::{
-    bindings::{ReflectReference, ScriptValue}, error::InteropError}
+	bindings::{ReflectReference, ScriptValue}, error::InteropError}
 ;
 use bevy::reflect::{FromReflect, GetTypeRegistration, TypeRegistry, Typed};
 use bevy_mod_scripting_derive::impl_get_type_dependencies;
@@ -156,7 +156,7 @@ macro_rules! register_tuple_dependencies {
 }
 
 
-bevy::utils::all_tuples!(register_tuple_dependencies, 1, 14, T);
+variadics_please::all_tuples!(register_tuple_dependencies, 1, 14, T);
 
 /// A trait collecting type dependency information for a whole function. Used to register everything used by a function with the type registry
 pub trait GetFunctionTypeDependencies<Marker> {
@@ -184,4 +184,4 @@ macro_rules! impl_script_function_type_dependencies{
     };
 }
 
-bevy::utils::all_tuples!(impl_script_function_type_dependencies, 0, 13, T);
+variadics_please::all_tuples!(impl_script_function_type_dependencies, 0, 13, T);

@@ -39,15 +39,6 @@ impl bevy::transform::components::GlobalTransform {
             .into();
         output
     }
-    fn clone(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::transform::components::GlobalTransform> {
-        let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::GlobalTransform as std::clone::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
     ///  Returns the 3d affine transformation matrix as a [`Mat4`].
     fn compute_matrix(
         _self: Ref<bevy::transform::components::GlobalTransform>,
@@ -77,16 +68,6 @@ impl bevy::transform::components::GlobalTransform {
         let output: Val<bevy::math::Dir3> = bevy::transform::components::GlobalTransform::down(
                 &_self,
             )
-            .into();
-        output
-    }
-    fn eq(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-        other: Ref<bevy::transform::components::GlobalTransform>,
-    ) -> bool {
-        let output: bool = <bevy::transform::components::GlobalTransform as std::cmp::PartialEq<
-            bevy::transform::components::GlobalTransform,
-        >>::eq(&_self, &other)
             .into();
         output
     }
@@ -159,36 +140,6 @@ impl bevy::transform::components::GlobalTransform {
             .into();
         output
     }
-    fn mul(
-        _self: Val<bevy::transform::components::GlobalTransform>,
-        value: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::transform::components::GlobalTransform as std::ops::Mul<
-            bevy::math::Vec3,
-        >>::mul(_self.into_inner(), value.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::transform::components::GlobalTransform>,
-        global_transform: Val<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::transform::components::GlobalTransform> {
-        let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::GlobalTransform as std::ops::Mul<
-            bevy::transform::components::GlobalTransform,
-        >>::mul(_self.into_inner(), global_transform.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::transform::components::GlobalTransform>,
-        transform: Val<bevy::transform::components::Transform>,
-    ) -> Val<bevy::transform::components::GlobalTransform> {
-        let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::GlobalTransform as std::ops::Mul<
-            bevy::transform::components::Transform,
-        >>::mul(_self.into_inner(), transform.into_inner())
-            .into();
-        output
-    }
     ///  Multiplies `self` with `transform` component by component, returning the
     ///  resulting [`GlobalTransform`]
     fn mul_transform(
@@ -222,7 +173,6 @@ impl bevy::transform::components::GlobalTransform {
     ///  ```
     ///  # use bevy_transform::prelude::{GlobalTransform, Transform};
     ///  # use bevy_ecs::prelude::{Entity, Query, Component, Commands};
-    ///  # use bevy_hierarchy::{prelude::Parent, BuildChildren};
     ///  #[derive(Component)]
     ///  struct ToReparent {
     ///      new_parent: Entity,
@@ -394,15 +344,6 @@ impl bevy::transform::components::Transform {
             .into();
         output
     }
-    fn clone(
-        _self: Ref<bevy::transform::components::Transform>,
-    ) -> Val<bevy::transform::components::Transform> {
-        let output: Val<bevy::transform::components::Transform> = <bevy::transform::components::Transform as std::clone::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
     ///  Returns the 3d affine transformation matrix from this transforms translation,
     ///  rotation, and scale.
     fn compute_affine(
@@ -432,16 +373,6 @@ impl bevy::transform::components::Transform {
         let output: Val<bevy::math::Dir3> = bevy::transform::components::Transform::down(
                 &_self,
             )
-            .into();
-        output
-    }
-    fn eq(
-        _self: Ref<bevy::transform::components::Transform>,
-        other: Ref<bevy::transform::components::Transform>,
-    ) -> bool {
-        let output: bool = <bevy::transform::components::Transform as std::cmp::PartialEq<
-            bevy::transform::components::Transform,
-        >>::eq(&_self, &other)
             .into();
         output
     }
@@ -570,36 +501,6 @@ impl bevy::transform::components::Transform {
             .into();
         output
     }
-    fn mul(
-        _self: Val<bevy::transform::components::Transform>,
-        value: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::transform::components::Transform as std::ops::Mul<
-            bevy::math::Vec3,
-        >>::mul(_self.into_inner(), value.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::transform::components::Transform>,
-        global_transform: Val<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::transform::components::GlobalTransform> {
-        let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::Transform as std::ops::Mul<
-            bevy::transform::components::GlobalTransform,
-        >>::mul(_self.into_inner(), global_transform.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::transform::components::Transform>,
-        transform: Val<bevy::transform::components::Transform>,
-    ) -> Val<bevy::transform::components::Transform> {
-        let output: Val<bevy::transform::components::Transform> = <bevy::transform::components::Transform as std::ops::Mul<
-            bevy::transform::components::Transform,
-        >>::mul(_self.into_inner(), transform.into_inner())
-            .into();
-        output
-    }
     ///  Multiplies `self` with `transform` component by component, returning the
     ///  resulting [`Transform`]
     fn mul_transform(
@@ -656,6 +557,11 @@ impl bevy::transform::components::Transform {
     }
     ///  Rotates this [`Transform`] around the given `axis` by `angle` (in radians).
     ///  If this [`Transform`] has a parent, the `axis` is relative to the rotation of the parent.
+    ///  # Warning
+    ///  If you pass in an `axis` based on the current rotation (e.g. obtained via [`Transform::local_x`]),
+    ///  floating point errors can accumulate exponentially when applying rotations repeatedly this way. This will
+    ///  result in a denormalized rotation. In this case, it is recommended to normalize the [`Transform::rotation`] after
+    ///  each call to this method.
     fn rotate_axis(
         mut _self: Mut<bevy::transform::components::Transform>,
         axis: Val<bevy::math::Dir3>,
@@ -683,6 +589,11 @@ impl bevy::transform::components::Transform {
         output
     }
     ///  Rotates this [`Transform`] around its local `axis` by `angle` (in radians).
+    ///  # Warning
+    ///  If you pass in an `axis` based on the current rotation (e.g. obtained via [`Transform::local_x`]),
+    ///  floating point errors can accumulate exponentially when applying rotations repeatedly this way. This will
+    ///  result in a denormalized rotation. In this case, it is recommended to normalize the [`Transform::rotation`] after
+    ///  each call to this method.
     fn rotate_local_axis(
         mut _self: Mut<bevy::transform::components::Transform>,
         axis: Val<bevy::math::Dir3>,
@@ -861,10 +772,18 @@ impl bevy::transform::components::Transform {
         output
     }
 }
+#[script_bindings(
+    remote,
+    name = "transform_tree_changed_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::transform::components::TransformTreeChanged {}
 impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
         let mut world = app.world_mut();
         register_global_transform_functions(&mut world);
         register_transform_functions(&mut world);
+        register_transform_tree_changed_functions(&mut world);
     }
 }

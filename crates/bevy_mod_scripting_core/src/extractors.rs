@@ -4,14 +4,17 @@
 #![allow(deprecated)]
 use std::ops::{Deref, DerefMut};
 
-use bevy::ecs::{
-    component::ComponentId,
-    entity::Entity,
-    event::{Event, EventCursor, EventIterator, Events},
-    query::{Access, AccessConflicts},
-    storage::SparseSetIndex,
-    system::{Local, Resource, SystemParam, SystemState},
-    world::World,
+use bevy::{
+    ecs::{
+        component::ComponentId,
+        entity::Entity,
+        event::{Event, EventCursor, EventIterator, Events},
+        query::{Access, AccessConflicts},
+        storage::SparseSetIndex,
+        system::{Local, SystemParam, SystemState, SystemParamValidationError},
+        world::World,
+    },
+    prelude::Resource
 };
 use fixedbitset::FixedBitSet;
 
@@ -365,7 +368,7 @@ unsafe impl<T: SystemParam> SystemParam for WithWorldGuard<'_, '_, T> {
         state: &Self::State,
         system_meta: &bevy::ecs::system::SystemMeta,
         world: bevy::ecs::world::unsafe_world_cell::UnsafeWorldCell,
-    ) -> bool {
+    ) -> Result<(), SystemParamValidationError> {
         T::validate_param(&state.0, system_meta, world)
     }
 }
@@ -417,9 +420,10 @@ mod test {
         ecs::{
             component::Component,
             event::{Event, EventReader},
-            system::{Query, ResMut, Resource},
+            system::{Query, ResMut},
             world::FromWorld,
         },
+        prelude::Resource,
     };
     use test_utils::make_test_plugin;
 

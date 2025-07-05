@@ -19,23 +19,6 @@ pub struct BevyEcsScriptingPlugin;
     generated
 )]
 impl bevy::ecs::entity::Entity {
-    fn clone(_self: Ref<bevy::ecs::entity::Entity>) -> Val<bevy::ecs::entity::Entity> {
-        let output: Val<bevy::ecs::entity::Entity> = <bevy::ecs::entity::Entity as std::clone::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn eq(
-        _self: Ref<bevy::ecs::entity::Entity>,
-        other: Ref<bevy::ecs::entity::Entity>,
-    ) -> bool {
-        let output: bool = <bevy::ecs::entity::Entity as std::cmp::PartialEq<
-            bevy::ecs::entity::Entity,
-        >>::eq(&_self, &other)
-            .into();
-        output
-    }
     ///  Reconstruct an `Entity` previously destructured with [`Entity::to_bits`].
     ///  Only useful when applied to results from `to_bits` in the same instance of an application.
     ///  # Panics
@@ -90,6 +73,61 @@ impl bevy::ecs::entity::Entity {
 }
 #[script_bindings(
     remote,
+    name = "child_of_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::ecs::hierarchy::ChildOf {
+    ///  The parent entity of this child entity.
+    fn get(_self: Ref<bevy::ecs::hierarchy::ChildOf>) -> Val<bevy::ecs::entity::Entity> {
+        let output: Val<bevy::ecs::entity::Entity> = bevy::ecs::hierarchy::ChildOf::get(
+                &_self,
+            )
+            .into();
+        output
+    }
+    ///  The parent entity of this child entity.
+    fn parent(
+        _self: Ref<bevy::ecs::hierarchy::ChildOf>,
+    ) -> Val<bevy::ecs::entity::Entity> {
+        let output: Val<bevy::ecs::entity::Entity> = bevy::ecs::hierarchy::ChildOf::parent(
+                &_self,
+            )
+            .into();
+        output
+    }
+}
+#[script_bindings(
+    remote,
+    name = "children_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::ecs::hierarchy::Children {
+    ///  Swaps the child at `a_index` with the child at `b_index`.
+    fn swap(
+        mut _self: Mut<bevy::ecs::hierarchy::Children>,
+        a_index: usize,
+        b_index: usize,
+    ) -> () {
+        let output: () = bevy::ecs::hierarchy::Children::swap(
+                &mut _self,
+                a_index,
+                b_index,
+            )
+            .into();
+        output
+    }
+}
+#[script_bindings(
+    remote,
+    name = "name_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::ecs::name::Name {}
+#[script_bindings(
+    remote,
     name = "on_add_functions",
     bms_core_path = "bevy_mod_scripting_core",
     generated
@@ -123,32 +161,6 @@ impl bevy::ecs::world::OnReplace {}
     generated
 )]
 impl bevy::ecs::component::ComponentId {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::ecs::component::ComponentId>) -> () {
-        let output: () = <bevy::ecs::component::ComponentId as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn clone(
-        _self: Ref<bevy::ecs::component::ComponentId>,
-    ) -> Val<bevy::ecs::component::ComponentId> {
-        let output: Val<bevy::ecs::component::ComponentId> = <bevy::ecs::component::ComponentId as std::clone::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn eq(
-        _self: Ref<bevy::ecs::component::ComponentId>,
-        other: Ref<bevy::ecs::component::ComponentId>,
-    ) -> bool {
-        let output: bool = <bevy::ecs::component::ComponentId as std::cmp::PartialEq<
-            bevy::ecs::component::ComponentId,
-        >>::eq(&_self, &other)
-            .into();
-        output
-    }
     ///  Returns the index of the current component.
     fn index(_self: Val<bevy::ecs::component::ComponentId>) -> usize {
         let output: usize = bevy::ecs::component::ComponentId::index(_self.into_inner())
@@ -168,35 +180,46 @@ impl bevy::ecs::component::ComponentId {
 }
 #[script_bindings(
     remote,
+    name = "default_query_filters_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::ecs::entity_disabling::DefaultQueryFilters {
+    ///  Creates a new, completely empty [`DefaultQueryFilters`].
+    ///  This is provided as an escape hatch; in most cases you should initialize this using [`FromWorld`],
+    ///  which is automatically called when creating a new [`World`].
+    fn empty() -> Val<bevy::ecs::entity_disabling::DefaultQueryFilters> {
+        let output: Val<bevy::ecs::entity_disabling::DefaultQueryFilters> = bevy::ecs::entity_disabling::DefaultQueryFilters::empty()
+            .into();
+        output
+    }
+    ///  Adds this [`ComponentId`] to the set of [`DefaultQueryFilters`],
+    ///  causing entities with this component to be excluded from queries.
+    ///  This method is idempotent, and will not add the same component multiple times.
+    ///  # Warning
+    ///  This method should only be called before the app starts, as it will not affect queries
+    ///  initialized before it is called.
+    ///  As discussed in the [module docs](crate::entity_disabling), this can have performance implications,
+    ///  as well as create interoperability issues, and should be used with caution.
+    fn register_disabling_component(
+        mut _self: Mut<bevy::ecs::entity_disabling::DefaultQueryFilters>,
+        component_id: Val<bevy::ecs::component::ComponentId>,
+    ) -> () {
+        let output: () = bevy::ecs::entity_disabling::DefaultQueryFilters::register_disabling_component(
+                &mut _self,
+                component_id.into_inner(),
+            )
+            .into();
+        output
+    }
+}
+#[script_bindings(
+    remote,
     name = "tick_functions",
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
 impl bevy::ecs::component::Tick {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::ecs::component::Tick>) -> () {
-        let output: () = <bevy::ecs::component::Tick as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::ecs::component::Tick>) -> Val<bevy::ecs::component::Tick> {
-        let output: Val<bevy::ecs::component::Tick> = <bevy::ecs::component::Tick as std::clone::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn eq(
-        _self: Ref<bevy::ecs::component::Tick>,
-        other: Ref<bevy::ecs::component::Tick>,
-    ) -> bool {
-        let output: bool = <bevy::ecs::component::Tick as std::cmp::PartialEq<
-            bevy::ecs::component::Tick,
-        >>::eq(&_self, &other)
-            .into();
-        output
-    }
     ///  Gets the value of this change tick.
     fn get(_self: Val<bevy::ecs::component::Tick>) -> u32 {
         let output: u32 = bevy::ecs::component::Tick::get(_self.into_inner()).into();
@@ -238,15 +261,6 @@ impl bevy::ecs::component::Tick {
     generated
 )]
 impl bevy::ecs::component::ComponentTicks {
-    fn clone(
-        _self: Ref<bevy::ecs::component::ComponentTicks>,
-    ) -> Val<bevy::ecs::component::ComponentTicks> {
-        let output: Val<bevy::ecs::component::ComponentTicks> = <bevy::ecs::component::ComponentTicks as std::clone::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
     ///  Returns `true` if the component or resource was added after the system last ran
     ///  (or the system is running for the first time).
     fn is_added(
@@ -288,7 +302,7 @@ impl bevy::ecs::component::ComponentTicks {
         output
     }
     ///  Manually sets the change tick.
-    ///  This is normally done automatically via the [`DerefMut`](std::ops::DerefMut) implementation
+    ///  This is normally done automatically via the [`DerefMut`] implementation
     ///  on [`Mut<T>`](crate::change_detection::Mut), [`ResMut<T>`](crate::change_detection::ResMut), etc.
     ///  However, components and resources that make use of interior mutability might require manual updates.
     ///  # Example
@@ -312,30 +326,49 @@ impl bevy::ecs::component::ComponentTicks {
 }
 #[script_bindings(
     remote,
+    name = "entity_hash_set_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::ecs::entity::hash_set::EntityHashSet {
+    ///  Returns `true` if the set contains no elements.
+    fn is_empty(_self: Ref<bevy::ecs::entity::hash_set::EntityHashSet>) -> bool {
+        let output: bool = bevy::ecs::entity::hash_set::EntityHashSet::is_empty(&_self)
+            .into();
+        output
+    }
+    ///  Returns the number of elements in the set.
+    fn len(_self: Ref<bevy::ecs::entity::hash_set::EntityHashSet>) -> usize {
+        let output: usize = bevy::ecs::entity::hash_set::EntityHashSet::len(&_self)
+            .into();
+        output
+    }
+    ///  Creates an empty `EntityHashSet`.
+    ///  Equivalent to [`HashSet::with_hasher(EntityHash)`].
+    ///  [`HashSet::with_hasher(EntityHash)`]: HashSet::with_hasher
+    fn new() -> Val<bevy::ecs::entity::hash_set::EntityHashSet> {
+        let output: Val<bevy::ecs::entity::hash_set::EntityHashSet> = bevy::ecs::entity::hash_set::EntityHashSet::new()
+            .into();
+        output
+    }
+    ///  Creates an empty `EntityHashSet` with the specified capacity.
+    ///  Equivalent to [`HashSet::with_capacity_and_hasher(n, EntityHash)`].
+    ///  [`HashSet::with_capacity_and_hasher(n, EntityHash)`]: HashSet::with_capacity_and_hasher
+    fn with_capacity(n: usize) -> Val<bevy::ecs::entity::hash_set::EntityHashSet> {
+        let output: Val<bevy::ecs::entity::hash_set::EntityHashSet> = bevy::ecs::entity::hash_set::EntityHashSet::with_capacity(
+                n,
+            )
+            .into();
+        output
+    }
+}
+#[script_bindings(
+    remote,
     name = "identifier_functions",
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
 impl bevy::ecs::identifier::Identifier {
-    fn clone(
-        _self: Ref<bevy::ecs::identifier::Identifier>,
-    ) -> Val<bevy::ecs::identifier::Identifier> {
-        let output: Val<bevy::ecs::identifier::Identifier> = <bevy::ecs::identifier::Identifier as std::clone::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn eq(
-        _self: Ref<bevy::ecs::identifier::Identifier>,
-        other: Ref<bevy::ecs::identifier::Identifier>,
-    ) -> bool {
-        let output: bool = <bevy::ecs::identifier::Identifier as std::cmp::PartialEq<
-            bevy::ecs::identifier::Identifier,
-        >>::eq(&_self, &other)
-            .into();
-        output
-    }
     ///  Convert a `u64` into an [`Identifier`].
     ///  # Panics
     ///  This method will likely panic if given `u64` values that did not come from [`Identifier::to_bits`].
@@ -374,34 +407,21 @@ impl bevy::ecs::identifier::Identifier {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl bevy::ecs::entity::EntityHash {
-    fn clone(
-        _self: Ref<bevy::ecs::entity::EntityHash>,
-    ) -> Val<bevy::ecs::entity::EntityHash> {
-        let output: Val<bevy::ecs::entity::EntityHash> = <bevy::ecs::entity::EntityHash as std::clone::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-}
+impl bevy::ecs::entity::EntityHash {}
+#[script_bindings(
+    remote,
+    name = "disabled_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::ecs::entity_disabling::Disabled {}
 #[script_bindings(
     remote,
     name = "removed_component_entity_functions",
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl bevy::ecs::removal_detection::RemovedComponentEntity {
-    fn clone(
-        _self: Ref<bevy::ecs::removal_detection::RemovedComponentEntity>,
-    ) -> Val<bevy::ecs::removal_detection::RemovedComponentEntity> {
-        let output: Val<bevy::ecs::removal_detection::RemovedComponentEntity> = <bevy::ecs::removal_detection::RemovedComponentEntity as std::clone::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-}
+impl bevy::ecs::removal_detection::RemovedComponentEntity {}
 #[script_bindings(
     remote,
     name = "system_id_marker_functions",
@@ -409,20 +429,34 @@ impl bevy::ecs::removal_detection::RemovedComponentEntity {
     generated
 )]
 impl bevy::ecs::system::SystemIdMarker {}
+#[script_bindings(
+    remote,
+    name = "on_despawn_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::ecs::world::OnDespawn {}
 impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
         let mut world = app.world_mut();
         register_entity_functions(&mut world);
+        register_child_of_functions(&mut world);
+        register_children_functions(&mut world);
+        register_name_functions(&mut world);
         register_on_add_functions(&mut world);
         register_on_insert_functions(&mut world);
         register_on_remove_functions(&mut world);
         register_on_replace_functions(&mut world);
         register_component_id_functions(&mut world);
+        register_default_query_filters_functions(&mut world);
         register_tick_functions(&mut world);
         register_component_ticks_functions(&mut world);
+        register_entity_hash_set_functions(&mut world);
         register_identifier_functions(&mut world);
         register_entity_hash_functions(&mut world);
+        register_disabled_functions(&mut world);
         register_removed_component_entity_functions(&mut world);
         register_system_id_marker_functions(&mut world);
+        register_on_despawn_functions(&mut world);
     }
 }
