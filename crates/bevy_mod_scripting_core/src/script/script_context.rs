@@ -90,7 +90,9 @@ impl<P: IntoScriptPluginParams> Default for ScriptContext<P> {
     }
 }
 
-struct Or<T, U>(T, U);
+/// Compose two ScriptContextProviders in a short-circuit OR relationship. Use T
+/// first, failing that use U.
+pub struct Or<T, U>(pub T, pub U);
 
 impl<T: ScriptContextProvider<P>, U: ScriptContextProvider<P>, P: IntoScriptPluginParams> ScriptContextProvider<P> for Or<T, U> {
     #[inline]
