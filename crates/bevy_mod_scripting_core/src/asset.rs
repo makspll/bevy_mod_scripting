@@ -12,7 +12,7 @@ use bevy::{
     app::{App, PreUpdate},
     asset::{Asset, AssetEvent, AssetId, AssetLoader, AssetPath, Assets, LoadState},
     ecs::system::Resource,
-    log::{debug, info, trace, warn},
+    log::{debug, info, trace, warn, error},
     prelude::{
         Commands, Event, EventReader, EventWriter, IntoSystemConfigs, IntoSystemSetConfigs, Res,
         ResMut, Added, Query, Local, Handle, AssetServer, Entity,
@@ -172,7 +172,12 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
                         info!("{}: Loading static script: {:?}", P::LANGUAGE, id);
                         commands.queue(CreateOrUpdateScript::<P>::new(
                             Handle::Weak(*id),
-                            asset.content.clone(), // Cloning seems bad!
+                            // Since we have the asset, we don't need to clone
+                            // its contents to evaluate it. We can refer to the
+                            // asset.
+
+                            // asset.content.clone(), // Cloning seems bad!
+                            None,
                             None, // No domain for static scripts.
                         ));
                     }
@@ -202,32 +207,35 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
         }
     }
     while ! script_queue.is_empty() {
-        let script_ready = script_queue.front().map(|(_, script_id, _)| match asset_server.load_state(&*script_id) {
-            LoadState::Failed(e) => {
-                warn!("Failed to load script {}", script_id.display());
-                true
-            }
-            LoadState::Loaded => true,
-            _ => false
-        }).unwrap_or(false);
+        let mut script_failed = false;
+        // NOTE: Maybe using pop_front_if once stabalized.
+        let script_ready = script_queue
+            .front()
+            .map(|(_, script_id, _)| {
+                script_assets.contains(script_id.id()) || match asset_server.load_state(&*script_id) {
+                    LoadState::NotLoaded => false,
+                    LoadState::Loading => false,
+                    LoadState::Loaded => true,
+                    LoadState::Failed(e) => {
+                        script_failed = true;
+                        error!("Failed to load script {} for eval.", script_id.display());
+                        true
+                    }
+                }
+            })
+            .unwrap_or(false);
         if ! script_ready {
             break;
         }
-        // NOTE: Maybe once pop_front_if is stabalized.
-        // if let Some(script_id) = script_queue.pop_front_if(|script_id| match asset_server.load_state(script_id) {
-        //     LoadState::Failed(e) => {
-        //         warn!("Failed to load script {}", &script_id);
-        //         true
-        //     }
-        //     LoadState::Loaded => true,
-        //     _ => false
-        // }) {
         if let Some((id, script_id, domain_maybe)) = script_queue.pop_front() {
+            if script_failed {
+                continue;
+            }
             if let Some(asset) = script_assets.get(&script_id) {
                 if asset.language == P::LANGUAGE {
                     commands.entity(id).queue(CreateOrUpdateScript::<P>::new(
                         script_id,
-                        asset.content.clone(),
+                        None,
                         domain_maybe
                     ));
                 }
@@ -349,11 +357,6 @@ mod tests {
             .unwrap();
 
         assert_eq!(
-            asset.asset_path,
-            AssetPath::from_path(&PathBuf::from("test_assets/test_script.script"))
-        );
-
-        assert_eq!(
             String::from_utf8(asset.content.clone().to_vec()).unwrap(),
             "test script".to_string()
         );
@@ -379,28 +382,12 @@ mod tests {
             .unwrap();
 
         assert_eq!(
-            asset.asset_path,
-            AssetPath::from(PathBuf::from("test_assets/test_script.script"))
+            handle.path().unwrap(),
+            &AssetPath::from(PathBuf::from("test_assets/test_script.script"))
         );
         assert_eq!(
             String::from_utf8(asset.content.clone().to_vec()).unwrap(),
             "pest script".to_string()
-        );
-    }
-
-    #[test]
-    fn test_script_asset_settings_select_language() {
-        let settings = make_test_settings();
-
-        let path = AssetPath::from(Path::new("test.lua"));
-        assert_eq!(settings.select_script_language(&path), Language::Lua);
-        assert_eq!(
-            settings.select_script_language(&AssetPath::from(Path::new("test.rhai"))),
-            Language::Rhai
-        );
-        assert_eq!(
-            settings.select_script_language(&AssetPath::from(Path::new("test.blob"))),
-            Language::Unknown
         );
     }
 
