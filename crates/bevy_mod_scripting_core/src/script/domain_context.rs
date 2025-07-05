@@ -10,17 +10,13 @@ impl<P: IntoScriptPluginParams> Default for DomainContext<P> {
 }
 
 impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for DomainContext<P> {
-    fn hash(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64> {
-        domain.as_ref().map(|d| {
-            let mut hasher = DefaultHashBuilder::default().build_hasher();
-            d.hash(&mut hasher);
-            hasher.finish()
-        })
+    fn hash(&self, _id: Option<Entity>, _script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64> {
+        domain.as_ref().map(|d| DefaultHashBuilder::default().hash_one(&d))
     }
-    fn get(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<&Arc<Mutex<P::C>>> {
+    fn get(&self, _id: Option<Entity>, _script_id: &ScriptId, domain: &Option<Domain>) -> Option<&Arc<Mutex<P::C>>> {
         domain.as_ref().and_then(|id| self.0.get(id))
     }
-    fn insert(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>, context: P::C) -> Result<(), P::C> {
+    fn insert(&mut self, _id: Option<Entity>, _script_id: &ScriptId, domain: &Option<Domain>, context: P::C) -> Result<(), P::C> {
         if let Some(id) = domain {
             self.0.insert(id.clone(), Arc::new(Mutex::new(context)));
             Ok(())
@@ -28,7 +24,7 @@ impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for DomainContext<P> {
             Err(context)
         }
     }
-    fn contains(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool {
+    fn contains(&self, _id: Option<Entity>, _script_id: &ScriptId, domain: &Option<Domain>) -> bool {
         domain.as_ref().map(|id| self.0.contains_key(id)).unwrap_or(false)
     }
 }
