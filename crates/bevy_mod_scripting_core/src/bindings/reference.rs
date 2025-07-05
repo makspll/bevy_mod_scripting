@@ -6,19 +6,19 @@
 //! we need wrapper types which have owned and ref variants.
 use super::{access_map::ReflectAccessId, WorldGuard};
 use crate::{
-	bindings::{with_access_read, with_access_write, ReflectAllocationId},
-	error::InteropError,
-	reflection_extensions::{PartialReflectExt, TypeIdExtensions},
-	ReflectAllocator,
+    bindings::{with_access_read, with_access_write, ReflectAllocationId},
+    error::InteropError,
+    reflection_extensions::{PartialReflectExt, TypeIdExtensions},
+    ReflectAllocator,
 };
 use bevy::{
-	ecs::{
-		change_detection::MutUntyped, component::ComponentId, entity::Entity,
-		world::unsafe_world_cell::UnsafeWorldCell,
-	},
-	prelude::{Component, ReflectDefault, Resource},
-	ptr::Ptr,
-	reflect::{ParsedPath, PartialReflect, Reflect, ReflectFromPtr, ReflectPath},
+    ecs::{
+        change_detection::MutUntyped, component::ComponentId, entity::Entity,
+        world::unsafe_world_cell::UnsafeWorldCell,
+    },
+    prelude::{Component, ReflectDefault, Resource},
+    ptr::Ptr,
+    reflect::{ParsedPath, PartialReflect, Reflect, ReflectFromPtr, ReflectPath},
 };
 use std::{any::TypeId, fmt::Debug};
 
@@ -503,11 +503,7 @@ impl ReflectBase {
         match self {
             ReflectBase::Component(entity, component_id) => {
                 // Safety: the caller ensures invariants hold
-                if let Ok(entity) = world.get_entity(entity) {
-                    entity.get_by_id(component_id)
-                } else {
-                    None
-                }
+                world.get_entity(entity).ok()?.get_by_id(component_id)
             }
             ReflectBase::Resource(component_id) => {
                 // Safety: the caller ensures invariants hold
@@ -526,11 +522,7 @@ impl ReflectBase {
         match self {
             ReflectBase::Component(entity, component_id) => {
                 // Safety: the caller ensures invariants hold
-                if let Ok(entity) = world.get_entity(entity) {
-                    entity.get_mut_by_id(component_id).ok()
-                } else {
-                    None
-                }
+                world.get_entity(entity).ok()?.get_mut_by_id(component_id)
             }
             ReflectBase::Resource(component_id) => {
                 // Safety: the caller ensures invariants hold
@@ -646,15 +638,15 @@ impl Iterator for ReflectRefIter {
 
 #[cfg(test)]
 mod test {
-	use bevy::prelude::{AppTypeRegistry, World};
+    use bevy::prelude::{AppTypeRegistry, World};
 
-	use crate::bindings::{
-		function::script_function::AppScriptFunctionRegistry, AppReflectAllocator,
-	};
+    use crate::bindings::{
+        function::script_function::AppScriptFunctionRegistry, AppReflectAllocator,
+    };
 
-	use super::*;
+    use super::*;
 
-	#[derive(Reflect, Component, Debug, Clone, PartialEq)]
+    #[derive(Reflect, Component, Debug, Clone, PartialEq)]
     struct Component(Vec<String>);
 
     #[derive(Reflect, Resource, Debug, Clone, PartialEq)]
