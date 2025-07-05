@@ -30,11 +30,11 @@ codegen-units = 8
 incremental = false
 debug = false
 
-[rust-analyzer.rustc]
-source = "discover"
+# [rust-analyzer.rustc]
+# source = "discover"
 
-[package.metadata.rust-analyzer]
-rustc_private = true
+# [package.metadata.rust-analyzer]
+# rustc_private = true
 
 [dependencies]
 log = "0.4"
@@ -50,7 +50,7 @@ strum = { version = "0.26", features = ["derive"] }
 include_dir = "0.7"
 prettyplease = "0.2"
 convert_case = "0.6"
-syn = { version = "2", features = ["parsing"], no-default-features = true }
+syn = { version = "2", features = ["parsing"], default-features = false }
 itertools = "0.12"
 chrono = "0.4"
 

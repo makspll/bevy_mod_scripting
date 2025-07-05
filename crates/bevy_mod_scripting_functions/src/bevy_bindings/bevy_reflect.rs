@@ -18,7 +18,7 @@ pub struct BevyReflectScriptingPlugin;
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl std::sync::atomic::AtomicBool {
+impl core::sync::atomic::AtomicBool {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -28,8 +28,8 @@ impl std::sync::atomic::AtomicBool {
     ///  let some_bool = AtomicBool::new(true);
     ///  assert_eq!(some_bool.into_inner(), true);
     ///  ```
-    fn into_inner(_self: Val<std::sync::atomic::AtomicBool>) -> bool {
-        let output: bool = std::sync::atomic::AtomicBool::into_inner(_self.into_inner())
+    fn into_inner(_self: Val<core::sync::atomic::AtomicBool>) -> bool {
+        let output: bool = core::sync::atomic::AtomicBool::into_inner(_self.into_inner())
             .into();
         output
     }
@@ -40,8 +40,8 @@ impl std::sync::atomic::AtomicBool {
     ///  let atomic_true = AtomicBool::new(true);
     ///  let atomic_false = AtomicBool::new(false);
     ///  ```
-    fn new(v: bool) -> Val<std::sync::atomic::AtomicBool> {
-        let output: Val<std::sync::atomic::AtomicBool> = std::sync::atomic::AtomicBool::new(
+    fn new(v: bool) -> Val<core::sync::atomic::AtomicBool> {
+        let output: Val<core::sync::atomic::AtomicBool> = core::sync::atomic::AtomicBool::new(
                 v,
             )
             .into();
@@ -54,7 +54,7 @@ impl std::sync::atomic::AtomicBool {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl std::sync::atomic::AtomicI16 {
+impl core::sync::atomic::AtomicI16 {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -64,8 +64,8 @@ impl std::sync::atomic::AtomicI16 {
     /// let some_var = AtomicI16::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<std::sync::atomic::AtomicI16>) -> i16 {
-        let output: i16 = std::sync::atomic::AtomicI16::into_inner(_self.into_inner())
+    fn into_inner(_self: Val<core::sync::atomic::AtomicI16>) -> i16 {
+        let output: i16 = core::sync::atomic::AtomicI16::into_inner(_self.into_inner())
             .into();
         output
     }
@@ -75,8 +75,8 @@ impl std::sync::atomic::AtomicI16 {
     /// use std::sync::atomic::AtomicI16;
     /// let atomic_forty_two = AtomicI16::new(42);
     ///  ```
-    fn new(v: i16) -> Val<std::sync::atomic::AtomicI16> {
-        let output: Val<std::sync::atomic::AtomicI16> = std::sync::atomic::AtomicI16::new(
+    fn new(v: i16) -> Val<core::sync::atomic::AtomicI16> {
+        let output: Val<core::sync::atomic::AtomicI16> = core::sync::atomic::AtomicI16::new(
                 v,
             )
             .into();
@@ -89,7 +89,7 @@ impl std::sync::atomic::AtomicI16 {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl std::sync::atomic::AtomicI32 {
+impl core::sync::atomic::AtomicI32 {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -99,8 +99,8 @@ impl std::sync::atomic::AtomicI32 {
     /// let some_var = AtomicI32::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<std::sync::atomic::AtomicI32>) -> i32 {
-        let output: i32 = std::sync::atomic::AtomicI32::into_inner(_self.into_inner())
+    fn into_inner(_self: Val<core::sync::atomic::AtomicI32>) -> i32 {
+        let output: i32 = core::sync::atomic::AtomicI32::into_inner(_self.into_inner())
             .into();
         output
     }
@@ -110,8 +110,8 @@ impl std::sync::atomic::AtomicI32 {
     /// use std::sync::atomic::AtomicI32;
     /// let atomic_forty_two = AtomicI32::new(42);
     ///  ```
-    fn new(v: i32) -> Val<std::sync::atomic::AtomicI32> {
-        let output: Val<std::sync::atomic::AtomicI32> = std::sync::atomic::AtomicI32::new(
+    fn new(v: i32) -> Val<core::sync::atomic::AtomicI32> {
+        let output: Val<core::sync::atomic::AtomicI32> = core::sync::atomic::AtomicI32::new(
                 v,
             )
             .into();
@@ -124,7 +124,7 @@ impl std::sync::atomic::AtomicI32 {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl std::sync::atomic::AtomicI64 {
+impl core::sync::atomic::AtomicI64 {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -134,8 +134,8 @@ impl std::sync::atomic::AtomicI64 {
     /// let some_var = AtomicI64::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<std::sync::atomic::AtomicI64>) -> i64 {
-        let output: i64 = std::sync::atomic::AtomicI64::into_inner(_self.into_inner())
+    fn into_inner(_self: Val<core::sync::atomic::AtomicI64>) -> i64 {
+        let output: i64 = core::sync::atomic::AtomicI64::into_inner(_self.into_inner())
             .into();
         output
     }
@@ -145,8 +145,8 @@ impl std::sync::atomic::AtomicI64 {
     /// use std::sync::atomic::AtomicI64;
     /// let atomic_forty_two = AtomicI64::new(42);
     ///  ```
-    fn new(v: i64) -> Val<std::sync::atomic::AtomicI64> {
-        let output: Val<std::sync::atomic::AtomicI64> = std::sync::atomic::AtomicI64::new(
+    fn new(v: i64) -> Val<core::sync::atomic::AtomicI64> {
+        let output: Val<core::sync::atomic::AtomicI64> = core::sync::atomic::AtomicI64::new(
                 v,
             )
             .into();
@@ -159,7 +159,7 @@ impl std::sync::atomic::AtomicI64 {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl std::sync::atomic::AtomicI8 {
+impl core::sync::atomic::AtomicI8 {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -169,8 +169,8 @@ impl std::sync::atomic::AtomicI8 {
     /// let some_var = AtomicI8::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<std::sync::atomic::AtomicI8>) -> i8 {
-        let output: i8 = std::sync::atomic::AtomicI8::into_inner(_self.into_inner())
+    fn into_inner(_self: Val<core::sync::atomic::AtomicI8>) -> i8 {
+        let output: i8 = core::sync::atomic::AtomicI8::into_inner(_self.into_inner())
             .into();
         output
     }
@@ -180,8 +180,8 @@ impl std::sync::atomic::AtomicI8 {
     /// use std::sync::atomic::AtomicI8;
     /// let atomic_forty_two = AtomicI8::new(42);
     ///  ```
-    fn new(v: i8) -> Val<std::sync::atomic::AtomicI8> {
-        let output: Val<std::sync::atomic::AtomicI8> = std::sync::atomic::AtomicI8::new(
+    fn new(v: i8) -> Val<core::sync::atomic::AtomicI8> {
+        let output: Val<core::sync::atomic::AtomicI8> = core::sync::atomic::AtomicI8::new(
                 v,
             )
             .into();
@@ -194,7 +194,7 @@ impl std::sync::atomic::AtomicI8 {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl std::sync::atomic::AtomicIsize {
+impl core::sync::atomic::AtomicIsize {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -204,8 +204,8 @@ impl std::sync::atomic::AtomicIsize {
     /// let some_var = AtomicIsize::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<std::sync::atomic::AtomicIsize>) -> isize {
-        let output: isize = std::sync::atomic::AtomicIsize::into_inner(
+    fn into_inner(_self: Val<core::sync::atomic::AtomicIsize>) -> isize {
+        let output: isize = core::sync::atomic::AtomicIsize::into_inner(
                 _self.into_inner(),
             )
             .into();
@@ -217,8 +217,8 @@ impl std::sync::atomic::AtomicIsize {
     /// use std::sync::atomic::AtomicIsize;
     /// let atomic_forty_two = AtomicIsize::new(42);
     ///  ```
-    fn new(v: isize) -> Val<std::sync::atomic::AtomicIsize> {
-        let output: Val<std::sync::atomic::AtomicIsize> = std::sync::atomic::AtomicIsize::new(
+    fn new(v: isize) -> Val<core::sync::atomic::AtomicIsize> {
+        let output: Val<core::sync::atomic::AtomicIsize> = core::sync::atomic::AtomicIsize::new(
                 v,
             )
             .into();
@@ -231,7 +231,7 @@ impl std::sync::atomic::AtomicIsize {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl std::sync::atomic::AtomicU16 {
+impl core::sync::atomic::AtomicU16 {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -241,8 +241,8 @@ impl std::sync::atomic::AtomicU16 {
     /// let some_var = AtomicU16::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<std::sync::atomic::AtomicU16>) -> u16 {
-        let output: u16 = std::sync::atomic::AtomicU16::into_inner(_self.into_inner())
+    fn into_inner(_self: Val<core::sync::atomic::AtomicU16>) -> u16 {
+        let output: u16 = core::sync::atomic::AtomicU16::into_inner(_self.into_inner())
             .into();
         output
     }
@@ -252,8 +252,8 @@ impl std::sync::atomic::AtomicU16 {
     /// use std::sync::atomic::AtomicU16;
     /// let atomic_forty_two = AtomicU16::new(42);
     ///  ```
-    fn new(v: u16) -> Val<std::sync::atomic::AtomicU16> {
-        let output: Val<std::sync::atomic::AtomicU16> = std::sync::atomic::AtomicU16::new(
+    fn new(v: u16) -> Val<core::sync::atomic::AtomicU16> {
+        let output: Val<core::sync::atomic::AtomicU16> = core::sync::atomic::AtomicU16::new(
                 v,
             )
             .into();
@@ -266,7 +266,7 @@ impl std::sync::atomic::AtomicU16 {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl std::sync::atomic::AtomicU32 {
+impl core::sync::atomic::AtomicU32 {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -276,8 +276,8 @@ impl std::sync::atomic::AtomicU32 {
     /// let some_var = AtomicU32::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<std::sync::atomic::AtomicU32>) -> u32 {
-        let output: u32 = std::sync::atomic::AtomicU32::into_inner(_self.into_inner())
+    fn into_inner(_self: Val<core::sync::atomic::AtomicU32>) -> u32 {
+        let output: u32 = core::sync::atomic::AtomicU32::into_inner(_self.into_inner())
             .into();
         output
     }
@@ -287,8 +287,8 @@ impl std::sync::atomic::AtomicU32 {
     /// use std::sync::atomic::AtomicU32;
     /// let atomic_forty_two = AtomicU32::new(42);
     ///  ```
-    fn new(v: u32) -> Val<std::sync::atomic::AtomicU32> {
-        let output: Val<std::sync::atomic::AtomicU32> = std::sync::atomic::AtomicU32::new(
+    fn new(v: u32) -> Val<core::sync::atomic::AtomicU32> {
+        let output: Val<core::sync::atomic::AtomicU32> = core::sync::atomic::AtomicU32::new(
                 v,
             )
             .into();
@@ -301,7 +301,7 @@ impl std::sync::atomic::AtomicU32 {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl std::sync::atomic::AtomicU64 {
+impl core::sync::atomic::AtomicU64 {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -311,8 +311,8 @@ impl std::sync::atomic::AtomicU64 {
     /// let some_var = AtomicU64::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<std::sync::atomic::AtomicU64>) -> u64 {
-        let output: u64 = std::sync::atomic::AtomicU64::into_inner(_self.into_inner())
+    fn into_inner(_self: Val<core::sync::atomic::AtomicU64>) -> u64 {
+        let output: u64 = core::sync::atomic::AtomicU64::into_inner(_self.into_inner())
             .into();
         output
     }
@@ -322,8 +322,8 @@ impl std::sync::atomic::AtomicU64 {
     /// use std::sync::atomic::AtomicU64;
     /// let atomic_forty_two = AtomicU64::new(42);
     ///  ```
-    fn new(v: u64) -> Val<std::sync::atomic::AtomicU64> {
-        let output: Val<std::sync::atomic::AtomicU64> = std::sync::atomic::AtomicU64::new(
+    fn new(v: u64) -> Val<core::sync::atomic::AtomicU64> {
+        let output: Val<core::sync::atomic::AtomicU64> = core::sync::atomic::AtomicU64::new(
                 v,
             )
             .into();
@@ -336,7 +336,7 @@ impl std::sync::atomic::AtomicU64 {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl std::sync::atomic::AtomicU8 {
+impl core::sync::atomic::AtomicU8 {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -346,8 +346,8 @@ impl std::sync::atomic::AtomicU8 {
     /// let some_var = AtomicU8::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<std::sync::atomic::AtomicU8>) -> u8 {
-        let output: u8 = std::sync::atomic::AtomicU8::into_inner(_self.into_inner())
+    fn into_inner(_self: Val<core::sync::atomic::AtomicU8>) -> u8 {
+        let output: u8 = core::sync::atomic::AtomicU8::into_inner(_self.into_inner())
             .into();
         output
     }
@@ -357,8 +357,8 @@ impl std::sync::atomic::AtomicU8 {
     /// use std::sync::atomic::AtomicU8;
     /// let atomic_forty_two = AtomicU8::new(42);
     ///  ```
-    fn new(v: u8) -> Val<std::sync::atomic::AtomicU8> {
-        let output: Val<std::sync::atomic::AtomicU8> = std::sync::atomic::AtomicU8::new(
+    fn new(v: u8) -> Val<core::sync::atomic::AtomicU8> {
+        let output: Val<core::sync::atomic::AtomicU8> = core::sync::atomic::AtomicU8::new(
                 v,
             )
             .into();
@@ -371,7 +371,7 @@ impl std::sync::atomic::AtomicU8 {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl std::sync::atomic::AtomicUsize {
+impl core::sync::atomic::AtomicUsize {
     ///  Consumes the atomic and returns the contained value.
     ///  This is safe because passing `self` by value guarantees that no other threads are
     ///  concurrently accessing the atomic data.
@@ -381,8 +381,8 @@ impl std::sync::atomic::AtomicUsize {
     /// let some_var = AtomicUsize::new(5);
     ///  assert_eq!(some_var.into_inner(), 5);
     ///  ```
-    fn into_inner(_self: Val<std::sync::atomic::AtomicUsize>) -> usize {
-        let output: usize = std::sync::atomic::AtomicUsize::into_inner(
+    fn into_inner(_self: Val<core::sync::atomic::AtomicUsize>) -> usize {
+        let output: usize = core::sync::atomic::AtomicUsize::into_inner(
                 _self.into_inner(),
             )
             .into();
@@ -394,8 +394,8 @@ impl std::sync::atomic::AtomicUsize {
     /// use std::sync::atomic::AtomicUsize;
     /// let atomic_forty_two = AtomicUsize::new(42);
     ///  ```
-    fn new(v: usize) -> Val<std::sync::atomic::AtomicUsize> {
-        let output: Val<std::sync::atomic::AtomicUsize> = std::sync::atomic::AtomicUsize::new(
+    fn new(v: usize) -> Val<core::sync::atomic::AtomicUsize> {
+        let output: Val<core::sync::atomic::AtomicUsize> = core::sync::atomic::AtomicUsize::new(
                 v,
             )
             .into();
@@ -408,7 +408,7 @@ impl std::sync::atomic::AtomicUsize {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl std::time::Duration {
+impl core::time::Duration {
     ///  Computes the absolute difference between `self` and `other`.
     ///  # Examples
     ///  ```
@@ -417,23 +417,13 @@ impl std::time::Duration {
     ///  assert_eq!(Duration::new(100, 400_000_000).abs_diff(Duration::new(110, 0)), Duration::new(9, 600_000_000));
     ///  ```
     fn abs_diff(
-        _self: Val<std::time::Duration>,
-        other: Val<std::time::Duration>,
-    ) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = std::time::Duration::abs_diff(
+        _self: Val<core::time::Duration>,
+        other: Val<core::time::Duration>,
+    ) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = core::time::Duration::abs_diff(
                 _self.into_inner(),
                 other.into_inner(),
             )
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<std::time::Duration>,
-        rhs: Val<std::time::Duration>,
-    ) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = <std::time::Duration as std::ops::Add<
-            std::time::Duration,
-        >>::add(_self.into_inner(), rhs.into_inner())
             .into();
         output
     }
@@ -444,8 +434,8 @@ impl std::time::Duration {
     ///  let duration = Duration::new(5, 730_023_852);
     ///  assert_eq!(duration.as_micros(), 5_730_023);
     ///  ```
-    fn as_micros(_self: Ref<std::time::Duration>) -> u128 {
-        let output: u128 = std::time::Duration::as_micros(&_self).into();
+    fn as_micros(_self: Ref<core::time::Duration>) -> u128 {
+        let output: u128 = core::time::Duration::as_micros(&_self).into();
         output
     }
     ///  Returns the total number of whole milliseconds contained by this `Duration`.
@@ -455,8 +445,8 @@ impl std::time::Duration {
     ///  let duration = Duration::new(5, 730_023_852);
     ///  assert_eq!(duration.as_millis(), 5_730);
     ///  ```
-    fn as_millis(_self: Ref<std::time::Duration>) -> u128 {
-        let output: u128 = std::time::Duration::as_millis(&_self).into();
+    fn as_millis(_self: Ref<core::time::Duration>) -> u128 {
+        let output: u128 = core::time::Duration::as_millis(&_self).into();
         output
     }
     ///  Returns the total number of nanoseconds contained by this `Duration`.
@@ -466,8 +456,8 @@ impl std::time::Duration {
     ///  let duration = Duration::new(5, 730_023_852);
     ///  assert_eq!(duration.as_nanos(), 5_730_023_852);
     ///  ```
-    fn as_nanos(_self: Ref<std::time::Duration>) -> u128 {
-        let output: u128 = std::time::Duration::as_nanos(&_self).into();
+    fn as_nanos(_self: Ref<core::time::Duration>) -> u128 {
+        let output: u128 = core::time::Duration::as_nanos(&_self).into();
         output
     }
     ///  Returns the number of _whole_ seconds contained by this `Duration`.
@@ -484,8 +474,8 @@ impl std::time::Duration {
     ///  [`as_secs_f64`]: Duration::as_secs_f64
     ///  [`as_secs_f32`]: Duration::as_secs_f32
     ///  [`subsec_nanos`]: Duration::subsec_nanos
-    fn as_secs(_self: Ref<std::time::Duration>) -> u64 {
-        let output: u64 = std::time::Duration::as_secs(&_self).into();
+    fn as_secs(_self: Ref<core::time::Duration>) -> u64 {
+        let output: u64 = core::time::Duration::as_secs(&_self).into();
         output
     }
     ///  Returns the number of seconds contained by this `Duration` as `f32`.
@@ -496,8 +486,8 @@ impl std::time::Duration {
     ///  let dur = Duration::new(2, 700_000_000);
     ///  assert_eq!(dur.as_secs_f32(), 2.7);
     ///  ```
-    fn as_secs_f32(_self: Ref<std::time::Duration>) -> f32 {
-        let output: f32 = std::time::Duration::as_secs_f32(&_self).into();
+    fn as_secs_f32(_self: Ref<core::time::Duration>) -> f32 {
+        let output: f32 = core::time::Duration::as_secs_f32(&_self).into();
         output
     }
     ///  Returns the number of seconds contained by this `Duration` as `f64`.
@@ -508,29 +498,8 @@ impl std::time::Duration {
     ///  let dur = Duration::new(2, 700_000_000);
     ///  assert_eq!(dur.as_secs_f64(), 2.7);
     ///  ```
-    fn as_secs_f64(_self: Ref<std::time::Duration>) -> f64 {
-        let output: f64 = std::time::Duration::as_secs_f64(&_self).into();
-        output
-    }
-    fn assert_receiver_is_total_eq(_self: Ref<std::time::Duration>) -> () {
-        let output: () = <std::time::Duration as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<std::time::Duration>) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = <std::time::Duration as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn div(_self: Val<std::time::Duration>, rhs: u32) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = <std::time::Duration as std::ops::Div<
-            u32,
-        >>::div(_self.into_inner(), rhs)
-            .into();
+    fn as_secs_f64(_self: Ref<core::time::Duration>) -> f64 {
+        let output: f64 = core::time::Duration::as_secs_f64(&_self).into();
         output
     }
     ///  Divides `Duration` by `Duration` and returns `f32`.
@@ -542,10 +511,10 @@ impl std::time::Duration {
     ///  assert_eq!(dur1.div_duration_f32(dur2), 0.5);
     ///  ```
     fn div_duration_f32(
-        _self: Val<std::time::Duration>,
-        rhs: Val<std::time::Duration>,
+        _self: Val<core::time::Duration>,
+        rhs: Val<core::time::Duration>,
     ) -> f32 {
-        let output: f32 = std::time::Duration::div_duration_f32(
+        let output: f32 = core::time::Duration::div_duration_f32(
                 _self.into_inner(),
                 rhs.into_inner(),
             )
@@ -561,10 +530,10 @@ impl std::time::Duration {
     ///  assert_eq!(dur1.div_duration_f64(dur2), 0.5);
     ///  ```
     fn div_duration_f64(
-        _self: Val<std::time::Duration>,
-        rhs: Val<std::time::Duration>,
+        _self: Val<core::time::Duration>,
+        rhs: Val<core::time::Duration>,
     ) -> f64 {
-        let output: f64 = std::time::Duration::div_duration_f64(
+        let output: f64 = core::time::Duration::div_duration_f64(
                 _self.into_inner(),
                 rhs.into_inner(),
             )
@@ -583,11 +552,8 @@ impl std::time::Duration {
     ///  assert_eq!(dur.div_f32(3.14), Duration::new(0, 859_872_580));
     ///  assert_eq!(dur.div_f32(3.14e5), Duration::new(0, 8_599));
     ///  ```
-    fn div_f32(
-        _self: Val<std::time::Duration>,
-        rhs: f32,
-    ) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = std::time::Duration::div_f32(
+    fn div_f32(_self: Val<core::time::Duration>, rhs: f32) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = core::time::Duration::div_f32(
                 _self.into_inner(),
                 rhs,
             )
@@ -604,21 +570,11 @@ impl std::time::Duration {
     ///  assert_eq!(dur.div_f64(3.14), Duration::new(0, 859_872_611));
     ///  assert_eq!(dur.div_f64(3.14e5), Duration::new(0, 8_599));
     ///  ```
-    fn div_f64(
-        _self: Val<std::time::Duration>,
-        rhs: f64,
-    ) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = std::time::Duration::div_f64(
+    fn div_f64(_self: Val<core::time::Duration>, rhs: f64) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = core::time::Duration::div_f64(
                 _self.into_inner(),
                 rhs,
             )
-            .into();
-        output
-    }
-    fn eq(_self: Ref<std::time::Duration>, other: Ref<std::time::Duration>) -> bool {
-        let output: bool = <std::time::Duration as std::cmp::PartialEq<
-            std::time::Duration,
-        >>::eq(&_self, &other)
             .into();
         output
     }
@@ -630,10 +586,8 @@ impl std::time::Duration {
     ///  assert_eq!(1, duration.as_secs());
     ///  assert_eq!(2_000, duration.subsec_nanos());
     ///  ```
-    fn from_micros(micros: u64) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = std::time::Duration::from_micros(
-                micros,
-            )
+    fn from_micros(micros: u64) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = core::time::Duration::from_micros(micros)
             .into();
         output
     }
@@ -645,10 +599,8 @@ impl std::time::Duration {
     ///  assert_eq!(2, duration.as_secs());
     ///  assert_eq!(569_000_000, duration.subsec_nanos());
     ///  ```
-    fn from_millis(millis: u64) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = std::time::Duration::from_millis(
-                millis,
-            )
+    fn from_millis(millis: u64) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = core::time::Duration::from_millis(millis)
             .into();
         output
     }
@@ -664,8 +616,8 @@ impl std::time::Duration {
     ///  assert_eq!(1, duration.as_secs());
     ///  assert_eq!(123, duration.subsec_nanos());
     ///  ```
-    fn from_nanos(nanos: u64) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = std::time::Duration::from_nanos(nanos)
+    fn from_nanos(nanos: u64) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = core::time::Duration::from_nanos(nanos)
             .into();
         output
     }
@@ -677,8 +629,8 @@ impl std::time::Duration {
     ///  assert_eq!(5, duration.as_secs());
     ///  assert_eq!(0, duration.subsec_nanos());
     ///  ```
-    fn from_secs(secs: u64) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = std::time::Duration::from_secs(secs)
+    fn from_secs(secs: u64) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = core::time::Duration::from_secs(secs)
             .into();
         output
     }
@@ -706,10 +658,8 @@ impl std::time::Duration {
     ///  let res = Duration::from_secs_f32(0.999e-9);
     ///  assert_eq!(res, Duration::new(0, 1));
     ///  ```
-    fn from_secs_f32(secs: f32) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = std::time::Duration::from_secs_f32(
-                secs,
-            )
+    fn from_secs_f32(secs: f32) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = core::time::Duration::from_secs_f32(secs)
             .into();
         output
     }
@@ -737,10 +687,8 @@ impl std::time::Duration {
     ///  let res = Duration::from_secs_f64(0.999e-9);
     ///  assert_eq!(res, Duration::new(0, 1));
     ///  ```
-    fn from_secs_f64(secs: f64) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = std::time::Duration::from_secs_f64(
-                secs,
-            )
+    fn from_secs_f64(secs: f64) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = core::time::Duration::from_secs_f64(secs)
             .into();
         output
     }
@@ -756,15 +704,8 @@ impl std::time::Duration {
     ///  assert!(!Duration::from_nanos(1).is_zero());
     ///  assert!(!Duration::from_secs(1).is_zero());
     ///  ```
-    fn is_zero(_self: Ref<std::time::Duration>) -> bool {
-        let output: bool = std::time::Duration::is_zero(&_self).into();
-        output
-    }
-    fn mul(_self: Val<std::time::Duration>, rhs: u32) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = <std::time::Duration as std::ops::Mul<
-            u32,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
+    fn is_zero(_self: Ref<core::time::Duration>) -> bool {
+        let output: bool = core::time::Duration::is_zero(&_self).into();
         output
     }
     ///  Multiplies `Duration` by `f32`.
@@ -777,11 +718,8 @@ impl std::time::Duration {
     ///  assert_eq!(dur.mul_f32(3.14), Duration::new(8, 478_000_641));
     ///  assert_eq!(dur.mul_f32(3.14e5), Duration::new(847_800, 0));
     ///  ```
-    fn mul_f32(
-        _self: Val<std::time::Duration>,
-        rhs: f32,
-    ) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = std::time::Duration::mul_f32(
+    fn mul_f32(_self: Val<core::time::Duration>, rhs: f32) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = core::time::Duration::mul_f32(
                 _self.into_inner(),
                 rhs,
             )
@@ -798,11 +736,8 @@ impl std::time::Duration {
     ///  assert_eq!(dur.mul_f64(3.14), Duration::new(8, 478_000_000));
     ///  assert_eq!(dur.mul_f64(3.14e5), Duration::new(847_800, 0));
     ///  ```
-    fn mul_f64(
-        _self: Val<std::time::Duration>,
-        rhs: f64,
-    ) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = std::time::Duration::mul_f64(
+    fn mul_f64(_self: Val<core::time::Duration>, rhs: f64) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = core::time::Duration::mul_f64(
                 _self.into_inner(),
                 rhs,
             )
@@ -821,8 +756,8 @@ impl std::time::Duration {
     ///  use std::time::Duration;
     ///  let five_seconds = Duration::new(5, 0);
     ///  ```
-    fn new(secs: u64, nanos: u32) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = std::time::Duration::new(secs, nanos)
+    fn new(secs: u64, nanos: u32) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = core::time::Duration::new(secs, nanos)
             .into();
         output
     }
@@ -836,10 +771,10 @@ impl std::time::Duration {
     ///  assert_eq!(Duration::new(1, 0).saturating_add(Duration::new(u64::MAX, 0)), Duration::MAX);
     ///  ```
     fn saturating_add(
-        _self: Val<std::time::Duration>,
-        rhs: Val<std::time::Duration>,
-    ) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = std::time::Duration::saturating_add(
+        _self: Val<core::time::Duration>,
+        rhs: Val<core::time::Duration>,
+    ) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = core::time::Duration::saturating_add(
                 _self.into_inner(),
                 rhs.into_inner(),
             )
@@ -856,10 +791,10 @@ impl std::time::Duration {
     ///  assert_eq!(Duration::new(u64::MAX - 1, 0).saturating_mul(2), Duration::MAX);
     ///  ```
     fn saturating_mul(
-        _self: Val<std::time::Duration>,
+        _self: Val<core::time::Duration>,
         rhs: u32,
-    ) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = std::time::Duration::saturating_mul(
+    ) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = core::time::Duration::saturating_mul(
                 _self.into_inner(),
                 rhs,
             )
@@ -875,23 +810,13 @@ impl std::time::Duration {
     ///  assert_eq!(Duration::new(0, 0).saturating_sub(Duration::new(0, 1)), Duration::ZERO);
     ///  ```
     fn saturating_sub(
-        _self: Val<std::time::Duration>,
-        rhs: Val<std::time::Duration>,
-    ) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = std::time::Duration::saturating_sub(
+        _self: Val<core::time::Duration>,
+        rhs: Val<core::time::Duration>,
+    ) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = core::time::Duration::saturating_sub(
                 _self.into_inner(),
                 rhs.into_inner(),
             )
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<std::time::Duration>,
-        rhs: Val<std::time::Duration>,
-    ) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = <std::time::Duration as std::ops::Sub<
-            std::time::Duration,
-        >>::sub(_self.into_inner(), rhs.into_inner())
             .into();
         output
     }
@@ -906,8 +831,8 @@ impl std::time::Duration {
     ///  assert_eq!(duration.as_secs(), 1);
     ///  assert_eq!(duration.subsec_micros(), 234_567);
     ///  ```
-    fn subsec_micros(_self: Ref<std::time::Duration>) -> u32 {
-        let output: u32 = std::time::Duration::subsec_micros(&_self).into();
+    fn subsec_micros(_self: Ref<core::time::Duration>) -> u32 {
+        let output: u32 = core::time::Duration::subsec_micros(&_self).into();
         output
     }
     ///  Returns the fractional part of this `Duration`, in whole milliseconds.
@@ -921,8 +846,8 @@ impl std::time::Duration {
     ///  assert_eq!(duration.as_secs(), 5);
     ///  assert_eq!(duration.subsec_millis(), 432);
     ///  ```
-    fn subsec_millis(_self: Ref<std::time::Duration>) -> u32 {
-        let output: u32 = std::time::Duration::subsec_millis(&_self).into();
+    fn subsec_millis(_self: Ref<core::time::Duration>) -> u32 {
+        let output: u32 = core::time::Duration::subsec_millis(&_self).into();
         output
     }
     ///  Returns the fractional part of this `Duration`, in nanoseconds.
@@ -936,8 +861,8 @@ impl std::time::Duration {
     ///  assert_eq!(duration.as_secs(), 5);
     ///  assert_eq!(duration.subsec_nanos(), 10_000_000);
     ///  ```
-    fn subsec_nanos(_self: Ref<std::time::Duration>) -> u32 {
-        let output: u32 = std::time::Duration::subsec_nanos(&_self).into();
+    fn subsec_nanos(_self: Ref<core::time::Duration>) -> u32 {
+        let output: u32 = core::time::Duration::subsec_nanos(&_self).into();
         output
     }
 }
@@ -947,34 +872,7 @@ impl std::time::Duration {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl bevy::platform::time::Instant {
-    ///  # Panics
-    ///  This function may panic if the resulting point in time cannot be represented by the
-    ///  underlying data structure. See [`Instant::checked_add`] for a version without panic.
-    fn add(
-        _self: Val<bevy::platform::time::Instant>,
-        other: Val<std::time::Duration>,
-    ) -> Val<bevy::platform::time::Instant> {
-        let output: Val<bevy::platform::time::Instant> = <bevy::platform::time::Instant as std::ops::Add<
-            std::time::Duration,
-        >>::add(_self.into_inner(), other.into_inner())
-            .into();
-        output
-    }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::platform::time::Instant>) -> () {
-        let output: () = <bevy::platform::time::Instant as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::platform::time::Instant>) -> Val<bevy::platform::time::Instant> {
-        let output: Val<bevy::platform::time::Instant> = <bevy::platform::time::Instant as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
+impl std::time::Instant {
     ///  Returns the amount of time elapsed from another instant to this one,
     ///  or zero duration if that instant is later than this one.
     ///  # Panics
@@ -993,10 +891,10 @@ impl bevy::platform::time::Instant {
     ///  println!("{:?}", now.duration_since(new_now)); // 0ns
     ///  ```
     fn duration_since(
-        _self: Ref<bevy::platform::time::Instant>,
-        earlier: Val<bevy::platform::time::Instant>,
-    ) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = bevy::platform::time::Instant::duration_since(
+        _self: Ref<std::time::Instant>,
+        earlier: Val<std::time::Instant>,
+    ) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = std::time::Instant::duration_since(
                 &_self,
                 earlier.into_inner(),
             )
@@ -1018,15 +916,8 @@ impl bevy::platform::time::Instant {
     ///  sleep(three_secs);
     ///  assert!(instant.elapsed() >= three_secs);
     ///  ```
-    fn elapsed(_self: Ref<bevy::platform::time::Instant>) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = bevy::platform::time::Instant::elapsed(&_self)
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::platform::time::Instant>, other: Ref<bevy::platform::time::Instant>) -> bool {
-        let output: bool = <bevy::platform::time::Instant as std::cmp::PartialEq<
-            bevy::platform::time::Instant,
-        >>::eq(&_self, &other)
+    fn elapsed(_self: Ref<std::time::Instant>) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = std::time::Instant::elapsed(&_self)
             .into();
         output
     }
@@ -1036,8 +927,8 @@ impl bevy::platform::time::Instant {
     ///  use std::time::Instant;
     ///  let now = Instant::now();
     ///  ```
-    fn now() -> Val<bevy::platform::time::Instant> {
-        let output: Val<bevy::platform::time::Instant> = bevy::platform::time::Instant::now().into();
+    fn now() -> Val<std::time::Instant> {
+        let output: Val<std::time::Instant> = std::time::Instant::now().into();
         output
     }
     ///  Returns the amount of time elapsed from another instant to this one,
@@ -1053,40 +944,13 @@ impl bevy::platform::time::Instant {
     ///  println!("{:?}", now.saturating_duration_since(new_now)); // 0ns
     ///  ```
     fn saturating_duration_since(
-        _self: Ref<bevy::platform::time::Instant>,
-        earlier: Val<bevy::platform::time::Instant>,
-    ) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = bevy::platform::time::Instant::saturating_duration_since(
+        _self: Ref<std::time::Instant>,
+        earlier: Val<std::time::Instant>,
+    ) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = std::time::Instant::saturating_duration_since(
                 &_self,
                 earlier.into_inner(),
             )
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::platform::time::Instant>,
-        other: Val<std::time::Duration>,
-    ) -> Val<bevy::platform::time::Instant> {
-        let output: Val<bevy::platform::time::Instant> = <bevy::platform::time::Instant as std::ops::Sub<
-            std::time::Duration,
-        >>::sub(_self.into_inner(), other.into_inner())
-            .into();
-        output
-    }
-    ///  Returns the amount of time elapsed from another instant to this one,
-    ///  or zero duration if that instant is later than this one.
-    ///  # Panics
-    ///  Previous Rust versions panicked when `other` was later than `self`. Currently this
-    ///  method saturates. Future versions may reintroduce the panic in some circumstances.
-    ///  See [Monotonicity].
-    ///  [Monotonicity]: Instant#monotonicity
-    fn sub(
-        _self: Val<bevy::platform::time::Instant>,
-        other: Val<bevy::platform::time::Instant>,
-    ) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = <bevy::platform::time::Instant as std::ops::Sub<
-            bevy::platform::time::Instant,
-        >>::sub(_self.into_inner(), other.into_inner())
             .into();
         output
     }
@@ -1097,26 +961,27 @@ impl bevy::platform::time::Instant {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl std::ops::RangeFull {
-    fn assert_receiver_is_total_eq(_self: Ref<std::ops::RangeFull>) -> () {
-        let output: () = <std::ops::RangeFull as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<std::ops::RangeFull>) -> Val<std::ops::RangeFull> {
-        let output: Val<std::ops::RangeFull> = <std::ops::RangeFull as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn eq(_self: Ref<std::ops::RangeFull>, other: Ref<std::ops::RangeFull>) -> bool {
-        let output: bool = <std::ops::RangeFull as std::cmp::PartialEq<
-            std::ops::RangeFull,
-        >>::eq(&_self, &other)
-            .into();
+impl core::ops::RangeFull {}
+#[script_bindings(
+    remote,
+    name = "type_id_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl core::any::TypeId {
+    ///  Returns the `TypeId` of the type this generic function has been
+    ///  instantiated with.
+    ///  # Examples
+    ///  ```
+    ///  use std::any::{Any, TypeId};
+    ///  fn is_string<T: ?Sized + Any>(_s: &T) -> bool {
+    ///      TypeId::of::<String>() == TypeId::of::<T>()
+    ///  }
+    ///  assert_eq!(is_string(&0), false);
+    ///  assert_eq!(is_string(&"cookie monster".to_string()), true);
+    ///  ```
+    fn of() -> Val<core::any::TypeId> {
+        let output: Val<core::any::TypeId> = core::any::TypeId::of().into();
         output
     }
 }
@@ -1147,20 +1012,6 @@ impl bevy::math::Quat {
             .into();
         output
     }
-    ///  Adds two quaternions.
-    ///  The sum is not guaranteed to be normalized.
-    ///  Note that addition is not the same as combining the rotations represented by the
-    ///  two quaternions! That corresponds to multiplication.
-    fn add(
-        _self: Val<bevy::math::Quat>,
-        rhs: Val<bevy::math::Quat>,
-    ) -> Val<bevy::math::Quat> {
-        let output: Val<bevy::math::Quat> = <bevy::math::Quat as std::ops::Add<
-            bevy::math::Quat,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
     ///  Returns the angle (in radians) for the minimal rotation
     ///  for transforming this quaternion into another.
     ///  Both quaternions must be normalized.
@@ -1181,13 +1032,6 @@ impl bevy::math::Quat {
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::Quat>) -> Val<bevy::math::Quat> {
-        let output: Val<bevy::math::Quat> = <bevy::math::Quat as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
     ///  Returns the quaternion conjugate of `self`. For a unit quaternion the
     ///  conjugate is also the inverse.
     fn conjugate(_self: Val<bevy::math::Quat>) -> Val<bevy::math::Quat> {
@@ -1197,26 +1041,10 @@ impl bevy::math::Quat {
             .into();
         output
     }
-    ///  Divides a quaternion by a scalar value.
-    ///  The quotient is not guaranteed to be normalized.
-    fn div(_self: Val<bevy::math::Quat>, rhs: f32) -> Val<bevy::math::Quat> {
-        let output: Val<bevy::math::Quat> = <bevy::math::Quat as std::ops::Div<
-            f32,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Computes the dot product of `self` and `rhs`. The dot product is
     ///  equal to the cosine of the angle between two quaternion rotations.
     fn dot(_self: Val<bevy::math::Quat>, rhs: Val<bevy::math::Quat>) -> f32 {
         let output: f32 = bevy::math::Quat::dot(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::Quat>, rhs: Ref<bevy::math::Quat>) -> bool {
-        let output: bool = <bevy::math::Quat as std::cmp::PartialEq<
-            bevy::math::Quat,
-        >>::eq(&_self, &rhs)
             .into();
         output
     }
@@ -1473,54 +1301,6 @@ impl bevy::math::Quat {
     }
     ///  Multiplies two quaternions. If they each represent a rotation, the result will
     ///  represent the combined rotation.
-    ///  Note that due to floating point rounding the result may not be perfectly
-    ///  normalized.
-    ///  # Panics
-    ///  Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-    fn mul(
-        _self: Val<bevy::math::Quat>,
-        rhs: Val<bevy::math::Quat>,
-    ) -> Val<bevy::math::Quat> {
-        let output: Val<bevy::math::Quat> = <bevy::math::Quat as std::ops::Mul<
-            bevy::math::Quat,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    ///  Multiplies a quaternion and a 3D vector, returning the rotated vector.
-    ///  # Panics
-    ///  Will panic if `self` is not normalized when `glam_assert` is enabled.
-    fn mul(
-        _self: Val<bevy::math::Quat>,
-        rhs: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Quat as std::ops::Mul<
-            bevy::math::Vec3,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::Quat>,
-        rhs: Val<bevy::math::Vec3A>,
-    ) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Quat as std::ops::Mul<
-            bevy::math::Vec3A,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    ///  Multiplies a quaternion by a scalar value.
-    ///  The product is not guaranteed to be normalized.
-    fn mul(_self: Val<bevy::math::Quat>, rhs: f32) -> Val<bevy::math::Quat> {
-        let output: Val<bevy::math::Quat> = <bevy::math::Quat as std::ops::Mul<
-            f32,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
-    ///  Multiplies two quaternions. If they each represent a rotation, the result will
-    ///  represent the combined rotation.
     ///  Note that due to floating point rounding the result may not be perfectly normalized.
     ///  # Panics
     ///  Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
@@ -1557,13 +1337,6 @@ impl bevy::math::Quat {
         let output: Val<bevy::math::Vec3A> = bevy::math::Quat::mul_vec3a(
                 _self.into_inner(),
                 rhs.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn neg(_self: Val<bevy::math::Quat>) -> Val<bevy::math::Quat> {
-        let output: Val<bevy::math::Quat> = <bevy::math::Quat as std::ops::Neg>::neg(
-                _self.into_inner(),
             )
             .into();
         output
@@ -1615,18 +1388,6 @@ impl bevy::math::Quat {
                 end.into_inner(),
                 s,
             )
-            .into();
-        output
-    }
-    ///  Subtracts the `rhs` quaternion from `self`.
-    ///  The difference is not guaranteed to be normalized.
-    fn sub(
-        _self: Val<bevy::math::Quat>,
-        rhs: Val<bevy::math::Quat>,
-    ) -> Val<bevy::math::Quat> {
-        let output: Val<bevy::math::Quat> = <bevy::math::Quat as std::ops::Sub<
-            bevy::math::Quat,
-        >>::sub(_self.into_inner(), rhs.into_inner())
             .into();
         output
     }
@@ -1695,33 +1456,6 @@ impl bevy::math::Vec3 {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::Vec3>,
-        rhs: Ref<bevy::math::Vec3>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Add<
-            &bevy::math::Vec3,
-        >>::add(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<bevy::math::Vec3>,
-        rhs: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Add<
-            bevy::math::Vec3,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn add(_self: Val<bevy::math::Vec3>, rhs: f32) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Add<
-            f32,
-        >>::add(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the angle (in radians) between two vectors in the range `[0, +π]`.
     ///  The inputs do not need to be unit vectors however they must be non-zero.
     fn angle_between(_self: Val<bevy::math::Vec3>, rhs: Val<bevy::math::Vec3>) -> f32 {
@@ -1759,10 +1493,21 @@ impl bevy::math::Vec3 {
         let output: Val<bevy::math::DVec3> = bevy::math::Vec3::as_dvec3(&_self).into();
         output
     }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec3(_self: Ref<bevy::math::Vec3>) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::Vec3::as_i16vec3(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `i64`.
     fn as_i64vec3(_self: Ref<bevy::math::Vec3>) -> Val<bevy::math::I64Vec3> {
         let output: Val<bevy::math::I64Vec3> = bevy::math::Vec3::as_i64vec3(&_self)
             .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec3(_self: Ref<bevy::math::Vec3>) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::Vec3::as_i8vec3(&_self).into();
         output
     }
     ///  Casts all elements of `self` to `i32`.
@@ -1770,10 +1515,21 @@ impl bevy::math::Vec3 {
         let output: Val<bevy::math::IVec3> = bevy::math::Vec3::as_ivec3(&_self).into();
         output
     }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec3(_self: Ref<bevy::math::Vec3>) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::Vec3::as_u16vec3(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `u64`.
     fn as_u64vec3(_self: Ref<bevy::math::Vec3>) -> Val<bevy::math::U64Vec3> {
         let output: Val<bevy::math::U64Vec3> = bevy::math::Vec3::as_u64vec3(&_self)
             .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec3(_self: Ref<bevy::math::Vec3>) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::Vec3::as_u8vec3(&_self).into();
         output
     }
     ///  Casts all elements of `self` to `u32`.
@@ -1845,13 +1601,6 @@ impl bevy::math::Vec3 {
         let output: Val<bevy::math::Vec3> = bevy::math::Vec3::clamp_length_min(
                 _self.into_inner(),
                 min,
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::Vec3>) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
             )
             .into();
         output
@@ -1991,33 +1740,6 @@ impl bevy::math::Vec3 {
             .into();
         output
     }
-    fn div(
-        _self: Val<bevy::math::Vec3>,
-        rhs: Ref<bevy::math::Vec3>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Div<
-            &bevy::math::Vec3,
-        >>::div(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn div(
-        _self: Val<bevy::math::Vec3>,
-        rhs: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Div<
-            bevy::math::Vec3,
-        >>::div(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn div(_self: Val<bevy::math::Vec3>, rhs: f32) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Div<
-            f32,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
     fn div_euclid(
         _self: Val<bevy::math::Vec3>,
@@ -2058,13 +1780,6 @@ impl bevy::math::Vec3 {
     ///  In other words, this computes `self.x + self.y + ..`.
     fn element_sum(_self: Val<bevy::math::Vec3>) -> f32 {
         let output: f32 = bevy::math::Vec3::element_sum(_self.into_inner()).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::Vec3>, other: Ref<bevy::math::Vec3>) -> bool {
-        let output: bool = <bevy::math::Vec3 as std::cmp::PartialEq<
-            bevy::math::Vec3,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Returns a vector containing `e^self` (the exponential function) for each element of
@@ -2261,33 +1976,6 @@ impl bevy::math::Vec3 {
             .into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::Vec3>,
-        rhs: Ref<bevy::math::Vec3>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Mul<
-            &bevy::math::Vec3,
-        >>::mul(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::Vec3>,
-        rhs: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Mul<
-            bevy::math::Vec3,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::Vec3>, rhs: f32) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Mul<
-            f32,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
     ///  error, yielding a more accurate result than an unfused multiply-add.
     ///  Using `mul_add` *may* be more performant than an unfused multiply-add if the target
@@ -2303,13 +1991,6 @@ impl bevy::math::Vec3 {
                 _self.into_inner(),
                 a.into_inner(),
                 b.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn neg(_self: Val<bevy::math::Vec3>) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Neg>::neg(
-                _self.into_inner(),
             )
             .into();
         output
@@ -2469,33 +2150,6 @@ impl bevy::math::Vec3 {
             .into();
         output
     }
-    fn rem(
-        _self: Val<bevy::math::Vec3>,
-        rhs: Ref<bevy::math::Vec3>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Rem<
-            &bevy::math::Vec3,
-        >>::rem(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::Vec3>,
-        rhs: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Rem<
-            bevy::math::Vec3,
-        >>::rem(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn rem(_self: Val<bevy::math::Vec3>, rhs: f32) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Rem<
-            f32,
-        >>::rem(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
     ///  [Euclidean division]: f32::rem_euclid
     fn rem_euclid(
@@ -2545,33 +2199,6 @@ impl bevy::math::Vec3 {
     ///  Creates a vector with all elements set to `v`.
     fn splat(v: f32) -> Val<bevy::math::Vec3> {
         let output: Val<bevy::math::Vec3> = bevy::math::Vec3::splat(v).into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::Vec3>,
-        rhs: Ref<bevy::math::Vec3>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Sub<
-            &bevy::math::Vec3,
-        >>::sub(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::Vec3>,
-        rhs: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Sub<
-            bevy::math::Vec3,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn sub(_self: Val<bevy::math::Vec3>, rhs: f32) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Vec3 as std::ops::Sub<
-            f32,
-        >>::sub(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  `[x, y, z]`
@@ -2625,6 +2252,67 @@ impl bevy::math::Vec3 {
 }
 #[script_bindings(
     remote,
+    name = "socket_addr_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl core::net::SocketAddr {
+    ///  Returns [`true`] if the [IP address] in this `SocketAddr` is an
+    ///  [`IPv4` address], and [`false`] otherwise.
+    ///  [IP address]: IpAddr
+    ///  [`IPv4` address]: IpAddr::V4
+    ///  # Examples
+    ///  ```
+    ///  use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+    ///  let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080);
+    ///  assert_eq!(socket.is_ipv4(), true);
+    ///  assert_eq!(socket.is_ipv6(), false);
+    ///  ```
+    fn is_ipv4(_self: Ref<core::net::SocketAddr>) -> bool {
+        let output: bool = core::net::SocketAddr::is_ipv4(&_self).into();
+        output
+    }
+    ///  Returns [`true`] if the [IP address] in this `SocketAddr` is an
+    ///  [`IPv6` address], and [`false`] otherwise.
+    ///  [IP address]: IpAddr
+    ///  [`IPv6` address]: IpAddr::V6
+    ///  # Examples
+    ///  ```
+    ///  use std::net::{IpAddr, Ipv6Addr, SocketAddr};
+    ///  let socket = SocketAddr::new(IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 65535, 0, 1)), 8080);
+    ///  assert_eq!(socket.is_ipv4(), false);
+    ///  assert_eq!(socket.is_ipv6(), true);
+    ///  ```
+    fn is_ipv6(_self: Ref<core::net::SocketAddr>) -> bool {
+        let output: bool = core::net::SocketAddr::is_ipv6(&_self).into();
+        output
+    }
+    ///  Returns the port number associated with this socket address.
+    ///  # Examples
+    ///  ```
+    ///  use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+    ///  let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080);
+    ///  assert_eq!(socket.port(), 8080);
+    ///  ```
+    fn port(_self: Ref<core::net::SocketAddr>) -> u16 {
+        let output: u16 = core::net::SocketAddr::port(&_self).into();
+        output
+    }
+    ///  Changes the port number associated with this socket address.
+    ///  # Examples
+    ///  ```
+    ///  use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+    ///  let mut socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080);
+    ///  socket.set_port(1025);
+    ///  assert_eq!(socket.port(), 1025);
+    ///  ```
+    fn set_port(mut _self: Mut<core::net::SocketAddr>, new_port: u16) -> () {
+        let output: () = core::net::SocketAddr::set_port(&mut _self, new_port).into();
+        output
+    }
+}
+#[script_bindings(
+    remote,
     name = "i_vec_2_functions",
     bms_core_path = "bevy_mod_scripting_core",
     generated
@@ -2636,36 +2324,15 @@ impl bevy::math::IVec2 {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::IVec2>,
-        rhs: Ref<bevy::math::IVec2>,
-    ) -> Val<bevy::math::IVec2> {
-        let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Add<
-            &bevy::math::IVec2,
-        >>::add(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<bevy::math::IVec2>,
-        rhs: Val<bevy::math::IVec2>,
-    ) -> Val<bevy::math::IVec2> {
-        let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Add<
-            bevy::math::IVec2,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn add(_self: Val<bevy::math::IVec2>, rhs: i32) -> Val<bevy::math::IVec2> {
-        let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Add<
-            i32,
-        >>::add(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Casts all elements of `self` to `f64`.
     fn as_dvec2(_self: Ref<bevy::math::IVec2>) -> Val<bevy::math::DVec2> {
         let output: Val<bevy::math::DVec2> = bevy::math::IVec2::as_dvec2(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec2(_self: Ref<bevy::math::IVec2>) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::IVec2::as_i16vec2(&_self)
+            .into();
         output
     }
     ///  Casts all elements of `self` to `i64`.
@@ -2674,9 +2341,27 @@ impl bevy::math::IVec2 {
             .into();
         output
     }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec2(_self: Ref<bevy::math::IVec2>) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::IVec2::as_i8vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec2(_self: Ref<bevy::math::IVec2>) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::IVec2::as_u16vec2(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `u64`.
     fn as_u64vec2(_self: Ref<bevy::math::IVec2>) -> Val<bevy::math::U64Vec2> {
         let output: Val<bevy::math::U64Vec2> = bevy::math::IVec2::as_u64vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec2(_self: Ref<bevy::math::IVec2>) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::IVec2::as_u8vec2(&_self)
             .into();
         output
     }
@@ -2688,13 +2373,6 @@ impl bevy::math::IVec2 {
     ///  Casts all elements of `self` to `f32`.
     fn as_vec2(_self: Ref<bevy::math::IVec2>) -> Val<bevy::math::Vec2> {
         let output: Val<bevy::math::Vec2> = bevy::math::IVec2::as_vec2(&_self).into();
-        output
-    }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::IVec2>) -> () {
-        let output: () = <bevy::math::IVec2 as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
         output
     }
     ///  Component-wise clamping of values, similar to [`i32::clamp`].
@@ -2710,13 +2388,6 @@ impl bevy::math::IVec2 {
                 _self.into_inner(),
                 min.into_inner(),
                 max.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::IVec2>) -> Val<bevy::math::IVec2> {
-        let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
             )
             .into();
         output
@@ -2823,33 +2494,6 @@ impl bevy::math::IVec2 {
             .into();
         output
     }
-    fn div(
-        _self: Val<bevy::math::IVec2>,
-        rhs: Ref<bevy::math::IVec2>,
-    ) -> Val<bevy::math::IVec2> {
-        let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Div<
-            &bevy::math::IVec2,
-        >>::div(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn div(
-        _self: Val<bevy::math::IVec2>,
-        rhs: Val<bevy::math::IVec2>,
-    ) -> Val<bevy::math::IVec2> {
-        let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Div<
-            bevy::math::IVec2,
-        >>::div(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn div(_self: Val<bevy::math::IVec2>, rhs: i32) -> Val<bevy::math::IVec2> {
-        let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Div<
-            i32,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
     ///  # Panics
     ///  This function will panic if any `rhs` element is 0 or the division results in overflow.
@@ -2892,13 +2536,6 @@ impl bevy::math::IVec2 {
     ///  In other words, this computes `self.x + self.y + ..`.
     fn element_sum(_self: Val<bevy::math::IVec2>) -> i32 {
         let output: i32 = bevy::math::IVec2::element_sum(_self.into_inner()).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::IVec2>, other: Ref<bevy::math::IVec2>) -> bool {
-        let output: bool = <bevy::math::IVec2 as std::cmp::PartialEq<
-            bevy::math::IVec2,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Creates a 3D vector from `self` and the given `z` value.
@@ -2966,40 +2603,6 @@ impl bevy::math::IVec2 {
         let output: i32 = bevy::math::IVec2::min_element(_self.into_inner()).into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::IVec2>,
-        rhs: Ref<bevy::math::IVec2>,
-    ) -> Val<bevy::math::IVec2> {
-        let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Mul<
-            &bevy::math::IVec2,
-        >>::mul(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::IVec2>,
-        rhs: Val<bevy::math::IVec2>,
-    ) -> Val<bevy::math::IVec2> {
-        let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Mul<
-            bevy::math::IVec2,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::IVec2>, rhs: i32) -> Val<bevy::math::IVec2> {
-        let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Mul<
-            i32,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
-    fn neg(_self: Val<bevy::math::IVec2>) -> Val<bevy::math::IVec2> {
-        let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Neg>::neg(
-                _self.into_inner(),
-            )
-            .into();
-        output
-    }
     ///  Creates a new vector.
     fn new(x: i32, y: i32) -> Val<bevy::math::IVec2> {
         let output: Val<bevy::math::IVec2> = bevy::math::IVec2::new(x, y).into();
@@ -3018,33 +2621,6 @@ impl bevy::math::IVec2 {
                 _self.into_inner(),
                 rhs.into_inner(),
             )
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::IVec2>,
-        rhs: Ref<bevy::math::IVec2>,
-    ) -> Val<bevy::math::IVec2> {
-        let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Rem<
-            &bevy::math::IVec2,
-        >>::rem(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::IVec2>,
-        rhs: Val<bevy::math::IVec2>,
-    ) -> Val<bevy::math::IVec2> {
-        let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Rem<
-            bevy::math::IVec2,
-        >>::rem(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn rem(_self: Val<bevy::math::IVec2>, rhs: i32) -> Val<bevy::math::IVec2> {
-        let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Rem<
-            i32,
-        >>::rem(_self.into_inner(), rhs)
             .into();
         output
     }
@@ -3187,33 +2763,6 @@ impl bevy::math::IVec2 {
         let output: Val<bevy::math::IVec2> = bevy::math::IVec2::splat(v).into();
         output
     }
-    fn sub(
-        _self: Val<bevy::math::IVec2>,
-        rhs: Ref<bevy::math::IVec2>,
-    ) -> Val<bevy::math::IVec2> {
-        let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Sub<
-            &bevy::math::IVec2,
-        >>::sub(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::IVec2>,
-        rhs: Val<bevy::math::IVec2>,
-    ) -> Val<bevy::math::IVec2> {
-        let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Sub<
-            bevy::math::IVec2,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn sub(_self: Val<bevy::math::IVec2>, rhs: i32) -> Val<bevy::math::IVec2> {
-        let output: Val<bevy::math::IVec2> = <bevy::math::IVec2 as std::ops::Sub<
-            i32,
-        >>::sub(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  `[x, y]`
     fn to_array(_self: Ref<bevy::math::IVec2>) -> [i32; 2] {
         let output: [i32; 2] = bevy::math::IVec2::to_array(&_self).into();
@@ -3329,36 +2878,15 @@ impl bevy::math::IVec3 {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::IVec3>,
-        rhs: Ref<bevy::math::IVec3>,
-    ) -> Val<bevy::math::IVec3> {
-        let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Add<
-            &bevy::math::IVec3,
-        >>::add(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<bevy::math::IVec3>,
-        rhs: Val<bevy::math::IVec3>,
-    ) -> Val<bevy::math::IVec3> {
-        let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Add<
-            bevy::math::IVec3,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn add(_self: Val<bevy::math::IVec3>, rhs: i32) -> Val<bevy::math::IVec3> {
-        let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Add<
-            i32,
-        >>::add(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Casts all elements of `self` to `f64`.
     fn as_dvec3(_self: Ref<bevy::math::IVec3>) -> Val<bevy::math::DVec3> {
         let output: Val<bevy::math::DVec3> = bevy::math::IVec3::as_dvec3(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec3(_self: Ref<bevy::math::IVec3>) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::IVec3::as_i16vec3(&_self)
+            .into();
         output
     }
     ///  Casts all elements of `self` to `i64`.
@@ -3367,9 +2895,27 @@ impl bevy::math::IVec3 {
             .into();
         output
     }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec3(_self: Ref<bevy::math::IVec3>) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::IVec3::as_i8vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec3(_self: Ref<bevy::math::IVec3>) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::IVec3::as_u16vec3(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `u64`.
     fn as_u64vec3(_self: Ref<bevy::math::IVec3>) -> Val<bevy::math::U64Vec3> {
         let output: Val<bevy::math::U64Vec3> = bevy::math::IVec3::as_u64vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec3(_self: Ref<bevy::math::IVec3>) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::IVec3::as_u8vec3(&_self)
             .into();
         output
     }
@@ -3388,13 +2934,6 @@ impl bevy::math::IVec3 {
         let output: Val<bevy::math::Vec3A> = bevy::math::IVec3::as_vec3a(&_self).into();
         output
     }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::IVec3>) -> () {
-        let output: () = <bevy::math::IVec3 as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
-        output
-    }
     ///  Component-wise clamping of values, similar to [`i32::clamp`].
     ///  Each element in `min` must be less-or-equal to the corresponding element in `max`.
     ///  # Panics
@@ -3408,13 +2947,6 @@ impl bevy::math::IVec3 {
                 _self.into_inner(),
                 min.into_inner(),
                 max.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::IVec3>) -> Val<bevy::math::IVec3> {
-        let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
             )
             .into();
         output
@@ -3533,33 +3065,6 @@ impl bevy::math::IVec3 {
             .into();
         output
     }
-    fn div(
-        _self: Val<bevy::math::IVec3>,
-        rhs: Ref<bevy::math::IVec3>,
-    ) -> Val<bevy::math::IVec3> {
-        let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Div<
-            &bevy::math::IVec3,
-        >>::div(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn div(
-        _self: Val<bevy::math::IVec3>,
-        rhs: Val<bevy::math::IVec3>,
-    ) -> Val<bevy::math::IVec3> {
-        let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Div<
-            bevy::math::IVec3,
-        >>::div(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn div(_self: Val<bevy::math::IVec3>, rhs: i32) -> Val<bevy::math::IVec3> {
-        let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Div<
-            i32,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
     ///  # Panics
     ///  This function will panic if any `rhs` element is 0 or the division results in overflow.
@@ -3602,13 +3107,6 @@ impl bevy::math::IVec3 {
     ///  In other words, this computes `self.x + self.y + ..`.
     fn element_sum(_self: Val<bevy::math::IVec3>) -> i32 {
         let output: i32 = bevy::math::IVec3::element_sum(_self.into_inner()).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::IVec3>, other: Ref<bevy::math::IVec3>) -> bool {
-        let output: bool = <bevy::math::IVec3 as std::cmp::PartialEq<
-            bevy::math::IVec3,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Creates a 4D vector from `self` and the given `w` value.
@@ -3676,70 +3174,9 @@ impl bevy::math::IVec3 {
         let output: i32 = bevy::math::IVec3::min_element(_self.into_inner()).into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::IVec3>,
-        rhs: Ref<bevy::math::IVec3>,
-    ) -> Val<bevy::math::IVec3> {
-        let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Mul<
-            &bevy::math::IVec3,
-        >>::mul(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::IVec3>,
-        rhs: Val<bevy::math::IVec3>,
-    ) -> Val<bevy::math::IVec3> {
-        let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Mul<
-            bevy::math::IVec3,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::IVec3>, rhs: i32) -> Val<bevy::math::IVec3> {
-        let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Mul<
-            i32,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
-    fn neg(_self: Val<bevy::math::IVec3>) -> Val<bevy::math::IVec3> {
-        let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Neg>::neg(
-                _self.into_inner(),
-            )
-            .into();
-        output
-    }
     ///  Creates a new vector.
     fn new(x: i32, y: i32, z: i32) -> Val<bevy::math::IVec3> {
         let output: Val<bevy::math::IVec3> = bevy::math::IVec3::new(x, y, z).into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::IVec3>,
-        rhs: Ref<bevy::math::IVec3>,
-    ) -> Val<bevy::math::IVec3> {
-        let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Rem<
-            &bevy::math::IVec3,
-        >>::rem(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::IVec3>,
-        rhs: Val<bevy::math::IVec3>,
-    ) -> Val<bevy::math::IVec3> {
-        let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Rem<
-            bevy::math::IVec3,
-        >>::rem(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn rem(_self: Val<bevy::math::IVec3>, rhs: i32) -> Val<bevy::math::IVec3> {
-        let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Rem<
-            i32,
-        >>::rem(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
@@ -3865,33 +3302,6 @@ impl bevy::math::IVec3 {
     ///  Creates a vector with all elements set to `v`.
     fn splat(v: i32) -> Val<bevy::math::IVec3> {
         let output: Val<bevy::math::IVec3> = bevy::math::IVec3::splat(v).into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::IVec3>,
-        rhs: Ref<bevy::math::IVec3>,
-    ) -> Val<bevy::math::IVec3> {
-        let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Sub<
-            &bevy::math::IVec3,
-        >>::sub(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::IVec3>,
-        rhs: Val<bevy::math::IVec3>,
-    ) -> Val<bevy::math::IVec3> {
-        let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Sub<
-            bevy::math::IVec3,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn sub(_self: Val<bevy::math::IVec3>, rhs: i32) -> Val<bevy::math::IVec3> {
-        let output: Val<bevy::math::IVec3> = <bevy::math::IVec3 as std::ops::Sub<
-            i32,
-        >>::sub(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  `[x, y, z]`
@@ -4027,36 +3437,15 @@ impl bevy::math::IVec4 {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::IVec4>,
-        rhs: Ref<bevy::math::IVec4>,
-    ) -> Val<bevy::math::IVec4> {
-        let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Add<
-            &bevy::math::IVec4,
-        >>::add(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<bevy::math::IVec4>,
-        rhs: Val<bevy::math::IVec4>,
-    ) -> Val<bevy::math::IVec4> {
-        let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Add<
-            bevy::math::IVec4,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn add(_self: Val<bevy::math::IVec4>, rhs: i32) -> Val<bevy::math::IVec4> {
-        let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Add<
-            i32,
-        >>::add(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Casts all elements of `self` to `f64`.
     fn as_dvec4(_self: Ref<bevy::math::IVec4>) -> Val<bevy::math::DVec4> {
         let output: Val<bevy::math::DVec4> = bevy::math::IVec4::as_dvec4(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec4(_self: Ref<bevy::math::IVec4>) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::IVec4::as_i16vec4(&_self)
+            .into();
         output
     }
     ///  Casts all elements of `self` to `i64`.
@@ -4065,9 +3454,27 @@ impl bevy::math::IVec4 {
             .into();
         output
     }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec4(_self: Ref<bevy::math::IVec4>) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::IVec4::as_i8vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec4(_self: Ref<bevy::math::IVec4>) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::IVec4::as_u16vec4(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `u64`.
     fn as_u64vec4(_self: Ref<bevy::math::IVec4>) -> Val<bevy::math::U64Vec4> {
         let output: Val<bevy::math::U64Vec4> = bevy::math::IVec4::as_u64vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec4(_self: Ref<bevy::math::IVec4>) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::IVec4::as_u8vec4(&_self)
             .into();
         output
     }
@@ -4079,13 +3486,6 @@ impl bevy::math::IVec4 {
     ///  Casts all elements of `self` to `f32`.
     fn as_vec4(_self: Ref<bevy::math::IVec4>) -> Val<bevy::math::Vec4> {
         let output: Val<bevy::math::Vec4> = bevy::math::IVec4::as_vec4(&_self).into();
-        output
-    }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::IVec4>) -> () {
-        let output: () = <bevy::math::IVec4 as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
         output
     }
     ///  Component-wise clamping of values, similar to [`i32::clamp`].
@@ -4101,13 +3501,6 @@ impl bevy::math::IVec4 {
                 _self.into_inner(),
                 min.into_inner(),
                 max.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::IVec4>) -> Val<bevy::math::IVec4> {
-        let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
             )
             .into();
         output
@@ -4214,33 +3607,6 @@ impl bevy::math::IVec4 {
             .into();
         output
     }
-    fn div(
-        _self: Val<bevy::math::IVec4>,
-        rhs: Ref<bevy::math::IVec4>,
-    ) -> Val<bevy::math::IVec4> {
-        let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Div<
-            &bevy::math::IVec4,
-        >>::div(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn div(
-        _self: Val<bevy::math::IVec4>,
-        rhs: Val<bevy::math::IVec4>,
-    ) -> Val<bevy::math::IVec4> {
-        let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Div<
-            bevy::math::IVec4,
-        >>::div(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn div(_self: Val<bevy::math::IVec4>, rhs: i32) -> Val<bevy::math::IVec4> {
-        let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Div<
-            i32,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
     ///  # Panics
     ///  This function will panic if any `rhs` element is 0 or the division results in overflow.
@@ -4283,13 +3649,6 @@ impl bevy::math::IVec4 {
     ///  In other words, this computes `self.x + self.y + ..`.
     fn element_sum(_self: Val<bevy::math::IVec4>) -> i32 {
         let output: i32 = bevy::math::IVec4::element_sum(_self.into_inner()).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::IVec4>, other: Ref<bevy::math::IVec4>) -> bool {
-        let output: bool = <bevy::math::IVec4 as std::cmp::PartialEq<
-            bevy::math::IVec4,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Creates a new vector from an array.
@@ -4348,70 +3707,9 @@ impl bevy::math::IVec4 {
         let output: i32 = bevy::math::IVec4::min_element(_self.into_inner()).into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::IVec4>,
-        rhs: Ref<bevy::math::IVec4>,
-    ) -> Val<bevy::math::IVec4> {
-        let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Mul<
-            &bevy::math::IVec4,
-        >>::mul(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::IVec4>,
-        rhs: Val<bevy::math::IVec4>,
-    ) -> Val<bevy::math::IVec4> {
-        let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Mul<
-            bevy::math::IVec4,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::IVec4>, rhs: i32) -> Val<bevy::math::IVec4> {
-        let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Mul<
-            i32,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
-    fn neg(_self: Val<bevy::math::IVec4>) -> Val<bevy::math::IVec4> {
-        let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Neg>::neg(
-                _self.into_inner(),
-            )
-            .into();
-        output
-    }
     ///  Creates a new vector.
     fn new(x: i32, y: i32, z: i32, w: i32) -> Val<bevy::math::IVec4> {
         let output: Val<bevy::math::IVec4> = bevy::math::IVec4::new(x, y, z, w).into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::IVec4>,
-        rhs: Ref<bevy::math::IVec4>,
-    ) -> Val<bevy::math::IVec4> {
-        let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Rem<
-            &bevy::math::IVec4,
-        >>::rem(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::IVec4>,
-        rhs: Val<bevy::math::IVec4>,
-    ) -> Val<bevy::math::IVec4> {
-        let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Rem<
-            bevy::math::IVec4,
-        >>::rem(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn rem(_self: Val<bevy::math::IVec4>, rhs: i32) -> Val<bevy::math::IVec4> {
-        let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Rem<
-            i32,
-        >>::rem(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
@@ -4537,33 +3835,6 @@ impl bevy::math::IVec4 {
     ///  Creates a vector with all elements set to `v`.
     fn splat(v: i32) -> Val<bevy::math::IVec4> {
         let output: Val<bevy::math::IVec4> = bevy::math::IVec4::splat(v).into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::IVec4>,
-        rhs: Ref<bevy::math::IVec4>,
-    ) -> Val<bevy::math::IVec4> {
-        let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Sub<
-            &bevy::math::IVec4,
-        >>::sub(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::IVec4>,
-        rhs: Val<bevy::math::IVec4>,
-    ) -> Val<bevy::math::IVec4> {
-        let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Sub<
-            bevy::math::IVec4,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn sub(_self: Val<bevy::math::IVec4>, rhs: i32) -> Val<bevy::math::IVec4> {
-        let output: Val<bevy::math::IVec4> = <bevy::math::IVec4 as std::ops::Sub<
-            i32,
-        >>::sub(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  `[x, y, z, w]`
@@ -4697,6 +3968,3334 @@ impl bevy::math::IVec4 {
 }
 #[script_bindings(
     remote,
+    name = "i_8_vec_2_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::math::I8Vec2 {
+    ///  Returns a vector containing the absolute value of each element of `self`.
+    fn abs(_self: Val<bevy::math::I8Vec2>) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::abs(_self.into_inner())
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `f64`.
+    fn as_dvec2(_self: Ref<bevy::math::I8Vec2>) -> Val<bevy::math::DVec2> {
+        let output: Val<bevy::math::DVec2> = bevy::math::I8Vec2::as_dvec2(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec2(_self: Ref<bevy::math::I8Vec2>) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I8Vec2::as_i16vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i64`.
+    fn as_i64vec2(_self: Ref<bevy::math::I8Vec2>) -> Val<bevy::math::I64Vec2> {
+        let output: Val<bevy::math::I64Vec2> = bevy::math::I8Vec2::as_i64vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i32`.
+    fn as_ivec2(_self: Ref<bevy::math::I8Vec2>) -> Val<bevy::math::IVec2> {
+        let output: Val<bevy::math::IVec2> = bevy::math::I8Vec2::as_ivec2(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec2(_self: Ref<bevy::math::I8Vec2>) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::I8Vec2::as_u16vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u64`.
+    fn as_u64vec2(_self: Ref<bevy::math::I8Vec2>) -> Val<bevy::math::U64Vec2> {
+        let output: Val<bevy::math::U64Vec2> = bevy::math::I8Vec2::as_u64vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec2(_self: Ref<bevy::math::I8Vec2>) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::I8Vec2::as_u8vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u32`.
+    fn as_uvec2(_self: Ref<bevy::math::I8Vec2>) -> Val<bevy::math::UVec2> {
+        let output: Val<bevy::math::UVec2> = bevy::math::I8Vec2::as_uvec2(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `f32`.
+    fn as_vec2(_self: Ref<bevy::math::I8Vec2>) -> Val<bevy::math::Vec2> {
+        let output: Val<bevy::math::Vec2> = bevy::math::I8Vec2::as_vec2(&_self).into();
+        output
+    }
+    ///  Component-wise clamping of values, similar to [`i8::clamp`].
+    ///  Each element in `min` must be less-or-equal to the corresponding element in `max`.
+    ///  # Panics
+    ///  Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+    fn clamp(
+        _self: Val<bevy::math::I8Vec2>,
+        min: Val<bevy::math::I8Vec2>,
+        max: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::clamp(
+                _self.into_inner(),
+                min.into_inner(),
+                max.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `==` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+    ///  elements.
+    fn cmpeq(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::I8Vec2::cmpeq(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+    ///  elements.
+    fn cmpge(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::I8Vec2::cmpge(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+    ///  elements.
+    fn cmpgt(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::I8Vec2::cmpgt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+    ///  elements.
+    fn cmple(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::I8Vec2::cmple(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+    ///  elements.
+    fn cmplt(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::I8Vec2::cmplt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `!=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+    ///  elements.
+    fn cmpne(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::I8Vec2::cmpne(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Compute the squared euclidean distance between two points in space.
+    fn distance_squared(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> i8 {
+        let output: i8 = bevy::math::I8Vec2::distance_squared(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
+    ///  # Panics
+    ///  This function will panic if any `rhs` element is 0 or the division results in overflow.
+    fn div_euclid(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::div_euclid(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Computes the dot product of `self` and `rhs`.
+    fn dot(_self: Val<bevy::math::I8Vec2>, rhs: Val<bevy::math::I8Vec2>) -> i8 {
+        let output: i8 = bevy::math::I8Vec2::dot(_self.into_inner(), rhs.into_inner())
+            .into();
+        output
+    }
+    ///  Returns a vector where every component is the dot product of `self` and `rhs`.
+    fn dot_into_vec(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::dot_into_vec(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the product of all elements of `self`.
+    ///  In other words, this computes `self.x * self.y * ..`.
+    fn element_product(_self: Val<bevy::math::I8Vec2>) -> i8 {
+        let output: i8 = bevy::math::I8Vec2::element_product(_self.into_inner()).into();
+        output
+    }
+    ///  Returns the sum of all elements of `self`.
+    ///  In other words, this computes `self.x + self.y + ..`.
+    fn element_sum(_self: Val<bevy::math::I8Vec2>) -> i8 {
+        let output: i8 = bevy::math::I8Vec2::element_sum(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a 3D vector from `self` and the given `z` value.
+    fn extend(_self: Val<bevy::math::I8Vec2>, z: i8) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec2::extend(
+                _self.into_inner(),
+                z,
+            )
+            .into();
+        output
+    }
+    ///  Creates a new vector from an array.
+    fn from_array(a: [i8; 2]) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::from_array(a).into();
+        output
+    }
+    ///  Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.
+    ///  A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
+    ///  into the first lowest bit, element `y` into the second, etc.
+    fn is_negative_bitmask(_self: Val<bevy::math::I8Vec2>) -> u32 {
+        let output: u32 = bevy::math::I8Vec2::is_negative_bitmask(_self.into_inner())
+            .into();
+        output
+    }
+    ///  Computes the squared length of `self`.
+    fn length_squared(_self: Val<bevy::math::I8Vec2>) -> i8 {
+        let output: i8 = bevy::math::I8Vec2::length_squared(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the maximum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+    fn max(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::max(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal maximum of `self`.
+    ///  In other words this computes `max(x, y, ..)`.
+    fn max_element(_self: Val<bevy::math::I8Vec2>) -> i8 {
+        let output: i8 = bevy::math::I8Vec2::max_element(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the minimum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+    fn min(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::min(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal minimum of `self`.
+    ///  In other words this computes `min(x, y, ..)`.
+    fn min_element(_self: Val<bevy::math::I8Vec2>) -> i8 {
+        let output: i8 = bevy::math::I8Vec2::min_element(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a new vector.
+    fn new(x: i8, y: i8) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::new(x, y).into();
+        output
+    }
+    ///  Returns a vector that is equal to `self` rotated by 90 degrees.
+    fn perp(_self: Val<bevy::math::I8Vec2>) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::perp(
+                _self.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  The perpendicular dot product of `self` and `rhs`.
+    ///  Also known as the wedge product, 2D cross product, and determinant.
+    fn perp_dot(_self: Val<bevy::math::I8Vec2>, rhs: Val<bevy::math::I8Vec2>) -> i8 {
+        let output: i8 = bevy::math::I8Vec2::perp_dot(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
+    ///  # Panics
+    ///  This function will panic if any `rhs` element is 0 or the division results in overflow.
+    ///  [Euclidean division]: i8::rem_euclid
+    fn rem_euclid(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::rem_euclid(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns `rhs` rotated by the angle of `self`. If `self` is normalized,
+    ///  then this just rotation. This is what you usually want. Otherwise,
+    ///  it will be like a rotation with a multiplication by `self`'s length.
+    fn rotate(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::rotate(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
+    fn saturating_add(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::saturating_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  In other words this computes `[self.x.saturating_add_unsigned(rhs.x), self.y.saturating_add_unsigned(rhs.y), ..]`.
+    fn saturating_add_unsigned(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::saturating_add_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
+    fn saturating_div(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::saturating_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
+    fn saturating_mul(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::saturating_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
+    fn saturating_sub(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::saturating_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating subtraction of `self` and unsigned vector `rhs`.
+    ///  In other words this computes `[self.x.saturating_sub_unsigned(rhs.x), self.y.saturating_sub_unsigned(rhs.y), ..]`.
+    fn saturating_sub_unsigned(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::saturating_sub_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+    ///  for each element of `self`.
+    ///  A true element in the mask uses the corresponding element from `if_true`, and false
+    ///  uses the element from `if_false`.
+    fn select(
+        mask: Val<bevy::math::BVec2>,
+        if_true: Val<bevy::math::I8Vec2>,
+        if_false: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::select(
+                mask.into_inner(),
+                if_true.into_inner(),
+                if_false.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector with elements representing the sign of `self`.
+    ///   - `0` if the number is zero
+    ///   - `1` if the number is positive
+    ///   - `-1` if the number is negative
+    fn signum(_self: Val<bevy::math::I8Vec2>) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::signum(
+                _self.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector with all elements set to `v`.
+    fn splat(v: i8) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::splat(v).into();
+        output
+    }
+    ///  `[x, y]`
+    fn to_array(_self: Ref<bevy::math::I8Vec2>) -> [i8; 2] {
+        let output: [i8; 2] = bevy::math::I8Vec2::to_array(&_self).into();
+        output
+    }
+    ///  Creates a 2D vector from `self` with the given value of `x`.
+    fn with_x(_self: Val<bevy::math::I8Vec2>, x: i8) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::with_x(
+                _self.into_inner(),
+                x,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 2D vector from `self` with the given value of `y`.
+    fn with_y(_self: Val<bevy::math::I8Vec2>, y: i8) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::with_y(
+                _self.into_inner(),
+                y,
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
+    fn wrapping_add(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::wrapping_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and unsigned vector `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add_unsigned(rhs.x), self.y.wrapping_add_unsigned(rhs.y), ..]`.
+    fn wrapping_add_unsigned(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::wrapping_add_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
+    fn wrapping_div(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::wrapping_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
+    fn wrapping_mul(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::wrapping_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
+    fn wrapping_sub(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::wrapping_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping subtraction of `self` and unsigned vector `rhs`.
+    ///  In other words this computes `[self.x.wrapping_sub_unsigned(rhs.x), self.y.wrapping_sub_unsigned(rhs.y), ..]`.
+    fn wrapping_sub_unsigned(
+        _self: Val<bevy::math::I8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec2::wrapping_sub_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+}
+#[script_bindings(
+    remote,
+    name = "i_8_vec_3_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::math::I8Vec3 {
+    ///  Returns a vector containing the absolute value of each element of `self`.
+    fn abs(_self: Val<bevy::math::I8Vec3>) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::abs(_self.into_inner())
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `f64`.
+    fn as_dvec3(_self: Ref<bevy::math::I8Vec3>) -> Val<bevy::math::DVec3> {
+        let output: Val<bevy::math::DVec3> = bevy::math::I8Vec3::as_dvec3(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec3(_self: Ref<bevy::math::I8Vec3>) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I8Vec3::as_i16vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i64`.
+    fn as_i64vec3(_self: Ref<bevy::math::I8Vec3>) -> Val<bevy::math::I64Vec3> {
+        let output: Val<bevy::math::I64Vec3> = bevy::math::I8Vec3::as_i64vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i32`.
+    fn as_ivec3(_self: Ref<bevy::math::I8Vec3>) -> Val<bevy::math::IVec3> {
+        let output: Val<bevy::math::IVec3> = bevy::math::I8Vec3::as_ivec3(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec3(_self: Ref<bevy::math::I8Vec3>) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::I8Vec3::as_u16vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u64`.
+    fn as_u64vec3(_self: Ref<bevy::math::I8Vec3>) -> Val<bevy::math::U64Vec3> {
+        let output: Val<bevy::math::U64Vec3> = bevy::math::I8Vec3::as_u64vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec3(_self: Ref<bevy::math::I8Vec3>) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::I8Vec3::as_u8vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u32`.
+    fn as_uvec3(_self: Ref<bevy::math::I8Vec3>) -> Val<bevy::math::UVec3> {
+        let output: Val<bevy::math::UVec3> = bevy::math::I8Vec3::as_uvec3(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `f32`.
+    fn as_vec3(_self: Ref<bevy::math::I8Vec3>) -> Val<bevy::math::Vec3> {
+        let output: Val<bevy::math::Vec3> = bevy::math::I8Vec3::as_vec3(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `f32`.
+    fn as_vec3a(_self: Ref<bevy::math::I8Vec3>) -> Val<bevy::math::Vec3A> {
+        let output: Val<bevy::math::Vec3A> = bevy::math::I8Vec3::as_vec3a(&_self).into();
+        output
+    }
+    ///  Component-wise clamping of values, similar to [`i8::clamp`].
+    ///  Each element in `min` must be less-or-equal to the corresponding element in `max`.
+    ///  # Panics
+    ///  Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+    fn clamp(
+        _self: Val<bevy::math::I8Vec3>,
+        min: Val<bevy::math::I8Vec3>,
+        max: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::clamp(
+                _self.into_inner(),
+                min.into_inner(),
+                max.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `==` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+    ///  elements.
+    fn cmpeq(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::I8Vec3::cmpeq(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+    ///  elements.
+    fn cmpge(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::I8Vec3::cmpge(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+    ///  elements.
+    fn cmpgt(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::I8Vec3::cmpgt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+    ///  elements.
+    fn cmple(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::I8Vec3::cmple(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+    ///  elements.
+    fn cmplt(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::I8Vec3::cmplt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `!=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+    ///  elements.
+    fn cmpne(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::I8Vec3::cmpne(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Computes the cross product of `self` and `rhs`.
+    fn cross(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::cross(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Compute the squared euclidean distance between two points in space.
+    fn distance_squared(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> i8 {
+        let output: i8 = bevy::math::I8Vec3::distance_squared(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
+    ///  # Panics
+    ///  This function will panic if any `rhs` element is 0 or the division results in overflow.
+    fn div_euclid(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::div_euclid(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Computes the dot product of `self` and `rhs`.
+    fn dot(_self: Val<bevy::math::I8Vec3>, rhs: Val<bevy::math::I8Vec3>) -> i8 {
+        let output: i8 = bevy::math::I8Vec3::dot(_self.into_inner(), rhs.into_inner())
+            .into();
+        output
+    }
+    ///  Returns a vector where every component is the dot product of `self` and `rhs`.
+    fn dot_into_vec(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::dot_into_vec(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the product of all elements of `self`.
+    ///  In other words, this computes `self.x * self.y * ..`.
+    fn element_product(_self: Val<bevy::math::I8Vec3>) -> i8 {
+        let output: i8 = bevy::math::I8Vec3::element_product(_self.into_inner()).into();
+        output
+    }
+    ///  Returns the sum of all elements of `self`.
+    ///  In other words, this computes `self.x + self.y + ..`.
+    fn element_sum(_self: Val<bevy::math::I8Vec3>) -> i8 {
+        let output: i8 = bevy::math::I8Vec3::element_sum(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a 4D vector from `self` and the given `w` value.
+    fn extend(_self: Val<bevy::math::I8Vec3>, w: i8) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec3::extend(
+                _self.into_inner(),
+                w,
+            )
+            .into();
+        output
+    }
+    ///  Creates a new vector from an array.
+    fn from_array(a: [i8; 3]) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::from_array(a).into();
+        output
+    }
+    ///  Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.
+    ///  A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
+    ///  into the first lowest bit, element `y` into the second, etc.
+    fn is_negative_bitmask(_self: Val<bevy::math::I8Vec3>) -> u32 {
+        let output: u32 = bevy::math::I8Vec3::is_negative_bitmask(_self.into_inner())
+            .into();
+        output
+    }
+    ///  Computes the squared length of `self`.
+    fn length_squared(_self: Val<bevy::math::I8Vec3>) -> i8 {
+        let output: i8 = bevy::math::I8Vec3::length_squared(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the maximum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+    fn max(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::max(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal maximum of `self`.
+    ///  In other words this computes `max(x, y, ..)`.
+    fn max_element(_self: Val<bevy::math::I8Vec3>) -> i8 {
+        let output: i8 = bevy::math::I8Vec3::max_element(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the minimum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+    fn min(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::min(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal minimum of `self`.
+    ///  In other words this computes `min(x, y, ..)`.
+    fn min_element(_self: Val<bevy::math::I8Vec3>) -> i8 {
+        let output: i8 = bevy::math::I8Vec3::min_element(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a new vector.
+    fn new(x: i8, y: i8, z: i8) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::new(x, y, z).into();
+        output
+    }
+    ///  Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
+    ///  # Panics
+    ///  This function will panic if any `rhs` element is 0 or the division results in overflow.
+    ///  [Euclidean division]: i8::rem_euclid
+    fn rem_euclid(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::rem_euclid(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
+    fn saturating_add(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::saturating_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  In other words this computes `[self.x.saturating_add_unsigned(rhs.x), self.y.saturating_add_unsigned(rhs.y), ..]`.
+    fn saturating_add_unsigned(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::saturating_add_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
+    fn saturating_div(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::saturating_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
+    fn saturating_mul(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::saturating_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
+    fn saturating_sub(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::saturating_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating subtraction of `self` and unsigned vector `rhs`.
+    ///  In other words this computes `[self.x.saturating_sub_unsigned(rhs.x), self.y.saturating_sub_unsigned(rhs.y), ..]`.
+    fn saturating_sub_unsigned(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::saturating_sub_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+    ///  for each element of `self`.
+    ///  A true element in the mask uses the corresponding element from `if_true`, and false
+    ///  uses the element from `if_false`.
+    fn select(
+        mask: Val<bevy::math::BVec3>,
+        if_true: Val<bevy::math::I8Vec3>,
+        if_false: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::select(
+                mask.into_inner(),
+                if_true.into_inner(),
+                if_false.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector with elements representing the sign of `self`.
+    ///   - `0` if the number is zero
+    ///   - `1` if the number is positive
+    ///   - `-1` if the number is negative
+    fn signum(_self: Val<bevy::math::I8Vec3>) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::signum(
+                _self.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector with all elements set to `v`.
+    fn splat(v: i8) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::splat(v).into();
+        output
+    }
+    ///  `[x, y, z]`
+    fn to_array(_self: Ref<bevy::math::I8Vec3>) -> [i8; 3] {
+        let output: [i8; 3] = bevy::math::I8Vec3::to_array(&_self).into();
+        output
+    }
+    ///  Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
+    ///  Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
+    fn truncate(_self: Val<bevy::math::I8Vec3>) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I8Vec3::truncate(
+                _self.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a 3D vector from `self` with the given value of `x`.
+    fn with_x(_self: Val<bevy::math::I8Vec3>, x: i8) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::with_x(
+                _self.into_inner(),
+                x,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 3D vector from `self` with the given value of `y`.
+    fn with_y(_self: Val<bevy::math::I8Vec3>, y: i8) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::with_y(
+                _self.into_inner(),
+                y,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 3D vector from `self` with the given value of `z`.
+    fn with_z(_self: Val<bevy::math::I8Vec3>, z: i8) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::with_z(
+                _self.into_inner(),
+                z,
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
+    fn wrapping_add(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::wrapping_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and unsigned vector `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add_unsigned(rhs.x), self.y.wrapping_add_unsigned(rhs.y), ..]`.
+    fn wrapping_add_unsigned(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::wrapping_add_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
+    fn wrapping_div(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::wrapping_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
+    fn wrapping_mul(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::wrapping_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
+    fn wrapping_sub(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::wrapping_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping subtraction of `self` and unsigned vector `rhs`.
+    ///  In other words this computes `[self.x.wrapping_sub_unsigned(rhs.x), self.y.wrapping_sub_unsigned(rhs.y), ..]`.
+    fn wrapping_sub_unsigned(
+        _self: Val<bevy::math::I8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec3::wrapping_sub_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+}
+#[script_bindings(
+    remote,
+    name = "i_8_vec_4_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::math::I8Vec4 {
+    ///  Returns a vector containing the absolute value of each element of `self`.
+    fn abs(_self: Val<bevy::math::I8Vec4>) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::abs(_self.into_inner())
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `f64`.
+    fn as_dvec4(_self: Ref<bevy::math::I8Vec4>) -> Val<bevy::math::DVec4> {
+        let output: Val<bevy::math::DVec4> = bevy::math::I8Vec4::as_dvec4(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec4(_self: Ref<bevy::math::I8Vec4>) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I8Vec4::as_i16vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i64`.
+    fn as_i64vec4(_self: Ref<bevy::math::I8Vec4>) -> Val<bevy::math::I64Vec4> {
+        let output: Val<bevy::math::I64Vec4> = bevy::math::I8Vec4::as_i64vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i32`.
+    fn as_ivec4(_self: Ref<bevy::math::I8Vec4>) -> Val<bevy::math::IVec4> {
+        let output: Val<bevy::math::IVec4> = bevy::math::I8Vec4::as_ivec4(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec4(_self: Ref<bevy::math::I8Vec4>) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::I8Vec4::as_u16vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u64`.
+    fn as_u64vec4(_self: Ref<bevy::math::I8Vec4>) -> Val<bevy::math::U64Vec4> {
+        let output: Val<bevy::math::U64Vec4> = bevy::math::I8Vec4::as_u64vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec4(_self: Ref<bevy::math::I8Vec4>) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::I8Vec4::as_u8vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u32`.
+    fn as_uvec4(_self: Ref<bevy::math::I8Vec4>) -> Val<bevy::math::UVec4> {
+        let output: Val<bevy::math::UVec4> = bevy::math::I8Vec4::as_uvec4(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `f32`.
+    fn as_vec4(_self: Ref<bevy::math::I8Vec4>) -> Val<bevy::math::Vec4> {
+        let output: Val<bevy::math::Vec4> = bevy::math::I8Vec4::as_vec4(&_self).into();
+        output
+    }
+    ///  Component-wise clamping of values, similar to [`i8::clamp`].
+    ///  Each element in `min` must be less-or-equal to the corresponding element in `max`.
+    ///  # Panics
+    ///  Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+    fn clamp(
+        _self: Val<bevy::math::I8Vec4>,
+        min: Val<bevy::math::I8Vec4>,
+        max: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::clamp(
+                _self.into_inner(),
+                min.into_inner(),
+                max.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `==` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+    ///  elements.
+    fn cmpeq(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::I8Vec4::cmpeq(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+    ///  elements.
+    fn cmpge(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::I8Vec4::cmpge(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+    ///  elements.
+    fn cmpgt(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::I8Vec4::cmpgt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+    ///  elements.
+    fn cmple(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::I8Vec4::cmple(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+    ///  elements.
+    fn cmplt(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::I8Vec4::cmplt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `!=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+    ///  elements.
+    fn cmpne(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::I8Vec4::cmpne(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Compute the squared euclidean distance between two points in space.
+    fn distance_squared(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> i8 {
+        let output: i8 = bevy::math::I8Vec4::distance_squared(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
+    ///  # Panics
+    ///  This function will panic if any `rhs` element is 0 or the division results in overflow.
+    fn div_euclid(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::div_euclid(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Computes the dot product of `self` and `rhs`.
+    fn dot(_self: Val<bevy::math::I8Vec4>, rhs: Val<bevy::math::I8Vec4>) -> i8 {
+        let output: i8 = bevy::math::I8Vec4::dot(_self.into_inner(), rhs.into_inner())
+            .into();
+        output
+    }
+    ///  Returns a vector where every component is the dot product of `self` and `rhs`.
+    fn dot_into_vec(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::dot_into_vec(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the product of all elements of `self`.
+    ///  In other words, this computes `self.x * self.y * ..`.
+    fn element_product(_self: Val<bevy::math::I8Vec4>) -> i8 {
+        let output: i8 = bevy::math::I8Vec4::element_product(_self.into_inner()).into();
+        output
+    }
+    ///  Returns the sum of all elements of `self`.
+    ///  In other words, this computes `self.x + self.y + ..`.
+    fn element_sum(_self: Val<bevy::math::I8Vec4>) -> i8 {
+        let output: i8 = bevy::math::I8Vec4::element_sum(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a new vector from an array.
+    fn from_array(a: [i8; 4]) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::from_array(a).into();
+        output
+    }
+    ///  Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.
+    ///  A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
+    ///  into the first lowest bit, element `y` into the second, etc.
+    fn is_negative_bitmask(_self: Val<bevy::math::I8Vec4>) -> u32 {
+        let output: u32 = bevy::math::I8Vec4::is_negative_bitmask(_self.into_inner())
+            .into();
+        output
+    }
+    ///  Computes the squared length of `self`.
+    fn length_squared(_self: Val<bevy::math::I8Vec4>) -> i8 {
+        let output: i8 = bevy::math::I8Vec4::length_squared(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the maximum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+    fn max(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::max(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal maximum of `self`.
+    ///  In other words this computes `max(x, y, ..)`.
+    fn max_element(_self: Val<bevy::math::I8Vec4>) -> i8 {
+        let output: i8 = bevy::math::I8Vec4::max_element(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the minimum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+    fn min(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::min(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal minimum of `self`.
+    ///  In other words this computes `min(x, y, ..)`.
+    fn min_element(_self: Val<bevy::math::I8Vec4>) -> i8 {
+        let output: i8 = bevy::math::I8Vec4::min_element(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a new vector.
+    fn new(x: i8, y: i8, z: i8, w: i8) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::new(x, y, z, w).into();
+        output
+    }
+    ///  Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
+    ///  # Panics
+    ///  This function will panic if any `rhs` element is 0 or the division results in overflow.
+    ///  [Euclidean division]: i8::rem_euclid
+    fn rem_euclid(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::rem_euclid(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
+    fn saturating_add(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::saturating_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  In other words this computes `[self.x.saturating_add_unsigned(rhs.x), self.y.saturating_add_unsigned(rhs.y), ..]`.
+    fn saturating_add_unsigned(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::saturating_add_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
+    fn saturating_div(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::saturating_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
+    fn saturating_mul(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::saturating_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
+    fn saturating_sub(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::saturating_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating subtraction of `self` and unsigned vector `rhs`.
+    ///  In other words this computes `[self.x.saturating_sub_unsigned(rhs.x), self.y.saturating_sub_unsigned(rhs.y), ..]`.
+    fn saturating_sub_unsigned(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::saturating_sub_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+    ///  for each element of `self`.
+    ///  A true element in the mask uses the corresponding element from `if_true`, and false
+    ///  uses the element from `if_false`.
+    fn select(
+        mask: Val<bevy::math::BVec4>,
+        if_true: Val<bevy::math::I8Vec4>,
+        if_false: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::select(
+                mask.into_inner(),
+                if_true.into_inner(),
+                if_false.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector with elements representing the sign of `self`.
+    ///   - `0` if the number is zero
+    ///   - `1` if the number is positive
+    ///   - `-1` if the number is negative
+    fn signum(_self: Val<bevy::math::I8Vec4>) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::signum(
+                _self.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector with all elements set to `v`.
+    fn splat(v: i8) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::splat(v).into();
+        output
+    }
+    ///  `[x, y, z, w]`
+    fn to_array(_self: Ref<bevy::math::I8Vec4>) -> [i8; 4] {
+        let output: [i8; 4] = bevy::math::I8Vec4::to_array(&_self).into();
+        output
+    }
+    ///  Creates a 3D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
+    ///  Truncation to [`I8Vec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
+    fn truncate(_self: Val<bevy::math::I8Vec4>) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I8Vec4::truncate(
+                _self.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a 4D vector from `self` with the given value of `w`.
+    fn with_w(_self: Val<bevy::math::I8Vec4>, w: i8) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::with_w(
+                _self.into_inner(),
+                w,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 4D vector from `self` with the given value of `x`.
+    fn with_x(_self: Val<bevy::math::I8Vec4>, x: i8) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::with_x(
+                _self.into_inner(),
+                x,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 4D vector from `self` with the given value of `y`.
+    fn with_y(_self: Val<bevy::math::I8Vec4>, y: i8) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::with_y(
+                _self.into_inner(),
+                y,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 4D vector from `self` with the given value of `z`.
+    fn with_z(_self: Val<bevy::math::I8Vec4>, z: i8) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::with_z(
+                _self.into_inner(),
+                z,
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
+    fn wrapping_add(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::wrapping_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and unsigned vector `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add_unsigned(rhs.x), self.y.wrapping_add_unsigned(rhs.y), ..]`.
+    fn wrapping_add_unsigned(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::wrapping_add_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
+    fn wrapping_div(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::wrapping_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
+    fn wrapping_mul(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::wrapping_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
+    fn wrapping_sub(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::wrapping_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping subtraction of `self` and unsigned vector `rhs`.
+    ///  In other words this computes `[self.x.wrapping_sub_unsigned(rhs.x), self.y.wrapping_sub_unsigned(rhs.y), ..]`.
+    fn wrapping_sub_unsigned(
+        _self: Val<bevy::math::I8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I8Vec4::wrapping_sub_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+}
+#[script_bindings(
+    remote,
+    name = "i_16_vec_2_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::math::I16Vec2 {
+    ///  Returns a vector containing the absolute value of each element of `self`.
+    fn abs(_self: Val<bevy::math::I16Vec2>) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::abs(
+                _self.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `f64`.
+    fn as_dvec2(_self: Ref<bevy::math::I16Vec2>) -> Val<bevy::math::DVec2> {
+        let output: Val<bevy::math::DVec2> = bevy::math::I16Vec2::as_dvec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i64`.
+    fn as_i64vec2(_self: Ref<bevy::math::I16Vec2>) -> Val<bevy::math::I64Vec2> {
+        let output: Val<bevy::math::I64Vec2> = bevy::math::I16Vec2::as_i64vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec2(_self: Ref<bevy::math::I16Vec2>) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I16Vec2::as_i8vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i32`.
+    fn as_ivec2(_self: Ref<bevy::math::I16Vec2>) -> Val<bevy::math::IVec2> {
+        let output: Val<bevy::math::IVec2> = bevy::math::I16Vec2::as_ivec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec2(_self: Ref<bevy::math::I16Vec2>) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::I16Vec2::as_u16vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u64`.
+    fn as_u64vec2(_self: Ref<bevy::math::I16Vec2>) -> Val<bevy::math::U64Vec2> {
+        let output: Val<bevy::math::U64Vec2> = bevy::math::I16Vec2::as_u64vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec2(_self: Ref<bevy::math::I16Vec2>) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::I16Vec2::as_u8vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u32`.
+    fn as_uvec2(_self: Ref<bevy::math::I16Vec2>) -> Val<bevy::math::UVec2> {
+        let output: Val<bevy::math::UVec2> = bevy::math::I16Vec2::as_uvec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `f32`.
+    fn as_vec2(_self: Ref<bevy::math::I16Vec2>) -> Val<bevy::math::Vec2> {
+        let output: Val<bevy::math::Vec2> = bevy::math::I16Vec2::as_vec2(&_self).into();
+        output
+    }
+    ///  Component-wise clamping of values, similar to [`i16::clamp`].
+    ///  Each element in `min` must be less-or-equal to the corresponding element in `max`.
+    ///  # Panics
+    ///  Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+    fn clamp(
+        _self: Val<bevy::math::I16Vec2>,
+        min: Val<bevy::math::I16Vec2>,
+        max: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::clamp(
+                _self.into_inner(),
+                min.into_inner(),
+                max.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `==` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+    ///  elements.
+    fn cmpeq(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::I16Vec2::cmpeq(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+    ///  elements.
+    fn cmpge(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::I16Vec2::cmpge(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+    ///  elements.
+    fn cmpgt(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::I16Vec2::cmpgt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+    ///  elements.
+    fn cmple(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::I16Vec2::cmple(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+    ///  elements.
+    fn cmplt(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::I16Vec2::cmplt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `!=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+    ///  elements.
+    fn cmpne(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::I16Vec2::cmpne(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Compute the squared euclidean distance between two points in space.
+    fn distance_squared(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> i16 {
+        let output: i16 = bevy::math::I16Vec2::distance_squared(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
+    ///  # Panics
+    ///  This function will panic if any `rhs` element is 0 or the division results in overflow.
+    fn div_euclid(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::div_euclid(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Computes the dot product of `self` and `rhs`.
+    fn dot(_self: Val<bevy::math::I16Vec2>, rhs: Val<bevy::math::I16Vec2>) -> i16 {
+        let output: i16 = bevy::math::I16Vec2::dot(_self.into_inner(), rhs.into_inner())
+            .into();
+        output
+    }
+    ///  Returns a vector where every component is the dot product of `self` and `rhs`.
+    fn dot_into_vec(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::dot_into_vec(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the product of all elements of `self`.
+    ///  In other words, this computes `self.x * self.y * ..`.
+    fn element_product(_self: Val<bevy::math::I16Vec2>) -> i16 {
+        let output: i16 = bevy::math::I16Vec2::element_product(_self.into_inner())
+            .into();
+        output
+    }
+    ///  Returns the sum of all elements of `self`.
+    ///  In other words, this computes `self.x + self.y + ..`.
+    fn element_sum(_self: Val<bevy::math::I16Vec2>) -> i16 {
+        let output: i16 = bevy::math::I16Vec2::element_sum(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a 3D vector from `self` and the given `z` value.
+    fn extend(_self: Val<bevy::math::I16Vec2>, z: i16) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec2::extend(
+                _self.into_inner(),
+                z,
+            )
+            .into();
+        output
+    }
+    ///  Creates a new vector from an array.
+    fn from_array(a: [i16; 2]) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::from_array(a).into();
+        output
+    }
+    ///  Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.
+    ///  A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
+    ///  into the first lowest bit, element `y` into the second, etc.
+    fn is_negative_bitmask(_self: Val<bevy::math::I16Vec2>) -> u32 {
+        let output: u32 = bevy::math::I16Vec2::is_negative_bitmask(_self.into_inner())
+            .into();
+        output
+    }
+    ///  Computes the squared length of `self`.
+    fn length_squared(_self: Val<bevy::math::I16Vec2>) -> i16 {
+        let output: i16 = bevy::math::I16Vec2::length_squared(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the maximum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+    fn max(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::max(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal maximum of `self`.
+    ///  In other words this computes `max(x, y, ..)`.
+    fn max_element(_self: Val<bevy::math::I16Vec2>) -> i16 {
+        let output: i16 = bevy::math::I16Vec2::max_element(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the minimum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+    fn min(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::min(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal minimum of `self`.
+    ///  In other words this computes `min(x, y, ..)`.
+    fn min_element(_self: Val<bevy::math::I16Vec2>) -> i16 {
+        let output: i16 = bevy::math::I16Vec2::min_element(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a new vector.
+    fn new(x: i16, y: i16) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::new(x, y).into();
+        output
+    }
+    ///  Returns a vector that is equal to `self` rotated by 90 degrees.
+    fn perp(_self: Val<bevy::math::I16Vec2>) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::perp(
+                _self.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  The perpendicular dot product of `self` and `rhs`.
+    ///  Also known as the wedge product, 2D cross product, and determinant.
+    fn perp_dot(_self: Val<bevy::math::I16Vec2>, rhs: Val<bevy::math::I16Vec2>) -> i16 {
+        let output: i16 = bevy::math::I16Vec2::perp_dot(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
+    ///  # Panics
+    ///  This function will panic if any `rhs` element is 0 or the division results in overflow.
+    ///  [Euclidean division]: i16::rem_euclid
+    fn rem_euclid(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::rem_euclid(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns `rhs` rotated by the angle of `self`. If `self` is normalized,
+    ///  then this just rotation. This is what you usually want. Otherwise,
+    ///  it will be like a rotation with a multiplication by `self`'s length.
+    fn rotate(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::rotate(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
+    fn saturating_add(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::saturating_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  In other words this computes `[self.x.saturating_add_unsigned(rhs.x), self.y.saturating_add_unsigned(rhs.y), ..]`.
+    fn saturating_add_unsigned(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::saturating_add_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
+    fn saturating_div(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::saturating_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
+    fn saturating_mul(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::saturating_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
+    fn saturating_sub(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::saturating_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating subtraction of `self` and unsigned vector `rhs`.
+    ///  In other words this computes `[self.x.saturating_sub_unsigned(rhs.x), self.y.saturating_sub_unsigned(rhs.y), ..]`.
+    fn saturating_sub_unsigned(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::saturating_sub_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+    ///  for each element of `self`.
+    ///  A true element in the mask uses the corresponding element from `if_true`, and false
+    ///  uses the element from `if_false`.
+    fn select(
+        mask: Val<bevy::math::BVec2>,
+        if_true: Val<bevy::math::I16Vec2>,
+        if_false: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::select(
+                mask.into_inner(),
+                if_true.into_inner(),
+                if_false.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector with elements representing the sign of `self`.
+    ///   - `0` if the number is zero
+    ///   - `1` if the number is positive
+    ///   - `-1` if the number is negative
+    fn signum(_self: Val<bevy::math::I16Vec2>) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::signum(
+                _self.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector with all elements set to `v`.
+    fn splat(v: i16) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::splat(v).into();
+        output
+    }
+    ///  `[x, y]`
+    fn to_array(_self: Ref<bevy::math::I16Vec2>) -> [i16; 2] {
+        let output: [i16; 2] = bevy::math::I16Vec2::to_array(&_self).into();
+        output
+    }
+    ///  Creates a 2D vector from `self` with the given value of `x`.
+    fn with_x(_self: Val<bevy::math::I16Vec2>, x: i16) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::with_x(
+                _self.into_inner(),
+                x,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 2D vector from `self` with the given value of `y`.
+    fn with_y(_self: Val<bevy::math::I16Vec2>, y: i16) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::with_y(
+                _self.into_inner(),
+                y,
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
+    fn wrapping_add(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::wrapping_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and unsigned vector `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add_unsigned(rhs.x), self.y.wrapping_add_unsigned(rhs.y), ..]`.
+    fn wrapping_add_unsigned(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::wrapping_add_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
+    fn wrapping_div(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::wrapping_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
+    fn wrapping_mul(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::wrapping_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
+    fn wrapping_sub(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::wrapping_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping subtraction of `self` and unsigned vector `rhs`.
+    ///  In other words this computes `[self.x.wrapping_sub_unsigned(rhs.x), self.y.wrapping_sub_unsigned(rhs.y), ..]`.
+    fn wrapping_sub_unsigned(
+        _self: Val<bevy::math::I16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec2::wrapping_sub_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+}
+#[script_bindings(
+    remote,
+    name = "i_16_vec_3_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::math::I16Vec3 {
+    ///  Returns a vector containing the absolute value of each element of `self`.
+    fn abs(_self: Val<bevy::math::I16Vec3>) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::abs(
+                _self.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `f64`.
+    fn as_dvec3(_self: Ref<bevy::math::I16Vec3>) -> Val<bevy::math::DVec3> {
+        let output: Val<bevy::math::DVec3> = bevy::math::I16Vec3::as_dvec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i64`.
+    fn as_i64vec3(_self: Ref<bevy::math::I16Vec3>) -> Val<bevy::math::I64Vec3> {
+        let output: Val<bevy::math::I64Vec3> = bevy::math::I16Vec3::as_i64vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec3(_self: Ref<bevy::math::I16Vec3>) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I16Vec3::as_i8vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i32`.
+    fn as_ivec3(_self: Ref<bevy::math::I16Vec3>) -> Val<bevy::math::IVec3> {
+        let output: Val<bevy::math::IVec3> = bevy::math::I16Vec3::as_ivec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec3(_self: Ref<bevy::math::I16Vec3>) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::I16Vec3::as_u16vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u64`.
+    fn as_u64vec3(_self: Ref<bevy::math::I16Vec3>) -> Val<bevy::math::U64Vec3> {
+        let output: Val<bevy::math::U64Vec3> = bevy::math::I16Vec3::as_u64vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec3(_self: Ref<bevy::math::I16Vec3>) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::I16Vec3::as_u8vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u32`.
+    fn as_uvec3(_self: Ref<bevy::math::I16Vec3>) -> Val<bevy::math::UVec3> {
+        let output: Val<bevy::math::UVec3> = bevy::math::I16Vec3::as_uvec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `f32`.
+    fn as_vec3(_self: Ref<bevy::math::I16Vec3>) -> Val<bevy::math::Vec3> {
+        let output: Val<bevy::math::Vec3> = bevy::math::I16Vec3::as_vec3(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `f32`.
+    fn as_vec3a(_self: Ref<bevy::math::I16Vec3>) -> Val<bevy::math::Vec3A> {
+        let output: Val<bevy::math::Vec3A> = bevy::math::I16Vec3::as_vec3a(&_self)
+            .into();
+        output
+    }
+    ///  Component-wise clamping of values, similar to [`i16::clamp`].
+    ///  Each element in `min` must be less-or-equal to the corresponding element in `max`.
+    ///  # Panics
+    ///  Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+    fn clamp(
+        _self: Val<bevy::math::I16Vec3>,
+        min: Val<bevy::math::I16Vec3>,
+        max: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::clamp(
+                _self.into_inner(),
+                min.into_inner(),
+                max.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `==` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+    ///  elements.
+    fn cmpeq(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::I16Vec3::cmpeq(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+    ///  elements.
+    fn cmpge(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::I16Vec3::cmpge(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+    ///  elements.
+    fn cmpgt(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::I16Vec3::cmpgt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+    ///  elements.
+    fn cmple(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::I16Vec3::cmple(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+    ///  elements.
+    fn cmplt(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::I16Vec3::cmplt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `!=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+    ///  elements.
+    fn cmpne(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::I16Vec3::cmpne(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Computes the cross product of `self` and `rhs`.
+    fn cross(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::cross(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Compute the squared euclidean distance between two points in space.
+    fn distance_squared(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> i16 {
+        let output: i16 = bevy::math::I16Vec3::distance_squared(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
+    ///  # Panics
+    ///  This function will panic if any `rhs` element is 0 or the division results in overflow.
+    fn div_euclid(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::div_euclid(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Computes the dot product of `self` and `rhs`.
+    fn dot(_self: Val<bevy::math::I16Vec3>, rhs: Val<bevy::math::I16Vec3>) -> i16 {
+        let output: i16 = bevy::math::I16Vec3::dot(_self.into_inner(), rhs.into_inner())
+            .into();
+        output
+    }
+    ///  Returns a vector where every component is the dot product of `self` and `rhs`.
+    fn dot_into_vec(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::dot_into_vec(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the product of all elements of `self`.
+    ///  In other words, this computes `self.x * self.y * ..`.
+    fn element_product(_self: Val<bevy::math::I16Vec3>) -> i16 {
+        let output: i16 = bevy::math::I16Vec3::element_product(_self.into_inner())
+            .into();
+        output
+    }
+    ///  Returns the sum of all elements of `self`.
+    ///  In other words, this computes `self.x + self.y + ..`.
+    fn element_sum(_self: Val<bevy::math::I16Vec3>) -> i16 {
+        let output: i16 = bevy::math::I16Vec3::element_sum(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a 4D vector from `self` and the given `w` value.
+    fn extend(_self: Val<bevy::math::I16Vec3>, w: i16) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec3::extend(
+                _self.into_inner(),
+                w,
+            )
+            .into();
+        output
+    }
+    ///  Creates a new vector from an array.
+    fn from_array(a: [i16; 3]) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::from_array(a).into();
+        output
+    }
+    ///  Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.
+    ///  A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
+    ///  into the first lowest bit, element `y` into the second, etc.
+    fn is_negative_bitmask(_self: Val<bevy::math::I16Vec3>) -> u32 {
+        let output: u32 = bevy::math::I16Vec3::is_negative_bitmask(_self.into_inner())
+            .into();
+        output
+    }
+    ///  Computes the squared length of `self`.
+    fn length_squared(_self: Val<bevy::math::I16Vec3>) -> i16 {
+        let output: i16 = bevy::math::I16Vec3::length_squared(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the maximum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+    fn max(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::max(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal maximum of `self`.
+    ///  In other words this computes `max(x, y, ..)`.
+    fn max_element(_self: Val<bevy::math::I16Vec3>) -> i16 {
+        let output: i16 = bevy::math::I16Vec3::max_element(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the minimum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+    fn min(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::min(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal minimum of `self`.
+    ///  In other words this computes `min(x, y, ..)`.
+    fn min_element(_self: Val<bevy::math::I16Vec3>) -> i16 {
+        let output: i16 = bevy::math::I16Vec3::min_element(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a new vector.
+    fn new(x: i16, y: i16, z: i16) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::new(x, y, z).into();
+        output
+    }
+    ///  Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
+    ///  # Panics
+    ///  This function will panic if any `rhs` element is 0 or the division results in overflow.
+    ///  [Euclidean division]: i16::rem_euclid
+    fn rem_euclid(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::rem_euclid(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
+    fn saturating_add(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::saturating_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  In other words this computes `[self.x.saturating_add_unsigned(rhs.x), self.y.saturating_add_unsigned(rhs.y), ..]`.
+    fn saturating_add_unsigned(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::saturating_add_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
+    fn saturating_div(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::saturating_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
+    fn saturating_mul(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::saturating_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
+    fn saturating_sub(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::saturating_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating subtraction of `self` and unsigned vector `rhs`.
+    ///  In other words this computes `[self.x.saturating_sub_unsigned(rhs.x), self.y.saturating_sub_unsigned(rhs.y), ..]`.
+    fn saturating_sub_unsigned(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::saturating_sub_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+    ///  for each element of `self`.
+    ///  A true element in the mask uses the corresponding element from `if_true`, and false
+    ///  uses the element from `if_false`.
+    fn select(
+        mask: Val<bevy::math::BVec3>,
+        if_true: Val<bevy::math::I16Vec3>,
+        if_false: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::select(
+                mask.into_inner(),
+                if_true.into_inner(),
+                if_false.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector with elements representing the sign of `self`.
+    ///   - `0` if the number is zero
+    ///   - `1` if the number is positive
+    ///   - `-1` if the number is negative
+    fn signum(_self: Val<bevy::math::I16Vec3>) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::signum(
+                _self.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector with all elements set to `v`.
+    fn splat(v: i16) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::splat(v).into();
+        output
+    }
+    ///  `[x, y, z]`
+    fn to_array(_self: Ref<bevy::math::I16Vec3>) -> [i16; 3] {
+        let output: [i16; 3] = bevy::math::I16Vec3::to_array(&_self).into();
+        output
+    }
+    ///  Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
+    ///  Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
+    fn truncate(_self: Val<bevy::math::I16Vec3>) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I16Vec3::truncate(
+                _self.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a 3D vector from `self` with the given value of `x`.
+    fn with_x(_self: Val<bevy::math::I16Vec3>, x: i16) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::with_x(
+                _self.into_inner(),
+                x,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 3D vector from `self` with the given value of `y`.
+    fn with_y(_self: Val<bevy::math::I16Vec3>, y: i16) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::with_y(
+                _self.into_inner(),
+                y,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 3D vector from `self` with the given value of `z`.
+    fn with_z(_self: Val<bevy::math::I16Vec3>, z: i16) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::with_z(
+                _self.into_inner(),
+                z,
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
+    fn wrapping_add(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::wrapping_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and unsigned vector `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add_unsigned(rhs.x), self.y.wrapping_add_unsigned(rhs.y), ..]`.
+    fn wrapping_add_unsigned(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::wrapping_add_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
+    fn wrapping_div(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::wrapping_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
+    fn wrapping_mul(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::wrapping_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
+    fn wrapping_sub(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::wrapping_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping subtraction of `self` and unsigned vector `rhs`.
+    ///  In other words this computes `[self.x.wrapping_sub_unsigned(rhs.x), self.y.wrapping_sub_unsigned(rhs.y), ..]`.
+    fn wrapping_sub_unsigned(
+        _self: Val<bevy::math::I16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec3::wrapping_sub_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+}
+#[script_bindings(
+    remote,
+    name = "i_16_vec_4_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::math::I16Vec4 {
+    ///  Returns a vector containing the absolute value of each element of `self`.
+    fn abs(_self: Val<bevy::math::I16Vec4>) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::abs(
+                _self.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `f64`.
+    fn as_dvec4(_self: Ref<bevy::math::I16Vec4>) -> Val<bevy::math::DVec4> {
+        let output: Val<bevy::math::DVec4> = bevy::math::I16Vec4::as_dvec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i64`.
+    fn as_i64vec4(_self: Ref<bevy::math::I16Vec4>) -> Val<bevy::math::I64Vec4> {
+        let output: Val<bevy::math::I64Vec4> = bevy::math::I16Vec4::as_i64vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec4(_self: Ref<bevy::math::I16Vec4>) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I16Vec4::as_i8vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i32`.
+    fn as_ivec4(_self: Ref<bevy::math::I16Vec4>) -> Val<bevy::math::IVec4> {
+        let output: Val<bevy::math::IVec4> = bevy::math::I16Vec4::as_ivec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec4(_self: Ref<bevy::math::I16Vec4>) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::I16Vec4::as_u16vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u64`.
+    fn as_u64vec4(_self: Ref<bevy::math::I16Vec4>) -> Val<bevy::math::U64Vec4> {
+        let output: Val<bevy::math::U64Vec4> = bevy::math::I16Vec4::as_u64vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec4(_self: Ref<bevy::math::I16Vec4>) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::I16Vec4::as_u8vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u32`.
+    fn as_uvec4(_self: Ref<bevy::math::I16Vec4>) -> Val<bevy::math::UVec4> {
+        let output: Val<bevy::math::UVec4> = bevy::math::I16Vec4::as_uvec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `f32`.
+    fn as_vec4(_self: Ref<bevy::math::I16Vec4>) -> Val<bevy::math::Vec4> {
+        let output: Val<bevy::math::Vec4> = bevy::math::I16Vec4::as_vec4(&_self).into();
+        output
+    }
+    ///  Component-wise clamping of values, similar to [`i16::clamp`].
+    ///  Each element in `min` must be less-or-equal to the corresponding element in `max`.
+    ///  # Panics
+    ///  Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+    fn clamp(
+        _self: Val<bevy::math::I16Vec4>,
+        min: Val<bevy::math::I16Vec4>,
+        max: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::clamp(
+                _self.into_inner(),
+                min.into_inner(),
+                max.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `==` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+    ///  elements.
+    fn cmpeq(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::I16Vec4::cmpeq(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+    ///  elements.
+    fn cmpge(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::I16Vec4::cmpge(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+    ///  elements.
+    fn cmpgt(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::I16Vec4::cmpgt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+    ///  elements.
+    fn cmple(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::I16Vec4::cmple(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+    ///  elements.
+    fn cmplt(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::I16Vec4::cmplt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `!=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+    ///  elements.
+    fn cmpne(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::I16Vec4::cmpne(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Compute the squared euclidean distance between two points in space.
+    fn distance_squared(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> i16 {
+        let output: i16 = bevy::math::I16Vec4::distance_squared(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
+    ///  # Panics
+    ///  This function will panic if any `rhs` element is 0 or the division results in overflow.
+    fn div_euclid(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::div_euclid(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Computes the dot product of `self` and `rhs`.
+    fn dot(_self: Val<bevy::math::I16Vec4>, rhs: Val<bevy::math::I16Vec4>) -> i16 {
+        let output: i16 = bevy::math::I16Vec4::dot(_self.into_inner(), rhs.into_inner())
+            .into();
+        output
+    }
+    ///  Returns a vector where every component is the dot product of `self` and `rhs`.
+    fn dot_into_vec(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::dot_into_vec(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the product of all elements of `self`.
+    ///  In other words, this computes `self.x * self.y * ..`.
+    fn element_product(_self: Val<bevy::math::I16Vec4>) -> i16 {
+        let output: i16 = bevy::math::I16Vec4::element_product(_self.into_inner())
+            .into();
+        output
+    }
+    ///  Returns the sum of all elements of `self`.
+    ///  In other words, this computes `self.x + self.y + ..`.
+    fn element_sum(_self: Val<bevy::math::I16Vec4>) -> i16 {
+        let output: i16 = bevy::math::I16Vec4::element_sum(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a new vector from an array.
+    fn from_array(a: [i16; 4]) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::from_array(a).into();
+        output
+    }
+    ///  Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.
+    ///  A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
+    ///  into the first lowest bit, element `y` into the second, etc.
+    fn is_negative_bitmask(_self: Val<bevy::math::I16Vec4>) -> u32 {
+        let output: u32 = bevy::math::I16Vec4::is_negative_bitmask(_self.into_inner())
+            .into();
+        output
+    }
+    ///  Computes the squared length of `self`.
+    fn length_squared(_self: Val<bevy::math::I16Vec4>) -> i16 {
+        let output: i16 = bevy::math::I16Vec4::length_squared(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the maximum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+    fn max(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::max(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal maximum of `self`.
+    ///  In other words this computes `max(x, y, ..)`.
+    fn max_element(_self: Val<bevy::math::I16Vec4>) -> i16 {
+        let output: i16 = bevy::math::I16Vec4::max_element(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the minimum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+    fn min(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::min(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal minimum of `self`.
+    ///  In other words this computes `min(x, y, ..)`.
+    fn min_element(_self: Val<bevy::math::I16Vec4>) -> i16 {
+        let output: i16 = bevy::math::I16Vec4::min_element(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a new vector.
+    fn new(x: i16, y: i16, z: i16, w: i16) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::new(x, y, z, w)
+            .into();
+        output
+    }
+    ///  Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
+    ///  # Panics
+    ///  This function will panic if any `rhs` element is 0 or the division results in overflow.
+    ///  [Euclidean division]: i16::rem_euclid
+    fn rem_euclid(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::rem_euclid(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
+    fn saturating_add(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::saturating_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  In other words this computes `[self.x.saturating_add_unsigned(rhs.x), self.y.saturating_add_unsigned(rhs.y), ..]`.
+    fn saturating_add_unsigned(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::saturating_add_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
+    fn saturating_div(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::saturating_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
+    fn saturating_mul(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::saturating_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
+    fn saturating_sub(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::saturating_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating subtraction of `self` and unsigned vector `rhs`.
+    ///  In other words this computes `[self.x.saturating_sub_unsigned(rhs.x), self.y.saturating_sub_unsigned(rhs.y), ..]`.
+    fn saturating_sub_unsigned(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::saturating_sub_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+    ///  for each element of `self`.
+    ///  A true element in the mask uses the corresponding element from `if_true`, and false
+    ///  uses the element from `if_false`.
+    fn select(
+        mask: Val<bevy::math::BVec4>,
+        if_true: Val<bevy::math::I16Vec4>,
+        if_false: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::select(
+                mask.into_inner(),
+                if_true.into_inner(),
+                if_false.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector with elements representing the sign of `self`.
+    ///   - `0` if the number is zero
+    ///   - `1` if the number is positive
+    ///   - `-1` if the number is negative
+    fn signum(_self: Val<bevy::math::I16Vec4>) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::signum(
+                _self.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector with all elements set to `v`.
+    fn splat(v: i16) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::splat(v).into();
+        output
+    }
+    ///  `[x, y, z, w]`
+    fn to_array(_self: Ref<bevy::math::I16Vec4>) -> [i16; 4] {
+        let output: [i16; 4] = bevy::math::I16Vec4::to_array(&_self).into();
+        output
+    }
+    ///  Creates a 3D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
+    ///  Truncation to [`I16Vec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
+    fn truncate(_self: Val<bevy::math::I16Vec4>) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I16Vec4::truncate(
+                _self.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a 4D vector from `self` with the given value of `w`.
+    fn with_w(_self: Val<bevy::math::I16Vec4>, w: i16) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::with_w(
+                _self.into_inner(),
+                w,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 4D vector from `self` with the given value of `x`.
+    fn with_x(_self: Val<bevy::math::I16Vec4>, x: i16) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::with_x(
+                _self.into_inner(),
+                x,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 4D vector from `self` with the given value of `y`.
+    fn with_y(_self: Val<bevy::math::I16Vec4>, y: i16) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::with_y(
+                _self.into_inner(),
+                y,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 4D vector from `self` with the given value of `z`.
+    fn with_z(_self: Val<bevy::math::I16Vec4>, z: i16) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::with_z(
+                _self.into_inner(),
+                z,
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
+    fn wrapping_add(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::wrapping_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and unsigned vector `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add_unsigned(rhs.x), self.y.wrapping_add_unsigned(rhs.y), ..]`.
+    fn wrapping_add_unsigned(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::wrapping_add_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
+    fn wrapping_div(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::wrapping_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
+    fn wrapping_mul(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::wrapping_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
+    fn wrapping_sub(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::wrapping_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping subtraction of `self` and unsigned vector `rhs`.
+    ///  In other words this computes `[self.x.wrapping_sub_unsigned(rhs.x), self.y.wrapping_sub_unsigned(rhs.y), ..]`.
+    fn wrapping_sub_unsigned(
+        _self: Val<bevy::math::I16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I16Vec4::wrapping_sub_unsigned(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+}
+#[script_bindings(
+    remote,
     name = "i_64_vec_2_functions",
     bms_core_path = "bevy_mod_scripting_core",
     generated
@@ -4710,36 +7309,21 @@ impl bevy::math::I64Vec2 {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::I64Vec2>,
-        rhs: Ref<bevy::math::I64Vec2>,
-    ) -> Val<bevy::math::I64Vec2> {
-        let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Add<
-            &bevy::math::I64Vec2,
-        >>::add(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<bevy::math::I64Vec2>,
-        rhs: Val<bevy::math::I64Vec2>,
-    ) -> Val<bevy::math::I64Vec2> {
-        let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Add<
-            bevy::math::I64Vec2,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn add(_self: Val<bevy::math::I64Vec2>, rhs: i64) -> Val<bevy::math::I64Vec2> {
-        let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Add<
-            i64,
-        >>::add(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Casts all elements of `self` to `f64`.
     fn as_dvec2(_self: Ref<bevy::math::I64Vec2>) -> Val<bevy::math::DVec2> {
         let output: Val<bevy::math::DVec2> = bevy::math::I64Vec2::as_dvec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec2(_self: Ref<bevy::math::I64Vec2>) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::I64Vec2::as_i16vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec2(_self: Ref<bevy::math::I64Vec2>) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::I64Vec2::as_i8vec2(&_self)
             .into();
         output
     }
@@ -4749,9 +7333,21 @@ impl bevy::math::I64Vec2 {
             .into();
         output
     }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec2(_self: Ref<bevy::math::I64Vec2>) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::I64Vec2::as_u16vec2(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `u64`.
     fn as_u64vec2(_self: Ref<bevy::math::I64Vec2>) -> Val<bevy::math::U64Vec2> {
         let output: Val<bevy::math::U64Vec2> = bevy::math::I64Vec2::as_u64vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec2(_self: Ref<bevy::math::I64Vec2>) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::I64Vec2::as_u8vec2(&_self)
             .into();
         output
     }
@@ -4764,13 +7360,6 @@ impl bevy::math::I64Vec2 {
     ///  Casts all elements of `self` to `f32`.
     fn as_vec2(_self: Ref<bevy::math::I64Vec2>) -> Val<bevy::math::Vec2> {
         let output: Val<bevy::math::Vec2> = bevy::math::I64Vec2::as_vec2(&_self).into();
-        output
-    }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::I64Vec2>) -> () {
-        let output: () = <bevy::math::I64Vec2 as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
         output
     }
     ///  Component-wise clamping of values, similar to [`i64::clamp`].
@@ -4786,13 +7375,6 @@ impl bevy::math::I64Vec2 {
                 _self.into_inner(),
                 min.into_inner(),
                 max.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::I64Vec2>) -> Val<bevy::math::I64Vec2> {
-        let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
             )
             .into();
         output
@@ -4899,33 +7481,6 @@ impl bevy::math::I64Vec2 {
             .into();
         output
     }
-    fn div(
-        _self: Val<bevy::math::I64Vec2>,
-        rhs: Ref<bevy::math::I64Vec2>,
-    ) -> Val<bevy::math::I64Vec2> {
-        let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Div<
-            &bevy::math::I64Vec2,
-        >>::div(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn div(
-        _self: Val<bevy::math::I64Vec2>,
-        rhs: Val<bevy::math::I64Vec2>,
-    ) -> Val<bevy::math::I64Vec2> {
-        let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Div<
-            bevy::math::I64Vec2,
-        >>::div(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn div(_self: Val<bevy::math::I64Vec2>, rhs: i64) -> Val<bevy::math::I64Vec2> {
-        let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Div<
-            i64,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
     ///  # Panics
     ///  This function will panic if any `rhs` element is 0 or the division results in overflow.
@@ -4969,13 +7524,6 @@ impl bevy::math::I64Vec2 {
     ///  In other words, this computes `self.x + self.y + ..`.
     fn element_sum(_self: Val<bevy::math::I64Vec2>) -> i64 {
         let output: i64 = bevy::math::I64Vec2::element_sum(_self.into_inner()).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::I64Vec2>, other: Ref<bevy::math::I64Vec2>) -> bool {
-        let output: bool = <bevy::math::I64Vec2 as std::cmp::PartialEq<
-            bevy::math::I64Vec2,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Creates a 3D vector from `self` and the given `z` value.
@@ -5043,40 +7591,6 @@ impl bevy::math::I64Vec2 {
         let output: i64 = bevy::math::I64Vec2::min_element(_self.into_inner()).into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::I64Vec2>,
-        rhs: Ref<bevy::math::I64Vec2>,
-    ) -> Val<bevy::math::I64Vec2> {
-        let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Mul<
-            &bevy::math::I64Vec2,
-        >>::mul(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::I64Vec2>,
-        rhs: Val<bevy::math::I64Vec2>,
-    ) -> Val<bevy::math::I64Vec2> {
-        let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Mul<
-            bevy::math::I64Vec2,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::I64Vec2>, rhs: i64) -> Val<bevy::math::I64Vec2> {
-        let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Mul<
-            i64,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
-    fn neg(_self: Val<bevy::math::I64Vec2>) -> Val<bevy::math::I64Vec2> {
-        let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Neg>::neg(
-                _self.into_inner(),
-            )
-            .into();
-        output
-    }
     ///  Creates a new vector.
     fn new(x: i64, y: i64) -> Val<bevy::math::I64Vec2> {
         let output: Val<bevy::math::I64Vec2> = bevy::math::I64Vec2::new(x, y).into();
@@ -5097,33 +7611,6 @@ impl bevy::math::I64Vec2 {
                 _self.into_inner(),
                 rhs.into_inner(),
             )
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::I64Vec2>,
-        rhs: Ref<bevy::math::I64Vec2>,
-    ) -> Val<bevy::math::I64Vec2> {
-        let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Rem<
-            &bevy::math::I64Vec2,
-        >>::rem(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::I64Vec2>,
-        rhs: Val<bevy::math::I64Vec2>,
-    ) -> Val<bevy::math::I64Vec2> {
-        let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Rem<
-            bevy::math::I64Vec2,
-        >>::rem(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn rem(_self: Val<bevy::math::I64Vec2>, rhs: i64) -> Val<bevy::math::I64Vec2> {
-        let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Rem<
-            i64,
-        >>::rem(_self.into_inner(), rhs)
             .into();
         output
     }
@@ -5266,33 +7753,6 @@ impl bevy::math::I64Vec2 {
         let output: Val<bevy::math::I64Vec2> = bevy::math::I64Vec2::splat(v).into();
         output
     }
-    fn sub(
-        _self: Val<bevy::math::I64Vec2>,
-        rhs: Ref<bevy::math::I64Vec2>,
-    ) -> Val<bevy::math::I64Vec2> {
-        let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Sub<
-            &bevy::math::I64Vec2,
-        >>::sub(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::I64Vec2>,
-        rhs: Val<bevy::math::I64Vec2>,
-    ) -> Val<bevy::math::I64Vec2> {
-        let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Sub<
-            bevy::math::I64Vec2,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn sub(_self: Val<bevy::math::I64Vec2>, rhs: i64) -> Val<bevy::math::I64Vec2> {
-        let output: Val<bevy::math::I64Vec2> = <bevy::math::I64Vec2 as std::ops::Sub<
-            i64,
-        >>::sub(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  `[x, y]`
     fn to_array(_self: Ref<bevy::math::I64Vec2>) -> [i64; 2] {
         let output: [i64; 2] = bevy::math::I64Vec2::to_array(&_self).into();
@@ -5410,36 +7870,21 @@ impl bevy::math::I64Vec3 {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::I64Vec3>,
-        rhs: Ref<bevy::math::I64Vec3>,
-    ) -> Val<bevy::math::I64Vec3> {
-        let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Add<
-            &bevy::math::I64Vec3,
-        >>::add(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<bevy::math::I64Vec3>,
-        rhs: Val<bevy::math::I64Vec3>,
-    ) -> Val<bevy::math::I64Vec3> {
-        let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Add<
-            bevy::math::I64Vec3,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn add(_self: Val<bevy::math::I64Vec3>, rhs: i64) -> Val<bevy::math::I64Vec3> {
-        let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Add<
-            i64,
-        >>::add(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Casts all elements of `self` to `f64`.
     fn as_dvec3(_self: Ref<bevy::math::I64Vec3>) -> Val<bevy::math::DVec3> {
         let output: Val<bevy::math::DVec3> = bevy::math::I64Vec3::as_dvec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec3(_self: Ref<bevy::math::I64Vec3>) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::I64Vec3::as_i16vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec3(_self: Ref<bevy::math::I64Vec3>) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::I64Vec3::as_i8vec3(&_self)
             .into();
         output
     }
@@ -5449,9 +7894,21 @@ impl bevy::math::I64Vec3 {
             .into();
         output
     }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec3(_self: Ref<bevy::math::I64Vec3>) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::I64Vec3::as_u16vec3(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `u64`.
     fn as_u64vec3(_self: Ref<bevy::math::I64Vec3>) -> Val<bevy::math::U64Vec3> {
         let output: Val<bevy::math::U64Vec3> = bevy::math::I64Vec3::as_u64vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec3(_self: Ref<bevy::math::I64Vec3>) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::I64Vec3::as_u8vec3(&_self)
             .into();
         output
     }
@@ -5472,13 +7929,6 @@ impl bevy::math::I64Vec3 {
             .into();
         output
     }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::I64Vec3>) -> () {
-        let output: () = <bevy::math::I64Vec3 as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
-        output
-    }
     ///  Component-wise clamping of values, similar to [`i64::clamp`].
     ///  Each element in `min` must be less-or-equal to the corresponding element in `max`.
     ///  # Panics
@@ -5492,13 +7942,6 @@ impl bevy::math::I64Vec3 {
                 _self.into_inner(),
                 min.into_inner(),
                 max.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::I64Vec3>) -> Val<bevy::math::I64Vec3> {
-        let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
             )
             .into();
         output
@@ -5617,33 +8060,6 @@ impl bevy::math::I64Vec3 {
             .into();
         output
     }
-    fn div(
-        _self: Val<bevy::math::I64Vec3>,
-        rhs: Ref<bevy::math::I64Vec3>,
-    ) -> Val<bevy::math::I64Vec3> {
-        let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Div<
-            &bevy::math::I64Vec3,
-        >>::div(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn div(
-        _self: Val<bevy::math::I64Vec3>,
-        rhs: Val<bevy::math::I64Vec3>,
-    ) -> Val<bevy::math::I64Vec3> {
-        let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Div<
-            bevy::math::I64Vec3,
-        >>::div(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn div(_self: Val<bevy::math::I64Vec3>, rhs: i64) -> Val<bevy::math::I64Vec3> {
-        let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Div<
-            i64,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
     ///  # Panics
     ///  This function will panic if any `rhs` element is 0 or the division results in overflow.
@@ -5687,13 +8103,6 @@ impl bevy::math::I64Vec3 {
     ///  In other words, this computes `self.x + self.y + ..`.
     fn element_sum(_self: Val<bevy::math::I64Vec3>) -> i64 {
         let output: i64 = bevy::math::I64Vec3::element_sum(_self.into_inner()).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::I64Vec3>, other: Ref<bevy::math::I64Vec3>) -> bool {
-        let output: bool = <bevy::math::I64Vec3 as std::cmp::PartialEq<
-            bevy::math::I64Vec3,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Creates a 4D vector from `self` and the given `w` value.
@@ -5761,70 +8170,9 @@ impl bevy::math::I64Vec3 {
         let output: i64 = bevy::math::I64Vec3::min_element(_self.into_inner()).into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::I64Vec3>,
-        rhs: Ref<bevy::math::I64Vec3>,
-    ) -> Val<bevy::math::I64Vec3> {
-        let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Mul<
-            &bevy::math::I64Vec3,
-        >>::mul(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::I64Vec3>,
-        rhs: Val<bevy::math::I64Vec3>,
-    ) -> Val<bevy::math::I64Vec3> {
-        let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Mul<
-            bevy::math::I64Vec3,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::I64Vec3>, rhs: i64) -> Val<bevy::math::I64Vec3> {
-        let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Mul<
-            i64,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
-    fn neg(_self: Val<bevy::math::I64Vec3>) -> Val<bevy::math::I64Vec3> {
-        let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Neg>::neg(
-                _self.into_inner(),
-            )
-            .into();
-        output
-    }
     ///  Creates a new vector.
     fn new(x: i64, y: i64, z: i64) -> Val<bevy::math::I64Vec3> {
         let output: Val<bevy::math::I64Vec3> = bevy::math::I64Vec3::new(x, y, z).into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::I64Vec3>,
-        rhs: Ref<bevy::math::I64Vec3>,
-    ) -> Val<bevy::math::I64Vec3> {
-        let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Rem<
-            &bevy::math::I64Vec3,
-        >>::rem(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::I64Vec3>,
-        rhs: Val<bevy::math::I64Vec3>,
-    ) -> Val<bevy::math::I64Vec3> {
-        let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Rem<
-            bevy::math::I64Vec3,
-        >>::rem(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn rem(_self: Val<bevy::math::I64Vec3>, rhs: i64) -> Val<bevy::math::I64Vec3> {
-        let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Rem<
-            i64,
-        >>::rem(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
@@ -5950,33 +8298,6 @@ impl bevy::math::I64Vec3 {
     ///  Creates a vector with all elements set to `v`.
     fn splat(v: i64) -> Val<bevy::math::I64Vec3> {
         let output: Val<bevy::math::I64Vec3> = bevy::math::I64Vec3::splat(v).into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::I64Vec3>,
-        rhs: Ref<bevy::math::I64Vec3>,
-    ) -> Val<bevy::math::I64Vec3> {
-        let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Sub<
-            &bevy::math::I64Vec3,
-        >>::sub(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::I64Vec3>,
-        rhs: Val<bevy::math::I64Vec3>,
-    ) -> Val<bevy::math::I64Vec3> {
-        let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Sub<
-            bevy::math::I64Vec3,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn sub(_self: Val<bevy::math::I64Vec3>, rhs: i64) -> Val<bevy::math::I64Vec3> {
-        let output: Val<bevy::math::I64Vec3> = <bevy::math::I64Vec3 as std::ops::Sub<
-            i64,
-        >>::sub(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  `[x, y, z]`
@@ -6114,36 +8435,21 @@ impl bevy::math::I64Vec4 {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::I64Vec4>,
-        rhs: Ref<bevy::math::I64Vec4>,
-    ) -> Val<bevy::math::I64Vec4> {
-        let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Add<
-            &bevy::math::I64Vec4,
-        >>::add(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<bevy::math::I64Vec4>,
-        rhs: Val<bevy::math::I64Vec4>,
-    ) -> Val<bevy::math::I64Vec4> {
-        let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Add<
-            bevy::math::I64Vec4,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn add(_self: Val<bevy::math::I64Vec4>, rhs: i64) -> Val<bevy::math::I64Vec4> {
-        let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Add<
-            i64,
-        >>::add(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Casts all elements of `self` to `f64`.
     fn as_dvec4(_self: Ref<bevy::math::I64Vec4>) -> Val<bevy::math::DVec4> {
         let output: Val<bevy::math::DVec4> = bevy::math::I64Vec4::as_dvec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec4(_self: Ref<bevy::math::I64Vec4>) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::I64Vec4::as_i16vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec4(_self: Ref<bevy::math::I64Vec4>) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::I64Vec4::as_i8vec4(&_self)
             .into();
         output
     }
@@ -6153,9 +8459,21 @@ impl bevy::math::I64Vec4 {
             .into();
         output
     }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec4(_self: Ref<bevy::math::I64Vec4>) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::I64Vec4::as_u16vec4(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `u64`.
     fn as_u64vec4(_self: Ref<bevy::math::I64Vec4>) -> Val<bevy::math::U64Vec4> {
         let output: Val<bevy::math::U64Vec4> = bevy::math::I64Vec4::as_u64vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec4(_self: Ref<bevy::math::I64Vec4>) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::I64Vec4::as_u8vec4(&_self)
             .into();
         output
     }
@@ -6168,13 +8486,6 @@ impl bevy::math::I64Vec4 {
     ///  Casts all elements of `self` to `f32`.
     fn as_vec4(_self: Ref<bevy::math::I64Vec4>) -> Val<bevy::math::Vec4> {
         let output: Val<bevy::math::Vec4> = bevy::math::I64Vec4::as_vec4(&_self).into();
-        output
-    }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::I64Vec4>) -> () {
-        let output: () = <bevy::math::I64Vec4 as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
         output
     }
     ///  Component-wise clamping of values, similar to [`i64::clamp`].
@@ -6190,13 +8501,6 @@ impl bevy::math::I64Vec4 {
                 _self.into_inner(),
                 min.into_inner(),
                 max.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::I64Vec4>) -> Val<bevy::math::I64Vec4> {
-        let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
             )
             .into();
         output
@@ -6303,33 +8607,6 @@ impl bevy::math::I64Vec4 {
             .into();
         output
     }
-    fn div(
-        _self: Val<bevy::math::I64Vec4>,
-        rhs: Ref<bevy::math::I64Vec4>,
-    ) -> Val<bevy::math::I64Vec4> {
-        let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Div<
-            &bevy::math::I64Vec4,
-        >>::div(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn div(
-        _self: Val<bevy::math::I64Vec4>,
-        rhs: Val<bevy::math::I64Vec4>,
-    ) -> Val<bevy::math::I64Vec4> {
-        let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Div<
-            bevy::math::I64Vec4,
-        >>::div(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn div(_self: Val<bevy::math::I64Vec4>, rhs: i64) -> Val<bevy::math::I64Vec4> {
-        let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Div<
-            i64,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
     ///  # Panics
     ///  This function will panic if any `rhs` element is 0 or the division results in overflow.
@@ -6373,13 +8650,6 @@ impl bevy::math::I64Vec4 {
     ///  In other words, this computes `self.x + self.y + ..`.
     fn element_sum(_self: Val<bevy::math::I64Vec4>) -> i64 {
         let output: i64 = bevy::math::I64Vec4::element_sum(_self.into_inner()).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::I64Vec4>, other: Ref<bevy::math::I64Vec4>) -> bool {
-        let output: bool = <bevy::math::I64Vec4 as std::cmp::PartialEq<
-            bevy::math::I64Vec4,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Creates a new vector from an array.
@@ -6438,70 +8708,9 @@ impl bevy::math::I64Vec4 {
         let output: i64 = bevy::math::I64Vec4::min_element(_self.into_inner()).into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::I64Vec4>,
-        rhs: Ref<bevy::math::I64Vec4>,
-    ) -> Val<bevy::math::I64Vec4> {
-        let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Mul<
-            &bevy::math::I64Vec4,
-        >>::mul(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::I64Vec4>,
-        rhs: Val<bevy::math::I64Vec4>,
-    ) -> Val<bevy::math::I64Vec4> {
-        let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Mul<
-            bevy::math::I64Vec4,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::I64Vec4>, rhs: i64) -> Val<bevy::math::I64Vec4> {
-        let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Mul<
-            i64,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
-    fn neg(_self: Val<bevy::math::I64Vec4>) -> Val<bevy::math::I64Vec4> {
-        let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Neg>::neg(
-                _self.into_inner(),
-            )
-            .into();
-        output
-    }
     ///  Creates a new vector.
     fn new(x: i64, y: i64, z: i64, w: i64) -> Val<bevy::math::I64Vec4> {
         let output: Val<bevy::math::I64Vec4> = bevy::math::I64Vec4::new(x, y, z, w)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::I64Vec4>,
-        rhs: Ref<bevy::math::I64Vec4>,
-    ) -> Val<bevy::math::I64Vec4> {
-        let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Rem<
-            &bevy::math::I64Vec4,
-        >>::rem(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::I64Vec4>,
-        rhs: Val<bevy::math::I64Vec4>,
-    ) -> Val<bevy::math::I64Vec4> {
-        let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Rem<
-            bevy::math::I64Vec4,
-        >>::rem(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn rem(_self: Val<bevy::math::I64Vec4>, rhs: i64) -> Val<bevy::math::I64Vec4> {
-        let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Rem<
-            i64,
-        >>::rem(_self.into_inner(), rhs)
             .into();
         output
     }
@@ -6628,33 +8837,6 @@ impl bevy::math::I64Vec4 {
     ///  Creates a vector with all elements set to `v`.
     fn splat(v: i64) -> Val<bevy::math::I64Vec4> {
         let output: Val<bevy::math::I64Vec4> = bevy::math::I64Vec4::splat(v).into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::I64Vec4>,
-        rhs: Ref<bevy::math::I64Vec4>,
-    ) -> Val<bevy::math::I64Vec4> {
-        let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Sub<
-            &bevy::math::I64Vec4,
-        >>::sub(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::I64Vec4>,
-        rhs: Val<bevy::math::I64Vec4>,
-    ) -> Val<bevy::math::I64Vec4> {
-        let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Sub<
-            bevy::math::I64Vec4,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn sub(_self: Val<bevy::math::I64Vec4>, rhs: i64) -> Val<bevy::math::I64Vec4> {
-        let output: Val<bevy::math::I64Vec4> = <bevy::math::I64Vec4 as std::ops::Sub<
-            i64,
-        >>::sub(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  `[x, y, z, w]`
@@ -6793,36 +8975,15 @@ impl bevy::math::I64Vec4 {
     generated
 )]
 impl bevy::math::UVec2 {
-    fn add(
-        _self: Val<bevy::math::UVec2>,
-        rhs: Ref<bevy::math::UVec2>,
-    ) -> Val<bevy::math::UVec2> {
-        let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Add<
-            &bevy::math::UVec2,
-        >>::add(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<bevy::math::UVec2>,
-        rhs: Val<bevy::math::UVec2>,
-    ) -> Val<bevy::math::UVec2> {
-        let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Add<
-            bevy::math::UVec2,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn add(_self: Val<bevy::math::UVec2>, rhs: u32) -> Val<bevy::math::UVec2> {
-        let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Add<
-            u32,
-        >>::add(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Casts all elements of `self` to `f64`.
     fn as_dvec2(_self: Ref<bevy::math::UVec2>) -> Val<bevy::math::DVec2> {
         let output: Val<bevy::math::DVec2> = bevy::math::UVec2::as_dvec2(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec2(_self: Ref<bevy::math::UVec2>) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::UVec2::as_i16vec2(&_self)
+            .into();
         output
     }
     ///  Casts all elements of `self` to `i64`.
@@ -6831,9 +8992,21 @@ impl bevy::math::UVec2 {
             .into();
         output
     }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec2(_self: Ref<bevy::math::UVec2>) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::UVec2::as_i8vec2(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `i32`.
     fn as_ivec2(_self: Ref<bevy::math::UVec2>) -> Val<bevy::math::IVec2> {
         let output: Val<bevy::math::IVec2> = bevy::math::UVec2::as_ivec2(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec2(_self: Ref<bevy::math::UVec2>) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::UVec2::as_u16vec2(&_self)
+            .into();
         output
     }
     ///  Casts all elements of `self` to `u64`.
@@ -6842,16 +9015,15 @@ impl bevy::math::UVec2 {
             .into();
         output
     }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec2(_self: Ref<bevy::math::UVec2>) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::UVec2::as_u8vec2(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `f32`.
     fn as_vec2(_self: Ref<bevy::math::UVec2>) -> Val<bevy::math::Vec2> {
         let output: Val<bevy::math::Vec2> = bevy::math::UVec2::as_vec2(&_self).into();
-        output
-    }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::UVec2>) -> () {
-        let output: () = <bevy::math::UVec2 as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
         output
     }
     ///  Component-wise clamping of values, similar to [`u32::clamp`].
@@ -6867,13 +9039,6 @@ impl bevy::math::UVec2 {
                 _self.into_inner(),
                 min.into_inner(),
                 max.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::UVec2>) -> Val<bevy::math::UVec2> {
-        let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
             )
             .into();
         output
@@ -6968,33 +9133,6 @@ impl bevy::math::UVec2 {
             .into();
         output
     }
-    fn div(
-        _self: Val<bevy::math::UVec2>,
-        rhs: Ref<bevy::math::UVec2>,
-    ) -> Val<bevy::math::UVec2> {
-        let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Div<
-            &bevy::math::UVec2,
-        >>::div(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn div(
-        _self: Val<bevy::math::UVec2>,
-        rhs: Val<bevy::math::UVec2>,
-    ) -> Val<bevy::math::UVec2> {
-        let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Div<
-            bevy::math::UVec2,
-        >>::div(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn div(_self: Val<bevy::math::UVec2>, rhs: u32) -> Val<bevy::math::UVec2> {
-        let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Div<
-            u32,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Computes the dot product of `self` and `rhs`.
     fn dot(_self: Val<bevy::math::UVec2>, rhs: Val<bevy::math::UVec2>) -> u32 {
         let output: u32 = bevy::math::UVec2::dot(_self.into_inner(), rhs.into_inner())
@@ -7023,13 +9161,6 @@ impl bevy::math::UVec2 {
     ///  In other words, this computes `self.x + self.y + ..`.
     fn element_sum(_self: Val<bevy::math::UVec2>) -> u32 {
         let output: u32 = bevy::math::UVec2::element_sum(_self.into_inner()).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::UVec2>, other: Ref<bevy::math::UVec2>) -> bool {
-        let output: bool = <bevy::math::UVec2 as std::cmp::PartialEq<
-            bevy::math::UVec2,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Creates a 3D vector from `self` and the given `z` value.
@@ -7089,63 +9220,9 @@ impl bevy::math::UVec2 {
         let output: u32 = bevy::math::UVec2::min_element(_self.into_inner()).into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::UVec2>,
-        rhs: Ref<bevy::math::UVec2>,
-    ) -> Val<bevy::math::UVec2> {
-        let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Mul<
-            &bevy::math::UVec2,
-        >>::mul(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::UVec2>,
-        rhs: Val<bevy::math::UVec2>,
-    ) -> Val<bevy::math::UVec2> {
-        let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Mul<
-            bevy::math::UVec2,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::UVec2>, rhs: u32) -> Val<bevy::math::UVec2> {
-        let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Mul<
-            u32,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Creates a new vector.
     fn new(x: u32, y: u32) -> Val<bevy::math::UVec2> {
         let output: Val<bevy::math::UVec2> = bevy::math::UVec2::new(x, y).into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::UVec2>,
-        rhs: Ref<bevy::math::UVec2>,
-    ) -> Val<bevy::math::UVec2> {
-        let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Rem<
-            &bevy::math::UVec2,
-        >>::rem(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::UVec2>,
-        rhs: Val<bevy::math::UVec2>,
-    ) -> Val<bevy::math::UVec2> {
-        let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Rem<
-            bevy::math::UVec2,
-        >>::rem(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn rem(_self: Val<bevy::math::UVec2>, rhs: u32) -> Val<bevy::math::UVec2> {
-        let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Rem<
-            u32,
-        >>::rem(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  Returns a vector containing the saturating addition of `self` and `rhs`.
@@ -7233,33 +9310,6 @@ impl bevy::math::UVec2 {
     ///  Creates a vector with all elements set to `v`.
     fn splat(v: u32) -> Val<bevy::math::UVec2> {
         let output: Val<bevy::math::UVec2> = bevy::math::UVec2::splat(v).into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::UVec2>,
-        rhs: Ref<bevy::math::UVec2>,
-    ) -> Val<bevy::math::UVec2> {
-        let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Sub<
-            &bevy::math::UVec2,
-        >>::sub(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::UVec2>,
-        rhs: Val<bevy::math::UVec2>,
-    ) -> Val<bevy::math::UVec2> {
-        let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Sub<
-            bevy::math::UVec2,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn sub(_self: Val<bevy::math::UVec2>, rhs: u32) -> Val<bevy::math::UVec2> {
-        let output: Val<bevy::math::UVec2> = <bevy::math::UVec2 as std::ops::Sub<
-            u32,
-        >>::sub(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  `[x, y]`
@@ -7358,36 +9408,15 @@ impl bevy::math::UVec2 {
     generated
 )]
 impl bevy::math::UVec3 {
-    fn add(
-        _self: Val<bevy::math::UVec3>,
-        rhs: Ref<bevy::math::UVec3>,
-    ) -> Val<bevy::math::UVec3> {
-        let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Add<
-            &bevy::math::UVec3,
-        >>::add(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<bevy::math::UVec3>,
-        rhs: Val<bevy::math::UVec3>,
-    ) -> Val<bevy::math::UVec3> {
-        let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Add<
-            bevy::math::UVec3,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn add(_self: Val<bevy::math::UVec3>, rhs: u32) -> Val<bevy::math::UVec3> {
-        let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Add<
-            u32,
-        >>::add(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Casts all elements of `self` to `f64`.
     fn as_dvec3(_self: Ref<bevy::math::UVec3>) -> Val<bevy::math::DVec3> {
         let output: Val<bevy::math::DVec3> = bevy::math::UVec3::as_dvec3(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec3(_self: Ref<bevy::math::UVec3>) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::UVec3::as_i16vec3(&_self)
+            .into();
         output
     }
     ///  Casts all elements of `self` to `i64`.
@@ -7396,14 +9425,32 @@ impl bevy::math::UVec3 {
             .into();
         output
     }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec3(_self: Ref<bevy::math::UVec3>) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::UVec3::as_i8vec3(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `i32`.
     fn as_ivec3(_self: Ref<bevy::math::UVec3>) -> Val<bevy::math::IVec3> {
         let output: Val<bevy::math::IVec3> = bevy::math::UVec3::as_ivec3(&_self).into();
         output
     }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec3(_self: Ref<bevy::math::UVec3>) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::UVec3::as_u16vec3(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `u64`.
     fn as_u64vec3(_self: Ref<bevy::math::UVec3>) -> Val<bevy::math::U64Vec3> {
         let output: Val<bevy::math::U64Vec3> = bevy::math::UVec3::as_u64vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec3(_self: Ref<bevy::math::UVec3>) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::UVec3::as_u8vec3(&_self)
             .into();
         output
     }
@@ -7415,13 +9462,6 @@ impl bevy::math::UVec3 {
     ///  Casts all elements of `self` to `f32`.
     fn as_vec3a(_self: Ref<bevy::math::UVec3>) -> Val<bevy::math::Vec3A> {
         let output: Val<bevy::math::Vec3A> = bevy::math::UVec3::as_vec3a(&_self).into();
-        output
-    }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::UVec3>) -> () {
-        let output: () = <bevy::math::UVec3 as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
         output
     }
     ///  Component-wise clamping of values, similar to [`u32::clamp`].
@@ -7437,13 +9477,6 @@ impl bevy::math::UVec3 {
                 _self.into_inner(),
                 min.into_inner(),
                 max.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::UVec3>) -> Val<bevy::math::UVec3> {
-        let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
             )
             .into();
         output
@@ -7550,33 +9583,6 @@ impl bevy::math::UVec3 {
             .into();
         output
     }
-    fn div(
-        _self: Val<bevy::math::UVec3>,
-        rhs: Ref<bevy::math::UVec3>,
-    ) -> Val<bevy::math::UVec3> {
-        let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Div<
-            &bevy::math::UVec3,
-        >>::div(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn div(
-        _self: Val<bevy::math::UVec3>,
-        rhs: Val<bevy::math::UVec3>,
-    ) -> Val<bevy::math::UVec3> {
-        let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Div<
-            bevy::math::UVec3,
-        >>::div(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn div(_self: Val<bevy::math::UVec3>, rhs: u32) -> Val<bevy::math::UVec3> {
-        let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Div<
-            u32,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Computes the dot product of `self` and `rhs`.
     fn dot(_self: Val<bevy::math::UVec3>, rhs: Val<bevy::math::UVec3>) -> u32 {
         let output: u32 = bevy::math::UVec3::dot(_self.into_inner(), rhs.into_inner())
@@ -7605,13 +9611,6 @@ impl bevy::math::UVec3 {
     ///  In other words, this computes `self.x + self.y + ..`.
     fn element_sum(_self: Val<bevy::math::UVec3>) -> u32 {
         let output: u32 = bevy::math::UVec3::element_sum(_self.into_inner()).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::UVec3>, other: Ref<bevy::math::UVec3>) -> bool {
-        let output: bool = <bevy::math::UVec3 as std::cmp::PartialEq<
-            bevy::math::UVec3,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Creates a 4D vector from `self` and the given `w` value.
@@ -7671,63 +9670,9 @@ impl bevy::math::UVec3 {
         let output: u32 = bevy::math::UVec3::min_element(_self.into_inner()).into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::UVec3>,
-        rhs: Ref<bevy::math::UVec3>,
-    ) -> Val<bevy::math::UVec3> {
-        let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Mul<
-            &bevy::math::UVec3,
-        >>::mul(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::UVec3>,
-        rhs: Val<bevy::math::UVec3>,
-    ) -> Val<bevy::math::UVec3> {
-        let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Mul<
-            bevy::math::UVec3,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::UVec3>, rhs: u32) -> Val<bevy::math::UVec3> {
-        let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Mul<
-            u32,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Creates a new vector.
     fn new(x: u32, y: u32, z: u32) -> Val<bevy::math::UVec3> {
         let output: Val<bevy::math::UVec3> = bevy::math::UVec3::new(x, y, z).into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::UVec3>,
-        rhs: Ref<bevy::math::UVec3>,
-    ) -> Val<bevy::math::UVec3> {
-        let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Rem<
-            &bevy::math::UVec3,
-        >>::rem(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::UVec3>,
-        rhs: Val<bevy::math::UVec3>,
-    ) -> Val<bevy::math::UVec3> {
-        let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Rem<
-            bevy::math::UVec3,
-        >>::rem(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn rem(_self: Val<bevy::math::UVec3>, rhs: u32) -> Val<bevy::math::UVec3> {
-        let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Rem<
-            u32,
-        >>::rem(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  Returns a vector containing the saturating addition of `self` and `rhs`.
@@ -7815,33 +9760,6 @@ impl bevy::math::UVec3 {
     ///  Creates a vector with all elements set to `v`.
     fn splat(v: u32) -> Val<bevy::math::UVec3> {
         let output: Val<bevy::math::UVec3> = bevy::math::UVec3::splat(v).into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::UVec3>,
-        rhs: Ref<bevy::math::UVec3>,
-    ) -> Val<bevy::math::UVec3> {
-        let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Sub<
-            &bevy::math::UVec3,
-        >>::sub(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::UVec3>,
-        rhs: Val<bevy::math::UVec3>,
-    ) -> Val<bevy::math::UVec3> {
-        let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Sub<
-            bevy::math::UVec3,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn sub(_self: Val<bevy::math::UVec3>, rhs: u32) -> Val<bevy::math::UVec3> {
-        let output: Val<bevy::math::UVec3> = <bevy::math::UVec3 as std::ops::Sub<
-            u32,
-        >>::sub(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  `[x, y, z]`
@@ -7958,36 +9876,15 @@ impl bevy::math::UVec3 {
     generated
 )]
 impl bevy::math::UVec4 {
-    fn add(
-        _self: Val<bevy::math::UVec4>,
-        rhs: Ref<bevy::math::UVec4>,
-    ) -> Val<bevy::math::UVec4> {
-        let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Add<
-            &bevy::math::UVec4,
-        >>::add(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<bevy::math::UVec4>,
-        rhs: Val<bevy::math::UVec4>,
-    ) -> Val<bevy::math::UVec4> {
-        let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Add<
-            bevy::math::UVec4,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn add(_self: Val<bevy::math::UVec4>, rhs: u32) -> Val<bevy::math::UVec4> {
-        let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Add<
-            u32,
-        >>::add(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Casts all elements of `self` to `f64`.
     fn as_dvec4(_self: Ref<bevy::math::UVec4>) -> Val<bevy::math::DVec4> {
         let output: Val<bevy::math::DVec4> = bevy::math::UVec4::as_dvec4(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec4(_self: Ref<bevy::math::UVec4>) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::UVec4::as_i16vec4(&_self)
+            .into();
         output
     }
     ///  Casts all elements of `self` to `i64`.
@@ -7996,9 +9893,21 @@ impl bevy::math::UVec4 {
             .into();
         output
     }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec4(_self: Ref<bevy::math::UVec4>) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::UVec4::as_i8vec4(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `i32`.
     fn as_ivec4(_self: Ref<bevy::math::UVec4>) -> Val<bevy::math::IVec4> {
         let output: Val<bevy::math::IVec4> = bevy::math::UVec4::as_ivec4(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec4(_self: Ref<bevy::math::UVec4>) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::UVec4::as_u16vec4(&_self)
+            .into();
         output
     }
     ///  Casts all elements of `self` to `u64`.
@@ -8007,16 +9916,15 @@ impl bevy::math::UVec4 {
             .into();
         output
     }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec4(_self: Ref<bevy::math::UVec4>) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::UVec4::as_u8vec4(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `f32`.
     fn as_vec4(_self: Ref<bevy::math::UVec4>) -> Val<bevy::math::Vec4> {
         let output: Val<bevy::math::Vec4> = bevy::math::UVec4::as_vec4(&_self).into();
-        output
-    }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::UVec4>) -> () {
-        let output: () = <bevy::math::UVec4 as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
         output
     }
     ///  Component-wise clamping of values, similar to [`u32::clamp`].
@@ -8032,13 +9940,6 @@ impl bevy::math::UVec4 {
                 _self.into_inner(),
                 min.into_inner(),
                 max.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::UVec4>) -> Val<bevy::math::UVec4> {
-        let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
             )
             .into();
         output
@@ -8133,33 +10034,6 @@ impl bevy::math::UVec4 {
             .into();
         output
     }
-    fn div(
-        _self: Val<bevy::math::UVec4>,
-        rhs: Ref<bevy::math::UVec4>,
-    ) -> Val<bevy::math::UVec4> {
-        let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Div<
-            &bevy::math::UVec4,
-        >>::div(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn div(
-        _self: Val<bevy::math::UVec4>,
-        rhs: Val<bevy::math::UVec4>,
-    ) -> Val<bevy::math::UVec4> {
-        let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Div<
-            bevy::math::UVec4,
-        >>::div(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn div(_self: Val<bevy::math::UVec4>, rhs: u32) -> Val<bevy::math::UVec4> {
-        let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Div<
-            u32,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Computes the dot product of `self` and `rhs`.
     fn dot(_self: Val<bevy::math::UVec4>, rhs: Val<bevy::math::UVec4>) -> u32 {
         let output: u32 = bevy::math::UVec4::dot(_self.into_inner(), rhs.into_inner())
@@ -8188,13 +10062,6 @@ impl bevy::math::UVec4 {
     ///  In other words, this computes `self.x + self.y + ..`.
     fn element_sum(_self: Val<bevy::math::UVec4>) -> u32 {
         let output: u32 = bevy::math::UVec4::element_sum(_self.into_inner()).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::UVec4>, other: Ref<bevy::math::UVec4>) -> bool {
-        let output: bool = <bevy::math::UVec4 as std::cmp::PartialEq<
-            bevy::math::UVec4,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Creates a new vector from an array.
@@ -8245,63 +10112,9 @@ impl bevy::math::UVec4 {
         let output: u32 = bevy::math::UVec4::min_element(_self.into_inner()).into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::UVec4>,
-        rhs: Ref<bevy::math::UVec4>,
-    ) -> Val<bevy::math::UVec4> {
-        let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Mul<
-            &bevy::math::UVec4,
-        >>::mul(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::UVec4>,
-        rhs: Val<bevy::math::UVec4>,
-    ) -> Val<bevy::math::UVec4> {
-        let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Mul<
-            bevy::math::UVec4,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::UVec4>, rhs: u32) -> Val<bevy::math::UVec4> {
-        let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Mul<
-            u32,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Creates a new vector.
     fn new(x: u32, y: u32, z: u32, w: u32) -> Val<bevy::math::UVec4> {
         let output: Val<bevy::math::UVec4> = bevy::math::UVec4::new(x, y, z, w).into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::UVec4>,
-        rhs: Ref<bevy::math::UVec4>,
-    ) -> Val<bevy::math::UVec4> {
-        let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Rem<
-            &bevy::math::UVec4,
-        >>::rem(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::UVec4>,
-        rhs: Val<bevy::math::UVec4>,
-    ) -> Val<bevy::math::UVec4> {
-        let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Rem<
-            bevy::math::UVec4,
-        >>::rem(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn rem(_self: Val<bevy::math::UVec4>, rhs: u32) -> Val<bevy::math::UVec4> {
-        let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Rem<
-            u32,
-        >>::rem(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  Returns a vector containing the saturating addition of `self` and `rhs`.
@@ -8389,33 +10202,6 @@ impl bevy::math::UVec4 {
     ///  Creates a vector with all elements set to `v`.
     fn splat(v: u32) -> Val<bevy::math::UVec4> {
         let output: Val<bevy::math::UVec4> = bevy::math::UVec4::splat(v).into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::UVec4>,
-        rhs: Ref<bevy::math::UVec4>,
-    ) -> Val<bevy::math::UVec4> {
-        let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Sub<
-            &bevy::math::UVec4,
-        >>::sub(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::UVec4>,
-        rhs: Val<bevy::math::UVec4>,
-    ) -> Val<bevy::math::UVec4> {
-        let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Sub<
-            bevy::math::UVec4,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn sub(_self: Val<bevy::math::UVec4>, rhs: u32) -> Val<bevy::math::UVec4> {
-        let output: Val<bevy::math::UVec4> = <bevy::math::UVec4 as std::ops::Sub<
-            u32,
-        >>::sub(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  `[x, y, z, w]`
@@ -8536,41 +10322,2732 @@ impl bevy::math::UVec4 {
 }
 #[script_bindings(
     remote,
+    name = "u_8_vec_2_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::math::U8Vec2 {
+    ///  Casts all elements of `self` to `f64`.
+    fn as_dvec2(_self: Ref<bevy::math::U8Vec2>) -> Val<bevy::math::DVec2> {
+        let output: Val<bevy::math::DVec2> = bevy::math::U8Vec2::as_dvec2(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec2(_self: Ref<bevy::math::U8Vec2>) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::U8Vec2::as_i16vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i64`.
+    fn as_i64vec2(_self: Ref<bevy::math::U8Vec2>) -> Val<bevy::math::I64Vec2> {
+        let output: Val<bevy::math::I64Vec2> = bevy::math::U8Vec2::as_i64vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec2(_self: Ref<bevy::math::U8Vec2>) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::U8Vec2::as_i8vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i32`.
+    fn as_ivec2(_self: Ref<bevy::math::U8Vec2>) -> Val<bevy::math::IVec2> {
+        let output: Val<bevy::math::IVec2> = bevy::math::U8Vec2::as_ivec2(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec2(_self: Ref<bevy::math::U8Vec2>) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U8Vec2::as_u16vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u64`.
+    fn as_u64vec2(_self: Ref<bevy::math::U8Vec2>) -> Val<bevy::math::U64Vec2> {
+        let output: Val<bevy::math::U64Vec2> = bevy::math::U8Vec2::as_u64vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u32`.
+    fn as_uvec2(_self: Ref<bevy::math::U8Vec2>) -> Val<bevy::math::UVec2> {
+        let output: Val<bevy::math::UVec2> = bevy::math::U8Vec2::as_uvec2(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `f32`.
+    fn as_vec2(_self: Ref<bevy::math::U8Vec2>) -> Val<bevy::math::Vec2> {
+        let output: Val<bevy::math::Vec2> = bevy::math::U8Vec2::as_vec2(&_self).into();
+        output
+    }
+    ///  Component-wise clamping of values, similar to [`u8::clamp`].
+    ///  Each element in `min` must be less-or-equal to the corresponding element in `max`.
+    ///  # Panics
+    ///  Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+    fn clamp(
+        _self: Val<bevy::math::U8Vec2>,
+        min: Val<bevy::math::U8Vec2>,
+        max: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::clamp(
+                _self.into_inner(),
+                min.into_inner(),
+                max.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `==` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+    ///  elements.
+    fn cmpeq(
+        _self: Val<bevy::math::U8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::U8Vec2::cmpeq(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+    ///  elements.
+    fn cmpge(
+        _self: Val<bevy::math::U8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::U8Vec2::cmpge(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+    ///  elements.
+    fn cmpgt(
+        _self: Val<bevy::math::U8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::U8Vec2::cmpgt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+    ///  elements.
+    fn cmple(
+        _self: Val<bevy::math::U8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::U8Vec2::cmple(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+    ///  elements.
+    fn cmplt(
+        _self: Val<bevy::math::U8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::U8Vec2::cmplt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `!=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+    ///  elements.
+    fn cmpne(
+        _self: Val<bevy::math::U8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::U8Vec2::cmpne(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Computes the dot product of `self` and `rhs`.
+    fn dot(_self: Val<bevy::math::U8Vec2>, rhs: Val<bevy::math::U8Vec2>) -> u8 {
+        let output: u8 = bevy::math::U8Vec2::dot(_self.into_inner(), rhs.into_inner())
+            .into();
+        output
+    }
+    ///  Returns a vector where every component is the dot product of `self` and `rhs`.
+    fn dot_into_vec(
+        _self: Val<bevy::math::U8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::dot_into_vec(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the product of all elements of `self`.
+    ///  In other words, this computes `self.x * self.y * ..`.
+    fn element_product(_self: Val<bevy::math::U8Vec2>) -> u8 {
+        let output: u8 = bevy::math::U8Vec2::element_product(_self.into_inner()).into();
+        output
+    }
+    ///  Returns the sum of all elements of `self`.
+    ///  In other words, this computes `self.x + self.y + ..`.
+    fn element_sum(_self: Val<bevy::math::U8Vec2>) -> u8 {
+        let output: u8 = bevy::math::U8Vec2::element_sum(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a 3D vector from `self` and the given `z` value.
+    fn extend(_self: Val<bevy::math::U8Vec2>, z: u8) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec2::extend(
+                _self.into_inner(),
+                z,
+            )
+            .into();
+        output
+    }
+    ///  Creates a new vector from an array.
+    fn from_array(a: [u8; 2]) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::from_array(a).into();
+        output
+    }
+    ///  Computes the squared length of `self`.
+    fn length_squared(_self: Val<bevy::math::U8Vec2>) -> u8 {
+        let output: u8 = bevy::math::U8Vec2::length_squared(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the maximum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+    fn max(
+        _self: Val<bevy::math::U8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::max(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal maximum of `self`.
+    ///  In other words this computes `max(x, y, ..)`.
+    fn max_element(_self: Val<bevy::math::U8Vec2>) -> u8 {
+        let output: u8 = bevy::math::U8Vec2::max_element(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the minimum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+    fn min(
+        _self: Val<bevy::math::U8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::min(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal minimum of `self`.
+    ///  In other words this computes `min(x, y, ..)`.
+    fn min_element(_self: Val<bevy::math::U8Vec2>) -> u8 {
+        let output: u8 = bevy::math::U8Vec2::min_element(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a new vector.
+    fn new(x: u8, y: u8) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::new(x, y).into();
+        output
+    }
+    ///  Returns a vector containing the saturating addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
+    fn saturating_add(
+        _self: Val<bevy::math::U8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::saturating_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating addition of `self` and signed vector `rhs`.
+    ///  In other words this computes `[self.x.saturating_add_signed(rhs.x), self.y.saturating_add_signed(rhs.y), ..]`.
+    fn saturating_add_signed(
+        _self: Val<bevy::math::U8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::saturating_add_signed(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
+    fn saturating_div(
+        _self: Val<bevy::math::U8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::saturating_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
+    fn saturating_mul(
+        _self: Val<bevy::math::U8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::saturating_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
+    fn saturating_sub(
+        _self: Val<bevy::math::U8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::saturating_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+    ///  for each element of `self`.
+    ///  A true element in the mask uses the corresponding element from `if_true`, and false
+    ///  uses the element from `if_false`.
+    fn select(
+        mask: Val<bevy::math::BVec2>,
+        if_true: Val<bevy::math::U8Vec2>,
+        if_false: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::select(
+                mask.into_inner(),
+                if_true.into_inner(),
+                if_false.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector with all elements set to `v`.
+    fn splat(v: u8) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::splat(v).into();
+        output
+    }
+    ///  `[x, y]`
+    fn to_array(_self: Ref<bevy::math::U8Vec2>) -> [u8; 2] {
+        let output: [u8; 2] = bevy::math::U8Vec2::to_array(&_self).into();
+        output
+    }
+    ///  Creates a 2D vector from `self` with the given value of `x`.
+    fn with_x(_self: Val<bevy::math::U8Vec2>, x: u8) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::with_x(
+                _self.into_inner(),
+                x,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 2D vector from `self` with the given value of `y`.
+    fn with_y(_self: Val<bevy::math::U8Vec2>, y: u8) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::with_y(
+                _self.into_inner(),
+                y,
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
+    fn wrapping_add(
+        _self: Val<bevy::math::U8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::wrapping_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and signed vector `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add_signed(rhs.x), self.y.wrapping_add_signed(rhs.y), ..]`.
+    fn wrapping_add_signed(
+        _self: Val<bevy::math::U8Vec2>,
+        rhs: Val<bevy::math::I8Vec2>,
+    ) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::wrapping_add_signed(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
+    fn wrapping_div(
+        _self: Val<bevy::math::U8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::wrapping_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
+    fn wrapping_mul(
+        _self: Val<bevy::math::U8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::wrapping_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
+    fn wrapping_sub(
+        _self: Val<bevy::math::U8Vec2>,
+        rhs: Val<bevy::math::U8Vec2>,
+    ) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec2::wrapping_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+}
+#[script_bindings(
+    remote,
+    name = "u_8_vec_3_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::math::U8Vec3 {
+    ///  Casts all elements of `self` to `f64`.
+    fn as_dvec3(_self: Ref<bevy::math::U8Vec3>) -> Val<bevy::math::DVec3> {
+        let output: Val<bevy::math::DVec3> = bevy::math::U8Vec3::as_dvec3(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec3(_self: Ref<bevy::math::U8Vec3>) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::U8Vec3::as_i16vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i64`.
+    fn as_i64vec3(_self: Ref<bevy::math::U8Vec3>) -> Val<bevy::math::I64Vec3> {
+        let output: Val<bevy::math::I64Vec3> = bevy::math::U8Vec3::as_i64vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec3(_self: Ref<bevy::math::U8Vec3>) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::U8Vec3::as_i8vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i32`.
+    fn as_ivec3(_self: Ref<bevy::math::U8Vec3>) -> Val<bevy::math::IVec3> {
+        let output: Val<bevy::math::IVec3> = bevy::math::U8Vec3::as_ivec3(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec3(_self: Ref<bevy::math::U8Vec3>) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U8Vec3::as_u16vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u64`.
+    fn as_u64vec3(_self: Ref<bevy::math::U8Vec3>) -> Val<bevy::math::U64Vec3> {
+        let output: Val<bevy::math::U64Vec3> = bevy::math::U8Vec3::as_u64vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u32`.
+    fn as_uvec3(_self: Ref<bevy::math::U8Vec3>) -> Val<bevy::math::UVec3> {
+        let output: Val<bevy::math::UVec3> = bevy::math::U8Vec3::as_uvec3(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `f32`.
+    fn as_vec3(_self: Ref<bevy::math::U8Vec3>) -> Val<bevy::math::Vec3> {
+        let output: Val<bevy::math::Vec3> = bevy::math::U8Vec3::as_vec3(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `f32`.
+    fn as_vec3a(_self: Ref<bevy::math::U8Vec3>) -> Val<bevy::math::Vec3A> {
+        let output: Val<bevy::math::Vec3A> = bevy::math::U8Vec3::as_vec3a(&_self).into();
+        output
+    }
+    ///  Component-wise clamping of values, similar to [`u8::clamp`].
+    ///  Each element in `min` must be less-or-equal to the corresponding element in `max`.
+    ///  # Panics
+    ///  Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+    fn clamp(
+        _self: Val<bevy::math::U8Vec3>,
+        min: Val<bevy::math::U8Vec3>,
+        max: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::clamp(
+                _self.into_inner(),
+                min.into_inner(),
+                max.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `==` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+    ///  elements.
+    fn cmpeq(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::U8Vec3::cmpeq(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+    ///  elements.
+    fn cmpge(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::U8Vec3::cmpge(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+    ///  elements.
+    fn cmpgt(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::U8Vec3::cmpgt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+    ///  elements.
+    fn cmple(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::U8Vec3::cmple(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+    ///  elements.
+    fn cmplt(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::U8Vec3::cmplt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `!=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+    ///  elements.
+    fn cmpne(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::U8Vec3::cmpne(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Computes the cross product of `self` and `rhs`.
+    fn cross(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::cross(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Computes the dot product of `self` and `rhs`.
+    fn dot(_self: Val<bevy::math::U8Vec3>, rhs: Val<bevy::math::U8Vec3>) -> u8 {
+        let output: u8 = bevy::math::U8Vec3::dot(_self.into_inner(), rhs.into_inner())
+            .into();
+        output
+    }
+    ///  Returns a vector where every component is the dot product of `self` and `rhs`.
+    fn dot_into_vec(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::dot_into_vec(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the product of all elements of `self`.
+    ///  In other words, this computes `self.x * self.y * ..`.
+    fn element_product(_self: Val<bevy::math::U8Vec3>) -> u8 {
+        let output: u8 = bevy::math::U8Vec3::element_product(_self.into_inner()).into();
+        output
+    }
+    ///  Returns the sum of all elements of `self`.
+    ///  In other words, this computes `self.x + self.y + ..`.
+    fn element_sum(_self: Val<bevy::math::U8Vec3>) -> u8 {
+        let output: u8 = bevy::math::U8Vec3::element_sum(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a 4D vector from `self` and the given `w` value.
+    fn extend(_self: Val<bevy::math::U8Vec3>, w: u8) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec3::extend(
+                _self.into_inner(),
+                w,
+            )
+            .into();
+        output
+    }
+    ///  Creates a new vector from an array.
+    fn from_array(a: [u8; 3]) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::from_array(a).into();
+        output
+    }
+    ///  Computes the squared length of `self`.
+    fn length_squared(_self: Val<bevy::math::U8Vec3>) -> u8 {
+        let output: u8 = bevy::math::U8Vec3::length_squared(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the maximum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+    fn max(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::max(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal maximum of `self`.
+    ///  In other words this computes `max(x, y, ..)`.
+    fn max_element(_self: Val<bevy::math::U8Vec3>) -> u8 {
+        let output: u8 = bevy::math::U8Vec3::max_element(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the minimum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+    fn min(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::min(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal minimum of `self`.
+    ///  In other words this computes `min(x, y, ..)`.
+    fn min_element(_self: Val<bevy::math::U8Vec3>) -> u8 {
+        let output: u8 = bevy::math::U8Vec3::min_element(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a new vector.
+    fn new(x: u8, y: u8, z: u8) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::new(x, y, z).into();
+        output
+    }
+    ///  Returns a vector containing the saturating addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
+    fn saturating_add(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::saturating_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating addition of `self` and signed vector `rhs`.
+    ///  In other words this computes `[self.x.saturating_add_signed(rhs.x), self.y.saturating_add_signed(rhs.y), ..]`.
+    fn saturating_add_signed(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::saturating_add_signed(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
+    fn saturating_div(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::saturating_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
+    fn saturating_mul(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::saturating_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
+    fn saturating_sub(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::saturating_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+    ///  for each element of `self`.
+    ///  A true element in the mask uses the corresponding element from `if_true`, and false
+    ///  uses the element from `if_false`.
+    fn select(
+        mask: Val<bevy::math::BVec3>,
+        if_true: Val<bevy::math::U8Vec3>,
+        if_false: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::select(
+                mask.into_inner(),
+                if_true.into_inner(),
+                if_false.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector with all elements set to `v`.
+    fn splat(v: u8) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::splat(v).into();
+        output
+    }
+    ///  `[x, y, z]`
+    fn to_array(_self: Ref<bevy::math::U8Vec3>) -> [u8; 3] {
+        let output: [u8; 3] = bevy::math::U8Vec3::to_array(&_self).into();
+        output
+    }
+    ///  Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
+    ///  Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
+    fn truncate(_self: Val<bevy::math::U8Vec3>) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U8Vec3::truncate(
+                _self.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a 3D vector from `self` with the given value of `x`.
+    fn with_x(_self: Val<bevy::math::U8Vec3>, x: u8) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::with_x(
+                _self.into_inner(),
+                x,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 3D vector from `self` with the given value of `y`.
+    fn with_y(_self: Val<bevy::math::U8Vec3>, y: u8) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::with_y(
+                _self.into_inner(),
+                y,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 3D vector from `self` with the given value of `z`.
+    fn with_z(_self: Val<bevy::math::U8Vec3>, z: u8) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::with_z(
+                _self.into_inner(),
+                z,
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
+    fn wrapping_add(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::wrapping_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and signed vector `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add_signed(rhs.x), self.y.wrapping_add_signed(rhs.y), ..]`.
+    fn wrapping_add_signed(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::I8Vec3>,
+    ) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::wrapping_add_signed(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
+    fn wrapping_div(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::wrapping_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
+    fn wrapping_mul(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::wrapping_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
+    fn wrapping_sub(
+        _self: Val<bevy::math::U8Vec3>,
+        rhs: Val<bevy::math::U8Vec3>,
+    ) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec3::wrapping_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+}
+#[script_bindings(
+    remote,
+    name = "u_8_vec_4_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::math::U8Vec4 {
+    ///  Casts all elements of `self` to `f64`.
+    fn as_dvec4(_self: Ref<bevy::math::U8Vec4>) -> Val<bevy::math::DVec4> {
+        let output: Val<bevy::math::DVec4> = bevy::math::U8Vec4::as_dvec4(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec4(_self: Ref<bevy::math::U8Vec4>) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::U8Vec4::as_i16vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i64`.
+    fn as_i64vec4(_self: Ref<bevy::math::U8Vec4>) -> Val<bevy::math::I64Vec4> {
+        let output: Val<bevy::math::I64Vec4> = bevy::math::U8Vec4::as_i64vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec4(_self: Ref<bevy::math::U8Vec4>) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::U8Vec4::as_i8vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i32`.
+    fn as_ivec4(_self: Ref<bevy::math::U8Vec4>) -> Val<bevy::math::IVec4> {
+        let output: Val<bevy::math::IVec4> = bevy::math::U8Vec4::as_ivec4(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec4(_self: Ref<bevy::math::U8Vec4>) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U8Vec4::as_u16vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u64`.
+    fn as_u64vec4(_self: Ref<bevy::math::U8Vec4>) -> Val<bevy::math::U64Vec4> {
+        let output: Val<bevy::math::U64Vec4> = bevy::math::U8Vec4::as_u64vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u32`.
+    fn as_uvec4(_self: Ref<bevy::math::U8Vec4>) -> Val<bevy::math::UVec4> {
+        let output: Val<bevy::math::UVec4> = bevy::math::U8Vec4::as_uvec4(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `f32`.
+    fn as_vec4(_self: Ref<bevy::math::U8Vec4>) -> Val<bevy::math::Vec4> {
+        let output: Val<bevy::math::Vec4> = bevy::math::U8Vec4::as_vec4(&_self).into();
+        output
+    }
+    ///  Component-wise clamping of values, similar to [`u8::clamp`].
+    ///  Each element in `min` must be less-or-equal to the corresponding element in `max`.
+    ///  # Panics
+    ///  Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+    fn clamp(
+        _self: Val<bevy::math::U8Vec4>,
+        min: Val<bevy::math::U8Vec4>,
+        max: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::clamp(
+                _self.into_inner(),
+                min.into_inner(),
+                max.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `==` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+    ///  elements.
+    fn cmpeq(
+        _self: Val<bevy::math::U8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::U8Vec4::cmpeq(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+    ///  elements.
+    fn cmpge(
+        _self: Val<bevy::math::U8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::U8Vec4::cmpge(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+    ///  elements.
+    fn cmpgt(
+        _self: Val<bevy::math::U8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::U8Vec4::cmpgt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+    ///  elements.
+    fn cmple(
+        _self: Val<bevy::math::U8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::U8Vec4::cmple(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+    ///  elements.
+    fn cmplt(
+        _self: Val<bevy::math::U8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::U8Vec4::cmplt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `!=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+    ///  elements.
+    fn cmpne(
+        _self: Val<bevy::math::U8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::U8Vec4::cmpne(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Computes the dot product of `self` and `rhs`.
+    fn dot(_self: Val<bevy::math::U8Vec4>, rhs: Val<bevy::math::U8Vec4>) -> u8 {
+        let output: u8 = bevy::math::U8Vec4::dot(_self.into_inner(), rhs.into_inner())
+            .into();
+        output
+    }
+    ///  Returns a vector where every component is the dot product of `self` and `rhs`.
+    fn dot_into_vec(
+        _self: Val<bevy::math::U8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::dot_into_vec(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the product of all elements of `self`.
+    ///  In other words, this computes `self.x * self.y * ..`.
+    fn element_product(_self: Val<bevy::math::U8Vec4>) -> u8 {
+        let output: u8 = bevy::math::U8Vec4::element_product(_self.into_inner()).into();
+        output
+    }
+    ///  Returns the sum of all elements of `self`.
+    ///  In other words, this computes `self.x + self.y + ..`.
+    fn element_sum(_self: Val<bevy::math::U8Vec4>) -> u8 {
+        let output: u8 = bevy::math::U8Vec4::element_sum(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a new vector from an array.
+    fn from_array(a: [u8; 4]) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::from_array(a).into();
+        output
+    }
+    ///  Computes the squared length of `self`.
+    fn length_squared(_self: Val<bevy::math::U8Vec4>) -> u8 {
+        let output: u8 = bevy::math::U8Vec4::length_squared(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the maximum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+    fn max(
+        _self: Val<bevy::math::U8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::max(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal maximum of `self`.
+    ///  In other words this computes `max(x, y, ..)`.
+    fn max_element(_self: Val<bevy::math::U8Vec4>) -> u8 {
+        let output: u8 = bevy::math::U8Vec4::max_element(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the minimum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+    fn min(
+        _self: Val<bevy::math::U8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::min(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal minimum of `self`.
+    ///  In other words this computes `min(x, y, ..)`.
+    fn min_element(_self: Val<bevy::math::U8Vec4>) -> u8 {
+        let output: u8 = bevy::math::U8Vec4::min_element(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a new vector.
+    fn new(x: u8, y: u8, z: u8, w: u8) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::new(x, y, z, w).into();
+        output
+    }
+    ///  Returns a vector containing the saturating addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
+    fn saturating_add(
+        _self: Val<bevy::math::U8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::saturating_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating addition of `self` and signed vector `rhs`.
+    ///  In other words this computes `[self.x.saturating_add_signed(rhs.x), self.y.saturating_add_signed(rhs.y), ..]`.
+    fn saturating_add_signed(
+        _self: Val<bevy::math::U8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::saturating_add_signed(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
+    fn saturating_div(
+        _self: Val<bevy::math::U8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::saturating_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
+    fn saturating_mul(
+        _self: Val<bevy::math::U8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::saturating_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
+    fn saturating_sub(
+        _self: Val<bevy::math::U8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::saturating_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+    ///  for each element of `self`.
+    ///  A true element in the mask uses the corresponding element from `if_true`, and false
+    ///  uses the element from `if_false`.
+    fn select(
+        mask: Val<bevy::math::BVec4>,
+        if_true: Val<bevy::math::U8Vec4>,
+        if_false: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::select(
+                mask.into_inner(),
+                if_true.into_inner(),
+                if_false.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector with all elements set to `v`.
+    fn splat(v: u8) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::splat(v).into();
+        output
+    }
+    ///  `[x, y, z, w]`
+    fn to_array(_self: Ref<bevy::math::U8Vec4>) -> [u8; 4] {
+        let output: [u8; 4] = bevy::math::U8Vec4::to_array(&_self).into();
+        output
+    }
+    ///  Creates a 3D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
+    ///  Truncation to [`U8Vec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
+    fn truncate(_self: Val<bevy::math::U8Vec4>) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U8Vec4::truncate(
+                _self.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a 4D vector from `self` with the given value of `w`.
+    fn with_w(_self: Val<bevy::math::U8Vec4>, w: u8) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::with_w(
+                _self.into_inner(),
+                w,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 4D vector from `self` with the given value of `x`.
+    fn with_x(_self: Val<bevy::math::U8Vec4>, x: u8) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::with_x(
+                _self.into_inner(),
+                x,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 4D vector from `self` with the given value of `y`.
+    fn with_y(_self: Val<bevy::math::U8Vec4>, y: u8) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::with_y(
+                _self.into_inner(),
+                y,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 4D vector from `self` with the given value of `z`.
+    fn with_z(_self: Val<bevy::math::U8Vec4>, z: u8) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::with_z(
+                _self.into_inner(),
+                z,
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
+    fn wrapping_add(
+        _self: Val<bevy::math::U8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::wrapping_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and signed vector `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add_signed(rhs.x), self.y.wrapping_add_signed(rhs.y), ..]`.
+    fn wrapping_add_signed(
+        _self: Val<bevy::math::U8Vec4>,
+        rhs: Val<bevy::math::I8Vec4>,
+    ) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::wrapping_add_signed(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
+    fn wrapping_div(
+        _self: Val<bevy::math::U8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::wrapping_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
+    fn wrapping_mul(
+        _self: Val<bevy::math::U8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::wrapping_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
+    fn wrapping_sub(
+        _self: Val<bevy::math::U8Vec4>,
+        rhs: Val<bevy::math::U8Vec4>,
+    ) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U8Vec4::wrapping_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+}
+#[script_bindings(
+    remote,
+    name = "u_16_vec_2_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::math::U16Vec2 {
+    ///  Casts all elements of `self` to `f64`.
+    fn as_dvec2(_self: Ref<bevy::math::U16Vec2>) -> Val<bevy::math::DVec2> {
+        let output: Val<bevy::math::DVec2> = bevy::math::U16Vec2::as_dvec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec2(_self: Ref<bevy::math::U16Vec2>) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::U16Vec2::as_i16vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i64`.
+    fn as_i64vec2(_self: Ref<bevy::math::U16Vec2>) -> Val<bevy::math::I64Vec2> {
+        let output: Val<bevy::math::I64Vec2> = bevy::math::U16Vec2::as_i64vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec2(_self: Ref<bevy::math::U16Vec2>) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::U16Vec2::as_i8vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i32`.
+    fn as_ivec2(_self: Ref<bevy::math::U16Vec2>) -> Val<bevy::math::IVec2> {
+        let output: Val<bevy::math::IVec2> = bevy::math::U16Vec2::as_ivec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u64`.
+    fn as_u64vec2(_self: Ref<bevy::math::U16Vec2>) -> Val<bevy::math::U64Vec2> {
+        let output: Val<bevy::math::U64Vec2> = bevy::math::U16Vec2::as_u64vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec2(_self: Ref<bevy::math::U16Vec2>) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U16Vec2::as_u8vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u32`.
+    fn as_uvec2(_self: Ref<bevy::math::U16Vec2>) -> Val<bevy::math::UVec2> {
+        let output: Val<bevy::math::UVec2> = bevy::math::U16Vec2::as_uvec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `f32`.
+    fn as_vec2(_self: Ref<bevy::math::U16Vec2>) -> Val<bevy::math::Vec2> {
+        let output: Val<bevy::math::Vec2> = bevy::math::U16Vec2::as_vec2(&_self).into();
+        output
+    }
+    ///  Component-wise clamping of values, similar to [`u16::clamp`].
+    ///  Each element in `min` must be less-or-equal to the corresponding element in `max`.
+    ///  # Panics
+    ///  Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+    fn clamp(
+        _self: Val<bevy::math::U16Vec2>,
+        min: Val<bevy::math::U16Vec2>,
+        max: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::clamp(
+                _self.into_inner(),
+                min.into_inner(),
+                max.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `==` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+    ///  elements.
+    fn cmpeq(
+        _self: Val<bevy::math::U16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::U16Vec2::cmpeq(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+    ///  elements.
+    fn cmpge(
+        _self: Val<bevy::math::U16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::U16Vec2::cmpge(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+    ///  elements.
+    fn cmpgt(
+        _self: Val<bevy::math::U16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::U16Vec2::cmpgt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+    ///  elements.
+    fn cmple(
+        _self: Val<bevy::math::U16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::U16Vec2::cmple(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+    ///  elements.
+    fn cmplt(
+        _self: Val<bevy::math::U16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::U16Vec2::cmplt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `!=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+    ///  elements.
+    fn cmpne(
+        _self: Val<bevy::math::U16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::BVec2> {
+        let output: Val<bevy::math::BVec2> = bevy::math::U16Vec2::cmpne(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Computes the dot product of `self` and `rhs`.
+    fn dot(_self: Val<bevy::math::U16Vec2>, rhs: Val<bevy::math::U16Vec2>) -> u16 {
+        let output: u16 = bevy::math::U16Vec2::dot(_self.into_inner(), rhs.into_inner())
+            .into();
+        output
+    }
+    ///  Returns a vector where every component is the dot product of `self` and `rhs`.
+    fn dot_into_vec(
+        _self: Val<bevy::math::U16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::dot_into_vec(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the product of all elements of `self`.
+    ///  In other words, this computes `self.x * self.y * ..`.
+    fn element_product(_self: Val<bevy::math::U16Vec2>) -> u16 {
+        let output: u16 = bevy::math::U16Vec2::element_product(_self.into_inner())
+            .into();
+        output
+    }
+    ///  Returns the sum of all elements of `self`.
+    ///  In other words, this computes `self.x + self.y + ..`.
+    fn element_sum(_self: Val<bevy::math::U16Vec2>) -> u16 {
+        let output: u16 = bevy::math::U16Vec2::element_sum(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a 3D vector from `self` and the given `z` value.
+    fn extend(_self: Val<bevy::math::U16Vec2>, z: u16) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec2::extend(
+                _self.into_inner(),
+                z,
+            )
+            .into();
+        output
+    }
+    ///  Creates a new vector from an array.
+    fn from_array(a: [u16; 2]) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::from_array(a).into();
+        output
+    }
+    ///  Computes the squared length of `self`.
+    fn length_squared(_self: Val<bevy::math::U16Vec2>) -> u16 {
+        let output: u16 = bevy::math::U16Vec2::length_squared(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the maximum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+    fn max(
+        _self: Val<bevy::math::U16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::max(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal maximum of `self`.
+    ///  In other words this computes `max(x, y, ..)`.
+    fn max_element(_self: Val<bevy::math::U16Vec2>) -> u16 {
+        let output: u16 = bevy::math::U16Vec2::max_element(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the minimum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+    fn min(
+        _self: Val<bevy::math::U16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::min(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal minimum of `self`.
+    ///  In other words this computes `min(x, y, ..)`.
+    fn min_element(_self: Val<bevy::math::U16Vec2>) -> u16 {
+        let output: u16 = bevy::math::U16Vec2::min_element(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a new vector.
+    fn new(x: u16, y: u16) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::new(x, y).into();
+        output
+    }
+    ///  Returns a vector containing the saturating addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
+    fn saturating_add(
+        _self: Val<bevy::math::U16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::saturating_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating addition of `self` and signed vector `rhs`.
+    ///  In other words this computes `[self.x.saturating_add_signed(rhs.x), self.y.saturating_add_signed(rhs.y), ..]`.
+    fn saturating_add_signed(
+        _self: Val<bevy::math::U16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::saturating_add_signed(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
+    fn saturating_div(
+        _self: Val<bevy::math::U16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::saturating_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
+    fn saturating_mul(
+        _self: Val<bevy::math::U16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::saturating_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
+    fn saturating_sub(
+        _self: Val<bevy::math::U16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::saturating_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+    ///  for each element of `self`.
+    ///  A true element in the mask uses the corresponding element from `if_true`, and false
+    ///  uses the element from `if_false`.
+    fn select(
+        mask: Val<bevy::math::BVec2>,
+        if_true: Val<bevy::math::U16Vec2>,
+        if_false: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::select(
+                mask.into_inner(),
+                if_true.into_inner(),
+                if_false.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector with all elements set to `v`.
+    fn splat(v: u16) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::splat(v).into();
+        output
+    }
+    ///  `[x, y]`
+    fn to_array(_self: Ref<bevy::math::U16Vec2>) -> [u16; 2] {
+        let output: [u16; 2] = bevy::math::U16Vec2::to_array(&_self).into();
+        output
+    }
+    ///  Creates a 2D vector from `self` with the given value of `x`.
+    fn with_x(_self: Val<bevy::math::U16Vec2>, x: u16) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::with_x(
+                _self.into_inner(),
+                x,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 2D vector from `self` with the given value of `y`.
+    fn with_y(_self: Val<bevy::math::U16Vec2>, y: u16) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::with_y(
+                _self.into_inner(),
+                y,
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
+    fn wrapping_add(
+        _self: Val<bevy::math::U16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::wrapping_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and signed vector `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add_signed(rhs.x), self.y.wrapping_add_signed(rhs.y), ..]`.
+    fn wrapping_add_signed(
+        _self: Val<bevy::math::U16Vec2>,
+        rhs: Val<bevy::math::I16Vec2>,
+    ) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::wrapping_add_signed(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
+    fn wrapping_div(
+        _self: Val<bevy::math::U16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::wrapping_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
+    fn wrapping_mul(
+        _self: Val<bevy::math::U16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::wrapping_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
+    fn wrapping_sub(
+        _self: Val<bevy::math::U16Vec2>,
+        rhs: Val<bevy::math::U16Vec2>,
+    ) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec2::wrapping_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+}
+#[script_bindings(
+    remote,
+    name = "u_16_vec_3_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::math::U16Vec3 {
+    ///  Casts all elements of `self` to `f64`.
+    fn as_dvec3(_self: Ref<bevy::math::U16Vec3>) -> Val<bevy::math::DVec3> {
+        let output: Val<bevy::math::DVec3> = bevy::math::U16Vec3::as_dvec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec3(_self: Ref<bevy::math::U16Vec3>) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::U16Vec3::as_i16vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i64`.
+    fn as_i64vec3(_self: Ref<bevy::math::U16Vec3>) -> Val<bevy::math::I64Vec3> {
+        let output: Val<bevy::math::I64Vec3> = bevy::math::U16Vec3::as_i64vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec3(_self: Ref<bevy::math::U16Vec3>) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::U16Vec3::as_i8vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i32`.
+    fn as_ivec3(_self: Ref<bevy::math::U16Vec3>) -> Val<bevy::math::IVec3> {
+        let output: Val<bevy::math::IVec3> = bevy::math::U16Vec3::as_ivec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u64`.
+    fn as_u64vec3(_self: Ref<bevy::math::U16Vec3>) -> Val<bevy::math::U64Vec3> {
+        let output: Val<bevy::math::U64Vec3> = bevy::math::U16Vec3::as_u64vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec3(_self: Ref<bevy::math::U16Vec3>) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U16Vec3::as_u8vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u32`.
+    fn as_uvec3(_self: Ref<bevy::math::U16Vec3>) -> Val<bevy::math::UVec3> {
+        let output: Val<bevy::math::UVec3> = bevy::math::U16Vec3::as_uvec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `f32`.
+    fn as_vec3(_self: Ref<bevy::math::U16Vec3>) -> Val<bevy::math::Vec3> {
+        let output: Val<bevy::math::Vec3> = bevy::math::U16Vec3::as_vec3(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `f32`.
+    fn as_vec3a(_self: Ref<bevy::math::U16Vec3>) -> Val<bevy::math::Vec3A> {
+        let output: Val<bevy::math::Vec3A> = bevy::math::U16Vec3::as_vec3a(&_self)
+            .into();
+        output
+    }
+    ///  Component-wise clamping of values, similar to [`u16::clamp`].
+    ///  Each element in `min` must be less-or-equal to the corresponding element in `max`.
+    ///  # Panics
+    ///  Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+    fn clamp(
+        _self: Val<bevy::math::U16Vec3>,
+        min: Val<bevy::math::U16Vec3>,
+        max: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::clamp(
+                _self.into_inner(),
+                min.into_inner(),
+                max.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `==` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+    ///  elements.
+    fn cmpeq(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::U16Vec3::cmpeq(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+    ///  elements.
+    fn cmpge(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::U16Vec3::cmpge(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+    ///  elements.
+    fn cmpgt(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::U16Vec3::cmpgt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+    ///  elements.
+    fn cmple(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::U16Vec3::cmple(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+    ///  elements.
+    fn cmplt(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::U16Vec3::cmplt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `!=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+    ///  elements.
+    fn cmpne(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::BVec3> {
+        let output: Val<bevy::math::BVec3> = bevy::math::U16Vec3::cmpne(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Computes the cross product of `self` and `rhs`.
+    fn cross(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::cross(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Computes the dot product of `self` and `rhs`.
+    fn dot(_self: Val<bevy::math::U16Vec3>, rhs: Val<bevy::math::U16Vec3>) -> u16 {
+        let output: u16 = bevy::math::U16Vec3::dot(_self.into_inner(), rhs.into_inner())
+            .into();
+        output
+    }
+    ///  Returns a vector where every component is the dot product of `self` and `rhs`.
+    fn dot_into_vec(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::dot_into_vec(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the product of all elements of `self`.
+    ///  In other words, this computes `self.x * self.y * ..`.
+    fn element_product(_self: Val<bevy::math::U16Vec3>) -> u16 {
+        let output: u16 = bevy::math::U16Vec3::element_product(_self.into_inner())
+            .into();
+        output
+    }
+    ///  Returns the sum of all elements of `self`.
+    ///  In other words, this computes `self.x + self.y + ..`.
+    fn element_sum(_self: Val<bevy::math::U16Vec3>) -> u16 {
+        let output: u16 = bevy::math::U16Vec3::element_sum(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a 4D vector from `self` and the given `w` value.
+    fn extend(_self: Val<bevy::math::U16Vec3>, w: u16) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec3::extend(
+                _self.into_inner(),
+                w,
+            )
+            .into();
+        output
+    }
+    ///  Creates a new vector from an array.
+    fn from_array(a: [u16; 3]) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::from_array(a).into();
+        output
+    }
+    ///  Computes the squared length of `self`.
+    fn length_squared(_self: Val<bevy::math::U16Vec3>) -> u16 {
+        let output: u16 = bevy::math::U16Vec3::length_squared(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the maximum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+    fn max(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::max(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal maximum of `self`.
+    ///  In other words this computes `max(x, y, ..)`.
+    fn max_element(_self: Val<bevy::math::U16Vec3>) -> u16 {
+        let output: u16 = bevy::math::U16Vec3::max_element(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the minimum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+    fn min(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::min(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal minimum of `self`.
+    ///  In other words this computes `min(x, y, ..)`.
+    fn min_element(_self: Val<bevy::math::U16Vec3>) -> u16 {
+        let output: u16 = bevy::math::U16Vec3::min_element(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a new vector.
+    fn new(x: u16, y: u16, z: u16) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::new(x, y, z).into();
+        output
+    }
+    ///  Returns a vector containing the saturating addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
+    fn saturating_add(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::saturating_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating addition of `self` and signed vector `rhs`.
+    ///  In other words this computes `[self.x.saturating_add_signed(rhs.x), self.y.saturating_add_signed(rhs.y), ..]`.
+    fn saturating_add_signed(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::saturating_add_signed(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
+    fn saturating_div(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::saturating_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
+    fn saturating_mul(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::saturating_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
+    fn saturating_sub(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::saturating_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+    ///  for each element of `self`.
+    ///  A true element in the mask uses the corresponding element from `if_true`, and false
+    ///  uses the element from `if_false`.
+    fn select(
+        mask: Val<bevy::math::BVec3>,
+        if_true: Val<bevy::math::U16Vec3>,
+        if_false: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::select(
+                mask.into_inner(),
+                if_true.into_inner(),
+                if_false.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector with all elements set to `v`.
+    fn splat(v: u16) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::splat(v).into();
+        output
+    }
+    ///  `[x, y, z]`
+    fn to_array(_self: Ref<bevy::math::U16Vec3>) -> [u16; 3] {
+        let output: [u16; 3] = bevy::math::U16Vec3::to_array(&_self).into();
+        output
+    }
+    ///  Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
+    ///  Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
+    fn truncate(_self: Val<bevy::math::U16Vec3>) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U16Vec3::truncate(
+                _self.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a 3D vector from `self` with the given value of `x`.
+    fn with_x(_self: Val<bevy::math::U16Vec3>, x: u16) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::with_x(
+                _self.into_inner(),
+                x,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 3D vector from `self` with the given value of `y`.
+    fn with_y(_self: Val<bevy::math::U16Vec3>, y: u16) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::with_y(
+                _self.into_inner(),
+                y,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 3D vector from `self` with the given value of `z`.
+    fn with_z(_self: Val<bevy::math::U16Vec3>, z: u16) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::with_z(
+                _self.into_inner(),
+                z,
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
+    fn wrapping_add(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::wrapping_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and signed vector `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add_signed(rhs.x), self.y.wrapping_add_signed(rhs.y), ..]`.
+    fn wrapping_add_signed(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::I16Vec3>,
+    ) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::wrapping_add_signed(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
+    fn wrapping_div(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::wrapping_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
+    fn wrapping_mul(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::wrapping_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
+    fn wrapping_sub(
+        _self: Val<bevy::math::U16Vec3>,
+        rhs: Val<bevy::math::U16Vec3>,
+    ) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec3::wrapping_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+}
+#[script_bindings(
+    remote,
+    name = "u_16_vec_4_functions",
+    bms_core_path = "bevy_mod_scripting_core",
+    generated
+)]
+impl bevy::math::U16Vec4 {
+    ///  Casts all elements of `self` to `f64`.
+    fn as_dvec4(_self: Ref<bevy::math::U16Vec4>) -> Val<bevy::math::DVec4> {
+        let output: Val<bevy::math::DVec4> = bevy::math::U16Vec4::as_dvec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec4(_self: Ref<bevy::math::U16Vec4>) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::U16Vec4::as_i16vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i64`.
+    fn as_i64vec4(_self: Ref<bevy::math::U16Vec4>) -> Val<bevy::math::I64Vec4> {
+        let output: Val<bevy::math::I64Vec4> = bevy::math::U16Vec4::as_i64vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec4(_self: Ref<bevy::math::U16Vec4>) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::U16Vec4::as_i8vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i32`.
+    fn as_ivec4(_self: Ref<bevy::math::U16Vec4>) -> Val<bevy::math::IVec4> {
+        let output: Val<bevy::math::IVec4> = bevy::math::U16Vec4::as_ivec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u64`.
+    fn as_u64vec4(_self: Ref<bevy::math::U16Vec4>) -> Val<bevy::math::U64Vec4> {
+        let output: Val<bevy::math::U64Vec4> = bevy::math::U16Vec4::as_u64vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec4(_self: Ref<bevy::math::U16Vec4>) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U16Vec4::as_u8vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u32`.
+    fn as_uvec4(_self: Ref<bevy::math::U16Vec4>) -> Val<bevy::math::UVec4> {
+        let output: Val<bevy::math::UVec4> = bevy::math::U16Vec4::as_uvec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `f32`.
+    fn as_vec4(_self: Ref<bevy::math::U16Vec4>) -> Val<bevy::math::Vec4> {
+        let output: Val<bevy::math::Vec4> = bevy::math::U16Vec4::as_vec4(&_self).into();
+        output
+    }
+    ///  Component-wise clamping of values, similar to [`u16::clamp`].
+    ///  Each element in `min` must be less-or-equal to the corresponding element in `max`.
+    ///  # Panics
+    ///  Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+    fn clamp(
+        _self: Val<bevy::math::U16Vec4>,
+        min: Val<bevy::math::U16Vec4>,
+        max: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::clamp(
+                _self.into_inner(),
+                min.into_inner(),
+                max.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `==` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+    ///  elements.
+    fn cmpeq(
+        _self: Val<bevy::math::U16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::U16Vec4::cmpeq(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+    ///  elements.
+    fn cmpge(
+        _self: Val<bevy::math::U16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::U16Vec4::cmpge(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `>` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+    ///  elements.
+    fn cmpgt(
+        _self: Val<bevy::math::U16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::U16Vec4::cmpgt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+    ///  elements.
+    fn cmple(
+        _self: Val<bevy::math::U16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::U16Vec4::cmple(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `<` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+    ///  elements.
+    fn cmplt(
+        _self: Val<bevy::math::U16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::U16Vec4::cmplt(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector mask containing the result of a `!=` comparison for each element of
+    ///  `self` and `rhs`.
+    ///  In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+    ///  elements.
+    fn cmpne(
+        _self: Val<bevy::math::U16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::BVec4> {
+        let output: Val<bevy::math::BVec4> = bevy::math::U16Vec4::cmpne(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Computes the dot product of `self` and `rhs`.
+    fn dot(_self: Val<bevy::math::U16Vec4>, rhs: Val<bevy::math::U16Vec4>) -> u16 {
+        let output: u16 = bevy::math::U16Vec4::dot(_self.into_inner(), rhs.into_inner())
+            .into();
+        output
+    }
+    ///  Returns a vector where every component is the dot product of `self` and `rhs`.
+    fn dot_into_vec(
+        _self: Val<bevy::math::U16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::dot_into_vec(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the product of all elements of `self`.
+    ///  In other words, this computes `self.x * self.y * ..`.
+    fn element_product(_self: Val<bevy::math::U16Vec4>) -> u16 {
+        let output: u16 = bevy::math::U16Vec4::element_product(_self.into_inner())
+            .into();
+        output
+    }
+    ///  Returns the sum of all elements of `self`.
+    ///  In other words, this computes `self.x + self.y + ..`.
+    fn element_sum(_self: Val<bevy::math::U16Vec4>) -> u16 {
+        let output: u16 = bevy::math::U16Vec4::element_sum(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a new vector from an array.
+    fn from_array(a: [u16; 4]) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::from_array(a).into();
+        output
+    }
+    ///  Computes the squared length of `self`.
+    fn length_squared(_self: Val<bevy::math::U16Vec4>) -> u16 {
+        let output: u16 = bevy::math::U16Vec4::length_squared(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the maximum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+    fn max(
+        _self: Val<bevy::math::U16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::max(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal maximum of `self`.
+    ///  In other words this computes `max(x, y, ..)`.
+    fn max_element(_self: Val<bevy::math::U16Vec4>) -> u16 {
+        let output: u16 = bevy::math::U16Vec4::max_element(_self.into_inner()).into();
+        output
+    }
+    ///  Returns a vector containing the minimum values for each element of `self` and `rhs`.
+    ///  In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+    fn min(
+        _self: Val<bevy::math::U16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::min(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns the horizontal minimum of `self`.
+    ///  In other words this computes `min(x, y, ..)`.
+    fn min_element(_self: Val<bevy::math::U16Vec4>) -> u16 {
+        let output: u16 = bevy::math::U16Vec4::min_element(_self.into_inner()).into();
+        output
+    }
+    ///  Creates a new vector.
+    fn new(x: u16, y: u16, z: u16, w: u16) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::new(x, y, z, w)
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
+    fn saturating_add(
+        _self: Val<bevy::math::U16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::saturating_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating addition of `self` and signed vector `rhs`.
+    ///  In other words this computes `[self.x.saturating_add_signed(rhs.x), self.y.saturating_add_signed(rhs.y), ..]`.
+    fn saturating_add_signed(
+        _self: Val<bevy::math::U16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::saturating_add_signed(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
+    fn saturating_div(
+        _self: Val<bevy::math::U16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::saturating_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
+    fn saturating_mul(
+        _self: Val<bevy::math::U16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::saturating_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the saturating subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
+    fn saturating_sub(
+        _self: Val<bevy::math::U16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::saturating_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+    ///  for each element of `self`.
+    ///  A true element in the mask uses the corresponding element from `if_true`, and false
+    ///  uses the element from `if_false`.
+    fn select(
+        mask: Val<bevy::math::BVec4>,
+        if_true: Val<bevy::math::U16Vec4>,
+        if_false: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::select(
+                mask.into_inner(),
+                if_true.into_inner(),
+                if_false.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a vector with all elements set to `v`.
+    fn splat(v: u16) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::splat(v).into();
+        output
+    }
+    ///  `[x, y, z, w]`
+    fn to_array(_self: Ref<bevy::math::U16Vec4>) -> [u16; 4] {
+        let output: [u16; 4] = bevy::math::U16Vec4::to_array(&_self).into();
+        output
+    }
+    ///  Creates a 3D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
+    ///  Truncation to [`U16Vec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
+    fn truncate(_self: Val<bevy::math::U16Vec4>) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U16Vec4::truncate(
+                _self.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Creates a 4D vector from `self` with the given value of `w`.
+    fn with_w(_self: Val<bevy::math::U16Vec4>, w: u16) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::with_w(
+                _self.into_inner(),
+                w,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 4D vector from `self` with the given value of `x`.
+    fn with_x(_self: Val<bevy::math::U16Vec4>, x: u16) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::with_x(
+                _self.into_inner(),
+                x,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 4D vector from `self` with the given value of `y`.
+    fn with_y(_self: Val<bevy::math::U16Vec4>, y: u16) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::with_y(
+                _self.into_inner(),
+                y,
+            )
+            .into();
+        output
+    }
+    ///  Creates a 4D vector from `self` with the given value of `z`.
+    fn with_z(_self: Val<bevy::math::U16Vec4>, z: u16) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::with_z(
+                _self.into_inner(),
+                z,
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
+    fn wrapping_add(
+        _self: Val<bevy::math::U16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::wrapping_add(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping addition of `self` and signed vector `rhs`.
+    ///  In other words this computes `[self.x.wrapping_add_signed(rhs.x), self.y.wrapping_add_signed(rhs.y), ..]`.
+    fn wrapping_add_signed(
+        _self: Val<bevy::math::U16Vec4>,
+        rhs: Val<bevy::math::I16Vec4>,
+    ) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::wrapping_add_signed(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping division of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
+    fn wrapping_div(
+        _self: Val<bevy::math::U16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::wrapping_div(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping multiplication of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
+    fn wrapping_mul(
+        _self: Val<bevy::math::U16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::wrapping_mul(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+    ///  Returns a vector containing the wrapping subtraction of `self` and `rhs`.
+    ///  In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
+    fn wrapping_sub(
+        _self: Val<bevy::math::U16Vec4>,
+        rhs: Val<bevy::math::U16Vec4>,
+    ) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U16Vec4::wrapping_sub(
+                _self.into_inner(),
+                rhs.into_inner(),
+            )
+            .into();
+        output
+    }
+}
+#[script_bindings(
+    remote,
     name = "u_64_vec_2_functions",
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
 impl bevy::math::U64Vec2 {
-    fn add(
-        _self: Val<bevy::math::U64Vec2>,
-        rhs: Ref<bevy::math::U64Vec2>,
-    ) -> Val<bevy::math::U64Vec2> {
-        let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Add<
-            &bevy::math::U64Vec2,
-        >>::add(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<bevy::math::U64Vec2>,
-        rhs: Val<bevy::math::U64Vec2>,
-    ) -> Val<bevy::math::U64Vec2> {
-        let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Add<
-            bevy::math::U64Vec2,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn add(_self: Val<bevy::math::U64Vec2>, rhs: u64) -> Val<bevy::math::U64Vec2> {
-        let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Add<
-            u64,
-        >>::add(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Casts all elements of `self` to `f64`.
     fn as_dvec2(_self: Ref<bevy::math::U64Vec2>) -> Val<bevy::math::DVec2> {
         let output: Val<bevy::math::DVec2> = bevy::math::U64Vec2::as_dvec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec2(_self: Ref<bevy::math::U64Vec2>) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::U64Vec2::as_i16vec2(&_self)
             .into();
         output
     }
@@ -8580,9 +13057,27 @@ impl bevy::math::U64Vec2 {
             .into();
         output
     }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec2(_self: Ref<bevy::math::U64Vec2>) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::U64Vec2::as_i8vec2(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `i32`.
     fn as_ivec2(_self: Ref<bevy::math::U64Vec2>) -> Val<bevy::math::IVec2> {
         let output: Val<bevy::math::IVec2> = bevy::math::U64Vec2::as_ivec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec2(_self: Ref<bevy::math::U64Vec2>) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::U64Vec2::as_u16vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec2(_self: Ref<bevy::math::U64Vec2>) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::U64Vec2::as_u8vec2(&_self)
             .into();
         output
     }
@@ -8595,13 +13090,6 @@ impl bevy::math::U64Vec2 {
     ///  Casts all elements of `self` to `f32`.
     fn as_vec2(_self: Ref<bevy::math::U64Vec2>) -> Val<bevy::math::Vec2> {
         let output: Val<bevy::math::Vec2> = bevy::math::U64Vec2::as_vec2(&_self).into();
-        output
-    }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::U64Vec2>) -> () {
-        let output: () = <bevy::math::U64Vec2 as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
         output
     }
     ///  Component-wise clamping of values, similar to [`u64::clamp`].
@@ -8617,13 +13105,6 @@ impl bevy::math::U64Vec2 {
                 _self.into_inner(),
                 min.into_inner(),
                 max.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::U64Vec2>) -> Val<bevy::math::U64Vec2> {
-        let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
             )
             .into();
         output
@@ -8718,33 +13199,6 @@ impl bevy::math::U64Vec2 {
             .into();
         output
     }
-    fn div(
-        _self: Val<bevy::math::U64Vec2>,
-        rhs: Ref<bevy::math::U64Vec2>,
-    ) -> Val<bevy::math::U64Vec2> {
-        let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Div<
-            &bevy::math::U64Vec2,
-        >>::div(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn div(
-        _self: Val<bevy::math::U64Vec2>,
-        rhs: Val<bevy::math::U64Vec2>,
-    ) -> Val<bevy::math::U64Vec2> {
-        let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Div<
-            bevy::math::U64Vec2,
-        >>::div(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn div(_self: Val<bevy::math::U64Vec2>, rhs: u64) -> Val<bevy::math::U64Vec2> {
-        let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Div<
-            u64,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Computes the dot product of `self` and `rhs`.
     fn dot(_self: Val<bevy::math::U64Vec2>, rhs: Val<bevy::math::U64Vec2>) -> u64 {
         let output: u64 = bevy::math::U64Vec2::dot(_self.into_inner(), rhs.into_inner())
@@ -8774,13 +13228,6 @@ impl bevy::math::U64Vec2 {
     ///  In other words, this computes `self.x + self.y + ..`.
     fn element_sum(_self: Val<bevy::math::U64Vec2>) -> u64 {
         let output: u64 = bevy::math::U64Vec2::element_sum(_self.into_inner()).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::U64Vec2>, other: Ref<bevy::math::U64Vec2>) -> bool {
-        let output: bool = <bevy::math::U64Vec2 as std::cmp::PartialEq<
-            bevy::math::U64Vec2,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Creates a 3D vector from `self` and the given `z` value.
@@ -8840,63 +13287,9 @@ impl bevy::math::U64Vec2 {
         let output: u64 = bevy::math::U64Vec2::min_element(_self.into_inner()).into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::U64Vec2>,
-        rhs: Ref<bevy::math::U64Vec2>,
-    ) -> Val<bevy::math::U64Vec2> {
-        let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Mul<
-            &bevy::math::U64Vec2,
-        >>::mul(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::U64Vec2>,
-        rhs: Val<bevy::math::U64Vec2>,
-    ) -> Val<bevy::math::U64Vec2> {
-        let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Mul<
-            bevy::math::U64Vec2,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::U64Vec2>, rhs: u64) -> Val<bevy::math::U64Vec2> {
-        let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Mul<
-            u64,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Creates a new vector.
     fn new(x: u64, y: u64) -> Val<bevy::math::U64Vec2> {
         let output: Val<bevy::math::U64Vec2> = bevy::math::U64Vec2::new(x, y).into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::U64Vec2>,
-        rhs: Ref<bevy::math::U64Vec2>,
-    ) -> Val<bevy::math::U64Vec2> {
-        let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Rem<
-            &bevy::math::U64Vec2,
-        >>::rem(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::U64Vec2>,
-        rhs: Val<bevy::math::U64Vec2>,
-    ) -> Val<bevy::math::U64Vec2> {
-        let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Rem<
-            bevy::math::U64Vec2,
-        >>::rem(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn rem(_self: Val<bevy::math::U64Vec2>, rhs: u64) -> Val<bevy::math::U64Vec2> {
-        let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Rem<
-            u64,
-        >>::rem(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  Returns a vector containing the saturating addition of `self` and `rhs`.
@@ -8984,33 +13377,6 @@ impl bevy::math::U64Vec2 {
     ///  Creates a vector with all elements set to `v`.
     fn splat(v: u64) -> Val<bevy::math::U64Vec2> {
         let output: Val<bevy::math::U64Vec2> = bevy::math::U64Vec2::splat(v).into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::U64Vec2>,
-        rhs: Ref<bevy::math::U64Vec2>,
-    ) -> Val<bevy::math::U64Vec2> {
-        let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Sub<
-            &bevy::math::U64Vec2,
-        >>::sub(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::U64Vec2>,
-        rhs: Val<bevy::math::U64Vec2>,
-    ) -> Val<bevy::math::U64Vec2> {
-        let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Sub<
-            bevy::math::U64Vec2,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn sub(_self: Val<bevy::math::U64Vec2>, rhs: u64) -> Val<bevy::math::U64Vec2> {
-        let output: Val<bevy::math::U64Vec2> = <bevy::math::U64Vec2 as std::ops::Sub<
-            u64,
-        >>::sub(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  `[x, y]`
@@ -9109,36 +13475,15 @@ impl bevy::math::U64Vec2 {
     generated
 )]
 impl bevy::math::U64Vec3 {
-    fn add(
-        _self: Val<bevy::math::U64Vec3>,
-        rhs: Ref<bevy::math::U64Vec3>,
-    ) -> Val<bevy::math::U64Vec3> {
-        let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Add<
-            &bevy::math::U64Vec3,
-        >>::add(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<bevy::math::U64Vec3>,
-        rhs: Val<bevy::math::U64Vec3>,
-    ) -> Val<bevy::math::U64Vec3> {
-        let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Add<
-            bevy::math::U64Vec3,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn add(_self: Val<bevy::math::U64Vec3>, rhs: u64) -> Val<bevy::math::U64Vec3> {
-        let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Add<
-            u64,
-        >>::add(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Casts all elements of `self` to `f64`.
     fn as_dvec3(_self: Ref<bevy::math::U64Vec3>) -> Val<bevy::math::DVec3> {
         let output: Val<bevy::math::DVec3> = bevy::math::U64Vec3::as_dvec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec3(_self: Ref<bevy::math::U64Vec3>) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::U64Vec3::as_i16vec3(&_self)
             .into();
         output
     }
@@ -9148,9 +13493,27 @@ impl bevy::math::U64Vec3 {
             .into();
         output
     }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec3(_self: Ref<bevy::math::U64Vec3>) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::U64Vec3::as_i8vec3(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `i32`.
     fn as_ivec3(_self: Ref<bevy::math::U64Vec3>) -> Val<bevy::math::IVec3> {
         let output: Val<bevy::math::IVec3> = bevy::math::U64Vec3::as_ivec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec3(_self: Ref<bevy::math::U64Vec3>) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::U64Vec3::as_u16vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec3(_self: Ref<bevy::math::U64Vec3>) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::U64Vec3::as_u8vec3(&_self)
             .into();
         output
     }
@@ -9171,13 +13534,6 @@ impl bevy::math::U64Vec3 {
             .into();
         output
     }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::U64Vec3>) -> () {
-        let output: () = <bevy::math::U64Vec3 as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
-        output
-    }
     ///  Component-wise clamping of values, similar to [`u64::clamp`].
     ///  Each element in `min` must be less-or-equal to the corresponding element in `max`.
     ///  # Panics
@@ -9191,13 +13547,6 @@ impl bevy::math::U64Vec3 {
                 _self.into_inner(),
                 min.into_inner(),
                 max.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::U64Vec3>) -> Val<bevy::math::U64Vec3> {
-        let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
             )
             .into();
         output
@@ -9304,33 +13653,6 @@ impl bevy::math::U64Vec3 {
             .into();
         output
     }
-    fn div(
-        _self: Val<bevy::math::U64Vec3>,
-        rhs: Ref<bevy::math::U64Vec3>,
-    ) -> Val<bevy::math::U64Vec3> {
-        let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Div<
-            &bevy::math::U64Vec3,
-        >>::div(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn div(
-        _self: Val<bevy::math::U64Vec3>,
-        rhs: Val<bevy::math::U64Vec3>,
-    ) -> Val<bevy::math::U64Vec3> {
-        let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Div<
-            bevy::math::U64Vec3,
-        >>::div(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn div(_self: Val<bevy::math::U64Vec3>, rhs: u64) -> Val<bevy::math::U64Vec3> {
-        let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Div<
-            u64,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Computes the dot product of `self` and `rhs`.
     fn dot(_self: Val<bevy::math::U64Vec3>, rhs: Val<bevy::math::U64Vec3>) -> u64 {
         let output: u64 = bevy::math::U64Vec3::dot(_self.into_inner(), rhs.into_inner())
@@ -9360,13 +13682,6 @@ impl bevy::math::U64Vec3 {
     ///  In other words, this computes `self.x + self.y + ..`.
     fn element_sum(_self: Val<bevy::math::U64Vec3>) -> u64 {
         let output: u64 = bevy::math::U64Vec3::element_sum(_self.into_inner()).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::U64Vec3>, other: Ref<bevy::math::U64Vec3>) -> bool {
-        let output: bool = <bevy::math::U64Vec3 as std::cmp::PartialEq<
-            bevy::math::U64Vec3,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Creates a 4D vector from `self` and the given `w` value.
@@ -9426,63 +13741,9 @@ impl bevy::math::U64Vec3 {
         let output: u64 = bevy::math::U64Vec3::min_element(_self.into_inner()).into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::U64Vec3>,
-        rhs: Ref<bevy::math::U64Vec3>,
-    ) -> Val<bevy::math::U64Vec3> {
-        let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Mul<
-            &bevy::math::U64Vec3,
-        >>::mul(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::U64Vec3>,
-        rhs: Val<bevy::math::U64Vec3>,
-    ) -> Val<bevy::math::U64Vec3> {
-        let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Mul<
-            bevy::math::U64Vec3,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::U64Vec3>, rhs: u64) -> Val<bevy::math::U64Vec3> {
-        let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Mul<
-            u64,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Creates a new vector.
     fn new(x: u64, y: u64, z: u64) -> Val<bevy::math::U64Vec3> {
         let output: Val<bevy::math::U64Vec3> = bevy::math::U64Vec3::new(x, y, z).into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::U64Vec3>,
-        rhs: Ref<bevy::math::U64Vec3>,
-    ) -> Val<bevy::math::U64Vec3> {
-        let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Rem<
-            &bevy::math::U64Vec3,
-        >>::rem(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::U64Vec3>,
-        rhs: Val<bevy::math::U64Vec3>,
-    ) -> Val<bevy::math::U64Vec3> {
-        let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Rem<
-            bevy::math::U64Vec3,
-        >>::rem(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn rem(_self: Val<bevy::math::U64Vec3>, rhs: u64) -> Val<bevy::math::U64Vec3> {
-        let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Rem<
-            u64,
-        >>::rem(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  Returns a vector containing the saturating addition of `self` and `rhs`.
@@ -9570,33 +13831,6 @@ impl bevy::math::U64Vec3 {
     ///  Creates a vector with all elements set to `v`.
     fn splat(v: u64) -> Val<bevy::math::U64Vec3> {
         let output: Val<bevy::math::U64Vec3> = bevy::math::U64Vec3::splat(v).into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::U64Vec3>,
-        rhs: Ref<bevy::math::U64Vec3>,
-    ) -> Val<bevy::math::U64Vec3> {
-        let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Sub<
-            &bevy::math::U64Vec3,
-        >>::sub(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::U64Vec3>,
-        rhs: Val<bevy::math::U64Vec3>,
-    ) -> Val<bevy::math::U64Vec3> {
-        let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Sub<
-            bevy::math::U64Vec3,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn sub(_self: Val<bevy::math::U64Vec3>, rhs: u64) -> Val<bevy::math::U64Vec3> {
-        let output: Val<bevy::math::U64Vec3> = <bevy::math::U64Vec3 as std::ops::Sub<
-            u64,
-        >>::sub(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  `[x, y, z]`
@@ -9713,36 +13947,15 @@ impl bevy::math::U64Vec3 {
     generated
 )]
 impl bevy::math::U64Vec4 {
-    fn add(
-        _self: Val<bevy::math::U64Vec4>,
-        rhs: Ref<bevy::math::U64Vec4>,
-    ) -> Val<bevy::math::U64Vec4> {
-        let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Add<
-            &bevy::math::U64Vec4,
-        >>::add(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<bevy::math::U64Vec4>,
-        rhs: Val<bevy::math::U64Vec4>,
-    ) -> Val<bevy::math::U64Vec4> {
-        let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Add<
-            bevy::math::U64Vec4,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn add(_self: Val<bevy::math::U64Vec4>, rhs: u64) -> Val<bevy::math::U64Vec4> {
-        let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Add<
-            u64,
-        >>::add(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Casts all elements of `self` to `f64`.
     fn as_dvec4(_self: Ref<bevy::math::U64Vec4>) -> Val<bevy::math::DVec4> {
         let output: Val<bevy::math::DVec4> = bevy::math::U64Vec4::as_dvec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec4(_self: Ref<bevy::math::U64Vec4>) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::U64Vec4::as_i16vec4(&_self)
             .into();
         output
     }
@@ -9752,9 +13965,27 @@ impl bevy::math::U64Vec4 {
             .into();
         output
     }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec4(_self: Ref<bevy::math::U64Vec4>) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::U64Vec4::as_i8vec4(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `i32`.
     fn as_ivec4(_self: Ref<bevy::math::U64Vec4>) -> Val<bevy::math::IVec4> {
         let output: Val<bevy::math::IVec4> = bevy::math::U64Vec4::as_ivec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec4(_self: Ref<bevy::math::U64Vec4>) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::U64Vec4::as_u16vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec4(_self: Ref<bevy::math::U64Vec4>) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::U64Vec4::as_u8vec4(&_self)
             .into();
         output
     }
@@ -9767,13 +13998,6 @@ impl bevy::math::U64Vec4 {
     ///  Casts all elements of `self` to `f32`.
     fn as_vec4(_self: Ref<bevy::math::U64Vec4>) -> Val<bevy::math::Vec4> {
         let output: Val<bevy::math::Vec4> = bevy::math::U64Vec4::as_vec4(&_self).into();
-        output
-    }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::U64Vec4>) -> () {
-        let output: () = <bevy::math::U64Vec4 as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
         output
     }
     ///  Component-wise clamping of values, similar to [`u64::clamp`].
@@ -9789,13 +14013,6 @@ impl bevy::math::U64Vec4 {
                 _self.into_inner(),
                 min.into_inner(),
                 max.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::U64Vec4>) -> Val<bevy::math::U64Vec4> {
-        let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
             )
             .into();
         output
@@ -9890,33 +14107,6 @@ impl bevy::math::U64Vec4 {
             .into();
         output
     }
-    fn div(
-        _self: Val<bevy::math::U64Vec4>,
-        rhs: Ref<bevy::math::U64Vec4>,
-    ) -> Val<bevy::math::U64Vec4> {
-        let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Div<
-            &bevy::math::U64Vec4,
-        >>::div(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn div(
-        _self: Val<bevy::math::U64Vec4>,
-        rhs: Val<bevy::math::U64Vec4>,
-    ) -> Val<bevy::math::U64Vec4> {
-        let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Div<
-            bevy::math::U64Vec4,
-        >>::div(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn div(_self: Val<bevy::math::U64Vec4>, rhs: u64) -> Val<bevy::math::U64Vec4> {
-        let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Div<
-            u64,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Computes the dot product of `self` and `rhs`.
     fn dot(_self: Val<bevy::math::U64Vec4>, rhs: Val<bevy::math::U64Vec4>) -> u64 {
         let output: u64 = bevy::math::U64Vec4::dot(_self.into_inner(), rhs.into_inner())
@@ -9946,13 +14136,6 @@ impl bevy::math::U64Vec4 {
     ///  In other words, this computes `self.x + self.y + ..`.
     fn element_sum(_self: Val<bevy::math::U64Vec4>) -> u64 {
         let output: u64 = bevy::math::U64Vec4::element_sum(_self.into_inner()).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::U64Vec4>, other: Ref<bevy::math::U64Vec4>) -> bool {
-        let output: bool = <bevy::math::U64Vec4 as std::cmp::PartialEq<
-            bevy::math::U64Vec4,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Creates a new vector from an array.
@@ -10003,63 +14186,9 @@ impl bevy::math::U64Vec4 {
         let output: u64 = bevy::math::U64Vec4::min_element(_self.into_inner()).into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::U64Vec4>,
-        rhs: Ref<bevy::math::U64Vec4>,
-    ) -> Val<bevy::math::U64Vec4> {
-        let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Mul<
-            &bevy::math::U64Vec4,
-        >>::mul(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::U64Vec4>,
-        rhs: Val<bevy::math::U64Vec4>,
-    ) -> Val<bevy::math::U64Vec4> {
-        let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Mul<
-            bevy::math::U64Vec4,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::U64Vec4>, rhs: u64) -> Val<bevy::math::U64Vec4> {
-        let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Mul<
-            u64,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Creates a new vector.
     fn new(x: u64, y: u64, z: u64, w: u64) -> Val<bevy::math::U64Vec4> {
         let output: Val<bevy::math::U64Vec4> = bevy::math::U64Vec4::new(x, y, z, w)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::U64Vec4>,
-        rhs: Ref<bevy::math::U64Vec4>,
-    ) -> Val<bevy::math::U64Vec4> {
-        let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Rem<
-            &bevy::math::U64Vec4,
-        >>::rem(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::U64Vec4>,
-        rhs: Val<bevy::math::U64Vec4>,
-    ) -> Val<bevy::math::U64Vec4> {
-        let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Rem<
-            bevy::math::U64Vec4,
-        >>::rem(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn rem(_self: Val<bevy::math::U64Vec4>, rhs: u64) -> Val<bevy::math::U64Vec4> {
-        let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Rem<
-            u64,
-        >>::rem(_self.into_inner(), rhs)
             .into();
         output
     }
@@ -10148,33 +14277,6 @@ impl bevy::math::U64Vec4 {
     ///  Creates a vector with all elements set to `v`.
     fn splat(v: u64) -> Val<bevy::math::U64Vec4> {
         let output: Val<bevy::math::U64Vec4> = bevy::math::U64Vec4::splat(v).into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::U64Vec4>,
-        rhs: Ref<bevy::math::U64Vec4>,
-    ) -> Val<bevy::math::U64Vec4> {
-        let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Sub<
-            &bevy::math::U64Vec4,
-        >>::sub(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::U64Vec4>,
-        rhs: Val<bevy::math::U64Vec4>,
-    ) -> Val<bevy::math::U64Vec4> {
-        let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Sub<
-            bevy::math::U64Vec4,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn sub(_self: Val<bevy::math::U64Vec4>, rhs: u64) -> Val<bevy::math::U64Vec4> {
-        let output: Val<bevy::math::U64Vec4> = <bevy::math::U64Vec4 as std::ops::Sub<
-            u64,
-        >>::sub(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  `[x, y, z, w]`
@@ -10326,33 +14428,6 @@ impl bevy::math::Vec2 {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::Vec2>,
-        rhs: Ref<bevy::math::Vec2>,
-    ) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Add<
-            &bevy::math::Vec2,
-        >>::add(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<bevy::math::Vec2>,
-        rhs: Val<bevy::math::Vec2>,
-    ) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Add<
-            bevy::math::Vec2,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn add(_self: Val<bevy::math::Vec2>, rhs: f32) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Add<
-            f32,
-        >>::add(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     fn angle_between(_self: Val<bevy::math::Vec2>, rhs: Val<bevy::math::Vec2>) -> f32 {
         let output: f32 = bevy::math::Vec2::angle_between(
                 _self.into_inner(),
@@ -10376,10 +14451,21 @@ impl bevy::math::Vec2 {
         let output: Val<bevy::math::DVec2> = bevy::math::Vec2::as_dvec2(&_self).into();
         output
     }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec2(_self: Ref<bevy::math::Vec2>) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::Vec2::as_i16vec2(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `i64`.
     fn as_i64vec2(_self: Ref<bevy::math::Vec2>) -> Val<bevy::math::I64Vec2> {
         let output: Val<bevy::math::I64Vec2> = bevy::math::Vec2::as_i64vec2(&_self)
             .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec2(_self: Ref<bevy::math::Vec2>) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::Vec2::as_i8vec2(&_self).into();
         output
     }
     ///  Casts all elements of `self` to `i32`.
@@ -10387,10 +14473,21 @@ impl bevy::math::Vec2 {
         let output: Val<bevy::math::IVec2> = bevy::math::Vec2::as_ivec2(&_self).into();
         output
     }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec2(_self: Ref<bevy::math::Vec2>) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::Vec2::as_u16vec2(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `u64`.
     fn as_u64vec2(_self: Ref<bevy::math::Vec2>) -> Val<bevy::math::U64Vec2> {
         let output: Val<bevy::math::U64Vec2> = bevy::math::Vec2::as_u64vec2(&_self)
             .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec2(_self: Ref<bevy::math::Vec2>) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::Vec2::as_u8vec2(&_self).into();
         output
     }
     ///  Casts all elements of `self` to `u32`.
@@ -10462,13 +14559,6 @@ impl bevy::math::Vec2 {
         let output: Val<bevy::math::Vec2> = bevy::math::Vec2::clamp_length_min(
                 _self.into_inner(),
                 min,
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::Vec2>) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
             )
             .into();
         output
@@ -10596,33 +14686,6 @@ impl bevy::math::Vec2 {
             .into();
         output
     }
-    fn div(
-        _self: Val<bevy::math::Vec2>,
-        rhs: Ref<bevy::math::Vec2>,
-    ) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Div<
-            &bevy::math::Vec2,
-        >>::div(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn div(
-        _self: Val<bevy::math::Vec2>,
-        rhs: Val<bevy::math::Vec2>,
-    ) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Div<
-            bevy::math::Vec2,
-        >>::div(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn div(_self: Val<bevy::math::Vec2>, rhs: f32) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Div<
-            f32,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
     fn div_euclid(
         _self: Val<bevy::math::Vec2>,
@@ -10663,13 +14726,6 @@ impl bevy::math::Vec2 {
     ///  In other words, this computes `self.x + self.y + ..`.
     fn element_sum(_self: Val<bevy::math::Vec2>) -> f32 {
         let output: f32 = bevy::math::Vec2::element_sum(_self.into_inner()).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::Vec2>, other: Ref<bevy::math::Vec2>) -> bool {
-        let output: bool = <bevy::math::Vec2 as std::cmp::PartialEq<
-            bevy::math::Vec2,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Returns a vector containing `e^self` (the exponential function) for each element of
@@ -10874,33 +14930,6 @@ impl bevy::math::Vec2 {
             .into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::Vec2>,
-        rhs: Ref<bevy::math::Vec2>,
-    ) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Mul<
-            &bevy::math::Vec2,
-        >>::mul(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::Vec2>,
-        rhs: Val<bevy::math::Vec2>,
-    ) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Mul<
-            bevy::math::Vec2,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::Vec2>, rhs: f32) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Mul<
-            f32,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
     ///  error, yielding a more accurate result than an unfused multiply-add.
     ///  Using `mul_add` *may* be more performant than an unfused multiply-add if the target
@@ -10916,13 +14945,6 @@ impl bevy::math::Vec2 {
                 _self.into_inner(),
                 a.into_inner(),
                 b.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn neg(_self: Val<bevy::math::Vec2>) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Neg>::neg(
-                _self.into_inner(),
             )
             .into();
         output
@@ -11098,33 +15120,6 @@ impl bevy::math::Vec2 {
             .into();
         output
     }
-    fn rem(
-        _self: Val<bevy::math::Vec2>,
-        rhs: Ref<bevy::math::Vec2>,
-    ) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Rem<
-            &bevy::math::Vec2,
-        >>::rem(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::Vec2>,
-        rhs: Val<bevy::math::Vec2>,
-    ) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Rem<
-            bevy::math::Vec2,
-        >>::rem(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn rem(_self: Val<bevy::math::Vec2>, rhs: f32) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Rem<
-            f32,
-        >>::rem(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
     ///  [Euclidean division]: f32::rem_euclid
     fn rem_euclid(
@@ -11207,33 +15202,6 @@ impl bevy::math::Vec2 {
         let output: Val<bevy::math::Vec2> = bevy::math::Vec2::splat(v).into();
         output
     }
-    fn sub(
-        _self: Val<bevy::math::Vec2>,
-        rhs: Ref<bevy::math::Vec2>,
-    ) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Sub<
-            &bevy::math::Vec2,
-        >>::sub(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::Vec2>,
-        rhs: Val<bevy::math::Vec2>,
-    ) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Sub<
-            bevy::math::Vec2,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn sub(_self: Val<bevy::math::Vec2>, rhs: f32) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> = <bevy::math::Vec2 as std::ops::Sub<
-            f32,
-        >>::sub(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the angle (in radians) of this vector in the range `[-π, +π]`.
     ///  The input does not need to be a unit vector however it must be non-zero.
     fn to_angle(_self: Val<bevy::math::Vec2>) -> f32 {
@@ -11304,33 +15272,6 @@ impl bevy::math::Vec3A {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::Vec3A>,
-        rhs: Ref<bevy::math::Vec3A>,
-    ) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Add<
-            &bevy::math::Vec3A,
-        >>::add(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<bevy::math::Vec3A>,
-        rhs: Val<bevy::math::Vec3A>,
-    ) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Add<
-            bevy::math::Vec3A,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn add(_self: Val<bevy::math::Vec3A>, rhs: f32) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Add<
-            f32,
-        >>::add(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the angle (in radians) between two vectors in the range `[0, +π]`.
     ///  The inputs do not need to be unit vectors however they must be non-zero.
     fn angle_between(_self: Val<bevy::math::Vec3A>, rhs: Val<bevy::math::Vec3A>) -> f32 {
@@ -11368,9 +15309,21 @@ impl bevy::math::Vec3A {
         let output: Val<bevy::math::DVec3> = bevy::math::Vec3A::as_dvec3(&_self).into();
         output
     }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec3(_self: Ref<bevy::math::Vec3A>) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::Vec3A::as_i16vec3(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `i64`.
     fn as_i64vec3(_self: Ref<bevy::math::Vec3A>) -> Val<bevy::math::I64Vec3> {
         let output: Val<bevy::math::I64Vec3> = bevy::math::Vec3A::as_i64vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec3(_self: Ref<bevy::math::Vec3A>) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::Vec3A::as_i8vec3(&_self)
             .into();
         output
     }
@@ -11379,9 +15332,21 @@ impl bevy::math::Vec3A {
         let output: Val<bevy::math::IVec3> = bevy::math::Vec3A::as_ivec3(&_self).into();
         output
     }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec3(_self: Ref<bevy::math::Vec3A>) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::Vec3A::as_u16vec3(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `u64`.
     fn as_u64vec3(_self: Ref<bevy::math::Vec3A>) -> Val<bevy::math::U64Vec3> {
         let output: Val<bevy::math::U64Vec3> = bevy::math::Vec3A::as_u64vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec3(_self: Ref<bevy::math::Vec3A>) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::Vec3A::as_u8vec3(&_self)
             .into();
         output
     }
@@ -11454,13 +15419,6 @@ impl bevy::math::Vec3A {
         let output: Val<bevy::math::Vec3A> = bevy::math::Vec3A::clamp_length_min(
                 _self.into_inner(),
                 min,
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::Vec3A>) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
             )
             .into();
         output
@@ -11600,33 +15558,6 @@ impl bevy::math::Vec3A {
             .into();
         output
     }
-    fn div(
-        _self: Val<bevy::math::Vec3A>,
-        rhs: Ref<bevy::math::Vec3A>,
-    ) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Div<
-            &bevy::math::Vec3A,
-        >>::div(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn div(
-        _self: Val<bevy::math::Vec3A>,
-        rhs: Val<bevy::math::Vec3A>,
-    ) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Div<
-            bevy::math::Vec3A,
-        >>::div(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn div(_self: Val<bevy::math::Vec3A>, rhs: f32) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Div<
-            f32,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
     fn div_euclid(
         _self: Val<bevy::math::Vec3A>,
@@ -11667,13 +15598,6 @@ impl bevy::math::Vec3A {
     ///  In other words, this computes `self.x + self.y + ..`.
     fn element_sum(_self: Val<bevy::math::Vec3A>) -> f32 {
         let output: f32 = bevy::math::Vec3A::element_sum(_self.into_inner()).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::Vec3A>, rhs: Ref<bevy::math::Vec3A>) -> bool {
-        let output: bool = <bevy::math::Vec3A as std::cmp::PartialEq<
-            bevy::math::Vec3A,
-        >>::eq(&_self, &rhs)
-            .into();
         output
     }
     ///  Returns a vector containing `e^self` (the exponential function) for each element of
@@ -11877,33 +15801,6 @@ impl bevy::math::Vec3A {
             .into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::Vec3A>,
-        rhs: Ref<bevy::math::Vec3A>,
-    ) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Mul<
-            &bevy::math::Vec3A,
-        >>::mul(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::Vec3A>,
-        rhs: Val<bevy::math::Vec3A>,
-    ) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Mul<
-            bevy::math::Vec3A,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::Vec3A>, rhs: f32) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Mul<
-            f32,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
     ///  error, yielding a more accurate result than an unfused multiply-add.
     ///  Using `mul_add` *may* be more performant than an unfused multiply-add if the target
@@ -11919,13 +15816,6 @@ impl bevy::math::Vec3A {
                 _self.into_inner(),
                 a.into_inner(),
                 b.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn neg(_self: Val<bevy::math::Vec3A>) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Neg>::neg(
-                _self.into_inner(),
             )
             .into();
         output
@@ -12088,33 +15978,6 @@ impl bevy::math::Vec3A {
             .into();
         output
     }
-    fn rem(
-        _self: Val<bevy::math::Vec3A>,
-        rhs: Ref<bevy::math::Vec3A>,
-    ) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Rem<
-            &bevy::math::Vec3A,
-        >>::rem(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::Vec3A>,
-        rhs: Val<bevy::math::Vec3A>,
-    ) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Rem<
-            bevy::math::Vec3A,
-        >>::rem(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn rem(_self: Val<bevy::math::Vec3A>, rhs: f32) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Rem<
-            f32,
-        >>::rem(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
     ///  [Euclidean division]: f32::rem_euclid
     fn rem_euclid(
@@ -12166,33 +16029,6 @@ impl bevy::math::Vec3A {
     ///  Creates a vector with all elements set to `v`.
     fn splat(v: f32) -> Val<bevy::math::Vec3A> {
         let output: Val<bevy::math::Vec3A> = bevy::math::Vec3A::splat(v).into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::Vec3A>,
-        rhs: Ref<bevy::math::Vec3A>,
-    ) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Sub<
-            &bevy::math::Vec3A,
-        >>::sub(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::Vec3A>,
-        rhs: Val<bevy::math::Vec3A>,
-    ) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Sub<
-            bevy::math::Vec3A,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn sub(_self: Val<bevy::math::Vec3A>, rhs: f32) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Vec3A as std::ops::Sub<
-            f32,
-        >>::sub(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  `[x, y, z]`
@@ -12277,36 +16113,15 @@ impl bevy::math::Vec4 {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::Vec4>,
-        rhs: Ref<bevy::math::Vec4>,
-    ) -> Val<bevy::math::Vec4> {
-        let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Add<
-            &bevy::math::Vec4,
-        >>::add(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<bevy::math::Vec4>,
-        rhs: Val<bevy::math::Vec4>,
-    ) -> Val<bevy::math::Vec4> {
-        let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Add<
-            bevy::math::Vec4,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn add(_self: Val<bevy::math::Vec4>, rhs: f32) -> Val<bevy::math::Vec4> {
-        let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Add<
-            f32,
-        >>::add(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Casts all elements of `self` to `f64`.
     fn as_dvec4(_self: Ref<bevy::math::Vec4>) -> Val<bevy::math::DVec4> {
         let output: Val<bevy::math::DVec4> = bevy::math::Vec4::as_dvec4(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec4(_self: Ref<bevy::math::Vec4>) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::Vec4::as_i16vec4(&_self)
+            .into();
         output
     }
     ///  Casts all elements of `self` to `i64`.
@@ -12315,15 +16130,31 @@ impl bevy::math::Vec4 {
             .into();
         output
     }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec4(_self: Ref<bevy::math::Vec4>) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::Vec4::as_i8vec4(&_self).into();
+        output
+    }
     ///  Casts all elements of `self` to `i32`.
     fn as_ivec4(_self: Ref<bevy::math::Vec4>) -> Val<bevy::math::IVec4> {
         let output: Val<bevy::math::IVec4> = bevy::math::Vec4::as_ivec4(&_self).into();
+        output
+    }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec4(_self: Ref<bevy::math::Vec4>) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::Vec4::as_u16vec4(&_self)
+            .into();
         output
     }
     ///  Casts all elements of `self` to `u64`.
     fn as_u64vec4(_self: Ref<bevy::math::Vec4>) -> Val<bevy::math::U64Vec4> {
         let output: Val<bevy::math::U64Vec4> = bevy::math::Vec4::as_u64vec4(&_self)
             .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec4(_self: Ref<bevy::math::Vec4>) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::Vec4::as_u8vec4(&_self).into();
         output
     }
     ///  Casts all elements of `self` to `u32`.
@@ -12395,13 +16226,6 @@ impl bevy::math::Vec4 {
         let output: Val<bevy::math::Vec4> = bevy::math::Vec4::clamp_length_min(
                 _self.into_inner(),
                 min,
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::Vec4>) -> Val<bevy::math::Vec4> {
-        let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
             )
             .into();
         output
@@ -12529,33 +16353,6 @@ impl bevy::math::Vec4 {
             .into();
         output
     }
-    fn div(
-        _self: Val<bevy::math::Vec4>,
-        rhs: Ref<bevy::math::Vec4>,
-    ) -> Val<bevy::math::Vec4> {
-        let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Div<
-            &bevy::math::Vec4,
-        >>::div(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn div(
-        _self: Val<bevy::math::Vec4>,
-        rhs: Val<bevy::math::Vec4>,
-    ) -> Val<bevy::math::Vec4> {
-        let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Div<
-            bevy::math::Vec4,
-        >>::div(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn div(_self: Val<bevy::math::Vec4>, rhs: f32) -> Val<bevy::math::Vec4> {
-        let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Div<
-            f32,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
     fn div_euclid(
         _self: Val<bevy::math::Vec4>,
@@ -12596,13 +16393,6 @@ impl bevy::math::Vec4 {
     ///  In other words, this computes `self.x + self.y + ..`.
     fn element_sum(_self: Val<bevy::math::Vec4>) -> f32 {
         let output: f32 = bevy::math::Vec4::element_sum(_self.into_inner()).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::Vec4>, rhs: Ref<bevy::math::Vec4>) -> bool {
-        let output: bool = <bevy::math::Vec4 as std::cmp::PartialEq<
-            bevy::math::Vec4,
-        >>::eq(&_self, &rhs)
-            .into();
         output
     }
     ///  Returns a vector containing `e^self` (the exponential function) for each element of
@@ -12790,33 +16580,6 @@ impl bevy::math::Vec4 {
             .into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::Vec4>,
-        rhs: Ref<bevy::math::Vec4>,
-    ) -> Val<bevy::math::Vec4> {
-        let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Mul<
-            &bevy::math::Vec4,
-        >>::mul(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::Vec4>,
-        rhs: Val<bevy::math::Vec4>,
-    ) -> Val<bevy::math::Vec4> {
-        let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Mul<
-            bevy::math::Vec4,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::Vec4>, rhs: f32) -> Val<bevy::math::Vec4> {
-        let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Mul<
-            f32,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
     ///  error, yielding a more accurate result than an unfused multiply-add.
     ///  Using `mul_add` *may* be more performant than an unfused multiply-add if the target
@@ -12832,13 +16595,6 @@ impl bevy::math::Vec4 {
                 _self.into_inner(),
                 a.into_inner(),
                 b.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn neg(_self: Val<bevy::math::Vec4>) -> Val<bevy::math::Vec4> {
-        let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Neg>::neg(
-                _self.into_inner(),
             )
             .into();
         output
@@ -12998,33 +16754,6 @@ impl bevy::math::Vec4 {
             .into();
         output
     }
-    fn rem(
-        _self: Val<bevy::math::Vec4>,
-        rhs: Ref<bevy::math::Vec4>,
-    ) -> Val<bevy::math::Vec4> {
-        let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Rem<
-            &bevy::math::Vec4,
-        >>::rem(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::Vec4>,
-        rhs: Val<bevy::math::Vec4>,
-    ) -> Val<bevy::math::Vec4> {
-        let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Rem<
-            bevy::math::Vec4,
-        >>::rem(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn rem(_self: Val<bevy::math::Vec4>, rhs: f32) -> Val<bevy::math::Vec4> {
-        let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Rem<
-            f32,
-        >>::rem(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
     ///  [Euclidean division]: f32::rem_euclid
     fn rem_euclid(
@@ -13074,33 +16803,6 @@ impl bevy::math::Vec4 {
     ///  Creates a vector with all elements set to `v`.
     fn splat(v: f32) -> Val<bevy::math::Vec4> {
         let output: Val<bevy::math::Vec4> = bevy::math::Vec4::splat(v).into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::Vec4>,
-        rhs: Ref<bevy::math::Vec4>,
-    ) -> Val<bevy::math::Vec4> {
-        let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Sub<
-            &bevy::math::Vec4,
-        >>::sub(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::Vec4>,
-        rhs: Val<bevy::math::Vec4>,
-    ) -> Val<bevy::math::Vec4> {
-        let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Sub<
-            bevy::math::Vec4,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn sub(_self: Val<bevy::math::Vec4>, rhs: f32) -> Val<bevy::math::Vec4> {
-        let output: Val<bevy::math::Vec4> = <bevy::math::Vec4 as std::ops::Sub<
-            f32,
-        >>::sub(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  `[x, y, z, w]`
@@ -13179,32 +16881,11 @@ impl bevy::math::BVec2 {
         let output: bool = bevy::math::BVec2::any(_self.into_inner()).into();
         output
     }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::BVec2>) -> () {
-        let output: () = <bevy::math::BVec2 as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
-        output
-    }
     ///  Returns a bitmask with the lowest 2 bits set from the elements of `self`.
     ///  A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
     ///  into the first lowest bit, element `y` into the second, etc.
     fn bitmask(_self: Val<bevy::math::BVec2>) -> u32 {
         let output: u32 = bevy::math::BVec2::bitmask(_self.into_inner()).into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::BVec2>) -> Val<bevy::math::BVec2> {
-        let output: Val<bevy::math::BVec2> = <bevy::math::BVec2 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::BVec2>, other: Ref<bevy::math::BVec2>) -> bool {
-        let output: bool = <bevy::math::BVec2 as std::cmp::PartialEq<
-            bevy::math::BVec2,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Creates a new vector mask from a bool array.
@@ -13252,32 +16933,11 @@ impl bevy::math::BVec3 {
         let output: bool = bevy::math::BVec3::any(_self.into_inner()).into();
         output
     }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::BVec3>) -> () {
-        let output: () = <bevy::math::BVec3 as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
-        output
-    }
     ///  Returns a bitmask with the lowest 3 bits set from the elements of `self`.
     ///  A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
     ///  into the first lowest bit, element `y` into the second, etc.
     fn bitmask(_self: Val<bevy::math::BVec3>) -> u32 {
         let output: u32 = bevy::math::BVec3::bitmask(_self.into_inner()).into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::BVec3>) -> Val<bevy::math::BVec3> {
-        let output: Val<bevy::math::BVec3> = <bevy::math::BVec3 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::BVec3>, other: Ref<bevy::math::BVec3>) -> bool {
-        let output: bool = <bevy::math::BVec3 as std::cmp::PartialEq<
-            bevy::math::BVec3,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Creates a new vector mask from a bool array.
@@ -13325,32 +16985,11 @@ impl bevy::math::BVec4 {
         let output: bool = bevy::math::BVec4::any(_self.into_inner()).into();
         output
     }
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::BVec4>) -> () {
-        let output: () = <bevy::math::BVec4 as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
-        output
-    }
     ///  Returns a bitmask with the lowest 4 bits set from the elements of `self`.
     ///  A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
     ///  into the first lowest bit, element `y` into the second, etc.
     fn bitmask(_self: Val<bevy::math::BVec4>) -> u32 {
         let output: u32 = bevy::math::BVec4::bitmask(_self.into_inner()).into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::BVec4>) -> Val<bevy::math::BVec4> {
-        let output: Val<bevy::math::BVec4> = <bevy::math::BVec4 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::BVec4>, other: Ref<bevy::math::BVec4>) -> bool {
-        let output: bool = <bevy::math::BVec4 as std::cmp::PartialEq<
-            bevy::math::BVec4,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Creates a new vector mask from a bool array.
@@ -13414,33 +17053,6 @@ impl bevy::math::DVec2 {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::DVec2>,
-        rhs: Ref<bevy::math::DVec2>,
-    ) -> Val<bevy::math::DVec2> {
-        let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Add<
-            &bevy::math::DVec2,
-        >>::add(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<bevy::math::DVec2>,
-        rhs: Val<bevy::math::DVec2>,
-    ) -> Val<bevy::math::DVec2> {
-        let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Add<
-            bevy::math::DVec2,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn add(_self: Val<bevy::math::DVec2>, rhs: f64) -> Val<bevy::math::DVec2> {
-        let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Add<
-            f64,
-        >>::add(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     fn angle_between(_self: Val<bevy::math::DVec2>, rhs: Val<bevy::math::DVec2>) -> f64 {
         let output: f64 = bevy::math::DVec2::angle_between(
                 _self.into_inner(),
@@ -13459,9 +17071,21 @@ impl bevy::math::DVec2 {
             .into();
         output
     }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec2(_self: Ref<bevy::math::DVec2>) -> Val<bevy::math::I16Vec2> {
+        let output: Val<bevy::math::I16Vec2> = bevy::math::DVec2::as_i16vec2(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `i64`.
     fn as_i64vec2(_self: Ref<bevy::math::DVec2>) -> Val<bevy::math::I64Vec2> {
         let output: Val<bevy::math::I64Vec2> = bevy::math::DVec2::as_i64vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec2(_self: Ref<bevy::math::DVec2>) -> Val<bevy::math::I8Vec2> {
+        let output: Val<bevy::math::I8Vec2> = bevy::math::DVec2::as_i8vec2(&_self)
             .into();
         output
     }
@@ -13470,9 +17094,21 @@ impl bevy::math::DVec2 {
         let output: Val<bevy::math::IVec2> = bevy::math::DVec2::as_ivec2(&_self).into();
         output
     }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec2(_self: Ref<bevy::math::DVec2>) -> Val<bevy::math::U16Vec2> {
+        let output: Val<bevy::math::U16Vec2> = bevy::math::DVec2::as_u16vec2(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `u64`.
     fn as_u64vec2(_self: Ref<bevy::math::DVec2>) -> Val<bevy::math::U64Vec2> {
         let output: Val<bevy::math::U64Vec2> = bevy::math::DVec2::as_u64vec2(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec2(_self: Ref<bevy::math::DVec2>) -> Val<bevy::math::U8Vec2> {
+        let output: Val<bevy::math::U8Vec2> = bevy::math::DVec2::as_u8vec2(&_self)
             .into();
         output
     }
@@ -13550,13 +17186,6 @@ impl bevy::math::DVec2 {
         let output: Val<bevy::math::DVec2> = bevy::math::DVec2::clamp_length_min(
                 _self.into_inner(),
                 min,
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::DVec2>) -> Val<bevy::math::DVec2> {
-        let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
             )
             .into();
         output
@@ -13684,33 +17313,6 @@ impl bevy::math::DVec2 {
             .into();
         output
     }
-    fn div(
-        _self: Val<bevy::math::DVec2>,
-        rhs: Ref<bevy::math::DVec2>,
-    ) -> Val<bevy::math::DVec2> {
-        let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Div<
-            &bevy::math::DVec2,
-        >>::div(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn div(
-        _self: Val<bevy::math::DVec2>,
-        rhs: Val<bevy::math::DVec2>,
-    ) -> Val<bevy::math::DVec2> {
-        let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Div<
-            bevy::math::DVec2,
-        >>::div(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn div(_self: Val<bevy::math::DVec2>, rhs: f64) -> Val<bevy::math::DVec2> {
-        let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Div<
-            f64,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
     fn div_euclid(
         _self: Val<bevy::math::DVec2>,
@@ -13751,13 +17353,6 @@ impl bevy::math::DVec2 {
     ///  In other words, this computes `self.x + self.y + ..`.
     fn element_sum(_self: Val<bevy::math::DVec2>) -> f64 {
         let output: f64 = bevy::math::DVec2::element_sum(_self.into_inner()).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::DVec2>, other: Ref<bevy::math::DVec2>) -> bool {
-        let output: bool = <bevy::math::DVec2 as std::cmp::PartialEq<
-            bevy::math::DVec2,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Returns a vector containing `e^self` (the exponential function) for each element of
@@ -13962,33 +17557,6 @@ impl bevy::math::DVec2 {
             .into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::DVec2>,
-        rhs: Ref<bevy::math::DVec2>,
-    ) -> Val<bevy::math::DVec2> {
-        let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Mul<
-            &bevy::math::DVec2,
-        >>::mul(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::DVec2>,
-        rhs: Val<bevy::math::DVec2>,
-    ) -> Val<bevy::math::DVec2> {
-        let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Mul<
-            bevy::math::DVec2,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::DVec2>, rhs: f64) -> Val<bevy::math::DVec2> {
-        let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Mul<
-            f64,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
     ///  error, yielding a more accurate result than an unfused multiply-add.
     ///  Using `mul_add` *may* be more performant than an unfused multiply-add if the target
@@ -14004,13 +17572,6 @@ impl bevy::math::DVec2 {
                 _self.into_inner(),
                 a.into_inner(),
                 b.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn neg(_self: Val<bevy::math::DVec2>) -> Val<bevy::math::DVec2> {
-        let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Neg>::neg(
-                _self.into_inner(),
             )
             .into();
         output
@@ -14189,33 +17750,6 @@ impl bevy::math::DVec2 {
             .into();
         output
     }
-    fn rem(
-        _self: Val<bevy::math::DVec2>,
-        rhs: Ref<bevy::math::DVec2>,
-    ) -> Val<bevy::math::DVec2> {
-        let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Rem<
-            &bevy::math::DVec2,
-        >>::rem(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::DVec2>,
-        rhs: Val<bevy::math::DVec2>,
-    ) -> Val<bevy::math::DVec2> {
-        let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Rem<
-            bevy::math::DVec2,
-        >>::rem(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn rem(_self: Val<bevy::math::DVec2>, rhs: f64) -> Val<bevy::math::DVec2> {
-        let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Rem<
-            f64,
-        >>::rem(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
     ///  [Euclidean division]: f64::rem_euclid
     fn rem_euclid(
@@ -14300,33 +17834,6 @@ impl bevy::math::DVec2 {
         let output: Val<bevy::math::DVec2> = bevy::math::DVec2::splat(v).into();
         output
     }
-    fn sub(
-        _self: Val<bevy::math::DVec2>,
-        rhs: Ref<bevy::math::DVec2>,
-    ) -> Val<bevy::math::DVec2> {
-        let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Sub<
-            &bevy::math::DVec2,
-        >>::sub(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::DVec2>,
-        rhs: Val<bevy::math::DVec2>,
-    ) -> Val<bevy::math::DVec2> {
-        let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Sub<
-            bevy::math::DVec2,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn sub(_self: Val<bevy::math::DVec2>, rhs: f64) -> Val<bevy::math::DVec2> {
-        let output: Val<bevy::math::DVec2> = <bevy::math::DVec2 as std::ops::Sub<
-            f64,
-        >>::sub(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the angle (in radians) of this vector in the range `[-π, +π]`.
     ///  The input does not need to be a unit vector however it must be non-zero.
     fn to_angle(_self: Val<bevy::math::DVec2>) -> f64 {
@@ -14397,33 +17904,6 @@ impl bevy::math::DVec3 {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::DVec3>,
-        rhs: Ref<bevy::math::DVec3>,
-    ) -> Val<bevy::math::DVec3> {
-        let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Add<
-            &bevy::math::DVec3,
-        >>::add(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<bevy::math::DVec3>,
-        rhs: Val<bevy::math::DVec3>,
-    ) -> Val<bevy::math::DVec3> {
-        let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Add<
-            bevy::math::DVec3,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn add(_self: Val<bevy::math::DVec3>, rhs: f64) -> Val<bevy::math::DVec3> {
-        let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Add<
-            f64,
-        >>::add(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the angle (in radians) between two vectors in the range `[0, +π]`.
     ///  The inputs do not need to be unit vectors however they must be non-zero.
     fn angle_between(_self: Val<bevy::math::DVec3>, rhs: Val<bevy::math::DVec3>) -> f64 {
@@ -14456,9 +17936,21 @@ impl bevy::math::DVec3 {
             .into();
         output
     }
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec3(_self: Ref<bevy::math::DVec3>) -> Val<bevy::math::I16Vec3> {
+        let output: Val<bevy::math::I16Vec3> = bevy::math::DVec3::as_i16vec3(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `i64`.
     fn as_i64vec3(_self: Ref<bevy::math::DVec3>) -> Val<bevy::math::I64Vec3> {
         let output: Val<bevy::math::I64Vec3> = bevy::math::DVec3::as_i64vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec3(_self: Ref<bevy::math::DVec3>) -> Val<bevy::math::I8Vec3> {
+        let output: Val<bevy::math::I8Vec3> = bevy::math::DVec3::as_i8vec3(&_self)
             .into();
         output
     }
@@ -14467,9 +17959,21 @@ impl bevy::math::DVec3 {
         let output: Val<bevy::math::IVec3> = bevy::math::DVec3::as_ivec3(&_self).into();
         output
     }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec3(_self: Ref<bevy::math::DVec3>) -> Val<bevy::math::U16Vec3> {
+        let output: Val<bevy::math::U16Vec3> = bevy::math::DVec3::as_u16vec3(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `u64`.
     fn as_u64vec3(_self: Ref<bevy::math::DVec3>) -> Val<bevy::math::U64Vec3> {
         let output: Val<bevy::math::U64Vec3> = bevy::math::DVec3::as_u64vec3(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec3(_self: Ref<bevy::math::DVec3>) -> Val<bevy::math::U8Vec3> {
+        let output: Val<bevy::math::U8Vec3> = bevy::math::DVec3::as_u8vec3(&_self)
             .into();
         output
     }
@@ -14552,13 +18056,6 @@ impl bevy::math::DVec3 {
         let output: Val<bevy::math::DVec3> = bevy::math::DVec3::clamp_length_min(
                 _self.into_inner(),
                 min,
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::DVec3>) -> Val<bevy::math::DVec3> {
-        let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
             )
             .into();
         output
@@ -14698,33 +18195,6 @@ impl bevy::math::DVec3 {
             .into();
         output
     }
-    fn div(
-        _self: Val<bevy::math::DVec3>,
-        rhs: Ref<bevy::math::DVec3>,
-    ) -> Val<bevy::math::DVec3> {
-        let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Div<
-            &bevy::math::DVec3,
-        >>::div(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn div(
-        _self: Val<bevy::math::DVec3>,
-        rhs: Val<bevy::math::DVec3>,
-    ) -> Val<bevy::math::DVec3> {
-        let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Div<
-            bevy::math::DVec3,
-        >>::div(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn div(_self: Val<bevy::math::DVec3>, rhs: f64) -> Val<bevy::math::DVec3> {
-        let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Div<
-            f64,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
     fn div_euclid(
         _self: Val<bevy::math::DVec3>,
@@ -14765,13 +18235,6 @@ impl bevy::math::DVec3 {
     ///  In other words, this computes `self.x + self.y + ..`.
     fn element_sum(_self: Val<bevy::math::DVec3>) -> f64 {
         let output: f64 = bevy::math::DVec3::element_sum(_self.into_inner()).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::DVec3>, other: Ref<bevy::math::DVec3>) -> bool {
-        let output: bool = <bevy::math::DVec3 as std::cmp::PartialEq<
-            bevy::math::DVec3,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Returns a vector containing `e^self` (the exponential function) for each element of
@@ -14968,33 +18431,6 @@ impl bevy::math::DVec3 {
             .into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::DVec3>,
-        rhs: Ref<bevy::math::DVec3>,
-    ) -> Val<bevy::math::DVec3> {
-        let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Mul<
-            &bevy::math::DVec3,
-        >>::mul(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::DVec3>,
-        rhs: Val<bevy::math::DVec3>,
-    ) -> Val<bevy::math::DVec3> {
-        let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Mul<
-            bevy::math::DVec3,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::DVec3>, rhs: f64) -> Val<bevy::math::DVec3> {
-        let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Mul<
-            f64,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
     ///  error, yielding a more accurate result than an unfused multiply-add.
     ///  Using `mul_add` *may* be more performant than an unfused multiply-add if the target
@@ -15010,13 +18446,6 @@ impl bevy::math::DVec3 {
                 _self.into_inner(),
                 a.into_inner(),
                 b.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn neg(_self: Val<bevy::math::DVec3>) -> Val<bevy::math::DVec3> {
-        let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Neg>::neg(
-                _self.into_inner(),
             )
             .into();
         output
@@ -15179,33 +18608,6 @@ impl bevy::math::DVec3 {
             .into();
         output
     }
-    fn rem(
-        _self: Val<bevy::math::DVec3>,
-        rhs: Ref<bevy::math::DVec3>,
-    ) -> Val<bevy::math::DVec3> {
-        let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Rem<
-            &bevy::math::DVec3,
-        >>::rem(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::DVec3>,
-        rhs: Val<bevy::math::DVec3>,
-    ) -> Val<bevy::math::DVec3> {
-        let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Rem<
-            bevy::math::DVec3,
-        >>::rem(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn rem(_self: Val<bevy::math::DVec3>, rhs: f64) -> Val<bevy::math::DVec3> {
-        let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Rem<
-            f64,
-        >>::rem(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
     ///  [Euclidean division]: f64::rem_euclid
     fn rem_euclid(
@@ -15257,33 +18659,6 @@ impl bevy::math::DVec3 {
     ///  Creates a vector with all elements set to `v`.
     fn splat(v: f64) -> Val<bevy::math::DVec3> {
         let output: Val<bevy::math::DVec3> = bevy::math::DVec3::splat(v).into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::DVec3>,
-        rhs: Ref<bevy::math::DVec3>,
-    ) -> Val<bevy::math::DVec3> {
-        let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Sub<
-            &bevy::math::DVec3,
-        >>::sub(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::DVec3>,
-        rhs: Val<bevy::math::DVec3>,
-    ) -> Val<bevy::math::DVec3> {
-        let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Sub<
-            bevy::math::DVec3,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn sub(_self: Val<bevy::math::DVec3>, rhs: f64) -> Val<bevy::math::DVec3> {
-        let output: Val<bevy::math::DVec3> = <bevy::math::DVec3 as std::ops::Sub<
-            f64,
-        >>::sub(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  `[x, y, z]`
@@ -15368,30 +18743,9 @@ impl bevy::math::DVec4 {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::DVec4>,
-        rhs: Ref<bevy::math::DVec4>,
-    ) -> Val<bevy::math::DVec4> {
-        let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Add<
-            &bevy::math::DVec4,
-        >>::add(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn add(
-        _self: Val<bevy::math::DVec4>,
-        rhs: Val<bevy::math::DVec4>,
-    ) -> Val<bevy::math::DVec4> {
-        let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Add<
-            bevy::math::DVec4,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn add(_self: Val<bevy::math::DVec4>, rhs: f64) -> Val<bevy::math::DVec4> {
-        let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Add<
-            f64,
-        >>::add(_self.into_inner(), rhs)
+    ///  Casts all elements of `self` to `i16`.
+    fn as_i16vec4(_self: Ref<bevy::math::DVec4>) -> Val<bevy::math::I16Vec4> {
+        let output: Val<bevy::math::I16Vec4> = bevy::math::DVec4::as_i16vec4(&_self)
             .into();
         output
     }
@@ -15401,14 +18755,32 @@ impl bevy::math::DVec4 {
             .into();
         output
     }
+    ///  Casts all elements of `self` to `i8`.
+    fn as_i8vec4(_self: Ref<bevy::math::DVec4>) -> Val<bevy::math::I8Vec4> {
+        let output: Val<bevy::math::I8Vec4> = bevy::math::DVec4::as_i8vec4(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `i32`.
     fn as_ivec4(_self: Ref<bevy::math::DVec4>) -> Val<bevy::math::IVec4> {
         let output: Val<bevy::math::IVec4> = bevy::math::DVec4::as_ivec4(&_self).into();
         output
     }
+    ///  Casts all elements of `self` to `u16`.
+    fn as_u16vec4(_self: Ref<bevy::math::DVec4>) -> Val<bevy::math::U16Vec4> {
+        let output: Val<bevy::math::U16Vec4> = bevy::math::DVec4::as_u16vec4(&_self)
+            .into();
+        output
+    }
     ///  Casts all elements of `self` to `u64`.
     fn as_u64vec4(_self: Ref<bevy::math::DVec4>) -> Val<bevy::math::U64Vec4> {
         let output: Val<bevy::math::U64Vec4> = bevy::math::DVec4::as_u64vec4(&_self)
+            .into();
+        output
+    }
+    ///  Casts all elements of `self` to `u8`.
+    fn as_u8vec4(_self: Ref<bevy::math::DVec4>) -> Val<bevy::math::U8Vec4> {
+        let output: Val<bevy::math::U8Vec4> = bevy::math::DVec4::as_u8vec4(&_self)
             .into();
         output
     }
@@ -15486,13 +18858,6 @@ impl bevy::math::DVec4 {
         let output: Val<bevy::math::DVec4> = bevy::math::DVec4::clamp_length_min(
                 _self.into_inner(),
                 min,
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::DVec4>) -> Val<bevy::math::DVec4> {
-        let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
             )
             .into();
         output
@@ -15620,33 +18985,6 @@ impl bevy::math::DVec4 {
             .into();
         output
     }
-    fn div(
-        _self: Val<bevy::math::DVec4>,
-        rhs: Ref<bevy::math::DVec4>,
-    ) -> Val<bevy::math::DVec4> {
-        let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Div<
-            &bevy::math::DVec4,
-        >>::div(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn div(
-        _self: Val<bevy::math::DVec4>,
-        rhs: Val<bevy::math::DVec4>,
-    ) -> Val<bevy::math::DVec4> {
-        let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Div<
-            bevy::math::DVec4,
-        >>::div(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn div(_self: Val<bevy::math::DVec4>, rhs: f64) -> Val<bevy::math::DVec4> {
-        let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Div<
-            f64,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
     fn div_euclid(
         _self: Val<bevy::math::DVec4>,
@@ -15687,13 +19025,6 @@ impl bevy::math::DVec4 {
     ///  In other words, this computes `self.x + self.y + ..`.
     fn element_sum(_self: Val<bevy::math::DVec4>) -> f64 {
         let output: f64 = bevy::math::DVec4::element_sum(_self.into_inner()).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::DVec4>, other: Ref<bevy::math::DVec4>) -> bool {
-        let output: bool = <bevy::math::DVec4 as std::cmp::PartialEq<
-            bevy::math::DVec4,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Returns a vector containing `e^self` (the exponential function) for each element of
@@ -15881,33 +19212,6 @@ impl bevy::math::DVec4 {
             .into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::DVec4>,
-        rhs: Ref<bevy::math::DVec4>,
-    ) -> Val<bevy::math::DVec4> {
-        let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Mul<
-            &bevy::math::DVec4,
-        >>::mul(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::DVec4>,
-        rhs: Val<bevy::math::DVec4>,
-    ) -> Val<bevy::math::DVec4> {
-        let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Mul<
-            bevy::math::DVec4,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::DVec4>, rhs: f64) -> Val<bevy::math::DVec4> {
-        let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Mul<
-            f64,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
     ///  error, yielding a more accurate result than an unfused multiply-add.
     ///  Using `mul_add` *may* be more performant than an unfused multiply-add if the target
@@ -15923,13 +19227,6 @@ impl bevy::math::DVec4 {
                 _self.into_inner(),
                 a.into_inner(),
                 b.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn neg(_self: Val<bevy::math::DVec4>) -> Val<bevy::math::DVec4> {
-        let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Neg>::neg(
-                _self.into_inner(),
             )
             .into();
         output
@@ -16092,33 +19389,6 @@ impl bevy::math::DVec4 {
             .into();
         output
     }
-    fn rem(
-        _self: Val<bevy::math::DVec4>,
-        rhs: Ref<bevy::math::DVec4>,
-    ) -> Val<bevy::math::DVec4> {
-        let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Rem<
-            &bevy::math::DVec4,
-        >>::rem(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn rem(
-        _self: Val<bevy::math::DVec4>,
-        rhs: Val<bevy::math::DVec4>,
-    ) -> Val<bevy::math::DVec4> {
-        let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Rem<
-            bevy::math::DVec4,
-        >>::rem(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn rem(_self: Val<bevy::math::DVec4>, rhs: f64) -> Val<bevy::math::DVec4> {
-        let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Rem<
-            f64,
-        >>::rem(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
     ///  [Euclidean division]: f64::rem_euclid
     fn rem_euclid(
@@ -16170,33 +19440,6 @@ impl bevy::math::DVec4 {
     ///  Creates a vector with all elements set to `v`.
     fn splat(v: f64) -> Val<bevy::math::DVec4> {
         let output: Val<bevy::math::DVec4> = bevy::math::DVec4::splat(v).into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::DVec4>,
-        rhs: Ref<bevy::math::DVec4>,
-    ) -> Val<bevy::math::DVec4> {
-        let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Sub<
-            &bevy::math::DVec4,
-        >>::sub(_self.into_inner(), &rhs)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::DVec4>,
-        rhs: Val<bevy::math::DVec4>,
-    ) -> Val<bevy::math::DVec4> {
-        let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Sub<
-            bevy::math::DVec4,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn sub(_self: Val<bevy::math::DVec4>, rhs: f64) -> Val<bevy::math::DVec4> {
-        let output: Val<bevy::math::DVec4> = <bevy::math::DVec4 as std::ops::Sub<
-            f64,
-        >>::sub(_self.into_inner(), rhs)
-            .into();
         output
     }
     ///  `[x, y, z, w]`
@@ -16289,16 +19532,6 @@ impl bevy::math::Mat2 {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::Mat2>,
-        rhs: Val<bevy::math::Mat2>,
-    ) -> Val<bevy::math::Mat2> {
-        let output: Val<bevy::math::Mat2> = <bevy::math::Mat2 as std::ops::Add<
-            bevy::math::Mat2,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
     ///  Adds two 2x2 matrices.
     fn add_mat2(
         _self: Ref<bevy::math::Mat2>,
@@ -16310,13 +19543,6 @@ impl bevy::math::Mat2 {
     }
     fn as_dmat2(_self: Ref<bevy::math::Mat2>) -> Val<bevy::math::DMat2> {
         let output: Val<bevy::math::DMat2> = bevy::math::Mat2::as_dmat2(&_self).into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::Mat2>) -> Val<bevy::math::Mat2> {
-        let output: Val<bevy::math::Mat2> = <bevy::math::Mat2 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
         output
     }
     ///  Returns the matrix column for the given `index`.
@@ -16331,23 +19557,9 @@ impl bevy::math::Mat2 {
         let output: f32 = bevy::math::Mat2::determinant(&_self).into();
         output
     }
-    fn div(_self: Val<bevy::math::Mat2>, rhs: f32) -> Val<bevy::math::Mat2> {
-        let output: Val<bevy::math::Mat2> = <bevy::math::Mat2 as std::ops::Div<
-            f32,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Divides a 2x2 matrix by a scalar.
     fn div_scalar(_self: Ref<bevy::math::Mat2>, rhs: f32) -> Val<bevy::math::Mat2> {
         let output: Val<bevy::math::Mat2> = bevy::math::Mat2::div_scalar(&_self, rhs)
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::Mat2>, rhs: Ref<bevy::math::Mat2>) -> bool {
-        let output: bool = <bevy::math::Mat2 as std::cmp::PartialEq<
-            bevy::math::Mat2,
-        >>::eq(&_self, &rhs)
             .into();
         output
     }
@@ -16454,33 +19666,6 @@ impl bevy::math::Mat2 {
         let output: bool = bevy::math::Mat2::is_nan(&_self).into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::Mat2>,
-        rhs: Val<bevy::math::Mat2>,
-    ) -> Val<bevy::math::Mat2> {
-        let output: Val<bevy::math::Mat2> = <bevy::math::Mat2 as std::ops::Mul<
-            bevy::math::Mat2,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::Mat2>,
-        rhs: Val<bevy::math::Vec2>,
-    ) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> = <bevy::math::Mat2 as std::ops::Mul<
-            bevy::math::Vec2,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::Mat2>, rhs: f32) -> Val<bevy::math::Mat2> {
-        let output: Val<bevy::math::Mat2> = <bevy::math::Mat2 as std::ops::Mul<
-            f32,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Multiplies two 2x2 matrices.
     fn mul_mat2(
         _self: Ref<bevy::math::Mat2>,
@@ -16508,28 +19693,11 @@ impl bevy::math::Mat2 {
             .into();
         output
     }
-    fn neg(_self: Val<bevy::math::Mat2>) -> Val<bevy::math::Mat2> {
-        let output: Val<bevy::math::Mat2> = <bevy::math::Mat2 as std::ops::Neg>::neg(
-                _self.into_inner(),
-            )
-            .into();
-        output
-    }
     ///  Returns the matrix row for the given `index`.
     ///  # Panics
     ///  Panics if `index` is greater than 1.
     fn row(_self: Ref<bevy::math::Mat2>, index: usize) -> Val<bevy::math::Vec2> {
         let output: Val<bevy::math::Vec2> = bevy::math::Mat2::row(&_self, index).into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::Mat2>,
-        rhs: Val<bevy::math::Mat2>,
-    ) -> Val<bevy::math::Mat2> {
-        let output: Val<bevy::math::Mat2> = <bevy::math::Mat2 as std::ops::Sub<
-            bevy::math::Mat2,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
         output
     }
     ///  Subtracts two 2x2 matrices.
@@ -16591,16 +19759,6 @@ impl bevy::math::Mat3 {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::Mat3>,
-        rhs: Val<bevy::math::Mat3>,
-    ) -> Val<bevy::math::Mat3> {
-        let output: Val<bevy::math::Mat3> = <bevy::math::Mat3 as std::ops::Add<
-            bevy::math::Mat3,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
     ///  Adds two 3x3 matrices.
     fn add_mat3(
         _self: Ref<bevy::math::Mat3>,
@@ -16612,13 +19770,6 @@ impl bevy::math::Mat3 {
     }
     fn as_dmat3(_self: Ref<bevy::math::Mat3>) -> Val<bevy::math::DMat3> {
         let output: Val<bevy::math::DMat3> = bevy::math::Mat3::as_dmat3(&_self).into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::Mat3>) -> Val<bevy::math::Mat3> {
-        let output: Val<bevy::math::Mat3> = <bevy::math::Mat3 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
         output
     }
     ///  Returns the matrix column for the given `index`.
@@ -16633,23 +19784,9 @@ impl bevy::math::Mat3 {
         let output: f32 = bevy::math::Mat3::determinant(&_self).into();
         output
     }
-    fn div(_self: Val<bevy::math::Mat3>, rhs: f32) -> Val<bevy::math::Mat3> {
-        let output: Val<bevy::math::Mat3> = <bevy::math::Mat3 as std::ops::Div<
-            f32,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Divides a 3x3 matrix by a scalar.
     fn div_scalar(_self: Ref<bevy::math::Mat3>, rhs: f32) -> Val<bevy::math::Mat3> {
         let output: Val<bevy::math::Mat3> = bevy::math::Mat3::div_scalar(&_self, rhs)
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::Mat3>, rhs: Ref<bevy::math::Mat3>) -> bool {
-        let output: bool = <bevy::math::Mat3 as std::cmp::PartialEq<
-            bevy::math::Mat3,
-        >>::eq(&_self, &rhs)
             .into();
         output
     }
@@ -16832,53 +19969,6 @@ impl bevy::math::Mat3 {
         let output: bool = bevy::math::Mat3::is_nan(&_self).into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::Mat3>,
-        rhs: Val<bevy::math::Affine2>,
-    ) -> Val<bevy::math::Mat3> {
-        let output: Val<bevy::math::Mat3> = <bevy::math::Mat3 as std::ops::Mul<
-            bevy::math::Affine2,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::Mat3>,
-        rhs: Val<bevy::math::Mat3>,
-    ) -> Val<bevy::math::Mat3> {
-        let output: Val<bevy::math::Mat3> = <bevy::math::Mat3 as std::ops::Mul<
-            bevy::math::Mat3,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::Mat3>,
-        rhs: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Mat3 as std::ops::Mul<
-            bevy::math::Vec3,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::Mat3>,
-        rhs: Val<bevy::math::Vec3A>,
-    ) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Mat3 as std::ops::Mul<
-            bevy::math::Vec3A,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::Mat3>, rhs: f32) -> Val<bevy::math::Mat3> {
-        let output: Val<bevy::math::Mat3> = <bevy::math::Mat3 as std::ops::Mul<
-            f32,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Multiplies two 3x3 matrices.
     fn mul_mat3(
         _self: Ref<bevy::math::Mat3>,
@@ -16918,28 +20008,11 @@ impl bevy::math::Mat3 {
             .into();
         output
     }
-    fn neg(_self: Val<bevy::math::Mat3>) -> Val<bevy::math::Mat3> {
-        let output: Val<bevy::math::Mat3> = <bevy::math::Mat3 as std::ops::Neg>::neg(
-                _self.into_inner(),
-            )
-            .into();
-        output
-    }
     ///  Returns the matrix row for the given `index`.
     ///  # Panics
     ///  Panics if `index` is greater than 2.
     fn row(_self: Ref<bevy::math::Mat3>, index: usize) -> Val<bevy::math::Vec3> {
         let output: Val<bevy::math::Vec3> = bevy::math::Mat3::row(&_self, index).into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::Mat3>,
-        rhs: Val<bevy::math::Mat3>,
-    ) -> Val<bevy::math::Mat3> {
-        let output: Val<bevy::math::Mat3> = <bevy::math::Mat3 as std::ops::Sub<
-            bevy::math::Mat3,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
         output
     }
     ///  Subtracts two 3x3 matrices.
@@ -17049,16 +20122,6 @@ impl bevy::math::Mat3A {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::Mat3A>,
-        rhs: Val<bevy::math::Mat3A>,
-    ) -> Val<bevy::math::Mat3A> {
-        let output: Val<bevy::math::Mat3A> = <bevy::math::Mat3A as std::ops::Add<
-            bevy::math::Mat3A,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
     ///  Adds two 3x3 matrices.
     fn add_mat3(
         _self: Ref<bevy::math::Mat3A>,
@@ -17070,13 +20133,6 @@ impl bevy::math::Mat3A {
     }
     fn as_dmat3(_self: Ref<bevy::math::Mat3A>) -> Val<bevy::math::DMat3> {
         let output: Val<bevy::math::DMat3> = bevy::math::Mat3A::as_dmat3(&_self).into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::Mat3A>) -> Val<bevy::math::Mat3A> {
-        let output: Val<bevy::math::Mat3A> = <bevy::math::Mat3A as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
         output
     }
     ///  Returns the matrix column for the given `index`.
@@ -17092,23 +20148,9 @@ impl bevy::math::Mat3A {
         let output: f32 = bevy::math::Mat3A::determinant(&_self).into();
         output
     }
-    fn div(_self: Val<bevy::math::Mat3A>, rhs: f32) -> Val<bevy::math::Mat3A> {
-        let output: Val<bevy::math::Mat3A> = <bevy::math::Mat3A as std::ops::Div<
-            f32,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Divides a 3x3 matrix by a scalar.
     fn div_scalar(_self: Ref<bevy::math::Mat3A>, rhs: f32) -> Val<bevy::math::Mat3A> {
         let output: Val<bevy::math::Mat3A> = bevy::math::Mat3A::div_scalar(&_self, rhs)
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::Mat3A>, rhs: Ref<bevy::math::Mat3A>) -> bool {
-        let output: bool = <bevy::math::Mat3A as std::cmp::PartialEq<
-            bevy::math::Mat3A,
-        >>::eq(&_self, &rhs)
             .into();
         output
     }
@@ -17291,53 +20333,6 @@ impl bevy::math::Mat3A {
         let output: bool = bevy::math::Mat3A::is_nan(&_self).into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::Mat3A>,
-        rhs: Val<bevy::math::Affine2>,
-    ) -> Val<bevy::math::Mat3A> {
-        let output: Val<bevy::math::Mat3A> = <bevy::math::Mat3A as std::ops::Mul<
-            bevy::math::Affine2,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::Mat3A>,
-        rhs: Val<bevy::math::Mat3A>,
-    ) -> Val<bevy::math::Mat3A> {
-        let output: Val<bevy::math::Mat3A> = <bevy::math::Mat3A as std::ops::Mul<
-            bevy::math::Mat3A,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::Mat3A>,
-        rhs: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::math::Mat3A as std::ops::Mul<
-            bevy::math::Vec3,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::Mat3A>,
-        rhs: Val<bevy::math::Vec3A>,
-    ) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = <bevy::math::Mat3A as std::ops::Mul<
-            bevy::math::Vec3A,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::Mat3A>, rhs: f32) -> Val<bevy::math::Mat3A> {
-        let output: Val<bevy::math::Mat3A> = <bevy::math::Mat3A as std::ops::Mul<
-            f32,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Multiplies two 3x3 matrices.
     fn mul_mat3(
         _self: Ref<bevy::math::Mat3A>,
@@ -17377,28 +20372,11 @@ impl bevy::math::Mat3A {
             .into();
         output
     }
-    fn neg(_self: Val<bevy::math::Mat3A>) -> Val<bevy::math::Mat3A> {
-        let output: Val<bevy::math::Mat3A> = <bevy::math::Mat3A as std::ops::Neg>::neg(
-                _self.into_inner(),
-            )
-            .into();
-        output
-    }
     ///  Returns the matrix row for the given `index`.
     ///  # Panics
     ///  Panics if `index` is greater than 2.
     fn row(_self: Ref<bevy::math::Mat3A>, index: usize) -> Val<bevy::math::Vec3A> {
         let output: Val<bevy::math::Vec3A> = bevy::math::Mat3A::row(&_self, index)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::Mat3A>,
-        rhs: Val<bevy::math::Mat3A>,
-    ) -> Val<bevy::math::Mat3A> {
-        let output: Val<bevy::math::Mat3A> = <bevy::math::Mat3A as std::ops::Sub<
-            bevy::math::Mat3A,
-        >>::sub(_self.into_inner(), rhs.into_inner())
             .into();
         output
     }
@@ -17509,16 +20487,6 @@ impl bevy::math::Mat4 {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::Mat4>,
-        rhs: Val<bevy::math::Mat4>,
-    ) -> Val<bevy::math::Mat4> {
-        let output: Val<bevy::math::Mat4> = <bevy::math::Mat4 as std::ops::Add<
-            bevy::math::Mat4,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
     ///  Adds two 4x4 matrices.
     fn add_mat4(
         _self: Ref<bevy::math::Mat4>,
@@ -17530,13 +20498,6 @@ impl bevy::math::Mat4 {
     }
     fn as_dmat4(_self: Ref<bevy::math::Mat4>) -> Val<bevy::math::DMat4> {
         let output: Val<bevy::math::DMat4> = bevy::math::Mat4::as_dmat4(&_self).into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::Mat4>) -> Val<bevy::math::Mat4> {
-        let output: Val<bevy::math::Mat4> = <bevy::math::Mat4 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
         output
     }
     ///  Returns the matrix column for the given `index`.
@@ -17551,23 +20512,9 @@ impl bevy::math::Mat4 {
         let output: f32 = bevy::math::Mat4::determinant(&_self).into();
         output
     }
-    fn div(_self: Val<bevy::math::Mat4>, rhs: f32) -> Val<bevy::math::Mat4> {
-        let output: Val<bevy::math::Mat4> = <bevy::math::Mat4 as std::ops::Div<
-            f32,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Divides a 4x4 matrix by a scalar.
     fn div_scalar(_self: Ref<bevy::math::Mat4>, rhs: f32) -> Val<bevy::math::Mat4> {
         let output: Val<bevy::math::Mat4> = bevy::math::Mat4::div_scalar(&_self, rhs)
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::Mat4>, rhs: Ref<bevy::math::Mat4>) -> bool {
-        let output: bool = <bevy::math::Mat4 as std::cmp::PartialEq<
-            bevy::math::Mat4,
-        >>::eq(&_self, &rhs)
             .into();
         output
     }
@@ -17832,43 +20779,6 @@ impl bevy::math::Mat4 {
             .into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::Mat4>,
-        rhs: Val<bevy::math::Affine3A>,
-    ) -> Val<bevy::math::Mat4> {
-        let output: Val<bevy::math::Mat4> = <bevy::math::Mat4 as std::ops::Mul<
-            bevy::math::Affine3A,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::Mat4>,
-        rhs: Val<bevy::math::Mat4>,
-    ) -> Val<bevy::math::Mat4> {
-        let output: Val<bevy::math::Mat4> = <bevy::math::Mat4 as std::ops::Mul<
-            bevy::math::Mat4,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::Mat4>,
-        rhs: Val<bevy::math::Vec4>,
-    ) -> Val<bevy::math::Vec4> {
-        let output: Val<bevy::math::Vec4> = <bevy::math::Mat4 as std::ops::Mul<
-            bevy::math::Vec4,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::Mat4>, rhs: f32) -> Val<bevy::math::Mat4> {
-        let output: Val<bevy::math::Mat4> = <bevy::math::Mat4 as std::ops::Mul<
-            f32,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Multiplies two 4x4 matrices.
     fn mul_mat4(
         _self: Ref<bevy::math::Mat4>,
@@ -17892,13 +20802,6 @@ impl bevy::math::Mat4 {
         let output: Val<bevy::math::Vec4> = bevy::math::Mat4::mul_vec4(
                 &_self,
                 rhs.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn neg(_self: Val<bevy::math::Mat4>) -> Val<bevy::math::Mat4> {
-        let output: Val<bevy::math::Mat4> = <bevy::math::Mat4 as std::ops::Neg>::neg(
-                _self.into_inner(),
             )
             .into();
         output
@@ -18137,16 +21040,6 @@ impl bevy::math::Mat4 {
         let output: Val<bevy::math::Vec4> = bevy::math::Mat4::row(&_self, index).into();
         output
     }
-    fn sub(
-        _self: Val<bevy::math::Mat4>,
-        rhs: Val<bevy::math::Mat4>,
-    ) -> Val<bevy::math::Mat4> {
-        let output: Val<bevy::math::Mat4> = <bevy::math::Mat4 as std::ops::Sub<
-            bevy::math::Mat4,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
     ///  Subtracts two 4x4 matrices.
     fn sub_mat4(
         _self: Ref<bevy::math::Mat4>,
@@ -18285,16 +21178,6 @@ impl bevy::math::DMat2 {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::DMat2>,
-        rhs: Val<bevy::math::DMat2>,
-    ) -> Val<bevy::math::DMat2> {
-        let output: Val<bevy::math::DMat2> = <bevy::math::DMat2 as std::ops::Add<
-            bevy::math::DMat2,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
     ///  Adds two 2x2 matrices.
     fn add_mat2(
         _self: Ref<bevy::math::DMat2>,
@@ -18306,13 +21189,6 @@ impl bevy::math::DMat2 {
     }
     fn as_mat2(_self: Ref<bevy::math::DMat2>) -> Val<bevy::math::Mat2> {
         let output: Val<bevy::math::Mat2> = bevy::math::DMat2::as_mat2(&_self).into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::DMat2>) -> Val<bevy::math::DMat2> {
-        let output: Val<bevy::math::DMat2> = <bevy::math::DMat2 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
         output
     }
     ///  Returns the matrix column for the given `index`.
@@ -18328,23 +21204,9 @@ impl bevy::math::DMat2 {
         let output: f64 = bevy::math::DMat2::determinant(&_self).into();
         output
     }
-    fn div(_self: Val<bevy::math::DMat2>, rhs: f64) -> Val<bevy::math::DMat2> {
-        let output: Val<bevy::math::DMat2> = <bevy::math::DMat2 as std::ops::Div<
-            f64,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Divides a 2x2 matrix by a scalar.
     fn div_scalar(_self: Ref<bevy::math::DMat2>, rhs: f64) -> Val<bevy::math::DMat2> {
         let output: Val<bevy::math::DMat2> = bevy::math::DMat2::div_scalar(&_self, rhs)
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::DMat2>, rhs: Ref<bevy::math::DMat2>) -> bool {
-        let output: bool = <bevy::math::DMat2 as std::cmp::PartialEq<
-            bevy::math::DMat2,
-        >>::eq(&_self, &rhs)
             .into();
         output
     }
@@ -18428,33 +21290,6 @@ impl bevy::math::DMat2 {
         let output: bool = bevy::math::DMat2::is_nan(&_self).into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::DMat2>,
-        rhs: Val<bevy::math::DMat2>,
-    ) -> Val<bevy::math::DMat2> {
-        let output: Val<bevy::math::DMat2> = <bevy::math::DMat2 as std::ops::Mul<
-            bevy::math::DMat2,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::DMat2>,
-        rhs: Val<bevy::math::DVec2>,
-    ) -> Val<bevy::math::DVec2> {
-        let output: Val<bevy::math::DVec2> = <bevy::math::DMat2 as std::ops::Mul<
-            bevy::math::DVec2,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::DMat2>, rhs: f64) -> Val<bevy::math::DMat2> {
-        let output: Val<bevy::math::DMat2> = <bevy::math::DMat2 as std::ops::Mul<
-            f64,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Multiplies two 2x2 matrices.
     fn mul_mat2(
         _self: Ref<bevy::math::DMat2>,
@@ -18482,28 +21317,11 @@ impl bevy::math::DMat2 {
             .into();
         output
     }
-    fn neg(_self: Val<bevy::math::DMat2>) -> Val<bevy::math::DMat2> {
-        let output: Val<bevy::math::DMat2> = <bevy::math::DMat2 as std::ops::Neg>::neg(
-                _self.into_inner(),
-            )
-            .into();
-        output
-    }
     ///  Returns the matrix row for the given `index`.
     ///  # Panics
     ///  Panics if `index` is greater than 1.
     fn row(_self: Ref<bevy::math::DMat2>, index: usize) -> Val<bevy::math::DVec2> {
         let output: Val<bevy::math::DVec2> = bevy::math::DMat2::row(&_self, index)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::DMat2>,
-        rhs: Val<bevy::math::DMat2>,
-    ) -> Val<bevy::math::DMat2> {
-        let output: Val<bevy::math::DMat2> = <bevy::math::DMat2 as std::ops::Sub<
-            bevy::math::DMat2,
-        >>::sub(_self.into_inner(), rhs.into_inner())
             .into();
         output
     }
@@ -18566,16 +21384,6 @@ impl bevy::math::DMat3 {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::DMat3>,
-        rhs: Val<bevy::math::DMat3>,
-    ) -> Val<bevy::math::DMat3> {
-        let output: Val<bevy::math::DMat3> = <bevy::math::DMat3 as std::ops::Add<
-            bevy::math::DMat3,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
     ///  Adds two 3x3 matrices.
     fn add_mat3(
         _self: Ref<bevy::math::DMat3>,
@@ -18587,13 +21395,6 @@ impl bevy::math::DMat3 {
     }
     fn as_mat3(_self: Ref<bevy::math::DMat3>) -> Val<bevy::math::Mat3> {
         let output: Val<bevy::math::Mat3> = bevy::math::DMat3::as_mat3(&_self).into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::DMat3>) -> Val<bevy::math::DMat3> {
-        let output: Val<bevy::math::DMat3> = <bevy::math::DMat3 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
         output
     }
     ///  Returns the matrix column for the given `index`.
@@ -18609,23 +21410,9 @@ impl bevy::math::DMat3 {
         let output: f64 = bevy::math::DMat3::determinant(&_self).into();
         output
     }
-    fn div(_self: Val<bevy::math::DMat3>, rhs: f64) -> Val<bevy::math::DMat3> {
-        let output: Val<bevy::math::DMat3> = <bevy::math::DMat3 as std::ops::Div<
-            f64,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Divides a 3x3 matrix by a scalar.
     fn div_scalar(_self: Ref<bevy::math::DMat3>, rhs: f64) -> Val<bevy::math::DMat3> {
         let output: Val<bevy::math::DMat3> = bevy::math::DMat3::div_scalar(&_self, rhs)
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::DMat3>, rhs: Ref<bevy::math::DMat3>) -> bool {
-        let output: bool = <bevy::math::DMat3 as std::cmp::PartialEq<
-            bevy::math::DMat3,
-        >>::eq(&_self, &rhs)
             .into();
         output
     }
@@ -18808,43 +21595,6 @@ impl bevy::math::DMat3 {
         let output: bool = bevy::math::DMat3::is_nan(&_self).into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::DMat3>,
-        rhs: Val<bevy::math::DAffine2>,
-    ) -> Val<bevy::math::DMat3> {
-        let output: Val<bevy::math::DMat3> = <bevy::math::DMat3 as std::ops::Mul<
-            bevy::math::DAffine2,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::DMat3>,
-        rhs: Val<bevy::math::DMat3>,
-    ) -> Val<bevy::math::DMat3> {
-        let output: Val<bevy::math::DMat3> = <bevy::math::DMat3 as std::ops::Mul<
-            bevy::math::DMat3,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::DMat3>,
-        rhs: Val<bevy::math::DVec3>,
-    ) -> Val<bevy::math::DVec3> {
-        let output: Val<bevy::math::DVec3> = <bevy::math::DMat3 as std::ops::Mul<
-            bevy::math::DVec3,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::DMat3>, rhs: f64) -> Val<bevy::math::DMat3> {
-        let output: Val<bevy::math::DMat3> = <bevy::math::DMat3 as std::ops::Mul<
-            f64,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Multiplies two 3x3 matrices.
     fn mul_mat3(
         _self: Ref<bevy::math::DMat3>,
@@ -18872,28 +21622,11 @@ impl bevy::math::DMat3 {
             .into();
         output
     }
-    fn neg(_self: Val<bevy::math::DMat3>) -> Val<bevy::math::DMat3> {
-        let output: Val<bevy::math::DMat3> = <bevy::math::DMat3 as std::ops::Neg>::neg(
-                _self.into_inner(),
-            )
-            .into();
-        output
-    }
     ///  Returns the matrix row for the given `index`.
     ///  # Panics
     ///  Panics if `index` is greater than 2.
     fn row(_self: Ref<bevy::math::DMat3>, index: usize) -> Val<bevy::math::DVec3> {
         let output: Val<bevy::math::DVec3> = bevy::math::DMat3::row(&_self, index)
-            .into();
-        output
-    }
-    fn sub(
-        _self: Val<bevy::math::DMat3>,
-        rhs: Val<bevy::math::DMat3>,
-    ) -> Val<bevy::math::DMat3> {
-        let output: Val<bevy::math::DMat3> = <bevy::math::DMat3 as std::ops::Sub<
-            bevy::math::DMat3,
-        >>::sub(_self.into_inner(), rhs.into_inner())
             .into();
         output
     }
@@ -19004,16 +21737,6 @@ impl bevy::math::DMat4 {
             .into();
         output
     }
-    fn add(
-        _self: Val<bevy::math::DMat4>,
-        rhs: Val<bevy::math::DMat4>,
-    ) -> Val<bevy::math::DMat4> {
-        let output: Val<bevy::math::DMat4> = <bevy::math::DMat4 as std::ops::Add<
-            bevy::math::DMat4,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
     ///  Adds two 4x4 matrices.
     fn add_mat4(
         _self: Ref<bevy::math::DMat4>,
@@ -19025,13 +21748,6 @@ impl bevy::math::DMat4 {
     }
     fn as_mat4(_self: Ref<bevy::math::DMat4>) -> Val<bevy::math::Mat4> {
         let output: Val<bevy::math::Mat4> = bevy::math::DMat4::as_mat4(&_self).into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::DMat4>) -> Val<bevy::math::DMat4> {
-        let output: Val<bevy::math::DMat4> = <bevy::math::DMat4 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
         output
     }
     ///  Returns the matrix column for the given `index`.
@@ -19047,23 +21763,9 @@ impl bevy::math::DMat4 {
         let output: f64 = bevy::math::DMat4::determinant(&_self).into();
         output
     }
-    fn div(_self: Val<bevy::math::DMat4>, rhs: f64) -> Val<bevy::math::DMat4> {
-        let output: Val<bevy::math::DMat4> = <bevy::math::DMat4 as std::ops::Div<
-            f64,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Divides a 4x4 matrix by a scalar.
     fn div_scalar(_self: Ref<bevy::math::DMat4>, rhs: f64) -> Val<bevy::math::DMat4> {
         let output: Val<bevy::math::DMat4> = bevy::math::DMat4::div_scalar(&_self, rhs)
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::DMat4>, rhs: Ref<bevy::math::DMat4>) -> bool {
-        let output: bool = <bevy::math::DMat4 as std::cmp::PartialEq<
-            bevy::math::DMat4,
-        >>::eq(&_self, &rhs)
             .into();
         output
     }
@@ -19319,43 +22021,6 @@ impl bevy::math::DMat4 {
             .into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::DMat4>,
-        rhs: Val<bevy::math::DAffine3>,
-    ) -> Val<bevy::math::DMat4> {
-        let output: Val<bevy::math::DMat4> = <bevy::math::DMat4 as std::ops::Mul<
-            bevy::math::DAffine3,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::DMat4>,
-        rhs: Val<bevy::math::DMat4>,
-    ) -> Val<bevy::math::DMat4> {
-        let output: Val<bevy::math::DMat4> = <bevy::math::DMat4 as std::ops::Mul<
-            bevy::math::DMat4,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::DMat4>,
-        rhs: Val<bevy::math::DVec4>,
-    ) -> Val<bevy::math::DVec4> {
-        let output: Val<bevy::math::DVec4> = <bevy::math::DMat4 as std::ops::Mul<
-            bevy::math::DVec4,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(_self: Val<bevy::math::DMat4>, rhs: f64) -> Val<bevy::math::DMat4> {
-        let output: Val<bevy::math::DMat4> = <bevy::math::DMat4 as std::ops::Mul<
-            f64,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Multiplies two 4x4 matrices.
     fn mul_mat4(
         _self: Ref<bevy::math::DMat4>,
@@ -19379,13 +22044,6 @@ impl bevy::math::DMat4 {
         let output: Val<bevy::math::DVec4> = bevy::math::DMat4::mul_vec4(
                 &_self,
                 rhs.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn neg(_self: Val<bevy::math::DMat4>) -> Val<bevy::math::DMat4> {
-        let output: Val<bevy::math::DMat4> = <bevy::math::DMat4 as std::ops::Neg>::neg(
-                _self.into_inner(),
             )
             .into();
         output
@@ -19610,16 +22268,6 @@ impl bevy::math::DMat4 {
             .into();
         output
     }
-    fn sub(
-        _self: Val<bevy::math::DMat4>,
-        rhs: Val<bevy::math::DMat4>,
-    ) -> Val<bevy::math::DMat4> {
-        let output: Val<bevy::math::DMat4> = <bevy::math::DMat4 as std::ops::Sub<
-            bevy::math::DMat4,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
     ///  Subtracts two 4x4 matrices.
     fn sub_mat4(
         _self: Ref<bevy::math::DMat4>,
@@ -19724,20 +22372,6 @@ impl bevy::math::Affine2 {
                 rhs.into_inner(),
                 max_abs_diff,
             )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::Affine2>) -> Val<bevy::math::Affine2> {
-        let output: Val<bevy::math::Affine2> = <bevy::math::Affine2 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::Affine2>, rhs: Ref<bevy::math::Affine2>) -> bool {
-        let output: bool = <bevy::math::Affine2 as std::cmp::PartialEq<
-            bevy::math::Affine2,
-        >>::eq(&_self, &rhs)
             .into();
         output
     }
@@ -19867,36 +22501,6 @@ impl bevy::math::Affine2 {
         let output: bool = bevy::math::Affine2::is_nan(&_self).into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::Affine2>,
-        rhs: Val<bevy::math::Affine2>,
-    ) -> Val<bevy::math::Affine2> {
-        let output: Val<bevy::math::Affine2> = <bevy::math::Affine2 as std::ops::Mul<
-            bevy::math::Affine2,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::Affine2>,
-        rhs: Val<bevy::math::Mat3>,
-    ) -> Val<bevy::math::Mat3> {
-        let output: Val<bevy::math::Mat3> = <bevy::math::Affine2 as std::ops::Mul<
-            bevy::math::Mat3,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::Affine2>,
-        rhs: Val<bevy::math::Mat3A>,
-    ) -> Val<bevy::math::Mat3A> {
-        let output: Val<bevy::math::Mat3A> = <bevy::math::Affine2 as std::ops::Mul<
-            bevy::math::Mat3A,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
     ///  Creates a `[f32; 6]` array storing data in column major order.
     fn to_cols_array(_self: Ref<bevy::math::Affine2>) -> [f32; 6] {
         let output: [f32; 6] = bevy::math::Affine2::to_cols_array(&_self).into();
@@ -19960,20 +22564,6 @@ impl bevy::math::Affine3A {
                 rhs.into_inner(),
                 max_abs_diff,
             )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::Affine3A>) -> Val<bevy::math::Affine3A> {
-        let output: Val<bevy::math::Affine3A> = <bevy::math::Affine3A as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::Affine3A>, rhs: Ref<bevy::math::Affine3A>) -> bool {
-        let output: bool = <bevy::math::Affine3A as std::cmp::PartialEq<
-            bevy::math::Affine3A,
-        >>::eq(&_self, &rhs)
             .into();
         output
     }
@@ -20209,26 +22799,6 @@ impl bevy::math::Affine3A {
             .into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::Affine3A>,
-        rhs: Val<bevy::math::Affine3A>,
-    ) -> Val<bevy::math::Affine3A> {
-        let output: Val<bevy::math::Affine3A> = <bevy::math::Affine3A as std::ops::Mul<
-            bevy::math::Affine3A,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::Affine3A>,
-        rhs: Val<bevy::math::Mat4>,
-    ) -> Val<bevy::math::Mat4> {
-        let output: Val<bevy::math::Mat4> = <bevy::math::Affine3A as std::ops::Mul<
-            bevy::math::Mat4,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
     ///  Creates a `[f32; 12]` array storing data in column major order.
     fn to_cols_array(_self: Ref<bevy::math::Affine3A>) -> [f32; 12] {
         let output: [f32; 12] = bevy::math::Affine3A::to_cols_array(&_self).into();
@@ -20319,20 +22889,6 @@ impl bevy::math::DAffine2 {
                 rhs.into_inner(),
                 max_abs_diff,
             )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::DAffine2>) -> Val<bevy::math::DAffine2> {
-        let output: Val<bevy::math::DAffine2> = <bevy::math::DAffine2 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::DAffine2>, rhs: Ref<bevy::math::DAffine2>) -> bool {
-        let output: bool = <bevy::math::DAffine2 as std::cmp::PartialEq<
-            bevy::math::DAffine2,
-        >>::eq(&_self, &rhs)
             .into();
         output
     }
@@ -20456,26 +23012,6 @@ impl bevy::math::DAffine2 {
         let output: bool = bevy::math::DAffine2::is_nan(&_self).into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::DAffine2>,
-        rhs: Val<bevy::math::DAffine2>,
-    ) -> Val<bevy::math::DAffine2> {
-        let output: Val<bevy::math::DAffine2> = <bevy::math::DAffine2 as std::ops::Mul<
-            bevy::math::DAffine2,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::DAffine2>,
-        rhs: Val<bevy::math::DMat3>,
-    ) -> Val<bevy::math::DMat3> {
-        let output: Val<bevy::math::DMat3> = <bevy::math::DAffine2 as std::ops::Mul<
-            bevy::math::DMat3,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
     ///  Creates a `[f64; 6]` array storing data in column major order.
     fn to_cols_array(_self: Ref<bevy::math::DAffine2>) -> [f64; 6] {
         let output: [f64; 6] = bevy::math::DAffine2::to_cols_array(&_self).into();
@@ -20540,20 +23076,6 @@ impl bevy::math::DAffine3 {
                 rhs.into_inner(),
                 max_abs_diff,
             )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::DAffine3>) -> Val<bevy::math::DAffine3> {
-        let output: Val<bevy::math::DAffine3> = <bevy::math::DAffine3 as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::DAffine3>, rhs: Ref<bevy::math::DAffine3>) -> bool {
-        let output: bool = <bevy::math::DAffine3 as std::cmp::PartialEq<
-            bevy::math::DAffine3,
-        >>::eq(&_self, &rhs)
             .into();
         output
     }
@@ -20789,26 +23311,6 @@ impl bevy::math::DAffine3 {
             .into();
         output
     }
-    fn mul(
-        _self: Val<bevy::math::DAffine3>,
-        rhs: Val<bevy::math::DAffine3>,
-    ) -> Val<bevy::math::DAffine3> {
-        let output: Val<bevy::math::DAffine3> = <bevy::math::DAffine3 as std::ops::Mul<
-            bevy::math::DAffine3,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn mul(
-        _self: Val<bevy::math::DAffine3>,
-        rhs: Val<bevy::math::DMat4>,
-    ) -> Val<bevy::math::DMat4> {
-        let output: Val<bevy::math::DMat4> = <bevy::math::DAffine3 as std::ops::Mul<
-            bevy::math::DMat4,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
     ///  Creates a `[f64; 12]` array storing data in column major order.
     fn to_cols_array(_self: Ref<bevy::math::DAffine3>) -> [f64; 12] {
         let output: [f64; 12] = bevy::math::DAffine3::to_cols_array(&_self).into();
@@ -20876,20 +23378,6 @@ impl bevy::math::DQuat {
             .into();
         output
     }
-    ///  Adds two quaternions.
-    ///  The sum is not guaranteed to be normalized.
-    ///  Note that addition is not the same as combining the rotations represented by the
-    ///  two quaternions! That corresponds to multiplication.
-    fn add(
-        _self: Val<bevy::math::DQuat>,
-        rhs: Val<bevy::math::DQuat>,
-    ) -> Val<bevy::math::DQuat> {
-        let output: Val<bevy::math::DQuat> = <bevy::math::DQuat as std::ops::Add<
-            bevy::math::DQuat,
-        >>::add(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
     ///  Returns the angle (in radians) for the minimal rotation
     ///  for transforming this quaternion into another.
     ///  Both quaternions must be normalized.
@@ -20910,13 +23398,6 @@ impl bevy::math::DQuat {
             .into();
         output
     }
-    fn clone(_self: Ref<bevy::math::DQuat>) -> Val<bevy::math::DQuat> {
-        let output: Val<bevy::math::DQuat> = <bevy::math::DQuat as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
     ///  Returns the quaternion conjugate of `self`. For a unit quaternion the
     ///  conjugate is also the inverse.
     fn conjugate(_self: Val<bevy::math::DQuat>) -> Val<bevy::math::DQuat> {
@@ -20926,26 +23407,10 @@ impl bevy::math::DQuat {
             .into();
         output
     }
-    ///  Divides a quaternion by a scalar value.
-    ///  The quotient is not guaranteed to be normalized.
-    fn div(_self: Val<bevy::math::DQuat>, rhs: f64) -> Val<bevy::math::DQuat> {
-        let output: Val<bevy::math::DQuat> = <bevy::math::DQuat as std::ops::Div<
-            f64,
-        >>::div(_self.into_inner(), rhs)
-            .into();
-        output
-    }
     ///  Computes the dot product of `self` and `rhs`. The dot product is
     ///  equal to the cosine of the angle between two quaternion rotations.
     fn dot(_self: Val<bevy::math::DQuat>, rhs: Val<bevy::math::DQuat>) -> f64 {
         let output: f64 = bevy::math::DQuat::dot(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::DQuat>, rhs: Ref<bevy::math::DQuat>) -> bool {
-        let output: bool = <bevy::math::DQuat as std::cmp::PartialEq<
-            bevy::math::DQuat,
-        >>::eq(&_self, &rhs)
             .into();
         output
     }
@@ -21196,44 +23661,6 @@ impl bevy::math::DQuat {
     }
     ///  Multiplies two quaternions. If they each represent a rotation, the result will
     ///  represent the combined rotation.
-    ///  Note that due to floating point rounding the result may not be perfectly
-    ///  normalized.
-    ///  # Panics
-    ///  Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-    fn mul(
-        _self: Val<bevy::math::DQuat>,
-        rhs: Val<bevy::math::DQuat>,
-    ) -> Val<bevy::math::DQuat> {
-        let output: Val<bevy::math::DQuat> = <bevy::math::DQuat as std::ops::Mul<
-            bevy::math::DQuat,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    ///  Multiplies a quaternion and a 3D vector, returning the rotated vector.
-    ///  # Panics
-    ///  Will panic if `self` is not normalized when `glam_assert` is enabled.
-    fn mul(
-        _self: Val<bevy::math::DQuat>,
-        rhs: Val<bevy::math::DVec3>,
-    ) -> Val<bevy::math::DVec3> {
-        let output: Val<bevy::math::DVec3> = <bevy::math::DQuat as std::ops::Mul<
-            bevy::math::DVec3,
-        >>::mul(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
-    ///  Multiplies a quaternion by a scalar value.
-    ///  The product is not guaranteed to be normalized.
-    fn mul(_self: Val<bevy::math::DQuat>, rhs: f64) -> Val<bevy::math::DQuat> {
-        let output: Val<bevy::math::DQuat> = <bevy::math::DQuat as std::ops::Mul<
-            f64,
-        >>::mul(_self.into_inner(), rhs)
-            .into();
-        output
-    }
-    ///  Multiplies two quaternions. If they each represent a rotation, the result will
-    ///  represent the combined rotation.
     ///  Note that due to floating point rounding the result may not be perfectly normalized.
     ///  # Panics
     ///  Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
@@ -21258,13 +23685,6 @@ impl bevy::math::DQuat {
         let output: Val<bevy::math::DVec3> = bevy::math::DQuat::mul_vec3(
                 _self.into_inner(),
                 rhs.into_inner(),
-            )
-            .into();
-        output
-    }
-    fn neg(_self: Val<bevy::math::DQuat>) -> Val<bevy::math::DQuat> {
-        let output: Val<bevy::math::DQuat> = <bevy::math::DQuat as std::ops::Neg>::neg(
-                _self.into_inner(),
             )
             .into();
         output
@@ -21319,18 +23739,6 @@ impl bevy::math::DQuat {
             .into();
         output
     }
-    ///  Subtracts the `rhs` quaternion from `self`.
-    ///  The difference is not guaranteed to be normalized.
-    fn sub(
-        _self: Val<bevy::math::DQuat>,
-        rhs: Val<bevy::math::DQuat>,
-    ) -> Val<bevy::math::DQuat> {
-        let output: Val<bevy::math::DQuat> = <bevy::math::DQuat as std::ops::Sub<
-            bevy::math::DQuat,
-        >>::sub(_self.into_inner(), rhs.into_inner())
-            .into();
-        output
-    }
     ///  `[x, y, z, w]`
     fn to_array(_self: Ref<bevy::math::DQuat>) -> [f64; 4] {
         let output: [f64; 4] = bevy::math::DQuat::to_array(&_self).into();
@@ -21369,29 +23777,7 @@ impl bevy::math::DQuat {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl bevy::math::EulerRot {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::math::EulerRot>) -> () {
-        let output: () = <bevy::math::EulerRot as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::EulerRot>) -> Val<bevy::math::EulerRot> {
-        let output: Val<bevy::math::EulerRot> = <bevy::math::EulerRot as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::EulerRot>, other: Ref<bevy::math::EulerRot>) -> bool {
-        let output: bool = <bevy::math::EulerRot as std::cmp::PartialEq<
-            bevy::math::EulerRot,
-        >>::eq(&_self, &other)
-            .into();
-        output
-    }
-}
+impl bevy::math::EulerRot {}
 #[script_bindings(
     remote,
     name = "b_vec_3_a_functions",
@@ -21414,20 +23800,6 @@ impl bevy::math::BVec3A {
     ///  into the first lowest bit, element `y` into the second, etc.
     fn bitmask(_self: Val<bevy::math::BVec3A>) -> u32 {
         let output: u32 = bevy::math::BVec3A::bitmask(_self.into_inner()).into();
-        output
-    }
-    fn clone(_self: Ref<bevy::math::BVec3A>) -> Val<bevy::math::BVec3A> {
-        let output: Val<bevy::math::BVec3A> = <bevy::math::BVec3A as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::BVec3A>, rhs: Ref<bevy::math::BVec3A>) -> bool {
-        let output: bool = <bevy::math::BVec3A as std::cmp::PartialEq<
-            bevy::math::BVec3A,
-        >>::eq(&_self, &rhs)
-            .into();
         output
     }
     ///  Creates a new vector mask from a bool array.
@@ -21482,20 +23854,6 @@ impl bevy::math::BVec4A {
         let output: u32 = bevy::math::BVec4A::bitmask(_self.into_inner()).into();
         output
     }
-    fn clone(_self: Ref<bevy::math::BVec4A>) -> Val<bevy::math::BVec4A> {
-        let output: Val<bevy::math::BVec4A> = <bevy::math::BVec4A as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn eq(_self: Ref<bevy::math::BVec4A>, rhs: Ref<bevy::math::BVec4A>) -> bool {
-        let output: bool = <bevy::math::BVec4A as std::cmp::PartialEq<
-            bevy::math::BVec4A,
-        >>::eq(&_self, &rhs)
-            .into();
-        output
-    }
     ///  Creates a new vector mask from a bool array.
     fn from_array(a: [bool; 4]) -> Val<bevy::math::BVec4A> {
         let output: Val<bevy::math::BVec4A> = bevy::math::BVec4A::from_array(a).into();
@@ -21531,20 +23889,6 @@ impl bevy::math::BVec4A {
     generated
 )]
 impl smol_str::SmolStr {
-    fn clone(_self: Ref<smol_str::SmolStr>) -> Val<smol_str::SmolStr> {
-        let output: Val<smol_str::SmolStr> = <smol_str::SmolStr as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn eq(_self: Ref<smol_str::SmolStr>, other: Ref<smol_str::SmolStr>) -> bool {
-        let output: bool = <smol_str::SmolStr as std::cmp::PartialEq<
-            smol_str::SmolStr,
-        >>::eq(&_self, &other)
-            .into();
-        output
-    }
     fn is_empty(_self: Ref<smol_str::SmolStr>) -> bool {
         let output: bool = smol_str::SmolStr::is_empty(&_self).into();
         output
@@ -21607,20 +23951,6 @@ impl uuid::Uuid {
         let output: (u64, u64) = uuid::Uuid::as_u64_pair(&_self).into();
         output
     }
-    fn assert_receiver_is_total_eq(_self: Ref<uuid::Uuid>) -> () {
-        let output: () = <uuid::Uuid as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<uuid::Uuid>) -> Val<uuid::Uuid> {
-        let output: Val<uuid::Uuid> = <uuid::Uuid as bevy::reflect::erased_serde::__private::serde::__private::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
     ///  A buffer that can be used for `encode_...` calls, that is
     ///  guaranteed to be long enough for any of the format adapters.
     ///  # Examples
@@ -21643,13 +23973,6 @@ impl uuid::Uuid {
     ///  ```
     fn encode_buffer() -> [u8; 45] {
         let output: [u8; 45] = uuid::Uuid::encode_buffer().into();
-        output
-    }
-    fn eq(_self: Ref<uuid::Uuid>, other: Ref<uuid::Uuid>) -> bool {
-        let output: bool = <uuid::Uuid as std::cmp::PartialEq<
-            uuid::Uuid,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Creates a UUID using the supplied bytes.
@@ -21938,17 +24261,31 @@ impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
         register_duration_functions(&mut world);
         register_instant_functions(&mut world);
         register_range_full_functions(&mut world);
+        register_type_id_functions(&mut world);
         register_quat_functions(&mut world);
         register_vec_3_functions(&mut world);
+        register_socket_addr_functions(&mut world);
         register_i_vec_2_functions(&mut world);
         register_i_vec_3_functions(&mut world);
         register_i_vec_4_functions(&mut world);
+        register_i_8_vec_2_functions(&mut world);
+        register_i_8_vec_3_functions(&mut world);
+        register_i_8_vec_4_functions(&mut world);
+        register_i_16_vec_2_functions(&mut world);
+        register_i_16_vec_3_functions(&mut world);
+        register_i_16_vec_4_functions(&mut world);
         register_i_64_vec_2_functions(&mut world);
         register_i_64_vec_3_functions(&mut world);
         register_i_64_vec_4_functions(&mut world);
         register_u_vec_2_functions(&mut world);
         register_u_vec_3_functions(&mut world);
         register_u_vec_4_functions(&mut world);
+        register_u_8_vec_2_functions(&mut world);
+        register_u_8_vec_3_functions(&mut world);
+        register_u_8_vec_4_functions(&mut world);
+        register_u_16_vec_2_functions(&mut world);
+        register_u_16_vec_3_functions(&mut world);
+        register_u_16_vec_4_functions(&mut world);
         register_u_64_vec_2_functions(&mut world);
         register_u_64_vec_3_functions(&mut world);
         register_u_64_vec_4_functions(&mut world);

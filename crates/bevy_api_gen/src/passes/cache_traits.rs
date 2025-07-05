@@ -8,7 +8,7 @@ use crate::{
     DEF_PATHS_GET_TYPE_REGISTRATION, DEF_PATHS_REFLECT, STD_SOURCE_TRAITS,
 };
 
-fn dump_traits(tcx: &TyCtxt) -> String{
+fn dump_traits(tcx: &TyCtxt) -> String {
     let mut buffer = String::new();
     for t in tcx.all_traits() {
         buffer.push_str(&tcx.def_path_str(t));
@@ -43,20 +43,24 @@ pub(crate) fn cache_traits(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
         }
     }
 
-    if !ctxt.cached_traits.has_all_bms_traits() {
+    let missing_bevy_traits = ctxt.cached_traits.missing_bevy_traits();
+    if !missing_bevy_traits.is_empty() {
         panic!(
-            "Could not find all bms traits in crate: {}. Available traits: {}",
+            "Could not find traits: [{}] in crate: {}, did bootstrapping go wrong? Available traits: {}",
+            missing_bevy_traits.join(", "),
             tcx.crate_name(LOCAL_CRATE),
             dump_traits(tcx)
-        )
+        );
     }
 
-    if !ctxt.cached_traits.has_all_bevy_traits() {
+    let missing_bms_traits = ctxt.cached_traits.missing_bms_traits();
+    if !missing_bms_traits.is_empty() {
         panic!(
-            "Could not find all reflect traits in crate: {}, did bootstrapping go wrong?. Available traits: {}",
+            "Could not find traits: [{}] in crate: {}, did bootstrapping go wrong? Available traits: {}",
+            missing_bms_traits.join(", "),
             tcx.crate_name(LOCAL_CRATE),
             dump_traits(tcx)
-        )
+        );
     }
 
     // some crates specifically do not have std in scope via `#![no_std]` which means we do not care about these traits

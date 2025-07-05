@@ -18,30 +18,14 @@ pub struct BevyTimeScriptingPlugin;
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl bevy::time::prelude::Fixed {
-    fn clone(_self: Ref<bevy::time::prelude::Fixed>) -> Val<bevy::time::prelude::Fixed> {
-        let output: Val<bevy::time::prelude::Fixed> = <bevy::time::prelude::Fixed as std::clone::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-}
+impl bevy::time::prelude::Fixed {}
 #[script_bindings(
     remote,
     name = "real_functions",
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl bevy::time::prelude::Real {
-    fn clone(_self: Ref<bevy::time::prelude::Real>) -> Val<bevy::time::prelude::Real> {
-        let output: Val<bevy::time::prelude::Real> = <bevy::time::prelude::Real as std::clone::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-}
+impl bevy::time::prelude::Real {}
 #[script_bindings(
     remote,
     name = "timer_functions",
@@ -49,20 +33,6 @@ impl bevy::time::prelude::Real {
     generated
 )]
 impl bevy::time::prelude::Timer {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::time::prelude::Timer>) -> () {
-        let output: () = <bevy::time::prelude::Timer as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::time::prelude::Timer>) -> Val<bevy::time::prelude::Timer> {
-        let output: Val<bevy::time::prelude::Timer> = <bevy::time::prelude::Timer as std::clone::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
     ///  Returns the duration of the timer.
     ///  # Examples
     ///  ```
@@ -71,8 +41,8 @@ impl bevy::time::prelude::Timer {
     ///  let timer = Timer::new(Duration::from_secs(1), TimerMode::Once);
     ///  assert_eq!(timer.duration(), Duration::from_secs(1));
     ///  ```
-    fn duration(_self: Ref<bevy::time::prelude::Timer>) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = bevy::time::prelude::Timer::duration(
+    fn duration(_self: Ref<bevy::time::prelude::Timer>) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = bevy::time::prelude::Timer::duration(
                 &_self,
             )
             .into();
@@ -89,8 +59,8 @@ impl bevy::time::prelude::Timer {
     ///  timer.tick(Duration::from_secs_f32(0.5));
     ///  assert_eq!(timer.elapsed(), Duration::from_secs_f32(0.5));
     ///  ```
-    fn elapsed(_self: Ref<bevy::time::prelude::Timer>) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = bevy::time::prelude::Timer::elapsed(
+    fn elapsed(_self: Ref<bevy::time::prelude::Timer>) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = bevy::time::prelude::Timer::elapsed(
                 &_self,
             )
             .into();
@@ -106,16 +76,6 @@ impl bevy::time::prelude::Timer {
     ///  See also [`Timer::elapsed`](Timer::elapsed).
     fn elapsed_secs_f64(_self: Ref<bevy::time::prelude::Timer>) -> f64 {
         let output: f64 = bevy::time::prelude::Timer::elapsed_secs_f64(&_self).into();
-        output
-    }
-    fn eq(
-        _self: Ref<bevy::time::prelude::Timer>,
-        other: Ref<bevy::time::prelude::Timer>,
-    ) -> bool {
-        let output: bool = <bevy::time::prelude::Timer as std::cmp::PartialEq<
-            bevy::time::prelude::Timer,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Returns `true` if the timer has reached its duration.
@@ -218,7 +178,7 @@ impl bevy::time::prelude::Timer {
     ///  Creates a new timer with a given duration.
     ///  See also [`Timer::from_seconds`](Timer::from_seconds).
     fn new(
-        duration: Val<std::time::Duration>,
+        duration: Val<core::time::Duration>,
         mode: Val<bevy::time::prelude::TimerMode>,
     ) -> Val<bevy::time::prelude::Timer> {
         let output: Val<bevy::time::prelude::Timer> = bevy::time::prelude::Timer::new(
@@ -268,8 +228,8 @@ impl bevy::time::prelude::Timer {
     ///  timer.tick(Duration::from_secs_f32(0.5));
     ///  assert_eq!(timer.remaining(), Duration::from_secs_f32(1.5));
     ///  ```
-    fn remaining(_self: Ref<bevy::time::prelude::Timer>) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = bevy::time::prelude::Timer::remaining(
+    fn remaining(_self: Ref<bevy::time::prelude::Timer>) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = bevy::time::prelude::Timer::remaining(
                 &_self,
             )
             .into();
@@ -318,7 +278,7 @@ impl bevy::time::prelude::Timer {
     ///  ```
     fn set_duration(
         mut _self: Mut<bevy::time::prelude::Timer>,
-        duration: Val<std::time::Duration>,
+        duration: Val<core::time::Duration>,
     ) -> () {
         let output: () = bevy::time::prelude::Timer::set_duration(
                 &mut _self,
@@ -341,7 +301,7 @@ impl bevy::time::prelude::Timer {
     ///  ```
     fn set_elapsed(
         mut _self: Mut<bevy::time::prelude::Timer>,
-        time: Val<std::time::Duration>,
+        time: Val<core::time::Duration>,
     ) -> () {
         let output: () = bevy::time::prelude::Timer::set_elapsed(
                 &mut _self,
@@ -414,51 +374,14 @@ impl bevy::time::prelude::Timer {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl bevy::time::prelude::TimerMode {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::time::prelude::TimerMode>) -> () {
-        let output: () = <bevy::time::prelude::TimerMode as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn clone(
-        _self: Ref<bevy::time::prelude::TimerMode>,
-    ) -> Val<bevy::time::prelude::TimerMode> {
-        let output: Val<bevy::time::prelude::TimerMode> = <bevy::time::prelude::TimerMode as std::clone::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn eq(
-        _self: Ref<bevy::time::prelude::TimerMode>,
-        other: Ref<bevy::time::prelude::TimerMode>,
-    ) -> bool {
-        let output: bool = <bevy::time::prelude::TimerMode as std::cmp::PartialEq<
-            bevy::time::prelude::TimerMode,
-        >>::eq(&_self, &other)
-            .into();
-        output
-    }
-}
+impl bevy::time::prelude::TimerMode {}
 #[script_bindings(
     remote,
     name = "virtual_functions",
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl bevy::time::prelude::Virtual {
-    fn clone(
-        _self: Ref<bevy::time::prelude::Virtual>,
-    ) -> Val<bevy::time::prelude::Virtual> {
-        let output: Val<bevy::time::prelude::Virtual> = <bevy::time::prelude::Virtual as std::clone::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
-}
+impl bevy::time::prelude::Virtual {}
 #[script_bindings(
     remote,
     name = "stopwatch_functions",
@@ -466,20 +389,6 @@ impl bevy::time::prelude::Virtual {
     generated
 )]
 impl bevy::time::Stopwatch {
-    fn assert_receiver_is_total_eq(_self: Ref<bevy::time::Stopwatch>) -> () {
-        let output: () = <bevy::time::Stopwatch as std::cmp::Eq>::assert_receiver_is_total_eq(
-                &_self,
-            )
-            .into();
-        output
-    }
-    fn clone(_self: Ref<bevy::time::Stopwatch>) -> Val<bevy::time::Stopwatch> {
-        let output: Val<bevy::time::Stopwatch> = <bevy::time::Stopwatch as std::clone::Clone>::clone(
-                &_self,
-            )
-            .into();
-        output
-    }
     ///  Returns the elapsed time since the last [`reset`](Stopwatch::reset)
     ///  of the stopwatch.
     ///  # Examples
@@ -493,8 +402,8 @@ impl bevy::time::Stopwatch {
     ///  # See Also
     ///  [`elapsed_secs`](Stopwatch::elapsed_secs) - if an `f32` value is desirable instead.
     ///  [`elapsed_secs_f64`](Stopwatch::elapsed_secs_f64) - if an `f64` is desirable instead.
-    fn elapsed(_self: Ref<bevy::time::Stopwatch>) -> Val<std::time::Duration> {
-        let output: Val<std::time::Duration> = bevy::time::Stopwatch::elapsed(&_self)
+    fn elapsed(_self: Ref<bevy::time::Stopwatch>) -> Val<core::time::Duration> {
+        let output: Val<core::time::Duration> = bevy::time::Stopwatch::elapsed(&_self)
             .into();
         output
     }
@@ -522,13 +431,6 @@ impl bevy::time::Stopwatch {
     ///  [`elapsed_secs`](Stopwatch::elapsed_secs) - if an `f32` is desirable instead.
     fn elapsed_secs_f64(_self: Ref<bevy::time::Stopwatch>) -> f64 {
         let output: f64 = bevy::time::Stopwatch::elapsed_secs_f64(&_self).into();
-        output
-    }
-    fn eq(_self: Ref<bevy::time::Stopwatch>, other: Ref<bevy::time::Stopwatch>) -> bool {
-        let output: bool = <bevy::time::Stopwatch as std::cmp::PartialEq<
-            bevy::time::Stopwatch,
-        >>::eq(&_self, &other)
-            .into();
         output
     }
     ///  Returns `true` if the stopwatch is paused.
@@ -599,7 +501,7 @@ impl bevy::time::Stopwatch {
     ///  ```
     fn set_elapsed(
         mut _self: Mut<bevy::time::Stopwatch>,
-        time: Val<std::time::Duration>,
+        time: Val<core::time::Duration>,
     ) -> () {
         let output: () = bevy::time::Stopwatch::set_elapsed(
                 &mut _self,
