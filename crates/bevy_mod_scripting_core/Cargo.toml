@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_core"
-version = "0.12.0"
+version = "0.13.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -41,7 +41,7 @@ bevy_mod_scripting_derive = { workspace = true }
 fixedbitset = "0.5"
 petgraph = "0.6"
 bevy_mod_debugdump = "0.12"
-bevy_system_reflection = { path = "../bevy_system_reflection", version = "0.1.1" }
+bevy_system_reflection = { path = "../bevy_system_reflection", version = "0.1.2" }
 
 [dev-dependencies]
 test_utils = { workspace = true }
