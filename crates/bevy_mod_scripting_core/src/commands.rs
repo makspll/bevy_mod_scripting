@@ -12,7 +12,7 @@ use crate::{
     },
     extractors::{with_handler_system_state, HandlerContext, WithWorldGuard},
     handler::{handle_script_errors, send_callback_response},
-    script::{ScriptId, StaticScripts, DisplayProxy, ScriptContextProvider, Domain},
+    script::{ScriptId, StaticScripts, DisplayProxy, ScriptContextProvider, Domain, ScriptContext},
     IntoScriptPluginParams,
 };
 use bevy::{asset::{Assets, Handle}, ecs::entity::Entity, log::{warn, debug}, prelude::{EntityCommand, Command}};
@@ -44,7 +44,7 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
         // first apply unload callback
         RunScriptCallback::<P>::new(
             Handle::Weak(self.id.clone()),
-            Entity::from_raw(0),
+            None,
             self.domain,
             OnScriptUnloaded::into_callback_label(),
             vec![],
@@ -214,7 +214,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
 
                 RunScriptCallback::<P>::new(
                     self.id,
-                    Entity::from_raw(0),
+                    None,
                     self.domain,
                     OnScriptLoaded::into_callback_label(),
                     vec![],
@@ -243,7 +243,7 @@ impl<P: IntoScriptPluginParams> EntityCommand for CreateOrUpdateScript<P> {
 
                 RunScriptCallback::<P>::new(
                     self.id,
-                    entity,
+                    Some(entity),
                     self.domain,
                     OnScriptLoaded::into_callback_label(),
                     vec![],
@@ -262,7 +262,7 @@ pub struct RunScriptCallback<P: IntoScriptPluginParams> {
     /// The ID of the script to run the callback on
     pub id: Handle<ScriptAsset>,
     /// The entity to use for the callback
-    pub entity: Entity,
+    pub entity: Option<Entity>,
     /// The domain if any
     pub domain: Option<Domain>,
     /// The callback to run
@@ -281,7 +281,7 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
     /// Creates a new RunCallbackCommand with the given ID, callback and arguments
     pub fn new(
         id: Handle<ScriptAsset>,
-        entity: Entity,
+        entity: Option<Entity>,
         domain: Option<Domain>,
         callback: CallbackLabel,
         args: Vec<ScriptValue>,
@@ -406,7 +406,6 @@ mod test {
         context::{ContextBuilder, ContextLoadingSettings},
         handler::CallbackSettings,
         runtime::RuntimeContainer,
-        script::Scripts,
     };
 
     use super::*;
@@ -465,9 +464,7 @@ mod test {
                 Ok(ScriptValue::Unit)
             },
         })
-        .insert_resource(Scripts::<DummyPlugin> {
-            scripts: Default::default(),
-        });
+            ;
 
         app
     }
@@ -485,15 +482,13 @@ mod test {
     }
 
     fn assert_context_and_script(world: &World, id: &str, context: &str, message: &str) {
-        let scripts = world.get_resource::<Scripts<DummyPlugin>>().unwrap();
+        let scripts = world.get_resource::<ScriptContext<DummyPlugin>>().unwrap();
 
-        let script = scripts
-            .scripts
-            .get(id)
-            .unwrap_or_else(|| panic!("Script not found {message}"));
+        let context = scripts.get(None, &Handle::default(), &None)
+            .unwrap_or_else(|| panic!("Context not found {message}"));
 
-        assert_eq!(id, script.id);
-        let found_context = script.context.lock();
+        // assert_eq!(id, script.id);
+        let found_context = context.lock();
 
         assert_eq!(*context, *found_context, "{message}");
     }

@@ -25,7 +25,7 @@ pub type ContextInitializer<P> =
 
 /// Initializer run every time before executing or loading/re-loading a script
 pub type ContextPreHandlingInitializer<P> =
-    fn(&Handle<ScriptAsset>, Entity, &mut <P as IntoScriptPluginParams>::C) -> Result<(), ScriptError>;
+    fn(&Handle<ScriptAsset>, Option<Entity>, &mut <P as IntoScriptPluginParams>::C) -> Result<(), ScriptError>;
 
 /// Settings concerning the creation and assignment of script contexts as well as their initialization.
 #[derive(Resource)]

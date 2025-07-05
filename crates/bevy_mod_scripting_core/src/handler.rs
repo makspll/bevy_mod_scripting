@@ -31,7 +31,7 @@ use bevy::{
 /// A function that handles a callback event
 pub type HandlerFn<P> = fn(
     args: Vec<ScriptValue>,
-    entity: Entity,
+    entity: Option<Entity>,
     script_id: &Handle<ScriptAsset>,
     callback: &CallbackLabel,
     context: &mut <P as IntoScriptPluginParams>::C,
@@ -73,7 +73,7 @@ impl<P: IntoScriptPluginParams> CallbackSettings<P> {
     pub fn call(
         handler: HandlerFn<P>,
         args: Vec<ScriptValue>,
-        entity: Entity,
+        entity: Option<Entity>,
         script_id: &Handle<ScriptAsset>,
         callback: &CallbackLabel,
         script_ctxt: &mut P::C,
@@ -155,13 +155,13 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     let entity_and_static_scripts = guard.with_global_access(|world| {
         entity_query_state
             .iter(world)
-            .map(|(e, s, d)| (e, s.0.clone(), d.map(|x| x.0.clone())))
+            .map(|(e, s, d)| (Some(e), s.0.clone(), d.map(|x| x.0.clone())))
             .chain(
                 handler_ctxt
                     .static_scripts
                     .scripts
                     .iter()
-                    .map(|s| (NO_ENTITY, vec![s.clone()], None)),
+                    .map(|s| (None, vec![s.clone()], None)),
             )
             .collect::<Vec<_>>()
     });
@@ -198,7 +198,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                     {
                         continue
                     }
-                    crate::event::Recipients::Entity(target_entity) if target_entity != entity => {
+                    crate::event::Recipients::Entity(target_entity) if entity.map(|e| *target_entity != e).unwrap_or(false) => {
                         continue
                     }
                     crate::event::Recipients::Language(target_language)
@@ -215,7 +215,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                     _ => ()
 
                 }
-                let context_hash = handler_ctxt.script_context.hash((*entity != NO_ENTITY).then_some(*entity),
+                let context_hash = handler_ctxt.script_context.hash(*entity,
                                                                     &script_id.id(),
                                                                     domain);
                 if let Some(hash) = context_hash {
@@ -345,7 +345,7 @@ mod test {
         context::{ContextBuilder, ContextLoadingSettings},
         event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent},
         runtime::RuntimeContainer,
-        script::{Script, ScriptComponent, ScriptId, Scripts, StaticScripts},
+        script::{ScriptComponent, ScriptId, StaticScripts},
         BMSScriptingInfrastructurePlugin,
     };
 

@@ -197,7 +197,7 @@ fn load_rhai_content_into_context(
         .try_for_each(|init| init(script, context))?;
     pre_handling_initializers
         .iter()
-        .try_for_each(|init| init(script, Entity::from_raw(0), context))?;
+        .try_for_each(|init| init(script, None, context))?;
     runtime.eval_ast_with_scope(&mut context.scope, &context.ast)?;
 
     context.ast.clear_statements();
@@ -251,7 +251,7 @@ pub fn rhai_context_reload(
 /// The rhai callback handler.
 pub fn rhai_callback_handler(
     args: Vec<ScriptValue>,
-    entity: Entity,
+    entity: Option<Entity>,
     script_id: &Handle<ScriptAsset>,
     callback: &CallbackLabel,
     context: &mut RhaiScriptContext,

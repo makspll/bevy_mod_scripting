@@ -162,7 +162,7 @@ fn load_lua_content_into_context(
 
     pre_handling_initializers
         .iter()
-        .try_for_each(|init| init(script_id, Entity::from_raw(0), context))?;
+        .try_for_each(|init| init(script_id, None, context))?;
 
     context
         .load(content)
@@ -221,7 +221,7 @@ pub fn lua_context_reload(
 /// The lua handler for events
 pub fn lua_handler(
     args: Vec<ScriptValue>,
-    entity: bevy::ecs::entity::Entity,
+    entity: Option<bevy::ecs::entity::Entity>,
     script_id: &Handle<ScriptAsset>,
     callback_label: &CallbackLabel,
     context: &mut Lua,

@@ -262,13 +262,13 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
         &self,
         label: &CallbackLabel,
         script_id: &Handle<ScriptAsset>,
-        entity: Entity,
+        entity: Option<Entity>,
         domain: &Option<Domain>,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
         // find script
-        let Some(context) = self.script_context.get(Some(entity), &script_id.id(), domain) else {
+        let Some(context) = self.script_context.get(entity, &script_id.id(), domain) else {
             return Err(InteropError::missing_context(script_id.clone()).into());
         };
 
@@ -504,7 +504,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             &state.callback_label,
             // &self.target_script,
             &script_id,
-            Entity::from_raw(0),
+            None,
             &self.domain,
             payload,
             guard.clone(),
@@ -737,7 +737,7 @@ mod test {
             });
 
         // now dynamically add script system via builder
-        let mut builder = ScriptSystemBuilder::new("test".into(), "empty_script".into());
+        let mut builder = ScriptSystemBuilder::new("test".into(), "empty_script".into(), None);
         builder.before_system(test_system);
 
         let _ = builder

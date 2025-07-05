@@ -219,13 +219,13 @@ impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
         &self,
         label: &CallbackLabel,
         script_id: &Handle<ScriptAsset>,
-        entity: Entity,
+        entity: Option<Entity>,
         domain: &Option<Domain>,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
         // find script
-        let Some(context) = self.script_context.get(Some(entity), &script_id.id(), domain) else {
+        let Some(context) = self.script_context.get(entity, &script_id.id(), domain) else {
             return Err(InteropError::missing_context(script_id.clone()).into());
         };
 
@@ -258,7 +258,7 @@ impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
     pub fn call<C: IntoCallbackLabel>(
         &self,
         script_id: &Handle<ScriptAsset>,
-        entity: Entity,
+        entity: Option<Entity>,
         domain: &Option<Domain>,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
