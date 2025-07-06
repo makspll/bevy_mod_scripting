@@ -598,6 +598,13 @@ struct CodegenTemplateArgs {
     self_is_bms_lua: bool,
 }
 
+fn fetch_default_bevy_features() -> String {
+    let path = "codegen_bevy_features.txt";
+    std::fs::read_to_string(path)
+        .with_context(|| format!("Failed to read default bevy features from {path}"))
+        .unwrap()
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, clap::Subcommand, strum::AsRefStr)]
 #[clap(
     name = "xtask",
@@ -677,7 +684,7 @@ enum Xtasks {
 
         #[clap(
             long,
-            default_value = "bevy_asset,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded",
+            default_value = fetch_default_bevy_features(),
             help = "The features to enable for the bevy crate"
         )]
         bevy_features: Vec<String>,
@@ -814,9 +821,10 @@ impl Xtasks {
     /// Reads the metadata from the main workspace
     fn main_workspace_cargo_metadata() -> Result<cargo_metadata::Metadata> {
         let cargo_manifest_path = std::env::var("MAIN_CARGO_MANIFEST_PATH").unwrap();
-
+        let path = PathBuf::from(cargo_manifest_path);
+        let parent_dir = path.parent().unwrap().parent().unwrap().join("Cargo.toml");
         let mut cmd = cargo_metadata::MetadataCommand::new();
-        cmd.manifest_path(cargo_manifest_path);
+        cmd.manifest_path(parent_dir.to_string_lossy().to_string());
         let out = cmd.exec()?;
         Ok(out)
     }
@@ -993,7 +1001,11 @@ impl Xtasks {
         if ide_mode {
             clippy_args.push("--message-format=json");
         }
-        clippy_args.extend(vec!["--all-targets", "--", "-D", "warnings"]);
+
+        let keep_going = std::env::var(XTASK_KEEP_GOING).is_ok();
+        if !keep_going {
+            clippy_args.extend(vec!["--all-targets", "--", "-D", "warnings"]);
+        }
 
         Self::run_workspace_command(
             &app_settings,
@@ -1035,7 +1047,11 @@ impl Xtasks {
         if ide_mode {
             clippy_args.push("--message-format=json");
         }
-        clippy_args.extend(vec!["--all-targets", "--", "-D", "warnings"]);
+
+        let keep_going = std::env::var(XTASK_KEEP_GOING).is_ok();
+        if !keep_going {
+            clippy_args.extend(vec!["--all-targets", "--", "-D", "warnings"]);
+        }
 
         Self::run_workspace_command(
             &app_settings,
@@ -1211,6 +1227,10 @@ impl Xtasks {
     }
 
     fn check(app_settings: GlobalArgs, ide_mode: bool, kind: CheckKind) -> Result<()> {
+        if ide_mode && kind == CheckKind::All {
+            bail!("Ide mode should not be used with 'all' check kind, each workspace needs to have each own individual check, for toolchains to be properly supported");
+        }
+
         match kind {
             CheckKind::All => {
                 let err_main = Self::check_main_workspace(app_settings.clone(), ide_mode);
@@ -2017,7 +2037,9 @@ fn try_main() -> Result<()> {
     pretty_env_logger::formatted_builder()
         .filter_level(LevelFilter::Info)
         .init();
+
     pop_cargo_env()?;
+
     let args = App::try_parse()?;
     info!(
         "Default toolchain: {:?}",
@@ -2032,6 +2054,8 @@ fn try_main() -> Result<()> {
     }
     Ok(())
 }
+
+const XTASK_KEEP_GOING: &str = "XTASK_KEEP_GOING";
 
 fn main() {
     if let Err(e) = try_main() {
