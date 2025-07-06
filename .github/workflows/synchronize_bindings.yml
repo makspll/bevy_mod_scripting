@@ -1,9 +1,8 @@
 on:
   pull_request:
-    branches:
-      - "**"
+    types: [opened, reopened, edited, synchronize]
 
-name: Synchronize Bindings (Generate Diff)
+name: Synchronize Bindings
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.event.pull_request.number || github.ref }}
@@ -11,7 +10,7 @@ concurrency:
 
 jobs:
   generate_bindings:
-    name: Diff
+    name: Generate Diff
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -50,6 +49,3 @@ jobs:
       with:
         name: event-bindings.json
         path: ${{ github.event_path }}
-    outputs:
-      has-changes: ${{ steps.check_changes.outputs.changes }}
-      pr-number: ${{ github.event.pull_request.number }}
