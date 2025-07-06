@@ -1,0 +1,49 @@
+on:
+  workflow_run:
+    workflows: [Synchronize Bindings]
+    types: [completed]
+
+name: Synchronize Bindings (Check Diff)
+
+permissions: write-all
+
+jobs:
+  apply_fork_bindings:
+    name: Apply Bindings (Fork)
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+    env:
+      DIFF_ARTIFACT: bindings.diff
+      PR_EVENT: event-bindings.json
+    steps:
+    - name: Download Benchmark Results
+      uses: dawidd6/action-download-artifact@v6
+      with:
+        name: ${{ env.DIFF_ARTIFACT }}
+        run_id: ${{ github.event.workflow_run.id }}
+    - name: Download PR Event
+      uses: dawidd6/action-download-artifact@v6
+      with:
+        name: ${{ env.PR_EVENT }}
+        run_id: ${{ github.event.workflow_run.id }}
+    - name: Export PR Event Data
+      uses: actions/github-script@v6
+      with:
+        script: |
+          let fs = require('fs');
+          let prEvent = JSON.parse(fs.readFileSync(process.env.PR_EVENT, {encoding: 'utf8'}));
+          core.exportVariable("PR_HEAD", prEvent.pull_request.head.ref);
+          core.exportVariable("PR_BASE", prEvent.pull_request.base.ref);
+          core.exportVariable("PR_BASE_SHA", prEvent.pull_request.base.sha);
+          core.exportVariable("PR_NUMBER", prEvent.number);
+          core.exportVariable("HEAD_REPO", prEvent.pull_request.head.repo.full_name);
+          core.exportVariable("HEAD_REPO_URL", prEvent.pull_request.head.repo.git_url);
+    - name: Fail PR With URL
+      uses: actions/github-script@v6
+      with:
+        script: |
+          core.setFailed(`Running `cargo xtask codegen` produces changes in the bindings, please make sure to run this command locally and commit the changes to the PR.`);
+        
+
+
+        
