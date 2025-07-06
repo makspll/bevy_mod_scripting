@@ -307,7 +307,7 @@ mod test {
     #[test]
     fn test_reload_doesnt_overwrite_old_context() {
         let runtime = RhaiRuntime::new(Engine::new());
-        let script_id = ScriptId::from("asd.rhai");
+        let script_id = Handle::default();
         let initializers: Vec<ContextInitializer<RhaiScriptingPlugin>> = vec![];
         let pre_handling_initializers: Vec<ContextPreHandlingInitializer<RhaiScriptingPlugin>> =
             vec![];

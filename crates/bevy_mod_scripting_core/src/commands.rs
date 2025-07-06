@@ -523,7 +523,7 @@ mod test {
 
         let content = "content".as_bytes().to_vec().into_boxed_slice();
         let handle = Handle::default();
-        let command = CreateOrUpdateScript::<DummyPlugin>::new(handle.clone(), content, None);
+        let command = CreateOrUpdateScript::<DummyPlugin>::new(handle.clone(), Some(content), None);
         // command.apply(app.world_mut());
         Command::apply(command, app.world_mut());
 
@@ -538,7 +538,7 @@ mod test {
         // update the script
         let content = "new content".as_bytes().to_vec().into_boxed_slice();
         let script = Handle::default();
-        let command = CreateOrUpdateScript::<DummyPlugin>::new(script.clone(), content, None);
+        let command = CreateOrUpdateScript::<DummyPlugin>::new(script.clone(), Some(content), None);
         Command::apply(command, app.world_mut());
 
         // check script
@@ -552,7 +552,7 @@ mod test {
         // create second script
         let content = "content2".as_bytes().to_vec().into_boxed_slice();
         let script2 = Handle::default();
-        let command = CreateOrUpdateScript::<DummyPlugin>::new(script2.clone(), content, None);
+        let command = CreateOrUpdateScript::<DummyPlugin>::new(script2.clone(), Some(content), None);
 
         Command::apply(command, app.world_mut());
 
@@ -620,7 +620,7 @@ mod test {
 
     fn update_script(app: &mut App, handle: AssetId<ScriptAsset>, content: impl Into<String>) {
         let mut script_asset = app.world_mut().resource_mut::<Assets<ScriptAsset>>().get_mut(handle).unwrap();
-        script_asset.bytes = content.into().into_vec().into_boxed_slice();
+        script_asset.content = content.into().into_bytes().into_boxed_slice();
     }
 
     #[test]
@@ -639,7 +639,7 @@ mod test {
         let script = add_script(&mut app, "content");
         let command = CreateOrUpdateScript::<DummyPlugin>::new(script.clone(), None, None);
 
-        command.apply(app.world_mut());
+        Command::apply(command, app.world_mut());
 
         // check script
         assert_context_and_script(
@@ -654,7 +654,7 @@ mod test {
         update_script(&mut app, script.id(), "new content");
         let command = CreateOrUpdateScript::<DummyPlugin>::new(script.clone(), None, None);
 
-        command.apply(app.world_mut());
+        Command::apply(command, app.world_mut());
 
         // check script
 
@@ -670,7 +670,7 @@ mod test {
         let script2 = add_script(&mut app, "content2");
         let command = CreateOrUpdateScript::<DummyPlugin>::new(script2.clone(), None, None);
 
-        command.apply(app.world_mut());
+        Command::apply(command, app.world_mut());
 
         // check both scripts have the new context
 
@@ -687,13 +687,13 @@ mod test {
             "First script context was not updated on second script insert",
         );
 
-        let scripts = app.world().get_resource::<StaticScripts<DummyPlugin>>().unwrap();
+        let scripts = app.world().get_resource::<StaticScripts>().unwrap();
         assert!(scripts.scripts.len() == 2);
 
         // delete first script
         let command = DeleteScript::<DummyPlugin>::new("script".into());
 
-        command.apply(app.world_mut());
+        Command::apply(command, app.world_mut());
 
         // check second script still has the context, and on unload was called
         assert_context_and_script(
@@ -707,7 +707,7 @@ mod test {
 
         let command = DeleteScript::<DummyPlugin>::new("script2".into());
 
-        command.apply(app.world_mut());
+        Command::apply(command, app.world_mut());
 
         // check that the scripts are gone, and so is the context
 

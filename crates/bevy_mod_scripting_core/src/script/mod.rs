@@ -128,27 +128,31 @@ mod tests {
     #[test]
     fn static_scripts_insert() {
         let mut static_scripts = StaticScripts::default();
-        static_scripts.insert("script1");
+        let script1 = Handle::default();
+        static_scripts.insert(script1);
         assert_eq!(static_scripts.scripts.len(), 1);
-        assert!(static_scripts.scripts.contains("script1"));
+        assert!(static_scripts.scripts.contains(script1));
     }
 
     #[test]
     fn static_scripts_remove() {
         let mut static_scripts = StaticScripts::default();
-        static_scripts.insert("script1");
+        let script1 = Handle::default();
+        static_scripts.insert(script1);
         assert_eq!(static_scripts.scripts.len(), 1);
-        assert!(static_scripts.scripts.contains("script1"));
-        assert!(static_scripts.remove("script1"));
+        assert!(static_scripts.scripts.contains(script1));
+        assert!(static_scripts.remove(script1));
         assert_eq!(static_scripts.scripts.len(), 0);
-        assert!(!static_scripts.scripts.contains("script1"));
+        assert!(!static_scripts.scripts.contains(script1));
     }
 
     #[test]
     fn static_scripts_contains() {
         let mut static_scripts = StaticScripts::default();
-        static_scripts.insert("script1");
-        assert!(static_scripts.contains("script1"));
-        assert!(!static_scripts.contains("script2"));
+        let script1 = Handle::default();
+        let script2 = Handle::default();
+        static_scripts.insert(script1);
+        assert!(static_scripts.contains(script1));
+        assert!(!static_scripts.contains(script2));
     }
 }
