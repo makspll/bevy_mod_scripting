@@ -110,13 +110,16 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                         .tcx
                         .impl_trait_ref(*impl_did)
                         .map(|tr| tr.skip_binder().def_id);
+                    let trait_name = trait_did
+                        .map(|td| ctxt.tcx.item_name(td).to_ident_string())
+                        .unwrap_or_else(|| "None".to_string());
 
                     let fn_name = assoc_item.name.to_ident_string();
                     let has_self = assoc_item.fn_has_self_parameter;
                     let fn_did = assoc_item.def_id;
 
                     trace!(
-                        "Processing function: '{fn_name}' on type: `{}`",
+                        "Processing function: '{fn_name}' on type: `{}` on trait: `{trait_name}`",
                         ctxt.tcx.item_name(def_id)
                     );
 

@@ -62,6 +62,9 @@ fn main() {
                 .map(|s| s.to_owned())
                 .collect::<Vec<String>>();
 
+            // log all dependencies
+            debug!("Enabled dependencies: {}", dependencies.join(","));
+
             Some(dependencies)
         }
         _ => None,

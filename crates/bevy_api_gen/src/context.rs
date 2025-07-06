@@ -99,24 +99,25 @@ pub(crate) const DEF_PATHS_GET_TYPE_REGISTRATION: [&str; 2] = [
 
 /// A collection of traits which we search for in the codebase, some are included purely for the methods they provide,
 /// others are later used for quick lookup of the type "does this type implement Display" etc.
-pub(crate) const STD_SOURCE_TRAITS: [&str; 14] = [
+pub(crate) const STD_ONLY_TRAITS: [&str; 1] = ["std::string::ToString"];
+
+pub(crate) const STD_OR_CORE_TRAITS: [&str; 13] = [
     // PRINTING
-    "std::fmt::Debug",
-    "std::fmt::Display",
-    "std::string::ToString",
+    "fmt::Debug",
+    "fmt::Display",
     // OWNERSHIP
-    "std::clone::Clone",
+    "clone::Clone",
     // OPERATORS
-    "std::ops::Neg",
-    "std::ops::Mul",
-    "std::ops::Add",
-    "std::ops::Sub",
-    "std::ops::Div",
-    "std::ops::Rem",
-    "std::cmp::Eq",
-    "std::cmp::PartialEq",
-    "std::cmp::Ord", // we don't use these fully cuz of the output types not being lua primitives, but keeping it for the future
-    "std::cmp::PartialOrd",
+    "ops::Neg",
+    "ops::Mul",
+    "ops::Add",
+    "ops::Sub",
+    "ops::Div",
+    "ops::Rem",
+    "cmp::Eq",
+    "cmp::PartialEq",
+    "cmp::Ord", // we don't use these fully cuz of the output types not being lua primitives, but keeping it for the future
+    "cmp::PartialOrd",
 ];
 
 /// A collection of common traits stored for quick access.
@@ -128,7 +129,8 @@ pub(crate) struct CachedTraits {
     pub(crate) bevy_reflect_get_type_registration: Option<DefId>,
     /// Map from def_path_str to DefId of common std traits we work with
     /// these are the only trait impls from which we generate methods
-    pub(crate) std_source_traits: HashMap<String, DefId>,
+    pub(crate) std_only_traits: HashMap<String, DefId>,
+    pub(crate) std_or_core_traits: HashMap<String, DefId>,
 }
 
 impl CachedTraits {
@@ -150,6 +152,24 @@ impl CachedTraits {
         }
         if self.bevy_reflect_get_type_registration.is_none() {
             missing.extend(DEF_PATHS_GET_TYPE_REGISTRATION);
+        }
+        missing
+    }
+
+    pub(crate) fn missing_std_traits(&self) -> Vec<String> {
+        let mut missing = Vec::new();
+        for trait_name in STD_ONLY_TRAITS {
+            if !self.std_only_traits.contains_key(trait_name) {
+                missing.push(trait_name.to_owned());
+            }
+        }
+        for trait_name in STD_OR_CORE_TRAITS {
+            for prefix in ["std::", "core::"] {
+                let full_trait_name = format!("{prefix}{trait_name}");
+                if !self.std_or_core_traits.contains_key(&full_trait_name) {
+                    missing.push(full_trait_name);
+                }
+            }
         }
         missing
     }

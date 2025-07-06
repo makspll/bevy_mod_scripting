@@ -39,6 +39,15 @@ impl bevy::transform::components::GlobalTransform {
             .into();
         output
     }
+    fn clone(
+        _self: Ref<bevy::transform::components::GlobalTransform>,
+    ) -> Val<bevy::transform::components::GlobalTransform> {
+        let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::GlobalTransform as ::core::clone::Clone>::clone(
+                &_self,
+            )
+            .into();
+        output
+    }
     ///  Returns the 3d affine transformation matrix as a [`Mat4`].
     fn compute_matrix(
         _self: Ref<bevy::transform::components::GlobalTransform>,
@@ -68,6 +77,16 @@ impl bevy::transform::components::GlobalTransform {
         let output: Val<bevy::math::Dir3> = bevy::transform::components::GlobalTransform::down(
                 &_self,
             )
+            .into();
+        output
+    }
+    fn eq(
+        _self: Ref<bevy::transform::components::GlobalTransform>,
+        other: Ref<bevy::transform::components::GlobalTransform>,
+    ) -> bool {
+        let output: bool = <bevy::transform::components::GlobalTransform as ::core::cmp::PartialEq<
+            bevy::transform::components::GlobalTransform,
+        >>::eq(&_self, &other)
             .into();
         output
     }
@@ -137,6 +156,36 @@ impl bevy::transform::components::GlobalTransform {
         let output: Val<bevy::math::Dir3> = bevy::transform::components::GlobalTransform::left(
                 &_self,
             )
+            .into();
+        output
+    }
+    fn mul(
+        _self: Val<bevy::transform::components::GlobalTransform>,
+        value: Val<bevy::math::Vec3>,
+    ) -> Val<bevy::math::Vec3> {
+        let output: Val<bevy::math::Vec3> = <bevy::transform::components::GlobalTransform as ::core::ops::Mul<
+            bevy::math::Vec3,
+        >>::mul(_self.into_inner(), value.into_inner())
+            .into();
+        output
+    }
+    fn mul(
+        _self: Val<bevy::transform::components::GlobalTransform>,
+        global_transform: Val<bevy::transform::components::GlobalTransform>,
+    ) -> Val<bevy::transform::components::GlobalTransform> {
+        let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::GlobalTransform as ::core::ops::Mul<
+            bevy::transform::components::GlobalTransform,
+        >>::mul(_self.into_inner(), global_transform.into_inner())
+            .into();
+        output
+    }
+    fn mul(
+        _self: Val<bevy::transform::components::GlobalTransform>,
+        transform: Val<bevy::transform::components::Transform>,
+    ) -> Val<bevy::transform::components::GlobalTransform> {
+        let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::GlobalTransform as ::core::ops::Mul<
+            bevy::transform::components::Transform,
+        >>::mul(_self.into_inner(), transform.into_inner())
             .into();
         output
     }
@@ -344,6 +393,15 @@ impl bevy::transform::components::Transform {
             .into();
         output
     }
+    fn clone(
+        _self: Ref<bevy::transform::components::Transform>,
+    ) -> Val<bevy::transform::components::Transform> {
+        let output: Val<bevy::transform::components::Transform> = <bevy::transform::components::Transform as ::core::clone::Clone>::clone(
+                &_self,
+            )
+            .into();
+        output
+    }
     ///  Returns the 3d affine transformation matrix from this transforms translation,
     ///  rotation, and scale.
     fn compute_affine(
@@ -373,6 +431,16 @@ impl bevy::transform::components::Transform {
         let output: Val<bevy::math::Dir3> = bevy::transform::components::Transform::down(
                 &_self,
             )
+            .into();
+        output
+    }
+    fn eq(
+        _self: Ref<bevy::transform::components::Transform>,
+        other: Ref<bevy::transform::components::Transform>,
+    ) -> bool {
+        let output: bool = <bevy::transform::components::Transform as ::core::cmp::PartialEq<
+            bevy::transform::components::Transform,
+        >>::eq(&_self, &other)
             .into();
         output
     }
@@ -498,6 +566,36 @@ impl bevy::transform::components::Transform {
         let output: Val<bevy::math::Dir3> = bevy::transform::components::Transform::local_z(
                 &_self,
             )
+            .into();
+        output
+    }
+    fn mul(
+        _self: Val<bevy::transform::components::Transform>,
+        value: Val<bevy::math::Vec3>,
+    ) -> Val<bevy::math::Vec3> {
+        let output: Val<bevy::math::Vec3> = <bevy::transform::components::Transform as ::core::ops::Mul<
+            bevy::math::Vec3,
+        >>::mul(_self.into_inner(), value.into_inner())
+            .into();
+        output
+    }
+    fn mul(
+        _self: Val<bevy::transform::components::Transform>,
+        global_transform: Val<bevy::transform::components::GlobalTransform>,
+    ) -> Val<bevy::transform::components::GlobalTransform> {
+        let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::Transform as ::core::ops::Mul<
+            bevy::transform::components::GlobalTransform,
+        >>::mul(_self.into_inner(), global_transform.into_inner())
+            .into();
+        output
+    }
+    fn mul(
+        _self: Val<bevy::transform::components::Transform>,
+        transform: Val<bevy::transform::components::Transform>,
+    ) -> Val<bevy::transform::components::Transform> {
+        let output: Val<bevy::transform::components::Transform> = <bevy::transform::components::Transform as ::core::ops::Mul<
+            bevy::transform::components::Transform,
+        >>::mul(_self.into_inner(), transform.into_inner())
             .into();
         output
     }
@@ -778,7 +876,27 @@ impl bevy::transform::components::Transform {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl bevy::transform::components::TransformTreeChanged {}
+impl bevy::transform::components::TransformTreeChanged {
+    fn clone(
+        _self: Ref<bevy::transform::components::TransformTreeChanged>,
+    ) -> Val<bevy::transform::components::TransformTreeChanged> {
+        let output: Val<bevy::transform::components::TransformTreeChanged> = <bevy::transform::components::TransformTreeChanged as ::core::clone::Clone>::clone(
+                &_self,
+            )
+            .into();
+        output
+    }
+    fn eq(
+        _self: Ref<bevy::transform::components::TransformTreeChanged>,
+        other: Ref<bevy::transform::components::TransformTreeChanged>,
+    ) -> bool {
+        let output: bool = <bevy::transform::components::TransformTreeChanged as ::core::cmp::PartialEq<
+            bevy::transform::components::TransformTreeChanged,
+        >>::eq(&_self, &other)
+            .into();
+        output
+    }
+}
 impl ::bevy::app::Plugin for BevyTransformScriptingPlugin {
     fn build(&self, app: &mut ::bevy::prelude::App) {
         let mut world = app.world_mut();

@@ -1,11 +1,11 @@
-use log::trace;
+use log::{trace, warn};
 use rustc_hir::def_id::LOCAL_CRATE;
 use rustc_middle::ty::TyCtxt;
 use rustc_span::Symbol;
 
 use crate::{
     Args, BevyCtxt, DEF_PATHS_BMS_FROM_SCRIPT, DEF_PATHS_BMS_INTO_SCRIPT,
-    DEF_PATHS_GET_TYPE_REGISTRATION, DEF_PATHS_REFLECT, STD_SOURCE_TRAITS,
+    DEF_PATHS_GET_TYPE_REGISTRATION, DEF_PATHS_REFLECT, STD_ONLY_TRAITS, STD_OR_CORE_TRAITS,
 };
 
 fn dump_traits(tcx: &TyCtxt) -> String {
@@ -29,11 +29,19 @@ pub(crate) fn cache_traits(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
         } else if DEF_PATHS_GET_TYPE_REGISTRATION.contains(&def_path_str.as_str()) {
             trace!("found GetTypeRegistration trait def id: {trait_did:?}");
             ctxt.cached_traits.bevy_reflect_get_type_registration = Some(trait_did);
-        } else if STD_SOURCE_TRAITS.contains(&def_path_str.as_str()) {
-            trace!("found misc trait def id: {trait_did:?}");
+        } else if STD_ONLY_TRAITS.contains(&def_path_str.as_str()) {
+            trace!("found std trait def id: {trait_did:?}");
             ctxt.cached_traits
-                .std_source_traits
+                .std_only_traits
                 .insert(def_path_str.to_string(), trait_did);
+        } else if let Some(full_name) = STD_OR_CORE_TRAITS.iter().find(|name| {
+            (Some(**name) == def_path_str.strip_prefix("core::"))
+                || (Some(**name) == def_path_str.strip_prefix("std::"))
+        }) {
+            trace!("found core trait def id: {trait_did:?}");
+            ctxt.cached_traits
+                .std_or_core_traits
+                .insert(full_name.to_string(), trait_did);
         } else if DEF_PATHS_BMS_INTO_SCRIPT.contains(&def_path_str.as_str()) {
             trace!("found IntoScript trait def id: {trait_did:?}");
             ctxt.cached_traits.bms_into_script = Some(trait_did);
@@ -60,6 +68,15 @@ pub(crate) fn cache_traits(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
             missing_bms_traits.join(", "),
             tcx.crate_name(LOCAL_CRATE),
             dump_traits(tcx)
+        );
+    }
+
+    let missing_std_traits = ctxt.cached_traits.missing_std_traits();
+    if !missing_std_traits.is_empty() {
+        warn!(
+            "Could not find std traits: [{}] in crate: {}, this might lead to missing methods in the generated API.",
+            missing_std_traits.join(", "),
+            tcx.crate_name(LOCAL_CRATE),
         );
     }
 
