@@ -821,9 +821,10 @@ impl Xtasks {
     /// Reads the metadata from the main workspace
     fn main_workspace_cargo_metadata() -> Result<cargo_metadata::Metadata> {
         let cargo_manifest_path = std::env::var("MAIN_CARGO_MANIFEST_PATH").unwrap();
-
+        let path = PathBuf::from(cargo_manifest_path);
+        let parent_dir = path.parent().unwrap().parent().unwrap().join("Cargo.toml");
         let mut cmd = cargo_metadata::MetadataCommand::new();
-        cmd.manifest_path(cargo_manifest_path);
+        cmd.manifest_path(parent_dir.to_string_lossy().to_string());
         let out = cmd.exec()?;
         Ok(out)
     }

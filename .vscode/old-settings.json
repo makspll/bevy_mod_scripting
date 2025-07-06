@@ -1,0 +1,32 @@
+{
+    // "rust-analyzer.rustc.source": "discover",
+    // "rust-analyzer.cargo.sysroot": "discover",
+    // "rust-analyzer.linkedProjects": [
+    //     // "/home/makspll/git/bevy_mod_scripting/crates/bevy_api_gen/Cargo.toml",
+    //     "Cargo.toml"
+    // ],
+    // "rust-analyzer.check.invocationStrategy": "per_workspace",
+    // "rust-analyzer.check.overrideCommand": [
+    //     "/home/makspll/git/bevy_mod_scripting/check.sh"
+    // ],
+    // "rust-analyzer.cargo.buildScripts.invocationStrategy": "per_workspace",
+    // "rust-analyzer.cargo.buildScripts.overrideCommand": [
+    //     "env",
+    //     "XTASK_KEEP_GOING=true",
+    //     "/home/makspll/git/bevy_mod_scripting/check.sh"
+    // ],
+    "lldb.displayFormat": "auto",
+    "lldb.showDisassembly": "never",
+    "lldb.dereferencePointers": true,
+    "lldb.consoleMode": "commands",
+    "rust-analyzer.cargo.features": [
+        "lua54"
+    ],
+    "rust-analyzer.runnables.extraArgs": [
+        "--profile",
+        "dev-debug"
+    ],
+    "rust-analyzer.server.extraEnv": {
+        "RA_LOG": "warn,rust_analyzer::main_loop=warn"
+    }
+}
