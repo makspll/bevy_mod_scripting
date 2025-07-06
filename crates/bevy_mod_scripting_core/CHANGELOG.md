@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.12.0...bevy_mod_scripting_core-v0.13.0) - 2025-07-05
+
+### Added
+
+- Include Entity in `ScriptCallbackResponseEvent` ([#425](https://github.com/makspll/bevy_mod_scripting/pull/425))
+- Add on_script_reloaded callback. ([#421](https://github.com/makspll/bevy_mod_scripting/pull/421))
+- Warn on unknown language. ([#418](https://github.com/makspll/bevy_mod_scripting/pull/418))
+
 ## [0.12.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.11.1...bevy_mod_scripting_core-v0.12.0) - 2025-04-07
 
 ### Added

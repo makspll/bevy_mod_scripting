@@ -101,7 +101,7 @@ bevy = { workspace = true, default-features = true, features = ["std"] }
 clap = { version = "4.1", features = ["derive"] }
 rand = "0.9.1"
 criterion = { version = "0.5" }
-ladfile_builder = { path = "crates/ladfile_builder", version = "0.3.2" }
+ladfile_builder = { path = "crates/ladfile_builder", version = "0.3.3" }
 script_integration_test_harness = { workspace = true }
 test_utils = { workspace = true }
 libtest-mimic = "0.8"
@@ -116,7 +116,6 @@ members = [
     "crates/languages/bevy_mod_scripting_rhai",
     # "crates/languages/bevy_mod_scripting_rune",
     "crates/bevy_mod_scripting_functions",
-    "crates/xtask",
     "crates/testing_crates/test_utils",
     "crates/testing_crates/script_integration_test_harness",
     "crates/bevy_mod_scripting_derive",
@@ -126,7 +125,7 @@ members = [
     "crates/bevy_system_reflection",
 ]
 resolver = "2"
-exclude = ["crates/bevy_api_gen", "crates/macro_tests"]
+exclude = ["crates/bevy_api_gen", "crates/macro_tests", "xtask"]
 
 [profile.dev]
 debug = 1

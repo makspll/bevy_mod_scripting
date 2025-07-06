@@ -28,9 +28,9 @@ rhai_bindings = ["bevy_mod_scripting_rhai"]
 
 [dependencies]
 bevy = { workspace = true }
-bevy_math = { workspace = true, features = ["curve"]}
-bevy_reflect = { workspace = true, features = ["smol_str"]}
-bevy_input = { workspace = true, features = ["smol_str"]}
+bevy_math = { workspace = true, features = ["curve"] }
+bevy_reflect = { workspace = true, features = ["smol_str"] }
+bevy_input = { workspace = true, features = ["smol_str"] }
 profiling = { workspace = true }
 uuid = "1.11"
 smol_str = "0.2.2"
@@ -38,7 +38,7 @@ bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
 bevy_mod_scripting_lua = { path = "../languages/bevy_mod_scripting_lua", optional = true, version = "0.13.0" }
 bevy_mod_scripting_rhai = { path = "../languages/bevy_mod_scripting_rhai", optional = true, version = "0.13.0" }
-bevy_system_reflection = { path = "../bevy_system_reflection", version = "0.1.1" }
+bevy_system_reflection = { path = "../bevy_system_reflection", version = "0.1.2" }
 
 [lints]
 workspace = true
