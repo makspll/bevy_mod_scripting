@@ -145,7 +145,6 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     mut script_events: crate::extractors::EventReaderScope<ScriptCallbackEvent>,
     mut handler_ctxt: WithWorldGuard<HandlerContext<P>>,
 ) {
-    const NO_ENTITY: Entity = Entity::from_raw(0);
     let (guard, handler_ctxt) = handler_ctxt.get_mut();
 
     let mut errors = Vec::default();

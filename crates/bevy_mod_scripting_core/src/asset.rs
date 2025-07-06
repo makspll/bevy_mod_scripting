@@ -3,6 +3,7 @@
 use crate::{
     StaticScripts,
     ScriptComponent,
+    LanguageExtensions,
     commands::CreateOrUpdateScript,
     error::ScriptError,
     script::{DisplayProxy, Domain, ScriptDomain},
@@ -78,9 +79,39 @@ pub struct ScriptSettings {
 /// A loader for script assets
 pub struct ScriptAssetLoader {
     /// The file extensions this loader should handle
-    pub extensions: &'static [&'static str],
+    language_extensions: LanguageExtensions,
+    extensions: &'static [&'static str],
     /// preprocessor to run on the script before saving the content to an asset
     pub preprocessor: Option<Box<dyn Fn(&mut [u8]) -> Result<(), ScriptError> + Send + Sync>>,
+}
+
+impl ScriptAssetLoader {
+    /// Create a new script asset loader for the given extensions.
+    pub fn new(language_extensions: LanguageExtensions) -> Self {
+        let extensions: Vec<&'static str> = language_extensions.keys()
+                                                               .into_iter()
+                                                               .map(|x| *x)
+                                                               .collect();
+        let new_arr_static = Vec::leak(extensions);
+        Self {
+            language_extensions,
+            extensions: new_arr_static,
+            preprocessor: None,
+        }
+    }
+
+    // For testing purposes.
+    pub(crate) fn for_extension(extension: &'static str) -> Self {
+        let mut langext = LanguageExtensions::default();
+        langext.insert(extension, Language::Unknown);
+        Self::new(langext)
+    }
+
+    /// Add a preprocessor
+    pub fn with_preprocessor(mut self, preprocessor: Box<dyn Fn(&mut [u8]) -> Result<(), ScriptError> + Send + Sync>) -> Self {
+        self.preprocessor = Some(preprocessor);
+        self
+    }
 }
 
 #[profiling::all_functions]
@@ -108,16 +139,13 @@ impl AssetLoader for ScriptAssetLoader {
         let language = settings
             .language
             .clone()
-            .unwrap_or_else(||
-                match load_context.path().extension().and_then(|e| e.to_str()).unwrap_or_default() {
-                    "lua" => Language::Lua,
-                    "rhai" => Language::Rhai,
-                    "rn" => Language::Rune,
-                    x => {
-                        warn!("Unknown language for {:?}", load_context.path().display());
-                        Language::Unknown
-                    }
-                });
+            .unwrap_or_else(|| {
+                let ext = load_context.path().extension().and_then(|e| e.to_str()).unwrap_or_default();
+                self.language_extensions.get(ext).cloned().unwrap_or_else(|| {
+                    warn!("Unknown language for {:?}", load_context.path().display());
+                    Language::Unknown
+                })
+            });
         let asset = ScriptAsset {
             content: content.into_boxed_slice(),
             language,
@@ -292,7 +320,7 @@ mod tests {
 
     use bevy::{
         app::{App, Update},
-        asset::{AssetApp, AssetPlugin, AssetServer, Assets, Handle, LoadState},
+        asset::{AssetApp, AssetPlugin, AssetServer, Assets, Handle, LoadState, AssetPath},
         prelude::Resource,
         MinimalPlugins,
     };
@@ -341,10 +369,7 @@ mod tests {
 
     #[test]
     fn test_asset_loader_loads() {
-        let loader = ScriptAssetLoader {
-            extensions: &["script"],
-            preprocessor: None,
-        };
+        let loader = ScriptAssetLoader::for_extension("script");
         let mut app = init_loader_test(loader);
 
         let handle = load_asset(&mut app, "test_assets/test_script.script");
@@ -363,13 +388,11 @@ mod tests {
 
     #[test]
     fn test_asset_loader_applies_preprocessor() {
-        let loader = ScriptAssetLoader {
-            extensions: &["script"],
-            preprocessor: Some(Box::new(|content| {
+        let loader = ScriptAssetLoader::for_extension("script")
+            .with_preprocessor(Box::new(|content| {
                 content[0] = b'p';
                 Ok(())
-            })),
-        };
+            }));
         let mut app = init_loader_test(loader);
 
         let handle = load_asset(&mut app, "test_assets/test_script.script");

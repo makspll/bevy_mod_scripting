@@ -5,9 +5,9 @@
 use crate::event::ScriptErrorEvent;
 use asset::{
     configure_asset_systems, configure_asset_systems_for_plugin, Language, ScriptAsset,
-    ScriptAssetLoader, //ScriptAssetSettings,
+    ScriptAssetLoader,
 };
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 use bindings::{
     function::script_function::AppScriptFunctionRegistry, garbage_collector,
     schedule::AppScheduleRegistry, script_value::ScriptValue, AppReflectAllocator,
@@ -281,24 +281,11 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
     }
 
     fn finish(&self, app: &mut App) {
-        // read extensions from asset settings
-        // let asset_settings_extensions = app
-        //     .world_mut()
-        //     // .get_resource_or_init::<ScriptAssetSettings>()
-        //     .supported_extensions;
-
-        // // convert extensions to static array
-        // bevy::log::info!(
-        //     "Initializing BMS with Supported extensions: {:?}",
-        //     asset_settings_extensions
-        // );
-        let asset_settings_extensions = &["lua", "luau", "rhai", "rn"];
-        app.register_asset_loader(ScriptAssetLoader {
-            extensions: asset_settings_extensions,
-            preprocessor: None,
-        });
-
-        // pre-register component id's
+        // Read extensions.
+        let language_extensions = app.world_mut().remove_resource::<LanguageExtensions>()
+            .unwrap_or_default();
+        app.register_asset_loader(ScriptAssetLoader::new(language_extensions));
+        // Pre-register component IDs.
         pre_register_components(app);
         DynamicScriptComponentPlugin.finish(app);
     }
@@ -393,31 +380,34 @@ pub trait ConfigureScriptAssetSettings {
     ) -> &mut Self;
 }
 
+/// Collect the language extensions supported during initialization.
+///
+/// NOTE: This resource is removed after plugin setup.
+#[derive(Debug, Resource, Deref, DerefMut)]
+pub struct LanguageExtensions(HashMap<&'static str, Language>);
+
+impl Default for LanguageExtensions {
+    fn default() -> Self {
+        LanguageExtensions([("lua", Language::Lua),
+                            ("rhai", Language::Rhai),
+                            ("rn", Language::Rune)].into_iter().collect())
+    }
+}
+
 impl ConfigureScriptAssetSettings for App {
     fn add_supported_script_extensions(
         &mut self,
         extensions: &[&'static str],
         language: Language,
     ) -> &mut Self {
-        todo!()
-        // let mut asset_settings = self
-        //     .world_mut()
-        //     .get_resource_or_init::<ScriptAssetSettings>();
+        let mut language_extensions  = self
+            .world_mut()
+            .get_resource_or_init::<LanguageExtensions>();
 
-        // let mut new_arr = Vec::from(asset_settings.supported_extensions);
-
-        // new_arr.extend(extensions);
-
-        // let new_arr_static = Vec::leak(new_arr);
-
-        // asset_settings.supported_extensions = new_arr_static;
-        // for extension in extensions {
-        //     asset_settings
-        //         .extension_to_language_map
-        //         .insert(*extension, language.clone());
-        // }
-
-        // self
+        for extension in extensions {
+            language_extensions.insert(extension, language.clone());
+        }
+        self
     }
 }
 
