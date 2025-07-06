@@ -3,7 +3,7 @@
 
 use crate::{error::ScriptError, IntoScriptPluginParams};
 use bevy::{
-    ecs::system::{ResMut},
+    ecs::system::ResMut,
     prelude::{Res, Resource},
 };
 

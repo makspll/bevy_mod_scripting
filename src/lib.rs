@@ -1,17 +1,17 @@
 #![doc=include_str!("../readme.md")]
 
 pub mod core {
-	pub use bevy_mod_scripting_core::*;
+    pub use bevy_mod_scripting_core::*;
 }
 
 #[cfg(feature = "lua")]
 pub mod lua {
-	pub use bevy_mod_scripting_lua::*;
+    pub use bevy_mod_scripting_lua::*;
 }
 
 #[cfg(feature = "rhai")]
 pub mod rhai {
-	pub use bevy_mod_scripting_rhai::*;
+    pub use bevy_mod_scripting_rhai::*;
 }
 
 // #[cfg(feature = "rune")]
@@ -21,7 +21,7 @@ pub mod rhai {
 
 use bevy::app::plugin_group;
 use bevy_mod_scripting_core::{
-	bindings::CoreScriptGlobalsPlugin, BMSScriptingInfrastructurePlugin,
+    bindings::CoreScriptGlobalsPlugin, BMSScriptingInfrastructurePlugin,
 };
 pub use bevy_mod_scripting_derive::*;
 pub use bevy_mod_scripting_functions::*;

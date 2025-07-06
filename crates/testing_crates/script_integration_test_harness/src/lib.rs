@@ -1,40 +1,40 @@
 pub mod test_functions;
 
 use std::{
-	marker::PhantomData,
-	path::PathBuf,
-	time::{Duration, Instant},
+    marker::PhantomData,
+    path::PathBuf,
+    time::{Duration, Instant},
 };
 
 use bevy::{
-	app::{Last, Plugin, PostUpdate, Startup, Update},
-	asset::{AssetServer, Handle},
-	ecs::{
-		component::Component,
-		event::{Event, Events},
-		prelude::{Command, Resource},
-		schedule::ScheduleConfigs,
-		system::{BoxedSystem, InfallibleSystemWrapper, IntoSystem, Local, Res, SystemState},
-		world::{FromWorld, Mut},
-	},
-	log::{tracing, tracing::event, Level},
-	prelude::{BevyError, Entity, IntoScheduleConfigs, World},
-	reflect::{Reflect, TypeRegistry},
+    app::{Last, Plugin, PostUpdate, Startup, Update},
+    asset::{AssetServer, Handle},
+    ecs::{
+        component::Component,
+        event::{Event, Events},
+        prelude::{Command, Resource},
+        schedule::ScheduleConfigs,
+        system::{BoxedSystem, InfallibleSystemWrapper, IntoSystem, Local, Res, SystemState},
+        world::{FromWorld, Mut},
+    },
+    log::{tracing, tracing::event, Level},
+    prelude::{BevyError, Entity, IntoScheduleConfigs, World},
+    reflect::{Reflect, TypeRegistry},
 };
 use bevy_mod_scripting_core::{
-	asset::ScriptAsset,
-	bindings::{
-		pretty_print::DisplayWithWorld, script_value::ScriptValue, CoreScriptGlobalsPlugin,
-		ReflectAccessId, WorldAccessGuard, WorldGuard,
-	},
-	callback_labels,
-	commands::CreateOrUpdateScript,
-	error::{InteropError, ScriptError},
-	event::{IntoCallbackLabel, ScriptErrorEvent},
-	extractors::{HandlerContext, WithWorldGuard},
-	handler::handle_script_errors,
-	script::ScriptId,
-	BMSScriptingInfrastructurePlugin, IntoScriptPluginParams, ScriptingPlugin,
+    asset::ScriptAsset,
+    bindings::{
+        pretty_print::DisplayWithWorld, script_value::ScriptValue, CoreScriptGlobalsPlugin,
+        ReflectAccessId, WorldAccessGuard, WorldGuard,
+    },
+    callback_labels,
+    commands::CreateOrUpdateScript,
+    error::{InteropError, ScriptError},
+    event::{IntoCallbackLabel, ScriptErrorEvent},
+    extractors::{HandlerContext, WithWorldGuard},
+    handler::handle_script_errors,
+    script::ScriptId,
+    BMSScriptingInfrastructurePlugin, IntoScriptPluginParams, ScriptingPlugin,
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
 use criterion::{measurement::Measurement, BatchSize};
@@ -133,12 +133,12 @@ pub fn make_test_lua_plugin() -> bevy_mod_scripting_lua::LuaScriptingPlugin {
 #[cfg(feature = "rhai")]
 pub fn make_test_rhai_plugin() -> bevy_mod_scripting_rhai::RhaiScriptingPlugin {
     use bevy_mod_scripting_core::{
-	    bindings::{ThreadWorldContainer, WorldContainer},
-	    ConfigureScriptPlugin,
+        bindings::{ThreadWorldContainer, WorldContainer},
+        ConfigureScriptPlugin,
     };
     use bevy_mod_scripting_rhai::{
-	    rhai::{Dynamic, EvalAltResult, FnPtr, NativeCallContext},
-	    RhaiScriptingPlugin,
+        rhai::{Dynamic, EvalAltResult, FnPtr, NativeCallContext},
+        RhaiScriptingPlugin,
     };
 
     RhaiScriptingPlugin::default().add_runtime_initializer(|runtime| {
@@ -421,7 +421,7 @@ where
     F: Fn(&mut P::C, &P::R, &str, &mut criterion::BenchmarkGroup<M>) -> Result<(), String>,
 {
     use bevy_mod_scripting_core::bindings::{
-	    ThreadWorldContainer, WorldAccessGuard, WorldContainer,
+        ThreadWorldContainer, WorldAccessGuard, WorldContainer,
     };
 
     let mut app = setup_integration_test(|_, _| {});

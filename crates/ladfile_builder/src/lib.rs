@@ -2,31 +2,31 @@
 pub mod plugin;
 
 use std::{
-	any::TypeId,
-	borrow::Cow,
-	cmp::{max, min},
-	collections::HashMap,
-	ffi::OsString,
-	path::PathBuf,
+    any::TypeId,
+    borrow::Cow,
+    cmp::{max, min},
+    collections::HashMap,
+    ffi::OsString,
+    path::PathBuf,
 };
 
 use bevy::{ecs::world::World, platform::collections::HashSet};
 use bevy_mod_scripting_core::{
-	bindings::{
-		function::{
-			namespace::Namespace,
-			script_function::{
-				DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext,
-			},
-		},
-		ReflectReference,
-	},
-	docgen::{
-		info::FunctionInfo,
-		typed_through::{ThroughTypeInfo, TypedWrapperKind, UntypedWrapperKind},
-		TypedThrough,
-	},
-	match_by_type,
+    bindings::{
+        function::{
+            namespace::Namespace,
+            script_function::{
+                DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext,
+            },
+        },
+        ReflectReference,
+    },
+    docgen::{
+        info::FunctionInfo,
+        typed_through::{ThroughTypeInfo, TypedWrapperKind, UntypedWrapperKind},
+        TypedThrough,
+    },
+    match_by_type,
 };
 use bevy_reflect::{NamedField, TypeInfo, TypeRegistry, Typed, UnnamedField};
 use ladfile::*;
@@ -788,21 +788,21 @@ impl<'t> LadFileBuilder<'t> {
 
 #[cfg(test)]
 mod test {
-	use bevy_mod_scripting_core::{
-		bindings::{
-			function::{
-				from::Ref,
-				namespace::{GlobalNamespace, IntoNamespace},
-			},
-			Union, Val,
-		},
-		docgen::info::GetFunctionInfo,
-	};
-	use bevy_reflect::Reflect;
+    use bevy_mod_scripting_core::{
+        bindings::{
+            function::{
+                from::Ref,
+                namespace::{GlobalNamespace, IntoNamespace},
+            },
+            Union, Val,
+        },
+        docgen::info::GetFunctionInfo,
+    };
+    use bevy_reflect::Reflect;
 
-	use super::*;
+    use super::*;
 
-	/// normalize line endings etc..
+    /// normalize line endings etc..
     fn normalize_file(file: &mut String) {
         *file = file.replace("\r\n", "\n");
     }

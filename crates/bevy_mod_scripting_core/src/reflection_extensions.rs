@@ -4,9 +4,7 @@ use crate::{
     bindings::{ReflectReference, WorldGuard},
     error::InteropError,
 };
-use bevy::reflect::{
-    PartialReflect, Reflect, ReflectFromReflect, ReflectMut, TypeInfo,
-};
+use bevy::reflect::{PartialReflect, Reflect, ReflectFromReflect, ReflectMut, TypeInfo};
 use std::{
     any::{Any, TypeId},
     cmp::max,

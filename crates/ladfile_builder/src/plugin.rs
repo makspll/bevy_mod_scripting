@@ -3,13 +3,13 @@
 use std::path::PathBuf;
 
 use bevy::{
-	app::{App, Plugin, Startup},
-	ecs::{prelude::Resource, reflect::AppTypeRegistry, system::Res, world::World},
+    app::{App, Plugin, Startup},
+    ecs::{prelude::Resource, reflect::AppTypeRegistry, system::Res, world::World},
 };
 use bevy_mod_scripting_core::bindings::{
-	function::{namespace::Namespace, script_function::AppScriptFunctionRegistry},
-	globals::AppScriptGlobalsRegistry,
-	IntoNamespace, MarkAsCore, MarkAsGenerated, MarkAsSignificant,
+    function::{namespace::Namespace, script_function::AppScriptFunctionRegistry},
+    globals::AppScriptGlobalsRegistry,
+    IntoNamespace, MarkAsCore, MarkAsGenerated, MarkAsSignificant,
 };
 use ladfile::{default_importance, LadTypeKind};
 

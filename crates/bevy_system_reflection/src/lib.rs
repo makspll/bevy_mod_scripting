@@ -2,14 +2,14 @@
 use std::{any::TypeId, borrow::Cow, ops::Deref};
 
 use bevy::{
-	ecs::{
-		schedule::{
-			InternedScheduleLabel, InternedSystemSet, NodeId, Schedule, ScheduleLabel, SystemSet,
-		},
-		system::{System, SystemInput},
-	},
-	platform::collections::{HashMap, HashSet},
-	reflect::Reflect,
+    ecs::{
+        schedule::{
+            InternedScheduleLabel, InternedSystemSet, NodeId, Schedule, ScheduleLabel, SystemSet,
+        },
+        system::{System, SystemInput},
+    },
+    platform::collections::{HashMap, HashSet},
+    reflect::Reflect,
 };
 use dot_writer::{Attributes, DotWriter};
 
@@ -469,11 +469,11 @@ pub struct Edge {
 
 #[cfg(test)]
 mod test {
-	use bevy::{app::Update, ecs::world::World, prelude::IntoScheduleConfigs};
+    use bevy::{app::Update, ecs::world::World, prelude::IntoScheduleConfigs};
 
-	use super::*;
+    use super::*;
 
-	fn system_a() {}
+    fn system_a() {}
 
     fn system_b() {}
 

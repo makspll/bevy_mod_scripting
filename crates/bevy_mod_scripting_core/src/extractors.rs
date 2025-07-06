@@ -11,10 +11,10 @@ use bevy::{
         event::{Event, EventCursor, EventIterator, Events},
         query::{Access, AccessConflicts},
         storage::SparseSetIndex,
-        system::{Local, SystemParam, SystemState, SystemParamValidationError},
+        system::{Local, SystemParam, SystemParamValidationError, SystemState},
         world::World,
     },
-    prelude::Resource
+    prelude::Resource,
 };
 use fixedbitset::FixedBitSet;
 
