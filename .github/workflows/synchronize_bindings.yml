@@ -1,56 +1,51 @@
 on:
   pull_request:
-    branches:
-      - "**"
+    types: [opened, reopened, edited, synchronize]
 
 name: Synchronize Bindings
 
 concurrency:
-  # Use github.run_id on main branch
-  # Use github.event.pull_request.number on pull requests, so it's unique per pull request
-  # Use github.ref on other branches, so it's unique per branch
   group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
- generate_bindings:
-    name: Synchronise Bindings (Not Fork)
-    permissions:
-      contents: write
-      pull-requests: write
+  generate_bindings:
+    name: Generate Diff
     runs-on: ubuntu-latest
-    if: github.event.pull_request.head.repo.full_name == github.repository    
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        ref: ${{ github.head_ref || github.ref_name }}
     - name: Rust Cache
-      if: ${{ needs.check-needs-run.outputs.any-changes == 'true' }}
       uses: Swatinem/rust-cache@v2.7.7
       with:
-        # reasoning: we want to cache xtask, most of the jobs in the matrix will be sped up a good bit thanks to that 
         save-if: ${{ github.ref == 'refs/heads/main' }}
         cache-all-crates: true
-    - name: Setup Bot GitHub Credentials
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "41898282+github-actions[bot]@users.noreply.github.com" 
     - name: Setup
       run: |
         cargo xtask init
     - name: Generate Bindings
       run: |
         cargo xtask codegen
-    - name: Check for changes
+    - name: Check for changes and create diff
       id: check_changes
       run: |
         if [[ -n $(git status --porcelain) ]]; then
-            echo "changes=true" >> "$GITHUB_OUTPUT"; 
+          echo "changes=true" >> "$GITHUB_OUTPUT"
+          git diff > bindings.diff
+          echo "Diff created:"
+          cat bindings.diff
+        else
+          echo "changes=false" >> "$GITHUB_OUTPUT"
         fi
-    - name: Commit Changes
-      if: steps.check_changes.outputs.changes
-      run: |
-        git add -A
-        git commit -m "chore(codegen): update bevy bindings"
-        git push
+    - name: Upload Diff Artifact
+      if: steps.check_changes.outputs.changes == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: bindings.diff
+        path: bindings.diff
+        retention-days: 1
+    - name: Upload GitHub Pull Request Event
+      uses: actions/upload-artifact@v4
+      with:
+        name: event-bindings.json
+        path: ${{ github.event_path }}
