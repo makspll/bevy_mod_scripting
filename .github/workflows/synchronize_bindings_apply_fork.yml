@@ -4,7 +4,7 @@ on:
     types:
       - completed
 
-name: Synchronize Bindings (Apply Diff - Fork)
+name: Synchronize Bindings (Check Diff)
 
 jobs:
   apply_fork_bindings:
@@ -41,10 +41,8 @@ jobs:
           core.exportVariable("PR_NUMBER", prEvent.number);
           core.exportVariable("HEAD_REPO", prEvent.pull_request.head.repo.full_name);
           core.exportVariable("HEAD_REPO_URL", prEvent.pull_request.head.repo.git_url);
-          core.exportVariable("IS_FORK", prEvent.pull_request.head.repo.full_name !== prEvent.pull_request.base.repo.full_name);    
     - name: Fail PR With URL
       uses: actions/github-script@v6
-      if: ${ env.IS_FORK == 'true' }
       with:
         script: |
           core.setFailed(`Running `cargo xtask codegen` produces changes in the bindings, please make sure to run this command locally and commit the changes to the PR.`);
