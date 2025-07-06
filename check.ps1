@@ -1,14 +1,16 @@
-#!/usr/bin/env pwsh
-$WORKSPACE_DIR = Get-Location
+#!/bin/bash
+WORKSPACE_DIR="$PWD"
 
-Set-Location (Split-Path $MyInvocation.MyCommand.Path)
-
-# dump environment to current ./xtask.log file 
-
+cd "$(dirname "$0")"
 # if the path is in /bevy_api_gen then we run the codegen check
 
-if ($WORKSPACE_DIR -like "*\bevy_api_gen*") {
+if [[ "$WORKSPACE_DIR" == *"/bevy_api_gen"* ]]; then
+    # save output to file as well as stdout and stderr
     cargo xtask check --ide-mode --kind codegen
-} else {
-    cargo xtask check --ide-mode --kind main
-}
+elif [[ "$WORKSPACE_DIR" == *"/xtask"* ]]; then
+    cd "$WORKSPACE_DIR"
+    cargo clippy --workspace --message-format=json --all-targets -- -D warnings
+else 
+    cd "$WORKSPACE_DIR"
+    cargo xtask check --ide-mode --kind main  
+fi
