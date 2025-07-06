@@ -7,7 +7,7 @@ use rustc_hir::{
 };
 use rustc_infer::infer::TyCtxtInferExt;
 use rustc_middle::ty::{
-    AdtKind, AssocKind, FieldDef, FnSig, GenericArgs, Ty, TyCtxt, TyKind, TypingEnv, TypingMode,
+    AdtKind, AssocKind, FieldDef, FnSig, GenericArgs, Ty, TyCtxt, TyKind, TypingEnv,
 };
 use rustc_span::Symbol;
 use rustc_trait_selection::infer::InferCtxtExt;
@@ -105,9 +105,6 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                     if assoc_item.kind != AssocKind::Fn {
                         return None;
                     }
-
-                    let inference_ctxt =
-                        ctxt.tcx.infer_ctxt().build(TypingMode::non_body_analysis());
 
                     let trait_did = ctxt
                         .tcx
@@ -238,7 +235,7 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
     true
 }
 
-fn get_function_generics<'tcx>(tcx: TyCtxt<'tcx>, fn_did: DefId, impl_did: DefId) -> Vec<Ty<'tcx>> {
+fn get_function_generics(tcx: TyCtxt, fn_did: DefId, impl_did: DefId) -> Vec<Ty> {
     // the early binder for this fn_sig will contain the generics on the function
     // we can't use it to iterate them though, for that we need to get the generics via the identity mapping
     // we want to first instantiate the function with any args in the impl, as those don't affect the standalone function signature
