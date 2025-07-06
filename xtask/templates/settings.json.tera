@@ -2,10 +2,15 @@
     "rust-analyzer.rustc.source": "discover",
     "rust-analyzer.linkedProjects": [
         "{{ dir }}/crates/bevy_api_gen/Cargo.toml",
-        "Cargo.toml"
+        "Cargo.toml",
+        "xtask/Cargo.toml"
     ],
     "rust-analyzer.check.invocationStrategy": "per_workspace",
     "rust-analyzer.check.overrideCommand": [
+        "{{ dir }}/check.sh"
+    ],
+    "rust-analyzer.cargo.buildScripts.invocationStrategy": "per_workspace",
+    "rust-analyzer.cargo.buildScripts.overrideCommand": [
         "{{ dir }}/check.sh"
     ]
 }

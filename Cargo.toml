@@ -115,7 +115,6 @@ members = [
     "crates/languages/bevy_mod_scripting_rhai",
     # "crates/languages/bevy_mod_scripting_rune",
     "crates/bevy_mod_scripting_functions",
-    "crates/xtask",
     "crates/testing_crates/test_utils",
     "crates/testing_crates/script_integration_test_harness",
     "crates/bevy_mod_scripting_derive",
@@ -125,7 +124,7 @@ members = [
     "crates/bevy_system_reflection",
 ]
 resolver = "2"
-exclude = ["crates/bevy_api_gen", "crates/macro_tests"]
+exclude = ["crates/bevy_api_gen", "crates/macro_tests", "xtask"]
 
 [profile.dev]
 debug = 1

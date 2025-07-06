@@ -8,7 +8,7 @@ use crate::{
     DEF_PATHS_GET_TYPE_REGISTRATION, DEF_PATHS_REFLECT, STD_SOURCE_TRAITS,
 };
 
-fn dump_traits(tcx: &TyCtxt) -> String{
+fn dump_traits(tcx: &TyCtxt) -> String {
     let mut buffer = String::new();
     for t in tcx.all_traits() {
         buffer.push_str(&tcx.def_path_str(t));

@@ -2,4 +2,4 @@
 TARGET_DIR = { value = "target", relative = true }
 
 [alias]
-xtask = "run --package xtask --"
+xtask = "run --manifest-path xtask/Cargo.toml --package xtask --"
