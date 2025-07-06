@@ -1000,7 +1000,11 @@ impl Xtasks {
         if ide_mode {
             clippy_args.push("--message-format=json");
         }
-        clippy_args.extend(vec!["--all-targets", "--", "-D", "warnings"]);
+
+        let keep_going = std::env::var(XTASK_KEEP_GOING).is_ok();
+        if !keep_going {
+            clippy_args.extend(vec!["--all-targets", "--", "-D", "warnings"]);
+        }
 
         Self::run_workspace_command(
             &app_settings,
@@ -1042,7 +1046,11 @@ impl Xtasks {
         if ide_mode {
             clippy_args.push("--message-format=json");
         }
-        clippy_args.extend(vec!["--all-targets", "--", "-D", "warnings"]);
+
+        let keep_going = std::env::var(XTASK_KEEP_GOING).is_ok();
+        if !keep_going {
+            clippy_args.extend(vec!["--all-targets", "--", "-D", "warnings"]);
+        }
 
         Self::run_workspace_command(
             &app_settings,
@@ -1218,6 +1226,10 @@ impl Xtasks {
     }
 
     fn check(app_settings: GlobalArgs, ide_mode: bool, kind: CheckKind) -> Result<()> {
+        if ide_mode && kind == CheckKind::All {
+            bail!("Ide mode should not be used with 'all' check kind, each workspace needs to have each own individual check, for toolchains to be properly supported");
+        }
+
         match kind {
             CheckKind::All => {
                 let err_main = Self::check_main_workspace(app_settings.clone(), ide_mode);
@@ -2024,7 +2036,9 @@ fn try_main() -> Result<()> {
     pretty_env_logger::formatted_builder()
         .filter_level(LevelFilter::Info)
         .init();
+
     pop_cargo_env()?;
+
     let args = App::try_parse()?;
     info!(
         "Default toolchain: {:?}",
@@ -2039,6 +2053,8 @@ fn try_main() -> Result<()> {
     }
     Ok(())
 }
+
+const XTASK_KEEP_GOING: &str = "XTASK_KEEP_GOING";
 
 fn main() {
     if let Err(e) = try_main() {

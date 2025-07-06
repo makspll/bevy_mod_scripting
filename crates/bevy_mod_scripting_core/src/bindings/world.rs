@@ -448,7 +448,9 @@ impl<'w> WorldAccessGuard<'w> {
             format!("Could not access component: {}", std::any::type_name::<T>()),
             {
                 // Safety: we have acquired access for the duration of the closure
-                f(unsafe { cell.get_entity(entity).map(|e| e.get::<T>()) }.ok().unwrap_or(None))
+                f(unsafe { cell.get_entity(entity).map(|e| e.get::<T>()) }
+                    .ok()
+                    .unwrap_or(None))
             }
         )
     }
@@ -468,7 +470,9 @@ impl<'w> WorldAccessGuard<'w> {
             format!("Could not access component: {}", std::any::type_name::<T>()),
             {
                 // Safety: we have acquired access for the duration of the closure
-                f(unsafe { cell.get_entity(entity).map(|e| e.get_mut::<T>()) }.ok().unwrap_or(None))
+                f(unsafe { cell.get_entity(entity).map(|e| e.get_mut::<T>()) }
+                    .ok()
+                    .unwrap_or(None))
             }
         )
     }
@@ -818,10 +822,7 @@ impl WorldAccessGuard<'_> {
         // try to construct type from reflect
         // TODO: it would be nice to have a <dyn PartialReflect>::from_reflect_with_fallback equivalent, that does exactly that
         // only using this as it's already there and convenient, the clone variant hitting will be confusing to end users
-        <dyn PartialReflect>::from_reflect_or_clone(
-            dynamic.as_ref(),
-            self.clone(),
-        )
+        <dyn PartialReflect>::from_reflect_or_clone(dynamic.as_ref(), self.clone())
     }
 
     /// Spawns a new entity in the world
