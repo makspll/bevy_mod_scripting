@@ -23,9 +23,7 @@ features = ["lua54", "rhai"]
 [features]
 default = [
     "core_functions",
-    "bevy_core_bindings",
     "bevy_ecs_bindings",
-    "bevy_hierarchy_bindings",
     "bevy_input_bindings",
     "bevy_math_bindings",
     "bevy_reflect_bindings",
