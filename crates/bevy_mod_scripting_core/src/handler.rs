@@ -328,7 +328,7 @@ pub fn handle_script_errors<I: Iterator<Item = ScriptError> + Clone>(world: Worl
 #[cfg(test)]
 #[allow(clippy::todo)]
 mod test {
-    use std::{borrow::Cow, collections::HashMap, sync::Arc};
+    // use std::{borrow::Cow, collections::HashMap, sync::Arc};
 
     use bevy::{
         app::{App, Update},
@@ -336,15 +336,15 @@ mod test {
         diagnostic::DiagnosticsPlugin,
         ecs::world::FromWorld,
     };
-    use parking_lot::Mutex;
     use test_utils::make_test_plugin;
 
     use crate::{
+        ScriptContext,
         bindings::script_value::ScriptValue,
         context::{ContextBuilder, ContextLoadingSettings},
         event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent},
         runtime::RuntimeContainer,
-        script::{ScriptComponent, ScriptId, StaticScripts},
+        script::{ScriptComponent, StaticScripts},
         BMSScriptingInfrastructurePlugin,
     };
 
@@ -591,13 +591,10 @@ mod test {
 
         app.update();
         {
-            let test_scripts = app.world().get_resource::<StaticScripts<TestPlugin>>().unwrap();
-            let test_context = test_scripts
-                .scripts
-                .get(&test_script_id)
-                .unwrap()
-                .context
-                .lock();
+
+            let script_context = app.world().get_resource::<ScriptContext>().unwrap();
+            let Some(context_arc) = script_context.get(None, &test_script_id, None).cloned();
+            let test_context = context_arc.lock();
 
             assert_eq!(
                 test_context.invocations,

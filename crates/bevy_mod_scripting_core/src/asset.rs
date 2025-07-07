@@ -88,9 +88,7 @@ pub struct ScriptAssetLoader {
 impl ScriptAssetLoader {
     /// Create a new script asset loader for the given extensions.
     pub fn new(language_extensions: LanguageExtensions) -> Self {
-        let extensions: Vec<&'static str> = language_extensions.keys()
-                                                               .into_iter()
-                                                               .map(|x| *x)
+        let extensions: Vec<&'static str> = language_extensions.keys().copied()
                                                                .collect();
         let new_arr_static = Vec::leak(extensions);
         Self {
@@ -100,11 +98,12 @@ impl ScriptAssetLoader {
         }
     }
 
-    // For testing purposes.
+    /// For testing purposes.
+    #[allow(dead_code)]
     pub(crate) fn for_extension(extension: &'static str) -> Self {
-        let mut langext = LanguageExtensions::default();
-        langext.insert(extension, Language::Unknown);
-        Self::new(langext)
+        let mut language_extensions = LanguageExtensions::default();
+        language_extensions.insert(extension, Language::Unknown);
+        Self::new(language_extensions)
     }
 
     /// Add a preprocessor
@@ -210,11 +209,11 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
                 }
             }
             AssetEvent::Removed{ id } => {
-                if static_scripts.remove(id) {
+                if static_scripts.remove(*id) {
                     info!("{}: Removing static script {:?}", P::LANGUAGE, id);
                 }
             }
-            AssetEvent::Unused { id } => {
+            AssetEvent::Unused { id: _ } => {
             }
         };
     }
@@ -244,7 +243,7 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
                     LoadState::Loaded => true,
                     LoadState::Failed(e) => {
                         script_failed = true;
-                        error!("Failed to load script {} for eval.", script_id.display());
+                        error!("Failed to load script {} for eval: {e}.", script_id.display());
                         true
                     }
                 }
@@ -316,7 +315,7 @@ pub(crate) fn configure_asset_systems_for_plugin<P: IntoScriptPluginParams>(
 
 #[cfg(test)]
 mod tests {
-    use std::path::{Path, PathBuf};
+    use std::path::{PathBuf};
 
     use bevy::{
         app::{App, Update},

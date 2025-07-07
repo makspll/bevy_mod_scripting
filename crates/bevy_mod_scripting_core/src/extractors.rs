@@ -29,7 +29,7 @@ use crate::{
     event::{CallbackLabel, IntoCallbackLabel},
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{StaticScripts, ScriptContext, DisplayProxy, ScriptContextProvider, Domain},
+    script::{StaticScripts, ScriptContext, ScriptContextProvider, Domain},
     IntoScriptPluginParams,
 };
 

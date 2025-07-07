@@ -1,9 +1,9 @@
 use super::*;
 use crate::IntoScriptPluginParams;
-use bevy::prelude::{Component, Entity};
-use bevy::{asset::Asset, ecs::system::Resource, reflect::Reflect};
+use bevy::prelude::Entity;
+use bevy::{ecs::system::Resource};
 use parking_lot::Mutex;
-use std::{borrow::Cow, ops::Deref, sync::Arc};
+use std::{borrow::Cow, sync::Arc};
 
 /// A kind of catch all type for script context selection
 ///

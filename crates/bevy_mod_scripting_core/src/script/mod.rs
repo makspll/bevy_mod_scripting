@@ -4,7 +4,7 @@ use crate::{asset::ScriptAsset, IntoScriptPluginParams};
 use bevy::prelude::{Component, ReflectComponent, Entity};
 use bevy::{asset::{Asset, AssetId, Handle}, ecs::system::Resource, reflect::Reflect, utils::HashSet};
 use parking_lot::Mutex;
-use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc, fmt, hash::{Hash, Hasher, BuildHasher}};
+use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc, fmt, hash::{BuildHasher}};
 use bevy::utils::hashbrown::hash_map::DefaultHashBuilder;
 
 mod script_context;
@@ -105,14 +105,16 @@ impl StaticScripts {
     }
 
     /// Removes a static script from the collection, returning `true` if the script was in the collection, `false` otherwise
-    pub fn remove(&mut self, script_id: &ScriptId) -> bool {
-        self.scripts.extract_if(|handle| handle.id() == *script_id).next().is_some()
+    pub fn remove(&mut self, script_id: impl Into<ScriptId>) -> bool {
+        let script_id = script_id.into();
+        self.scripts.extract_if(|handle| handle.id() == script_id).next().is_some()
     }
 
     /// Checks if a static script is in the collection
     /// Returns `true` if the script is in the collection, `false` otherwise
-    pub fn contains(&self, script_id: &ScriptId) -> bool {
-        self.scripts.iter().any(|handle| handle.id() == *script_id)
+    pub fn contains(&self, script_id: impl Into<ScriptId>) -> bool {
+        let script_id = script_id.into();
+        self.scripts.iter().any(|handle| handle.id() == script_id)
     }
 
     /// Returns an iterator over the static scripts
@@ -129,21 +131,21 @@ mod tests {
     fn static_scripts_insert() {
         let mut static_scripts = StaticScripts::default();
         let script1 = Handle::default();
-        static_scripts.insert(script1);
+        static_scripts.insert(script1.clone());
         assert_eq!(static_scripts.scripts.len(), 1);
-        assert!(static_scripts.scripts.contains(script1));
+        assert!(static_scripts.scripts.contains(&script1));
     }
 
     #[test]
     fn static_scripts_remove() {
         let mut static_scripts = StaticScripts::default();
         let script1 = Handle::default();
-        static_scripts.insert(script1);
+        static_scripts.insert(script1.clone());
         assert_eq!(static_scripts.scripts.len(), 1);
-        assert!(static_scripts.scripts.contains(script1));
-        assert!(static_scripts.remove(script1));
+        assert!(static_scripts.scripts.contains(&script1));
+        assert!(static_scripts.remove(&script1));
         assert_eq!(static_scripts.scripts.len(), 0);
-        assert!(!static_scripts.scripts.contains(script1));
+        assert!(!static_scripts.scripts.contains(&script1));
     }
 
     #[test]
@@ -151,8 +153,8 @@ mod tests {
         let mut static_scripts = StaticScripts::default();
         let script1 = Handle::default();
         let script2 = Handle::default();
-        static_scripts.insert(script1);
-        assert!(static_scripts.contains(script1));
-        assert!(!static_scripts.contains(script2));
+        static_scripts.insert(script1.clone());
+        assert!(static_scripts.contains(&script1));
+        assert!(!static_scripts.contains(&script2));
     }
 }

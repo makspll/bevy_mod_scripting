@@ -52,7 +52,7 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
         .apply(world);
 
         let mut scripts = world.get_resource_or_init::<StaticScripts>();
-        if scripts.remove(&self.id) {
+        if scripts.remove(self.id) {
             debug!("Deleted script with id: {}", self.id);
         } else {
             bevy::log::error!(
@@ -145,7 +145,6 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         domain: &Option<Domain>,
         guard: WorldGuard,
         handler_ctxt: &mut HandlerContext<P>) -> Result<(), ScriptError> {
-        let assignment_strategy = handler_ctxt.context_loading_settings.assignment_strategy;
 
         let Some(content) = content.or_else(|| handler_ctxt.scripts.get(id).map(|script| &*script.content)) else {
             warn!("No content for script {} to create or update", id.display());
@@ -243,8 +242,8 @@ impl<P: IntoScriptPluginParams> EntityCommand for CreateOrUpdateScript<P> {
                                              guard, handler_ctxt)
             });
 
-        // immediately run command for callback, but only if loading went fine
-        if let Ok(maybe_script) = result {
+        // Immediately run command for callback, but only if loading went fine.
+        if result.is_ok() {
 
             RunScriptCallback::<P>::new(
                 self.id,
@@ -390,7 +389,7 @@ impl RemoveStaticScript {
 impl Command for RemoveStaticScript {
     fn apply(self, world: &mut bevy::prelude::World) {
         let mut static_scripts = world.get_resource_or_init::<StaticScripts>();
-        static_scripts.remove(&self.id.id());
+        static_scripts.remove(&self.id);
     }
 }
 
@@ -619,7 +618,8 @@ mod test {
     }
 
     fn update_script(app: &mut App, handle: AssetId<ScriptAsset>, content: impl Into<String>) {
-        let mut script_asset = app.world_mut().resource_mut::<Assets<ScriptAsset>>().get_mut(handle).unwrap();
+        let mut scripts = app.world_mut().resource_mut::<Assets<ScriptAsset>>();
+        let mut script_asset = scripts.get_mut(handle).unwrap();
         script_asset.content = content.into().into_bytes().into_boxed_slice();
     }
 
@@ -634,6 +634,7 @@ mod test {
             .unwrap();
 
         settings.assignment_strategy = crate::context::ContextAssignmentStrategy::Global;
+        app.insert_resource(ScriptContext::shared());
 
         // create a script
         let script = add_script(&mut app, "content");
