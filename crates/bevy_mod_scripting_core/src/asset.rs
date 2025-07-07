@@ -68,6 +68,13 @@ impl From<String> for ScriptAsset {
     }
 }
 
+impl ScriptAsset {
+    /// Create a new script asset with an unknown language.
+    pub fn new(s: impl Into<String>) -> Self {
+        s.into().into()
+    }
+}
+
 /// Script settings
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ScriptSettings {

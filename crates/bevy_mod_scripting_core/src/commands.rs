@@ -402,7 +402,7 @@ mod test {
 
     use crate::{
         asset::Language,
-        script::ScriptContext,
+        script::{ScriptId, ScriptContext},
         bindings::script_value::ScriptValue,
         context::{ContextBuilder, ContextLoadingSettings},
         handler::CallbackSettings,
@@ -482,10 +482,10 @@ mod test {
         }
     }
 
-    fn assert_context_and_script(world: &World, id: &str, context: &str, message: &str) {
+    fn assert_context_and_script(world: &World, id: &ScriptId, context: &str, message: &str) {
         let scripts = world.get_resource::<ScriptContext<DummyPlugin>>().unwrap();
 
-        let context_arc = scripts.get(None, &Handle::default().id(), &None)
+        let context_arc = scripts.get(None, id, &None)
             .unwrap_or_else(|| panic!("Context not found {message}"));
 
         // assert_eq!(id, script.id);
@@ -521,29 +521,28 @@ mod test {
         let mut app = setup_app();
 
         let content = "content".as_bytes().to_vec().into_boxed_slice();
-        let handle = Handle::default();
-        let command = CreateOrUpdateScript::<DummyPlugin>::new(handle.clone(), Some(content), None);
+        let script = Handle::default();
+        let command = CreateOrUpdateScript::<DummyPlugin>::new(script.clone(), Some(content), None);
         // command.apply(app.world_mut());
         Command::apply(command, app.world_mut());
 
         // check script
         assert_context_and_script(
             app.world_mut(),
-            "script",
+            &script.id(),
             "content initialized pre-handling-initialized callback-ran-on_script_loaded",
             "Initial script creation failed",
         );
 
         // update the script
         let content = "new content".as_bytes().to_vec().into_boxed_slice();
-        let script = Handle::default();
         let command = CreateOrUpdateScript::<DummyPlugin>::new(script.clone(), Some(content), None);
         Command::apply(command, app.world_mut());
 
         // check script
         assert_context_and_script(
             app.world_mut(),
-            "script",
+            &script.id(),
             "new content initialized pre-handling-initialized callback-ran-on_script_loaded",
             "Script update failed",
         );
@@ -558,7 +557,7 @@ mod test {
         // check second script
         assert_context_and_script(
             app.world_mut(),
-            "script2",
+            &script2.id(),
             "content2 initialized pre-handling-initialized callback-ran-on_script_loaded",
             "Second script creation failed",
         );
@@ -577,7 +576,7 @@ mod test {
         // check this has applied
         assert_context_and_script(
             app.world_mut(),
-            "script",
+            &script.id(),
             "new content initialized pre-handling-initialized callback-ran-on_script_loaded callback-ran-on_script_loaded",
             "Script callback failed",
         );
@@ -634,7 +633,7 @@ mod test {
             .unwrap();
 
         settings.assignment_strategy = crate::context::ContextAssignmentStrategy::Global;
-        app.insert_resource(ScriptContext::shared());
+        app.insert_resource(ScriptContext::<DummyPlugin>::shared());
 
         // create a script
         let script = add_script(&mut app, "content");
@@ -645,7 +644,7 @@ mod test {
         // check script
         assert_context_and_script(
             app.world(),
-            "script",
+            &script.id(),
             "content initialized pre-handling-initialized callback-ran-on_script_loaded",
             "Initial script creation failed",
         );
@@ -661,7 +660,7 @@ mod test {
 
         assert_context_and_script(
             app.world(),
-            "script",
+            &script.id(),
             "new content initialized pre-handling-initialized callback-ran-on_script_loaded",
             "Script update failed",
         );
@@ -677,13 +676,13 @@ mod test {
 
         assert_context_and_script(
             app.world(),
-            "script2",
+            &script2.id(),
             "content2 initialized pre-handling-initialized callback-ran-on_script_loaded",
             "second script context was not created correctly",
         );
         assert_context_and_script(
             app.world(),
-            "script",
+            &script2.id(),
             "content2 initialized pre-handling-initialized callback-ran-on_script_loaded",
             "First script context was not updated on second script insert",
         );
@@ -692,31 +691,30 @@ mod test {
         assert!(scripts.scripts.len() == 2);
 
         // delete first script
-        let command = DeleteScript::<DummyPlugin>::new("script".into());
+        let command = DeleteScript::<DummyPlugin>::new(script.id(), None);
 
         Command::apply(command, app.world_mut());
 
         // check second script still has the context, and on unload was called
         assert_context_and_script(
             app.world(),
-            "script2",
+            &script2.id(),
             "content2 initialized pre-handling-initialized callback-ran-on_script_loaded callback-ran-on_script_unloaded",
             "first script unload didn't have the desired effect",
         );
 
         // delete second script
 
-        let command = DeleteScript::<DummyPlugin>::new("script2".into());
+        let command = DeleteScript::<DummyPlugin>::new(script2.id(), None);
 
         Command::apply(command, app.world_mut());
 
         // check that the scripts are gone, and so is the context
 
-        let scripts = app.world().get_resource::<StaticScripts<DummyPlugin>>().unwrap();
+        let scripts = app.world().get_resource::<StaticScripts>().unwrap();
         assert!(scripts.scripts.is_empty());
 
-        let scripts = app.world().get_resource::<StaticScripts<DummyPlugin>>().unwrap();
-
+        let scripts = app.world().get_resource::<StaticScripts>().unwrap();
         assert_eq!(scripts.scripts.len(), 0, "scripts weren't removed");
         assert_response_events(
             app.world_mut(),
@@ -729,18 +727,19 @@ mod test {
     fn test_static_scripts() {
         let mut app = setup_app();
 
+        let script = add_script(&mut app, "");
         let world = app.world_mut();
 
-        let command = AddStaticScript::new("script");
+        let command = AddStaticScript::new(script.clone());
         command.apply(world);
 
         let static_scripts = world.get_resource::<StaticScripts>().unwrap();
-        assert!(static_scripts.contains("script"));
+        assert!(static_scripts.contains(&script));
 
-        let command = RemoveStaticScript::new("script".into());
+        let command = RemoveStaticScript::new(script.clone());
         command.apply(world);
 
         let static_scripts = world.get_resource::<StaticScripts>().unwrap();
-        assert!(!static_scripts.contains("script"));
+        assert!(!static_scripts.contains(&script));
     }
 }
