@@ -12,9 +12,7 @@ categories = ["game-development"]
 readme = "readme.md"
 
 [features]
-bevy_core = []
 bevy_ecs = []
-bevy_hierarchy = []
 bevy_input = []
 bevy_math = []
 bevy_reflect = []

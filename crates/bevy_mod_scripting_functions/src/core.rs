@@ -32,12 +32,8 @@ use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
 
 #[allow(unused_variables, reason = "feature flags")]
 pub fn register_bevy_bindings(app: &mut App) {
-    #[cfg(feature = "bevy_core")]
-    app.add_plugins(crate::bevy_bindings::bevy_core::BevyCoreScriptingPlugin);
     #[cfg(feature = "bevy_ecs")]
     app.add_plugins(crate::bevy_bindings::bevy_ecs::BevyEcsScriptingPlugin);
-    #[cfg(feature = "bevy_hierarchy")]
-    app.add_plugins(crate::bevy_bindings::bevy_hierarchy::BevyHierarchyScriptingPlugin);
     #[cfg(feature = "bevy_input")]
     app.add_plugins(crate::bevy_bindings::bevy_input::BevyInputScriptingPlugin);
     #[cfg(feature = "bevy_math")]
