@@ -48,9 +48,7 @@ luau = ["bevy_mod_scripting_lua/luau", "lua"]
 
 # bindings 
 core_functions = ["bevy_mod_scripting_functions/core_functions"]
-bevy_core_bindings = ["bevy_mod_scripting_functions/bevy_core"]
 bevy_ecs_bindings = ["bevy_mod_scripting_functions/bevy_ecs"]
-bevy_hierarchy_bindings = ["bevy_mod_scripting_functions/bevy_hierarchy"]
 bevy_input_bindings = ["bevy_mod_scripting_functions/bevy_input"]
 bevy_math_bindings = ["bevy_mod_scripting_functions/bevy_math"]
 bevy_reflect_bindings = ["bevy_mod_scripting_functions/bevy_reflect"]
