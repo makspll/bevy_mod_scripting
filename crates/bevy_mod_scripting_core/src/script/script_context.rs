@@ -28,6 +28,9 @@ pub trait ScriptContextProvider<P: IntoScriptPluginParams> {
     /// Note: The existence of the hash does not imply the context exists. It
     /// only declares what its hash will be.
     fn hash(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64>;
+
+    /// Iterate through contexts.
+    fn iter(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>>;
 }
 
 #[derive(Resource)]
@@ -118,6 +121,10 @@ impl<T: ScriptContextProvider<P>, U: ScriptContextProvider<P>, P: IntoScriptPlug
         self.0.hash(id, script_id, domain)
               .or_else(|| self.1.hash(id, script_id, domain))
     }
+    fn iter(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
+        self.0.iter().chain(self.1.iter())
+
+    }
 }
 
 macro_rules! delegate_to_variants {
@@ -148,5 +155,18 @@ impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for ScriptContext<P> {
         fn contains(&Self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool,
         fn hash(&Self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64>,
         fn insert(&mut Self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>, context: P::C) -> Result<(), P::C>,
+    }
+
+    fn iter(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
+        match self {
+            ScriptContext::Shared(a) => Box::new(a.iter()),
+            _ => todo!(),
+            // ScriptContext::ScriptId(a) => a.$fn_name($( $arg ),*),
+            // ScriptContext::Entity(a) => a.$fn_name($( $arg ),*),
+            // ScriptContext::Domain(a) => a.$fn_name($( $arg ),*),
+            // ScriptContext::DomainShared(a) => a.$fn_name($( $arg ),*),
+            // ScriptContext::DomainScriptId(a) => a.$fn_name($( $arg ),*),
+            // ScriptContext::DomainEntity(a) => a.$fn_name($( $arg ),*),
+        }
     }
 }

@@ -27,4 +27,7 @@ impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for EntityContext<P> {
     fn contains(&self, id: Option<Entity>, _script_id: &ScriptId, _domain: &Option<Domain>) -> bool {
         id.map(|id| self.0.contains_key(&id)).unwrap_or(false)
     }
+    fn iter(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
+        self.0.values()
+    }
 }

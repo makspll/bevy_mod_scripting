@@ -18,6 +18,10 @@ impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for SharedContext<P> {
     fn contains(&self, _id: Option<Entity>, _script_id: &ScriptId, _domain: &Option<Domain>) -> bool {
         self.0.is_some()
     }
+
+    fn iter(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
+        self.0.as_ref().into_iter()
+    }
 }
 
 impl<P: IntoScriptPluginParams> Default for SharedContext<P> {
