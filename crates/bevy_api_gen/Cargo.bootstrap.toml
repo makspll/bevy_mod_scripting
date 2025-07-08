@@ -6,8 +6,8 @@ edition = "2021"
 
 [dependencies]
 bevy_mod_scripting_core = { path = "{{BMS_CORE_PATH}}" }
-bevy_reflect = { version = "0.15.3", features = [
-    "bevy",
+bevy_reflect = { version = "0.16.0", features = [
+    "smol_str",
     "glam",
     "petgraph",
     "smallvec",

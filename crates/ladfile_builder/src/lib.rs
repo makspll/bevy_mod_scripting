@@ -1,7 +1,16 @@
 //! Parsing definitions for the LAD (Language Agnostic Decleration) file format.
 pub mod plugin;
 
-use bevy::{ecs::world::World, utils::HashSet};
+use std::{
+    any::TypeId,
+    borrow::Cow,
+    cmp::{max, min},
+    collections::HashMap,
+    ffi::OsString,
+    path::PathBuf,
+};
+
+use bevy::{ecs::world::World, platform::collections::HashSet};
 use bevy_mod_scripting_core::{
     bindings::{
         function::{
@@ -21,14 +30,6 @@ use bevy_mod_scripting_core::{
 };
 use bevy_reflect::{NamedField, TypeInfo, TypeRegistry, Typed, UnnamedField};
 use ladfile::*;
-use std::{
-    any::TypeId,
-    borrow::Cow,
-    cmp::{max, min},
-    collections::HashMap,
-    ffi::OsString,
-    path::PathBuf,
-};
 
 /// We can assume that the types here will be either primitives
 /// or reflect types, as the rest will be covered by typed wrappers

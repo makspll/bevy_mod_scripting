@@ -17,6 +17,7 @@ pub(crate) fn write_meta(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
     }
     let will_generate = !proxies.is_empty();
     let meta = Meta {
+        crate_name: tcx.crate_name(LOCAL_CRATE).to_string(),
         proxies,
         will_generate,
         meta_version: META_VERSION.to_string(),

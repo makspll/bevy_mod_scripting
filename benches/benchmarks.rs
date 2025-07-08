@@ -1,26 +1,27 @@
-use bevy::log::tracing_subscriber::layer::SubscriberExt;
-use bevy::log::{tracing_subscriber, Level};
-use bevy::reflect::Reflect;
-use bevy::utils::tracing;
-use bevy::utils::tracing::span;
-use bevy_mod_scripting_core::bindings::{
-    FromScript, IntoScript, Mut, Ref, ReflectReference, ScriptValue, Val,
-};
-use criterion::{criterion_main, measurement::Measurement, BenchmarkGroup, Criterion};
-use criterion::{BatchSize, BenchmarkFilter};
-use regex::Regex;
-use script_integration_test_harness::test_functions::rand::Rng;
-use script_integration_test_harness::{
-    make_test_lua_plugin, make_test_rhai_plugin, perform_benchmark_with_generator,
-    run_lua_benchmark, run_plugin_script_load_benchmark, run_rhai_benchmark,
-};
-use std::collections::HashMap;
-use std::{path::PathBuf, sync::LazyLock, time::Duration};
-use test_utils::{discover_all_tests, Test};
-
 extern crate bevy_mod_scripting;
 extern crate script_integration_test_harness;
 extern crate test_utils;
+use std::{collections::HashMap, path::PathBuf, sync::LazyLock, time::Duration};
+
+use bevy::{
+    log::{
+        tracing, tracing::span, tracing_subscriber, tracing_subscriber::layer::SubscriberExt, Level,
+    },
+    reflect::Reflect,
+};
+use bevy_mod_scripting_core::bindings::{
+    FromScript, IntoScript, Mut, Ref, ReflectReference, ScriptValue, Val,
+};
+use criterion::{
+    criterion_main, measurement::Measurement, BatchSize, BenchmarkFilter, BenchmarkGroup, Criterion,
+};
+use regex::Regex;
+use script_integration_test_harness::{
+    make_test_lua_plugin, make_test_rhai_plugin, perform_benchmark_with_generator,
+    run_lua_benchmark, run_plugin_script_load_benchmark, run_rhai_benchmark,
+    test_functions::rand::Rng,
+};
+use test_utils::{discover_all_tests, Test};
 
 static ENABLE_PROFILING: LazyLock<bool> =
     LazyLock::new(|| std::env::var("ENABLE_PROFILING").is_ok());

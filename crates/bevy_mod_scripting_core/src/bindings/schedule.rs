@@ -3,15 +3,15 @@
 use super::{script_system::ScriptSystemBuilder, WorldAccessGuard};
 use crate::{error::InteropError, IntoScriptPluginParams};
 use bevy::{
-    app::{
-        First, FixedFirst, FixedLast, FixedMain, FixedPostUpdate, FixedPreUpdate, FixedUpdate,
-        Last, PostStartup, PostUpdate, PreStartup, PreUpdate, RunFixedMainLoop, Startup, Update,
-    },
-    ecs::{
-        schedule::{Schedule, ScheduleLabel, Schedules},
-        system::Resource,
-        world::World,
-    },
+	app::{
+		First, FixedFirst, FixedLast, FixedMain, FixedPostUpdate, FixedPreUpdate, FixedUpdate,
+		Last, PostStartup, PostUpdate, PreStartup, PreUpdate, RunFixedMainLoop, Startup, Update,
+	},
+	ecs::{
+		schedule::{Schedule, ScheduleLabel, Schedules},
+		world::World,
+	},
+	prelude::Resource,
 };
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 use parking_lot::RwLock;
@@ -191,19 +191,18 @@ impl WorldAccessGuard<'_> {
     reason = "tests are there but not working currently"
 )]
 mod tests {
+	use bevy::{
+		app::Update,
+		ecs::{
+			schedule::{NodeId, Schedules},
+			system::IntoSystem,
+		},
+	};
+	use test_utils::make_test_plugin;
 
-    use bevy::{
-        app::{App, Update},
-        ecs::{
-            schedule::{NodeId, Schedules},
-            system::IntoSystem,
-        },
-    };
-    use test_utils::make_test_plugin;
+	use super::*;
 
-    use super::*;
-
-    #[test]
+	#[test]
     fn test_schedule_registry() {
         let mut registry = ScheduleRegistry::default();
         registry.register(Update);
@@ -342,7 +341,7 @@ mod tests {
 
         // Collect all edges as (from, to) name pairs.
         let mut found_edges = Vec::new();
-        for (from, to, _) in graph.dependency().graph().all_edges() {
+        for (from, to) in graph.dependency().graph().all_edges() {
             let name_from = resolve_name(from);
             let name_to = resolve_name(to);
             found_edges.push((name_from, name_to));

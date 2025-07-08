@@ -33,9 +33,7 @@ use strum::{IntoEnumIterator, VariantNames};
 enum Feature {
     // bindings
     CoreFunctions,
-    BevyCoreBindings,
     BevyEcsBindings,
-    BevyHierarchyBindings,
     BevyInputBindings,
     BevyMathBindings,
     BevyReflectBindings,
@@ -111,9 +109,7 @@ impl IntoFeatureGroup for Feature {
             | Feature::MluaMacros
             | Feature::MluaSerialize
             | Feature::UnsafeLuaModules => FeatureGroup::ForExternalCrate,
-            Feature::BevyCoreBindings
-            | Feature::BevyEcsBindings
-            | Feature::BevyHierarchyBindings
+            Feature::BevyEcsBindings
             | Feature::BevyInputBindings
             | Feature::BevyMathBindings
             | Feature::BevyReflectBindings
@@ -133,9 +129,7 @@ impl Default for Features {
         Features::new(vec![
             Feature::Lua54,
             Feature::CoreFunctions,
-            Feature::BevyCoreBindings,
             Feature::BevyEcsBindings,
-            Feature::BevyHierarchyBindings,
             Feature::BevyInputBindings,
             Feature::BevyMathBindings,
             Feature::BevyReflectBindings,

@@ -3,8 +3,8 @@
 
 use crate::{error::ScriptError, IntoScriptPluginParams};
 use bevy::{
-    ecs::system::{ResMut, Resource},
-    prelude::Res,
+    ecs::system::ResMut,
+    prelude::{Res, Resource},
 };
 
 /// A trait that all script runtimes must implement.
