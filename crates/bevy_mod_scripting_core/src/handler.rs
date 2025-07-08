@@ -10,7 +10,7 @@ use crate::{
     error::{InteropErrorInner, ScriptError},
     event::{
         CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent,
-        ScriptErrorEvent,
+        ScriptErrorEvent, Recipients,
     },
     extractors::{HandlerContext, WithWorldGuard},
     script::{ScriptComponent, ScriptDomain, ScriptContextProvider},
@@ -146,10 +146,56 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     mut script_events: crate::extractors::EventReaderScope<ScriptCallbackEvent>,
     mut handler_ctxt: WithWorldGuard<HandlerContext<P>>,
 ) {
+    let mut events = script_events.read();
+    if events.is_empty() {
+        return;
+    }
+    let mut target_triples: Vec<(Option<Entity>, Handle<ScriptAsset>, Option<Domain>)> = Vec::new();
+    for event in events {
+        match &event.recipients {
+            Recipients::Script(target_script_id)
+            {
+                target_script_ids.insert(target_script_id, event);
+            }
+            Recipients::Entity(target_entity)
+                // if entity.map(|e| *target_entity != e).unwrap_or(false)
+                => {
+                    let Ok((id, script_component, script_domain_maybe)) = entity_query_state.get(target_entity) else {
+                        continue
+                    };
+                    for script_handle in &script_component.0 {
+                        target_triples.push((Some(id), script_component.0.clone(), script_domain_maybe));
+                    }
+
+                // match entity_query_state.get(target_entity) {
+                //     Ok((_, script_component, _)) => {
+                //         script_components.0.contains(
+
+                //     }
+                //     Err(e) => {
+                //         continue
+                //     }
+                // }
+                continue
+            }
+            Recipients::Language(target_language)
+                if *target_language != P::LANGUAGE =>
+            {
+                continue
+            }
+            Recipients::Domain(target_domain)
+                // if domain.as_ref().map(|x| *x != *target_domain).unwrap_or(false) =>
+            {
+                continue
+            }
+            Recipients::All => (),
+        }
+
+    }
     let (guard, handler_ctxt) = handler_ctxt.get_mut();
 
     let mut errors = Vec::default();
-    let events = script_events.read().cloned().collect::<Vec<_>>();
+    let events =
 
     // query entities + chain static scripts
     let entity_and_static_scripts = guard.with_global_access(|world| {
@@ -193,12 +239,12 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
         for (entity, entity_scripts, domain) in entity_and_static_scripts.iter() {
             for script_id in entity_scripts.iter() {
                 match &event.recipients {
-                    crate::event::Recipients::Script(target_script_id)
+                    Recipients::Script(target_script_id)
                         if *target_script_id != script_id.id() =>
                     {
                         continue
                     }
-                    crate::event::Recipients::Entity(target_entity) if entity.map(|e| *target_entity != e).unwrap_or(false) => {
+                    Recipients::Entity(target_entity) if entity.map(|e| *target_entity != e).unwrap_or(false) => {
                         // match entity_query_state.get(target_entity) {
                         //     Ok((_, script_component, _)) => {
                         //         script_components.0.contains(
@@ -210,17 +256,17 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                         // }
                         continue
                     }
-                    crate::event::Recipients::Language(target_language)
+                    Recipients::Language(target_language)
                         if *target_language != P::LANGUAGE =>
                     {
                         continue
                     }
-                    crate::event::Recipients::Domain(target_domain)
+                    Recipients::Domain(target_domain)
                         if domain.as_ref().map(|x| *x != *target_domain).unwrap_or(false) =>
                     {
                         continue
                     }
-                    crate::event::Recipients::All => (),
+                    Recipients::All => (),
                     _ => ()
 
                 }
@@ -446,7 +492,7 @@ mod test {
             ScriptCallbackEvent::new(
                 OnTestCallback::into_callback_label(),
                 vec![ScriptValue::String("test_args".into())],
-                crate::event::Recipients::All,
+                Recipients::All,
             )
             .with_response(),
         );
@@ -479,7 +525,7 @@ mod test {
             ScriptCallbackEvent::new(
                 OnTestCallback::into_callback_label(),
                 vec![ScriptValue::String("test_args".into())],
-                crate::event::Recipients::All,
+                Recipients::All,
             )
             .with_response(),
         );
@@ -566,13 +612,13 @@ mod test {
         app.world_mut().send_event(ScriptCallbackEvent::new(
             OnTestCallback::into_callback_label(),
             vec![ScriptValue::String("test_args_script".into())],
-            crate::event::Recipients::Script(test_script_id.id()),
+            Recipients::Script(test_script_id.id()),
         ));
 
         app.world_mut().send_event(ScriptCallbackEvent::new(
             OnTestCallback::into_callback_label(),
             vec![ScriptValue::String("test_args_entity".into())],
-            crate::event::Recipients::Entity(test_entity_id),
+            Recipients::Entity(test_entity_id),
         ));
 
         app.update();
@@ -623,13 +669,13 @@ mod test {
         app.world_mut().send_event(ScriptCallbackEvent::new(
             OnTestCallback::into_callback_label(),
             vec![ScriptValue::String("test_args_script".into())],
-            crate::event::Recipients::All,
+            Recipients::All,
         ));
 
         app.world_mut().send_event(ScriptCallbackEvent::new(
             OnTestCallback::into_callback_label(),
             vec![ScriptValue::String("test_script_id".into())],
-            crate::event::Recipients::Script(test_script_id.id()),
+            Recipients::Script(test_script_id.id()),
         ));
 
         app.update();
