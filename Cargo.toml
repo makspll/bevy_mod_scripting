@@ -71,6 +71,8 @@ profile_with_tracy = ["bevy/trace_tracy"]
 
 [dependencies]
 bevy = { workspace = true }
+bevy_math = { workspace = true }
+bevy_reflect = { workspace = true }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", version = "0.13.0", optional = true }
 bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.13.0", optional = true }
@@ -81,6 +83,8 @@ bevy_mod_scripting_derive = { workspace = true }
 [workspace.dependencies]
 profiling = { version = "1.0" }
 bevy = { version = "0.16.0", default-features = false }
+bevy_math = { version = "0.16.0" }
+bevy_reflect = { version = "0.16.0" }
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.13.0" }
 bevy_mod_scripting_functions = { path = "crates/bevy_mod_scripting_functions", version = "0.13.0", default-features = false }
 bevy_mod_scripting_derive = { path = "crates/bevy_mod_scripting_derive", version = "0.13.0" }
