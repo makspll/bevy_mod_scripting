@@ -177,7 +177,6 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
     script_assets: Res<Assets<ScriptAsset>>,
     mut static_scripts: ResMut<StaticScripts>,
     asset_server: Res<AssetServer>,
-    mut commands: Commands,
 ) {
     for event in events.read() {
 
@@ -203,20 +202,6 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
                         }
                         continue;
                     }
-
-                    // if static_scripts.iter().any(|handle| handle.id() == *id) {
-                    //     info!("{}: Loading static script: {:?}", P::LANGUAGE, id);
-                    //     commands.queue(CreateOrUpdateScript::<P>::new(
-                    //         Handle::Weak(*id),
-                    //         // Since we have the asset, we don't need to clone
-                    //         // its contents to evaluate it. We can refer to the
-                    //         // asset.
-
-                    //         // asset.content.clone(), // Cloning seems bad!
-                    //         None,
-                    //         None, // No domain for static scripts.
-                    //     ));
-                    // }
                 }
             }
             AssetEvent::Removed{ id } => {

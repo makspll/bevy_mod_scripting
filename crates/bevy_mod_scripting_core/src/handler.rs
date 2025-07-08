@@ -12,7 +12,7 @@ use crate::{
         ScriptErrorEvent, Recipients,
     },
     extractors::{HandlerContext, WithWorldGuard},
-    script::{ScriptComponent, ScriptDomain, ScriptContextProvider, Domain},
+    script::{ScriptComponent, ScriptDomain, ScriptContextProvider, Domain, ScriptId},
     IntoScriptPluginParams,
 };
 use bevy::{
@@ -145,72 +145,12 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     mut script_events: crate::extractors::EventReaderScope<ScriptCallbackEvent>,
     mut handler_ctxt: WithWorldGuard<HandlerContext<P>>,
 ) {
-    let mut events = script_events.read();
+    let events = script_events.read();
     if events.len() == 0 {
         return;
     }
     let mut targets: Vec<(Option<Entity>, Handle<ScriptAsset>, Option<Domain>, &ScriptCallbackEvent)> = Vec::new();
-    for event in events {
-        match &event.recipients {
-            Recipients::Script(target_script_id) =>
-            {
-                // target_script_ids.insert(target_script_id, event);
-            }
-            Recipients::Entity(target_entity) => {
-                let Ok((id, script_component, script_domain_maybe)) = guard.with_global_access(|world| {
-                    entity_query_state.get(world, target_entity)
-                }) else {
-                    continue
-                };
-                for script_handle in &script_component.0 {
-                    targets.push((Some(id), script_handle.clone_weak(), script_domain_maybe, &event));
-                }
-            }
-            Recipients::Language(target_language)
-                if *target_language != P::LANGUAGE =>
-            {
-                continue
-            }
-            Recipients::Domain(target_domain) =>
-                // if domain.as_ref().map(|x| *x != *target_domain).unwrap_or(false) =>
-            {
-                continue
-            }
-            Recipients::All => (),
-        }
-
-    }
-    let (guard, handler_ctxt) = handler_ctxt.get_mut();
-
     let mut errors = Vec::default();
-    // let events =
-
-    // query entities + chain static scripts
-    let entity_and_static_scripts = guard.with_global_access(|world| {
-        entity_query_state
-            .iter(world)
-            .map(|(e, s, d)| (Some(e), s.0.clone(), d.map(|x| x.0.clone())))
-            .chain(
-                handler_ctxt
-                    .static_scripts
-                    .scripts
-                    .iter()
-                    .map(|s| (None, vec![s.clone()], None)),
-            )
-            .collect::<Vec<_>>()
-    });
-
-    let entity_and_static_scripts = match entity_and_static_scripts {
-        Ok(entity_and_static_scripts) => entity_and_static_scripts,
-        Err(e) => {
-            bevy::log::error_once!(
-                "{}: Failed to query entities with scripts: {}",
-                P::LANGUAGE,
-                e.display_with_world(guard.clone())
-            );
-            return;
-        }
-    };
 
     // Keep track of the contexts that have been called. Don't duplicate the
     // calls on account of multiple matches.
@@ -223,114 +163,202 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     // `Recipients::All`, then I want that call to be evaluated three times,
     // once in each context.
     let mut called_contexts: HashSet<u64> = HashSet::new();
-    for event in events.into_iter().filter(|e| e.label == callback_label) {
-        for (entity, entity_scripts, domain) in entity_and_static_scripts.iter() {
-            for script_id in entity_scripts.iter() {
-                match &event.recipients {
-                    Recipients::Script(target_script_id)
-                        if *target_script_id != script_id.id() =>
-                    {
-                        continue
-                    }
-                    Recipients::Entity(target_entity) if entity.map(|e| *target_entity != e).unwrap_or(false) => {
-                        // match entity_query_state.get(target_entity) {
-                        //     Ok((_, script_component, _)) => {
-                        //         script_components.0.contains(
+    let (guard, handler_ctxt) = handler_ctxt.get_mut();
+    let mut contexts = Vec::new();
+    for event in events {
+        contexts.clear();
+        match &event.recipients {
+            Recipients::Script(target_script_id) =>
+            {
 
-                        //     }
-                        //     Err(e) => {
-                        //         continue
-                        //     }
-                        // }
-                        continue
+                contexts.push(handler_ctxt.script_context.get(None,
+                                                              target_script_id,
+                                                              &None));
+                // if let Some(hash) = context_hash {
+                //     if !called_contexts.insert(hash) {
+                //         // Only call a context once, not once per script.
+                //         continue;
+                //     }
+                // }
+                // targets.push((None, Handle::Weak(*target_script_id), None, &event));
+            }
+            Recipients::Entity(target_entity) => {
+                if let Err(e) = guard.with_global_access(|world| {
+                    if let Ok((_, script_component, script_domain_maybe)) = entity_query_state
+                        .get(world, *target_entity) {
+                            let domain = script_domain_maybe.as_ref().map(|x| x.0.clone());
+                        for script_handle in &script_component.0 {
+                            contexts.push(handler_ctxt.script_context.get(Some(*target_entity),
+                                                                          &script_handle.id(),
+                                                                          &domain));
+                            // targets.push((Some(*target_entity), script_handle.clone_weak(), domain, event));
+                        }
+                    } else {
+                        todo!()
                     }
-                    Recipients::Language(target_language)
-                        if *target_language != P::LANGUAGE =>
-                    {
-                        continue
-                    }
-                    Recipients::Domain(target_domain)
-                        if domain.as_ref().map(|x| *x != *target_domain).unwrap_or(false) =>
-                    {
-                        continue
-                    }
-                    Recipients::All => (),
-                    _ => ()
-
-                }
-                let context_hash = handler_ctxt.script_context.hash(*entity,
-                                                                    &script_id.id(),
-                                                                    domain);
-                if let Some(hash) = context_hash {
-                    if !called_contexts.insert(hash) {
-                        // Only call a context once, not once per script.
-                        continue;
-                    }
-                }
-
-                let call_result = handler_ctxt.call_dynamic_label(
-                    &callback_label,
-                    script_id,
-                    *entity,
-                    domain,
-                    event.args.clone(),
-                    guard.clone(),
-                );
-
-                if event.trigger_response {
-                    send_callback_response(
-                        guard.clone(),
-                        ScriptCallbackResponseEvent::new(
-                            callback_label.clone(),
-                            script_id.id(),
-                            call_result.clone(),
-                        ),
+                }) {
+                    bevy::log::error_once!(
+                        "{}: Failed to query entity {} with scripts: {}",
+                        P::LANGUAGE,
+                        target_entity,
+                        e.display_with_world(guard.clone())
                     );
                 }
-
-                match call_result {
-                    Ok(_) => {}
-                    Err(e) => {
-                        match e.downcast_interop_inner() {
-                            Some(InteropErrorInner::MissingScript { script_id }) => {
-                                if let Some(path) = script_id.path() {
-                                    trace_once!(
-                                        "{}: Script path `{}` on entity `{:?}` is either still loading, doesn't exist, or is for another language, ignoring until the corresponding script is loaded.",
-                                        P::LANGUAGE,
-                                        path, entity
-                                    );
-                                } else {
-                                    trace_once!(
-                                        "{}: Script id `{}` on entity `{:?}` is either still loading, doesn't exist, or is for another language, ignoring until the corresponding script is loaded.",
-                                        P::LANGUAGE,
-                                        script_id.id(), entity
-                                    );
-                                }
-                                continue;
-                            }
-                            Some(InteropErrorInner::MissingContext { .. }) => {
-                                // if we don't have a context for the script, it's either:
-                                // 1. a script for a different language, in which case we ignore it
-                                // 2. something went wrong. This should not happen though and it's best we ignore this
-                                continue;
-                            }
-                            _ => {}
-                        }
-                        let e = {
-
-                            if let Some(path) = script_id.path() {
-                                e.with_script(path)
-                            } else {
-                                e
-                            }
-                            .with_context(format!("Event handling for: Language: {}", P::LANGUAGE))
-                        };
-                        push_err_and_continue!(errors, Err(e));
-                    }
-                };
             }
+            Recipients::Language(target_language) =>
+            {
+                if *target_language != P::LANGUAGE {
+                    continue;
+                }
+
+                todo!()
+            }
+            Recipients::Domain(target_domain) =>
+            {
+                contexts.push(handler_ctxt.script_context.get(None, &ScriptId::default(), &Some(target_domain.clone())));
+            }
+            Recipients::All => (),
         }
     }
+    // let (guard, handler_ctxt) = handler_ctxt.get_mut();
+
+    // // let events =
+
+    // // query entities + chain static scripts
+    // let entity_and_static_scripts = guard.with_global_access(|world| {
+    //     entity_query_state
+    //         .iter(world)
+    //         .map(|(e, s, d)| (Some(e), s.0.clone(), d.map(|x| x.0.clone())))
+    //         .chain(
+    //             handler_ctxt
+    //                 .static_scripts
+    //                 .scripts
+    //                 .iter()
+    //                 .map(|s| (None, vec![s.clone()], None)),
+    //         )
+    //         .collect::<Vec<_>>()
+    // });
+
+    // let entity_and_static_scripts = match entity_and_static_scripts {
+    //     Ok(entity_and_static_scripts) => entity_and_static_scripts,
+    //     Err(e) => {
+    //         bevy::log::error_once!(
+    //             "{}: Failed to query entities with scripts: {}",
+    //             P::LANGUAGE,
+    //             e.display_with_world(guard.clone())
+    //         );
+    //         return;
+    //     }
+    // };
+
+    // for event in events.into_iter().filter(|e| e.label == callback_label) {
+    //     for (entity, entity_scripts, domain) in entity_and_static_scripts.iter() {
+    //         for script_id in entity_scripts.iter() {
+    //             match &event.recipients {
+    //                 Recipients::Script(target_script_id)
+    //                     if *target_script_id != script_id.id() =>
+    //                 {
+    //                     continue
+    //                 }
+    //                 Recipients::Entity(target_entity) if entity.map(|e| *target_entity != e).unwrap_or(false) => {
+    //                     // match entity_query_state.get(target_entity) {
+    //                     //     Ok((_, script_component, _)) => {
+    //                     //         script_components.0.contains(
+
+    //                     //     }
+    //                     //     Err(e) => {
+    //                     //         continue
+    //                     //     }
+    //                     // }
+    //                     continue
+    //                 }
+    //                 Recipients::Language(target_language)
+    //                     if *target_language != P::LANGUAGE =>
+    //                 {
+    //                     continue
+    //                 }
+    //                 Recipients::Domain(target_domain)
+    //                     if domain.as_ref().map(|x| *x != *target_domain).unwrap_or(false) =>
+    //                 {
+    //                     continue
+    //                 }
+    //                 Recipients::All => (),
+    //                 _ => ()
+
+    //             }
+    //             let context_hash = handler_ctxt.script_context.hash(*entity,
+    //                                                                 &script_id.id(),
+    //                                                                 domain);
+    //             if let Some(hash) = context_hash {
+    //                 if !called_contexts.insert(hash) {
+    //                     // Only call a context once, not once per script.
+    //                     continue;
+    //                 }
+    //             }
+
+    //             let call_result = handler_ctxt.call_dynamic_label(
+    //                 &callback_label,
+    //                 script_id,
+    //                 *entity,
+    //                 domain,
+    //                 event.args.clone(),
+    //                 guard.clone(),
+    //             );
+
+    //             if event.trigger_response {
+    //                 send_callback_response(
+    //                     guard.clone(),
+    //                     ScriptCallbackResponseEvent::new(
+    //                         callback_label.clone(),
+    //                         script_id.id(),
+    //                         call_result.clone(),
+    //                     ),
+    //                 );
+    //             }
+
+    //             match call_result {
+    //                 Ok(_) => {}
+    //                 Err(e) => {
+    //                     match e.downcast_interop_inner() {
+    //                         Some(InteropErrorInner::MissingScript { script_id }) => {
+    //                             if let Some(path) = script_id.path() {
+    //                                 trace_once!(
+    //                                     "{}: Script path `{}` on entity `{:?}` is either still loading, doesn't exist, or is for another language, ignoring until the corresponding script is loaded.",
+    //                                     P::LANGUAGE,
+    //                                     path, entity
+    //                                 );
+    //                             } else {
+    //                                 trace_once!(
+    //                                     "{}: Script id `{}` on entity `{:?}` is either still loading, doesn't exist, or is for another language, ignoring until the corresponding script is loaded.",
+    //                                     P::LANGUAGE,
+    //                                     script_id.id(), entity
+    //                                 );
+    //                             }
+    //                             continue;
+    //                         }
+    //                         Some(InteropErrorInner::MissingContext { .. }) => {
+    //                             // if we don't have a context for the script, it's either:
+    //                             // 1. a script for a different language, in which case we ignore it
+    //                             // 2. something went wrong. This should not happen though and it's best we ignore this
+    //                             continue;
+    //                         }
+    //                         _ => {}
+    //                     }
+    //                     let e = {
+
+    //                         if let Some(path) = script_id.path() {
+    //                             e.with_script(path)
+    //                         } else {
+    //                             e
+    //                         }
+    //                         .with_context(format!("Event handling for: Language: {}", P::LANGUAGE))
+    //                     };
+    //                     push_err_and_continue!(errors, Err(e));
+    //                 }
+    //             };
+    //         }
+    //     }
+    // }
 
     handle_script_errors(guard, errors.into_iter());
 }
