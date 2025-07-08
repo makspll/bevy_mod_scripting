@@ -15,7 +15,7 @@ use bevy::{
     log::{info, trace, warn, error},
     prelude::{
         Commands, EventReader, IntoSystemConfigs, IntoSystemSetConfigs, Res,
-        ResMut, Added, Query, Local, Handle, AssetServer, Entity,
+        ResMut, Added, Query, Local, Handle, AssetServer, Entity, Resource, Deref, DerefMut,
     },
     reflect::TypePath,
 };
@@ -74,6 +74,10 @@ impl ScriptAsset {
         s.into().into()
     }
 }
+
+/// The queue that evaluates scripts.
+#[derive(Resource, Deref, DerefMut, Default)]
+pub(crate) struct ScriptQueue(VecDeque<(Option<Entity>, Handle<ScriptAsset>, Option<Domain>)>);
 
 /// Script settings
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -200,19 +204,19 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
                         continue;
                     }
 
-                    if static_scripts.iter().any(|handle| handle.id() == *id) {
-                        info!("{}: Loading static script: {:?}", P::LANGUAGE, id);
-                        commands.queue(CreateOrUpdateScript::<P>::new(
-                            Handle::Weak(*id),
-                            // Since we have the asset, we don't need to clone
-                            // its contents to evaluate it. We can refer to the
-                            // asset.
+                    // if static_scripts.iter().any(|handle| handle.id() == *id) {
+                    //     info!("{}: Loading static script: {:?}", P::LANGUAGE, id);
+                    //     commands.queue(CreateOrUpdateScript::<P>::new(
+                    //         Handle::Weak(*id),
+                    //         // Since we have the asset, we don't need to clone
+                    //         // its contents to evaluate it. We can refer to the
+                    //         // asset.
 
-                            // asset.content.clone(), // Cloning seems bad!
-                            None,
-                            None, // No domain for static scripts.
-                        ));
-                    }
+                    //         // asset.content.clone(), // Cloning seems bad!
+                    //         None,
+                    //         None, // No domain for static scripts.
+                    //     ));
+                    // }
                 }
             }
             AssetEvent::Removed{ id } => {
@@ -228,14 +232,15 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
 
 pub(crate) fn eval_script<P: IntoScriptPluginParams>(
     script_comps: Query<(Entity, &ScriptComponent, Option<&ScriptDomain>), Added<ScriptComponent>>,
-    mut script_queue: Local<VecDeque<(Entity, Handle<ScriptAsset>, Option<Domain>)>>,
+    // mut script_queue: Local<VecDeque<(Entity, Handle<ScriptAsset>, Option<Domain>)>>,
+    mut script_queue: ResMut<ScriptQueue>,
     script_assets: Res<Assets<ScriptAsset>>,
     asset_server: Res<AssetServer>,
     mut commands: Commands,
     ) {
     for (id, script_comp, domain_maybe) in &script_comps {
         for handle in &script_comp.0 {
-            script_queue.push_back((id, handle.clone_weak(), domain_maybe.map(|x| x.0.clone())));
+            script_queue.push_back((Some(id), handle.clone_weak(), domain_maybe.map(|x| x.0.clone())));
         }
     }
     while ! script_queue.is_empty() {
@@ -259,17 +264,26 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
         if ! script_ready {
             break;
         }
-        if let Some((id, script_id, domain_maybe)) = script_queue.pop_front() {
+        if let Some((id_maybe, script_id, domain_maybe)) = script_queue.pop_front() {
             if script_failed {
                 continue;
             }
             if let Some(asset) = script_assets.get(&script_id) {
                 if asset.language == P::LANGUAGE {
-                    commands.entity(id).queue(CreateOrUpdateScript::<P>::new(
-                        script_id,
-                        None,
-                        domain_maybe
-                    ));
+                    match id_maybe {
+                        Some(id) => {
+                            commands.entity(id).queue(CreateOrUpdateScript::<P>::new(
+                                script_id,
+                                None,
+                                domain_maybe));
+                        },
+                        None => {
+                            commands.queue(CreateOrUpdateScript::<P>::new(
+                                script_id,
+                                None,
+                                domain_maybe));
+                        },
+                    }
                 }
             } else {
                 // This is probably a load failure. What to do? We've already
@@ -312,12 +326,11 @@ pub(crate) fn configure_asset_systems(app: &mut App) -> &mut App {
 #[profiling::function]
 pub(crate) fn configure_asset_systems_for_plugin<P: IntoScriptPluginParams>(
     app: &mut App,
-) -> &mut App {
+) {
     app.add_systems(
         PreUpdate,
         (eval_script::<P>, sync_script_data::<P>).in_set(ScriptingSystemSet::ScriptCommandDispatch),
     );
-    app
 }
 
 #[cfg(test)]

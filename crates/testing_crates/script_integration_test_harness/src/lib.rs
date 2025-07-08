@@ -5,17 +5,16 @@ use std::{
     marker::PhantomData,
     path::PathBuf,
     time::{Duration, Instant},
-    sync::{Arc,Mutex},
 };
 
 use bevy::{
     app::{Last, Plugin, PostUpdate, Startup, Update},
-    asset::{AssetServer, Handle, AssetPath, AssetId, LoadState, Assets},
+    asset::{AssetServer, Handle, AssetPath, LoadState, Assets},
     ecs::{
         component::Component,
         event::{Event, Events},
         schedule::{IntoSystemConfigs, SystemConfigs},
-        system::{IntoSystem, Local, Res, Resource, SystemState},
+        system::{IntoSystem, Resource, SystemState},
         world::{Command, FromWorld, Mut},
     },
     log::Level,

@@ -1,6 +1,7 @@
 //! Commands for creating, updating and deleting scripts
 
 use crate::{
+    ScriptQueue,
     AssetId,
     asset::ScriptAsset,
     bindings::{ScriptValue, WorldGuard},
@@ -208,7 +209,6 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
 #[profiling::all_functions]
 impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
     fn apply(self, world: &mut bevy::prelude::World) {
-        // todo!()
         let result = with_handler_system_state(
             world,
             |guard, handler_ctxt: &mut HandlerContext<P>| {
@@ -368,7 +368,9 @@ impl AddStaticScript {
 impl Command for AddStaticScript {
     fn apply(self, world: &mut bevy::prelude::World) {
         let mut static_scripts = world.get_resource_or_init::<StaticScripts>();
-        static_scripts.insert(self.id);
+        static_scripts.insert(self.id.clone());
+        let mut script_queue = world.resource_mut::<ScriptQueue>();
+        script_queue.push_back((None, self.id, None));
     }
 }
 
@@ -401,7 +403,8 @@ mod test {
     };
 
     use crate::{
-        asset::Language,
+        ManageStaticScripts,
+        asset::{ScriptQueue, Language},
         script::{ScriptId, ScriptContext},
         bindings::script_value::ScriptValue,
         context::{ContextBuilder, ContextLoadingSettings},
@@ -416,6 +419,9 @@ mod test {
         let mut app = App::new();
 
         app.add_event::<ScriptCallbackResponseEvent>();
+        app.add_plugins(bevy::asset::AssetPlugin::default());
+        app.init_asset::<ScriptAsset>();
+        app.init_resource::<ScriptQueue>();
         app.add_plugins(LogPlugin {
             filter: "bevy_mod_scripting_core=debug,info".to_owned(),
             level: Level::TRACE,
@@ -520,9 +526,9 @@ mod test {
     fn test_commands_with_default_assigner() {
         let mut app = setup_app();
 
-        let content = "content".as_bytes().to_vec().into_boxed_slice();
-        let script = Handle::default();
-        let command = CreateOrUpdateScript::<DummyPlugin>::new(script.clone(), Some(content), None);
+        // let content = "content".as_bytes().to_vec().into_boxed_slice();
+        let script = add_script(&mut app, "content");
+        let command = CreateOrUpdateScript::<DummyPlugin>::new(script.clone(), None, None);
         // command.apply(app.world_mut());
         Command::apply(command, app.world_mut());
 
@@ -548,9 +554,9 @@ mod test {
         );
 
         // create second script
-        let content = "content2".as_bytes().to_vec().into_boxed_slice();
-        let script2 = Handle::default();
-        let command = CreateOrUpdateScript::<DummyPlugin>::new(script2.clone(), Some(content), None);
+        // let content = "content2".as_bytes().to_vec().into_boxed_slice();
+        let script2 = add_script(&mut app, "content2");
+        let command = CreateOrUpdateScript::<DummyPlugin>::new(script2.clone(), None, None);
 
         Command::apply(command, app.world_mut());
 
@@ -639,6 +645,7 @@ mod test {
         let script = add_script(&mut app, "content");
         let command = CreateOrUpdateScript::<DummyPlugin>::new(script.clone(), None, None);
 
+        app.add_static_script(script.clone());
         Command::apply(command, app.world_mut());
 
         // check script
@@ -668,6 +675,7 @@ mod test {
         // create second script
 
         let script2 = add_script(&mut app, "content2");
+        app.add_static_script(script2.clone());
         let command = CreateOrUpdateScript::<DummyPlugin>::new(script2.clone(), None, None);
 
         Command::apply(command, app.world_mut());
@@ -688,7 +696,7 @@ mod test {
         );
 
         let scripts = app.world().get_resource::<StaticScripts>().unwrap();
-        assert!(scripts.scripts.len() == 2);
+        assert_eq!(scripts.scripts.len(), 2);
 
         // delete first script
         let command = DeleteScript::<DummyPlugin>::new(script.id(), None);

@@ -5,7 +5,7 @@
 use crate::event::ScriptErrorEvent;
 use asset::{
     configure_asset_systems, configure_asset_systems_for_plugin, Language, ScriptAsset,
-    ScriptAssetLoader,
+    ScriptAssetLoader, ScriptQueue
 };
 use bevy::{prelude::*, utils::HashMap};
 use bindings::{
@@ -266,6 +266,7 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
             .add_event::<ScriptCallbackResponseEvent>()
             .init_resource::<AppReflectAllocator>()
             .init_resource::<StaticScripts>()
+            .init_resource::<ScriptQueue>()
             .init_asset::<ScriptAsset>()
             .init_resource::<AppScriptFunctionRegistry>()
             .insert_resource(AppScheduleRegistry::new());
@@ -303,7 +304,7 @@ fn register_script_plugin_systems<P: IntoScriptPluginParams>(app: &mut App) {
         .in_set(ScriptingSystemSet::RuntimeInitialization),
     );
 
-    configure_asset_systems_for_plugin::<P>(app);
+    app.add_plugins(configure_asset_systems_for_plugin::<P>);
 }
 
 /// Register all types that need to be accessed via reflection

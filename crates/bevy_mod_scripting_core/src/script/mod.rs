@@ -148,11 +148,19 @@ mod tests {
         assert!(!static_scripts.scripts.contains(&script1));
     }
 
+    fn scriptid_from_u128(uuid: u128) -> ScriptId {
+        ScriptId::from(uuid::Builder::from_random_bytes(uuid.to_le_bytes()).into_uuid())
+    }
+
+    fn handle_from_u128(uuid: u128) -> Handle<ScriptAsset> {
+        Handle::Weak(scriptid_from_u128(uuid))
+    }
+
     #[test]
     fn static_scripts_contains() {
         let mut static_scripts = StaticScripts::default();
-        let script1 = Handle::default();
-        let script2 = Handle::default();
+        let script1 = handle_from_u128(0);
+        let script2 = handle_from_u128(1);
         static_scripts.insert(script1.clone());
         assert!(static_scripts.contains(&script1));
         assert!(!static_scripts.contains(&script2));

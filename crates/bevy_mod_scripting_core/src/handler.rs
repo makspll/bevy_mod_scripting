@@ -1,6 +1,7 @@
 //! Contains the logic for handling script callback events
 use crate::{
     ScriptAsset,
+    ScriptQueue,
     bindings::{
         pretty_print::DisplayWithWorld, script_value::ScriptValue, ThreadWorldContainer,
         WorldContainer, WorldGuard,
@@ -198,6 +199,15 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                         continue
                     }
                     crate::event::Recipients::Entity(target_entity) if entity.map(|e| *target_entity != e).unwrap_or(false) => {
+                        // match entity_query_state.get(target_entity) {
+                        //     Ok((_, script_component, _)) => {
+                        //         script_components.0.contains(
+
+                        //     }
+                        //     Err(e) => {
+                        //         continue
+                        //     }
+                        // }
                         continue
                     }
                     crate::event::Recipients::Language(target_language)
@@ -332,13 +342,14 @@ mod test {
 
     use bevy::{
         app::{App, Update},
-        asset::{Assets, AssetPlugin},
+        asset::{Assets, AssetPlugin, AssetApp},
         diagnostic::DiagnosticsPlugin,
         ecs::world::FromWorld,
     };
     use test_utils::make_test_plugin;
 
     use crate::{
+        ManageStaticScripts,
         ScriptContext,
         bindings::script_value::ScriptValue,
         context::{ContextBuilder, ContextLoadingSettings},
@@ -382,10 +393,11 @@ mod test {
 
     fn setup_app<L: IntoCallbackLabel + 'static>(
         runtime: TestRuntime,
-        scripts: Vec<ScriptAsset>,
-    ) -> (App, Vec<Handle<ScriptAsset>>) {
+    ) -> App {
         let mut app = App::new();
-
+        app.add_plugins(bevy::asset::AssetPlugin::default());
+        app.init_asset::<ScriptAsset>();
+        app.init_resource::<ScriptQueue>();
         app.add_event::<ScriptCallbackEvent>();
         app.add_event::<ScriptCallbackResponseEvent>();
         app.add_event::<ScriptErrorEvent>();
@@ -393,24 +405,18 @@ mod test {
             callback_handler: |args, entity, script, _, ctxt, _, runtime| {
                 ctxt.invocations.extend(args);
                 let mut runtime = runtime.invocations.lock();
-                // runtime.push((entity.unwrap_or_else(|| Entity::from_raw(0)), script.id()));
                 runtime.push((entity, script.id()));
                 Ok(ScriptValue::Unit)
             },
         });
+        app.add_plugins(crate::configure_asset_systems_for_plugin::<TestPlugin>);
         app.add_systems(Update, event_handler::<L, TestPlugin>);
-        let handles: Vec<Handle<ScriptAsset>> = {
-            let world = app.world_mut();
-            let mut script_assets = world.resource_mut::<Assets<ScriptAsset>>();
-            scripts.into_iter().map(|s| script_assets.add(s)).collect()
-        };
-        app.insert_resource::<StaticScripts>(StaticScripts { scripts: handles.clone().into_iter().collect() });
         app.insert_resource(RuntimeContainer::<TestPlugin> { runtime });
         app.init_resource::<StaticScripts>();
         app.insert_resource(ContextLoadingSettings::<TestPlugin> {
             loader: ContextBuilder {
-                load: |_, _, _, _, _| todo!(),
-                reload: |_, _, _, _, _, _| todo!(),
+                load: |_, _, _, _, _| Ok(TestContext::default()),
+                reload: |_, _, _, _, _, _| Ok(()),
             },
             assignment_strategy: Default::default(),
             context_initializers: vec![],
@@ -418,7 +424,11 @@ mod test {
         });
         app.finish();
         app.cleanup();
-        (app, handles)
+        app
+    }
+
+    fn add_script(app: &mut App, content: impl Into<String>) -> Handle<ScriptAsset> {
+        app.world_mut().resource_mut::<Assets<ScriptAsset>>().add(ScriptAsset::from(content.into()))
     }
 
     #[test]
@@ -426,11 +436,44 @@ mod test {
         let runtime = TestRuntime {
             invocations: vec![].into(),
         };
-        let scripts = vec![ScriptAsset::new("")];
-        let (mut app, handles) = setup_app::<OnTestCallback>(runtime, scripts);
-        let test_script_id = &handles[0];
+        let mut app = setup_app::<OnTestCallback>(runtime);
+        let test_script_id = add_script(&mut app, "");
         app.world_mut()
             .spawn(ScriptComponent(vec![test_script_id.clone()]));
+        app.update();
+
+        app.world_mut().send_event(
+            ScriptCallbackEvent::new(
+                OnTestCallback::into_callback_label(),
+                vec![ScriptValue::String("test_args".into())],
+                crate::event::Recipients::All,
+            )
+            .with_response(),
+        );
+        app.update();
+
+        assert_response_events(
+            app.world_mut(),
+            vec![ScriptCallbackResponseEvent::new(
+                OnTestCallback::into_callback_label(),
+                test_script_id.id(),
+                Ok(ScriptValue::Unit),
+            )]
+            .into_iter(),
+        );
+    }
+
+    #[test]
+    fn test_handler_emits_response_events_for_static_script() {
+        let runtime = TestRuntime {
+            invocations: vec![].into(),
+        };
+        let mut app = setup_app::<OnTestCallback>(runtime);
+        let test_script_id = add_script(&mut app, "");
+        app.add_static_script(test_script_id.clone());
+        // app.world_mut()
+        //     .spawn(ScriptComponent(vec![test_script_id.clone()]));
+        app.update();
 
         app.world_mut().send_event(
             ScriptCallbackEvent::new(
@@ -455,12 +498,12 @@ mod test {
 
     #[test]
     fn test_handler_called_with_right_args() {
-        let scripts = vec![ScriptAsset::new("")];
         let runtime = TestRuntime {
             invocations: vec![].into(),
         };
-        let (mut app, handles) = setup_app::<OnTestCallback>(runtime, scripts);
-        let test_script_id = &handles[0];
+        let mut app = setup_app::<OnTestCallback>(runtime);
+        let test_script_id = add_script(&mut app, "");
+        // app.add_static_script(test_script_id.clone());
         let test_entity_id = app
             .world_mut()
             .spawn(ScriptComponent(vec![test_script_id.clone()]))
@@ -504,15 +547,21 @@ mod test {
         let runtime = TestRuntime {
             invocations: vec![].into(),
         };
-        let scripts = vec![ScriptAsset::new(""),
-                           ScriptAsset::new("wrong"),
-        ];
-        let (mut app, handles) = setup_app::<OnTestCallback>(runtime, scripts);
-        let test_script_id = &handles[0];
+        let mut app = setup_app::<OnTestCallback>(runtime);
+        app.insert_resource(ScriptContext::<TestPlugin>::per_entity());
+        let test_script_id = add_script(&mut app, "");
+        let test_script2_id = add_script(&mut app, "wrong");
+        // app.add_static_script(test_script_id.clone());
         let test_entity_id = app
             .world_mut()
             .spawn(ScriptComponent(vec![test_script_id.clone()]))
             .id();
+
+        let test_entity2_id = app
+            .world_mut()
+            .spawn(ScriptComponent(vec![test_script2_id.clone()]))
+            .id();
+        app.update();
 
         app.world_mut().send_event(ScriptCallbackEvent::new(
             OnTestCallback::into_callback_label(),
@@ -528,7 +577,7 @@ mod test {
 
         app.update();
         {
-            let test_scripts = app.world().get_resource::<StaticScripts>().unwrap();
+            // let test_scripts = app.world().get_resource::<StaticScripts>().unwrap();
             let test_runtime = app
                 .world()
                 .get_resource::<RuntimeContainer<TestPlugin>>()
@@ -565,13 +614,11 @@ mod test {
         let runtime = TestRuntime {
             invocations: vec![].into(),
         };
-        let scripts = vec![ScriptAsset::new("")];
-        let (mut app, handles) = setup_app::<OnTestCallback>(runtime, scripts);
-        let test_script_id = &handles[0];
 
-        app.world_mut().insert_resource(StaticScripts {
-            scripts: vec![test_script_id.clone()].into_iter().collect(),
-        });
+        let mut app = setup_app::<OnTestCallback>(runtime);
+        let test_script_id = add_script(&mut app, "");
+        app.add_static_script(test_script_id.clone());
+        app.update();
 
         app.world_mut().send_event(ScriptCallbackEvent::new(
             OnTestCallback::into_callback_label(),
