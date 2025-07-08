@@ -18,6 +18,17 @@ pub type ScriptId = Cow<'static, str>;
 /// Event handlers search for components with this component to figure out which scripts to run and on which entities.
 pub struct ScriptComponent(pub Vec<ScriptId>);
 
+/// Specifies the order in which an entity's [ScriptComponent]'s
+/// script callbacks are executed
+/// relative to the script components on other entities.
+///
+/// Higher values mean later execution.
+/// Equal values have non-deterministic execution order.
+/// If this is not present, a value of 0 is assumed.
+#[derive(bevy::ecs::component::Component, Reflect, Clone, Copy, Ord, PartialOrd, Eq, PartialEq)]
+#[reflect(Component)]
+pub struct ScriptExecutionOrder(pub i32);
+
 impl Deref for ScriptComponent {
     type Target = Vec<ScriptId>;
 

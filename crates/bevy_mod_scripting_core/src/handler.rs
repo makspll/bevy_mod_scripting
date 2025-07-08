@@ -1,4 +1,5 @@
 //! Contains the logic for handling script callback events
+use crate::script::ScriptExecutionOrder;
 use crate::{
     bindings::{
         pretty_print::DisplayWithWorld, script_value::ScriptValue, ThreadWorldContainer,
@@ -129,7 +130,14 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
 
 #[allow(deprecated)]
 pub(crate) type EventHandlerSystemState<'w, 's, P> = SystemState<(
-    Local<'s, QueryState<(Entity, Ref<'w, ScriptComponent>)>>,
+    Local<
+        's,
+        QueryState<(
+            Entity,
+            Ref<'w, ScriptComponent>,
+            Option<Ref<'w, ScriptExecutionOrder>>,
+        )>,
+    >,
     crate::extractors::EventReaderScope<'s, ScriptCallbackEvent>,
     WithWorldGuard<'w, 's, HandlerContext<'s, P>>,
 )>;
@@ -138,7 +146,13 @@ pub(crate) type EventHandlerSystemState<'w, 's, P> = SystemState<(
 #[allow(deprecated)]
 pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     callback_label: CallbackLabel,
-    mut entity_query_state: Local<QueryState<(Entity, Ref<ScriptComponent>)>>,
+    mut entity_query_state: Local<
+        QueryState<(
+            Entity,
+            Ref<ScriptComponent>,
+            Option<Ref<ScriptExecutionOrder>>,
+        )>,
+    >,
     mut script_events: crate::extractors::EventReaderScope<ScriptCallbackEvent>,
     mut handler_ctxt: WithWorldGuard<HandlerContext<P>>,
 ) {
@@ -152,13 +166,27 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     let entity_and_static_scripts = guard.with_global_access(|world| {
         entity_query_state
             .iter(world)
-            .map(|(e, s)| (e, s.0.clone()))
+            // sort entity iteration by script execution order, if present
+            .sort_unstable_by_key::<Option<Ref<ScriptExecutionOrder>>, i32>(|e| match e {
+                None => 0,
+                Some(order) => order.0,
+            })
+            .map(|(e, s, o)| {
+                (
+                    e,
+                    s.0.clone(),
+                    match o {
+                        None => None,
+                        Some(o) => Some(o.clone()),
+                    },
+                )
+            })
             .chain(
                 handler_ctxt
                     .static_scripts
                     .scripts
                     .iter()
-                    .map(|s| (Entity::from_raw(0), vec![s.clone()])),
+                    .map(|s| (Entity::from_raw(0), vec![s.clone()], None)),
             )
             .collect::<Vec<_>>()
     });
@@ -176,7 +204,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     };
 
     for event in events.into_iter().filter(|e| e.label == callback_label) {
-        for (entity, entity_scripts) in entity_and_static_scripts.iter() {
+        for (entity, entity_scripts, order) in entity_and_static_scripts.iter() {
             for script_id in entity_scripts.iter() {
                 match &event.recipients {
                     crate::event::Recipients::Script(target_script_id)
