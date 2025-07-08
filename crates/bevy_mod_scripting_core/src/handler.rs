@@ -1,7 +1,6 @@
 //! Contains the logic for handling script callback events
 use crate::{
     ScriptAsset,
-    ScriptQueue,
     bindings::{
         pretty_print::DisplayWithWorld, script_value::ScriptValue, ThreadWorldContainer,
         WorldContainer, WorldGuard,
@@ -13,7 +12,7 @@ use crate::{
         ScriptErrorEvent, Recipients,
     },
     extractors::{HandlerContext, WithWorldGuard},
-    script::{ScriptComponent, ScriptDomain, ScriptContextProvider},
+    script::{ScriptComponent, ScriptDomain, ScriptContextProvider, Domain},
     IntoScriptPluginParams,
 };
 use bevy::{
@@ -147,43 +146,32 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     mut handler_ctxt: WithWorldGuard<HandlerContext<P>>,
 ) {
     let mut events = script_events.read();
-    if events.is_empty() {
+    if events.len() == 0 {
         return;
     }
-    let mut target_triples: Vec<(Option<Entity>, Handle<ScriptAsset>, Option<Domain>)> = Vec::new();
+    let mut targets: Vec<(Option<Entity>, Handle<ScriptAsset>, Option<Domain>, &ScriptCallbackEvent)> = Vec::new();
     for event in events {
         match &event.recipients {
-            Recipients::Script(target_script_id)
+            Recipients::Script(target_script_id) =>
             {
-                target_script_ids.insert(target_script_id, event);
+                // target_script_ids.insert(target_script_id, event);
             }
-            Recipients::Entity(target_entity)
-                // if entity.map(|e| *target_entity != e).unwrap_or(false)
-                => {
-                    let Ok((id, script_component, script_domain_maybe)) = entity_query_state.get(target_entity) else {
-                        continue
-                    };
-                    for script_handle in &script_component.0 {
-                        target_triples.push((Some(id), script_component.0.clone(), script_domain_maybe));
-                    }
-
-                // match entity_query_state.get(target_entity) {
-                //     Ok((_, script_component, _)) => {
-                //         script_components.0.contains(
-
-                //     }
-                //     Err(e) => {
-                //         continue
-                //     }
-                // }
-                continue
+            Recipients::Entity(target_entity) => {
+                let Ok((id, script_component, script_domain_maybe)) = guard.with_global_access(|world| {
+                    entity_query_state.get(world, target_entity)
+                }) else {
+                    continue
+                };
+                for script_handle in &script_component.0 {
+                    targets.push((Some(id), script_handle.clone_weak(), script_domain_maybe, &event));
+                }
             }
             Recipients::Language(target_language)
                 if *target_language != P::LANGUAGE =>
             {
                 continue
             }
-            Recipients::Domain(target_domain)
+            Recipients::Domain(target_domain) =>
                 // if domain.as_ref().map(|x| *x != *target_domain).unwrap_or(false) =>
             {
                 continue
@@ -195,7 +183,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     let (guard, handler_ctxt) = handler_ctxt.get_mut();
 
     let mut errors = Vec::default();
-    let events =
+    // let events =
 
     // query entities + chain static scripts
     let entity_and_static_scripts = guard.with_global_access(|world| {

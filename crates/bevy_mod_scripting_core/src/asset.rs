@@ -15,7 +15,7 @@ use bevy::{
     log::{info, trace, warn, error},
     prelude::{
         Commands, EventReader, IntoSystemConfigs, IntoSystemSetConfigs, Res,
-        ResMut, Added, Query, Local, Handle, AssetServer, Entity, Resource, Deref, DerefMut,
+        ResMut, Added, Query, Handle, AssetServer, Entity, Resource, Deref, DerefMut,
     },
     reflect::TypePath,
 };
