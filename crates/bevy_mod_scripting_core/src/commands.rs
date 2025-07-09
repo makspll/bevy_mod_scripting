@@ -3,6 +3,7 @@
 use crate::{
     ScriptQueue,
     AssetId,
+    ScriptContext,
     asset::ScriptAsset,
     bindings::{ScriptValue, WorldGuard},
     context::ContextBuilder,
@@ -52,12 +53,24 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
         )
         .apply(world);
 
-        let mut scripts = world.get_resource_or_init::<StaticScripts>();
-        if scripts.remove(self.id) {
-            debug!("Deleted script with id: {}", self.id);
-        } else {
+        let mut deleted = false;
+        {
+            let mut scripts = world.get_resource_or_init::<StaticScripts>();
+            if scripts.remove(self.id) {
+                debug!("Deleted static script with id: {}", self.id);
+                deleted = true;
+            }
+        }
+        {
+            let mut script_contexts = world.get_resource_or_init::<ScriptContext<P>>();
+            if script_contexts.remove(None, &self.id, &None) {
+                bevy::log::info!("{}: Deleted context for script {:?}", P::LANGUAGE, self.id);
+                deleted = true;
+            }
+        }
+        if !deleted {
             bevy::log::error!(
-                "Attempted to delete script with id: {} but it does not exist, doing nothing!",
+                "Attempted to delete script with id {} but it does not exist; doing nothing!",
                 self.id
             );
         }
@@ -325,6 +338,7 @@ impl<P: IntoScriptPluginParams> Command for RunScriptCallback<P> {
                 &self.id,
                 self.entity,
                 &self.domain,
+                None,
                 self.args,
                 guard.clone(),
             );

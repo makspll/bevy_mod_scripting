@@ -1,6 +1,6 @@
 //! Contains the logic for handling script callback events
 use crate::{
-    ScriptAsset,
+    Language,
     bindings::{
         pretty_print::DisplayWithWorld, script_value::ScriptValue, ThreadWorldContainer,
         WorldContainer, WorldGuard,
@@ -8,12 +8,12 @@ use crate::{
     context::ContextPreHandlingInitializer,
     error::{InteropErrorInner, ScriptError},
     event::{
-        CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent,
-        ScriptErrorEvent, Recipients,
+        CallbackLabel, IntoCallbackLabel, Recipients, ScriptCallbackEvent,
+        ScriptCallbackResponseEvent, ScriptErrorEvent,
     },
     extractors::{HandlerContext, WithWorldGuard},
-    script::{ScriptComponent, ScriptDomain, ScriptContextProvider, Domain, ScriptId},
-    IntoScriptPluginParams,
+    script::{Domain, ScriptComponent, ScriptContextProvider, ScriptDomain, ScriptId, DisplayProxy},
+    IntoScriptPluginParams, ScriptAsset,
 };
 use bevy::{
     asset::Handle,
@@ -27,8 +27,6 @@ use bevy::{
     prelude::{Events, Ref},
     utils::HashSet,
 };
-use parking_lot::Mutex;
-use std::sync::Arc;
 
 /// A function that handles a callback event
 pub type HandlerFn<P> = fn(
@@ -98,18 +96,6 @@ impl<P: IntoScriptPluginParams> CallbackSettings<P> {
     }
 }
 
-macro_rules! push_err_and_continue {
-    ($errors:ident, $expr:expr) => {
-        match $expr {
-            Ok(v) => v,
-            Err(e) => {
-                $errors.push(e);
-                continue;
-            }
-        }
-    };
-}
-
 /// Passes events with the specified label to the script callback with the same name and runs the callback.
 ///
 /// If any of the resources required for the handler are missing, the system will log this issue and do nothing.
@@ -134,7 +120,14 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
 
 #[allow(deprecated)]
 pub(crate) type EventHandlerSystemState<'w, 's, P> = SystemState<(
-    Local<'s, QueryState<(Entity, Ref<'w, ScriptComponent>, Option<Ref<'w, ScriptDomain>>)>>,
+    Local<
+        's,
+        QueryState<(
+            Entity,
+            Ref<'w, ScriptComponent>,
+            Option<Ref<'w, ScriptDomain>>,
+        )>,
+    >,
     crate::extractors::EventReaderScope<'s, ScriptCallbackEvent>,
     WithWorldGuard<'w, 's, HandlerContext<'s, P>>,
 )>;
@@ -143,7 +136,9 @@ pub(crate) type EventHandlerSystemState<'w, 's, P> = SystemState<(
 #[allow(deprecated)]
 pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     callback_label: CallbackLabel,
-    mut entity_query_state: Local<QueryState<(Entity, Ref<ScriptComponent>, Option<Ref<ScriptDomain>>)>>,
+    mut entity_query_state: Local<
+        QueryState<(Entity, Ref<ScriptComponent>, Option<Ref<ScriptDomain>>)>,
+    >,
     mut script_events: crate::extractors::EventReaderScope<ScriptCallbackEvent>,
     mut handler_ctxt: WithWorldGuard<HandlerContext<P>>,
 ) {
@@ -151,60 +146,77 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     if events.len() == 0 {
         return;
     }
-    let mut targets: Vec<(Option<Entity>, Handle<ScriptAsset>, Option<Domain>, &ScriptCallbackEvent)> = Vec::new();
     let mut errors = Vec::default();
 
-    // Keep track of the contexts that have been called. Don't duplicate the
-    // calls on account of multiple matches.
-    //
-    // If I have five scripts all in one shared context, and I fire a call to
-    // `Recipients::All`, then I want that call to go to the shared context
-    // once.
-    //
-    // If I have four scripts in three different contexts, and I fire a call to
-    // `Recipients::All`, then I want that call to be evaluated three times,
-    // once in each context.
     let (guard, handler_ctxt) = handler_ctxt.get_mut();
-    let mut contexts: Vec<Option<&Arc<Mutex<P::C>>>> = Vec::new();
     for event in events.filter(|e| e.label == callback_label) {
-        contexts.clear();
-        let mut call_results_overflow = Vec::new();
-        let script_id;
+        // Most of these recipients call a single context. In those cases, the
+        // following 4 variables will be initialized.
+        //
+        // But targeting an entity or language or all, may call multiple contexts. In these cases they are handled
+        let script_handle;
         let domain;
         let entity;
+        let context;
         match &event.recipients {
-            Recipients::Script(target_script_id) =>
-            {
-                script_id = target_script_id;
+            Recipients::Script(target_script_id) => {
+                script_handle = Handle::Weak(*target_script_id);
                 domain = None;
                 entity = None;
-                // let call_result = handler_ctxt.call_dynamic_label(
-                //     &callback_label,
-                //     target_script_id,
-                //     None,
-                //     None,
-                //     event.args.clone(),
-                //     guard.clone(),
-                // );
-                // contexts.push(handler_ctxt.script_context.get(None,
-                //                                               target_script_id,
-                //                                               &None));
+                context = None;
             }
             Recipients::Entity(target_entity) => {
                 if let Err(e) = guard.with_global_access(|world| {
-                    if let Ok((_, script_component, script_domain_maybe)) = entity_query_state
-                        .get(world, *target_entity) {
-                            let domain = script_domain_maybe.as_ref().map(|x| x.0.clone());
+                    if let Ok((_, script_component, script_domain_maybe)) =
+                        entity_query_state.get(world, *target_entity)
+                    {
+                        let domain = script_domain_maybe.as_ref().map(|x| x.0.clone());
 
-                            let mut called_contexts: HashSet<u64> = HashSet::new();
+                        // Keep track of the contexts that have been called. Don't duplicate the
+                        // calls on account of multiple matches.
+                        //
+                        // If I have five scripts all in one shared context, and I fire a call to
+                        // `Recipients::All`, then I want that call to go to the shared context
+                        // once.
+                        //
+                        // If I have four scripts in three different contexts, and I fire a call to
+                        // `Recipients::All`, then I want that call to be evaluated three times,
+                        // once in each context.
+                        let mut called_contexts: HashSet<u64> = HashSet::new();
                         for script_handle in &script_component.0 {
-                            if let Some(hash) = handler_ctxt.script_context.hash(Some(*target_entity),
-                                                                                 &script_handle.id(),
-                                                                                 &domain) {
+                            if let Some(hash) = handler_ctxt.script_context.hash(
+                                Some(*target_entity),
+                                &script_handle.id(),
+                                &domain,
+                            ) {
                                 if called_contexts.insert(hash) {
-                                    contexts.push(handler_ctxt.script_context.get(Some(*target_entity),
-                                                                                  &script_handle.id(),
-                                                                                  &domain));
+                                    // contexts.push(handler_ctxt.script_context.get(
+                                    //     Some(*target_entity),
+                                    //     &script_handle.id(),
+                                    //     &domain,
+                                    // ));
+
+                                let call_result = handler_ctxt.call_dynamic_label(
+                                    &callback_label,
+                                    &script_handle,
+                                    Some(*target_entity),
+                                    &domain,
+                                    None,
+                                    event.args.clone(),
+                                    guard.clone(),
+                                );
+
+                                if event.trigger_response {
+                                    send_callback_response(
+                                        guard.clone(),
+                                        ScriptCallbackResponseEvent::new(
+                                            callback_label.clone(),
+                                            script_handle.id(),
+                                            call_result.clone(),
+                                        ),
+                                    );
+                                }
+                                collect_errors(call_result, Some(*target_entity), P::LANGUAGE, &mut errors);
                                 }
                             }
                         }
@@ -219,27 +231,66 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                         e.display_with_world(guard.clone())
                     );
                 }
+                continue;
             }
-            Recipients::Domain(target_domain) =>
-            {
-                contexts.push(handler_ctxt.script_context.get(None, &ScriptId::default(), &Some(target_domain.clone())));
+            Recipients::Domain(target_domain) => {
+
+                script_handle = Handle::default();
+                domain = Some(target_domain.clone());
+                entity = None;
+                context = None;
             }
-            Recipients::Language(target_language) if *target_language != P::LANGUAGE  =>
-            {
+            Recipients::Language(target_language) if *target_language != P::LANGUAGE => {
                 continue;
             }
             Recipients::Language(_) | Recipients::All => {
                 // All and language are effectively the same modulo the other
-                // languages, which are handled by the P handlers.
-                contexts.extend(handler_ctxt.script_context.iter().map(Some));
+                // languages, which are handled by the other P handlers.
+                script_handle = Handle::default();
+                for context in handler_ctxt.script_context.iter_box() {
+                    let call_result = handler_ctxt.call_dynamic_label(
+                        &callback_label,
+                        &script_handle,
+                        None,
+                        &None,
+                        Some(context),
+                        event.args.clone(),
+                        guard.clone(),
+                    );
+
+                    if event.trigger_response {
+                        send_callback_response(
+                            guard.clone(),
+                            ScriptCallbackResponseEvent::new(
+                                callback_label.clone(),
+                                script_handle.id(),
+                                call_result.clone(),
+                            ),
+                        );
+                    }
+                    // The tricky thing here is a context _could_ be associated
+                    // with an entity, but we don't quite have means to express
+                    // that relationship yet. Maybe
+                    // `ScriptContextProvider.iter()` ought to provide that
+                    // association using a struct like this:
+                    //
+                    // ContextKeys {
+                    //    script: Option<Handle<ScriptAsset>>,
+                    //    entity: Option<Entity>,
+                    //    domain: Option<Domain>,
+                    // }
+                    collect_errors(call_result, None, P::LANGUAGE, &mut errors);
+                }
+                continue;
             }
         }
 
         let call_result = handler_ctxt.call_dynamic_label(
             &callback_label,
-            script_id,
-            entity,
-            domain,
+            &script_handle,
+            entity.clone(),
+            &domain,
+            context,
             event.args.clone(),
             guard.clone(),
         );
@@ -249,195 +300,55 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                 guard.clone(),
                 ScriptCallbackResponseEvent::new(
                     callback_label.clone(),
-                    script_id,
+                    script_handle.id(),
                     call_result.clone(),
                 ),
             );
         }
-
-        match call_result {
-            Ok(_) => {}
-            Err(e) => {
-                match e.downcast_interop_inner() {
-                    Some(InteropErrorInner::MissingScript { script_id }) => {
-                        if let Some(path) = script_id.path() {
-                            trace_once!(
-                                "{}: Script path `{}` on entity `{:?}` is either still loading, doesn't exist, or is for another language, ignoring until the corresponding script is loaded.",
-                                P::LANGUAGE,
-                                path, entity
-                            );
-                        } else {
-                            trace_once!(
-                                "{}: Script id `{}` on entity `{:?}` is either still loading, doesn't exist, or is for another language, ignoring until the corresponding script is loaded.",
-                                P::LANGUAGE,
-                                script_id.id(), entity
-                            );
-                        }
-                        continue;
-                    }
-                    Some(InteropErrorInner::MissingContext { .. }) => {
-                        // if we don't have a context for the script, it's either:
-                        // 1. a script for a different language, in which case we ignore it
-                        // 2. something went wrong. This should not happen though and it's best we ignore this
-                        continue;
-                    }
-                    _ => {}
-                }
-                let e = {
-
-                    if let Some(path) = script_id.path() {
-                        e.with_script(path)
-                    } else {
-                        e
-                    }
-                    .with_context(format!("Event handling for: Language: {}", P::LANGUAGE))
-                };
-                push_err_and_continue!(errors, Err(e));
-            }
-        }
+        collect_errors(call_result, entity, P::LANGUAGE, &mut errors);
     }
-    // let (guard, handler_ctxt) = handler_ctxt.get_mut();
-
-    // // let events =
-
-    // // query entities + chain static scripts
-    // let entity_and_static_scripts = guard.with_global_access(|world| {
-    //     entity_query_state
-    //         .iter(world)
-    //         .map(|(e, s, d)| (Some(e), s.0.clone(), d.map(|x| x.0.clone())))
-    //         .chain(
-    //             handler_ctxt
-    //                 .static_scripts
-    //                 .scripts
-    //                 .iter()
-    //                 .map(|s| (None, vec![s.clone()], None)),
-    //         )
-    //         .collect::<Vec<_>>()
-    // });
-
-    // let entity_and_static_scripts = match entity_and_static_scripts {
-    //     Ok(entity_and_static_scripts) => entity_and_static_scripts,
-    //     Err(e) => {
-    //         bevy::log::error_once!(
-    //             "{}: Failed to query entities with scripts: {}",
-    //             P::LANGUAGE,
-    //             e.display_with_world(guard.clone())
-    //         );
-    //         return;
-    //     }
-    // };
-
-    // for event in events.into_iter().filter(|e| e.label == callback_label) {
-    //     for (entity, entity_scripts, domain) in entity_and_static_scripts.iter() {
-    //         for script_id in entity_scripts.iter() {
-    //             match &event.recipients {
-    //                 Recipients::Script(target_script_id)
-    //                     if *target_script_id != script_id.id() =>
-    //                 {
-    //                     continue
-    //                 }
-    //                 Recipients::Entity(target_entity) if entity.map(|e| *target_entity != e).unwrap_or(false) => {
-    //                     // match entity_query_state.get(target_entity) {
-    //                     //     Ok((_, script_component, _)) => {
-    //                     //         script_components.0.contains(
-
-    //                     //     }
-    //                     //     Err(e) => {
-    //                     //         continue
-    //                     //     }
-    //                     // }
-    //                     continue
-    //                 }
-    //                 Recipients::Language(target_language)
-    //                     if *target_language != P::LANGUAGE =>
-    //                 {
-    //                     continue
-    //                 }
-    //                 Recipients::Domain(target_domain)
-    //                     if domain.as_ref().map(|x| *x != *target_domain).unwrap_or(false) =>
-    //                 {
-    //                     continue
-    //                 }
-    //                 Recipients::All => (),
-    //                 _ => ()
-
-    //             }
-    //             let context_hash = handler_ctxt.script_context.hash(*entity,
-    //                                                                 &script_id.id(),
-    //                                                                 domain);
-    //             if let Some(hash) = context_hash {
-    //                 if !called_contexts.insert(hash) {
-    //                     // Only call a context once, not once per script.
-    //                     continue;
-    //                 }
-    //             }
-
-    //             let call_result = handler_ctxt.call_dynamic_label(
-    //                 &callback_label,
-    //                 script_id,
-    //                 *entity,
-    //                 domain,
-    //                 event.args.clone(),
-    //                 guard.clone(),
-    //             );
-
-    //             if event.trigger_response {
-    //                 send_callback_response(
-    //                     guard.clone(),
-    //                     ScriptCallbackResponseEvent::new(
-    //                         callback_label.clone(),
-    //                         script_id.id(),
-    //                         call_result.clone(),
-    //                     ),
-    //                 );
-    //             }
-
-    //             match call_result {
-    //                 Ok(_) => {}
-    //                 Err(e) => {
-    //                     match e.downcast_interop_inner() {
-    //                         Some(InteropErrorInner::MissingScript { script_id }) => {
-    //                             if let Some(path) = script_id.path() {
-    //                                 trace_once!(
-    //                                     "{}: Script path `{}` on entity `{:?}` is either still loading, doesn't exist, or is for another language, ignoring until the corresponding script is loaded.",
-    //                                     P::LANGUAGE,
-    //                                     path, entity
-    //                                 );
-    //                             } else {
-    //                                 trace_once!(
-    //                                     "{}: Script id `{}` on entity `{:?}` is either still loading, doesn't exist, or is for another language, ignoring until the corresponding script is loaded.",
-    //                                     P::LANGUAGE,
-    //                                     script_id.id(), entity
-    //                                 );
-    //                             }
-    //                             continue;
-    //                         }
-    //                         Some(InteropErrorInner::MissingContext { .. }) => {
-    //                             // if we don't have a context for the script, it's either:
-    //                             // 1. a script for a different language, in which case we ignore it
-    //                             // 2. something went wrong. This should not happen though and it's best we ignore this
-    //                             continue;
-    //                         }
-    //                         _ => {}
-    //                     }
-    //                     let e = {
-
-    //                         if let Some(path) = script_id.path() {
-    //                             e.with_script(path)
-    //                         } else {
-    //                             e
-    //                         }
-    //                         .with_context(format!("Event handling for: Language: {}", P::LANGUAGE))
-    //                     };
-    //                     push_err_and_continue!(errors, Err(e));
-    //                 }
-    //             };
-    //         }
-    //     }
-    // }
-
     handle_script_errors(guard, errors.into_iter());
 }
+
+fn collect_errors(
+    call_result: Result<ScriptValue, ScriptError>,
+    entity: Option<Entity>,
+    language: Language,
+    errors: &mut Vec<ScriptError>) {
+    match call_result {
+        Ok(_) => {}
+        Err(e) => {
+            match e.downcast_interop_inner() {
+                Some(InteropErrorInner::MissingScript { script_id }) => {
+                    trace_once!(
+                        "{}: Script `{}` on entity `{:?}` is either still loading, doesn't exist, or is for another language; ignoring until the corresponding script is loaded.",
+                        language,
+                        script_id.display(), entity
+                    );
+                    return;
+                }
+                Some(InteropErrorInner::MissingContext { .. }) => {
+                    // If we don't have a context for the script, it's either:
+                    // 1. A script for a different language, in which case we ignore it.
+                    // 2. Something went wrong. This should not happen though and it's best we ignore this.
+                    return;
+                }
+                _ => {}
+            }
+            // let e = {
+            //     // if let Some(path) =
+            //     // script_id.path().map(|path| e.with_script(path)).unwrap_or_else(|| e)//  {
+            //     //     e.with_script(path)
+            //     // } else {
+            //     //     e
+            //     // }
+            // };
+            // push_err_and_continue!(errors, Err(e));
+            errors.push(e.with_context(format!("Event handling for Language: {}", language)));
+        }
+    }
+}
+
 
 /// Sends a callback response event to the world
 pub fn send_callback_response(world: WorldGuard, response: ScriptCallbackResponseEvent) {
@@ -480,21 +391,19 @@ mod test {
 
     use bevy::{
         app::{App, Update},
-        asset::{Assets, AssetPlugin, AssetApp},
+        asset::{AssetApp, AssetPlugin, Assets},
         diagnostic::DiagnosticsPlugin,
         ecs::world::FromWorld,
     };
     use test_utils::make_test_plugin;
 
     use crate::{
-        ManageStaticScripts,
-        ScriptContext,
         bindings::script_value::ScriptValue,
         context::{ContextBuilder, ContextLoadingSettings},
         event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent},
         runtime::RuntimeContainer,
         script::{ScriptComponent, StaticScripts},
-        BMSScriptingInfrastructurePlugin,
+        BMSScriptingInfrastructurePlugin, ManageStaticScripts, ScriptContext,
     };
 
     use super::*;
@@ -529,9 +438,7 @@ mod test {
         }
     }
 
-    fn setup_app<L: IntoCallbackLabel + 'static>(
-        runtime: TestRuntime,
-    ) -> App {
+    fn setup_app<L: IntoCallbackLabel + 'static>(runtime: TestRuntime) -> App {
         let mut app = App::new();
         app.add_plugins(bevy::asset::AssetPlugin::default());
         app.init_asset::<ScriptAsset>();
@@ -566,7 +473,9 @@ mod test {
     }
 
     fn add_script(app: &mut App, content: impl Into<String>) -> Handle<ScriptAsset> {
-        app.world_mut().resource_mut::<Assets<ScriptAsset>>().add(ScriptAsset::from(content.into()))
+        app.world_mut()
+            .resource_mut::<Assets<ScriptAsset>>()
+            .add(ScriptAsset::from(content.into()))
     }
 
     #[test]
@@ -653,8 +562,14 @@ mod test {
         ));
         app.update();
         {
-            let script_context = app.world().get_resource::<ScriptContext<TestPlugin>>().unwrap();
-            let context_arc = script_context.get(None, &test_script_id.id(), &None).cloned().expect("script context");
+            let script_context = app
+                .world()
+                .get_resource::<ScriptContext<TestPlugin>>()
+                .unwrap();
+            let context_arc = script_context
+                .get(None, &test_script_id.id(), &None)
+                .cloned()
+                .expect("script context");
 
             let test_context = context_arc.lock();
 
@@ -722,8 +637,14 @@ mod test {
                 .unwrap();
             let test_runtime = test_runtime.runtime.invocations.lock();
 
-            let script_context = app.world().get_resource::<ScriptContext<TestPlugin>>().unwrap();
-            let context_arc = script_context.get(None, &test_script_id.id(), &None).cloned().expect("script context");
+            let script_context = app
+                .world()
+                .get_resource::<ScriptContext<TestPlugin>>()
+                .unwrap();
+            let context_arc = script_context
+                .get(None, &test_script_id.id(), &None)
+                .cloned()
+                .expect("script context");
             let context_after = context_arc.lock();
             assert_eq!(
                 context_after.invocations,
@@ -772,9 +693,14 @@ mod test {
 
         app.update();
         {
-
-            let script_context = app.world().get_resource::<ScriptContext<TestPlugin>>().unwrap();
-            let context_arc = script_context.get(None, &test_script_id.id(), &None).cloned().expect("script context");
+            let script_context = app
+                .world()
+                .get_resource::<ScriptContext<TestPlugin>>()
+                .unwrap();
+            let context_arc = script_context
+                .get(None, &test_script_id.id(), &None)
+                .cloned()
+                .expect("script context");
             let test_context = context_arc.lock();
 
             assert_eq!(

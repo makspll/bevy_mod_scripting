@@ -15,7 +15,7 @@ use bevy_mod_scripting_core::{
     event::CallbackLabel,
     reflection_extensions::PartialReflectExt,
     runtime::RuntimeSettings,
-    script::ScriptId,
+    script::{ScriptId, DisplayProxy},
     IntoScriptPluginParams, ScriptingPlugin,
 };
 use bindings::{
@@ -236,22 +236,11 @@ pub fn lua_handler(
         Ok(handler) => handler,
         // not subscribed to this event type
         Err(_) => {
-            match script_id.path() {
-                Some(path) => {
-                    bevy::log::trace!(
-                        "Script path {} is not subscribed to callback {}",
-                        path,
-                        callback_label.as_ref()
-                    );
-                }
-                None => {
-                    bevy::log::trace!(
-                        "Script id {} is not subscribed to callback {}",
-                        script_id.id(),
-                        callback_label.as_ref()
-                    );
-                }
-            }
+            bevy::log::trace!(
+                "Script {} is not subscribed to callback {}",
+                script_id.display(),
+                callback_label.as_ref()
+            );
             return Ok(ScriptValue::Unit);
         }
     };

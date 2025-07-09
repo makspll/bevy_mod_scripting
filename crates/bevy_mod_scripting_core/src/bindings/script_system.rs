@@ -38,7 +38,8 @@ use bevy::{
     utils::hashbrown::HashSet,
 };
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
-use std::{any::TypeId, borrow::Cow, hash::Hash, marker::PhantomData, ops::Deref};
+use std::{any::TypeId, borrow::Cow, hash::Hash, marker::PhantomData, ops::Deref, sync::Arc};
+use parking_lot::Mutex;
 #[derive(Clone, Hash, PartialEq, Eq)]
 /// a system set for script systems.
 pub struct ScriptSystemSet(Cow<'static, str>);
@@ -264,11 +265,12 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
         script_id: &Handle<ScriptAsset>,
         entity: Option<Entity>,
         domain: &Option<Domain>,
+        context: Option<&Arc<Mutex<P::C>>>,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
         // find script
-        let Some(context) = self.script_context.get(entity, &script_id.id(), domain) else {
+        let Some(context) = context.or_else(|| self.script_context.get(entity, &script_id.id(), domain)) else {
             return Err(InteropError::missing_context(script_id.clone()).into());
         };
 
@@ -495,8 +497,9 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             }
         }
 
-        // now that we have everything ready, we need to run the callback on the targetted scripts
-        // let's start with just calling the one targetted script
+        // Now that we have everything ready, we need to run the callback on the
+        // targetted scripts. Let's start with just calling the one targetted
+        // script.
 
         let handler_ctxt = DynamicHandlerContext::<P>::get_param(&world);
 
@@ -506,11 +509,13 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             &script_id,
             None,
             &self.domain,
+            None,// context
             payload,
             guard.clone(),
         );
 
-        // TODO: emit error events via commands, maybe accumulate in state instead and use apply
+        // TODO: Emit error events via commands, maybe accumulate in state
+        // instead and use apply.
         match result {
             Ok(_) => {}
             Err(err) => {

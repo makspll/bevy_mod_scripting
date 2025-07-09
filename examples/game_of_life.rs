@@ -57,8 +57,7 @@ fn run_script_cmd(
     mut log: ConsoleCommand<GameOfLifeCommand>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut script_handle: Local<Option<Handle<ScriptAsset>>>,
-    script_comps: Query<Entity, With<ScriptComponent>>,
+    script_comps: Query<(Entity, &ScriptComponent)>,
     mut static_lua_scripts: Local<Vec<ScriptId>>,
     mut static_rhai_scripts: Local<Vec<ScriptId>>,
 ) {
@@ -91,7 +90,13 @@ fn run_script_cmd(
                 bevy::log::info!("Stopping game of life by dropping the handles to all scripts");
 
 
-                for id in &script_comps {
+                for (id, script_component) in &script_comps {
+                    for script_id in &script_component.0 {
+                        commands.queue(DeleteScript::<LuaScriptingPlugin>::new(
+                            script_id.id(),
+                            None,
+                        ));
+                    }
                     commands.entity(id).despawn();
                 }
 

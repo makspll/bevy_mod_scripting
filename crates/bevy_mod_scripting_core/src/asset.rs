@@ -1,12 +1,13 @@
 //! Systems and resources for handling script assets and events
 
 use crate::{
+    ScriptContext,
     StaticScripts,
     ScriptComponent,
     LanguageExtensions,
     commands::CreateOrUpdateScript,
     error::ScriptError,
-    script::{DisplayProxy, Domain, ScriptDomain},
+    script::{DisplayProxy, Domain, ScriptDomain, ScriptContextProvider},
     IntoScriptPluginParams, ScriptingSystemSet,
 };
 use bevy::{
@@ -176,6 +177,7 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
     mut events: EventReader<AssetEvent<ScriptAsset>>,
     script_assets: Res<Assets<ScriptAsset>>,
     mut static_scripts: ResMut<StaticScripts>,
+    mut script_contexts: ResMut<ScriptContext<P>>,
     asset_server: Res<AssetServer>,
 ) {
     for event in events.read() {
@@ -205,9 +207,18 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
                 }
             }
             AssetEvent::Removed{ id } => {
+                info!("{}: Asset removed {:?}", P::LANGUAGE, id);
                 if static_scripts.remove(*id) {
                     info!("{}: Removing static script {:?}", P::LANGUAGE, id);
                 }
+                // We're removing a context because its handle was removed. This
+                // makes sense specifically for ScriptIdContext. However, it
+                // doesn't quite work for the other context providers, and it
+                // requires we keep a script loaded in memory when technically
+                // it needn't be.
+                // if script_contexts.remove(None, id, &None) {
+                //     info!("{}: Removed script context {:?}", P::LANGUAGE, id);
+                // }
             }
             AssetEvent::Unused { id: _ } => {
             }

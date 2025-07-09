@@ -2,7 +2,11 @@
 //!
 //! These are designed to be used to pipe inputs into other systems which require them, while handling any configuration erorrs nicely.
 #![allow(deprecated)]
-use std::ops::{Deref, DerefMut};
+use std::{
+    ops::{Deref, DerefMut},
+    sync::Arc,
+};
+use parking_lot::Mutex;
 
 use bevy::{
     asset::{Handle, Assets},
@@ -222,11 +226,12 @@ impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
         script_id: &Handle<ScriptAsset>,
         entity: Option<Entity>,
         domain: &Option<Domain>,
+        context: Option<&Arc<Mutex<P::C>>>,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
         // find script
-        let Some(context) = self.script_context.get(entity, &script_id.id(), domain) else {
+        let Some(context) = context.or_else(|| self.script_context.get(entity, &script_id.id(), domain)) else {
             return Err(InteropError::missing_context(script_id.clone()).into());
         };
 
@@ -264,7 +269,7 @@ impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
-        self.call_dynamic_label(&C::into_callback_label(), script_id, entity, domain, payload, guard)
+        self.call_dynamic_label(&C::into_callback_label(), script_id, entity, domain, None, payload, guard)
     }
 }
 
