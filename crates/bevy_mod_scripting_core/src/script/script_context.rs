@@ -18,6 +18,60 @@ pub struct ContextKey {
     domain: Option<Domain>,
 }
 
+impl ContextKey {
+    pub fn is_empty(&self) -> bool {
+        self.entity.is_none() && self.script_id.is_none() && self.domain.is_none()
+    }
+
+    pub fn or(self, other: ContextKey) -> Self {
+        Self {
+            entity: self.entity.or(other.entity),
+            script_id: self.script_id.or(other.script_id),
+            domain: self.domain.or(other.domain),
+        }
+    }
+
+    pub fn is_subset(&self, other: &ContextKey) -> bool {
+        let mut mask = 0;
+        if self.entity == other.entity {
+            mask |= 1;
+        }
+
+        if self.entity == other.entity {
+            mask |= 1;
+        }
+
+    }
+}
+
+impl From<Entity> for ContextKey {
+    fn from(entity: Entity) -> Self {
+        Self {
+            entity,
+            ..default()
+        }
+    }
+}
+
+impl From<ScriptId> for ContextKey {
+    fn from(script_id: ScriptId) -> Self {
+        Self {
+            script_id,
+            ..default()
+        }
+    }
+}
+
+impl From<Domain> for ContextKey {
+    fn from(domain: Domain) -> Self {
+        Self {
+            domain,
+            ..default()
+        }
+    }
+}
+
+
 /// A generic script context provider
 pub trait ScriptContextProvider<P: IntoScriptPluginParams> {
     /// Get the context.
