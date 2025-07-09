@@ -31,6 +31,10 @@ pub trait ScriptContextProvider<P: IntoScriptPluginParams> {
 
     /// Iterate through contexts.
     fn iter(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>>;
+    /// Remove a context.
+    ///
+    /// Returns true if removed.
+    fn remove(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool;
 }
 
 #[derive(Resource)]
@@ -98,6 +102,8 @@ impl<P: IntoScriptPluginParams> Default for ScriptContext<P> {
 
 /// Compose two ScriptContextProviders in a short-circuit OR relationship. Use T
 /// first, failing that use U.
+///
+/// The iter() method does not short-circuit but returns both results
 pub struct Or<T, U>(pub T, pub U);
 
 impl<T: ScriptContextProvider<P>, U: ScriptContextProvider<P>, P: IntoScriptPluginParams> ScriptContextProvider<P> for Or<T, U> {
@@ -121,9 +127,13 @@ impl<T: ScriptContextProvider<P>, U: ScriptContextProvider<P>, P: IntoScriptPlug
         self.0.hash(id, script_id, domain)
               .or_else(|| self.1.hash(id, script_id, domain))
     }
+    #[inline]
     fn iter(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
         self.0.iter().chain(self.1.iter())
-
+    }
+    #[inline]
+    fn remove(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool {
+        self.0.remove(id, script_id, domain) || self.1.remove(id, script_id, domain)
     }
 }
 
@@ -155,18 +165,27 @@ impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for ScriptContext<P> {
         fn contains(&Self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool,
         fn hash(&Self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64>,
         fn insert(&mut Self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>, context: P::C) -> Result<(), P::C>,
+        fn remove(&mut Self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool,
     }
 
     fn iter(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
+        panic!("Must used iter_box() with ScriptContext<P>.");
+        std::iter::empty()
+    }
+}
+
+
+impl<P: IntoScriptPluginParams> ScriptContext<P> {
+    /// Return an iterator for contexts
+    pub fn iter_box(&self) -> Box<dyn Iterator<Item = &Arc<Mutex<P::C>>> + '_> {
         match self {
             ScriptContext::Shared(a) => Box::new(a.iter()),
-            _ => todo!(),
-            // ScriptContext::ScriptId(a) => a.$fn_name($( $arg ),*),
-            // ScriptContext::Entity(a) => a.$fn_name($( $arg ),*),
-            // ScriptContext::Domain(a) => a.$fn_name($( $arg ),*),
-            // ScriptContext::DomainShared(a) => a.$fn_name($( $arg ),*),
-            // ScriptContext::DomainScriptId(a) => a.$fn_name($( $arg ),*),
-            // ScriptContext::DomainEntity(a) => a.$fn_name($( $arg ),*),
+            ScriptContext::ScriptId(a) => Box::new(a.iter()),
+            ScriptContext::Entity(a) => Box::new(a.iter()),
+            ScriptContext::Domain(a) => Box::new(a.iter()),
+            ScriptContext::DomainShared(a) => Box::new(a.iter()),
+            ScriptContext::DomainScriptId(a) => Box::new(a.iter()),
+            ScriptContext::DomainEntity(a) => Box::new(a.iter()),
         }
     }
 }
