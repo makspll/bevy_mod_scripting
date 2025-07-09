@@ -12,11 +12,13 @@ mod shared_context;
 mod entity_context;
 mod domain_context;
 mod scriptid_context;
+mod entity_scriptid_context;
 pub use script_context::*;
 pub use shared_context::*;
 pub use entity_context::*;
 pub use domain_context::*;
 pub use scriptid_context::*;
+pub use entity_scriptid_context::*;
 
 /// A unique identifier for a script, by default corresponds to the path of the asset excluding the asset source.
 ///

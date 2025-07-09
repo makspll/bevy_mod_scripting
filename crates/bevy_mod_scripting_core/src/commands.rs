@@ -24,17 +24,21 @@ use std::marker::PhantomData;
 pub struct DeleteScript<P: IntoScriptPluginParams> {
     /// The ID of the script to delete
     pub id: AssetId<ScriptAsset>,
-    domain: Option<Domain>,
+    /// entity associated with script
+    pub entity: Option<Entity>,
+    /// domain associated with script
+    pub domain: Option<Domain>,
     /// hack to make this Send, C does not need to be Send since it is not stored in the command
     pub _ph: PhantomData<fn(P::C, P::R)>,
 }
 
 impl<P: IntoScriptPluginParams> DeleteScript<P> {
     /// Creates a new DeleteScript command with the given ID
-    pub fn new(id: AssetId<ScriptAsset>, domain: Option<Domain>) -> Self {
+    pub fn new(entity: Option<Entity>, id: AssetId<ScriptAsset>, domain: Option<Domain>) -> Self {
         Self {
             id,
             domain,
+            entity,
             _ph: PhantomData,
         }
     }
@@ -45,8 +49,8 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
         // first apply unload callback
         RunScriptCallback::<P>::new(
             Handle::Weak(self.id),
-            None,
-            self.domain,
+            self.entity.clone(),
+            self.domain.clone(),
             OnScriptUnloaded::into_callback_label(),
             vec![],
             false,
@@ -63,7 +67,8 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
         }
         {
             let mut script_contexts = world.get_resource_or_init::<ScriptContext<P>>();
-            if script_contexts.remove(None, &self.id, &None) {
+
+            if script_contexts.remove(self.entity, &self.id, &self.domain) {
                 bevy::log::info!("{}: Deleted context for script {:?}", P::LANGUAGE, self.id);
                 deleted = true;
             }
@@ -540,10 +545,8 @@ mod test {
     fn test_commands_with_default_assigner() {
         let mut app = setup_app();
 
-        // let content = "content".as_bytes().to_vec().into_boxed_slice();
         let script = add_script(&mut app, "content");
         let command = CreateOrUpdateScript::<DummyPlugin>::new(script.clone(), None, None);
-        // command.apply(app.world_mut());
         Command::apply(command, app.world_mut());
 
         // check script
@@ -556,6 +559,7 @@ mod test {
 
         // update the script
         let content = "new content".as_bytes().to_vec().into_boxed_slice();
+        // let command = CreateOrUpdateScript::<DummyPlugin>::new(script.clone(), Some(content), None);
         let command = CreateOrUpdateScript::<DummyPlugin>::new(script.clone(), Some(content), None);
         Command::apply(command, app.world_mut());
 
@@ -568,7 +572,6 @@ mod test {
         );
 
         // create second script
-        // let content = "content2".as_bytes().to_vec().into_boxed_slice();
         let script2 = add_script(&mut app, "content2");
         let command = CreateOrUpdateScript::<DummyPlugin>::new(script2.clone(), None, None);
 
@@ -597,7 +600,7 @@ mod test {
         assert_context_and_script(
             app.world_mut(),
             &script.id(),
-            "new content initialized pre-handling-initialized callback-ran-on_script_loaded callback-ran-on_script_loaded",
+            "BLAH new content initialized pre-handling-initialized callback-ran-on_script_loaded callback-ran-on_script_loaded",
             "Script callback failed",
         );
         // assert events sent
@@ -613,9 +616,9 @@ mod test {
         );
 
         // delete both scripts
-        let command = DeleteScript::<DummyPlugin>::new(script.id(), None);
+        let command = DeleteScript::<DummyPlugin>::new(None, script.id(), None);
         command.apply(app.world_mut());
-        let command = DeleteScript::<DummyPlugin>::new(script2.id(), None);
+        let command = DeleteScript::<DummyPlugin>::new(None, script2.id(), None);
         command.apply(app.world_mut());
 
         // check that the scripts are gone
@@ -713,7 +716,7 @@ mod test {
         assert_eq!(scripts.scripts.len(), 2);
 
         // delete first script
-        let command = DeleteScript::<DummyPlugin>::new(script.id(), None);
+        let command = DeleteScript::<DummyPlugin>::new(None,script.id(), None);
 
         Command::apply(command, app.world_mut());
 
@@ -727,7 +730,7 @@ mod test {
 
         // delete second script
 
-        let command = DeleteScript::<DummyPlugin>::new(script2.id(), None);
+        let command = DeleteScript::<DummyPlugin>::new(None,script2.id(), None);
 
         Command::apply(command, app.world_mut());
 

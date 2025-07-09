@@ -10,6 +10,14 @@ use std::{borrow::Cow, sync::Arc};
 /// I believe this is what the original ScriptId was intended to be.
 pub type Domain = Cow<'static, str>;
 
+/// The key for a context.
+#[derive(Debug, Hash, Clone, Default, PartialEq, Eq)]
+pub struct ContextKey {
+    entity: Option<Entity>,
+    script_id: Option<ScriptId>,
+    domain: Option<Domain>,
+}
+
 /// A generic script context provider
 pub trait ScriptContextProvider<P: IntoScriptPluginParams> {
     /// Get the context.
@@ -63,6 +71,17 @@ pub enum ScriptContext<P: IntoScriptPluginParams> {
     ScriptId(Or<ScriptIdContext<P>, SharedContext<P>>),
     /// A script context per script with domains
     DomainScriptId(Or<DomainContext<P>, Or<ScriptIdContext<P>, SharedContext<P>>>),
+
+    /// One script context per entity per script ID
+    ///
+    /// Stores context by entity with a shared context as a last resort when no
+    /// entity is provided.
+    ///
+    /// TODO: Should check for entity despawns and remove from this
+    /// EntityContext.
+    EntityScriptId(Or<EntityScriptIdContext<P>, SharedContext<P>>),
+    /// One script context per entity with domains
+    DomainEntityScriptId(Or<DomainContext<P>, Or<EntityScriptIdContext<P>, SharedContext<P>>>),
 }
 
 impl<P: IntoScriptPluginParams> ScriptContext<P> {
@@ -76,7 +95,8 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
             ScriptContext::Shared(a) => ScriptContext::DomainShared(Or(DomainContext::default(), a)),
             ScriptContext::Entity(a) => ScriptContext::DomainEntity(Or(DomainContext::default(), a)),
             ScriptContext::ScriptId(a) => ScriptContext::DomainScriptId(Or(DomainContext::default(), a)),
-            _ => panic!("Expected `Shared`, `Entity`, or `ScriptId` for with_domains"),
+            ScriptContext::EntityScriptId(a) => ScriptContext::DomainEntityScriptId(Or(DomainContext::default(), a)),
+            _ => panic!("Expected `Shared`, `Entity`, `ScriptId`, or `EntityScriptId` for with_domains"),
         }
     }
     /// Domain contexts or a shared context
@@ -91,12 +111,16 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
     pub fn per_script() -> Self {
         Self::ScriptId(Or(ScriptIdContext::default(), SharedContext::default()))
     }
+    /// Use one script context per entity and script
+    pub fn per_entity_and_script() -> Self {
+        Self::EntityScriptId(Or(EntityScriptIdContext::default(), SharedContext::default()))
+    }
 }
 
 /// Use one script context per entity by default; see [ScriptContext::per_script].
 impl<P: IntoScriptPluginParams> Default for ScriptContext<P> {
     fn default() -> Self {
-        Self::per_script()
+        Self::per_entity_and_script()
     }
 }
 
@@ -149,10 +173,12 @@ macro_rules! delegate_to_variants {
                     ScriptContext::Shared(a) => a.$fn_name($( $arg ),*),
                     ScriptContext::ScriptId(a) => a.$fn_name($( $arg ),*),
                     ScriptContext::Entity(a) => a.$fn_name($( $arg ),*),
+                    ScriptContext::EntityScriptId(a) => a.$fn_name($( $arg ),*),
                     ScriptContext::Domain(a) => a.$fn_name($( $arg ),*),
                     ScriptContext::DomainShared(a) => a.$fn_name($( $arg ),*),
                     ScriptContext::DomainScriptId(a) => a.$fn_name($( $arg ),*),
                     ScriptContext::DomainEntity(a) => a.$fn_name($( $arg ),*),
+                    ScriptContext::DomainEntityScriptId(a) => a.$fn_name($( $arg ),*),
                 }
             }
         )*
@@ -182,10 +208,12 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
             ScriptContext::Shared(a) => Box::new(a.iter()),
             ScriptContext::ScriptId(a) => Box::new(a.iter()),
             ScriptContext::Entity(a) => Box::new(a.iter()),
+            ScriptContext::EntityScriptId(a) => Box::new(a.iter()),
             ScriptContext::Domain(a) => Box::new(a.iter()),
             ScriptContext::DomainShared(a) => Box::new(a.iter()),
             ScriptContext::DomainScriptId(a) => Box::new(a.iter()),
             ScriptContext::DomainEntity(a) => Box::new(a.iter()),
+            ScriptContext::DomainEntityScriptId(a) => Box::new(a.iter()),
         }
     }
 }

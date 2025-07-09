@@ -160,6 +160,8 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
         let context;
         match &event.recipients {
             Recipients::Script(target_script_id) => {
+                // This is not a one and done.
+                // TODO: This could match many things.
                 script_handle = Handle::Weak(*target_script_id);
                 domain = None;
                 entity = None;
@@ -398,6 +400,7 @@ mod test {
     use test_utils::make_test_plugin;
 
     use crate::{
+        ScriptQueue,
         bindings::script_value::ScriptValue,
         context::{ContextBuilder, ContextLoadingSettings},
         event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent},
@@ -518,8 +521,6 @@ mod test {
         let mut app = setup_app::<OnTestCallback>(runtime);
         let test_script_id = add_script(&mut app, "");
         app.add_static_script(test_script_id.clone());
-        // app.world_mut()
-        //     .spawn(ScriptComponent(vec![test_script_id.clone()]));
         app.update();
 
         app.world_mut().send_event(
@@ -567,7 +568,7 @@ mod test {
                 .get_resource::<ScriptContext<TestPlugin>>()
                 .unwrap();
             let context_arc = script_context
-                .get(None, &test_script_id.id(), &None)
+                .get(Some(test_entity_id), &test_script_id.id(), &None)
                 .cloned()
                 .expect("script context");
 
@@ -601,7 +602,7 @@ mod test {
             invocations: vec![].into(),
         };
         let mut app = setup_app::<OnTestCallback>(runtime);
-        app.insert_resource(ScriptContext::<TestPlugin>::per_entity());
+        // app.insert_resource(ScriptContext::<TestPlugin>::per_entity_and_scriptid());
         let test_script_id = add_script(&mut app, "");
         let test_script2_id = add_script(&mut app, "wrong");
         // app.add_static_script(test_script_id.clone());
@@ -642,7 +643,7 @@ mod test {
                 .get_resource::<ScriptContext<TestPlugin>>()
                 .unwrap();
             let context_arc = script_context
-                .get(None, &test_script_id.id(), &None)
+                .get(Some(test_entity_id), &test_script_id.id(), &None)
                 .cloned()
                 .expect("script context");
             let context_after = context_arc.lock();

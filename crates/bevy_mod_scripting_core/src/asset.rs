@@ -177,7 +177,7 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
     mut events: EventReader<AssetEvent<ScriptAsset>>,
     script_assets: Res<Assets<ScriptAsset>>,
     mut static_scripts: ResMut<StaticScripts>,
-    mut script_contexts: ResMut<ScriptContext<P>>,
+    // mut script_contexts: ResMut<ScriptContext<P>>,
     asset_server: Res<AssetServer>,
 ) {
     for event in events.read() {

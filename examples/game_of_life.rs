@@ -93,6 +93,7 @@ fn run_script_cmd(
                 for (id, script_component) in &script_comps {
                     for script_id in &script_component.0 {
                         commands.queue(DeleteScript::<LuaScriptingPlugin>::new(
+                            Some(id),
                             script_id.id(),
                             None,
                         ));
@@ -102,6 +103,7 @@ fn run_script_cmd(
 
                 for script_id in static_lua_scripts.drain(..) {
                     commands.queue(DeleteScript::<LuaScriptingPlugin>::new(
+                        None,
                         script_id,
                         None,
                     ));
@@ -110,6 +112,7 @@ fn run_script_cmd(
                 #[cfg(feature = "rhai")]
                 for script_id in static_rhai_scripts.drain(..) {
                     commands.queue(DeleteScript::<RhaiScriptingPlugin>::new(
+                        None,
                         script_id,
                         None,
                     ));
