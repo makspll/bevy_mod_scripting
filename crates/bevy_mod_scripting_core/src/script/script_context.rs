@@ -1,6 +1,6 @@
 use super::*;
 use crate::IntoScriptPluginParams;
-use bevy::prelude::Entity;
+use bevy::prelude::{default, Entity};
 use bevy::{ecs::system::Resource};
 use parking_lot::Mutex;
 use std::{borrow::Cow, sync::Arc};
@@ -19,10 +19,12 @@ pub struct ContextKey {
 }
 
 impl ContextKey {
+    /// Is the key empty?
     pub fn is_empty(&self) -> bool {
         self.entity.is_none() && self.script_id.is_none() && self.domain.is_none()
     }
 
+    /// or with other context
     pub fn or(self, other: ContextKey) -> Self {
         Self {
             entity: self.entity.or(other.entity),
@@ -31,23 +33,25 @@ impl ContextKey {
         }
     }
 
+    /// Returns true if self is a subset of other.
+    ///
+    /// Subset meaning if `self.entity` is `Some`, then other must be `Some` and
+    /// equal.
+    ///
+    /// If `self.entity` is `None`, then other.entity can be anything.
+    ///
+    /// An empty [ContextKey] is a subset of any context key.
     pub fn is_subset(&self, other: &ContextKey) -> bool {
-        let mut mask = 0;
-        if self.entity == other.entity {
-            mask |= 1;
-        }
-
-        if self.entity == other.entity {
-            mask |= 1;
-        }
-
+        self.entity.map(|a| other.entity.map(|b| a == b).unwrap_or(false)).unwrap_or(true)
+            || self.script_id.map(|a| other.script_id.map(|b| a == b).unwrap_or(false)).unwrap_or(true)
+            || self.domain.as_ref().map(|a| other.domain.as_ref().map(|b| a == b).unwrap_or(false)).unwrap_or(true)
     }
 }
 
 impl From<Entity> for ContextKey {
     fn from(entity: Entity) -> Self {
         Self {
-            entity,
+            entity: Some(entity),
             ..default()
         }
     }
@@ -56,7 +60,7 @@ impl From<Entity> for ContextKey {
 impl From<ScriptId> for ContextKey {
     fn from(script_id: ScriptId) -> Self {
         Self {
-            script_id,
+            script_id: Some(script_id),
             ..default()
         }
     }
@@ -65,7 +69,7 @@ impl From<ScriptId> for ContextKey {
 impl From<Domain> for ContextKey {
     fn from(domain: Domain) -> Self {
         Self {
-            domain,
+            domain: Some(domain),
             ..default()
         }
     }
@@ -92,7 +96,7 @@ pub trait ScriptContextProvider<P: IntoScriptPluginParams> {
     fn hash(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64>;
 
     /// Iterate through contexts.
-    fn iter(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>>;
+    fn values(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>>;
     /// Remove a context.
     ///
     /// Returns true if removed.
@@ -206,8 +210,8 @@ impl<T: ScriptContextProvider<P>, U: ScriptContextProvider<P>, P: IntoScriptPlug
               .or_else(|| self.1.hash(id, script_id, domain))
     }
     #[inline]
-    fn iter(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
-        self.0.iter().chain(self.1.iter())
+    fn values(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
+        self.0.values().chain(self.1.values())
     }
     #[inline]
     fn remove(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool {
@@ -248,26 +252,25 @@ impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for ScriptContext<P> {
         fn remove(&mut Self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool,
     }
 
-    fn iter(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
+    fn values(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
         panic!("Must used iter_box() with ScriptContext<P>.");
         std::iter::empty()
     }
 }
 
-
 impl<P: IntoScriptPluginParams> ScriptContext<P> {
     /// Return an iterator for contexts
-    pub fn iter_box(&self) -> Box<dyn Iterator<Item = &Arc<Mutex<P::C>>> + '_> {
+    pub fn values_box(&self) -> Box<dyn Iterator<Item = &Arc<Mutex<P::C>>> + '_> {
         match self {
-            ScriptContext::Shared(a) => Box::new(a.iter()),
-            ScriptContext::ScriptId(a) => Box::new(a.iter()),
-            ScriptContext::Entity(a) => Box::new(a.iter()),
-            ScriptContext::EntityScriptId(a) => Box::new(a.iter()),
-            ScriptContext::Domain(a) => Box::new(a.iter()),
-            ScriptContext::DomainShared(a) => Box::new(a.iter()),
-            ScriptContext::DomainScriptId(a) => Box::new(a.iter()),
-            ScriptContext::DomainEntity(a) => Box::new(a.iter()),
-            ScriptContext::DomainEntityScriptId(a) => Box::new(a.iter()),
+            ScriptContext::Shared(a) => Box::new(a.values()),
+            ScriptContext::ScriptId(a) => Box::new(a.values()),
+            ScriptContext::Entity(a) => Box::new(a.values()),
+            ScriptContext::EntityScriptId(a) => Box::new(a.values()),
+            ScriptContext::Domain(a) => Box::new(a.values()),
+            ScriptContext::DomainShared(a) => Box::new(a.values()),
+            ScriptContext::DomainScriptId(a) => Box::new(a.values()),
+            ScriptContext::DomainEntity(a) => Box::new(a.values()),
+            ScriptContext::DomainEntityScriptId(a) => Box::new(a.values()),
         }
     }
 }

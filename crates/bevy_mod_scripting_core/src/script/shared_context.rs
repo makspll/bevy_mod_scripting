@@ -19,7 +19,7 @@ impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for SharedContext<P> {
         self.0.is_some()
     }
 
-    fn iter(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
+    fn values(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
         self.0.as_ref().into_iter()
     }
 

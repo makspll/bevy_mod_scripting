@@ -249,7 +249,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                 // All and language are effectively the same modulo the other
                 // languages, which are handled by the other P handlers.
                 script_handle = Handle::default();
-                for context in handler_ctxt.script_context.iter_box() {
+                for context in handler_ctxt.script_context.values_box() {
                     let call_result = handler_ctxt.call_dynamic_label(
                         &callback_label,
                         &script_handle,

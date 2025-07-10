@@ -120,7 +120,7 @@ impl StaticScripts {
     }
 
     /// Returns an iterator over the static scripts
-    pub fn iter(&self) -> impl Iterator<Item = &Handle<ScriptAsset>> {
+    pub fn values(&self) -> impl Iterator<Item = &Handle<ScriptAsset>> {
         self.scripts.iter()
     }
 }

@@ -27,7 +27,7 @@ impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for DomainContext<P> {
     fn contains(&self, _id: Option<Entity>, _script_id: &ScriptId, domain: &Option<Domain>) -> bool {
         domain.as_ref().map(|id| self.0.contains_key(id)).unwrap_or(false)
     }
-    fn iter(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
+    fn values(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
         self.0.values()
     }
     fn remove(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool {
