@@ -42,4 +42,11 @@ impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for EntityScriptIdConte
     fn remove(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool {
         id.map(|id| self.0.remove(&(id, *script_id)).is_some()).unwrap_or(false)
     }
+    fn iter(&self) -> impl Iterator<Item = (ContextKey, &Arc<Mutex<P::C>>)> {
+        self.0.iter().map(|((id, script_id), c)| (ContextKey {
+            entity: Some(*id),
+            script_id: Some(*script_id),
+            domain: None,
+        }, c))
+    }
 }

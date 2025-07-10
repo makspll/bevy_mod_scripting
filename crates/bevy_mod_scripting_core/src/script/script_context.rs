@@ -13,9 +13,12 @@ pub type Domain = Cow<'static, str>;
 /// The key for a context.
 #[derive(Debug, Hash, Clone, Default, PartialEq, Eq)]
 pub struct ContextKey {
-    entity: Option<Entity>,
-    script_id: Option<ScriptId>,
-    domain: Option<Domain>,
+    /// Entity if there is one.
+    pub entity: Option<Entity>,
+    /// Script ID if there is one.
+    pub script_id: Option<ScriptId>,
+    /// Domain if there is one.
+    pub domain: Option<Domain>,
 }
 
 impl ContextKey {
@@ -101,6 +104,10 @@ pub trait ScriptContextProvider<P: IntoScriptPluginParams> {
     ///
     /// Returns true if removed.
     fn remove(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool;
+
+    /// Iterate through keys and contexts.
+    fn iter(&self) -> impl Iterator<Item = (ContextKey, &Arc<Mutex<P::C>>)>;
+    // fn values_if(&self, pred: impl FnMut(&ContextKey) -> bool) -> impl Iterator<Item = &Arc<Mutex<P::C>>>;
 }
 
 #[derive(Resource)]
@@ -175,10 +182,11 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
     }
 }
 
-/// Use one script context per entity by default; see [ScriptContext::per_script].
+/// Use one script context per entity and script with domains by default; see
+/// [ScriptContext::per_entity_and_script].
 impl<P: IntoScriptPluginParams> Default for ScriptContext<P> {
     fn default() -> Self {
-        Self::per_entity_and_script()
+        Self::per_entity_and_script().with_domains()
     }
 }
 
@@ -217,6 +225,10 @@ impl<T: ScriptContextProvider<P>, U: ScriptContextProvider<P>, P: IntoScriptPlug
     fn remove(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool {
         self.0.remove(id, script_id, domain) || self.1.remove(id, script_id, domain)
     }
+    #[inline]
+    fn iter(&self) -> impl Iterator<Item = (ContextKey, &Arc<Mutex<P::C>>)> {
+        self.0.iter().chain(self.1.iter())
+    }
 }
 
 macro_rules! delegate_to_variants {
@@ -253,6 +265,11 @@ impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for ScriptContext<P> {
     }
 
     fn values(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
+        panic!("Must used values_box() with ScriptContext<P>.");
+        std::iter::empty()
+    }
+
+    fn iter(&self) -> impl Iterator<Item = (ContextKey, &Arc<Mutex<P::C>>)> {
         panic!("Must used iter_box() with ScriptContext<P>.");
         std::iter::empty()
     }
@@ -271,6 +288,21 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
             ScriptContext::DomainScriptId(a) => Box::new(a.values()),
             ScriptContext::DomainEntity(a) => Box::new(a.values()),
             ScriptContext::DomainEntityScriptId(a) => Box::new(a.values()),
+        }
+    }
+
+    /// Return an iterator of the keys and contexts.
+    pub fn iter_box(&self) -> Box<dyn Iterator<Item = (ContextKey, &Arc<Mutex<P::C>>)> + '_> {
+        match self {
+            ScriptContext::Shared(a) => Box::new(a.iter()),
+            ScriptContext::ScriptId(a) => Box::new(a.iter()),
+            ScriptContext::Entity(a) => Box::new(a.iter()),
+            ScriptContext::EntityScriptId(a) => Box::new(a.iter()),
+            ScriptContext::Domain(a) => Box::new(a.iter()),
+            ScriptContext::DomainShared(a) => Box::new(a.iter()),
+            ScriptContext::DomainScriptId(a) => Box::new(a.iter()),
+            ScriptContext::DomainEntity(a) => Box::new(a.iter()),
+            ScriptContext::DomainEntityScriptId(a) => Box::new(a.iter()),
         }
     }
 }
