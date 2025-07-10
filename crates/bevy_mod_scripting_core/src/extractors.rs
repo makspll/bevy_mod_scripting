@@ -223,6 +223,7 @@ impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
     pub fn call_dynamic_label(
         &self,
         label: &CallbackLabel,
+        // context_key: &ContextKey
         script_id: &Handle<ScriptAsset>,
         entity: Option<Entity>,
         domain: &Option<Domain>,
@@ -230,31 +231,32 @@ impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
+        todo!();
         // find script
-        let Some(context) = context.or_else(|| self.script_context.get(entity, &script_id.id(), domain)) else {
-            return Err(InteropError::missing_context(script_id.clone()).into());
-        };
+        // let Some(context) = context.or_else(|| self.script_context.get(entity, &script_id.id(), domain)) else {
+        //     return Err(InteropError::missing_context(script_id.clone()).into());
+        // };
 
-        // call the script
-        let handler = self.callback_settings.callback_handler;
-        let pre_handling_initializers = &self
-            .context_loading_settings
-            .context_pre_handling_initializers;
-        let runtime = &self.runtime_container.runtime;
+        // // call the script
+        // let handler = self.callback_settings.callback_handler;
+        // let pre_handling_initializers = &self
+        //     .context_loading_settings
+        //     .context_pre_handling_initializers;
+        // let runtime = &self.runtime_container.runtime;
 
-        let mut context = context.lock();
+        // let mut context = context.lock();
 
-        CallbackSettings::<P>::call(
-            handler,
-            payload,
-            entity,
-            script_id,
-            label,
-            &mut context,
-            pre_handling_initializers,
-            runtime,
-            guard,
-        )
+        // CallbackSettings::<P>::call(
+        //     handler,
+        //     payload,
+        //     entity,
+        //     script_id,
+        //     label,
+        //     &mut context,
+        //     pre_handling_initializers,
+        //     runtime,
+        //     guard,
+        // )
     }
 
     /// Invoke a callback in a script immediately.

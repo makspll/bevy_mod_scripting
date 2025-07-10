@@ -18,7 +18,7 @@ use crate::{
     extractors::get_all_access_ids,
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{ScriptContextProvider, ScriptContext, Domain},
+    script::{ScriptContextProvider, ScriptContext, Domain, ContextKey},
     IntoScriptPluginParams,
 };
 use bevy::{
@@ -262,16 +262,14 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
     pub fn call_dynamic_label(
         &self,
         label: &CallbackLabel,
-        script_id: &Handle<ScriptAsset>,
-        entity: Option<Entity>,
-        domain: &Option<Domain>,
+        context_key: &ContextKey,
         context: Option<&Arc<Mutex<P::C>>>,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
         // find script
-        let Some(context) = context.or_else(|| self.script_context.get(entity, &script_id.id(), domain)) else {
-            return Err(InteropError::missing_context(script_id.clone()).into());
+        let Some(context) = context.or_else(|| self.script_context.get(context_key.entity.clone(), &context_key.script_id.unwrap_or_default(), &context_key.domain)) else {
+            return Err(InteropError::missing_context(context_key.clone()).into());
         };
 
         // call the script
@@ -286,8 +284,7 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
         CallbackSettings::<P>::call(
             handler,
             payload,
-            entity,
-            script_id,
+            context_key,
             label,
             &mut context,
             pre_handling_initializers,
@@ -502,13 +499,15 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         // script.
 
         let handler_ctxt = DynamicHandlerContext::<P>::get_param(&world);
+        let context_key = ContextKey {
+            script_id: Some(script_id.id()),
+            entity: None,
+            domain: self.domain,
+        };
 
         let result = handler_ctxt.call_dynamic_label(
             &state.callback_label,
-            // &self.target_script,
-            &script_id,
-            None,
-            &self.domain,
+            &context_key,
             None,// context
             payload,
             guard.clone(),

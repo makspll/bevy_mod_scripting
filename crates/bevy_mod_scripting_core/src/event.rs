@@ -1,6 +1,6 @@
 //! Event handlers and event types for scripting.
 
-use crate::{bindings::script_value::ScriptValue, error::ScriptError, script::{Domain, ScriptId}};
+use crate::{bindings::script_value::ScriptValue, error::ScriptError, script::{Domain, ScriptId, ContextKey}};
 use bevy::{ecs::entity::Entity, prelude::Event, reflect::Reflect};
 
 /// An error coming from a script
@@ -171,28 +171,28 @@ impl ScriptCallbackEvent {
     }
 }
 
-/// Event published when a script completes a callback, and a response is requested
+/// Event published when a script completes a callback and a response is requested.
 #[derive(Clone, Event, Debug)]
 #[non_exhaustive]
 pub struct ScriptCallbackResponseEvent {
     /// the label of the callback
     pub label: CallbackLabel,
-    /// the script that replied
-    pub script: ScriptId,
+    /// the key to the context that replied
+    pub context_key: ContextKey,
     /// the response received
     pub response: Result<ScriptValue, ScriptError>,
 }
 
 impl ScriptCallbackResponseEvent {
-    /// Creates a new callback response event with the given label, script and response
+    /// Creates a new callback response event with the given label, script, and response.
     pub fn new<L: Into<CallbackLabel>>(
         label: L,
-        script: ScriptId,
+        context_key: impl Into<ContextKey>,
         response: Result<ScriptValue, ScriptError>,
     ) -> Self {
         Self {
             label: label.into(),
-            script,
+            context_key: context_key.into(),
             response,
         }
     }

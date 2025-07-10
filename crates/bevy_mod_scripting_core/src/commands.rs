@@ -536,7 +536,7 @@ mod test {
         );
         for (a, b) in responses.iter().zip(expected.iter()) {
             assert_eq!(a.label, b.label, "{context}");
-            assert_eq!(a.script, b.script, "{context}");
+            assert_eq!(a.context_key, b.context_key, "{context}");
             assert_eq!(a.response, b.response, "{context}");
         }
     }

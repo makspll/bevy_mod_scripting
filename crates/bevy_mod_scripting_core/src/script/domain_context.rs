@@ -1,7 +1,7 @@
 use super::*;
 
 /// Stores the script context by entity.
-pub struct DomainContext<P: IntoScriptPluginParams>(HashMap<Cow<'static, str>, Arc<Mutex<P::C>>>);
+pub struct DomainContext<P: IntoScriptPluginParams>(HashMap<Domain, Arc<Mutex<P::C>>>);
 
 impl<P: IntoScriptPluginParams> Default for DomainContext<P> {
     fn default() -> Self {
@@ -34,6 +34,6 @@ impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for DomainContext<P> {
         domain.as_ref().map(|id| self.0.remove(id).is_some()).unwrap_or(false)
     }
     fn iter(&self) -> impl Iterator<Item = (ContextKey, &Arc<Mutex<P::C>>)> {
-        self.0.iter().map(|(domain, c)| (domain.clone().into(), c))
+        self.0.iter().map(|(domain, c)| ((*domain).into(), c))
     }
 }

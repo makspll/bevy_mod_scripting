@@ -3,13 +3,18 @@ use crate::IntoScriptPluginParams;
 use bevy::prelude::{default, Entity};
 use bevy::{ecs::system::Resource, log::trace};
 use parking_lot::Mutex;
-use std::{borrow::Cow, sync::Arc};
+use std::{borrow::Cow, sync::Arc, hash::Hash};
 
 /// A kind of catch all type for script context selection
-///
-/// I believe this is what the original ScriptId was intended to be.
-pub type Domain = Cow<'static, str>;
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+pub struct Domain(u64);
 
+impl Domain {
+    /// Create a domain handle.
+    pub fn new(hashable: impl Hash) -> Self {
+        Domain(DefaultHashBuilder::default().hash_one(hashable))
+    }
+}
 /// A generic script context provider
 pub trait ScriptContextProvider<P: IntoScriptPluginParams> {
     /// Get the context.

@@ -3,7 +3,7 @@ use crate::IntoScriptPluginParams;
 use bevy::prelude::{default, Entity};
 use bevy::{ecs::system::Resource};
 use parking_lot::Mutex;
-use std::{borrow::Cow, sync::Arc};
+use std::{borrow::{Borrow, Cow}, sync::Arc, fmt};
 
 /// The key for a context.
 #[derive(Debug, Hash, Clone, Default, PartialEq, Eq)]
@@ -15,6 +15,30 @@ pub struct ContextKey {
     /// Domain if there is one.
     pub domain: Option<Domain>,
 }
+
+impl fmt::Display for ContextKey {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "context ")?;
+        if let Some(id) = self.entity {
+            write!(f, "entity {}", id)?;
+        }
+        if let Some(script_id) = self.script_id {
+            write!(f, "script id {}", script_id)?;
+        }
+        if let Some(domain) = self.domain {
+            write!(f, "domain {:?}", domain)?;
+        }
+        Ok(())
+    }
+}
+
+// /// A context key reference.
+// #[derive(Debug, PartialEq, Eq, Hash)]
+// pub struct ContextKeyRef<'a> {
+//     pub entity: Option<Entity>,
+//     pub script_id: Option<&'a ScriptId>,
+//     pub domain: Option<&'a Domain>,
+// }
 
 impl ContextKey {
     /// Is the key empty?
@@ -44,7 +68,22 @@ impl ContextKey {
             || self.script_id.map(|a| other.script_id.map(|b| a == b).unwrap_or(false)).unwrap_or(true)
             || self.domain.as_ref().map(|a| other.domain.as_ref().map(|b| a == b).unwrap_or(false)).unwrap_or(true)
     }
+
+    // pub fn as_ref(&self) -> ContextKeyRef<'_> {
+    //     ContextKeyRef {
+    //         entity: self.entity,
+    //         script_id: self.script_id.as_ref(),
+    //         domain: self.domain.as_ref(),
+    //     }
+    // }
 }
+
+// impl<'a> Borrow<ContextKeyRef<'a>> for ContextKey {
+//     #[inline]
+//     fn borrow(&self) -> &ContextKeyRef<'a> {
+//         self.as_ref()
+//     }
+// }
 
 impl From<Entity> for ContextKey {
     fn from(entity: Entity) -> Self {
@@ -59,6 +98,15 @@ impl From<ScriptId> for ContextKey {
     fn from(script_id: ScriptId) -> Self {
         Self {
             script_id: Some(script_id),
+            ..default()
+        }
+    }
+}
+
+impl From<Handle<ScriptAsset>> for ContextKey {
+    fn from(handle: Handle<ScriptAsset>) -> Self {
+        Self {
+            script_id: Some(handle.id()),
             ..default()
         }
     }

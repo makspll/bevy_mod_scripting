@@ -12,7 +12,7 @@ use crate::{
         ScriptCallbackResponseEvent, ScriptErrorEvent,
     },
     extractors::{HandlerContext, WithWorldGuard},
-    script::{Domain, ScriptComponent, ScriptContextProvider, ScriptDomain, ScriptId, DisplayProxy},
+    script::{Domain, ScriptComponent, ScriptContextProvider, ScriptDomain, ScriptId, DisplayProxy, ContextKey},
     IntoScriptPluginParams, ScriptAsset,
 };
 use bevy::{
@@ -32,8 +32,7 @@ use std::iter;
 /// A function that handles a callback event
 pub type HandlerFn<P> = fn(
     args: Vec<ScriptValue>,
-    entity: Option<Entity>,
-    script_id: &Handle<ScriptAsset>,
+    context_key: &ContextKey,
     callback: &CallbackLabel,
     context: &mut <P as IntoScriptPluginParams>::C,
     pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
@@ -50,7 +49,7 @@ pub struct CallbackSettings<P: IntoScriptPluginParams> {
 impl<P: IntoScriptPluginParams> Default for CallbackSettings<P> {
     fn default() -> Self {
         Self {
-            callback_handler: |_, _, _, _, _, _, _| Ok(ScriptValue::Unit),
+            callback_handler: |_, _, _, _, _, _| Ok(ScriptValue::Unit),
         }
     }
 }
@@ -74,8 +73,7 @@ impl<P: IntoScriptPluginParams> CallbackSettings<P> {
     pub fn call(
         handler: HandlerFn<P>,
         args: Vec<ScriptValue>,
-        entity: Option<Entity>,
-        script_id: &Handle<ScriptAsset>,
+        context_key: &ContextKey,
         callback: &CallbackLabel,
         script_ctxt: &mut P::C,
         pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
@@ -86,8 +84,7 @@ impl<P: IntoScriptPluginParams> CallbackSettings<P> {
             ThreadWorldContainer.set_world(world)?;
             (handler)(
                 args,
-                entity,
-                script_id,
+                context_key,
                 callback,
                 script_ctxt,
                 pre_handling_initializers,
@@ -316,7 +313,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                 // All and language are effectively the same modulo the other
                 // languages, which are handled by the other P handlers.
                 script_handle = Handle::default();
-                for context in handler_ctxt.script_context.values_box() {
+                for (key, context) in handler_ctxt.script_context.iter_box() {
                     let call_result = handler_ctxt.call_dynamic_label(
                         &callback_label,
                         &script_handle,
@@ -332,7 +329,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                             guard.clone(),
                             ScriptCallbackResponseEvent::new(
                                 callback_label.clone(),
-                                script_handle.id(),
+                                key,
                                 call_result.clone(),
                             ),
                         );
@@ -503,7 +500,7 @@ mod test {
         );
         for (a, b) in responses.iter().zip(expected.iter()) {
             assert_eq!(a.label, b.label);
-            assert_eq!(a.script, b.script);
+            assert_eq!(a.context_key, b.context_key);
             assert_eq!(a.response, b.response);
         }
     }
