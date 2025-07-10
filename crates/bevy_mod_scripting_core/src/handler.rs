@@ -304,7 +304,6 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                 continue;
             }
             Recipients::Domain(target_domain) => {
-
                 script_handle = Handle::default();
                 domain = Some(target_domain.clone());
                 entity = None;
@@ -613,6 +612,58 @@ mod test {
     }
 
     #[test]
+    fn test_handler_init() {
+        let runtime = TestRuntime {
+            invocations: vec![].into(),
+        };
+        let mut app = setup_app::<OnTestCallback>(runtime);
+        let test_script_id = add_script(&mut app, "");
+        // app.add_static_script(test_script_id.clone());
+        let test_entity_id = app
+            .world_mut()
+            .spawn(ScriptComponent(vec![test_script_id.clone()]))
+            .id();
+
+        app.update();
+        {
+            let script_context = app
+                .world()
+                .get_resource::<ScriptContext<TestPlugin>>()
+                .unwrap();
+            let key = script_context.iter_box().next().map(|x| x.0).unwrap();
+            assert_eq!(Some(test_entity_id), key.entity);
+            assert_eq!(Some(test_script_id.id()), key.script_id);
+            assert_eq!(1, script_context.iter_box().count());
+            let context_arc = script_context
+                .get(Some(test_entity_id), &test_script_id.id(), &None)
+                .cloned()
+                .expect("script context");
+
+            let test_context = context_arc.lock();
+
+            let test_runtime = app
+                .world()
+                .get_resource::<RuntimeContainer<TestPlugin>>()
+                .unwrap();
+
+            assert_eq!(
+                test_context.invocations,
+                vec![]
+            );
+
+            let runtime_invocations = test_runtime.runtime.invocations.lock();
+            assert_eq!(
+                runtime_invocations
+                    .iter()
+                    .map(|(e, s)| (*e, s.clone()))
+                    .collect::<Vec<_>>(),
+                vec![(Some(test_entity_id), test_script_id.id())]
+            );
+        }
+        assert_response_events(app.world_mut(), vec![].into_iter());
+    }
+
+    #[test]
     fn test_handler_called_with_right_args() {
         let runtime = TestRuntime {
             invocations: vec![].into(),
@@ -635,6 +686,10 @@ mod test {
                 .world()
                 .get_resource::<ScriptContext<TestPlugin>>()
                 .unwrap();
+            let key = script_context.iter_box().next().map(|x| x.0).unwrap();
+            assert_eq!(Some(test_entity_id), key.entity);
+            assert_eq!(Some(test_script_id.id()), key.script_id);
+            assert_eq!(1, script_context.iter_box().count());
             let context_arc = script_context
                 .get(Some(test_entity_id), &test_script_id.id(), &None)
                 .cloned()

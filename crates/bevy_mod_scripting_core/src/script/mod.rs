@@ -8,11 +8,13 @@ use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc, fmt, hash::{
 use bevy::utils::hashbrown::hash_map::DefaultHashBuilder;
 
 mod script_context;
+mod key;
 mod shared_context;
 mod entity_context;
 mod domain_context;
 mod scriptid_context;
 mod entity_scriptid_context;
+pub use key::*;
 pub use script_context::*;
 pub use shared_context::*;
 pub use entity_context::*;
