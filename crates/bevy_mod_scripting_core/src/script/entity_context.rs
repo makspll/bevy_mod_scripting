@@ -10,28 +10,28 @@ impl<P: IntoScriptPluginParams> Default for EntityContext<P> {
 }
 
 impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for EntityContext<P> {
-    fn hash(&self, id: Option<Entity>, _script_id: &ScriptId, _domain: &Option<Domain>) -> Option<u64> {
-        id.map(|id| DefaultHashBuilder::default().hash_one(id))
+    fn hash(&self, context_key: &ContextKey) -> Option<u64> {
+        context_key.entity.map(|id| DefaultHashBuilder::default().hash_one(id))
     }
-    fn get(&self, id: Option<Entity>, _script_id: &ScriptId, _domain: &Option<Domain>) -> Option<&Arc<Mutex<P::C>>> {
-        id.and_then(|id| self.0.get(&id))
+    fn get(&self, context_key: &ContextKey) -> Option<&Arc<Mutex<P::C>>> {
+        context_key.entity.and_then(|id| self.0.get(&id))
     }
-    fn insert(&mut self, id: Option<Entity>, _script_id: &ScriptId, _domain: &Option<Domain>, context: P::C) -> Result<(), P::C> {
-        if let Some(id) = id {
+    fn insert(&mut self, context_key: ContextKey, context: P::C) -> Result<(), P::C> {
+        if let Some(id) = context_key.entity {
             self.0.insert(id, Arc::new(Mutex::new(context)));
             Ok(())
         } else {
             Err(context)
         }
     }
-    fn contains(&self, id: Option<Entity>, _script_id: &ScriptId, _domain: &Option<Domain>) -> bool {
-        id.map(|id| self.0.contains_key(&id)).unwrap_or(false)
+    fn contains(&self, context_key: &ContextKey) -> bool {
+        context_key.entity.map(|id| self.0.contains_key(&id)).unwrap_or(false)
     }
     fn values(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
         self.0.values()
     }
-    fn remove(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool {
-        id.map(|id| self.0.remove(&id).is_some()).unwrap_or(false)
+    fn remove(&mut self, context_key: &ContextKey) -> bool {
+        context_key.entity.map(|id| self.0.remove(&id).is_some()).unwrap_or(false)
     }
     fn iter(&self) -> impl Iterator<Item = (ContextKey, &Arc<Mutex<P::C>>)> {
         self.0.iter().map(|(id, c)| ((*id).into(), c))

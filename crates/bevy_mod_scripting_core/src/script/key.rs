@@ -19,11 +19,11 @@ pub struct ContextKey {
 impl fmt::Display for ContextKey {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "context ")?;
-        if let Some(id) = self.entity {
-            write!(f, "entity {}", id)?;
-        }
         if let Some(script_id) = self.script_id {
             write!(f, "script id {}", script_id)?;
+        }
+        if let Some(id) = self.entity {
+            write!(f, "entity {}", id)?;
         }
         if let Some(domain) = self.domain {
             write!(f, "domain {:?}", domain)?;

@@ -14,7 +14,7 @@ use crate::{
     },
     extractors::{with_handler_system_state, HandlerContext},
     handler::{handle_script_errors, send_callback_response},
-    script::{StaticScripts, DisplayProxy, ScriptContextProvider, Domain},
+    script::{StaticScripts, DisplayProxy, ScriptContextProvider, Domain, ContextKey},
     IntoScriptPluginParams,
 };
 use bevy::{asset::Handle, ecs::entity::Entity, log::{warn, debug}, prelude::{EntityCommand, Command}};
@@ -68,7 +68,12 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
         {
             let mut script_contexts = world.get_resource_or_init::<ScriptContext<P>>();
 
-            if script_contexts.remove(self.entity, &self.id, &self.domain) {
+            let key = ContextKey {
+                entity: self.entity,
+                script_id: Some(self.id),
+                domain: self.domain,
+            };
+            if script_contexts.remove(&key) {
                 bevy::log::info!("{}: Deleted context for script {:?}", P::LANGUAGE, self.id);
                 deleted = true;
             }
@@ -158,35 +163,38 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     }
 
     pub(crate) fn create_or_update_script(
-        entity: Option<Entity>,
-        id: &Handle<ScriptAsset>,
+        context_key: &ContextKey,
         content: Option<&[u8]>,
-        domain: &Option<Domain>,
         guard: WorldGuard,
         handler_ctxt: &mut HandlerContext<P>) -> Result<(), ScriptError> {
 
-        let Some(content) = content.or_else(|| handler_ctxt.scripts.get(id).map(|script| &*script.content)) else {
-            warn!("No content for script {} to create or update", id.display());
+        let script_id;
+        let Some(content) = content.or_else(|| context_key.script_id.and_then(|id| {
+            script_id = id;
+            handler_ctxt.scripts.get(id).map(|script| &*script.content)
+        })) else {
+            warn!("No content for context {} to create or update", context_key);
             return Err(ScriptError::new(InteropError::missing_script(
-                id.clone(),
+                context_key.script_id.unwrap_or_default()
+                // id.clone(),
             )));
         };
         let phrase;
         let success;
-        let result = match handler_ctxt.script_context.get(entity, &id.id(), domain) {
+        let result = match handler_ctxt.script_context.get(context_key) {
             Some(context) => {
-                bevy::log::debug!("{}: reloading script {}", P::LANGUAGE, id.display());
+                bevy::log::debug!("{}: reloading context {}", P::LANGUAGE, context_key);
                 let mut lcontext = context.lock();
                 phrase = "reloading";
                 success = "updated";
-                Self::reload_context(id, content, &mut lcontext, guard.clone(), handler_ctxt)
+                Self::reload_context(script_id, content, &mut lcontext, guard.clone(), handler_ctxt)
                     .map(|_| None)
             }
             None => {
-                bevy::log::debug!("{}: loading script {}", P::LANGUAGE, id.display());
+                bevy::log::debug!("{}: loading context {}", P::LANGUAGE, context_key);
                 phrase = "loading";
                 success = "created";
-                Self::load_context(id, content, guard.clone(), handler_ctxt)
+                Self::load_context(script_id, content, guard.clone(), handler_ctxt)
                     .map(Some)
             }
         };
@@ -194,15 +202,15 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         match result {
             Ok(maybe_context) => {
                 if let Some(context) = maybe_context {
-                    if handler_ctxt.script_context.insert(entity, &id.id(), &None, context).is_err() {
-                        warn!("Unable to insert script context for entity {:?} with script {}.", entity, id.display());
+                    if handler_ctxt.script_context.insert(context_key.clone(), context).is_err() {
+                        warn!("Unable to insert script context for {}.", context_key);
                     }
                 }
 
                 bevy::log::debug!(
                     "{}: script {} successfully {}",
                     P::LANGUAGE,
-                    id.display(),
+                    context_key,
                     success,
                 );
                 Ok(())// none until individual context support added.

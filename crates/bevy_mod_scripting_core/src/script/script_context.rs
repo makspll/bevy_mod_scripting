@@ -18,13 +18,13 @@ impl Domain {
 /// A generic script context provider
 pub trait ScriptContextProvider<P: IntoScriptPluginParams> {
     /// Get the context.
-    fn get(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<&Arc<Mutex<P::C>>>;
+    fn get(&self, context_key: &ContextKey) -> Option<&Arc<Mutex<P::C>>>;
     /// Insert a context.
     ///
     /// If the context cannot be inserted, it is returned as an `Err`.
-    fn insert(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>, context: P::C) -> Result<(), P::C>;
+    fn insert(&mut self, context_key: ContextKey, context: P::C) -> Result<(), P::C>;
     /// Returns true if there is a context.
-    fn contains(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool;
+    fn contains(&self, context_key: &ContextKey) -> bool;
     /// Hash for context.
     ///
     /// Useful for tracking what context will be returned by `get()` without
@@ -32,14 +32,14 @@ pub trait ScriptContextProvider<P: IntoScriptPluginParams> {
     ///
     /// Note: The existence of the hash does not imply the context exists. It
     /// only declares what its hash will be.
-    fn hash(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64>;
+    fn hash(&self, context_key: &ContextKey) -> Option<u64>;
 
     /// Iterate through contexts.
     fn values(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>>;
     /// Remove a context.
     ///
     /// Returns true if removed.
-    fn remove(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool;
+    fn remove(&mut self, context_key: &ContextKey) -> bool;
 
     /// Iterate through keys and contexts.
     fn iter(&self) -> impl Iterator<Item = (ContextKey, &Arc<Mutex<P::C>>)>;
@@ -134,33 +134,33 @@ pub struct Or<T, U>(pub T, pub U);
 
 impl<T: ScriptContextProvider<P>, U: ScriptContextProvider<P>, P: IntoScriptPluginParams> ScriptContextProvider<P> for Or<T, U> {
     #[inline]
-    fn get(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<&Arc<Mutex<P::C>>> {
-        self.0.get(id, script_id, domain).or_else(|| self.1.get(id, script_id, domain))
+    fn get(&self, context_key: &ContextKey) -> Option<&Arc<Mutex<P::C>>> {
+        self.0.get(context_key).or_else(|| self.1.get(context_key))
     }
     #[inline]
-    fn insert(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>, context: P::C) -> Result<(), P::C> {
-        trace!("insert context for entity {:?} script_id {}, domain {:?}", &id, script_id, domain);
-        match self.0.insert(id, script_id, domain, context) {
+    fn insert(&mut self, context_key: ContextKey, context: P::C) -> Result<(), P::C> {
+        trace!("insert context for {}", &context_key);
+        match self.0.insert(context_key, context) {
             Ok(()) => Ok(()),
-            Err(context) => self.1.insert(id, script_id, domain, context)
+            Err(context) => self.1.insert(context_key, context)
         }
     }
     #[inline]
-    fn contains(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool {
-        self.0.contains(id, script_id, domain) || self.1.contains(id, script_id, domain)
+    fn contains(&self, context_key: &ContextKey) -> bool {
+        self.0.contains(context_key) || self.1.contains(context_key)
     }
     #[inline]
-    fn hash(&self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64> {
-        self.0.hash(id, script_id, domain)
-              .or_else(|| self.1.hash(id, script_id, domain))
+    fn hash(&self, context_key: &ContextKey) -> Option<u64> {
+        self.0.hash(context_key)
+              .or_else(|| self.1.hash(context_key))
     }
     #[inline]
     fn values(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
         self.0.values().chain(self.1.values())
     }
     #[inline]
-    fn remove(&mut self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool {
-        self.0.remove(id, script_id, domain) || self.1.remove(id, script_id, domain)
+    fn remove(&mut self, context_key: &ContextKey) -> bool {
+        self.0.remove(context_key) || self.1.remove(context_key)
     }
     #[inline]
     fn iter(&self) -> impl Iterator<Item = (ContextKey, &Arc<Mutex<P::C>>)> {
@@ -194,11 +194,11 @@ macro_rules! delegate_to_variants {
 
 impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for ScriptContext<P> {
     delegate_to_variants! {
-        fn get(&Self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<&Arc<Mutex<P::C>>>,
-        fn contains(&Self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool,
-        fn hash(&Self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> Option<u64>,
-        fn insert(&mut Self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>, context: P::C) -> Result<(), P::C>,
-        fn remove(&mut Self, id: Option<Entity>, script_id: &ScriptId, domain: &Option<Domain>) -> bool,
+        fn get(&Self, context_key: &ContextKey) -> Option<&Arc<Mutex<P::C>>>,
+        fn contains(&Self, context_key: &ContextKey) -> bool,
+        fn hash(&Self, context_key: &ContextKey) -> Option<u64>,
+        fn insert(&mut Self, context_key: ContextKey, context: P::C) -> Result<(), P::C>,
+        fn remove(&mut Self, context_key: &ContextKey) -> bool,
     }
 
     fn values(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {

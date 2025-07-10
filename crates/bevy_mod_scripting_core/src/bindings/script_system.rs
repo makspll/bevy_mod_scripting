@@ -268,7 +268,7 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
         // find script
-        let Some(context) = context.or_else(|| self.script_context.get(context_key.entity.clone(), &context_key.script_id.unwrap_or_default(), &context_key.domain)) else {
+        let Some(context) = context.or_else(|| self.script_context.get(context_key)) else {
             return Err(InteropError::missing_context(context_key.clone()).into());
         };
 
