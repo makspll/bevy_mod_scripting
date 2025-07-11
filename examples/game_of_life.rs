@@ -92,11 +92,26 @@ fn run_script_cmd(
 
                 for (id, script_component) in &script_comps {
                     for script_id in &script_component.0 {
-                        commands.queue(DeleteScript::<LuaScriptingPlugin>::new(
-                            Some(id),
-                            script_id.id(),
-                            None,
-                        ));
+                        match script_id.path().and_then(|p| p.get_full_extension()).unwrap_or_default().as_str() {
+                            "lua" => {
+                                commands.queue(DeleteScript::<LuaScriptingPlugin>::new(
+                                    Some(id),
+                                    script_id.id(),
+                                    None,
+                                ));
+                            }
+                            "rhai" => {
+                                #[cfg(feature = "rhai")]
+                                commands.queue(DeleteScript::<RhaiScriptingPlugin>::new(
+                                    Some(id),
+                                    script_id.id(),
+                                    None,
+                                ));
+                            }
+                            ext => {
+                                warn!("Can't delete script with extension {ext:?}.");
+                            }
+                        }
                     }
                     commands.entity(id).despawn();
                 }
