@@ -1,10 +1,10 @@
 //! Script related types, functions and components
 
-use crate::{asset::ScriptAsset, IntoScriptPluginParams};
+use crate::{IntoScriptPluginParams, asset::ScriptAsset};
 use bevy::prelude::{Component, ReflectComponent, Entity};
 use bevy::{asset::{Asset, AssetId, Handle}, ecs::system::Resource, reflect::Reflect, utils::HashSet};
 use parking_lot::Mutex;
-use std::{borrow::Cow, collections::HashMap, ops::Deref, sync::Arc, fmt, hash::{BuildHasher}};
+use std::{collections::HashMap, ops::Deref, sync::Arc, fmt, hash::{BuildHasher}};
 use bevy::utils::hashbrown::hash_map::DefaultHashBuilder;
 
 mod script_context;

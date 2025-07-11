@@ -18,12 +18,12 @@ use bevy::{
         world::{Command, FromWorld, Mut},
     },
     log::Level,
-    prelude::{Entity, World, Commands},
+    prelude::{World},
     reflect::{Reflect, TypeRegistry},
     utils::tracing,
 };
 use bevy_mod_scripting_core::{
-    asset::{Language, ScriptAsset},
+    asset::{ScriptAsset},
     bindings::{
         pretty_print::DisplayWithWorld, script_value::ScriptValue, CoreScriptGlobalsPlugin,
         ReflectAccessId, WorldAccessGuard, WorldGuard,
@@ -34,7 +34,7 @@ use bevy_mod_scripting_core::{
     event::{IntoCallbackLabel, ScriptErrorEvent},
     extractors::{HandlerContext, WithWorldGuard},
     handler::handle_script_errors,
-    script::{ScriptComponent, ScriptId, DisplayProxy, ScriptContextProvider},
+    script::{ScriptComponent, ScriptId, DisplayProxy, ScriptContextProvider, ContextKey},
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams, ScriptingPlugin,
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
@@ -56,13 +56,14 @@ struct TestCallbackBuilder<P: IntoScriptPluginParams, L: IntoCallbackLabel> {
 }
 
 impl<L: IntoCallbackLabel, P: IntoScriptPluginParams> TestCallbackBuilder<P, L> {
-    fn build<'a>(script_id: Handle<ScriptAsset>, expect_response: bool) -> SystemConfigs {
+    fn build<'a>(context_key: impl Into<ContextKey>, expect_response: bool) -> SystemConfigs {
+        let context_key = context_key.into();
         IntoSystem::into_system(
             move |world: &mut World,
                   system_state: &mut SystemState<WithWorldGuard<HandlerContext<P>>>| {
 
                 let with_guard = system_state.get_mut(world);
-                let _ = run_test_callback::<P, L>(&script_id, with_guard, expect_response);
+                let _ = run_test_callback::<P, L>(&context_key, with_guard, expect_response);
 
                 system_state.apply(world);
             },
@@ -313,7 +314,7 @@ pub fn execute_integration_test<'a,
 }
 
 fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
-    script_id: &Handle<ScriptAsset>,
+    context_key: &ContextKey,
     mut with_guard: WithWorldGuard<'_, '_, HandlerContext<'_, P>>,
     expect_response: bool,
 ) -> Result<ScriptValue, ScriptError> {
@@ -324,9 +325,7 @@ fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
     // }
 
     let res = handler_ctxt.call::<C>(
-        script_id,
-        None,
-        &None,
+        context_key,
         vec![],
         guard.clone(),
     );
@@ -456,7 +455,7 @@ where
 
     let mut state = SystemState::<WithWorldGuard<HandlerContext<P>>>::from_world(app.world_mut());
 
-    /// Wait until script is loaded.
+    // Wait until script is loaded.
     loop {
         app.update();
         match app.world().resource::<AssetServer>().load_state(script_id) {
@@ -473,8 +472,13 @@ where
 
         let mut handler_ctxt = state.get_mut(app.world_mut());
         let (guard, context) = handler_ctxt.get_mut();
+        let context_key = ContextKey {
+            entity: Some(entity),
+            script_id: Some(Handle::Weak(script_id)),
+            domain: None,
+        };
 
-        let ctxt_arc = context.script_context().get(Some(entity), &script_id, &None).cloned().unwrap();
+        let ctxt_arc = context.script_context().get(&context_key).cloned().unwrap();
         let mut ctxt_locked = ctxt_arc.lock();
 
         let runtime = &context.runtime_container().runtime;

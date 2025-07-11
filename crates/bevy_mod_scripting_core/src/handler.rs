@@ -12,11 +12,9 @@ use crate::{
         ScriptCallbackResponseEvent, ScriptErrorEvent,
     },
     extractors::{HandlerContext, WithWorldGuard},
-    script::{Domain, ScriptComponent, ScriptContextProvider, ScriptDomain, ScriptId, DisplayProxy, ContextKey},
-    IntoScriptPluginParams, ScriptAsset,
-};
+    script::{ScriptComponent, ScriptContextProvider, ScriptDomain, DisplayProxy, ContextKey},
+    IntoScriptPluginParams};
 use bevy::{
-    asset::Handle,
     ecs::{
         entity::Entity,
         query::QueryState,
@@ -27,7 +25,6 @@ use bevy::{
     prelude::{Events, Ref},
     utils::HashSet,
 };
-use std::iter;
 
 /// A function that handles a callback event
 pub type HandlerFn<P> = fn(
@@ -448,7 +445,7 @@ mod test {
 
     use bevy::{
         app::{App, Update},
-        asset::{AssetApp, AssetPlugin, Assets, AssetId},
+        asset::{AssetApp, AssetPlugin, Assets, AssetId, Handle},
         diagnostic::DiagnosticsPlugin,
         ecs::world::FromWorld,
     };
@@ -460,6 +457,7 @@ mod test {
         context::{ContextBuilder, ContextLoadingSettings},
         event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent},
         runtime::RuntimeContainer,
+        asset::ScriptAsset,
         script::{ScriptComponent, StaticScripts},
         BMSScriptingInfrastructurePlugin, ManageStaticScripts, ScriptContext,
     };

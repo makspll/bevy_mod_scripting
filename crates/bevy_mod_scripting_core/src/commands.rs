@@ -110,7 +110,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     }
 
     fn reload_context(
-        id: &Handle<ScriptAsset>,
+        context_key: &ContextKey,
         content: &[u8],
         context: &mut P::C,
         guard: WorldGuard,
@@ -126,7 +126,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
 
         (ContextBuilder::<P>::reload)(
             handler_ctxt.context_loading_settings.loader.reload,
-            id,
+            context_key,
             content,
             context,
             &handler_ctxt.context_loading_settings.context_initializers,
@@ -139,14 +139,14 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     }
 
     fn load_context(
-        id: &Handle<ScriptAsset>,
+        context_key: &ContextKey,
         content: &[u8],
         guard: WorldGuard,
         handler_ctxt: &HandlerContext<P>,
     ) -> Result<P::C, ScriptError> {
         let context = (ContextBuilder::<P>::load)(
             handler_ctxt.context_loading_settings.loader.load,
-            id,
+            context_key,
             content,
             &handler_ctxt.context_loading_settings.context_initializers,
             &handler_ctxt
@@ -191,14 +191,14 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
                 let mut lcontext = context.lock();
                 phrase = "reloading";
                 success = "updated";
-                Self::reload_context(&script_id, content, &mut lcontext, guard.clone(), handler_ctxt)
+                Self::reload_context(&context_key, content, &mut lcontext, guard.clone(), handler_ctxt)
                     .map(|_| None)
             }
             None => {
                 bevy::log::debug!("{}: loading context {}", P::LANGUAGE, context_key);
                 phrase = "loading";
                 success = "created";
-                Self::load_context(&script_id, content, guard.clone(), handler_ctxt)
+                Self::load_context(&context_key, content, guard.clone(), handler_ctxt)
                     .map(Some)
             }
         };
@@ -439,7 +439,7 @@ mod test {
     use crate::{
         ManageStaticScripts,
         asset::{ScriptQueue, Language},
-        script::{ScriptId, ScriptContext},
+        script::ScriptContext,
         bindings::script_value::ScriptValue,
         context::{ContextBuilder, ContextLoadingSettings},
         handler::CallbackSettings,
@@ -470,7 +470,7 @@ mod test {
                         init(name, &mut context)?;
                     }
                     for init in pre_run_init {
-                        init(name, None, &mut context)?;
+                        init(name, &mut context)?;
                     }
                     Ok(context)
                 },
@@ -480,7 +480,7 @@ mod test {
                         init(name, existing)?;
                     }
                     for init in pre_run_init {
-                        init(name, None, existing)?;
+                        init(name, existing)?;
                     }
                     Ok(())
                 },
@@ -490,7 +490,7 @@ mod test {
                 c.push_str(" initialized");
                 Ok(())
             }],
-            context_pre_handling_initializers: vec![|_, _, c| {
+            context_pre_handling_initializers: vec![|_, c| {
                 c.push_str(" pre-handling-initialized");
                 Ok(())
             }],
@@ -655,7 +655,7 @@ mod test {
 
     fn update_script(app: &mut App, handle: AssetId<ScriptAsset>, content: impl Into<String>) {
         let mut scripts = app.world_mut().resource_mut::<Assets<ScriptAsset>>();
-        let mut script_asset = scripts.get_mut(handle).unwrap();
+        let script_asset = scripts.get_mut(handle).unwrap();
         script_asset.content = content.into().into_bytes().into_boxed_slice();
     }
 

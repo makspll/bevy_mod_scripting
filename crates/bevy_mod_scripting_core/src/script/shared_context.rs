@@ -4,18 +4,18 @@ use super::*;
 pub struct SharedContext<P: IntoScriptPluginParams>(pub Option<Arc<Mutex<P::C>>>);
 
 impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for SharedContext<P> {
-    fn hash(&self, context_key: &ContextKey) -> Option<u64> {
+    fn hash(&self, _context_key: &ContextKey) -> Option<u64> {
         self.0.is_some().then_some(0)
     }
 
-    fn get(&self, context_key: &ContextKey) -> Option<&Arc<Mutex<P::C>>> {
+    fn get(&self, _context_key: &ContextKey) -> Option<&Arc<Mutex<P::C>>> {
         self.0.as_ref()
     }
-    fn insert(&mut self, context_key: ContextKey, context: P::C) -> Result<(), P::C> {
+    fn insert(&mut self, _context_key: ContextKey, context: P::C) -> Result<(), P::C> {
         self.0 = Some(Arc::new(Mutex::new(context)));
         Ok(())
     }
-    fn contains(&self, context_key: &ContextKey) -> bool {
+    fn contains(&self, _context_key: &ContextKey) -> bool {
         self.0.is_some()
     }
 

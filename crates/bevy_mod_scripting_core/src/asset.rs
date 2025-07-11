@@ -1,13 +1,12 @@
 //! Systems and resources for handling script assets and events
 
 use crate::{
-    ScriptContext,
     StaticScripts,
     ScriptComponent,
     LanguageExtensions,
     commands::CreateOrUpdateScript,
     error::ScriptError,
-    script::{DisplayProxy, Domain, ScriptDomain, ScriptContextProvider},
+    script::{DisplayProxy, Domain, ScriptDomain},
     IntoScriptPluginParams, ScriptingSystemSet,
 };
 use bevy::{
@@ -177,7 +176,6 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
     mut events: EventReader<AssetEvent<ScriptAsset>>,
     script_assets: Res<Assets<ScriptAsset>>,
     mut static_scripts: ResMut<StaticScripts>,
-    // mut script_contexts: ResMut<ScriptContext<P>>,
     asset_server: Res<AssetServer>,
 ) {
     for event in events.read() {
@@ -428,7 +426,8 @@ mod tests {
         );
     }
 
-    fn run_app_untill_asset_event(app: &mut App, event_kind: AssetEvent<ScriptAsset>) {
+    #[allow(dead_code)]
+    fn run_app_until_asset_event(app: &mut App, event_kind: AssetEvent<ScriptAsset>) {
         let checker_system = |mut reader: EventReader<AssetEvent<ScriptAsset>>,
                               mut event_target: ResMut<EventTarget>| {
             println!("Reading asset events this frame");

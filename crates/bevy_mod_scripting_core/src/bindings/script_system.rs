@@ -10,7 +10,6 @@ use super::{
     WorldGuard,
 };
 use crate::{
-    ScriptAsset,
     bindings::pretty_print::DisplayWithWorld,
     context::ContextLoadingSettings,
     error::{InteropError, ScriptError},
@@ -22,7 +21,6 @@ use crate::{
     IntoScriptPluginParams,
 };
 use bevy::{
-    asset::Handle,
     prelude::AssetServer,
     ecs::{
         archetype::{ArchetypeComponentId, ArchetypeGeneration},
@@ -90,7 +88,7 @@ type ScriptPath = Cow<'static, str>;
 pub struct ScriptSystemBuilder {
     pub(crate) name: CallbackLabel,
     pub(crate) script_id: ScriptPath,
-    domain: Option<Domain>,
+    // domain: Option<Domain>,
     before: Vec<ReflectSystem>,
     after: Vec<ReflectSystem>,
     system_params: Vec<ScriptSystemParamDescriptor>,
@@ -100,13 +98,13 @@ pub struct ScriptSystemBuilder {
 #[profiling::all_functions]
 impl ScriptSystemBuilder {
     /// Creates a new script system builder
-    pub fn new(name: CallbackLabel, script_id: ScriptPath, domain: Option<Domain>) -> Self {
+    pub fn new(name: CallbackLabel, script_id: ScriptPath, _domain: Option<Domain>) -> Self {
         Self {
             before: vec![],
             after: vec![],
             name,
             script_id,
-            domain,
+            // domain,
             system_params: vec![],
             is_exclusive: false,
         }

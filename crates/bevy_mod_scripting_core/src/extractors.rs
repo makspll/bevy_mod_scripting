@@ -9,10 +9,9 @@ use std::{
 use parking_lot::Mutex;
 
 use bevy::{
-    asset::{Handle, Assets},
+    asset::{Assets},
     ecs::{
         component::ComponentId,
-        entity::Entity,
         event::{Event, EventCursor, EventIterator, Events},
         query::{Access, AccessConflicts},
         storage::SparseSetIndex,
@@ -33,7 +32,7 @@ use crate::{
     event::{CallbackLabel, IntoCallbackLabel},
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{StaticScripts, ScriptContext, ScriptContextProvider, Domain, ContextKey},
+    script::{StaticScripts, ScriptContext, ScriptContextProvider, ContextKey},
     IntoScriptPluginParams,
 };
 

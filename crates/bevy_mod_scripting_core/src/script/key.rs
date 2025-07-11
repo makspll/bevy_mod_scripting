@@ -1,9 +1,7 @@
 use super::*;
-use crate::IntoScriptPluginParams;
+use crate::ScriptAsset;
 use bevy::prelude::{default, Entity};
-use bevy::{ecs::system::Resource};
-use parking_lot::Mutex;
-use std::{borrow::{Borrow, Cow}, sync::Arc, fmt};
+use std::fmt;
 
 /// The key for a context.
 #[derive(Debug, Hash, Clone, Default, PartialEq, Eq)]

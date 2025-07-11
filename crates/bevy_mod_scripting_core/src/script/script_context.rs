@@ -1,9 +1,8 @@
 use super::*;
 use crate::IntoScriptPluginParams;
-use bevy::prelude::{default, Entity};
 use bevy::{ecs::system::Resource, log::trace};
 use parking_lot::Mutex;
-use std::{borrow::Cow, sync::Arc, hash::Hash};
+use std::{sync::Arc, hash::Hash};
 
 /// A kind of catch all type for script context selection
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
@@ -201,11 +200,13 @@ impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for ScriptContext<P> {
         fn remove(&mut Self, context_key: &ContextKey) -> bool,
     }
 
+    #[allow(unreachable_code)]
     fn values(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
         panic!("Must used values_box() with ScriptContext<P>.");
         std::iter::empty()
     }
 
+    #[allow(unreachable_code)]
     fn iter(&self) -> impl Iterator<Item = (ContextKey, &Arc<Mutex<P::C>>)> {
         panic!("Must used iter_box() with ScriptContext<P>.");
         std::iter::empty()
