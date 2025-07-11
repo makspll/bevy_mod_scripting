@@ -18,7 +18,7 @@ impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for DomainContext<P> {
     }
     fn insert(&mut self, context_key: ContextKey, context: P::C) -> Result<(), P::C> {
         if let Some(id) = context_key.domain {
-            self.0.insert(id.clone(), Arc::new(Mutex::new(context)));
+            self.0.insert(id, Arc::new(Mutex::new(context)));
             Ok(())
         } else {
             Err(context)

@@ -169,7 +169,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                            .map(|s| (None, Err(s), None)))
                            {
                                let empty_script_component = ScriptComponent(vec![]);
-                               let domain = script_domain_maybe.as_ref().map(|x| x.0.clone());
+                               let domain = script_domain_maybe.as_ref().map(|x| x.0);
                                let (iter_a, iter_b) = match script_component {
                                    Ok(script_component) => (script_component.into_inner(), None.into_iter()),
                                    Err(script_handle) => (&empty_script_component, Some(script_handle).into_iter())
@@ -185,7 +185,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                                 // A clone is better for error reporting but a
                                 // weak handle avoids the clone.
                                 script_id: Some(script_handle.clone()),
-                                domain: domain.clone(),
+                                domain,
                             };
                             if let Some(hash) = handler_ctxt.script_context.hash(
                                 &context_key
@@ -227,10 +227,10 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
             }
             Recipients::Entity(target_entity) => {
                 if let Err(e) = guard.with_global_access(|world| {
-                    if let Ok((_, script_component, script_domain_maybe)) =
-                        entity_query_state.get(world, *target_entity)
+                    match entity_query_state.get(world, *target_entity) {
+                        Ok((_, script_component, script_domain_maybe)) =>
                     {
-                        let domain = script_domain_maybe.as_ref().map(|x| x.0.clone());
+                        let domain = script_domain_maybe.map(|x| x.0);
 
                         // Keep track of the contexts that have been called. Don't duplicate the
                         // calls on account of multiple matches.
@@ -248,7 +248,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                             let context_key = ContextKey {
                                 entity: Some(*target_entity),
                                 script_id: Some(script_handle.clone()),
-                                domain: domain.clone(),
+                                domain,
                             };
                             if let Some(hash) = handler_ctxt.script_context.hash(
                                 &context_key
@@ -282,12 +282,19 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                                 }
                             }
                         }
-                    } else {
-                        todo!()
+                    }
+                        Err(e) => {
+                        bevy::log::error_once!(
+                            "{}: Failed to get entity {} with scripts: {}",
+                            P::LANGUAGE,
+                            target_entity,
+                            e,
+                        );
+                    }
                     }
                 }) {
                     bevy::log::error_once!(
-                        "{}: Failed to get entity {} with scripts: {}",
+                        "{}: Failed to get world access for entity {}: {}",
                         P::LANGUAGE,
                         target_entity,
                         e.display_with_world(guard.clone())
@@ -398,7 +405,7 @@ fn collect_errors(
             //     // }
             // };
             // push_err_and_continue!(errors, Err(e));
-            errors.push(e.with_context(format!("Event handling for Language: {}", language)));
+            errors.push(e.with_context(format!("Event handling for language {language}")));
         }
     }
 }

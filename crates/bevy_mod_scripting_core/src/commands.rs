@@ -191,14 +191,14 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
                 let mut lcontext = context.lock();
                 phrase = "reloading";
                 success = "updated";
-                Self::reload_context(&context_key, content, &mut lcontext, guard.clone(), handler_ctxt)
+                Self::reload_context(context_key, content, &mut lcontext, guard.clone(), handler_ctxt)
                     .map(|_| None)
             }
             None => {
                 bevy::log::debug!("{}: loading context {}", P::LANGUAGE, context_key);
                 phrase = "loading";
                 success = "created";
-                Self::load_context(&context_key, content, guard.clone(), handler_ctxt)
+                Self::load_context(context_key, content, guard.clone(), handler_ctxt)
                     .map(Some)
             }
         };
@@ -253,7 +253,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
             });
 
         // Immediately run command for callback, but only if loading went fine.
-        if let Ok(_) = result {
+        if result.is_ok() {
             RunScriptCallback::<P>::new(
                 context_key,
                 OnScriptLoaded::into_callback_label(),
@@ -404,7 +404,7 @@ impl Command for AddStaticScript {
         let mut static_scripts = world.get_resource_or_init::<StaticScripts>();
         static_scripts.insert(self.id.clone());
         let mut script_queue = world.resource_mut::<ScriptQueue>();
-        script_queue.push_back((None, self.id, None));
+        script_queue.push_back(ContextKey::from(self.id));
     }
 }
 

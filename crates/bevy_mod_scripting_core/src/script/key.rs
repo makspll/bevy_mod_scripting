@@ -21,10 +21,10 @@ impl fmt::Display for ContextKey {
             write!(f, "script {}", script_id.display())?;
         }
         if let Some(id) = self.entity {
-            write!(f, "entity {}", id)?;
+            write!(f, "entity {id}")?;
         }
         if let Some(domain) = self.domain {
-            write!(f, "domain {:?}", domain)?;
+            write!(f, "domain {domain:?}")?;
         }
         Ok(())
     }

@@ -6,7 +6,7 @@ use crate::{
     LanguageExtensions,
     commands::CreateOrUpdateScript,
     error::ScriptError,
-    script::{DisplayProxy, Domain, ScriptDomain},
+    script::{DisplayProxy, ScriptDomain, ContextKey},
     IntoScriptPluginParams, ScriptingSystemSet,
 };
 use bevy::{
@@ -15,7 +15,7 @@ use bevy::{
     log::{info, trace, warn, error},
     prelude::{
         Commands, EventReader, IntoSystemConfigs, IntoSystemSetConfigs, Res,
-        ResMut, Added, Query, Handle, AssetServer, Entity, Resource, Deref, DerefMut,
+        ResMut, Added, Query, AssetServer, Entity, Resource, Deref, DerefMut,
     },
     reflect::TypePath,
 };
@@ -77,7 +77,7 @@ impl ScriptAsset {
 
 /// The queue that evaluates scripts.
 #[derive(Resource, Deref, DerefMut, Default)]
-pub(crate) struct ScriptQueue(VecDeque<(Option<Entity>, Handle<ScriptAsset>, Option<Domain>)>);
+pub(crate) struct ScriptQueue(VecDeque<ContextKey>);
 
 /// Script settings
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -234,7 +234,11 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
     ) {
     for (id, script_comp, domain_maybe) in &script_comps {
         for handle in &script_comp.0 {
-            script_queue.push_back((Some(id), handle.clone_weak(), domain_maybe.map(|x| x.0.clone())));
+            script_queue.push_back(ContextKey {
+                entity: Some(id),
+                script_id: Some(handle.clone_weak()),
+                domain: domain_maybe.map(|x| x.0)
+            });
         }
     }
     while ! script_queue.is_empty() {
@@ -242,7 +246,11 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
         // NOTE: Maybe using pop_front_if once stabalized.
         let script_ready = script_queue
             .front()
-            .map(|(_, script_id, _)| {
+            .map(|context_key| {
+
+                // If there is a script, wait for the script to load.
+                context_key.script_id.as_ref()
+                                     .map(|script_id|
                 script_assets.contains(script_id.id()) || match asset_server.load_state(script_id) {
                     LoadState::NotLoaded => false,
                     LoadState::Loading => false,
@@ -252,37 +260,35 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
                         error!("Failed to load script {} for eval: {e}.", script_id.display());
                         true
                     }
-                }
+                }).unwrap_or(true)
             })
             .unwrap_or(false);
         if ! script_ready {
             break;
         }
-        if let Some((id_maybe, script_id, domain_maybe)) = script_queue.pop_front() {
+        if let Some(context_key) = script_queue.pop_front() {
             if script_failed {
                 continue;
             }
-            if let Some(asset) = script_assets.get(&script_id) {
-                if asset.language == P::LANGUAGE {
-                    match id_maybe {
-                        Some(id) => {
-                            commands.entity(id).queue(CreateOrUpdateScript::<P>::new(
-                                script_id,
-                                None,
-                                domain_maybe));
-                        },
-                        None => {
-                            commands.queue(CreateOrUpdateScript::<P>::new(
-                                script_id,
-                                None,
-                                domain_maybe));
-                        },
-                    }
+            let language = context_key.script_id.as_ref()
+                                      .and_then(|script_id| script_assets.get(script_id))
+                                      .map(|asset| asset.language.clone())
+                                      .unwrap_or_default();
+            if language == P::LANGUAGE {
+                match context_key.entity {
+                    Some(id) => {
+                        commands.entity(id).queue(CreateOrUpdateScript::<P>::new(
+                            context_key.script_id.unwrap_or_default(),
+                            None,
+                            context_key.domain));
+                    },
+                    None => {
+                        commands.queue(CreateOrUpdateScript::<P>::new(
+                            context_key.script_id.unwrap_or_default(),
+                            None,
+                            context_key.domain));
+                    },
                 }
-            } else {
-                // This is probably a load failure. What to do? We've already
-                // provided a warning on failure. Doing nothing is fine then we
-                // process the next one.
             }
         } else {
             break;
