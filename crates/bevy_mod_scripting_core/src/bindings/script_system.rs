@@ -500,7 +500,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 
         let handler_ctxt = DynamicHandlerContext::<P>::get_param(&world);
         let context_key = ContextKey {
-            script_id: Some(script_id.id()),
+            script_id: Some(script_id),
             entity: None,
             domain: self.domain,
         };

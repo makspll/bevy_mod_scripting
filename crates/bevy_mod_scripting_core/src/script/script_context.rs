@@ -80,9 +80,9 @@ pub enum ScriptContext<P: IntoScriptPluginParams> {
     ///
     /// TODO: Should check for entity despawns and remove from this
     /// EntityContext.
-    EntityScriptId(Or<EntityScriptIdContext<P>, SharedContext<P>>),
+    EntityScriptId(Or<EntityScriptIdContext<P>, Or<ScriptIdContext<P>, SharedContext<P>>>),
     /// One script context per entity with domains
-    DomainEntityScriptId(Or<DomainContext<P>, Or<EntityScriptIdContext<P>, SharedContext<P>>>),
+    DomainEntityScriptId(Or<DomainContext<P>, Or<EntityScriptIdContext<P>, Or<ScriptIdContext<P>, SharedContext<P>>>>),
 }
 
 impl<P: IntoScriptPluginParams> ScriptContext<P> {
@@ -114,7 +114,7 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
     }
     /// Use one script context per entity and script
     pub fn per_entity_and_script() -> Self {
-        Self::EntityScriptId(Or(EntityScriptIdContext::default(), SharedContext::default()))
+        Self::EntityScriptId(Or(EntityScriptIdContext::default(), Or(ScriptIdContext::default(), SharedContext::default())))
     }
 }
 
@@ -140,7 +140,7 @@ impl<T: ScriptContextProvider<P>, U: ScriptContextProvider<P>, P: IntoScriptPlug
     #[inline]
     fn insert(&mut self, context_key: ContextKey, context: P::C) -> Result<(), P::C> {
         trace!("insert context for {}", &context_key);
-        match self.0.insert(context_key, context) {
+        match self.0.insert(context_key.clone(), context) {
             Ok(()) => Ok(()),
             Err(context) => self.1.insert(context_key, context)
         }

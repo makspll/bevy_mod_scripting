@@ -33,7 +33,7 @@ use crate::{
     event::{CallbackLabel, IntoCallbackLabel},
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{StaticScripts, ScriptContext, ScriptContextProvider, Domain},
+    script::{StaticScripts, ScriptContext, ScriptContextProvider, Domain, ContextKey},
     IntoScriptPluginParams,
 };
 
@@ -224,39 +224,35 @@ impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
         &self,
         label: &CallbackLabel,
         // context_key: &ContextKey
-        script_id: &Handle<ScriptAsset>,
-        entity: Option<Entity>,
-        domain: &Option<Domain>,
+        context_key: &ContextKey,
         context: Option<&Arc<Mutex<P::C>>>,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
-        todo!();
         // find script
-        // let Some(context) = context.or_else(|| self.script_context.get(entity, &script_id.id(), domain)) else {
-        //     return Err(InteropError::missing_context(script_id.clone()).into());
-        // };
+        let Some(context) = context.or_else(|| self.script_context.get(context_key)) else {
+            return Err(InteropError::missing_context(context_key.clone()).into());
+        };
 
-        // // call the script
-        // let handler = self.callback_settings.callback_handler;
-        // let pre_handling_initializers = &self
-        //     .context_loading_settings
-        //     .context_pre_handling_initializers;
-        // let runtime = &self.runtime_container.runtime;
+        // call the script
+        let handler = self.callback_settings.callback_handler;
+        let pre_handling_initializers = &self
+            .context_loading_settings
+            .context_pre_handling_initializers;
+        let runtime = &self.runtime_container.runtime;
 
-        // let mut context = context.lock();
+        let mut context = context.lock();
 
-        // CallbackSettings::<P>::call(
-        //     handler,
-        //     payload,
-        //     entity,
-        //     script_id,
-        //     label,
-        //     &mut context,
-        //     pre_handling_initializers,
-        //     runtime,
-        //     guard,
-        // )
+        CallbackSettings::<P>::call(
+            handler,
+            payload,
+            context_key,
+            label,
+            &mut context,
+            pre_handling_initializers,
+            runtime,
+            guard,
+        )
     }
 
     /// Invoke a callback in a script immediately.
@@ -265,13 +261,11 @@ impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
     /// Run [`Self::is_script_fully_loaded`] before calling the script to ensure the script and context were loaded ahead of time.
     pub fn call<C: IntoCallbackLabel>(
         &self,
-        script_id: &Handle<ScriptAsset>,
-        entity: Option<Entity>,
-        domain: &Option<Domain>,
+        context_key: &ContextKey,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
-        self.call_dynamic_label(&C::into_callback_label(), script_id, entity, domain, None, payload, guard)
+        self.call_dynamic_label(&C::into_callback_label(), context_key, None, payload, guard)
     }
 }
 

@@ -11,7 +11,7 @@ pub struct ContextKey {
     /// Entity if there is one.
     pub entity: Option<Entity>,
     /// Script ID if there is one.
-    pub script_id: Option<ScriptId>,
+    pub script_id: Option<Handle<ScriptAsset>>,
     /// Domain if there is one.
     pub domain: Option<Domain>,
 }
@@ -19,8 +19,8 @@ pub struct ContextKey {
 impl fmt::Display for ContextKey {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "context ")?;
-        if let Some(script_id) = self.script_id {
-            write!(f, "script id {}", script_id)?;
+        if let Some(script_id) = &self.script_id {
+            write!(f, "script {}", script_id.display())?;
         }
         if let Some(id) = self.entity {
             write!(f, "entity {}", id)?;
@@ -36,7 +36,7 @@ impl fmt::Display for ContextKey {
 // #[derive(Debug, PartialEq, Eq, Hash)]
 // pub struct ContextKeyRef<'a> {
 //     pub entity: Option<Entity>,
-//     pub script_id: Option<&'a ScriptId>,
+//     pub script_id: Option<&'a Handle<ScriptAsset>>,
 //     pub domain: Option<&'a Domain>,
 // }
 
@@ -65,14 +65,25 @@ impl ContextKey {
     /// An empty [ContextKey] is a subset of any context key.
     pub fn is_subset(&self, other: &ContextKey) -> bool {
         self.entity.map(|a| other.entity.map(|b| a == b).unwrap_or(false)).unwrap_or(true)
-            || self.script_id.map(|a| other.script_id.map(|b| a == b).unwrap_or(false)).unwrap_or(true)
+            || self.script_id.as_ref().map(|a| other.script_id.as_ref().map(|b| a == b).unwrap_or(false)).unwrap_or(true)
             || self.domain.as_ref().map(|a| other.domain.as_ref().map(|b| a == b).unwrap_or(false)).unwrap_or(true)
+    }
+
+    /// If a script handle is present and is strong, converts it into a weak
+    /// handle.
+    pub fn into_weak(mut self) -> Self {
+        if let Some(script_id) = self.script_id.as_mut() {
+            if script_id.is_strong() {
+                *script_id = Handle::Weak(script_id.id());
+            }
+        }
+        self
     }
 
     // pub fn as_ref(&self) -> ContextKeyRef<'_> {
     //     ContextKeyRef {
     //         entity: self.entity,
-    //         script_id: self.script_id.as_ref(),
+    //         script_id: self.script_id.as_ref().map(Handle::Weak),
     //         domain: self.domain.as_ref(),
     //     }
     // }
@@ -97,7 +108,7 @@ impl From<Entity> for ContextKey {
 impl From<ScriptId> for ContextKey {
     fn from(script_id: ScriptId) -> Self {
         Self {
-            script_id: Some(script_id),
+            script_id: Some(Handle::Weak(script_id)),
             ..default()
         }
     }
@@ -106,7 +117,7 @@ impl From<ScriptId> for ContextKey {
 impl From<Handle<ScriptAsset>> for ContextKey {
     fn from(handle: Handle<ScriptAsset>) -> Self {
         Self {
-            script_id: Some(handle.id()),
+            script_id: Some(handle),
             ..default()
         }
     }
