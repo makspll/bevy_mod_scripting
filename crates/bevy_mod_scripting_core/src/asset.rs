@@ -277,16 +277,10 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
             if language == P::LANGUAGE {
                 match context_key.entity {
                     Some(id) => {
-                        commands.entity(id).queue(CreateOrUpdateScript::<P>::new(
-                            context_key.script_id.unwrap_or_default(),
-                            None,
-                            context_key.domain));
+                        commands.entity(id).queue(CreateOrUpdateScript::<P>::new(context_key));
                     },
                     None => {
-                        commands.queue(CreateOrUpdateScript::<P>::new(
-                            context_key.script_id.unwrap_or_default(),
-                            None,
-                            context_key.domain));
+                        commands.queue(CreateOrUpdateScript::<P>::new(context_key));
                     },
                 }
             }

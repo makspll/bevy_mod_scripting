@@ -483,7 +483,7 @@ where
 
         let runtime = &context.runtime_container().runtime;
 
-        return WorldAccessGuard::with_existing_static_guard(guard, |guard| {
+        let _ = WorldAccessGuard::with_existing_static_guard(guard, |guard| {
             // Ensure the world is available via ThreadWorldContainer
             ThreadWorldContainer
                 .set_world(guard.clone())
@@ -496,6 +496,7 @@ where
             return Err("Timeout after 30 seconds, could not load script".into());
         }
     }
+    Ok(())
 }
 
 pub fn run_plugin_script_load_benchmark<
@@ -521,13 +522,8 @@ pub fn run_plugin_script_load_benchmark<
                 let random_id = if is_reload { 0 } else { rng.random::<u128>() };
                 let random_script_id: ScriptId = ScriptId::from(uuid::Builder::from_random_bytes(random_id.to_le_bytes()).into_uuid());
                 // We manually load the script inside a command.
-                let content = content.to_string().into_bytes().into_boxed_slice();
                 (
-                    CreateOrUpdateScript::<P>::new(
-                        Handle::Weak(random_script_id),
-                        Some(content.clone().into()),
-                        None,
-                    ),
+                    CreateOrUpdateScript::<P>::new(random_script_id).with_content(content),
                     is_reload,
                 )
             },
