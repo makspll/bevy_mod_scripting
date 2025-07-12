@@ -15,24 +15,10 @@ use bevy::{
     window::{PrimaryWindow, WindowResized},
 };
 use bevy_console::{make_layer, AddConsoleCommand, ConsoleCommand, ConsoleOpen, ConsolePlugin};
-use bevy_mod_scripting::{BMSPlugin, ScriptFunctionsPlugin};
-use bevy_mod_scripting_core::{
-    ConfigureScriptPlugin,
-    asset::ScriptAsset,
-    bindings::{
-        function::namespace::{GlobalNamespace, NamespaceBuilder},
-        script_value::ScriptValue,
-        AllocatorDiagnosticPlugin, CoreScriptGlobalsPlugin,
-    },
-    callback_labels,
-    commands::{DeleteScript, AddStaticScript},
-    event::ScriptCallbackEvent,
-    handler::event_handler,
-    script::{ScriptId, ScriptComponent},
+use bevy_mod_scripting::{
+    prelude::*,
+    core::bindings::AllocatorDiagnosticPlugin,
 };
-use bevy_mod_scripting_lua::LuaScriptingPlugin;
-#[cfg(feature = "rhai")]
-use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
 use clap::Parser;
 
 // CONSOLE SETUP

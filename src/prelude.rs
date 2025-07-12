@@ -2,12 +2,13 @@
 pub use crate::{BMSPlugin, ScriptFunctionsPlugin};
 pub use bevy_mod_scripting_core::{
     ConfigureScriptPlugin,
-    asset::ScriptAsset,
+    asset::{Language, ScriptAsset},
     bindings::{
         function::namespace::{GlobalNamespace, NamespaceBuilder},
         script_value::ScriptValue,
-        AllocatorDiagnosticPlugin, CoreScriptGlobalsPlugin,
+        CoreScriptGlobalsPlugin,
     },
+    IntoScriptPluginParams,
     callback_labels,
     commands::{DeleteScript, AddStaticScript},
     event::ScriptCallbackEvent,
