@@ -1,0 +1,92 @@
+{%- if is_meta -%}
+---@meta
+{% endif -%}
+{%- if name -%}
+---@module "{{ name }}"
+{% endif %}
+{%- if documentation -%}
+--- {{ documentation }}
+{% endif %}
+
+
+
+{%- for alias in aliases %}
+
+{%- if alias.description %}
+--- {{ alias.description }}
+{%- endif %}
+{%- if alias.enum_variants %}
+---@alias {{ alias.name }}
+{%- for variant in alias.enum_variants %}
+---| "{{ variant.value }}"{% if variant.description %} # {{ variant.description }}{% endif %}
+{%- endfor %}
+{%- else %}
+---@alias {{ alias.name }} {{ alias.definition | lua_type }}
+{%- endif %}
+{%- endfor %}
+
+{%- for enum in enums %}
+
+{%- if enum.description %}
+--- {{ enum.description }}
+{%- endif %}
+---@enum {{ enum.name }}
+local {{ enum.name }} = {
+{%- for variant in enum.enum_variants %}
+{{ variant.value | upper }} = "{{ variant.value }}",{% if variant.description %} -- {{ variant.description }}{% endif %}
+{%- endfor %}
+}
+{%- endfor %}
+
+{%- for class in classes %}
+
+{%- if class.documentation %}
+--- {{ class.documentation }}
+{%- endif %}
+---@class {{ class.name }}{% if class.generics %}<{{ class.generics | join(sep=", " ) }}>{% endif %}{% if class.parents
+    %} : {{ class.parents | join(sep=" , ") }}{% endif %}{% if class.exact %} @exact{% endif %}
+    {%- for field in class.fields %}
+    ---@field {% if field.scope != " Public" %}{{ field.scope | lower }} {% endif %}{{ field.name }}{% if field.optional
+    %}?{% endif %} {{ field.ty | lua_type }}{% if field.description %} # {{ field.description }}{% endif %} {%- endfor
+    %} {%- for operator in class.operators %} ---@operator {{ operator.operation }}{% if operator.param_type %}({{
+    operator.param_type | lua_type }}){% endif %}: {{ operator.return_type | lua_type }} {%- endfor %} {{
+    class.name }}={} {%- endfor %} {%- for func in functions %} {%- if func.documentation %} --- {{ func.documentation
+    }} {%- endif %} {%- if func.deprecated %} ---@deprecated {%- endif %} {%- if func.async_fn %} ---@async {%- endif %}
+    {%- if func.nodiscard %} ---@nodiscard {%- endif %} {%- if func.package %} ---@package {%- endif %} {%- for generic
+    in func.generics %} ---@generic {{ generic }} {%- endfor %} {%- for param in func.params %} ---@param {{ param.name
+    }}{% if param.optional %}?{% endif %} {{ param.ty | lua_type }}{% if param.description %} # {{ param.description
+    }}{% endif %} {%- endfor %} {%- for return_type in func.returns %} ---@return {{ return_type | lua_type }} {%-
+    endfor %} {%- for overload in func.overloads %} ---@overload fun({{ overload.params | map(attribute="name" ) |
+    join(sep=", ") }}): {{ overload.returns | map(attribute="lua_type") | join(sep=", ") }}
+    {%- endfor %}
+    function {{ func.name | default(value="anonymous") }}({{ func.params | map(attribute="name" ) | join(sep=", ") }})
+    end
+    {%- endfor %}
+
+    {%- macro lua_type(type) -%}
+    {%- if type.Primitive -%}
+    {{ type.Primitive | lower }}
+    {%- elif type.Alias -%}
+    {{ type.Alias }}
+    {%- elif type.Union -%}
+    {{ type.Union | map(attribute="lua_type") | join(sep=" | ") }}
+    {%- elif type.Array -%}
+    {{ type.Array | lua_type }}[]
+    {%- elif type.Tuple -%}
+    [{{ type.Tuple | map(attribute="lua_type") |
+    join(sep=", ") }}]
+    {%- elif type.Dictionary -%}
+    table<{{ type.Dictionary.key | lua_type }}, {{ type.Dictionary.value | lua_type }}>
+        {%- elif type.TableLiteral -%}
+        { {% for key, value in type.TableLiteral %}{{ key }}: {{ value | lua_type }}{% if not loop.last %}, {% endif
+        %}{% endfor %} }
+        {%- elif type.Function -%}
+        fun({% for param in type.Function.params %}{{ param.name }}{% if param.optional %}?{% endif %}: {{ param.ty |
+        lua_type }}{% if not loop.last %}, {% endif %}{% endfor %}){% if type.Function.returns %}: {{
+        type.Function.returns | map(attribute="lua_type") | join(sep=", ") }}{% endif %}
+        {%- elif type.Generic -%}
+        {{ type.Generic.name }}{% if type.Generic.parent %}<{{ type.Generic.parent | lua_type }}>{% endif %}
+            {%- elif type.Literal -%}
+            " {{ type.Literal }}" {%- elif type.Any -%} any {%- elif type.Nil -%} nil {%- else -%} unknown {%- endif -%}
+            {%-
+            endmacro -%}

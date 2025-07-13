@@ -1,0 +1,39 @@
+[package]
+name = "lua_language_server_lad_backend"
+version = "0.1.0"
+edition = "2021"
+authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
+license = "MIT OR Apache-2.0"
+description = "Language Agnostic Declaration (LAD) file format post processor for generating Lua language server files for the bevy_mod_scripting crate"
+repository = "https://github.com/makspll/bevy_mod_scripting"
+homepage = "https://github.com/makspll/bevy_mod_scripting"
+keywords = ["bevy", "gamedev", "scripting", "documentation", "generator"]
+categories = ["game-development", "development-tools"]
+include = ["readme.md", "/src"]
+readme = "readme.md"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+# mdbook = "0.4"
+anyhow = "1"
+tera = "1.20"
+strum = { version = "0.25", features = ["derive"] }
+ladfile = { path = "../../ladfile", version = "0.5.0" }
+env_logger = "0.11"
+log = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+include_dir = "0.7"
+indexmap = "2"
+# serde_json = "1.0"
+# regex = "1.11"
+
+[dev-dependencies]
+# assert_cmd = "2.0"
+# pretty_assertions = "1.4.1"
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "lad-lls"
+path = "src/main.rs"

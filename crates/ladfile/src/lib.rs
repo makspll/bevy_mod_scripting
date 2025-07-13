@@ -577,12 +577,12 @@ pub struct LadGeneric {
     pub name: String,
 }
 
-/// Parses a toml string into a LAD file.
+/// Parses a json string into a LAD file.
 pub fn parse_lad_file(toml: &str) -> Result<LadFile, serde_json::Error> {
     serde_json::from_str(toml)
 }
 
-/// Serializes a LAD file into a toml file.
+/// Serializes a LAD file into a json file.
 pub fn serialize_lad_file(lad_file: &LadFile, pretty: bool) -> Result<String, serde_json::Error> {
     if pretty {
         serde_json::to_string_pretty(lad_file)
