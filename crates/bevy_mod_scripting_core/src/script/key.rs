@@ -16,7 +16,7 @@ pub struct ContextKey {
 
 impl fmt::Display for ContextKey {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "context ")?;
+        // write!(f, "context ")?;
         if let Some(script_id) = &self.script_id {
             write!(f, "script {}", script_id.display())?;
         }

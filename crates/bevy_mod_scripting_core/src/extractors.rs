@@ -222,7 +222,6 @@ impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
     pub fn call_dynamic_label(
         &self,
         label: &CallbackLabel,
-        // context_key: &ContextKey
         context_key: &ContextKey,
         context: Option<&Arc<Mutex<P::C>>>,
         payload: Vec<ScriptValue>,

@@ -16,7 +16,7 @@ use crate::{
     script::{StaticScripts, DisplayProxy, ScriptContextProvider, ContextKey},
     IntoScriptPluginParams,
 };
-use bevy::{asset::Handle, ecs::entity::Entity, log::{warn, debug}, prelude::{EntityCommand, Command}};
+use bevy::{asset::Handle, ecs::entity::Entity, log::{error, warn, debug}, prelude::{EntityCommand, Command}};
 use std::marker::PhantomData;
 
 /// Deletes a script with the given ID
@@ -115,17 +115,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         guard: WorldGuard,
         handler_ctxt: &HandlerContext<P>,
     ) -> Result<(), ScriptError> {
-// <<<<<<< HEAD
-        // bevy::log::debug!("{}: reloading script with id: {}", P::LANGUAGE, self.id);
-        // let existing_script = match handler_ctxt.scripts.scripts.get(&self.id) {
-        //     Some(script) => script,
-        //     None => {
-        //         return Err(
-        //             InteropError::invariant("Tried to reload script which doesn't exist").into(),
-        //         )
-        //     }
-        // };
-
+        bevy::log::debug!("{}: reloading context {}", P::LANGUAGE, context_key);
         // reload context
         (ContextBuilder::<P>::reload)(
             handler_ctxt.context_loading_settings.loader.reload,
@@ -147,7 +137,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         guard: WorldGuard,
         handler_ctxt: &HandlerContext<P>,
     ) -> Result<P::C, ScriptError> {
-        bevy::log::debug!("{}: loading script into context {}", P::LANGUAGE, context_key);
+        bevy::log::debug!("{}: loading context {}", P::LANGUAGE, context_key);
         let context = (ContextBuilder::<P>::load)(
             handler_ctxt.context_loading_settings.loader.load,
             context_key,
@@ -163,138 +153,67 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     }
 
     fn before_load(
-        // context_key: &ContextKey,
-        &self,
+        context_key: ContextKey,
         world: WorldGuard,
-        handler_ctxt: &mut HandlerContext<P>,
-        is_reload: bool,
+        handler_ctxt: &HandlerContext<P>,
     ) -> Option<ScriptValue> {
-        if is_reload {
-            // if something goes wrong, the error will be handled in the command
-            // but we will not pass the script state to the after_load
-            return RunScriptCallback::<P>::new(
-                self.context_key.clone(),
-                OnScriptUnloaded::into_callback_label(),
-                vec![],
-                false,
-            )
+        // if something goes wrong, the error will be handled in the command
+        // but we will not pass the script state to the after_load
+        RunScriptCallback::<P>::new(
+            context_key.clone(),
+            OnScriptUnloaded::into_callback_label(),
+            vec![],
+            false,
+        )
             .with_context(P::LANGUAGE)
             .with_context("saving reload state")
             .run_with_handler(world, handler_ctxt)
-            .ok();
-        }
-
-        None
+            .inspect_err(|e| {
+                error!("{}: on_script_unloaded problem for {}", P::LANGUAGE, &context_key);
+            })
+            .ok()
     }
 
     fn after_load(
-        // context_key: &ContextKey,
-        &self,
+        context_key: ContextKey,
         world: WorldGuard,
-        handler_ctxt: &mut HandlerContext<P>,
+        handler_ctxt: &HandlerContext<P>,
         script_state: Option<ScriptValue>,
-        is_reload: bool,
     ) {
         let _ = RunScriptCallback::<P>::new(
-            self.context_key.clone(),
+            context_key.clone(),
             OnScriptLoaded::into_callback_label(),
             vec![],
             false,
         )
         .with_context(P::LANGUAGE)
         .with_context("on loaded callback")
-        .run_with_handler(world.clone(), handler_ctxt);
+        .run_with_handler(world.clone(), handler_ctxt)
+        .inspect_err(|e| {
+            error!("{}: on_script_loaded problem for {}", P::LANGUAGE, &context_key);
+        });
 
-        if is_reload {
-            let state = script_state.unwrap_or(ScriptValue::Unit);
+        if let Some(state) = script_state {
             let _ = RunScriptCallback::<P>::new(
-                self.context_key.clone(),
+                context_key.clone(),
                 OnScriptReloaded::into_callback_label(),
                 vec![state],
                 false,
             )
             .with_context(P::LANGUAGE)
             .with_context("on reloaded callback")
-            .run_with_handler(world, handler_ctxt);
+            .run_with_handler(world, handler_ctxt)
+            .inspect_err(|e| {
+                error!("{}: on_script_reloaded problem for {}", P::LANGUAGE, &context_key);
+            });
         }
     }
-
-// <<<<<<< HEAD
-    // fn handle_global_context(
-    //     &self,
-    //     guard: WorldGuard,
-    //     handler_ctxt: &mut HandlerContext<P>,
-    // ) -> (Result<(), ScriptError>, Option<ScriptValue>, bool) {
-    //     let existing_context = handler_ctxt
-    //         .scripts
-    //         .scripts
-    //         .values()
-    //         .next()
-    //         .map(|s| s.context.clone());
-
-    //     debug!(
-    //         "{}: CreateOrUpdateScript command applying to global context (script_id: {}, new context?: {}, new script?: {})",
-    //         P::LANGUAGE,
-    //         self.id,
-    //         existing_context.is_none(),
-    //         !handler_ctxt.scripts.scripts.contains_key(&self.id)
-    //     );
-
-    //     let is_reload = existing_context.is_some();
-
-    //     if let Some(context) = existing_context {
-    //         // point all new scripts to the shared context
-    //         handler_ctxt.scripts.scripts.insert(
-    //             self.id.clone(),
-    //             Script {
-    //                 id: self.id.clone(),
-    //                 asset: self.asset.clone(),
-    //                 context,
-    //             },
-    //         );
-    //     }
-
-    //     let script_state = self.before_load(guard.clone(), handler_ctxt, is_reload);
-
-    //     let result = if is_reload {
-    //         self.reload_context(guard, handler_ctxt)
-    //     } else {
-    //         self.load_context(guard, handler_ctxt)
-    //     };
-
-    //     (result, script_state, is_reload)
-    // }
-
-    // fn handle_individual_context(
-    //     &self,
-    //     guard: WorldGuard,
-    //     handler_ctxt: &mut HandlerContext<P>,
-    // ) -> (Result<(), ScriptError>, Option<ScriptValue>, bool) {
-    //     let is_new_script = !handler_ctxt.scripts.scripts.contains_key(&self.id);
-    //     let is_reload = !is_new_script;
-
-    //     debug!(
-    //         "{}: CreateOrUpdateScript command applying (script_id: {}, new context?: {}, new script?: {})",
-    //         P::LANGUAGE,
-    //         self.id,
-    //         is_new_script,
-    //         !handler_ctxt.scripts.scripts.contains_key(&self.id)
-    //     );
-
-    //     let script_state = self.before_load(guard.clone(), handler_ctxt, is_reload);
-    //     let result = if is_new_script {
-    //         self.load_context(guard, handler_ctxt)
-    //     } else {
-    //         self.reload_context(guard, handler_ctxt)
-    //     };
-    //     (result, script_state, is_reload)
-    // }
 
     pub(crate) fn create_or_update_script(
         context_key: &ContextKey,
         content: Option<&[u8]>,
         guard: WorldGuard,
-        handler_ctxt: &mut HandlerContext<P>) -> Result<(), ScriptError> {
+        handler_ctxt: &mut HandlerContext<P>) -> Result<Option<ScriptValue>, ScriptError> {
 
         let mut script_id = &Handle::default();
         let Some(content) = content.or_else(|| context_key.script_id.as_ref().and_then(|id| {
@@ -315,9 +234,11 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         };
         let phrase;
         let success;
+        let mut script_state = None;
         let result = match handler_ctxt.script_context.get(context_key) {
             Some(context) => {
                 bevy::log::debug!("{}: reloading context {}", P::LANGUAGE, context_key);
+                script_state = Self::before_load(context_key.clone(), guard.clone(), handler_ctxt);
                 let mut lcontext = context.lock();
                 phrase = "reloading";
                 success = "updated";
@@ -347,7 +268,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
                     context_key,
                     success,
                 );
-                Ok(())// none until individual context support added.
+                Ok(script_state)// none until individual context support added.
             }
             Err(err) => {
                 handle_script_errors(
@@ -369,57 +290,18 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
 #[profiling::all_functions]
 impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
     fn apply(self, world: &mut bevy::prelude::World) {
-        // with_handler_system_state(world, |guard, handler_ctxt: &mut HandlerContext<P>| {
-        //     let (result, script_state, is_reload) =
-        //         match handler_ctxt.context_loading_settings.assignment_strategy {
-        //             crate::context::ContextAssignmentStrategy::Global => {
-        //                 self.handle_global_context(guard.clone(), handler_ctxt)
-        //             }
-        //             crate::context::ContextAssignmentStrategy::Individual => {
-        //                 self.handle_individual_context(guard.clone(), handler_ctxt)
-        //             }
-        //         };
-
-        //     if let Err(err) = result {
-        //         handle_script_errors(
-        //             guard,
-        //             vec![err
-        //                 .with_script(self.id.clone())
-        //                 .with_context(P::LANGUAGE)
-        //                 .with_context(if is_reload {
-        //                     "reloading an existing script or context"
-        //                 } else {
-        //                     "loading a new script or context"
-        //                 })]
-        //             .into_iter(),
-        //         );
-        //         return; // don't run after_load if there was an error
-        //     }
-
-        //     bevy::log::debug!(
-        //         "{}: script with id: {} successfully created or updated",
-        //         P::LANGUAGE,
-        //         self.id
-        //     );
-
-        //     self.after_load(guard, handler_ctxt, script_state, is_reload);
-        // });
-        let result = with_handler_system_state(
+        let _ = with_handler_system_state(
             world,
             |guard, handler_ctxt: &mut HandlerContext<P>| {
-               Self::create_or_update_script(&self.context_key, self.content.as_deref(),
-                                             guard, handler_ctxt)
+               let result = Self::create_or_update_script(&self.context_key, self.content.as_deref(),
+                                                          guard.clone(), handler_ctxt);
+                match result {
+                    Ok(script_state) => {
+                        Self::after_load(self.context_key, guard, handler_ctxt, script_state);
+                    }
+                    Err(_) => {}
+                }
             });
-
-        // Immediately run command for callback, but only if loading went fine.
-        if result.is_ok() {
-            Command::apply(RunScriptCallback::<P>::new(
-                self.context_key,
-                OnScriptLoaded::into_callback_label(),
-                vec![],
-                false,
-            ), world);
-        }
     }
 }
 
@@ -476,86 +358,43 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
     pub fn run_with_handler(
         self,
         guard: WorldGuard,
-        handler_ctxt: &mut HandlerContext<P>,
+        handler_ctxt: &HandlerContext<P>,
     ) -> Result<ScriptValue, ScriptError> {
 
-            let result = handler_ctxt.call_dynamic_label(
-                &self.callback,
-                &self.context_key,
-                None,
-                self.args,
+        let result = handler_ctxt.call_dynamic_label(
+            &self.callback,
+            &self.context_key,
+            None,
+            self.args,
+            guard.clone(),
+        );
+
+        if self.trigger_response {
+            send_callback_response(
                 guard.clone(),
+                ScriptCallbackResponseEvent::new(
+                    self.callback,
+                    self.context_key.clone(),
+                    result.clone(),
+                ),
             );
+        }
 
-            if self.trigger_response {
-                send_callback_response(
-                    guard.clone(),
-                    ScriptCallbackResponseEvent::new(
-                        self.callback,
-                        self.context_key.clone(),
-                        result.clone(),
-                    ),
-                );
-            }
-
-            if let Err(ref err) = result {
-
-                let mut error_with_context =
-                    if let Some(script_id) = self.context_key .script_id .as_ref() {
-                        err.clone().with_script(script_id.display())
-                    } else {
-                        err.clone()
-                    }
-                .with_context(P::LANGUAGE);
-                for ctxt in self.context {
-                    error_with_context = error_with_context.with_context(ctxt);
+        if let Err(ref err) = result {
+            let mut error_with_context =
+                if let Some(script_id) = self.context_key.script_id.as_ref() {
+                    err.clone().with_script(script_id.display())
+                } else {
+                    err.clone()
                 }
-
-                handle_script_errors(guard, vec![error_with_context].into_iter());
+            .with_context(P::LANGUAGE);
+            for ctxt in self.context {
+                error_with_context = error_with_context.with_context(ctxt);
             }
+
+            handle_script_errors(guard, vec![error_with_context].into_iter());
+        }
         result
-        // if !handler_ctxt.is_script_fully_loaded(self.id.clone()) {
-        //     bevy::log::error!(
-        //         "{}: Cannot apply callback {} command, as script does not exist: {}. Ignoring.",
-        //         P::LANGUAGE,
-        //         self.callback,
-        //         self.id
-        //     );
-        //     return Err(ScriptError::new(InteropError::missing_script(
-        //         self.id.clone(),
-        //     )));
-        // }
-
-        // let result = handler_ctxt.call_dynamic_label(
-        //     &self.callback,
-        //     &self.id,
-        //     self.entity,
-        //     self.args,
-        //     guard.clone(),
-        // );
-
-        // if self.trigger_response {
-        //     send_callback_response(
-        //         guard.clone(),
-        //         ScriptCallbackResponseEvent::new(
-        //             self.entity,
-        //             self.callback,
-        //             self.id.clone(),
-        //             result.clone(),
-        //         ),
-        //     );
-        // }
-
-        // if let Err(err) = &result {
-        //     let mut error_with_context = err.clone().with_script(self.id).with_context(P::LANGUAGE);
-        //     for ctxt in &self.context {
-        //         error_with_context = error_with_context.with_context(ctxt);
-        //     }
-
-        //     handle_script_errors(guard, vec![error_with_context].into_iter());
-        // }
-
-        // result
     }
 
     /// Equivalent to running the command, but also returns the result of the callback.
@@ -570,19 +409,8 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
 
 impl<P: IntoScriptPluginParams> Command for RunScriptCallback<P> {
     fn apply(self, world: &mut bevy::prelude::World) {
-// <<<<<<< HEAD
-        // // internals handle this
+        // Internals handle this.
         let _ = self.run(world);
-        // with_handler_system_state(world, |guard, handler_ctxt: &mut HandlerContext<P>| {
-            // if !handler_ctxt.is_script_fully_loaded(self.id.id()) {
-            //     bevy::log::error!(
-            //         "{}: Cannot apply callback command, as script {} does not exist. Ignoring.",
-            //         P::LANGUAGE,
-            //         self.id.display()
-            //     );
-            //     return;
-            // }
-
     }
 }
 
@@ -687,8 +515,6 @@ mod test {
                         init(name, &mut new)?;
                     }
                     for init in pre_run_init {
-// <<<<<<< HEAD
-                        // init(name, Entity::from_raw(0), &mut new)?;
                         init(name, existing)?;
                     }
                     existing.push_str(" | ");
@@ -836,7 +662,6 @@ mod test {
         assert_response_events(
             app.world_mut(),
             vec![ScriptCallbackResponseEvent::new(
-                Entity::from_raw(0),
                 OnScriptLoaded::into_callback_label(),
                 script.id(),
                 Ok(ScriptValue::Unit),

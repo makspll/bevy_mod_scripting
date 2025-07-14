@@ -566,7 +566,6 @@ mod test {
         assert_response_events(
             app.world_mut(),
             vec![ScriptCallbackResponseEvent::new(
-                entity,
                 OnTestCallback::into_callback_label(),
                 ContextKey::from(test_script_id.id()).or(test_entity_id.into()),
                 Ok(ScriptValue::Unit),
