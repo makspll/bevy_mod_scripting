@@ -515,7 +515,7 @@ mod test {
                         init(name, &mut new)?;
                     }
                     for init in pre_run_init {
-                        init(name, existing)?;
+                        init(name, &mut new)?;
                     }
                     existing.push_str(" | ");
                     existing.push_str(&new);
