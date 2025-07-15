@@ -21,7 +21,6 @@ fn main() {
                          for file_name in args.drain(..) {
                              handles.push(asset_server.load::<ScriptAsset>(file_name));
                          }
-                         println!("spawn");
                          commands.spawn(ScriptComponent(handles));
 
                      })
@@ -37,19 +36,19 @@ fn add_logging(app: &mut App) {
     let world = app.world_mut();
     NamespaceBuilder::<World>::new_unregistered(world)
         .register("info", |s: String| {
-            bevy::log::info!(s);
+            bevy::log::info!("{}", s);
         })
         .register("warn", |s: String| {
-            bevy::log::warn!(s);
+            bevy::log::warn!("{}", s);
         })
         .register("error", |s: String| {
-            bevy::log::error!(s);
+            bevy::log::error!("{}", s);
         })
         .register("debug", |s: String| {
-            bevy::log::debug!(s);
+            bevy::log::debug!("{}", s);
         })
         .register("trace", |s: String| {
-            bevy::log::trace!(s);
+            bevy::log::trace!("{}", s);
         });
 }
 
