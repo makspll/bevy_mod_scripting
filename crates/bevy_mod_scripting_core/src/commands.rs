@@ -169,7 +169,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
             .with_context("saving reload state")
             .run_with_handler(world, handler_ctxt)
             .inspect_err(|e| {
-                error!("{}: on_script_unloaded problem for {}", P::LANGUAGE, &context_key);
+                error!("{}: on_script_unloaded problem for {}: {e}", P::LANGUAGE, &context_key);
             })
             .ok()
     }
@@ -190,7 +190,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         .with_context("on loaded callback")
         .run_with_handler(world.clone(), handler_ctxt)
         .inspect_err(|e| {
-            error!("{}: on_script_loaded problem for {}", P::LANGUAGE, &context_key);
+            error!("{}: on_script_loaded problem for {}: {e}", P::LANGUAGE, &context_key);
         });
 
         if let Some(state) = script_state {
@@ -204,7 +204,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
             .with_context("on reloaded callback")
             .run_with_handler(world, handler_ctxt)
             .inspect_err(|e| {
-                error!("{}: on_script_reloaded problem for {}", P::LANGUAGE, &context_key);
+                error!("{}: on_script_reloaded problem for {}: {e}", P::LANGUAGE, &context_key);
             });
         }
     }
