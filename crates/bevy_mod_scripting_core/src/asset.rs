@@ -184,31 +184,34 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
     mut events: EventReader<AssetEvent<ScriptAsset>>,
     script_assets: Res<Assets<ScriptAsset>>,
     mut static_scripts: ResMut<StaticScripts>,
-    asset_server: Res<AssetServer>,
+    scripts: Query<(Entity, &ScriptComponent, Option<&ScriptDomain>)>,
+    mut commands: Commands,
 ) {
     for event in events.read() {
 
         trace!("{}: Received script asset event: {:?}", P::LANGUAGE, event);
         match event {
-            // emitted when a new script asset is loaded for the first time
-            AssetEvent::LoadedWithDependencies { id } | AssetEvent::Added { id } | AssetEvent::Modified{ id } => {
+            AssetEvent::Modified{ id } => {
                 if let Some(asset) = script_assets.get(*id) {
                     if asset.language != P::LANGUAGE {
-                        match asset_server.get_path(*id) {
-                            Some(path) => {
-                                trace!(
-                                    "{}: Script path {} is for a different language than this sync system. Skipping.",
-                                    P::LANGUAGE,
-                                    path);
-                            }
-                            None => {
-                                trace!(
-                                    "{}: Script id {} is for a different language than this sync system. Skipping.",
-                                    P::LANGUAGE,
-                                    id);
-                            }
-                        }
                         continue;
+                    }
+                    // We need to reload the script for any context its
+                    // associated with. That could be static scripts, script
+                    // components.
+                    for (entity, script_component, script_domain_maybe) in &scripts
+                    {
+                        if let Some(handle) = script_component.0.iter().find(|handle| handle.id() == *id) {
+                            commands.queue(CreateOrUpdateScript::<P>::new(ContextKey {
+                                entity: Some(entity),
+                                script_id: Some(handle.clone()),
+                                domain: script_domain_maybe.map(|x| x.0),
+                            }));
+                        }
+                    }
+
+                    if let Some(handle) = static_scripts.scripts.iter().find(|s| s.id() == *id) {
+                        commands.queue(CreateOrUpdateScript::<P>::new(handle.clone()));
                     }
                 }
             }
@@ -222,12 +225,15 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
                 // doesn't quite work for the other context providers, and it
                 // requires we keep a script loaded in memory when technically
                 // it needn't be.
+                //
+                // If we want this kind of behavior, it seems like we'd want to
+                // have handles to contexts.
+                //
                 // if script_contexts.remove(None, id, &None) {
                 //     info!("{}: Removed script context {:?}", P::LANGUAGE, id);
                 // }
             }
-            AssetEvent::Unused { id: _ } => {
-            }
+            _ => ()
         };
     }
 }

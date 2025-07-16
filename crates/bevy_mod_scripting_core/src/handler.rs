@@ -169,7 +169,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                            .map(|s| (None, Err(s), None)))
                            {
                                let empty_script_component = ScriptComponent(vec![]);
-                               let domain = script_domain_maybe.as_ref().map(|x| x.0);
+                               let domain = script_domain_maybe.map(|x| x.0);
                                let (iter_a, iter_b) = match script_component {
                                    Ok(script_component) => (script_component.into_inner(), None.into_iter()),
                                    Err(script_handle) => (&empty_script_component, Some(script_handle).into_iter())
