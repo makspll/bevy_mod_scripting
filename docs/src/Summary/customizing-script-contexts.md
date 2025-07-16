@@ -12,7 +12,7 @@ For example, let's say you want to set a dynamic amount of globals in your scrip
 
 You could do this by customizing the scripting plugin:
 ```rust,ignore
-let plugin = LuaScriptingPlugin::default().add_context_initializer(|script_id: &str, context: &mut Lua| {
+let plugin = LuaScriptingPlugin::default().add_context_initializer(|_context_key: &ContextKey, context: &mut Lua| {
     let globals = context.globals();
     for i in 0..10 {
         globals.set(i, i);
@@ -67,7 +67,7 @@ use bevy::prelude::*;
 use bevy_mod_scripting::prelude::*;
 fn scripting_plugin(app: &mut App) {
     let plugin = LuaScriptingPlugin::default();
-    plugin.add_context_initializer(|script_id: &str, context: &mut Lua| {
+    plugin.add_context_initializer(|_context_key: &ContextKey, context: &mut Lua| {
         let world = ThreadWorldContainer.try_get_world().unwrap();
         world.with_resource::<MyResource>(|res| println!("My resource: {:?}", res));
         Ok(())
