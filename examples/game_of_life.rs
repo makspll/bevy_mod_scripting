@@ -75,17 +75,17 @@ fn run_script_cmd(
                 // we can simply drop the handle, or manually delete, I'll just drop the handle
                 bevy::log::info!("Stopping game of life by dropping the handles to all scripts");
                 for (id, script_component) in &script_comps {
-                    for script_id in &script_component.0 {
-                        match script_id.path().and_then(|p| p.get_full_extension()).unwrap_or_default().as_str() {
+                    for script in &script_component.0 {
+                        match script.path().and_then(|p| p.get_full_extension()).unwrap_or_default().as_str() {
                             "lua" => {
                                 commands.entity(id).queue(DeleteScript::<LuaScriptingPlugin>::new(
-                                    script_id.id(),
+                                    script.id(),
                                 ));
                             }
                             "rhai" => {
                                 #[cfg(feature = "rhai")]
                                 commands.entity(id).queue(DeleteScript::<RhaiScriptingPlugin>::new(
-                                    script_id.id(),
+                                    script.id(),
                                 ));
                             }
                             ext => {
@@ -96,16 +96,16 @@ fn run_script_cmd(
                     commands.entity(id).despawn();
                 }
 
-                for script_id in static_lua_scripts.drain(..) {
+                for script in static_lua_scripts.drain(..) {
                     commands.queue(DeleteScript::<LuaScriptingPlugin>::new(
-                        script_id,
+                        script,
                     ));
                 }
 
                 #[cfg(feature = "rhai")]
-                for script_id in static_rhai_scripts.drain(..) {
+                for script in static_rhai_scripts.drain(..) {
                     commands.queue(DeleteScript::<RhaiScriptingPlugin>::new(
-                        script_id,
+                        script,
                     ));
                 }
             }

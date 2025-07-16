@@ -48,7 +48,7 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
         ), world);
 
         let mut deleted = false;
-        if let Some(script_id) = self.context_key.script_id.as_ref() {
+        if let Some(script_id) = self.context_key.script.as_ref() {
             {
                 let mut scripts = world.get_resource_or_init::<StaticScripts>();
                 if scripts.remove(script_id) {
@@ -216,14 +216,14 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         handler_ctxt: &mut HandlerContext<P>) -> Result<Option<ScriptValue>, ScriptError> {
 
         let mut script_id = &Handle::default();
-        let Some(content) = content.or_else(|| context_key.script_id.as_ref().and_then(|id| {
+        let Some(content) = content.or_else(|| context_key.script.as_ref().and_then(|id| {
             script_id = id;
             handler_ctxt.scripts.get(script_id)
                                 .map(|script| &*script.content)
                 // .ok_or_else(|| ScriptError::new(InteropError::missing_script(id)))
         })) else {
             warn!("No content for context {} to create or update", context_key);
-            match &context_key.script_id {
+            match &context_key.script {
                 Some(script_id) => {
                     return Err(ScriptError::new(InteropError::missing_script(script_id.clone())));
                 }
@@ -382,7 +382,7 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
 
         if let Err(ref err) = result {
             let mut error_with_context =
-                if let Some(script_id) = self.context_key.script_id.as_ref() {
+                if let Some(script_id) = self.context_key.script.as_ref() {
                     err.clone().with_script(script_id.display())
                 } else {
                     err.clone()

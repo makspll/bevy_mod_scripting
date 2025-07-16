@@ -474,7 +474,7 @@ where
         let (guard, context) = handler_ctxt.get_mut();
         let context_key = ContextKey {
             entity: Some(entity),
-            script_id: Some(Handle::Weak(script_id)),
+            script: Some(Handle::Weak(script_id)),
             domain: None,
         };
 

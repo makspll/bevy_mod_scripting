@@ -126,8 +126,8 @@ impl Default for LuaScriptingPlugin {
                             )
                             .map_err(ScriptError::from_mlua_error)?;
                     }
-                    if let Some(script_id) = context_key.script_id.as_ref() {
-                        let path = script_id.path().map(|p| p.to_string()).unwrap_or_else(|| script_id.id().to_string());
+                    if let Some(script) = context_key.script.as_ref() {
+                        let path = script.path().map(|p| p.to_string()).unwrap_or_else(|| script.id().to_string());
                         context
                             .globals()
                             .set("script_id", path)
@@ -278,7 +278,7 @@ mod test {
         lua_context_load(
             &context_key,
             "function hello_world_from_first_load()
-            
+
             end"
             .as_bytes(),
             &initializers,
@@ -290,7 +290,7 @@ mod test {
         lua_context_reload(
             &context_key,
             "function hello_world_from_second_load()
-            
+
             end"
             .as_bytes(),
             &mut old_ctxt,

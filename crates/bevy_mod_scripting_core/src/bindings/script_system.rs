@@ -426,7 +426,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         };
 
         let mut payload = Vec::with_capacity(state.system_params.len());
-        let script_id = {
+        let script = {
             let asset_server = world.world().resource::<AssetServer>();
             asset_server.load(&*self.target_script)
         };
@@ -498,7 +498,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 
         let handler_ctxt = DynamicHandlerContext::<P>::get_param(&world);
         let context_key = ContextKey {
-            script_id: Some(script_id),
+            script: Some(script),
             entity: None,
             domain: self.domain,
         };

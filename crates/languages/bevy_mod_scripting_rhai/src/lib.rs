@@ -159,7 +159,7 @@ impl Default for RhaiScriptingPlugin {
                             RhaiReflectReference(<Entity>::allocate(Box::new(entity), world)),
                         );
                     }
-                    if let Some(script_id) = context_key.script_id.as_ref() {
+                    if let Some(script_id) = context_key.script.as_ref() {
                         context.scope.set_or_push("script_id", script_id.to_owned());
                     }
                     Ok(())
@@ -194,7 +194,7 @@ fn load_rhai_content_into_context(
     let runtime = runtime.read();
 
     context.ast = runtime.compile(std::str::from_utf8(content)?)?;
-    if let Some(script) = context_key.script_id.as_ref() {
+    if let Some(script) = context_key.script.as_ref() {
         context.ast.set_source(script.display().to_string());
     }
 

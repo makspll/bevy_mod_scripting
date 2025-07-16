@@ -204,7 +204,7 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
                         if let Some(handle) = script_component.0.iter().find(|handle| handle.id() == *id) {
                             commands.queue(CreateOrUpdateScript::<P>::new(ContextKey {
                                 entity: Some(entity),
-                                script_id: Some(handle.clone()),
+                                script: Some(handle.clone()),
                                 domain: script_domain_maybe.map(|x| x.0),
                             }));
                         }
@@ -249,7 +249,7 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
         for handle in &script_comp.0 {
             script_queue.push_back(ContextKey {
                 entity: Some(id),
-                script_id: Some(handle.clone_weak()),
+                script: Some(handle.clone_weak()),
                 domain: domain_maybe.map(|x| x.0)
             });
         }
@@ -262,15 +262,15 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
             .map(|context_key| {
 
                 // If there is a script, wait for the script to load.
-                context_key.script_id.as_ref()
-                                     .map(|script_id|
-                script_assets.contains(script_id.id()) || match asset_server.load_state(script_id) {
+                context_key.script.as_ref()
+                                     .map(|script|
+                script_assets.contains(script.id()) || match asset_server.load_state(script) {
                     LoadState::NotLoaded => false,
                     LoadState::Loading => false,
                     LoadState::Loaded => true,
                     LoadState::Failed(e) => {
                         script_failed = true;
-                        error!("Failed to load script {} for eval: {e}.", script_id.display());
+                        error!("Failed to load script {} for eval: {e}.", script.display());
                         true
                     }
                 }).unwrap_or(true)
@@ -283,7 +283,7 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
             if script_failed {
                 continue;
             }
-            let language = context_key.script_id.as_ref()
+            let language = context_key.script.as_ref()
                                       .and_then(|script_id| script_assets.get(script_id))
                                       .map(|asset| asset.language.clone())
                                       .unwrap_or_default();

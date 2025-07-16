@@ -184,7 +184,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                                 entity: id,
                                 // A clone is better for error reporting but a
                                 // weak handle avoids the clone.
-                                script_id: Some(script_handle.clone()),
+                                script: Some(script_handle.clone()),
                                 domain,
                             };
                             if let Some(hash) = handler_ctxt.script_context.hash(
@@ -247,7 +247,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
 
                             let context_key = ContextKey {
                                 entity: Some(*target_entity),
-                                script_id: Some(script_handle.clone()),
+                                script: Some(script_handle.clone()),
                                 domain,
                             };
                             if let Some(hash) = handler_ctxt.script_context.hash(
@@ -513,7 +513,7 @@ mod test {
             callback_handler: |args, context_key, _, ctxt, _, runtime| {
                 ctxt.invocations.extend(args);
                 let mut runtime = runtime.invocations.lock();
-                runtime.push((context_key.entity, context_key.script_id.as_ref().map(|x| x.id())));
+                runtime.push((context_key.entity, context_key.script.as_ref().map(|x| x.id())));
                 Ok(ScriptValue::Unit)
             },
         });
@@ -547,9 +547,9 @@ mod test {
             invocations: vec![].into(),
         };
         let mut app = setup_app::<OnTestCallback>(runtime);
-        let test_script_id = add_script(&mut app, "");
+        let test_script = add_script(&mut app, "");
         let test_entity_id = app.world_mut()
-            .spawn(ScriptComponent(vec![test_script_id.clone()]))
+            .spawn(ScriptComponent(vec![test_script.clone()]))
             .id();
         app.update();
 
@@ -567,7 +567,7 @@ mod test {
             app.world_mut(),
             vec![ScriptCallbackResponseEvent::new(
                 OnTestCallback::into_callback_label(),
-                ContextKey::from(test_script_id.id()).or(test_entity_id.into()),
+                ContextKey::from(test_script.id()).or(test_entity_id.into()),
                 Ok(ScriptValue::Unit),
             )]
             .into_iter(),
@@ -580,8 +580,8 @@ mod test {
             invocations: vec![].into(),
         };
         let mut app = setup_app::<OnTestCallback>(runtime);
-        let test_script_id = add_script(&mut app, "");
-        app.add_static_script(test_script_id.clone());
+        let test_script = add_script(&mut app, "");
+        app.add_static_script(test_script.clone());
         app.update();
 
         app.world_mut().send_event(
@@ -598,7 +598,7 @@ mod test {
             app.world_mut(),
             vec![ScriptCallbackResponseEvent::new(
                 OnTestCallback::into_callback_label(),
-                test_script_id.id(),
+                test_script.id(),
                 Ok(ScriptValue::Unit),
             )]
             .into_iter(),
@@ -611,11 +611,11 @@ mod test {
             invocations: vec![].into(),
         };
         let mut app = setup_app::<OnTestCallback>(runtime);
-        let test_script_id = add_script(&mut app, "");
-        // app.add_static_script(test_script_id.clone());
+        let test_script = add_script(&mut app, "");
+        // app.add_static_script(test_script.clone());
         let test_entity_id = app
             .world_mut()
-            .spawn(ScriptComponent(vec![test_script_id.clone()]))
+            .spawn(ScriptComponent(vec![test_script.clone()]))
             .id();
 
         app.update();
@@ -626,9 +626,9 @@ mod test {
                 .unwrap();
             // let key = script_context.iter_box().next().map(|x| x.0).unwrap();
             // assert_eq!(Some(test_entity_id), key.entity);
-            // // assert_eq!(Some(test_script_id), key.script_id);
+            // // assert_eq!(Some(test_script), key.script_id);
             // assert_eq!(1, script_context.iter_box().count());
-            let key = ContextKey::from(test_entity_id).or(test_script_id.id().into());
+            let key = ContextKey::from(test_entity_id).or(test_script.id().into());
             let context_arc = script_context
                 .get(&key)
                 .cloned()
@@ -652,7 +652,7 @@ mod test {
                     .iter()
                     .map(|(e, s)| (*e, s.clone()))
                     .collect::<Vec<_>>(),
-                vec![(Some(test_entity_id), Some(test_script_id.id()))]
+                vec![(Some(test_entity_id), Some(test_script.id()))]
             );
         }
         assert_response_events(app.world_mut(), vec![].into_iter());
@@ -664,11 +664,11 @@ mod test {
             invocations: vec![].into(),
         };
         let mut app = setup_app::<OnTestCallback>(runtime);
-        let test_script_id = add_script(&mut app, "");
-        // app.add_static_script(test_script_id.clone());
+        let test_script = add_script(&mut app, "");
+        // app.add_static_script(test_script.clone());
         let test_entity_id = app
             .world_mut()
-            .spawn(ScriptComponent(vec![test_script_id.clone()]))
+            .spawn(ScriptComponent(vec![test_script.clone()]))
             .id();
 
         app.world_mut().send_event(ScriptCallbackEvent::new_for_all(
@@ -683,7 +683,7 @@ mod test {
                 .unwrap();
             let key = script_context.iter_box().next().map(|x| x.0).unwrap();
             assert_eq!(Some(test_entity_id), key.entity);
-            // assert_eq!(Some(test_script_id), key.script_id);
+            // assert_eq!(Some(test_script), key.script_id);
             assert_eq!(1, script_context.iter_box().count());
             let context_arc = script_context
                 .get(&key)
@@ -710,9 +710,9 @@ mod test {
                     .collect::<Vec<_>>(),
                 vec![
                     // Once for evaluating the script.
-                    (Some(test_entity_id), Some(test_script_id.id())),
+                    (Some(test_entity_id), Some(test_script.id())),
                     // Once for the callback.
-                    (Some(test_entity_id), Some(test_script_id.id()))]
+                    (Some(test_entity_id), Some(test_script.id()))]
             );
         }
         assert_response_events(app.world_mut(), vec![].into_iter());
@@ -725,12 +725,12 @@ mod test {
         };
         let mut app = setup_app::<OnTestCallback>(runtime);
         // app.insert_resource(ScriptContext::<TestPlugin>::per_entity_and_scriptid());
-        let test_script_id = add_script(&mut app, "");
+        let test_script = add_script(&mut app, "");
         let test_script2_id = add_script(&mut app, "wrong");
-        // app.add_static_script(test_script_id.clone());
+        // app.add_static_script(test_script.clone());
         let test_entity_id = app
             .world_mut()
-            .spawn(ScriptComponent(vec![test_script_id.clone()]))
+            .spawn(ScriptComponent(vec![test_script.clone()]))
             .id();
 
         let test_entity2_id = app
@@ -742,7 +742,7 @@ mod test {
         app.world_mut().send_event(ScriptCallbackEvent::new(
             OnTestCallback::into_callback_label(),
             vec![ScriptValue::String("test_args_script".into())],
-            Recipients::Script(test_script_id.id()),
+            Recipients::Script(test_script.id()),
         ));
 
         app.world_mut().send_event(ScriptCallbackEvent::new(
@@ -765,7 +765,7 @@ mod test {
                 .get_resource::<ScriptContext<TestPlugin>>()
                 .unwrap();
 
-            let key = ContextKey::from(test_entity_id).or(test_script_id.id().into());
+            let key = ContextKey::from(test_entity_id).or(test_script.id().into());
             let context_arc = script_context
                 .get(&key)
                 .cloned()
@@ -786,13 +786,13 @@ mod test {
                     .collect::<Vec<_>>(),
                 vec![
                     // Load 1
-                    (Some(test_entity_id), Some(test_script_id.id())),
+                    (Some(test_entity_id), Some(test_script.id())),
                     // Load 2
                     (Some(test_entity2_id), Some(test_script2_id.id())),
                     // Call 1,
-                    (Some(test_entity_id), Some(test_script_id.id())),
+                    (Some(test_entity_id), Some(test_script.id())),
                     // Call 2,
-                    (Some(test_entity_id), Some(test_script_id.id())),
+                    (Some(test_entity_id), Some(test_script.id())),
                 ]
             );
         }
@@ -806,8 +806,8 @@ mod test {
         };
 
         let mut app = setup_app::<OnTestCallback>(runtime);
-        let test_script_id = add_script(&mut app, "");
-        app.add_static_script(test_script_id.clone());
+        let test_script = add_script(&mut app, "");
+        app.add_static_script(test_script.clone());
         app.update();
 
         app.world_mut().send_event(ScriptCallbackEvent::new(
@@ -818,8 +818,8 @@ mod test {
 
         app.world_mut().send_event(ScriptCallbackEvent::new(
             OnTestCallback::into_callback_label(),
-            vec![ScriptValue::String("test_script_id".into())],
-            Recipients::Script(test_script_id.id()),
+            vec![ScriptValue::String("test_script".into())],
+            Recipients::Script(test_script.id()),
         ));
 
         app.update();
@@ -828,7 +828,7 @@ mod test {
                 .world()
                 .get_resource::<ScriptContext<TestPlugin>>()
                 .unwrap();
-            let key = ContextKey::from(test_script_id);
+            let key = ContextKey::from(test_script);
             let context_arc = script_context
                 .get(&key)
                 .cloned()
@@ -839,7 +839,7 @@ mod test {
                 test_context.invocations,
                 vec![
                     ScriptValue::String("test_args_script".into()),
-                    ScriptValue::String("test_script_id".into())
+                    ScriptValue::String("test_script".into())
                 ]
             );
         }
