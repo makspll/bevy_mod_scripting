@@ -14,6 +14,7 @@ impl Domain {
         Domain(DefaultHashBuilder::default().hash_one(hashable))
     }
 }
+
 /// A generic script context provider
 pub trait ScriptContextProvider<P: IntoScriptPluginParams> {
     /// Get the context.

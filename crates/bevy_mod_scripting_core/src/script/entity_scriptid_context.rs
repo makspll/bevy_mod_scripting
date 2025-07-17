@@ -30,8 +30,17 @@ impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for EntityScriptIdConte
     fn values(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
         self.0.values()
     }
+    /// Remove the (entity, script_id) pair. Or if an entity is given alone, remove all entity pairs.
     fn remove(&mut self, context_key: &ContextKey) -> bool {
         context_key.entity.zip(context_key.script.as_ref()).map(|(e, h)| self.0.remove(&(e, h.id())).is_some()).unwrap_or(false)
+            || (context_key.script.is_none() && context_key.entity.map(|id| {
+                let keys: Vec<(Entity, ScriptId)> = self.0.keys().filter(|(entity, _)| *entity == id).cloned().collect();
+                let mut removed = false;
+                for key in keys {
+                    removed |= self.0.remove(&key).is_some();
+                }
+                removed
+            }).unwrap_or(false))
     }
     fn iter(&self) -> impl Iterator<Item = (ContextKey, &Arc<Mutex<P::C>>)> {
         self.0.iter().map(|((id, script_id), c)| (ContextKey {

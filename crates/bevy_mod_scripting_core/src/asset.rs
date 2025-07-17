@@ -6,7 +6,7 @@ use crate::{
     LanguageExtensions,
     commands::CreateOrUpdateScript,
     error::ScriptError,
-    script::{DisplayProxy, ScriptDomain, ContextKey},
+    script::{DisplayProxy, ScriptDomain, ContextKey, ScriptContext, ScriptContextProvider},
     IntoScriptPluginParams, ScriptingSystemSet,
 };
 use bevy::{
@@ -16,6 +16,7 @@ use bevy::{
     prelude::{
         Commands, EventReader, IntoSystemConfigs, IntoSystemSetConfigs, Res,
         ResMut, Added, Query, AssetServer, Entity, Resource, Deref, DerefMut,
+        RemovedComponents,
     },
     reflect::TypePath,
 };
@@ -183,7 +184,7 @@ impl AssetLoader for ScriptAssetLoader {
 pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
     mut events: EventReader<AssetEvent<ScriptAsset>>,
     script_assets: Res<Assets<ScriptAsset>>,
-    mut static_scripts: ResMut<StaticScripts>,
+    static_scripts: Res<StaticScripts>,
     scripts: Query<(Entity, &ScriptComponent, Option<&ScriptDomain>)>,
     mut commands: Commands,
 ) {
@@ -214,24 +215,6 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
                         commands.queue(CreateOrUpdateScript::<P>::new(handle.clone()));
                     }
                 }
-            }
-            AssetEvent::Removed{ id } => {
-                info!("{}: Asset removed {:?}", P::LANGUAGE, id);
-                if static_scripts.remove(*id) {
-                    info!("{}: Removing static script {:?}", P::LANGUAGE, id);
-                }
-                // We're removing a context because its handle was removed. This
-                // makes sense specifically for ScriptIdContext. However, it
-                // doesn't quite work for the other context providers, and it
-                // requires we keep a script loaded in memory when technically
-                // it needn't be.
-                //
-                // If we want this kind of behavior, it seems like we'd want to
-                // have handles to contexts.
-                //
-                // if script_contexts.remove(None, id, &None) {
-                //     info!("{}: Removed script context {:?}", P::LANGUAGE, id);
-                // }
             }
             _ => ()
         };
@@ -303,6 +286,54 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
     }
 }
 
+/// Remove contexts that are associated with removed entities.
+fn remove_entity_associated_contexts<P: IntoScriptPluginParams>(mut removed: RemovedComponents<ScriptComponent>,
+                                                                mut script_context: ResMut<ScriptContext<P>>,
+) {
+    let mut context_key = ContextKey::default();
+    for id in removed.read() {
+        context_key.entity = Some(id);
+        script_context.remove(&context_key);
+    }
+}
+
+/// When a [ScriptAsset] is removed---all of its strong handles have
+/// dropped---then this system will remove any [StaticScripts] that exist and it
+/// will remove any contexts associated solely with that script.
+///
+/// In BMS version 0.11 and prior, this was the default behavior. Add this
+/// system to restore that behavior.
+#[profiling::function]
+pub fn remove_context_on_script_removal<P: IntoScriptPluginParams>(
+    mut events: EventReader<AssetEvent<ScriptAsset>>,
+    mut static_scripts: ResMut<StaticScripts>,
+    mut script_contexts: ResMut<ScriptContext<P>>,
+) {
+    for event in events.read() {
+        match event {
+            AssetEvent::Removed{ id } => {
+                info!("{}: Asset removed {:?}", P::LANGUAGE, id);
+                if static_scripts.remove(*id) {
+                    info!("{}: Removing static script {:?}", P::LANGUAGE, id);
+                }
+                // We're removing a context because its handle was removed. This
+                // makes sense specifically for ScriptIdContext. However, it
+                // doesn't quite work for the other context providers, and it
+                // requires we keep a script loaded in memory when technically
+                // it needn't be.
+                //
+                // If we want this kind of behavior, it seems like we'd want to
+                // have handles to contexts.
+                //
+                if script_contexts.remove(&ContextKey::from(*id)) {
+                    info!("{}: Removed context for script {:?}", P::LANGUAGE, id);
+                }
+            }
+            _ => ()
+        };
+    }
+}
+
 /// Setup all the asset systems for the scripting plugin and the dependencies
 #[profiling::function]
 pub(crate) fn configure_asset_systems(app: &mut App) -> &mut App {
@@ -322,7 +353,7 @@ pub(crate) fn configure_asset_systems(app: &mut App) -> &mut App {
             ScriptingSystemSet::ScriptAssetDispatch.after(bevy::asset::TrackAssets),
             ScriptingSystemSet::ScriptCommandDispatch
                 .after(ScriptingSystemSet::ScriptAssetDispatch)
-                .before(ScriptingSystemSet::ScriptMetadataRemoval),
+                .before(ScriptingSystemSet::EntityRemoval),
         ),
     );
 
@@ -334,10 +365,12 @@ pub(crate) fn configure_asset_systems(app: &mut App) -> &mut App {
 pub(crate) fn configure_asset_systems_for_plugin<P: IntoScriptPluginParams>(
     app: &mut App,
 ) {
-    app.add_systems(
-        PreUpdate,
-        (eval_script::<P>, sync_script_data::<P>).in_set(ScriptingSystemSet::ScriptCommandDispatch),
-    );
+    app
+        .add_systems(
+            PreUpdate,
+            ((eval_script::<P>, sync_script_data::<P>).in_set(ScriptingSystemSet::ScriptCommandDispatch),
+            remove_entity_associated_contexts::<P>.in_set(ScriptingSystemSet::EntityRemoval)),
+        );
 }
 
 #[cfg(test)]
