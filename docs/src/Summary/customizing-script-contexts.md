@@ -12,7 +12,7 @@ For example, let's say you want to set a dynamic amount of globals in your scrip
 
 You could do this by customizing the scripting plugin:
 ```rust,ignore
-let plugin = LuaScriptingPlugin::default().add_context_initializer(|script_id: &str, context: &mut Lua| {
+let plugin = LuaScriptingPlugin::default().add_context_initializer(|_context_key: &ContextKey, context: &mut Lua| {
     let globals = context.globals();
     for i in 0..10 {
         globals.set(i, i);
@@ -28,21 +28,33 @@ The above will run every time the script is loaded or re-loaded and before it ha
 ## Context Pre Handling Initializers
 
 If you want to customize your context before every time it's about to handle events (and when it's loaded + reloaded), you can use `Context Pre Handling Initializers`:
-```rust,ignore
-let plugin = LuaScriptingPlugin::default().add_context_pre_handling_initializer(|script_id: &str, entity: Entity, context: &mut Lua| {
-    let globals = context.globals();
-    globals.set("script_name", script_id.to_owned());
-    Ok(())
-});
+```rust
+use bevy::prelude::*;
+use bevy_mod_scripting::prelude::*;
+fn scripting_plugin(app: &mut App) {
+    app.add_plugins(LuaScriptingPlugin::default()
+                       .add_context_pre_handling_initializer(|context_key: &ContextKey, entity: Entity, context: &mut Lua| {
+        let globals = context.globals();
+        if let Some(script_id) = context_key.script_id.as_ref() {
+            globals.set("script_name", script_id.to_owned());
+        }
+        Ok(())
+    }));
+}
 ```
 ## Runtime Initializers
 
 Some scripting languages, have the concept of a `runtime`. This is a global object which is shared between all contexts. You can customize this object using `Runtime Initializers`:
-```rust,ignore
-let plugin = SomeScriptingPlugin::default().add_runtime_initializer(|runtime: &mut Runtime| {
-    runtime.set_max_stack_size(1000);
-    Ok(())
-});
+```rust
+use bevy::prelude::*;
+use bevy_mod_scripting::prelude::*;
+fn scripting_plugin(app: &mut App) {
+    app.add_plugin(SomeScriptingPlugin::default().add_runtime_initializer(|runtime: &mut Runtime| {
+        runtime.set_max_stack_size(1000);
+        Ok(())
+    }));
+    
+}
 ```
 
 In the case of Lua, the runtime type is `()` i.e. This is because `mlua` does not have a separate runtime concept.
@@ -50,12 +62,16 @@ In the case of Lua, the runtime type is `()` i.e. This is because `mlua` does no
 ## Accessing the World in Initializers
 
 You can access the world in these initializers by using the thread local: `ThreadWorldContainer`:
-```rust,ignore
-
-let plugin = LuaScriptingPlugin::default();
-plugin.add_context_initializer(|script_id: &str, context: &mut Lua| {
-    let world = ThreadWorldContainer.try_get_world().unwrap();
-    world.with_resource::<MyResource>(|res| println!("My resource: {:?}", res));
-    Ok(())
-});
+```rust
+use bevy::prelude::*;
+use bevy_mod_scripting::prelude::*;
+fn scripting_plugin(app: &mut App) {
+    let plugin = LuaScriptingPlugin::default();
+    plugin.add_context_initializer(|_context_key: &ContextKey, context: &mut Lua| {
+        let world = ThreadWorldContainer.try_get_world().unwrap();
+        world.with_resource::<MyResource>(|res| println!("My resource: {:?}", res));
+        Ok(())
+    });
+    app.add_plugins(plugin);
+}
 ```

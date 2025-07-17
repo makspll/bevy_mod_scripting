@@ -11,6 +11,7 @@ use bevy_mod_scripting_core::{
         script_system::ScriptSystemBuilder,
     },
     docgen::info::FunctionInfo,
+    script::Domain,
     *,
 };
 use bevy_mod_scripting_derive::script_bindings;
@@ -417,20 +418,22 @@ impl World {
     /// * `system`: The system that was added.
     fn add_system(
         ctxt: FunctionCallContext,
+        #[allow(unused_variables)]
         schedule: Val<ReflectSchedule>,
+        #[allow(unused_variables)]
         builder: Val<ScriptSystemBuilder>,
     ) -> Result<Val<ReflectSystem>, InteropError> {
         profiling::function_scope!("add_system");
-        let world = ctxt.world()?;
-        let system = match ctxt.language() {
+        let _world = ctxt.world()?;
+        let _system = match ctxt.language() {
             #[cfg(feature = "lua_bindings")]
-            asset::Language::Lua => world
+            asset::Language::Lua => _world
                 .add_system::<bevy_mod_scripting_lua::LuaScriptingPlugin>(
                     &schedule,
                     builder.into_inner(),
                 )?,
             #[cfg(feature = "rhai_bindings")]
-            asset::Language::Rhai => world
+            asset::Language::Rhai => _world
                 .add_system::<bevy_mod_scripting_rhai::RhaiScriptingPlugin>(
                     &schedule,
                     builder.into_inner(),
@@ -446,7 +449,8 @@ impl World {
                 ))
             }
         };
-        Ok(Val(system))
+        #[allow(unreachable_code)]
+        Ok(Val(_system))
     }
 
     /// Quits the program.
@@ -1261,8 +1265,9 @@ impl GlobalNamespace {
     fn system_builder(
         callback: String,
         script_id: String,
+        domain: Option<String>,
     ) -> Result<Val<ScriptSystemBuilder>, InteropError> {
-        Ok(ScriptSystemBuilder::new(callback.into(), script_id.into()).into())
+        Ok(ScriptSystemBuilder::new(callback.into(), script_id.into(), domain.map(|x| Domain::new(x))).into())
     }
 }
 

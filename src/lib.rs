@@ -4,6 +4,8 @@ pub mod core {
     pub use bevy_mod_scripting_core::*;
 }
 
+pub mod prelude;
+
 #[cfg(feature = "lua")]
 pub mod lua {
     pub use bevy_mod_scripting_lua::*;
