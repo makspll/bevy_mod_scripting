@@ -11,6 +11,8 @@
 - [Contexts](./Summary/contexts.md)
 - [Script Systems](./ScriptSystems/introduction.md)
 - [Examples](./Examples/introduction.md)
+- [Migration Guides](./Migration/guides.md)
+    - [0.12-to-0.13](./Migration/0.12-to-0.13.md)
 
 # Scripting Reference
 
