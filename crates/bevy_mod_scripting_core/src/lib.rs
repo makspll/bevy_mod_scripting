@@ -229,6 +229,8 @@ impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugi
         self
     }
 
+    // TODO: Enable deprecation once the proper version is set.
+    // #[deprecated(since="0.13", note="please use app.insert_resource(ScriptContext::shared()) instead")]
     fn enable_context_sharing(mut self) -> Self {
         self.as_mut().context_assignment_strategy = ContextAssignmentStrategy::Global;
         self
