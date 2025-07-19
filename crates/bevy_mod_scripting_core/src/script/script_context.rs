@@ -97,7 +97,10 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
             ScriptContext::Entity(a) => ScriptContext::DomainEntity(Or(DomainContext::default(), a)),
             ScriptContext::ScriptId(a) => ScriptContext::DomainScriptId(Or(DomainContext::default(), a)),
             ScriptContext::EntityScriptId(a) => ScriptContext::DomainEntityScriptId(Or(DomainContext::default(), a)),
-            _ => panic!("Expected `Shared`, `Entity`, `ScriptId`, or `EntityScriptId` for with_domains"),
+            _ => {
+                // It aleady handles domains.
+                self
+            }
         }
     }
     /// Domain contexts or a shared context
@@ -171,10 +174,14 @@ impl<T: ScriptContextProvider<P>, U: ScriptContextProvider<P>, P: IntoScriptPlug
 macro_rules! delegate_to_variants {
     (
         $(
+            $(#[$meta:meta])*
+            $vis:vis
             fn $fn_name:ident ($self:ty, $( $arg:ident : $arg_ty:ty ),* ) -> $ret:ty
         ),* $(,)?
     ) => {
         $(
+            $(#[$meta])*
+            $vis
             fn $fn_name(self: $self, $( $arg: $arg_ty ),*) -> $ret {
                 match self {
                     ScriptContext::Shared(a) => a.$fn_name($( $arg ),*),
@@ -192,31 +199,27 @@ macro_rules! delegate_to_variants {
     };
 }
 
-impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for ScriptContext<P> {
-    delegate_to_variants! {
-        fn get(&Self, context_key: &ContextKey) -> Option<&Arc<Mutex<P::C>>>,
-        fn contains(&Self, context_key: &ContextKey) -> bool,
-        fn hash(&Self, context_key: &ContextKey) -> Option<u64>,
-        fn insert(&mut Self, context_key: ContextKey, context: P::C) -> Result<(), P::C>,
-        fn remove(&mut Self, context_key: &ContextKey) -> bool,
-    }
-
-    #[allow(unreachable_code)]
-    fn values(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
-        panic!("Must used values_box() with ScriptContext<P>.");
-        std::iter::empty()
-    }
-
-    #[allow(unreachable_code)]
-    fn iter(&self) -> impl Iterator<Item = (ContextKey, &Arc<Mutex<P::C>>)> {
-        panic!("Must used iter_box() with ScriptContext<P>.");
-        std::iter::empty()
-    }
-}
-
+// impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for ScriptContext<P> {
+//
+/// We don't implement `ScriptContextProvider<P>` because we want to return a
+/// `Box<dyn Iterator>` as a special case. So we implement mostly the same
+/// interface but do not actually implement it.
 impl<P: IntoScriptPluginParams> ScriptContext<P> {
+    delegate_to_variants! {
+        /// Get
+        pub fn get(&Self, context_key: &ContextKey) -> Option<&Arc<Mutex<P::C>>>,
+        /// Contains
+        pub fn contains(&Self, context_key: &ContextKey) -> bool,
+        /// Hash
+        pub fn hash(&Self, context_key: &ContextKey) -> Option<u64>,
+        /// Insert
+        pub fn insert(&mut Self, context_key: ContextKey, context: P::C) -> Result<(), P::C>,
+        /// Remove
+        pub fn remove(&mut Self, context_key: &ContextKey) -> bool,
+    }
+
     /// Return an iterator for contexts
-    pub fn values_box(&self) -> Box<dyn Iterator<Item = &Arc<Mutex<P::C>>> + '_> {
+    pub fn values(&self) -> Box<dyn Iterator<Item = &Arc<Mutex<P::C>>> + '_> {
         match self {
             ScriptContext::Shared(a) => Box::new(a.values()),
             ScriptContext::ScriptId(a) => Box::new(a.values()),
@@ -231,7 +234,7 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
     }
 
     /// Return an iterator of the keys and contexts.
-    pub fn iter_box(&self) -> Box<dyn Iterator<Item = (ContextKey, &Arc<Mutex<P::C>>)> + '_> {
+    pub fn iter(&self) -> Box<dyn Iterator<Item = (ContextKey, &Arc<Mutex<P::C>>)> + '_> {
         match self {
             ScriptContext::Shared(a) => Box::new(a.iter()),
             ScriptContext::ScriptId(a) => Box::new(a.iter()),

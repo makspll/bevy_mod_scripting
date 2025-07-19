@@ -290,16 +290,15 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
 #[profiling::all_functions]
 impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
     fn apply(self, world: &mut bevy::prelude::World) {
-        let _ = with_handler_system_state(
+        with_handler_system_state(
             world,
             |guard, handler_ctxt: &mut HandlerContext<P>| {
-               let result = Self::create_or_update_script(&self.context_key, self.content.as_deref(),
-                                                          guard.clone(), handler_ctxt);
-                match result {
-                    Ok(script_state) => {
-                        Self::after_load(self.context_key, guard, handler_ctxt, script_state);
-                    }
-                    Err(_) => {}
+                let result = Self::create_or_update_script(&self.context_key, self.content.as_deref(),
+                                                           guard.clone(), handler_ctxt);
+                if let Ok(script_state) = result {
+                    Self::after_load(self.context_key, guard, handler_ctxt, script_state);
+                } else {
+                    // XXX: The error is logged by create_or_update_script?
                 }
             });
     }

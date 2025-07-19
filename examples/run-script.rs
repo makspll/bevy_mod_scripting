@@ -15,7 +15,7 @@ fn main() {
         .add_plugins(BMSPlugin)
         .add_plugins(add_logging)
         .add_systems(Startup, setup)
-        .add_systems(Startup, move |mut asset_server: Res<AssetServer>,
+        .add_systems(Startup, move |asset_server: Res<AssetServer>,
                      mut commands: Commands| {
                          let mut handles = vec![];
                          for file_name in args.drain(..) {

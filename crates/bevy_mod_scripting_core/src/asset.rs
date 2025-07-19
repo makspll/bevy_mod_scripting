@@ -191,33 +191,30 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
     for event in events.read() {
 
         trace!("{}: Received script asset event: {:?}", P::LANGUAGE, event);
-        match event {
-            AssetEvent::Modified{ id } => {
-                if let Some(asset) = script_assets.get(*id) {
-                    if asset.language != P::LANGUAGE {
-                        continue;
-                    }
-                    // We need to reload the script for any context its
-                    // associated with. That could be static scripts, script
-                    // components.
-                    for (entity, script_component, script_domain_maybe) in &scripts
-                    {
-                        if let Some(handle) = script_component.0.iter().find(|handle| handle.id() == *id) {
-                            commands.queue(CreateOrUpdateScript::<P>::new(ContextKey {
-                                entity: Some(entity),
-                                script: Some(handle.clone()),
-                                domain: script_domain_maybe.map(|x| x.0),
-                            }));
-                        }
-                    }
-
-                    if let Some(handle) = static_scripts.scripts.iter().find(|s| s.id() == *id) {
-                        commands.queue(CreateOrUpdateScript::<P>::new(handle.clone()));
+        if let AssetEvent::Modified{ id } = event {
+            if let Some(asset) = script_assets.get(*id) {
+                if asset.language != P::LANGUAGE {
+                    continue;
+                }
+                // We need to reload the script for any context its
+                // associated with. That could be static scripts, script
+                // components.
+                for (entity, script_component, script_domain_maybe) in &scripts
+                {
+                    if let Some(handle) = script_component.0.iter().find(|handle| handle.id() == *id) {
+                        commands.queue(CreateOrUpdateScript::<P>::new(ContextKey {
+                            entity: Some(entity),
+                            script: Some(handle.clone()),
+                            domain: script_domain_maybe.map(|x| x.0),
+                        }));
                     }
                 }
+
+                if let Some(handle) = static_scripts.scripts.iter().find(|s| s.id() == *id) {
+                    commands.queue(CreateOrUpdateScript::<P>::new(handle.clone()));
+                }
             }
-            _ => ()
-        };
+        }
     }
 }
 
@@ -310,27 +307,24 @@ pub fn remove_context_on_script_removal<P: IntoScriptPluginParams>(
     mut script_contexts: ResMut<ScriptContext<P>>,
 ) {
     for event in events.read() {
-        match event {
-            AssetEvent::Removed{ id } => {
-                info!("{}: Asset removed {:?}", P::LANGUAGE, id);
-                if static_scripts.remove(*id) {
-                    info!("{}: Removing static script {:?}", P::LANGUAGE, id);
-                }
-                // We're removing a context because its handle was removed. This
-                // makes sense specifically for ScriptIdContext. However, it
-                // doesn't quite work for the other context providers, and it
-                // requires we keep a script loaded in memory when technically
-                // it needn't be.
-                //
-                // If we want this kind of behavior, it seems like we'd want to
-                // have handles to contexts.
-                //
-                if script_contexts.remove(&ContextKey::from(*id)) {
-                    info!("{}: Removed context for script {:?}", P::LANGUAGE, id);
-                }
+        if let AssetEvent::Removed{ id } = event {
+            info!("{}: Asset removed {:?}", P::LANGUAGE, id);
+            if static_scripts.remove(*id) {
+                info!("{}: Removing static script {:?}", P::LANGUAGE, id);
             }
-            _ => ()
-        };
+            // We're removing a context because its handle was removed. This
+            // makes sense specifically for ScriptIdContext. However, it
+            // doesn't quite work for the other context providers, and it
+            // requires we keep a script loaded in memory when technically
+            // it needn't be.
+            //
+            // If we want this kind of behavior, it seems like we'd want to
+            // have handles to contexts.
+            //
+            if script_contexts.remove(&ContextKey::from(*id)) {
+                info!("{}: Removed context for script {:?}", P::LANGUAGE, id);
+            }
+        }
     }
 }
 

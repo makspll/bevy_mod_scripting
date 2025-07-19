@@ -331,7 +331,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
             Recipients::Language(_) | Recipients::All => {
                 // All and language are effectively the same modulo the other
                 // languages, which are handled by the other P handlers.
-                for (key, context) in handler_ctxt.script_context.iter_box() {
+                for (key, context) in handler_ctxt.script_context.iter() {
                     let call_result = handler_ctxt.call_dynamic_label(
                         &callback_label,
                         &key,
@@ -681,10 +681,10 @@ mod test {
                 .world()
                 .get_resource::<ScriptContext<TestPlugin>>()
                 .unwrap();
-            let key = script_context.iter_box().next().map(|x| x.0).unwrap();
+            let key = script_context.iter().next().map(|x| x.0).unwrap();
             assert_eq!(Some(test_entity_id), key.entity);
             // assert_eq!(Some(test_script), key.script_id);
-            assert_eq!(1, script_context.iter_box().count());
+            assert_eq!(1, script_context.iter().count());
             let context_arc = script_context
                 .get(&key)
                 .cloned()
