@@ -3,9 +3,7 @@
 use std::path::PathBuf;
 
 use libtest_mimic::{Arguments, Failed, Trial};
-use script_integration_test_harness::{
-    execute_lua_integration_test,
-};
+use script_integration_test_harness::execute_lua_integration_test;
 
 use test_utils::{discover_all_tests, Test, TestKind};
 
@@ -16,22 +14,22 @@ trait TestExecutor {
 
 impl TestExecutor for Test {
     fn execute(self) -> Result<(), Failed> {
-
         match self.kind {
             TestKind::Lua => {
                 println!("Running test: {:?}", self.path);
                 execute_lua_integration_test(&self.path.to_string_lossy())?
-            },
+            }
             TestKind::Rhai => {
                 if cfg!(feature = "rhai") {
                     println!("Running test: {:?}", self.path);
                     #[cfg(feature = "rhai")]
-                    script_integration_test_harness::execute_rhai_integration_test(&self.path.to_string_lossy())?
+                    script_integration_test_harness::execute_rhai_integration_test(
+                        &self.path.to_string_lossy(),
+                    )?
                 } else {
                     println!("Skipping test: {:?}", self.path);
                 }
-            },
-
+            }
         }
 
         Ok(())

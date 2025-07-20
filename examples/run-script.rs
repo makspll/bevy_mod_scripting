@@ -14,15 +14,16 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugins(BMSPlugin)
         .add_plugins(add_logging)
-        .add_systems(Startup, move |asset_server: Res<AssetServer>,
-                     mut commands: Commands| {
-                         let mut handles = vec![];
-                         for file_name in args.drain(..) {
-                             handles.push(asset_server.load::<ScriptAsset>(file_name));
-                         }
-                         commands.spawn(ScriptComponent(handles));
-
-                     })
+        .add_systems(
+            Startup,
+            move |asset_server: Res<AssetServer>, mut commands: Commands| {
+                let mut handles = vec![];
+                for file_name in args.drain(..) {
+                    handles.push(asset_server.load::<ScriptAsset>(file_name));
+                }
+                commands.spawn(ScriptComponent(handles));
+            },
+        )
         .add_systems(Update, info_on_asset_event::<ScriptAsset>())
         .run();
 }

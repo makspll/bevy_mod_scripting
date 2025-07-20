@@ -248,13 +248,7 @@ fn script_load_benchmarks(criterion: &mut Criterion) {
     // lua
     let plugin = make_test_lua_plugin();
     let content = include_str!("../assets/macro_benchmarks/loading/empty.lua");
-    run_plugin_script_load_benchmark(
-        plugin,
-        "empty Lua",
-        content,
-        &mut group,
-        reload_probability,
-    );
+    run_plugin_script_load_benchmark(plugin, "empty Lua", content, &mut group, reload_probability);
 
     // rhai
     let plugin = make_test_rhai_plugin();

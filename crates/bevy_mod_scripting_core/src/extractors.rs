@@ -2,14 +2,14 @@
 //!
 //! These are designed to be used to pipe inputs into other systems which require them, while handling any configuration erorrs nicely.
 #![allow(deprecated)]
+use parking_lot::Mutex;
 use std::{
     ops::{Deref, DerefMut},
     sync::Arc,
 };
-use parking_lot::Mutex;
 
 use bevy::{
-    asset::{Assets},
+    asset::Assets,
     ecs::{
         component::ComponentId,
         event::{Event, EventCursor, EventIterator, Events},
@@ -22,7 +22,6 @@ use bevy::{
 use fixedbitset::FixedBitSet;
 
 use crate::{
-    ScriptAsset,
     bindings::{
         access_map::ReflectAccessId, pretty_print::DisplayWithWorld, script_value::ScriptValue,
         WorldAccessGuard, WorldGuard,
@@ -32,8 +31,8 @@ use crate::{
     event::{CallbackLabel, IntoCallbackLabel},
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{StaticScripts, ScriptContext, ContextKey},
-    IntoScriptPluginParams,
+    script::{ContextKey, ScriptContext, StaticScripts},
+    IntoScriptPluginParams, ScriptAsset,
 };
 
 /// Executes `system_state.get_mut` followed by `system_state.apply` after running the given closure, makes sure state is correctly handled in the context of an exclusive system.
@@ -147,7 +146,6 @@ impl<T: Event> EventReaderScope<'_, T> {
         self.reader.read(&self.events)
     }
 }
-
 
 /// Context for systems which handle events for scripts
 #[derive(SystemParam)]

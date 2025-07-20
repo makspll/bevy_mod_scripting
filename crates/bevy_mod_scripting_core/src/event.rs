@@ -1,6 +1,10 @@
 //! Event handlers and event types for scripting.
 
-use crate::{bindings::script_value::ScriptValue, error::ScriptError, script::{Domain, ScriptId, ContextKey}};
+use crate::{
+    bindings::script_value::ScriptValue,
+    error::ScriptError,
+    script::{ContextKey, Domain, ScriptId},
+};
 use bevy::{ecs::entity::Entity, prelude::Event, reflect::Reflect};
 
 /// An error coming from a script

@@ -69,9 +69,19 @@ impl ContextKey {
     ///
     /// An empty [ContextKey] is a subset of any context key.
     pub fn is_subset(&self, other: &ContextKey) -> bool {
-        self.entity.map(|a| other.entity.map(|b| a == b).unwrap_or(false)).unwrap_or(true)
-            || self.script.as_ref().map(|a| other.script.as_ref().map(|b| a == b).unwrap_or(false)).unwrap_or(true)
-            || self.domain.as_ref().map(|a| other.domain.as_ref().map(|b| a == b).unwrap_or(false)).unwrap_or(true)
+        self.entity
+            .map(|a| other.entity.map(|b| a == b).unwrap_or(false))
+            .unwrap_or(true)
+            || self
+                .script
+                .as_ref()
+                .map(|a| other.script.as_ref().map(|b| a == b).unwrap_or(false))
+                .unwrap_or(true)
+            || self
+                .domain
+                .as_ref()
+                .map(|a| other.domain.as_ref().map(|b| a == b).unwrap_or(false))
+                .unwrap_or(true)
     }
 
     /// If a script handle is present and is strong, convert it to a weak

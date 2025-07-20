@@ -418,10 +418,8 @@ impl World {
     /// * `system`: The system that was added.
     fn add_system(
         ctxt: FunctionCallContext,
-        #[allow(unused_variables)]
-        schedule: Val<ReflectSchedule>,
-        #[allow(unused_variables)]
-        builder: Val<ScriptSystemBuilder>,
+        #[allow(unused_variables)] schedule: Val<ReflectSchedule>,
+        #[allow(unused_variables)] builder: Val<ScriptSystemBuilder>,
     ) -> Result<Val<ReflectSystem>, InteropError> {
         profiling::function_scope!("add_system");
         let _world = ctxt.world()?;
@@ -1267,7 +1265,10 @@ impl GlobalNamespace {
         script_id: String,
         domain: Option<String>,
     ) -> Result<Val<ScriptSystemBuilder>, InteropError> {
-        Ok(ScriptSystemBuilder::new(callback.into(), script_id.into(), domain.map(Domain::new)).into())
+        Ok(
+            ScriptSystemBuilder::new(callback.into(), script_id.into(), domain.map(Domain::new))
+                .into(),
+        )
     }
 }
 

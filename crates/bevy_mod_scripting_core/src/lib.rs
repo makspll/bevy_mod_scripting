@@ -5,7 +5,7 @@
 use crate::event::ScriptErrorEvent;
 use asset::{
     configure_asset_systems, configure_asset_systems_for_plugin, Language, ScriptAsset,
-    ScriptAssetLoader, ScriptQueue
+    ScriptAssetLoader, ScriptQueue,
 };
 use bevy::{prelude::*, utils::HashMap};
 use bindings::{
@@ -22,7 +22,7 @@ use error::ScriptError;
 use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent};
 use handler::{CallbackSettings, HandlerFn};
 use runtime::{initialize_runtime, Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
-use script::{ScriptComponent, StaticScripts, ScriptContext};
+use script::{ScriptComponent, ScriptContext, StaticScripts};
 
 pub mod asset;
 pub mod bindings;
@@ -127,13 +127,12 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
                 context_initializers: self.context_initializers.clone(),
                 context_pre_handling_initializers: self.context_pre_handling_initializers.clone(),
             });
-        if !app.world().contains_resource::<ScriptContext::<P>>() {
-            app.insert_resource(
-                if self.context_assignment_strategy.is_global() {
-                    ScriptContext::<P>::shared()
-                } else {
-                    ScriptContext::<P>::default()
-                });
+        if !app.world().contains_resource::<ScriptContext<P>>() {
+            app.insert_resource(if self.context_assignment_strategy.is_global() {
+                ScriptContext::<P>::shared()
+            } else {
+                ScriptContext::<P>::default()
+            });
         }
 
         register_script_plugin_systems::<P>(app);
@@ -285,7 +284,9 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
 
     fn finish(&self, app: &mut App) {
         // Read extensions.
-        let language_extensions = app.world_mut().remove_resource::<LanguageExtensions>()
+        let language_extensions = app
+            .world_mut()
+            .remove_resource::<LanguageExtensions>()
             .unwrap_or_default();
         app.register_asset_loader(ScriptAssetLoader::new(language_extensions));
         // Pre-register component IDs.
@@ -391,9 +392,15 @@ pub struct LanguageExtensions(HashMap<&'static str, Language>);
 
 impl Default for LanguageExtensions {
     fn default() -> Self {
-        LanguageExtensions([("lua", Language::Lua),
-                            ("rhai", Language::Rhai),
-                            ("rn", Language::Rune)].into_iter().collect())
+        LanguageExtensions(
+            [
+                ("lua", Language::Lua),
+                ("rhai", Language::Rhai),
+                ("rn", Language::Rune),
+            ]
+            .into_iter()
+            .collect(),
+        )
     }
 }
 
@@ -403,7 +410,7 @@ impl ConfigureScriptAssetSettings for App {
         extensions: &[&'static str],
         language: Language,
     ) -> &mut Self {
-        let mut language_extensions  = self
+        let mut language_extensions = self
             .world_mut()
             .get_resource_or_init::<LanguageExtensions>();
 

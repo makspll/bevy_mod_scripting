@@ -11,7 +11,9 @@ impl<P: IntoScriptPluginParams> Default for DomainContext<P> {
 
 impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for DomainContext<P> {
     fn hash(&self, context_key: &ContextKey) -> Option<u64> {
-        context_key.domain.map(|d| DefaultHashBuilder::default().hash_one(d))
+        context_key
+            .domain
+            .map(|d| DefaultHashBuilder::default().hash_one(d))
     }
     fn get(&self, context_key: &ContextKey) -> Option<&Arc<Mutex<P::C>>> {
         context_key.domain.and_then(|id| self.0.get(&id))
@@ -25,13 +27,19 @@ impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for DomainContext<P> {
         }
     }
     fn contains(&self, context_key: &ContextKey) -> bool {
-        context_key.domain.map(|id| self.0.contains_key(&id)).unwrap_or(false)
+        context_key
+            .domain
+            .map(|id| self.0.contains_key(&id))
+            .unwrap_or(false)
     }
     fn values(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
         self.0.values()
     }
     fn remove(&mut self, context_key: &ContextKey) -> bool {
-        context_key.domain.map(|id| self.0.remove(&id).is_some()).unwrap_or(false)
+        context_key
+            .domain
+            .map(|id| self.0.remove(&id).is_some())
+            .unwrap_or(false)
     }
     fn iter(&self) -> impl Iterator<Item = (ContextKey, &Arc<Mutex<P::C>>)> {
         self.0.iter().map(|(domain, c)| ((*domain).into(), c))

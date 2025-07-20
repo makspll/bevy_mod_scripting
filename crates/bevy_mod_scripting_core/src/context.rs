@@ -3,12 +3,10 @@
 use crate::{
     bindings::{ThreadWorldContainer, WorldContainer, WorldGuard},
     error::{InteropError, ScriptError},
-    IntoScriptPluginParams,
     script::ContextKey,
+    IntoScriptPluginParams,
 };
-use bevy::{
-    ecs::{system::Resource},
-};
+use bevy::ecs::system::Resource;
 
 /// A trait that all script contexts must implement.
 ///

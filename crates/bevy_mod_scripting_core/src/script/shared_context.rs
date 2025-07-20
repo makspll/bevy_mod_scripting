@@ -23,7 +23,10 @@ impl<P: IntoScriptPluginParams> ScriptContextProvider<P> for SharedContext<P> {
         self.0.as_ref().into_iter()
     }
     fn iter(&self) -> impl Iterator<Item = (ContextKey, &Arc<Mutex<P::C>>)> {
-        self.0.as_ref().into_iter().map(|c| (ContextKey::default(), c))
+        self.0
+            .as_ref()
+            .into_iter()
+            .map(|c| (ContextKey::default(), c))
     }
     fn remove(&mut self, context_key: &ContextKey) -> bool {
         if context_key.is_empty() {

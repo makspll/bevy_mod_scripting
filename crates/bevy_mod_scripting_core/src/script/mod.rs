@@ -1,26 +1,31 @@
 //! Script related types, functions and components
 
-use crate::{IntoScriptPluginParams, asset::ScriptAsset};
-use bevy::prelude::{Component, ReflectComponent, Entity};
-use bevy::{asset::{Asset, AssetId, Handle}, ecs::system::Resource, reflect::Reflect, utils::HashSet};
-use parking_lot::Mutex;
-use std::{collections::HashMap, ops::Deref, sync::Arc, fmt, hash::{BuildHasher}};
+use crate::{asset::ScriptAsset, IntoScriptPluginParams};
+use bevy::prelude::{Component, Entity, ReflectComponent};
 use bevy::utils::hashbrown::hash_map::DefaultHashBuilder;
+use bevy::{
+    asset::{Asset, AssetId, Handle},
+    ecs::system::Resource,
+    reflect::Reflect,
+    utils::HashSet,
+};
+use parking_lot::Mutex;
+use std::{collections::HashMap, fmt, hash::BuildHasher, ops::Deref, sync::Arc};
 
-mod script_context;
-mod key;
-mod shared_context;
-mod entity_context;
 mod domain_context;
-mod scriptid_context;
+mod entity_context;
 mod entity_scriptid_context;
+mod key;
+mod script_context;
+mod scriptid_context;
+mod shared_context;
+pub use domain_context::*;
+pub use entity_context::*;
+pub use entity_scriptid_context::*;
 pub use key::*;
 pub use script_context::*;
-pub use shared_context::*;
-pub use entity_context::*;
-pub use domain_context::*;
 pub use scriptid_context::*;
-pub use entity_scriptid_context::*;
+pub use shared_context::*;
 
 /// A unique identifier for a script, by default corresponds to the path of the asset excluding the asset source.
 ///
@@ -54,7 +59,9 @@ impl<'a, A: Asset> fmt::Debug for HandleDisplay<'a, A> {
 /// Make a type display-able.
 pub trait DisplayProxy {
     /// The type that does the displaying.
-    type D<'a>: fmt::Display + fmt::Debug where Self: 'a;
+    type D<'a>: fmt::Display + fmt::Debug
+    where
+        Self: 'a;
     /// Return a display-able reference.
     fn display<'a>(&'a self) -> Self::D<'a>;
 }
@@ -111,7 +118,10 @@ impl StaticScripts {
     /// Removes a static script from the collection, returning `true` if the script was in the collection, `false` otherwise
     pub fn remove(&mut self, script_id: impl Into<ScriptId>) -> bool {
         let script_id = script_id.into();
-        self.scripts.extract_if(|handle| handle.id() == script_id).next().is_some()
+        self.scripts
+            .extract_if(|handle| handle.id() == script_id)
+            .next()
+            .is_some()
     }
 
     /// Checks if a static script is in the collection

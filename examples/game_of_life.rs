@@ -15,10 +15,7 @@ use bevy::{
     window::{PrimaryWindow, WindowResized},
 };
 use bevy_console::{make_layer, AddConsoleCommand, ConsoleCommand, ConsoleOpen, ConsolePlugin};
-use bevy_mod_scripting::{
-    prelude::*,
-    core::bindings::AllocatorDiagnosticPlugin,
-};
+use bevy_mod_scripting::{core::bindings::AllocatorDiagnosticPlugin, prelude::*};
 use clap::Parser;
 
 // CONSOLE SETUP
@@ -76,17 +73,22 @@ fn run_script_cmd(
                 bevy::log::info!("Stopping game of life by dropping the handles to all scripts");
                 for (id, script_component) in &script_comps {
                     for script in &script_component.0 {
-                        match script.path().and_then(|p| p.get_full_extension()).unwrap_or_default().as_str() {
+                        match script
+                            .path()
+                            .and_then(|p| p.get_full_extension())
+                            .unwrap_or_default()
+                            .as_str()
+                        {
                             "lua" => {
-                                commands.entity(id).queue(DeleteScript::<LuaScriptingPlugin>::new(
-                                    script.id(),
-                                ));
+                                commands
+                                    .entity(id)
+                                    .queue(DeleteScript::<LuaScriptingPlugin>::new(script.id()));
                             }
                             "rhai" => {
                                 #[cfg(feature = "rhai")]
-                                commands.entity(id).queue(DeleteScript::<RhaiScriptingPlugin>::new(
-                                    script.id(),
-                                ));
+                                commands
+                                    .entity(id)
+                                    .queue(DeleteScript::<RhaiScriptingPlugin>::new(script.id()));
                             }
                             ext => {
                                 warn!("Can't delete script with extension {ext:?}.");
@@ -97,16 +99,12 @@ fn run_script_cmd(
                 }
 
                 for script in static_lua_scripts.drain(..) {
-                    commands.queue(DeleteScript::<LuaScriptingPlugin>::new(
-                        script,
-                    ));
+                    commands.queue(DeleteScript::<LuaScriptingPlugin>::new(script));
                 }
 
                 #[cfg(feature = "rhai")]
                 for script in static_rhai_scripts.drain(..) {
-                    commands.queue(DeleteScript::<RhaiScriptingPlugin>::new(
-                        script,
-                    ));
+                    commands.queue(DeleteScript::<RhaiScriptingPlugin>::new(script));
                 }
             }
         }

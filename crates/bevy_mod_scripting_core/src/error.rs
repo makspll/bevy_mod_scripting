@@ -1,7 +1,6 @@
 //! Errors that can occur when interacting with the scripting system
 
 use crate::{
-    ScriptAsset,
     bindings::{
         access_map::{DisplayCodeLocation, ReflectAccessId},
         function::namespace::Namespace,
@@ -9,7 +8,8 @@ use crate::{
         script_value::ScriptValue,
         ReflectBaseType, ReflectReference,
     },
-    script::{DisplayProxy, ContextKey},
+    script::{ContextKey, DisplayProxy},
+    ScriptAsset,
 };
 use bevy::{
     asset::Handle,

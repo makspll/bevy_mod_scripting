@@ -2,7 +2,7 @@ use super::*;
 use crate::IntoScriptPluginParams;
 use bevy::{ecs::system::Resource, log::trace};
 use parking_lot::Mutex;
-use std::{sync::Arc, hash::Hash};
+use std::{hash::Hash, sync::Arc};
 
 /// A kind of catch all type for script context selection
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
@@ -82,7 +82,12 @@ pub enum ScriptContext<P: IntoScriptPluginParams> {
     /// EntityContext.
     EntityScriptId(Or<EntityScriptIdContext<P>, Or<ScriptIdContext<P>, SharedContext<P>>>),
     /// One script context per entity with domains
-    DomainEntityScriptId(Or<DomainContext<P>, Or<EntityScriptIdContext<P>, Or<ScriptIdContext<P>, SharedContext<P>>>>),
+    DomainEntityScriptId(
+        Or<
+            DomainContext<P>,
+            Or<EntityScriptIdContext<P>, Or<ScriptIdContext<P>, SharedContext<P>>>,
+        >,
+    ),
 }
 
 impl<P: IntoScriptPluginParams> ScriptContext<P> {
@@ -93,10 +98,18 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
     /// If a domain is given, use that first.
     pub fn with_domains(self) -> Self {
         match self {
-            ScriptContext::Shared(a) => ScriptContext::DomainShared(Or(DomainContext::default(), a)),
-            ScriptContext::Entity(a) => ScriptContext::DomainEntity(Or(DomainContext::default(), a)),
-            ScriptContext::ScriptId(a) => ScriptContext::DomainScriptId(Or(DomainContext::default(), a)),
-            ScriptContext::EntityScriptId(a) => ScriptContext::DomainEntityScriptId(Or(DomainContext::default(), a)),
+            ScriptContext::Shared(a) => {
+                ScriptContext::DomainShared(Or(DomainContext::default(), a))
+            }
+            ScriptContext::Entity(a) => {
+                ScriptContext::DomainEntity(Or(DomainContext::default(), a))
+            }
+            ScriptContext::ScriptId(a) => {
+                ScriptContext::DomainScriptId(Or(DomainContext::default(), a))
+            }
+            ScriptContext::EntityScriptId(a) => {
+                ScriptContext::DomainEntityScriptId(Or(DomainContext::default(), a))
+            }
             _ => {
                 // It aleady handles domains.
                 self
@@ -117,7 +130,10 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
     }
     /// Use one script context per entity and script
     pub fn per_entity_and_script() -> Self {
-        Self::EntityScriptId(Or(EntityScriptIdContext::default(), Or(ScriptIdContext::default(), SharedContext::default())))
+        Self::EntityScriptId(Or(
+            EntityScriptIdContext::default(),
+            Or(ScriptIdContext::default(), SharedContext::default()),
+        ))
     }
 }
 
@@ -135,7 +151,9 @@ impl<P: IntoScriptPluginParams> Default for ScriptContext<P> {
 /// The iter() method does not short-circuit but returns both results
 pub struct Or<T, U>(pub T, pub U);
 
-impl<T: ScriptContextProvider<P>, U: ScriptContextProvider<P>, P: IntoScriptPluginParams> ScriptContextProvider<P> for Or<T, U> {
+impl<T: ScriptContextProvider<P>, U: ScriptContextProvider<P>, P: IntoScriptPluginParams>
+    ScriptContextProvider<P> for Or<T, U>
+{
     #[inline]
     fn get(&self, context_key: &ContextKey) -> Option<&Arc<Mutex<P::C>>> {
         self.0.get(context_key).or_else(|| self.1.get(context_key))
@@ -145,7 +163,7 @@ impl<T: ScriptContextProvider<P>, U: ScriptContextProvider<P>, P: IntoScriptPlug
         trace!("insert context for {}", &context_key);
         match self.0.insert(context_key.clone(), context) {
             Ok(()) => Ok(()),
-            Err(context) => self.1.insert(context_key, context)
+            Err(context) => self.1.insert(context_key, context),
         }
     }
     #[inline]
@@ -154,8 +172,9 @@ impl<T: ScriptContextProvider<P>, U: ScriptContextProvider<P>, P: IntoScriptPlug
     }
     #[inline]
     fn hash(&self, context_key: &ContextKey) -> Option<u64> {
-        self.0.hash(context_key)
-              .or_else(|| self.1.hash(context_key))
+        self.0
+            .hash(context_key)
+            .or_else(|| self.1.hash(context_key))
     }
     #[inline]
     fn values(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {

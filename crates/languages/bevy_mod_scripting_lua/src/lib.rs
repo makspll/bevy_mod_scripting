@@ -127,7 +127,10 @@ impl Default for LuaScriptingPlugin {
                             .map_err(ScriptError::from_mlua_error)?;
                     }
                     if let Some(script) = context_key.script.as_ref() {
-                        let path = script.path().map(|p| p.to_string()).unwrap_or_else(|| script.id().to_string());
+                        let path = script
+                            .path()
+                            .map(|p| p.to_string())
+                            .unwrap_or_else(|| script.id().to_string());
                         context
                             .globals()
                             .set("script_id", path)
@@ -259,9 +262,9 @@ pub fn lua_handler(
 
 #[cfg(test)]
 mod test {
-    use mlua::Value;
     use bevy::prelude::Handle;
     use bevy_mod_scripting_core::script::ScriptId;
+    use mlua::Value;
 
     use super::*;
 
