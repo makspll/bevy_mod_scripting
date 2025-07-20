@@ -9,7 +9,7 @@ use std::{
 
 use bevy::{
     app::{Last, Plugin, PostUpdate, Startup, Update},
-    asset::{AssetServer, Handle, AssetPath, LoadState, Assets},
+    asset::{AssetPath, AssetServer, Assets, Handle, LoadState},
     ecs::{
         component::Component,
         event::{Event, Events},
@@ -18,12 +18,12 @@ use bevy::{
         world::{Command, FromWorld, Mut},
     },
     log::Level,
-    prelude::{World},
+    prelude::World,
     reflect::{Reflect, TypeRegistry},
     utils::tracing,
 };
 use bevy_mod_scripting_core::{
-    asset::{ScriptAsset},
+    asset::ScriptAsset,
     bindings::{
         pretty_print::DisplayWithWorld, script_value::ScriptValue, CoreScriptGlobalsPlugin,
         ReflectAccessId, WorldAccessGuard, WorldGuard,
@@ -34,7 +34,7 @@ use bevy_mod_scripting_core::{
     event::{IntoCallbackLabel, ScriptErrorEvent},
     extractors::{HandlerContext, WithWorldGuard},
     handler::handle_script_errors,
-    script::{ScriptComponent, ScriptId, DisplayProxy, ContextKey},
+    script::{ContextKey, DisplayProxy, ScriptComponent, ScriptId},
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams, ScriptingPlugin,
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
@@ -56,12 +56,11 @@ struct TestCallbackBuilder<P: IntoScriptPluginParams, L: IntoCallbackLabel> {
 }
 
 impl<L: IntoCallbackLabel, P: IntoScriptPluginParams> TestCallbackBuilder<P, L> {
-    fn build<'a>(context_key: impl Into<ContextKey>, expect_response: bool) -> SystemConfigs {
+    fn build(context_key: impl Into<ContextKey>, expect_response: bool) -> SystemConfigs {
         let context_key = context_key.into();
         IntoSystem::into_system(
             move |world: &mut World,
                   system_state: &mut SystemState<WithWorldGuard<HandlerContext<P>>>| {
-
                 let with_guard = system_state.get_mut(world);
                 let _ = run_test_callback::<P, L>(&context_key, with_guard, expect_response);
 
@@ -94,8 +93,9 @@ pub fn make_test_lua_plugin() -> bevy_mod_scripting_lua::LuaScriptingPlugin {
     use bevy_mod_scripting_core::{bindings::WorldContainer, ConfigureScriptPlugin};
     use bevy_mod_scripting_lua::{mlua, LuaScriptingPlugin};
 
-    LuaScriptingPlugin::default().enable_context_sharing().add_context_initializer(
-        |_, ctxt: &mut bevy_mod_scripting_lua::mlua::Lua| {
+    LuaScriptingPlugin::default()
+        .enable_context_sharing()
+        .add_context_initializer(|_, ctxt: &mut bevy_mod_scripting_lua::mlua::Lua| {
             let globals = ctxt.globals();
             globals.set(
                 "assert_throws",
@@ -125,8 +125,7 @@ pub fn make_test_lua_plugin() -> bevy_mod_scripting_lua::LuaScriptingPlugin {
                 })?,
             )?;
             Ok(())
-        },
-    )
+        })
 }
 
 #[cfg(feature = "rhai")]
@@ -201,7 +200,8 @@ pub fn execute_rhai_integration_test(script_id: &str) -> Result<(), String> {
     execute_integration_test(plugin, |_, _| {}, script_id)
 }
 
-pub fn execute_integration_test<'a,
+pub fn execute_integration_test<
+    'a,
     P: IntoScriptPluginParams + Plugin + AsMut<ScriptingPlugin<P>>,
     F: FnOnce(&mut World, &mut TypeRegistry),
 >(
@@ -236,7 +236,11 @@ pub fn execute_integration_test<'a,
     );
 
     // tests can opt in to this via "__RETURN"
-    let expect_callback_response = script_id.path().to_str().map(|s| s.contains("__RETURN")).unwrap_or(false);
+    let expect_callback_response = script_id
+        .path()
+        .to_str()
+        .map(|s| s.contains("__RETURN"))
+        .unwrap_or(false);
     // The following code did not work, possibly because of the asynchronous
     // nature of AssetServer.
     //
@@ -249,12 +253,16 @@ pub fn execute_integration_test<'a,
         script_dir.push("assets");
         script_dir.push(script_id.path());
         // Read the contents and don't do anything async.
-        let content = fs::read_to_string(&script_dir).map_err(|io| format!("io error {io} for path {script_dir:?}"))?;
+        let content = fs::read_to_string(&script_dir)
+            .map_err(|io| format!("io error {io} for path {script_dir:?}"))?;
         let mut script = ScriptAsset::from(content);
         script.language = P::LANGUAGE;
-        app.world_mut().resource_mut::<Assets<ScriptAsset>>().add(script)
+        app.world_mut()
+            .resource_mut::<Assets<ScriptAsset>>()
+            .add(script)
     };
-    app.world_mut().spawn(ScriptComponent::new([handle.clone()]));
+    app.world_mut()
+        .spawn(ScriptComponent::new([handle.clone()]));
     app.add_systems(
         Update,
         TestCallbackBuilder::<P, OnTest>::build(handle.clone(), expect_callback_response),
@@ -322,11 +330,7 @@ fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
     //     return Ok(ScriptValue::Unit);
     // }
 
-    let res = handler_ctxt.call::<C>(
-        context_key,
-        vec![],
-        guard.clone(),
-    );
+    let res = handler_ctxt.call::<C>(context_key, vec![], guard.clone());
 
     let e = match res {
         Ok(ScriptValue::Error(e)) => e.into(),
@@ -443,7 +447,10 @@ where
     let script_path = script_path.into();
     let script_handle = app.world().resource::<AssetServer>().load(script_path);
     let script_id = script_handle.id();
-    let entity = app.world_mut().spawn(ScriptComponent(vec![script_handle.clone()])).id();
+    let entity = app
+        .world_mut()
+        .spawn(ScriptComponent(vec![script_handle.clone()]))
+        .id();
 
     // finalize
     app.cleanup();
@@ -459,7 +466,10 @@ where
         match app.world().resource::<AssetServer>().load_state(script_id) {
             LoadState::Loaded => break,
             LoadState::Failed(e) => {
-                return Err(format!("Failed to load script {}: {e}", script_handle.display()));
+                return Err(format!(
+                    "Failed to load script {}: {e}",
+                    script_handle.display()
+                ));
             }
             _ => continue,
         }
@@ -494,7 +504,6 @@ where
             return Err("Timeout after 30 seconds, could not load script".into());
         }
     }
-    Ok(())
 }
 
 pub fn run_plugin_script_load_benchmark<
@@ -518,7 +527,9 @@ pub fn run_plugin_script_load_benchmark<
                 let mut rng = RNG.lock().unwrap();
                 let is_reload = rng.random_range(0f32..=1f32) < reload_probability;
                 let random_id = if is_reload { 0 } else { rng.random::<u128>() };
-                let random_script_id: ScriptId = ScriptId::from(uuid::Builder::from_random_bytes(random_id.to_le_bytes()).into_uuid());
+                let random_script_id: ScriptId = ScriptId::from(
+                    uuid::Builder::from_random_bytes(random_id.to_le_bytes()).into_uuid(),
+                );
                 // We manually load the script inside a command.
                 (
                     CreateOrUpdateScript::<P>::new(random_script_id).with_content(content),
