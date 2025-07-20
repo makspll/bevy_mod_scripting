@@ -12,7 +12,7 @@ use crate::{
         ScriptCallbackResponseEvent, ScriptErrorEvent,
     },
     extractors::{HandlerContext, WithWorldGuard},
-    script::{ScriptComponent, ScriptContextProvider, ScriptDomain, DisplayProxy, ContextKey},
+    script::{ScriptComponent, ScriptDomain, DisplayProxy, ContextKey},
     IntoScriptPluginParams};
 use bevy::{
     ecs::{
@@ -753,7 +753,6 @@ mod test {
 
         app.update();
         {
-            // let test_scripts = app.world().get_resource::<StaticScripts>().unwrap();
             let test_runtime = app
                 .world()
                 .get_resource::<RuntimeContainer<TestPlugin>>()

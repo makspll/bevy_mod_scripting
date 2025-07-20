@@ -22,22 +22,22 @@ function on_test()
     local expected_dot_graph = [[
 digraph {
   node_0 [label="bevy_mod_scripting_core::bindings::allocator::garbage_collector"];
-  node_1 [label="on_test_post_update"];
-  node_2 [label="script_integration_test_harness::dummy_before_post_update_system"];
-  node_3 [label="script_integration_test_harness::dummy_post_update_system"];
-  node_4 [label="custom_system_a"];
-  node_5 [label="custom_system_b"];
-  node_6 [label="SystemSet GarbageCollection"];
-  node_7 [label="SystemSet ScriptSystem(custom_system_a)"];
-  node_8 [label="SystemSet ScriptSystem(custom_system_b)"];
-  node_0 -> node_6 [color=red, label="child of", arrowhead=diamond];
-  node_4 -> node_7 [color=red, label="child of", arrowhead=diamond];
+  node_1 [label="bevy_mod_scripting_core::asset::remove_entity_associated_contexts<bevy_mod_scripting_lua::LuaScriptingPlugin>"];
+  node_2 [label="on_test_post_update"];
+  node_3 [label="script_integration_test_harness::dummy_before_post_update_system"];
+  node_4 [label="script_integration_test_harness::dummy_post_update_system"];
+  node_5 [label="custom_system_a"];
+  node_6 [label="custom_system_b"];
+  node_7 [label="SystemSet GarbageCollection"];
+  node_8 [label="SystemSet ScriptSystem(custom_system_a)"];
+  node_9 [label="SystemSet ScriptSystem(custom_system_b)"];
+  node_0 -> node_7 [color=red, label="child of", arrowhead=diamond];
   node_5 -> node_8 [color=red, label="child of", arrowhead=diamond];
-  node_1 -> node_4 [color=blue, label="runs before", arrowhead=normal];
-  node_1 -> node_5 [color=blue, label="runs before", arrowhead=normal];
-  node_2 -> node_3 [color=blue, label="runs before", arrowhead=normal];
+  node_6 -> node_9 [color=red, label="child of", arrowhead=diamond];
+  node_2 -> node_5 [color=blue, label="runs before", arrowhead=normal];
+  node_2 -> node_6 [color=blue, label="runs before", arrowhead=normal];
+  node_3 -> node_4 [color=blue, label="runs before", arrowhead=normal];
 }
     ]]
-
     assert_str_eq(dot_graph, expected_dot_graph, "Expected the schedule graph to match the expected graph")
 end

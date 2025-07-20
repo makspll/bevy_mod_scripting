@@ -17,7 +17,7 @@ use crate::{
     extractors::get_all_access_ids,
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{ScriptContextProvider, ScriptContext, Domain, ContextKey},
+    script::{ScriptContext, Domain, ContextKey},
     IntoScriptPluginParams,
 };
 use bevy::{

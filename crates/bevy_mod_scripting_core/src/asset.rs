@@ -6,11 +6,11 @@ use crate::{
     LanguageExtensions,
     commands::CreateOrUpdateScript,
     error::ScriptError,
-    script::{DisplayProxy, ScriptDomain, ContextKey, ScriptContext, ScriptContextProvider},
+    script::{DisplayProxy, ScriptDomain, ContextKey, ScriptContext},
     IntoScriptPluginParams, ScriptingSystemSet,
 };
 use bevy::{
-    app::{App, PreUpdate},
+    app::{App, PreUpdate, PostUpdate},
     asset::{Asset, AssetEvent, AssetLoader, Assets, LoadState},
     log::{info, trace, warn, error, warn_once},
     prelude::{
@@ -346,8 +346,7 @@ pub(crate) fn configure_asset_systems(app: &mut App) -> &mut App {
         (
             ScriptingSystemSet::ScriptAssetDispatch.after(bevy::asset::TrackAssets),
             ScriptingSystemSet::ScriptCommandDispatch
-                .after(ScriptingSystemSet::ScriptAssetDispatch)
-                .before(ScriptingSystemSet::EntityRemoval),
+                .after(ScriptingSystemSet::ScriptAssetDispatch),
         ),
     );
 
@@ -362,8 +361,11 @@ pub(crate) fn configure_asset_systems_for_plugin<P: IntoScriptPluginParams>(
     app
         .add_systems(
             PreUpdate,
-            ((eval_script::<P>, sync_script_data::<P>).in_set(ScriptingSystemSet::ScriptCommandDispatch),
-            remove_entity_associated_contexts::<P>.in_set(ScriptingSystemSet::EntityRemoval)),
+            (eval_script::<P>, sync_script_data::<P>).in_set(ScriptingSystemSet::ScriptCommandDispatch),
+        )
+        .add_systems(
+            PostUpdate,
+            remove_entity_associated_contexts::<P>//.in_set(ScriptingSystemSet::EntityRemoval)
         );
 }
 

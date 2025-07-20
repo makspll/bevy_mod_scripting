@@ -34,7 +34,7 @@ use bevy_mod_scripting_core::{
     event::{IntoCallbackLabel, ScriptErrorEvent},
     extractors::{HandlerContext, WithWorldGuard},
     handler::handle_script_errors,
-    script::{ScriptComponent, ScriptId, DisplayProxy, ScriptContextProvider, ContextKey},
+    script::{ScriptComponent, ScriptId, DisplayProxy, ContextKey},
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams, ScriptingPlugin,
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
@@ -234,8 +234,6 @@ pub fn execute_integration_test<'a,
         OnTestPostUpdate => "on_test_post_update",
         OnTestLast => "on_test_last",
     );
-
-    let script_path = script_id.clone_owned();
 
     // tests can opt in to this via "__RETURN"
     let expect_callback_response = script_id.path().to_str().map(|s| s.contains("__RETURN")).unwrap_or(false);
@@ -459,11 +457,11 @@ where
     loop {
         app.update();
         match app.world().resource::<AssetServer>().load_state(script_id) {
-            _ => continue,
             LoadState::Loaded => break,
             LoadState::Failed(e) => {
                 return Err(format!("Failed to load script {}: {e}", script_handle.display()));
             }
+            _ => continue,
         }
     }
 

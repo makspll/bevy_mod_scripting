@@ -13,7 +13,7 @@ use crate::{
     },
     extractors::{with_handler_system_state, HandlerContext},
     handler::{handle_script_errors, send_callback_response},
-    script::{StaticScripts, DisplayProxy, ScriptContextProvider, ContextKey},
+    script::{StaticScripts, DisplayProxy, ContextKey},
     IntoScriptPluginParams,
 };
 use bevy::{asset::Handle, ecs::entity::Entity, log::{error, warn, debug}, prelude::{EntityCommand, Command}};

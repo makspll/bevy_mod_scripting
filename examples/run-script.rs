@@ -14,7 +14,6 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugins(BMSPlugin)
         .add_plugins(add_logging)
-        .add_systems(Startup, setup)
         .add_systems(Startup, move |asset_server: Res<AssetServer>,
                      mut commands: Commands| {
                          let mut handles = vec![];
@@ -26,10 +25,6 @@ fn main() {
                      })
         .add_systems(Update, info_on_asset_event::<ScriptAsset>())
         .run();
-}
-
-fn setup(mut commands: Commands) {
-    // commands.spawn(Camera2d);
 }
 
 fn add_logging(app: &mut App) {

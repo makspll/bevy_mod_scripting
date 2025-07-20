@@ -205,7 +205,7 @@ impl ScriptCallbackResponseEvent {
 
     /// Return the source entity for the callback if there was any.
     pub fn source_entity(&self) -> Option<Entity> {
-        self.context_key.entity.clone()
+        self.context_key.entity
     }
 }
 

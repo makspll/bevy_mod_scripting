@@ -46,8 +46,8 @@ pub enum ScriptingSystemSet {
     ScriptAssetDispatch,
     /// Systems which read incoming internal script asset events and produce script lifecycle commands
     ScriptCommandDispatch,
-    /// Systems which read entity removal events and remove contexts associated with them
-    EntityRemoval,
+    // /// Systems which read entity removal events and remove contexts associated with them
+    // EntityRemoval,
     /// One time runtime initialization systems
     RuntimeInitialization,
     /// Systems which handle the garbage collection of allocated values

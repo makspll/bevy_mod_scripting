@@ -1267,7 +1267,7 @@ impl GlobalNamespace {
         script_id: String,
         domain: Option<String>,
     ) -> Result<Val<ScriptSystemBuilder>, InteropError> {
-        Ok(ScriptSystemBuilder::new(callback.into(), script_id.into(), domain.map(|x| Domain::new(x))).into())
+        Ok(ScriptSystemBuilder::new(callback.into(), script_id.into(), domain.map(Domain::new)).into())
     }
 }
 
