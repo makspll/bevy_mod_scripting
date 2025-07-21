@@ -15,8 +15,7 @@ pub fn prepare_tera() -> Result<tera::Tera, anyhow::Error> {
 
         let template_name = file.path().to_string_lossy();
         tera.add_raw_template(&template_name, content_utf8)
-            .map_err(handle_tera_error)
-            .with_context(|| format!("Failed to add template: {}", file.path().display()))?;
+            .map_err(handle_tera_error)?;
         log::info!("Added template: {template_name}");
     }
 
