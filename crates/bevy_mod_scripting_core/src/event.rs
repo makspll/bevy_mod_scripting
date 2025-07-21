@@ -7,6 +7,55 @@ use crate::{
 };
 use bevy::{ecs::entity::Entity, prelude::Event, reflect::Reflect};
 
+/// A script event
+#[derive(Event, Debug, Clone)]
+pub enum ScriptEvent {
+    /// A script asset was added.
+    Added {
+        /// The script
+        script: ScriptId
+    },
+    /// A script component was attached to an entity.
+    Attached {
+        /// The entity
+        entity: Entity,
+    },
+    /// A script was loaded/evaluated.
+    Loaded {
+        /// The script
+        script: ScriptId,
+        /// The entity
+        entity: Option<Entity>,
+        /// The domain
+        domain: Option<Domain>,
+    },
+    /// A script was unloaded, perhaps producing a value.
+    Unloaded {
+        /// The context key
+        context_key: ContextKey,
+        // /// The script
+        // script: ScriptId,
+        // /// The entity
+        // entity: Option<Entity>,
+        // /// The domain
+        // domain: Option<Domain>,
+        /// The unloaded value
+        value: ScriptValue
+    },
+    //
+    // Detached { entity: Entity },
+    /// A script asset was removed.
+    Removed {
+        /// The script
+        script: ScriptId
+    },
+    /// A script asset was modified.
+    Modified {
+        /// The script
+        script: ScriptId
+    },
+}
+
 /// An error coming from a script
 #[derive(Debug, Event)]
 pub struct ScriptErrorEvent {

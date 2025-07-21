@@ -496,6 +496,7 @@ mod test {
         app.add_event::<ScriptCallbackEvent>();
         app.add_event::<ScriptCallbackResponseEvent>();
         app.add_event::<ScriptErrorEvent>();
+        app.add_event::<ScriptEvent>();
         app.insert_resource::<CallbackSettings<TestPlugin>>(CallbackSettings {
             callback_handler: |args, context_key, _, ctxt, _, runtime| {
                 ctxt.invocations.extend(args);

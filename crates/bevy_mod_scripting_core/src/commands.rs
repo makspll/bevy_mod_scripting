@@ -238,6 +238,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         handler_ctxt: &mut HandlerContext<P>,
     ) -> Result<Option<ScriptValue>, ScriptError> {
         let mut script_id = &Handle::default();
+        let mut script_events = vec![];
         let Some(content) = content.or_else(|| {
             context_key.script.as_ref().and_then(|id| {
                 script_id = id;
@@ -269,6 +270,11 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
             Some(context) => {
                 bevy::log::debug!("{}: reloading context {}", P::LANGUAGE, context_key);
                 script_state = Self::before_load(context_key.clone(), guard.clone(), handler_ctxt);
+                script_events.push(ScriptEvent::Unloaded {
+                    context_key: context_key.clone(),
+                    value: script_state.clone(),
+                });
+
                 let mut lcontext = context.lock();
                 phrase = "reloading";
                 success = "updated";
@@ -307,7 +313,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
                     context_key,
                     success,
                 );
-                Ok(script_state) // none until individual context support added.
+                Ok(script_state)
             }
             Err(err) => {
                 handle_script_errors(
