@@ -147,50 +147,107 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     for event in events.filter(|e| e.label == callback_label) {
         match &event.recipients {
             Recipients::Script(target_script_id) => {
-                if let Err(e) = guard.with_global_access(|world| {
-                    // Keep track of the contexts that have been called. Don't duplicate the
-                    // calls on account of multiple matches.
-                    //
-                    // If I have five scripts all in one shared context, and I fire a call to
-                    // `Recipients::All`, then I want that call to go to the shared context
-                    // once.
-                    //
-                    // If I have four scripts in three different contexts, and I fire a call to
-                    // `Recipients::All`, then I want that call to be evaluated three times,
-                    // once in each context.
-                    let mut called_contexts: HashSet<u64> = HashSet::new();
-                    for (id, script_component, script_domain_maybe) in entity_query_state
-                        .iter(world)
-                        .map(|(a, b, c)| (Some(a), Ok(b), c))
-                        .chain(
-                            handler_ctxt
-                                .static_scripts
-                                .scripts
-                                .iter()
-                                .map(|s| (None, Err(s), None)),
-                        )
+                match guard.with_global_access(|world| {
+                    let mut keys = vec![];
+                    for (id, script_component, script_domain_maybe) in entity_query_state.iter(world) {
+                        if let Some(handle) = script_component.0.iter().find(|handle| handle.id() == *target_script_id) {
+                            keys.push(ContextKey {
+                                entity: Some(id),
+                                script: Some(handle.clone()),
+                                domain: script_domain_maybe.map(|x| x.0)
+                            });
+                        }
+                    }
+                    if let Some(handle) = handler_ctxt
+                        .static_scripts
+                        .scripts
+                        .iter()
+                        .find(|handle| handle.id() == *target_script_id) {
+                            keys.push(ContextKey {
+                                entity: None,
+                                script: Some(handle.clone()),
+                                domain: None,
+                            });
+                        }
+                    keys
+                }) {
+                    Ok(keys) =>
                     {
-                        let empty_script_component = ScriptComponent(vec![]);
-                        let domain = script_domain_maybe.map(|x| x.0);
-                        let (iter_a, iter_b) = match script_component {
-                            Ok(script_component) => {
-                                (script_component.into_inner(), None.into_iter())
-                            }
-                            Err(script_handle) => {
-                                (&empty_script_component, Some(script_handle).into_iter())
-                            }
-                        };
+                        // Keep track of the contexts that have been called. Don't duplicate the
+                        // calls on account of multiple matches.
+                        let mut called_contexts: HashSet<u64> = HashSet::new();
+                        for context_key in keys {
+                            if let Some(hash) = handler_ctxt.script_context.hash(&context_key) {
+                                if called_contexts.insert(hash) {
+                                    let call_result = handler_ctxt.call_dynamic_label(
+                                        &callback_label,
+                                        &context_key,
+                                        None,
+                                        event.args.clone(),
+                                        guard.clone(),
+                                    );
 
-                        'inner: for script_handle in iter_a.iter().chain(iter_b) {
-                            if script_handle.id() != *target_script_id {
-                                continue 'inner;
+                                    if event.trigger_response {
+                                        send_callback_response(
+                                            guard.clone(),
+                                            ScriptCallbackResponseEvent::new(
+                                                callback_label.clone(),
+                                                *target_script_id,
+                                                call_result.clone(),
+                                            ),
+                                        );
+                                    }
+                                    collect_errors(call_result, context_key.entity, P::LANGUAGE, &mut errors);
+                                }
                             }
-
+                        }
+                    }
+                    Err(e) => {
+                        bevy::log::error_once!(
+                            "{}: Failed to query for script {}: {}",
+                            P::LANGUAGE,
+                            target_script_id,
+                            e.display_with_world(guard.clone())
+                        );
+                    }
+                }
+                continue;
+            }
+            Recipients::Entity(target_entity) => {
+                match guard.with_global_access(|world| {
+                    match entity_query_state.get(world, *target_entity) {
+                        Ok((_, script_component, script_domain_maybe)) => {
+                            let domain = script_domain_maybe.map(|x| x.0);
+                            (script_component.0.clone(), domain)
+                        }
+                        Err(e) => {
+                            bevy::log::error_once!(
+                                "{}: Failed to get entity {} with scripts: {}",
+                                P::LANGUAGE,
+                                target_entity,
+                                e,
+                            );
+                            (vec![], None)
+                        }
+                    }
+                }) {
+                    Ok((handles, domain)) => {
+                        // Keep track of the contexts that have been called. Don't duplicate the
+                        // calls on account of multiple matches.
+                        //
+                        // If I have five scripts all in one shared context, and I fire a call to
+                        // `Recipients::All`, then I want that call to go to the shared context
+                        // once.
+                        //
+                        // If I have four scripts in three different contexts, and I fire a call to
+                        // `Recipients::All`, then I want that call to be evaluated three times,
+                        // once in each context.
+                        let mut called_contexts: HashSet<u64> = HashSet::new();
+                        for script_handle in handles {
+                            let script_id = script_handle.id();
                             let context_key = ContextKey {
-                                entity: id,
-                                // A clone is better for error reporting but a
-                                // weak handle avoids the clone.
-                                script: Some(script_handle.clone()),
+                                entity: Some(*target_entity),
+                                script: Some(script_handle),
                                 domain,
                             };
                             if let Some(hash) = handler_ctxt.script_context.hash(&context_key) {
@@ -208,102 +265,29 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                                             guard.clone(),
                                             ScriptCallbackResponseEvent::new(
                                                 callback_label.clone(),
-                                                script_handle.id(),
+                                                script_id,
                                                 call_result.clone(),
                                             ),
                                         );
                                     }
-                                    collect_errors(call_result, id, P::LANGUAGE, &mut errors);
+                                    collect_errors(
+                                        call_result,
+                                        Some(*target_entity),
+                                        P::LANGUAGE,
+                                        &mut errors,
+                                    );
                                 }
                             }
                         }
                     }
-                }) {
-                    bevy::log::error_once!(
-                        "{}: Failed to query for script {}: {}",
-                        P::LANGUAGE,
-                        target_script_id,
-                        e.display_with_world(guard.clone())
-                    );
-                }
-
-                continue;
-            }
-            Recipients::Entity(target_entity) => {
-                if let Err(e) = guard.with_global_access(|world| {
-                    match entity_query_state.get(world, *target_entity) {
-                        Ok((_, script_component, script_domain_maybe)) => {
-                            let domain = script_domain_maybe.map(|x| x.0);
-
-                            // Keep track of the contexts that have been called. Don't duplicate the
-                            // calls on account of multiple matches.
-                            //
-                            // If I have five scripts all in one shared context, and I fire a call to
-                            // `Recipients::All`, then I want that call to go to the shared context
-                            // once.
-                            //
-                            // If I have four scripts in three different contexts, and I fire a call to
-                            // `Recipients::All`, then I want that call to be evaluated three times,
-                            // once in each context.
-                            let mut called_contexts: HashSet<u64> = HashSet::new();
-                            for script_handle in &script_component.0 {
-                                let context_key = ContextKey {
-                                    entity: Some(*target_entity),
-                                    script: Some(script_handle.clone()),
-                                    domain,
-                                };
-                                if let Some(hash) = handler_ctxt.script_context.hash(&context_key) {
-                                    if called_contexts.insert(hash) {
-                                        // contexts.push(handler_ctxt.script_context.get(
-                                        //     Some(*target_entity),
-                                        //     &script_handle.id(),
-                                        //     &domain,
-                                        // ));
-
-                                        let call_result = handler_ctxt.call_dynamic_label(
-                                            &callback_label,
-                                            &context_key,
-                                            None,
-                                            event.args.clone(),
-                                            guard.clone(),
-                                        );
-
-                                        if event.trigger_response {
-                                            send_callback_response(
-                                                guard.clone(),
-                                                ScriptCallbackResponseEvent::new(
-                                                    callback_label.clone(),
-                                                    script_handle.id(),
-                                                    call_result.clone(),
-                                                ),
-                                            );
-                                        }
-                                        collect_errors(
-                                            call_result,
-                                            Some(*target_entity),
-                                            P::LANGUAGE,
-                                            &mut errors,
-                                        );
-                                    }
-                                }
-                            }
-                        }
-                        Err(e) => {
-                            bevy::log::error_once!(
-                                "{}: Failed to get entity {} with scripts: {}",
-                                P::LANGUAGE,
-                                target_entity,
-                                e,
-                            );
-                        }
+                    Err(e) => {
+                        bevy::log::error_once!(
+                            "{}: Failed to get entity {} with scripts: {}",
+                            P::LANGUAGE,
+                            target_entity,
+                            e,
+                        );
                     }
-                }) {
-                    bevy::log::error_once!(
-                        "{}: Failed to get world access for entity {}: {}",
-                        P::LANGUAGE,
-                        target_entity,
-                        e.display_with_world(guard.clone())
-                    );
                 }
                 continue;
             }
