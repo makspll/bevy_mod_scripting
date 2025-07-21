@@ -5,6 +5,7 @@ use crate::{
     error::ScriptError,
     script::{ContextKey, DisplayProxy, ScriptContext, ScriptDomain},
     IntoScriptPluginParams, LanguageExtensions, ScriptComponent, ScriptingSystemSet, StaticScripts,
+    event::ScriptEvent,
 };
 use bevy::{
     app::{App, PostUpdate, PreUpdate},
@@ -12,7 +13,7 @@ use bevy::{
     log::{error, info, trace, warn, warn_once},
     prelude::{
         Added, AssetServer, Commands, Deref, DerefMut, Entity, EventReader, IntoSystemConfigs,
-        IntoSystemSetConfigs, Query, RemovedComponents, Res, ResMut, Resource,
+        IntoSystemSetConfigs, Query, RemovedComponents, Res, ResMut, Resource, EventWriter
     },
     reflect::TypePath,
 };
@@ -179,6 +180,32 @@ impl AssetLoader for ScriptAssetLoader {
     }
 }
 
+fn sync_assets(
+    mut events: EventReader<AssetEvent<ScriptAsset>>,
+    mut script_events: EventWriter<ScriptEvent>,
+) {
+    for event in events.read() {
+        match event {
+            AssetEvent::Modified { id } => { script_events.send(ScriptEvent::Modified { script: *id }); }
+            AssetEvent::Added { id } => { script_events.send(ScriptEvent::Added { script: *id }); }
+            AssetEvent::Removed { id } => { script_events.send(ScriptEvent::Removed { script: *id }); }
+            _ => ()
+        }
+    }
+}
+
+fn sync_components(
+    script_comps: Query<Entity, Added<ScriptComponent>>,
+    mut removed: RemovedComponents<ScriptComponent>,
+    mut script_events: EventWriter<ScriptEvent>) {
+    for id in &script_comps {
+        script_events.send(ScriptEvent::Attached { entity: id });
+    }
+    for id in removed.read() {
+        script_events.send(ScriptEvent::Detached { entity: id });
+    }
+}
+
 /// Listens to [`AssetEvent`] events and dispatches [`CreateOrUpdateScript`] and [`DeleteScript`] commands accordingly.
 ///
 /// Allows for hot-reloading of scripts.
@@ -197,7 +224,7 @@ pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
                 if asset.language != P::LANGUAGE {
                     continue;
                 }
-                // We need to reload the script for any context its
+                // We need to reload the script for any context it's
                 // associated with. That could be static scripts, script
                 // components.
                 for (entity, script_component, script_domain_maybe) in &scripts {
@@ -358,7 +385,8 @@ pub(crate) fn configure_asset_systems(app: &mut App) -> &mut App {
         .configure_sets(
             PreUpdate,
             (
-                ScriptingSystemSet::ScriptAssetDispatch.after(bevy::asset::TrackAssets),
+                ScriptingSystemSet::ScriptAssetDispatch
+                    .after(bevy::asset::TrackAssets),
                 ScriptingSystemSet::ScriptCommandDispatch
                     .after(ScriptingSystemSet::ScriptAssetDispatch),
             ),

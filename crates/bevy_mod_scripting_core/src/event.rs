@@ -40,10 +40,15 @@ pub enum ScriptEvent {
         // /// The domain
         // domain: Option<Domain>,
         /// The unloaded value
-        value: ScriptValue
+        value: Option<ScriptValue>
     },
-    //
-    // Detached { entity: Entity },
+    // We could deliver this through `RemovedComponents` but
+    // it won't have any further information since the component is gone.
+    /// An entity with a [ScriptComponent] was removed.
+    Detached {
+        /// The entity
+        entity: Entity
+    },
     /// A script asset was removed.
     Removed {
         /// The script

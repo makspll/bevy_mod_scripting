@@ -7,7 +7,7 @@ use crate::{
     error::{InteropError, ScriptError},
     event::{
         CallbackLabel, IntoCallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded,
-        ScriptCallbackResponseEvent,
+        ScriptCallbackResponseEvent, ScriptEvent
     },
     extractors::{with_handler_system_state, HandlerContext},
     handler::{handle_script_errors, send_callback_response},
