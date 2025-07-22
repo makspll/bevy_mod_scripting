@@ -15,6 +15,100 @@ impl Domain {
     }
 }
 
+/// Determines how contexts are grouped by manipulating the context key.
+pub trait ContextKeySelector {
+    /// The given a context key represents the script, entity, domain that is
+    /// requesting a context.
+    ///
+    /// Returns `None` when `context_key` is not relevant to its policy.
+    ///
+    /// Returns `Some` context key to use to look up context.
+    fn select(&self, context_key: &ContextKey) -> Option<ContextKey>;
+}
+
+impl<F: Fn(&ContextKey) -> Option<ContextKey>> ContextKeySelector for F {
+    fn select(&self, context_key: &ContextKey) -> Option<ContextKey> {
+        (self)(context_key)
+    }
+}
+
+// #[derive(Clone, PartialEq, Eq, Hash)]
+/// Determines the rule for context look ups.
+pub enum ContextRule {
+    /// If domain exists, return only that.
+    Domain,
+    /// If entity-script pair exists, return only that.
+    EntityScript,
+    /// If entity exists, return only that.
+    Entity,
+    /// If script exists, return only that.
+    Script,
+    /// Check nothing, provide shared context
+    Shared,
+    /// A custom rule
+    Custom(Box<dyn ContextKeySelector + 'static + Sync + Send>)
+}
+impl fmt::Debug for ContextRule {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>)
+        -> fmt::Result {
+        fmt::Formatter::write_str(f,
+            match self {
+                ContextRule::Domain => "Domain",
+                ContextRule::EntityScript => "EntityScript",
+                ContextRule::Entity => "Entity",
+                ContextRule::Script => "Script",
+                ContextRule::Shared => "Shared",
+                ContextRule::Custom(_) => "Custom",
+            })
+    }
+}
+
+impl ContextKeySelector for ContextRule {
+    ///
+    ///
+    /// e.g., A rule of `Domain` will check for a domain in the `context_key`,
+    /// if it is present it will return a ContextKey that only has domain.
+    fn select(&self, context_key: &ContextKey) -> Option<ContextKey> {
+        match self {
+            ContextRule::Domain => context_key.domain.map(ContextKey::from),
+            ContextRule::Entity => context_key.entity.map(ContextKey::from),
+            ContextRule::Script => context_key.script.clone().map(ContextKey::from),
+            ContextRule::EntityScript => context_key.entity.zip(context_key.script.clone()).map(|(entity, script)| ContextKey {
+                entity: Some(entity),
+                script: Some(script),
+                domain: None
+            }),
+            ContextRule::Shared => Some(ContextKey::default()),
+            ContextRule::Custom(rule) => rule.select(context_key),
+        }
+    }
+}
+
+#[derive(Resource, Debug)]
+/// This is a configurable context selector based on priority.
+pub struct ContextPolicy {
+    /// The rules in order of priority.
+    pub priorities: Vec<ContextRule>,
+}
+
+/// Returns a [Domain, EntityScript, Shared] policy.
+impl Default for ContextPolicy {
+    fn default() -> Self {
+        ContextPolicy { priorities: vec![
+            ContextRule::Domain,
+            ContextRule::EntityScript,
+            ContextRule::Shared,
+        ] }
+    }
+}
+
+impl ContextKeySelector for ContextPolicy {
+    fn select(&self, context_key: &ContextKey) -> Option<ContextKey> {
+        self.priorities.iter().find_map(|priority| priority.select(context_key))
+    }
+}
+
+
 /// A generic script context provider
 pub trait ScriptContextProvider<P: IntoScriptPluginParams> {
     /// Get the context.
