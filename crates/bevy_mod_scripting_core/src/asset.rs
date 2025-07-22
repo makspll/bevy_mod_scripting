@@ -12,8 +12,8 @@ use bevy::{
     asset::{Asset, AssetEvent, AssetLoader, Assets, LoadState},
     log::{error, info, trace, warn, warn_once},
     prelude::{
-        Added, AssetServer, Commands, Deref, DerefMut, Entity, EventReader, IntoSystemConfigs,
-        IntoSystemSetConfigs, Query, RemovedComponents, Res, ResMut, Resource, EventWriter, Local, Handle,
+        Added, AssetServer, Commands, Entity, EventReader, IntoSystemConfigs,
+        IntoSystemSetConfigs, Query, RemovedComponents, Res, ResMut, EventWriter, Local, Handle,
     },
     reflect::TypePath,
 };
@@ -393,9 +393,8 @@ pub(crate) fn configure_asset_systems(app: &mut App) -> &mut App {
     app
         .add_systems(
             PreUpdate,
-            (
-                (sync_assets, sync_components.after(sync_assets)).in_set(ScriptingSystemSet::ScriptAssetDispatch)
-            ),
+            (sync_assets, sync_components.after(sync_assets))
+                .in_set(ScriptingSystemSet::ScriptAssetDispatch)
         )
         .configure_sets(
             PreUpdate,

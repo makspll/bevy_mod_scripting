@@ -8,7 +8,7 @@ use crate::{
     error::{InteropErrorInner, ScriptError},
     event::{
         CallbackLabel, IntoCallbackLabel, Recipients, ScriptCallbackEvent,
-        ScriptCallbackResponseEvent, ScriptErrorEvent, ScriptEvent,
+        ScriptCallbackResponseEvent, ScriptErrorEvent
     },
     extractors::{HandlerContext, WithWorldGuard},
     script::{ContextKey, DisplayProxy, ScriptComponent, ScriptDomain},
