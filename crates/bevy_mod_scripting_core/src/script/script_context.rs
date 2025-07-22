@@ -43,8 +43,10 @@ pub enum ContextRule {
     Entity,
     /// If script exists, return only that.
     Script,
-    /// Check nothing, provide shared context
+    /// Check nothing; return empty context key.
     Shared,
+    // XXX: Custom rule with this opaque type makes it harder to have the
+    // derives above that we might want. So maybe we drop this variant.
     /// A custom rule
     Custom(Box<dyn ContextKeySelector + 'static + Sync + Send>)
 }
