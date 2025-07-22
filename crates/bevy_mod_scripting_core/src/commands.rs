@@ -12,8 +12,7 @@ use crate::{
     extractors::{with_handler_system_state, HandlerContext},
     handler::{handle_script_errors, send_callback_response},
     script::{ContextKey, DisplayProxy, StaticScripts},
-    IntoScriptPluginParams, ScriptContext, ScriptQueue,
-};
+    IntoScriptPluginParams, ScriptContext };
 use bevy::{
     asset::Handle,
     ecs::entity::Entity,
@@ -238,7 +237,6 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         handler_ctxt: &mut HandlerContext<P>,
     ) -> Result<Option<ScriptValue>, ScriptError> {
         let mut script_id = &Handle::default();
-        let mut script_events = vec![];
         let Some(content) = content.or_else(|| {
             context_key.script.as_ref().and_then(|id| {
                 script_id = id;
@@ -270,10 +268,6 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
             Some(context) => {
                 bevy::log::debug!("{}: reloading context {}", P::LANGUAGE, context_key);
                 script_state = Self::before_load(context_key.clone(), guard.clone(), handler_ctxt);
-                script_events.push(ScriptEvent::Unloaded {
-                    context_key: context_key.clone(),
-                    value: script_state.clone(),
-                });
 
                 let mut lcontext = context.lock();
                 phrase = "reloading";
@@ -479,10 +473,10 @@ impl AddStaticScript {
 
 impl Command for AddStaticScript {
     fn apply(self, world: &mut bevy::prelude::World) {
+        let script_id = self.id.id();
         let mut static_scripts = world.get_resource_or_init::<StaticScripts>();
-        static_scripts.insert(self.id.clone());
-        let mut script_queue = world.resource_mut::<ScriptQueue>();
-        script_queue.push_back(ContextKey::from(self.id));
+        static_scripts.insert(self.id);
+        world.send_event(ScriptEvent::StaticAttached { script: script_id });
     }
 }
 

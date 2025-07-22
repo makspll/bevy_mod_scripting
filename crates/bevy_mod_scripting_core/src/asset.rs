@@ -13,7 +13,7 @@ use bevy::{
     log::{error, info, trace, warn, warn_once},
     prelude::{
         Added, AssetServer, Commands, Deref, DerefMut, Entity, EventReader, IntoSystemConfigs,
-        IntoSystemSetConfigs, Query, RemovedComponents, Res, ResMut, Resource, EventWriter
+        IntoSystemSetConfigs, Query, RemovedComponents, Res, ResMut, Resource, EventWriter, Local, Handle,
     },
     reflect::TypePath,
 };
@@ -74,9 +74,7 @@ impl ScriptAsset {
 }
 
 /// The queue that evaluates scripts.
-#[derive(Resource, Deref, DerefMut, Default)]
-pub(crate) struct ScriptQueue(VecDeque<ContextKey>);
-
+type ScriptQueue = VecDeque<ContextKey>;
 /// Script settings
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ScriptSettings {
@@ -206,63 +204,79 @@ fn sync_components(
     }
 }
 
-/// Listens to [`AssetEvent`] events and dispatches [`CreateOrUpdateScript`] and [`DeleteScript`] commands accordingly.
+/// Listens to [`ScriptEvent`] events and dispatches [`CreateOrUpdateScript`] and [`DeleteScript`] commands accordingly.
 ///
 /// Allows for hot-reloading of scripts.
 #[profiling::function]
-pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
-    mut events: EventReader<AssetEvent<ScriptAsset>>,
+fn handle_script_events<P: IntoScriptPluginParams>(
+    mut events: EventReader<ScriptEvent>,
     script_assets: Res<Assets<ScriptAsset>>,
     static_scripts: Res<StaticScripts>,
     scripts: Query<(Entity, &ScriptComponent, Option<&ScriptDomain>)>,
+    asset_server: Res<AssetServer>,
+    mut script_queue: Local<ScriptQueue>,
     mut commands: Commands,
 ) {
     for event in events.read() {
-        trace!("{}: Received script asset event: {:?}", P::LANGUAGE, event);
-        if let AssetEvent::Modified { id } = event {
-            if let Some(asset) = script_assets.get(*id) {
-                if asset.language != P::LANGUAGE {
-                    continue;
-                }
-                // We need to reload the script for any context it's
-                // associated with. That could be static scripts, script
-                // components.
-                for (entity, script_component, script_domain_maybe) in &scripts {
-                    if let Some(handle) =
-                        script_component.0.iter().find(|handle| handle.id() == *id)
-                    {
-                        commands.queue(CreateOrUpdateScript::<P>::new(ContextKey {
-                            entity: Some(entity),
-                            script: Some(handle.clone()),
-                            domain: script_domain_maybe.map(|x| x.0),
-                        }));
+        trace!("{}: Received script event: {:?}", P::LANGUAGE, event);
+        match event {
+            ScriptEvent::Modified { script: id } => {
+                if let Some(asset) = script_assets.get(*id) {
+                    if asset.language != P::LANGUAGE {
+                        continue;
+                    }
+                    // We need to reload the script for any context it's
+                    // associated with. That could be static scripts, script
+                    // components.
+                    for (entity, script_component, script_domain_maybe) in &scripts {
+                        if let Some(handle) =
+                            script_component.0.iter().find(|handle| handle.id() == *id)
+                        {
+                            commands.queue(CreateOrUpdateScript::<P>::new(ContextKey {
+                                entity: Some(entity),
+                                script: Some(handle.clone()),
+                                domain: script_domain_maybe.map(|x| x.0),
+                            }));
+                        }
+                    }
+
+                    if let Some(handle) = static_scripts.scripts.iter().find(|s| s.id() == *id) {
+                        commands.queue(CreateOrUpdateScript::<P>::new(handle.clone()));
                     }
                 }
-
-                if let Some(handle) = static_scripts.scripts.iter().find(|s| s.id() == *id) {
-                    commands.queue(CreateOrUpdateScript::<P>::new(handle.clone()));
+            }
+            ScriptEvent::StaticAttached { script } => {
+                script_queue.push_back(ContextKey {
+                    entity: None,
+                    script: Some(Handle::Weak(*script)),
+                    domain: None,
+                });
+            }
+            ScriptEvent::Attached { entity } => {
+                match scripts.get(*entity) {
+                    Ok((id, script_comp, domain_maybe)) => {
+                        let domain = domain_maybe.map(|x| x.0);
+                        for handle in &script_comp.0 {
+                            script_queue.push_back(ContextKey {
+                                entity: Some(id),
+                                script: Some(handle.clone_weak()),
+                                domain,
+                            });
+                        }
+                    }
+                    Err(e) => {
+                        error!("{}: Unable to look up attached entity {}: {}", P::LANGUAGE, entity, e);
+                    }
                 }
             }
+            _ => ()
         }
     }
-}
 
-pub(crate) fn eval_script<P: IntoScriptPluginParams>(
-    script_comps: Query<(Entity, &ScriptComponent, Option<&ScriptDomain>), Added<ScriptComponent>>,
-    mut script_queue: ResMut<ScriptQueue>,
-    script_assets: Res<Assets<ScriptAsset>>,
-    asset_server: Res<AssetServer>,
-    mut commands: Commands,
-) {
-    for (id, script_comp, domain_maybe) in &script_comps {
-        for handle in &script_comp.0 {
-            script_queue.push_back(ContextKey {
-                entity: Some(id),
-                script: Some(handle.clone_weak()),
-                domain: domain_maybe.map(|x| x.0),
-            });
-        }
-    }
+    // Evalute the scripts in the order they were attached.
+    //
+    // If a script is not loaded yet, we stop evaluation and try again on the
+    // next call.
     while !script_queue.is_empty() {
         let mut script_failed = false;
         // NOTE: Maybe using pop_front_if once stabalized.
@@ -293,6 +307,7 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
             })
             .unwrap_or(false);
         if !script_ready {
+            // We can't evaluate it yet. It's still loading.
             break;
         }
         if let Some(context_key) = script_queue.pop_front() {
@@ -321,6 +336,7 @@ pub(crate) fn eval_script<P: IntoScriptPluginParams>(
             break;
         }
     }
+
 }
 
 /// Remove contexts that are associated with removed entities.
@@ -400,7 +416,7 @@ pub(crate) fn configure_asset_systems(app: &mut App) -> &mut App {
 pub(crate) fn configure_asset_systems_for_plugin<P: IntoScriptPluginParams>(app: &mut App) {
     app.add_systems(
         PreUpdate,
-        (eval_script::<P>, sync_script_data::<P>).in_set(ScriptingSystemSet::ScriptCommandDispatch),
+        handle_script_events::<P>.in_set(ScriptingSystemSet::ScriptCommandDispatch),
     )
     .add_systems(
         PostUpdate,

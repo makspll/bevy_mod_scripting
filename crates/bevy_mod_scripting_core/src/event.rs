@@ -15,40 +15,6 @@ pub enum ScriptEvent {
         /// The script
         script: ScriptId
     },
-    /// A script component was attached to an entity.
-    Attached {
-        /// The entity
-        entity: Entity,
-    },
-    /// A script was loaded/evaluated.
-    Loaded {
-        /// The script
-        script: ScriptId,
-        /// The entity
-        entity: Option<Entity>,
-        /// The domain
-        domain: Option<Domain>,
-    },
-    /// A script was unloaded, perhaps producing a value.
-    Unloaded {
-        /// The context key
-        context_key: ContextKey,
-        // /// The script
-        // script: ScriptId,
-        // /// The entity
-        // entity: Option<Entity>,
-        // /// The domain
-        // domain: Option<Domain>,
-        /// The unloaded value
-        value: Option<ScriptValue>
-    },
-    // We could deliver this through `RemovedComponents` but
-    // it won't have any further information since the component is gone.
-    /// An entity with a [ScriptComponent] was removed.
-    Detached {
-        /// The entity
-        entity: Entity
-    },
     /// A script asset was removed.
     Removed {
         /// The script
@@ -59,6 +25,53 @@ pub enum ScriptEvent {
         /// The script
         script: ScriptId
     },
+    /// A script component was attached to an entity.
+    Attached {
+        /// The entity
+        entity: Entity,
+    },
+    /// A script was added to [StaticScripts].
+    StaticAttached {
+        /// The script
+        script: ScriptId,
+    },
+    // We could deliver this through `RemovedComponents` but
+    // it won't have any further information since the component is gone.
+    /// An entity with a [ScriptComponent] was removed.
+    Detached {
+        /// The entity
+        entity: Entity
+    },
+
+    // These were some other events I was considering. I thought Unloaded might
+    // be interesting, but if I implemented it the way things work currently it
+    // could only be a notification. The user wouldn't be able to do anything
+    // between an Unloaded and Loaded event that could affect the Unloaded
+    // value. Maybe that's fine. I'm leaving it here purely to communicate the
+    // idea. It can be removed.
+
+    // /// A script was loaded/evaluated.
+    // Loaded {
+    //     /// The script
+    //     script: ScriptId,
+    //     /// The entity
+    //     entity: Option<Entity>,
+    //     /// The domain
+    //     domain: Option<Domain>,
+    // },
+    // /// A script was unloaded, perhaps producing a value.
+    // Unloaded {
+    //     /// The context key
+    //     context_key: ContextKey,
+    //     // /// The script
+    //     // script: ScriptId,
+    //     // /// The entity
+    //     // entity: Option<Entity>,
+    //     // /// The domain
+    //     // domain: Option<Domain>,
+    //     /// The unloaded value
+    //     value: Option<ScriptValue>
+    // },
 }
 
 /// An error coming from a script

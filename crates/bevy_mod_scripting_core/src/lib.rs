@@ -5,7 +5,7 @@
 use crate::event::ScriptErrorEvent;
 use asset::{
     configure_asset_systems, configure_asset_systems_for_plugin, Language, ScriptAsset,
-    ScriptAssetLoader, ScriptQueue,
+    ScriptAssetLoader,
 };
 use bevy::{prelude::*, utils::HashMap};
 use bindings::{
@@ -267,7 +267,6 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
             .add_event::<ScriptCallbackResponseEvent>()
             .init_resource::<AppReflectAllocator>()
             .init_resource::<StaticScripts>()
-            .init_resource::<ScriptQueue>()
             .init_asset::<ScriptAsset>()
             .init_resource::<AppScriptFunctionRegistry>()
             .insert_resource(AppScheduleRegistry::new());
