@@ -391,13 +391,12 @@ pub(crate) fn configure_asset_systems(app: &mut App) -> &mut App {
     // these should be in the same set as bevy's asset systems
     // currently this is in the PreUpdate set
     app
-        // .add_systems(
-        //     PreUpdate,
-        //     (
-        //         dispatch_script_asset_events.in_set(ScriptingSystemSet::ScriptAssetDispatch),
-        //         remove_script_metadata.in_set(ScriptingSystemSet::ScriptMetadataRemoval),
-        //     ),
-        // )
+        .add_systems(
+            PreUpdate,
+            (
+                (sync_assets, sync_components.after(sync_assets)).in_set(ScriptingSystemSet::ScriptAssetDispatch)
+            ),
+        )
         .configure_sets(
             PreUpdate,
             (
