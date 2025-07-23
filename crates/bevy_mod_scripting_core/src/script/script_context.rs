@@ -1,6 +1,6 @@
 use super::*;
 use crate::IntoScriptPluginParams;
-use bevy::{ecs::system::Resource, log::trace};
+use bevy::ecs::system::Resource;
 use parking_lot::Mutex;
 use std::{hash::Hash, sync::Arc};
 

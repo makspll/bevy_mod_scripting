@@ -1,7 +1,7 @@
 //! Script related types, functions and components
 
-use crate::{asset::ScriptAsset, IntoScriptPluginParams};
-use bevy::prelude::{Component, Entity, ReflectComponent};
+use crate::{asset::ScriptAsset};
+use bevy::prelude::{Component, ReflectComponent};
 use bevy::utils::hashbrown::hash_map::DefaultHashBuilder;
 use bevy::{
     asset::{Asset, AssetId, Handle},
@@ -9,12 +9,11 @@ use bevy::{
     reflect::Reflect,
     utils::HashSet,
 };
-use parking_lot::Mutex;
-use std::{collections::HashMap, fmt, hash::BuildHasher, ops::Deref, sync::Arc};
+use std::{collections::HashMap, fmt, hash::BuildHasher, ops::Deref};
 
-mod key;
+mod context_key;
 mod script_context;
-pub use key::*;
+pub use context_key::*;
 pub use script_context::*;
 
 /// A unique identifier for a script, by default corresponds to the path of the asset excluding the asset source.
