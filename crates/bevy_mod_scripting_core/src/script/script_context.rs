@@ -154,7 +154,7 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
     pub fn insert(&mut self, context_key: &ContextKey, context: P::C) -> Result<(), P::C> {
         match self.policy.select(context_key) {
             Some(key) => {
-                self.map.insert(key, Arc::new(Mutex::new(context)));
+                self.map.insert(key.into_weak(), Arc::new(Mutex::new(context)));
                 Ok(())
             }
             None => Err(context)
