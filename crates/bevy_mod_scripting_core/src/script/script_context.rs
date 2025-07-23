@@ -75,7 +75,7 @@ impl ContextKeySelector for ContextRule {
 }
 
 #[derive(Resource, Debug)]
-/// This is a configurable context selector based on priority.
+/// This is a configurable context policy based on priority.
 pub struct ContextPolicy {
     /// The rules in order of priority.
     pub priorities: Vec<ContextRule>,
@@ -95,6 +95,10 @@ impl Default for ContextPolicy {
 
 
 impl ContextPolicy {
+    /// Return which rule is used for context_key.
+    pub fn which_rule(&self, context_key: &ContextKey) -> Option<&ContextRule> {
+        self.priorities.iter().find(|rule| rule.select(context_key).is_some())
+    }
     /// Use a shared script context
     pub fn shared() -> Self {
         ContextPolicy { priorities: vec![ContextRule::Shared] }
@@ -134,19 +138,21 @@ impl ContextKeySelector for ContextPolicy {
 /// Keeps track of script contexts and enforces the context selection policy.
 pub struct ScriptContext<P: IntoScriptPluginParams> {
     map: HashMap<ContextKey, Arc<Mutex<P::C>>>,
-    selector: ContextPolicy,
+    /// The policy used to determine the context key.
+    pub policy: ContextPolicy,
 }
 
 impl<P: IntoScriptPluginParams> ScriptContext<P> {
+
     /// Get the context.
     pub fn get(&self, context_key: &ContextKey) -> Option<&Arc<Mutex<P::C>>> {
-        self.selector.select(context_key).and_then(|key| self.map.get(&key))
+        self.policy.select(context_key).and_then(|key| self.map.get(&key))
     }
     /// Insert a context.
     ///
     /// If the context cannot be inserted, it is returned as an `Err`.
     pub fn insert(&mut self, context_key: &ContextKey, context: P::C) -> Result<(), P::C> {
-        match self.selector.select(context_key) {
+        match self.policy.select(context_key) {
             Some(key) => {
                 self.map.insert(key, Arc::new(Mutex::new(context)));
                 Ok(())
@@ -156,7 +162,7 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
     }
     /// Returns true if there is a context.
     pub fn contains(&self, context_key: &ContextKey) -> bool {
-        self.selector.select(context_key).map(|key| self.map.contains_key(&key)).unwrap_or(false)
+        self.policy.select(context_key).map(|key| self.map.contains_key(&key)).unwrap_or(false)
     }
     /// Hash for context.
     ///
@@ -166,7 +172,7 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
     /// Note: The existence of the hash does not imply the context exists. It
     /// only declares what its hash will be.
     pub fn hash(&self, context_key: &ContextKey) -> Option<u64> {
-        self.selector.select(context_key).map(|key| DefaultHashBuilder::default().hash_one(&key))
+        self.policy.select(context_key).map(|key| DefaultHashBuilder::default().hash_one(&key))
     }
 
     /// Iterate through contexts.
@@ -177,7 +183,7 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
     ///
     /// Returns true if removed.
     pub fn remove(&mut self, context_key: &ContextKey) -> Option<Arc<Mutex<P::C>>> {
-        self.selector.select(context_key).and_then(|key| self.map.remove(&key))
+        self.policy.select(context_key).and_then(|key| self.map.remove(&key))
     }
 
     /// Iterate through keys and contexts.
@@ -187,7 +193,7 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
 
     /// Set the context selection policy.
     pub fn with_policy(mut self, policy: ContextPolicy) -> Self {
-        self.selector = policy;
+        self.policy = policy;
         self
     }
 }
@@ -199,7 +205,7 @@ impl<P: IntoScriptPluginParams> Default for ScriptContext<P> {
     fn default() -> Self {
         Self {
             map: HashMap::default(),
-            selector: ContextPolicy::default(),
+            policy: ContextPolicy::default(),
         }
     }
 }

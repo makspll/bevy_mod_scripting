@@ -11,7 +11,7 @@ use crate::{
     },
     extractors::{with_handler_system_state, HandlerContext},
     handler::{handle_script_errors, send_callback_response},
-    script::{ContextKey, DisplayProxy, StaticScripts},
+    script::{ContextKey, DisplayProxy, StaticScripts, ContextRule},
     IntoScriptPluginParams, ScriptContext };
 use bevy::{
     asset::Handle,
@@ -22,9 +22,13 @@ use bevy::{
 use std::marker::PhantomData;
 
 /// Deletes a script with the given ID
+///
+/// And deletes its associated context.
 pub struct DeleteScript<P: IntoScriptPluginParams> {
     /// The context key
     pub context_key: ContextKey,
+    /// Force deletes the context even if the context is shared.
+    pub force: bool,
     /// hack to make this Send, C does not need to be Send since it is not stored in the command
     pub _ph: PhantomData<fn(P::C, P::R)>,
 }
@@ -34,6 +38,7 @@ impl<P: IntoScriptPluginParams> DeleteScript<P> {
     pub fn new(context_key: impl Into<ContextKey>) -> Self {
         Self {
             context_key: context_key.into(),
+            force: false,
             _ph: PhantomData,
         }
     }
@@ -63,13 +68,24 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
             }
             {
                 let mut script_contexts = world.get_resource_or_init::<ScriptContext<P>>();
-                if script_contexts.remove(&self.context_key).is_some() {
-                    bevy::log::info!(
-                        "{}: Deleted context for script {:?}",
-                        P::LANGUAGE,
-                        script_id.display()
-                    );
-                    deleted = true;
+                let delete_context = match script_contexts.policy.which_rule(&self.context_key) {
+                    Some(ContextRule::Domain | ContextRule::Shared) => {
+                        // Don't delete these shared contexts.
+                        //
+                        // Perhaps this should be defined by the rule itself.
+                        false
+                    },
+                    _ => true
+                };
+
+                if (self.force || delete_context) &&
+                    script_contexts.remove(&self.context_key).is_some() {
+                        bevy::log::info!(
+                            "{}: Deleted context for script {:?}",
+                            P::LANGUAGE,
+                            script_id.display()
+                        );
+                        deleted = true;
                 }
             }
         }
@@ -750,13 +766,6 @@ mod test {
     fn test_commands_with_global_assigner() {
         // setup all the resources necessary
         let mut app = setup_app();
-
-        let mut settings = app
-            .world_mut()
-            .get_resource_mut::<ContextLoadingSettings<DummyPlugin>>()
-            .unwrap();
-
-        settings.assignment_strategy = crate::context::ContextAssignmentStrategy::Global;
         app.insert_resource(ScriptContext::<DummyPlugin>::default().with_policy(ContextPolicy::shared()));
 
         // create a script
@@ -830,6 +839,8 @@ mod test {
 
         Command::apply(command, app.world_mut());
 
+        // Have to run the systems to evaluate the events.
+        app.update();
         // check second script still has the context, and on unload was called
         assert_context_and_script(
             app.world(),
