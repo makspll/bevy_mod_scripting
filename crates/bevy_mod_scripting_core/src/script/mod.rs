@@ -12,20 +12,10 @@ use bevy::{
 use parking_lot::Mutex;
 use std::{collections::HashMap, fmt, hash::BuildHasher, ops::Deref, sync::Arc};
 
-mod domain_context;
-mod entity_context;
-mod entity_scriptid_context;
 mod key;
 mod script_context;
-mod scriptid_context;
-mod shared_context;
-pub use domain_context::*;
-pub use entity_context::*;
-pub use entity_scriptid_context::*;
 pub use key::*;
 pub use script_context::*;
-pub use scriptid_context::*;
-pub use shared_context::*;
 
 /// A unique identifier for a script, by default corresponds to the path of the asset excluding the asset source.
 ///

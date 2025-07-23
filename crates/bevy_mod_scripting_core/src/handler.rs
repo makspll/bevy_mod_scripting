@@ -323,7 +323,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                 for (key, context) in handler_ctxt.script_context.iter() {
                     let call_result = handler_ctxt.call_dynamic_label(
                         &callback_label,
-                        &key,
+                        key,
                         Some(context),
                         event.args.clone(),
                         guard.clone(),
@@ -334,7 +334,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                             guard.clone(),
                             ScriptCallbackResponseEvent::new(
                                 callback_label.clone(),
-                                key,
+                                key.clone(),
                                 call_result.clone(),
                             ),
                         );

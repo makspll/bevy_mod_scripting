@@ -63,7 +63,7 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
             }
             {
                 let mut script_contexts = world.get_resource_or_init::<ScriptContext<P>>();
-                if script_contexts.remove(&self.context_key) {
+                if script_contexts.remove(&self.context_key).is_some() {
                     bevy::log::info!(
                         "{}: Deleted context for script {:?}",
                         P::LANGUAGE,
@@ -294,7 +294,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
                 if let Some(context) = maybe_context {
                     if handler_ctxt
                         .script_context
-                        .insert(context_key.clone(), context)
+                        .insert(context_key, context)
                         .is_err()
                     {
                         warn!("Unable to insert script context for {}.", context_key);

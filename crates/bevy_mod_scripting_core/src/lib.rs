@@ -19,10 +19,10 @@ use context::{
     ContextPreHandlingInitializer,
 };
 use error::ScriptError;
-use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent};
+use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent, ScriptEvent};
 use handler::{CallbackSettings, HandlerFn};
 use runtime::{initialize_runtime, Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
-use script::{ScriptComponent, ScriptContext, StaticScripts};
+use script::{ScriptComponent, ScriptContext, StaticScripts, ContextPolicy};
 
 pub mod asset;
 pub mod bindings;
@@ -129,7 +129,7 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
             });
         if !app.world().contains_resource::<ScriptContext<P>>() {
             app.insert_resource(if self.context_assignment_strategy.is_global() {
-                ScriptContext::<P>::shared()
+                ScriptContext::<P>::default().with_policy(ContextPolicy::shared())
             } else {
                 ScriptContext::<P>::default()
             });
@@ -262,7 +262,9 @@ pub struct BMSScriptingInfrastructurePlugin;
 
 impl Plugin for BMSScriptingInfrastructurePlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<ScriptErrorEvent>()
+        app
+            .add_event::<ScriptErrorEvent>()
+            .add_event::<ScriptEvent>()
             .add_event::<ScriptCallbackEvent>()
             .add_event::<ScriptCallbackResponseEvent>()
             .init_resource::<AppReflectAllocator>()

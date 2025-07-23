@@ -378,7 +378,7 @@ pub fn remove_context_on_script_removal<P: IntoScriptPluginParams>(
             // If we want this kind of behavior, it seems like we'd want to
             // have handles to contexts.
             //
-            if script_contexts.remove(&ContextKey::from(*id)) {
+            if script_contexts.remove(&ContextKey::from(*id)).is_some() {
                 info!("{}: Removed context for script {:?}", P::LANGUAGE, id);
             }
         }
