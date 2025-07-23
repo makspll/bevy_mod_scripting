@@ -509,12 +509,12 @@ mod test {
     };
 
     use crate::{
-        asset::{Language, ScriptQueue},
+        asset::Language,
         bindings::script_value::ScriptValue,
         context::{ContextBuilder, ContextLoadingSettings},
         handler::CallbackSettings,
         runtime::RuntimeContainer,
-        script::ScriptContext,
+        script::{ContextPolicy, ScriptContext},
         ManageStaticScripts,
     };
 
@@ -525,15 +525,16 @@ mod test {
         let mut app = App::new();
 
         app.add_event::<ScriptCallbackResponseEvent>();
+        app.add_event::<ScriptEvent>();
         app.add_plugins(bevy::asset::AssetPlugin::default());
         app.init_asset::<ScriptAsset>();
-        app.init_resource::<ScriptQueue>();
         app.add_plugins(LogPlugin {
             filter: "bevy_mod_scripting_core=debug,info".to_owned(),
             level: Level::TRACE,
             ..Default::default()
         });
-
+        app.add_plugins(crate::configure_asset_systems);
+        app.add_plugins(crate::configure_asset_systems_for_plugin::<DummyPlugin>);
         app.insert_resource(ContextLoadingSettings::<DummyPlugin> {
             loader: ContextBuilder {
                 load: |name, c, init, pre_run_init, _| {
@@ -756,7 +757,7 @@ mod test {
             .unwrap();
 
         settings.assignment_strategy = crate::context::ContextAssignmentStrategy::Global;
-        app.insert_resource(ScriptContext::<DummyPlugin>::shared());
+        app.insert_resource(ScriptContext::<DummyPlugin>::default().with_policy(ContextPolicy::shared()));
 
         // create a script
         let script = add_script(&mut app, "content");

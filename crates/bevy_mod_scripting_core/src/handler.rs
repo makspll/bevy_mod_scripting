@@ -450,11 +450,10 @@ mod test {
         asset::ScriptAsset,
         bindings::script_value::ScriptValue,
         context::{ContextBuilder, ContextLoadingSettings},
-        event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent},
+        event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent, ScriptEvent},
         runtime::RuntimeContainer,
         script::{ScriptComponent, StaticScripts},
-        BMSScriptingInfrastructurePlugin, ManageStaticScripts, ScriptContext, ScriptQueue,
-    };
+        BMSScriptingInfrastructurePlugin, ManageStaticScripts, ScriptContext };
 
     use super::*;
     struct OnTestCallback;
@@ -490,9 +489,9 @@ mod test {
 
     fn setup_app<L: IntoCallbackLabel + 'static>(runtime: TestRuntime) -> App {
         let mut app = App::new();
+        // app.add_plugins(bevy::log::LogPlugin::default());
         app.add_plugins(bevy::asset::AssetPlugin::default());
         app.init_asset::<ScriptAsset>();
-        app.init_resource::<ScriptQueue>();
         app.add_event::<ScriptCallbackEvent>();
         app.add_event::<ScriptCallbackResponseEvent>();
         app.add_event::<ScriptErrorEvent>();
@@ -508,6 +507,7 @@ mod test {
                 Ok(ScriptValue::Unit)
             },
         });
+        app.add_plugins(crate::configure_asset_systems);
         app.add_plugins(crate::configure_asset_systems_for_plugin::<TestPlugin>);
         app.add_systems(Update, event_handler::<L, TestPlugin>);
         app.insert_resource(RuntimeContainer::<TestPlugin> { runtime });
@@ -616,7 +616,7 @@ mod test {
                 .world()
                 .get_resource::<ScriptContext<TestPlugin>>()
                 .unwrap();
-            // let key = script_context.iter_box().next().map(|x| x.0).unwrap();
+            assert_eq!(script_context.iter().count(), 1);
             // assert_eq!(Some(test_entity_id), key.entity);
             // // assert_eq!(Some(test_script), key.script_id);
             // assert_eq!(1, script_context.iter_box().count());

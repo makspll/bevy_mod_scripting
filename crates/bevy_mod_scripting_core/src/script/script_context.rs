@@ -87,6 +87,7 @@ impl Default for ContextPolicy {
         ContextPolicy { priorities: vec![
             ContextRule::Domain,
             ContextRule::EntityScript,
+            ContextRule::Script,
             ContextRule::Shared,
         ] }
     }

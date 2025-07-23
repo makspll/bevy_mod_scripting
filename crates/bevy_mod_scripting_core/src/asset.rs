@@ -246,6 +246,7 @@ fn handle_script_events<P: IntoScriptPluginParams>(
                 }
             }
             ScriptEvent::StaticAttached { script } => {
+                trace!("{}: Add static script {} to script queue.", P::LANGUAGE, script);
                 script_queue.push_back(ContextKey {
                     entity: None,
                     script: Some(Handle::Weak(*script)),
@@ -253,6 +254,7 @@ fn handle_script_events<P: IntoScriptPluginParams>(
                 });
             }
             ScriptEvent::Attached { entity } => {
+                trace!("{}: Add entity {} contents to script queue.", P::LANGUAGE, entity);
                 match scripts.get(*entity) {
                     Ok((id, script_comp, domain_maybe)) => {
                         let domain = domain_maybe.map(|x| x.0);
@@ -387,7 +389,7 @@ pub fn remove_context_on_script_removal<P: IntoScriptPluginParams>(
 
 /// Setup all the asset systems for the scripting plugin and the dependencies
 #[profiling::function]
-pub(crate) fn configure_asset_systems(app: &mut App) -> &mut App {
+pub(crate) fn configure_asset_systems(app: &mut App){
     // these should be in the same set as bevy's asset systems
     // currently this is in the PreUpdate set
     app
@@ -405,8 +407,6 @@ pub(crate) fn configure_asset_systems(app: &mut App) -> &mut App {
                     .after(ScriptingSystemSet::ScriptAssetDispatch),
             ),
         );
-
-    app
 }
 
 /// Setup all the asset systems for the scripting plugin and the dependencies

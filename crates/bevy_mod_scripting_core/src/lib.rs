@@ -278,7 +278,7 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
             ((garbage_collector).in_set(ScriptingSystemSet::GarbageCollection),),
         );
 
-        configure_asset_systems(app);
+        app.add_plugins(configure_asset_systems);
 
         DynamicScriptComponentPlugin.build(app);
     }
