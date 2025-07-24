@@ -74,14 +74,14 @@ impl ContextKeySelector for ContextRule {
     }
 }
 
-#[derive(Resource, Debug)]
 /// This is a configurable context policy based on priority.
+#[derive(Resource, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ContextPolicy {
     /// The rules in order of priority.
     pub priorities: Vec<ContextRule>,
 }
 
-/// Returns a `[Domain, EntityScript, Shared]` policy.
+/// Returns a `[Domain, EntityScript, Script, Shared]` policy.
 impl Default for ContextPolicy {
     fn default() -> Self {
         ContextPolicy { priorities: vec![
@@ -93,13 +93,12 @@ impl Default for ContextPolicy {
     }
 }
 
-
 impl ContextPolicy {
     /// Return which rule is used for context_key.
     pub fn which_rule(&self, context_key: &ContextKey) -> Option<&ContextRule> {
         self.priorities.iter().find(|rule| rule.select(context_key).is_some())
     }
-    /// Use a shared script context
+    /// Use a shared script context.
     pub fn shared() -> Self {
         ContextPolicy { priorities: vec![ContextRule::Shared] }
     }
@@ -110,21 +109,21 @@ impl ContextPolicy {
         }
         self
     }
-    /// Domain contexts or a shared context
+    /// Domain contexts or a shared context.
     pub fn domains() -> Self {
         ContextPolicy { priorities: vec![ContextRule::Domain, ContextRule::Shared] }
     }
-    /// Use one script context per entity
+    /// Use one script context per entity or a shared context.
     pub fn per_entity() -> Self {
         ContextPolicy { priorities: vec![ContextRule::Entity, ContextRule::Shared] }
     }
-    /// Use one script context per entity
+    /// Use one script context per entity or a shared context.
     pub fn per_script() -> Self {
         ContextPolicy { priorities: vec![ContextRule::Script, ContextRule::Shared] }
     }
-    /// Use one script context per entity and script
+    /// Use one script context per entity-script, or a script context, or a shared context.
     pub fn per_entity_and_script() -> Self {
-        ContextPolicy { priorities: vec![ContextRule::EntityScript, ContextRule::Shared] }
+        ContextPolicy { priorities: vec![ContextRule::EntityScript, ContextRule::Script, ContextRule::Shared] }
     }
 }
 
@@ -143,6 +142,13 @@ pub struct ScriptContext<P: IntoScriptPluginParams> {
 }
 
 impl<P: IntoScriptPluginParams> ScriptContext<P> {
+    /// Construct a new ScriptContext with the given policy.
+    pub fn new(policy: ContextPolicy) -> Self {
+        Self {
+            map: HashMap::default(),
+            policy,
+        }
+    }
 
     /// Get the context.
     pub fn get(&self, context_key: &ContextKey) -> Option<&Arc<Mutex<P::C>>> {
@@ -174,14 +180,13 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
     pub fn hash(&self, context_key: &ContextKey) -> Option<u64> {
         self.policy.select(context_key).map(|key| DefaultHashBuilder::default().hash_one(&key))
     }
-
     /// Iterate through contexts.
     pub fn values(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
         self.map.values()
     }
     /// Remove a context.
     ///
-    /// Returns true if removed.
+    /// Returns context if removed.
     pub fn remove(&mut self, context_key: &ContextKey) -> Option<Arc<Mutex<P::C>>> {
         self.policy.select(context_key).and_then(|key| self.map.remove(&key))
     }
@@ -189,12 +194,6 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
     /// Iterate through keys and contexts.
     pub fn iter(&self) -> impl Iterator<Item = (&ContextKey, &Arc<Mutex<P::C>>)> {
         self.map.iter()
-    }
-
-    /// Set the context selection policy.
-    pub fn with_policy(mut self, policy: ContextPolicy) -> Self {
-        self.policy = policy;
-        self
     }
 }
 

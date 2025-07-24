@@ -766,7 +766,7 @@ mod test {
     fn test_commands_with_global_assigner() {
         // setup all the resources necessary
         let mut app = setup_app();
-        app.insert_resource(ScriptContext::<DummyPlugin>::default().with_policy(ContextPolicy::shared()));
+        app.insert_resource(ScriptContext::<DummyPlugin>::new(ContextPolicy::shared()));
 
         // create a script
         let script = add_script(&mut app, "content");

@@ -129,7 +129,7 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
             });
         if !app.world().contains_resource::<ScriptContext<P>>() {
             app.insert_resource(if self.context_assignment_strategy.is_global() {
-                ScriptContext::<P>::default().with_policy(ContextPolicy::shared())
+                ScriptContext::<P>::new(ContextPolicy::shared())
             } else {
                 ScriptContext::<P>::default()
             });
