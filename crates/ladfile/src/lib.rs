@@ -73,6 +73,11 @@ impl LadFile {
             })
     }
 
+    /// Retrieves true if the type id corresponds to a primitive type.
+    pub fn is_primitive(&self, type_id: &LadTypeId) -> bool {
+        self.primitives.contains_key(type_id)
+    }
+
     /// Retrieves the generics of a type id if it is a generic type.
     pub fn get_type_generics(&self, type_id: &LadTypeId) -> Option<&[LadGeneric]> {
         self.types
@@ -92,6 +97,54 @@ impl LadFile {
                     .map(|p| p.documentation.as_ref())
             })
     }
+
+    /// Retrieves all unique types, then groups them by their generics arity,
+    /// this grouping represents types as expected to be seen in rust source code.
+    ///
+    /// For example `Vec<T>` and `Vec<i32>` will be grouped together as `Vec` with arity 1.
+    pub fn polymorphizied_types(&self) -> IndexMap<PolymorphicTypeKey, Vec<&LadTypeId>> {
+        let mut types_by_identifier_and_arity: IndexMap<PolymorphicTypeKey, Vec<&LadTypeId>> =
+            IndexMap::<PolymorphicTypeKey, Vec<&LadTypeId>>::new();
+        for type_id in self.types.keys() {
+            let arity = self.get_type_arity(type_id);
+            let identifier = self.get_type_identifier(type_id, None);
+            types_by_identifier_and_arity
+                .entry(PolymorphicTypeKey { identifier, arity })
+                .or_default()
+                .push(type_id);
+        }
+
+        for (primitive_id, primitive) in &self.primitives {
+            let arity = 0; // primitives have no generics currently
+            let identifier = primitive.kind.lad_type_id().to_string().into();
+            types_by_identifier_and_arity
+                .entry(PolymorphicTypeKey { identifier, arity })
+                .or_default()
+                .push(primitive_id);
+        }
+
+        types_by_identifier_and_arity
+    }
+
+    /// Returns the arity of a type, which is the number of generic parameters it has.
+    /// Types without generics will return 0, meaning they can be identified uniquely by their identifier.
+    pub fn get_type_arity(&self, type_id: &LadTypeId) -> usize {
+        self.types
+            .get(type_id)
+            .map(|t| t.generics.len())
+            .unwrap_or(0) // primitives have no generics currently
+    }
+}
+
+/// A key for polymorphic types, used to group types by their identifier and arity.
+///
+/// Each key would correspond to a unique rust type, such as `Vec<T>` or `HashMap<K,V>`.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct PolymorphicTypeKey {
+    /// The type identifier
+    pub identifier: Cow<'static, str>,
+    /// The arity of the type
+    pub arity: usize,
 }
 
 impl Default for LadFile {

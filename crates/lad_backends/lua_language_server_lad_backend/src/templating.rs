@@ -1,7 +1,5 @@
-use std::error::Error;
-
-use anyhow::Context;
 use include_dir::{include_dir, Dir};
+use std::error::Error;
 
 pub const TEMPLATE_DIRECTORY: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates");
 

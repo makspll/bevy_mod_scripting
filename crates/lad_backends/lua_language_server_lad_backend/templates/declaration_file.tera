@@ -1,51 +1,64 @@
 ---@meta
----@module "{{ name }}"
-
-{% for class in classes %}
+---@module "{{ modules | first | get(key="name")}}"
+{# newline #}
+{# newline #}
+{%- for module in modules -%} {# module #}
+{%- for class in module.classes -%}
 ---@class {{ class.name }}
+{# newline #}
+{{- self::multiline_description(description=class.documentation) -}}
 
-{% for field in class.fields %}
-{{ class_field(field=field) }}
-{% endfor %}
+{%- for field in class.fields -%}
+{{- class_field(field=field) -}}
+{%- endfor -%}
 
-{% for function in functions %}
-{% if function.async_fn %}
+{%- for function in module.functions -%}
+{%- if function.async_fn -%}
 ---@async
-{% endif %}
-{% if function.deprecated %}
+{%- endif -%}
+{%- if function.deprecated -%}
 ---@deprecated
-{% endif %}
-{% if function.no_discard %}
+{%- endif -%}
+{%- if function.no_discard -%}
 ---@nodiscard
-{% endif %}
-{% if function.package %}
+{%- endif -%}
+{%- if function.package -%}
 ---@package
-{% endif %}
-{% for generic in function.generics %}
+{%- endif -%}
+{%- for generic in function.generics -%}
 ---@generic {{ generic.name }}
-{% endfor %}
-{% for param in function.params %}
+{%- endfor -%}
+{%- for param in function.params -%}
 {{ function_param(param=param) }}
-{% endfor %}
-{% for return in function.returns %}
+{%- endfor -%}
+{%- for return in function.returns -%}
 ---@return {{ return.ty }}
-{% endfor %}
-{% endfor %}
-{% endfor %}
-{# macros #}
+{%- endfor -%}
+{%- endfor -%} {# functions #}
+{%- endfor -%} {# class #}
+{# newline #}
+{# newline #}
+{%- endfor -%} {# modules #}
 
-{% macro class_field(field) %}
+{%- macro class_field(field) -%}
 ---@field {{ field.scope }} {{ field.name }} {% if field.optional %}?{% endif %} {{ field.ty }}
-{{ multiline_description(description=field.description) }}
-{% endmacro class_field %}
+{# newline #}
+{{- multiline_description(description=field.description) -}}
+{%- endmacro class_field -%}
 
-{% macro function_param(arg) %}
+{%- macro function_param(arg) -%}
 ---@param {{ arg.name }} {{ arg.ty }} {% if arg.optional %}?{% endif %}
-{{ multiline_description(description=arg.description) }}
-{% endmacro function_param %}
+{# newline #}
+{{- multiline_description(description=arg.description) -}}
+{%- endmacro function_param -%}
 
-{% macro multiline_description(description) %}
-{% for line in description | split(pat="\n") %}
+{%- macro multiline_description(description) -%}
+{% if description %}
+{%- for line in description | split(pat="\n") -%}
 --- {{ line }}
-{% endfor %}
-{% endmacro multiline_description %}
+{%- if not last -%}
+{# newline #}
+{%- endif -%}
+{%- endfor -%}
+{%- endif -%}
+{%- endmacro multiline_description -%}

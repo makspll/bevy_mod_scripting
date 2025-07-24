@@ -28,8 +28,8 @@ indexmap = "2"
 # regex = "1.11"
 
 [dev-dependencies]
-# assert_cmd = "2.0"
-# pretty_assertions = "1.4.1"
+assert_cmd = "2.0"
+pretty_assertions = "1.4.1"
 
 [lints]
 workspace = true
