@@ -8,7 +8,7 @@ use crate::{
     error::{InteropErrorInner, ScriptError},
     event::{
         CallbackLabel, IntoCallbackLabel, Recipients, ScriptCallbackEvent,
-        ScriptCallbackResponseEvent, ScriptErrorEvent
+        ScriptCallbackResponseEvent, ScriptErrorEvent,
     },
     extractors::{HandlerContext, WithWorldGuard},
     script::{ContextKey, DisplayProxy, ScriptComponent, ScriptDomain},
@@ -149,12 +149,18 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
             Recipients::Script(target_script_id) => {
                 match guard.with_global_access(|world| {
                     let mut keys = vec![];
-                    for (id, script_component, script_domain_maybe) in entity_query_state.iter(world) {
-                        if let Some(handle) = script_component.0.iter().find(|handle| handle.id() == *target_script_id) {
+                    for (id, script_component, script_domain_maybe) in
+                        entity_query_state.iter(world)
+                    {
+                        if let Some(handle) = script_component
+                            .0
+                            .iter()
+                            .find(|handle| handle.id() == *target_script_id)
+                        {
                             keys.push(ContextKey {
                                 entity: Some(id),
                                 script: Some(handle.clone()),
-                                domain: script_domain_maybe.map(|x| x.0)
+                                domain: script_domain_maybe.map(|x| x.0),
                             });
                         }
                     }
@@ -162,17 +168,17 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                         .static_scripts
                         .scripts
                         .iter()
-                        .find(|handle| handle.id() == *target_script_id) {
-                            keys.push(ContextKey {
-                                entity: None,
-                                script: Some(handle.clone()),
-                                domain: None,
-                            });
-                        }
+                        .find(|handle| handle.id() == *target_script_id)
+                    {
+                        keys.push(ContextKey {
+                            entity: None,
+                            script: Some(handle.clone()),
+                            domain: None,
+                        });
+                    }
                     keys
                 }) {
-                    Ok(keys) =>
-                    {
+                    Ok(keys) => {
                         // Keep track of the contexts that have been called. Don't duplicate the
                         // calls on account of multiple matches.
                         let mut called_contexts: HashSet<u64> = HashSet::new();
@@ -197,7 +203,12 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                                             ),
                                         );
                                     }
-                                    collect_errors(call_result, context_key.entity, P::LANGUAGE, &mut errors);
+                                    collect_errors(
+                                        call_result,
+                                        context_key.entity,
+                                        P::LANGUAGE,
+                                        &mut errors,
+                                    );
                                 }
                             }
                         }
@@ -450,10 +461,13 @@ mod test {
         asset::ScriptAsset,
         bindings::script_value::ScriptValue,
         context::{ContextBuilder, ContextLoadingSettings},
-        event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent, ScriptEvent},
+        event::{
+            CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent, ScriptEvent,
+        },
         runtime::RuntimeContainer,
         script::{ScriptComponent, StaticScripts},
-        BMSScriptingInfrastructurePlugin, ManageStaticScripts, ScriptContext };
+        BMSScriptingInfrastructurePlugin, ManageStaticScripts, ScriptContext,
+    };
 
     use super::*;
     struct OnTestCallback;

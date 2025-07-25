@@ -22,7 +22,7 @@ use error::ScriptError;
 use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent, ScriptEvent};
 use handler::{CallbackSettings, HandlerFn};
 use runtime::{initialize_runtime, Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
-use script::{ScriptComponent, ScriptContext, StaticScripts, ContextPolicy};
+use script::{ContextPolicy, ScriptComponent, ScriptContext, StaticScripts};
 
 pub mod asset;
 pub mod bindings;
@@ -262,8 +262,7 @@ pub struct BMSScriptingInfrastructurePlugin;
 
 impl Plugin for BMSScriptingInfrastructurePlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_event::<ScriptErrorEvent>()
+        app.add_event::<ScriptErrorEvent>()
             .add_event::<ScriptEvent>()
             .add_event::<ScriptCallbackEvent>()
             .add_event::<ScriptCallbackResponseEvent>()

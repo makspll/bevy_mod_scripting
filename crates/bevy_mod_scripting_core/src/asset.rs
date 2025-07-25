@@ -3,17 +3,17 @@
 use crate::{
     commands::CreateOrUpdateScript,
     error::ScriptError,
+    event::ScriptEvent,
     script::{ContextKey, DisplayProxy, ScriptContext, ScriptDomain},
     IntoScriptPluginParams, LanguageExtensions, ScriptComponent, ScriptingSystemSet, StaticScripts,
-    event::ScriptEvent,
 };
 use bevy::{
     app::{App, PostUpdate, PreUpdate},
     asset::{Asset, AssetEvent, AssetLoader, Assets, LoadState},
     log::{error, info, trace, warn, warn_once},
     prelude::{
-        Added, AssetServer, Commands, Entity, EventReader, IntoSystemConfigs,
-        IntoSystemSetConfigs, Query, RemovedComponents, Res, ResMut, EventWriter, Local, Handle,
+        Added, AssetServer, Commands, Entity, EventReader, EventWriter, Handle, IntoSystemConfigs,
+        IntoSystemSetConfigs, Local, Query, RemovedComponents, Res, ResMut,
     },
     reflect::TypePath,
 };
@@ -184,10 +184,16 @@ fn sync_assets(
 ) {
     for event in events.read() {
         match event {
-            AssetEvent::Modified { id } => { script_events.send(ScriptEvent::Modified { script: *id }); }
-            AssetEvent::Added { id } => { script_events.send(ScriptEvent::Added { script: *id }); }
-            AssetEvent::Removed { id } => { script_events.send(ScriptEvent::Removed { script: *id }); }
-            _ => ()
+            AssetEvent::Modified { id } => {
+                script_events.send(ScriptEvent::Modified { script: *id });
+            }
+            AssetEvent::Added { id } => {
+                script_events.send(ScriptEvent::Added { script: *id });
+            }
+            AssetEvent::Removed { id } => {
+                script_events.send(ScriptEvent::Removed { script: *id });
+            }
+            _ => (),
         }
     }
 }
@@ -195,7 +201,8 @@ fn sync_assets(
 fn sync_components(
     script_comps: Query<Entity, Added<ScriptComponent>>,
     mut removed: RemovedComponents<ScriptComponent>,
-    mut script_events: EventWriter<ScriptEvent>) {
+    mut script_events: EventWriter<ScriptEvent>,
+) {
     for id in &script_comps {
         script_events.send(ScriptEvent::Attached { entity: id });
     }
@@ -246,7 +253,11 @@ fn handle_script_events<P: IntoScriptPluginParams>(
                 }
             }
             ScriptEvent::StaticAttached { script } => {
-                trace!("{}: Add static script {} to script queue.", P::LANGUAGE, script);
+                trace!(
+                    "{}: Add static script {} to script queue.",
+                    P::LANGUAGE,
+                    script
+                );
                 script_queue.push_back(ContextKey {
                     entity: None,
                     script: Some(Handle::Weak(*script)),
@@ -254,7 +265,11 @@ fn handle_script_events<P: IntoScriptPluginParams>(
                 });
             }
             ScriptEvent::Attached { entity } => {
-                trace!("{}: Add entity {} contents to script queue.", P::LANGUAGE, entity);
+                trace!(
+                    "{}: Add entity {} contents to script queue.",
+                    P::LANGUAGE,
+                    entity
+                );
                 match scripts.get(*entity) {
                     Ok((id, script_comp, domain_maybe)) => {
                         let domain = domain_maybe.map(|x| x.0);
@@ -267,11 +282,16 @@ fn handle_script_events<P: IntoScriptPluginParams>(
                         }
                     }
                     Err(e) => {
-                        error!("{}: Unable to look up attached entity {}: {}", P::LANGUAGE, entity, e);
+                        error!(
+                            "{}: Unable to look up attached entity {}: {}",
+                            P::LANGUAGE,
+                            entity,
+                            e
+                        );
                     }
                 }
             }
-            _ => ()
+            _ => (),
         }
     }
 
@@ -338,7 +358,6 @@ fn handle_script_events<P: IntoScriptPluginParams>(
             break;
         }
     }
-
 }
 
 /// Remove contexts that are associated with removed entities.
@@ -389,24 +408,22 @@ pub fn remove_context_on_script_removal<P: IntoScriptPluginParams>(
 
 /// Setup all the asset systems for the scripting plugin and the dependencies
 #[profiling::function]
-pub(crate) fn configure_asset_systems(app: &mut App){
+pub(crate) fn configure_asset_systems(app: &mut App) {
     // these should be in the same set as bevy's asset systems
     // currently this is in the PreUpdate set
-    app
-        .add_systems(
-            PreUpdate,
-            (sync_assets, sync_components.after(sync_assets))
-                .in_set(ScriptingSystemSet::ScriptAssetDispatch)
-        )
-        .configure_sets(
-            PreUpdate,
-            (
-                ScriptingSystemSet::ScriptAssetDispatch
-                    .after(bevy::asset::TrackAssets),
-                ScriptingSystemSet::ScriptCommandDispatch
-                    .after(ScriptingSystemSet::ScriptAssetDispatch),
-            ),
-        );
+    app.add_systems(
+        PreUpdate,
+        (sync_assets, sync_components.after(sync_assets))
+            .in_set(ScriptingSystemSet::ScriptAssetDispatch),
+    )
+    .configure_sets(
+        PreUpdate,
+        (
+            ScriptingSystemSet::ScriptAssetDispatch.after(bevy::asset::TrackAssets),
+            ScriptingSystemSet::ScriptCommandDispatch
+                .after(ScriptingSystemSet::ScriptAssetDispatch),
+        ),
+    );
 }
 
 /// Setup all the asset systems for the scripting plugin and the dependencies

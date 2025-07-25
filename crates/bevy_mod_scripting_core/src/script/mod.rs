@@ -1,6 +1,6 @@
 //! Script related types, functions and components
 
-use crate::{asset::ScriptAsset};
+use crate::asset::ScriptAsset;
 use bevy::prelude::{Component, ReflectComponent};
 use bevy::utils::hashbrown::hash_map::DefaultHashBuilder;
 use bevy::{

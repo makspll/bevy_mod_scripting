@@ -13,17 +13,17 @@ pub enum ScriptEvent {
     /// A script asset was added.
     Added {
         /// The script
-        script: ScriptId
+        script: ScriptId,
     },
     /// A script asset was removed.
     Removed {
         /// The script
-        script: ScriptId
+        script: ScriptId,
     },
     /// A script asset was modified.
     Modified {
         /// The script
-        script: ScriptId
+        script: ScriptId,
     },
     /// A script component was attached to an entity.
     Attached {
@@ -40,9 +40,8 @@ pub enum ScriptEvent {
     /// An entity with a [ScriptComponent] was removed.
     Detached {
         /// The entity
-        entity: Entity
+        entity: Entity,
     },
-
     // These were some other events I was considering. I thought Unloaded might
     // be interesting, but if I implemented it the way things work currently it
     // could only be a notification. The user wouldn't be able to do anything

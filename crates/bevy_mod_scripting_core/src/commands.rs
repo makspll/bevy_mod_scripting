@@ -7,12 +7,13 @@ use crate::{
     error::{InteropError, ScriptError},
     event::{
         CallbackLabel, IntoCallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded,
-        ScriptCallbackResponseEvent, ScriptEvent
+        ScriptCallbackResponseEvent, ScriptEvent,
     },
     extractors::{with_handler_system_state, HandlerContext},
     handler::{handle_script_errors, send_callback_response},
-    script::{ContextKey, DisplayProxy, StaticScripts, ContextRule},
-    IntoScriptPluginParams, ScriptContext };
+    script::{ContextKey, ContextRule, DisplayProxy, StaticScripts},
+    IntoScriptPluginParams, ScriptContext,
+};
 use bevy::{
     asset::Handle,
     ecs::entity::Entity,
@@ -74,18 +75,19 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
                         //
                         // Perhaps this should be defined by the rule itself.
                         false
-                    },
-                    _ => true
+                    }
+                    _ => true,
                 };
 
-                if (self.force || delete_context) &&
-                    script_contexts.remove(&self.context_key).is_some() {
-                        bevy::log::info!(
-                            "{}: Deleted context for script {:?}",
-                            P::LANGUAGE,
-                            script_id.display()
-                        );
-                        deleted = true;
+                if (self.force || delete_context)
+                    && script_contexts.remove(&self.context_key).is_some()
+                {
+                    bevy::log::info!(
+                        "{}: Deleted context for script {:?}",
+                        P::LANGUAGE,
+                        script_id.display()
+                    );
+                    deleted = true;
                 }
             }
         }
