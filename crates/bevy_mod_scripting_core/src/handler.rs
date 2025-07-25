@@ -671,7 +671,7 @@ mod test {
             assert_eq!(Some(test_entity_id), key.entity);
             // assert_eq!(Some(test_script), key.script_id);
             assert_eq!(1, script_context.iter().count());
-            let context_arc = script_context.get(&key).cloned().expect("script context");
+            let context_arc = script_context.get(key).cloned().expect("script context");
 
             let test_context = context_arc.lock();
 
