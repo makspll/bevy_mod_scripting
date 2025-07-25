@@ -1,7 +1,19 @@
 use indexmap::IndexMap;
-use ladfile::LadTypeId;
+use ladfile::{ArgumentVisitor, LadFile, LadTypeId};
 
-use crate::lua_declaration_file::{LuaClass, LuaDefinitionFile, LuaModule};
+use crate::lua_declaration_file::{
+    LuaClass, LuaDefinitionFile, LuaModule, LuaPrimitiveType, LuaType,
+};
+
+trait GetLuaIdentifier {
+    fn get_lua_identifier(&self, key: LadTypeId) -> String;
+}
+
+impl GetLuaIdentifier for ladfile::LadFile {
+    fn get_lua_identifier(&self, key: LadTypeId) -> String {
+        ArgumentVisitor
+    }
+}
 
 pub fn convert_ladfile_to_lua_declaration_file(
     ladfile: ladfile::LadFile,
@@ -58,14 +70,24 @@ pub fn convert_polymorphic_type_to_lua_classes(
             .get_type_documentation(lad_type_id)
             .map(ToOwned::to_owned);
 
+        let mut fields = vec![];
+        if let Some(lad_type) = ladfile.types.get(lad_type_id) {
+            // add fields for the type
+            match lad_type.layout {
+                ladfile::LadTypeLayout::Opaque => todo!(),
+                ladfile::LadTypeLayout::MonoVariant(lad_variant) => todo!(),
+                ladfile::LadTypeLayout::Enum(lad_variants) => todo!(),
+            }
+        }
+
         let class = LuaClass {
             name: polymorphic_type_key.identifier.to_string(),
-            exact: true,
+            parents: vec![], // not needed
+            fields: vec![],  // TODO: Find fields
             generics,
             documentation,
+            exact: true,
             operators: vec![], // TODO: Find operators
-            parents: vec![],   // not needed
-            fields: vec![],    // TODO: Find fields
         };
 
         types.push((lad_type_id.clone(), class));
@@ -73,24 +95,81 @@ pub fn convert_polymorphic_type_to_lua_classes(
     types
 }
 
-// pub fn lad_type_to_lua_type(lad_type: &ladfile::LadType) -> LuaClass {
-//     let mut class = LuaClass {
-//         name: lad_type.identifier.to_owned(),
-//         exact: true,
-//         parents: vec![],
-//         generics: lad_type.generics.iter().map(),
-//         operators: vec![], // TODO: Find operators
-//         documentation: lad_type.documentation.clone(),
-//         fields: todo!(),
-//     };
+pub fn to_lua_many(
+    ladfile: &LadFile,
+    lad_types: &[ladfile::LadTypeKind],
+) -> Result<Vec<LuaType>, anyhow::Error> {
+    let lua_types = lad_types
+        .iter()
+        .map(|lad_type| lad_instance_to_lua_type(&lad_type))
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(lua_types)
+}
 
-//     // match &lad_type.layout {
-//     //     ladfile::LadTypeLayout::Opaque => todo!(),
-//     //     ladfile::LadTypeLayout::MonoVariant(lad_variant) => {
+pub fn lad_instance_to_lua_type(
+    ladfile: &LadFile,
+    lad_type: &ladfile::LadTypeKind,
+) -> Result<LuaType, anyhow::Error> {
+    Ok(match &lad_type {
+        ladfile::LadTypeKind::Primitive(prim) => lad_primitive_to_lua_type(prim),
+        ladfile::LadTypeKind::Ref(lad_type_id)
+        | ladfile::LadTypeKind::Mut(lad_type_id)
+        | ladfile::LadTypeKind::Val(lad_type_id) => LuaType::Alias(ladfile.),
+        ladfile::LadTypeKind::Option(lad_type_kind) => LuaType::Union(vec![
+            lad_instance_to_lua_type(ladfile, lad_type_kind)?,
+            LuaType::Primitive(LuaPrimitiveType::Nil),
+        ]),
+        ladfile::LadTypeKind::Vec(lad_type_kind) => {
+            LuaType::Array(Box::new(lad_instance_to_lua_type(ladfile, lad_type_kind)?))
+        }
+        ladfile::LadTypeKind::HashMap(key, value) => LuaType::Dictionary {
+            key: Box::new(lad_instance_to_lua_type(ladfile, key)?),
+            value: Box::new(lad_instance_to_lua_type(ladfile, value)?),
+        },
+        ladfile::LadTypeKind::InteropResult(lad_type_kind) => {
+            lad_instance_to_lua_type(ladfile, lad_type_kind)? // TODO: currently ignores the possibility of an error type, we should have a custom class abstraction here
+        }
+        ladfile::LadTypeKind::Tuple(lad_type_kinds) => {
+            LuaType::Tuple(to_lua_many(ladfile, lad_type_kinds)?)
+        }
+        ladfile::LadTypeKind::Array(lad_type_kind, _) => {
+            LuaType::Array(Box::new(lad_instance_to_lua_type(ladfile, lad_type_kind)?))
+        }
+        ladfile::LadTypeKind::Union(lad_type_kinds) => {
+            LuaType::Union(to_lua_many(ladfile, lad_type_kinds)?)
+        }
+        ladfile::LadTypeKind::Unknown(_) => LuaType::Any,
+    })
+}
 
-//     //     },
-//     //     ladfile::LadTypeLayout::Enum(lad_variants) => todo!(),
-//     // }
-
-//     class
-// }
+pub fn lad_primitive_to_lua_type(lad_primitive: &ladfile::LadBMSPrimitiveKind) -> LuaType {
+    LuaType::Primitive(match lad_primitive {
+        ladfile::LadBMSPrimitiveKind::Bool => LuaPrimitiveType::Boolean,
+        ladfile::LadBMSPrimitiveKind::Isize
+        | ladfile::LadBMSPrimitiveKind::I8
+        | ladfile::LadBMSPrimitiveKind::I16
+        | ladfile::LadBMSPrimitiveKind::I32
+        | ladfile::LadBMSPrimitiveKind::I64
+        | ladfile::LadBMSPrimitiveKind::I128
+        | ladfile::LadBMSPrimitiveKind::Usize
+        | ladfile::LadBMSPrimitiveKind::U8
+        | ladfile::LadBMSPrimitiveKind::U16
+        | ladfile::LadBMSPrimitiveKind::U32
+        | ladfile::LadBMSPrimitiveKind::U64
+        | ladfile::LadBMSPrimitiveKind::U128 => LuaPrimitiveType::Integer,
+        ladfile::LadBMSPrimitiveKind::F32 | ladfile::LadBMSPrimitiveKind::F64 => {
+            LuaPrimitiveType::Number
+        }
+        ladfile::LadBMSPrimitiveKind::Char
+        | ladfile::LadBMSPrimitiveKind::Str
+        | ladfile::LadBMSPrimitiveKind::String
+        | ladfile::LadBMSPrimitiveKind::OsString
+        | ladfile::LadBMSPrimitiveKind::PathBuf => LuaPrimitiveType::String,
+        ladfile::LadBMSPrimitiveKind::FunctionCallContext => LuaPrimitiveType::Any,
+        ladfile::LadBMSPrimitiveKind::DynamicFunction
+        | ladfile::LadBMSPrimitiveKind::DynamicFunctionMut => LuaPrimitiveType::Function,
+        ladfile::LadBMSPrimitiveKind::ReflectReference => {
+            return LuaType::Alias("ReflectReference".to_string())
+        }
+    })
+}

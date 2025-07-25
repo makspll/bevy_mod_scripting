@@ -41,7 +41,6 @@ use std::collections::HashMap;
 #[serde(rename_all = "lowercase")]
 pub enum LuaPrimitiveType {
     Nil,
-    Any,
     Boolean,
     String,
     Number,
@@ -91,7 +90,6 @@ pub enum LuaType {
     },
     Literal(String), // for literal types, e.g., '"left"'
     Any,
-    Nil,
 }
 
 // Function-related definitions
