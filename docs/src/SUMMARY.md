@@ -12,6 +12,7 @@
 - [Script ID Mapping](./Summary/script-id-mapping.md)
 - [Script Systems](./ScriptSystems/introduction.md)
 - [Examples](./Examples/introduction.md)
+  - [Sprite spawn](./Examples/sprite-spawn.md)
 
 # Scripting Reference
 
