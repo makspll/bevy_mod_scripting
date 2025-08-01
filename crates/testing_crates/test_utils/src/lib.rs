@@ -26,6 +26,8 @@ impl std::fmt::Display for TestKind {
 pub struct Test {
     pub path: PathBuf,
     pub kind: TestKind,
+    /// If the test contains an explicit scenario, this will be set.
+    pub scenario_path: Option<PathBuf>,
 }
 
 fn visit_dirs(dir: &Path, cb: &mut dyn FnMut(&DirEntry)) -> io::Result<()> {
@@ -63,6 +65,10 @@ pub fn discover_all_tests(manifest_dir: PathBuf, filter: impl Fn(&Test) -> bool)
             let test = Test {
                 path: relative.to_path_buf(),
                 kind,
+                scenario_path: relative
+                    .parent()
+                    .and_then(|p| p.join("scenario.json").to_str().map(PathBuf::from))
+                    .filter(|p| p.exists()),
             };
 
             if !filter(&test) {

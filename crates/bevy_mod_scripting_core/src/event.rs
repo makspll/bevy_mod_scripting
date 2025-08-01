@@ -1,14 +1,19 @@
 //! Event handlers and event types for scripting.
 
+use std::sync::Arc;
+
 use crate::{
+    asset::Language,
     bindings::script_value::ScriptValue,
     error::ScriptError,
-    script::{ContextKey, Domain, ScriptId},
+    script::{ContextKey, Domain, ScriptAttachment, ScriptContext, ScriptId},
+    IntoScriptPluginParams,
 };
-use bevy::{ecs::entity::Entity, prelude::Event, reflect::Reflect};
+use bevy::{asset::Handle, ecs::entity::Entity, prelude::Event, reflect::Reflect};
+use parking_lot::Mutex;
 
 /// A script event
-#[derive(Event, Debug, Clone)]
+#[derive(Event, Debug, Clone, PartialEq, Eq)]
 pub enum ScriptEvent {
     /// A script asset was added.
     Added {
@@ -27,20 +32,13 @@ pub enum ScriptEvent {
     },
     /// A script component was attached to an entity.
     Attached {
-        /// The entity
-        entity: Entity,
+        /// The script attachment
+        key: ScriptAttachment,
     },
-    /// A script was added to [StaticScripts].
-    StaticAttached {
-        /// The script
-        script: ScriptId,
-    },
-    // We could deliver this through `RemovedComponents` but
-    // it won't have any further information since the component is gone.
     /// An entity with a [ScriptComponent] was removed.
     Detached {
-        /// The entity
-        entity: Entity,
+        /// The script attachment which was detached
+        key: ScriptAttachment,
     },
     // These were some other events I was considering. I thought Unloaded might
     // be interesting, but if I implemented it the way things work currently it
@@ -192,16 +190,58 @@ impl std::fmt::Display for CallbackLabel {
 /// Describes the designated recipients of a script event
 #[derive(Clone, Debug)]
 pub enum Recipients {
-    /// The event needs to be handled by all scripts
-    All,
-    /// The event is to be handled by a specific script
-    Script(ScriptId),
-    /// The event is to be handled by all the scripts on the specified entity
-    Entity(Entity),
+    /// The event needs to be handled by all scripts, if multiple scripts share a context, the event will be sent once per script in the context.
+    AllScripts,
+    /// The event is to be handled by all unique contexts, i.e. if two scripts share the same context, the event will be sent only once per the context.
+    AllContexts,
+    /// The event is to be handled by a specific script-entity pair
+    ScriptEntity(ScriptId, Entity),
+    /// the event is to be handled by a specific static script
+    StaticScript(ScriptId),
     /// The event is to be handled by a specific domain
     Domain(Domain),
-    /// The event is to be handled by all the scripts of one language
-    Language(crate::asset::Language),
+}
+
+impl Recipients {
+    /// Retrieves all the recipients of the event based on existing scripts
+    pub fn get_recipients<P: IntoScriptPluginParams>(
+        &self,
+        script_context: &ScriptContext<P>,
+    ) -> Vec<(ScriptAttachment, Arc<Mutex<P::C>>)> {
+        match self {
+            Recipients::AllScripts => script_context.all_residents().collect(),
+            Recipients::AllContexts => script_context.first_resident_from_each_context().collect(),
+            Recipients::ScriptEntity(script, entity) => {
+                let attachment =
+                    ScriptAttachment::EntityScript(*entity, Handle::Weak(*script), None);
+                script_context
+                    .get(&attachment)
+                    .into_iter()
+                    .map(|entry| (attachment.clone(), entry))
+                    .collect()
+            }
+            Recipients::StaticScript(script) => {
+                let attachment = ScriptAttachment::StaticScript(Handle::Weak(*script), None);
+                script_context
+                    .get(&attachment)
+                    .into_iter()
+                    .map(|entry| (attachment.clone(), entry))
+                    .collect()
+            }
+            Recipients::Domain(domain) => {
+                let attachment = ScriptAttachment::Other(ContextKey {
+                    entity: None,
+                    script: None,
+                    domain: Some(domain.clone()),
+                });
+                script_context
+                    .get(&attachment)
+                    .into_iter()
+                    .map(|entry| (attachment.clone(), entry))
+                    .collect()
+            }
+        }
+    }
 }
 
 /// A callback event meant to trigger a callback in a subset/set of scripts in the world with the given arguments
@@ -212,6 +252,8 @@ pub struct ScriptCallbackEvent {
     pub label: CallbackLabel,
     /// The recipients of the callback
     pub recipients: Recipients,
+    /// The language of the callback, if unspecified will apply to all languages
+    pub language: Option<Language>,
     /// The arguments to the callback
     pub args: Vec<ScriptValue>,
     /// Whether the callback should emit a response event
@@ -224,9 +266,11 @@ impl ScriptCallbackEvent {
         label: L,
         args: Vec<ScriptValue>,
         recipients: Recipients,
+        language: Option<Language>,
     ) -> Self {
         Self {
             label: label.into(),
+            language,
             args,
             recipients,
             trigger_response: false,
@@ -241,9 +285,14 @@ impl ScriptCallbackEvent {
         self
     }
 
-    /// Creates a new callback event with the given label, arguments and all scripts as recipients
-    pub fn new_for_all<L: Into<CallbackLabel>>(label: L, args: Vec<ScriptValue>) -> Self {
-        Self::new(label, args, Recipients::All)
+    /// Creates a new callback event with the given label, arguments and all scripts and languages as recipients
+    pub fn new_for_all_scripts<L: Into<CallbackLabel>>(label: L, args: Vec<ScriptValue>) -> Self {
+        Self::new(label, args, Recipients::AllScripts, None)
+    }
+
+    /// Creates a new callback event with the given label, arguments and all contexts (which can contain multiple scripts) and languages as recipients
+    pub fn new_for_all_contexts<L: Into<CallbackLabel>>(label: L, args: Vec<ScriptValue>) -> Self {
+        Self::new(label, args, Recipients::AllContexts, None)
     }
 }
 
@@ -254,7 +303,7 @@ pub struct ScriptCallbackResponseEvent {
     /// the label of the callback
     pub label: CallbackLabel,
     /// the key to the context that replied
-    pub context_key: ContextKey,
+    pub context_key: ScriptAttachment,
     /// the response received
     pub response: Result<ScriptValue, ScriptError>,
 }
@@ -263,19 +312,19 @@ impl ScriptCallbackResponseEvent {
     /// Creates a new callback response event with the given label, script, and response.
     pub fn new<L: Into<CallbackLabel>>(
         label: L,
-        context_key: impl Into<ContextKey>,
+        context_key: ScriptAttachment,
         response: Result<ScriptValue, ScriptError>,
     ) -> Self {
         Self {
             label: label.into(),
-            context_key: context_key.into(),
+            context_key,
             response,
         }
     }
 
     /// Return the source entity for the callback if there was any.
     pub fn source_entity(&self) -> Option<Entity> {
-        self.context_key.entity
+        self.context_key.entity()
     }
 }
 
@@ -408,4 +457,9 @@ mod test {
             assert_eq!(super::CallbackLabel::new_lossy(ident).as_ref(), *ident);
         });
     }
+
+    // #[test]
+    // fn test_recipients() {
+    //     todo!()
+    // }
 }

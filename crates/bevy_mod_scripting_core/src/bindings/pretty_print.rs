@@ -354,7 +354,7 @@ pub trait AsAny: 'static {
 }
 
 #[doc(hidden)]
-impl<T: DisplayWithWorld + 'static> AsAny for T {
+impl<T: 'static> AsAny for T {
     fn as_any(&self) -> &dyn Any {
         self
     }

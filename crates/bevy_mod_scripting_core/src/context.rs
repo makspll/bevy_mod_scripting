@@ -3,7 +3,7 @@
 use crate::{
     bindings::{ThreadWorldContainer, WorldContainer, WorldGuard},
     error::{InteropError, ScriptError},
-    script::ContextKey,
+    script::ScriptAttachment,
     IntoScriptPluginParams,
 };
 use bevy::ecs::system::Resource;
@@ -17,11 +17,11 @@ impl<T: 'static + Send> Context for T {}
 
 /// Initializer run once after creating a context but before executing it for the first time as well as after re-loading the script
 pub type ContextInitializer<P> =
-    fn(&ContextKey, &mut <P as IntoScriptPluginParams>::C) -> Result<(), ScriptError>;
+    fn(&ScriptAttachment, &mut <P as IntoScriptPluginParams>::C) -> Result<(), ScriptError>;
 
 /// Initializer run every time before executing or loading/re-loading a script
 pub type ContextPreHandlingInitializer<P> =
-    fn(&ContextKey, &mut <P as IntoScriptPluginParams>::C) -> Result<(), ScriptError>;
+    fn(&ScriptAttachment, &mut <P as IntoScriptPluginParams>::C) -> Result<(), ScriptError>;
 
 /// Settings concerning the creation and assignment of script contexts as well as their initialization.
 #[derive(Resource)]
@@ -59,7 +59,7 @@ impl<T: IntoScriptPluginParams> Clone for ContextLoadingSettings<T> {
 }
 /// A strategy for loading contexts
 pub type ContextLoadFn<P> = fn(
-    context_key: &ContextKey,
+    context_key: &ScriptAttachment,
     content: &[u8],
     context_initializers: &[ContextInitializer<P>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
@@ -68,7 +68,7 @@ pub type ContextLoadFn<P> = fn(
 
 /// A strategy for reloading contexts
 pub type ContextReloadFn<P> = fn(
-    context_key: &ContextKey,
+    context_key: &ScriptAttachment,
     content: &[u8],
     previous_context: &mut <P as IntoScriptPluginParams>::C,
     context_initializers: &[ContextInitializer<P>],
@@ -99,7 +99,7 @@ impl<P: IntoScriptPluginParams> ContextBuilder<P> {
     /// load a context
     pub fn load(
         loader: ContextLoadFn<P>,
-        context_key: &ContextKey,
+        context_key: &ScriptAttachment,
         content: &[u8],
         context_initializers: &[ContextInitializer<P>],
         pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
@@ -121,7 +121,7 @@ impl<P: IntoScriptPluginParams> ContextBuilder<P> {
     /// reload a context
     pub fn reload(
         reloader: ContextReloadFn<P>,
-        context_key: &ContextKey,
+        context_key: &ScriptAttachment,
         content: &[u8],
         previous_context: &mut P::C,
         context_initializers: &[ContextInitializer<P>],

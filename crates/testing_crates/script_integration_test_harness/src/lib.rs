@@ -1,21 +1,20 @@
+pub mod parse;
+pub mod scenario;
 pub mod test_functions;
 
 use std::{
-    fs,
-    marker::PhantomData,
     path::PathBuf,
     time::{Duration, Instant},
 };
 
 use bevy::{
-    app::{Last, Plugin, PostUpdate, Startup, Update},
-    asset::{AssetPath, AssetServer, Assets, Handle, LoadState},
+    app::{Plugin, PostUpdate, Startup, Update},
+    asset::{AssetPath, AssetServer, Handle, LoadState},
     ecs::{
         component::Component,
-        event::{Event, Events},
-        schedule::{IntoSystemConfigs, SystemConfigs},
-        system::{IntoSystem, Resource, SystemState},
-        world::{Command, FromWorld, Mut},
+        schedule::IntoSystemConfigs,
+        system::{Resource, SystemState},
+        world::{Command, FromWorld},
     },
     log::Level,
     prelude::World,
@@ -23,18 +22,13 @@ use bevy::{
     utils::tracing,
 };
 use bevy_mod_scripting_core::{
-    asset::ScriptAsset,
     bindings::{
-        pretty_print::DisplayWithWorld, script_value::ScriptValue, CoreScriptGlobalsPlugin,
-        ReflectAccessId, WorldAccessGuard, WorldGuard,
+        pretty_print::DisplayWithWorld, CoreScriptGlobalsPlugin, ReflectAccessId, WorldAccessGuard,
     },
-    callback_labels,
     commands::CreateOrUpdateScript,
-    error::{InteropError, ScriptError},
-    event::{IntoCallbackLabel, ScriptErrorEvent},
+    error::ScriptError,
     extractors::{HandlerContext, WithWorldGuard},
-    handler::handle_script_errors,
-    script::{ContextKey, DisplayProxy, ScriptComponent, ScriptId},
+    script::{DisplayProxy, ScriptAttachment, ScriptComponent, ScriptId},
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams, ScriptingPlugin,
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
@@ -43,34 +37,33 @@ use rand::{Rng, SeedableRng};
 use test_functions::{register_test_functions, RNG};
 use test_utils::test_data::setup_integration_test;
 
+use crate::scenario::Scenario;
+
 fn dummy_update_system() {}
 fn dummy_startup_system<T>() {}
 fn dummy_before_post_update_system() {}
 fn dummy_post_update_system() {}
 
-#[derive(Event)]
-struct TestEventFinished;
+// struct TestCallbackBuilder<P: IntoScriptPluginParams, L: IntoCallbackLabel> {
+//     _ph: PhantomData<(P, L)>,
+// }
 
-struct TestCallbackBuilder<P: IntoScriptPluginParams, L: IntoCallbackLabel> {
-    _ph: PhantomData<(P, L)>,
-}
+// impl<L: IntoCallbackLabel, P: IntoScriptPluginParams> TestCallbackBuilder<P, L> {
+//     fn build(context_key: impl Into<ContextKey>, expect_response: bool) -> SystemConfigs {
+//         let context_key = context_key.into();
+//         IntoSystem::into_system(
+//             move |world: &mut World,
+//                   system_state: &mut SystemState<WithWorldGuard<HandlerContext<P>>>| {
+//                 let with_guard = system_state.get_mut(world);
+//                 let _ = run_test_callback::<P, L>(&context_key, with_guard, expect_response);
 
-impl<L: IntoCallbackLabel, P: IntoScriptPluginParams> TestCallbackBuilder<P, L> {
-    fn build(context_key: impl Into<ContextKey>, expect_response: bool) -> SystemConfigs {
-        let context_key = context_key.into();
-        IntoSystem::into_system(
-            move |world: &mut World,
-                  system_state: &mut SystemState<WithWorldGuard<HandlerContext<P>>>| {
-                let with_guard = system_state.get_mut(world);
-                let _ = run_test_callback::<P, L>(&context_key, with_guard, expect_response);
-
-                system_state.apply(world);
-            },
-        )
-        .with_name(L::into_callback_label().to_string())
-        .into_configs()
-    }
-}
+//                 system_state.apply(world);
+//             },
+//         )
+//         .with_name(L::into_callback_label().to_string())
+//         .into_configs()
+//     }
+// }
 
 pub fn install_test_plugin<P: IntoScriptPluginParams + Plugin>(
     app: &mut bevy::app::App,
@@ -189,27 +182,25 @@ pub fn make_test_rhai_plugin() -> bevy_mod_scripting_rhai::RhaiScriptingPlugin {
 }
 
 #[cfg(feature = "lua")]
-pub fn execute_lua_integration_test(script_id: &str) -> Result<(), String> {
+pub fn execute_lua_integration_test(script_asset_path: &str) -> Result<(), String> {
     let plugin = make_test_lua_plugin();
-    execute_integration_test(plugin, |_, _| {}, script_id)
+    execute_integration_test(plugin, |_, _| {}, script_asset_path)
 }
 
 #[cfg(feature = "rhai")]
-pub fn execute_rhai_integration_test(script_id: &str) -> Result<(), String> {
+pub fn execute_rhai_integration_test(script_asset_path: &str) -> Result<(), String> {
     let plugin = make_test_rhai_plugin();
-    execute_integration_test(plugin, |_, _| {}, script_id)
+    execute_integration_test(plugin, |_, _| {}, script_asset_path)
 }
 
 pub fn execute_integration_test<
-    'a,
     P: IntoScriptPluginParams + Plugin + AsMut<ScriptingPlugin<P>>,
     F: FnOnce(&mut World, &mut TypeRegistry),
 >(
     plugin: P,
     init: F,
-    script_id: impl Into<AssetPath<'a>>,
+    script_asset_path: &str,
 ) -> Result<(), String> {
-    let script_id = script_id.into();
     // set "BEVY_ASSET_ROOT" to the global assets folder, i.e. CARGO_MANIFEST_DIR/../../../assets
     let mut manifest_dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
 
@@ -227,54 +218,6 @@ pub fn execute_integration_test<
 
     install_test_plugin(&mut app, plugin, true);
 
-    app.add_event::<TestEventFinished>();
-
-    callback_labels!(
-        OnTest => "on_test",
-        OnTestPostUpdate => "on_test_post_update",
-        OnTestLast => "on_test_last",
-    );
-
-    // tests can opt in to this via "__RETURN"
-    let expect_callback_response = script_id
-        .path()
-        .to_str()
-        .map(|s| s.contains("__RETURN"))
-        .unwrap_or(false);
-    // The following code did not work, possibly because of the asynchronous
-    // nature of AssetServer.
-    //
-    // ```
-    // let handle = app.world_mut().resource_mut::<AssetServer>().load(&script_path);
-    // app.world_mut().spawn(ScriptComponent::new([handle.clone()]));
-    // ```
-    let handle = {
-        let mut script_dir = manifest_dir.clone();
-        script_dir.push("assets");
-        script_dir.push(script_id.path());
-        // Read the contents and don't do anything async.
-        let content = fs::read_to_string(&script_dir)
-            .map_err(|io| format!("io error {io} for path {script_dir:?}"))?;
-        let mut script = ScriptAsset::from(content);
-        script.language = P::LANGUAGE;
-        app.world_mut()
-            .resource_mut::<Assets<ScriptAsset>>()
-            .add(script)
-    };
-    app.world_mut()
-        .spawn(ScriptComponent::new([handle.clone()]));
-    app.add_systems(
-        Update,
-        TestCallbackBuilder::<P, OnTest>::build(handle.clone(), expect_callback_response),
-    );
-    app.add_systems(
-        PostUpdate,
-        TestCallbackBuilder::<P, OnTestPostUpdate>::build(handle.clone(), expect_callback_response),
-    );
-    app.add_systems(
-        Last,
-        TestCallbackBuilder::<P, OnTestLast>::build(handle.clone(), expect_callback_response),
-    );
     app.add_systems(Update, dummy_update_system);
     app.add_systems(Startup, dummy_startup_system::<String>);
 
@@ -287,72 +230,81 @@ pub fn execute_integration_test<
     app.cleanup();
     app.finish();
 
-    let start = Instant::now(); // start the timer
+    // let asset_path = manifest_dir.clone();
+    // make script path relative to the asset root
+    let this_script_path = script_asset_path.into();
 
-    loop {
-        app.update();
-
-        if start.elapsed() > Duration::from_secs(10) {
-            return Err("Timeout after 10 seconds".into());
-        }
-
-        let error_events = app
-            .world_mut()
-            .resource_mut::<Events<ScriptErrorEvent>>()
-            .drain()
-            .collect::<Vec<_>>();
-
-        if let Some(event) = error_events.into_iter().next() {
-            // eprintln!("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx");
-            // if ! app.world().resource::<AssetServer>().load_state(&handle).is_loaded() {
-            //     continue;
-            // }
-            return Err(event
-                .error
-                .display_with_world(WorldGuard::new_exclusive(app.world_mut())));
-        }
-
-        let events_completed = app.world_mut().resource_ref::<Events<TestEventFinished>>();
-        if !events_completed.is_empty() {
-            return Ok(());
-        }
+    let scenario = Scenario::new_standard_scenario(this_script_path);
+    match scenario.execute::<P>(app) {
+        Ok(_) => Ok(()),
+        Err(e) => Err(format!("{e:?}")),
     }
-}
+    // let start = Instant::now(); // start the timer
 
-fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
-    context_key: &ContextKey,
-    mut with_guard: WithWorldGuard<'_, '_, HandlerContext<'_, P>>,
-    expect_response: bool,
-) -> Result<ScriptValue, ScriptError> {
-    let (guard, handler_ctxt) = with_guard.get_mut();
+    // loop {
+    //     app.update();
 
-    // if !handler_ctxt.is_script_fully_loaded(*script_id) {
-    //     return Ok(ScriptValue::Unit);
+    //     if start.elapsed() > Duration::from_secs(10) {
+    //         return Err("Timeout after 10 seconds".into());
+    //     }
+
+    //     let error_events = app
+    //         .world_mut()
+    //         .resource_mut::<Events<ScriptErrorEvent>>()
+    //         .drain()
+    //         .collect::<Vec<_>>();
+
+    //     if let Some(event) = error_events.into_iter().next() {
+    //         // eprintln!("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx");
+    //         // if ! app.world().resource::<AssetServer>().load_state(&handle).is_loaded() {
+    //         //     continue;
+    //         // }
+    //         return Err(event
+    //             .error
+    //             .display_with_world(WorldGuard::new_exclusive(app.world_mut())));
+    //     }
+
+    //     let events_completed = app.world_mut().resource_ref::<Events<TestEventFinished>>();
+    //     if !events_completed.is_empty() {
+    //         return Ok(());
     // }
-
-    let res = handler_ctxt.call::<C>(context_key, vec![], guard.clone());
-
-    let e = match res {
-        Ok(ScriptValue::Error(e)) => e.into(),
-        Err(e) => e,
-        Ok(v) => {
-            if expect_response && !matches!(v, ScriptValue::Bool(true)) {
-                InteropError::external_error(format!("Response from callback {} was either not received or wasn't correct. Expected true, got: {v:?}", C::into_callback_label()).into()).into()
-            } else {
-                match guard.with_resource_mut(|mut events: Mut<Events<TestEventFinished>>| {
-                    events.send(TestEventFinished)
-                }) {
-                    Ok(_) => return Ok(v),
-                    Err(e) => e.into(),
-                }
-            }
-        }
-    };
-
-    handle_script_errors(guard, vec![e.clone()].into_iter());
-
-    Err(e)
+    // }
 }
+
+// fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
+//     context_key: &ContextKey,
+//     mut with_guard: WithWorldGuard<'_, '_, HandlerContext<'_, P>>,
+//     expect_response: bool,
+// ) -> Result<ScriptValue, ScriptError> {
+//     let (guard, handler_ctxt) = with_guard.get_mut();
+
+//     if !handler_ctxt.is_script_fully_loaded(*script_id) {
+//         return Ok(ScriptValue::Unit);
+//     }
+
+//     let res = handler_ctxt.call::<C>(context_key, vec![], guard.clone());
+
+//     let e = match res {
+//         Ok(ScriptValue::Error(e)) => e.into(),
+//         Err(e) => e,
+//         Ok(v) => {
+//             if expect_response && !matches!(v, ScriptValue::Bool(true)) {
+//                 InteropError::external_error(format!("Response from callback {} was either not received or wasn't correct. Expected true, got: {v:?}", C::into_callback_label()).into()).into()
+//             } else {
+//                 match guard.with_resource_mut(|mut events: Mut<Events<TestEventFinished>>| {
+//                     events.send(TestEventFinished)
+//                 }) {
+//                     Ok(_) => return Ok(v),
+//                     Err(e) => e.into(),
+//                 }
+//             }
+//         }
+//     };
+
+//     handle_script_errors(guard, vec![e.clone()].into_iter());
+
+//     Err(e)
+// }
 
 #[cfg(feature = "lua")]
 pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(
@@ -480,13 +432,9 @@ where
 
         let mut handler_ctxt = state.get_mut(app.world_mut());
         let (guard, context) = handler_ctxt.get_mut();
-        let context_key = ContextKey {
-            entity: Some(entity),
-            script: Some(Handle::Weak(script_id)),
-            domain: None,
-        };
+        let context_key = ScriptAttachment::EntityScript(entity, Handle::Weak(script_id), None);
 
-        let ctxt_arc = context.script_context().get(&context_key).cloned().unwrap();
+        let ctxt_arc = context.script_context().get(&context_key).unwrap();
         let mut ctxt_locked = ctxt_arc.lock();
 
         let runtime = &context.runtime_container().runtime;
@@ -532,7 +480,11 @@ pub fn run_plugin_script_load_benchmark<
                 );
                 // We manually load the script inside a command.
                 (
-                    CreateOrUpdateScript::<P>::new(random_script_id).with_content(content),
+                    CreateOrUpdateScript::<P>::new(ScriptAttachment::StaticScript(
+                        Handle::Weak(random_script_id),
+                        None,
+                    ))
+                    .with_content(content),
                     is_reload,
                 )
             },

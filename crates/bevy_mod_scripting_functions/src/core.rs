@@ -1,6 +1,6 @@
 //! Contains functions defined by the [`bevy_mod_scripting_core`] crate
 
-use std::{collections::HashMap, ops::Deref};
+use std::{collections::HashMap, ops::Deref, path::PathBuf};
 
 use bevy::prelude::*;
 use bevy_mod_scripting_core::{
@@ -11,7 +11,6 @@ use bevy_mod_scripting_core::{
         script_system::ScriptSystemBuilder,
     },
     docgen::info::FunctionInfo,
-    script::Domain,
     *,
 };
 use bevy_mod_scripting_derive::script_bindings;
@@ -1257,18 +1256,23 @@ impl GlobalNamespace {
     ///
     /// Arguments:
     /// * `callback`: The function name in the script this system should call when run.
-    /// * `script_id`: The id of the script this system will execute when run.
+    /// * `script_id`: The path of the script this system will execute when run.
     /// Returns:
     /// * `builder`: The system builder
     fn system_builder(
+        ctxt: FunctionCallContext,
         callback: String,
         script_id: String,
-        domain: Option<String>,
     ) -> Result<Val<ScriptSystemBuilder>, InteropError> {
-        Ok(
-            ScriptSystemBuilder::new(callback.into(), script_id.into(), domain.map(Domain::new))
-                .into(),
-        )
+        let world = ctxt.world()?;
+        let path = PathBuf::from(script_id);
+        let script_handle = world.with_resource(|asset_server: &AssetServer| {
+            asset_server
+                .get_handle(path.clone())
+                .ok_or_else(|| InteropError::missing_script_by_path(path))
+        })??;
+
+        Ok(ScriptSystemBuilder::new(callback.into(), script_handle).into())
     }
 }
 

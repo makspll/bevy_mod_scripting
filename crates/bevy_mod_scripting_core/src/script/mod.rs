@@ -1,6 +1,10 @@
 //! Script related types, functions and components
 
 use crate::asset::ScriptAsset;
+use crate::event::ScriptEvent;
+use bevy::ecs::component::ComponentId;
+use bevy::ecs::entity::Entity;
+use bevy::ecs::world::DeferredWorld;
 use bevy::prelude::{Component, ReflectComponent};
 use bevy::utils::hashbrown::hash_map::DefaultHashBuilder;
 use bevy::{
@@ -69,6 +73,7 @@ pub struct ScriptDomain(pub Domain);
 
 #[derive(bevy::ecs::component::Component, Reflect, Clone)]
 #[reflect(Component)]
+#[component(on_remove=Self::on_remove, on_add=Self::on_add)]
 /// A component which identifies the scripts existing on an entity.
 ///
 /// Event handlers search for components with this component to figure out which scripts to run and on which entities.
@@ -86,6 +91,43 @@ impl ScriptComponent {
     /// Creates a new [`ScriptComponent`] with the given ScriptID's
     pub fn new<S: Into<Handle<ScriptAsset>>, I: IntoIterator<Item = S>>(components: I) -> Self {
         Self(components.into_iter().map(Into::into).collect())
+    }
+
+    fn get_context_keys_present(world: &DeferredWorld, entity: Entity) -> Vec<ScriptAttachment> {
+        let entity_ref = world.entity(entity);
+        let (script_component, maybe_script_domain) =
+            entity_ref.components::<(&ScriptComponent, Option<&ScriptDomain>)>();
+        let mut context_keys = Vec::new();
+        for script in script_component.iter() {
+            context_keys.push(ScriptAttachment::EntityScript(
+                entity,
+                script.clone(),
+                maybe_script_domain.map(|d| d.0.clone()),
+            ));
+        }
+        context_keys
+    }
+
+    /// the lifecycle hook called when a script component is removed from an entity, emits an appropriate event so we can handle
+    /// the removal of the script.
+    pub fn on_remove(mut world: DeferredWorld, entity: Entity, _component_id: ComponentId) {
+        let context_keys = Self::get_context_keys_present(&world, entity);
+        world.send_event_batch(
+            context_keys
+                .into_iter()
+                .map(|key| ScriptEvent::Detached { key }),
+        );
+    }
+
+    /// the lifecycle hook called when a script component is added to an entity, emits an appropriate event so we can handle
+    /// the addition of the script.
+    pub fn on_add(mut world: DeferredWorld, entity: Entity, _component_id: ComponentId) {
+        let context_keys = Self::get_context_keys_present(&world, entity);
+        world.send_event_batch(
+            context_keys
+                .into_iter()
+                .map(|key| ScriptEvent::Attached { key }),
+        );
     }
 }
 
@@ -128,6 +170,8 @@ impl StaticScripts {
 
 #[cfg(test)]
 mod tests {
+    use bevy::ecs::{event::Events, world::World};
+
     use super::*;
 
     #[test]
@@ -167,5 +211,24 @@ mod tests {
         static_scripts.insert(script1.clone());
         assert!(static_scripts.contains(&script1));
         assert!(!static_scripts.contains(&script2));
+    }
+
+    #[test]
+    fn test_component_add_no_domain() {
+        let mut world = World::new();
+        world.init_resource::<Events<ScriptEvent>>();
+        // spawn new script component
+        let entity = world
+            .spawn(ScriptComponent::new([Handle::Weak(AssetId::invalid())]))
+            .id();
+
+        // check that the event was sent
+        let mut events = world.resource_mut::<Events<ScriptEvent>>();
+        assert_eq!(
+            Some(ScriptEvent::Attached {
+                key: ScriptAttachment::EntityScript(entity, Handle::Weak(AssetId::invalid()), None)
+            }),
+            events.drain().next()
+        );
     }
 }

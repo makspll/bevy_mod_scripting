@@ -1,5 +1,6 @@
 //! Errors that can occur when interacting with the scripting system
 
+use crate::script::DisplayProxy;
 use crate::{
     bindings::{
         access_map::{DisplayCodeLocation, ReflectAccessId},
@@ -8,11 +9,11 @@ use crate::{
         script_value::ScriptValue,
         ReflectBaseType, ReflectReference,
     },
-    script::{ContextKey, DisplayProxy},
+    script::ContextKey,
     ScriptAsset,
 };
 use bevy::{
-    asset::Handle,
+    asset::{AssetPath, Handle},
     ecs::{
         component::ComponentId,
         schedule::{ScheduleBuildError, ScheduleNotInitialized},
@@ -596,7 +597,16 @@ impl InteropError {
     /// Thrown if a script could not be found when trying to call a synchronous callback or otherwise
     pub fn missing_script(script_id: impl Into<Handle<ScriptAsset>>) -> Self {
         Self(Arc::new(InteropErrorInner::MissingScript {
-            script_id: script_id.into(),
+            script_id: Some(script_id.into()),
+            script_path: None,
+        }))
+    }
+
+    /// Thrown if a script could not be found when trying to call a synchronous callback or otherwise
+    pub fn missing_script_by_path<'a>(script_id: impl Into<AssetPath<'a>>) -> Self {
+        Self(Arc::new(InteropErrorInner::MissingScript {
+            script_path: Some(script_id.into().to_string()),
+            script_id: None,
         }))
     }
 
@@ -628,9 +638,12 @@ pub enum InteropErrorInner {
     /// Thrown if a callback requires world access, but is unable to do so due
     MissingWorld,
     /// Thrown if a script could not be found when trying to call a synchronous callback.
+    /// The path or id is used depending on which stage the script was in when the error occurred.
     MissingScript {
+        /// The script path that was not found.
+        script_path: Option<String>,
         /// The script id that was not found.
-        script_id: Handle<ScriptAsset>,
+        script_id: Option<Handle<ScriptAsset>>,
     },
     /// Thrown if a base type is not registered with the reflection system
     UnregisteredBase {
@@ -828,9 +841,15 @@ impl PartialEq for InteropErrorInner {
     fn eq(&self, _other: &Self) -> bool {
         match (self, _other) {
             (
-                InteropErrorInner::MissingScript { script_id: a },
-                InteropErrorInner::MissingScript { script_id: b },
-            ) => a == b,
+                InteropErrorInner::MissingScript {
+                    script_id: a,
+                    script_path: b,
+                },
+                InteropErrorInner::MissingScript {
+                    script_id: c,
+                    script_path: d,
+                },
+            ) => a == c && b == d,
             (
                 InteropErrorInner::InvalidAccessCount {
                     count: a,
@@ -1254,10 +1273,13 @@ macro_rules! unregistered_component_or_resource_type {
 }
 
 macro_rules! missing_script_for_callback {
-    ($script_id:expr) => {
+    ($script_id:expr, $script_path:expr) => {
         format!(
             "Could not find script {}. Is the script loaded?",
-            $script_id.display()
+            $script_id.map_or_else(
+                || $script_path.unwrap_or_default(),
+                |id| id.display().to_string()
+            )
         )
     };
 }
@@ -1429,8 +1451,8 @@ impl DisplayWithWorld for InteropErrorInner {
             InteropErrorInner::ArgumentCountMismatch { expected, got } => {
                 argument_count_mismatch_msg!(expected, got)
             },
-            InteropErrorInner::MissingScript { script_id } => {
-                missing_script_for_callback!(script_id)
+            InteropErrorInner::MissingScript { script_id, script_path } => {
+                missing_script_for_callback!(script_id.clone(), script_path.clone())
             },
             InteropErrorInner::MissingContext { context_key } => {
                 missing_context_for_callback!(
@@ -1575,8 +1597,8 @@ impl DisplayWithWorld for InteropErrorInner {
             InteropErrorInner::ArgumentCountMismatch { expected, got } => {
                 argument_count_mismatch_msg!(expected, got)
             },
-            InteropErrorInner::MissingScript { script_id } => {
-                missing_script_for_callback!(script_id)
+            InteropErrorInner::MissingScript { script_id, script_path } => {
+                missing_script_for_callback!(script_id.clone(), script_path.clone())
             },
             InteropErrorInner::MissingContext { context_key } => {
                 missing_context_for_callback!(

@@ -1,38 +1,47 @@
 use super::*;
-use crate::IntoScriptPluginParams;
+use crate::{bindings::AsAny, IntoScriptPluginParams};
 use bevy::ecs::system::Resource;
 use parking_lot::Mutex;
 use std::{hash::Hash, sync::Arc};
 
 /// A kind of catch all type for script context selection
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
-pub struct Domain(u64);
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub struct Domain(String);
 
 impl Domain {
     /// Create a domain handle.
-    pub fn new(hashable: impl Hash) -> Self {
-        Domain(DefaultHashBuilder::default().hash_one(hashable))
+    pub fn new(domain: String) -> Self {
+        Domain(domain)
     }
 }
 
 /// Determines how contexts are grouped by manipulating the context key.
-pub trait ContextKeySelector {
+pub trait ContextKeySelector: Send + Sync + std::fmt::Debug + AsAny + 'static {
     /// The given context key represents a possible script, entity, domain that
     /// is requesting a context.
     ///
     /// This selector returns
     ///  - `None` when the given `context_key` is not relevant to its policy, or
     ///  - `Some(selected_key)` when the appropriate key has been determined.
-    fn select(&self, context_key: &ContextKey) -> Option<ContextKey>;
+    fn select(&self, context_key: &ScriptAttachment) -> Option<ContextKey>;
 }
 
-impl<F: Fn(&ContextKey) -> Option<ContextKey>> ContextKeySelector for F {
-    fn select(&self, context_key: &ContextKey) -> Option<ContextKey> {
+impl<F: Fn(&ScriptAttachment) -> Option<ContextKey> + Send + Sync + std::fmt::Debug + 'static>
+    ContextKeySelector for F
+{
+    fn select(&self, context_key: &ScriptAttachment) -> Option<ContextKey> {
         (self)(context_key)
     }
 }
 
-/// A rule for context selection
+/// A rule for context selection.
+///
+/// Maps a `ContextKey` to a `Option<ContextKey>`.
+///
+/// If the rule is not applicable, it returns `None`.
+///
+/// If the rule is applicable, it returns an equivalent or "susbset" `ContextKey` that represents the
+/// context assignment
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ContextRule {
     /// If domain exists, return only that.
@@ -45,10 +54,6 @@ pub enum ContextRule {
     Script,
     /// Check nothing; return empty context key.
     Shared,
-    /// A custom rule
-    Custom(fn(&ContextKey) -> Option<ContextKey>), // XXX: Custom rule with this opaque type makes it harder to have the
-                                                   // derives above that we might want. So maybe we drop this variant.
-                                                   // Custom(Box<dyn ContextKeySelector + 'static + Sync + Send>)
 }
 
 impl ContextKeySelector for ContextRule {
@@ -57,11 +62,14 @@ impl ContextKeySelector for ContextRule {
     /// For example a rule of `Domain` will check for a domain in the
     /// `context_key`. If it is present, a ContextKey that only
     /// has that domain will be returned.
-    fn select(&self, context_key: &ContextKey) -> Option<ContextKey> {
+    fn select(&self, context_key: &ScriptAttachment) -> Option<ContextKey> {
+        // extract the components from the input, i.e. entity, script, domain, fill with None if not present
+        let context_key: ContextKey = context_key.clone().into();
+
         match self {
             ContextRule::Domain => context_key.domain.map(ContextKey::from),
             ContextRule::Entity => context_key.entity.map(ContextKey::from),
-            ContextRule::Script => context_key.script.clone().map(ContextKey::from),
+            ContextRule::Script => context_key.script.map(ContextKey::from),
             ContextRule::EntityScript => {
                 context_key
                     .entity
@@ -73,27 +81,30 @@ impl ContextKeySelector for ContextRule {
                     })
             }
             ContextRule::Shared => Some(ContextKey::default()),
-            ContextRule::Custom(rule) => rule.select(context_key),
         }
     }
 }
 
 /// This is a configurable context policy based on priority.
-#[derive(Resource, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Resource, Debug)]
 pub struct ContextPolicy {
     /// The rules in order of priority.
-    pub priorities: Vec<ContextRule>,
+    pub priorities: Vec<Box<dyn ContextKeySelector>>,
 }
 
 /// Returns a `[Domain, EntityScript, Script, Shared]` policy.
+/// the default policy will assign:
+/// - static scripts to individual contexts
+/// - entity-script pairs to individual contexts
+/// - any scripts with a domain to domain contexts
 impl Default for ContextPolicy {
     fn default() -> Self {
         ContextPolicy {
             priorities: vec![
-                ContextRule::Domain,
-                ContextRule::EntityScript,
-                ContextRule::Script,
-                ContextRule::Shared,
+                Box::new(ContextRule::Domain),
+                Box::new(ContextRule::EntityScript),
+                Box::new(ContextRule::Script),
+                Box::new(ContextRule::Shared),
             ],
         }
     }
@@ -101,66 +112,133 @@ impl Default for ContextPolicy {
 
 impl ContextPolicy {
     /// Return which rule is used for context_key.
-    pub fn which_rule(&self, context_key: &ContextKey) -> Option<&ContextRule> {
+    pub fn which_rule(&self, context_key: &ScriptAttachment) -> Option<&dyn ContextKeySelector> {
         self.priorities
             .iter()
-            .find(|rule| rule.select(context_key).is_some())
+            .find_map(|rule| rule.select(context_key).is_some().then_some(rule.as_ref()))
     }
+
     /// Use a shared script context.
     pub fn shared() -> Self {
         ContextPolicy {
-            priorities: vec![ContextRule::Shared],
+            priorities: vec![Box::new(ContextRule::Shared)],
         }
     }
+
     /// If a domain is given, use that first.
+    ///
+    /// Inserts a `Domain` selection rule with the highest priority if it is not already present.
     pub fn with_domains(mut self) -> Self {
-        if !self.priorities.contains(&ContextRule::Domain) {
-            self.priorities.insert(0, ContextRule::Domain);
+        if !self.priorities.iter().any(|r| {
+            r.as_any()
+                .downcast_ref::<ContextRule>()
+                .is_some_and(|r| *r == ContextRule::Domain)
+        }) {
+            self.priorities.insert(0, Box::new(ContextRule::Domain));
         }
         self
     }
+
     /// Domain contexts or a shared context.
+    ///
+    /// For example, given:
+    /// - `script_id: Some("script1")`
+    /// - `entity: Some(1)`
+    /// - `domain: Some("domain1")`
+    ///
+    /// The context key will purely use the domain, resulting in a context key
+    /// of `ContextKey { domain: Some("domain1") }`.
+    ///
+    /// resulting in each domain having its own context regardless of the script id or entity.
+    ///
+    /// If no domain is given it will be the default, i.e. shared context.
     pub fn domains() -> Self {
         ContextPolicy {
-            priorities: vec![ContextRule::Domain, ContextRule::Shared],
+            priorities: vec![Box::new(ContextRule::Domain), Box::new(ContextRule::Shared)],
         }
     }
+
     /// Use one script context per entity or a shared context.
+    ///
+    /// For example, given:
+    /// - `script_id: Some("script1")`
+    /// - `entity: Some(1)`
+    /// - `domain: Some("domain1")`
+    ///
+    ///
+    /// The context key will purely use the entity, resulting in a context key
+    /// of `ContextKey { entity: Some(1) }`.
+    ///
+    /// resulting in each entity having its own context regardless of the script id.
+    ///
+    /// If no entity is given it will be the default, i.e. shared context.
     pub fn per_entity() -> Self {
         ContextPolicy {
-            priorities: vec![ContextRule::Entity, ContextRule::Shared],
+            priorities: vec![Box::new(ContextRule::Entity), Box::new(ContextRule::Shared)],
         }
     }
+
     /// Use one script context per entity or a shared context.
+    ///
+    /// For example, given:
+    /// - `script_id: Some("script1")`
+    /// - `entity: Some(1)`
+    /// - `domain: Some("domain1")`
+    ///
+    /// The context key will purely use the script, resulting in a context key
+    /// of `ContextKey { script: Some("script1") }`.
+    ///
+    /// resulting in each script having its own context regardless of the entity.
+    ///
+    /// If no script is given it will be the default, i.e. shared context.
     pub fn per_script() -> Self {
         ContextPolicy {
-            priorities: vec![ContextRule::Script, ContextRule::Shared],
+            priorities: vec![Box::new(ContextRule::Script), Box::new(ContextRule::Shared)],
         }
     }
+
     /// Use one script context per entity-script, or a script context, or a shared context.
+    ///
+    /// For example, given:
+    /// - `script_id: Some("script1")`
+    /// - `entity: Some(1)`
+    /// - `domain: Some("domain1")`
+    ///
+    /// The context key will use the entity-script pair, resulting in a context key
+    /// of `ContextKey { entity: Some(1), script: Some("script1") }`.
+    ///
+    /// resulting in each entity-script combination having its own context.
+    ///
+    /// If no entity-script pair is given it will be the default, i.e. shared context.
     pub fn per_entity_and_script() -> Self {
         ContextPolicy {
             priorities: vec![
-                ContextRule::EntityScript,
-                ContextRule::Script,
-                ContextRule::Shared,
+                Box::new(ContextRule::EntityScript),
+                Box::new(ContextRule::Script),
+                Box::new(ContextRule::Shared),
             ],
         }
     }
 }
 
 impl ContextKeySelector for ContextPolicy {
-    fn select(&self, context_key: &ContextKey) -> Option<ContextKey> {
+    fn select(&self, context_key: &ScriptAttachment) -> Option<ContextKey> {
         self.priorities
             .iter()
             .find_map(|priority| priority.select(context_key))
     }
 }
 
+struct ContextEntry<P: IntoScriptPluginParams> {
+    context: Arc<Mutex<P::C>>,
+    residents: HashSet<ScriptAttachment>,
+}
+
 #[derive(Resource)]
 /// Keeps track of script contexts and enforces the context selection policy.
 pub struct ScriptContext<P: IntoScriptPluginParams> {
-    map: HashMap<ContextKey, Arc<Mutex<P::C>>>,
+    /// script contexts and the counts of how many scripts are associated with them.
+    map: HashMap<ContextKey, ContextEntry<P>>,
     /// The policy used to determine the context key.
     pub policy: ContextPolicy,
 }
@@ -174,32 +252,125 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
         }
     }
 
-    /// Get the context.
-    pub fn get(&self, context_key: &ContextKey) -> Option<&Arc<Mutex<P::C>>> {
+    fn get_entry(&self, context_key: &ScriptAttachment) -> Option<&ContextEntry<P>> {
         self.policy
             .select(context_key)
             .and_then(|key| self.map.get(&key))
     }
+
+    fn get_entry_mut(&mut self, context_key: &ScriptAttachment) -> Option<&mut ContextEntry<P>> {
+        self.policy
+            .select(context_key)
+            .and_then(|key| self.map.get_mut(&key))
+    }
+
+    /// Get the context.
+    pub fn get(&self, context_key: &ScriptAttachment) -> Option<Arc<Mutex<P::C>>> {
+        self.get_entry(context_key)
+            .map(|entry| entry.context.clone())
+    }
+
     /// Insert a context.
     ///
     /// If the context cannot be inserted, it is returned as an `Err`.
-    pub fn insert(&mut self, context_key: &ContextKey, context: P::C) -> Result<(), P::C> {
+    ///
+    /// The attachment is also inserted as resident into the context.
+    pub fn insert(&mut self, context_key: &ScriptAttachment, context: P::C) -> Result<(), P::C> {
         match self.policy.select(context_key) {
             Some(key) => {
-                self.map
-                    .insert(key.into_weak(), Arc::new(Mutex::new(context)));
+                let entry = ContextEntry {
+                    context: Arc::new(Mutex::new(context)),
+                    residents: HashSet::from_iter([context_key.clone()]), // context with a residency of one
+                };
+                self.map.insert(key.into_weak(), entry);
                 Ok(())
             }
             None => Err(context),
         }
     }
-    /// Returns true if there is a context.
-    pub fn contains(&self, context_key: &ContextKey) -> bool {
-        self.policy
-            .select(context_key)
-            .map(|key| self.map.contains_key(&key))
-            .unwrap_or(false)
+
+    /// Mark a context as resident.
+    /// This needs to be called when a script is added to a context.
+    pub fn insert_resident(
+        &mut self,
+        context_key: ScriptAttachment,
+    ) -> Result<(), ScriptAttachment> {
+        if let Some(entry) = self.get_entry_mut(&context_key) {
+            entry.residents.insert(context_key);
+            Ok(())
+        } else {
+            Err(context_key)
+        }
     }
+
+    /// Remove a resident context.
+    /// This needs to be called when a script is deleted.
+    pub fn remove_resident(&mut self, context_key: &ScriptAttachment) {
+        if let Some(entry) = self.get_entry_mut(context_key) {
+            entry.residents.remove(context_key);
+        }
+    }
+
+    /// Iterates through all context & corresponding script attachment pairs.
+    pub fn all_residents(
+        &self,
+    ) -> impl Iterator<Item = (ScriptAttachment, Arc<Mutex<P::C>>)> + use<'_, P> {
+        self.map.values().flat_map(|entry| {
+            entry
+                .residents
+                .iter()
+                .map(move |resident| (resident.clone(), entry.context.clone()))
+        })
+    }
+
+    /// Retrieves the first resident from each context.
+    ///
+    /// For example if using a single global context, and with 2 scripts:
+    /// `script1` and `script2`
+    /// this will return:
+    /// `(&context_key, &script1)`
+    pub fn first_resident_from_each_context(
+        &self,
+    ) -> impl Iterator<Item = (ScriptAttachment, Arc<Mutex<P::C>>)> + use<'_, P> {
+        self.map.values().filter_map(|entry| {
+            entry
+                .residents
+                .iter()
+                .next()
+                .map(|resident| (resident.clone(), entry.context.clone()))
+        })
+    }
+
+    /// Iterates over the residents living in the same script context as the one mapped to by the context policy input
+    pub fn residents(
+        &self,
+        context_key: &ScriptAttachment,
+    ) -> impl Iterator<Item = (ScriptAttachment, Arc<Mutex<P::C>>)> + use<'_, P> {
+        self.get_entry(context_key).into_iter().flat_map(|entry| {
+            entry
+                .residents
+                .iter()
+                .map(move |resident| (resident.clone(), entry.context.clone()))
+        })
+    }
+
+    /// Check if the given script is resident in the context.
+    pub fn is_resident(&self, context_key: &ScriptAttachment) -> bool {
+        self.get_entry(context_key)
+            .is_some_and(|entry| entry.residents.contains(context_key))
+    }
+
+    /// Returns the number of residents in the context.
+    pub fn residents_len(&self, context_key: &ScriptAttachment) -> usize {
+        self.get_entry(context_key)
+            .map_or(0, |entry| !entry.residents.len())
+    }
+
+    /// Returns true if there is a context.
+    pub fn contains(&self, context_key: &ScriptAttachment) -> bool {
+        self.get_entry(context_key).is_some()
+    }
+
     /// Hash for context.
     ///
     /// Useful for tracking what context will be returned by `get()` without
@@ -207,27 +378,19 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
     ///
     /// Note: The existence of the hash does not imply the context exists. It
     /// only declares what its hash will be.
-    pub fn hash(&self, context_key: &ContextKey) -> Option<u64> {
+    pub fn hash(&self, context_key: &ScriptAttachment) -> Option<u64> {
         self.policy
             .select(context_key)
             .map(|key| DefaultHashBuilder::default().hash_one(&key))
     }
-    /// Iterate through contexts.
-    pub fn values(&self) -> impl Iterator<Item = &Arc<Mutex<P::C>>> {
-        self.map.values()
-    }
+
     /// Remove a context.
     ///
     /// Returns context if removed.
-    pub fn remove(&mut self, context_key: &ContextKey) -> Option<Arc<Mutex<P::C>>> {
+    pub fn remove(&mut self, context_key: &ScriptAttachment) -> Option<Arc<Mutex<P::C>>> {
         self.policy
             .select(context_key)
-            .and_then(|key| self.map.remove(&key))
-    }
-
-    /// Iterate through keys and contexts.
-    pub fn iter(&self) -> impl Iterator<Item = (&ContextKey, &Arc<Mutex<P::C>>)> {
-        self.map.iter()
+            .and_then(|key| self.map.remove(&key).map(|entry| entry.context))
     }
 }
 

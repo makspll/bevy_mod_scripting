@@ -31,7 +31,7 @@ use crate::{
     event::{CallbackLabel, IntoCallbackLabel},
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{ContextKey, ScriptContext, StaticScripts},
+    script::{ScriptAttachment, ScriptContext, StaticScripts},
     IntoScriptPluginParams, ScriptAsset,
 };
 
@@ -210,18 +210,20 @@ impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
         &mut self.script_context
     }
 
-    // /// checks if the script is loaded such that it can be executed.
-    // pub fn is_script_fully_loaded(&self, script_id: ScriptId) -> bool {
-    //     todo!()
-    //     // matches!(self.asset_server.load_state(script_id), LoadState::Loaded)
-    // }
+    /// checks if the script is loaded such that it can be executed.
+    ///
+    /// since the mapping between scripts and contexts is not one-to-one, will map the context key using the
+    /// context policy to find the script context, if one is found then the script is loaded.
+    pub fn is_script_fully_loaded(&self, key: &ScriptAttachment) -> bool {
+        self.script_context.is_resident(key)
+    }
 
     /// Equivalent to [`Self::call`] but with a dynamically passed in label
     pub fn call_dynamic_label(
         &self,
         label: &CallbackLabel,
-        context_key: &ContextKey,
-        context: Option<&Arc<Mutex<P::C>>>,
+        context_key: &ScriptAttachment,
+        context: Option<Arc<Mutex<P::C>>>,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
@@ -257,7 +259,7 @@ impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
     /// Run [`Self::is_script_fully_loaded`] before calling the script to ensure the script and context were loaded ahead of time.
     pub fn call<C: IntoCallbackLabel>(
         &self,
-        context_key: &ContextKey,
+        context_key: &ScriptAttachment,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {

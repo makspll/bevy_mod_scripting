@@ -4,16 +4,16 @@ use crate::{
     commands::CreateOrUpdateScript,
     error::ScriptError,
     event::ScriptEvent,
-    script::{ContextKey, DisplayProxy, ScriptContext, ScriptDomain},
+    script::{ContextKey, DisplayProxy, ScriptAttachment, ScriptDomain},
     IntoScriptPluginParams, LanguageExtensions, ScriptComponent, ScriptingSystemSet, StaticScripts,
 };
 use bevy::{
-    app::{App, PostUpdate, PreUpdate},
+    app::{App, PreUpdate},
     asset::{Asset, AssetEvent, AssetLoader, Assets, LoadState},
-    log::{error, info, trace, warn, warn_once},
+    log::{error, trace, warn, warn_once},
     prelude::{
-        Added, AssetServer, Commands, Entity, EventReader, EventWriter, Handle, IntoSystemConfigs,
-        IntoSystemSetConfigs, Local, Query, RemovedComponents, Res, ResMut,
+        AssetServer, Commands, Entity, EventReader, EventWriter, IntoSystemConfigs,
+        IntoSystemSetConfigs, Local, Query, Res,
     },
     reflect::TypePath,
 };
@@ -74,7 +74,7 @@ impl ScriptAsset {
 }
 
 /// The queue that evaluates scripts.
-type ScriptQueue = VecDeque<ContextKey>;
+type ScriptQueue = VecDeque<ScriptAttachment>;
 /// Script settings
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ScriptSettings {
@@ -198,19 +198,6 @@ fn sync_assets(
     }
 }
 
-fn sync_components(
-    script_comps: Query<Entity, Added<ScriptComponent>>,
-    mut removed: RemovedComponents<ScriptComponent>,
-    mut script_events: EventWriter<ScriptEvent>,
-) {
-    for id in &script_comps {
-        script_events.send(ScriptEvent::Attached { entity: id });
-    }
-    for id in removed.read() {
-        script_events.send(ScriptEvent::Detached { entity: id });
-    }
-}
-
 /// Listens to [`ScriptEvent`] events and dispatches [`CreateOrUpdateScript`] and [`DeleteScript`] commands accordingly.
 ///
 /// Allows for hot-reloading of scripts.
@@ -239,57 +226,26 @@ fn handle_script_events<P: IntoScriptPluginParams>(
                         if let Some(handle) =
                             script_component.0.iter().find(|handle| handle.id() == *id)
                         {
-                            commands.queue(CreateOrUpdateScript::<P>::new(ContextKey {
-                                entity: Some(entity),
-                                script: Some(handle.clone()),
-                                domain: script_domain_maybe.map(|x| x.0),
-                            }));
+                            commands.queue(CreateOrUpdateScript::<P>::new(
+                                ScriptAttachment::EntityScript(
+                                    entity,
+                                    handle.clone(),
+                                    script_domain_maybe.map(|d| d.0.clone()),
+                                ),
+                            ));
                         }
                     }
 
                     if let Some(handle) = static_scripts.scripts.iter().find(|s| s.id() == *id) {
-                        commands.queue(CreateOrUpdateScript::<P>::new(handle.clone()));
+                        commands.queue(CreateOrUpdateScript::<P>::new(
+                            ScriptAttachment::StaticScript(handle.clone(), None),
+                        ));
                     }
                 }
             }
-            ScriptEvent::StaticAttached { script } => {
-                trace!(
-                    "{}: Add static script {} to script queue.",
-                    P::LANGUAGE,
-                    script
-                );
-                script_queue.push_back(ContextKey {
-                    entity: None,
-                    script: Some(Handle::Weak(*script)),
-                    domain: None,
-                });
-            }
-            ScriptEvent::Attached { entity } => {
-                trace!(
-                    "{}: Add entity {} contents to script queue.",
-                    P::LANGUAGE,
-                    entity
-                );
-                match scripts.get(*entity) {
-                    Ok((id, script_comp, domain_maybe)) => {
-                        let domain = domain_maybe.map(|x| x.0);
-                        for handle in &script_comp.0 {
-                            script_queue.push_back(ContextKey {
-                                entity: Some(id),
-                                script: Some(handle.clone_weak()),
-                                domain,
-                            });
-                        }
-                    }
-                    Err(e) => {
-                        error!(
-                            "{}: Unable to look up attached entity {}: {}",
-                            P::LANGUAGE,
-                            entity,
-                            e
-                        );
-                    }
-                }
+            ScriptEvent::Attached { key } => {
+                trace!("{}: Attached script with key: {}", P::LANGUAGE, key);
+                script_queue.push_back(key.clone());
             }
             _ => (),
         }
@@ -304,7 +260,8 @@ fn handle_script_events<P: IntoScriptPluginParams>(
         // NOTE: Maybe using pop_front_if once stabalized.
         let script_ready = script_queue
             .front()
-            .map(|context_key| {
+            .map(|context_key| context_key.clone().into())
+            .map(|context_key: ContextKey| {
                 // If there is a script, wait for the script to load.
                 context_key
                     .script
@@ -332,75 +289,20 @@ fn handle_script_events<P: IntoScriptPluginParams>(
             // We can't evaluate it yet. It's still loading.
             break;
         }
+
         if let Some(context_key) = script_queue.pop_front() {
             if script_failed {
                 continue;
             }
+
             let language = context_key
-                .script
-                .as_ref()
-                .and_then(|script_id| script_assets.get(script_id))
+                .script()
+                .and_then(|script_id| script_assets.get(&script_id))
                 .map(|asset| asset.language.clone())
                 .unwrap_or_default();
+
             if language == P::LANGUAGE {
-                match context_key.entity {
-                    Some(id) => {
-                        commands
-                            .entity(id)
-                            .queue(CreateOrUpdateScript::<P>::new(context_key));
-                    }
-                    None => {
-                        commands.queue(CreateOrUpdateScript::<P>::new(context_key));
-                    }
-                }
-            }
-        } else {
-            break;
-        }
-    }
-}
-
-/// Remove contexts that are associated with removed entities.
-fn remove_entity_associated_contexts<P: IntoScriptPluginParams>(
-    mut removed: RemovedComponents<ScriptComponent>,
-    mut script_context: ResMut<ScriptContext<P>>,
-) {
-    let mut context_key = ContextKey::default();
-    for id in removed.read() {
-        context_key.entity = Some(id);
-        script_context.remove(&context_key);
-    }
-}
-
-/// When a [ScriptAsset] is removed---all of its strong handles have
-/// dropped---then this system will remove any [StaticScripts] that exist and it
-/// will remove any contexts associated solely with that script.
-///
-/// In BMS version 0.11 and prior, this was the default behavior. Add this
-/// system to restore that behavior.
-#[profiling::function]
-pub fn remove_context_on_script_removal<P: IntoScriptPluginParams>(
-    mut events: EventReader<AssetEvent<ScriptAsset>>,
-    mut static_scripts: ResMut<StaticScripts>,
-    mut script_contexts: ResMut<ScriptContext<P>>,
-) {
-    for event in events.read() {
-        if let AssetEvent::Removed { id } = event {
-            info!("{}: Asset removed {:?}", P::LANGUAGE, id);
-            if static_scripts.remove(*id) {
-                info!("{}: Removing static script {:?}", P::LANGUAGE, id);
-            }
-            // We're removing a context because its handle was removed. This
-            // makes sense specifically for ScriptIdContext. However, it
-            // doesn't quite work for the other context providers, and it
-            // requires we keep a script loaded in memory when technically
-            // it needn't be.
-            //
-            // If we want this kind of behavior, it seems like we'd want to
-            // have handles to contexts.
-            //
-            if script_contexts.remove(&ContextKey::from(*id)).is_some() {
-                info!("{}: Removed context for script {:?}", P::LANGUAGE, id);
+                commands.queue(CreateOrUpdateScript::<P>::new(context_key));
             }
         }
     }
@@ -413,8 +315,7 @@ pub(crate) fn configure_asset_systems(app: &mut App) {
     // currently this is in the PreUpdate set
     app.add_systems(
         PreUpdate,
-        (sync_assets, sync_components.after(sync_assets))
-            .in_set(ScriptingSystemSet::ScriptAssetDispatch),
+        (sync_assets).in_set(ScriptingSystemSet::ScriptAssetDispatch),
     )
     .configure_sets(
         PreUpdate,
@@ -432,10 +333,6 @@ pub(crate) fn configure_asset_systems_for_plugin<P: IntoScriptPluginParams>(app:
     app.add_systems(
         PreUpdate,
         handle_script_events::<P>.in_set(ScriptingSystemSet::ScriptCommandDispatch),
-    )
-    .add_systems(
-        PostUpdate,
-        remove_entity_associated_contexts::<P>, //.in_set(ScriptingSystemSet::EntityRemoval)
     );
 }
 
@@ -446,6 +343,7 @@ mod tests {
     use bevy::{
         app::{App, Update},
         asset::{AssetApp, AssetPath, AssetPlugin, AssetServer, Assets, Handle, LoadState},
+        ecs::system::ResMut,
         prelude::Resource,
         MinimalPlugins,
     };

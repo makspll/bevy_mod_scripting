@@ -14,7 +14,7 @@ use bevy_mod_scripting_core::{
     event::CallbackLabel,
     reflection_extensions::PartialReflectExt,
     runtime::RuntimeSettings,
-    script::ContextKey,
+    script::ScriptAttachment,
     IntoScriptPluginParams, ScriptingPlugin,
 };
 use bindings::{
@@ -117,7 +117,7 @@ impl Default for LuaScriptingPlugin {
                 ],
                 context_pre_handling_initializers: vec![|context_key, context| {
                     let world = ThreadWorldContainer.try_get_world()?;
-                    if let Some(entity) = context_key.entity {
+                    if let Some(entity) = context_key.entity() {
                         context
                             .globals()
                             .set(
@@ -126,7 +126,7 @@ impl Default for LuaScriptingPlugin {
                             )
                             .map_err(ScriptError::from_mlua_error)?;
                     }
-                    if let Some(script) = context_key.script.as_ref() {
+                    if let Some(script) = context_key.script().as_ref() {
                         let path = script
                             .path()
                             .map(|p| p.to_string())
@@ -157,7 +157,7 @@ impl Plugin for LuaScriptingPlugin {
 
 fn load_lua_content_into_context(
     context: &mut Lua,
-    context_key: &ContextKey,
+    context_key: &ScriptAttachment,
     content: &[u8],
     initializers: &[ContextInitializer<LuaScriptingPlugin>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
@@ -181,7 +181,7 @@ fn load_lua_content_into_context(
 #[profiling::function]
 /// Load a lua context from a script
 pub fn lua_context_load(
-    context_key: &ContextKey,
+    context_key: &ScriptAttachment,
     content: &[u8],
     initializers: &[ContextInitializer<LuaScriptingPlugin>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
@@ -205,7 +205,7 @@ pub fn lua_context_load(
 #[profiling::function]
 /// Reload a lua context from a script
 pub fn lua_context_reload(
-    context_key: &ContextKey,
+    context_key: &ScriptAttachment,
     content: &[u8],
     old_ctxt: &mut Lua,
     initializers: &[ContextInitializer<LuaScriptingPlugin>],
@@ -227,7 +227,7 @@ pub fn lua_context_reload(
 /// The lua handler for events
 pub fn lua_handler(
     args: Vec<ScriptValue>,
-    context_key: &ContextKey,
+    context_key: &ScriptAttachment,
     callback_label: &CallbackLabel,
     context: &mut Lua,
     pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
@@ -276,7 +276,7 @@ mod test {
         let pre_handling_initializers = vec![];
         let mut old_ctxt = lua.clone();
         let handle = Handle::Weak(script_id);
-        let context_key = handle.into();
+        let context_key = ScriptAttachment::EntityScript(Entity::from_raw(1), handle, None);
 
         lua_context_load(
             &context_key,

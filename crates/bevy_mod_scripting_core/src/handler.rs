@@ -5,31 +5,27 @@ use crate::{
         WorldContainer, WorldGuard,
     },
     context::ContextPreHandlingInitializer,
-    error::{InteropErrorInner, ScriptError},
+    error::ScriptError,
     event::{
-        CallbackLabel, IntoCallbackLabel, Recipients, ScriptCallbackEvent,
-        ScriptCallbackResponseEvent, ScriptErrorEvent,
+        CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent,
+        ScriptErrorEvent,
     },
     extractors::{HandlerContext, WithWorldGuard},
-    script::{ContextKey, DisplayProxy, ScriptComponent, ScriptDomain},
+    script::ScriptAttachment,
     IntoScriptPluginParams, Language,
 };
 use bevy::{
     ecs::{
-        entity::Entity,
-        query::QueryState,
-        system::{Local, Resource, SystemState},
+        system::{Resource, SystemState},
         world::{Mut, World},
     },
-    log::trace_once,
-    prelude::{Events, Ref},
-    utils::HashSet,
+    prelude::Events,
 };
 
 /// A function that handles a callback event
 pub type HandlerFn<P> = fn(
     args: Vec<ScriptValue>,
-    context_key: &ContextKey,
+    context_key: &ScriptAttachment,
     callback: &CallbackLabel,
     context: &mut <P as IntoScriptPluginParams>::C,
     pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
@@ -70,7 +66,7 @@ impl<P: IntoScriptPluginParams> CallbackSettings<P> {
     pub fn call(
         handler: HandlerFn<P>,
         args: Vec<ScriptValue>,
-        context_key: &ContextKey,
+        context_key: &ScriptAttachment,
         callback: &CallbackLabel,
         script_ctxt: &mut P::C,
         pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
@@ -102,27 +98,14 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     // we wrap the inner event handler, so that we can immediately re-insert all the resources back.
     // otherwise this would happen in the next schedule
     {
-        let (entity_query_state, script_events, handler_ctxt) = state.get_mut(world);
-        event_handler_inner::<P>(
-            L::into_callback_label(),
-            entity_query_state,
-            script_events,
-            handler_ctxt,
-        );
+        let (script_events, handler_ctxt) = state.get_mut(world);
+        event_handler_inner::<P>(L::into_callback_label(), script_events, handler_ctxt);
     }
     state.apply(world);
 }
 
 #[allow(deprecated)]
 pub(crate) type EventHandlerSystemState<'w, 's, P> = SystemState<(
-    Local<
-        's,
-        QueryState<(
-            Entity,
-            Ref<'w, ScriptComponent>,
-            Option<Ref<'w, ScriptDomain>>,
-        )>,
-    >,
     crate::extractors::EventReaderScope<'s, ScriptCallbackEvent>,
     WithWorldGuard<'w, 's, HandlerContext<'s, P>>,
 )>;
@@ -131,9 +114,6 @@ pub(crate) type EventHandlerSystemState<'w, 's, P> = SystemState<(
 #[allow(deprecated)]
 pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     callback_label: CallbackLabel,
-    mut entity_query_state: Local<
-        QueryState<(Entity, Ref<ScriptComponent>, Option<Ref<ScriptDomain>>)>,
-    >,
     mut script_events: crate::extractors::EventReaderScope<ScriptCallbackEvent>,
     mut handler_ctxt: WithWorldGuard<HandlerContext<P>>,
 ) {
@@ -144,227 +124,32 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     let mut errors = Vec::default();
 
     let (guard, handler_ctxt) = handler_ctxt.get_mut();
+
     for event in events.filter(|e| e.label == callback_label) {
-        match &event.recipients {
-            Recipients::Script(target_script_id) => {
-                match guard.with_global_access(|world| {
-                    let mut keys = vec![];
-                    for (id, script_component, script_domain_maybe) in
-                        entity_query_state.iter(world)
-                    {
-                        if let Some(handle) = script_component
-                            .0
-                            .iter()
-                            .find(|handle| handle.id() == *target_script_id)
-                        {
-                            keys.push(ContextKey {
-                                entity: Some(id),
-                                script: Some(handle.clone()),
-                                domain: script_domain_maybe.map(|x| x.0),
-                            });
-                        }
-                    }
-                    if let Some(handle) = handler_ctxt
-                        .static_scripts
-                        .scripts
-                        .iter()
-                        .find(|handle| handle.id() == *target_script_id)
-                    {
-                        keys.push(ContextKey {
-                            entity: None,
-                            script: Some(handle.clone()),
-                            domain: None,
-                        });
-                    }
-                    keys
-                }) {
-                    Ok(keys) => {
-                        // Keep track of the contexts that have been called. Don't duplicate the
-                        // calls on account of multiple matches.
-                        let mut called_contexts: HashSet<u64> = HashSet::new();
-                        for context_key in keys {
-                            if let Some(hash) = handler_ctxt.script_context.hash(&context_key) {
-                                if called_contexts.insert(hash) {
-                                    let call_result = handler_ctxt.call_dynamic_label(
-                                        &callback_label,
-                                        &context_key,
-                                        None,
-                                        event.args.clone(),
-                                        guard.clone(),
-                                    );
+        let recipients = event
+            .recipients
+            .get_recipients(&handler_ctxt.script_context);
 
-                                    if event.trigger_response {
-                                        send_callback_response(
-                                            guard.clone(),
-                                            ScriptCallbackResponseEvent::new(
-                                                callback_label.clone(),
-                                                *target_script_id,
-                                                call_result.clone(),
-                                            ),
-                                        );
-                                    }
-                                    collect_errors(
-                                        call_result,
-                                        context_key.entity,
-                                        P::LANGUAGE,
-                                        &mut errors,
-                                    );
-                                }
-                            }
-                        }
-                    }
-                    Err(e) => {
-                        bevy::log::error_once!(
-                            "{}: Failed to query for script {}: {}",
-                            P::LANGUAGE,
-                            target_script_id,
-                            e.display_with_world(guard.clone())
-                        );
-                    }
-                }
-                continue;
-            }
-            Recipients::Entity(target_entity) => {
-                match guard.with_global_access(|world| {
-                    match entity_query_state.get(world, *target_entity) {
-                        Ok((_, script_component, script_domain_maybe)) => {
-                            let domain = script_domain_maybe.map(|x| x.0);
-                            (script_component.0.clone(), domain)
-                        }
-                        Err(e) => {
-                            bevy::log::error_once!(
-                                "{}: Failed to get entity {} with scripts: {}",
-                                P::LANGUAGE,
-                                target_entity,
-                                e,
-                            );
-                            (vec![], None)
-                        }
-                    }
-                }) {
-                    Ok((handles, domain)) => {
-                        // Keep track of the contexts that have been called. Don't duplicate the
-                        // calls on account of multiple matches.
-                        //
-                        // If I have five scripts all in one shared context, and I fire a call to
-                        // `Recipients::All`, then I want that call to go to the shared context
-                        // once.
-                        //
-                        // If I have four scripts in three different contexts, and I fire a call to
-                        // `Recipients::All`, then I want that call to be evaluated three times,
-                        // once in each context.
-                        let mut called_contexts: HashSet<u64> = HashSet::new();
-                        for script_handle in handles {
-                            let script_id = script_handle.id();
-                            let context_key = ContextKey {
-                                entity: Some(*target_entity),
-                                script: Some(script_handle),
-                                domain,
-                            };
-                            if let Some(hash) = handler_ctxt.script_context.hash(&context_key) {
-                                if called_contexts.insert(hash) {
-                                    let call_result = handler_ctxt.call_dynamic_label(
-                                        &callback_label,
-                                        &context_key,
-                                        None,
-                                        event.args.clone(),
-                                        guard.clone(),
-                                    );
+        for (attachment, ctxt) in recipients {
+            let call_result = handler_ctxt.call_dynamic_label(
+                &callback_label,
+                &attachment,
+                Some(ctxt),
+                event.args.clone(),
+                guard.clone(),
+            );
 
-                                    if event.trigger_response {
-                                        send_callback_response(
-                                            guard.clone(),
-                                            ScriptCallbackResponseEvent::new(
-                                                callback_label.clone(),
-                                                script_id,
-                                                call_result.clone(),
-                                            ),
-                                        );
-                                    }
-                                    collect_errors(
-                                        call_result,
-                                        Some(*target_entity),
-                                        P::LANGUAGE,
-                                        &mut errors,
-                                    );
-                                }
-                            }
-                        }
-                    }
-                    Err(e) => {
-                        bevy::log::error_once!(
-                            "{}: Failed to get entity {} with scripts: {}",
-                            P::LANGUAGE,
-                            target_entity,
-                            e,
-                        );
-                    }
-                }
-                continue;
-            }
-            Recipients::Domain(target_domain) => {
-                let context_key = ContextKey::from(*target_domain);
-
-                let call_result = handler_ctxt.call_dynamic_label(
-                    &callback_label,
-                    &context_key,
-                    None,
-                    event.args.clone(),
+            if event.trigger_response {
+                send_callback_response(
                     guard.clone(),
+                    ScriptCallbackResponseEvent::new(
+                        callback_label.clone(),
+                        attachment,
+                        call_result.clone(),
+                    ),
                 );
-
-                if event.trigger_response {
-                    send_callback_response(
-                        guard.clone(),
-                        ScriptCallbackResponseEvent::new(
-                            callback_label.clone(),
-                            context_key,
-                            call_result.clone(),
-                        ),
-                    );
-                }
-                collect_errors(call_result, None, P::LANGUAGE, &mut errors);
             }
-            Recipients::Language(target_language) if *target_language != P::LANGUAGE => {
-                continue;
-            }
-            Recipients::Language(_) | Recipients::All => {
-                // All and language are effectively the same modulo the other
-                // languages, which are handled by the other P handlers.
-                for (key, context) in handler_ctxt.script_context.iter() {
-                    let call_result = handler_ctxt.call_dynamic_label(
-                        &callback_label,
-                        key,
-                        Some(context),
-                        event.args.clone(),
-                        guard.clone(),
-                    );
-
-                    if event.trigger_response {
-                        send_callback_response(
-                            guard.clone(),
-                            ScriptCallbackResponseEvent::new(
-                                callback_label.clone(),
-                                key.clone(),
-                                call_result.clone(),
-                            ),
-                        );
-                    }
-                    // The tricky thing here is a context _could_ be associated
-                    // with an entity, but we don't quite have means to express
-                    // that relationship yet. Maybe
-                    // `ScriptContextProvider.iter()` ought to provide that
-                    // association using a struct like this:
-                    //
-                    // ContextKeys {
-                    //    script: Option<Handle<ScriptAsset>>,
-                    //    entity: Option<Entity>,
-                    //    domain: Option<Domain>,
-                    // }
-                    collect_errors(call_result, None, P::LANGUAGE, &mut errors);
-                }
-                continue;
-            }
+            collect_errors(call_result, P::LANGUAGE, &mut errors);
         }
     }
     handle_script_errors(guard, errors.into_iter());
@@ -372,39 +157,12 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
 
 fn collect_errors(
     call_result: Result<ScriptValue, ScriptError>,
-    entity: Option<Entity>,
     language: Language,
     errors: &mut Vec<ScriptError>,
 ) {
     match call_result {
         Ok(_) => {}
         Err(e) => {
-            match e.downcast_interop_inner() {
-                Some(InteropErrorInner::MissingScript { script_id }) => {
-                    trace_once!(
-                        "{}: Script `{}` on entity `{:?}` is either still loading, doesn't exist, or is for another language; ignoring until the corresponding script is loaded.",
-                        language,
-                        script_id.display(), entity
-                    );
-                    return;
-                }
-                Some(InteropErrorInner::MissingContext { .. }) => {
-                    // If we don't have a context for the script, it's either:
-                    // 1. A script for a different language, in which case we ignore it.
-                    // 2. Something went wrong. This should not happen though and it's best we ignore this.
-                    return;
-                }
-                _ => {}
-            }
-            // let e = {
-            //     // if let Some(path) =
-            //     // script_id.path().map(|path| e.with_script(path)).unwrap_or_else(|| e)//  {
-            //     //     e.with_script(path)
-            //     // } else {
-            //     //     e
-            //     // }
-            // };
-            // push_err_and_continue!(errors, Err(e));
             errors.push(e.with_context(format!("Event handling for language {language}")));
         }
     }
@@ -462,7 +220,8 @@ mod test {
         bindings::script_value::ScriptValue,
         context::{ContextBuilder, ContextLoadingSettings},
         event::{
-            CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent, ScriptEvent,
+            CallbackLabel, IntoCallbackLabel, Recipients, ScriptCallbackEvent, ScriptErrorEvent,
+            ScriptEvent,
         },
         runtime::RuntimeContainer,
         script::{ScriptComponent, StaticScripts},
@@ -515,8 +274,8 @@ mod test {
                 ctxt.invocations.extend(args);
                 let mut runtime = runtime.invocations.lock();
                 runtime.push((
-                    context_key.entity,
-                    context_key.script.as_ref().map(|x| x.id()),
+                    context_key.entity(),
+                    context_key.script().as_ref().map(|x| x.id()),
                 ));
                 Ok(ScriptValue::Unit)
             },
@@ -563,7 +322,8 @@ mod test {
             ScriptCallbackEvent::new(
                 OnTestCallback::into_callback_label(),
                 vec![ScriptValue::String("test_args".into())],
-                Recipients::All,
+                Recipients::AllScripts,
+                None,
             )
             .with_response(),
         );
@@ -573,7 +333,7 @@ mod test {
             app.world_mut(),
             vec![ScriptCallbackResponseEvent::new(
                 OnTestCallback::into_callback_label(),
-                ContextKey::from(test_script.id()).or(test_entity_id.into()),
+                ScriptAttachment::EntityScript(test_entity_id, test_script.clone(), None),
                 Ok(ScriptValue::Unit),
             )]
             .into_iter(),
@@ -594,7 +354,8 @@ mod test {
             ScriptCallbackEvent::new(
                 OnTestCallback::into_callback_label(),
                 vec![ScriptValue::String("test_args".into())],
-                Recipients::All,
+                Recipients::AllScripts,
+                None,
             )
             .with_response(),
         );
@@ -604,58 +365,11 @@ mod test {
             app.world_mut(),
             vec![ScriptCallbackResponseEvent::new(
                 OnTestCallback::into_callback_label(),
-                test_script.id(),
+                ScriptAttachment::StaticScript(test_script.clone(), None),
                 Ok(ScriptValue::Unit),
             )]
             .into_iter(),
         );
-    }
-
-    #[test]
-    fn test_handler_init() {
-        let runtime = TestRuntime {
-            invocations: vec![].into(),
-        };
-        let mut app = setup_app::<OnTestCallback>(runtime);
-        let test_script = add_script(&mut app, "");
-        // app.add_static_script(test_script.clone());
-        let test_entity_id = app
-            .world_mut()
-            .spawn(ScriptComponent(vec![test_script.clone()]))
-            .id();
-
-        app.update();
-        {
-            let script_context = app
-                .world()
-                .get_resource::<ScriptContext<TestPlugin>>()
-                .unwrap();
-            assert_eq!(script_context.iter().count(), 1);
-            // assert_eq!(Some(test_entity_id), key.entity);
-            // // assert_eq!(Some(test_script), key.script_id);
-            // assert_eq!(1, script_context.iter_box().count());
-            let key = ContextKey::from(test_entity_id).or(test_script.id().into());
-            let context_arc = script_context.get(&key).cloned().expect("script context");
-
-            let test_context = context_arc.lock();
-
-            let test_runtime = app
-                .world()
-                .get_resource::<RuntimeContainer<TestPlugin>>()
-                .unwrap();
-
-            assert_eq!(test_context.invocations, vec![]);
-
-            let runtime_invocations = test_runtime.runtime.invocations.lock();
-            assert_eq!(
-                runtime_invocations
-                    .iter()
-                    .map(|(e, s)| (*e, *s))
-                    .collect::<Vec<_>>(),
-                vec![(Some(test_entity_id), Some(test_script.id()))]
-            );
-        }
-        assert_response_events(app.world_mut(), vec![].into_iter());
     }
 
     #[test]
@@ -671,29 +385,31 @@ mod test {
             .spawn(ScriptComponent(vec![test_script.clone()]))
             .id();
 
-        app.world_mut().send_event(ScriptCallbackEvent::new_for_all(
-            OnTestCallback::into_callback_label(),
-            vec![ScriptValue::String("test_args".into())],
-        ));
+        app.world_mut()
+            .send_event(ScriptCallbackEvent::new_for_all_scripts(
+                OnTestCallback::into_callback_label(),
+                vec![ScriptValue::String("test_args".into())],
+            ));
         app.update();
         {
             let script_context = app
                 .world()
                 .get_resource::<ScriptContext<TestPlugin>>()
                 .unwrap();
-            let key = script_context.iter().next().map(|x| x.0).unwrap();
-            assert_eq!(Some(test_entity_id), key.entity);
-            // assert_eq!(Some(test_script), key.script_id);
-            assert_eq!(1, script_context.iter().count());
-            let context_arc = script_context.get(key).cloned().expect("script context");
-
-            let test_context = context_arc.lock();
 
             let test_runtime = app
                 .world()
                 .get_resource::<RuntimeContainer<TestPlugin>>()
                 .unwrap();
 
+            let test_context = script_context
+                .get(&ScriptAttachment::EntityScript(
+                    test_entity_id,
+                    test_script.clone(),
+                    None,
+                ))
+                .expect("script context");
+            let test_context = test_context.lock();
             assert_eq!(
                 test_context.invocations,
                 vec![ScriptValue::String("test_args".into())]
@@ -740,13 +456,15 @@ mod test {
         app.world_mut().send_event(ScriptCallbackEvent::new(
             OnTestCallback::into_callback_label(),
             vec![ScriptValue::String("test_args_script".into())],
-            Recipients::Script(test_script.id()),
+            Recipients::ScriptEntity(test_script.id(), test_entity_id),
+            None,
         ));
 
         app.world_mut().send_event(ScriptCallbackEvent::new(
             OnTestCallback::into_callback_label(),
             vec![ScriptValue::String("test_args_entity".into())],
-            Recipients::Entity(test_entity_id),
+            Recipients::ScriptEntity(test_script.id(), test_entity_id),
+            None,
         ));
 
         app.update();
@@ -762,8 +480,8 @@ mod test {
                 .get_resource::<ScriptContext<TestPlugin>>()
                 .unwrap();
 
-            let key = ContextKey::from(test_entity_id).or(test_script.id().into());
-            let context_arc = script_context.get(&key).cloned().expect("script context");
+            let key = ScriptAttachment::EntityScript(test_entity_id, test_script.clone(), None);
+            let context_arc = script_context.get(&key).expect("script context");
             let context_after = context_arc.lock();
             assert_eq!(
                 context_after.invocations,
@@ -807,13 +525,15 @@ mod test {
         app.world_mut().send_event(ScriptCallbackEvent::new(
             OnTestCallback::into_callback_label(),
             vec![ScriptValue::String("test_args_script".into())],
-            Recipients::All,
+            Recipients::AllScripts,
+            None,
         ));
 
         app.world_mut().send_event(ScriptCallbackEvent::new(
             OnTestCallback::into_callback_label(),
             vec![ScriptValue::String("test_script".into())],
-            Recipients::Script(test_script.id()),
+            Recipients::StaticScript(test_script.id()),
+            None,
         ));
 
         app.update();
@@ -822,8 +542,8 @@ mod test {
                 .world()
                 .get_resource::<ScriptContext<TestPlugin>>()
                 .unwrap();
-            let key = ContextKey::from(test_script);
-            let context_arc = script_context.get(&key).cloned().expect("script context");
+            let key = ScriptAttachment::StaticScript(test_script.clone(), None);
+            let context_arc = script_context.get(&key).expect("script context");
             let test_context = context_arc.lock();
 
             assert_eq!(

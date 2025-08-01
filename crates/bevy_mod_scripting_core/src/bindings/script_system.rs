@@ -10,6 +10,7 @@ use super::{
     WorldGuard,
 };
 use crate::{
+    asset::ScriptAsset,
     bindings::pretty_print::DisplayWithWorld,
     context::ContextLoadingSettings,
     error::{InteropError, ScriptError},
@@ -17,11 +18,11 @@ use crate::{
     extractors::get_all_access_ids,
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{ScriptContext, Domain, ContextKey},
+    script::{ScriptAttachment, ScriptContext},
     IntoScriptPluginParams,
 };
 use bevy::{
-    prelude::AssetServer,
+    asset::Handle,
     ecs::{
         archetype::{ArchetypeComponentId, ArchetypeGeneration},
         component::{ComponentId, Tick},
@@ -36,8 +37,8 @@ use bevy::{
     utils::hashbrown::HashSet,
 };
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
-use std::{any::TypeId, borrow::Cow, hash::Hash, marker::PhantomData, ops::Deref, sync::Arc};
 use parking_lot::Mutex;
+use std::{any::TypeId, borrow::Cow, hash::Hash, marker::PhantomData, ops::Deref, sync::Arc};
 #[derive(Clone, Hash, PartialEq, Eq)]
 /// a system set for script systems.
 pub struct ScriptSystemSet(Cow<'static, str>);
@@ -80,15 +81,13 @@ enum ScriptSystemParamDescriptor {
     EntityQuery(ScriptQueryBuilder),
 }
 
-type ScriptPath = Cow<'static, str>;
-
 /// A builder for systems living in scripts
 #[derive(Reflect, Clone)]
 #[reflect(opaque)]
 pub struct ScriptSystemBuilder {
     pub(crate) name: CallbackLabel,
-    pub(crate) script_id: ScriptPath,
-    // domain: Option<Domain>,
+    pub(crate) script_asset: Handle<ScriptAsset>,
+    pub(crate) entity: Option<Entity>,
     before: Vec<ReflectSystem>,
     after: Vec<ReflectSystem>,
     system_params: Vec<ScriptSystemParamDescriptor>,
@@ -98,16 +97,22 @@ pub struct ScriptSystemBuilder {
 #[profiling::all_functions]
 impl ScriptSystemBuilder {
     /// Creates a new script system builder
-    pub fn new(name: CallbackLabel, script_id: ScriptPath, _domain: Option<Domain>) -> Self {
+    pub fn new(name: CallbackLabel, script_asset: Handle<ScriptAsset>) -> Self {
         Self {
             before: vec![],
             after: vec![],
             name,
-            script_id,
-            // domain,
+            script_asset,
+            entity: None,
             system_params: vec![],
             is_exclusive: false,
         }
+    }
+
+    /// Sets the entity that this system will run for.
+    pub fn entity(&mut self, entity: Entity) -> &mut Self {
+        self.entity = Some(entity);
+        self
     }
 
     /// Adds a component access to the system
@@ -240,9 +245,7 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
     pub fn get_param(system: &UnsafeWorldCell<'w>) -> Self {
         unsafe {
             Self {
-                script_context: system
-                    .get_resource()
-                    .expect("Scripts resource not found"),
+                script_context: system.get_resource().expect("Scripts resource not found"),
                 callback_settings: system
                     .get_resource()
                     .expect("CallbackSettings resource not found"),
@@ -260,8 +263,8 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
     pub fn call_dynamic_label(
         &self,
         label: &CallbackLabel,
-        context_key: &ContextKey,
-        context: Option<&Arc<Mutex<P::C>>>,
+        context_key: &ScriptAttachment,
+        context: Option<Arc<Mutex<P::C>>>,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
@@ -343,11 +346,10 @@ pub struct DynamicScriptSystem<P: IntoScriptPluginParams> {
     /// cause a conflict
     pub(crate) archetype_component_access: Access<ArchetypeComponentId>,
     pub(crate) last_run: Tick,
-    target_script: ScriptPath,
+    target_script: ScriptAttachment,
     archetype_generation: ArchetypeGeneration,
     system_param_descriptors: Vec<ScriptSystemParamDescriptor>,
     state: Option<ScriptSystemState>,
-    domain: Option<Domain>,
     _marker: std::marker::PhantomData<fn() -> P>,
 }
 
@@ -367,9 +369,11 @@ impl<P: IntoScriptPluginParams> IntoSystem<(), (), IsDynamicScriptSystem<P>>
             archetype_generation: ArchetypeGeneration::initial(),
             system_param_descriptors: builder.system_params,
             last_run: Default::default(),
-            target_script: builder.script_id,
+            target_script: builder.entity.map_or_else(
+                || ScriptAttachment::StaticScript(builder.script_asset.clone(), None),
+                |e| ScriptAttachment::EntityScript(e, builder.script_asset.clone(), None),
+            ),
             state: None,
-            domain: None,
             component_access_set: Default::default(),
             archetype_component_access: Default::default(),
             _marker: Default::default(),
@@ -426,10 +430,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         };
 
         let mut payload = Vec::with_capacity(state.system_params.len());
-        let script = {
-            let asset_server = world.world().resource::<AssetServer>();
-            asset_server.load(&*self.target_script)
-        };
+
         let guard = if self.exclusive {
             // safety: we are an exclusive system, therefore the cell allows us to do this
             let world = unsafe { world.world_mut() };
@@ -497,16 +498,11 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         // script.
 
         let handler_ctxt = DynamicHandlerContext::<P>::get_param(&world);
-        let context_key = ContextKey {
-            script: Some(script),
-            entity: None,
-            domain: self.domain,
-        };
 
         let result = handler_ctxt.call_dynamic_label(
             &state.callback_label,
-            &context_key,
-            None,// context
+            &self.target_script,
+            None, // context
             payload,
             guard.clone(),
         );
@@ -686,7 +682,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 mod test {
     use bevy::{
         app::{App, MainScheduleOrder, Update},
-        asset::AssetPlugin,
+        asset::{AssetId, AssetPlugin},
         diagnostic::DiagnosticsPlugin,
         ecs::schedule::{ScheduleLabel, Schedules},
     };
@@ -738,8 +734,8 @@ mod test {
                 ReflectSystem::from_system(system.as_ref(), node_id)
             });
 
-        // now dynamically add script system via builder
-        let mut builder = ScriptSystemBuilder::new("test".into(), "empty_script".into(), None);
+        // now dynamically add script system via builder, without a matching script
+        let mut builder = ScriptSystemBuilder::new("test".into(), Handle::Weak(AssetId::invalid()));
         builder.before_system(test_system);
 
         let _ = builder

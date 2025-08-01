@@ -296,7 +296,7 @@ callback_labels!(
 
 /// Sends events allowing scripts to drive update logic
 pub fn send_on_update(mut events: EventWriter<ScriptCallbackEvent>) {
-    events.send(ScriptCallbackEvent::new_for_all(OnUpdate, vec![]));
+    events.send(ScriptCallbackEvent::new_for_all_scripts(OnUpdate, vec![]));
 }
 
 pub fn send_on_click(
@@ -309,7 +309,7 @@ pub fn send_on_click(
         let pos = window.cursor_position().unwrap_or_default();
         let x = pos.x as u32;
         let y = pos.y as u32;
-        events.send(ScriptCallbackEvent::new_for_all(
+        events.send(ScriptCallbackEvent::new_for_all_scripts(
             OnClick,
             vec![
                 ScriptValue::Integer(x as i64),
