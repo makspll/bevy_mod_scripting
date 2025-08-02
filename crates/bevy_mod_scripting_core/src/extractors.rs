@@ -8,10 +8,9 @@ use bevy::{
     ecs::{
         component::ComponentId,
         entity::Entity,
-        event::{Event, EventCursor, EventIterator, Events},
         query::{Access, AccessConflicts},
         storage::SparseSetIndex,
-        system::{Local, SystemParam, SystemParamValidationError, SystemState},
+        system::{SystemParam, SystemParamValidationError},
         world::World,
     },
     prelude::Resource,
@@ -42,11 +41,11 @@ pub fn with_handler_system_state<
     world: &mut World,
     f: F,
 ) -> O {
-    let mut system_state: SystemState<WithWorldGuard<HandlerContext<P>>> = SystemState::new(world);
-    let mut with_guard = system_state.get_mut(world);
-    let (guard, handler_ctxt) = with_guard.get_mut();
-    let o = f(guard, handler_ctxt);
-    system_state.apply(world);
+    let mut handler_ctxt = HandlerContext::<P>::yoink(world);
+    let guard = WorldGuard::new_exclusive(world);
+    let o = f(guard, &mut handler_ctxt);
+    handler_ctxt.release(world);
+
     o
 }
 
@@ -114,44 +113,44 @@ unsafe impl<T: Resource + Default> SystemParam for ResScope<'_, T> {
     }
 }
 
-/// A version of [`bevy::ecs::event::EventReader`] which behaves just like [`ResScope`].
-///
-/// # Safety
-/// - unsafe to use this in a way which violates the invariants on [`ResScope`].
-/// - This is hidden from docs for a reason, rust doesn't allow expressing `type signature unsafety`
-/// - It is only safe to use when other system parameters do not create aliasing references inside their `get_param` calls
-#[derive(SystemParam)]
-#[doc(hidden)]
-#[deprecated(note = "This type is unsafe to use in systems")]
-pub struct EventReaderScope<'s, T: Event> {
-    events: ResScope<'s, Events<T>>,
-    reader: Local<'s, EventCursor<T>>,
-}
-
-#[allow(deprecated)]
-impl<T: Event> EventReaderScope<'_, T> {
-    /// Read all events that happened since the last read
-    pub fn read(&mut self) -> EventIterator<'_, T> {
-        self.reader.read(&self.events)
-    }
-}
-
 /// Context for systems which handle events for scripts
-#[derive(SystemParam)]
-pub struct HandlerContext<'s, P: IntoScriptPluginParams> {
+pub struct HandlerContext<P: IntoScriptPluginParams> {
     /// Settings for callbacks
-    pub(crate) callback_settings: ResScope<'s, CallbackSettings<P>>,
+    pub(crate) callback_settings: CallbackSettings<P>,
     /// Settings for loading contexts
-    pub(crate) context_loading_settings: ResScope<'s, ContextLoadingSettings<P>>,
+    pub(crate) context_loading_settings: ContextLoadingSettings<P>,
     /// Scripts
-    pub(crate) scripts: ResScope<'s, Scripts<P>>,
+    pub(crate) scripts: Scripts<P>,
     /// The runtime container
-    pub(crate) runtime_container: ResScope<'s, RuntimeContainer<P>>,
+    pub(crate) runtime_container: RuntimeContainer<P>,
     /// List of static scripts
-    pub(crate) static_scripts: ResScope<'s, StaticScripts>,
+    pub(crate) static_scripts: StaticScripts,
 }
 
-impl<P: IntoScriptPluginParams> HandlerContext<'_, P> {
+impl<P: IntoScriptPluginParams> HandlerContext<P> {
+    /// Yoink the handler context from the world, this will remove the matching resource from the world.
+    /// Every call to this function must be paired with a call to [`Self::release`].
+    pub fn yoink(world: &mut World) -> Self {
+        Self {
+            callback_settings: world.remove_resource().unwrap_or_default(),
+            context_loading_settings: world.remove_resource().unwrap_or_default(),
+            scripts: world.remove_resource().unwrap_or_default(),
+            runtime_container: world.remove_resource().unwrap_or_default(),
+            static_scripts: world.remove_resource().unwrap_or_default(),
+        }
+    }
+
+    /// Releases the current handler context back into the world, restoring the resources it contains.
+    /// Only call this if you have previously yoinked the handler context from the world.
+    pub fn release(self, world: &mut World) {
+        // insert the handler context back into the world
+        world.insert_resource(self.callback_settings);
+        world.insert_resource(self.context_loading_settings);
+        world.insert_resource(self.scripts);
+        world.insert_resource(self.runtime_container);
+        world.insert_resource(self.static_scripts);
+    }
+
     /// Splits the handler context into its individual components.
     ///
     /// Useful if you are needing multiple resources from the handler context.
@@ -420,7 +419,7 @@ mod test {
         ecs::{
             component::Component,
             event::{Event, EventReader},
-            system::{Query, ResMut},
+            system::{Query, ResMut, SystemState},
             world::FromWorld,
         },
         prelude::Resource,

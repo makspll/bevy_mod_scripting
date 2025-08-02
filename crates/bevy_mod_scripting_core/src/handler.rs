@@ -2,7 +2,7 @@
 use crate::{
     bindings::{
         pretty_print::DisplayWithWorld, script_value::ScriptValue, ThreadWorldContainer,
-        WorldContainer, WorldGuard,
+        WorldAccessGuard, WorldContainer, WorldGuard,
     },
     context::ContextPreHandlingInitializer,
     error::{InteropErrorInner, ScriptError},
@@ -17,12 +17,13 @@ use crate::{
 use bevy::{
     ecs::{
         entity::Entity,
+        event::EventCursor,
         query::QueryState,
         system::{Local, SystemState},
         world::{Mut, World},
     },
     log::trace_once,
-    prelude::{Events, Ref, Resource},
+    prelude::{Events, Resource},
 };
 
 /// A function that handles a callback event
@@ -111,47 +112,64 @@ macro_rules! push_err_and_continue {
 #[allow(deprecated)]
 pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     world: &mut World,
-    state: &mut EventHandlerSystemState<P>,
+    state: &mut EventHandlerSystemState,
 ) {
-    // we wrap the inner event handler, so that we can immediately re-insert all the resources back.
-    // otherwise this would happen in the next schedule
+    // we wrap the inner event handler, so that we can guarantee that the handler context is released statically
     {
-        let (entity_query_state, script_events, handler_ctxt) = state.get_mut(world);
-        event_handler_inner::<P>(
+        let handler_ctxt = HandlerContext::<P>::yoink(world);
+        let (query_state, event_cursor, mut guard) = state.get_mut(world);
+        let (guard, _) = guard.get_mut();
+        let handler_ctxt = event_handler_inner::<P>(
             L::into_callback_label(),
-            entity_query_state,
-            script_events,
+            query_state,
+            event_cursor,
             handler_ctxt,
+            guard,
         );
+        handler_ctxt.release(world);
     }
-    state.apply(world);
 }
 
-#[allow(deprecated)]
-pub(crate) type EventHandlerSystemState<'w, 's, P> = SystemState<(
-    Local<'s, QueryState<(Entity, Ref<'w, ScriptComponent>)>>,
-    crate::extractors::EventReaderScope<'s, ScriptCallbackEvent>,
-    WithWorldGuard<'w, 's, HandlerContext<'s, P>>,
+type EventHandlerSystemState<'w, 's> = SystemState<(
+    Local<'s, QueryState<(Entity, &'w ScriptComponent)>>,
+    Local<'s, EventCursor<ScriptCallbackEvent>>,
+    WithWorldGuard<'w, 's, ()>,
 )>;
 
 #[profiling::function]
 #[allow(deprecated)]
 pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     callback_label: CallbackLabel,
-    mut entity_query_state: Local<QueryState<(Entity, Ref<ScriptComponent>)>>,
-    mut script_events: crate::extractors::EventReaderScope<ScriptCallbackEvent>,
-    mut handler_ctxt: WithWorldGuard<HandlerContext<P>>,
-) {
-    let (guard, handler_ctxt) = handler_ctxt.get_mut();
-
+    mut entity_query_state: Local<QueryState<(Entity, &ScriptComponent)>>,
+    mut event_cursor: Local<EventCursor<ScriptCallbackEvent>>,
+    handler_ctxt: HandlerContext<P>,
+    guard: WorldAccessGuard,
+) -> HandlerContext<P> {
     let mut errors = Vec::default();
+    // let events = guard.with_resour events.read().cloned().collect::<Vec<_>>();
+    let events = guard.with_resource(|events: &Events<ScriptCallbackEvent>| {
+        event_cursor
+            .read(events)
+            .filter(|e| e.label == callback_label)
+            .cloned()
+            .collect::<Vec<_>>()
+    });
 
-    let events = script_events.read().cloned().collect::<Vec<_>>();
+    let events = match events {
+        Ok(events) => events,
+        Err(e) => {
+            bevy::log::error!(
+                "Failed to read script callback events: {}",
+                e.display_with_world(guard.clone())
+            );
+            return handler_ctxt;
+        }
+    };
 
     // query entities + chain static scripts
-    let entity_and_static_scripts = guard.with_global_access(|world| {
+    let entity_and_static_scripts = guard.with_global_access(|w| {
         entity_query_state
-            .iter(world)
+            .iter(w)
             .map(|(e, s)| (e, s.0.clone()))
             .chain(
                 handler_ctxt
@@ -167,16 +185,15 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
         Ok(entity_and_static_scripts) => entity_and_static_scripts,
         Err(e) => {
             bevy::log::error!(
-                "{}: Failed to query entities with scripts: {}",
-                P::LANGUAGE,
+                "Failed to query entities with scripts: {}",
                 e.display_with_world(guard.clone())
             );
-            return;
+            return handler_ctxt;
         }
     };
 
     for event in events.into_iter().filter(|e| e.label == callback_label) {
-        for (entity, entity_scripts) in entity_and_static_scripts.iter() {
+        for (entity, entity_scripts) in &entity_and_static_scripts {
             for script_id in entity_scripts.iter() {
                 match &event.recipients {
                     crate::event::Recipients::Script(target_script_id)
@@ -246,6 +263,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     }
 
     handle_script_errors(guard, errors.into_iter());
+    return handler_ctxt;
 }
 
 /// Sends a callback response event to the world
@@ -287,12 +305,7 @@ pub fn handle_script_errors<I: Iterator<Item = ScriptError> + Clone>(world: Worl
 mod test {
     use std::{borrow::Cow, collections::HashMap, sync::Arc};
 
-    use bevy::{
-        app::{App, Update},
-        asset::AssetPlugin,
-        diagnostic::DiagnosticsPlugin,
-        ecs::world::FromWorld,
-    };
+    use bevy::app::{App, Update};
     use parking_lot::Mutex;
     use test_utils::make_test_plugin;
 
@@ -302,7 +315,6 @@ mod test {
         event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent},
         runtime::RuntimeContainer,
         script::{Script, ScriptComponent, ScriptId, Scripts, StaticScripts},
-        BMSScriptingInfrastructurePlugin,
     };
 
     use super::*;
@@ -593,33 +605,5 @@ mod test {
             );
         }
         assert_response_events(app.world_mut(), vec![].into_iter());
-    }
-
-    #[test]
-    fn event_handler_reinserts_resources() {
-        let mut app = App::new();
-        app.add_plugins((
-            AssetPlugin::default(),
-            DiagnosticsPlugin,
-            TestPlugin::default(),
-            BMSScriptingInfrastructurePlugin,
-        ));
-
-        assert!(app
-            .world()
-            .contains_resource::<Events<ScriptCallbackEvent>>());
-
-        let mut local = SystemState::from_world(app.world_mut());
-
-        assert!(app
-            .world()
-            .contains_resource::<Events<ScriptCallbackEvent>>());
-
-        event_handler::<OnTestCallback, TestPlugin>(app.world_mut(), &mut local);
-
-        assert!(app
-            .world()
-            .get_resource::<Events<ScriptCallbackEvent>>()
-            .is_some());
     }
 }
