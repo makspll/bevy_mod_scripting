@@ -828,8 +828,11 @@ impl WorldAccessGuard<'_> {
     /// Spawns a new entity in the world
     pub fn spawn(&self) -> Result<Entity, InteropError> {
         self.with_global_access(|world| {
-            let entity = world.spawn_empty();
-            entity.id()
+            let mut command_queue = CommandQueue::default();
+            let mut commands = Commands::new(&mut command_queue, world);
+            let id = commands.spawn_empty().id();
+            command_queue.apply(world);
+            id
         })
     }
 
