@@ -10,7 +10,6 @@ use super::{
     WorldGuard,
 };
 use crate::{
-    asset::ScriptAsset,
     bindings::pretty_print::DisplayWithWorld,
     context::ContextLoadingSettings,
     error::{InteropError, ScriptError},
@@ -22,7 +21,6 @@ use crate::{
     IntoScriptPluginParams,
 };
 use bevy::{
-    asset::Handle,
     ecs::{
         archetype::{ArchetypeComponentId, ArchetypeGeneration},
         component::{ComponentId, Tick},
@@ -86,8 +84,7 @@ enum ScriptSystemParamDescriptor {
 #[reflect(opaque)]
 pub struct ScriptSystemBuilder {
     pub(crate) name: CallbackLabel,
-    pub(crate) script_asset: Handle<ScriptAsset>,
-    pub(crate) entity: Option<Entity>,
+    pub(crate) attachment: ScriptAttachment,
     before: Vec<ReflectSystem>,
     after: Vec<ReflectSystem>,
     system_params: Vec<ScriptSystemParamDescriptor>,
@@ -97,22 +94,15 @@ pub struct ScriptSystemBuilder {
 #[profiling::all_functions]
 impl ScriptSystemBuilder {
     /// Creates a new script system builder
-    pub fn new(name: CallbackLabel, script_asset: Handle<ScriptAsset>) -> Self {
+    pub fn new(name: CallbackLabel, attachment: ScriptAttachment) -> Self {
         Self {
             before: vec![],
             after: vec![],
             name,
-            script_asset,
-            entity: None,
+            attachment,
             system_params: vec![],
             is_exclusive: false,
         }
-    }
-
-    /// Sets the entity that this system will run for.
-    pub fn entity(&mut self, entity: Entity) -> &mut Self {
-        self.entity = Some(entity);
-        self
     }
 
     /// Adds a component access to the system
@@ -346,7 +336,7 @@ pub struct DynamicScriptSystem<P: IntoScriptPluginParams> {
     /// cause a conflict
     pub(crate) archetype_component_access: Access<ArchetypeComponentId>,
     pub(crate) last_run: Tick,
-    target_script: ScriptAttachment,
+    target_attachment: ScriptAttachment,
     archetype_generation: ArchetypeGeneration,
     system_param_descriptors: Vec<ScriptSystemParamDescriptor>,
     state: Option<ScriptSystemState>,
@@ -369,10 +359,7 @@ impl<P: IntoScriptPluginParams> IntoSystem<(), (), IsDynamicScriptSystem<P>>
             archetype_generation: ArchetypeGeneration::initial(),
             system_param_descriptors: builder.system_params,
             last_run: Default::default(),
-            target_script: builder.entity.map_or_else(
-                || ScriptAttachment::StaticScript(builder.script_asset.clone(), None),
-                |e| ScriptAttachment::EntityScript(e, builder.script_asset.clone(), None),
-            ),
+            target_attachment: builder.attachment,
             state: None,
             component_access_set: Default::default(),
             archetype_component_access: Default::default(),
@@ -499,25 +486,32 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 
         let handler_ctxt = DynamicHandlerContext::<P>::get_param(&world);
 
-        let result = handler_ctxt.call_dynamic_label(
-            &state.callback_label,
-            &self.target_script,
-            None, // context
-            payload,
-            guard.clone(),
-        );
-
-        // TODO: Emit error events via commands, maybe accumulate in state
-        // instead and use apply.
-        match result {
-            Ok(_) => {}
-            Err(err) => {
-                bevy::log::error!(
-                    "Error in dynamic script system `{}`: {}",
-                    self.name,
-                    err.display_with_world(guard)
-                )
+        if let Some(context) = handler_ctxt.script_context.get(&self.target_attachment) {
+            let result = handler_ctxt.call_dynamic_label(
+                &state.callback_label,
+                &self.target_attachment,
+                Some(context),
+                payload,
+                guard.clone(),
+            );
+            // TODO: Emit error events via commands, maybe accumulate in state
+            // instead and use apply.
+            match result {
+                Ok(_) => {}
+                Err(err) => {
+                    bevy::log::error!(
+                        "Error in dynamic script system `{}`: {}",
+                        self.name,
+                        err.display_with_world(guard)
+                    )
+                }
             }
+        } else {
+            bevy::log::warn_once!(
+                "Dynamic script system `{}` could not find script for attachment: {}. It will not run until it's loaded.",
+                self.name,
+                self.target_attachment
+            );
         }
     }
 
@@ -682,7 +676,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 mod test {
     use bevy::{
         app::{App, MainScheduleOrder, Update},
-        asset::{AssetId, AssetPlugin},
+        asset::{AssetId, AssetPlugin, Handle},
         diagnostic::DiagnosticsPlugin,
         ecs::schedule::{ScheduleLabel, Schedules},
     };
@@ -735,7 +729,10 @@ mod test {
             });
 
         // now dynamically add script system via builder, without a matching script
-        let mut builder = ScriptSystemBuilder::new("test".into(), Handle::Weak(AssetId::invalid()));
+        let mut builder = ScriptSystemBuilder::new(
+            "test".into(),
+            ScriptAttachment::StaticScript(Handle::Weak(AssetId::invalid())),
+        );
         builder.before_system(test_system);
 
         let _ = builder

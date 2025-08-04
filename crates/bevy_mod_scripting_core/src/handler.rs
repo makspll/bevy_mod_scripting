@@ -273,10 +273,7 @@ mod test {
             callback_handler: |args, context_key, _, ctxt, _, runtime| {
                 ctxt.invocations.extend(args);
                 let mut runtime = runtime.invocations.lock();
-                runtime.push((
-                    context_key.entity(),
-                    context_key.script().as_ref().map(|x| x.id()),
-                ));
+                runtime.push((context_key.entity(), Some(context_key.script().id())));
                 Ok(ScriptValue::Unit)
             },
         });
@@ -333,7 +330,7 @@ mod test {
             app.world_mut(),
             vec![ScriptCallbackResponseEvent::new(
                 OnTestCallback::into_callback_label(),
-                ScriptAttachment::EntityScript(test_entity_id, test_script.clone(), None),
+                ScriptAttachment::EntityScript(test_entity_id, test_script.clone()),
                 Ok(ScriptValue::Unit),
             )]
             .into_iter(),
@@ -365,7 +362,7 @@ mod test {
             app.world_mut(),
             vec![ScriptCallbackResponseEvent::new(
                 OnTestCallback::into_callback_label(),
-                ScriptAttachment::StaticScript(test_script.clone(), None),
+                ScriptAttachment::StaticScript(test_script.clone()),
                 Ok(ScriptValue::Unit),
             )]
             .into_iter(),
@@ -406,7 +403,6 @@ mod test {
                 .get(&ScriptAttachment::EntityScript(
                     test_entity_id,
                     test_script.clone(),
-                    None,
                 ))
                 .expect("script context");
             let test_context = test_context.lock();
@@ -480,7 +476,7 @@ mod test {
                 .get_resource::<ScriptContext<TestPlugin>>()
                 .unwrap();
 
-            let key = ScriptAttachment::EntityScript(test_entity_id, test_script.clone(), None);
+            let key = ScriptAttachment::EntityScript(test_entity_id, test_script.clone());
             let context_arc = script_context.get(&key).expect("script context");
             let context_after = context_arc.lock();
             assert_eq!(
@@ -542,7 +538,7 @@ mod test {
                 .world()
                 .get_resource::<ScriptContext<TestPlugin>>()
                 .unwrap();
-            let key = ScriptAttachment::StaticScript(test_script.clone(), None);
+            let key = ScriptAttachment::StaticScript(test_script.clone());
             let context_arc = script_context.get(&key).expect("script context");
             let test_context = context_arc.lock();
 

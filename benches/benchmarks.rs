@@ -37,7 +37,7 @@ impl BenchmarkExecutor for Test {
         // use the file path from `benchmarks` onwards using folders as groupings
         // replace file separators with `/`
         // replace _ with spaces
-        let path = self.path.to_string_lossy();
+        let path = self.script_asset_path.to_string_lossy();
         let path = path.split("benchmarks").collect::<Vec<&str>>()[1]
             .replace(std::path::MAIN_SEPARATOR, "/");
         let first_folder = path.split("/").collect::<Vec<&str>>()[1];
@@ -47,7 +47,7 @@ impl BenchmarkExecutor for Test {
     fn benchmark_name(&self) -> String {
         // use just the file stem
         let name = self
-            .path
+            .script_asset_path
             .file_stem()
             .unwrap()
             .to_string_lossy()
@@ -62,13 +62,13 @@ impl BenchmarkExecutor for Test {
     fn execute<M: Measurement>(&self, criterion: &mut BenchmarkGroup<M>) {
         match self.kind {
             test_utils::TestKind::Lua => run_lua_benchmark(
-                &self.path.to_string_lossy(),
+                &self.script_asset_path.to_string_lossy(),
                 &self.benchmark_name(),
                 criterion,
             )
             .expect("Benchmark failed"),
             test_utils::TestKind::Rhai => run_rhai_benchmark(
-                &self.path.to_string_lossy(),
+                &self.script_asset_path.to_string_lossy(),
                 &self.benchmark_name(),
                 criterion,
             )
@@ -81,7 +81,7 @@ fn script_benchmarks(criterion: &mut Criterion, filter: Option<Regex>) {
     // find manifest dir
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let tests = discover_all_tests(manifest_dir, |p| {
-        p.path.starts_with("benchmarks")
+        p.script_asset_path.starts_with("benchmarks")
             && if let Some(filter) = &filter {
                 let matching = filter.is_match(&p.benchmark_name());
                 if !matching {

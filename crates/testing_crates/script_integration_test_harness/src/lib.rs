@@ -44,27 +44,6 @@ fn dummy_startup_system<T>() {}
 fn dummy_before_post_update_system() {}
 fn dummy_post_update_system() {}
 
-// struct TestCallbackBuilder<P: IntoScriptPluginParams, L: IntoCallbackLabel> {
-//     _ph: PhantomData<(P, L)>,
-// }
-
-// impl<L: IntoCallbackLabel, P: IntoScriptPluginParams> TestCallbackBuilder<P, L> {
-//     fn build(context_key: impl Into<ContextKey>, expect_response: bool) -> SystemConfigs {
-//         let context_key = context_key.into();
-//         IntoSystem::into_system(
-//             move |world: &mut World,
-//                   system_state: &mut SystemState<WithWorldGuard<HandlerContext<P>>>| {
-//                 let with_guard = system_state.get_mut(world);
-//                 let _ = run_test_callback::<P, L>(&context_key, with_guard, expect_response);
-
-//                 system_state.apply(world);
-//             },
-//         )
-//         .with_name(L::into_callback_label().to_string())
-//         .into_configs()
-//     }
-// }
-
 pub fn install_test_plugin<P: IntoScriptPluginParams + Plugin>(
     app: &mut bevy::app::App,
     plugin: P,
@@ -86,9 +65,8 @@ pub fn make_test_lua_plugin() -> bevy_mod_scripting_lua::LuaScriptingPlugin {
     use bevy_mod_scripting_core::{bindings::WorldContainer, ConfigureScriptPlugin};
     use bevy_mod_scripting_lua::{mlua, LuaScriptingPlugin};
 
-    LuaScriptingPlugin::default()
-        .enable_context_sharing()
-        .add_context_initializer(|_, ctxt: &mut bevy_mod_scripting_lua::mlua::Lua| {
+    LuaScriptingPlugin::default().add_context_initializer(
+        |_, ctxt: &mut bevy_mod_scripting_lua::mlua::Lua| {
             let globals = ctxt.globals();
             globals.set(
                 "assert_throws",
@@ -118,7 +96,8 @@ pub fn make_test_lua_plugin() -> bevy_mod_scripting_lua::LuaScriptingPlugin {
                 })?,
             )?;
             Ok(())
-        })
+        },
+    )
 }
 
 #[cfg(feature = "rhai")]
@@ -182,15 +161,15 @@ pub fn make_test_rhai_plugin() -> bevy_mod_scripting_rhai::RhaiScriptingPlugin {
 }
 
 #[cfg(feature = "lua")]
-pub fn execute_lua_integration_test(script_asset_path: &str) -> Result<(), String> {
+pub fn execute_lua_integration_test(scenario: Scenario) -> Result<(), String> {
     let plugin = make_test_lua_plugin();
-    execute_integration_test(plugin, |_, _| {}, script_asset_path)
+    execute_integration_test(plugin, |_, _| {}, scenario)
 }
 
 #[cfg(feature = "rhai")]
-pub fn execute_rhai_integration_test(script_asset_path: &str) -> Result<(), String> {
+pub fn execute_rhai_integration_test(scenario: Scenario) -> Result<(), String> {
     let plugin = make_test_rhai_plugin();
-    execute_integration_test(plugin, |_, _| {}, script_asset_path)
+    execute_integration_test(plugin, |_, _| {}, scenario)
 }
 
 pub fn execute_integration_test<
@@ -199,7 +178,7 @@ pub fn execute_integration_test<
 >(
     plugin: P,
     init: F,
-    script_asset_path: &str,
+    scenario: Scenario,
 ) -> Result<(), String> {
     // set "BEVY_ASSET_ROOT" to the global assets folder, i.e. CARGO_MANIFEST_DIR/../../../assets
     let mut manifest_dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
@@ -230,11 +209,6 @@ pub fn execute_integration_test<
     app.cleanup();
     app.finish();
 
-    // let asset_path = manifest_dir.clone();
-    // make script path relative to the asset root
-    let this_script_path = script_asset_path.into();
-
-    let scenario = Scenario::new_standard_scenario(this_script_path);
     match scenario.execute::<P>(app) {
         Ok(_) => Ok(()),
         Err(e) => Err(format!("{e:?}")),
@@ -432,7 +406,7 @@ where
 
         let mut handler_ctxt = state.get_mut(app.world_mut());
         let (guard, context) = handler_ctxt.get_mut();
-        let context_key = ScriptAttachment::EntityScript(entity, Handle::Weak(script_id), None);
+        let context_key = ScriptAttachment::EntityScript(entity, Handle::Weak(script_id));
 
         let ctxt_arc = context.script_context().get(&context_key).unwrap();
         let mut ctxt_locked = ctxt_arc.lock();
@@ -480,10 +454,9 @@ pub fn run_plugin_script_load_benchmark<
                 );
                 // We manually load the script inside a command.
                 (
-                    CreateOrUpdateScript::<P>::new(ScriptAttachment::StaticScript(
-                        Handle::Weak(random_script_id),
-                        None,
-                    ))
+                    CreateOrUpdateScript::<P>::new(ScriptAttachment::StaticScript(Handle::Weak(
+                        random_script_id,
+                    )))
                     .with_content(content),
                     is_reload,
                 )

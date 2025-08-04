@@ -4,20 +4,9 @@ use bevy::ecs::system::Resource;
 use parking_lot::Mutex;
 use std::{hash::Hash, sync::Arc};
 
-/// A kind of catch all type for script context selection
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub struct Domain(String);
-
-impl Domain {
-    /// Create a domain handle.
-    pub fn new(domain: String) -> Self {
-        Domain(domain)
-    }
-}
-
 /// Determines how contexts are grouped by manipulating the context key.
 pub trait ContextKeySelector: Send + Sync + std::fmt::Debug + AsAny + 'static {
-    /// The given context key represents a possible script, entity, domain that
+    /// The given context key represents a possible script, entity that
     /// is requesting a context.
     ///
     /// This selector returns
@@ -44,8 +33,6 @@ impl<F: Fn(&ScriptAttachment) -> Option<ContextKey> + Send + Sync + std::fmt::De
 /// context assignment
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ContextRule {
-    /// If domain exists, return only that.
-    Domain,
     /// If entity-script pair exists, return only that.
     EntityScript,
     /// If entity exists, return only that.
@@ -58,18 +45,19 @@ pub enum ContextRule {
 
 impl ContextKeySelector for ContextRule {
     /// Depending on the enum variant, executes that rule.
-    ///
-    /// For example a rule of `Domain` will check for a domain in the
-    /// `context_key`. If it is present, a ContextKey that only
-    /// has that domain will be returned.
     fn select(&self, context_key: &ScriptAttachment) -> Option<ContextKey> {
-        // extract the components from the input, i.e. entity, script, domain, fill with None if not present
+        // extract the components from the input, i.e. entity, script, fill with None if not present
         let context_key: ContextKey = context_key.clone().into();
 
         match self {
-            ContextRule::Domain => context_key.domain.map(ContextKey::from),
-            ContextRule::Entity => context_key.entity.map(ContextKey::from),
-            ContextRule::Script => context_key.script.map(ContextKey::from),
+            ContextRule::Entity => context_key.entity.map(|e| ContextKey {
+                entity: Some(e),
+                script: None,
+            }),
+            ContextRule::Script => context_key.script.map(|h| ContextKey {
+                entity: None,
+                script: Some(h),
+            }),
             ContextRule::EntityScript => {
                 context_key
                     .entity
@@ -77,7 +65,6 @@ impl ContextKeySelector for ContextRule {
                     .map(|(entity, script)| ContextKey {
                         entity: Some(entity),
                         script: Some(script),
-                        domain: None,
                     })
             }
             ContextRule::Shared => Some(ContextKey::default()),
@@ -92,21 +79,10 @@ pub struct ContextPolicy {
     pub priorities: Vec<Box<dyn ContextKeySelector>>,
 }
 
-/// Returns a `[Domain, EntityScript, Script, Shared]` policy.
-/// the default policy will assign:
-/// - static scripts to individual contexts
-/// - entity-script pairs to individual contexts
-/// - any scripts with a domain to domain contexts
+/// Returns a default context policy. i.e. `[ContextPolicy::per_entity_and_script]`.
 impl Default for ContextPolicy {
     fn default() -> Self {
-        ContextPolicy {
-            priorities: vec![
-                Box::new(ContextRule::Domain),
-                Box::new(ContextRule::EntityScript),
-                Box::new(ContextRule::Script),
-                Box::new(ContextRule::Shared),
-            ],
-        }
+        ContextPolicy::per_entity_and_script()
     }
 }
 
@@ -125,45 +101,11 @@ impl ContextPolicy {
         }
     }
 
-    /// If a domain is given, use that first.
-    ///
-    /// Inserts a `Domain` selection rule with the highest priority if it is not already present.
-    pub fn with_domains(mut self) -> Self {
-        if !self.priorities.iter().any(|r| {
-            r.as_any()
-                .downcast_ref::<ContextRule>()
-                .is_some_and(|r| *r == ContextRule::Domain)
-        }) {
-            self.priorities.insert(0, Box::new(ContextRule::Domain));
-        }
-        self
-    }
-
-    /// Domain contexts or a shared context.
-    ///
-    /// For example, given:
-    /// - `script_id: Some("script1")`
-    /// - `entity: Some(1)`
-    /// - `domain: Some("domain1")`
-    ///
-    /// The context key will purely use the domain, resulting in a context key
-    /// of `ContextKey { domain: Some("domain1") }`.
-    ///
-    /// resulting in each domain having its own context regardless of the script id or entity.
-    ///
-    /// If no domain is given it will be the default, i.e. shared context.
-    pub fn domains() -> Self {
-        ContextPolicy {
-            priorities: vec![Box::new(ContextRule::Domain), Box::new(ContextRule::Shared)],
-        }
-    }
-
     /// Use one script context per entity or a shared context.
     ///
     /// For example, given:
     /// - `script_id: Some("script1")`
     /// - `entity: Some(1)`
-    /// - `domain: Some("domain1")`
     ///
     ///
     /// The context key will purely use the entity, resulting in a context key
@@ -183,7 +125,6 @@ impl ContextPolicy {
     /// For example, given:
     /// - `script_id: Some("script1")`
     /// - `entity: Some(1)`
-    /// - `domain: Some("domain1")`
     ///
     /// The context key will purely use the script, resulting in a context key
     /// of `ContextKey { script: Some("script1") }`.
@@ -202,7 +143,6 @@ impl ContextPolicy {
     /// For example, given:
     /// - `script_id: Some("script1")`
     /// - `entity: Some(1)`
-    /// - `domain: Some("domain1")`
     ///
     /// The context key will use the entity-script pair, resulting in a context key
     /// of `ContextKey { entity: Some(1), script: Some("script1") }`.
@@ -394,7 +334,7 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
     }
 }
 
-/// Use one script context per entity and script with domains by default; see
+/// Use one script context per entity and script by default; see
 /// [ScriptContext::per_entity_and_script].
 impl<P: IntoScriptPluginParams> Default for ScriptContext<P> {
     fn default() -> Self {

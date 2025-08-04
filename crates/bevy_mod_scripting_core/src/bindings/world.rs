@@ -22,21 +22,25 @@ use super::{
     ScriptTypeRegistration, Union,
 };
 use crate::{
+    asset::ScriptAsset,
     bindings::{
         function::{from::FromScript, from_ref::FromScriptRef},
         with_access_read, with_access_write,
     },
+    commands::AddStaticScript,
     error::InteropError,
     reflection_extensions::PartialReflectExt,
+    script::{ScriptAttachment, ScriptComponent},
 };
 use bevy::{
     app::AppExit,
+    asset::{AssetServer, Handle, LoadState},
     ecs::{
         component::{Component, ComponentId},
         entity::Entity,
         reflect::{AppTypeRegistry, ReflectFromWorld, ReflectResource},
         system::{Commands, Resource},
-        world::{unsafe_world_cell::UnsafeWorldCell, CommandQueue, Mut, World},
+        world::{unsafe_world_cell::UnsafeWorldCell, Command, CommandQueue, Mut, World},
     },
     hierarchy::{BuildChildren, Children, DespawnRecursiveExt, Parent},
     reflect::{
@@ -226,6 +230,13 @@ impl<'w> WorldAccessGuard<'w> {
             }),
             invalid: Rc::new(false.into()),
         }
+    }
+
+    /// Queues a command to the world, which will be executed later.
+    pub(crate) fn queue(&self, command: impl Command) -> Result<(), InteropError> {
+        self.with_global_access(|w| {
+            w.commands().queue(command);
+        })
     }
 
     /// Runs a closure within an isolated access scope, releasing leftover accesses, should only be used in a single-threaded context.
@@ -820,6 +831,36 @@ impl WorldAccessGuard<'_> {
             dynamic.as_ref(),
             self.clone(),
         ))
+    }
+
+    /// Loads a script from the given asset path with default settings.
+    pub fn load_script_asset(&self, asset_path: &str) -> Result<Handle<ScriptAsset>, InteropError> {
+        self.with_resource(|r: &AssetServer| r.load(asset_path))
+    }
+
+    /// Checks the load state of a script asset.
+    pub fn get_script_asset_load_state(
+        &self,
+        script: Handle<ScriptAsset>,
+    ) -> Result<LoadState, InteropError> {
+        self.with_resource(|r: &AssetServer| r.load_state(script.id()))
+    }
+
+    /// Attaches a script
+    pub fn attach_script(&self, attachment: ScriptAttachment) -> Result<(), InteropError> {
+        match attachment {
+            ScriptAttachment::EntityScript(entity, handle) => {
+                // find existing script components on the entity
+                self.with_or_insert_component_mut(entity, |c: &mut ScriptComponent| {
+                    c.0.push(handle.clone())
+                })?;
+            }
+            ScriptAttachment::StaticScript(handle) => {
+                self.queue(AddStaticScript::new(handle))?;
+            }
+        };
+
+        Ok(())
     }
 
     /// Spawns a new entity in the world

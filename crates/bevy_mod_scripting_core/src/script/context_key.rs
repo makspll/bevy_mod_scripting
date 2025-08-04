@@ -1,60 +1,61 @@
 use super::*;
 use crate::ScriptAsset;
-use bevy::prelude::{default, Entity};
+use bevy::prelude::Entity;
 use std::fmt;
 
 /// Specifies a unique attachment of a script. These attachments are mapped to [`ContextKey`]'s depending on the context policy used.
-#[derive(Debug, Hash, Clone, PartialEq, Eq)]
+#[derive(Debug, Hash, Clone, PartialEq, Eq, Reflect)]
 pub enum ScriptAttachment {
-    /// a script attached to an entity, with an optional domain.
-    EntityScript(Entity, Handle<ScriptAsset>, Option<Domain>),
-    /// a static script, with an optional domain.
-    StaticScript(Handle<ScriptAsset>, Option<Domain>),
-    /// External context key, comes from outside the BMS integration, can be combined with a custom policy for custom behavior.
-    Other(ContextKey),
+    /// a script attached to an entity, with an optional domain. By default selecting a domain will put the context of this script on a per-domain basis.
+    EntityScript(Entity, Handle<ScriptAsset>),
+    /// a static script, with an optional domain. By default selecting a domain will put the context of this script on a per-domain basis.
+    StaticScript(Handle<ScriptAsset>),
 }
 
 impl std::fmt::Display for ScriptAttachment {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ScriptAttachment::EntityScript(entity, script, domain) => {
+            ScriptAttachment::EntityScript(entity, script) => {
                 write!(
                     f,
-                    "EntityScript(entity: {}, script: {}, domain: {:?})",
+                    "EntityScript(entity: {}, script: {})",
                     entity,
                     script.display(),
-                    domain
                 )
             }
-            ScriptAttachment::StaticScript(script, domain) => {
-                write!(
-                    f,
-                    "StaticScript(script: {}, domain: {:?})",
-                    script.display(),
-                    domain
-                )
+            ScriptAttachment::StaticScript(script) => {
+                write!(f, "StaticScript(script: {})", script.display())
             }
-            ScriptAttachment::Other(context_key) => write!(f, "Other({context_key})"),
         }
     }
 }
 
 impl ScriptAttachment {
     /// Returns the script handle if it exists.
-    pub fn script(&self) -> Option<Handle<ScriptAsset>> {
+    pub fn script(&self) -> Handle<ScriptAsset> {
         match self {
-            ScriptAttachment::EntityScript(_, script, _) => Some(script.clone()),
-            ScriptAttachment::StaticScript(script, _) => Some(script.clone()),
-            ScriptAttachment::Other(context_key) => context_key.script.clone(),
+            ScriptAttachment::EntityScript(_, script) => script.clone(),
+            ScriptAttachment::StaticScript(script) => script.clone(),
         }
     }
 
     /// Returns the entity if it exists.
     pub fn entity(&self) -> Option<Entity> {
         match self {
-            ScriptAttachment::EntityScript(entity, _, _) => Some(*entity),
-            ScriptAttachment::StaticScript(_, _) => None,
-            ScriptAttachment::Other(context_key) => context_key.entity,
+            ScriptAttachment::EntityScript(entity, _) => Some(*entity),
+            ScriptAttachment::StaticScript(_) => None,
+        }
+    }
+
+    /// Downcasts any script handles into weak handles.
+    pub fn into_weak(self) -> Self {
+        match self {
+            ScriptAttachment::EntityScript(entity, script) => {
+                ScriptAttachment::EntityScript(entity, script.clone_weak())
+            }
+            ScriptAttachment::StaticScript(script) => {
+                ScriptAttachment::StaticScript(script.clone_weak())
+            }
         }
     }
 }
@@ -62,17 +63,14 @@ impl ScriptAttachment {
 impl From<ScriptAttachment> for ContextKey {
     fn from(val: ScriptAttachment) -> Self {
         match val {
-            ScriptAttachment::EntityScript(entity, script, domain) => ContextKey {
+            ScriptAttachment::EntityScript(entity, script) => ContextKey {
                 entity: Some(entity),
                 script: Some(script),
-                domain,
             },
-            ScriptAttachment::StaticScript(script, domain) => ContextKey {
+            ScriptAttachment::StaticScript(script) => ContextKey {
                 entity: None,
                 script: Some(script),
-                domain,
             },
-            ScriptAttachment::Other(context_key) => context_key,
         }
     }
 }
@@ -80,15 +78,13 @@ impl From<ScriptAttachment> for ContextKey {
 /// The key for a context. The context key is used for:
 /// - Identifying the script itself, uniquely.
 /// - later on it's mapped to a context, which will determine how the scripts are grouped in execution environments.
-#[derive(Debug, Hash, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Hash, Clone, Default, PartialEq, Eq, Reflect)]
 pub struct ContextKey {
     /// Entity if there is one.
-    pub(crate) entity: Option<Entity>,
+    pub entity: Option<Entity>,
     /// Script ID if there is one.
     /// Can be empty if the script is not driven by an asset.
-    pub(crate) script: Option<Handle<ScriptAsset>>,
-    /// Domain if there is one.
-    pub(crate) domain: Option<Domain>,
+    pub script: Option<Handle<ScriptAsset>>,
 }
 
 impl fmt::Display for ContextKey {
@@ -103,10 +99,6 @@ impl fmt::Display for ContextKey {
             write!(f, "entity {id}")?;
             empty = false;
         }
-        if let Some(domain) = &self.domain {
-            write!(f, "domain {domain:?}")?;
-            empty = false;
-        }
         if empty {
             write!(f, "empty")?;
         }
@@ -119,7 +111,14 @@ impl ContextKey {
     pub const INVALID: Self = Self {
         entity: Some(Entity::from_raw(0)),
         script: Some(Handle::Weak(AssetId::invalid())),
-        domain: None,
+    };
+
+    /// Creates a shared context key, which is used for shared contexts
+    pub const SHARED: Self = {
+        Self {
+            entity: None,
+            script: None,
+        }
     };
 
     /// Is the key empty?
@@ -131,29 +130,8 @@ impl ContextKey {
     pub fn or(self, other: ContextKey) -> Self {
         Self {
             entity: self.entity.or(other.entity),
-            script: self.script,
-            domain: self.domain.or(other.domain),
+            script: self.script.or(other.script),
         }
-    }
-
-    /// Returns true if self is a subset of other.
-    ///
-    /// Subset meaning if `self.entity` is `Some`, then other must be `Some` and
-    /// equal.
-    ///
-    /// If `self.entity` is `None`, then other.entity can be anything.
-    ///
-    /// An empty [ContextKey] is a subset of any context key.
-    pub fn is_subset(&self, other: &ContextKey) -> bool {
-        self.entity
-            .map(|a| other.entity.map(|b| a == b).unwrap_or(false))
-            .unwrap_or(true)
-            || self.script == other.script
-            || self
-                .domain
-                .as_ref()
-                .map(|a| other.domain.as_ref().map(|b| a == b).unwrap_or(false))
-                .unwrap_or(true)
     }
 
     /// If a script handle is present and is strong, convert it to a weak
@@ -165,41 +143,5 @@ impl ContextKey {
             }
         }
         self
-    }
-}
-
-impl From<Entity> for ContextKey {
-    fn from(entity: Entity) -> Self {
-        Self {
-            entity: Some(entity),
-            ..default()
-        }
-    }
-}
-
-impl From<ScriptId> for ContextKey {
-    fn from(script_id: ScriptId) -> Self {
-        Self {
-            script: Some(Handle::Weak(script_id)),
-            ..default()
-        }
-    }
-}
-
-impl From<Handle<ScriptAsset>> for ContextKey {
-    fn from(handle: Handle<ScriptAsset>) -> Self {
-        Self {
-            script: Some(handle),
-            ..default()
-        }
-    }
-}
-
-impl From<Domain> for ContextKey {
-    fn from(domain: Domain) -> Self {
-        Self {
-            domain: Some(domain),
-            ..default()
-        }
     }
 }

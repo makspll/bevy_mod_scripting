@@ -1,7 +1,7 @@
 //! Dynamic scheduling from scripts
 
 use super::{script_system::ScriptSystemBuilder, WorldAccessGuard};
-use crate::{error::InteropError, script::DisplayProxy, IntoScriptPluginParams};
+use crate::{error::InteropError, IntoScriptPluginParams};
 use bevy::{
     app::{
         First, FixedFirst, FixedLast, FixedMain, FixedPostUpdate, FixedPreUpdate, FixedUpdate,
@@ -176,7 +176,7 @@ impl WorldAccessGuard<'_> {
         bevy::log::debug!(
             "Adding script system '{}' for script '{}' to schedule '{}'",
             builder.name,
-            builder.script_asset.display(),
+            builder.attachment,
             schedule.identifier()
         );
 

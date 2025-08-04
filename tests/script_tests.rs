@@ -4,7 +4,7 @@ use std::path::PathBuf;
 
 use libtest_mimic::{Arguments, Failed, Trial};
 use script_integration_test_harness::{
-    execute_lua_integration_test, execute_rhai_integration_test,
+    execute_lua_integration_test, execute_rhai_integration_test, scenario::Scenario,
 };
 
 use test_utils::{discover_all_tests, Test, TestKind};
@@ -16,15 +16,21 @@ trait TestExecutor {
 
 impl TestExecutor for Test {
     fn execute(self) -> Result<(), Failed> {
+        let script_asset_path = self.script_asset_path;
+        let scenario_path = self.scenario_path.ok_or_else(|| {
+            Failed::from("Test does not have a scenario.txt file near to use for test".to_string())
+        })?;
+        println!(
+            "Running test: {}, with scenario: {}",
+            script_asset_path.display(),
+            scenario_path.display()
+        );
+
+        let scenario = Scenario::from_scenario_file(&script_asset_path, &scenario_path)
+            .map_err(|e| format!("{e:?}"))?; // print whole error from anyhow including source and backtrace
         match self.kind {
-            TestKind::Lua => {
-                println!("Running test: {:?}", self.path);
-                execute_lua_integration_test(&self.path.to_string_lossy())?
-            }
-            TestKind::Rhai => {
-                println!("Running test: {:?}", self.path);
-                execute_rhai_integration_test(&self.path.to_string_lossy())?
-            }
+            TestKind::Lua => execute_lua_integration_test(scenario)?,
+            TestKind::Rhai => execute_rhai_integration_test(scenario)?,
         }
 
         Ok(())
@@ -34,7 +40,7 @@ impl TestExecutor for Test {
         format!(
             "script_test - {} - {}",
             self.kind,
-            self.path
+            self.script_asset_path
                 .to_string_lossy()
                 .split(&format!("tests{}data", std::path::MAIN_SEPARATOR))
                 .last()
@@ -50,7 +56,7 @@ fn main() {
     let args = Arguments::from_args();
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
 
-    let tests = discover_all_tests(manifest_dir, |p| p.path.starts_with("tests"))
+    let tests = discover_all_tests(manifest_dir, |p| p.script_asset_path.starts_with("tests"))
         .into_iter()
         .map(|t| Trial::test(t.name(), move || t.execute()))
         .collect::<Vec<_>>();

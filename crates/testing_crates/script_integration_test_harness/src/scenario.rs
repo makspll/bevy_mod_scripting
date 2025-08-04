@@ -1,5 +1,6 @@
 use crate::parse::*;
 use anyhow::{anyhow, Context, Error};
+use bevy::prelude::IntoSystem;
 use bevy::{
     app::App,
     asset::{AssetEvent, Handle, LoadState},
@@ -18,7 +19,11 @@ use bevy_mod_scripting_core::{
     script::{ScriptAttachment, ScriptComponent},
     IntoScriptPluginParams,
 };
-use std::{collections::HashMap, path::PathBuf, time::Instant};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    time::Instant,
+};
 
 const TIMEOUT_SECONDS: u64 = 10;
 const SCENARIO_SELF_SCRIPT_NAME: &str = "@this_script";
@@ -29,6 +34,33 @@ pub struct Scenario {
 }
 
 impl Scenario {
+    /// Parses a scenario from a file.
+    pub fn from_scenario_file(
+        this_script_path: &Path,
+        scenario_path: &Path,
+    ) -> Result<Self, Error> {
+        let content = std::fs::read_to_string(scenario_path).with_context(|| {
+            format!("Failed to read scenario file: {}", scenario_path.display())
+        })?;
+        let lines = content
+            .lines()
+            .map(|line| line.trim())
+            .filter(|line| !line.is_empty() && !line.starts_with('#') && !line.starts_with("//"))
+            .collect::<Vec<_>>();
+
+        let steps = lines
+            .into_iter()
+            .map(|line| {
+                ScenarioStepSerialized::from_flat_string(line)
+                    .with_context(|| format!("Failed to parse scenario step: {line}"))
+            })
+            .collect::<Result<Vec<_>, Error>>()?;
+        Ok(Self {
+            steps,
+            context: ScenarioContext::new(this_script_path.to_path_buf()),
+        })
+    }
+
     pub fn dump_steps(steps: &[ScenarioStepSerialized]) -> String {
         steps
             .iter()
@@ -177,12 +209,17 @@ pub struct ScenarioContext {
 pub struct InterestingEventWatcher {
     pub events: Vec<(String, usize)>,
     pub asset_event_cursor: EventCursor<AssetEvent<ScriptAsset>>,
+    pub script_response_cursor: EventCursor<ScriptCallbackResponseEvent>,
 }
 
 impl InterestingEventWatcher {
     pub fn log_events(&mut self, step_no: usize, world: &bevy::ecs::world::World) {
         let asset_events = world.resource::<Events<AssetEvent<ScriptAsset>>>();
+        let script_responses = world.resource::<Events<ScriptCallbackResponseEvent>>();
         for event in self.asset_event_cursor.read(asset_events) {
+            self.events.push((format!("{event:?}"), step_no));
+        }
+        for event in self.script_response_cursor.read(script_responses) {
             self.events.push((format!("{event:?}"), step_no));
         }
     }
@@ -231,7 +268,9 @@ impl ScenarioSchedule {
         &self,
         app: &mut App,
     ) {
-        app.add_systems(self.clone(), event_handler::<T, P>);
+        let system = IntoSystem::into_system(event_handler::<T, P>);
+        let system = system.with_name(T::into_callback_label().to_string());
+        app.add_systems(self.clone(), system);
     }
 }
 impl ScheduleLabel for ScenarioSchedule {
@@ -450,8 +489,11 @@ impl ScenarioStep {
                     .chain(context.unmatched_callback_events.iter().map(|e| (e, false)));
                 let mut to_add = Vec::default();
                 let mut errors = Vec::default();
+
+                let mut found_match = false;
                 for (event, is_new) in unprocessed_and_new_events {
                     if event.label == label && event.context_key == script {
+                        found_match = true;
                         if let Err(e) = &event.response {
                             errors.push(e.clone());
                         } else {
@@ -464,6 +506,14 @@ impl ScenarioStep {
                     } else if is_new {
                         to_add.push(event.clone());
                     }
+                }
+
+                if !found_match {
+                    return Err(anyhow!(
+                        "Callback '{}' for attachment: '{}' not found",
+                        label,
+                        script.to_string()
+                    ));
                 }
 
                 if let Some(first_error) = errors.first() {

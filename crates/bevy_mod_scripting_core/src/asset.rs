@@ -1,10 +1,10 @@
 //! Systems and resources for handling script assets and events
 
 use crate::{
-    commands::CreateOrUpdateScript,
+    commands::{CreateOrUpdateScript, DeleteScript},
     error::ScriptError,
     event::ScriptEvent,
-    script::{ContextKey, DisplayProxy, ScriptAttachment, ScriptDomain},
+    script::{ContextKey, DisplayProxy, ScriptAttachment},
     IntoScriptPluginParams, LanguageExtensions, ScriptComponent, ScriptingSystemSet, StaticScripts,
 };
 use bevy::{
@@ -206,7 +206,7 @@ fn handle_script_events<P: IntoScriptPluginParams>(
     mut events: EventReader<ScriptEvent>,
     script_assets: Res<Assets<ScriptAsset>>,
     static_scripts: Res<StaticScripts>,
-    scripts: Query<(Entity, &ScriptComponent, Option<&ScriptDomain>)>,
+    scripts: Query<(Entity, &ScriptComponent)>,
     asset_server: Res<AssetServer>,
     mut script_queue: Local<ScriptQueue>,
     mut commands: Commands,
@@ -222,26 +222,25 @@ fn handle_script_events<P: IntoScriptPluginParams>(
                     // We need to reload the script for any context it's
                     // associated with. That could be static scripts, script
                     // components.
-                    for (entity, script_component, script_domain_maybe) in &scripts {
+                    for (entity, script_component) in &scripts {
                         if let Some(handle) =
                             script_component.0.iter().find(|handle| handle.id() == *id)
                         {
                             commands.queue(CreateOrUpdateScript::<P>::new(
-                                ScriptAttachment::EntityScript(
-                                    entity,
-                                    handle.clone(),
-                                    script_domain_maybe.map(|d| d.0.clone()),
-                                ),
+                                ScriptAttachment::EntityScript(entity, handle.clone()),
                             ));
                         }
                     }
 
                     if let Some(handle) = static_scripts.scripts.iter().find(|s| s.id() == *id) {
                         commands.queue(CreateOrUpdateScript::<P>::new(
-                            ScriptAttachment::StaticScript(handle.clone(), None),
+                            ScriptAttachment::StaticScript(handle.clone()),
                         ));
                     }
                 }
+            }
+            ScriptEvent::Detached { key } => {
+                commands.queue(DeleteScript::<P>::new(key.clone()));
             }
             ScriptEvent::Attached { key } => {
                 trace!("{}: Attached script with key: {}", P::LANGUAGE, key);
@@ -295,9 +294,8 @@ fn handle_script_events<P: IntoScriptPluginParams>(
                 continue;
             }
 
-            let language = context_key
-                .script()
-                .and_then(|script_id| script_assets.get(&script_id))
+            let language = script_assets
+                .get(&context_key.script())
                 .map(|asset| asset.language.clone())
                 .unwrap_or_default();
 

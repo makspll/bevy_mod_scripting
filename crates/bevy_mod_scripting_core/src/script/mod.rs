@@ -5,7 +5,7 @@ use crate::event::ScriptEvent;
 use bevy::ecs::component::ComponentId;
 use bevy::ecs::entity::Entity;
 use bevy::ecs::world::DeferredWorld;
-use bevy::prelude::{Component, ReflectComponent};
+use bevy::prelude::ReflectComponent;
 use bevy::utils::hashbrown::hash_map::DefaultHashBuilder;
 use bevy::{
     asset::{Asset, AssetId, Handle},
@@ -67,11 +67,7 @@ impl<A: Asset> DisplayProxy for Handle<A> {
     }
 }
 
-/// Defines the domain of a script
-#[derive(Component)]
-pub struct ScriptDomain(pub Domain);
-
-#[derive(bevy::ecs::component::Component, Reflect, Clone)]
+#[derive(bevy::ecs::component::Component, Reflect, Clone, Default, Debug)]
 #[reflect(Component)]
 #[component(on_remove=Self::on_remove, on_add=Self::on_add)]
 /// A component which identifies the scripts existing on an entity.
@@ -95,15 +91,10 @@ impl ScriptComponent {
 
     fn get_context_keys_present(world: &DeferredWorld, entity: Entity) -> Vec<ScriptAttachment> {
         let entity_ref = world.entity(entity);
-        let (script_component, maybe_script_domain) =
-            entity_ref.components::<(&ScriptComponent, Option<&ScriptDomain>)>();
+        let script_component = entity_ref.components::<&ScriptComponent>();
         let mut context_keys = Vec::new();
         for script in script_component.iter() {
-            context_keys.push(ScriptAttachment::EntityScript(
-                entity,
-                script.clone(),
-                maybe_script_domain.map(|d| d.0.clone()),
-            ));
+            context_keys.push(ScriptAttachment::EntityScript(entity, script.clone()));
         }
         context_keys
     }
@@ -214,7 +205,7 @@ mod tests {
     }
 
     #[test]
-    fn test_component_add_no_domain() {
+    fn test_component_add() {
         let mut world = World::new();
         world.init_resource::<Events<ScriptEvent>>();
         // spawn new script component
@@ -226,7 +217,7 @@ mod tests {
         let mut events = world.resource_mut::<Events<ScriptEvent>>();
         assert_eq!(
             Some(ScriptEvent::Attached {
-                key: ScriptAttachment::EntityScript(entity, Handle::Weak(AssetId::invalid()), None)
+                key: ScriptAttachment::EntityScript(entity, Handle::Weak(AssetId::invalid()))
             }),
             events.drain().next()
         );

@@ -5,7 +5,7 @@ use bevy_mod_scripting_core::{
     asset::Language,
     callback_labels,
     event::{CallbackLabel, Recipients, ScriptCallbackEvent},
-    script::{Domain, ScriptAttachment},
+    script::ScriptAttachment,
 };
 
 use crate::scenario::{ScenarioContext, ScenarioStep};
@@ -105,7 +105,6 @@ pub enum ScenarioRecipients {
     AllContexts,
     EntityScript { entity: String, script: String },
     StaticScript { script: String },
-    Domain(String),
 }
 
 impl ScenarioStepSerialized {
@@ -124,11 +123,11 @@ impl ScenarioStepSerialized {
             ScenarioAttachment::EntityScript { entity, script } => {
                 let entity = context.get_entity(&entity)?;
                 let script = context.get_script_handle(&script)?;
-                Ok(ScriptAttachment::EntityScript(entity, script, None))
+                Ok(ScriptAttachment::EntityScript(entity, script))
             }
             ScenarioAttachment::StaticScript { script } => {
                 let script = context.get_script_handle(&script)?;
-                Ok(ScriptAttachment::StaticScript(script, None))
+                Ok(ScriptAttachment::StaticScript(script))
             }
         }
     }
@@ -147,7 +146,6 @@ impl ScenarioStepSerialized {
             ScenarioRecipients::StaticScript { script } => {
                 Recipients::StaticScript(context.get_script_handle(&script)?.id())
             }
-            ScenarioRecipients::Domain(domain) => Recipients::Domain(Domain::new(domain)),
         })
     }
 
@@ -252,20 +250,35 @@ impl ScenarioStepSerialized {
         );
 
         let arg_part = parts.collect::<Vec<_>>().join(" ");
-        let parts = arg_part.split(',').map(str::trim);
 
-        for part in parts {
+        let args = arg_part
+            .split(',')
+            .map(str::trim)
+            .filter(|p| !p.is_empty())
+            .collect::<Vec<_>>();
+
+        for part in args {
             let mut kv = part.split('=');
-            let key = kv
-                .next()
-                .ok_or_else(|| Error::msg("Key-value pair must be in the format key=\"value\""))?;
+            let key = kv.next().ok_or_else(|| {
+                anyhow::anyhow!(
+                    "Key-value pair must be in the format key=\"value\" in part: `{part}`"
+                )
+            })?;
             let value = kv
                 .next()
-                .ok_or_else(|| Error::msg("Key-value pair must be in the format key=\"value\""))?;
-            map.insert(
-                key.trim().to_string(),
-                serde_json::Value::String(value.trim().trim_matches('"').to_string()),
-            );
+                .ok_or_else(|| {
+                    anyhow::anyhow!(
+                        "Key-value pair must be in the format key=\"value\" in part: `{part}`"
+                    )
+                })?
+                .trim();
+            let parsed_value = if !value.starts_with('"') && !value.ends_with('"') {
+                serde_json::from_str::<serde_json::Value>(value)
+                    .map_err(|e| Error::msg(format!("Failed to parse value: {e}")))?
+            } else {
+                serde_json::Value::String(value.trim_matches('"').to_string())
+            };
+            map.insert(key.trim().to_string(), parsed_value);
         }
 
         Ok(serde_json::from_value(serde_json::Value::Object(map))?)

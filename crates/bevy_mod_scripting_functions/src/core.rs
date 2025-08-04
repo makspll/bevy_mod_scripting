@@ -1,9 +1,10 @@
 //! Contains functions defined by the [`bevy_mod_scripting_core`] crate
 
-use std::{collections::HashMap, ops::Deref, path::PathBuf};
+use std::{collections::HashMap, ops::Deref};
 
 use bevy::prelude::*;
 use bevy_mod_scripting_core::{
+    asset::ScriptAsset,
     bindings::{
         function::{
             from::Union, namespace::GlobalNamespace, script_function::DynamicScriptFunctionMut,
@@ -11,6 +12,7 @@ use bevy_mod_scripting_core::{
         script_system::ScriptSystemBuilder,
     },
     docgen::info::FunctionInfo,
+    script::ScriptAttachment,
     *,
 };
 use bevy_mod_scripting_derive::script_bindings;
@@ -1050,9 +1052,10 @@ impl ReflectSchedule {
         profiling::function_scope!("system_by_name");
         let world = ctxt.world()?;
         let system = world.systems(&schedule)?;
-        Ok(system
-            .into_iter()
-            .find_map(|s| (s.identifier() == name || s.path() == name).then_some(s.into())))
+        Ok(system.into_iter().find_map(|s| {
+            (s.identifier() == name || s.path() == name || s.path().contains(&name))
+                .then_some(s.into())
+        }))
     }
 
     /// Renders the schedule as a dot graph string.
@@ -1206,6 +1209,77 @@ impl ScriptSystemBuilder {
 #[script_bindings(
     remote,
     bms_core_path = "bevy_mod_scripting_core",
+    name = "script_attachment_functions",
+    core
+)]
+impl ScriptAttachment {
+    /// Creates a new script attachment descriptor from a script asset.
+    ///  
+    /// Arguments:
+    /// * `script`: The script asset to create the attachment from.
+    /// Returns:    
+    /// * `attachment`: The new script attachment.
+    pub fn new_static_script(
+        script: Val<Handle<ScriptAsset>>,
+    ) -> Result<Val<ScriptAttachment>, InteropError> {
+        profiling::function_scope!("new_static_script");
+        Ok(Val(ScriptAttachment::StaticScript(script.into_inner())))
+    }
+
+    /// Creates a new script attachment descriptor for an entity attached script.
+    ///
+    /// Arguments:
+    /// * `entity`: The entity to attach the script to.
+    /// * `script`: The script asset to attach to the entity.
+    /// Returns:
+    /// * `attachment`: The new script attachment for the entity.
+    pub fn new_entity_script(
+        entity: Val<Entity>,
+        script: Val<Handle<ScriptAsset>>,
+    ) -> Result<Val<ScriptAttachment>, InteropError> {
+        profiling::function_scope!("new_entity_script");
+        Ok(Val(ScriptAttachment::EntityScript(
+            *entity,
+            script.into_inner(),
+        )))
+    }
+}
+
+#[script_bindings(
+    remote,
+    bms_core_path = "bevy_mod_scripting_core",
+    name = "script_handle_functions",
+    core
+)]
+impl Handle<ScriptAsset> {
+    /// Retrieves the path of the script asset if present.
+    ///
+    /// Arguments:
+    /// * `handle`: The handle to the script asset.
+    /// Returns:
+    /// * `path`: The path of the script asset.
+    fn asset_path(ctxt: FunctionCallContext, handle: Ref<Handle<ScriptAsset>>) -> Option<String> {
+        profiling::function_scope!("path");
+        let world = ctxt.world().ok();
+        let maybe_strong_handle = ctxt
+            .world()
+            .ok()
+            .and_then(|w| {
+                w.with_resource(|assets: &Assets<ScriptAsset>| {
+                    assets.get_strong_handle(handle.id())
+                })
+                .ok()
+                .flatten()
+            })
+            .unwrap_or(handle.clone());
+
+        maybe_strong_handle.path().to_string()
+    }
+}
+
+#[script_bindings(
+    remote,
+    bms_core_path = "bevy_mod_scripting_core",
     name = "global_namespace_functions",
     unregistered
 )]
@@ -1256,23 +1330,14 @@ impl GlobalNamespace {
     ///
     /// Arguments:
     /// * `callback`: The function name in the script this system should call when run.
-    /// * `script_id`: The path of the script this system will execute when run.
+    /// * `attachment`: The script attachment to use for the system. This is the attachment that will be used for the system's callback.
     /// Returns:
     /// * `builder`: The system builder
     fn system_builder(
-        ctxt: FunctionCallContext,
         callback: String,
-        script_id: String,
+        attachment: Val<ScriptAttachment>,
     ) -> Result<Val<ScriptSystemBuilder>, InteropError> {
-        let world = ctxt.world()?;
-        let path = PathBuf::from(script_id);
-        let script_handle = world.with_resource(|asset_server: &AssetServer| {
-            asset_server
-                .get_handle(path.clone())
-                .ok_or_else(|| InteropError::missing_script_by_path(path))
-        })??;
-
-        Ok(ScriptSystemBuilder::new(callback.into(), script_handle).into())
+        Ok(ScriptSystemBuilder::new(callback.into(), attachment.into_inner()).into())
     }
 }
 
@@ -1298,6 +1363,9 @@ pub fn register_core_functions(app: &mut App) {
         register_reflect_schedule_functions(world);
         register_reflect_system_functions(world);
         register_script_system_builder_functions(world);
+
+        register_script_attachment_functions(world);
+        register_script_handle_functions(world);
 
         register_global_namespace_functions(world);
     }

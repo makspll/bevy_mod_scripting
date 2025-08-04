@@ -24,7 +24,7 @@ impl std::fmt::Display for TestKind {
 
 #[derive(Debug, Clone)]
 pub struct Test {
-    pub path: PathBuf,
+    pub script_asset_path: PathBuf,
     pub kind: TestKind,
     /// If the test contains an explicit scenario, this will be set.
     pub scenario_path: Option<PathBuf>,
@@ -47,6 +47,34 @@ fn visit_dirs(dir: &Path, cb: &mut dyn FnMut(&DirEntry)) -> io::Result<()> {
     Ok(())
 }
 
+/// searches for the nearest ancestor of the given path that satisfies the condition.
+/// stops the search upon reaching the manifest path.
+fn find_nearest_ancestor(path: &Path, condition: impl Fn(&Path) -> bool) -> Option<PathBuf> {
+    // check path is within the manifest path
+    let manifest_path = std::env::var("CARGO_MANIFEST_DIR")
+        .ok()
+        .map(PathBuf::from)
+        .unwrap();
+
+    let manifest_path_ancestors = path
+        .ancestors()
+        .filter(|p| p.starts_with(&manifest_path) && p.is_dir())
+        .collect::<Vec<_>>();
+
+    for ancestor in manifest_path_ancestors {
+        let siblings = fs::read_dir(ancestor).ok()?;
+        let entries = siblings.filter_map(Result::ok).collect::<Vec<_>>();
+        for entry in entries {
+            let entry_path = entry.path();
+            if entry_path.is_file() && condition(&entry_path) {
+                return Some(entry_path);
+            }
+        }
+    }
+
+    None
+}
+
 pub fn discover_all_tests(manifest_dir: PathBuf, filter: impl Fn(&Test) -> bool) -> Vec<Test> {
     let assets_root = manifest_dir.join("assets");
     let mut test_files = Vec::new();
@@ -63,12 +91,11 @@ pub fn discover_all_tests(manifest_dir: PathBuf, filter: impl Fn(&Test) -> bool)
             // only take the path from the assets  bit
             let relative = path.strip_prefix(&assets_root).unwrap();
             let test = Test {
-                path: relative.to_path_buf(),
+                script_asset_path: relative.to_path_buf(),
                 kind,
-                scenario_path: relative
-                    .parent()
-                    .and_then(|p| p.join("scenario.json").to_str().map(PathBuf::from))
-                    .filter(|p| p.exists()),
+                scenario_path: find_nearest_ancestor(&path, |p| {
+                    p.file_name().and_then(|f| f.to_str()) == Some("scenario.txt")
+                }),
             };
 
             if !filter(&test) {

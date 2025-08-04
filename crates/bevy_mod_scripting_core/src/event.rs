@@ -6,7 +6,7 @@ use crate::{
     asset::Language,
     bindings::script_value::ScriptValue,
     error::ScriptError,
-    script::{ContextKey, Domain, ScriptAttachment, ScriptContext, ScriptId},
+    script::{ScriptAttachment, ScriptContext, ScriptId},
     IntoScriptPluginParams,
 };
 use bevy::{asset::Handle, ecs::entity::Entity, prelude::Event, reflect::Reflect};
@@ -30,12 +30,12 @@ pub enum ScriptEvent {
         /// The script
         script: ScriptId,
     },
-    /// A script component was attached to an entity.
+    /// A script was activated and attached via a [`ScriptAttachment`].
     Attached {
         /// The script attachment
         key: ScriptAttachment,
     },
-    /// An entity with a [ScriptComponent] was removed.
+    /// A script was deactivated and detached via a [`ScriptAttachment`].
     Detached {
         /// The script attachment which was detached
         key: ScriptAttachment,
@@ -198,8 +198,6 @@ pub enum Recipients {
     ScriptEntity(ScriptId, Entity),
     /// the event is to be handled by a specific static script
     StaticScript(ScriptId),
-    /// The event is to be handled by a specific domain
-    Domain(Domain),
 }
 
 impl Recipients {
@@ -212,8 +210,7 @@ impl Recipients {
             Recipients::AllScripts => script_context.all_residents().collect(),
             Recipients::AllContexts => script_context.first_resident_from_each_context().collect(),
             Recipients::ScriptEntity(script, entity) => {
-                let attachment =
-                    ScriptAttachment::EntityScript(*entity, Handle::Weak(*script), None);
+                let attachment = ScriptAttachment::EntityScript(*entity, Handle::Weak(*script));
                 script_context
                     .get(&attachment)
                     .into_iter()
@@ -221,19 +218,7 @@ impl Recipients {
                     .collect()
             }
             Recipients::StaticScript(script) => {
-                let attachment = ScriptAttachment::StaticScript(Handle::Weak(*script), None);
-                script_context
-                    .get(&attachment)
-                    .into_iter()
-                    .map(|entry| (attachment.clone(), entry))
-                    .collect()
-            }
-            Recipients::Domain(domain) => {
-                let attachment = ScriptAttachment::Other(ContextKey {
-                    entity: None,
-                    script: None,
-                    domain: Some(domain.clone()),
-                });
+                let attachment = ScriptAttachment::StaticScript(Handle::Weak(*script));
                 script_context
                     .get(&attachment)
                     .into_iter()

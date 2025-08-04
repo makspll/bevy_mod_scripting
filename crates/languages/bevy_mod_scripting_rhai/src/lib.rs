@@ -4,10 +4,11 @@ use std::ops::Deref;
 
 use bevy::{
     app::Plugin,
+    asset::Handle,
     ecs::{entity::Entity, world::World},
 };
 use bevy_mod_scripting_core::{
-    asset::Language,
+    asset::{Language, ScriptAsset},
     bindings::{
         function::namespace::Namespace, globals::AppScriptGlobalsRegistry,
         script_value::ScriptValue, ThreadWorldContainer, WorldContainer,
@@ -156,12 +157,20 @@ impl Default for RhaiScriptingPlugin {
                     if let Some(entity) = context_key.entity() {
                         context.scope.set_or_push(
                             "entity",
-                            RhaiReflectReference(<Entity>::allocate(Box::new(entity), world)),
+                            RhaiReflectReference(<Entity>::allocate(
+                                Box::new(entity),
+                                world.clone(),
+                            )),
                         );
                     }
-                    if let Some(script_id) = context_key.script().as_ref() {
-                        context.scope.set_or_push("script_id", script_id.to_owned());
-                    }
+                    context.scope.set_or_push(
+                        "script_id",
+                        RhaiReflectReference(<Handle<ScriptAsset>>::allocate(
+                            Box::new(context_key.script().clone()),
+                            world,
+                        )),
+                    );
+
                     Ok(())
                 }],
                 // already supported by BMS core
@@ -194,9 +203,9 @@ fn load_rhai_content_into_context(
     let runtime = runtime.read();
 
     context.ast = runtime.compile(std::str::from_utf8(content)?)?;
-    if let Some(script) = context_key.script().as_ref() {
-        context.ast.set_source(script.display().to_string());
-    }
+    context
+        .ast
+        .set_source(context_key.script().display().to_string());
 
     initializers
         .iter()
@@ -302,49 +311,5 @@ pub fn rhai_callback_handler(
                 Err(ScriptError::from(e))
             }
         }
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use bevy_mod_scripting_core::script::ContextKey;
-
-    use super::*;
-
-    #[test]
-    fn test_reload_doesnt_overwrite_old_context() {
-        let runtime = RhaiRuntime::new(Engine::new());
-        let context_key = ScriptAttachment::Other(ContextKey::default());
-        let initializers: Vec<ContextInitializer<RhaiScriptingPlugin>> = vec![];
-        let pre_handling_initializers: Vec<ContextPreHandlingInitializer<RhaiScriptingPlugin>> =
-            vec![];
-
-        // Load first content defining a function that returns 42.
-        let mut context = rhai_context_load(
-            &context_key,
-            b"let hello = 2;",
-            &initializers,
-            &pre_handling_initializers,
-            &runtime,
-        )
-        .unwrap();
-
-        // Reload with additional content defining a second function that returns 24.
-        rhai_context_reload(
-            &context_key,
-            b"let hello2 = 3",
-            &mut context,
-            &initializers,
-            &pre_handling_initializers,
-            &runtime,
-        )
-        .unwrap();
-
-        // get first var
-        let hello = context.scope.get_value::<i64>("hello").unwrap();
-        assert_eq!(hello, 2);
-        // get second var
-        let hello2 = context.scope.get_value::<i64>("hello2").unwrap();
-        assert_eq!(hello2, 3);
     }
 }

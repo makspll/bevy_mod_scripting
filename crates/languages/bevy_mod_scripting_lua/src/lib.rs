@@ -1,10 +1,11 @@
 //! Lua integration for the bevy_mod_scripting system.
 use bevy::{
     app::Plugin,
+    asset::Handle,
     ecs::{entity::Entity, world::World},
 };
 use bevy_mod_scripting_core::{
-    asset::Language,
+    asset::{Language, ScriptAsset},
     bindings::{
         function::namespace::Namespace, globals::AppScriptGlobalsRegistry,
         script_value::ScriptValue, ThreadWorldContainer, WorldContainer,
@@ -116,26 +117,31 @@ impl Default for LuaScriptingPlugin {
                     },
                 ],
                 context_pre_handling_initializers: vec![|context_key, context| {
+                    // TODO: convert these to functions
                     let world = ThreadWorldContainer.try_get_world()?;
                     if let Some(entity) = context_key.entity() {
                         context
                             .globals()
                             .set(
                                 "entity",
-                                LuaReflectReference(<Entity>::allocate(Box::new(entity), world)),
+                                LuaReflectReference(<Entity>::allocate(
+                                    Box::new(entity),
+                                    world.clone(),
+                                )),
                             )
                             .map_err(ScriptError::from_mlua_error)?;
                     }
-                    if let Some(script) = context_key.script().as_ref() {
-                        let path = script
-                            .path()
-                            .map(|p| p.to_string())
-                            .unwrap_or_else(|| script.id().to_string());
-                        context
-                            .globals()
-                            .set("script_id", path)
-                            .map_err(ScriptError::from_mlua_error)?;
-                    }
+                    context
+                        .globals()
+                        .set(
+                            "script_id",
+                            LuaReflectReference(<Handle<ScriptAsset>>::allocate(
+                                Box::new(context_key.script()),
+                                world,
+                            )),
+                        )
+                        .map_err(ScriptError::from_mlua_error)?;
+
                     Ok(())
                 }],
                 additional_supported_extensions: &[],
@@ -276,7 +282,7 @@ mod test {
         let pre_handling_initializers = vec![];
         let mut old_ctxt = lua.clone();
         let handle = Handle::Weak(script_id);
-        let context_key = ScriptAttachment::EntityScript(Entity::from_raw(1), handle, None);
+        let context_key = ScriptAttachment::EntityScript(Entity::from_raw(1), handle);
 
         lua_context_load(
             &context_key,

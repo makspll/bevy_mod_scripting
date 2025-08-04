@@ -8,15 +8,17 @@ let ComponentB   = world.get_type_by_name.call("CompWithDefaultAndComponentData"
 fn on_test() {
     let post_update_schedule = world.get_schedule_by_name.call("PostUpdate");
     
+    let script_attachment = ScriptAttachment.new_entity_script.call(entity, script_id);
     let entity  = world.spawn_.call();
     let entity2 = world.spawn_.call();
-
+    
     world.add_default_component.call(entity, ComponentA);
     world.add_default_component.call(entity, ComponentB);
     world.add_default_component.call(entity2, ComponentA);
     world.add_default_component.call(entity2, ComponentB);
 
-    let built_system = system_builder.call("my_parameterised_system", script_id)
+
+    let built_system = system_builder.call("my_parameterised_system", script_attachment)
                             .resource.call(ResourceTypeA)
                             .query.call(world.query.call().component.call(ComponentA).with_.call(ComponentB))
                             .resource.call(ResourceTypeB);
@@ -47,10 +49,8 @@ fn my_parameterised_system(resourceA, query, resourceB) {
 }
 
 fn on_test_post_update() {
-    return true;
 }
 
 fn on_test_last() {
     assert(runs.len == 1, "Expected 1 runs, got: " + runs.len);
-    return true;
 }
