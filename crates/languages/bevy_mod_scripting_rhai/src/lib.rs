@@ -18,7 +18,7 @@ use bevy_mod_scripting_core::{
     event::CallbackLabel,
     reflection_extensions::PartialReflectExt,
     runtime::RuntimeSettings,
-    script::{DisplayProxy, ScriptAttachment},
+    script::{ContextPolicy, DisplayProxy, ScriptAttachment},
     IntoScriptPluginParams, ScriptingPlugin,
 };
 use bindings::{
@@ -70,7 +70,6 @@ impl Default for RhaiScriptingPlugin {
     fn default() -> Self {
         RhaiScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
-                context_assignment_strategy: Default::default(),
                 runtime_settings: RuntimeSettings {
                     initializers: vec![|runtime: &RhaiRuntime| {
                         let mut engine = runtime.write();
@@ -164,7 +163,7 @@ impl Default for RhaiScriptingPlugin {
                         );
                     }
                     context.scope.set_or_push(
-                        "script_id",
+                        "script_asset",
                         RhaiReflectReference(<Handle<ScriptAsset>>::allocate(
                             Box::new(context_key.script().clone()),
                             world,
@@ -174,8 +173,9 @@ impl Default for RhaiScriptingPlugin {
                     Ok(())
                 }],
                 // already supported by BMS core
-                additional_supported_extensions: &[],
                 language: Language::Rhai,
+                context_policy: ContextPolicy::default(),
+                emit_responses: false,
             },
         }
     }

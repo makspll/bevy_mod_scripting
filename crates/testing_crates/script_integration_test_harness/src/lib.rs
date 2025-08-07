@@ -8,7 +8,7 @@ use std::{
 };
 
 use bevy::{
-    app::{Plugin, PostUpdate, Startup, Update},
+    app::{App, Plugin, PostUpdate, Startup, Update},
     asset::{AssetPath, AssetServer, Handle, LoadState},
     ecs::{
         component::Component,
@@ -17,8 +17,7 @@ use bevy::{
         world::{Command, FromWorld},
     },
     log::Level,
-    prelude::World,
-    reflect::{Reflect, TypeRegistry},
+    reflect::Reflect,
     utils::tracing,
 };
 use bevy_mod_scripting_core::{
@@ -29,7 +28,7 @@ use bevy_mod_scripting_core::{
     error::ScriptError,
     extractors::{HandlerContext, WithWorldGuard},
     script::{DisplayProxy, ScriptAttachment, ScriptComponent, ScriptId},
-    BMSScriptingInfrastructurePlugin, IntoScriptPluginParams, ScriptingPlugin,
+    BMSScriptingInfrastructurePlugin, IntoScriptPluginParams,
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
 use criterion::{measurement::Measurement, BatchSize};
@@ -58,6 +57,14 @@ pub fn install_test_plugin<P: IntoScriptPluginParams + Plugin>(
     if include_test_functions {
         register_test_functions(app);
     }
+    app.add_systems(Update, dummy_update_system);
+    app.add_systems(Startup, dummy_startup_system::<String>);
+
+    app.add_systems(
+        PostUpdate,
+        dummy_before_post_update_system.before(dummy_post_update_system),
+    );
+    app.add_systems(PostUpdate, dummy_post_update_system);
 }
 
 #[cfg(feature = "lua")]
@@ -160,26 +167,7 @@ pub fn make_test_rhai_plugin() -> bevy_mod_scripting_rhai::RhaiScriptingPlugin {
     })
 }
 
-#[cfg(feature = "lua")]
-pub fn execute_lua_integration_test(scenario: Scenario) -> Result<(), String> {
-    let plugin = make_test_lua_plugin();
-    execute_integration_test(plugin, |_, _| {}, scenario)
-}
-
-#[cfg(feature = "rhai")]
-pub fn execute_rhai_integration_test(scenario: Scenario) -> Result<(), String> {
-    let plugin = make_test_rhai_plugin();
-    execute_integration_test(plugin, |_, _| {}, scenario)
-}
-
-pub fn execute_integration_test<
-    P: IntoScriptPluginParams + Plugin + AsMut<ScriptingPlugin<P>>,
-    F: FnOnce(&mut World, &mut TypeRegistry),
->(
-    plugin: P,
-    init: F,
-    scenario: Scenario,
-) -> Result<(), String> {
+pub fn execute_integration_test(scenario: Scenario) -> Result<(), String> {
     // set "BEVY_ASSET_ROOT" to the global assets folder, i.e. CARGO_MANIFEST_DIR/../../../assets
     let mut manifest_dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
 
@@ -193,23 +181,7 @@ pub fn execute_integration_test<
 
     std::env::set_var("BEVY_ASSET_ROOT", manifest_dir.clone());
 
-    let mut app = setup_integration_test(init);
-
-    install_test_plugin(&mut app, plugin, true);
-
-    app.add_systems(Update, dummy_update_system);
-    app.add_systems(Startup, dummy_startup_system::<String>);
-
-    app.add_systems(
-        PostUpdate,
-        dummy_before_post_update_system.before(dummy_post_update_system),
-    );
-    app.add_systems(PostUpdate, dummy_post_update_system);
-
-    app.cleanup();
-    app.finish();
-
-    match scenario.execute::<P>(app) {
+    match scenario.execute(App::default()) {
         Ok(_) => Ok(()),
         Err(e) => Err(format!("{e:?}")),
     }

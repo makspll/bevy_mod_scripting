@@ -15,7 +15,7 @@ use bindings::{
 };
 use commands::{AddStaticScript, RemoveStaticScript};
 use context::{
-    Context, ContextAssignmentStrategy, ContextBuilder, ContextInitializer, ContextLoadingSettings,
+    Context, ContextBuilder, ContextInitializer, ContextLoadingSettings,
     ContextPreHandlingInitializer,
 };
 use error::ScriptError;
@@ -81,19 +81,20 @@ pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
     /// The context builder for loading contexts
     pub context_builder: ContextBuilder<P>,
 
-    /// The strategy for assigning contexts to scripts
-    pub context_assignment_strategy: ContextAssignmentStrategy,
+    /// The strategy used to assign contexts to scripts
+    pub context_policy: ContextPolicy,
 
     /// The language this plugin declares
     pub language: Language,
-    /// Supported extensions to be added to the asset settings without the dot
-    /// By default BMS populates a set of extensions for the languages it supports.
-    pub additional_supported_extensions: &'static [&'static str],
 
     /// initializers for the contexts, run when loading the script
     pub context_initializers: Vec<ContextInitializer<P>>,
+
     /// initializers for the contexts run every time before handling events
     pub context_pre_handling_initializers: Vec<ContextPreHandlingInitializer<P>>,
+
+    /// Whether to emit responses from core script callbacks like `on_script_loaded` or `on_script_unloaded`.
+    pub emit_responses: bool,
 }
 
 impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P> {
@@ -102,11 +103,11 @@ impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P> {
             runtime_settings: Default::default(),
             callback_handler: CallbackSettings::<P>::default().callback_handler,
             context_builder: Default::default(),
-            context_assignment_strategy: Default::default(),
+            context_policy: ContextPolicy::default(),
             language: Default::default(),
             context_initializers: Default::default(),
             context_pre_handling_initializers: Default::default(),
-            additional_supported_extensions: Default::default(),
+            emit_responses: false,
         }
     }
 }
@@ -123,26 +124,14 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
             })
             .insert_resource::<ContextLoadingSettings<P>>(ContextLoadingSettings {
                 loader: self.context_builder.clone(),
-                assignment_strategy: self.context_assignment_strategy,
                 context_initializers: self.context_initializers.clone(),
                 context_pre_handling_initializers: self.context_pre_handling_initializers.clone(),
+                emit_responses: self.emit_responses,
             });
-        if !app.world().contains_resource::<ScriptContext<P>>() {
-            app.insert_resource(if self.context_assignment_strategy.is_global() {
-                ScriptContext::<P>::new(ContextPolicy::shared())
-            } else {
-                ScriptContext::<P>::default()
-            });
-        }
+
+        app.insert_resource(ScriptContext::<P>::new(self.context_policy.clone()));
 
         register_script_plugin_systems::<P>(app);
-
-        if !self.additional_supported_extensions.is_empty() {
-            app.add_supported_script_extensions(
-                self.additional_supported_extensions,
-                self.language.clone(),
-            );
-        }
 
         register_types(app);
     }
@@ -194,16 +183,18 @@ pub trait ConfigureScriptPlugin {
     /// Add a runtime initializer to the plugin
     fn add_runtime_initializer(self, initializer: RuntimeInitializer<Self::P>) -> Self;
 
-    /// Switch the context assigning strategy to a global context assigner.
+    /// Switch the context assigning strategy to the given policy.
     ///
-    /// This means that all scripts will share the same context. This is useful for when you want to share data between scripts easilly.
-    /// Be careful however as this also means that scripts can interfere with each other in unexpected ways! Including overwriting each other's handlers.
-    fn enable_context_sharing(self) -> Self;
+    /// Some context policies might work in unexpected ways.
+    /// For example, a single shared context might cause issues with scripts overriding each other's handlers.
+    fn set_context_policy(self, context_policy: ContextPolicy) -> Self;
 
-    /// Set the set of extensions to be added for the plugin's language.
+    /// Whether to emit responses from core script callbacks like `on_script_loaded` or `on_script_unloaded`.
+    /// By default, this is `false` and responses are not emitted.
     ///
-    /// This is useful for adding extensions that are not supported by default by BMS.
-    fn set_additional_supported_extensions(self, extensions: &'static [&'static str]) -> Self;
+    /// You won't be able to react to these events until after contexts are fully loaded,
+    /// but they might be useful for other purposes, such as debugging or logging.
+    fn emit_core_callback_responses(self, emit_responses: bool) -> Self;
 }
 
 impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugin for P {
@@ -228,15 +219,13 @@ impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugi
         self
     }
 
-    // TODO: Enable deprecation once the proper version is set.
-    // #[deprecated(since="0.13", note="please use app.insert_resource(ScriptContext::shared()) instead")]
-    fn enable_context_sharing(mut self) -> Self {
-        self.as_mut().context_assignment_strategy = ContextAssignmentStrategy::Global;
+    fn set_context_policy(mut self, policy: ContextPolicy) -> Self {
+        self.as_mut().context_policy = policy;
         self
     }
 
-    fn set_additional_supported_extensions(mut self, extensions: &'static [&'static str]) -> Self {
-        self.as_mut().additional_supported_extensions = extensions;
+    fn emit_core_callback_responses(mut self, emit_responses: bool) -> Self {
+        self.as_mut().emit_responses = emit_responses;
         self
     }
 }

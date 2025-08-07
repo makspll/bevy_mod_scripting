@@ -1253,27 +1253,24 @@ impl ScriptAttachment {
 )]
 impl Handle<ScriptAsset> {
     /// Retrieves the path of the script asset if present.
+    /// Assets can be unloaded, and as such if the given handle is no longer active, this will return `None`.
     ///
     /// Arguments:
     /// * `handle`: The handle to the script asset.
     /// Returns:
-    /// * `path`: The path of the script asset.
+    /// * `path`: The asset path of the script asset.
     fn asset_path(ctxt: FunctionCallContext, handle: Ref<Handle<ScriptAsset>>) -> Option<String> {
         profiling::function_scope!("path");
-        let world = ctxt.world().ok();
-        let maybe_strong_handle = ctxt
-            .world()
-            .ok()
-            .and_then(|w| {
-                w.with_resource(|assets: &Assets<ScriptAsset>| {
-                    assets.get_strong_handle(handle.id())
-                })
-                .ok()
-                .flatten()
+        ctxt.world().ok().and_then(|w| {
+            w.with_resource(|assets: &Assets<ScriptAsset>| {
+                // debug
+                assets
+                    .get(&*handle)
+                    .map(|asset| asset.asset_path.to_string())
             })
-            .unwrap_or(handle.clone());
-
-        maybe_strong_handle.path().to_string()
+            .ok()
+            .flatten()
+        })
     }
 }
 

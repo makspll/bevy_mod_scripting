@@ -3,11 +3,9 @@
 use std::path::PathBuf;
 
 use libtest_mimic::{Arguments, Failed, Trial};
-use script_integration_test_harness::{
-    execute_lua_integration_test, execute_rhai_integration_test, scenario::Scenario,
-};
+use script_integration_test_harness::{execute_integration_test, scenario::Scenario};
 
-use test_utils::{discover_all_tests, Test, TestKind};
+use test_utils::{discover_all_tests, Test};
 
 trait TestExecutor {
     fn execute(self) -> Result<(), Failed>;
@@ -28,10 +26,8 @@ impl TestExecutor for Test {
 
         let scenario = Scenario::from_scenario_file(&script_asset_path, &scenario_path)
             .map_err(|e| format!("{e:?}"))?; // print whole error from anyhow including source and backtrace
-        match self.kind {
-            TestKind::Lua => execute_lua_integration_test(scenario)?,
-            TestKind::Rhai => execute_rhai_integration_test(scenario)?,
-        }
+
+        execute_integration_test(scenario)?;
 
         Ok(())
     }

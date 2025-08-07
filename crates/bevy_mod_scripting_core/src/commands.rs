@@ -4,7 +4,7 @@ use crate::{
     asset::ScriptAsset,
     bindings::{ScriptValue, WorldGuard},
     context::ContextBuilder,
-    error::{InteropError, ScriptError},
+    error::ScriptError,
     event::{
         CallbackLabel, IntoCallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded,
         ScriptCallbackResponseEvent, ScriptEvent,
@@ -15,9 +15,9 @@ use crate::{
     IntoScriptPluginParams, ScriptContext,
 };
 use bevy::{
-    asset::Handle,
+    asset::{Assets, Handle},
     ecs::event::Events,
-    log::{debug, error, warn},
+    log::{debug, warn},
     prelude::Command,
 };
 use std::marker::PhantomData;
@@ -26,6 +26,8 @@ use std::marker::PhantomData;
 pub struct DeleteScript<P: IntoScriptPluginParams> {
     /// The context key
     pub context_key: ScriptAttachment,
+    /// Whether to emit responses for core callbacks, like `on_script_loaded`, `on_script_reloaded`, etc.
+    pub emit_responses: bool,
     /// hack to make this Send, C does not need to be Send since it is not stored in the command
     pub _ph: PhantomData<fn(P::C, P::R)>,
 }
@@ -35,8 +37,15 @@ impl<P: IntoScriptPluginParams> DeleteScript<P> {
     pub fn new(context_key: ScriptAttachment) -> Self {
         Self {
             context_key,
+            emit_responses: false,
             _ph: PhantomData,
         }
+    }
+
+    /// If set to true, will emit responses for core callbacks, like `on_script_loaded`, `on_script_reloaded`, etc.
+    pub fn with_responses(mut self, emit_responses: bool) -> Self {
+        self.emit_responses = emit_responses;
+        self
     }
 }
 
@@ -51,7 +60,7 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
                 self.context_key.clone(),
                 OnScriptUnloaded::into_callback_label(),
                 vec![],
-                false,
+                self.emit_responses,
             ),
             world,
         );
@@ -104,6 +113,9 @@ pub struct CreateOrUpdateScript<P: IntoScriptPluginParams> {
     content: Option<Box<[u8]>>,
     // Hack to make this Send, C does not need to be Send since it is not stored in the command
     _ph: std::marker::PhantomData<fn(P::R, P::C)>,
+
+    // if set to true will emit responses for core callbacks, like `on_script_loaded`, `on_script_reloaded`, etc.
+    emit_responses: bool,
 }
 
 #[profiling::all_functions]
@@ -114,12 +126,19 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
             context_key,
             content: None,
             _ph: std::marker::PhantomData,
+            emit_responses: false,
         }
     }
     /// Add content to be evaluated.
     pub fn with_content(mut self, content: impl Into<String>) -> Self {
         let content = content.into();
         self.content = Some(content.into_bytes().into_boxed_slice());
+        self
+    }
+
+    /// If set to true, will emit responses for core callbacks, like `on_script_loaded`, `on_script_reloaded`, etc.
+    pub fn with_responses(mut self, emit_responses: bool) -> Self {
+        self.emit_responses = emit_responses;
         self
     }
 
@@ -167,10 +186,11 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         Ok(context)
     }
 
-    fn before_load(
+    fn before_reload(
         context_key: ScriptAttachment,
         world: WorldGuard,
         handler_ctxt: &HandlerContext<P>,
+        emit_responses: bool,
     ) -> Option<ScriptValue> {
         // if something goes wrong, the error will be handled in the command
         // but we will not pass the script state to the after_load
@@ -178,18 +198,11 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
             context_key.clone(),
             OnScriptUnloaded::into_callback_label(),
             vec![],
-            false,
+            emit_responses,
         )
         .with_context(P::LANGUAGE)
         .with_context("saving reload state")
         .run_with_handler(world, handler_ctxt)
-        .inspect_err(|e| {
-            error!(
-                "{}: on_script_unloaded problem for {}: {e}",
-                P::LANGUAGE,
-                &context_key
-            );
-        })
         .ok()
     }
 
@@ -198,69 +211,58 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         world: WorldGuard,
         handler_ctxt: &HandlerContext<P>,
         script_state: Option<ScriptValue>,
+        emit_responses: bool,
+        is_reload: bool,
     ) {
         let _ = RunScriptCallback::<P>::new(
             context_key.clone(),
             OnScriptLoaded::into_callback_label(),
             vec![],
-            false,
+            emit_responses,
         )
         .with_context(P::LANGUAGE)
         .with_context("on loaded callback")
-        .run_with_handler(world.clone(), handler_ctxt)
-        .inspect_err(|e| {
-            error!(
-                "{}: on_script_loaded problem for {}: {e}",
-                P::LANGUAGE,
-                &context_key
-            );
-        });
+        .run_with_handler(world.clone(), handler_ctxt);
 
-        if let Some(state) = script_state {
+        if is_reload {
             let _ = RunScriptCallback::<P>::new(
                 context_key.clone(),
                 OnScriptReloaded::into_callback_label(),
-                vec![state],
-                false,
+                vec![script_state.unwrap_or(ScriptValue::Unit)],
+                emit_responses,
             )
             .with_context(P::LANGUAGE)
             .with_context("on reloaded callback")
-            .run_with_handler(world, handler_ctxt)
-            .inspect_err(|e| {
-                error!(
-                    "{}: on_script_reloaded problem for {}: {e}",
-                    P::LANGUAGE,
-                    &context_key
-                );
-            });
+            .run_with_handler(world, handler_ctxt);
         }
     }
 
     pub(crate) fn create_or_update_script(
         context_key: &ScriptAttachment,
-        content: Option<&[u8]>,
+        content: &[u8],
         guard: WorldGuard,
         handler_ctxt: &mut HandlerContext<P>,
-    ) -> Result<Option<ScriptValue>, ScriptError> {
+        emit_responses: bool,
+    ) -> Result<(), ScriptError> {
         // we demote to weak from here on out, so as not to hold the asset hostage
         let context_key = context_key.clone().into_weak();
 
         let script_id = context_key.script();
-        let content = content
-            .or_else(|| {
-                handler_ctxt
-                    .scripts
-                    .get(&script_id)
-                    .map(|script| &*script.content)
-            })
-            .ok_or_else(|| ScriptError::new(InteropError::missing_script(script_id.clone())))?;
 
         let phrase;
         let success;
         let mut script_state = None;
+        let mut is_reload = false;
         let result = match handler_ctxt.script_context.get(&context_key) {
             Some(context) => {
-                script_state = Self::before_load(context_key.clone(), guard.clone(), handler_ctxt);
+                is_reload = true;
+
+                script_state = Self::before_reload(
+                    context_key.clone(),
+                    guard.clone(),
+                    handler_ctxt,
+                    emit_responses,
+                );
 
                 let mut lcontext = context.lock();
                 phrase = "reloading";
@@ -299,7 +301,17 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
                     context_key,
                     success,
                 );
-                Ok(script_state)
+
+                Self::after_load(
+                    context_key,
+                    guard,
+                    handler_ctxt,
+                    script_state,
+                    emit_responses,
+                    is_reload,
+                );
+
+                Ok(())
             }
             Err(err) => {
                 handle_script_errors(
@@ -320,18 +332,33 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
 #[profiling::all_functions]
 impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
     fn apply(self, world: &mut bevy::prelude::World) {
+        let content = match self.content {
+            Some(content) => content,
+            None => match world
+                .get_resource::<Assets<ScriptAsset>>()
+                .and_then(|assets| assets.get(&self.context_key.script()))
+                .map(|a| a.content.clone())
+            {
+                Some(content) => content,
+                None => {
+                    bevy::log::error!(
+                        "{}: No content provided for script attachment {}. Cannot attach script.",
+                        P::LANGUAGE,
+                        self.context_key.script().display()
+                    );
+                    return;
+                }
+            },
+        };
+
         with_handler_system_state(world, |guard, handler_ctxt: &mut HandlerContext<P>| {
-            let result = Self::create_or_update_script(
+            let _ = Self::create_or_update_script(
                 &self.context_key,
-                self.content.as_deref(),
+                &content,
                 guard.clone(),
                 handler_ctxt,
+                self.emit_responses,
             );
-            if let Ok(script_state) = result {
-                Self::after_load(self.context_key, guard, handler_ctxt, script_state);
-            } else {
-                // XXX: The error is logged by create_or_update_script?
-            }
         });
     }
 }
@@ -391,6 +418,12 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
         );
 
         if self.trigger_response {
+            bevy::log::trace!(
+                "{}: Sending callback response for callback: {}, attachment: {}",
+                P::LANGUAGE,
+                self.callback,
+                self.context_key,
+            );
             send_callback_response(
                 guard.clone(),
                 ScriptCallbackResponseEvent::new(

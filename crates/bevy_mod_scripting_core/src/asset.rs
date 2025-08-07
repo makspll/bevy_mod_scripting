@@ -2,14 +2,15 @@
 
 use crate::{
     commands::{CreateOrUpdateScript, DeleteScript},
+    context::ContextLoadingSettings,
     error::ScriptError,
     event::ScriptEvent,
     script::{ContextKey, DisplayProxy, ScriptAttachment},
     IntoScriptPluginParams, LanguageExtensions, ScriptComponent, ScriptingSystemSet, StaticScripts,
 };
 use bevy::{
-    app::{App, PreUpdate},
-    asset::{Asset, AssetEvent, AssetLoader, Assets, LoadState},
+    app::{App, Last},
+    asset::{Asset, AssetEvent, AssetLoader, AssetPath, Assets, LoadState},
     log::{error, trace, warn, warn_once},
     prelude::{
         AssetServer, Commands, Entity, EventReader, EventWriter, IntoSystemConfigs,
@@ -55,6 +56,8 @@ pub struct ScriptAsset {
     pub content: Box<[u8]>, // Any chance a Cow<'static, ?> could work here?
     /// The language of the script
     pub language: Language,
+    /// The asset path of the script.
+    pub asset_path: AssetPath<'static>,
 }
 
 impl From<String> for ScriptAsset {
@@ -62,6 +65,7 @@ impl From<String> for ScriptAsset {
         ScriptAsset {
             content: s.into_bytes().into_boxed_slice(),
             language: Language::default(),
+            asset_path: AssetPath::default(),
         }
     }
 }
@@ -102,14 +106,6 @@ impl ScriptAssetLoader {
             extensions: new_arr_static,
             preprocessor: None,
         }
-    }
-
-    /// For testing purposes.
-    #[allow(dead_code)]
-    pub(crate) fn for_extension(extension: &'static str) -> Self {
-        let mut language_extensions = LanguageExtensions::default();
-        language_extensions.insert(extension, Language::Unknown);
-        Self::new(language_extensions)
     }
 
     /// Add a preprocessor
@@ -169,6 +165,7 @@ impl AssetLoader for ScriptAssetLoader {
         let asset = ScriptAsset {
             content: content.into_boxed_slice(),
             language,
+            asset_path: load_context.asset_path().clone(),
         };
         Ok(asset)
     }
@@ -210,11 +207,13 @@ fn handle_script_events<P: IntoScriptPluginParams>(
     asset_server: Res<AssetServer>,
     mut script_queue: Local<ScriptQueue>,
     mut commands: Commands,
+    context_loading_settings: Res<ContextLoadingSettings<P>>,
 ) {
     for event in events.read() {
         trace!("{}: Received script event: {:?}", P::LANGUAGE, event);
         match event {
             ScriptEvent::Modified { script: id } => {
+                bevy::log::info!("{}: Script modified, reloading.", P::LANGUAGE);
                 if let Some(asset) = script_assets.get(*id) {
                     if asset.language != P::LANGUAGE {
                         continue;
@@ -226,21 +225,31 @@ fn handle_script_events<P: IntoScriptPluginParams>(
                         if let Some(handle) =
                             script_component.0.iter().find(|handle| handle.id() == *id)
                         {
-                            commands.queue(CreateOrUpdateScript::<P>::new(
-                                ScriptAttachment::EntityScript(entity, handle.clone()),
-                            ));
+                            commands.queue(
+                                CreateOrUpdateScript::<P>::new(ScriptAttachment::EntityScript(
+                                    entity,
+                                    handle.clone(),
+                                ))
+                                .with_responses(context_loading_settings.emit_responses),
+                            );
                         }
                     }
 
                     if let Some(handle) = static_scripts.scripts.iter().find(|s| s.id() == *id) {
-                        commands.queue(CreateOrUpdateScript::<P>::new(
-                            ScriptAttachment::StaticScript(handle.clone()),
-                        ));
+                        commands.queue(
+                            CreateOrUpdateScript::<P>::new(ScriptAttachment::StaticScript(
+                                handle.clone(),
+                            ))
+                            .with_responses(context_loading_settings.emit_responses),
+                        );
                     }
                 }
             }
             ScriptEvent::Detached { key } => {
-                commands.queue(DeleteScript::<P>::new(key.clone()));
+                commands.queue(
+                    DeleteScript::<P>::new(key.clone())
+                        .with_responses(context_loading_settings.emit_responses),
+                );
             }
             ScriptEvent::Attached { key } => {
                 trace!("{}: Attached script with key: {}", P::LANGUAGE, key);
@@ -300,7 +309,10 @@ fn handle_script_events<P: IntoScriptPluginParams>(
                 .unwrap_or_default();
 
             if language == P::LANGUAGE {
-                commands.queue(CreateOrUpdateScript::<P>::new(context_key));
+                commands.queue(
+                    CreateOrUpdateScript::<P>::new(context_key)
+                        .with_responses(context_loading_settings.emit_responses),
+                );
             }
         }
     }
@@ -312,13 +324,13 @@ pub(crate) fn configure_asset_systems(app: &mut App) {
     // these should be in the same set as bevy's asset systems
     // currently this is in the PreUpdate set
     app.add_systems(
-        PreUpdate,
+        Last,
         (sync_assets).in_set(ScriptingSystemSet::ScriptAssetDispatch),
     )
     .configure_sets(
-        PreUpdate,
+        Last,
         (
-            ScriptingSystemSet::ScriptAssetDispatch.after(bevy::asset::TrackAssets),
+            ScriptingSystemSet::ScriptAssetDispatch.after(bevy::asset::AssetEvents),
             ScriptingSystemSet::ScriptCommandDispatch
                 .after(ScriptingSystemSet::ScriptAssetDispatch),
         ),
@@ -329,7 +341,7 @@ pub(crate) fn configure_asset_systems(app: &mut App) {
 #[profiling::function]
 pub(crate) fn configure_asset_systems_for_plugin<P: IntoScriptPluginParams>(app: &mut App) {
     app.add_systems(
-        PreUpdate,
+        Last,
         handle_script_events::<P>.in_set(ScriptingSystemSet::ScriptCommandDispatch),
     );
 }
@@ -354,6 +366,12 @@ mod tests {
         app.init_asset::<ScriptAsset>();
         app.register_asset_loader(loader);
         app
+    }
+
+    fn for_extension(extension: &'static str) -> ScriptAssetLoader {
+        let mut language_extensions = LanguageExtensions::default();
+        language_extensions.insert(extension, Language::Unknown);
+        ScriptAssetLoader::new(language_extensions)
     }
 
     fn load_asset(app: &mut App, path: &str) -> Handle<ScriptAsset> {
@@ -390,7 +408,7 @@ mod tests {
 
     #[test]
     fn test_asset_loader_loads() {
-        let loader = ScriptAssetLoader::for_extension("script");
+        let loader = for_extension("script");
         let mut app = init_loader_test(loader);
 
         let handle = load_asset(&mut app, "test_assets/test_script.script");
@@ -409,11 +427,10 @@ mod tests {
 
     #[test]
     fn test_asset_loader_applies_preprocessor() {
-        let loader =
-            ScriptAssetLoader::for_extension("script").with_preprocessor(Box::new(|content| {
-                content[0] = b'p';
-                Ok(())
-            }));
+        let loader = for_extension("script").with_preprocessor(Box::new(|content| {
+            content[0] = b'p';
+            Ok(())
+        }));
         let mut app = init_loader_test(loader);
 
         let handle = load_asset(&mut app, "test_assets/test_script.script");

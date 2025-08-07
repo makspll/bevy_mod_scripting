@@ -4,11 +4,14 @@ use anyhow::Error;
 use bevy_mod_scripting_core::{
     asset::Language,
     callback_labels,
-    event::{CallbackLabel, Recipients, ScriptCallbackEvent},
-    script::ScriptAttachment,
+    event::{
+        CallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded, Recipients,
+        ScriptCallbackEvent,
+    },
+    script::{ContextPolicy, ScriptAttachment},
 };
 
-use crate::scenario::{ScenarioContext, ScenarioStep};
+use crate::scenario::{ScenarioContext, ScenarioStep, SCENARIO_SELF_LANGUAGE_NAME};
 
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
 pub enum ScenarioSchedule {
@@ -17,6 +20,15 @@ pub enum ScenarioSchedule {
     FixedUpdate,
     PostUpdate,
     Last,
+}
+
+/// The mode of context assignment for scripts in the scenario.
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
+#[serde(tag = "context_mode")]
+pub enum ContextMode {
+    Global,
+    PerEntity,
+    PerEntityPerScript,
 }
 
 callback_labels!(
@@ -31,6 +43,12 @@ callback_labels!(
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
 #[serde(tag = "step")]
 pub enum ScenarioStepSerialized {
+    /// Installs the scripting plugin with the given settings and intializes the app
+    InstallPlugin {
+        context_policy: Option<ContextMode>,
+        emit_responses: Option<bool>,
+    },
+
     /// Sets up a handler for the given schedule and label.
     /// You can onle use one of the following callbacks:
     /// - `on_test`
@@ -49,12 +67,27 @@ pub enum ScenarioStepSerialized {
     },
     /// Loads a script from the given path and assigns it a name,
     /// this handle can be used later when loaded.
-    LoadScriptAs { path: PathBuf, as_name: String },
+    LoadScriptAs {
+        path: PathBuf,
+        as_name: String,
+    },
     /// Waits until the script with the given name is loaded.
-    WaitForScriptLoaded { name: String },
+    WaitForScriptLoaded {
+        name: String,
+    },
     /// Spawns an entity with the given name and attaches the given script to it.
-    SpawnEntityWithScript { name: String, script: String },
-
+    SpawnEntityWithScript {
+        name: String,
+        script: String,
+    },
+    /// Drops the script asset from the scenario context.
+    DropScriptAsset {
+        script: String,
+    },
+    /// Despawns the entity with the given name.
+    DespawnEntity {
+        entity: String,
+    },
     /// Emits a ScriptCallbackEvent
     EmitScriptCallbackEvent {
         label: ScenarioLabel,
@@ -72,6 +105,19 @@ pub enum ScenarioStepSerialized {
         label: ScenarioLabel,
         #[serde(flatten)]
         attachment: ScenarioAttachment,
+        expect_string_value: Option<String>,
+    },
+    AssertNoCallbackResponsesEmitted,
+
+    /// Modifies the existing script asset by reloading it from the given path.
+    ReloadScriptFrom {
+        script: String,
+        path: PathBuf,
+    },
+
+    /// Sets the current script language context to be used untll this is changed
+    SetCurrentLanguage {
+        language: ScenarioLanguage,
     },
 }
 
@@ -86,6 +132,8 @@ pub enum ScenarioAttachment {
 pub enum ScenarioLanguage {
     Lua,
     Rhai,
+    #[serde(rename = "@this_script_language")]
+    ThisScriptLanguage,
 }
 
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
@@ -96,6 +144,9 @@ pub enum ScenarioLabel {
     CallbackA,
     CallbackB,
     CallbackC,
+    OnScriptLoaded,
+    OnScriptUnloaded,
+    OnScriptReloaded,
 }
 
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
@@ -112,6 +163,9 @@ impl ScenarioStepSerialized {
         match language {
             ScenarioLanguage::Lua => Language::Lua,
             ScenarioLanguage::Rhai => Language::Rhai,
+            ScenarioLanguage::ThisScriptLanguage => {
+                Language::External(SCENARIO_SELF_LANGUAGE_NAME.into())
+            }
         }
     }
 
@@ -157,11 +211,36 @@ impl ScenarioStepSerialized {
             ScenarioLabel::CallbackA => CallbackA.into(),
             ScenarioLabel::CallbackB => CallbackB.into(),
             ScenarioLabel::CallbackC => CallbackC.into(),
+            ScenarioLabel::OnScriptLoaded => OnScriptLoaded.into(),
+            ScenarioLabel::OnScriptUnloaded => OnScriptUnloaded.into(),
+            ScenarioLabel::OnScriptReloaded => OnScriptReloaded.into(),
+        }
+    }
+
+    pub fn resolve_context_policy(context_policy: Option<ContextMode>) -> ContextPolicy {
+        match context_policy {
+            Some(ContextMode::Global) => ContextPolicy::shared(),
+            Some(ContextMode::PerEntity) => ContextPolicy::per_entity(),
+            Some(ContextMode::PerEntityPerScript) => ContextPolicy::per_entity_and_script(),
+            None => ContextPolicy::default(),
         }
     }
 
     pub fn parse_and_resolve(self, context: &ScenarioContext) -> Result<ScenarioStep, Error> {
         Ok(match self {
+            Self::SetCurrentLanguage { language } => ScenarioStep::SetCurrentLanguage {
+                language: Self::parse_language(language),
+            },
+            Self::InstallPlugin {
+                context_policy,
+                emit_responses,
+            } => ScenarioStep::InstallPlugin {
+                context_policy: Self::resolve_context_policy(context_policy),
+                emit_responses: emit_responses.unwrap_or(false),
+            },
+            Self::DropScriptAsset { script } => ScenarioStep::DropScriptAsset {
+                script: context.get_script_handle(&script)?,
+            },
             Self::RunUpdateOnce => ScenarioStep::RunUpdateOnce,
             Self::EmitScriptCallbackEvent {
                 label,
@@ -178,12 +257,15 @@ impl ScenarioStepSerialized {
                 }
                 ScenarioStep::EmitScriptCallbackEvent { event }
             }
-            Self::AssertCallbackSuccess { label, attachment } => {
-                ScenarioStep::AssertCallbackSuccess {
-                    label: Self::resolve_label(label.clone()),
-                    script: Self::resolve_attachment(context, attachment)?,
-                }
-            }
+            Self::AssertCallbackSuccess {
+                label,
+                attachment,
+                expect_string_value,
+            } => ScenarioStep::AssertCallbackSuccess {
+                label: Self::resolve_label(label.clone()),
+                script: Self::resolve_attachment(context, attachment)?,
+                expect_string_value,
+            },
             Self::SetupHandler { schedule, label } => ScenarioStep::SetupHandler {
                 schedule,
                 label: Self::resolve_label(label),
@@ -198,6 +280,16 @@ impl ScenarioStepSerialized {
             Self::SpawnEntityWithScript { name, script } => ScenarioStep::SpawnEntityWithScript {
                 script: context.get_script_handle(&script)?,
                 entity: name,
+            },
+            Self::ReloadScriptFrom { script, path } => ScenarioStep::ReloadScriptFrom {
+                script: context.get_script_handle(&script)?,
+                path,
+            },
+            Self::AssertNoCallbackResponsesEmitted => {
+                ScenarioStep::AssertNoCallbackResponsesEmitted
+            }
+            Self::DespawnEntity { entity } => ScenarioStep::DespawnEntity {
+                entity: context.get_entity(&entity)?,
             },
         })
     }
@@ -296,9 +388,10 @@ mod tests {
                 entity: "entity1".to_string(),
                 script: "script1".to_string(),
             },
+            expect_string_value: None,
         };
         let flat_string = step.to_flat_string().unwrap();
-        assert_eq!(flat_string, "AssertCallbackSuccess attachment=\"EntityScript\", entity=\"entity1\", label=\"OnTest\", script=\"script1\"");
+        assert_eq!(flat_string, "AssertCallbackSuccess attachment=\"EntityScript\", entity=\"entity1\", expect_string_value=\"null\", label=\"OnTest\", script=\"script1\"");
     }
 
     #[test]
@@ -313,6 +406,7 @@ mod tests {
                     entity: "entity1".to_string(),
                     script: "script1".to_string(),
                 },
+                expect_string_value: None,
             }
         );
     }

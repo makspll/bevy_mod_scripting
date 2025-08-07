@@ -2,29 +2,10 @@
 //!
 //! These are designed to be used to pipe inputs into other systems which require them, while handling any configuration erorrs nicely.
 #![allow(deprecated)]
-use parking_lot::Mutex;
-use std::{
-    ops::{Deref, DerefMut},
-    sync::Arc,
-};
-
-use bevy::{
-    asset::Assets,
-    ecs::{
-        component::ComponentId,
-        event::{Event, EventCursor, EventIterator, Events},
-        query::{Access, AccessConflicts},
-        storage::SparseSetIndex,
-        system::{Local, Resource, SystemParam, SystemState},
-        world::World,
-    },
-};
-use fixedbitset::FixedBitSet;
-
+use crate::bindings::pretty_print::DisplayWithWorld;
 use crate::{
     bindings::{
-        access_map::ReflectAccessId, pretty_print::DisplayWithWorld, script_value::ScriptValue,
-        WorldAccessGuard, WorldGuard,
+        access_map::ReflectAccessId, script_value::ScriptValue, WorldAccessGuard, WorldGuard,
     },
     context::ContextLoadingSettings,
     error::{InteropError, ScriptError},
@@ -32,7 +13,21 @@ use crate::{
     handler::CallbackSettings,
     runtime::RuntimeContainer,
     script::{ScriptAttachment, ScriptContext, StaticScripts},
-    IntoScriptPluginParams, ScriptAsset,
+    IntoScriptPluginParams,
+};
+use bevy::ecs::{
+    component::ComponentId,
+    event::{Event, EventCursor, EventIterator, Events},
+    query::{Access, AccessConflicts},
+    storage::SparseSetIndex,
+    system::{Local, Resource, SystemParam, SystemState},
+    world::World,
+};
+use fixedbitset::FixedBitSet;
+use parking_lot::Mutex;
+use std::{
+    ops::{Deref, DerefMut},
+    sync::Arc,
 };
 
 /// Executes `system_state.get_mut` followed by `system_state.apply` after running the given closure, makes sure state is correctly handled in the context of an exclusive system.
@@ -160,8 +155,6 @@ pub struct HandlerContext<'s, P: IntoScriptPluginParams> {
     pub(crate) static_scripts: ResScope<'s, StaticScripts>,
     /// Script context
     pub(crate) script_context: ResScope<'s, ScriptContext<P>>,
-    /// Scripts
-    pub(crate) scripts: ResScope<'s, Assets<ScriptAsset>>,
 }
 
 impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {

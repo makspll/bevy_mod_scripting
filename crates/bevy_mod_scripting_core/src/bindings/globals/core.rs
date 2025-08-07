@@ -99,7 +99,7 @@ fn register_static_core_globals(
     global_registry.register_dummy::<World>("world", "The current ECS world.");
     global_registry
         .register_dummy::<Entity>("entity", "The entity this script is attached to if any.");
-    global_registry.register_dummy::<String>("script_id", "the name/id of this script");
+    global_registry.register_dummy::<String>("script_asset", "the asset handle for this script. If the asset is ever unloaded, the handle will be less useful.");
 }
 
 #[script_globals(bms_core_path = "crate", name = "core_globals")]

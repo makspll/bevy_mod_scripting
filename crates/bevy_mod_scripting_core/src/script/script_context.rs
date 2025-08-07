@@ -1,11 +1,11 @@
 use super::*;
-use crate::{bindings::AsAny, IntoScriptPluginParams};
+use crate::IntoScriptPluginParams;
 use bevy::ecs::system::Resource;
 use parking_lot::Mutex;
 use std::{hash::Hash, sync::Arc};
 
 /// Determines how contexts are grouped by manipulating the context key.
-pub trait ContextKeySelector: Send + Sync + std::fmt::Debug + AsAny + 'static {
+pub trait ContextKeySelector: Send + Sync + std::fmt::Debug + 'static {
     /// The given context key represents a possible script, entity that
     /// is requesting a context.
     ///
@@ -15,8 +15,14 @@ pub trait ContextKeySelector: Send + Sync + std::fmt::Debug + AsAny + 'static {
     fn select(&self, context_key: &ScriptAttachment) -> Option<ContextKey>;
 }
 
-impl<F: Fn(&ScriptAttachment) -> Option<ContextKey> + Send + Sync + std::fmt::Debug + 'static>
-    ContextKeySelector for F
+impl<
+        F: Fn(&ScriptAttachment) -> Option<ContextKey>
+            + Send
+            + Sync
+            + std::fmt::Debug
+            + Clone
+            + 'static,
+    > ContextKeySelector for F
 {
     fn select(&self, context_key: &ScriptAttachment) -> Option<ContextKey> {
         (self)(context_key)
@@ -73,10 +79,18 @@ impl ContextKeySelector for ContextRule {
 }
 
 /// This is a configurable context policy based on priority.
-#[derive(Resource, Debug)]
+#[derive(Debug)]
 pub struct ContextPolicy {
     /// The rules in order of priority.
-    pub priorities: Vec<Box<dyn ContextKeySelector>>,
+    pub priorities: Vec<Arc<dyn ContextKeySelector>>,
+}
+
+impl Clone for ContextPolicy {
+    fn clone(&self) -> Self {
+        Self {
+            priorities: self.priorities.to_vec(),
+        }
+    }
 }
 
 /// Returns a default context policy. i.e. `[ContextPolicy::per_entity_and_script]`.
@@ -97,7 +111,7 @@ impl ContextPolicy {
     /// Use a shared script context.
     pub fn shared() -> Self {
         ContextPolicy {
-            priorities: vec![Box::new(ContextRule::Shared)],
+            priorities: vec![Arc::new(ContextRule::Shared)],
         }
     }
 
@@ -116,11 +130,11 @@ impl ContextPolicy {
     /// If no entity is given it will be the default, i.e. shared context.
     pub fn per_entity() -> Self {
         ContextPolicy {
-            priorities: vec![Box::new(ContextRule::Entity), Box::new(ContextRule::Shared)],
+            priorities: vec![Arc::new(ContextRule::Entity), Arc::new(ContextRule::Shared)],
         }
     }
 
-    /// Use one script context per entity or a shared context.
+    /// Use one script context per script or a shared context.
     ///
     /// For example, given:
     /// - `script_id: Some("script1")`
@@ -134,7 +148,7 @@ impl ContextPolicy {
     /// If no script is given it will be the default, i.e. shared context.
     pub fn per_script() -> Self {
         ContextPolicy {
-            priorities: vec![Box::new(ContextRule::Script), Box::new(ContextRule::Shared)],
+            priorities: vec![Arc::new(ContextRule::Script), Arc::new(ContextRule::Shared)],
         }
     }
 
@@ -153,9 +167,9 @@ impl ContextPolicy {
     pub fn per_entity_and_script() -> Self {
         ContextPolicy {
             priorities: vec![
-                Box::new(ContextRule::EntityScript),
-                Box::new(ContextRule::Script),
-                Box::new(ContextRule::Shared),
+                Arc::new(ContextRule::EntityScript),
+                Arc::new(ContextRule::Script),
+                Arc::new(ContextRule::Shared),
             ],
         }
     }

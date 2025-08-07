@@ -15,7 +15,7 @@ use bevy_mod_scripting_core::{
     event::CallbackLabel,
     reflection_extensions::PartialReflectExt,
     runtime::RuntimeSettings,
-    script::ScriptAttachment,
+    script::{ContextPolicy, ScriptAttachment},
     IntoScriptPluginParams, ScriptingPlugin,
 };
 use bindings::{
@@ -53,7 +53,6 @@ impl Default for LuaScriptingPlugin {
     fn default() -> Self {
         LuaScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
-                context_assignment_strategy: Default::default(),
                 runtime_settings: RuntimeSettings::default(),
                 callback_handler: lua_handler,
                 context_builder: ContextBuilder::<LuaScriptingPlugin> {
@@ -134,7 +133,7 @@ impl Default for LuaScriptingPlugin {
                     context
                         .globals()
                         .set(
-                            "script_id",
+                            "script_asset",
                             LuaReflectReference(<Handle<ScriptAsset>>::allocate(
                                 Box::new(context_key.script()),
                                 world,
@@ -144,8 +143,9 @@ impl Default for LuaScriptingPlugin {
 
                     Ok(())
                 }],
-                additional_supported_extensions: &[],
                 language: Language::Lua,
+                context_policy: ContextPolicy::default(),
+                emit_responses: false,
             },
         }
     }

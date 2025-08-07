@@ -90,12 +90,39 @@ pub fn discover_all_tests(manifest_dir: PathBuf, filter: impl Fn(&Test) -> bool)
         {
             // only take the path from the assets  bit
             let relative = path.strip_prefix(&assets_root).unwrap();
+
+            let scenario_path = find_nearest_ancestor(&path, |p| {
+                p.file_name()
+                    .and_then(|f| f.to_str())
+                    .is_some_and(|p| p == "scenario.txt" || p == "group_scenario.txt")
+            });
+
+            // if the scenario has a `// #main_script filename` line, check if this script is the main script in the scenario
+            // if not ignore it. we only want to run against the main script in the scenario.
+            let is_main_script_in_scenario = scenario_path.as_ref().is_none_or(|scenario| {
+                let scenario_content = fs::read_to_string(scenario).unwrap_or_default();
+                scenario_content.lines().any(|line| {
+                    line.contains("#main_script")
+                        .then(|| {
+                            let main_script_path = line
+                                .split_once("#main_script ")
+                                .map(|(_, main_script_path)| main_script_path.trim())
+                                .unwrap_or_default();
+                            let main_script_path = PathBuf::from(main_script_path);
+                            main_script_path.file_name() == relative.file_name()
+                        })
+                        .is_some_and(|is_main| is_main)
+                })
+            });
+
+            if !is_main_script_in_scenario {
+                return;
+            }
+
             let test = Test {
                 script_asset_path: relative.to_path_buf(),
                 kind,
-                scenario_path: find_nearest_ancestor(&path, |p| {
-                    p.file_name().and_then(|f| f.to_str()) == Some("scenario.txt")
-                }),
+                scenario_path,
             };
 
             if !filter(&test) {

@@ -26,10 +26,11 @@ pub type ContextPreHandlingInitializer<P> =
 /// Settings concerning the creation and assignment of script contexts as well as their initialization.
 #[derive(Resource)]
 pub struct ContextLoadingSettings<P: IntoScriptPluginParams> {
+    /// Whether to emit responses from core script_callbacks like `on_script_loaded` or `on_script_unloaded`.
+    /// By default, this is `false` and responses are not emitted.
+    pub emit_responses: bool,
     /// Defines the strategy used to load and reload contexts
     pub loader: ContextBuilder<P>,
-    /// Defines the strategy used to assign contexts to scripts
-    pub assignment_strategy: ContextAssignmentStrategy,
     /// Initializers run once after creating a context but before executing it for the first time
     pub context_initializers: Vec<ContextInitializer<P>>,
     /// Initializers run every time before executing or loading a script
@@ -39,8 +40,8 @@ pub struct ContextLoadingSettings<P: IntoScriptPluginParams> {
 impl<P: IntoScriptPluginParams> Default for ContextLoadingSettings<P> {
     fn default() -> Self {
         Self {
+            emit_responses: false,
             loader: ContextBuilder::default(),
-            assignment_strategy: Default::default(),
             context_initializers: Default::default(),
             context_pre_handling_initializers: Default::default(),
         }
@@ -50,8 +51,8 @@ impl<P: IntoScriptPluginParams> Default for ContextLoadingSettings<P> {
 impl<T: IntoScriptPluginParams> Clone for ContextLoadingSettings<T> {
     fn clone(&self) -> Self {
         Self {
+            emit_responses: self.emit_responses,
             loader: self.loader.clone(),
-            assignment_strategy: self.assignment_strategy,
             context_initializers: self.context_initializers.clone(),
             context_pre_handling_initializers: self.context_pre_handling_initializers.clone(),
         }
@@ -149,22 +150,5 @@ impl<P: IntoScriptPluginParams> Clone for ContextBuilder<P> {
             load: self.load,
             reload: self.reload,
         }
-    }
-}
-
-/// The strategy used in assigning contexts to scripts
-#[derive(Default, Clone, Copy)]
-pub enum ContextAssignmentStrategy {
-    /// Assign a new context to each script
-    #[default]
-    Individual,
-    /// Share contexts with all other scripts
-    Global,
-}
-
-impl ContextAssignmentStrategy {
-    /// Returns true if there is one global context.
-    pub fn is_global(&self) -> bool {
-        matches!(self, ContextAssignmentStrategy::Global)
     }
 }

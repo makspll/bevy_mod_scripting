@@ -287,9 +287,9 @@ mod test {
                 load: |_, _, _, _, _| Ok(TestContext::default()),
                 reload: |_, _, _, _, _, _| Ok(()),
             },
-            assignment_strategy: Default::default(),
             context_initializers: vec![],
             context_pre_handling_initializers: vec![],
+            emit_responses: false,
         });
         app.finish();
         app.cleanup();
