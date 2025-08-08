@@ -246,6 +246,10 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     ) -> Result<(), ScriptError> {
         // we demote to weak from here on out, so as not to hold the asset hostage
         let context_key = context_key.clone().into_weak();
+        if let ScriptAttachment::StaticScript(id) = &context_key {
+            // add to static scripts
+            handler_ctxt.static_scripts.insert(id.clone());
+        }
 
         let script_id = context_key.script();
 

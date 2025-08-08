@@ -1,6 +1,7 @@
 use crate::{install_test_plugin, parse::*};
 use anyhow::{anyhow, Context, Error};
 use bevy::ecs::entity::Entity;
+use bevy::ecs::world::Command;
 use bevy::prelude::IntoSystem;
 use bevy::{
     app::App,
@@ -13,6 +14,7 @@ use bevy::{
 };
 use bevy_mod_scripting_core::asset::Language;
 use bevy_mod_scripting_core::bindings::{DisplayWithWorld, ScriptValue, WorldGuard};
+use bevy_mod_scripting_core::commands::{AddStaticScript, RemoveStaticScript};
 use bevy_mod_scripting_core::event::ScriptEvent;
 use bevy_mod_scripting_core::script::ContextPolicy;
 use bevy_mod_scripting_core::{
@@ -322,7 +324,12 @@ pub enum ScenarioStep {
         script: Handle<ScriptAsset>,
         entity: String,
     },
-
+    AttachStaticScript {
+        script: Handle<ScriptAsset>,
+    },
+    DetachStaticScript {
+        script: Handle<ScriptAsset>,
+    },
     /// Drops the named script asset from the scenario context.
     DropScriptAsset {
         script: Handle<ScriptAsset>,
@@ -469,12 +476,12 @@ impl ScenarioStep {
                     }
                     _ => {
                         return Err(anyhow!(
-                            "Scenario step InstallPlugin is not supported for the current plugin type: '{}'",
-                            context.current_script_language
-                                .as_ref()
-                                .map(|l| l.to_string())
-                                .unwrap_or_else(|| "None".to_string())
-                        ));
+                                            "Scenario step InstallPlugin is not supported for the current plugin type: '{}'",
+                                            context.current_script_language
+                                                .as_ref()
+                                                .map(|l| l.to_string())
+                                                .unwrap_or_else(|| "None".to_string())
+                                        ));
                     }
                 }
 
@@ -576,11 +583,11 @@ impl ScenarioStep {
                 if let Some(event) = next_event {
                     if event.label != label || event.context_key != script {
                         return Err(anyhow!(
-                                                    "Callback '{}' for attachment: '{}' was not the next event, found: {:?}. Order of events was incorrect.",
-                                                    label,
-                                                    script.to_string(),
-                                                    event
-                                                ));
+                                                                    "Callback '{}' for attachment: '{}' was not the next event, found: {:?}. Order of events was incorrect.",
+                                                                    label,
+                                                                    script.to_string(),
+                                                                    event
+                                                                ));
                     }
 
                     match &event.response {
@@ -596,12 +603,12 @@ impl ScenarioStep {
                                 if ScriptValue::String(Cow::Owned(expected_string.clone())) != *val
                                 {
                                     return Err(anyhow!(
-                                                                "Callback '{}' for attachment: '{}' expected: {}, but got: {}",
-                                                                label,
-                                                                script.to_string(),
-                                                                expected_string,
-                                                                val.display_with_world(WorldGuard::new_exclusive(app.world_mut()))
-                                                            ));
+                                                                                "Callback '{}' for attachment: '{}' expected: {}, but got: {}",
+                                                                                label,
+                                                                                script.to_string(),
+                                                                                expected_string,
+                                                                                val.display_with_world(WorldGuard::new_exclusive(app.world_mut()))
+                                                                            ));
                                 }
                             }
                         }
@@ -691,6 +698,14 @@ impl ScenarioStep {
                 } else {
                     bevy::log::info!("Despawning entity with name '{}'", entity);
                 }
+            }
+            ScenarioStep::AttachStaticScript { script } => {
+                AddStaticScript::new(script.clone()).apply(app.world_mut());
+                bevy::log::info!("Attached static script with handle: {}", script.id());
+            }
+            ScenarioStep::DetachStaticScript { script } => {
+                RemoveStaticScript::new(script.clone()).apply(app.world_mut());
+                bevy::log::info!("Detached static script with handle: {}", script.id());
             }
         }
         Ok(())

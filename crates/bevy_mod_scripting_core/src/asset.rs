@@ -213,7 +213,6 @@ fn handle_script_events<P: IntoScriptPluginParams>(
         trace!("{}: Received script event: {:?}", P::LANGUAGE, event);
         match event {
             ScriptEvent::Modified { script: id } => {
-                bevy::log::info!("{}: Script modified, reloading.", P::LANGUAGE);
                 if let Some(asset) = script_assets.get(*id) {
                     if asset.language != P::LANGUAGE {
                         continue;
@@ -252,7 +251,6 @@ fn handle_script_events<P: IntoScriptPluginParams>(
                 );
             }
             ScriptEvent::Attached { key } => {
-                trace!("{}: Attached script with key: {}", P::LANGUAGE, key);
                 script_queue.push_back(key.clone());
             }
             _ => (),

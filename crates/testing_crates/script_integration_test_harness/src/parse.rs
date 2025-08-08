@@ -80,6 +80,12 @@ pub enum ScenarioStepSerialized {
         name: String,
         script: String,
     },
+    AttachStaticScript {
+        script: String,
+    },
+    DetachStaticScript {
+        script: String,
+    },
     /// Drops the script asset from the scenario context.
     DropScriptAsset {
         script: String,
@@ -228,6 +234,12 @@ impl ScenarioStepSerialized {
 
     pub fn parse_and_resolve(self, context: &ScenarioContext) -> Result<ScenarioStep, Error> {
         Ok(match self {
+            Self::AttachStaticScript { script } => ScenarioStep::AttachStaticScript {
+                script: context.get_script_handle(&script)?,
+            },
+            Self::DetachStaticScript { script } => ScenarioStep::DetachStaticScript {
+                script: context.get_script_handle(&script)?,
+            },
             Self::SetCurrentLanguage { language } => ScenarioStep::SetCurrentLanguage {
                 language: Self::parse_language(language),
             },

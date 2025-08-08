@@ -102,16 +102,17 @@ pub fn discover_all_tests(manifest_dir: PathBuf, filter: impl Fn(&Test) -> bool)
             let is_main_script_in_scenario = scenario_path.as_ref().is_none_or(|scenario| {
                 let scenario_content = fs::read_to_string(scenario).unwrap_or_default();
                 scenario_content.lines().any(|line| {
-                    line.contains("#main_script")
-                        .then(|| {
-                            let main_script_path = line
-                                .split_once("#main_script ")
-                                .map(|(_, main_script_path)| main_script_path.trim())
-                                .unwrap_or_default();
-                            let main_script_path = PathBuf::from(main_script_path);
-                            main_script_path.file_name() == relative.file_name()
-                        })
-                        .is_some_and(|is_main| is_main)
+                    let main_script_line = line.contains("#main_script ");
+                    if !main_script_line {
+                        return true;
+                    }
+
+                    let main_script_path = line
+                        .split_once("#main_script ")
+                        .map(|(_, main_script_path)| main_script_path.trim())
+                        .unwrap_or_default();
+                    let main_script_path = PathBuf::from(main_script_path);
+                    main_script_path.file_name() == relative.file_name()
                 })
             });
 

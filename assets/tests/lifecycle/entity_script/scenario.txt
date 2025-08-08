@@ -1,4 +1,3 @@
-// #main_script lifecycle.lua 
 SetCurrentLanguage language="@this_script_language"
 InstallPlugin emit_responses=true
 
