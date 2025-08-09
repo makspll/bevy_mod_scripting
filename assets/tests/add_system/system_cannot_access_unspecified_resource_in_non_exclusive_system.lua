@@ -2,7 +2,7 @@ runs = {}
 
 function on_test()
     local post_update_schedule = world.get_schedule_by_name("PostUpdate")
-    local script_attachment = ScriptAttachment.new_entity_script(entity, script_id)
+    local script_attachment = ScriptAttachment.new_entity_script(entity, script_asset)
 
     world.add_system(
         post_update_schedule,

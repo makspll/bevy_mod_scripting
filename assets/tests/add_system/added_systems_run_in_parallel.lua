@@ -3,7 +3,7 @@ function on_test()
 
     local test_system = post_update_schedule:get_system_by_name("on_test_post_update")
 
-    local script_attachment = ScriptAttachment.new_entity_script(entity, script_id)
+    local script_attachment = ScriptAttachment.new_entity_script(entity, script_asset)
 
     local system_a = world.add_system(
         post_update_schedule,

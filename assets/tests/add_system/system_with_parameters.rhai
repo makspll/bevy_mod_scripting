@@ -8,7 +8,7 @@ let ComponentB   = world.get_type_by_name.call("CompWithDefaultAndComponentData"
 fn on_test() {
     let post_update_schedule = world.get_schedule_by_name.call("PostUpdate");
     
-    let script_attachment = ScriptAttachment.new_entity_script.call(entity, script_id);
+    let script_attachment = ScriptAttachment.new_entity_script.call(entity, script_asset);
     let entity  = world.spawn_.call();
     let entity2 = world.spawn_.call();
     
