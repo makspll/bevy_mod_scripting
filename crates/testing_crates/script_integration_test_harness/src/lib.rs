@@ -295,6 +295,9 @@ where
 
     // Wait until script is loaded.
     loop {
+        if timer.elapsed() > Duration::from_secs(30) {
+            return Err("Timeout after 30 seconds, could not load script".into());
+        }
         app.update();
         match app.world().resource::<AssetServer>().load_state(script_id) {
             LoadState::Loaded => break,
@@ -308,31 +311,27 @@ where
         }
     }
 
-    loop {
-        app.update();
+    app.update();
 
-        let mut handler_ctxt = state.get_mut(app.world_mut());
-        let (guard, context) = handler_ctxt.get_mut();
-        let context_key = ScriptAttachment::EntityScript(entity, Handle::Weak(script_id));
+    let mut handler_ctxt = state.get_mut(app.world_mut());
+    let (guard, context) = handler_ctxt.get_mut();
+    let context_key = ScriptAttachment::EntityScript(entity, Handle::Weak(script_id));
 
-        let ctxt_arc = context.script_context().get(&context_key).unwrap();
-        let mut ctxt_locked = ctxt_arc.lock();
+    let ctxt_arc = context.script_context().get(&context_key).unwrap();
+    let mut ctxt_locked = ctxt_arc.lock();
 
-        let runtime = &context.runtime_container().runtime;
+    let runtime = &context.runtime_container().runtime;
 
-        let _ = WorldAccessGuard::with_existing_static_guard(guard, |guard| {
-            // Ensure the world is available via ThreadWorldContainer
-            ThreadWorldContainer
-                .set_world(guard.clone())
-                .map_err(|e| e.display_with_world(guard))?;
-            // Pass the locked context to the closure for benchmarking its Lua (or generic) part
-            bench_fn(&mut ctxt_locked, runtime, label, criterion)
-        });
-        state.apply(app.world_mut());
-        if timer.elapsed() > Duration::from_secs(30) {
-            return Err("Timeout after 30 seconds, could not load script".into());
-        }
-    }
+    let _ = WorldAccessGuard::with_existing_static_guard(guard, |guard| {
+        // Ensure the world is available via ThreadWorldContainer
+        ThreadWorldContainer
+            .set_world(guard.clone())
+            .map_err(|e| e.display_with_world(guard))?;
+        // Pass the locked context to the closure for benchmarking its Lua (or generic) part
+        bench_fn(&mut ctxt_locked, runtime, label, criterion)
+    });
+    state.apply(app.world_mut());
+    Ok(())
 }
 
 pub fn run_plugin_script_load_benchmark<

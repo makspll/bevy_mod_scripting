@@ -108,6 +108,24 @@ fn script_benchmarks(criterion: &mut Criterion, filter: Option<Regex>) {
         tests.sort_by_key(|a| a.benchmark_name());
     }
 
+    // debug
+    println!(
+        "{}",
+        grouped
+            .iter()
+            .map(|(k, v)| {
+                format!(
+                    "Group: {k}, Tests: {}",
+                    v.iter()
+                        .map(|t| t.benchmark_name())
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n"),
+    );
+
     for (group, tests) in grouped {
         println!("Running benchmarks for group: {group}");
         let mut benchmark_group = criterion.benchmark_group(group);
