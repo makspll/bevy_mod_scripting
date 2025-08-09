@@ -24,12 +24,12 @@ pub struct AppScriptGlobalsRegistry(Arc<RwLock<ScriptGlobalsRegistry>>);
 #[profiling::all_functions]
 impl AppScriptGlobalsRegistry {
     /// Returns a reference to the inner [`ScriptGlobalsRegistry`].
-    pub fn read(&self) -> RwLockReadGuard<ScriptGlobalsRegistry> {
+    pub fn read(&self) -> RwLockReadGuard<'_, ScriptGlobalsRegistry> {
         self.0.read()
     }
 
     /// Returns a mutable reference to the inner [`ScriptGlobalsRegistry`].
-    pub fn write(&self) -> RwLockWriteGuard<ScriptGlobalsRegistry> {
+    pub fn write(&self) -> RwLockWriteGuard<'_, ScriptGlobalsRegistry> {
         self.0.write()
     }
 }
