@@ -20,6 +20,8 @@ let handle = script_assets.add(script);
 This will not evaluate any code yet. 
 
 ## Evaluating
+A script does not participate in any callbacks until it is evaluated, to evaluate a script you must first attach it to an entity, or to a static script entry.
+
 To evaluate a script, add it to a `ScriptComponent` or to `StaticScripts`.
 ### Load File via `AssetServer`
 ```rust
@@ -49,23 +51,12 @@ fn add_script(mut script_assets: ResMut<Assets<ScriptAsset>>, mut commands: Comm
 }
 ```
 
-## Unloading 
-Scripts are loaded into a context. When the `ScriptAsset` is unloaded, the context may remain. To delete the context do the following:
+## Unloading
+When you no longer need a script asset you can freely unload it, but the script attachment will persist.
+In order to trigger the `on_script_unloaded` etc. callbacks, you need to remove the script from the `ScriptComponent` or `StaticScripts`.
 
-```rust
-# use bevy::prelude::*;
-# use bevy_mod_scripting::prelude::*;
-/// To delete all Lua scripts before the app exits, one would:
-/// `app.add_systems(Update, delete_all_scripts::<LuaScriptingPlugin>.run_if(on_event::<AppExit>))`
-fn delete_all_scripts<P: IntoScriptPluginParams>(script_components: Query<(Entity, &ScriptComponent)>) {
-    for (id, script_component) in &script_components {
-        for handle in &script_component.0 {
-            commands.entity(id).queue(DeleteScript::<P>::new(handle.id()));
-        }
-        commands.entity(id).despawn();
-    }
-}
-```
+When that happens a corresponding `ScriptEvent::Detached` will be dispatched, and then handled by a `DeleteScript` command. Once the last script in a context is removed, the context itself will also be removed.
+
 ## Hot-loading scripts
 To enable hot-loading of assets, you need to enable the necessary Bevy features as normal [see the bevy cheatbook for instructions](https://bevy-cheatbook.github.io/assets/hot-reload.html).
 
@@ -109,4 +100,6 @@ commands.queue(DeleteScript::<LuaScriptingPlugin>::new(script_handle));
 Replace `LuaScriptingPlugin` with the scripting plugin you are using.
 
 ### Loading/Unloading timeframe
-Script evaluation---initial script evalution and script reloading---happens in the `PreUpdate` schedule, in the `ScriptingSystemSet::ScriptCommandDispatch` system set.
+
+Script asset changes are processed together with bevy asset systems, in the `Last` schedule.
+These are converted to `ScriptEvent`'s which are handled right after via the `ScriptingSystemSet::ScriptingCommandDispatch` system set.
