@@ -16,7 +16,7 @@ use bevy::{
         AssetServer, Commands, Entity, EventReader, EventWriter, IntoSystemConfigs,
         IntoSystemSetConfigs, Local, Query, Res,
     },
-    reflect::TypePath,
+    reflect::Reflect,
 };
 use serde::{Deserialize, Serialize};
 use std::{borrow::Cow, collections::VecDeque};
@@ -50,7 +50,8 @@ impl std::fmt::Display for Language {
 }
 
 /// Represents a script loaded into memory as an asset
-#[derive(Asset, TypePath, Clone)]
+#[derive(Asset, Clone, Reflect)]
+#[reflect(opaque)]
 pub struct ScriptAsset {
     /// The body of the script
     pub content: Box<[u8]>, // Any chance a Cow<'static, ?> could work here?

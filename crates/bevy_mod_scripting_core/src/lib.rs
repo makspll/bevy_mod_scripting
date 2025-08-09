@@ -2,7 +2,7 @@
 //!
 //! Contains language agnostic systems and types for handling scripting in bevy.
 
-use crate::event::ScriptErrorEvent;
+use crate::{bindings::MarkAsCore, event::ScriptErrorEvent};
 use asset::{
     configure_asset_systems, configure_asset_systems_for_plugin, Language, ScriptAsset,
     ScriptAssetLoader,
@@ -279,6 +279,10 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
             .init_asset::<ScriptAsset>()
             .init_resource::<AppScriptFunctionRegistry>()
             .insert_resource(AppScheduleRegistry::new());
+
+        app.register_type::<ScriptAsset>();
+        app.register_type::<Handle<ScriptAsset>>();
+        app.register_type_data::<Handle<ScriptAsset>, MarkAsCore>();
 
         app.add_systems(
             PostUpdate,

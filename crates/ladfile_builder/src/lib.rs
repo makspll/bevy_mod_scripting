@@ -1,7 +1,7 @@
 //! Parsing definitions for the LAD (Language Agnostic Decleration) file format.
 pub mod plugin;
 
-use bevy::{ecs::world::World, utils::HashSet};
+use bevy::{ecs::world::World, log, utils::HashSet};
 use bevy_mod_scripting_core::{
     bindings::{
         function::{
@@ -10,7 +10,7 @@ use bevy_mod_scripting_core::{
                 DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext,
             },
         },
-        ReflectReference,
+        MarkAsCore, MarkAsGenerated, MarkAsSignificant, ReflectReference,
     },
     docgen::{
         info::FunctionInfo,
@@ -273,6 +273,22 @@ impl<'t> LadFileBuilder<'t> {
     /// Add a type definition to the LAD file.
     /// Will overwrite any existing type definitions with the same type id.
     pub fn add_type_info(&mut self, type_info: &TypeInfo) -> &mut Self {
+        let registration = self.type_registry.get(type_info.type_id());
+
+        let mut insignificance = default_importance();
+        let mut generated = false;
+        if let Some(registration) = registration {
+            if registration.contains::<MarkAsGenerated>() {
+                generated = true;
+            }
+            if registration.contains::<MarkAsCore>() {
+                insignificance = default_importance() / 2;
+            }
+            if registration.contains::<MarkAsSignificant>() {
+                insignificance = default_importance() / 4;
+            }
+        }
+
         let type_id = self.lad_id_from_type_id(type_info.type_id());
         let lad_type = LadType {
             identifier: type_info
@@ -296,10 +312,52 @@ impl<'t> LadFileBuilder<'t> {
                 .map(|s| s.to_owned()),
             path: type_info.type_path_table().path().to_owned(),
             layout: self.lad_layout_from_type_info(type_info),
-            generated: false,
-            insignificance: default_importance(),
+            generated,
+            insignificance,
         };
         self.file.types.insert(type_id, lad_type);
+        self
+    }
+
+    /// Adds all nested types within the given `ThroughTypeInfo`.
+    pub fn add_through_type_info(&mut self, type_info: &ThroughTypeInfo) -> &mut Self {
+        match type_info {
+            ThroughTypeInfo::UntypedWrapper { through_type, .. } => {
+                self.add_type_info(through_type);
+            }
+            ThroughTypeInfo::TypedWrapper(typed_wrapper_kind) => match typed_wrapper_kind {
+                TypedWrapperKind::Union(ti) => {
+                    for ti in ti {
+                        self.add_through_type_info(ti);
+                    }
+                }
+                TypedWrapperKind::Vec(ti) => {
+                    self.add_through_type_info(ti);
+                }
+                TypedWrapperKind::HashMap(til, tir) => {
+                    self.add_through_type_info(til);
+                    self.add_through_type_info(tir);
+                }
+                TypedWrapperKind::Array(ti, _) => {
+                    self.add_through_type_info(ti);
+                }
+                TypedWrapperKind::Option(ti) => {
+                    self.add_through_type_info(ti);
+                }
+                TypedWrapperKind::InteropResult(ti) => {
+                    self.add_through_type_info(ti);
+                }
+                TypedWrapperKind::Tuple(ti) => {
+                    for ti in ti {
+                        self.add_through_type_info(ti);
+                    }
+                }
+            },
+            ThroughTypeInfo::TypeInfo(type_info) => {
+                self.add_type_info(type_info);
+            }
+        }
+
         self
     }
 
@@ -433,6 +491,12 @@ impl<'t> LadFileBuilder<'t> {
                 LadFunctionNamespace::Type(type_id) => {
                     if let Some(t) = file.types.get_mut(type_id) {
                         t.associated_functions.push(function_id.clone());
+                    } else {
+                        log::warn!(
+                            "Function {} is on type {}, but the type is not registered in the LAD file.",
+                            function_id,
+                            type_id
+                        );
                     }
                 }
                 LadFunctionNamespace::Global => {}

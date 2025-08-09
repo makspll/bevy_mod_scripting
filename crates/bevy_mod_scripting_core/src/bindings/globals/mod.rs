@@ -6,7 +6,7 @@ use super::{
     WorldGuard,
 };
 use crate::{
-    docgen::{into_through_type_info, typed_through::ThroughTypeInfo},
+    docgen::{into_through_type_info, typed_through::ThroughTypeInfo, TypedThrough},
     error::InteropError,
 };
 use bevy::{ecs::system::Resource, reflect::Typed, utils::hashbrown::HashMap};
@@ -152,6 +152,22 @@ impl ScriptGlobalsRegistry {
                 documentation: Some(documentation.into()),
                 type_id: TypeId::of::<T>(),
                 type_information: None,
+            },
+        );
+    }
+
+    /// Typed equivalent to [`Self::register_dummy`].
+    pub fn register_dummy_typed<T: 'static + TypedThrough>(
+        &mut self,
+        name: impl Into<Cow<'static, str>>,
+        documentation: impl Into<Cow<'static, str>>,
+    ) {
+        self.dummies.insert(
+            name.into(),
+            ScriptGlobalDummy {
+                documentation: Some(documentation.into()),
+                type_id: TypeId::of::<T>(),
+                type_information: Some(T::through_type_info()),
             },
         );
     }
