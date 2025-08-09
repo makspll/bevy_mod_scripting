@@ -185,72 +185,7 @@ pub fn execute_integration_test(scenario: Scenario) -> Result<(), String> {
         Ok(_) => Ok(()),
         Err(e) => Err(format!("{e:?}")),
     }
-    // let start = Instant::now(); // start the timer
-
-    // loop {
-    //     app.update();
-
-    //     if start.elapsed() > Duration::from_secs(10) {
-    //         return Err("Timeout after 10 seconds".into());
-    //     }
-
-    //     let error_events = app
-    //         .world_mut()
-    //         .resource_mut::<Events<ScriptErrorEvent>>()
-    //         .drain()
-    //         .collect::<Vec<_>>();
-
-    //     if let Some(event) = error_events.into_iter().next() {
-    //         // eprintln!("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx");
-    //         // if ! app.world().resource::<AssetServer>().load_state(&handle).is_loaded() {
-    //         //     continue;
-    //         // }
-    //         return Err(event
-    //             .error
-    //             .display_with_world(WorldGuard::new_exclusive(app.world_mut())));
-    //     }
-
-    //     let events_completed = app.world_mut().resource_ref::<Events<TestEventFinished>>();
-    //     if !events_completed.is_empty() {
-    //         return Ok(());
-    // }
-    // }
 }
-
-// fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
-//     context_key: &ContextKey,
-//     mut with_guard: WithWorldGuard<'_, '_, HandlerContext<'_, P>>,
-//     expect_response: bool,
-// ) -> Result<ScriptValue, ScriptError> {
-//     let (guard, handler_ctxt) = with_guard.get_mut();
-
-//     if !handler_ctxt.is_script_fully_loaded(*script_id) {
-//         return Ok(ScriptValue::Unit);
-//     }
-
-//     let res = handler_ctxt.call::<C>(context_key, vec![], guard.clone());
-
-//     let e = match res {
-//         Ok(ScriptValue::Error(e)) => e.into(),
-//         Err(e) => e,
-//         Ok(v) => {
-//             if expect_response && !matches!(v, ScriptValue::Bool(true)) {
-//                 InteropError::external_error(format!("Response from callback {} was either not received or wasn't correct. Expected true, got: {v:?}", C::into_callback_label()).into()).into()
-//             } else {
-//                 match guard.with_resource_mut(|mut events: Mut<Events<TestEventFinished>>| {
-//                     events.send(TestEventFinished)
-//                 }) {
-//                     Ok(_) => return Ok(v),
-//                     Err(e) => e.into(),
-//                 }
-//             }
-//         }
-//     };
-
-//     handle_script_errors(guard, vec![e.clone()].into_iter());
-
-//     Err(e)
-// }
 
 #[cfg(feature = "lua")]
 pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(

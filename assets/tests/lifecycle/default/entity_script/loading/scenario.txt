@@ -27,3 +27,4 @@ DespawnEntity entity="test_entity_a"
 RunUpdateOnce
 AssertCallbackSuccess attachment="EntityScript", entity="test_entity_a", label="OnScriptUnloaded", script="script_a", expect_string_value="unloaded!"
 AssertNoCallbackResponsesEmitted
+AssertContextResidents attachment="EntityScript", script="script_a", entity="test_entity_a", residents_num=0

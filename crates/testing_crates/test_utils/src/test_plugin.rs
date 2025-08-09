@@ -3,7 +3,7 @@
 #[macro_export]
 macro_rules! make_test_plugin {
     ($ident: ident) => {
-        // #[derive(Default)]
+        #[derive(std::fmt::Debug)]
         struct TestPlugin($ident::ScriptingPlugin<Self>);
 
         impl Default for TestPlugin {
@@ -31,7 +31,7 @@ macro_rules! make_test_plugin {
             }
         }
 
-        #[derive(Default)]
+        #[derive(Default, std::fmt::Debug)]
         struct TestRuntime {
             pub invocations: parking_lot::Mutex<
                 Vec<(
@@ -41,7 +41,7 @@ macro_rules! make_test_plugin {
             >,
         }
 
-        #[derive(Default)]
+        #[derive(Default, std::fmt::Debug, Clone)]
         struct TestContext {
             pub invocations: Vec<$ident::bindings::script_value::ScriptValue>,
         }

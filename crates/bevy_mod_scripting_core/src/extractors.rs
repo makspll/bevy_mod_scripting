@@ -208,7 +208,7 @@ impl<'s, P: IntoScriptPluginParams> HandlerContext<'s, P> {
     /// since the mapping between scripts and contexts is not one-to-one, will map the context key using the
     /// context policy to find the script context, if one is found then the script is loaded.
     pub fn is_script_fully_loaded(&self, key: &ScriptAttachment) -> bool {
-        self.script_context.is_resident(key)
+        self.script_context.contains(key)
     }
 
     /// Equivalent to [`Self::call`] but with a dynamically passed in label

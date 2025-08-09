@@ -97,6 +97,25 @@ pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
     pub emit_responses: bool,
 }
 
+impl<P> std::fmt::Debug for ScriptingPlugin<P>
+where
+    P: IntoScriptPluginParams,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ScriptingPlugin")
+            .field("callback_handler", &self.callback_handler)
+            .field("context_policy", &self.context_policy)
+            .field("language", &self.language)
+            .field("context_initializers", &self.context_initializers)
+            .field(
+                "context_pre_handling_initializers",
+                &self.context_pre_handling_initializers,
+            )
+            .field("emit_responses", &self.emit_responses)
+            .finish()
+    }
+}
+
 impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P> {
     fn default() -> Self {
         Self {

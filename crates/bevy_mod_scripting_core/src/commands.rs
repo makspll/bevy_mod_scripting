@@ -4,7 +4,7 @@ use crate::{
     asset::ScriptAsset,
     bindings::{ScriptValue, WorldGuard},
     context::ContextBuilder,
-    error::ScriptError,
+    error::{InteropError, ScriptError},
     event::{
         CallbackLabel, IntoCallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded,
         ScriptCallbackResponseEvent, ScriptEvent,
@@ -108,7 +108,7 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
 ///
 /// If script comes from an asset, expects it to be loaded, otherwise this command will fail to process the script.
 pub struct CreateOrUpdateScript<P: IntoScriptPluginParams> {
-    context_key: ScriptAttachment,
+    attachment: ScriptAttachment,
     // It feels like we're using a Box, which requires a clone merely to satisfy the Command trait.
     content: Option<Box<[u8]>>,
     // Hack to make this Send, C does not need to be Send since it is not stored in the command
@@ -121,9 +121,9 @@ pub struct CreateOrUpdateScript<P: IntoScriptPluginParams> {
 #[profiling::all_functions]
 impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     /// Creates a new CreateOrUpdateScript command with the given ID, content
-    pub fn new(context_key: ScriptAttachment) -> Self {
+    pub fn new(attachment: ScriptAttachment) -> Self {
         Self {
-            context_key,
+            attachment,
             content: None,
             _ph: std::marker::PhantomData,
             emit_responses: false,
@@ -143,17 +143,17 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     }
 
     fn reload_context(
-        context_key: &ScriptAttachment,
+        attachment: &ScriptAttachment,
         content: &[u8],
         context: &mut P::C,
         guard: WorldGuard,
         handler_ctxt: &HandlerContext<P>,
     ) -> Result<(), ScriptError> {
-        bevy::log::debug!("{}: reloading context {}", P::LANGUAGE, context_key);
+        bevy::log::debug!("{}: reloading context {}", P::LANGUAGE, attachment);
         // reload context
         (ContextBuilder::<P>::reload)(
             handler_ctxt.context_loading_settings.loader.reload,
-            context_key,
+            attachment,
             content,
             context,
             &handler_ctxt.context_loading_settings.context_initializers,
@@ -166,15 +166,15 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     }
 
     fn load_context(
-        context_key: &ScriptAttachment,
+        attachment: &ScriptAttachment,
         content: &[u8],
         guard: WorldGuard,
         handler_ctxt: &HandlerContext<P>,
     ) -> Result<P::C, ScriptError> {
-        bevy::log::debug!("{}: loading context {}", P::LANGUAGE, context_key);
+        bevy::log::debug!("{}: loading context {}", P::LANGUAGE, attachment);
         let context = (ContextBuilder::<P>::load)(
             handler_ctxt.context_loading_settings.loader.load,
-            context_key,
+            attachment,
             content,
             &handler_ctxt.context_loading_settings.context_initializers,
             &handler_ctxt
@@ -187,7 +187,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     }
 
     fn before_reload(
-        context_key: ScriptAttachment,
+        attachment: ScriptAttachment,
         world: WorldGuard,
         handler_ctxt: &HandlerContext<P>,
         emit_responses: bool,
@@ -195,7 +195,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         // if something goes wrong, the error will be handled in the command
         // but we will not pass the script state to the after_load
         RunScriptCallback::<P>::new(
-            context_key.clone(),
+            attachment.clone(),
             OnScriptUnloaded::into_callback_label(),
             vec![],
             emit_responses,
@@ -207,7 +207,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     }
 
     fn after_load(
-        context_key: ScriptAttachment,
+        attachment: ScriptAttachment,
         world: WorldGuard,
         handler_ctxt: &HandlerContext<P>,
         script_state: Option<ScriptValue>,
@@ -215,7 +215,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         is_reload: bool,
     ) {
         let _ = RunScriptCallback::<P>::new(
-            context_key.clone(),
+            attachment.clone(),
             OnScriptLoaded::into_callback_label(),
             vec![],
             emit_responses,
@@ -226,7 +226,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
 
         if is_reload {
             let _ = RunScriptCallback::<P>::new(
-                context_key.clone(),
+                attachment.clone(),
                 OnScriptReloaded::into_callback_label(),
                 vec![script_state.unwrap_or(ScriptValue::Unit)],
                 emit_responses,
@@ -238,76 +238,92 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     }
 
     pub(crate) fn create_or_update_script(
-        context_key: &ScriptAttachment,
+        attachment: &ScriptAttachment,
         content: &[u8],
         guard: WorldGuard,
         handler_ctxt: &mut HandlerContext<P>,
         emit_responses: bool,
     ) -> Result<(), ScriptError> {
         // we demote to weak from here on out, so as not to hold the asset hostage
-        let context_key = context_key.clone().into_weak();
-        if let ScriptAttachment::StaticScript(id) = &context_key {
+        let attachment = attachment.clone().into_weak();
+        if let ScriptAttachment::StaticScript(id) = &attachment {
             // add to static scripts
             handler_ctxt.static_scripts.insert(id.clone());
         }
 
-        let script_id = context_key.script();
+        let script_id = attachment.script();
 
         let phrase;
         let success;
         let mut script_state = None;
-        let mut is_reload = false;
-        let result = match handler_ctxt.script_context.get(&context_key) {
+        // what callbacks we invoke depends whether or not this attachment
+        // was already present in the context or not
+        let is_reload = handler_ctxt.script_context.contains(&attachment);
+        if is_reload {
+            phrase = "reloading";
+            success = "reloaded";
+
+            script_state = Self::before_reload(
+                attachment.clone(),
+                guard.clone(),
+                handler_ctxt,
+                emit_responses,
+            );
+        } else {
+            phrase = "loading";
+            success = "loaded";
+        };
+
+        // whether or not we actually load vs reload the context (i.e. scrap the old one and create a new one)
+        // depends on whether the context is already present in the script context
+        let context = handler_ctxt.script_context.get(&attachment);
+        let result_context_to_insert = match context {
             Some(context) => {
-                is_reload = true;
+                let mut context = context.lock();
 
-                script_state = Self::before_reload(
-                    context_key.clone(),
-                    guard.clone(),
-                    handler_ctxt,
-                    emit_responses,
-                );
-
-                let mut lcontext = context.lock();
-                phrase = "reloading";
-                success = "updated";
                 Self::reload_context(
-                    &context_key,
+                    &attachment,
                     content,
-                    &mut lcontext,
+                    &mut context,
                     guard.clone(),
                     handler_ctxt,
                 )
                 .map(|_| None)
             }
-            None => {
-                phrase = "loading";
-                success = "created";
-                Self::load_context(&context_key, content, guard.clone(), handler_ctxt).map(Some)
-            }
+            None => Self::load_context(&attachment, content, guard.clone(), handler_ctxt).map(Some),
         };
 
-        match result {
+        match result_context_to_insert {
             Ok(maybe_context) => {
                 if let Some(context) = maybe_context {
                     if handler_ctxt
                         .script_context
-                        .insert(&context_key, context)
+                        .insert(&attachment, context)
                         .is_err()
                     {
-                        warn!("Unable to insert script context for {}.", context_key);
+                        warn!("Unable to insert script context for {}.", attachment);
                     }
                 }
+
+                // mark as resident in the context
+                handler_ctxt
+                    .script_context
+                    .insert_resident(attachment.clone())
+                    .map_err(|err| {
+                        ScriptError::new(InteropError::invariant(format!(
+                            "expected context to be present, could not mark attachment as resident in context, {err:?}"
+                        )))
+                    })?;
 
                 bevy::log::debug!(
                     "{}: script {} successfully {}",
                     P::LANGUAGE,
-                    context_key,
+                    attachment,
                     success,
                 );
 
                 Self::after_load(
-                    context_key,
+                    attachment,
                     guard,
                     handler_ctxt,
                     script_state,
@@ -340,7 +356,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
             Some(content) => content,
             None => match world
                 .get_resource::<Assets<ScriptAsset>>()
-                .and_then(|assets| assets.get(&self.context_key.script()))
+                .and_then(|assets| assets.get(&self.attachment.script()))
                 .map(|a| a.content.clone())
             {
                 Some(content) => content,
@@ -348,7 +364,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
                     bevy::log::error!(
                         "{}: No content provided for script attachment {}. Cannot attach script.",
                         P::LANGUAGE,
-                        self.context_key.script().display()
+                        self.attachment.script().display()
                     );
                     return;
                 }
@@ -357,7 +373,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
 
         with_handler_system_state(world, |guard, handler_ctxt: &mut HandlerContext<P>| {
             let _ = Self::create_or_update_script(
-                &self.context_key,
+                &self.attachment,
                 &content,
                 guard.clone(),
                 handler_ctxt,
@@ -370,7 +386,7 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
 /// Runs a callback on the script with the given ID if it exists
 pub struct RunScriptCallback<P: IntoScriptPluginParams> {
     /// The context key
-    pub context_key: ScriptAttachment,
+    pub attachment: ScriptAttachment,
     /// The callback to run
     pub callback: CallbackLabel,
     /// optional context passed down to errors
@@ -386,13 +402,13 @@ pub struct RunScriptCallback<P: IntoScriptPluginParams> {
 impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
     /// Creates a new RunCallbackCommand with the given ID, callback and arguments
     pub fn new(
-        context_key: ScriptAttachment,
+        attachment: ScriptAttachment,
         callback: CallbackLabel,
         args: Vec<ScriptValue>,
         trigger_response: bool,
     ) -> Self {
         Self {
-            context_key,
+            attachment,
             context: vec![],
             callback,
             args,
@@ -415,7 +431,7 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
     ) -> Result<ScriptValue, ScriptError> {
         let result = handler_ctxt.call_dynamic_label(
             &self.callback,
-            &self.context_key,
+            &self.attachment,
             None,
             self.args,
             guard.clone(),
@@ -426,13 +442,13 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
                 "{}: Sending callback response for callback: {}, attachment: {}",
                 P::LANGUAGE,
                 self.callback,
-                self.context_key,
+                self.attachment,
             );
             send_callback_response(
                 guard.clone(),
                 ScriptCallbackResponseEvent::new(
                     self.callback,
-                    self.context_key.clone(),
+                    self.attachment.clone(),
                     result.clone(),
                 ),
             );
@@ -441,7 +457,7 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
         if let Err(ref err) = result {
             let mut error_with_context = err
                 .clone()
-                .with_script(self.context_key.script().display())
+                .with_script(self.attachment.script().display())
                 .with_context(P::LANGUAGE);
             for ctxt in self.context {
                 error_with_context = error_with_context.with_context(ctxt);
@@ -523,381 +539,3 @@ impl Command for RemoveStaticScript {
         self.run(&mut events);
     }
 }
-
-// fn asd() {
-//     todo!("")
-// }
-
-// #[cfg(test)]
-// mod test {
-//     use bevy::{
-//         log::{Level, LogPlugin},
-//         prelude::*,
-//     };
-
-//     use crate::{
-//         asset::Language,
-//         bindings::script_value::ScriptValue,
-//         context::{ContextBuilder, ContextLoadingSettings},
-//         handler::CallbackSettings,
-//         runtime::RuntimeContainer,
-//         script::{ContextPolicy, ScriptContext},
-//         ManageStaticScripts,
-//     };
-
-//     use super::*;
-
-//     fn setup_app() -> App {
-//         // setup all the resources necessary
-//         let mut app = App::new();
-
-//         app.add_event::<ScriptCallbackResponseEvent>();
-//         app.add_event::<ScriptEvent>();
-//         app.add_plugins(bevy::asset::AssetPlugin::default());
-//         app.init_asset::<ScriptAsset>();
-//         app.add_plugins(LogPlugin {
-//             filter: "bevy_mod_scripting_core=debug,info".to_owned(),
-//             level: Level::TRACE,
-//             ..Default::default()
-//         });
-//         app.add_plugins(crate::configure_asset_systems);
-//         app.add_plugins(crate::configure_asset_systems_for_plugin::<DummyPlugin>);
-//         app.insert_resource(ContextLoadingSettings::<DummyPlugin> {
-//             loader: ContextBuilder {
-//                 load: |name, c, init, pre_run_init, _| {
-//                     let mut context = String::from_utf8_lossy(c).into();
-//                     for init in init {
-//                         init(name, &mut context)?;
-//                     }
-//                     for init in pre_run_init {
-//                         init(name, &mut context)?;
-//                     }
-//                     Ok(context)
-//                 },
-//                 reload: |name, new, existing, init, pre_run_init, _| {
-//                     let mut new = String::from_utf8_lossy(new).to_string();
-//                     for init in init {
-//                         init(name, &mut new)?;
-//                     }
-//                     for init in pre_run_init {
-//                         init(name, &mut new)?;
-//                     }
-//                     existing.push_str(" | ");
-//                     existing.push_str(&new);
-//                     Ok(())
-//                 },
-//             },
-//             assignment_strategy: Default::default(),
-//             context_initializers: vec![|_, c| {
-//                 c.push_str(" initialized");
-//                 Ok(())
-//             }],
-//             context_pre_handling_initializers: vec![|_, c| {
-//                 c.push_str(" pre-handling-initialized");
-//                 Ok(())
-//             }],
-//         })
-//         .insert_resource(RuntimeContainer::<DummyPlugin> {
-//             runtime: "Runtime".to_string(),
-//         })
-//         .init_resource::<StaticScripts>()
-//         .insert_resource(CallbackSettings::<DummyPlugin> {
-//             callback_handler: |_, _, callback, c, _, _| {
-//                 c.push_str(format!(" callback-ran-{callback}").as_str());
-//                 Ok(ScriptValue::Unit)
-//             },
-//         });
-
-//         app
-//     }
-
-//     struct DummyPlugin;
-
-//     impl IntoScriptPluginParams for DummyPlugin {
-//         type R = String;
-//         type C = String;
-//         const LANGUAGE: Language = Language::Unknown;
-
-//         fn build_runtime() -> Self::R {
-//             "Runtime".to_string()
-//         }
-//     }
-
-//     fn assert_context_and_script(
-//         world: &World,
-//         context_key: ScriptAttachment,
-//         context: &str,
-//         message: &str,
-//     ) {
-//         let scripts = world.get_resource::<ScriptContext<DummyPlugin>>().unwrap();
-
-//         let context_arc = scripts
-//             .get(&context_key)
-//             .unwrap_or_else(|| panic!("Context not found {message}"));
-
-//         // assert_eq!(id, script.id);
-//         let found_context = context_arc.lock();
-
-//         assert_eq!(context, found_context.as_str(), "{message}");
-//     }
-
-//     fn assert_response_events(
-//         app: &mut World,
-//         expected: impl Iterator<Item = ScriptCallbackResponseEvent>,
-//         context: &'static str,
-//     ) {
-//         let mut events = app
-//             .get_resource_mut::<Events<ScriptCallbackResponseEvent>>()
-//             .unwrap();
-//         let responses = events.drain().collect::<Vec<_>>();
-//         let expected: Vec<_> = expected.collect();
-//         assert_eq!(
-//             responses.len(),
-//             expected.len(),
-//             "Incorrect amount of events received {context}"
-//         );
-//         for (a, b) in responses.iter().zip(expected.iter()) {
-//             assert_eq!(a.label, b.label, "{context}");
-//             assert_eq!(a.context_key, b.context_key, "{context}");
-//             assert_eq!(a.response, b.response, "{context}");
-//         }
-//     }
-
-//     #[test]
-//     fn test_commands_with_default_assigner() {
-//         let mut app = setup_app();
-//         // app.insert_resource(ScriptContext::<DummyPlugin>::per_script());
-//         let script = add_script(&mut app, "content");
-//         let command = CreateOrUpdateScript::<DummyPlugin>::new(script.clone());
-//         Command::apply(command, app.world_mut());
-
-//         // check script
-//         let loaded_script_expected_content =
-//             "content initialized pre-handling-initialized callback-ran-on_script_loaded";
-//         assert_context_and_script(
-//             app.world_mut(),
-//             script.id(),
-//             loaded_script_expected_content,
-//             "Initial script creation failed",
-//         );
-
-//         // update the script
-//         let content = "new content";
-//         // let command = CreateOrUpdateScript::<DummyPlugin>::new(script.clone(), Some(content), None);
-//         let command =
-//             CreateOrUpdateScript::<DummyPlugin>::new(script.clone()).with_content(content);
-//         Command::apply(command, app.world_mut());
-
-//         // check script
-//         let reloaded_script_expected_content = format!("{loaded_script_expected_content} callback-ran-on_script_unloaded \
-//             | new content initialized pre-handling-initialized callback-ran-on_script_loaded callback-ran-on_script_reloaded");
-
-//         assert_context_and_script(
-//             app.world_mut(),
-//             script.id(),
-//             &reloaded_script_expected_content,
-//             "Script update failed",
-//         );
-
-//         // create second script
-//         let script2 = add_script(&mut app, "content2");
-//         let command = CreateOrUpdateScript::<DummyPlugin>::new(script2.clone());
-
-//         Command::apply(command, app.world_mut());
-
-//         // check second script
-//         assert_context_and_script(
-//             app.world_mut(),
-//             script2.id(),
-//             "content2 initialized pre-handling-initialized callback-ran-on_script_loaded",
-//             "Second script creation failed",
-//         );
-
-//         // run a specific callback on the first script
-//         Command::apply(
-//             RunScriptCallback::<DummyPlugin>::new(
-//                 script.clone(),
-//                 OnScriptLoaded::into_callback_label(),
-//                 vec![],
-//                 true,
-//             ),
-//             app.world_mut(),
-//         );
-
-//         // check this has applied
-//         assert_context_and_script(
-//             app.world_mut(),
-//             script.id(),
-//             &format!("{reloaded_script_expected_content} callback-ran-on_script_loaded"),
-//             "Script callback failed",
-//         );
-//         // assert events sent
-//         assert_response_events(
-//             app.world_mut(),
-//             vec![ScriptCallbackResponseEvent::new(
-//                 OnScriptLoaded::into_callback_label(),
-//                 script.id(),
-//                 Ok(ScriptValue::Unit),
-//             )]
-//             .into_iter(),
-//             "script callback response failed",
-//         );
-
-//         // delete both scripts
-//         let command = DeleteScript::<DummyPlugin>::new(script.id());
-//         Command::apply(command, app.world_mut());
-//         let command = DeleteScript::<DummyPlugin>::new(script2.id());
-//         Command::apply(command, app.world_mut());
-
-//         // check that the scripts are gone
-//         let scripts = app.world_mut().get_resource::<StaticScripts>().unwrap();
-//         assert!(scripts.scripts.is_empty());
-
-//         assert_response_events(
-//             app.world_mut(),
-//             vec![].into_iter(),
-//             "did not expect response events",
-//         );
-//     }
-
-//     fn add_script(app: &mut App, content: impl Into<String>) -> Handle<ScriptAsset> {
-//         app.world_mut()
-//             .resource_mut::<Assets<ScriptAsset>>()
-//             .add(ScriptAsset::from(content.into()))
-//     }
-
-//     fn update_script(app: &mut App, handle: AssetId<ScriptAsset>, content: impl Into<String>) {
-//         let mut scripts = app.world_mut().resource_mut::<Assets<ScriptAsset>>();
-//         let script_asset = scripts.get_mut(handle).unwrap();
-//         script_asset.content = content.into().into_bytes().into_boxed_slice();
-//     }
-
-//     #[test]
-//     fn test_commands_with_global_assigner() {
-//         // setup all the resources necessary
-//         let mut app = setup_app();
-//         app.insert_resource(ScriptContext::<DummyPlugin>::new(ContextPolicy::shared()));
-
-//         // create a script
-//         let script = add_script(&mut app, "content");
-//         let attachment = ScriptAttachment::StaticScript(script.clone(), None);
-//         let command = CreateOrUpdateScript::<DummyPlugin>::new(attachment.clone());
-
-//         app.add_static_script(script.clone());
-//         Command::apply(command, app.world_mut());
-
-//         // check script
-//         let loaded_script_expected_content =
-//             "content initialized pre-handling-initialized callback-ran-on_script_loaded";
-//         assert_context_and_script(
-//             app.world(),
-//             attachment.clone(),
-//             loaded_script_expected_content,
-//             "Initial script creation failed",
-//         );
-
-//         // update the script
-
-//         update_script(&mut app, script.id(), "new content");
-//         let command = CreateOrUpdateScript::<DummyPlugin>::new(attachment.clone());
-
-//         Command::apply(command, app.world_mut());
-
-//         // check script
-
-//         let second_loaded_script_expected_content =
-//             format!("{loaded_script_expected_content} callback-ran-on_script_unloaded \
-//             | new content initialized pre-handling-initialized callback-ran-on_script_loaded callback-ran-on_script_reloaded");
-//         assert_context_and_script(
-//             app.world(),
-//             attachment.clone(),
-//             &second_loaded_script_expected_content,
-//             "Script update failed",
-//         );
-
-//         // create second script
-
-//         let script2 = add_script(&mut app, "content2");
-//         app.add_static_script(script2.clone());
-//         let attachment2 = ScriptAttachment::StaticScript(script2.clone(), None);
-//         let command = CreateOrUpdateScript::<DummyPlugin>::new(attachment2.clone());
-
-//         Command::apply(command, app.world_mut());
-
-//         // check both scripts have the new context
-//         let third_loaded_script_expected_content = format!(
-//             "{second_loaded_script_expected_content} callback-ran-on_script_unloaded \
-//             | content2 initialized pre-handling-initialized callback-ran-on_script_loaded callback-ran-on_script_reloaded",
-//         );
-//         assert_context_and_script(
-//             app.world(),
-//             attachment2.clone(),
-//             &third_loaded_script_expected_content,
-//             "second script context was not created correctly",
-//         );
-//         assert_context_and_script(
-//             app.world(),
-//             attachment2.clone(),
-//             // "script",
-//             &third_loaded_script_expected_content,
-//             "First script context was not updated on second script insert",
-//         );
-
-//         let scripts = app.world().get_resource::<StaticScripts>().unwrap();
-//         assert_eq!(scripts.scripts.len(), 2);
-
-//         // delete first script
-//         let command = DeleteScript::<DummyPlugin>::new(attachment.clone());
-
-//         Command::apply(command, app.world_mut());
-
-//         // Have to run the systems to evaluate the events.
-//         app.update();
-//         // check second script still has the context, and on unload was called
-//         assert_context_and_script(
-//             app.world(),
-//             attachment2.clone(),
-//             &format!("{third_loaded_script_expected_content} callback-ran-on_script_unloaded"),
-//             "first script unload didn't have the desired effect",
-//         );
-
-//         // delete second script
-
-//         let command = DeleteScript::<DummyPlugin>::new(script2);
-
-//         Command::apply(command, app.world_mut());
-
-//         // check that the scripts are gone, and so is the context
-
-//         let scripts = app.world().get_resource::<StaticScripts>().unwrap();
-//         assert!(scripts.scripts.is_empty());
-
-//         let scripts = app.world().get_resource::<StaticScripts>().unwrap();
-//         assert_eq!(scripts.scripts.len(), 0, "scripts weren't removed");
-//         assert_response_events(
-//             app.world_mut(),
-//             vec![].into_iter(),
-//             "did not expect any response events",
-//         );
-//     }
-
-//     #[test]
-//     fn test_static_scripts() {
-//         let mut app = setup_app();
-
-//         let script = add_script(&mut app, "");
-//         let world = app.world_mut();
-
-//         let command = AddStaticScript::new(script.clone());
-//         Command::apply(command, world);
-
-//         let static_scripts = world.get_resource::<StaticScripts>().unwrap();
-//         assert!(static_scripts.contains(&script));
-
-//         let command = RemoveStaticScript::new(script.clone());
-//         Command::apply(command, world);
-
-//         let static_scripts = world.get_resource::<StaticScripts>().unwrap();
-//         assert!(!static_scripts.contains(&script));
-//     }
-// }

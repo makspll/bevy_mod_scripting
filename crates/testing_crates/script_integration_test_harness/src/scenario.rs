@@ -17,6 +17,7 @@ use bevy_mod_scripting_core::bindings::{DisplayWithWorld, ScriptValue, WorldGuar
 use bevy_mod_scripting_core::commands::{AddStaticScript, RemoveStaticScript};
 use bevy_mod_scripting_core::event::ScriptEvent;
 use bevy_mod_scripting_core::script::ContextPolicy;
+use bevy_mod_scripting_core::script::ScriptContext;
 use bevy_mod_scripting_core::{
     asset::ScriptAsset,
     event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent},
@@ -54,7 +55,7 @@ impl Scenario {
         let lines = content
             .lines()
             .map(|line| line.trim())
-            .filter(|line| !line.is_empty() && !line.starts_with('#') && !line.starts_with("//"))
+            .filter(|line| !line.is_empty())
             .collect::<Vec<_>>();
 
         let steps = lines
@@ -70,22 +71,51 @@ impl Scenario {
         })
     }
 
-    pub fn dump_steps(steps: &[ScenarioStepSerialized]) -> String {
-        steps
+    pub fn scenario_error(
+        watcher: &InterestingEventWatcher,
+        steps: &[ScenarioStepSerialized],
+        error_step: (usize, Error),
+    ) -> Error {
+        let msg = steps
             .iter()
             .enumerate()
-            .map(|(i, step)| format!("#{i}: {}", step.to_flat_string().unwrap_or_default()))
-            .collect::<Vec<_>>()
-            .join("\n")
-    }
+            .map(|(i, step)| {
+                let step = format!("#{i}: {}", step.to_flat_string().unwrap_or_default());
+                // print events, in blue
+                let event_colour_start = "\x1b[34m";
+                let event_colour_end = "\x1b[0m";
+                let step_events = watcher
+                    .events
+                    .iter()
+                    .filter(|(_, step_no)| *step_no == i)
+                    .flat_map(|(event, _)| event.lines())
+                    .map(|line| format!("\n\t{event_colour_start}{line}{event_colour_end}"))
+                    .collect::<Vec<_>>()
+                    .join("");
 
-    pub fn dump_events(watcher: &InterestingEventWatcher) -> String {
-        watcher
-            .events
-            .iter()
-            .map(|(event, step)| format!("#{step}: {event}"))
+                if i == error_step.0 {
+                    let anyhow_error_pretty = format!("{:?}", error_step.1);
+                    let tabulated = anyhow_error_pretty
+                        .lines()
+                        .map(|line| format!("\t{line}"))
+                        .collect::<Vec<_>>()
+                        .join("\n");
+                    let colour_start = "\x1b[31m";
+                    let colour_end = "\x1b[0m";
+
+                    format!("{colour_start}{step}\n{tabulated}{colour_end}{step_events}")
+                } else {
+                    format!("{step}{step_events}")
+                }
+            })
             .collect::<Vec<_>>()
-            .join("\n")
+            .join("\n");
+
+        anyhow::anyhow!(
+            "Error in scenario:\n{}\n\nWith steps:\n{}",
+            error_step.1,
+            msg
+        )
     }
 
     pub fn execute(mut self, mut app: App) -> Result<(), Error> {
@@ -96,28 +126,12 @@ impl Scenario {
                 step.to_flat_string().unwrap_or_default()
             );
             self.context.current_step_no = i;
-            let original_step = step.clone();
             let parsed_step = step.parse_and_resolve(&self.context)?;
-            parsed_step
-                .execute(&mut self.context, &mut app)
-                .with_context(|| {
-                    format!(
-                        "Error in step #{i}: {}",
-                        original_step.to_flat_string().unwrap_or_default()
-                    )
-                })
-                .with_context(|| {
-                    format!(
-                        "While execution scenario:\n{}",
-                        Self::dump_steps(&original_steps)
-                    )
-                })
-                .with_context(|| {
-                    format!(
-                        "With events:\n{}",
-                        Self::dump_events(&self.context.event_log)
-                    )
-                })?;
+            if let Err(err) = parsed_step.execute(&mut self.context, &mut app) {
+                let error =
+                    Scenario::scenario_error(&self.context.event_log, &original_steps, (i, err));
+                return Err(error);
+            }
         }
         Ok(())
     }
@@ -285,6 +299,10 @@ impl ScheduleLabel for ScenarioSchedule {
 
 #[derive(Debug)]
 pub enum ScenarioStep {
+    /// A comment in the scenario, ignored during execution.
+    Comment {
+        comment: String,
+    },
     /// Installs the scripting plugin with the given context policy and whether to emit responses.
     InstallPlugin {
         context_policy: ContextPolicy,
@@ -357,6 +375,11 @@ pub enum ScenarioStep {
     ReloadScriptFrom {
         script: Handle<ScriptAsset>,
         path: PathBuf,
+    },
+    /// Asserts that a context for the given attachment does not exist
+    AssertContextResidents {
+        script: ScriptAttachment,
+        residents_num: usize,
     },
 
     /// Despawns the entity with the given name.
@@ -476,12 +499,12 @@ impl ScenarioStep {
                     }
                     _ => {
                         return Err(anyhow!(
-                                            "Scenario step InstallPlugin is not supported for the current plugin type: '{}'",
-                                            context.current_script_language
-                                                .as_ref()
-                                                .map(|l| l.to_string())
-                                                .unwrap_or_else(|| "None".to_string())
-                                        ));
+                                                            "Scenario step InstallPlugin is not supported for the current plugin type: '{}'",
+                                                            context.current_script_language
+                                                                .as_ref()
+                                                                .map(|l| l.to_string())
+                                                                .unwrap_or_else(|| "None".to_string())
+                                                        ));
                     }
                 }
 
@@ -583,11 +606,11 @@ impl ScenarioStep {
                 if let Some(event) = next_event {
                     if event.label != label || event.context_key != script {
                         return Err(anyhow!(
-                                                                    "Callback '{}' for attachment: '{}' was not the next event, found: {:?}. Order of events was incorrect.",
-                                                                    label,
-                                                                    script.to_string(),
-                                                                    event
-                                                                ));
+                                                                                    "Callback '{}' for attachment: '{}' was not the next event, found: {:?}. Order of events was incorrect.",
+                                                                                    label,
+                                                                                    script.to_string(),
+                                                                                    event
+                                                                                ));
                     }
 
                     match &event.response {
@@ -603,12 +626,12 @@ impl ScenarioStep {
                                 if ScriptValue::String(Cow::Owned(expected_string.clone())) != *val
                                 {
                                     return Err(anyhow!(
-                                                                                "Callback '{}' for attachment: '{}' expected: {}, but got: {}",
-                                                                                label,
-                                                                                script.to_string(),
-                                                                                expected_string,
-                                                                                val.display_with_world(WorldGuard::new_exclusive(app.world_mut()))
-                                                                            ));
+                                                                                                "Callback '{}' for attachment: '{}' expected: {}, but got: {}",
+                                                                                                label,
+                                                                                                script.to_string(),
+                                                                                                expected_string,
+                                                                                                val.display_with_world(WorldGuard::new_exclusive(app.world_mut()))
+                                                                                            ));
                                 }
                             }
                         }
@@ -671,10 +694,10 @@ impl ScenarioStep {
                     };
                 } else {
                     return Err(anyhow!(
-                        "Script asset with id '{}' not found in context. Tried reloading from path: {}",
-                        script.id(),
-                        path.display()
-                    ));
+                                        "Script asset with id '{}' not found in context. Tried reloading from path: {}",
+                                        script.id(),
+                                        path.display()
+                                    ));
                 }
             }
             ScenarioStep::AssertNoCallbackResponsesEmitted => {
@@ -706,6 +729,47 @@ impl ScenarioStep {
             ScenarioStep::DetachStaticScript { script } => {
                 RemoveStaticScript::new(script.clone()).apply(app.world_mut());
                 bevy::log::info!("Detached static script with handle: {}", script.id());
+            }
+            ScenarioStep::AssertContextResidents {
+                script,
+                residents_num,
+            } => {
+                let world = app.world_mut();
+                let residents = match context.current_script_language {
+                    #[cfg(feature = "lua")]
+                    Some(Language::Lua) => world
+                        .resource::<ScriptContext<bevy_mod_scripting_lua::LuaScriptingPlugin>>()
+                        .residents_len(&script),
+                    #[cfg(feature = "rhai")]
+                    Some(Language::Rhai) => world
+                        .resource::<ScriptContext<bevy_mod_scripting_rhai::RhaiScriptingPlugin>>()
+                        .residents_len(&script),
+                    _ => {
+                        return Err(anyhow!(
+                                    "Scenario step AssertContextRemoved is not supported for the current plugin type: '{:?}'",
+                                    context.current_script_language
+                                ));
+                    }
+                };
+
+                if residents != residents_num {
+                    return Err(anyhow!(
+                        "Expected {} residents for script attachment: {}, but found {}",
+                        residents_num,
+                        script.to_string(),
+                        residents
+                    ));
+                } else {
+                    bevy::log::info!(
+                        "Script attachment: {} has {} residents as expected",
+                        script.to_string(),
+                        residents
+                    );
+                }
+            }
+            ScenarioStep::Comment { comment } => {
+                // Comments are ignored, do nothing, log it though for debugging
+                bevy::log::info!("Comment: {}", comment);
             }
         }
         Ok(())

@@ -27,3 +27,4 @@ DetachStaticScript script="script_a"
 RunUpdateOnce
 AssertCallbackSuccess attachment="StaticScript", label="OnScriptUnloaded", script="script_a", expect_string_value="unloaded!"
 AssertNoCallbackResponsesEmitted
+AssertContextResidents attachment="StaticScript", script="script_a", residents_num=0

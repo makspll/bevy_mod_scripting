@@ -402,6 +402,21 @@ static FORBIDDEN_KEYWORDS: [&str; 82] = [
 
 #[cfg(test)]
 mod test {
+    use std::sync::Arc;
+
+    use bevy::{
+        asset::{AssetId, AssetIndex, Handle},
+        ecs::entity::Entity,
+    };
+    use parking_lot::Mutex;
+    use test_utils::make_test_plugin;
+
+    use crate::{
+        bindings::ScriptValue,
+        event::Recipients,
+        script::{ContextPolicy, ScriptAttachment, ScriptContext},
+    };
+
     use super::FORBIDDEN_KEYWORDS;
 
     #[test]
@@ -443,8 +458,179 @@ mod test {
         });
     }
 
-    // #[test]
-    // fn test_recipients() {
-    //     todo!()
-    // }
+    make_test_plugin!(crate);
+
+    /// make the following arrangement:
+    /// use AssetId's to identify residents
+    /// ContextA:
+    /// - EntityScriptA (Entity::from_raw(0), AssetId::from_bits(0))
+    /// - EntityScriptB (Entity::from_raw(0), AssetId::from_bits(1))
+    ///
+    /// ContextB:
+    /// - EntityScriptC (Entity::from_raw(1), AssetId::from_bits(2))
+    /// - EntityScriptD (Entity::from_raw(1), AssetId::from_bits(3))
+    ///
+    /// ContextC:
+    /// - StaticScriptA (AssetId::from_bits(4))
+    ///
+    /// ContextD:
+    /// - StaticScriptB (AssetId::from_bits(5))
+    fn make_test_contexts() -> ScriptContext<TestPlugin> {
+        let policy = ContextPolicy::per_entity();
+        let mut script_context = ScriptContext::<TestPlugin>::new(policy);
+        let context_a = TestContext {
+            invocations: vec![ScriptValue::String("a".to_string().into())],
+        };
+        let context_b = TestContext {
+            invocations: vec![ScriptValue::String("b".to_string().into())],
+        };
+        let context_c = TestContext {
+            invocations: vec![ScriptValue::String("c".to_string().into())],
+        };
+        let context_d = TestContext {
+            invocations: vec![ScriptValue::String("d".to_string().into())],
+        };
+
+        let entity_script_a = Handle::Weak(AssetId::from(AssetIndex::from_bits(0)));
+        let entity_script_b = Handle::Weak(AssetId::from(AssetIndex::from_bits(1)));
+        let entity_script_c = Handle::Weak(AssetId::from(AssetIndex::from_bits(2)));
+        let entity_script_d = Handle::Weak(AssetId::from(AssetIndex::from_bits(3)));
+
+        let static_script_a = Handle::Weak(AssetId::from(AssetIndex::from_bits(4)));
+        let static_script_b = Handle::Weak(AssetId::from(AssetIndex::from_bits(5)));
+
+        script_context
+            .insert(
+                &ScriptAttachment::EntityScript(Entity::from_raw(0), entity_script_a),
+                context_a,
+            )
+            .unwrap();
+
+        script_context
+            .insert_resident(ScriptAttachment::EntityScript(
+                Entity::from_raw(0),
+                entity_script_b,
+            ))
+            .unwrap();
+
+        script_context
+            .insert(
+                &ScriptAttachment::EntityScript(Entity::from_raw(1), entity_script_c),
+                context_b,
+            )
+            .unwrap();
+        script_context
+            .insert_resident(ScriptAttachment::EntityScript(
+                Entity::from_raw(1),
+                entity_script_d,
+            ))
+            .unwrap();
+
+        script_context
+            .insert(&ScriptAttachment::StaticScript(static_script_a), context_c)
+            .unwrap();
+
+        script_context
+            .insert(&ScriptAttachment::StaticScript(static_script_b), context_d)
+            .unwrap();
+
+        script_context
+    }
+
+    fn recipients_to_asset_ids(
+        recipients: &[(ScriptAttachment, Arc<Mutex<TestContext>>)],
+    ) -> Vec<(usize, String)> {
+        recipients
+            .iter()
+            .map(|(attachment, context)| {
+                if let AssetId::Index { index, .. } = attachment.script().id() {
+                    let locked = context.lock();
+                    let first_invocation_string =
+                        if let Some(ScriptValue::String(s)) = locked.invocations.first() {
+                            s.clone()
+                        } else {
+                            panic!("Expected first invocation to be a string")
+                        };
+                    (
+                        index.to_bits() as usize,
+                        first_invocation_string.to_string(),
+                    )
+                } else {
+                    panic!(
+                        "Expected AssetId::Index, got {:?}",
+                        attachment.script().id()
+                    )
+                }
+            })
+            .collect()
+    }
+
+    #[test]
+    fn test_all_scripts_recipients() {
+        let script_context = make_test_contexts();
+        let recipients = Recipients::AllScripts.get_recipients(&script_context);
+        assert_eq!(recipients.len(), 6);
+        let mut id_context_pairs = recipients_to_asset_ids(&recipients);
+
+        id_context_pairs.sort_by_key(|(id, _)| *id);
+
+        assert_eq!(
+            id_context_pairs,
+            vec![
+                (0, "a".to_string()),
+                (1, "a".to_string()),
+                (2, "b".to_string()),
+                (3, "b".to_string()),
+                (4, "c".to_string()),
+                (5, "d".to_string()),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_all_contexts_recipients() {
+        let script_context = make_test_contexts();
+        let recipients = Recipients::AllContexts.get_recipients(&script_context);
+        assert_eq!(recipients.len(), 4);
+        let mut id_context_pairs = recipients_to_asset_ids(&recipients);
+        id_context_pairs.sort_by_key(|(id, _)| *id);
+
+        // expect one of 0,1 for context a and one of 2,3 for context b
+        // and 4 for context c and 5 for context d
+
+        // we can't just use equality here because the order of contexts is not guaranteed
+        assert!(
+            id_context_pairs.contains(&(0, "a".to_string()))
+                || id_context_pairs.contains(&(1, "a".to_string()))
+        );
+        assert!(
+            id_context_pairs.contains(&(2, "b".to_string()))
+                || id_context_pairs.contains(&(3, "b".to_string()))
+        );
+        assert!(id_context_pairs.contains(&(4, "c".to_string())));
+        assert!(id_context_pairs.contains(&(5, "d".to_string())));
+    }
+
+    #[test]
+    fn test_script_entity_recipients() {
+        let script_context = make_test_contexts();
+        let recipients =
+            Recipients::ScriptEntity(AssetId::from(AssetIndex::from_bits(0)), Entity::from_raw(0))
+                .get_recipients(&script_context);
+
+        assert_eq!(recipients.len(), 1);
+        let id_context_pairs = recipients_to_asset_ids(&recipients);
+        assert_eq!(id_context_pairs, vec![(0, "a".to_string())]);
+    }
+
+    #[test]
+    fn test_static_script_recipients() {
+        let script_context = make_test_contexts();
+        let recipients = Recipients::StaticScript(AssetId::from(AssetIndex::from_bits(4)))
+            .get_recipients(&script_context);
+
+        assert_eq!(recipients.len(), 1);
+        let id_context_pairs = recipients_to_asset_ids(&recipients);
+        assert_eq!(id_context_pairs, vec![(4, "c".to_string())]);
+    }
 }

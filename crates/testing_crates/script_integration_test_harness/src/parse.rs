@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use anyhow::Error;
 use bevy_mod_scripting_core::{
     asset::Language,
+    bindings::ScriptValue,
     callback_labels,
     event::{
         CallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded, Recipients,
@@ -24,7 +25,6 @@ pub enum ScenarioSchedule {
 
 /// The mode of context assignment for scripts in the scenario.
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
-#[serde(tag = "context_mode")]
 pub enum ContextMode {
     Global,
     PerEntity,
@@ -43,6 +43,9 @@ callback_labels!(
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
 #[serde(tag = "step")]
 pub enum ScenarioStepSerialized {
+    Comment {
+        comment: String,
+    },
     /// Installs the scripting plugin with the given settings and intializes the app
     InstallPlugin {
         context_policy: Option<ContextMode>,
@@ -100,7 +103,9 @@ pub enum ScenarioStepSerialized {
         #[serde(flatten)]
         recipients: ScenarioRecipients,
         language: Option<ScenarioLanguage>,
+        #[serde(default)]
         emit_response: bool,
+        string_value: Option<String>,
     },
 
     /// Run the app update loop once
@@ -114,7 +119,11 @@ pub enum ScenarioStepSerialized {
         expect_string_value: Option<String>,
     },
     AssertNoCallbackResponsesEmitted,
-
+    AssertContextResidents {
+        #[serde(flatten)]
+        script: ScenarioAttachment,
+        residents_num: usize,
+    },
     /// Modifies the existing script asset by reloading it from the given path.
     ReloadScriptFrom {
         script: String,
@@ -234,6 +243,13 @@ impl ScenarioStepSerialized {
 
     pub fn parse_and_resolve(self, context: &ScenarioContext) -> Result<ScenarioStep, Error> {
         Ok(match self {
+            Self::AssertContextResidents {
+                script,
+                residents_num,
+            } => ScenarioStep::AssertContextResidents {
+                script: Self::resolve_attachment(context, script)?,
+                residents_num,
+            },
             Self::AttachStaticScript { script } => ScenarioStep::AttachStaticScript {
                 script: context.get_script_handle(&script)?,
             },
@@ -259,11 +275,15 @@ impl ScenarioStepSerialized {
                 recipients,
                 language,
                 emit_response,
+                string_value,
             } => {
                 let label = Self::resolve_label(label.clone());
                 let recipients = Self::resolve_recipients(context, recipients.clone())?;
                 let language = language.map(Self::parse_language);
-                let mut event = ScriptCallbackEvent::new(label, vec![], recipients, language);
+                let payload = string_value
+                    .map(|s| vec![ScriptValue::String(s.into())])
+                    .unwrap_or(vec![]);
+                let mut event = ScriptCallbackEvent::new(label, payload, recipients, language);
                 if emit_response {
                     event = event.with_response();
                 }
@@ -303,6 +323,7 @@ impl ScenarioStepSerialized {
             Self::DespawnEntity { entity } => ScenarioStep::DespawnEntity {
                 entity: context.get_entity(&entity)?,
             },
+            Self::Comment { comment } => ScenarioStep::Comment { comment },
         })
     }
 
@@ -343,10 +364,18 @@ impl ScenarioStepSerialized {
     }
 
     pub fn from_flat_string(flat_string: &str) -> Result<Self, Error> {
+        let flat_string = flat_string.trim();
+        if flat_string.starts_with("//") {
+            // This is a comment, ignore it
+            return Ok(ScenarioStepSerialized::Comment {
+                comment: flat_string.trim_start_matches("//").trim().to_string(),
+            });
+        }
+
         let mut parts = flat_string.split_whitespace();
-        let step_name = parts.next().ok_or_else(|| {
-            Error::msg("Flat string must start with the step name followed by key-value pairs")
-        })?;
+        let step_name = parts
+            .next()
+            .ok_or_else(|| anyhow::anyhow!("Invalid flat string step: `{}`", flat_string))?;
         let mut map = serde_json::Map::new();
         map.insert(
             "step".to_string(),

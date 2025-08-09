@@ -60,7 +60,7 @@ impl<T: IntoScriptPluginParams> Clone for ContextLoadingSettings<T> {
 }
 /// A strategy for loading contexts
 pub type ContextLoadFn<P> = fn(
-    context_key: &ScriptAttachment,
+    attachment: &ScriptAttachment,
     content: &[u8],
     context_initializers: &[ContextInitializer<P>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
@@ -69,7 +69,7 @@ pub type ContextLoadFn<P> = fn(
 
 /// A strategy for reloading contexts
 pub type ContextReloadFn<P> = fn(
-    context_key: &ScriptAttachment,
+    attachment: &ScriptAttachment,
     content: &[u8],
     previous_context: &mut <P as IntoScriptPluginParams>::C,
     context_initializers: &[ContextInitializer<P>],
@@ -100,7 +100,7 @@ impl<P: IntoScriptPluginParams> ContextBuilder<P> {
     /// load a context
     pub fn load(
         loader: ContextLoadFn<P>,
-        context_key: &ScriptAttachment,
+        attachment: &ScriptAttachment,
         content: &[u8],
         context_initializers: &[ContextInitializer<P>],
         pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
@@ -110,7 +110,7 @@ impl<P: IntoScriptPluginParams> ContextBuilder<P> {
         WorldGuard::with_existing_static_guard(world.clone(), |world| {
             ThreadWorldContainer.set_world(world)?;
             (loader)(
-                context_key,
+                attachment,
                 content,
                 context_initializers,
                 pre_handling_initializers,
@@ -122,7 +122,7 @@ impl<P: IntoScriptPluginParams> ContextBuilder<P> {
     /// reload a context
     pub fn reload(
         reloader: ContextReloadFn<P>,
-        context_key: &ScriptAttachment,
+        attachment: &ScriptAttachment,
         content: &[u8],
         previous_context: &mut P::C,
         context_initializers: &[ContextInitializer<P>],
@@ -133,7 +133,7 @@ impl<P: IntoScriptPluginParams> ContextBuilder<P> {
         WorldGuard::with_existing_static_guard(world, |world| {
             ThreadWorldContainer.set_world(world)?;
             (reloader)(
-                context_key,
+                attachment,
                 content,
                 previous_context,
                 context_initializers,

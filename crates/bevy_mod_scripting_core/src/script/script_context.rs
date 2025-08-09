@@ -15,14 +15,8 @@ pub trait ContextKeySelector: Send + Sync + std::fmt::Debug + 'static {
     fn select(&self, context_key: &ScriptAttachment) -> Option<ContextKey>;
 }
 
-impl<
-        F: Fn(&ScriptAttachment) -> Option<ContextKey>
-            + Send
-            + Sync
-            + std::fmt::Debug
-            + Clone
-            + 'static,
-    > ContextKeySelector for F
+impl<F: Fn(&ScriptAttachment) -> Option<ContextKey> + Send + Sync + std::fmt::Debug + 'static>
+    ContextKeySelector for F
 {
     fn select(&self, context_key: &ScriptAttachment) -> Option<ContextKey> {
         (self)(context_key)
@@ -127,10 +121,16 @@ impl ContextPolicy {
     ///
     /// resulting in each entity having its own context regardless of the script id.
     ///
-    /// If no entity is given it will be the default, i.e. shared context.
+    /// static scripts will get their own context per script asset.
+    ///
+    /// The default is then to use a shared context for no matches
     pub fn per_entity() -> Self {
         ContextPolicy {
-            priorities: vec![Arc::new(ContextRule::Entity), Arc::new(ContextRule::Shared)],
+            priorities: vec![
+                Arc::new(ContextRule::Entity),
+                Arc::new(ContextRule::Script),
+                Arc::new(ContextRule::Shared),
+            ],
         }
     }
 
@@ -245,13 +245,15 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
 
     /// Mark a context as resident.
     /// This needs to be called when a script is added to a context.
+    ///
+    /// Returns true if the context was inserted as a resident, false if it was already present.
+    /// Errors if no matching context is found for the given attachment.
     pub fn insert_resident(
         &mut self,
         context_key: ScriptAttachment,
-    ) -> Result<(), ScriptAttachment> {
+    ) -> Result<bool, ScriptAttachment> {
         if let Some(entry) = self.get_entry_mut(&context_key) {
-            entry.residents.insert(context_key);
-            Ok(())
+            Ok(entry.residents.insert(context_key))
         } else {
             Err(context_key)
         }
@@ -308,21 +310,16 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
         })
     }
 
-    /// Check if the given script is resident in the context.
-    pub fn is_resident(&self, context_key: &ScriptAttachment) -> bool {
-        self.get_entry(context_key)
-            .is_some_and(|entry| entry.residents.contains(context_key))
-    }
-
-    /// Returns the number of residents in the context.
+    /// Returns the number of residents in the context shared by the given attachment.
     pub fn residents_len(&self, context_key: &ScriptAttachment) -> usize {
         self.get_entry(context_key)
-            .map_or(0, |entry| !entry.residents.len())
+            .map_or(0, |entry| entry.residents.len())
     }
 
-    /// Returns true if there is a context.
+    /// Returns true if a context contains this given attachment
     pub fn contains(&self, context_key: &ScriptAttachment) -> bool {
-        self.get_entry(context_key).is_some()
+        self.get_entry(context_key)
+            .is_some_and(|entry| entry.residents.contains(context_key))
     }
 
     /// Hash for context.
@@ -356,5 +353,73 @@ impl<P: IntoScriptPluginParams> Default for ScriptContext<P> {
             map: HashMap::default(),
             policy: ContextPolicy::default(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use bevy::asset::AssetIndex;
+    use test_utils::make_test_plugin;
+
+    use super::*;
+
+    make_test_plugin!(crate);
+
+    #[test]
+    fn script_attachment_eq() {
+        let a = ScriptAttachment::EntityScript(
+            Entity::from_raw(1),
+            Handle::Weak(AssetIndex::from_bits(1).into()),
+        );
+        let b = ScriptAttachment::EntityScript(
+            Entity::from_raw(1),
+            Handle::Weak(AssetIndex::from_bits(2).into()),
+        );
+
+        assert_eq!(a, a);
+        assert_ne!(a, b);
+        let hash_a = DefaultHashBuilder::default().hash_one(&a);
+        let hash_b = DefaultHashBuilder::default().hash_one(&b);
+        assert_eq!(hash_a, hash_a);
+        assert_ne!(hash_a, hash_b);
+    }
+
+    #[test]
+    fn test_insertion_per_script_policy() {
+        let policy = ContextPolicy::per_script();
+
+        let mut script_context = ScriptContext::<TestPlugin>::new(policy.clone());
+        let context_key = ScriptAttachment::EntityScript(
+            Entity::from_raw(1),
+            Handle::Weak(AssetIndex::from_bits(1).into()),
+        );
+        let context_key2 = ScriptAttachment::EntityScript(
+            Entity::from_raw(2),
+            Handle::Weak(AssetIndex::from_bits(1).into()),
+        );
+        assert_eq!(policy.select(&context_key), policy.select(&context_key2));
+
+        script_context
+            .insert(&context_key, TestContext::default())
+            .unwrap();
+
+        assert!(script_context.contains(&context_key));
+        assert_eq!(script_context.residents_len(&context_key), 1);
+        let resident = script_context.residents(&context_key).next().unwrap();
+        assert_eq!(resident.0, context_key);
+        assert!(script_context.get(&context_key).is_some());
+
+        // insert another into the same context
+        assert!(script_context
+            .insert_resident(context_key2.clone())
+            .unwrap());
+
+        assert!(script_context.contains(&context_key2));
+        let mut residents = script_context.residents(&context_key2).collect::<Vec<_>>();
+        residents.sort_by_key(|r| r.0.entity());
+        assert_eq!(residents[0].0, context_key);
+        assert_eq!(residents[1].0, context_key2);
+        assert_eq!(residents.len(), 2);
+        assert_eq!(script_context.residents_len(&context_key2), 2);
     }
 }

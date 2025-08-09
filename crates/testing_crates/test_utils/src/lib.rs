@@ -99,12 +99,12 @@ pub fn discover_all_tests(manifest_dir: PathBuf, filter: impl Fn(&Test) -> bool)
 
             // if the scenario has a `// #main_script filename` line, check if this script is the main script in the scenario
             // if not ignore it. we only want to run against the main script in the scenario.
-            let is_main_script_in_scenario = scenario_path.as_ref().is_none_or(|scenario| {
+            let main_script_path = scenario_path.as_ref().and_then(|scenario| {
                 let scenario_content = fs::read_to_string(scenario).unwrap_or_default();
-                scenario_content.lines().any(|line| {
-                    let main_script_line = line.contains("#main_script ");
+                scenario_content.lines().find_map(|line| {
+                    let main_script_line = line.contains("#main_script");
                     if !main_script_line {
-                        return true;
+                        return None;
                     }
 
                     let main_script_path = line
@@ -112,9 +112,14 @@ pub fn discover_all_tests(manifest_dir: PathBuf, filter: impl Fn(&Test) -> bool)
                         .map(|(_, main_script_path)| main_script_path.trim())
                         .unwrap_or_default();
                     let main_script_path = PathBuf::from(main_script_path);
-                    main_script_path.file_name() == relative.file_name()
+                    Some(main_script_path)
                 })
             });
+
+            let is_main_script_in_scenario =
+                main_script_path.as_ref().is_none_or(|main_script_path| {
+                    relative.file_name() == main_script_path.file_name()
+                });
 
             if !is_main_script_in_scenario {
                 return;
