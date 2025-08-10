@@ -54,7 +54,6 @@ Reminding ourselves how `ContextKey` is defined,
 pub struct ContextKey {
     pub entity: Option<Entity>,
     pub script: Option<Handle<ScriptAsset>>,
-    pub domain: Option<Domain>,
 }
 ```
 we read `policy_b` like this: if `ContextKey` has a script, return a `ContextKey` with only a script. Failing that `ContextRule::Shared` always returns an empty `ContextKey`.
