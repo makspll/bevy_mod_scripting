@@ -1305,7 +1305,7 @@ impl WorldContainer for ThreadWorldContainer {
 #[cfg(test)]
 mod test {
     use super::*;
-    use bevy::reflect::{GetTypeRegistration, Reflect, ReflectFromReflect};
+    use bevy::reflect::{GetTypeRegistration, ReflectFromReflect};
     use test_utils::test_data::{setup_world, SimpleEnum, SimpleStruct, SimpleTupleStruct};
 
     #[test]
@@ -1357,11 +1357,6 @@ mod test {
             Ok::<_, InteropError>(Box::new(SimpleTupleStruct(1)) as Box<dyn PartialReflect>);
 
         pretty_assertions::assert_str_eq!(format!("{result:#?}"), format!("{expected:#?}"));
-    }
-
-    #[derive(Reflect)]
-    struct Test {
-        pub hello: (usize, usize),
     }
 
     #[test]

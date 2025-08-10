@@ -350,10 +350,8 @@ mod tests {
     use std::path::PathBuf;
 
     use bevy::{
-        app::{App, Update},
+        app::App,
         asset::{AssetApp, AssetPath, AssetPlugin, AssetServer, Assets, Handle, LoadState},
-        ecs::system::ResMut,
-        prelude::Resource,
         MinimalPlugins,
     };
 
@@ -449,70 +447,4 @@ mod tests {
             "pest script".to_string()
         );
     }
-
-    #[allow(dead_code)]
-    fn run_app_until_asset_event(app: &mut App, event_kind: AssetEvent<ScriptAsset>) {
-        let checker_system = |mut reader: EventReader<AssetEvent<ScriptAsset>>,
-                              mut event_target: ResMut<EventTarget>| {
-            println!("Reading asset events this frame");
-            for event in reader.read() {
-                println!("{event:?}");
-                if matches!(
-                    (event_target.event, event),
-                    (AssetEvent::Added { .. }, AssetEvent::Added { .. })
-                        | (AssetEvent::Modified { .. }, AssetEvent::Modified { .. })
-                        | (AssetEvent::Removed { .. }, AssetEvent::Removed { .. })
-                        | (AssetEvent::Unused { .. }, AssetEvent::Unused { .. })
-                        | (
-                            AssetEvent::LoadedWithDependencies { .. },
-                            AssetEvent::LoadedWithDependencies { .. },
-                        )
-                ) {
-                    println!("Event matched");
-                    event_target.happened = true;
-                }
-            }
-        };
-
-        if !app.world().contains_resource::<EventTarget>() {
-            // for when we run this multiple times in a test
-            app.add_systems(Update, checker_system);
-        }
-
-        #[derive(Resource)]
-        struct EventTarget {
-            event: AssetEvent<ScriptAsset>,
-            happened: bool,
-        }
-        app.world_mut().insert_resource(EventTarget {
-            event: event_kind,
-            happened: false,
-        });
-
-        loop {
-            println!("Checking if asset event was dispatched");
-            if app.world().get_resource::<EventTarget>().unwrap().happened {
-                println!("Stopping loop");
-                break;
-            }
-            println!("Running app");
-
-            app.update();
-        }
-    }
-
-    struct DummyPlugin;
-
-    impl IntoScriptPluginParams for DummyPlugin {
-        type R = ();
-        type C = ();
-        const LANGUAGE: Language = Language::Lua;
-
-        fn build_runtime() -> Self::R {}
-    }
-
-    // #[test]
-    // fn test_syncing_assets() {
-    //     todo!()
-    // }
 }
