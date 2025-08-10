@@ -36,6 +36,7 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc.js"></script>
@@ -92,10 +93,13 @@
                 sidebar = sidebar || 'visible';
             } else {
                 sidebar = 'hidden';
+                sidebar_toggle.checked = false;
             }
-            sidebar_toggle.checked = sidebar === 'visible';
-            html.classList.remove('sidebar-visible');
-            html.classList.add("sidebar-" + sidebar);
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
@@ -143,7 +147,7 @@
                         <a href="https://github.com/makspll/bevy_mod_scripting" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/core_bindings/types/infiniteplane3d.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/core_bindings/types/infiniteplane3d.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -152,7 +156,12 @@
 
                 <div id="search-wrapper" class="hidden">
                     <form id="searchbar-outer" class="searchbar-outer">
-                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
                     </form>
                     <div id="searchresults-outer" class="searchresults-outer hidden">
                         <div id="searchresults-header" class="searchresults-header"></div>
@@ -186,8 +195,8 @@ stretching infinitely far</p>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><a href="./infiniteplane3d/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./infiniteplane3d/isometry_into_xy.html">isometry_into_xy</a></td><td>Computes an [`Isometry3d`] which transforms points from the plane in 3D space with the given  `origin` to the XY-plane.  ## Guarantees  * the transformation is a [congruence]...</td></tr>
 <tr><td><a href="./infiniteplane3d/isometry_from_xy.html">isometry_from_xy</a></td><td>Computes an [`Isometry3d`] which transforms points from the XY-plane to this plane with the  given `origin`.  ## Guarantees  * the transformation is a [congruence]...</td></tr>
+<tr><td><a href="./infiniteplane3d/isometry_into_xy.html">isometry_into_xy</a></td><td>Computes an [`Isometry3d`] which transforms points from the plane in 3D space with the given  `origin` to the XY-plane.  ## Guarantees  * the transformation is a [congruence]...</td></tr>
 <tr><td><a href="./infiniteplane3d/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
 </tbody></table>
 </div>
@@ -195,7 +204,7 @@ stretching infinitely far</p>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/cylinder/lateral_area.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/cylinder/base.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
@@ -209,7 +218,7 @@ stretching infinitely far</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/cylinder/lateral_area.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/cylinder/base.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
@@ -238,6 +247,7 @@ stretching infinitely far</p>
 
         <!-- Custom JS scripts -->
         <script src="../../multi-code-block.js"></script>
+
 
 
     </div>

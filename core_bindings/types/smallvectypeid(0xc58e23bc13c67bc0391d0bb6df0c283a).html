@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>SmallVec&lt;TypeId(0xe3153e2bb9b95f2ec7db0e6cd7fafcef)&gt; - Bevy Scripting</title>
+        <title>SmallVec&lt;TypeId(0xc58e23bc13c67bc0391d0bb6df0c283a)&gt; - Bevy Scripting</title>
 
 
         <!-- Custom HTML head -->
@@ -36,6 +36,7 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../searchindex.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc.js"></script>
@@ -92,10 +93,13 @@
                 sidebar = sidebar || 'visible';
             } else {
                 sidebar = 'hidden';
+                sidebar_toggle.checked = false;
             }
-            sidebar_toggle.checked = sidebar === 'visible';
-            html.classList.remove('sidebar-visible');
-            html.classList.add("sidebar-" + sidebar);
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
@@ -143,7 +147,7 @@
                         <a href="https://github.com/makspll/bevy_mod_scripting" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/core_bindings/types/smallvectypeid(0xe3153e2bb9b95f2ec7db0e6cd7fafcef).md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/core_bindings/types/smallvectypeid(0xc58e23bc13c67bc0391d0bb6df0c283a).md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -152,7 +156,12 @@
 
                 <div id="search-wrapper" class="hidden">
                     <form id="searchbar-outer" class="searchbar-outer">
-                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
                     </form>
                     <div id="searchresults-outer" class="searchresults-outer hidden">
                         <div id="searchresults-header" class="searchresults-header"></div>
@@ -172,7 +181,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="smallvectypeid0xe3153e2bb9b95f2ec7db0e6cd7fafcef"><a class="header" href="#smallvectypeid0xe3153e2bb9b95f2ec7db0e6cd7fafcef"><code>SmallVec&lt;TypeId(0xe3153e2bb9b95f2ec7db0e6cd7fafcef)&gt;</code></a></h1>
+                        <h1 id="smallvectypeid0xc58e23bc13c67bc0391d0bb6df0c283a"><a class="header" href="#smallvectypeid0xc58e23bc13c67bc0391d0bb6df0c283a"><code>SmallVec&lt;TypeId(0xc58e23bc13c67bc0391d0bb6df0c283a)&gt;</code></a></h1>
 <p>Opaque Type. 🔒</p>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
@@ -189,7 +198,7 @@
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/smallvectypeid(0xca4424050e7a74e1740c7c5e2c2bd34d).html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/smallvectypeid(0x3bbd39b795879a90f2ac5701015e7b6a).html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -203,7 +212,7 @@
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/smallvectypeid(0xca4424050e7a74e1740c7c5e2c2bd34d).html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/smallvectypeid(0x3bbd39b795879a90f2ac5701015e7b6a).html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
@@ -228,6 +237,7 @@
 
         <!-- Custom JS scripts -->
         <script src="../../multi-code-block.js"></script>
+
 
 
     </div>

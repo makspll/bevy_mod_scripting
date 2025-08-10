@@ -36,6 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc.js"></script>
@@ -92,10 +93,13 @@
                 sidebar = sidebar || 'visible';
             } else {
                 sidebar = 'hidden';
+                sidebar_toggle.checked = false;
             }
-            sidebar_toggle.checked = sidebar === 'visible';
-            html.classList.remove('sidebar-visible');
-            html.classList.add("sidebar-" + sidebar);
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
@@ -143,7 +147,7 @@
                         <a href="https://github.com/makspll/bevy_mod_scripting" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/core_bindings/types.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/core_bindings/types.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -152,7 +156,12 @@
 
                 <div id="search-wrapper" class="hidden">
                     <form id="searchbar-outer" class="searchbar-outer">
-                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
                     </form>
                     <div id="searchresults-outer" class="searchresults-outer hidden">
                         <div id="searchresults-header" class="searchresults-header"></div>
@@ -184,8 +193,10 @@
 <tr><td><a href="././types/scriptresourceregistration.html"><code>ScriptResourceRegistration</code></a></td><td>A reference to a resource type's reflection registration.   In general think of this as a handle to...</td></tr>
 <tr><td><a href="././types/scripttyperegistration.html"><code>ScriptTypeRegistration</code></a></td><td>A reference to a type which is not a `Resource` or `Component`.   In general think of this as a han...</td></tr>
 <tr><td><a href="././types/scriptsystembuilder.html"><code>ScriptSystemBuilder</code></a></td><td>A builder for systems living in scripts</td></tr>
+<tr><td><a href="././types/scriptattachment.html"><code>ScriptAttachment</code></a></td><td>Specifies a unique attachment of a script. These attachments are mapped to [`ContextKey`]'s depending on the context policy used.</td></tr>
 <tr><td><a href="././types/reflectschedule.html"><code>ReflectSchedule</code></a></td><td>A reflectable schedule.</td></tr>
 <tr><td><a href="././types/reflectsystem.html"><code>ReflectSystem</code></a></td><td>A reflectable system.</td></tr>
+<tr><td><a href="././types/handlescriptasset.html"><code>Handle&lt;ScriptAsset&gt;</code></a></td><td>A strong or weak handle to a specific [`Asset`]. If a [`Handle`] is [`Handle::Strong`], the [`Asset...</td></tr>
 <tr><td><a href="././types/name.html"><code>Name</code></a></td><td>Component used to identify an entity. Stores a hash for faster comparisons.   The hash is eagerly r...</td></tr>
 <tr><td><a href="././types/componentid.html"><code>ComponentId</code></a></td><td>A value which uniquely identifies the type of a [`Component`] or [`Resource`] within a  [`World`].   Each time a new `Component` type is registered within a `World` using  e.g. [`World::register_component`]...</td></tr>
 <tr><td><a href="././types/componentticks.html"><code>ComponentTicks</code></a></td><td>Records when a component or resource was added and when it was last mutably dereferenced (or added)...</td></tr>
@@ -441,7 +452,9 @@
 <tr><td><a href="././types/meshmorphweights.html"><code>MeshMorphWeights</code></a></td><td>Control a specific [`Mesh`] instance's [morph targets]. These control the weights of  specific "mes...</td></tr>
 <tr><td><a href="././types/morphweights.html"><code>MorphWeights</code></a></td><td>Controls the [morph targets] for all child `Mesh3d` entities. In most cases, [`MorphWeights`] shoul...</td></tr>
 <tr><td><a href="././types/skinnedmesh.html"><code>SkinnedMesh</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/scriptasset.html"><code>ScriptAsset</code></a></td><td>Represents a script loaded into memory as an asset</td></tr>
 <tr><td><a href="././types/namespace.html"><code>Namespace</code></a></td><td>A namespace for functions</td></tr>
+<tr><td><a href="././types/dynamiccomponent.html"><code>DynamicComponent</code></a></td><td>A dynamic script component</td></tr>
 <tr><td><a href="././types/scriptvalue.html"><code>ScriptValue</code></a></td><td>An abstraction of values that can be passed to and from scripts.  This allows us to re-use logic be...</td></tr>
 <tr><td><a href="././types/functionarginfo.html"><code>FunctionArgInfo</code></a></td><td>Information about a function argument.</td></tr>
 <tr><td><a href="././types/functioninfo.html"><code>FunctionInfo</code></a></td><td>Information about a function.</td></tr>
@@ -704,6 +717,7 @@
 <tr><td><a href="././types/assetidanimationgraph.html"><code>AssetId&lt;AnimationGraph&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
 <tr><td><a href="././types/assetidimage.html"><code>AssetId&lt;Image&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
 <tr><td><a href="././types/assetidmesh.html"><code>AssetId&lt;Mesh&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
+<tr><td><a href="././types/assetidscriptasset.html"><code>AssetId&lt;ScriptAsset&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
 <tr><td><a href="././types/assetidstandardmaterial.html"><code>AssetId&lt;StandardMaterial&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
 <tr><td><a href="././types/assetidshaderstoragebuffer.html"><code>AssetId&lt;ShaderStorageBuffer&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
 <tr><td><a href="././types/assetidcolormaterial.html"><code>AssetId&lt;ColorMaterial&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
@@ -750,9 +764,9 @@
 <tr><td><a href="././types/optionu16.html"><code>Option&lt;u16&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/optionu32.html"><code>Option&lt;u32&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/optionusize.html"><code>Option&lt;usize&gt;</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/smallvectypeid(0xe3153e2bb9b95f2ec7db0e6cd7fafcef).html"><code>SmallVec&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/smallvectypeid(0xca4424050e7a74e1740c7c5e2c2bd34d).html"><code>SmallVec&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="././types/smallvectypeid(0xa4ba851152396acbf20abdd3b310e381).html"><code>SmallVec&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/smallvectypeid(0xc58e23bc13c67bc0391d0bb6df0c283a).html"><code>SmallVec&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/smallvectypeid(0x3bbd39b795879a90f2ac5701015e7b6a).html"><code>SmallVec&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/smallvectypeid(0x110c69d67d7c0ed7a3163f328496aaff).html"><code>SmallVec&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/smallvectypeid(0xc02b4f0291ef0aad60339b7367f351ef).html"><code>SmallVec&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/vec(bevy_ecs::entity::entity,_bevy_picking::backend::hitdata).html"><code>Vec&lt;Unknown&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/vecrange.html"><code>Vec&lt;Range&gt;</code></a></td><td>No Documentation 🚧</td></tr>
@@ -773,6 +787,7 @@
 <tr><td><a href="././types/resultreflectreference,_interoperror.html"><code>Result&lt;ReflectReference, InteropError&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/resultscriptsystembuilder,_interoperror.html"><code>Result&lt;ScriptSystemBuilder, InteropError&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/resultscriptvalue,_interoperror.html"><code>Result&lt;ScriptValue, InteropError&gt;</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/resultscriptattachment,_interoperror.html"><code>Result&lt;ScriptAttachment, InteropError&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/resultreflectsystem,_interoperror.html"><code>Result&lt;ReflectSystem, InteropError&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/resultbool,_interoperror.html"><code>Result&lt;bool, InteropError&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/hashmapanimationtargetid,_u64.html"><code>HashMap&lt;AnimationTargetId, u64&gt;</code></a></td><td>No Documentation 🚧</td></tr>
@@ -850,6 +865,7 @@
 
         <!-- Custom JS scripts -->
         <script src="../multi-code-block.js"></script>
+
 
 
     </div>
