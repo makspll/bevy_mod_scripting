@@ -3,6 +3,8 @@ InstallPlugin
 SetupHandler OnTest=null, Update=null
 SetupHandler OnTestPostUpdate=null, PostUpdate=null
 SetupHandler Last=null, OnTestLast=null
+FinalizeApp
+
 LoadScriptAs as_name="@this_script", path="@this_script"
 WaitForScriptLoaded name="@this_script"
 SpawnEntityWithScript name="test_entity", script="@this_script"

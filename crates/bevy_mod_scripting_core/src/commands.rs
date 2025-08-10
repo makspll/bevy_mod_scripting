@@ -450,6 +450,7 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
                     self.callback,
                     self.attachment.clone(),
                     result.clone(),
+                    P::LANGUAGE,
                 ),
             );
         }

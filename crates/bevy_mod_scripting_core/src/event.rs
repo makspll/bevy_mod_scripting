@@ -287,6 +287,8 @@ impl ScriptCallbackEvent {
 pub struct ScriptCallbackResponseEvent {
     /// the label of the callback
     pub label: CallbackLabel,
+    /// the language of the callback that replied
+    pub language: Language,
     /// the key to the context that replied
     pub context_key: ScriptAttachment,
     /// the response received
@@ -299,11 +301,13 @@ impl ScriptCallbackResponseEvent {
         label: L,
         context_key: ScriptAttachment,
         response: Result<ScriptValue, ScriptError>,
+        language: Language,
     ) -> Self {
         Self {
             label: label.into(),
             context_key,
             response,
+            language,
         }
     }
 

@@ -1,6 +1,7 @@
 // #main_script lifecycle.lua
 SetCurrentLanguage language="@this_script_language"
 InstallPlugin emit_responses=true, context_policy="Global"
+FinalizeApp
 
 // load script a 
 LoadScriptAs as_name="script_a", path="lifecycle.lua"

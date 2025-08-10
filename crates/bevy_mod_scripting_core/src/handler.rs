@@ -125,7 +125,9 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
 
     let (guard, handler_ctxt) = handler_ctxt.get_mut();
 
-    for event in events.filter(|e| e.label == callback_label) {
+    for event in events.filter(|e| {
+        e.label == callback_label && e.language.as_ref().is_none_or(|l| l == &P::LANGUAGE)
+    }) {
         let recipients = event
             .recipients
             .get_recipients(&handler_ctxt.script_context);
@@ -146,6 +148,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                         callback_label.clone(),
                         attachment,
                         call_result.clone(),
+                        P::LANGUAGE,
                     ),
                 );
             }

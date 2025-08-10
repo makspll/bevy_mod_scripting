@@ -43,16 +43,11 @@ fn dummy_startup_system<T>() {}
 fn dummy_before_post_update_system() {}
 fn dummy_post_update_system() {}
 
-pub fn install_test_plugin<P: IntoScriptPluginParams + Plugin>(
-    app: &mut bevy::app::App,
-    plugin: P,
-    include_test_functions: bool,
-) {
+pub fn install_test_plugin(app: &mut bevy::app::App, include_test_functions: bool) {
     app.add_plugins((
         ScriptFunctionsPlugin,
         CoreScriptGlobalsPlugin::default(),
         BMSScriptingInfrastructurePlugin,
-        plugin,
     ));
     if include_test_functions {
         register_test_functions(app);
@@ -275,8 +270,8 @@ where
 
     let mut app = setup_integration_test(|_, _| {});
 
-    install_test_plugin(&mut app, plugin, true);
-
+    install_test_plugin(&mut app, true);
+    app.add_plugins(plugin);
     let script_path = script_path.into();
     let script_handle = app.world().resource::<AssetServer>().load(script_path);
     let script_id = script_handle.id();
@@ -345,7 +340,8 @@ pub fn run_plugin_script_load_benchmark<
     reload_probability: f32,
 ) {
     let mut app = setup_integration_test(|_, _| {});
-    install_test_plugin(&mut app, plugin, false);
+    install_test_plugin(&mut app, false);
+    app.add_plugins(plugin);
     let mut rng_guard = RNG.lock().unwrap();
     *rng_guard = rand_chacha::ChaCha12Rng::from_seed([42u8; 32]);
     drop(rng_guard);

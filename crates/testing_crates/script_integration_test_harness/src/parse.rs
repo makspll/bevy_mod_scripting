@@ -51,7 +51,8 @@ pub enum ScenarioStepSerialized {
         context_policy: Option<ContextMode>,
         emit_responses: Option<bool>,
     },
-
+    /// Called after the app config is set up, but before we run anything
+    FinalizeApp,
     /// Sets up a handler for the given schedule and label.
     /// You can onle use one of the following callbacks:
     /// - `on_test`
@@ -117,6 +118,7 @@ pub enum ScenarioStepSerialized {
         #[serde(flatten)]
         attachment: ScenarioAttachment,
         expect_string_value: Option<String>,
+        language: Option<ScenarioLanguage>,
     },
     AssertNoCallbackResponsesEmitted,
     AssertContextResidents {
@@ -243,6 +245,7 @@ impl ScenarioStepSerialized {
 
     pub fn parse_and_resolve(self, context: &ScenarioContext) -> Result<ScenarioStep, Error> {
         Ok(match self {
+            Self::FinalizeApp => ScenarioStep::FinalizeApp,
             Self::AssertContextResidents {
                 script,
                 residents_num,
@@ -293,10 +296,12 @@ impl ScenarioStepSerialized {
                 label,
                 attachment,
                 expect_string_value,
+                language,
             } => ScenarioStep::AssertCallbackSuccess {
                 label: Self::resolve_label(label.clone()),
                 script: Self::resolve_attachment(context, attachment)?,
                 expect_string_value,
+                language: language.map(Self::parse_language),
             },
             Self::SetupHandler { schedule, label } => ScenarioStep::SetupHandler {
                 schedule,
@@ -430,9 +435,10 @@ mod tests {
                 script: "script1".to_string(),
             },
             expect_string_value: None,
+            language: None,
         };
         let flat_string = step.to_flat_string().unwrap();
-        assert_eq!(flat_string, "AssertCallbackSuccess attachment=\"EntityScript\", entity=\"entity1\", expect_string_value=\"null\", label=\"OnTest\", script=\"script1\"");
+        assert_eq!(flat_string, "AssertCallbackSuccess attachment=\"EntityScript\", entity=\"entity1\", expect_string_value=\"null\", label=\"OnTest\", language=\"null\", script=\"script1\"");
     }
 
     #[test]
@@ -448,6 +454,7 @@ mod tests {
                     script: "script1".to_string(),
                 },
                 expect_string_value: None,
+                language: None,
             }
         );
     }

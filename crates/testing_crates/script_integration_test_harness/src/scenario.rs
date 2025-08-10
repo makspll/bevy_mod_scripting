@@ -147,6 +147,7 @@ pub struct ScenarioContext {
     pub event_log: InterestingEventWatcher,
     pub current_step_no: usize,
     pub current_script_language: Option<Language>,
+    pub initialized_app: bool,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -197,6 +198,7 @@ impl ScenarioContext {
             event_log: InterestingEventWatcher::default(),
             current_step_no: 0,
             current_script_language: None,
+            initialized_app: false,
         }
     }
 
@@ -286,7 +288,7 @@ impl ScheduleLabel for ScenarioSchedule {
         }
     }
 
-    fn dyn_hash(&self, state: &mut dyn ::core::hash::Hasher) {
+    fn dyn_hash(&self, state: &mut dyn::core::hash::Hasher) {
         match self {
             ScenarioSchedule::Startup => bevy::app::Startup.dyn_hash(state),
             ScenarioSchedule::Update => bevy::app::Update.dyn_hash(state),
@@ -308,7 +310,8 @@ pub enum ScenarioStep {
         context_policy: ContextPolicy,
         emit_responses: bool,
     },
-
+    /// Finalizes the app, cleaning up resources and preparing for the next steps.
+    FinalizeApp,
     SetCurrentLanguage {
         language: Language,
     },
@@ -366,6 +369,7 @@ pub enum ScenarioStep {
         label: CallbackLabel,
         script: ScriptAttachment,
         expect_string_value: Option<String>,
+        language: Option<Language>,
     },
 
     /// Asserts that no more callback events are left to process.
@@ -474,11 +478,20 @@ impl ScenarioStep {
                     context.current_script_language
                 );
             }
+            ScenarioStep::FinalizeApp => {
+                app.finish();
+                app.cleanup();
+                bevy::log::info!("App finalized and cleaned up");
+            }
             ScenarioStep::InstallPlugin {
                 context_policy,
                 emit_responses,
             } => {
-                *app = setup_integration_test(|_, _| {});
+                if !context.initialized_app {
+                    *app = setup_integration_test(|_, _| {});
+                    install_test_plugin(app, true);
+                    context.initialized_app = true;
+                }
 
                 match context.current_script_language {
                     #[cfg(feature = "lua")]
@@ -487,7 +500,7 @@ impl ScenarioStep {
                         let plugin = plugin
                             .set_context_policy(context_policy)
                             .emit_core_callback_responses(emit_responses);
-                        install_test_plugin(app, plugin, true);
+                        app.add_plugins(plugin);
                     }
                     #[cfg(feature = "rhai")]
                     Some(Language::Rhai) => {
@@ -495,7 +508,7 @@ impl ScenarioStep {
                         let plugin = plugin
                             .set_context_policy(context_policy)
                             .emit_core_callback_responses(emit_responses);
-                        install_test_plugin(app, plugin, true);
+                        app.add_plugins(plugin);
                     }
                     _ => {
                         return Err(anyhow!(
@@ -507,10 +520,6 @@ impl ScenarioStep {
                                                         ));
                     }
                 }
-
-                app.cleanup();
-                app.finish();
-
                 return Ok(());
             }
             ScenarioStep::LoadScriptAs { path, as_name } => {
@@ -600,17 +609,19 @@ impl ScenarioStep {
                 label,
                 script,
                 expect_string_value,
+                language,
             } => {
                 let next_event = context.event_log.script_responses_queue.pop_front();
 
                 if let Some(event) = next_event {
-                    if event.label != label || event.context_key != script {
+                    let language_correct = language.is_none_or(|l| l == event.language);
+                    if event.label != label || event.context_key != script || !language_correct {
                         return Err(anyhow!(
-                                                                                    "Callback '{}' for attachment: '{}' was not the next event, found: {:?}. Order of events was incorrect.",
-                                                                                    label,
-                                                                                    script.to_string(),
-                                                                                    event
-                                                                                ));
+                            "Callback '{}' for attachment: '{}' was not the next event, found: {:?}. Order of events was incorrect.",
+                            label,
+                            script.to_string(),
+                            event
+                        ));
                     }
 
                     match &event.response {
