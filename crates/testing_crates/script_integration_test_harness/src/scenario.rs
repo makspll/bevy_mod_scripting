@@ -288,7 +288,7 @@ impl ScheduleLabel for ScenarioSchedule {
         }
     }
 
-    fn dyn_hash(&self, state: &mut dyn::core::hash::Hasher) {
+    fn dyn_hash(&self, state: &mut dyn ::core::hash::Hasher) {
         match self {
             ScenarioSchedule::Startup => bevy::app::Startup.dyn_hash(state),
             ScenarioSchedule::Update => bevy::app::Update.dyn_hash(state),
