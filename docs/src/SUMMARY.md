@@ -12,7 +12,6 @@
 - [Script Systems](./ScriptSystems/introduction.md)
 - [Examples](./Examples/introduction.md)
 - [Migration Guides](./Migration/guides.md)
-    - [0.13-to-0.14-alpha](./Migration/0.14-to-0.15.md)
     - [0.14-to-0.15](./Migration/0.14-to-0.15.md)
 
 # Scripting Reference
