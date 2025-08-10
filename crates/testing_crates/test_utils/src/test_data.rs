@@ -4,7 +4,6 @@ use std::collections::HashMap;
 use bevy::asset::AssetPlugin;
 use bevy::diagnostic::DiagnosticsPlugin;
 use bevy::ecs::{component::*, world::World};
-use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use bevy::reflect::*;
 
@@ -348,7 +347,7 @@ pub fn setup_integration_test<F: FnOnce(&mut World, &mut TypeRegistry)>(init: F)
         AssetPlugin::default(),
         HierarchyPlugin,
         DiagnosticsPlugin,
-        LogPlugin {
+        bevy::log::LogPlugin {
             filter: log_level,
             ..Default::default()
         },

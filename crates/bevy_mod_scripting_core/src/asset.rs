@@ -2,26 +2,27 @@
 
 use crate::{
     commands::{CreateOrUpdateScript, DeleteScript},
+    context::ContextLoadingSettings,
     error::ScriptError,
-    script::ScriptId,
-    IntoScriptPluginParams, ScriptingSystemSet,
+    event::ScriptEvent,
+    script::{ContextKey, DisplayProxy, ScriptAttachment},
+    IntoScriptPluginParams, LanguageExtensions, ScriptComponent, ScriptingSystemSet, StaticScripts,
 };
 use bevy::{
-    app::{App, PreUpdate},
-    asset::{Asset, AssetEvent, AssetId, AssetLoader, AssetPath, Assets},
-    ecs::system::Resource,
-    log::{debug, info, trace, warn},
+    app::{App, Last},
+    asset::{Asset, AssetEvent, AssetLoader, AssetPath, Assets, LoadState},
+    log::{error, trace, warn, warn_once},
     prelude::{
-        Commands, Event, EventReader, EventWriter, IntoSystemConfigs, IntoSystemSetConfigs, Res,
-        ResMut,
+        AssetServer, Commands, Entity, EventReader, EventWriter, IntoSystemConfigs,
+        IntoSystemSetConfigs, Local, Query, Res,
     },
-    reflect::TypePath,
-    utils::hashbrown::HashMap,
+    reflect::Reflect,
 };
-use std::borrow::Cow;
+use serde::{Deserialize, Serialize};
+use std::{borrow::Cow, collections::VecDeque};
 
 /// Represents a scripting language. Languages which compile into another language should use the target language as their language.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Serialize, Deserialize)]
 pub enum Language {
     /// The Rhai scripting language
     Rhai,
@@ -49,42 +50,87 @@ impl std::fmt::Display for Language {
 }
 
 /// Represents a script loaded into memory as an asset
-#[derive(Asset, TypePath, Clone)]
+#[derive(Asset, Clone, Reflect)]
+#[reflect(opaque)]
 pub struct ScriptAsset {
     /// The body of the script
-    pub content: Box<[u8]>,
-    /// The virtual filesystem path of the asset, used to map to the script Id for asset backed scripts
+    pub content: Box<[u8]>, // Any chance a Cow<'static, ?> could work here?
+    /// The language of the script
+    pub language: Language,
+    /// The asset path of the script.
     pub asset_path: AssetPath<'static>,
 }
 
-#[derive(Event, Debug, Clone)]
-pub(crate) enum ScriptAssetEvent {
-    Added(ScriptMetadata),
-    Removed(ScriptMetadata),
-    Modified(ScriptMetadata),
+impl From<String> for ScriptAsset {
+    fn from(s: String) -> ScriptAsset {
+        ScriptAsset {
+            content: s.into_bytes().into_boxed_slice(),
+            language: Language::default(),
+            asset_path: AssetPath::default(),
+        }
+    }
+}
+
+impl ScriptAsset {
+    /// Create a new script asset with an unknown language.
+    pub fn new(s: impl Into<String>) -> Self {
+        s.into().into()
+    }
+}
+
+/// The queue that evaluates scripts.
+type ScriptQueue = VecDeque<ScriptAttachment>;
+/// Script settings
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ScriptSettings {
+    /// Define the language for a script or use the extension if None.
+    pub language: Option<Language>,
 }
 
 #[derive(Default)]
 /// A loader for script assets
 pub struct ScriptAssetLoader {
     /// The file extensions this loader should handle
-    pub extensions: &'static [&'static str],
+    language_extensions: LanguageExtensions,
+    extensions: &'static [&'static str],
     /// preprocessor to run on the script before saving the content to an asset
     pub preprocessor: Option<Box<dyn Fn(&mut [u8]) -> Result<(), ScriptError> + Send + Sync>>,
+}
+
+impl ScriptAssetLoader {
+    /// Create a new script asset loader for the given extensions.
+    pub fn new(language_extensions: LanguageExtensions) -> Self {
+        let extensions: Vec<&'static str> = language_extensions.keys().copied().collect();
+        let new_arr_static = Vec::leak(extensions);
+        Self {
+            language_extensions,
+            extensions: new_arr_static,
+            preprocessor: None,
+        }
+    }
+
+    /// Add a preprocessor
+    pub fn with_preprocessor(
+        mut self,
+        preprocessor: Box<dyn Fn(&mut [u8]) -> Result<(), ScriptError> + Send + Sync>,
+    ) -> Self {
+        self.preprocessor = Some(preprocessor);
+        self
+    }
 }
 
 #[profiling::all_functions]
 impl AssetLoader for ScriptAssetLoader {
     type Asset = ScriptAsset;
 
-    type Settings = ();
+    type Settings = ScriptSettings;
 
     type Error = ScriptError;
 
     async fn load(
         &self,
         reader: &mut dyn bevy::asset::io::Reader,
-        _settings: &Self::Settings,
+        settings: &Self::Settings,
         load_context: &mut bevy::asset::LoadContext<'_>,
     ) -> Result<Self::Asset, Self::Error> {
         let mut content = Vec::new();
@@ -95,9 +141,32 @@ impl AssetLoader for ScriptAssetLoader {
         if let Some(processor) = &self.preprocessor {
             processor(&mut content)?;
         }
+        let language = settings.language.clone().unwrap_or_else(|| {
+            let ext = load_context
+                .path()
+                .extension()
+                .and_then(|e| e.to_str())
+                .unwrap_or_default();
+            self.language_extensions
+                .get(ext)
+                .cloned()
+                .unwrap_or_else(|| {
+                    warn!("Unknown language for {:?}", load_context.path().display());
+                    Language::Unknown
+                })
+        });
+        if language == Language::Lua && cfg!(not(feature = "mlua")) {
+            warn_once!("Script {:?} is a Lua script but the {:?} feature is not enabled; the script will not be evaluated.",
+                       load_context.path().display(), "mlua");
+        }
+        if language == Language::Rhai && cfg!(not(feature = "rhai")) {
+            warn_once!("Script {:?} is a Rhai script but the {:?} feature is not enabled; the script will not be evaluated.",
+                       load_context.path().display(), "rhai");
+        }
         let asset = ScriptAsset {
             content: content.into_boxed_slice(),
-            asset_path: load_context.asset_path().to_owned(),
+            language,
+            asset_path: load_context.asset_path().clone(),
         };
         Ok(asset)
     }
@@ -107,280 +176,182 @@ impl AssetLoader for ScriptAssetLoader {
     }
 }
 
-#[derive(Clone, Resource)]
-/// Settings to do with script assets and how they are handled
-pub struct ScriptAssetSettings {
-    /// Strategy for mapping asset paths to script ids, by default this is the identity function
-    pub script_id_mapper: AssetPathToScriptIdMapper,
-    /// Mapping from extension to script language
-    pub extension_to_language_map: HashMap<&'static str, Language>,
-
-    /// The currently supported asset extensions
-    /// Should be updated by each scripting plugin to include the extensions it supports.
-    ///
-    /// Will be used to populate the script asset loader with the supported extensions
-    pub supported_extensions: &'static [&'static str],
-}
-
-#[profiling::all_functions]
-impl ScriptAssetSettings {
-    /// Selects the language for a given asset path
-    pub fn select_script_language(&self, path: &AssetPath) -> Language {
-        let extension = path
-            .path()
-            .extension()
-            .and_then(|ext| ext.to_str())
-            .unwrap_or_default();
-        self.extension_to_language_map
-            .get(extension)
-            .cloned()
-            .unwrap_or_default()
-    }
-}
-
-impl Default for ScriptAssetSettings {
-    fn default() -> Self {
-        Self {
-            script_id_mapper: AssetPathToScriptIdMapper {
-                map: (|path: &AssetPath| path.path().to_string_lossy().into_owned().into()),
-            },
-            extension_to_language_map: HashMap::from_iter(vec![
-                ("lua", Language::Lua),
-                ("luau", Language::Lua),
-                ("rhai", Language::Rhai),
-                ("rn", Language::Rune),
-            ]),
-            supported_extensions: &["lua", "luau", "rhai", "rn"],
-        }
-    }
-}
-
-/// Strategy for mapping asset paths to script ids, by default this is the identity function
-#[derive(Clone, Copy)]
-pub struct AssetPathToScriptIdMapper {
-    /// The mapping function
-    pub map: fn(&AssetPath) -> ScriptId,
-}
-
-/// A cache of asset id's to their script id's. Necessary since when we drop an asset we won't have the ability to get the path from the asset.
-#[derive(Default, Debug, Resource)]
-pub struct ScriptMetadataStore {
-    /// The map of asset id's to their metadata
-    pub map: HashMap<AssetId<ScriptAsset>, ScriptMetadata>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-/// Metadata for a script asset
-pub struct ScriptMetadata {
-    /// The asset id of the script
-    pub asset_id: AssetId<ScriptAsset>,
-    /// The script id of the script
-    pub script_id: ScriptId,
-    /// The language of the script
-    pub language: Language,
-}
-
-#[profiling::all_functions]
-impl ScriptMetadataStore {
-    /// Inserts a new metadata entry
-    pub fn insert(&mut self, id: AssetId<ScriptAsset>, meta: ScriptMetadata) {
-        // TODO: new generations of assets are not going to have the same ID as the old one
-        self.map.insert(id, meta);
-    }
-
-    /// Gets a metadata entry
-    pub fn get(&self, id: AssetId<ScriptAsset>) -> Option<&ScriptMetadata> {
-        self.map.get(&id)
-    }
-
-    /// Removes a metadata entry
-    pub fn remove(&mut self, id: AssetId<ScriptAsset>) -> Option<ScriptMetadata> {
-        self.map.remove(&id)
-    }
-
-    /// Checks if the store contains a metadata entry
-    pub fn contains(&self, id: AssetId<ScriptAsset>) -> bool {
-        self.map.contains_key(&id)
-    }
-}
-
-/// Converts incoming asset events, into internal script asset events, also loads and inserts metadata for newly added scripts
-#[profiling::function]
-pub(crate) fn dispatch_script_asset_events(
+fn sync_assets(
     mut events: EventReader<AssetEvent<ScriptAsset>>,
-    mut script_asset_events: EventWriter<ScriptAssetEvent>,
-    assets: Res<Assets<ScriptAsset>>,
-    mut metadata_store: ResMut<ScriptMetadataStore>,
-    settings: Res<ScriptAssetSettings>,
+    mut script_events: EventWriter<ScriptEvent>,
 ) {
     for event in events.read() {
         match event {
-            AssetEvent::LoadedWithDependencies { id } | AssetEvent::Added { id } => {
-                // these can occur multiple times, we only send one added event though
-                if !metadata_store.contains(*id) {
-                    let asset = assets.get(*id);
-                    if let Some(asset) = asset {
-                        let path = &asset.asset_path;
-                        let converter = settings.script_id_mapper.map;
-                        let script_id = converter(path);
-
-                        let language = settings.select_script_language(path);
-                        if language == Language::Unknown {
-                            let extension = path
-                                .path()
-                                .extension()
-                                .and_then(|ext| ext.to_str())
-                                .unwrap_or_default();
-                            warn!("A script {:?} was added but its language is unknown. Consider adding the {:?} extension to the `ScriptAssetSettings`.", &script_id, extension);
-                        }
-                        let metadata = ScriptMetadata {
-                            asset_id: *id,
-                            script_id,
-                            language,
-                        };
-                        debug!("Script loaded, populating metadata: {:?}:", metadata);
-                        script_asset_events.send(ScriptAssetEvent::Added(metadata.clone()));
-                        metadata_store.insert(*id, metadata);
-                    } else {
-                        warn!("A script was added but it's asset was not found, failed to compute metadata. This script will not be loaded. Did you forget to store `Handle<ScriptAsset>` somewhere?. {}", id);
-                    }
-                }
+            AssetEvent::Modified { id } => {
+                script_events.send(ScriptEvent::Modified { script: *id });
+            }
+            AssetEvent::Added { id } => {
+                script_events.send(ScriptEvent::Added { script: *id });
             }
             AssetEvent::Removed { id } => {
-                if let Some(metadata) = metadata_store.get(*id) {
-                    debug!("Script removed: {:?}", metadata);
-                    script_asset_events.send(ScriptAssetEvent::Removed(metadata.clone()));
-                } else {
-                    warn!("Script metadata not found for removed script asset: {}. Cannot properly clean up script", id);
-                }
+                script_events.send(ScriptEvent::Removed { script: *id });
             }
-            AssetEvent::Modified { id } => {
-                if let Some(metadata) = metadata_store.get(*id) {
-                    debug!("Script modified: {:?}", metadata);
-                    script_asset_events.send(ScriptAssetEvent::Modified(metadata.clone()));
-                } else {
-                    warn!("Script metadata not found for modified script asset: {}. Cannot properly update script", id);
-                }
-            }
-            _ => {}
+            _ => (),
         }
     }
 }
 
-/// Listens to [`ScriptAssetEvent::Removed`] events and removes the corresponding script metadata.
-#[profiling::function]
-pub(crate) fn remove_script_metadata(
-    mut events: EventReader<ScriptAssetEvent>,
-    mut asset_path_map: ResMut<ScriptMetadataStore>,
-) {
-    for event in events.read() {
-        if let ScriptAssetEvent::Removed(metadata) = event {
-            let previous = asset_path_map.remove(metadata.asset_id);
-            if let Some(previous) = previous {
-                debug!("Removed script metadata: {:?}", previous);
-            }
-        }
-    }
-}
-
-/// Listens to [`ScriptAssetEvent`] events and dispatches [`CreateOrUpdateScript`] and [`DeleteScript`] commands accordingly.
+/// Listens to [`ScriptEvent`] events and dispatches [`CreateOrUpdateScript`] and [`DeleteScript`] commands accordingly.
 ///
 /// Allows for hot-reloading of scripts.
 #[profiling::function]
-pub(crate) fn sync_script_data<P: IntoScriptPluginParams>(
-    mut events: EventReader<ScriptAssetEvent>,
+fn handle_script_events<P: IntoScriptPluginParams>(
+    mut events: EventReader<ScriptEvent>,
     script_assets: Res<Assets<ScriptAsset>>,
+    static_scripts: Res<StaticScripts>,
+    scripts: Query<(Entity, &ScriptComponent)>,
+    asset_server: Res<AssetServer>,
+    mut script_queue: Local<ScriptQueue>,
     mut commands: Commands,
+    context_loading_settings: Res<ContextLoadingSettings<P>>,
 ) {
     for event in events.read() {
-        let metadata = match event {
-            ScriptAssetEvent::Added(script_metadata)
-            | ScriptAssetEvent::Removed(script_metadata)
-            | ScriptAssetEvent::Modified(script_metadata) => script_metadata,
-        };
+        trace!("{}: Received script event: {:?}", P::LANGUAGE, event);
+        match event {
+            ScriptEvent::Modified { script: id } => {
+                if let Some(asset) = script_assets.get(*id) {
+                    if asset.language != P::LANGUAGE {
+                        continue;
+                    }
+                    // We need to reload the script for any context it's
+                    // associated with. That could be static scripts, script
+                    // components.
+                    for (entity, script_component) in &scripts {
+                        if let Some(handle) =
+                            script_component.0.iter().find(|handle| handle.id() == *id)
+                        {
+                            commands.queue(
+                                CreateOrUpdateScript::<P>::new(ScriptAttachment::EntityScript(
+                                    entity,
+                                    handle.clone(),
+                                ))
+                                .with_responses(context_loading_settings.emit_responses),
+                            );
+                        }
+                    }
 
-        if metadata.language != P::LANGUAGE {
-            continue;
+                    if let Some(handle) = static_scripts.scripts.iter().find(|s| s.id() == *id) {
+                        commands.queue(
+                            CreateOrUpdateScript::<P>::new(ScriptAttachment::StaticScript(
+                                handle.clone(),
+                            ))
+                            .with_responses(context_loading_settings.emit_responses),
+                        );
+                    }
+                }
+            }
+            ScriptEvent::Detached { key } => {
+                commands.queue(
+                    DeleteScript::<P>::new(key.clone())
+                        .with_responses(context_loading_settings.emit_responses),
+                );
+            }
+            ScriptEvent::Attached { key } => {
+                script_queue.push_back(key.clone());
+            }
+            _ => (),
+        }
+    }
+
+    // Evalute the scripts in the order they were attached.
+    //
+    // If a script is not loaded yet, we stop evaluation and try again on the
+    // next call.
+    while !script_queue.is_empty() {
+        let mut script_failed = false;
+        // NOTE: Maybe using pop_front_if once stabalized.
+        let script_ready = script_queue
+            .front()
+            .map(|context_key| context_key.clone().into())
+            .map(|context_key: ContextKey| {
+                // If there is a script, wait for the script to load.
+                context_key
+                    .script
+                    .as_ref()
+                    .map(|script| {
+                        script_assets.contains(script.id())
+                            || match asset_server.load_state(script) {
+                                LoadState::NotLoaded => false,
+                                LoadState::Loading => false,
+                                LoadState::Loaded => true,
+                                LoadState::Failed(e) => {
+                                    script_failed = true;
+                                    error!(
+                                        "Failed to load script {} for eval: {e}.",
+                                        script.display()
+                                    );
+                                    true
+                                }
+                            }
+                    })
+                    .unwrap_or(true)
+            })
+            .unwrap_or(false);
+        if !script_ready {
+            // We can't evaluate it yet. It's still loading.
+            break;
         }
 
-        trace!("{}: Received script asset event: {:?}", P::LANGUAGE, event);
-        match event {
-            // emitted when a new script asset is loaded for the first time
-            ScriptAssetEvent::Added(_) | ScriptAssetEvent::Modified(_) => {
-                if metadata.language != P::LANGUAGE {
-                    trace!(
-                        "{}: Script asset with id: {} is for a different langauge than this sync system. Skipping.",
-                        P::LANGUAGE,
-                        metadata.script_id
-                    );
-                    continue;
-                }
-
-                info!("{}: Loading Script: {:?}", P::LANGUAGE, metadata.script_id,);
-
-                if let Some(asset) = script_assets.get(metadata.asset_id) {
-                    commands.queue(CreateOrUpdateScript::<P>::new(
-                        metadata.script_id.clone(),
-                        asset.content.clone(),
-                        Some(script_assets.reserve_handle().clone_weak()),
-                    ));
-                }
+        if let Some(context_key) = script_queue.pop_front() {
+            if script_failed {
+                continue;
             }
-            ScriptAssetEvent::Removed(_) => {
-                info!("{}: Deleting Script: {:?}", P::LANGUAGE, metadata.script_id,);
-                commands.queue(DeleteScript::<P>::new(metadata.script_id.clone()));
+
+            let language = script_assets
+                .get(&context_key.script())
+                .map(|asset| asset.language.clone())
+                .unwrap_or_default();
+
+            if language == P::LANGUAGE {
+                commands.queue(
+                    CreateOrUpdateScript::<P>::new(context_key)
+                        .with_responses(context_loading_settings.emit_responses),
+                );
             }
-        };
+        }
     }
 }
 
 /// Setup all the asset systems for the scripting plugin and the dependencies
 #[profiling::function]
-pub(crate) fn configure_asset_systems(app: &mut App) -> &mut App {
+pub(crate) fn configure_asset_systems(app: &mut App) {
     // these should be in the same set as bevy's asset systems
     // currently this is in the PreUpdate set
     app.add_systems(
-        PreUpdate,
-        (
-            dispatch_script_asset_events.in_set(ScriptingSystemSet::ScriptAssetDispatch),
-            remove_script_metadata.in_set(ScriptingSystemSet::ScriptMetadataRemoval),
-        ),
+        Last,
+        (sync_assets).in_set(ScriptingSystemSet::ScriptAssetDispatch),
     )
     .configure_sets(
-        PreUpdate,
+        Last,
         (
-            ScriptingSystemSet::ScriptAssetDispatch.after(bevy::asset::TrackAssets),
+            ScriptingSystemSet::ScriptAssetDispatch.after(bevy::asset::AssetEvents),
             ScriptingSystemSet::ScriptCommandDispatch
-                .after(ScriptingSystemSet::ScriptAssetDispatch)
-                .before(ScriptingSystemSet::ScriptMetadataRemoval),
+                .after(ScriptingSystemSet::ScriptAssetDispatch),
         ),
-    )
-    .init_resource::<ScriptMetadataStore>()
-    .init_resource::<ScriptAssetSettings>()
-    .add_event::<ScriptAssetEvent>();
-
-    app
+    );
 }
 
 /// Setup all the asset systems for the scripting plugin and the dependencies
 #[profiling::function]
-pub(crate) fn configure_asset_systems_for_plugin<P: IntoScriptPluginParams>(
-    app: &mut App,
-) -> &mut App {
+pub(crate) fn configure_asset_systems_for_plugin<P: IntoScriptPluginParams>(app: &mut App) {
     app.add_systems(
-        PreUpdate,
-        sync_script_data::<P>.in_set(ScriptingSystemSet::ScriptCommandDispatch),
+        Last,
+        handle_script_events::<P>.in_set(ScriptingSystemSet::ScriptCommandDispatch),
     );
-    app
 }
 
 #[cfg(test)]
 mod tests {
-    use std::path::{Path, PathBuf};
+    use std::path::PathBuf;
 
     use bevy::{
-        app::{App, Update},
-        asset::{AssetApp, AssetPlugin, AssetServer, Assets, Handle, LoadState},
+        app::App,
+        asset::{AssetApp, AssetPath, AssetPlugin, AssetServer, Assets, Handle, LoadState},
         MinimalPlugins,
     };
 
@@ -394,17 +365,10 @@ mod tests {
         app
     }
 
-    fn make_test_settings() -> ScriptAssetSettings {
-        ScriptAssetSettings {
-            supported_extensions: &[],
-            script_id_mapper: AssetPathToScriptIdMapper {
-                map: |path| path.path().to_string_lossy().into_owned().into(),
-            },
-            extension_to_language_map: HashMap::from_iter(vec![
-                ("lua", Language::Lua),
-                ("rhai", Language::Rhai),
-            ]),
-        }
+    fn for_extension(extension: &'static str) -> ScriptAssetLoader {
+        let mut language_extensions = LanguageExtensions::default();
+        language_extensions.insert(extension, Language::Unknown);
+        ScriptAssetLoader::new(language_extensions)
     }
 
     fn load_asset(app: &mut App, path: &str) -> Handle<ScriptAsset> {
@@ -441,10 +405,7 @@ mod tests {
 
     #[test]
     fn test_asset_loader_loads() {
-        let loader = ScriptAssetLoader {
-            extensions: &["script"],
-            preprocessor: None,
-        };
+        let loader = for_extension("script");
         let mut app = init_loader_test(loader);
 
         let handle = load_asset(&mut app, "test_assets/test_script.script");
@@ -454,11 +415,6 @@ mod tests {
             .unwrap()
             .get(&handle)
             .unwrap();
-
-        assert_eq!(
-            asset.asset_path,
-            AssetPath::from_path(&PathBuf::from("test_assets/test_script.script"))
-        );
 
         assert_eq!(
             String::from_utf8(asset.content.clone().to_vec()).unwrap(),
@@ -468,13 +424,10 @@ mod tests {
 
     #[test]
     fn test_asset_loader_applies_preprocessor() {
-        let loader = ScriptAssetLoader {
-            extensions: &["script"],
-            preprocessor: Some(Box::new(|content| {
-                content[0] = b'p';
-                Ok(())
-            })),
-        };
+        let loader = for_extension("script").with_preprocessor(Box::new(|content| {
+            content[0] = b'p';
+            Ok(())
+        }));
         let mut app = init_loader_test(loader);
 
         let handle = load_asset(&mut app, "test_assets/test_script.script");
@@ -486,164 +439,12 @@ mod tests {
             .unwrap();
 
         assert_eq!(
-            asset.asset_path,
-            AssetPath::from(PathBuf::from("test_assets/test_script.script"))
+            handle.path().unwrap(),
+            &AssetPath::from(PathBuf::from("test_assets/test_script.script"))
         );
         assert_eq!(
             String::from_utf8(asset.content.clone().to_vec()).unwrap(),
             "pest script".to_string()
         );
     }
-
-    #[test]
-    fn test_metadata_store() {
-        let mut store = ScriptMetadataStore::default();
-        let id = AssetId::invalid();
-        let meta = ScriptMetadata {
-            asset_id: AssetId::invalid(),
-            script_id: "test".into(),
-            language: Language::Lua,
-        };
-
-        store.insert(id, meta.clone());
-        assert_eq!(store.get(id), Some(&meta));
-
-        assert_eq!(store.remove(id), Some(meta));
-    }
-
-    #[test]
-    fn test_script_asset_settings_select_language() {
-        let settings = make_test_settings();
-
-        let path = AssetPath::from(Path::new("test.lua"));
-        assert_eq!(settings.select_script_language(&path), Language::Lua);
-        assert_eq!(
-            settings.select_script_language(&AssetPath::from(Path::new("test.rhai"))),
-            Language::Rhai
-        );
-        assert_eq!(
-            settings.select_script_language(&AssetPath::from(Path::new("test.blob"))),
-            Language::Unknown
-        );
-    }
-
-    fn run_app_untill_asset_event(app: &mut App, event_kind: AssetEvent<ScriptAsset>) {
-        let checker_system = |mut reader: EventReader<AssetEvent<ScriptAsset>>,
-                              mut event_target: ResMut<EventTarget>| {
-            println!("Reading asset events this frame");
-            for event in reader.read() {
-                println!("{event:?}");
-                if matches!(
-                    (event_target.event, event),
-                    (AssetEvent::Added { .. }, AssetEvent::Added { .. })
-                        | (AssetEvent::Modified { .. }, AssetEvent::Modified { .. })
-                        | (AssetEvent::Removed { .. }, AssetEvent::Removed { .. })
-                        | (AssetEvent::Unused { .. }, AssetEvent::Unused { .. })
-                        | (
-                            AssetEvent::LoadedWithDependencies { .. },
-                            AssetEvent::LoadedWithDependencies { .. },
-                        )
-                ) {
-                    println!("Event matched");
-                    event_target.happened = true;
-                }
-            }
-        };
-
-        if !app.world().contains_resource::<EventTarget>() {
-            // for when we run this multiple times in a test
-            app.add_systems(Update, checker_system);
-        }
-
-        #[derive(Resource)]
-        struct EventTarget {
-            event: AssetEvent<ScriptAsset>,
-            happened: bool,
-        }
-        app.world_mut().insert_resource(EventTarget {
-            event: event_kind,
-            happened: false,
-        });
-
-        loop {
-            println!("Checking if asset event was dispatched");
-            if app.world().get_resource::<EventTarget>().unwrap().happened {
-                println!("Stopping loop");
-                break;
-            }
-            println!("Running app");
-
-            app.update();
-        }
-    }
-
-    struct DummyPlugin;
-
-    impl IntoScriptPluginParams for DummyPlugin {
-        type R = ();
-        type C = ();
-        const LANGUAGE: Language = Language::Lua;
-
-        fn build_runtime() -> Self::R {}
-    }
-
-    #[test]
-    fn test_asset_metadata_systems() {
-        // test metadata flow
-        let mut app = init_loader_test(ScriptAssetLoader {
-            extensions: &[],
-            preprocessor: None,
-        });
-        app.world_mut().insert_resource(make_test_settings());
-        configure_asset_systems(&mut app);
-
-        // update untill the asset event gets dispatched
-        let asset_server: &AssetServer = app.world().resource::<AssetServer>();
-        let handle = asset_server.load("test_assets/test_script.lua");
-        run_app_untill_asset_event(
-            &mut app,
-            AssetEvent::LoadedWithDependencies {
-                id: AssetId::invalid(),
-            },
-        );
-        let asset_id = handle.id();
-
-        // we expect the metadata to be inserted now, in the same frame as the asset is loaded
-        let metadata = app
-            .world()
-            .get_resource::<ScriptMetadataStore>()
-            .unwrap()
-            .get(asset_id)
-            .expect("Metadata not found");
-
-        assert_eq!(metadata.script_id, "test_assets/test_script.lua");
-        assert_eq!(metadata.language, Language::Lua);
-
-        // ----------------- REMOVING -----------------
-
-        // we drop the handle and wait untill the first asset event is dispatched
-        drop(handle);
-
-        run_app_untill_asset_event(
-            &mut app,
-            AssetEvent::Removed {
-                id: AssetId::invalid(),
-            },
-        );
-
-        // we expect the metadata to be removed now, in the same frame as the asset is removed
-        let metadata_len = app
-            .world()
-            .get_resource::<ScriptMetadataStore>()
-            .unwrap()
-            .map
-            .len();
-
-        assert_eq!(metadata_len, 0);
-    }
-
-    // #[test]
-    // fn test_syncing_assets() {
-    //     todo!()
-    // }
 }

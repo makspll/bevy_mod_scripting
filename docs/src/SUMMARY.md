@@ -8,10 +8,11 @@
 - [Running Scripts](./Summary/running-scripts.md)
 - [Controlling Script Bindings](./Summary/controlling-script-bindings.md)
 - [Modifying Script Contexts](./Summary/customizing-script-contexts.md)
-- [Shared Contexts](./Summary/sharing-contexts-between-scripts.md)
-- [Script ID Mapping](./Summary/script-id-mapping.md)
+- [Contexts](./Summary/contexts.md)
 - [Script Systems](./ScriptSystems/introduction.md)
 - [Examples](./Examples/introduction.md)
+- [Migration Guides](./Migration/guides.md)
+    - [0.14-to-0.15](./Migration/0.14-to-0.15.md)
 
 # Scripting Reference
 

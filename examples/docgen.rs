@@ -4,6 +4,7 @@ use bevy_mod_scripting::ScriptFunctionsPlugin;
 use bevy_mod_scripting_core::bindings::function::script_function::AppScriptFunctionRegistry;
 use bevy_mod_scripting_core::bindings::globals::core::CoreScriptGlobalsPlugin;
 use bevy_mod_scripting_core::bindings::globals::AppScriptGlobalsRegistry;
+use bevy_mod_scripting_core::BMSScriptingInfrastructurePlugin;
 use ladfile_builder::plugin::{generate_lad_file, LadFileSettings, ScriptingDocgenPlugin};
 
 fn main() -> std::io::Result<()> {
@@ -18,6 +19,7 @@ fn main() -> std::io::Result<()> {
         // the definitions by themselves
         CoreScriptGlobalsPlugin::default(),
         ScriptFunctionsPlugin,
+        BMSScriptingInfrastructurePlugin,
     ));
 
     // there are two ways to generate the ladfile

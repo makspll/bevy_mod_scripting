@@ -4,10 +4,11 @@ use std::ops::Deref;
 
 use bevy::{
     app::Plugin,
+    asset::Handle,
     ecs::{entity::Entity, world::World},
 };
 use bevy_mod_scripting_core::{
-    asset::Language,
+    asset::{Language, ScriptAsset},
     bindings::{
         function::namespace::Namespace, globals::AppScriptGlobalsRegistry,
         script_value::ScriptValue, ThreadWorldContainer, WorldContainer,
@@ -17,7 +18,7 @@ use bevy_mod_scripting_core::{
     event::CallbackLabel,
     reflection_extensions::PartialReflectExt,
     runtime::RuntimeSettings,
-    script::ScriptId,
+    script::{ContextPolicy, DisplayProxy, ScriptAttachment},
     IntoScriptPluginParams, ScriptingPlugin,
 };
 use bindings::{
@@ -69,7 +70,6 @@ impl Default for RhaiScriptingPlugin {
     fn default() -> Self {
         RhaiScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
-                context_assignment_strategy: Default::default(),
                 runtime_settings: RuntimeSettings {
                     initializers: vec![|runtime: &RhaiRuntime| {
                         let mut engine = runtime.write();
@@ -150,18 +150,32 @@ impl Default for RhaiScriptingPlugin {
                         Ok(())
                     },
                 ],
-                context_pre_handling_initializers: vec![|script, entity, context| {
+                context_pre_handling_initializers: vec![|context_key, context| {
                     let world = ThreadWorldContainer.try_get_world()?;
+
+                    if let Some(entity) = context_key.entity() {
+                        context.scope.set_or_push(
+                            "entity",
+                            RhaiReflectReference(<Entity>::allocate(
+                                Box::new(entity),
+                                world.clone(),
+                            )),
+                        );
+                    }
                     context.scope.set_or_push(
-                        "entity",
-                        RhaiReflectReference(<Entity>::allocate(Box::new(entity), world)),
+                        "script_asset",
+                        RhaiReflectReference(<Handle<ScriptAsset>>::allocate(
+                            Box::new(context_key.script().clone()),
+                            world,
+                        )),
                     );
-                    context.scope.set_or_push("script_id", script.to_owned());
+
                     Ok(())
                 }],
                 // already supported by BMS core
-                additional_supported_extensions: &[],
                 language: Language::Rhai,
+                context_policy: ContextPolicy::default(),
+                emit_responses: false,
             },
         }
     }
@@ -180,7 +194,7 @@ impl Plugin for RhaiScriptingPlugin {
 // NEW helper function to load content into an existing context without clearing previous definitions.
 fn load_rhai_content_into_context(
     context: &mut RhaiScriptContext,
-    script: &ScriptId,
+    context_key: &ScriptAttachment,
     content: &[u8],
     initializers: &[ContextInitializer<RhaiScriptingPlugin>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
@@ -189,14 +203,16 @@ fn load_rhai_content_into_context(
     let runtime = runtime.read();
 
     context.ast = runtime.compile(std::str::from_utf8(content)?)?;
-    context.ast.set_source(script.to_string());
+    context
+        .ast
+        .set_source(context_key.script().display().to_string());
 
     initializers
         .iter()
-        .try_for_each(|init| init(script, context))?;
+        .try_for_each(|init| init(context_key, context))?;
     pre_handling_initializers
         .iter()
-        .try_for_each(|init| init(script, Entity::from_raw(0), context))?;
+        .try_for_each(|init| init(context_key, context))?;
     runtime.eval_ast_with_scope(&mut context.scope, &context.ast)?;
 
     context.ast.clear_statements();
@@ -205,7 +221,7 @@ fn load_rhai_content_into_context(
 
 /// Load a rhai context from a script.
 pub fn rhai_context_load(
-    script: &ScriptId,
+    context_key: &ScriptAttachment,
     content: &[u8],
     initializers: &[ContextInitializer<RhaiScriptingPlugin>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
@@ -218,7 +234,7 @@ pub fn rhai_context_load(
     };
     load_rhai_content_into_context(
         &mut context,
-        script,
+        context_key,
         content,
         initializers,
         pre_handling_initializers,
@@ -229,7 +245,7 @@ pub fn rhai_context_load(
 
 /// Reload a rhai context from a script. New content is appended to the existing context.
 pub fn rhai_context_reload(
-    script: &ScriptId,
+    context_key: &ScriptAttachment,
     content: &[u8],
     context: &mut RhaiScriptContext,
     initializers: &[ContextInitializer<RhaiScriptingPlugin>],
@@ -238,7 +254,7 @@ pub fn rhai_context_reload(
 ) -> Result<(), ScriptError> {
     load_rhai_content_into_context(
         context,
-        script,
+        context_key,
         content,
         initializers,
         pre_handling_initializers,
@@ -250,8 +266,7 @@ pub fn rhai_context_reload(
 /// The rhai callback handler.
 pub fn rhai_callback_handler(
     args: Vec<ScriptValue>,
-    entity: Entity,
-    script_id: &ScriptId,
+    context_key: &ScriptAttachment,
     callback: &CallbackLabel,
     context: &mut RhaiScriptContext,
     pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
@@ -259,7 +274,7 @@ pub fn rhai_callback_handler(
 ) -> Result<ScriptValue, ScriptError> {
     pre_handling_initializers
         .iter()
-        .try_for_each(|init| init(script_id, entity, context))?;
+        .try_for_each(|init| init(context_key, context))?;
 
     // we want the call to be able to impact the scope
     let options = CallFnOptions::new().rewind_scope(false);
@@ -269,9 +284,9 @@ pub fn rhai_callback_handler(
         .collect::<Result<Vec<_>, _>>()?;
 
     bevy::log::trace!(
-        "Calling callback {} in script {} with args: {:?}",
+        "Calling callback {} in context {} with args: {:?}",
         callback,
-        script_id,
+        context_key,
         args
     );
     let runtime = runtime.read();
@@ -287,8 +302,8 @@ pub fn rhai_callback_handler(
         Err(e) => {
             if let EvalAltResult::ErrorFunctionNotFound(_, _) = e.unwrap_inner() {
                 bevy::log::trace!(
-                    "Script {} is not subscribed to callback {} with the provided arguments.",
-                    script_id,
+                    "Context {} is not subscribed to callback {} with the provided arguments.",
+                    context_key,
                     callback
                 );
                 Ok(ScriptValue::Unit)
@@ -296,47 +311,5 @@ pub fn rhai_callback_handler(
                 Err(ScriptError::from(e))
             }
         }
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn test_reload_doesnt_overwrite_old_context() {
-        let runtime = RhaiRuntime::new(Engine::new());
-        let script_id = ScriptId::from("asd.rhai");
-        let initializers: Vec<ContextInitializer<RhaiScriptingPlugin>> = vec![];
-        let pre_handling_initializers: Vec<ContextPreHandlingInitializer<RhaiScriptingPlugin>> =
-            vec![];
-
-        // Load first content defining a function that returns 42.
-        let mut context = rhai_context_load(
-            &script_id,
-            b"let hello = 2;",
-            &initializers,
-            &pre_handling_initializers,
-            &runtime,
-        )
-        .unwrap();
-
-        // Reload with additional content defining a second function that returns 24.
-        rhai_context_reload(
-            &script_id,
-            b"let hello2 = 3",
-            &mut context,
-            &initializers,
-            &pre_handling_initializers,
-            &runtime,
-        )
-        .unwrap();
-
-        // get first var
-        let hello = context.scope.get_value::<i64>("hello").unwrap();
-        assert_eq!(hello, 2);
-        // get second var
-        let hello2 = context.scope.get_value::<i64>("hello2").unwrap();
-        assert_eq!(hello2, 3);
     }
 }

@@ -23,12 +23,12 @@ pub struct AppScheduleRegistry(Arc<RwLock<ScheduleRegistry>>);
 
 impl AppScheduleRegistry {
     /// Reads the schedule registry.
-    pub fn read(&self) -> parking_lot::RwLockReadGuard<ScheduleRegistry> {
+    pub fn read(&self) -> parking_lot::RwLockReadGuard<'_, ScheduleRegistry> {
         self.0.read()
     }
 
     /// Writes to the schedule registry.
-    pub fn write(&self) -> parking_lot::RwLockWriteGuard<ScheduleRegistry> {
+    pub fn write(&self) -> parking_lot::RwLockWriteGuard<'_, ScheduleRegistry> {
         self.0.write()
     }
 
@@ -176,7 +176,7 @@ impl WorldAccessGuard<'_> {
         bevy::log::debug!(
             "Adding script system '{}' for script '{}' to schedule '{}'",
             builder.name,
-            builder.script_id,
+            builder.attachment,
             schedule.identifier()
         );
 
