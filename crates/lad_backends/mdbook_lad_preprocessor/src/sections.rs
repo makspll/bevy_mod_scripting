@@ -245,7 +245,7 @@ impl<'a> Section<'a> {
         }
     }
 
-    pub(crate) fn section_items(&self) -> Vec<'_, SectionItem> {
+    pub(crate) fn section_items(&self) -> Vec<SectionItem<'_>> {
         match self.data {
             SectionData::Summary { .. } => {
                 let title = self.title().clone();
