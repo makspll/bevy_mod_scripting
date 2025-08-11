@@ -27,12 +27,13 @@ use bevy::{
         entity::Entity,
         query::{Access, FilteredAccess, FilteredAccessSet, QueryState},
         reflect::AppTypeRegistry,
-        schedule::{IntoSystemConfigs, SystemSet},
-        system::{IntoSystem, System},
+        schedule::SystemSet,
+        system::{IntoSystem, System, SystemParamValidationError},
         world::{unsafe_world_cell::UnsafeWorldCell, World},
     },
+    platform::collections::HashSet,
+    prelude::IntoScheduleConfigs,
     reflect::{OffsetAccess, ParsedPath, Reflect},
-    utils::hashbrown::HashSet,
 };
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 use parking_lot::Mutex;
@@ -160,8 +161,10 @@ impl ScriptSystemBuilder {
 
             // this is quite important, by default systems are placed in a set defined by their TYPE, i.e. in this case
             // all script systems would be the same
-            // let set = ScriptSystemSet::next();
-            let mut system_config = IntoSystemConfigs::<IsDynamicScriptSystem<P>>::into_configs(self);            // apply ordering
+
+            let system: DynamicScriptSystem<P> = IntoSystem::into_system(self);
+            let mut system_config = system.into_configs();
+            // let mut system_config = <ScriptSystemBuilder as IntoScheduleConfigs<Box<(dyn System<In = (), Out = Result<(), BevyError>> + 'static)>, (Infallible, IsDynamicScriptSystem<P>)>>::into_configs(self);            // apply ordering
             for (other, is_before) in before_systems
                 .into_iter()
                 .map(|b| (b, true))
@@ -171,7 +174,8 @@ impl ScriptSystemBuilder {
                     if is_before {
                         bevy::log::info!("before {default_set:?}");
                         system_config = system_config.before(*default_set);
-                    } else {                        bevy::log::info!("before {default_set:?}");
+                    } else {
+                        bevy::log::info!("before {default_set:?}");
                         bevy::log::info!("after {default_set:?}");
                         system_config = system_config.after(*default_set);
                     }
@@ -649,9 +653,9 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 
     unsafe fn validate_param_unsafe(
         &mut self,
-        _world: bevy::ecs::world::unsafe_world_cell::UnsafeWorldCell,
-    ) -> bool {
-        true
+        _world: UnsafeWorldCell,
+    ) -> Result<(), SystemParamValidationError> {
+        Ok(())
     }
 
     fn default_system_sets(&self) -> Vec<bevy::ecs::schedule::InternedSystemSet> {
@@ -662,7 +666,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         TypeId::of::<Self>()
     }
 
-    fn validate_param(&mut self, world: &World) -> bool {
+    fn validate_param(&mut self, world: &World) -> Result<(), SystemParamValidationError> {
         let world_cell = world.as_unsafe_world_cell_readonly();
         self.update_archetype_component_access(world_cell);
         // SAFETY:

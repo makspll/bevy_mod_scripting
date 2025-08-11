@@ -15,6 +15,7 @@ assets/scripts/tlconfig.lua
 **.log
 **build/
 .html
+.idea/
 
 /assets/**/*.lad.json
 /docs/src/ladfiles/*.lad.json

@@ -285,7 +285,7 @@ pub fn update_rendered_state(
         let old_rendered_state = assets
             .get_mut(&old_rendered_state.image)
             .expect("World is not setup correctly");
-        old_rendered_state.data = new_state.cells.clone();
+        old_rendered_state.data = Some(new_state.cells.clone());
     }
 }
 
@@ -306,7 +306,7 @@ pub fn send_on_click(
 ) {
     if buttons.just_pressed(MouseButton::Left) {
         let window = q_windows.single();
-        let pos = window.cursor_position().unwrap_or_default();
+        let pos = window.unwrap().cursor_position().unwrap_or_default();
         let x = pos.x as u32;
         let y = pos.y as u32;
         events.send(ScriptCallbackEvent::new_for_all_scripts(

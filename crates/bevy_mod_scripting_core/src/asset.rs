@@ -1,5 +1,18 @@
 //! Systems and resources for handling script assets and events
 
+use std::borrow::Cow;
+
+use bevy::{
+    app::{App, PreUpdate},
+    asset::{Asset, AssetEvent, AssetId, AssetLoader, AssetPath, Assets},
+    log::{debug, info, trace, warn},
+    platform::collections::HashMap,
+    prelude::{
+        Commands, Event, EventReader, EventWriter, IntoScheduleConfigs, Res, ResMut, Resource,
+    },
+    reflect::TypePath,
+};
+
 use crate::{
     commands::{CreateOrUpdateScript, DeleteScript},
     context::ContextLoadingSettings,

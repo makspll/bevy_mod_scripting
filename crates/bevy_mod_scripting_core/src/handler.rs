@@ -2,7 +2,7 @@
 use crate::{
     bindings::{
         pretty_print::DisplayWithWorld, script_value::ScriptValue, ThreadWorldContainer,
-        WorldContainer, WorldGuard,
+        WorldAccessGuard, WorldContainer, WorldGuard,
     },
     context::ContextPreHandlingInitializer,
     error::ScriptError,
@@ -16,7 +16,9 @@ use crate::{
 };
 use bevy::{
     ecs::{
-        system::{Resource, SystemState},
+        entity::Entity,
+        event::EventCursor,
+        system::{Local, Resource, SystemState},
         world::{Mut, World},
     },
     prelude::Events,
@@ -93,35 +95,41 @@ impl<P: IntoScriptPluginParams> CallbackSettings<P> {
 #[allow(deprecated)]
 pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
     world: &mut World,
-    state: &mut EventHandlerSystemState<P>,
+    state: &mut EventHandlerSystemState,
 ) {
-    // we wrap the inner event handler, so that we can immediately re-insert all the resources back.
-    // otherwise this would happen in the next schedule
+    // we wrap the inner event handler, so that we can guarantee that the handler context is released statically
     {
-        let (script_events, handler_ctxt) = state.get_mut(world);
-        event_handler_inner::<P>(L::into_callback_label(), script_events, handler_ctxt);
+        let handler_ctxt = HandlerContext::<P>::yoink(world);
+        let (event_cursor, mut guard) = state.get_mut(world);
+        let (guard, _) = guard.get_mut();
+        let handler_ctxt =
+            event_handler_inner::<P>(L::into_callback_label(), event_cursor, handler_ctxt, guard);
+        handler_ctxt.release(world);
     }
-    state.apply(world);
 }
 
-#[allow(deprecated)]
-pub(crate) type EventHandlerSystemState<'w, 's, P> = SystemState<(
-    crate::extractors::EventReaderScope<'s, ScriptCallbackEvent>,
-    WithWorldGuard<'w, 's, HandlerContext<'s, P>>,
+type EventHandlerSystemState<'w, 's> = SystemState<(
+    Local<'s, EventCursor<ScriptCallbackEvent>>,
+    WithWorldGuard<'w, 's, ()>,
 )>;
 
 #[profiling::function]
 #[allow(deprecated)]
 pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     callback_label: CallbackLabel,
-    mut script_events: crate::extractors::EventReaderScope<ScriptCallbackEvent>,
-    mut handler_ctxt: WithWorldGuard<HandlerContext<P>>,
-) {
-    let events = script_events.read();
-    if events.len() == 0 {
-        return;
-    }
+    mut event_cursor: Local<EventCursor<ScriptCallbackEvent>>,
+    handler_ctxt: HandlerContext<P>,
+    guard: WorldAccessGuard,
+) -> HandlerContext<P> {
     let mut errors = Vec::default();
+    // let events = guard.with_resour events.read().cloned().collect::<Vec<_>>();
+    let events = guard.with_resource(|events: &Events<ScriptCallbackEvent>| {
+        event_cursor
+            .read(events)
+            .filter(|e| e.label == callback_label)
+            .cloned()
+            .collect::<Vec<_>>()
+    });
 
     let (guard, handler_ctxt) = handler_ctxt.get_mut();
 
@@ -156,6 +164,7 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
         }
     }
     handle_script_errors(guard, errors.into_iter());
+    return handler_ctxt;
 }
 
 fn collect_errors(

@@ -62,6 +62,9 @@ fn main() {
                 .map(|s| s.to_owned())
                 .collect::<Vec<String>>();
 
+            // log all dependencies
+            debug!("Enabled dependencies: {}", dependencies.join(","));
+
             Some(dependencies)
         }
         _ => None,
@@ -110,36 +113,34 @@ fn main() {
             if !output.is_dir() {
                 panic!("Output is not a directory");
             }
-            let crates = std::fs::read_dir(&output)
-                .expect("Could not read output directory")
-                .filter_map(|d| {
-                    let entry = d.expect("Could not read entry in output directory");
-                    let path = entry.path();
-                    if path.extension().is_some_and(|ext| ext == "rs")
-                        && path.file_stem().is_some_and(|s| s != "mod")
-                    {
-                        Some(path.file_stem().unwrap().to_owned())
-                    } else {
-                        None
-                    }
-                });
+
             let meta_loader = MetaLoader::new(vec![output.to_owned()], workspace_meta);
-            let mut crates: Vec<_> = crates
-                .map(|c| {
-                    let name = c.to_str().unwrap().to_owned();
-                    log::info!("Collecting crate: {}", name);
-                    let meta = meta_loader
-                        .meta_for(&name)
-                        .expect("Could not find meta file for crate");
-                    Crate { name, meta }
+            let mut crates = meta_loader
+                .iter_meta()
+                .filter_map(|m| {
+                    log::debug!(
+                        "Processing crate: {}, will generate: {}",
+                        m.crate_name(),
+                        m.will_generate()
+                    );
+                    m.will_generate().then_some(Crate {
+                        name: m.crate_name().to_owned(),
+                        meta: m,
+                    })
                 })
-                .collect();
+                .collect::<Vec<_>>();
 
             crates.sort_by(|a, b| a.name.cmp(&b.name));
 
-            let context = Collect { crates, api_name };
+            let json = serde_json::to_string_pretty(
+                &crates.iter().map(|c| c.name.clone()).collect::<Vec<_>>(),
+            )
+            .unwrap();
+
+            let collect = Collect { crates, api_name };
+
             let mut context =
-                Context::from_serialize(context).expect("Could not create template context");
+                Context::from_serialize(collect).expect("Could not create template context");
 
             extend_context_with_args(args.template_args.as_deref(), &mut context);
 
@@ -148,6 +149,11 @@ fn main() {
                 .expect("Failed to render mod.rs");
             file.flush().unwrap();
             log::info!("Succesfully generated mod.rs");
+
+            // put json of Collect context into stdout
+            std::io::stdout()
+                .write_all(json.as_bytes())
+                .expect("Failed to write Collect context to stdout");
             return;
         }
         _ => {}

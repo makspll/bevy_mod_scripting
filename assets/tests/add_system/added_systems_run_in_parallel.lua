@@ -1,26 +1,26 @@
 function on_test()
-    local post_update_schedule = world.get_schedule_by_name("PostUpdate")
+  local post_update_schedule = world.get_schedule_by_name("PostUpdate")
 
-    local test_system = post_update_schedule:get_system_by_name("on_test_post_update")
+  local test_system = post_update_schedule:get_system_by_name("on_test_post_update")
 
-    local script_attachment = ScriptAttachment.new_entity_script(entity, script_asset)
+  local script_attachment = ScriptAttachment.new_entity_script(entity, script_asset)
 
-    local system_a = world.add_system(
-        post_update_schedule,
-        system_builder("custom_system_a", script_attachment)
-        :after(test_system)
-    )
+  local system_a = world.add_system(
+    post_update_schedule,
+    system_builder("custom_system_a", script_attachment)
+    :after(test_system)
+  )
 
-    local system_b = world.add_system(
-        post_update_schedule,
-        system_builder("custom_system_b", script_attachment)
-        :after(test_system)
-    )
+  local system_b = world.add_system(
+    post_update_schedule,
+    system_builder("custom_system_b", script_attachment)
+    :after(test_system)
+  )
 
-    -- generate a schedule graph and verify it's what we expect
-    local dot_graph = post_update_schedule:render_dot()
+  -- generate a schedule graph and verify it's what we expect
+  local dot_graph = post_update_schedule:render_dot()
 
-    local expected_dot_graph = [[
+  local expected_dot_graph = [[
 digraph {
   node_0 [label="bevy_mod_scripting_core::bindings::allocator::garbage_collector"];
   node_1 [label="script_integration_test_harness::dummy_before_post_update_system"];
@@ -39,5 +39,5 @@ digraph {
   node_3 -> node_5 [color=blue, label="runs before", arrowhead=normal];
 }
     ]]
-    assert_str_eq(dot_graph, expected_dot_graph, "Expected the schedule graph to match the expected graph")
+  assert_str_eq(dot_graph, expected_dot_graph, "Expected the schedule graph to match the expected graph")
 end

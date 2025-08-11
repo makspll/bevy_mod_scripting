@@ -9,6 +9,7 @@ use std::{
     any::{Any, TypeId},
     cmp::max,
 };
+
 /// Extension trait for [`PartialReflect`] providing additional functionality for working with specific types.
 pub trait PartialReflectExt {
     /// Try to get a reference to the given key in an underyling map, if the type is a map.
@@ -30,7 +31,7 @@ pub trait PartialReflectExt {
     fn from_reflect_or_clone(
         reflect: &dyn PartialReflect,
         world: WorldGuard,
-    ) -> Box<dyn PartialReflect>;
+    ) -> Result<Box<dyn PartialReflect>, InteropError>;
 
     /// Allocate a new boxed reflect reference from a boxed reflect.
     fn allocate(boxed: Box<dyn Reflect>, world: WorldGuard) -> ReflectReference;
@@ -424,11 +425,19 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
     fn from_reflect_or_clone(
         reflect: &dyn PartialReflect,
         world: WorldGuard,
-    ) -> Box<dyn PartialReflect> {
+    ) -> Result<Box<dyn PartialReflect>, InteropError> {
         // try from reflect
         match <dyn PartialReflect>::from_reflect(reflect, world.clone()) {
-            Ok(v) => v.into_partial_reflect(),
-            Err(_) => reflect.clone_value(),
+            Ok(v) => Ok(v.into_partial_reflect()),
+            Err(_) => reflect
+                .reflect_clone()
+                .map(|v| v.into_partial_reflect())
+                .map_err(|e| {
+                    InteropError::failed_from_reflect(
+                        reflect.get_represented_type_info().map(|ti| ti.type_id()),
+                        e.to_string(),
+                    )
+                }),
         }
     }
 
@@ -667,7 +676,7 @@ mod test {
         let mut map =
             std::collections::HashMap::<i32, std::collections::HashMap<i32, i32>>::default();
         let value = DynamicMap::from_iter(vec![(1, 2), (2, 3), (3, 4)]);
-        let value_ref: Box<dyn PartialReflect> = Box::new(value.clone_dynamic());
+        let value_ref: Box<dyn PartialReflect> = Box::new(value.to_dynamic_map());
         map.insert(1, std::collections::HashMap::<i32, i32>::default());
         map.insert(2, std::collections::HashMap::<i32, i32>::default());
         map.insert(3, std::collections::HashMap::<i32, i32>::default());
