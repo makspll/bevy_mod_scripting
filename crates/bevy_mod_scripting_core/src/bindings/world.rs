@@ -32,7 +32,7 @@ use crate::{
     reflection_extensions::PartialReflectExt,
     script::{ScriptAttachment, ScriptComponent},
 };
-use bevy::ecs::component::Mutable;
+use bevy::ecs::{component::Mutable, system::Command};
 use bevy::prelude::{ChildOf, Children};
 use bevy::{
     app::AppExit,
@@ -42,8 +42,8 @@ use bevy::{
         entity::Entity,
         prelude::Resource,
         reflect::{AppTypeRegistry, ReflectFromWorld, ReflectResource},
-        system::{Commands, Resource},
-        world::{unsafe_world_cell::UnsafeWorldCell, Command, CommandQueue, Mut, World},
+        system::Commands,
+        world::{unsafe_world_cell::UnsafeWorldCell, CommandQueue, Mut, World},
     },
     reflect::{
         std_traits::ReflectDefault, DynamicEnum, DynamicStruct, DynamicTuple, DynamicTupleStruct,

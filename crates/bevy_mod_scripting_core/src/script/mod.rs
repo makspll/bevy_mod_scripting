@@ -2,18 +2,17 @@
 
 use crate::asset::ScriptAsset;
 use crate::event::ScriptEvent;
-use bevy::ecs::component::ComponentId;
+use bevy::ecs::component::HookContext;
 use bevy::ecs::entity::Entity;
+use bevy::ecs::resource::Resource;
 use bevy::ecs::world::DeferredWorld;
+use bevy::platform::collections::HashSet;
 use bevy::prelude::ReflectComponent;
-use bevy::utils::hashbrown::hash_map::DefaultHashBuilder;
 use bevy::{
     asset::{Asset, AssetId, Handle},
-    ecs::system::Resource,
     reflect::Reflect,
-    utils::HashSet,
 };
-use std::{collections::HashMap, fmt, hash::BuildHasher, ops::Deref};
+use std::{collections::HashMap, fmt, ops::Deref};
 
 mod context_key;
 mod script_context;
@@ -101,8 +100,8 @@ impl ScriptComponent {
 
     /// the lifecycle hook called when a script component is removed from an entity, emits an appropriate event so we can handle
     /// the removal of the script.
-    pub fn on_remove(mut world: DeferredWorld, entity: Entity, _component_id: ComponentId) {
-        let context_keys = Self::get_context_keys_present(&world, entity);
+    pub fn on_remove(mut world: DeferredWorld, context: HookContext) {
+        let context_keys = Self::get_context_keys_present(&world, context.entity);
         world.send_event_batch(
             context_keys
                 .into_iter()
@@ -112,8 +111,8 @@ impl ScriptComponent {
 
     /// the lifecycle hook called when a script component is added to an entity, emits an appropriate event so we can handle
     /// the addition of the script.
-    pub fn on_add(mut world: DeferredWorld, entity: Entity, _component_id: ComponentId) {
-        let context_keys = Self::get_context_keys_present(&world, entity);
+    pub fn on_add(mut world: DeferredWorld, context: HookContext) {
+        let context_keys = Self::get_context_keys_present(&world, context.entity);
         world.send_event_batch(
             context_keys
                 .into_iter()

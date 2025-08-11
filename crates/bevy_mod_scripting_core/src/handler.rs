@@ -16,11 +16,12 @@ use crate::{
 };
 use bevy::{
     ecs::{
-        entity::Entity,
         event::EventCursor,
-        system::{Local, Resource, SystemState},
+        resource::Resource,
+        system::{Local, SystemState},
         world::{Mut, World},
     },
+    log::error,
     prelude::Events,
 };
 
@@ -131,9 +132,18 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
             .collect::<Vec<_>>()
     });
 
-    let (guard, handler_ctxt) = handler_ctxt.get_mut();
+    let events = match events {
+        Ok(events) => events,
+        Err(err) => {
+            error!(
+                "Failed to read script callback events: {}",
+                err.display_with_world(guard)
+            );
+            return handler_ctxt;
+        }
+    };
 
-    for event in events.filter(|e| {
+    for event in events.into_iter().filter(|e| {
         e.label == callback_label && e.language.as_ref().is_none_or(|l| l == &P::LANGUAGE)
     }) {
         let recipients = event

@@ -6,7 +6,7 @@ use crate::{
     script::ScriptAttachment,
     IntoScriptPluginParams,
 };
-use bevy::{ecs::entity::Entity, prelude::Resource};
+use bevy::prelude::Resource;
 
 /// A trait that all script contexts must implement.
 ///

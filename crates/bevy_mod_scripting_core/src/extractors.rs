@@ -15,13 +15,12 @@ use crate::{
     script::{ScriptAttachment, ScriptContext, StaticScripts},
     IntoScriptPluginParams,
 };
+use bevy::ecs::resource::Resource;
 use bevy::ecs::{
     component::ComponentId,
-    entity::Entity,
-    event::{Event, EventCursor, EventIterator, Events},
     query::{Access, AccessConflicts},
     storage::SparseSetIndex,
-    system::{Local, Resource, SystemParam, SystemParamValidationError, SystemState},
+    system::{SystemParam, SystemParamValidationError},
     world::World,
 };
 use fixedbitset::FixedBitSet;
