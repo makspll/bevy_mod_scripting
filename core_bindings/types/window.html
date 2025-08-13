@@ -208,6 +208,7 @@
 <li><strong>window_theme</strong>:core::option::Option&lt;bevy_window::window::WindowTheme&gt;</li>
 <li><strong>visible</strong>:bool</li>
 <li><strong>skip_taskbar</strong>:bool</li>
+<li><strong>clip_children</strong>:bool</li>
 <li><strong>desired_maximum_frame_latency</strong>:core::option::Option<a href="core::num::NonZeroU32">core::num::NonZeroU32</a></li>
 <li><strong>recognize_pinch_gesture</strong>:bool</li>
 <li><strong>recognize_rotation_gesture</strong>:bool</li>
@@ -220,6 +221,8 @@
 <li><strong>titlebar_transparent</strong>:bool</li>
 <li><strong>titlebar_show_title</strong>:bool</li>
 <li><strong>titlebar_show_buttons</strong>:bool</li>
+<li><strong>prefers_home_indicator_hidden</strong>:bool</li>
+<li><strong>prefers_status_bar_hidden</strong>:bool</li>
 </ul>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
@@ -238,11 +241,12 @@ OS-integrated windowing operations. For example, here's a simple system
 to change the window mode:</p>
 <pre><code># use bevy_ecs::query::With;
 # use bevy_ecs::system::Query;
-# use bevy_window::{WindowMode, PrimaryWindow, Window, MonitorSelection};
+# use bevy_window::{WindowMode, PrimaryWindow, Window, MonitorSelection, VideoModeSelection};
 fn change_window_mode(mut windows: Query&lt;&amp;mut Window, With&lt;PrimaryWindow&gt;&gt;) {
     // Query returns one window typically.
     for mut window in windows.iter_mut() {
-        window.mode = WindowMode::Fullscreen(MonitorSelection::Current);
+        window.mode =
+            WindowMode::Fullscreen(MonitorSelection::Current, VideoModeSelection::Current);
     }
 }
 </code></pre>
@@ -254,7 +258,7 @@ fn change_window_mode(mut windows: Query&lt;&amp;mut Window, With&lt;PrimaryWind
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/primarywindow.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/videomodeselection.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
@@ -268,7 +272,7 @@ fn change_window_mode(mut windows: Query&lt;&amp;mut Window, With&lt;PrimaryWind
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/primarywindow.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/videomodeselection.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 

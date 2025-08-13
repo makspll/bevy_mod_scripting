@@ -190,9 +190,9 @@
 <p>Describes what type of input interaction has occurred for a UI node.</p>
 <p>This is commonly queried with a <code>Changed&lt;Interaction&gt;</code> filter.</p>
 <p>Updated in [<code>ui_focus_system</code>].</p>
-<p>If a UI node has both [<code>Interaction</code>] and [<code>ViewVisibility</code>] components,
+<p>If a UI node has both [<code>Interaction</code>] and [<code>InheritedVisibility</code>] components,
 [<code>Interaction</code>] will always be [<code>Interaction::None</code>]
-when [<code>ViewVisibility::get()</code>] is false.
+when [<code>InheritedVisibility::get()</code>] is false.
 This ensures that hidden UI nodes are not interactable,
 and do not end up stuck in an active state if hidden at the wrong time.</p>
 <p>Note that you can also control the visibility of a node using the <a href="crate::ui_node::Display"><code>Display</code></a> property,

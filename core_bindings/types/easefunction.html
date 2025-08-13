@@ -195,6 +195,12 @@
 <h3 id="quinticin"><a class="header" href="#quinticin">QuinticIn</a></h3>
 <h3 id="quinticout"><a class="header" href="#quinticout">QuinticOut</a></h3>
 <h3 id="quinticinout"><a class="header" href="#quinticinout">QuinticInOut</a></h3>
+<h3 id="smoothstepin"><a class="header" href="#smoothstepin">SmoothStepIn</a></h3>
+<h3 id="smoothstepout"><a class="header" href="#smoothstepout">SmoothStepOut</a></h3>
+<h3 id="smoothstep"><a class="header" href="#smoothstep">SmoothStep</a></h3>
+<h3 id="smootherstepin"><a class="header" href="#smootherstepin">SmootherStepIn</a></h3>
+<h3 id="smootherstepout"><a class="header" href="#smootherstepout">SmootherStepOut</a></h3>
+<h3 id="smootherstep"><a class="header" href="#smootherstep">SmootherStep</a></h3>
 <h3 id="sinein"><a class="header" href="#sinein">SineIn</a></h3>
 <h3 id="sineout"><a class="header" href="#sineout">SineOut</a></h3>
 <h3 id="sineinout"><a class="header" href="#sineinout">SineInOut</a></h3>
@@ -216,6 +222,7 @@
 <h3 id="steps"><a class="header" href="#steps">Steps</a></h3>
 <ol>
 <li>usize</li>
+<li>bevy_math::curve::easing::JumpAt</li>
 </ol>
 <h3 id="elastic"><a class="header" href="#elastic">Elastic</a></h3>
 <ol>
@@ -224,23 +231,48 @@
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
 <p>Curve functions over the <a href="%60Interval::UNIT%60">unit interval</a>, commonly used for easing transitions.</p>
+<p><code>EaseFunction</code> can be used on its own to interpolate between <code>0.0</code> and <code>1.0</code>.
+It can also be combined with [<code>EasingCurve</code>] to interpolate between other
+intervals and types, including vectors and rotations.</p>
+<h1 id="example"><a class="header" href="#example">Example</a></h1>
+<p><a href="EaseFunction::sample"><code>sample</code></a> the smoothstep function at various points. This will return <code>None</code>
+if the parameter is outside the unit interval.</p>
+<pre><code># use bevy_math::prelude::*;
+let f = EaseFunction::SmoothStep;
+
+assert_eq!(f.sample(-1.0), None);
+assert_eq!(f.sample(0.0), Some(0.0));
+assert_eq!(f.sample(0.5), Some(0.5));
+assert_eq!(f.sample(1.0), Some(1.0));
+assert_eq!(f.sample(2.0), None);
+</code></pre>
+<p><a href="EaseFunction::sample_clamped"><code>sample_clamped</code></a> will clamp the parameter to the unit interval, so it
+always returns a value.</p>
+<pre><code># use bevy_math::prelude::*;
+# let f = EaseFunction::SmoothStep;
+assert_eq!(f.sample_clamped(-1.0), 0.0);
+assert_eq!(f.sample_clamped(0.0), 0.0);
+assert_eq!(f.sample_clamped(0.5), 0.5);
+assert_eq!(f.sample_clamped(1.0), 1.0);
+assert_eq!(f.sample_clamped(2.0), 1.0);
+</code></pre>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
-<tr><td><a href="./easefunction/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="./easefunction/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./easefunction/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
 </tbody></table>
 </div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/compassquadrant/clone.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/compassquadrant/assert_receiver_is_total_eq.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/easefunction/clone.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/easefunction/eq.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -250,11 +282,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/compassquadrant/clone.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/compassquadrant/assert_receiver_is_total_eq.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/easefunction/clone.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/easefunction/eq.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

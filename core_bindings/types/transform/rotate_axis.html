@@ -185,6 +185,11 @@
 <blockquote>
 <p>Rotates this [<code>Transform</code>] around the given <code>axis</code> by <code>angle</code> (in radians).
 If this [<code>Transform</code>] has a parent, the <code>axis</code> is relative to the rotation of the parent.</p>
+<h1 id="warning"><a class="header" href="#warning">Warning</a></h1>
+<p>If you pass in an <code>axis</code> based on the current rotation (e.g. obtained via [<code>Transform::local_x</code>]),
+floating point errors can accumulate exponentially when applying rotations repeatedly this way. This will
+result in a denormalized rotation. In this case, it is recommended to normalize the [<code>Transform::rotation</code>] after
+each call to this method.</p>
 </blockquote>
 <h4 id="arguments"><a class="header" href="#arguments">Arguments</a></h4>
 <div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Documentation</th></tr></thead><tbody>
@@ -202,11 +207,11 @@ If this [<code>Transform</code>] has a parent, the <code>axis</code> is relative
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../../core_bindings/types/transform/transform_point.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../../core_bindings/types/transform/from_scale.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../../core_bindings/types/transform/mul-1.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../../core_bindings/types/transform/to_isometry.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -216,11 +221,11 @@ If this [<code>Transform</code>] has a parent, the <code>axis</code> is relative
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../../core_bindings/types/transform/transform_point.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../../core_bindings/types/transform/from_scale.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../../core_bindings/types/transform/mul-1.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../../core_bindings/types/transform/to_isometry.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

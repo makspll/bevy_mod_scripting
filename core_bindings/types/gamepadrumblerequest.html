@@ -184,7 +184,7 @@
                         <h1 id="gamepadrumblerequest"><a class="header" href="#gamepadrumblerequest"><code>GamepadRumbleRequest</code></a></h1>
 <h3 id="add"><a class="header" href="#add">Add</a></h3>
 <ul>
-<li><strong>duration</strong>:bevy_utils::Duration</li>
+<li><strong>duration</strong>:core::time::Duration</li>
 <li><strong>intensity</strong>:bevy_input::gamepad::GamepadRumbleIntensity</li>
 <li><strong>gamepad</strong>:bevy_ecs::entity::Entity</li>
 </ul>
@@ -200,13 +200,13 @@
 <h1 id="example"><a class="header" href="#example">Example</a></h1>
 <pre><code># use bevy_input::gamepad::{Gamepad, GamepadRumbleRequest, GamepadRumbleIntensity};
 # use bevy_ecs::prelude::{EventWriter, Res, Query, Entity, With};
-# use bevy_utils::Duration;
+# use core::time::Duration;
 fn rumble_gamepad_system(
     mut rumble_requests: EventWriter&lt;GamepadRumbleRequest&gt;,
     gamepads: Query&lt;Entity, With&lt;Gamepad&gt;&gt;,
 ) {
     for entity in gamepads.iter() {
-        rumble_requests.send(GamepadRumbleRequest::Add {
+        rumble_requests.write(GamepadRumbleRequest::Add {
             gamepad: entity,
             intensity: GamepadRumbleIntensity::MAX,
             duration: Duration::from_secs_f32(0.5),
@@ -226,7 +226,7 @@ fn rumble_gamepad_system(
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/gamepadrumbleintensity/clone.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/gamepadrumbleintensity/weak_motor.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
@@ -240,7 +240,7 @@ fn rumble_gamepad_system(
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/gamepadrumbleintensity/clone.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/gamepadrumbleintensity/weak_motor.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 

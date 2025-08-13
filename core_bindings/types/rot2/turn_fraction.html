@@ -191,8 +191,10 @@
 # use approx::assert_relative_eq;
 let rot1 = Rot2::turn_fraction(0.75);
 let rot2 = Rot2::turn_fraction(-0.25);
+#[cfg(feature = "approx")]
 assert_relative_eq!(rot1, rot2);
 let rot3 = Rot2::turn_fraction(0.5);
+#[cfg(feature = "approx")]
 assert_relative_eq!(rot1 * rot1, rot3);
 </code></pre>
 </blockquote>
@@ -210,11 +212,11 @@ assert_relative_eq!(rot1 * rot1, rot3);
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../../core_bindings/types/rot2/eq.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../../core_bindings/types/rot2/as_degrees.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../../core_bindings/types/rot2/length_recip.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../../core_bindings/types/rot2/as_radians.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -224,11 +226,11 @@ assert_relative_eq!(rot1 * rot1, rot3);
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../../core_bindings/types/rot2/eq.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../../core_bindings/types/rot2/as_degrees.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../../core_bindings/types/rot2/length_recip.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../../core_bindings/types/rot2/as_radians.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

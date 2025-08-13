@@ -184,7 +184,7 @@
                         <h1 id="handlemesh"><a class="header" href="#handlemesh"><code>Handle&lt;Mesh&gt;</code></a></h1>
 <h3 id="strong"><a class="header" href="#strong">Strong</a></h3>
 <ol>
-<li>alloc::sync::Arc&lt;bevy_asset::handle::StrongHandle&gt;</li>
+<li>bevy_platform::sync::Arc&lt;bevy_asset::handle::StrongHandle&gt;</li>
 </ol>
 <h3 id="weak"><a class="header" href="#weak">Weak</a></h3>
 <ol>
@@ -192,12 +192,17 @@
 </ol>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
-<p>A strong or weak handle to a specific [<code>Asset</code>]. If a [<code>Handle</code>] is [<code>Handle::Strong</code>], the [<code>Asset</code>] will be kept
+<p>A handle to a specific [<code>Asset</code>] of type <code>A</code>. Handles act as abstract "references" to
+assets, whose data are stored in the <a href="crate::prelude::Assets"><code>Assets&lt;A&gt;</code></a> resource,
+avoiding the need to store multiple copies of the same data.</p>
+<p>If a [<code>Handle</code>] is [<code>Handle::Strong</code>], the [<code>Asset</code>] will be kept
 alive until the [<code>Handle</code>] is dropped. If a [<code>Handle</code>] is [<code>Handle::Weak</code>], it does not necessarily reference a live [<code>Asset</code>],
 nor will it keep assets alive.</p>
+<p>Modifying a <em>handle</em> will change which existing asset is referenced, but modifying the <em>asset</em>
+(by mutating the <a href="crate::prelude::Assets"><code>Assets</code></a> resource) will change the asset for all handles referencing it.</p>
 <p>[<code>Handle</code>] can be cloned. If a [<code>Handle::Strong</code>] is cloned, the referenced [<code>Asset</code>] will not be freed until <em>all</em> instances
 of the [<code>Handle</code>] are dropped.</p>
-<p>[<code>Handle::Strong</code>] also provides access to useful [<code>Asset</code>] metadata, such as the [<code>AssetPath</code>] (if it exists).</p>
+<p>[<code>Handle::Strong</code>], via [<code>StrongHandle</code>] also provides access to useful [<code>Asset</code>] metadata, such as the [<code>AssetPath</code>] (if it exists).</p>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
@@ -206,7 +211,7 @@ of the [<code>Handle</code>] are dropped.</p>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/handleimage.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/handletextureatlaslayout.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
@@ -220,7 +225,7 @@ of the [<code>Handle</code>] are dropped.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/handleimage.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/handletextureatlaslayout.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 

@@ -187,6 +187,7 @@
 <li><strong>color</strong>:bevy_color::color::Color</li>
 <li><strong>illuminance</strong>:f32</li>
 <li><strong>shadows_enabled</strong>:bool</li>
+<li><strong>affects_lightmapped_mesh_diffuse</strong>:bool</li>
 <li><strong>shadow_depth_bias</strong>:f32</li>
 <li><strong>shadow_normal_bias</strong>:f32</li>
 </ul>
@@ -222,12 +223,7 @@ this would be along the negative-Z axis.</p>
 <p>Shadows are produced via <a href="https://developer.download.nvidia.com/SDK/10.5/opengl/src/cascaded_shadow_maps/doc/cascaded_shadow_maps.pdf">cascaded shadow maps</a>.</p>
 <p>To modify the cascade setup, such as the number of cascades or the maximum shadow distance,
 change the [<code>CascadeShadowConfig</code>] component of the entity with the [<code>DirectionalLight</code>].</p>
-<p>To control the resolution of the shadow maps, use the [<code>DirectionalLightShadowMap</code>] resource:</p>
-<pre><code># use bevy_app::prelude::*;
-# use bevy_pbr::DirectionalLightShadowMap;
-App::new()
-    .insert_resource(DirectionalLightShadowMap { size: 2048 });
-</code></pre>
+<p>To control the resolution of the shadow maps, use the [<code>DirectionalLightShadowMap</code>] resource.</p>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>

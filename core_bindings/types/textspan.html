@@ -188,19 +188,22 @@
 </ol>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
-<p>A span of UI text in a tree of spans under an entity with [<code>TextLayout</code>] and <code>Text</code> or <code>Text2d</code>.</p>
+<p>A span of text in a tree of spans.</p>
+<p><code>TextSpan</code> is only valid as a child of an entity with [<code>TextLayout</code>], which is provided by <code>Text</code>
+for text in <code>bevy_ui</code> or <code>Text2d</code> for text in 2d world-space.</p>
 <p>Spans are collected in hierarchy traversal order into a [<code>ComputedTextBlock</code>] for layout.</p>
 <pre><code># use bevy_asset::Handle;
 # use bevy_color::Color;
 # use bevy_color::palettes::basic::{RED, BLUE};
 # use bevy_ecs::world::World;
 # use bevy_text::{Font, TextLayout, TextFont, TextSpan, TextColor};
-# use bevy_hierarchy::BuildChildren;
 
 # let font_handle: Handle&lt;Font&gt; = Default::default();
 # let mut world = World::default();
 #
 world.spawn((
+    // `Text` or `Text2d` are needed, and will provide default instances
+    // of the following components.
     TextLayout::default(),
     TextFont {
         font: font_handle.clone().into(),
@@ -210,6 +213,7 @@ world.spawn((
     TextColor(BLUE.into()),
 ))
 .with_child((
+    // Children must be `TextSpan`, not `Text` or `Text2d`.
     TextSpan::new("Hello!"),
     TextFont {
         font: font_handle.into(),

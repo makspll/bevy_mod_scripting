@@ -185,14 +185,14 @@
 <h3 id="time"><a class="header" href="#time">Time</a></h3>
 <ul>
 <li><strong>context</strong>:bevy_time::virt::Virtual</li>
-<li><strong>wrap_period</strong>:bevy_utils::Duration</li>
-<li><strong>delta</strong>:bevy_utils::Duration</li>
+<li><strong>wrap_period</strong>:core::time::Duration</li>
+<li><strong>delta</strong>:core::time::Duration</li>
 <li><strong>delta_secs</strong>:f32</li>
 <li><strong>delta_secs_f64</strong>:f64</li>
-<li><strong>elapsed</strong>:bevy_utils::Duration</li>
+<li><strong>elapsed</strong>:core::time::Duration</li>
 <li><strong>elapsed_secs</strong>:f32</li>
 <li><strong>elapsed_secs_f64</strong>:f64</li>
-<li><strong>elapsed_wrapped</strong>:bevy_utils::Duration</li>
+<li><strong>elapsed_wrapped</strong>:core::time::Duration</li>
 <li><strong>elapsed_secs_wrapped</strong>:f32</li>
 <li><strong>elapsed_secs_wrapped_f64</strong>:f64</li>
 </ul>
@@ -326,7 +326,7 @@ overwrite the [<code>Time</code>] resource with it. The default systems added by
 schedules.</p>
 <pre><code># use bevy_ecs::prelude::*;
 # use bevy_time::prelude::*;
-# use bevy_utils::Instant;
+# use bevy_platform::time::Instant;
 #
 #[derive(Debug)]
 struct Custom {

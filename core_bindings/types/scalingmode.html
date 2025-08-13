@@ -182,44 +182,16 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="scalingmode"><a class="header" href="#scalingmode"><code>ScalingMode</code></a></h1>
-<h3 id="windowsize"><a class="header" href="#windowsize">WindowSize</a></h3>
-<h3 id="fixed"><a class="header" href="#fixed">Fixed</a></h3>
-<ul>
-<li><strong>width</strong>:f32</li>
-<li><strong>height</strong>:f32</li>
-</ul>
-<h3 id="automin"><a class="header" href="#automin">AutoMin</a></h3>
-<ul>
-<li><strong>min_width</strong>:f32</li>
-<li><strong>min_height</strong>:f32</li>
-</ul>
-<h3 id="automax"><a class="header" href="#automax">AutoMax</a></h3>
-<ul>
-<li><strong>max_width</strong>:f32</li>
-<li><strong>max_height</strong>:f32</li>
-</ul>
-<h3 id="fixedvertical"><a class="header" href="#fixedvertical">FixedVertical</a></h3>
-<ul>
-<li><strong>viewport_height</strong>:f32</li>
-</ul>
-<h3 id="fixedhorizontal"><a class="header" href="#fixedhorizontal">FixedHorizontal</a></h3>
-<ul>
-<li><strong>viewport_width</strong>:f32</li>
-</ul>
+<h3 id="fillcenter"><a class="header" href="#fillcenter">FillCenter</a></h3>
+<h3 id="fillstart"><a class="header" href="#fillstart">FillStart</a></h3>
+<h3 id="fillend"><a class="header" href="#fillend">FillEnd</a></h3>
+<h3 id="fitcenter"><a class="header" href="#fitcenter">FitCenter</a></h3>
+<h3 id="fitstart"><a class="header" href="#fitstart">FitStart</a></h3>
+<h3 id="fitend"><a class="header" href="#fitend">FitEnd</a></h3>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
-<p>Scaling mode for [<code>OrthographicProjection</code>].</p>
-<p>The effect of these scaling modes are combined with the [<code>OrthographicProjection::scale</code>] property.</p>
-<p>For example, if the scaling mode is <code>ScalingMode::Fixed { width: 100.0, height: 300 }</code> and the scale is <code>2.0</code>,
-the projection will be 200 world units wide and 600 world units tall.</p>
-<h1 id="examples"><a class="header" href="#examples">Examples</a></h1>
-<p>Configure the orthographic projection to two world units per window height:</p>
-<pre><code># use bevy_render::camera::{OrthographicProjection, Projection, ScalingMode};
-let projection = Projection::Orthographic(OrthographicProjection {
-   scaling_mode: ScalingMode::FixedVertical { viewport_height: 2.0 },
-   ..OrthographicProjection::default_2d()
-});
-</code></pre>
+<p>Represents various modes for proportional scaling of a texture.</p>
+<p>Can be used in [<code>SpriteImageMode::Scale</code>].</p>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
@@ -232,7 +204,7 @@ let projection = Projection::Orthographic(OrthographicProjection {
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/globalsuniform.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/occlusionculling.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -246,7 +218,7 @@ let projection = Projection::Orthographic(OrthographicProjection {
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/globalsuniform.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/occlusionculling.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

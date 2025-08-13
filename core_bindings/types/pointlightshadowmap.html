@@ -188,7 +188,12 @@
 </ul>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
-<p>No Documentation 🚧</p>
+<p>Controls the resolution of [<code>PointLight</code>] shadow maps.</p>
+<pre><code># use bevy_app::prelude::*;
+# use bevy_pbr::PointLightShadowMap;
+App::new()
+    .insert_resource(PointLightShadowMap { size: 2048 });
+</code></pre>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>

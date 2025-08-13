@@ -187,9 +187,9 @@
 <li><strong>default_button_settings</strong>:bevy_input::gamepad::ButtonSettings</li>
 <li><strong>default_axis_settings</strong>:bevy_input::gamepad::AxisSettings</li>
 <li><strong>default_button_axis_settings</strong>:bevy_input::gamepad::ButtonAxisSettings</li>
-<li><strong>button_settings</strong>:bevy_utils::hashbrown::HashMap&lt;bevy_input::gamepad::GamepadButton, bevy_input::gamepad::ButtonSettings, bevy_utils::hashbrown::hash_map::DefaultHashBuilder&gt;</li>
-<li><strong>axis_settings</strong>:bevy_utils::hashbrown::HashMap&lt;bevy_input::gamepad::GamepadAxis, bevy_input::gamepad::AxisSettings, bevy_utils::hashbrown::hash_map::DefaultHashBuilder&gt;</li>
-<li><strong>button_axis_settings</strong>:bevy_utils::hashbrown::HashMap&lt;bevy_input::gamepad::GamepadButton, bevy_input::gamepad::ButtonAxisSettings, bevy_utils::hashbrown::hash_map::DefaultHashBuilder&gt;</li>
+<li><strong>button_settings</strong>:bevy_platform::collections::HashMap&lt;bevy_input::gamepad::GamepadButton, bevy_input::gamepad::ButtonSettings, bevy_platform::hash::FixedHasher&gt;</li>
+<li><strong>axis_settings</strong>:bevy_platform::collections::HashMap&lt;bevy_input::gamepad::GamepadAxis, bevy_input::gamepad::AxisSettings, bevy_platform::hash::FixedHasher&gt;</li>
+<li><strong>button_axis_settings</strong>:bevy_platform::collections::HashMap&lt;bevy_input::gamepad::GamepadButton, bevy_input::gamepad::ButtonAxisSettings, bevy_platform::hash::FixedHasher&gt;</li>
 </ul>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>

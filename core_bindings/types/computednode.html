@@ -186,6 +186,7 @@
 <ul>
 <li><strong>stack_index</strong>:u32</li>
 <li><strong>size</strong>:glam::Vec2</li>
+<li><strong>content_size</strong>:glam::Vec2</li>
 <li><strong>outline_width</strong>:f32</li>
 <li><strong>outline_offset</strong>:f32</li>
 <li><strong>unrounded_size</strong>:glam::Vec2</li>
@@ -197,6 +198,10 @@
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
 <p>Provides the computed size and layout properties of the node.</p>
+<p>Fields in this struct are public but should not be modified under most circumstances.
+For example, in a scrollbar you may want to derive the handle's size from the proportion of
+scrollable content in-view. You can directly modify <code>ComputedNode</code> after layout to set the
+handle size without any delays.</p>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
@@ -209,7 +214,7 @@
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/display.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/computednodetarget.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -223,7 +228,7 @@
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/display.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/computednodetarget.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

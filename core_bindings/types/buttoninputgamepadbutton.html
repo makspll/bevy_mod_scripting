@@ -184,9 +184,9 @@
                         <h1 id="buttoninputgamepadbutton"><a class="header" href="#buttoninputgamepadbutton"><code>ButtonInput&lt;GamepadButton&gt;</code></a></h1>
 <h3 id="buttoninput"><a class="header" href="#buttoninput">ButtonInput</a></h3>
 <ul>
-<li><strong>pressed</strong>:bevy_utils::hashbrown::HashSet&lt;bevy_input::gamepad::GamepadButton, bevy_utils::hashbrown::hash_map::DefaultHashBuilder&gt;</li>
-<li><strong>just_pressed</strong>:bevy_utils::hashbrown::HashSet&lt;bevy_input::gamepad::GamepadButton, bevy_utils::hashbrown::hash_map::DefaultHashBuilder&gt;</li>
-<li><strong>just_released</strong>:bevy_utils::hashbrown::HashSet&lt;bevy_input::gamepad::GamepadButton, bevy_utils::hashbrown::hash_map::DefaultHashBuilder&gt;</li>
+<li><strong>pressed</strong>:bevy_platform::collections::HashSet&lt;bevy_input::gamepad::GamepadButton, bevy_platform::hash::FixedHasher&gt;</li>
+<li><strong>just_pressed</strong>:bevy_platform::collections::HashSet&lt;bevy_input::gamepad::GamepadButton, bevy_platform::hash::FixedHasher&gt;</li>
+<li><strong>just_released</strong>:bevy_platform::collections::HashSet&lt;bevy_input::gamepad::GamepadButton, bevy_platform::hash::FixedHasher&gt;</li>
 </ul>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
@@ -243,7 +243,7 @@ regains focus, [<code>ButtonInput::just_pressed</code>] will be triggered.</p>
 <h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
 <p>Reading and checking against the current set of pressed buttons:</p>
 <pre><code class="language-no_run"># use bevy_app::{App, NoopPluginGroup as DefaultPlugins, Update};
-# use bevy_ecs::{prelude::{IntoSystemConfigs, Res, Resource, resource_changed}, schedule::Condition};
+# use bevy_ecs::{prelude::{IntoScheduleConfigs, Res, Resource, resource_changed}, schedule::Condition};
 # use bevy_input::{ButtonInput, prelude::{KeyCode, MouseButton}};
 
 fn main() {

@@ -212,6 +212,16 @@
 <p>Represents the possible value types for layout properties.</p>
 <p>This enum allows specifying values for various <a href="crate::Node"><code>Node</code></a> properties in different units,
 such as logical pixels, percentages, or automatically determined values.</p>
+<p><code>Val</code> also implements [<code>core::str::FromStr</code>] to allow parsing values from strings in the format <code>#.#px</code>. Whitespaces between the value and unit is allowed. The following units are supported:</p>
+<ul>
+<li><code>px</code>: logical pixels</li>
+<li><code>%</code>: percentage</li>
+<li><code>vw</code>: percentage of the viewport width</li>
+<li><code>vh</code>: percentage of the viewport height</li>
+<li><code>vmin</code>: percentage of the viewport's smaller dimension</li>
+<li><code>vmax</code>: percentage of the viewport's larger dimension</li>
+</ul>
+<p>Additionally, <code>auto</code> will be parsed as [<code>Val::Auto</code>].</p>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>

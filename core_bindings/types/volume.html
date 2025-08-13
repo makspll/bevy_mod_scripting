@@ -182,13 +182,20 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="volume"><a class="header" href="#volume"><code>Volume</code></a></h1>
-<h3 id="volume-1"><a class="header" href="#volume-1">Volume</a></h3>
+<h3 id="linear"><a class="header" href="#linear">Linear</a></h3>
+<ol>
+<li>f32</li>
+</ol>
+<h3 id="decibels"><a class="header" href="#decibels">Decibels</a></h3>
 <ol>
 <li>f32</li>
 </ol>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
-<p>A volume level equivalent to a non-negative float.</p>
+<p>A [<code>Volume</code>] represents an audio source's volume level.</p>
+<p>To create a new [<code>Volume</code>] from a linear scale value, use
+[<code>Volume::Linear</code>].</p>
+<p>To create a new [<code>Volume</code>] from decibels, use [<code>Volume::Decibels</code>].</p>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
@@ -197,7 +204,7 @@
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/spatialscale.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/globalvolume.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
@@ -211,7 +218,7 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/spatialscale.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/globalvolume.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 

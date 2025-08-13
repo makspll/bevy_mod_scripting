@@ -190,9 +190,25 @@
 <ol>
 <li>bevy_render::camera::projection::OrthographicProjection</li>
 </ol>
+<h3 id="custom"><a class="header" href="#custom">Custom</a></h3>
+<ol>
+<li>bevy_render::camera::projection::CustomProjection</li>
+</ol>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
-<p>A configurable [<code>CameraProjection</code>] that can select its projection type at runtime.</p>
+<p>Component that defines how to compute a <a href="crate::camera::Camera"><code>Camera</code></a>'s projection matrix.</p>
+<p>Common projections, like perspective and orthographic, are provided out of the box to handle the
+majority of use cases. Custom projections can be added using the [<code>CameraProjection</code>] trait and
+the [<code>Projection::custom</code>] constructor.</p>
+<h2 id="whats-a-projection"><a class="header" href="#whats-a-projection">What's a projection?</a></h2>
+<p>A camera projection essentially describes how 3d points from the point of view of a camera are
+projected onto a 2d screen. This is where properties like a camera's field of view are defined.
+More specifically, a projection is a 4x4 matrix that transforms points from view space (the
+point of view of the camera) into clip space. Clip space is almost, but not quite, equivalent to
+the rectangle that is rendered to your screen, with a depth axis. Any points that land outside
+the bounds of this cuboid are "clipped" and not rendered.</p>
+<p>You can also think of the projection as the thing that describes the shape of a camera's
+frustum: the volume in 3d space that is visible to a camera.</p>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>

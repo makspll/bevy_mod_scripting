@@ -185,8 +185,9 @@
 <h3 id="onreplace-1"><a class="header" href="#onreplace-1">OnReplace</a></h3>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
-<p>Trigger emitted when a component is replaced on an entity. See [<code>crate::component::ComponentHooks::on_replace</code>]
-for more information.</p>
+<p>Trigger emitted when a component is inserted onto an entity that already has that component.
+Runs before the value is replaced, so you can still access the original component data.
+See [<code>crate::component::ComponentHooks::on_replace</code>] for more information.</p>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>

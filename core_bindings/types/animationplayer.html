@@ -184,8 +184,8 @@
                         <h1 id="animationplayer"><a class="header" href="#animationplayer"><code>AnimationPlayer</code></a></h1>
 <h3 id="animationplayer-1"><a class="header" href="#animationplayer-1">AnimationPlayer</a></h3>
 <ul>
-<li><strong>active_animations</strong>:bevy_utils::hashbrown::HashMap&lt;petgraph::graph::NodeIndex, bevy_animation::ActiveAnimation, bevy_utils::hashbrown::hash_map::DefaultHashBuilder&gt;</li>
-<li><strong>blend_weights</strong>:bevy_utils::hashbrown::HashMap&lt;petgraph::graph::NodeIndex, f32, bevy_utils::hashbrown::hash_map::DefaultHashBuilder&gt;</li>
+<li><strong>active_animations</strong>:bevy_platform::collections::HashMap&lt;petgraph::graph::NodeIndex, bevy_animation::ActiveAnimation, bevy_platform::hash::FixedHasher&gt;</li>
+<li><strong>blend_weights</strong>:bevy_platform::collections::HashMap&lt;petgraph::graph::NodeIndex, f32, bevy_platform::hash::FixedHasher&gt;</li>
 </ul>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>

@@ -184,21 +184,36 @@
                         <h1 id="segment3d"><a class="header" href="#segment3d"><code>Segment3d</code></a></h1>
 <h3 id="segment3d-1"><a class="header" href="#segment3d-1">Segment3d</a></h3>
 <ul>
-<li><strong>direction</strong>:bevy_math::direction::Dir3</li>
-<li><strong>half_length</strong>:f32</li>
+<li><strong>vertices</strong>:[glam::Vec3; 2]</li>
 </ul>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
-<p>A segment of a line going through the origin along a direction in 3D space.</p>
+<p>A line segment defined by two endpoints in 3D space.</p>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
+<tr><td><a href="./segment3d/new.html">new</a></td><td>Create a new `Segment3d` from its endpoints.</td></tr>
+<tr><td><a href="./segment3d/length_squared.html">length_squared</a></td><td>Compute the squared length of the line segment.</td></tr>
+<tr><td><a href="./segment3d/rotated.html">rotated</a></td><td>Compute the segment rotated around the origin by the given rotation.</td></tr>
+<tr><td><a href="./segment3d/direction.html">direction</a></td><td>Compute the normalized direction pointing from the first endpoint to the second endpoint.  For the ...</td></tr>
+<tr><td><a href="./segment3d/scaled_direction.html">scaled_direction</a></td><td>Compute the vector from the first endpoint to the second endpoint.</td></tr>
+<tr><td><a href="./segment3d/reversed.html">reversed</a></td><td>Returns the line segment with its direction reversed by swapping the endpoints.</td></tr>
 <tr><td><a href="./segment3d/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./segment3d/point2.html">point2</a></td><td>Get the position of the second point on the line segment</td></tr>
-<tr><td><a href="./segment3d/point1.html">point1</a></td><td>Get the position of the first point on the line segment</td></tr>
+<tr><td><a href="./segment3d/point1.html">point1</a></td><td>Get the position of the first endpoint of the line segment.</td></tr>
+<tr><td><a href="./segment3d/length.html">length</a></td><td>Compute the length of the line segment.</td></tr>
+<tr><td><a href="./segment3d/translated.html">translated</a></td><td>Compute the segment translated by the given vector.</td></tr>
+<tr><td><a href="./segment3d/from_ray_and_length.html">from_ray_and_length</a></td><td>Create a new `Segment3d` starting from the origin of the given `ray`,  going in the direction of th...</td></tr>
+<tr><td><a href="./segment3d/rotated_around.html">rotated_around</a></td><td>Compute the segment rotated around the given point by the given rotation.</td></tr>
+<tr><td><a href="./segment3d/centered.html">centered</a></td><td>Compute the segment with its center at the origin, keeping the same direction and length.</td></tr>
+<tr><td><a href="./segment3d/point2.html">point2</a></td><td>Get the position of the second endpoint of the line segment.</td></tr>
 <tr><td><a href="./segment3d/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./segment3d/new.html">new</a></td><td>Create a new `Segment3d` from a direction and full length of the segment</td></tr>
+<tr><td><a href="./segment3d/resized.html">resized</a></td><td>Compute the segment with a new length, keeping the same direction and center.</td></tr>
+<tr><td><a href="./segment3d/rotated_around_center.html">rotated_around_center</a></td><td>Compute the segment rotated around its own center.</td></tr>
+<tr><td><a href="./segment3d/reverse.html">reverse</a></td><td>Reverses the direction of the line segment by swapping the endpoints.</td></tr>
+<tr><td><a href="./segment3d/center.html">center</a></td><td>Compute the midpoint between the two endpoints of the line segment.</td></tr>
+<tr><td><a href="./segment3d/from_scaled_direction.html">from_scaled_direction</a></td><td>Create a new `Segment3d` centered at the origin from a vector representing  the direction and lengt...</td></tr>
+<tr><td><a href="./segment3d/from_direction_and_length.html">from_direction_and_length</a></td><td>Create a new `Segment3d` centered at the origin with the given direction and length.  The endpoints...</td></tr>
 </tbody></table>
 </div>
                     </main>
@@ -209,7 +224,7 @@
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/segment3d/eq.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/segment3d/new.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -223,7 +238,7 @@
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/segment3d/eq.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/segment3d/new.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

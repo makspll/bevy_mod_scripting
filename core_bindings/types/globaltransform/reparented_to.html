@@ -190,7 +190,6 @@ Say you have an entity <code>e1</code> that you want to turn into a child of <co
 but you want <code>e1</code> to keep the same global transform, even after re-parenting. You would use:</p>
 <pre><code># use bevy_transform::prelude::{GlobalTransform, Transform};
 # use bevy_ecs::prelude::{Entity, Query, Component, Commands};
-# use bevy_hierarchy::{prelude::Parent, BuildChildren};
 #[derive(Component)]
 struct ToReparent {
     new_parent: Entity,
@@ -228,11 +227,11 @@ will be invalid.</p>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../../core_bindings/types/globaltransform/to_isometry.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../../core_bindings/types/globaltransform/clone.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../../core_bindings/types/globaltransform/from_xyz.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../../core_bindings/types/globaltransform/from_isometry.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -242,11 +241,11 @@ will be invalid.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../../core_bindings/types/globaltransform/to_isometry.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../../core_bindings/types/globaltransform/clone.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../../core_bindings/types/globaltransform/from_xyz.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../../core_bindings/types/globaltransform/from_isometry.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

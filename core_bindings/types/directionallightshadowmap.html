@@ -189,6 +189,11 @@
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
 <p>Controls the resolution of [<code>DirectionalLight</code>] shadow maps.</p>
+<pre><code># use bevy_app::prelude::*;
+# use bevy_pbr::DirectionalLightShadowMap;
+App::new()
+    .insert_resource(DirectionalLightShadowMap { size: 4096 });
+</code></pre>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>

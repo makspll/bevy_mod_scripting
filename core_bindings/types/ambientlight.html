@@ -186,11 +186,13 @@
 <ul>
 <li><strong>color</strong>:bevy_color::color::Color</li>
 <li><strong>brightness</strong>:f32</li>
+<li><strong>affects_lightmapped_meshes</strong>:bool</li>
 </ul>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
 <p>An ambient light, which lights the entire scene equally.</p>
 <p>This resource is inserted by the [<code>PbrPlugin</code>] and by default it is set to a low ambient light.</p>
+<p>It can also be added to a camera to override the resource (or default) ambient for that camera only.</p>
 <h1 id="examples"><a class="header" href="#examples">Examples</a></h1>
 <p>Make ambient light slightly brighter:</p>
 <pre><code># use bevy_ecs::system::ResMut;

@@ -184,28 +184,35 @@
                         <h1 id="children"><a class="header" href="#children"><code>Children</code></a></h1>
 <h3 id="children-1"><a class="header" href="#children-1">Children</a></h3>
 <ol>
-<li>smallvec::SmallVec&lt;[bevy_ecs::entity::Entity; 8]&gt;</li>
+<li>alloc::vec::Vec&lt;bevy_ecs::entity::Entity&gt;</li>
 </ol>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
-<p>Contains references to the child entities of this entity.</p>
-<p>Each child must contain a <a href="crate::components::parent::Parent"><code>Parent</code></a> component that points back to this entity.
-This component rarely needs to be created manually,
-consider using higher level utilities like <a href="crate::child_builder::BuildChildren::with_children"><code>BuildChildren::with_children</code></a>
-which are safer and easier to use.</p>
-<p>See <a href="crate::query_extension::HierarchyQueryExt"><code>HierarchyQueryExt</code></a> for hierarchy related methods on <a href="bevy_ecs::system::Query"><code>Query</code></a>.</p>
+<p>Tracks which entities are children of this parent entity.</p>
+<p>A <a href="crate::relationship::RelationshipTarget"><code>RelationshipTarget</code></a> collection component that is populated
+with entities that "target" this entity with the [<code>ChildOf</code>] <a href="crate::relationship::Relationship"><code>Relationship</code></a> component.</p>
+<p>Together, these components form the "canonical parent-child hierarchy". See the [<code>ChildOf</code>] component for the full
+description of this relationship and instructions on how to use it.</p>
+<h1 id="usage"><a class="header" href="#usage">Usage</a></h1>
+<p>Like all <a href="crate::relationship::RelationshipTarget"><code>RelationshipTarget</code></a> components, this data should not be directly manipulated to avoid desynchronization.
+Instead, modify the [<code>ChildOf</code>] components on the "source" entities.</p>
+<p>To access the children of an entity, you can iterate over the [<code>Children</code>] component,
+using the [<code>IntoIterator</code>] trait.
+For more complex access patterns, see the <a href="crate::relationship::RelationshipTarget"><code>RelationshipTarget</code></a> trait.</p>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
 <tr><td><a href="./children/swap.html">swap</a></td><td>Swaps the child at `a_index` with the child at `b_index`.</td></tr>
+<tr><td><a href="./children/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./children/assert_receiver_is_total_eq.html">assert_receiver_is_total_eq</a></td><td>No Documentation 🚧</td></tr>
 </tbody></table>
 </div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/removedcomponententity/clone.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/childof/parent.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
@@ -219,7 +226,7 @@ which are safer and easier to use.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/removedcomponententity/clone.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/childof/parent.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
