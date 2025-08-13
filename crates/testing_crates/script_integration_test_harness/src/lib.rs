@@ -12,14 +12,14 @@ use bevy::{
     ecs::{
         component::Component,
         event::{Event, Events},
-        schedule::{IntoSystemConfigs, SystemConfigs},
-        system::{IntoSystem, Local, Res, Resource, SystemState},
-        world::{Command, FromWorld, Mut},
+        prelude::{Command, Resource},
+        schedule::ScheduleConfigs,
+        system::{BoxedSystem, InfallibleSystemWrapper, IntoSystem, Local, Res},
+        world::{FromWorld, Mut},
     },
-    log::Level,
-    prelude::{Entity, World},
+    log::{tracing, tracing::event, Level},
+    prelude::{BevyError, Entity, IntoScheduleConfigs, World},
     reflect::{Reflect, TypeRegistry},
-    utils::tracing,
 };
 use bevy_mod_scripting_core::{
     asset::ScriptAsset,
@@ -31,7 +31,7 @@ use bevy_mod_scripting_core::{
     commands::CreateOrUpdateScript,
     error::{InteropError, ScriptError},
     event::{IntoCallbackLabel, ScriptErrorEvent},
-    extractors::{HandlerContext, WithWorldGuard},
+    extractors::HandlerContext,
     handler::handle_script_errors,
     script::ScriptId,
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams, ScriptingPlugin,
@@ -55,19 +55,28 @@ struct TestCallbackBuilder<P: IntoScriptPluginParams, L: IntoCallbackLabel> {
 }
 
 impl<L: IntoCallbackLabel, P: IntoScriptPluginParams> TestCallbackBuilder<P, L> {
-    fn build(script_id: impl Into<ScriptId>, expect_response: bool) -> SystemConfigs {
+    fn build(
+        script_id: impl Into<ScriptId>,
+        expect_response: bool,
+    ) -> ScheduleConfigs<BoxedSystem<(), Result<(), BevyError>>> {
         let script_id = script_id.into();
-        IntoSystem::into_system(
-            move |world: &mut World,
-                  system_state: &mut SystemState<WithWorldGuard<HandlerContext<P>>>| {
-                let with_guard = system_state.get_mut(world);
-                let _ = run_test_callback::<P, L>(&script_id.clone(), with_guard, expect_response);
+        let system = Box::new(InfallibleSystemWrapper::new(
+            IntoSystem::into_system(move |world: &mut World| {
+                let mut handler_ctxt = HandlerContext::<P>::yoink(world);
+                let guard = WorldAccessGuard::new_exclusive(world);
+                let _ = run_test_callback::<P, L>(
+                    &script_id.clone(),
+                    guard,
+                    &mut handler_ctxt,
+                    expect_response,
+                );
 
-                system_state.apply(world);
-            },
-        )
-        .with_name(L::into_callback_label().to_string())
-        .into_configs()
+                handler_ctxt.release(world);
+            })
+            .with_name(L::into_callback_label().to_string()),
+        ));
+
+        system.into_configs()
     }
 }
 
@@ -297,11 +306,10 @@ pub fn execute_integration_test<
 
 fn run_test_callback<P: IntoScriptPluginParams, C: IntoCallbackLabel>(
     script_id: &str,
-    mut with_guard: WithWorldGuard<'_, '_, HandlerContext<'_, P>>,
+    guard: WorldGuard,
+    handler_ctxt: &mut HandlerContext<P>,
     expect_response: bool,
 ) -> Result<ScriptValue, ScriptError> {
-    let (guard, handler_ctxt) = with_guard.get_mut();
-
     if !handler_ctxt.is_script_fully_loaded(script_id.to_string().into()) {
         return Ok(ScriptValue::Unit);
     }
@@ -341,7 +349,7 @@ pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(
     label: &str,
     criterion: &mut criterion::BenchmarkGroup<M>,
 ) -> Result<(), String> {
-    use bevy::{log::Level, utils::tracing};
+    use bevy::log::Level;
     use bevy_mod_scripting_lua::mlua::Function;
 
     let plugin = make_test_lua_plugin();
@@ -373,7 +381,7 @@ pub fn run_rhai_benchmark<M: criterion::measurement::Measurement>(
     label: &str,
     criterion: &mut criterion::BenchmarkGroup<M>,
 ) -> Result<(), String> {
-    use bevy::{log::Level, utils::tracing};
+    use bevy::log::Level;
     use bevy_mod_scripting_rhai::rhai::Dynamic;
 
     let plugin = make_test_rhai_plugin();
@@ -440,13 +448,11 @@ where
 
     let timer = Instant::now();
 
-    let mut state = SystemState::<WithWorldGuard<HandlerContext<P>>>::from_world(app.world_mut());
-
     loop {
         app.update();
 
-        let mut handler_ctxt = state.get_mut(app.world_mut());
-        let (guard, context) = handler_ctxt.get_mut();
+        let mut context = HandlerContext::<P>::yoink(app.world_mut());
+        let guard = WorldAccessGuard::new_exclusive(app.world_mut());
 
         if context.is_script_fully_loaded(script_id.clone().into()) {
             let script = context
@@ -467,7 +473,7 @@ where
                 bench_fn(&mut ctxt_locked, runtime, label, criterion)
             });
         }
-        state.apply(app.world_mut());
+        context.release(app.world_mut());
         if timer.elapsed() > Duration::from_secs(30) {
             return Err("Timeout after 30 seconds, could not load script".into());
         }
@@ -587,7 +593,7 @@ pub fn perform_benchmark_with_generator<
                 )
             },
             |(i, w)| {
-                bevy::utils::tracing::event!(bevy::log::Level::TRACE, "profiling_iter {}", label);
+                event!(bevy::log::Level::TRACE, "profiling_iter {}", label);
                 bench_fn(w, i)
             },
             batch_size,

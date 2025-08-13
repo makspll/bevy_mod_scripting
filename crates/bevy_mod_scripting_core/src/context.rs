@@ -6,7 +6,7 @@ use crate::{
     script::ScriptId,
     IntoScriptPluginParams,
 };
-use bevy::ecs::{entity::Entity, system::Resource};
+use bevy::{ecs::entity::Entity, prelude::Resource};
 
 /// A trait that all script contexts must implement.
 ///

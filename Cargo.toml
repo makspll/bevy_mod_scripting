@@ -23,9 +23,7 @@ features = ["lua54", "rhai"]
 [features]
 default = [
     "core_functions",
-    "bevy_core_bindings",
     "bevy_ecs_bindings",
-    "bevy_hierarchy_bindings",
     "bevy_input_bindings",
     "bevy_math_bindings",
     "bevy_reflect_bindings",
@@ -48,9 +46,7 @@ luau = ["bevy_mod_scripting_lua/luau", "lua"]
 
 # bindings 
 core_functions = ["bevy_mod_scripting_functions/core_functions"]
-bevy_core_bindings = ["bevy_mod_scripting_functions/bevy_core"]
 bevy_ecs_bindings = ["bevy_mod_scripting_functions/bevy_ecs"]
-bevy_hierarchy_bindings = ["bevy_mod_scripting_functions/bevy_hierarchy"]
 bevy_input_bindings = ["bevy_mod_scripting_functions/bevy_input"]
 bevy_math_bindings = ["bevy_mod_scripting_functions/bevy_math"]
 bevy_reflect_bindings = ["bevy_mod_scripting_functions/bevy_reflect"]
@@ -75,6 +71,8 @@ profile_with_tracy = ["bevy/trace_tracy"]
 
 [dependencies]
 bevy = { workspace = true }
+bevy_math = { workspace = true }
+bevy_reflect = { workspace = true }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", version = "0.13.0", optional = true }
 bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.13.0", optional = true }
@@ -84,7 +82,9 @@ bevy_mod_scripting_derive = { workspace = true }
 
 [workspace.dependencies]
 profiling = { version = "1.0" }
-bevy = { version = "0.15.3", default-features = false }
+bevy = { version = "0.16.0", default-features = false }
+bevy_math = { version = "0.16.0" }
+bevy_reflect = { version = "0.16.0" }
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.13.0" }
 bevy_mod_scripting_functions = { path = "crates/bevy_mod_scripting_functions", version = "0.13.0", default-features = false }
 bevy_mod_scripting_derive = { path = "crates/bevy_mod_scripting_derive", version = "0.13.0" }
@@ -94,19 +94,17 @@ script_integration_test_harness = { path = "crates/testing_crates/script_integra
 test_utils = { path = "crates/testing_crates/test_utils" }
 
 [dev-dependencies]
-bevy = { workspace = true, default-features = true }
+bevy = { workspace = true, default-features = true, features = ["std"] }
 clap = { version = "4.1", features = ["derive"] }
-rand = "0.8.5"
-bevy_console = "0.13"
-# rhai-rand = "0.1"
+rand = "0.9.1"
 criterion = { version = "0.5" }
-ansi-parser = "0.9"
 ladfile_builder = { path = "crates/ladfile_builder", version = "0.3.3" }
 script_integration_test_harness = { workspace = true }
 test_utils = { workspace = true }
 libtest-mimic = "0.8"
 tracing-tracy = "0.11"
 regex = "1.11"
+bevy_console = "0.14"
 
 [workspace]
 members = [

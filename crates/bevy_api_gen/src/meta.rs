@@ -21,6 +21,7 @@ pub(crate) const META_VERSION: &str = "1";
 /// between crates to be able to properly identify links between crates
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Meta {
+    pub(crate) crate_name: String,
     /// The local proxies generated after analysis
     pub(crate) proxies: Vec<ProxyMeta>,
     /// False if no files are going to be generated for this crate
@@ -51,11 +52,19 @@ where
 
 impl Meta {
     /// Returns true if the crate generated a proxy with the given DefPathHash (for the ADT)
-    pub(crate) fn contains_def_path_hash(&self, did: DefPathHash) -> bool {
+    pub fn contains_def_path_hash(&self, did: DefPathHash) -> bool {
         self.proxies.iter().any(|meta| {
             meta.stable_crate_id == did.stable_crate_id().as_u64()
                 && meta.local_hash_id == did.local_hash().as_u64()
         })
+    }
+
+    pub fn will_generate(&self) -> bool {
+        self.will_generate
+    }
+
+    pub fn crate_name(&self) -> &str {
+        &self.crate_name
     }
 }
 
@@ -81,6 +90,24 @@ impl MetaLoader {
             cache: Default::default(),
             workspace_meta,
         }
+    }
+
+    /// iterates over the meta files in the meta directories and returns an iterator over the meta files
+    pub fn iter_meta(&self) -> impl Iterator<Item = Meta> + '_ {
+        self.meta_dirs.iter().flat_map(|dir| {
+            dir.read_dir()
+                .unwrap_or_else(|_| panic!("Could not read meta directory: {}", dir))
+                .filter_map(|entry| {
+                    let entry = entry.unwrap();
+                    if entry.path().extension().is_some_and(|ext| ext == "json") {
+                        return Self::opt_load_meta(
+                            Utf8PathBuf::from_path_buf(entry.path())
+                                .expect("Invalid meta file in meta directory"),
+                        );
+                    }
+                    None
+                })
+        })
     }
 
     /// Retrieves the meta for the provided crate, returns 'Some(meta)' if it exists and 'None' otherwise
