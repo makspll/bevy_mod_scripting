@@ -188,7 +188,7 @@
 <h2 id="context-initializers"><a class="header" href="#context-initializers">Context Initializers</a></h2>
 <p>For example, let's say you want to set a dynamic amount of globals in your script, depending on some setting in your app.</p>
 <p>You could do this by customizing the scripting plugin:</p>
-<pre><code class="language-rust ignore">let plugin = LuaScriptingPlugin::default().add_context_initializer(|script_id: &amp;str, context: &amp;mut Lua| {
+<pre><code class="language-rust ignore">let plugin = LuaScriptingPlugin::default().add_context_initializer(|_context_key: &amp;ContextKey, context: &amp;mut Lua| {
     let globals = context.globals();
     for i in 0..10 {
         globals.set(i, i);
@@ -200,27 +200,52 @@ app.add_plugins(plugin)</code></pre>
 <p>The above will run every time the script is loaded or re-loaded and before it handles any callbacks.</p>
 <h2 id="context-pre-handling-initializers"><a class="header" href="#context-pre-handling-initializers">Context Pre Handling Initializers</a></h2>
 <p>If you want to customize your context before every time it's about to handle events (and when it's loaded + reloaded), you can use <code>Context Pre Handling Initializers</code>:</p>
-<pre><code class="language-rust ignore">let plugin = LuaScriptingPlugin::default().add_context_pre_handling_initializer(|script_id: &amp;str, entity: Entity, context: &amp;mut Lua| {
-    let globals = context.globals();
-    globals.set("script_name", script_id.to_owned());
-    Ok(())
-});</code></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use bevy::prelude::*;
+use bevy_mod_scripting::prelude::*;
+fn scripting_plugin(app: &amp;mut App) {
+    app.add_plugins(LuaScriptingPlugin::default()
+                       .add_context_pre_handling_initializer(|context_key: &amp;ContextKey, entity: Entity, context: &amp;mut Lua| {
+        let globals = context.globals();
+        if let Some(script_id) = context_key.script_id.as_ref() {
+            globals.set("script_name", script_id.to_owned());
+        }
+        Ok(())
+    }));
+}
+<span class="boring">}</span></code></pre></pre>
 <h2 id="runtime-initializers"><a class="header" href="#runtime-initializers">Runtime Initializers</a></h2>
 <p>Some scripting languages, have the concept of a <code>runtime</code>. This is a global object which is shared between all contexts. You can customize this object using <code>Runtime Initializers</code>:</p>
-<pre><code class="language-rust ignore">let plugin = SomeScriptingPlugin::default().add_runtime_initializer(|runtime: &amp;mut Runtime| {
-    runtime.set_max_stack_size(1000);
-    Ok(())
-});</code></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use bevy::prelude::*;
+use bevy_mod_scripting::prelude::*;
+fn scripting_plugin(app: &amp;mut App) {
+    app.add_plugin(SomeScriptingPlugin::default().add_runtime_initializer(|runtime: &amp;mut Runtime| {
+        runtime.set_max_stack_size(1000);
+        Ok(())
+    }));
+    
+}
+<span class="boring">}</span></code></pre></pre>
 <p>In the case of Lua, the runtime type is <code>()</code> i.e. This is because <code>mlua</code> does not have a separate runtime concept.</p>
 <h2 id="accessing-the-world-in-initializers"><a class="header" href="#accessing-the-world-in-initializers">Accessing the World in Initializers</a></h2>
 <p>You can access the world in these initializers by using the thread local: <code>ThreadWorldContainer</code>:</p>
-<pre><code class="language-rust ignore">
-let plugin = LuaScriptingPlugin::default();
-plugin.add_context_initializer(|script_id: &amp;str, context: &amp;mut Lua| {
-    let world = ThreadWorldContainer.try_get_world().unwrap();
-    world.with_resource::&lt;MyResource&gt;(|res| println!("My resource: {:?}", res));
-    Ok(())
-});</code></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use bevy::prelude::*;
+use bevy_mod_scripting::prelude::*;
+fn scripting_plugin(app: &amp;mut App) {
+    let plugin = LuaScriptingPlugin::default();
+    plugin.add_context_initializer(|_context_key: &amp;ContextKey, context: &amp;mut Lua| {
+        let world = ThreadWorldContainer.try_get_world().unwrap();
+        world.with_resource::&lt;MyResource&gt;(|res| println!("My resource: {:?}", res));
+        Ok(())
+    });
+    app.add_plugins(plugin);
+}
+<span class="boring">}</span></code></pre></pre>
 
                     </main>
 
@@ -230,7 +255,7 @@ plugin.add_context_initializer(|script_id: &amp;str, context: &amp;mut Lua| {
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../Summary/sharing-contexts-between-scripts.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../Summary/contexts.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -244,7 +269,7 @@ plugin.add_context_initializer(|script_id: &amp;str, context: &amp;mut Lua| {
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../Summary/sharing-contexts-between-scripts.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../Summary/contexts.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

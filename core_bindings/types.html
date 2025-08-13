@@ -193,8 +193,10 @@
 <tr><td><a href="././types/scriptresourceregistration.html"><code>ScriptResourceRegistration</code></a></td><td>A reference to a resource type's reflection registration.   In general think of this as a handle to...</td></tr>
 <tr><td><a href="././types/scripttyperegistration.html"><code>ScriptTypeRegistration</code></a></td><td>A reference to a type which is not a `Resource` or `Component`.   In general think of this as a han...</td></tr>
 <tr><td><a href="././types/scriptsystembuilder.html"><code>ScriptSystemBuilder</code></a></td><td>A builder for systems living in scripts</td></tr>
+<tr><td><a href="././types/scriptattachment.html"><code>ScriptAttachment</code></a></td><td>Specifies a unique attachment of a script. These attachments are mapped to [`ContextKey`]'s depending on the context policy used.</td></tr>
 <tr><td><a href="././types/reflectschedule.html"><code>ReflectSchedule</code></a></td><td>A reflectable schedule.</td></tr>
 <tr><td><a href="././types/reflectsystem.html"><code>ReflectSystem</code></a></td><td>A reflectable system.</td></tr>
+<tr><td><a href="././types/handlescriptasset.html"><code>Handle&lt;ScriptAsset&gt;</code></a></td><td>A handle to a specific [`Asset`] of type `A`. Handles act as abstract "references" to  assets, whose data are stored in the [`Assets<A>`](crate::prelude::Assets)...</td></tr>
 <tr><td><a href="././types/componentid.html"><code>ComponentId</code></a></td><td>A value which uniquely identifies the type of a [`Component`] or [`Resource`] within a  [`World`].   Each time a new `Component` type is registered within a `World` using  e.g. [`World::register_component`]...</td></tr>
 <tr><td><a href="././types/componentticks.html"><code>ComponentTicks</code></a></td><td>Records when a component or resource was added and when it was last mutably dereferenced (or added)...</td></tr>
 <tr><td><a href="././types/tick.html"><code>Tick</code></a></td><td>A value that tracks when a system ran relative to other systems.  This is used to power change dete...</td></tr>
@@ -497,7 +499,9 @@
 <tr><td><a href="././types/torusmeshbuilder.html"><code>TorusMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`Torus`] shape.</td></tr>
 <tr><td><a href="././types/triangle3dmeshbuilder.html"><code>Triangle3dMeshBuilder</code></a></td><td>A builder used for creating a [`Mesh`] with a [`Triangle3d`] shape.</td></tr>
 <tr><td><a href="././types/skinnedmesh.html"><code>SkinnedMesh</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/scriptasset.html"><code>ScriptAsset</code></a></td><td>Represents a script loaded into memory as an asset</td></tr>
 <tr><td><a href="././types/namespace.html"><code>Namespace</code></a></td><td>A namespace for functions</td></tr>
+<tr><td><a href="././types/dynamiccomponent.html"><code>DynamicComponent</code></a></td><td>A dynamic script component</td></tr>
 <tr><td><a href="././types/scriptvalue.html"><code>ScriptValue</code></a></td><td>An abstraction of values that can be passed to and from scripts.  This allows us to re-use logic be...</td></tr>
 <tr><td><a href="././types/functionarginfo.html"><code>FunctionArgInfo</code></a></td><td>Information about a function argument.</td></tr>
 <tr><td><a href="././types/functioninfo.html"><code>FunctionInfo</code></a></td><td>Information about a function.</td></tr>
@@ -779,6 +783,7 @@
 <tr><td><a href="././types/assetidimage.html"><code>AssetId&lt;Image&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
 <tr><td><a href="././types/assetidtextureatlaslayout.html"><code>AssetId&lt;TextureAtlasLayout&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
 <tr><td><a href="././types/assetidmesh.html"><code>AssetId&lt;Mesh&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
+<tr><td><a href="././types/assetidscriptasset.html"><code>AssetId&lt;ScriptAsset&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
 <tr><td><a href="././types/assetidstandardmaterial.html"><code>AssetId&lt;StandardMaterial&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
 <tr><td><a href="././types/assetidshaderstoragebuffer.html"><code>AssetId&lt;ShaderStorageBuffer&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
 <tr><td><a href="././types/assetidcolormaterial.html"><code>AssetId&lt;ColorMaterial&gt;</code></a></td><td>A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the  lifetime of the Asset. This means it _can_ point to an [`Asset`]...</td></tr>
@@ -854,6 +859,7 @@
 <tr><td><a href="././types/resultreflectreference,_interoperror.html"><code>Result&lt;ReflectReference, InteropError&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/resultscriptsystembuilder,_interoperror.html"><code>Result&lt;ScriptSystemBuilder, InteropError&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/resultscriptvalue,_interoperror.html"><code>Result&lt;ScriptValue, InteropError&gt;</code></a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="././types/resultscriptattachment,_interoperror.html"><code>Result&lt;ScriptAttachment, InteropError&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/resultreflectsystem,_interoperror.html"><code>Result&lt;ReflectSystem, InteropError&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/resultbool,_interoperror.html"><code>Result&lt;bool, InteropError&gt;</code></a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="././types/hashmapanimationtargetid,_u64.html"><code>HashMap&lt;AnimationTargetId, u64&gt;</code></a></td><td>No Documentation 🚧</td></tr>

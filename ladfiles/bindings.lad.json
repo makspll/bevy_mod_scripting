@@ -127,6 +127,12 @@
       },
       "is_static": true
     },
+    "DynamicComponent": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::bindings::script_component::DynamicComponent"
+      },
+      "is_static": true
+    },
     "GizmoLineStyle": {
       "type_kind": {
         "val": "bevy_gizmos::config::GizmoLineStyle"
@@ -319,6 +325,12 @@
       },
       "is_static": true
     },
+    "Namespace": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::bindings::function::namespace::Namespace"
+      },
+      "is_static": true
+    },
     "ZIndex": {
       "type_kind": {
         "val": "bevy_ui::ui_node::ZIndex"
@@ -358,12 +370,6 @@
     "Entity": {
       "type_kind": {
         "val": "bevy_ecs::entity::Entity"
-      },
-      "is_static": true
-    },
-    "Namespace": {
-      "type_kind": {
-        "val": "bevy_mod_scripting_core::bindings::function::namespace::Namespace"
       },
       "is_static": true
     },
@@ -958,6 +964,12 @@
     "AnimationClip": {
       "type_kind": {
         "val": "bevy_animation::AnimationClip"
+      },
+      "is_static": true
+    },
+    "ScriptAsset": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::asset::ScriptAsset"
       },
       "is_static": true
     },
@@ -2140,9 +2152,9 @@
       },
       "is_static": true
     },
-    "Oklaba": {
+    "ScriptAttachment": {
       "type_kind": {
-        "val": "bevy_color::oklaba::Oklaba"
+        "val": "bevy_mod_scripting_core::script::context_key::ScriptAttachment"
       },
       "is_static": true
     },
@@ -2173,6 +2185,12 @@
     "ScreenshotCaptured": {
       "type_kind": {
         "val": "bevy_render::view::window::screenshot::ScreenshotCaptured"
+      },
+      "is_static": true
+    },
+    "Oklaba": {
+      "type_kind": {
+        "val": "bevy_color::oklaba::Oklaba"
       },
       "is_static": true
     },
@@ -2794,9 +2812,9 @@
       },
       "is_static": true
     },
-    "Pickable": {
+    "FunctionCallContext": {
       "type_kind": {
-        "val": "bevy_picking::Pickable"
+        "val": "FunctionCallContext"
       },
       "is_static": true
     },
@@ -2812,9 +2830,9 @@
       },
       "is_static": true
     },
-    "GridPlacement": {
+    "Pickable": {
       "type_kind": {
-        "val": "bevy_ui::ui_node::GridPlacement"
+        "val": "bevy_picking::Pickable"
       },
       "is_static": true
     },
@@ -2830,15 +2848,15 @@
       },
       "is_static": true
     },
-    "RangeFull": {
+    "GridPlacement": {
       "type_kind": {
-        "val": "core::ops::RangeFull"
+        "val": "bevy_ui::ui_node::GridPlacement"
       },
       "is_static": true
     },
-    "FunctionCallContext": {
+    "RangeFull": {
       "type_kind": {
-        "val": "FunctionCallContext"
+        "val": "core::ops::RangeFull"
       },
       "is_static": true
     },
@@ -2902,12 +2920,6 @@
       },
       "is_static": true
     },
-    "ScriptQueryResult": {
-      "type_kind": {
-        "val": "bevy_mod_scripting_core::bindings::query::ScriptQueryResult"
-      },
-      "is_static": true
-    },
     "u32": {
       "type_kind": {
         "val": "u32"
@@ -2917,6 +2929,12 @@
     "CascadesVisibleEntities": {
       "type_kind": {
         "val": "bevy_pbr::components::CascadesVisibleEntities"
+      },
+      "is_static": true
+    },
+    "ColorGrading": {
+      "type_kind": {
+        "val": "bevy_render::view::ColorGrading"
       },
       "is_static": true
     },
@@ -2938,9 +2956,9 @@
       },
       "is_static": true
     },
-    "ColorGrading": {
+    "ScriptQueryResult": {
       "type_kind": {
-        "val": "bevy_render::view::ColorGrading"
+        "val": "bevy_mod_scripting_core::bindings::query::ScriptQueryResult"
       },
       "is_static": true
     },
@@ -3388,9 +3406,9 @@
       },
       "is_static": true
     },
-    "script_id": {
+    "script_asset": {
       "type_kind": {
-        "val": "String"
+        "val": "bevy_asset::handle::Handle<bevy_mod_scripting_core::asset::ScriptAsset>"
       },
       "is_static": false
     },
@@ -3448,18 +3466,18 @@
       "path": "bevy_mod_scripting_core::bindings::reference::ReflectReference",
       "documentation": " A reference to an arbitrary reflected instance.\n\n The reference can point to either the ECS, or to the allocator.\n\n References are composed of two parts:\n - The base kind, which specifies where the reference points to\n - The path, which specifies how to access the value from the base.\n\n Bindings defined on this type, apply to ALL references.",
       "associated_functions": [
+        "ReflectReference::variant_name",
         "ReflectReference::display_ref",
-        "ReflectReference::pop",
-        "ReflectReference::map_get",
-        "ReflectReference::functions",
         "ReflectReference::display_value",
-        "ReflectReference::insert",
+        "ReflectReference::clear",
         "ReflectReference::iter",
-        "ReflectReference::remove",
+        "ReflectReference::insert",
+        "ReflectReference::functions",
+        "ReflectReference::map_get",
+        "ReflectReference::pop",
         "ReflectReference::push",
         "ReflectReference::len",
-        "ReflectReference::variant_name",
-        "ReflectReference::clear"
+        "ReflectReference::remove"
       ],
       "layout": null,
       "generated": false,
@@ -3501,8 +3519,8 @@
       "path": "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder",
       "documentation": " The query builder is used to build ECS queries which retrieve spefific components filtered by specific conditions.\n\n For example:\n ```rust,ignore\n builder.component(componentA)\n     .component(componentB)\n     .with(componentC)\n     .without(componentD)  \n ```\n\n Will retrieve entities which:\n - Have componentA\n - Have componentB\n - Have componentC\n - Do not have componentD\n\n As well as references to components:\n - componentA\n - componentB",
       "associated_functions": [
-        "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder::with",
         "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder::without",
+        "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder::with",
         "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder::component",
         "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder::build"
       ],
@@ -3516,8 +3534,8 @@
       "path": "bevy_mod_scripting_core::bindings::query::ScriptQueryResult",
       "documentation": " A result from a query.",
       "associated_functions": [
-        "bevy_mod_scripting_core::bindings::query::ScriptQueryResult::components",
-        "bevy_mod_scripting_core::bindings::query::ScriptQueryResult::entity"
+        "bevy_mod_scripting_core::bindings::query::ScriptQueryResult::entity",
+        "bevy_mod_scripting_core::bindings::query::ScriptQueryResult::components"
       ],
       "layout": null,
       "generated": false,
@@ -3529,8 +3547,8 @@
       "path": "bevy_mod_scripting_core::bindings::query::ScriptResourceRegistration",
       "documentation": " A reference to a resource type's reflection registration.\n\n In general think of this as a handle to a type.",
       "associated_functions": [
-        "bevy_mod_scripting_core::bindings::query::ScriptResourceRegistration::short_name",
-        "bevy_mod_scripting_core::bindings::query::ScriptResourceRegistration::type_name"
+        "bevy_mod_scripting_core::bindings::query::ScriptResourceRegistration::type_name",
+        "bevy_mod_scripting_core::bindings::query::ScriptResourceRegistration::short_name"
       ],
       "layout": {
         "kind": "Struct",
@@ -3555,8 +3573,8 @@
       "path": "bevy_mod_scripting_core::bindings::query::ScriptTypeRegistration",
       "documentation": " A reference to a type which is not a `Resource` or `Component`.\n\n In general think of this as a handle to a type.",
       "associated_functions": [
-        "bevy_mod_scripting_core::bindings::query::ScriptTypeRegistration::short_name",
-        "bevy_mod_scripting_core::bindings::query::ScriptTypeRegistration::type_name"
+        "bevy_mod_scripting_core::bindings::query::ScriptTypeRegistration::type_name",
+        "bevy_mod_scripting_core::bindings::query::ScriptTypeRegistration::short_name"
       ],
       "layout": null,
       "generated": false,
@@ -3569,12 +3587,47 @@
       "documentation": " A builder for systems living in scripts",
       "associated_functions": [
         "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::before",
-        "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::exclusive",
-        "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::query",
         "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::after",
+        "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::query",
+        "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::exclusive",
         "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::resource"
       ],
       "layout": null,
+      "generated": false,
+      "insignificance": 500
+    },
+    "bevy_mod_scripting_core::script::context_key::ScriptAttachment": {
+      "identifier": "ScriptAttachment",
+      "crate": "bevy_mod_scripting_core",
+      "path": "bevy_mod_scripting_core::script::context_key::ScriptAttachment",
+      "documentation": " Specifies a unique attachment of a script. These attachments are mapped to [`ContextKey`]'s depending on the context policy used.",
+      "associated_functions": [
+        "bevy_mod_scripting_core::script::context_key::ScriptAttachment::new_static_script",
+        "bevy_mod_scripting_core::script::context_key::ScriptAttachment::new_entity_script"
+      ],
+      "layout": [
+        {
+          "kind": "TupleStruct",
+          "name": "EntityScript",
+          "fields": [
+            {
+              "type": "bevy_ecs::entity::Entity"
+            },
+            {
+              "type": "bevy_asset::handle::Handle<bevy_mod_scripting_core::asset::ScriptAsset>"
+            }
+          ]
+        },
+        {
+          "kind": "TupleStruct",
+          "name": "StaticScript",
+          "fields": [
+            {
+              "type": "bevy_asset::handle::Handle<bevy_mod_scripting_core::asset::ScriptAsset>"
+            }
+          ]
+        }
+      ],
       "generated": false,
       "insignificance": 500
     },
@@ -3611,10 +3664,47 @@
       "path": "bevy_system_reflection::ReflectSystem",
       "documentation": " A reflectable system.",
       "associated_functions": [
-        "bevy_system_reflection::ReflectSystem::identifier",
-        "bevy_system_reflection::ReflectSystem::path"
+        "bevy_system_reflection::ReflectSystem::path",
+        "bevy_system_reflection::ReflectSystem::identifier"
       ],
       "layout": null,
+      "generated": false,
+      "insignificance": 500
+    },
+    "bevy_asset::handle::Handle<bevy_mod_scripting_core::asset::ScriptAsset>": {
+      "identifier": "Handle",
+      "crate": "bevy_asset",
+      "path": "bevy_asset::handle::Handle<bevy_mod_scripting_core::asset::ScriptAsset>",
+      "generics": [
+        {
+          "type_id": "bevy_mod_scripting_core::asset::ScriptAsset",
+          "name": "A"
+        }
+      ],
+      "documentation": " A handle to a specific [`Asset`] of type `A`. Handles act as abstract \"references\" to\n assets, whose data are stored in the [`Assets<A>`](crate::prelude::Assets) resource,\n avoiding the need to store multiple copies of the same data.\n\n If a [`Handle`] is [`Handle::Strong`], the [`Asset`] will be kept\n alive until the [`Handle`] is dropped. If a [`Handle`] is [`Handle::Weak`], it does not necessarily reference a live [`Asset`],\n nor will it keep assets alive.\n\n Modifying a *handle* will change which existing asset is referenced, but modifying the *asset*\n (by mutating the [`Assets`](crate::prelude::Assets) resource) will change the asset for all handles referencing it.\n\n [`Handle`] can be cloned. If a [`Handle::Strong`] is cloned, the referenced [`Asset`] will not be freed until _all_ instances\n of the [`Handle`] are dropped.\n\n [`Handle::Strong`], via [`StrongHandle`] also provides access to useful [`Asset`] metadata, such as the [`AssetPath`] (if it exists).",
+      "associated_functions": [
+        "bevy_asset::handle::Handle<bevy_mod_scripting_core::asset::ScriptAsset>::asset_path"
+      ],
+      "layout": [
+        {
+          "kind": "TupleStruct",
+          "name": "Strong",
+          "fields": [
+            {
+              "type": "bevy_platform::sync::Arc<bevy_asset::handle::StrongHandle>"
+            }
+          ]
+        },
+        {
+          "kind": "TupleStruct",
+          "name": "Weak",
+          "fields": [
+            {
+              "type": "bevy_asset::id::AssetId<bevy_mod_scripting_core::asset::ScriptAsset>"
+            }
+          ]
+        }
+      ],
       "generated": false,
       "insignificance": 500
     },
@@ -16823,6 +16913,15 @@
       "generated": false,
       "insignificance": 1000
     },
+    "bevy_mod_scripting_core::asset::ScriptAsset": {
+      "identifier": "ScriptAsset",
+      "crate": "bevy_mod_scripting_core",
+      "path": "bevy_mod_scripting_core::asset::ScriptAsset",
+      "documentation": " Represents a script loaded into memory as an asset",
+      "layout": null,
+      "generated": false,
+      "insignificance": 1000
+    },
     "bevy_mod_scripting_core::bindings::function::namespace::Namespace": {
       "identifier": "Namespace",
       "crate": "bevy_mod_scripting_core",
@@ -16843,6 +16942,24 @@
           ]
         }
       ],
+      "generated": false,
+      "insignificance": 1000
+    },
+    "bevy_mod_scripting_core::bindings::script_component::DynamicComponent": {
+      "identifier": "DynamicComponent",
+      "crate": "bevy_mod_scripting_core",
+      "path": "bevy_mod_scripting_core::bindings::script_component::DynamicComponent",
+      "documentation": " A dynamic script component",
+      "layout": {
+        "kind": "Struct",
+        "name": "DynamicComponent",
+        "fields": [
+          {
+            "name": "data",
+            "type": "bevy_mod_scripting_core::bindings::script_value::ScriptValue"
+          }
+        ]
+      },
       "generated": false,
       "insignificance": 1000
     },
@@ -24406,6 +24523,42 @@
       "generated": false,
       "insignificance": 1000
     },
+    "bevy_asset::id::AssetId<bevy_mod_scripting_core::asset::ScriptAsset>": {
+      "identifier": "AssetId",
+      "crate": "bevy_asset",
+      "path": "bevy_asset::id::AssetId<bevy_mod_scripting_core::asset::ScriptAsset>",
+      "generics": [
+        {
+          "type_id": "bevy_mod_scripting_core::asset::ScriptAsset",
+          "name": "A"
+        }
+      ],
+      "documentation": " A unique runtime-only identifier for an [`Asset`]. This is cheap to [`Copy`]/[`Clone`] and is not directly tied to the\n lifetime of the Asset. This means it _can_ point to an [`Asset`] that no longer exists.\n\n For an identifier tied to the lifetime of an asset, see [`Handle`](`crate::Handle`).\n\n For an \"untyped\" / \"generic-less\" id, see [`UntypedAssetId`].",
+      "layout": [
+        {
+          "kind": "Struct",
+          "name": "Index",
+          "fields": [
+            {
+              "name": "index",
+              "type": "bevy_asset::assets::AssetIndex"
+            }
+          ]
+        },
+        {
+          "kind": "Struct",
+          "name": "Uuid",
+          "fields": [
+            {
+              "name": "uuid",
+              "type": "uuid::Uuid"
+            }
+          ]
+        }
+      ],
+      "generated": false,
+      "insignificance": 1000
+    },
     "bevy_asset::id::AssetId<bevy_pbr::pbr_material::StandardMaterial>": {
       "identifier": "AssetId",
       "crate": "bevy_asset",
@@ -26543,6 +26696,43 @@
       "generated": false,
       "insignificance": 1000
     },
+    "core::result::Result<bevy_mod_scripting_core::script::context_key::ScriptAttachment, bevy_mod_scripting_core::error::InteropError>": {
+      "identifier": "Result",
+      "crate": "core",
+      "path": "core::result::Result<bevy_mod_scripting_core::script::context_key::ScriptAttachment, bevy_mod_scripting_core::error::InteropError>",
+      "generics": [
+        {
+          "type_id": "bevy_mod_scripting_core::script::context_key::ScriptAttachment",
+          "name": "T"
+        },
+        {
+          "type_id": "bevy_mod_scripting_core::error::InteropError",
+          "name": "E"
+        }
+      ],
+      "layout": [
+        {
+          "kind": "TupleStruct",
+          "name": "Ok",
+          "fields": [
+            {
+              "type": "bevy_mod_scripting_core::script::context_key::ScriptAttachment"
+            }
+          ]
+        },
+        {
+          "kind": "TupleStruct",
+          "name": "Err",
+          "fields": [
+            {
+              "type": "bevy_mod_scripting_core::error::InteropError"
+            }
+          ]
+        }
+      ],
+      "generated": false,
+      "insignificance": 1000
+    },
     "core::result::Result<bevy_system_reflection::ReflectSystem, bevy_mod_scripting_core::error::InteropError>": {
       "identifier": "Result",
       "crate": "core",
@@ -27404,10 +27594,10 @@
         },
         {
           "kind": {
-            "primitive": "string"
+            "val": "bevy_mod_scripting_core::script::context_key::ScriptAttachment"
           },
-          "documentation": "The id of the script this system will execute when run.",
-          "name": "script_id"
+          "documentation": "The script attachment to use for the system. This is the attachment that will be used for the system's callback.",
+          "name": "attachment"
         }
       ],
       "return_type": {
@@ -28576,6 +28766,35 @@
         "name": "entity"
       },
       "documentation": "Spawns a new entity and returns it\n"
+    },
+    "bevy_asset::handle::Handle<bevy_mod_scripting_core::asset::ScriptAsset>::asset_path": {
+      "namespace": "bevy_asset::handle::Handle<bevy_mod_scripting_core::asset::ScriptAsset>",
+      "identifier": "asset_path",
+      "arguments": [
+        {
+          "kind": {
+            "primitive": "functionCallContext"
+          },
+          "name": "ctxt"
+        },
+        {
+          "kind": {
+            "ref": "bevy_asset::handle::Handle<bevy_mod_scripting_core::asset::ScriptAsset>"
+          },
+          "documentation": "The handle to the script asset.",
+          "name": "handle"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "option": {
+            "primitive": "string"
+          }
+        },
+        "documentation": "The asset path of the script asset.",
+        "name": "path"
+      },
+      "documentation": "Retrieves the path of the script asset if present.\nAssets can be unloaded, and as such if the given handle is no longer active, this will return `None`.\n"
     },
     "bevy_ecs::component::ComponentId::assert_receiver_is_total_eq": {
       "namespace": "bevy_ecs::component::ComponentId",
@@ -42009,6 +42228,59 @@
         "name": "builder"
       },
       "documentation": "Requests the system have access to the given resource. The resource will be added to the\nlist of arguments of the callback in the order they're provided."
+    },
+    "bevy_mod_scripting_core::script::context_key::ScriptAttachment::new_entity_script": {
+      "namespace": "bevy_mod_scripting_core::script::context_key::ScriptAttachment",
+      "identifier": "new_entity_script",
+      "arguments": [
+        {
+          "kind": {
+            "val": "bevy_ecs::entity::Entity"
+          },
+          "documentation": "The entity to attach the script to.",
+          "name": "entity"
+        },
+        {
+          "kind": {
+            "val": "bevy_asset::handle::Handle<bevy_mod_scripting_core::asset::ScriptAsset>"
+          },
+          "documentation": "The script asset to attach to the entity.",
+          "name": "script"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "bevy_mod_scripting_core::script::context_key::ScriptAttachment"
+          }
+        },
+        "documentation": "The new script attachment for the entity.",
+        "name": "attachment"
+      },
+      "documentation": "Creates a new script attachment descriptor for an entity attached script.\n"
+    },
+    "bevy_mod_scripting_core::script::context_key::ScriptAttachment::new_static_script": {
+      "namespace": "bevy_mod_scripting_core::script::context_key::ScriptAttachment",
+      "identifier": "new_static_script",
+      "arguments": [
+        {
+          "kind": {
+            "val": "bevy_asset::handle::Handle<bevy_mod_scripting_core::asset::ScriptAsset>"
+          },
+          "documentation": "The script asset to create the attachment from.",
+          "name": "script"
+        }
+      ],
+      "return_type": {
+        "kind": {
+          "interopResult": {
+            "val": "bevy_mod_scripting_core::script::context_key::ScriptAttachment"
+          }
+        },
+        "documentation": "The new script attachment.",
+        "name": "attachment"
+      },
+      "documentation": "Creates a new script attachment descriptor from a script asset.\n "
     },
     "bevy_platform::time::Instant::add": {
       "namespace": "bevy_platform::time::Instant",

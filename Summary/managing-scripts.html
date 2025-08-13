@@ -182,43 +182,82 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="managing-scripts"><a class="header" href="#managing-scripts">Managing Scripts</a></h1>
-<p>Scripts live in the standard bevy <code>assets</code> directory. Loading a script means:</p>
+<p>Scripts live in the standard Bevy <code>assets</code> directory. Loading a script means obtaining its byte representation and associated language.</p>
+<p>Evaluating a script means:</p>
 <ul>
-<li>Parsing the script body</li>
-<li>Creating or updating the resources which store script state</li>
-<li>Assigning a name/id to the script so it can be referred to by the rest of the application.</li>
+<li>parsing the script body,</li>
+<li>and creating or updating the resources which store script state.</li>
 </ul>
 <h2 id="loading"><a class="header" href="#loading">Loading</a></h2>
-<p>BMS listens to <code>ScriptAsset</code> events and reacts accordingly. In order to load a script, all you need to do is request a handle to it via the asset server and store it somewhere.</p>
-<p>Below is an example system which loads a script called <code>assets/my_script.lua</code> and stores the handle in a local system parameter:</p>
-<pre><code class="language-rust ignore">fn load_script(server: Res&lt;AssetServer&gt;, mut handle: Local&lt;Handle&lt;ScriptAsset&gt;&gt;) {
-    let handle_ = server.load::&lt;ScriptAsset&gt;("my_script.lua");
-    *handle = handle_;
-}</code></pre>
-<p>In practice you will likely store this handle in a resource or component, when your load all the scripts necessary for your application.</p>
+<p>Scripts can be loaded into memory via the <code>AssetServer</code>.</p>
+<pre><code class="language-rust ignore">let handle = asset_server.load::&lt;ScriptAsset&gt;("my_script.lua");</code></pre>
+<p>Or scripts can be created in memory.</p>
+<pre><code class="language-rust ignore">let mut script = ScriptAsset::from("x = 0".into());
+script.language = Language::Lua;
+let handle = script_assets.add(script);</code></pre>
+<p>This will not evaluate any code yet.</p>
+<h2 id="evaluating"><a class="header" href="#evaluating">Evaluating</a></h2>
+<p>A script does not participate in any callbacks until it is evaluated, to evaluate a script you must first attach it to an entity, or to a static script entry.</p>
+<p>To evaluate a script, add it to a <code>ScriptComponent</code> or to <code>StaticScripts</code>.</p>
+<h3 id="load-file-via-assetserver"><a class="header" href="#load-file-via-assetserver">Load File via <code>AssetServer</code></a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">extern crate bevy;
+</span><span class="boring">extern crate bevy_mod_scripting;
+</span><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_mod_scripting::prelude::*;
+</span>
+fn load_script(asset_server: Res&lt;AssetServer&gt;, mut commands: Commands) {
+    let handle = asset_server.load::&lt;ScriptAsset&gt;("my_script.lua");
+    commands.spawn(ScriptComponent(vec![handle]));
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="create-scriptasset-and-add-it"><a class="header" href="#create-scriptasset-and-add-it">Create <code>ScriptAsset</code> and Add It</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">extern crate bevy;
+</span><span class="boring">extern crate bevy_mod_scripting;
+</span><span class="boring">use bevy::{asset::Assets, prelude::*};
+</span><span class="boring">use bevy_mod_scripting::prelude::*;
+</span>
+fn add_script(mut script_assets: ResMut&lt;Assets&lt;ScriptAsset&gt;&gt;, mut commands: Commands) {
+    let content: String = "x = 0".into();
+    let mut script = ScriptAsset::from(content);
+    script.language = Language::Lua;
+    let handle = script_assets.add(script);
+    commands.spawn(ScriptComponent(vec![handle]));
+}
+<span class="boring">}</span></code></pre></pre>
 <h2 id="unloading"><a class="header" href="#unloading">Unloading</a></h2>
-<p>Scripts are automatically unloaded when the asset is dropped. This means that if you have a handle to a script and it goes out of scope, the script will be unloaded.</p>
-<p>This will delete references to the script and remove any internal handles to the asset. You will also need to clean up any handles to the asset you hold in your application in order for the asset to be unloaded.</p>
+<p>When you no longer need a script asset you can freely unload it, but the script attachment will persist.
+In order to trigger the <code>on_script_unloaded</code> etc. callbacks, you need to remove the script from the <code>ScriptComponent</code> or <code>StaticScripts</code>.</p>
+<p>When that happens a corresponding <code>ScriptEvent::Detached</code> will be dispatched, and then handled by a <code>DeleteScript</code> command. Once the last script in a context is removed, the context itself will also be removed.</p>
 <h2 id="hot-loading-scripts"><a class="header" href="#hot-loading-scripts">Hot-loading scripts</a></h2>
-<p>To enable hot-loading of assets, you need to enable the necessary bevy features as normal <a href="https://bevy-cheatbook.github.io/assets/hot-reload.html">see the bevy cheatbook for instructions</a>.</p>
+<p>To enable hot-loading of assets, you need to enable the necessary Bevy features as normal <a href="https://bevy-cheatbook.github.io/assets/hot-reload.html">see the bevy cheatbook for instructions</a>.</p>
 <p>Assuming that hot-reloading is enabled for your app, any changes to script assets will automatically be picked up and the scripts re-loaded.</p>
 <h2 id="file-extensions"><a class="header" href="#file-extensions">File Extensions</a></h2>
 <p>Normally the set of supported extensions is pre-decided by each language plugin.</p>
 <p>I.e. Lua supports ".lua" extensions and Rhai supports ".rhai" extensions.</p>
-<p>Scripts are mapped to the corresponding language plugin based on these and so it's important to use them correctly.</p>
-<p>If you would like to add more extensions you need to populate them via <code>app.add_supported_script_extensions</code>.</p>
+<p>Scripts are mapped to the corresponding language plugin based on these and so it is important to use them correctly.</p>
+<p>If you would like to add more extensions, you need to populate them via <code>app.add_supported_script_extensions</code>.</p>
+<pre><code class="language-rust ignore">    app.add_supported_script_extensions(&amp;[".pua"], Language::Lua);</code></pre>
 <h2 id="advanced"><a class="header" href="#advanced">Advanced</a></h2>
-<p>Normally not necessary, but knowing these exist could be useful for more advanced use cases.</p>
+<p>Normally not necessary but knowing these exist could be useful for more advanced use cases.</p>
 <h3 id="manually-reloading-scripts"><a class="header" href="#manually-reloading-scripts">Manually (re)loading scripts</a></h3>
 <p>In order to manually re-load or load a script you can issue the <code>CreateOrUpdateScript</code> command:</p>
-<pre><code class="language-rust ignore">CreateOrUpdateScript::&lt;LuaScriptingPlugin&gt;::new("my_script.lua".into(), "print(\"hello world from new script body\")".into(), asset_handle)</code></pre>
+<pre><code class="language-rust ignore"><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_mod_scripting::prelude::*;
+</span>let create_or_update = CreateOrUpdateScript::&lt;LuaScriptingPlugin&gt;::new(script_handle)
+    .with_content("print(\"hello world from new script body\")");
+commands.queue(create_or_update);</code></pre>
 <p>replace <code>LuaScriptingPlugin</code> with the scripting plugin you are using.</p>
 <h3 id="manually-deleting-scripts"><a class="header" href="#manually-deleting-scripts">Manually Deleting scripts</a></h3>
 <p>In order to delete a previously loaded script, you will need to issue a <code>DeleteScript</code> command like so:</p>
-<pre><code class="language-rust ignore">DeleteScript::&lt;LuaScriptingPlugin&gt;::new("my_script.lua".into())</code></pre>
-<p>replace <code>LuaScriptingPlugin</code> with the scripting plugin you are using.</p>
+<pre><code class="language-rust ignore">commands.queue(DeleteScript::&lt;LuaScriptingPlugin&gt;::new(script_handle));</code></pre>
+<p>Replace <code>LuaScriptingPlugin</code> with the scripting plugin you are using.</p>
 <h3 id="loadingunloading-timeframe"><a class="header" href="#loadingunloading-timeframe">Loading/Unloading timeframe</a></h3>
-<p>Scripts asset events are processed within the same frame they are issued. This means the moment an asset is loaded, it should be loaded and ready to use in the <code>Update</code> schedule. Similarly, the moment an asset is deleted, it should be unloaded and no longer usable in the <code>Update</code> schedule.</p>
+<p>Script asset changes are processed together with bevy asset systems, in the <code>Last</code> schedule.
+These are converted to <code>ScriptEvent</code>'s which are handled right after via the <code>ScriptingSystemSet::ScriptingCommandDispatch</code> system set.</p>
 
                     </main>
 

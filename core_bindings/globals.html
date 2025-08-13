@@ -188,7 +188,7 @@
 <p>Instances containing actual accessible values.</p>
 <div class="table-wrapper"><table><thead><tr><th>Instance</th><th>Type</th></tr></thead><tbody>
 <tr><td><code>types</code></td><td>HashMap&lt;<a href="./types/string.html">String</a>, <a href="./types/scripttyperegistration.html">ScriptTypeRegistration</a> | <a href="./types/scriptcomponentregistration.html">ScriptComponentRegistration</a> | <a href="./types/scriptresourceregistration.html">ScriptResourceRegistration</a>&gt;</td></tr>
-<tr><td><code>script_id</code></td><td><a href="./types/string.html">String</a></td></tr>
+<tr><td><code>script_asset</code></td><td>Handle&lt;<a href="./types/scriptasset.html">ScriptAsset</a>&gt;</td></tr>
 <tr><td><code>world</code></td><td><a href="./types/world.html">World</a></td></tr>
 <tr><td><code>entity</code></td><td><a href="./types/entity.html">Entity</a></td></tr>
 </tbody></table>
@@ -217,6 +217,7 @@
 <tr><td><code>OnInsert</code></td><td><a href="./types/oninsert.html">OnInsert</a></td></tr>
 <tr><td><code>U8Vec3</code></td><td><a href="./types/u8vec3.html">U8Vec3</a></td></tr>
 <tr><td><code>DQuat</code></td><td><a href="./types/dquat.html">DQuat</a></td></tr>
+<tr><td><code>DynamicComponent</code></td><td><a href="./types/dynamiccomponent.html">DynamicComponent</a></td></tr>
 <tr><td><code>GizmoLineStyle</code></td><td><a href="./types/gizmolinestyle.html">GizmoLineStyle</a></td></tr>
 <tr><td><code>U16Vec4</code></td><td><a href="./types/u16vec4.html">U16Vec4</a></td></tr>
 <tr><td><code>CursorLeft</code></td><td><a href="./types/cursorleft.html">CursorLeft</a></td></tr>
@@ -249,6 +250,7 @@
 <tr><td><code>ThreadedAnimationGraph</code></td><td><a href="./types/threadedanimationgraph.html">ThreadedAnimationGraph</a></td></tr>
 <tr><td><code>TimedAnimationEvent</code></td><td><a href="./types/timedanimationevent.html">TimedAnimationEvent</a></td></tr>
 <tr><td><code>RayId</code></td><td><a href="./types/rayid.html">RayId</a></td></tr>
+<tr><td><code>Namespace</code></td><td><a href="./types/namespace.html">Namespace</a></td></tr>
 <tr><td><code>ZIndex</code></td><td><a href="./types/zindex.html">ZIndex</a></td></tr>
 <tr><td><code>Isometry2d</code></td><td><a href="./types/isometry2d.html">Isometry2d</a></td></tr>
 <tr><td><code>RemovedComponentEntity</code></td><td><a href="./types/removedcomponententity.html">RemovedComponentEntity</a></td></tr>
@@ -256,7 +258,6 @@
 <tr><td><code>WindowClosing</code></td><td><a href="./types/windowclosing.html">WindowClosing</a></td></tr>
 <tr><td><code>f64</code></td><td><a href="./types/f64.html">f64</a></td></tr>
 <tr><td><code>Entity</code></td><td><a href="./types/entity.html">Entity</a></td></tr>
-<tr><td><code>Namespace</code></td><td><a href="./types/namespace.html">Namespace</a></td></tr>
 <tr><td><code>GizmoLineJoint</code></td><td><a href="./types/gizmolinejoint.html">GizmoLineJoint</a></td></tr>
 <tr><td><code>BloomPrefilter</code></td><td><a href="./types/bloomprefilter.html">BloomPrefilter</a></td></tr>
 <tr><td><code>Text2d</code></td><td><a href="./types/text2d.html">Text2d</a></td></tr>
@@ -356,6 +357,7 @@
 <tr><td><code>VisibilityClass</code></td><td><a href="./types/visibilityclass.html">VisibilityClass</a></td></tr>
 <tr><td><code>GamepadConnection</code></td><td><a href="./types/gamepadconnection.html">GamepadConnection</a></td></tr>
 <tr><td><code>AnimationClip</code></td><td><a href="./types/animationclip.html">AnimationClip</a></td></tr>
+<tr><td><code>ScriptAsset</code></td><td><a href="./types/scriptasset.html">ScriptAsset</a></td></tr>
 <tr><td><code>Xyza</code></td><td><a href="./types/xyza.html">Xyza</a></td></tr>
 <tr><td><code>EntityHashSet</code></td><td><a href="./types/entityhashset.html">EntityHashSet</a></td></tr>
 <tr><td><code>FlexDirection</code></td><td><a href="./types/flexdirection.html">FlexDirection</a></td></tr>
@@ -548,12 +550,13 @@
 <tr><td><code>Cuboid</code></td><td><a href="./types/cuboid.html">Cuboid</a></td></tr>
 <tr><td><code>VisibleMeshEntities</code></td><td><a href="./types/visiblemeshentities.html">VisibleMeshEntities</a></td></tr>
 <tr><td><code>Vec4</code></td><td><a href="./types/vec4.html">Vec4</a></td></tr>
-<tr><td><code>Oklaba</code></td><td><a href="./types/oklaba.html">Oklaba</a></td></tr>
+<tr><td><code>ScriptAttachment</code></td><td><a href="./types/scriptattachment.html">ScriptAttachment</a></td></tr>
 <tr><td><code>BVec3</code></td><td><a href="./types/bvec3.html">BVec3</a></td></tr>
 <tr><td><code>TextFont</code></td><td><a href="./types/textfont.html">TextFont</a></td></tr>
 <tr><td><code>WindowOccluded</code></td><td><a href="./types/windowoccluded.html">WindowOccluded</a></td></tr>
 <tr><td><code>RawGamepadAxisChangedEvent</code></td><td><a href="./types/rawgamepadaxischangedevent.html">RawGamepadAxisChangedEvent</a></td></tr>
 <tr><td><code>ScreenshotCaptured</code></td><td><a href="./types/screenshotcaptured.html">ScreenshotCaptured</a></td></tr>
+<tr><td><code>Oklaba</code></td><td><a href="./types/oklaba.html">Oklaba</a></td></tr>
 <tr><td><code>Volume</code></td><td><a href="./types/volume.html">Volume</a></td></tr>
 <tr><td><code>TextNodeFlags</code></td><td><a href="./types/textnodeflags.html">TextNodeFlags</a></td></tr>
 <tr><td><code>SpotLight</code></td><td><a href="./types/spotlight.html">SpotLight</a></td></tr>
@@ -657,14 +660,14 @@
 <tr><td><code>i128</code></td><td><a href="./types/i128.html">i128</a></td></tr>
 <tr><td><code>isize</code></td><td><a href="./types/isize.html">isize</a></td></tr>
 <tr><td><code>Cascades</code></td><td><a href="./types/cascades.html">Cascades</a></td></tr>
-<tr><td><code>Pickable</code></td><td><a href="./types/pickable.html">Pickable</a></td></tr>
+<tr><td><code>FunctionCallContext</code></td><td><a href="./types/functioncallcontext.html">FunctionCallContext</a></td></tr>
 <tr><td><code>LightGizmoColor</code></td><td><a href="./types/lightgizmocolor.html">LightGizmoColor</a></td></tr>
 <tr><td><code>Circle</code></td><td><a href="./types/circle.html">Circle</a></td></tr>
-<tr><td><code>GridPlacement</code></td><td><a href="./types/gridplacement.html">GridPlacement</a></td></tr>
+<tr><td><code>Pickable</code></td><td><a href="./types/pickable.html">Pickable</a></td></tr>
 <tr><td><code>FunctionArgInfo</code></td><td><a href="./types/functionarginfo.html">FunctionArgInfo</a></td></tr>
 <tr><td><code>SpriteImageMode</code></td><td><a href="./types/spriteimagemode.html">SpriteImageMode</a></td></tr>
+<tr><td><code>GridPlacement</code></td><td><a href="./types/gridplacement.html">GridPlacement</a></td></tr>
 <tr><td><code>RangeFull</code></td><td><a href="./types/rangefull.html">RangeFull</a></td></tr>
-<tr><td><code>FunctionCallContext</code></td><td><a href="./types/functioncallcontext.html">FunctionCallContext</a></td></tr>
 <tr><td><code>Isometry3d</code></td><td><a href="./types/isometry3d.html">Isometry3d</a></td></tr>
 <tr><td><code>MonitorSelection</code></td><td><a href="./types/monitorselection.html">MonitorSelection</a></td></tr>
 <tr><td><code>OcclusionCulling</code></td><td><a href="./types/occlusionculling.html">OcclusionCulling</a></td></tr>
@@ -675,13 +678,13 @@
 <tr><td><code>RelativeCursorPosition</code></td><td><a href="./types/relativecursorposition.html">RelativeCursorPosition</a></td></tr>
 <tr><td><code>Disabled</code></td><td><a href="./types/disabled.html">Disabled</a></td></tr>
 <tr><td><code>U16Vec3</code></td><td><a href="./types/u16vec3.html">U16Vec3</a></td></tr>
-<tr><td><code>ScriptQueryResult</code></td><td><a href="./types/scriptqueryresult.html">ScriptQueryResult</a></td></tr>
 <tr><td><code>u32</code></td><td><a href="./types/u32.html">u32</a></td></tr>
 <tr><td><code>CascadesVisibleEntities</code></td><td><a href="./types/cascadesvisibleentities.html">CascadesVisibleEntities</a></td></tr>
+<tr><td><code>ColorGrading</code></td><td><a href="./types/colorgrading.html">ColorGrading</a></td></tr>
 <tr><td><code>GltfMeshExtras</code></td><td><a href="./types/gltfmeshextras.html">GltfMeshExtras</a></td></tr>
 <tr><td><code>Timer</code></td><td><a href="./types/timer.html">Timer</a></td></tr>
 <tr><td><code>RepeatAnimation</code></td><td><a href="./types/repeatanimation.html">RepeatAnimation</a></td></tr>
-<tr><td><code>ColorGrading</code></td><td><a href="./types/colorgrading.html">ColorGrading</a></td></tr>
+<tr><td><code>ScriptQueryResult</code></td><td><a href="./types/scriptqueryresult.html">ScriptQueryResult</a></td></tr>
 <tr><td><code>usize</code></td><td><a href="./types/usize.html">usize</a></td></tr>
 <tr><td><code>RenderTarget</code></td><td><a href="./types/rendertarget.html">RenderTarget</a></td></tr>
 <tr><td><code>WindowScaleFactorChanged</code></td><td><a href="./types/windowscalefactorchanged.html">WindowScaleFactorChanged</a></td></tr>
