@@ -6,7 +6,9 @@ use rustc_hir::{
     Safety,
 };
 use rustc_infer::infer::TyCtxtInferExt;
-use rustc_middle::ty::{AdtKind, AssocKind, FieldDef, FnSig, Ty, TyCtxt, TyKind, TypingEnv};
+use rustc_middle::ty::{
+    AdtKind, AssocKind, FieldDef, FnSig, GenericArgs, Ty, TyCtxt, TyKind, TypingEnv,
+};
 use rustc_span::Symbol;
 use rustc_trait_selection::infer::InferCtxtExt;
 
@@ -108,21 +110,36 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                         .tcx
                         .impl_trait_ref(*impl_did)
                         .map(|tr| tr.skip_binder().def_id);
+                    let trait_name = trait_did
+                        .map(|td| ctxt.tcx.item_name(td).to_ident_string())
+                        .unwrap_or_else(|| "None".to_string());
 
                     let fn_name = assoc_item.name.to_ident_string();
                     let has_self = assoc_item.fn_has_self_parameter;
                     let fn_did = assoc_item.def_id;
+
                     trace!(
-                        "Processing function: '{fn_name}' on type: `{}`",
+                        "Processing function: '{fn_name}' on type: `{}` on trait: `{trait_name}`",
                         ctxt.tcx.item_name(def_id)
                     );
 
-                    // let param_env = ctxt.tcx.param_env(fn_did);
                     let param_env = TypingEnv::non_body_analysis(ctxt.tcx, def_id);
-                    let sig: FnSig = ctxt.tcx.normalize_erasing_late_bound_regions(
-                        param_env,
-                        ctxt.tcx.fn_sig(fn_did).instantiate_identity(),
-                    );
+                    let fn_sig = ctxt.tcx.fn_sig(fn_did).instantiate_identity();
+                    let sig: FnSig = ctxt
+                        .tcx
+                        .normalize_erasing_late_bound_regions(param_env, fn_sig);
+
+                    let function_generics = get_function_generics(ctxt.tcx, fn_did, *impl_did);
+
+                    if !function_generics.is_empty() {
+                        log::debug!(
+                            "Skipping function: `{}` on type: `{}` as it has generics: {:?}",
+                            assoc_item.name,
+                            ctxt.tcx.item_name(def_id),
+                            function_generics
+                        );
+                        return None;
+                    }
 
                     if let Some(unstability) = ctxt.tcx.lookup_stability(fn_did) {
                         if unstability.is_unstable() {
@@ -219,6 +236,23 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
     }
 
     true
+}
+
+fn get_function_generics(tcx: TyCtxt, fn_did: DefId, impl_did: DefId) -> Vec<Ty> {
+    // the early binder for this fn_sig will contain the generics on the function
+    // we can't use it to iterate them though, for that we need to get the generics via the identity mapping
+    // we want to first instantiate the function with any args in the impl, as those don't affect the standalone function signature
+
+    let identity_args = GenericArgs::identity_for_item(tcx, fn_did)
+        .types()
+        .collect::<Vec<_>>();
+    let identity_args_impl = GenericArgs::identity_for_item(tcx, impl_did)
+        .types()
+        .collect::<Vec<_>>();
+    identity_args
+        .into_iter()
+        .filter(|arg| !identity_args_impl.contains(arg))
+        .collect::<Vec<_>>()
 }
 
 fn report_fn_arg_not_supported(tcx: TyCtxt, f_did: DefId, type_did: DefId, ty: Ty, reason: &str) {

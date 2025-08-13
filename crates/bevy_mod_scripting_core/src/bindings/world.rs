@@ -32,17 +32,19 @@ use crate::{
     reflection_extensions::PartialReflectExt,
     script::{ScriptAttachment, ScriptComponent},
 };
+use bevy::ecs::{component::Mutable, system::Command};
+use bevy::prelude::{ChildOf, Children};
 use bevy::{
     app::AppExit,
     asset::{AssetServer, Handle, LoadState},
     ecs::{
         component::{Component, ComponentId},
         entity::Entity,
+        prelude::Resource,
         reflect::{AppTypeRegistry, ReflectFromWorld, ReflectResource},
-        system::{Commands, Resource},
-        world::{unsafe_world_cell::UnsafeWorldCell, Command, CommandQueue, Mut, World},
+        system::Commands,
+        world::{unsafe_world_cell::UnsafeWorldCell, CommandQueue, Mut, World},
     },
-    hierarchy::{BuildChildren, Children, DespawnRecursiveExt, Parent},
     reflect::{
         std_traits::ReflectDefault, DynamicEnum, DynamicStruct, DynamicTuple, DynamicTupleStruct,
         DynamicVariant, ParsedPath, PartialReflect, TypeRegistryArc,
@@ -457,7 +459,9 @@ impl<'w> WorldAccessGuard<'w> {
             format!("Could not access component: {}", std::any::type_name::<T>()),
             {
                 // Safety: we have acquired access for the duration of the closure
-                f(unsafe { cell.get_entity(entity).and_then(|e| e.get::<T>()) })
+                f(unsafe { cell.get_entity(entity).map(|e| e.get::<T>()) }
+                    .ok()
+                    .unwrap_or(None))
             }
         )
     }
@@ -465,7 +469,7 @@ impl<'w> WorldAccessGuard<'w> {
     /// Safely accesses the component by claiming and releasing access to it.
     pub fn with_component_mut<F, T, O>(&self, entity: Entity, f: F) -> Result<O, InteropError>
     where
-        T: Component,
+        T: Component<Mutability = Mutable>,
         F: FnOnce(Option<Mut<T>>) -> O,
     {
         let cell = self.as_unsafe_world_cell()?;
@@ -477,7 +481,9 @@ impl<'w> WorldAccessGuard<'w> {
             format!("Could not access component: {}", std::any::type_name::<T>()),
             {
                 // Safety: we have acquired access for the duration of the closure
-                f(unsafe { cell.get_entity(entity).and_then(|e| e.get_mut::<T>()) })
+                f(unsafe { cell.get_entity(entity).map(|e| e.get_mut::<T>()) }
+                    .ok()
+                    .unwrap_or(None))
             }
         )
     }
@@ -489,7 +495,7 @@ impl<'w> WorldAccessGuard<'w> {
         f: F,
     ) -> Result<O, InteropError>
     where
-        T: Component + Default,
+        T: Component<Mutability = Mutable> + Default,
         F: FnOnce(&mut T) -> O,
     {
         self.with_global_access(|world| match world.get_mut::<T>(entity) {
@@ -547,7 +553,7 @@ impl<'w> WorldAccessGuard<'w> {
     /// checks if a given entity exists and is valid
     pub fn is_valid_entity(&self, entity: Entity) -> Result<bool, InteropError> {
         let cell = self.as_unsafe_world_cell()?;
-        Ok(cell.get_entity(entity).is_some() && entity.index() != 0)
+        Ok(cell.get_entity(entity).is_ok() && entity.index() != 0)
     }
 
     /// Tries to call a fitting overload of the function with the given name and in the type id's namespace based on the arguments provided.
@@ -827,10 +833,7 @@ impl WorldAccessGuard<'_> {
         // try to construct type from reflect
         // TODO: it would be nice to have a <dyn PartialReflect>::from_reflect_with_fallback equivalent, that does exactly that
         // only using this as it's already there and convenient, the clone variant hitting will be confusing to end users
-        Ok(<dyn PartialReflect>::from_reflect_or_clone(
-            dynamic.as_ref(),
-            self.clone(),
-        ))
+        <dyn PartialReflect>::from_reflect_or_clone(dynamic.as_ref(), self.clone())
     }
 
     /// Loads a script from the given asset path with default settings.
@@ -866,8 +869,11 @@ impl WorldAccessGuard<'_> {
     /// Spawns a new entity in the world
     pub fn spawn(&self) -> Result<Entity, InteropError> {
         self.with_global_access(|world| {
-            let entity = world.spawn_empty();
-            entity.id()
+            let mut command_queue = CommandQueue::default();
+            let mut commands = Commands::new(&mut command_queue, world);
+            let id = commands.spawn_empty().id();
+            command_queue.apply(world);
+            id
         })
     }
 
@@ -1030,7 +1036,7 @@ impl WorldAccessGuard<'_> {
         let cell = self.as_unsafe_world_cell()?;
         let entity = cell
             .get_entity(entity)
-            .ok_or_else(|| InteropError::missing_entity(entity))?;
+            .map_err(|_| InteropError::missing_entity(entity))?;
 
         if entity.contains_id(component_registration.component_id) {
             Ok(Some(ReflectReference {
@@ -1057,7 +1063,7 @@ impl WorldAccessGuard<'_> {
         let cell = self.as_unsafe_world_cell()?;
         let entity = cell
             .get_entity(entity)
-            .ok_or_else(|| InteropError::missing_entity(entity))?;
+            .map_err(|_| InteropError::missing_entity(entity))?;
 
         Ok(entity.contains_id(component_id))
     }
@@ -1152,7 +1158,7 @@ impl WorldAccessGuard<'_> {
             return Err(InteropError::missing_entity(entity));
         }
 
-        self.with_component(entity, |c: Option<&Parent>| c.map(|c| c.get()))
+        self.with_component(entity, |c: Option<&ChildOf>| c.map(|c| c.parent()))
     }
 
     /// insert children into the given entity
@@ -1226,7 +1232,7 @@ impl WorldAccessGuard<'_> {
         self.with_global_access(|world| {
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
-            commands.entity(parent).despawn_recursive();
+            commands.entity(parent).despawn();
             queue.apply(world);
         })
     }
@@ -1240,7 +1246,7 @@ impl WorldAccessGuard<'_> {
         self.with_global_access(|world| {
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
-            commands.entity(entity).despawn();
+            commands.entity(entity).remove::<Children>().despawn();
             queue.apply(world);
         })
     }
@@ -1254,7 +1260,7 @@ impl WorldAccessGuard<'_> {
         self.with_global_access(|world| {
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
-            commands.entity(parent).despawn_descendants();
+            commands.entity(parent).despawn_related::<Children>();
             queue.apply(world);
         })
     }

@@ -16,7 +16,7 @@ impl Plugin for ScriptFunctionsPlugin {
 
         // TODO: if bevy ever does this itself we should remove this
         let world_mut = app.world_mut();
-        world_mut.register_component::<Parent>();
+        world_mut.register_component::<ChildOf>();
         world_mut.register_component::<Children>();
     }
 }

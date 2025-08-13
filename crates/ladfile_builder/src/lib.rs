@@ -1,7 +1,7 @@
 //! Parsing definitions for the LAD (Language Agnostic Decleration) file format.
 pub mod plugin;
 
-use bevy::{ecs::world::World, log, utils::HashSet};
+use bevy::{ecs::world::World, log, platform::collections::HashSet};
 use bevy_mod_scripting_core::{
     bindings::{
         function::{

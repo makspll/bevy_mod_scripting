@@ -12,12 +12,10 @@ categories = ["game-development"]
 readme = "readme.md"
 
 [features]
-bevy_core = []
 bevy_ecs = []
-bevy_hierarchy = []
 bevy_input = []
-bevy_math = []
-bevy_reflect = []
+bevy_math = ["bevy_math/curve"]
+bevy_reflect = ["bevy_reflect/smol_str"]
 bevy_time = []
 bevy_transform = []
 
@@ -28,9 +26,13 @@ rhai_bindings = ["bevy_mod_scripting_rhai"]
 
 [dependencies]
 bevy = { workspace = true }
+# required since curve has no top level bevy features for these
+bevy_math = { workspace = true }
+bevy_reflect = { workspace = true }
+
 profiling = { workspace = true }
 uuid = "1.11"
-smol_str = "0.2.2"
+smol_str = "0.2.0"
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
 bevy_mod_scripting_lua = { path = "../languages/bevy_mod_scripting_lua", optional = true, version = "0.14.0-alpha.1" }

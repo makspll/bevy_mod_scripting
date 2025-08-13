@@ -1,6 +1,5 @@
 use super::*;
 use crate::IntoScriptPluginParams;
-use bevy::ecs::system::Resource;
 use parking_lot::Mutex;
 use std::{hash::Hash, sync::Arc};
 
@@ -322,19 +321,6 @@ impl<P: IntoScriptPluginParams> ScriptContext<P> {
             .is_some_and(|entry| entry.residents.contains(context_key))
     }
 
-    /// Hash for context.
-    ///
-    /// Useful for tracking what context will be returned by `get()` without
-    /// requiring that `P::C` impl `Hash` and cheaper too.
-    ///
-    /// Note: The existence of the hash does not imply the context exists. It
-    /// only declares what its hash will be.
-    pub fn hash(&self, context_key: &ScriptAttachment) -> Option<u64> {
-        self.policy
-            .select(context_key)
-            .map(|key| DefaultHashBuilder::default().hash_one(&key))
-    }
-
     /// Remove a context.
     ///
     /// Returns context if removed.
@@ -364,25 +350,6 @@ mod tests {
     use super::*;
 
     make_test_plugin!(crate);
-
-    #[test]
-    fn script_attachment_eq() {
-        let a = ScriptAttachment::EntityScript(
-            Entity::from_raw(1),
-            Handle::Weak(AssetIndex::from_bits(1).into()),
-        );
-        let b = ScriptAttachment::EntityScript(
-            Entity::from_raw(1),
-            Handle::Weak(AssetIndex::from_bits(2).into()),
-        );
-
-        assert_eq!(a, a);
-        assert_ne!(a, b);
-        let hash_a = DefaultHashBuilder::default().hash_one(&a);
-        let hash_b = DefaultHashBuilder::default().hash_one(&b);
-        assert_eq!(hash_a, hash_a);
-        assert_ne!(hash_a, hash_b);
-    }
 
     #[test]
     fn test_insertion_per_script_policy() {

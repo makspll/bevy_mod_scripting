@@ -26,9 +26,8 @@ use bindings::{
     script_value::{FromDynamic, IntoDynamic},
 };
 use parking_lot::RwLock;
-use rhai::{CallFnOptions, Dynamic, Engine, EvalAltResult, Scope, AST};
-
 pub use rhai;
+use rhai::{CallFnOptions, Dynamic, Engine, EvalAltResult, Scope, AST};
 /// Bindings for rhai.
 pub mod bindings;
 
@@ -71,7 +70,7 @@ impl Default for RhaiScriptingPlugin {
         RhaiScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
                 runtime_settings: RuntimeSettings {
-                    initializers: vec![|runtime: &RhaiRuntime| {
+                    initializers: vec![|runtime| {
                         let mut engine = runtime.write();
                         engine.set_max_expr_depths(999, 999);
                         engine.build_type::<RhaiReflectReference>();
@@ -86,14 +85,14 @@ impl Default for RhaiScriptingPlugin {
                     reload: rhai_context_reload,
                 },
                 context_initializers: vec![
-                    |_, context: &mut RhaiScriptContext| {
+                    |_, context| {
                         context.scope.set_or_push(
                             "world",
                             RhaiStaticReflectReference(std::any::TypeId::of::<World>()),
                         );
                         Ok(())
                     },
-                    |_, context: &mut RhaiScriptContext| {
+                    |_, context| {
                         // initialize global functions
                         let world = ThreadWorldContainer.try_get_world()?;
                         let globals_registry =

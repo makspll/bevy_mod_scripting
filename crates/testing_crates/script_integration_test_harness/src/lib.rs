@@ -11,22 +11,23 @@ use bevy::{
     app::{App, Plugin, PostUpdate, Startup, Update},
     asset::{AssetPath, AssetServer, Handle, LoadState},
     ecs::{
-        component::Component,
-        schedule::IntoSystemConfigs,
-        system::{Resource, SystemState},
-        world::{Command, FromWorld},
+        component::Component, resource::Resource, schedule::IntoScheduleConfigs, system::Command,
+        world::FromWorld,
     },
-    log::Level,
+    log::{
+        tracing::{self, event},
+        Level,
+    },
     reflect::Reflect,
-    utils::tracing,
 };
 use bevy_mod_scripting_core::{
     bindings::{
         pretty_print::DisplayWithWorld, CoreScriptGlobalsPlugin, ReflectAccessId, WorldAccessGuard,
+        WorldGuard,
     },
     commands::CreateOrUpdateScript,
     error::ScriptError,
-    extractors::{HandlerContext, WithWorldGuard},
+    extractors::HandlerContext,
     script::{DisplayProxy, ScriptAttachment, ScriptComponent, ScriptId},
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams,
 };
@@ -188,7 +189,6 @@ pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(
     label: &str,
     criterion: &mut criterion::BenchmarkGroup<M>,
 ) -> Result<(), String> {
-    use bevy::{log::Level, utils::tracing};
     use bevy_mod_scripting_lua::mlua::Function;
 
     let plugin = make_test_lua_plugin();
@@ -205,6 +205,8 @@ pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(
                     pre_bencher.call::<()>(()).unwrap();
                 }
                 c.iter(|| {
+                    use bevy::log::{tracing, Level};
+
                     tracing::event!(Level::TRACE, "profiling_iter {}", label);
                     bencher.call::<()>(()).unwrap();
                 })
@@ -220,7 +222,6 @@ pub fn run_rhai_benchmark<M: criterion::measurement::Measurement>(
     label: &str,
     criterion: &mut criterion::BenchmarkGroup<M>,
 ) -> Result<(), String> {
-    use bevy::{log::Level, utils::tracing};
     use bevy_mod_scripting_rhai::rhai::Dynamic;
 
     let plugin = make_test_rhai_plugin();
@@ -242,6 +243,8 @@ pub fn run_rhai_benchmark<M: criterion::measurement::Measurement>(
                 }
 
                 c.iter(|| {
+                    use bevy::log::{tracing, Level};
+
                     tracing::event!(Level::TRACE, "profiling_iter {}", label);
                     let _ = runtime
                         .call_fn::<Dynamic>(&mut ctxt.scope, &ctxt.ast, "bench", ARGS)
@@ -286,8 +289,6 @@ where
 
     let timer = Instant::now();
 
-    let mut state = SystemState::<WithWorldGuard<HandlerContext<P>>>::from_world(app.world_mut());
-
     // Wait until script is loaded.
     loop {
         if timer.elapsed() > Duration::from_secs(30) {
@@ -308,8 +309,9 @@ where
 
     app.update();
 
-    let mut handler_ctxt = state.get_mut(app.world_mut());
-    let (guard, context) = handler_ctxt.get_mut();
+    let mut context = HandlerContext::<P>::yoink(app.world_mut());
+    let guard = WorldGuard::new_exclusive(app.world_mut());
+
     let context_key = ScriptAttachment::EntityScript(entity, Handle::Weak(script_id));
 
     let ctxt_arc = context.script_context().get(&context_key).unwrap();
@@ -325,7 +327,7 @@ where
         // Pass the locked context to the closure for benchmarking its Lua (or generic) part
         bench_fn(&mut ctxt_locked, runtime, label, criterion)
     });
-    state.apply(app.world_mut());
+    context.release(app.world_mut());
     Ok(())
 }
 
@@ -441,7 +443,7 @@ pub fn perform_benchmark_with_generator<
                 )
             },
             |(i, w)| {
-                bevy::utils::tracing::event!(bevy::log::Level::TRACE, "profiling_iter {}", label);
+                event!(bevy::log::Level::TRACE, "profiling_iter {}", label);
                 bench_fn(w, i)
             },
             batch_size,

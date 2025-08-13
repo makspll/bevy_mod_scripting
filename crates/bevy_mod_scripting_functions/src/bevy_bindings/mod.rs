@@ -2,12 +2,8 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 #![cfg_attr(rustfmt, rustfmt_skip)]
-#[cfg(feature = "bevy_core")]
-pub mod bevy_core;
 #[cfg(feature = "bevy_ecs")]
 pub mod bevy_ecs;
-#[cfg(feature = "bevy_hierarchy")]
-pub mod bevy_hierarchy;
 #[cfg(feature = "bevy_input")]
 pub mod bevy_input;
 #[cfg(feature = "bevy_math")]

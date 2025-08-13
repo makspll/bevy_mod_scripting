@@ -1,7 +1,7 @@
 use crate::{install_test_plugin, parse::*};
 use anyhow::{anyhow, Context, Error};
 use bevy::ecs::entity::Entity;
-use bevy::ecs::world::Command;
+use bevy::ecs::system::Command;
 use bevy::prelude::IntoSystem;
 use bevy::{
     app::App,

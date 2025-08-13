@@ -1,5 +1,7 @@
 //! Systems and resources for handling script assets and events
 
+use std::borrow::Cow;
+
 use crate::{
     commands::{CreateOrUpdateScript, DeleteScript},
     context::ContextLoadingSettings,
@@ -13,13 +15,13 @@ use bevy::{
     asset::{Asset, AssetEvent, AssetLoader, AssetPath, Assets, LoadState},
     log::{error, trace, warn, warn_once},
     prelude::{
-        AssetServer, Commands, Entity, EventReader, EventWriter, IntoSystemConfigs,
-        IntoSystemSetConfigs, Local, Query, Res,
+        AssetServer, Commands, Entity, EventReader, EventWriter, IntoScheduleConfigs, Local, Query,
+        Res,
     },
     reflect::Reflect,
 };
 use serde::{Deserialize, Serialize};
-use std::{borrow::Cow, collections::VecDeque};
+use std::collections::VecDeque;
 
 /// Represents a scripting language. Languages which compile into another language should use the target language as their language.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Serialize, Deserialize)]
@@ -183,13 +185,13 @@ fn sync_assets(
     for event in events.read() {
         match event {
             AssetEvent::Modified { id } => {
-                script_events.send(ScriptEvent::Modified { script: *id });
+                script_events.write(ScriptEvent::Modified { script: *id });
             }
             AssetEvent::Added { id } => {
-                script_events.send(ScriptEvent::Added { script: *id });
+                script_events.write(ScriptEvent::Added { script: *id });
             }
             AssetEvent::Removed { id } => {
-                script_events.send(ScriptEvent::Removed { script: *id });
+                script_events.write(ScriptEvent::Removed { script: *id });
             }
             _ => (),
         }

@@ -6,18 +6,18 @@ use std::{ffi::OsString, path::PathBuf};
 use bevy::reflect::{TypeInfo, Typed};
 
 use crate::{
-    bindings::{
-        function::{
-            from::{Mut, Ref, Union, Val},
-            script_function::{
-                DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext,
-            },
-        },
-        script_value::ScriptValue,
-        ReflectReference,
-    },
-    error::InteropError,
-    reflection_extensions::TypeInfoExtensions,
+	bindings::{
+		function::{
+			from::{Mut, Ref, Union, Val},
+			script_function::{
+				DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext,
+			},
+		},
+		script_value::ScriptValue,
+		ReflectReference,
+	},
+	error::InteropError,
+	reflection_extensions::TypeInfoExtensions,
 };
 
 /// All Through types follow one rule:
@@ -265,13 +265,13 @@ macro_rules! impl_through_typed_tuple {
     };
 }
 
-bevy::utils::all_tuples!(impl_through_typed_tuple, 0, 13, T);
+variadics_please::all_tuples!(impl_through_typed_tuple, 0, 13, T);
 
 #[cfg(test)]
 mod test {
-    use super::*;
+	use super::*;
 
-    fn assert_type_info_is_through<T: Typed + TypedThrough>() {
+	fn assert_type_info_is_through<T: Typed + TypedThrough>() {
         let type_info = T::type_info();
         let through_type_info = T::through_type_info();
 

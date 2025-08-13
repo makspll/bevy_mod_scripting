@@ -72,7 +72,7 @@ impl Default for LuaScriptingPlugin {
 
                         Ok(())
                     },
-                    |_script_id, context: &mut Lua| {
+                    |_script_id, context| {
                         // set static globals
                         let world = ThreadWorldContainer.try_get_world()?;
                         let globals_registry =
@@ -268,8 +268,10 @@ pub fn lua_handler(
 
 #[cfg(test)]
 mod test {
-    use bevy::prelude::Handle;
-    use bevy_mod_scripting_core::script::ScriptId;
+    use bevy::{
+        asset::{AssetId, AssetIndex},
+        prelude::Handle,
+    };
     use mlua::Value;
 
     use super::*;
@@ -277,11 +279,10 @@ mod test {
     #[test]
     fn test_reload_doesnt_overwrite_old_context() {
         let lua = Lua::new();
-        let script_id: ScriptId = ScriptId::from(uuid::Uuid::new_v4());
         let initializers = vec![];
         let pre_handling_initializers = vec![];
         let mut old_ctxt = lua.clone();
-        let handle = Handle::Weak(script_id);
+        let handle = Handle::Weak(AssetId::from(AssetIndex::from_bits(0)));
         let context_key = ScriptAttachment::EntityScript(Entity::from_raw(1), handle);
 
         lua_context_load(

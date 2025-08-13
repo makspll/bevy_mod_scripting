@@ -200,7 +200,14 @@ impl FeatureGraph {
             .workspace_packages()
             .iter()
             .map(|p| Self::process_crate(p))
-            .collect();
+            .collect::<Vec<_>>();
+
+        // log the workspace crate dependencies
+        debug!(
+            "Workspace root: {}, Crates: {}",
+            workspace_root,
+            crates.iter().map(|c| format!("{c:?}")).join("\n\n ")
+        );
 
         Self {
             workspace_root: workspace_root.to_owned(),

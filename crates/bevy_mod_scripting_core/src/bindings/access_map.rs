@@ -4,8 +4,8 @@ use std::hash::{BuildHasherDefault, Hasher};
 
 use bevy::{
     ecs::{component::ComponentId, world::unsafe_world_cell::UnsafeWorldCell},
+	platform::collections::{HashMap, HashSet},
     prelude::Resource,
-    utils::hashbrown::{HashMap, HashSet},
 };
 use parking_lot::Mutex;
 use smallvec::SmallVec;
