@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_rhai"
-version = "0.13.0"
+version = "0.14.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
