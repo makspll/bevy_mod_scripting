@@ -733,15 +733,15 @@
       },
       "is_static": true
     },
-    "OverflowClipMargin": {
-      "type_kind": {
-        "val": "bevy_ui::ui_node::OverflowClipMargin"
-      },
-      "is_static": true
-    },
     "FunctionReturnInfo": {
       "type_kind": {
         "val": "bevy_mod_scripting_core::docgen::info::FunctionReturnInfo"
+      },
+      "is_static": true
+    },
+    "OverflowClipMargin": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::OverflowClipMargin"
       },
       "is_static": true
     },
@@ -1003,15 +1003,15 @@
       },
       "is_static": true
     },
-    "Text": {
-      "type_kind": {
-        "val": "bevy_ui::widget::text::Text"
-      },
-      "is_static": true
-    },
     "ReflectReference": {
       "type_kind": {
         "val": "ReflectReference"
+      },
+      "is_static": true
+    },
+    "Text": {
+      "type_kind": {
+        "val": "bevy_ui::widget::text::Text"
       },
       "is_static": true
     },
@@ -2560,15 +2560,15 @@
       },
       "is_static": true
     },
-    "Node": {
-      "type_kind": {
-        "val": "bevy_ui::ui_node::Node"
-      },
-      "is_static": true
-    },
     "ScriptResourceRegistration": {
       "type_kind": {
         "val": "bevy_mod_scripting_core::bindings::query::ScriptResourceRegistration"
+      },
+      "is_static": true
+    },
+    "Node": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::Node"
       },
       "is_static": true
     },
@@ -2794,9 +2794,9 @@
       },
       "is_static": true
     },
-    "FunctionCallContext": {
+    "Pickable": {
       "type_kind": {
-        "val": "FunctionCallContext"
+        "val": "bevy_picking::Pickable"
       },
       "is_static": true
     },
@@ -2812,9 +2812,9 @@
       },
       "is_static": true
     },
-    "Pickable": {
+    "GridPlacement": {
       "type_kind": {
-        "val": "bevy_picking::Pickable"
+        "val": "bevy_ui::ui_node::GridPlacement"
       },
       "is_static": true
     },
@@ -2830,15 +2830,15 @@
       },
       "is_static": true
     },
-    "GridPlacement": {
-      "type_kind": {
-        "val": "bevy_ui::ui_node::GridPlacement"
-      },
-      "is_static": true
-    },
     "RangeFull": {
       "type_kind": {
         "val": "core::ops::RangeFull"
+      },
+      "is_static": true
+    },
+    "FunctionCallContext": {
+      "type_kind": {
+        "val": "FunctionCallContext"
       },
       "is_static": true
     },
@@ -2902,6 +2902,12 @@
       },
       "is_static": true
     },
+    "ScriptQueryResult": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::bindings::query::ScriptQueryResult"
+      },
+      "is_static": true
+    },
     "u32": {
       "type_kind": {
         "val": "u32"
@@ -2911,12 +2917,6 @@
     "CascadesVisibleEntities": {
       "type_kind": {
         "val": "bevy_pbr::components::CascadesVisibleEntities"
-      },
-      "is_static": true
-    },
-    "ColorGrading": {
-      "type_kind": {
-        "val": "bevy_render::view::ColorGrading"
       },
       "is_static": true
     },
@@ -2938,9 +2938,9 @@
       },
       "is_static": true
     },
-    "ScriptQueryResult": {
+    "ColorGrading": {
       "type_kind": {
-        "val": "bevy_mod_scripting_core::bindings::query::ScriptQueryResult"
+        "val": "bevy_render::view::ColorGrading"
       },
       "is_static": true
     },
@@ -2986,15 +2986,15 @@
       },
       "is_static": true
     },
-    "SpritePickingSettings": {
-      "type_kind": {
-        "val": "bevy_sprite::picking_backend::SpritePickingSettings"
-      },
-      "is_static": true
-    },
     "InteropError": {
       "type_kind": {
         "val": "bevy_mod_scripting_core::error::InteropError"
+      },
+      "is_static": true
+    },
+    "SpritePickingSettings": {
+      "type_kind": {
+        "val": "bevy_sprite::picking_backend::SpritePickingSettings"
       },
       "is_static": true
     },
@@ -3448,18 +3448,18 @@
       "path": "bevy_mod_scripting_core::bindings::reference::ReflectReference",
       "documentation": " A reference to an arbitrary reflected instance.\n\n The reference can point to either the ECS, or to the allocator.\n\n References are composed of two parts:\n - The base kind, which specifies where the reference points to\n - The path, which specifies how to access the value from the base.\n\n Bindings defined on this type, apply to ALL references.",
       "associated_functions": [
-        "ReflectReference::iter",
-        "ReflectReference::push",
-        "ReflectReference::variant_name",
-        "ReflectReference::clear",
-        "ReflectReference::map_get",
-        "ReflectReference::pop",
-        "ReflectReference::len",
         "ReflectReference::display_ref",
-        "ReflectReference::insert",
+        "ReflectReference::pop",
+        "ReflectReference::map_get",
         "ReflectReference::functions",
+        "ReflectReference::display_value",
+        "ReflectReference::insert",
+        "ReflectReference::iter",
         "ReflectReference::remove",
-        "ReflectReference::display_value"
+        "ReflectReference::push",
+        "ReflectReference::len",
+        "ReflectReference::variant_name",
+        "ReflectReference::clear"
       ],
       "layout": null,
       "generated": false,
@@ -3501,10 +3501,10 @@
       "path": "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder",
       "documentation": " The query builder is used to build ECS queries which retrieve spefific components filtered by specific conditions.\n\n For example:\n ```rust,ignore\n builder.component(componentA)\n     .component(componentB)\n     .with(componentC)\n     .without(componentD)  \n ```\n\n Will retrieve entities which:\n - Have componentA\n - Have componentB\n - Have componentC\n - Do not have componentD\n\n As well as references to components:\n - componentA\n - componentB",
       "associated_functions": [
+        "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder::with",
         "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder::without",
         "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder::component",
-        "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder::build",
-        "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder::with"
+        "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder::build"
       ],
       "layout": null,
       "generated": false,
@@ -3568,10 +3568,10 @@
       "path": "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder",
       "documentation": " A builder for systems living in scripts",
       "associated_functions": [
-        "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::after",
         "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::before",
         "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::exclusive",
         "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::query",
+        "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::after",
         "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::resource"
       ],
       "layout": null,
@@ -3611,8 +3611,8 @@
       "path": "bevy_system_reflection::ReflectSystem",
       "documentation": " A reflectable system.",
       "associated_functions": [
-        "bevy_system_reflection::ReflectSystem::path",
-        "bevy_system_reflection::ReflectSystem::identifier"
+        "bevy_system_reflection::ReflectSystem::identifier",
+        "bevy_system_reflection::ReflectSystem::path"
       ],
       "layout": null,
       "generated": false,
