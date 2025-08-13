@@ -98,7 +98,7 @@ bevy = { workspace = true, default-features = true, features = ["std"] }
 clap = { version = "4.1", features = ["derive"] }
 rand = "0.9.1"
 criterion = { version = "0.5" }
-ladfile_builder = { path = "crates/ladfile_builder", version = "0.3.3" }
+ladfile_builder = { path = "crates/ladfile_builder", version = "0.3.4" }
 script_integration_test_harness = { workspace = true }
 test_utils = { workspace = true }
 libtest-mimic = "0.8"
