@@ -1,5 +1,30 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.15.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.14.0...v0.15.0) - 2025-08-14
+
+### Added
+
+- Use the Handles, Luke! ([#427](https://github.com/makspll/bevy_mod_scripting/pull/427))
+
+### Fixed
+
+- fix version
+- fix version
+
+### Other
+
+- improve docs, fix issues
+- update versions to currently released ones
+- Merge remote-tracking branch 'origin/main' into staging
+# Changelog
+
 ## [0.13.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.12.0...v0.13.0) - 2025-07-05
 
 ### Added

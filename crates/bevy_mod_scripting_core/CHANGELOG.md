@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.14.0...bevy_mod_scripting_core-v0.15.0) - 2025-08-14
+
+### Added
+
+- Use the Handles, Luke! ([#427](https://github.com/makspll/bevy_mod_scripting/pull/427))
+
+### Fixed
+
+- fix version
+
+### Other
+
+- update versions to currently released ones
+
 ## [0.13.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_core-v0.12.0...bevy_mod_scripting_core-v0.13.0) - 2025-07-05
 
 ### Added

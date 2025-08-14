@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1](https://github.com/makspll/bevy_mod_scripting/compare/v0.4.0-ladfile_builder...v0.4.1-ladfile_builder) - 2025-08-14
+
+### Added
+
+- Use the Handles, Luke! ([#427](https://github.com/makspll/bevy_mod_scripting/pull/427))
+
+### Other
+
+- improve docs, fix issues
+- update versions to currently released ones
+- Merge remote-tracking branch 'origin/main' into staging
+
 ## [0.4.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.3.4-ladfile_builder...v0.4.0-ladfile_builder) - 2025-08-13
 
 ### Added
