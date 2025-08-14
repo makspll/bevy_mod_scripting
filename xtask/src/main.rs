@@ -1428,6 +1428,15 @@ impl Xtasks {
             .args(["--threshold-upper-boundary", "0.99"])
             .args(["--thresholds-reset"]);
 
+        if !is_main {
+            bencher_cmd
+                .args(["--branch", &branch])
+                .args(["--start-point", "main"])
+                .args(["--start-point-hash", "main"])
+                .args(["--start-point-clone-thresholds"])
+                .args(["--start-point-reset"]);
+        }
+
         if let Some(token) = &github_token {
             bencher_cmd.args(["--github-actions", token]);
         }
