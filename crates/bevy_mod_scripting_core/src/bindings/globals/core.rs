@@ -4,12 +4,14 @@ use std::{cell::RefCell, collections::HashMap, sync::Arc};
 
 use bevy::{
     app::Plugin,
+    asset::Handle,
     ecs::{entity::Entity, reflect::AppTypeRegistry, world::World},
     reflect::TypeRegistration,
 };
 use bevy_mod_scripting_derive::script_globals;
 
 use crate::{
+    asset::ScriptAsset,
     bindings::{
         function::from::{Union, Val},
         ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration,
@@ -53,7 +55,7 @@ impl Plugin for CoreScriptGlobalsPlugin {
         app.init_resource::<AppScriptGlobalsRegistry>();
     }
     fn finish(&self, app: &mut bevy::app::App) {
-        profiling::function_scope!("app finish");
+        // profiling::function_scope!("app finish");
 
         if self.register_static_references {
             register_static_core_globals(app.world_mut(), self.filter);
@@ -99,7 +101,7 @@ fn register_static_core_globals(
     global_registry.register_dummy::<World>("world", "The current ECS world.");
     global_registry
         .register_dummy::<Entity>("entity", "The entity this script is attached to if any.");
-    global_registry.register_dummy::<String>("script_id", "the name/id of this script");
+    global_registry.register_dummy_typed::<Val<Handle<ScriptAsset>>>("script_asset", "the asset handle for this script. If the asset is ever unloaded, the handle will be less useful.");
 }
 
 #[script_globals(bms_core_path = "crate", name = "core_globals")]
@@ -121,7 +123,7 @@ impl CoreGlobals {
         >,
         InteropError,
     > {
-        profiling::function_scope!("registering core globals");
+        // profiling::function_scope!("registering core globals");
         let type_registry = guard.type_registry();
         let type_registry = type_registry.read();
         let mut type_cache = HashMap::<String, _>::default();
