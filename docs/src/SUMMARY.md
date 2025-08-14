@@ -11,8 +11,12 @@
 - [Contexts](./Summary/contexts.md)
 - [Script Systems](./ScriptSystems/introduction.md)
 - [Examples](./Examples/introduction.md)
-- [Migration Guides](./Migration/guides.md)
-    - [0.14-to-0.15](./Migration/0.14-to-0.15.md)
+
+# Release Notes
+
+- [Release Notes](./ReleaseNotes/guides.md)
+    - [0.14-to-0.15](./ReleaseNotes/0.14-to-0.15.md)
+    - [0.15.0](./ReleaseNotes/0.15.0.md)
 
 # Scripting Reference
 

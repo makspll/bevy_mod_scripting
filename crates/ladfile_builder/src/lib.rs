@@ -21,6 +21,14 @@ use bevy_mod_scripting_core::{
 };
 use bevy_reflect::{NamedField, TypeInfo, TypeRegistry, Typed, UnnamedField};
 use ladfile::*;
+use std::{
+    any::TypeId,
+    borrow::Cow,
+    cmp::{max, min},
+    collections::HashMap,
+    ffi::OsString,
+    path::PathBuf,
+};
 
 /// We can assume that the types here will be either primitives
 /// or reflect types, as the rest will be covered by typed wrappers
@@ -843,6 +851,8 @@ impl<'t> LadFileBuilder<'t> {
 
 #[cfg(test)]
 mod test {
+    use std::collections::HashMap;
+
     use bevy_mod_scripting_core::{
         bindings::{
             function::{
