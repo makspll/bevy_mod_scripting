@@ -1,6 +1,6 @@
 [package]
 name = "mdbook_lad_preprocessor"
-version = "0.1.9"
+version = "0.1.10"
 edition = "2021"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 license = "MIT OR Apache-2.0"

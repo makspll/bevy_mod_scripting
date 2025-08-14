@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_lua"
-version = "0.14.0-alpha.1"
+version = "0.14.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
