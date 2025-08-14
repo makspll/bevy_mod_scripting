@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>query - Bevy Scripting</title>
+        <title>0.15.0 - Bevy Scripting</title>
 
 
         <!-- Custom HTML head -->
@@ -12,34 +12,34 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="../../../favicon.svg">
-        <link rel="shortcut icon" href="../../../favicon.png">
-        <link rel="stylesheet" href="../../../css/variables.css">
-        <link rel="stylesheet" href="../../../css/general.css">
-        <link rel="stylesheet" href="../../../css/chrome.css">
-        <link rel="stylesheet" href="../../../css/print.css" media="print">
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
-        <link rel="stylesheet" href="../../../fonts/fonts.css">
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="highlight-css" href="../../../highlight.css">
-        <link rel="stylesheet" id="tomorrow-night-css" href="../../../tomorrow-night.css">
-        <link rel="stylesheet" id="ayu-highlight-css" href="../../../ayu-highlight.css">
+        <link rel="stylesheet" id="highlight-css" href="../highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="../tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="../ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
 
 
         <!-- Provide site root and default themes to javascript -->
         <script>
-            const path_to_root = "../../../";
+            const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../../searchindex.js";
+            window.path_to_searchindex_js = "../searchindex.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../../toc.js"></script>
+        <script src="../toc.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -106,7 +106,7 @@
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
-                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
             </noscript>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -141,13 +141,13 @@
                     <h1 class="menu-title">Bevy Scripting</h1>
 
                     <div class="right-buttons">
-                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
                         <a href="https://github.com/makspll/bevy_mod_scripting" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/core_bindings/types/scriptsystembuilder/query.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/ReleaseNotes/0.15.0.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -181,30 +181,44 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="query"><a class="header" href="#query"><code>query</code></a></h1>
-<blockquote>
-<p>Adds a query to the system builder.</p>
-</blockquote>
-<h4 id="arguments"><a class="header" href="#arguments">Arguments</a></h4>
-<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Documentation</th></tr></thead><tbody>
-<tr><td><strong>builder</strong></td><td><a href="../../types/scriptsystembuilder.html">ScriptSystemBuilder</a></td><td>The system builder to add the query to.</td></tr>
-<tr><td><strong>query</strong></td><td><a href="../../types/scriptquerybuilder.html">ScriptQueryBuilder</a></td><td>The query to add.</td></tr>
-</tbody></table>
-</div>
-<h4 id="returns"><a class="header" href="#returns">Returns</a></h4>
-<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Documentation</th></tr></thead><tbody>
-<tr><td><strong>builder</strong></td><td><a href="../../types/scriptsystembuilder.html">ScriptSystemBuilder</a></td><td>The system builder with the query added.</td></tr>
-</tbody></table>
-</div>
+                        <h1 id="0150---asset-handles-and-context-policies"><a class="header" href="#0150---asset-handles-and-context-policies">0.15.0 - Asset Handles and Context Policies</a></h1>
+<p>This release focuses on aligning <code>bevy_mod_scripting</code> with modern Bevy practices, most notably by switching to <code>Handle&lt;ScriptAsset&gt;</code> for script management. This change simplifies the API, removes boilerplate, and makes script handling more idiomatic.</p>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<h3 id="asset-first-workflow"><a class="header" href="#asset-first-workflow">Asset-First Workflow</a></h3>
+<p>Scripts are now treated as first-class Bevy assets. The old <code>ScriptId</code> (which was a string) has been replaced by <code>AssetId&lt;ScriptAsset&gt;</code>, and you'll primarily interact with scripts via <code>Handle&lt;ScriptAsset&gt;</code>.</p>
+<pre><code class="language-rust ignore">// New way
+let handle: Handle&lt;ScriptAsset&gt; = asset_server.load("my_script.lua");
+commands.spawn(ScriptComponent(vec![handle]));</code></pre>
+<p>Scripts are now only evaluated when they are attached to a <code>ScriptComponent</code> or added to <code>StaticScripts</code>, which means you have more control over when and how scripts are executed.</p>
+<h3 id="flexible-context-policies"><a class="header" href="#flexible-context-policies">Flexible Context Policies</a></h3>
+<p>You now have much finer control over how script contexts (i.e., the environment a script runs in) are created. The old <code>enable_context_sharing()</code> has been replaced with <code>set_context_policy()</code> which accepts a <code>ContextPolicy</code>:</p>
+<ul>
+<li><code>ContextPolicy::shared()</code>: All scripts run in one global context</li>
+<li><code>ContextPolicy::per_script()</code>: Each script asset gets its own context (the old default.)</li>
+<li><code>ContextPolicy::per_entity()</code>: Each entity with scripts gets its own context.</li>
+<li><code>ContextPolicy::per_entity_and_script()</code>: A unique context for every script on every entity (the new default).</li>
+</ul>
+<p>This means that each script is maximally isolated by default, but you can still opt for shared contexts if needed.</p>
+<h3 id="other-changes"><a class="header" href="#other-changes">Other Changes</a></h3>
+<ul>
+<li><strong><code>Recipients</code> Enum:</strong> The <code>Recipients</code> enum for events has been redesigned to align with the new context policies, offering <code>AllScripts</code> and <code>AllContexts</code> variants, and removing some variants which don't fit the new model. If you need the old behaviour, you can simply query the ECS first before sending events.</li>
+<li><strong>API Cleanup:</strong> Several types and traits were removed or simplified, including <code>ScriptAssetSettings</code>, <code>AssetPathToScriptIdMapper</code>, and <code>ScriptMetadataStore</code>, as they are no longer needed with the new asset-based approach.</li>
+</ul>
+<h2 id="migration-guide"><a class="header" href="#migration-guide">Migration Guide</a></h2>
+<p>This release contains significant breaking changes. Please refer to the migration guide for detailed instructions on updating your project.</p>
+<ul>
+<li><a href="https://makspll.github.io/bevy_mod_scripting/Migration/0.14-to-0.15.html">Migration Guide: 0.14 to 0.15</a></li>
+</ul>
+
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../../core_bindings/types/scriptsystembuilder/exclusive.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../ReleaseNotes/0.14-to-0.15.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../../core_bindings/types/scriptsystembuilder/after.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../ScriptingReference/introduction.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -214,11 +228,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../../core_bindings/types/scriptsystembuilder/exclusive.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../ReleaseNotes/0.14-to-0.15.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../../core_bindings/types/scriptsystembuilder/after.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../ScriptingReference/introduction.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
@@ -233,16 +247,16 @@
         </script>
 
 
-        <script src="../../../elasticlunr.min.js"></script>
-        <script src="../../../mark.min.js"></script>
-        <script src="../../../searcher.js"></script>
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
 
-        <script src="../../../clipboard.min.js"></script>
-        <script src="../../../highlight.js"></script>
-        <script src="../../../book.js"></script>
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../../multi-code-block.js"></script>
+        <script src="../multi-code-block.js"></script>
 
 
 

@@ -147,7 +147,7 @@
                         <a href="https://github.com/makspll/bevy_mod_scripting" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/Migration/0.14-to-0.15.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/ReleaseNotes/0.14-to-0.15.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -317,16 +317,35 @@ pub struct ScriptCallbackEvent {
     pub trigger_response: bool,
 }
 </code></pre>
+<h2 id="bindings-changes"><a class="header" href="#bindings-changes">Bindings Changes</a></h2>
+<h3 id="scriptid"><a class="header" href="#scriptid">ScriptId</a></h3>
+<p><code>script_id</code> is replaced with <code>script_asset</code> which now has a type of <code>Handle&lt;ScriptAsset&gt;</code>. This means that you can no longer use a string to refer to a script, but rather you must use a handle.</p>
+<p>Scripts can still access the asset path of the script using:</p>
+<pre><code class="language-lua ignore">-- prints: "my_script.lua"
+print(script_asset:asset_path())
+</code></pre>
+<h3 id="scriptattachment"><a class="header" href="#scriptattachment">ScriptAttachment</a></h3>
+<p>The concept of script attachments has been introduced to describe the idea of a script instance. Previously this was muddied due to the fact script ID's were the primary way to refer to scripts. Now the instance of a script and its mapping to a context is clearer.</p>
+<p>This is reflected in a brand new set of bindings:</p>
+<pre><code class="language-lua ignore">-- will create backing ScriptAttachment instances, that can be used in other bindings.
+local entity_script = ScriptAttachment.new_entity_script(entity, script_asset)
+local static_script = ScriptAttachment.new_static_script(script_asset)
+</code></pre>
+<h3 id="system-builder"><a class="header" href="#system-builder">System Builder</a></h3>
+<p>the system builder no longer accepts script id's as parameters. Instead it accepts script attachments</p>
+<pre><code class="language-diff lua">-system_builder("my_callback", "this_script_id.lua")
++system_builder("my_callback", ScriptAttachment.new_static_script(script_asset))
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../Migration/guides.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../ReleaseNotes/guides.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../ScriptingReference/introduction.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../ReleaseNotes/0.15.0.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -336,11 +355,11 @@ pub struct ScriptCallbackEvent {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../Migration/guides.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../ReleaseNotes/guides.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../ScriptingReference/introduction.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../ReleaseNotes/0.15.0.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
