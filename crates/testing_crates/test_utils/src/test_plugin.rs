@@ -3,7 +3,7 @@
 #[macro_export]
 macro_rules! make_test_plugin {
     ($ident: ident) => {
-        // #[derive(Default)]
+        #[derive(std::fmt::Debug)]
         struct TestPlugin($ident::ScriptingPlugin<Self>);
 
         impl Default for TestPlugin {
@@ -31,13 +31,17 @@ macro_rules! make_test_plugin {
             }
         }
 
-        #[derive(Default)]
+        #[derive(Default, std::fmt::Debug)]
         struct TestRuntime {
-            pub invocations:
-                parking_lot::Mutex<Vec<(bevy::prelude::Entity, $ident::script::ScriptId)>>,
+            pub invocations: parking_lot::Mutex<
+                Vec<(
+                    Option<bevy::prelude::Entity>,
+                    Option<$ident::script::ScriptId>,
+                )>,
+            >,
         }
 
-        #[derive(Default)]
+        #[derive(Default, std::fmt::Debug, Clone)]
         struct TestContext {
             pub invocations: Vec<$ident::bindings::script_value::ScriptValue>,
         }

@@ -1,13 +1,10 @@
 use std::{alloc::Layout, collections::HashMap};
 
-use bevy::{
-    asset::AssetPlugin,
-    diagnostic::DiagnosticsPlugin,
-    ecs::{component::*, world::World},
-    log::LogPlugin,
-    prelude::*,
-    reflect::*,
-};
+use bevy::asset::AssetPlugin;
+use bevy::diagnostic::DiagnosticsPlugin;
+use bevy::ecs::{component::*, world::World};
+use bevy::prelude::*;
+use bevy::reflect::*;
 
 /// Test component with Reflect and ReflectComponent registered
 #[derive(Component, Reflect, PartialEq, Eq, Debug)]
@@ -350,7 +347,7 @@ pub fn setup_integration_test<F: FnOnce(&mut World, &mut TypeRegistry)>(init: F)
         MinimalPlugins,
         AssetPlugin::default(),
         DiagnosticsPlugin,
-        LogPlugin {
+        bevy::log::LogPlugin {
             filter: log_level,
             ..Default::default()
         },

@@ -39,12 +39,12 @@ pub struct AppScriptComponentRegistry(pub Arc<RwLock<ScriptComponentRegistry>>);
 #[profiling::all_functions]
 impl AppScriptComponentRegistry {
     /// Reads the underlying registry
-    pub fn read(&self) -> parking_lot::RwLockReadGuard<ScriptComponentRegistry> {
+    pub fn read(&self) -> parking_lot::RwLockReadGuard<'_, ScriptComponentRegistry> {
         self.0.read()
     }
 
     /// Writes to the underlying registry
-    pub fn write(&self) -> parking_lot::RwLockWriteGuard<ScriptComponentRegistry> {
+    pub fn write(&self) -> parking_lot::RwLockWriteGuard<'_, ScriptComponentRegistry> {
         self.0.write()
     }
 }

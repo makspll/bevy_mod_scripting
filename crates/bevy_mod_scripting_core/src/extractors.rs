@@ -2,33 +2,32 @@
 //!
 //! These are designed to be used to pipe inputs into other systems which require them, while handling any configuration erorrs nicely.
 #![allow(deprecated)]
-use std::ops::{Deref, DerefMut};
-
-use bevy::{
-    ecs::{
-        component::ComponentId,
-        entity::Entity,
-        query::{Access, AccessConflicts},
-        storage::SparseSetIndex,
-        system::{SystemParam, SystemParamValidationError},
-        world::World,
-    },
-    prelude::Resource,
-};
-use fixedbitset::FixedBitSet;
-
+use crate::bindings::pretty_print::DisplayWithWorld;
 use crate::{
     bindings::{
-        access_map::ReflectAccessId, pretty_print::DisplayWithWorld, script_value::ScriptValue,
-        WorldAccessGuard, WorldGuard,
+        access_map::ReflectAccessId, script_value::ScriptValue, WorldAccessGuard, WorldGuard,
     },
     context::ContextLoadingSettings,
     error::{InteropError, ScriptError},
     event::{CallbackLabel, IntoCallbackLabel},
     handler::CallbackSettings,
     runtime::RuntimeContainer,
-    script::{ScriptId, Scripts, StaticScripts},
+    script::{ScriptAttachment, ScriptContext, StaticScripts},
     IntoScriptPluginParams,
+};
+use bevy::ecs::resource::Resource;
+use bevy::ecs::{
+    component::ComponentId,
+    query::{Access, AccessConflicts},
+    storage::SparseSetIndex,
+    system::{SystemParam, SystemParamValidationError},
+    world::World,
+};
+use fixedbitset::FixedBitSet;
+use parking_lot::Mutex;
+use std::{
+    ops::{Deref, DerefMut},
+    sync::Arc,
 };
 
 /// Executes `system_state.get_mut` followed by `system_state.apply` after running the given closure, makes sure state is correctly handled in the context of an exclusive system.
@@ -49,16 +48,24 @@ pub fn with_handler_system_state<
     o
 }
 
-/// Semantics of [`bevy::ecs::change_detection::Res`] but doesn't claim read or write on the world by removing the resource from it ahead of time.
+/// Semantics of [`bevy::ecs::change_detection::Res`] but doesn't claim read or
+/// write on the world by removing the resource from it ahead of time.
 ///
 /// Similar to using [`World::resource_scope`].
 ///
-/// This is useful for interacting with scripts, since [`WithWorldGuard`] will ensure scripts cannot gain exclusive access to the world if *any* reads or writes
-/// are claimed on the world. Removing the resource from the world lets you access it in the context of running scripts without blocking exclusive world access.
+/// This is useful for interacting with scripts, since [`WithWorldGuard`] will
+/// ensure scripts cannot gain exclusive access to the world if *any* reads or
+/// writes are claimed on the world. Removing the resource from the world lets
+/// you access it in the context of running scripts without blocking exclusive
+/// world access.
 ///
 /// # Safety
-/// - Because the resource is removed during the `get_param` call, if there is a conflicting resource access, this will be unsafe
-/// - You must ensure you're only using this in combination with system parameters which will not read or write to this resource in `get_param`
+///
+/// - Because the resource is removed during the `get_param` call, if there is a
+///   conflicting resource access, this will be unsafe
+///
+/// - You must ensure you're only using this in combination with system
+///   parameters which will not read or write to this resource in `get_param`
 pub(crate) struct ResScope<'state, T: Resource + Default>(pub &'state mut T);
 
 impl<T: Resource + Default> Deref for ResScope<'_, T> {
@@ -119,12 +126,12 @@ pub struct HandlerContext<P: IntoScriptPluginParams> {
     pub(crate) callback_settings: CallbackSettings<P>,
     /// Settings for loading contexts
     pub(crate) context_loading_settings: ContextLoadingSettings<P>,
-    /// Scripts
-    pub(crate) scripts: Scripts<P>,
     /// The runtime container
     pub(crate) runtime_container: RuntimeContainer<P>,
     /// List of static scripts
     pub(crate) static_scripts: StaticScripts,
+    /// Script context
+    pub(crate) script_context: ScriptContext<P>,
 }
 
 impl<P: IntoScriptPluginParams> HandlerContext<P> {
@@ -134,9 +141,9 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
         Self {
             callback_settings: world.remove_resource().unwrap_or_default(),
             context_loading_settings: world.remove_resource().unwrap_or_default(),
-            scripts: world.remove_resource().unwrap_or_default(),
             runtime_container: world.remove_resource().unwrap_or_default(),
             static_scripts: world.remove_resource().unwrap_or_default(),
+            script_context: world.remove_resource().unwrap_or_default(),
         }
     }
 
@@ -146,9 +153,9 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
         // insert the handler context back into the world
         world.insert_resource(self.callback_settings);
         world.insert_resource(self.context_loading_settings);
-        world.insert_resource(self.scripts);
         world.insert_resource(self.runtime_container);
         world.insert_resource(self.static_scripts);
+        world.insert_resource(self.script_context);
     }
 
     /// Splits the handler context into its individual components.
@@ -160,14 +167,12 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
     ) -> (
         &mut CallbackSettings<P>,
         &mut ContextLoadingSettings<P>,
-        &mut Scripts<P>,
         &mut RuntimeContainer<P>,
         &mut StaticScripts,
     ) {
         (
             &mut self.callback_settings,
             &mut self.context_loading_settings,
-            &mut self.scripts,
             &mut self.runtime_container,
             &mut self.static_scripts,
         )
@@ -183,11 +188,6 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
         &mut self.context_loading_settings
     }
 
-    /// Get the scripts
-    pub fn scripts(&mut self) -> &mut Scripts<P> {
-        &mut self.scripts
-    }
-
     /// Get the runtime container
     pub fn runtime_container(&mut self) -> &mut RuntimeContainer<P> {
         &mut self.runtime_container
@@ -198,24 +198,31 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
         &mut self.static_scripts
     }
 
+    /// Get the static scripts
+    pub fn script_context(&mut self) -> &mut ScriptContext<P> {
+        &mut self.script_context
+    }
+
     /// checks if the script is loaded such that it can be executed.
-    pub fn is_script_fully_loaded(&self, script_id: ScriptId) -> bool {
-        self.scripts.scripts.contains_key(&script_id)
+    ///
+    /// since the mapping between scripts and contexts is not one-to-one, will map the context key using the
+    /// context policy to find the script context, if one is found then the script is loaded.
+    pub fn is_script_fully_loaded(&self, key: &ScriptAttachment) -> bool {
+        self.script_context.contains(key)
     }
 
     /// Equivalent to [`Self::call`] but with a dynamically passed in label
     pub fn call_dynamic_label(
         &self,
         label: &CallbackLabel,
-        script_id: &ScriptId,
-        entity: Entity,
+        context_key: &ScriptAttachment,
+        context: Option<Arc<Mutex<P::C>>>,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
         // find script
-        let script = match self.scripts.scripts.get(script_id) {
-            Some(script) => script,
-            None => return Err(InteropError::missing_script(script_id.clone()).into()),
+        let Some(context) = context.or_else(|| self.script_context.get(context_key)) else {
+            return Err(InteropError::missing_context(context_key.clone()).into());
         };
 
         // call the script
@@ -225,13 +232,12 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
             .context_pre_handling_initializers;
         let runtime = &self.runtime_container.runtime;
 
-        let mut context = script.context.lock();
+        let mut context = context.lock();
 
         CallbackSettings::<P>::call(
             handler,
             payload,
-            entity,
-            script_id,
+            context_key,
             label,
             &mut context,
             pre_handling_initializers,
@@ -246,12 +252,11 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
     /// Run [`Self::is_script_fully_loaded`] before calling the script to ensure the script and context were loaded ahead of time.
     pub fn call<C: IntoCallbackLabel>(
         &self,
-        script_id: &ScriptId,
-        entity: Entity,
+        context_key: &ScriptAttachment,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
-        self.call_dynamic_label(&C::into_callback_label(), script_id, entity, payload, guard)
+        self.call_dynamic_label(&C::into_callback_label(), context_key, None, payload, guard)
     }
 }
 

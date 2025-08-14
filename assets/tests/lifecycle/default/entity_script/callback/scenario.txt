@@ -1,0 +1,19 @@
+SetCurrentLanguage language="@this_script_language"
+InstallPlugin
+SetupHandler OnTest=null, Update=null
+SetupHandler OnTestPostUpdate=null, PostUpdate=null
+SetupHandler Last=null, OnTestLast=null
+FinalizeApp
+
+LoadScriptAs as_name="@this_script", path="@this_script"
+WaitForScriptLoaded name="@this_script"
+SpawnEntityWithScript name="test_entity", script="@this_script"
+RunUpdateOnce
+
+EmitScriptCallbackEvent emit_response=true, entity="test_entity", label="OnTest", language=null, recipients="EntityScript", script="@this_script", string_value="arg1" 
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity", label="OnTest", script="@this_script", expect_string_value="got: arg1"
+
+EmitScriptCallbackEvent entity="test_entity", label="OnTest", language=null, recipients="EntityScript", script="@this_script", string_value="arg1" 
+RunUpdateOnce
+AssertNoCallbackResponsesEmitted
