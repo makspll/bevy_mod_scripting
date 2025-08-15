@@ -62,7 +62,7 @@ impl Eq for ReflectAllocationId {}
 
 impl PartialOrd for ReflectAllocationId {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.id().cmp(&other.id()))
+        Some(self.cmp(other))
     }
 }
 
@@ -147,12 +147,12 @@ impl Default for AppReflectAllocator {
 
 impl AppReflectAllocator {
     /// claim a read lock on the allocator
-    pub fn read(&self) -> RwLockReadGuard<ReflectAllocator> {
+    pub fn read(&self) -> RwLockReadGuard<'_, ReflectAllocator> {
         self.allocator.read()
     }
 
     /// claim a write lock on the allocator
-    pub fn write(&self) -> RwLockWriteGuard<ReflectAllocator> {
+    pub fn write(&self) -> RwLockWriteGuard<'_, ReflectAllocator> {
         self.allocator.write()
     }
 }

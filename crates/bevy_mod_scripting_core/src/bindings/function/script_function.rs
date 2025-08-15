@@ -253,12 +253,12 @@ pub struct ScriptFunctionRegistryArc(pub Arc<RwLock<ScriptFunctionRegistry>>);
 #[profiling::all_functions]
 impl ScriptFunctionRegistryArc {
     /// claim a read lock on the registry
-    pub fn read(&self) -> RwLockReadGuard<ScriptFunctionRegistry> {
+    pub fn read(&self) -> RwLockReadGuard<'_, ScriptFunctionRegistry> {
         self.0.read()
     }
 
     /// claim a write lock on the registry
-    pub fn write(&mut self) -> RwLockWriteGuard<ScriptFunctionRegistry> {
+    pub fn write(&mut self) -> RwLockWriteGuard<'_, ScriptFunctionRegistry> {
         self.0.write()
     }
 }

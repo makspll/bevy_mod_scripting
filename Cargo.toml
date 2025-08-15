@@ -82,6 +82,7 @@ bevy_mod_scripting_derive = { workspace = true }
 
 [workspace.dependencies]
 profiling = { version = "1.0" }
+
 bevy = { version = "0.16.0", default-features = false }
 bevy_math = { version = "0.16.0" }
 bevy_reflect = { version = "0.16.0" }

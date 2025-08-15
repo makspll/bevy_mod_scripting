@@ -40,6 +40,8 @@ profiling = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
 fixedbitset = "0.5"
 bevy_system_reflection = { path = "../bevy_system_reflection", version = "0.2.0" }
+serde = { version = "1.0", features = ["derive"] }
+uuid = "1.11"
 variadics_please = "1.1.0"
 
 [dev-dependencies]

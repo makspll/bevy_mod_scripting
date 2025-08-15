@@ -1,32 +1,64 @@
 # Managing Scripts
 
-Scripts live in the standard bevy `assets` directory. Loading a script means:
-- Parsing the script body
-- Creating or updating the resources which store script state
-- Assigning a name/id to the script so it can be referred to by the rest of the application.
+Scripts live in the standard Bevy `assets` directory. Loading a script means obtaining its byte representation and associated language.
+
+Evaluating a script means:
+- parsing the script body,
+- and creating or updating the resources which store script state.
 
 ## Loading 
-BMS listens to `ScriptAsset` events and reacts accordingly. In order to load a script, all you need to do is request a handle to it via the asset server and store it somewhere. 
-
-Below is an example system which loads a script called `assets/my_script.lua` and stores the handle in a local system parameter:
-
+Scripts can be loaded into memory via the `AssetServer`.
 ```rust,ignore
-fn load_script(server: Res<AssetServer>, mut handle: Local<Handle<ScriptAsset>>) {
-    let handle_ = server.load::<ScriptAsset>("my_script.lua");
-    *handle = handle_;
+let handle = asset_server.load::<ScriptAsset>("my_script.lua");
+```
+Or scripts can be created in memory. 
+```rust,ignore
+let mut script = ScriptAsset::from("x = 0".into());
+script.language = Language::Lua;
+let handle = script_assets.add(script);
+```
+This will not evaluate any code yet. 
+
+## Evaluating
+A script does not participate in any callbacks until it is evaluated, to evaluate a script you must first attach it to an entity, or to a static script entry.
+
+To evaluate a script, add it to a `ScriptComponent` or to `StaticScripts`.
+### Load File via `AssetServer`
+```rust
+# extern crate bevy;
+# extern crate bevy_mod_scripting;
+# use bevy::prelude::*;
+# use bevy_mod_scripting::prelude::*;
+
+fn load_script(asset_server: Res<AssetServer>, mut commands: Commands) {
+    let handle = asset_server.load::<ScriptAsset>("my_script.lua");
+    commands.spawn(ScriptComponent(vec![handle]));
+}
+```
+### Create `ScriptAsset` and Add It
+```rust
+# extern crate bevy;
+# extern crate bevy_mod_scripting;
+# use bevy::{asset::Assets, prelude::*};
+# use bevy_mod_scripting::prelude::*;
+
+fn add_script(mut script_assets: ResMut<Assets<ScriptAsset>>, mut commands: Commands) {
+    let content: String = "x = 0".into();
+    let mut script = ScriptAsset::from(content);
+    script.language = Language::Lua;
+    let handle = script_assets.add(script);
+    commands.spawn(ScriptComponent(vec![handle]));
 }
 ```
 
-In practice you will likely store this handle in a resource or component, when your load all the scripts necessary for your application.
+## Unloading
+When you no longer need a script asset you can freely unload it, but the script attachment will persist.
+In order to trigger the `on_script_unloaded` etc. callbacks, you need to remove the script from the `ScriptComponent` or `StaticScripts`.
 
-## Unloading 
-Scripts are automatically unloaded when the asset is dropped. This means that if you have a handle to a script and it goes out of scope, the script will be unloaded.
-
-
-This will delete references to the script and remove any internal handles to the asset. You will also need to clean up any handles to the asset you hold in your application in order for the asset to be unloaded.
+When that happens a corresponding `ScriptEvent::Detached` will be dispatched, and then handled by a `DeleteScript` command. Once the last script in a context is removed, the context itself will also be removed.
 
 ## Hot-loading scripts
-To enable hot-loading of assets, you need to enable the necessary bevy features as normal [see the bevy cheatbook for instructions](https://bevy-cheatbook.github.io/assets/hot-reload.html).
+To enable hot-loading of assets, you need to enable the necessary Bevy features as normal [see the bevy cheatbook for instructions](https://bevy-cheatbook.github.io/assets/hot-reload.html).
 
 Assuming that hot-reloading is enabled for your app, any changes to script assets will automatically be picked up and the scripts re-loaded.
 
@@ -35,18 +67,25 @@ Normally the set of supported extensions is pre-decided by each language plugin.
 
 I.e. Lua supports ".lua" extensions and Rhai supports ".rhai" extensions.
 
-Scripts are mapped to the corresponding language plugin based on these and so it's important to use them correctly.
+Scripts are mapped to the corresponding language plugin based on these and so it is important to use them correctly.
 
-If you would like to add more extensions you need to populate them via `app.add_supported_script_extensions`.
+If you would like to add more extensions, you need to populate them via `app.add_supported_script_extensions`.
+```rust,ignore
+    app.add_supported_script_extensions(&[".pua"], Language::Lua);
+```
 
 ## Advanced
-Normally not necessary, but knowing these exist could be useful for more advanced use cases.
+Normally not necessary but knowing these exist could be useful for more advanced use cases.
 
 ### Manually (re)loading scripts
 In order to manually re-load or load a script you can issue the `CreateOrUpdateScript` command:
 
 ```rust,ignore
-CreateOrUpdateScript::<LuaScriptingPlugin>::new("my_script.lua".into(), "print(\"hello world from new script body\")".into(), asset_handle)
+# use bevy::prelude::*;
+# use bevy_mod_scripting::prelude::*;
+let create_or_update = CreateOrUpdateScript::<LuaScriptingPlugin>::new(script_handle)
+    .with_content("print(\"hello world from new script body\")");
+commands.queue(create_or_update);
 ```
 
 replace `LuaScriptingPlugin` with the scripting plugin you are using.
@@ -55,10 +94,12 @@ replace `LuaScriptingPlugin` with the scripting plugin you are using.
 In order to delete a previously loaded script, you will need to issue a `DeleteScript` command like so:
 
 ```rust,ignore
-DeleteScript::<LuaScriptingPlugin>::new("my_script.lua".into())
+commands.queue(DeleteScript::<LuaScriptingPlugin>::new(script_handle));
 ```
 
-replace `LuaScriptingPlugin` with the scripting plugin you are using.
+Replace `LuaScriptingPlugin` with the scripting plugin you are using.
 
 ### Loading/Unloading timeframe
-Scripts asset events are processed within the same frame they are issued. This means the moment an asset is loaded, it should be loaded and ready to use in the `Update` schedule. Similarly, the moment an asset is deleted, it should be unloaded and no longer usable in the `Update` schedule.
+
+Script asset changes are processed together with bevy asset systems, in the `Last` schedule.
+These are converted to `ScriptEvent`'s which are handled right after via the `ScriptingSystemSet::ScriptingCommandDispatch` system set.
