@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.1.10-mdbook_lad_preprocessor...v0.2.0-mdbook_lad_preprocessor) - 2025-08-14
+
+### Added
+
+- [**breaking**] Use the Handles, Luke! ([#427](https://github.com/makspll/bevy_mod_scripting/pull/427)) ([#444](https://github.com/makspll/bevy_mod_scripting/pull/444))
+
 ## [0.1.7](https://github.com/makspll/bevy_mod_scripting/compare/v0.1.6-mdbook_lad_preprocessor...v0.1.7-mdbook_lad_preprocessor) - 2025-04-07
 
 ### Added
