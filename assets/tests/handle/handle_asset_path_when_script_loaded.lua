@@ -1,6 +1,10 @@
 local expected_asset_path = "tests/handle/handle_asset_path_when_script_loaded.lua"
 function normalize_path(path)
-    return string.gsub(tostring(path), "\\", "/")
+    if path then
+        return string.gsub(path, "\\", "/")
+    else
+        return nil
+    end
 end
 
 local normalized_gotten_asset_path = normalize_path(script_asset:asset_path())
