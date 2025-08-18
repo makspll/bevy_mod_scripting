@@ -3,10 +3,10 @@
 use crate::{
     bindings::{ThreadWorldContainer, WorldContainer, WorldGuard},
     error::{InteropError, ScriptError},
-    script::ScriptId,
+    script::ScriptAttachment,
     IntoScriptPluginParams,
 };
-use bevy::ecs::{entity::Entity, system::Resource};
+use bevy::prelude::Resource;
 
 /// A trait that all script contexts must implement.
 ///
@@ -17,19 +17,20 @@ impl<T: 'static + Send> Context for T {}
 
 /// Initializer run once after creating a context but before executing it for the first time as well as after re-loading the script
 pub type ContextInitializer<P> =
-    fn(&str, &mut <P as IntoScriptPluginParams>::C) -> Result<(), ScriptError>;
+    fn(&ScriptAttachment, &mut <P as IntoScriptPluginParams>::C) -> Result<(), ScriptError>;
 
 /// Initializer run every time before executing or loading/re-loading a script
 pub type ContextPreHandlingInitializer<P> =
-    fn(&str, Entity, &mut <P as IntoScriptPluginParams>::C) -> Result<(), ScriptError>;
+    fn(&ScriptAttachment, &mut <P as IntoScriptPluginParams>::C) -> Result<(), ScriptError>;
 
 /// Settings concerning the creation and assignment of script contexts as well as their initialization.
 #[derive(Resource)]
 pub struct ContextLoadingSettings<P: IntoScriptPluginParams> {
+    /// Whether to emit responses from core script_callbacks like `on_script_loaded` or `on_script_unloaded`.
+    /// By default, this is `false` and responses are not emitted.
+    pub emit_responses: bool,
     /// Defines the strategy used to load and reload contexts
     pub loader: ContextBuilder<P>,
-    /// Defines the strategy used to assign contexts to scripts
-    pub assignment_strategy: ContextAssignmentStrategy,
     /// Initializers run once after creating a context but before executing it for the first time
     pub context_initializers: Vec<ContextInitializer<P>>,
     /// Initializers run every time before executing or loading a script
@@ -39,8 +40,8 @@ pub struct ContextLoadingSettings<P: IntoScriptPluginParams> {
 impl<P: IntoScriptPluginParams> Default for ContextLoadingSettings<P> {
     fn default() -> Self {
         Self {
+            emit_responses: false,
             loader: ContextBuilder::default(),
-            assignment_strategy: Default::default(),
             context_initializers: Default::default(),
             context_pre_handling_initializers: Default::default(),
         }
@@ -50,8 +51,8 @@ impl<P: IntoScriptPluginParams> Default for ContextLoadingSettings<P> {
 impl<T: IntoScriptPluginParams> Clone for ContextLoadingSettings<T> {
     fn clone(&self) -> Self {
         Self {
+            emit_responses: self.emit_responses,
             loader: self.loader.clone(),
-            assignment_strategy: self.assignment_strategy,
             context_initializers: self.context_initializers.clone(),
             context_pre_handling_initializers: self.context_pre_handling_initializers.clone(),
         }
@@ -59,7 +60,7 @@ impl<T: IntoScriptPluginParams> Clone for ContextLoadingSettings<T> {
 }
 /// A strategy for loading contexts
 pub type ContextLoadFn<P> = fn(
-    script_id: &ScriptId,
+    attachment: &ScriptAttachment,
     content: &[u8],
     context_initializers: &[ContextInitializer<P>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
@@ -68,7 +69,7 @@ pub type ContextLoadFn<P> = fn(
 
 /// A strategy for reloading contexts
 pub type ContextReloadFn<P> = fn(
-    script_id: &ScriptId,
+    attachment: &ScriptAttachment,
     content: &[u8],
     previous_context: &mut <P as IntoScriptPluginParams>::C,
     context_initializers: &[ContextInitializer<P>],
@@ -99,7 +100,7 @@ impl<P: IntoScriptPluginParams> ContextBuilder<P> {
     /// load a context
     pub fn load(
         loader: ContextLoadFn<P>,
-        script: &ScriptId,
+        attachment: &ScriptAttachment,
         content: &[u8],
         context_initializers: &[ContextInitializer<P>],
         pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
@@ -109,7 +110,7 @@ impl<P: IntoScriptPluginParams> ContextBuilder<P> {
         WorldGuard::with_existing_static_guard(world.clone(), |world| {
             ThreadWorldContainer.set_world(world)?;
             (loader)(
-                script,
+                attachment,
                 content,
                 context_initializers,
                 pre_handling_initializers,
@@ -121,7 +122,7 @@ impl<P: IntoScriptPluginParams> ContextBuilder<P> {
     /// reload a context
     pub fn reload(
         reloader: ContextReloadFn<P>,
-        script: &ScriptId,
+        attachment: &ScriptAttachment,
         content: &[u8],
         previous_context: &mut P::C,
         context_initializers: &[ContextInitializer<P>],
@@ -132,7 +133,7 @@ impl<P: IntoScriptPluginParams> ContextBuilder<P> {
         WorldGuard::with_existing_static_guard(world, |world| {
             ThreadWorldContainer.set_world(world)?;
             (reloader)(
-                script,
+                attachment,
                 content,
                 previous_context,
                 context_initializers,
@@ -150,14 +151,4 @@ impl<P: IntoScriptPluginParams> Clone for ContextBuilder<P> {
             reload: self.reload,
         }
     }
-}
-
-/// The strategy used in assigning contexts to scripts
-#[derive(Default, Clone, Copy)]
-pub enum ContextAssignmentStrategy {
-    /// Assign a new context to each script
-    #[default]
-    Individual,
-    /// Share contexts with all other scripts
-    Global,
 }

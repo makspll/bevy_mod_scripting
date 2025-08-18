@@ -1,0 +1,19 @@
+SetCurrentLanguage language="@this_script_language"
+InstallPlugin
+SetupHandler OnTest=null, Update=null
+SetupHandler OnTestPostUpdate=null, PostUpdate=null
+SetupHandler Last=null, OnTestLast=null
+FinalizeApp
+
+LoadScriptAs as_name="@this_script", path="@this_script"
+WaitForScriptLoaded name="@this_script"
+AttachStaticScript script="@this_script"
+RunUpdateOnce
+
+EmitScriptCallbackEvent emit_response=true, label="OnTest", language=null, recipients="StaticScript", script="@this_script", string_value="arg1" 
+RunUpdateOnce
+AssertCallbackSuccess attachment="StaticScript", label="OnTest", script="@this_script", expect_string_value="got: arg1"
+
+EmitScriptCallbackEvent label="OnTest", language=null, recipients="StaticScript", script="@this_script", string_value="arg1" 
+RunUpdateOnce
+AssertNoCallbackResponsesEmitted

@@ -1,0 +1,41 @@
+// #main_script multi_lang.lua
+SetCurrentLanguage language="Lua"
+InstallPlugin emit_responses=false
+SetupHandler OnTest=null, Update=null
+
+SetCurrentLanguage language="Rhai"
+InstallPlugin emit_responses=false
+SetupHandler OnTest=null, Update=null
+FinalizeApp
+
+// load lua script
+SetCurrentLanguage language="Lua"
+LoadScriptAs as_name="script_lua", path="multi_lang.lua"
+WaitForScriptLoaded name="script_lua"
+AttachStaticScript script="script_lua"
+
+// load rhai script
+SetCurrentLanguage language="Rhai"
+LoadScriptAs as_name="script_rhai", path="multi_lang.rhai"
+WaitForScriptLoaded name="script_rhai"
+AttachStaticScript script="script_rhai"
+
+// expect no responses
+RunUpdateOnce
+AssertNoCallbackResponsesEmitted
+
+// emit callbacks
+EmitScriptCallbackEvent emit_response=true, label="OnTest", language="Lua", recipients="AllScripts", script="script_lua"
+RunUpdateOnce
+AssertCallbackSuccess attachment="StaticScript", label="OnTest", language="Lua", script="script_lua", expect_string_value="Hi from Lua!"
+AssertNoCallbackResponsesEmitted
+
+EmitScriptCallbackEvent emit_response=true, label="OnTest", language="Rhai", recipients="AllScripts", script="script_rhai"
+RunUpdateOnce
+AssertCallbackSuccess attachment="StaticScript", label="OnTest", language="Rhai", script="script_rhai", expect_string_value="Hi from Rhai!"
+AssertNoCallbackResponsesEmitted
+
+EmitScriptCallbackEvent emit_response=true, label="OnTest", recipients="AllScripts", script="script_lua", expect_string_value="Hi from Lua!"
+RunUpdateOnce
+AssertCallbackSuccess attachment="StaticScript", label="OnTest", language="Lua", script="script_lua"
+AssertCallbackSuccess attachment="StaticScript", label="OnTest", language="Rhai", script="script_rhai"

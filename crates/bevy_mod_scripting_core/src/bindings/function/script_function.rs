@@ -10,8 +10,8 @@ use crate::{
     error::InteropError,
     ScriptValue,
 };
+use bevy::platform::collections::HashMap;
 use bevy::prelude::{Reflect, Resource};
-use bevy::utils::hashbrown::HashMap;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::borrow::Cow;
 use std::collections::VecDeque;
@@ -253,12 +253,12 @@ pub struct ScriptFunctionRegistryArc(pub Arc<RwLock<ScriptFunctionRegistry>>);
 #[profiling::all_functions]
 impl ScriptFunctionRegistryArc {
     /// claim a read lock on the registry
-    pub fn read(&self) -> RwLockReadGuard<ScriptFunctionRegistry> {
+    pub fn read(&self) -> RwLockReadGuard<'_, ScriptFunctionRegistry> {
         self.0.read()
     }
 
     /// claim a write lock on the registry
-    pub fn write(&mut self) -> RwLockWriteGuard<ScriptFunctionRegistry> {
+    pub fn write(&mut self) -> RwLockWriteGuard<'_, ScriptFunctionRegistry> {
         self.0.write()
     }
 }
@@ -622,13 +622,13 @@ macro_rules! impl_script_function {
     };
 }
 
-bevy::utils::all_tuples!(impl_script_function, 0, 13, T);
+variadics_please::all_tuples!(impl_script_function, 0, 13, T);
 
 #[cfg(test)]
 mod test {
-    use super::*;
+	use super::*;
 
-    fn with_local_world<F: Fn()>(f: F) {
+	fn with_local_world<F: Fn()>(f: F) {
         let mut world = bevy::prelude::World::default();
         WorldGuard::with_static_guard(&mut world, |world| {
             ThreadWorldContainer.set_world(world).unwrap();

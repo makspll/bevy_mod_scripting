@@ -6,10 +6,10 @@ use super::{
     WorldGuard,
 };
 use crate::{
-    docgen::{into_through_type_info, typed_through::ThroughTypeInfo},
+    docgen::{into_through_type_info, typed_through::ThroughTypeInfo, TypedThrough},
     error::InteropError,
 };
-use bevy::{ecs::system::Resource, reflect::Typed, utils::hashbrown::HashMap};
+use bevy::{platform::collections::HashMap, prelude::Resource, reflect::Typed};
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::{any::TypeId, borrow::Cow, sync::Arc};
 
@@ -24,12 +24,12 @@ pub struct AppScriptGlobalsRegistry(Arc<RwLock<ScriptGlobalsRegistry>>);
 #[profiling::all_functions]
 impl AppScriptGlobalsRegistry {
     /// Returns a reference to the inner [`ScriptGlobalsRegistry`].
-    pub fn read(&self) -> RwLockReadGuard<ScriptGlobalsRegistry> {
+    pub fn read(&self) -> RwLockReadGuard<'_, ScriptGlobalsRegistry> {
         self.0.read()
     }
 
     /// Returns a mutable reference to the inner [`ScriptGlobalsRegistry`].
-    pub fn write(&self) -> RwLockWriteGuard<ScriptGlobalsRegistry> {
+    pub fn write(&self) -> RwLockWriteGuard<'_, ScriptGlobalsRegistry> {
         self.0.write()
     }
 }
@@ -152,6 +152,22 @@ impl ScriptGlobalsRegistry {
                 documentation: Some(documentation.into()),
                 type_id: TypeId::of::<T>(),
                 type_information: None,
+            },
+        );
+    }
+
+    /// Typed equivalent to [`Self::register_dummy`].
+    pub fn register_dummy_typed<T: 'static + TypedThrough>(
+        &mut self,
+        name: impl Into<Cow<'static, str>>,
+        documentation: impl Into<Cow<'static, str>>,
+    ) {
+        self.dummies.insert(
+            name.into(),
+            ScriptGlobalDummy {
+                documentation: Some(documentation.into()),
+                type_id: TypeId::of::<T>(),
+                type_information: Some(T::through_type_info()),
             },
         );
     }

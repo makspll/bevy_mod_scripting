@@ -53,11 +53,17 @@ pub(crate) fn find_trait_impls(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
         retaining
     });
 
+    let std_traits = ctxt
+        .cached_traits
+        .std_only_traits
+        .values()
+        .chain(ctxt.cached_traits.std_or_core_traits.values())
+        .collect::<Vec<_>>();
+
     log::trace!(
         "Looking for impls of the traits: [{}]",
-        ctxt.cached_traits
-            .std_source_traits
-            .values()
+        std_traits
+            .iter()
             .map(|d| tcx.def_path_str(*d))
             .collect::<Vec<_>>()
             .join(", ")
@@ -66,10 +72,10 @@ pub(crate) fn find_trait_impls(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
     for (reflect_ty_did, type_ctxt) in ctxt.reflect_types.iter_mut() {
         let mut impls = Vec::default();
 
-        for trait_did in ctxt.cached_traits.std_source_traits.values() {
-            let matching_impls = type_impl_of_trait(tcx, *trait_did, reflect_ty_did);
+        for &&trait_did in &std_traits {
+            let matching_impls = type_impl_of_trait(tcx, trait_did, reflect_ty_did);
             if !matching_impls.is_empty() {
-                impls.push((*trait_did, matching_impls));
+                impls.push((trait_did, matching_impls));
             }
         }
 

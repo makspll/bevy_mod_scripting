@@ -1,10 +1,11 @@
 //! Lua integration for the bevy_mod_scripting system.
 use bevy::{
     app::Plugin,
+    asset::Handle,
     ecs::{entity::Entity, world::World},
 };
 use bevy_mod_scripting_core::{
-    asset::Language,
+    asset::{Language, ScriptAsset},
     bindings::{
         function::namespace::Namespace, globals::AppScriptGlobalsRegistry,
         script_value::ScriptValue, ThreadWorldContainer, WorldContainer,
@@ -14,7 +15,7 @@ use bevy_mod_scripting_core::{
     event::CallbackLabel,
     reflection_extensions::PartialReflectExt,
     runtime::RuntimeSettings,
-    script::ScriptId,
+    script::{ContextPolicy, ScriptAttachment},
     IntoScriptPluginParams, ScriptingPlugin,
 };
 use bindings::{
@@ -52,7 +53,6 @@ impl Default for LuaScriptingPlugin {
     fn default() -> Self {
         LuaScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
-                context_assignment_strategy: Default::default(),
                 runtime_settings: RuntimeSettings::default(),
                 callback_handler: lua_handler,
                 context_builder: ContextBuilder::<LuaScriptingPlugin> {
@@ -72,7 +72,7 @@ impl Default for LuaScriptingPlugin {
 
                         Ok(())
                     },
-                    |_script_id, context: &mut Lua| {
+                    |_script_id, context| {
                         // set static globals
                         let world = ThreadWorldContainer.try_get_world()?;
                         let globals_registry =
@@ -115,23 +115,37 @@ impl Default for LuaScriptingPlugin {
                         Ok(())
                     },
                 ],
-                context_pre_handling_initializers: vec![|script_id, entity, context| {
+                context_pre_handling_initializers: vec![|context_key, context| {
+                    // TODO: convert these to functions
                     let world = ThreadWorldContainer.try_get_world()?;
+                    if let Some(entity) = context_key.entity() {
+                        context
+                            .globals()
+                            .set(
+                                "entity",
+                                LuaReflectReference(<Entity>::allocate(
+                                    Box::new(entity),
+                                    world.clone(),
+                                )),
+                            )
+                            .map_err(ScriptError::from_mlua_error)?;
+                    }
                     context
                         .globals()
                         .set(
-                            "entity",
-                            LuaReflectReference(<Entity>::allocate(Box::new(entity), world)),
+                            "script_asset",
+                            LuaReflectReference(<Handle<ScriptAsset>>::allocate(
+                                Box::new(context_key.script()),
+                                world,
+                            )),
                         )
                         .map_err(ScriptError::from_mlua_error)?;
-                    context
-                        .globals()
-                        .set("script_id", script_id)
-                        .map_err(ScriptError::from_mlua_error)?;
+
                     Ok(())
                 }],
-                additional_supported_extensions: &[],
                 language: Language::Lua,
+                context_policy: ContextPolicy::default(),
+                emit_responses: false,
             },
         }
     }
@@ -149,18 +163,18 @@ impl Plugin for LuaScriptingPlugin {
 
 fn load_lua_content_into_context(
     context: &mut Lua,
-    script_id: &ScriptId,
+    context_key: &ScriptAttachment,
     content: &[u8],
     initializers: &[ContextInitializer<LuaScriptingPlugin>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
 ) -> Result<(), ScriptError> {
     initializers
         .iter()
-        .try_for_each(|init| init(script_id, context))?;
+        .try_for_each(|init| init(context_key, context))?;
 
     pre_handling_initializers
         .iter()
-        .try_for_each(|init| init(script_id, Entity::from_raw(0), context))?;
+        .try_for_each(|init| init(context_key, context))?;
 
     context
         .load(content)
@@ -173,7 +187,7 @@ fn load_lua_content_into_context(
 #[profiling::function]
 /// Load a lua context from a script
 pub fn lua_context_load(
-    script_id: &ScriptId,
+    context_key: &ScriptAttachment,
     content: &[u8],
     initializers: &[ContextInitializer<LuaScriptingPlugin>],
     pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
@@ -186,7 +200,7 @@ pub fn lua_context_load(
 
     load_lua_content_into_context(
         &mut context,
-        script_id,
+        context_key,
         content,
         initializers,
         pre_handling_initializers,
@@ -197,7 +211,7 @@ pub fn lua_context_load(
 #[profiling::function]
 /// Reload a lua context from a script
 pub fn lua_context_reload(
-    script: &ScriptId,
+    context_key: &ScriptAttachment,
     content: &[u8],
     old_ctxt: &mut Lua,
     initializers: &[ContextInitializer<LuaScriptingPlugin>],
@@ -206,7 +220,7 @@ pub fn lua_context_reload(
 ) -> Result<(), ScriptError> {
     load_lua_content_into_context(
         old_ctxt,
-        script,
+        context_key,
         content,
         initializers,
         pre_handling_initializers,
@@ -219,8 +233,7 @@ pub fn lua_context_reload(
 /// The lua handler for events
 pub fn lua_handler(
     args: Vec<ScriptValue>,
-    entity: bevy::ecs::entity::Entity,
-    script_id: &ScriptId,
+    context_key: &ScriptAttachment,
     callback_label: &CallbackLabel,
     context: &mut Lua,
     pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
@@ -228,15 +241,15 @@ pub fn lua_handler(
 ) -> Result<ScriptValue, bevy_mod_scripting_core::error::ScriptError> {
     pre_handling_initializers
         .iter()
-        .try_for_each(|init| init(script_id, entity, context))?;
+        .try_for_each(|init| init(context_key, context))?;
 
     let handler: Function = match context.globals().raw_get(callback_label.as_ref()) {
         Ok(handler) => handler,
         // not subscribed to this event type
         Err(_) => {
             bevy::log::trace!(
-                "Script {} is not subscribed to callback {}",
-                script_id,
+                "Context {} is not subscribed to callback {}",
+                context_key,
                 callback_label.as_ref()
             );
             return Ok(ScriptValue::Unit);
@@ -255,6 +268,10 @@ pub fn lua_handler(
 
 #[cfg(test)]
 mod test {
+    use bevy::{
+        asset::{AssetId, AssetIndex},
+        prelude::Handle,
+    };
     use mlua::Value;
 
     use super::*;
@@ -262,15 +279,16 @@ mod test {
     #[test]
     fn test_reload_doesnt_overwrite_old_context() {
         let lua = Lua::new();
-        let script_id = ScriptId::from("asd.lua");
         let initializers = vec![];
         let pre_handling_initializers = vec![];
         let mut old_ctxt = lua.clone();
+        let handle = Handle::Weak(AssetId::from(AssetIndex::from_bits(0)));
+        let context_key = ScriptAttachment::EntityScript(Entity::from_raw(1), handle);
 
         lua_context_load(
-            &script_id,
+            &context_key,
             "function hello_world_from_first_load()
-            
+
             end"
             .as_bytes(),
             &initializers,
@@ -280,9 +298,9 @@ mod test {
         .unwrap();
 
         lua_context_reload(
-            &script_id,
+            &context_key,
             "function hello_world_from_second_load()
-            
+
             end"
             .as_bytes(),
             &mut old_ctxt,

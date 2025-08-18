@@ -1,26 +1,27 @@
-use bevy::log::tracing_subscriber::layer::SubscriberExt;
-use bevy::log::{tracing_subscriber, Level};
-use bevy::reflect::Reflect;
-use bevy::utils::tracing;
-use bevy::utils::tracing::span;
-use bevy_mod_scripting_core::bindings::{
-    FromScript, IntoScript, Mut, Ref, ReflectReference, ScriptValue, Val,
-};
-use criterion::{criterion_main, measurement::Measurement, BenchmarkGroup, Criterion};
-use criterion::{BatchSize, BenchmarkFilter};
-use regex::Regex;
-use script_integration_test_harness::test_functions::rand::Rng;
-use script_integration_test_harness::{
-    make_test_lua_plugin, make_test_rhai_plugin, perform_benchmark_with_generator,
-    run_lua_benchmark, run_plugin_script_load_benchmark, run_rhai_benchmark,
-};
-use std::collections::HashMap;
-use std::{path::PathBuf, sync::LazyLock, time::Duration};
-use test_utils::{discover_all_tests, Test};
-
 extern crate bevy_mod_scripting;
 extern crate script_integration_test_harness;
 extern crate test_utils;
+use std::{collections::HashMap, path::PathBuf, sync::LazyLock, time::Duration};
+
+use bevy::{
+    log::{
+        tracing, tracing::span, tracing_subscriber, tracing_subscriber::layer::SubscriberExt, Level,
+    },
+    reflect::Reflect,
+};
+use bevy_mod_scripting_core::bindings::{
+    FromScript, IntoScript, Mut, Ref, ReflectReference, ScriptValue, Val,
+};
+use criterion::{
+    criterion_main, measurement::Measurement, BatchSize, BenchmarkFilter, BenchmarkGroup, Criterion,
+};
+use regex::Regex;
+use script_integration_test_harness::{
+    make_test_lua_plugin, make_test_rhai_plugin, perform_benchmark_with_generator,
+    run_lua_benchmark, run_plugin_script_load_benchmark, run_rhai_benchmark,
+    test_functions::rand::Rng,
+};
+use test_utils::{discover_all_tests, Test};
 
 static ENABLE_PROFILING: LazyLock<bool> =
     LazyLock::new(|| std::env::var("ENABLE_PROFILING").is_ok());
@@ -37,7 +38,7 @@ impl BenchmarkExecutor for Test {
         // use the file path from `benchmarks` onwards using folders as groupings
         // replace file separators with `/`
         // replace _ with spaces
-        let path = self.path.to_string_lossy();
+        let path = self.script_asset_path.to_string_lossy();
         let path = path.split("benchmarks").collect::<Vec<&str>>()[1]
             .replace(std::path::MAIN_SEPARATOR, "/");
         let first_folder = path.split("/").collect::<Vec<&str>>()[1];
@@ -47,7 +48,7 @@ impl BenchmarkExecutor for Test {
     fn benchmark_name(&self) -> String {
         // use just the file stem
         let name = self
-            .path
+            .script_asset_path
             .file_stem()
             .unwrap()
             .to_string_lossy()
@@ -62,13 +63,13 @@ impl BenchmarkExecutor for Test {
     fn execute<M: Measurement>(&self, criterion: &mut BenchmarkGroup<M>) {
         match self.kind {
             test_utils::TestKind::Lua => run_lua_benchmark(
-                &self.path.to_string_lossy(),
+                &self.script_asset_path.to_string_lossy(),
                 &self.benchmark_name(),
                 criterion,
             )
             .expect("Benchmark failed"),
             test_utils::TestKind::Rhai => run_rhai_benchmark(
-                &self.path.to_string_lossy(),
+                &self.script_asset_path.to_string_lossy(),
                 &self.benchmark_name(),
                 criterion,
             )
@@ -81,7 +82,7 @@ fn script_benchmarks(criterion: &mut Criterion, filter: Option<Regex>) {
     // find manifest dir
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let tests = discover_all_tests(manifest_dir, |p| {
-        p.path.starts_with("benchmarks")
+        p.script_asset_path.starts_with("benchmarks")
             && if let Some(filter) = &filter {
                 let matching = filter.is_match(&p.benchmark_name());
                 if !matching {
@@ -107,6 +108,24 @@ fn script_benchmarks(criterion: &mut Criterion, filter: Option<Regex>) {
     for (_, tests) in grouped.iter_mut() {
         tests.sort_by_key(|a| a.benchmark_name());
     }
+
+    // debug
+    println!(
+        "{}",
+        grouped
+            .iter()
+            .map(|(k, v)| {
+                format!(
+                    "Group: {k}, Tests: {}",
+                    v.iter()
+                        .map(|t| t.benchmark_name())
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n"),
+    );
 
     for (group, tests) in grouped {
         println!("Running benchmarks for group: {group}");
@@ -248,14 +267,7 @@ fn script_load_benchmarks(criterion: &mut Criterion) {
     // lua
     let plugin = make_test_lua_plugin();
     let content = include_str!("../assets/macro_benchmarks/loading/empty.lua");
-    run_plugin_script_load_benchmark(
-        plugin,
-        "empty Lua",
-        content,
-        &mut group,
-        |rand| format!("{rand}.lua"),
-        reload_probability,
-    );
+    run_plugin_script_load_benchmark(plugin, "empty Lua", content, &mut group, reload_probability);
 
     // rhai
     let plugin = make_test_rhai_plugin();
@@ -265,7 +277,6 @@ fn script_load_benchmarks(criterion: &mut Criterion) {
         "empty Rhai",
         content,
         &mut group,
-        |rand| format!("{rand}.rhai"),
         reload_probability,
     );
 }

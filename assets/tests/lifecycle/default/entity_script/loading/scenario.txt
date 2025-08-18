@@ -1,0 +1,31 @@
+SetCurrentLanguage language="@this_script_language"
+InstallPlugin emit_responses=true
+FinalizeApp
+
+// load script a 
+LoadScriptAs as_name="script_a", path="lifecycle.lua"
+WaitForScriptLoaded name="script_a"
+SpawnEntityWithScript name="test_entity_a", script="script_a"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity_a", label="OnScriptLoaded", script="script_a", expect_string_value="loaded!"
+AssertNoCallbackResponsesEmitted
+
+// reload script_a, with the same content
+ReloadScriptFrom script="script_a", path="lifecycle.lua"
+RunUpdateOnce 
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity_a", label="OnScriptUnloaded", script="script_a", expect_string_value="unloaded!"
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity_a", label="OnScriptLoaded", script="script_a", expect_string_value="loaded!"
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity_a", label="OnScriptReloaded", script="script_a", expect_string_value="reloaded with: unloaded!"
+AssertNoCallbackResponsesEmitted
+
+// now first drop the script asset, assert that does nothing yet 
+DropScriptAsset script="script_a"
+RunUpdateOnce
+AssertNoCallbackResponsesEmitted
+
+// now despawn the entity, expect unloading
+DespawnEntity entity="test_entity_a"
+RunUpdateOnce
+AssertCallbackSuccess attachment="EntityScript", entity="test_entity_a", label="OnScriptUnloaded", script="script_a", expect_string_value="unloaded!"
+AssertNoCallbackResponsesEmitted
+AssertContextResidents attachment="EntityScript", script="script_a", entity="test_entity_a", residents_num=0

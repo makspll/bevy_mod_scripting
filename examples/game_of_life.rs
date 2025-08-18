@@ -15,22 +15,7 @@ use bevy::{
     window::{PrimaryWindow, WindowResized},
 };
 use bevy_console::{make_layer, AddConsoleCommand, ConsoleCommand, ConsoleOpen, ConsolePlugin};
-use bevy_mod_scripting::{BMSPlugin, ScriptFunctionsPlugin};
-use bevy_mod_scripting_core::{
-    asset::ScriptAsset,
-    bindings::{
-        function::namespace::{GlobalNamespace, NamespaceBuilder},
-        script_value::ScriptValue,
-        AllocatorDiagnosticPlugin, CoreScriptGlobalsPlugin,
-    },
-    callback_labels,
-    commands::AddStaticScript,
-    event::ScriptCallbackEvent,
-    handler::event_handler,
-    script::ScriptComponent,
-};
-use bevy_mod_scripting_lua::LuaScriptingPlugin;
-use bevy_mod_scripting_rhai::RhaiScriptingPlugin;
+use bevy_mod_scripting::{core::bindings::AllocatorDiagnosticPlugin, prelude::*};
 use clap::Parser;
 
 // CONSOLE SETUP
@@ -54,7 +39,10 @@ fn console_app(app: &mut App) -> &mut App {
 fn run_script_cmd(
     mut log: ConsoleCommand<GameOfLifeCommand>,
     mut commands: Commands,
-    mut loaded_scripts: ResMut<LoadedScripts>,
+    asset_server: Res<AssetServer>,
+    script_comps: Query<(Entity, &ScriptComponent)>,
+    mut static_lua_scripts: Local<Vec<ScriptId>>,
+    mut static_rhai_scripts: Local<Vec<ScriptId>>,
 ) {
     if let Some(Ok(command)) = log.take() {
         match command {
@@ -63,32 +51,61 @@ fn run_script_cmd(
                 use_static_script,
             } => {
                 // create an entity with the script component
-                bevy::log::info!(
-                    "Starting game of life spawning entity with the game_of_life.{} script",
-                    language
-                );
+                bevy::log::info!("Using game of life script game_of_life.{}", language);
 
                 let script_path = format!("scripts/game_of_life.{}", language);
                 if !use_static_script {
                     bevy::log::info!("Spawning an entity with ScriptComponent");
-                    commands.spawn(ScriptComponent::new(vec![script_path]));
+                    commands.spawn(ScriptComponent::new(vec![asset_server.load(script_path)]));
                 } else {
                     bevy::log::info!("Using static script instead of spawning an entity");
-                    commands.queue(AddStaticScript::new(script_path))
+                    let handle = asset_server.load(script_path);
+                    if language == "lua" {
+                        static_lua_scripts.push(handle.id());
+                    } else {
+                        static_rhai_scripts.push(handle.id());
+                    }
+                    commands.queue(AddStaticScript::new(handle))
                 }
             }
             GameOfLifeCommand::Stop => {
                 // we can simply drop the handle, or manually delete, I'll just drop the handle
                 bevy::log::info!("Stopping game of life by dropping the handles to all scripts");
+                for (id, script_component) in &script_comps {
+                    for script in &script_component.0 {
+                        match script
+                            .path()
+                            .and_then(|p| p.get_full_extension())
+                            .unwrap_or_default()
+                            .as_str()
+                        {
+                            "lua" => {
+                                commands
+                                    .entity(id)
+                                    .queue(DeleteScript::<LuaScriptingPlugin>::new(script.id()));
+                            }
+                            "rhai" => {
+                                #[cfg(feature = "rhai")]
+                                commands
+                                    .entity(id)
+                                    .queue(DeleteScript::<RhaiScriptingPlugin>::new(script.id()));
+                            }
+                            ext => {
+                                warn!("Can't delete script with extension {ext:?}.");
+                            }
+                        }
+                    }
+                    commands.entity(id).despawn();
+                }
 
-                // I am not mapping the handles to the script names, so I'll just clear the entire list
-                loaded_scripts.0.clear();
+                for script in static_lua_scripts.drain(..) {
+                    commands.queue(DeleteScript::<LuaScriptingPlugin>::new(script));
+                }
 
-                // you could also do
-                // commands.queue(DeleteScript::<LuaScriptingPlugin>::new(
-                //     "scripts/game_of_life.lua".into(),
-                // ));
-                // as this will retain your script asset and handle
+                #[cfg(feature = "rhai")]
+                for script in static_rhai_scripts.drain(..) {
+                    commands.queue(DeleteScript::<RhaiScriptingPlugin>::new(script));
+                }
             }
         }
     }
@@ -115,12 +132,12 @@ pub enum GameOfLifeCommand {
 // ------------- GAME OF LIFE
 fn game_of_life_app(app: &mut App) -> &mut App {
     app.insert_resource(Time::<Fixed>::from_seconds(UPDATE_FREQUENCY.into()))
+        // .add_plugins(BMSPlugin.set(LuaScriptingPlugin::default().enable_context_sharing()))
         .add_plugins(BMSPlugin)
         .register_type::<LifeState>()
         .register_type::<Settings>()
         .init_resource::<Settings>()
-        .init_resource::<LoadedScripts>()
-        .add_systems(Startup, (init_game_of_life_state, load_script_assets))
+        .add_systems(Startup, init_game_of_life_state)
         .add_systems(Update, (sync_window_size, send_on_click))
         .add_systems(
             FixedUpdate,
@@ -129,8 +146,10 @@ fn game_of_life_app(app: &mut App) -> &mut App {
                 send_on_update.after(update_rendered_state),
                 (
                     event_handler::<OnUpdate, LuaScriptingPlugin>,
+                    #[cfg(feature = "rhai")]
                     event_handler::<OnUpdate, RhaiScriptingPlugin>,
                     event_handler::<OnClick, LuaScriptingPlugin>,
+                    #[cfg(feature = "rhai")]
                     event_handler::<OnClick, RhaiScriptingPlugin>,
                 )
                     .after(send_on_update),
@@ -144,9 +163,6 @@ fn game_of_life_app(app: &mut App) -> &mut App {
 pub struct LifeState {
     pub cells: Vec<u8>,
 }
-
-#[derive(Debug, Resource, Default)]
-pub struct LoadedScripts(pub Vec<Handle<ScriptAsset>>);
 
 #[derive(Reflect, Resource)]
 #[reflect(Resource)]
@@ -168,17 +184,6 @@ impl Default for Settings {
             display_grid_dimensions: (0, 0),
         }
     }
-}
-
-/// Prepares any scripts by loading them and storing the handles.
-pub fn load_script_assets(
-    asset_server: Res<AssetServer>,
-    mut loaded_scripts: ResMut<LoadedScripts>,
-) {
-    loaded_scripts.0.extend(vec![
-        asset_server.load("scripts/game_of_life.lua"),
-        asset_server.load("scripts/game_of_life.rhai"),
-    ]);
 }
 
 pub fn register_script_functions(app: &mut App) -> &mut App {
@@ -280,7 +285,7 @@ pub fn update_rendered_state(
         let old_rendered_state = assets
             .get_mut(&old_rendered_state.image)
             .expect("World is not setup correctly");
-        old_rendered_state.data = new_state.cells.clone();
+        old_rendered_state.data = Some(new_state.cells.clone());
     }
 }
 
@@ -291,7 +296,7 @@ callback_labels!(
 
 /// Sends events allowing scripts to drive update logic
 pub fn send_on_update(mut events: EventWriter<ScriptCallbackEvent>) {
-    events.send(ScriptCallbackEvent::new_for_all(OnUpdate, vec![]));
+    events.send(ScriptCallbackEvent::new_for_all_scripts(OnUpdate, vec![]));
 }
 
 pub fn send_on_click(
@@ -301,10 +306,10 @@ pub fn send_on_click(
 ) {
     if buttons.just_pressed(MouseButton::Left) {
         let window = q_windows.single();
-        let pos = window.cursor_position().unwrap_or_default();
+        let pos = window.unwrap().cursor_position().unwrap_or_default();
         let x = pos.x as u32;
         let y = pos.y as u32;
-        events.send(ScriptCallbackEvent::new_for_all(
+        events.send(ScriptCallbackEvent::new_for_all_scripts(
             OnClick,
             vec![
                 ScriptValue::Integer(x as i64),

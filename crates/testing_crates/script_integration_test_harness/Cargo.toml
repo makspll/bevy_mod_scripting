@@ -6,7 +6,11 @@ publish = false
 
 [features]
 default = ["lua", "rhai"]
-lua = ["bevy_mod_scripting_lua", "bevy_mod_scripting_functions/lua_bindings"]
+lua = [
+    "bevy_mod_scripting_lua",
+    "bevy_mod_scripting_functions/lua_bindings",
+    "bevy_mod_scripting_lua/lua54",
+]
 rhai = ["bevy_mod_scripting_rhai", "bevy_mod_scripting_functions/rhai_bindings"]
 
 [dependencies]
@@ -23,3 +27,7 @@ bevy_mod_scripting_rhai = { path = "../../languages/bevy_mod_scripting_rhai", op
 criterion = "0.5"
 rand = "0.9"
 rand_chacha = "0.9"
+uuid = "1.11"
+anyhow = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"

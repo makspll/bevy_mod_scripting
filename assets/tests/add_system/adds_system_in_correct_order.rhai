@@ -3,16 +3,17 @@ let runs = [];
 fn on_test() {
     let post_update_schedule = world.get_schedule_by_name.call("PostUpdate");
     let test_system = post_update_schedule.get_system_by_name.call("on_test_post_update");
+    let script_attachment = ScriptAttachment.new_entity_script.call(entity, script_asset);
 
-    let builder_after = system_builder.call("custom_system_after", script_id)
+    let builder_after = system_builder.call("custom_system_after", script_attachment)
         .after.call(test_system);
     let system_after = world.add_system.call(post_update_schedule, builder_after);
     
-    let builder_before = system_builder.call("custom_system_before", script_id)
+    let builder_before = system_builder.call("custom_system_before", script_attachment)
         .before.call(test_system);
     let system_before = world.add_system.call(post_update_schedule, builder_before);
 
-    let builder_between = system_builder.call("custom_system_between", script_id)
+    let builder_between = system_builder.call("custom_system_between", script_attachment)
         .after.call(test_system)
         .before.call(system_after);
 
