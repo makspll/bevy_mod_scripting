@@ -224,7 +224,7 @@ hello_world2("hi from global!");
 <p>Note the <code>new_unregistered</code> call instead of <code>new</code>, this is because <code>GlobalNamespace</code> is not a <code>Reflect</code> type, and the <code>new</code> call also automatically registers the type in the reflection registry.</p>
 <h2 id="macros"><a class="header" href="#macros">Macros</a></h2>
 <p>The above is a bit tedious, so instead you can use the <code>script_bindings</code> macro, which applies to impl blocks like so:</p>
-<pre><code class="language-rust ignore">#[script_bindings("test_fn")]
+<pre><code class="language-rust ignore">#[script_bindings(name = "test_fn")]
 impl TestStruct {
     /// My docs !!
     /// 
