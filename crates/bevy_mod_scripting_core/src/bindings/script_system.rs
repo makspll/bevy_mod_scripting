@@ -15,7 +15,7 @@ use crate::{
     error::{InteropError, ScriptError},
     event::CallbackLabel,
     extractors::get_all_access_ids,
-    handler::CallbackSettings,
+    handler::ScriptingHandler,
     runtime::RuntimeContainer,
     script::{ScriptAttachment, ScriptContext},
     IntoScriptPluginParams,
@@ -200,7 +200,6 @@ impl ScriptSystemBuilder {
 
 struct DynamicHandlerContext<'w, P: IntoScriptPluginParams> {
     script_context: &'w ScriptContext<P>,
-    callback_settings: &'w CallbackSettings<P>,
     context_loading_settings: &'w ContextLoadingSettings<P>,
     runtime_container: &'w RuntimeContainer<P>,
 }
@@ -215,9 +214,6 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
         let mut access = FilteredAccess::<ComponentId>::matches_nothing();
         // let scripts_res_id = world
         //     .query::<&Script<P>>();
-        let callback_settings_res_id = world
-            .resource_id::<CallbackSettings<P>>()
-            .expect("CallbackSettings resource not found");
         let context_loading_settings_res_id = world
             .resource_id::<ContextLoadingSettings<P>>()
             .expect("ContextLoadingSettings resource not found");
@@ -225,7 +221,6 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
             .resource_id::<RuntimeContainer<P>>()
             .expect("RuntimeContainer resource not found");
 
-        access.add_resource_read(callback_settings_res_id);
         access.add_resource_read(context_loading_settings_res_id);
         access.add_resource_read(runtime_container_res_id);
 
@@ -240,9 +235,6 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
         unsafe {
             Self {
                 script_context: system.get_resource().expect("Scripts resource not found"),
-                callback_settings: system
-                    .get_resource()
-                    .expect("CallbackSettings resource not found"),
                 context_loading_settings: system
                     .get_resource()
                     .expect("ContextLoadingSettings resource not found"),
@@ -268,7 +260,6 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
         };
 
         // call the script
-        let handler = self.callback_settings.callback_handler;
         let pre_handling_initializers = &self
             .context_loading_settings
             .context_pre_handling_initializers;
@@ -276,8 +267,7 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
 
         let mut context = context.lock();
 
-        CallbackSettings::<P>::call(
-            handler,
+        P::handle(
             payload,
             context_key,
             label,

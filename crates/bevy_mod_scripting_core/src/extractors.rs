@@ -3,6 +3,7 @@
 //! These are designed to be used to pipe inputs into other systems which require them, while handling any configuration erorrs nicely.
 #![allow(deprecated)]
 use crate::bindings::pretty_print::DisplayWithWorld;
+use crate::handler::ScriptingHandler;
 use crate::{
     bindings::{
         access_map::ReflectAccessId, script_value::ScriptValue, WorldAccessGuard, WorldGuard,
@@ -10,7 +11,6 @@ use crate::{
     context::ContextLoadingSettings,
     error::{InteropError, ScriptError},
     event::{CallbackLabel, IntoCallbackLabel},
-    handler::CallbackSettings,
     runtime::RuntimeContainer,
     script::{ScriptAttachment, ScriptContext, StaticScripts},
     IntoScriptPluginParams,
@@ -122,8 +122,6 @@ unsafe impl<T: Resource + Default> SystemParam for ResScope<'_, T> {
 
 /// Context for systems which handle events for scripts
 pub struct HandlerContext<P: IntoScriptPluginParams> {
-    /// Settings for callbacks
-    pub(crate) callback_settings: CallbackSettings<P>,
     /// Settings for loading contexts
     pub(crate) context_loading_settings: ContextLoadingSettings<P>,
     /// The runtime container
@@ -139,7 +137,6 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
     /// Every call to this function must be paired with a call to [`Self::release`].
     pub fn yoink(world: &mut World) -> Self {
         Self {
-            callback_settings: world.remove_resource().unwrap_or_default(),
             context_loading_settings: world.remove_resource().unwrap_or_default(),
             runtime_container: world.remove_resource().unwrap_or_default(),
             static_scripts: world.remove_resource().unwrap_or_default(),
@@ -151,7 +148,6 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
     /// Only call this if you have previously yoinked the handler context from the world.
     pub fn release(self, world: &mut World) {
         // insert the handler context back into the world
-        world.insert_resource(self.callback_settings);
         world.insert_resource(self.context_loading_settings);
         world.insert_resource(self.runtime_container);
         world.insert_resource(self.static_scripts);
@@ -165,22 +161,15 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
     pub fn destructure(
         &mut self,
     ) -> (
-        &mut CallbackSettings<P>,
         &mut ContextLoadingSettings<P>,
         &mut RuntimeContainer<P>,
         &mut StaticScripts,
     ) {
         (
-            &mut self.callback_settings,
             &mut self.context_loading_settings,
             &mut self.runtime_container,
             &mut self.static_scripts,
         )
-    }
-
-    /// Get the callback settings
-    pub fn callback_settings(&mut self) -> &mut CallbackSettings<P> {
-        &mut self.callback_settings
     }
 
     /// Get the context loading settings
@@ -226,7 +215,6 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
         };
 
         // call the script
-        let handler = self.callback_settings.callback_handler;
         let pre_handling_initializers = &self
             .context_loading_settings
             .context_pre_handling_initializers;
@@ -234,8 +222,7 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
 
         let mut context = context.lock();
 
-        CallbackSettings::<P>::call(
-            handler,
+        P::handle(
             payload,
             context_key,
             label,

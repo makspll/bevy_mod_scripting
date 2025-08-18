@@ -51,6 +51,10 @@ impl IntoScriptPluginParams for RhaiScriptingPlugin {
     fn build_runtime() -> Self::R {
         Engine::new().into()
     }
+
+    fn handler() -> bevy_mod_scripting_core::handler::HandlerFn<Self> {
+        rhai_callback_handler
+    }
 }
 
 /// The rhai scripting plugin. Used to add rhai scripting to a bevy app within the context of the BMS framework.
@@ -79,7 +83,6 @@ impl Default for RhaiScriptingPlugin {
                         Ok(())
                     }],
                 },
-                callback_handler: rhai_callback_handler,
                 context_builder: ContextBuilder {
                     load: rhai_context_load,
                     reload: rhai_context_reload,
