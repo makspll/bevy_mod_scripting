@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.1](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_functions-v0.15.0...bevy_mod_scripting_functions-v0.15.1) - 2025-08-18
+
+### Changed
+
+- Remove asset_path field from ScriptAsset. ([#450](https://github.com/makspll/bevy_mod_scripting/pull/450))
+
 ## [0.15.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_functions-v0.14.0...bevy_mod_scripting_functions-v0.15.0) - 2025-08-14
 
 ### Added
