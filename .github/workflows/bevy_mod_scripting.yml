@@ -83,10 +83,7 @@ jobs:
       - name: Check if fork
         id: check-fork
         run: | 
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
-            echo "Push to main, not a fork."
-            echo "is_fork=false" >> $GITHUB_OUTPUT
-          elif [ "${{ github.repository }}" != "${{ github.event.pull_request.head.repo.full_name }}" ]; then
+          if [ "${{ github.event_name }}" == "pull_request" && "${{ github.repository }}" != "${{ github.event.pull_request.head.repo.full_name }}" ]; then
             echo "This is a forked repository."
             echo "is_fork=true" >> $GITHUB_OUTPUT
           else
