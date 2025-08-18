@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.1](https://github.com/makspll/bevy_mod_scripting/compare/v0.15.0...v0.15.1) - 2025-08-18
+
+### Changed
+
+- Remove asset_path field from ScriptAsset. ([#450](https://github.com/makspll/bevy_mod_scripting/pull/450))
+
+### Fixed
+
+- "luau" extension regression ([#453](https://github.com/makspll/bevy_mod_scripting/pull/453))
+
 ## [0.15.0](https://github.com/makspll/bevy_mod_scripting/compare/v0.14.0...v0.15.0) - 2025-08-14
 
 ### Added
