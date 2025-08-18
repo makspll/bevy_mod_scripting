@@ -407,6 +407,7 @@ impl Default for LanguageExtensions {
         LanguageExtensions(
             [
                 ("lua", Language::Lua),
+                ("luau", Language::Lua),
                 ("rhai", Language::Rhai),
                 ("rn", Language::Rune),
             ]
