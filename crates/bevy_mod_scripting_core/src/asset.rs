@@ -12,7 +12,7 @@ use crate::{
 };
 use bevy::{
     app::{App, Last},
-    asset::{Asset, AssetEvent, AssetLoader, AssetPath, Assets, LoadState},
+    asset::{Asset, AssetEvent, AssetLoader, Assets, LoadState},
     log::{error, trace, warn, warn_once},
     prelude::{
         AssetServer, Commands, Entity, EventReader, EventWriter, IntoScheduleConfigs, Local, Query,
@@ -59,8 +59,6 @@ pub struct ScriptAsset {
     pub content: Box<[u8]>, // Any chance a Cow<'static, ?> could work here?
     /// The language of the script
     pub language: Language,
-    /// The asset path of the script.
-    pub asset_path: AssetPath<'static>,
 }
 
 impl From<String> for ScriptAsset {
@@ -68,7 +66,6 @@ impl From<String> for ScriptAsset {
         ScriptAsset {
             content: s.into_bytes().into_boxed_slice(),
             language: Language::default(),
-            asset_path: AssetPath::default(),
         }
     }
 }
@@ -168,7 +165,6 @@ impl AssetLoader for ScriptAssetLoader {
         let asset = ScriptAsset {
             content: content.into_boxed_slice(),
             language,
-            asset_path: load_context.asset_path().clone(),
         };
         Ok(asset)
     }

@@ -1257,15 +1257,14 @@ impl Handle<ScriptAsset> {
     /// * `path`: The asset path of the script asset.
     fn asset_path(ctxt: FunctionCallContext, handle: Ref<Handle<ScriptAsset>>) -> Option<String> {
         profiling::function_scope!("path");
-        ctxt.world().ok().and_then(|w| {
-            w.with_resource(|assets: &Assets<ScriptAsset>| {
-                // debug
-                assets
-                    .get(&*handle)
-                    .map(|asset| asset.asset_path.to_string())
+        handle.path().map(|p| p.to_string()).or_else(|| {
+            ctxt.world().ok().and_then(|w| {
+                w.with_resource(|asset_server: &AssetServer| {
+                    asset_server.get_path(&*handle).map(|p| p.to_string())
+                })
+                .ok()
+                .flatten()
             })
-            .ok()
-            .flatten()
         })
     }
 }

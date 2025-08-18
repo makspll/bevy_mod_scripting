@@ -700,7 +700,6 @@ impl ScenarioStep {
                     let boxed_byte_arr = content.into_bytes().into_boxed_slice();
                     *existing = ScriptAsset {
                         content: boxed_byte_arr,
-                        asset_path: path.into(),
                         language: existing.language.clone(),
                     };
                 } else {
