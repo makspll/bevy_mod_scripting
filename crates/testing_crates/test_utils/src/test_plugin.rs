@@ -39,6 +39,26 @@ macro_rules! make_test_plugin {
                     Ok($ident::bindings::script_value::ScriptValue::Unit)
                 }) as $ident::HandlerFn<Self>
             }
+
+            fn context_loader() -> $ident::ContextLoadFn<Self> {
+                (|attachment, content, context_initializers, pre_handling_initializers, runtime| {
+                    Ok(TestContext {
+                        invocations: vec![],
+                    })
+                })
+            }
+
+            fn context_reloader() -> $ident::ContextReloadFn<Self> {
+                (|attachment,
+                  content,
+                  previous_context,
+                  context_initializers,
+                  pre_handling_initializers,
+                  runtime| {
+                    previous_context.invocations.clear();
+                    Ok(())
+                })
+            }
         }
 
         #[derive(Default, std::fmt::Debug)]

@@ -2,7 +2,11 @@
 //!
 //! Contains language agnostic systems and types for handling scripting in bevy.
 
-use crate::{bindings::MarkAsCore, event::ScriptErrorEvent};
+use crate::{
+    bindings::MarkAsCore,
+    context::{ContextLoadFn, ContextReloadFn},
+    event::ScriptErrorEvent,
+};
 use asset::{
     configure_asset_systems, configure_asset_systems_for_plugin, Language, ScriptAsset,
     ScriptAssetLoader,
@@ -14,10 +18,7 @@ use bindings::{
     DynamicScriptComponentPlugin, ReflectAllocator, ReflectReference, ScriptTypeRegistration,
 };
 use commands::{AddStaticScript, RemoveStaticScript};
-use context::{
-    Context, ContextBuilder, ContextInitializer, ContextLoadingSettings,
-    ContextPreHandlingInitializer,
-};
+use context::{Context, ContextInitializer, ContextLoadingSettings, ContextPreHandlingInitializer};
 use error::ScriptError;
 use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent, ScriptEvent};
 use handler::HandlerFn;
@@ -73,15 +74,18 @@ pub trait IntoScriptPluginParams: 'static {
 
     /// Returns the handler function for the plugin
     fn handler() -> HandlerFn<Self>;
+
+    /// Returns the context loader function for the plugin
+    fn context_loader() -> ContextLoadFn<Self>;
+
+    /// Returns the context reloader function for the plugin
+    fn context_reloader() -> ContextReloadFn<Self>;
 }
 
 /// Bevy plugin enabling scripting within the bevy mod scripting framework
 pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
     /// Settings for the runtime
     pub runtime_settings: RuntimeSettings<P>,
-
-    /// The context builder for loading contexts
-    pub context_builder: ContextBuilder<P>,
 
     /// The strategy used to assign contexts to scripts
     pub context_policy: ContextPolicy,
@@ -121,7 +125,6 @@ impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P> {
     fn default() -> Self {
         Self {
             runtime_settings: Default::default(),
-            context_builder: Default::default(),
             context_policy: ContextPolicy::default(),
             language: Default::default(),
             context_initializers: Default::default(),
@@ -139,7 +142,6 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
                 runtime: P::build_runtime(),
             })
             .insert_resource::<ContextLoadingSettings<P>>(ContextLoadingSettings {
-                loader: self.context_builder.clone(),
                 context_initializers: self.context_initializers.clone(),
                 context_pre_handling_initializers: self.context_pre_handling_initializers.clone(),
                 emit_responses: self.emit_responses,
