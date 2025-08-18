@@ -63,7 +63,7 @@ Note the `new_unregistered` call instead of `new`, this is because `GlobalNamesp
 The above is a bit tedious, so instead you can use the `script_bindings` macro, which applies to impl blocks like so:
 
 ```rust,ignore
-#[script_bindings("test_fn")]
+#[script_bindings(name = "test_fn")]
 impl TestStruct {
     /// My docs !!
     /// 
