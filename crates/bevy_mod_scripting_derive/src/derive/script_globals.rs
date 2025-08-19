@@ -1,6 +1,6 @@
 use proc_macro2::Span;
 use quote::{format_ident, quote_spanned};
-use syn::{spanned::Spanned, ItemImpl};
+use syn::{ItemImpl, spanned::Spanned};
 
 use super::{impl_fn_to_global_registry_registration, is_public_impl};
 
@@ -74,20 +74,18 @@ impl syn::parse::Parse for Args {
         for pair in pairs {
             match &pair {
                 syn::Meta::NameValue(name_value) => {
-                    if name_value.path.is_ident("bms_core_path") {
-                        if let syn::Expr::Lit(path) = &name_value.value {
-                            if let syn::Lit::Str(lit_str) = &path.lit {
-                                bms_core_path = syn::parse_str(&lit_str.value())?;
-                                continue;
-                            }
-                        }
-                    } else if name_value.path.is_ident("name") {
-                        if let syn::Expr::Lit(path) = &name_value.value {
-                            if let syn::Lit::Str(lit_str) = &path.lit {
-                                name = syn::parse_str(&lit_str.value())?;
-                                continue;
-                            }
-                        }
+                    if name_value.path.is_ident("bms_core_path")
+                        && let syn::Expr::Lit(path) = &name_value.value
+                        && let syn::Lit::Str(lit_str) = &path.lit
+                    {
+                        bms_core_path = syn::parse_str(&lit_str.value())?;
+                        continue;
+                    } else if name_value.path.is_ident("name")
+                        && let syn::Expr::Lit(path) = &name_value.value
+                        && let syn::Lit::Str(lit_str) = &path.lit
+                    {
+                        name = syn::parse_str(&lit_str.value())?;
+                        continue;
                     }
                 }
                 _ => {
