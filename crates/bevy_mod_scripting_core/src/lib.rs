@@ -20,7 +20,7 @@ use context::{
 };
 use error::ScriptError;
 use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent, ScriptEvent};
-use handler::{CallbackSettings, HandlerFn};
+use handler::HandlerFn;
 use runtime::{initialize_runtime, Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
 use script::{ContextPolicy, ScriptComponent, ScriptContext, StaticScripts};
 
@@ -70,14 +70,16 @@ pub trait IntoScriptPluginParams: 'static {
 
     /// Build the runtime
     fn build_runtime() -> Self::R;
+
+    /// Returns the handler function for the plugin
+    fn handler() -> HandlerFn<Self>;
 }
 
 /// Bevy plugin enabling scripting within the bevy mod scripting framework
 pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
     /// Settings for the runtime
     pub runtime_settings: RuntimeSettings<P>,
-    /// The handler used for executing callbacks in scripts
-    pub callback_handler: HandlerFn<P>,
+
     /// The context builder for loading contexts
     pub context_builder: ContextBuilder<P>,
 
@@ -103,7 +105,6 @@ where
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ScriptingPlugin")
-            .field("callback_handler", &self.callback_handler)
             .field("context_policy", &self.context_policy)
             .field("language", &self.language)
             .field("context_initializers", &self.context_initializers)
@@ -120,7 +121,6 @@ impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P> {
     fn default() -> Self {
         Self {
             runtime_settings: Default::default(),
-            callback_handler: CallbackSettings::<P>::default().callback_handler,
             context_builder: Default::default(),
             context_policy: ContextPolicy::default(),
             language: Default::default(),
@@ -137,9 +137,6 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
         app.insert_resource(self.runtime_settings.clone())
             .insert_resource::<RuntimeContainer<P>>(RuntimeContainer {
                 runtime: P::build_runtime(),
-            })
-            .insert_resource::<CallbackSettings<P>>(CallbackSettings {
-                callback_handler: self.callback_handler,
             })
             .insert_resource::<ContextLoadingSettings<P>>(ContextLoadingSettings {
                 loader: self.context_builder.clone(),

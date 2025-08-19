@@ -34,6 +34,10 @@ impl IntoScriptPluginParams for LuaScriptingPlugin {
     const LANGUAGE: Language = Language::Lua;
 
     fn build_runtime() -> Self::R {}
+
+    fn handler() -> bevy_mod_scripting_core::handler::HandlerFn<Self> {
+        lua_handler
+    }
 }
 
 // necessary for automatic config goodies
@@ -54,7 +58,6 @@ impl Default for LuaScriptingPlugin {
         LuaScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
                 runtime_settings: RuntimeSettings::default(),
-                callback_handler: lua_handler,
                 context_builder: ContextBuilder::<LuaScriptingPlugin> {
                     load: lua_context_load,
                     reload: lua_context_reload,

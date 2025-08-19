@@ -29,6 +29,16 @@ macro_rules! make_test_plugin {
                     invocations: vec![].into(),
                 }
             }
+
+            fn handler() -> $ident::HandlerFn<Self> {
+                (|args, context_key, callback, script_ctxt, pre_handling_initializers, runtime| {
+                    runtime
+                        .invocations
+                        .lock()
+                        .push((context_key.entity(), Some(context_key.script().id())));
+                    Ok($ident::bindings::script_value::ScriptValue::Unit)
+                }) as $ident::HandlerFn<Self>
+            }
         }
 
         #[derive(Default, std::fmt::Debug)]
