@@ -2,7 +2,7 @@
 use std::{
     collections::HashMap,
     env,
-    fs::{create_dir_all, File},
+    fs::{File, create_dir_all},
     io::{BufRead, Write},
     path::{Path, PathBuf},
     process::{Command, Stdio},
@@ -22,7 +22,7 @@ fn main() {
     let args = Args::parse_from(env::args().skip(1));
 
     if env::var("RUST_LOG").is_err() {
-        env::set_var("RUST_LOG", args.verbose.get_rustlog_value());
+        unsafe { env::set_var("RUST_LOG", args.verbose.get_rustlog_value()) };
     }
     env_logger::init();
 
@@ -175,15 +175,17 @@ fn main() {
             .join(" ");
 
         debug!("bootstrap paths: {bootstrap_rlibs:?}");
-        env::set_var(
-            "RUSTFLAGS",
-            format!(
-                "{} {} -L dependency={}",
-                env::var("RUSTFLAGS").unwrap_or("".to_owned()),
-                extern_args,
-                bootstrap_rlibs.iter().next().unwrap().1.parent().unwrap()
-            ),
-        );
+        unsafe {
+            env::set_var(
+                "RUSTFLAGS",
+                format!(
+                    "{} {} -L dependency={}",
+                    env::var("RUSTFLAGS").unwrap_or("".to_owned()),
+                    extern_args,
+                    bootstrap_rlibs.iter().next().unwrap().1.parent().unwrap()
+                ),
+            )
+        };
     } else {
         panic!("Could not find 'libmlua' artifact among bootstrap crate artifacts, stopping.");
     }
@@ -193,7 +195,7 @@ fn main() {
     debug!("RUSTFLAGS={}", env::var("RUSTFLAGS").unwrap_or_default());
 
     // disable incremental compilation
-    env::set_var("CARGO_INCREMENTAL", "0");
+    unsafe { env::set_var("CARGO_INCREMENTAL", "0") };
 
     rustc_plugin::cli_main(BevyAnalyzer);
 
