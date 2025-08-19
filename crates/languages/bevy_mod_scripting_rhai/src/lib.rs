@@ -13,7 +13,7 @@ use bevy_mod_scripting_core::{
         function::namespace::Namespace, globals::AppScriptGlobalsRegistry,
         script_value::ScriptValue, ThreadWorldContainer, WorldContainer,
     },
-    context::{ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
+    context::{ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
     event::CallbackLabel,
     reflection_extensions::PartialReflectExt,
@@ -55,6 +55,14 @@ impl IntoScriptPluginParams for RhaiScriptingPlugin {
     fn handler() -> bevy_mod_scripting_core::handler::HandlerFn<Self> {
         rhai_callback_handler
     }
+
+    fn context_loader() -> bevy_mod_scripting_core::context::ContextLoadFn<Self> {
+        rhai_context_load
+    }
+
+    fn context_reloader() -> bevy_mod_scripting_core::context::ContextReloadFn<Self> {
+        rhai_context_reload
+    }
 }
 
 /// The rhai scripting plugin. Used to add rhai scripting to a bevy app within the context of the BMS framework.
@@ -82,10 +90,6 @@ impl Default for RhaiScriptingPlugin {
                         engine.register_iterator_result::<RhaiReflectReference, _>();
                         Ok(())
                     }],
-                },
-                context_builder: ContextBuilder {
-                    load: rhai_context_load,
-                    reload: rhai_context_reload,
                 },
                 context_initializers: vec![
                     |_, context| {

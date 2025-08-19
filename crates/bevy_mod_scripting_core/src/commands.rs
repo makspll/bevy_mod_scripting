@@ -3,7 +3,7 @@
 use crate::{
     asset::ScriptAsset,
     bindings::{ScriptValue, WorldGuard},
-    context::ContextBuilder,
+    context::ScriptingLoader,
     error::{InteropError, ScriptError},
     event::{
         CallbackLabel, IntoCallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded,
@@ -151,8 +151,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     ) -> Result<(), ScriptError> {
         bevy::log::debug!("{}: reloading context {}", P::LANGUAGE, attachment);
         // reload context
-        (ContextBuilder::<P>::reload)(
-            handler_ctxt.context_loading_settings.loader.reload,
+        P::reload(
             attachment,
             content,
             context,
@@ -172,8 +171,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         handler_ctxt: &HandlerContext<P>,
     ) -> Result<P::C, ScriptError> {
         bevy::log::debug!("{}: loading context {}", P::LANGUAGE, attachment);
-        let context = (ContextBuilder::<P>::load)(
-            handler_ctxt.context_loading_settings.loader.load,
+        let context = P::load(
             attachment,
             content,
             &handler_ctxt.context_loading_settings.context_initializers,

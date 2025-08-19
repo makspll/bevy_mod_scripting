@@ -10,7 +10,7 @@ use bevy_mod_scripting_core::{
         function::namespace::Namespace, globals::AppScriptGlobalsRegistry,
         script_value::ScriptValue, ThreadWorldContainer, WorldContainer,
     },
-    context::{ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
+    context::{ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
     event::CallbackLabel,
     reflection_extensions::PartialReflectExt,
@@ -38,6 +38,14 @@ impl IntoScriptPluginParams for LuaScriptingPlugin {
     fn handler() -> bevy_mod_scripting_core::handler::HandlerFn<Self> {
         lua_handler
     }
+
+    fn context_loader() -> bevy_mod_scripting_core::context::ContextLoadFn<Self> {
+        lua_context_load
+    }
+
+    fn context_reloader() -> bevy_mod_scripting_core::context::ContextReloadFn<Self> {
+        lua_context_reload
+    }
 }
 
 // necessary for automatic config goodies
@@ -58,10 +66,6 @@ impl Default for LuaScriptingPlugin {
         LuaScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
                 runtime_settings: RuntimeSettings::default(),
-                context_builder: ContextBuilder::<LuaScriptingPlugin> {
-                    load: lua_context_load,
-                    reload: lua_context_reload,
-                },
                 context_initializers: vec![
                     |_script_id, context| {
                         // set the world global
