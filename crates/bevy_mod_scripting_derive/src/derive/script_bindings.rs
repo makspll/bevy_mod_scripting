@@ -155,13 +155,12 @@ impl syn::parse::Parse for Args {
                     }
                 }
                 syn::Meta::NameValue(name_value) => {
-                    if name_value.path.is_ident("bms_core_path") {
-                        if let syn::Expr::Lit(path) = &name_value.value {
-                            if let syn::Lit::Str(lit_str) = &path.lit {
-                                bms_core_path = syn::parse_str(&lit_str.value())?;
-                                continue;
-                            }
-                        }
+                    if name_value.path.is_ident("bms_core_path")
+                        && let syn::Expr::Lit(path) = &name_value.value
+                        && let syn::Lit::Str(lit_str) = &path.lit
+                    {
+                        bms_core_path = syn::parse_str(&lit_str.value())?;
+                        continue;
                     } else if name_value.path.is_ident("name")
                         && let syn::Expr::Lit(path) = &name_value.value
                         && let syn::Lit::Str(lit_str) = &path.lit
