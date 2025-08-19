@@ -1880,6 +1880,7 @@ impl Xtasks {
             "rustc-dev",
             "clippy",
             "llvm-tools-preview",
+            "rustfmt",
         ];
 
         // install components for the stable and nightly toolchains
