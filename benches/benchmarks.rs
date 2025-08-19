@@ -5,7 +5,7 @@ use std::{collections::HashMap, path::PathBuf, sync::LazyLock, time::Duration};
 
 use bevy::{
     log::{
-        tracing, tracing::span, tracing_subscriber, tracing_subscriber::layer::SubscriberExt, Level,
+        Level, tracing, tracing::span, tracing_subscriber, tracing_subscriber::layer::SubscriberExt,
     },
     reflect::Reflect,
 };
@@ -13,7 +13,7 @@ use bevy_mod_scripting_core::bindings::{
     FromScript, IntoScript, Mut, Ref, ReflectReference, ScriptValue, Val,
 };
 use criterion::{
-    criterion_main, measurement::Measurement, BatchSize, BenchmarkFilter, BenchmarkGroup, Criterion,
+    BatchSize, BenchmarkFilter, BenchmarkGroup, Criterion, criterion_main, measurement::Measurement,
 };
 use regex::Regex;
 use script_integration_test_harness::{
@@ -21,7 +21,7 @@ use script_integration_test_harness::{
     run_lua_benchmark, run_plugin_script_load_benchmark, run_rhai_benchmark,
     test_functions::rand::Rng,
 };
-use test_utils::{discover_all_tests, Test};
+use test_utils::{Test, discover_all_tests};
 
 static ENABLE_PROFILING: LazyLock<bool> =
     LazyLock::new(|| std::env::var("ENABLE_PROFILING").is_ok());
@@ -147,7 +147,9 @@ fn script_benchmarks(criterion: &mut Criterion, filter: Option<Regex>) {
 
 fn maybe_with_profiler(f: impl Fn(bool)) {
     if *ENABLE_PROFILING {
-        println!("profiling enabled, make sure to run tracy. If using it across windows/WSL you can use something like `tracy-capture.exe -o output.tracy -a localhost` on windows");
+        println!(
+            "profiling enabled, make sure to run tracy. If using it across windows/WSL you can use something like `tracy-capture.exe -o output.tracy -a localhost` on windows"
+        );
         // set global tracing subscriber so bevy doesn't set it itself first
         let subscriber = tracing_subscriber::Registry::default();
         let tracy_layer = tracing_tracy::TracyLayer::default();

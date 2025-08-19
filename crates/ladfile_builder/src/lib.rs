@@ -4,18 +4,18 @@ pub mod plugin;
 use bevy::{ecs::world::World, log, platform::collections::HashSet};
 use bevy_mod_scripting_core::{
     bindings::{
+        MarkAsCore, MarkAsGenerated, MarkAsSignificant, ReflectReference,
         function::{
             namespace::Namespace,
             script_function::{
                 DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext,
             },
         },
-        MarkAsCore, MarkAsGenerated, MarkAsSignificant, ReflectReference,
     },
     docgen::{
+        TypedThrough,
         info::FunctionInfo,
         typed_through::{ThroughTypeInfo, TypedWrapperKind, UntypedWrapperKind},
-        TypedThrough,
     },
     match_by_type,
 };
@@ -855,11 +855,11 @@ mod test {
 
     use bevy_mod_scripting_core::{
         bindings::{
+            Union, Val,
             function::{
                 from::Ref,
                 namespace::{GlobalNamespace, IntoNamespace},
             },
-            Union, Val,
         },
         docgen::info::GetFunctionInfo,
     };

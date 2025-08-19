@@ -1,5 +1,5 @@
 use crate::{install_test_plugin, parse::*};
-use anyhow::{anyhow, Context, Error};
+use anyhow::{Context, Error, anyhow};
 use bevy::ecs::entity::Entity;
 use bevy::ecs::system::Command;
 use bevy::prelude::IntoSystem;
@@ -18,13 +18,13 @@ use bevy_mod_scripting_core::commands::{AddStaticScript, RemoveStaticScript};
 use bevy_mod_scripting_core::event::ScriptEvent;
 use bevy_mod_scripting_core::script::ContextPolicy;
 use bevy_mod_scripting_core::script::ScriptContext;
+use bevy_mod_scripting_core::{ConfigureScriptPlugin, LanguageExtensions};
 use bevy_mod_scripting_core::{
     asset::ScriptAsset,
     event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent},
     handler::event_handler,
     script::{ScriptAttachment, ScriptComponent},
 };
-use bevy_mod_scripting_core::{ConfigureScriptPlugin, LanguageExtensions};
 use std::borrow::Cow;
 use std::collections::VecDeque;
 use std::{
@@ -512,12 +512,13 @@ impl ScenarioStep {
                     }
                     _ => {
                         return Err(anyhow!(
-                                                            "Scenario step InstallPlugin is not supported for the current plugin type: '{}'",
-                                                            context.current_script_language
-                                                                .as_ref()
-                                                                .map(|l| l.to_string())
-                                                                .unwrap_or_else(|| "None".to_string())
-                                                        ));
+                            "Scenario step InstallPlugin is not supported for the current plugin type: '{}'",
+                            context
+                                .current_script_language
+                                .as_ref()
+                                .map(|l| l.to_string())
+                                .unwrap_or_else(|| "None".to_string())
+                        ));
                     }
                 }
                 return Ok(());
@@ -584,9 +585,9 @@ impl ScenarioStep {
                         .add_handler::<CallbackC>(context.current_script_language.clone(), app),
                     _ => {
                         return Err(anyhow!(
-                    "callback label: {} is not allowed, you can only use one of a set of labels",
-                    label
-                ))
+                            "callback label: {} is not allowed, you can only use one of a set of labels",
+                            label
+                        ));
                     }
                 }
             }
@@ -637,12 +638,14 @@ impl ScenarioStep {
                                 if ScriptValue::String(Cow::Owned(expected_string.clone())) != *val
                                 {
                                     return Err(anyhow!(
-                                                                                                "Callback '{}' for attachment: '{}' expected: {}, but got: {}",
-                                                                                                label,
-                                                                                                script.to_string(),
-                                                                                                expected_string,
-                                                                                                val.display_with_world(WorldGuard::new_exclusive(app.world_mut()))
-                                                                                            ));
+                                        "Callback '{}' for attachment: '{}' expected: {}, but got: {}",
+                                        label,
+                                        script.to_string(),
+                                        expected_string,
+                                        val.display_with_world(WorldGuard::new_exclusive(
+                                            app.world_mut()
+                                        ))
+                                    ));
                                 }
                             }
                         }
@@ -704,10 +707,10 @@ impl ScenarioStep {
                     };
                 } else {
                     return Err(anyhow!(
-                                        "Script asset with id '{}' not found in context. Tried reloading from path: {}",
-                                        script.id(),
-                                        path.display()
-                                    ));
+                        "Script asset with id '{}' not found in context. Tried reloading from path: {}",
+                        script.id(),
+                        path.display()
+                    ));
                 }
             }
             ScenarioStep::AssertNoCallbackResponsesEmitted => {
@@ -756,9 +759,9 @@ impl ScenarioStep {
                         .residents_len(&script),
                     _ => {
                         return Err(anyhow!(
-                                    "Scenario step AssertContextRemoved is not supported for the current plugin type: '{:?}'",
-                                    context.current_script_language
-                                ));
+                            "Scenario step AssertContextRemoved is not supported for the current plugin type: '{:?}'",
+                            context.current_script_language
+                        ));
                     }
                 };
 

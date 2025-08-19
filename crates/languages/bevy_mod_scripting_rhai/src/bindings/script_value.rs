@@ -124,7 +124,7 @@ impl IntoDynamic for ScriptValue {
                     "Interop error in rhai script".to_string(),
                     interop_error.into(),
                 )
-                .into())
+                .into());
             }
         })
     }

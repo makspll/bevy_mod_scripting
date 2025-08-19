@@ -5,10 +5,11 @@ use bevy::{
     ecs::{entity::Entity, world::World},
 };
 use bevy_mod_scripting_core::{
+    IntoScriptPluginParams, ScriptingPlugin,
     asset::{Language, ScriptAsset},
     bindings::{
-        function::namespace::Namespace, globals::AppScriptGlobalsRegistry,
-        script_value::ScriptValue, ThreadWorldContainer, WorldContainer,
+        ThreadWorldContainer, WorldContainer, function::namespace::Namespace,
+        globals::AppScriptGlobalsRegistry, script_value::ScriptValue,
     },
     context::{ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
@@ -16,7 +17,6 @@ use bevy_mod_scripting_core::{
     reflection_extensions::PartialReflectExt,
     runtime::RuntimeSettings,
     script::{ContextPolicy, ScriptAttachment},
-    IntoScriptPluginParams, ScriptingPlugin,
 };
 use bindings::{
     reference::{LuaReflectReference, LuaStaticReflectReference},

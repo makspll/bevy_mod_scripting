@@ -1,8 +1,8 @@
-use super::script_value::{LuaScriptValue, LUA_CALLER_CONTEXT};
+use super::script_value::{LUA_CALLER_CONTEXT, LuaScriptValue};
 use bevy_mod_scripting_core::{
     bindings::{
-        pretty_print::DisplayWithWorld, script_value::ScriptValue, ReflectReference,
-        ThreadWorldContainer, WorldContainer,
+        ReflectReference, ThreadWorldContainer, WorldContainer, pretty_print::DisplayWithWorld,
+        script_value::ScriptValue,
     },
     error::InteropError,
     reflection_extensions::TypeIdExtensions,

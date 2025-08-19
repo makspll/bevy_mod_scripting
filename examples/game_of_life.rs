@@ -14,7 +14,7 @@ use bevy::{
     },
     window::{PrimaryWindow, WindowResized},
 };
-use bevy_console::{make_layer, AddConsoleCommand, ConsoleCommand, ConsoleOpen, ConsolePlugin};
+use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsoleOpen, ConsolePlugin, make_layer};
 use bevy_mod_scripting::{core::bindings::AllocatorDiagnosticPlugin, prelude::*};
 use clap::Parser;
 

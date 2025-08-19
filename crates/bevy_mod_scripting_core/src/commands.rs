@@ -1,6 +1,7 @@
 //! Commands for creating, updating and deleting scripts
 
 use crate::{
+    IntoScriptPluginParams, ScriptContext,
     asset::ScriptAsset,
     bindings::{ScriptValue, WorldGuard},
     context::ScriptingLoader,
@@ -9,10 +10,9 @@ use crate::{
         CallbackLabel, IntoCallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded,
         ScriptCallbackResponseEvent, ScriptEvent,
     },
-    extractors::{with_handler_system_state, HandlerContext},
+    extractors::{HandlerContext, with_handler_system_state},
     handler::{handle_script_errors, send_callback_response},
     script::{DisplayProxy, ScriptAttachment, StaticScripts},
-    IntoScriptPluginParams, ScriptContext,
 };
 use bevy::{
     asset::{Assets, Handle},
@@ -334,11 +334,12 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
             Err(err) => {
                 handle_script_errors(
                     guard,
-                    vec![err
-                        .clone()
-                        .with_script(script_id.display())
-                        .with_context(P::LANGUAGE)
-                        .with_context(phrase)]
+                    vec![
+                        err.clone()
+                            .with_script(script_id.display())
+                            .with_context(P::LANGUAGE)
+                            .with_context(phrase),
+                    ]
                     .into_iter(),
                 );
                 Err(err)

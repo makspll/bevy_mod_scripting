@@ -1,8 +1,9 @@
 //! Contains the logic for handling script callback events
 use crate::{
+    IntoScriptPluginParams, Language,
     bindings::{
-        pretty_print::DisplayWithWorld, script_value::ScriptValue, ThreadWorldContainer,
-        WorldAccessGuard, WorldContainer, WorldGuard,
+        ThreadWorldContainer, WorldAccessGuard, WorldContainer, WorldGuard,
+        pretty_print::DisplayWithWorld, script_value::ScriptValue,
     },
     context::ContextPreHandlingInitializer,
     error::ScriptError,
@@ -12,7 +13,6 @@ use crate::{
     },
     extractors::{HandlerContext, WithWorldGuard},
     script::ScriptAttachment,
-    IntoScriptPluginParams, Language,
 };
 use bevy::{
     ecs::{

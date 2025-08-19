@@ -7,11 +7,11 @@ use bevy::{
     ecs::{prelude::Resource, reflect::AppTypeRegistry, system::Res, world::World},
 };
 use bevy_mod_scripting_core::bindings::{
+    IntoNamespace,
     function::{namespace::Namespace, script_function::AppScriptFunctionRegistry},
     globals::AppScriptGlobalsRegistry,
-    IntoNamespace,
 };
-use ladfile::{default_importance, LadTypeKind};
+use ladfile::{LadTypeKind, default_importance};
 
 use crate::LadFileBuilder;
 

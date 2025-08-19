@@ -3,12 +3,12 @@
 use std::borrow::Cow;
 
 use crate::{
+    IntoScriptPluginParams, LanguageExtensions, ScriptComponent, ScriptingSystemSet, StaticScripts,
     commands::{CreateOrUpdateScript, DeleteScript},
     context::ContextLoadingSettings,
     error::ScriptError,
     event::ScriptEvent,
     script::{ContextKey, DisplayProxy, ScriptAttachment},
-    IntoScriptPluginParams, LanguageExtensions, ScriptComponent, ScriptingSystemSet, StaticScripts,
 };
 use bevy::{
     app::{App, Last},
@@ -155,12 +155,18 @@ impl AssetLoader for ScriptAssetLoader {
                 })
         });
         if language == Language::Lua && cfg!(not(feature = "mlua")) {
-            warn_once!("Script {:?} is a Lua script but the {:?} feature is not enabled; the script will not be evaluated.",
-                       load_context.path().display(), "mlua");
+            warn_once!(
+                "Script {:?} is a Lua script but the {:?} feature is not enabled; the script will not be evaluated.",
+                load_context.path().display(),
+                "mlua"
+            );
         }
         if language == Language::Rhai && cfg!(not(feature = "rhai")) {
-            warn_once!("Script {:?} is a Rhai script but the {:?} feature is not enabled; the script will not be evaluated.",
-                       load_context.path().display(), "rhai");
+            warn_once!(
+                "Script {:?} is a Rhai script but the {:?} feature is not enabled; the script will not be evaluated.",
+                load_context.path().display(),
+                "rhai"
+            );
         }
         let asset = ScriptAsset {
             content: content.into_boxed_slice(),
@@ -348,9 +354,9 @@ mod tests {
     use std::path::PathBuf;
 
     use bevy::{
+        MinimalPlugins,
         app::App,
         asset::{AssetApp, AssetPath, AssetPlugin, AssetServer, Assets, Handle, LoadState},
-        MinimalPlugins,
     };
 
     use super::*;

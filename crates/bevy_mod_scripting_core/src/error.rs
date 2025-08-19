@@ -2,15 +2,15 @@
 
 use crate::script::DisplayProxy;
 use crate::{
+    ScriptAsset,
     bindings::{
+        ReflectBaseType, ReflectReference,
         access_map::{DisplayCodeLocation, ReflectAccessId},
         function::namespace::Namespace,
         pretty_print::DisplayWithWorld,
         script_value::ScriptValue,
-        ReflectBaseType, ReflectReference,
     },
     script::ContextKey,
-    ScriptAsset,
 };
 use bevy::{
     asset::{AssetPath, Handle},
@@ -1624,7 +1624,7 @@ mod test {
     use bevy::prelude::{AppTypeRegistry, World};
 
     use crate::bindings::{
-        function::script_function::AppScriptFunctionRegistry, AppReflectAllocator, WorldGuard,
+        AppReflectAllocator, WorldGuard, function::script_function::AppScriptFunctionRegistry,
     };
 
     use super::*;

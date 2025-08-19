@@ -1,10 +1,10 @@
 //! Traits and types for managing script contexts.
 
 use crate::{
+    IntoScriptPluginParams,
     bindings::{ThreadWorldContainer, WorldContainer, WorldGuard},
     error::ScriptError,
     script::ScriptAttachment,
-    IntoScriptPluginParams,
 };
 use bevy::prelude::Resource;
 

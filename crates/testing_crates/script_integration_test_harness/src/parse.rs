@@ -12,7 +12,7 @@ use bevy_mod_scripting_core::{
     script::{ContextPolicy, ScriptAttachment},
 };
 
-use crate::scenario::{ScenarioContext, ScenarioStep, SCENARIO_SELF_LANGUAGE_NAME};
+use crate::scenario::{SCENARIO_SELF_LANGUAGE_NAME, ScenarioContext, ScenarioStep};
 
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
 pub enum ScenarioSchedule {
@@ -438,7 +438,10 @@ mod tests {
             language: None,
         };
         let flat_string = step.to_flat_string().unwrap();
-        assert_eq!(flat_string, "AssertCallbackSuccess attachment=\"EntityScript\", entity=\"entity1\", expect_string_value=\"null\", label=\"OnTest\", language=\"null\", script=\"script1\"");
+        assert_eq!(
+            flat_string,
+            "AssertCallbackSuccess attachment=\"EntityScript\", entity=\"entity1\", expect_string_value=\"null\", label=\"OnTest\", language=\"null\", script=\"script1\""
+        );
     }
 
     #[test]

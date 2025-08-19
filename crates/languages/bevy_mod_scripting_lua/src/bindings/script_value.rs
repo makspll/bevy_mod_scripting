@@ -112,7 +112,7 @@ impl FromLua for LuaScriptValue {
                     from: value.type_name(),
                     to: "ScriptValue".to_owned(),
                     message: Some("unsupported value type".to_owned()),
-                })
+                });
             }
         }
         .into())

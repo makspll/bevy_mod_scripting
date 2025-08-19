@@ -3,11 +3,11 @@
 use std::sync::Arc;
 
 use crate::{
+    IntoScriptPluginParams,
     asset::Language,
     bindings::script_value::ScriptValue,
     error::ScriptError,
     script::{ScriptAttachment, ScriptContext, ScriptId},
-    IntoScriptPluginParams,
 };
 use bevy::{asset::Handle, ecs::entity::Entity, prelude::Event, reflect::Reflect};
 use parking_lot::Mutex;

@@ -1,7 +1,7 @@
 //! "Runtime" here refers to the execution evironment of scripts. This might be the VM executing bytecode or the interpreter executing source code.
 //! The important thing is that there is only one runtime which is used to execute all scripts of a particular type or `context`.
 
-use crate::{error::ScriptError, IntoScriptPluginParams};
+use crate::{IntoScriptPluginParams, error::ScriptError};
 use bevy::{
     ecs::system::ResMut,
     prelude::{Res, Resource},

@@ -1,8 +1,9 @@
 use super::script_value::{FromDynamic, FunctionWithReceiver, IntoDynamic, RHAI_CALLER_CONTEXT};
 use bevy_mod_scripting_core::{
     bindings::{
+        ReflectReference, ThreadWorldContainer, WorldContainer,
         function::script_function::DynamicScriptFunctionMut, pretty_print::DisplayWithWorld,
-        script_value::ScriptValue, ReflectReference, ThreadWorldContainer, WorldContainer,
+        script_value::ScriptValue,
     },
     error::InteropError,
     reflection_extensions::TypeIdExtensions,
@@ -304,7 +305,7 @@ impl CustomType for RhaiReflectReference {
                         {
                             Ok(func) => {
                                 return FunctionWithReceiver::curry(func, self_.clone().into())
-                                    .into_dynamic()
+                                    .into_dynamic();
                             }
                             Err(string) => ScriptValue::String(string),
                         }

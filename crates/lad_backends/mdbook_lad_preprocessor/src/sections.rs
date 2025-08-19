@@ -1,6 +1,6 @@
 use crate::{
     argument_visitor::MarkdownArgumentVisitor,
-    markdown::{markdown_substring, IntoMarkdown, Markdown, MarkdownBuilder, TableBuilder},
+    markdown::{IntoMarkdown, Markdown, MarkdownBuilder, TableBuilder, markdown_substring},
     markdown_vec,
 };
 use ladfile::{
@@ -267,8 +267,9 @@ impl<'a> Section<'a> {
                             builder.row(markdown_vec![
                                 Markdown::new_paragraph("Global Functions").code(),
                                 Markdown::Link {
-                                    text:
-                                        Box::new("Documents all the global functions present in the bindings"),
+                                    text: Box::new(
+                                        "Documents all the global functions present in the bindings"
+                                    ),
                                     url: format!(
                                         "./{}/functions.md",
                                         linkify_filename(title.clone())
@@ -279,7 +280,9 @@ impl<'a> Section<'a> {
                             builder.row(markdown_vec![
                                 Markdown::new_paragraph("Globals").code(),
                                 Markdown::Link {
-                                    text: Box::new("Documents all global variables present in the bindings"),
+                                    text: Box::new(
+                                        "Documents all global variables present in the bindings"
+                                    ),
                                     url: format!(
                                         "./{}/globals.md",
                                         linkify_filename(title.clone())
