@@ -293,14 +293,13 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
 
         match result_context_to_insert {
             Ok(maybe_context) => {
-                if let Some(context) = maybe_context {
-                    if handler_ctxt
+                if let Some(context) = maybe_context
+                    && handler_ctxt
                         .script_context
                         .insert(&attachment, context)
                         .is_err()
-                    {
-                        warn!("Unable to insert script context for {}.", attachment);
-                    }
+                {
+                    warn!("Unable to insert script context for {}.", attachment);
                 }
 
                 // mark as resident in the context

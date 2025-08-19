@@ -189,27 +189,28 @@ impl ReflectReference {
         &self,
         world: WorldGuard,
     ) -> Result<Box<dyn PartialReflect>, InteropError> {
-        if let ReflectBase::Owned(id) = &self.base.base_id {
-            if self.reflect_path.is_empty() && id.strong_count() == 0 {
-                let allocator = world.allocator();
-                let mut allocator = allocator.write();
-                let arc = allocator
-                    .remove(id)
-                    .ok_or_else(|| InteropError::garbage_collected_allocation(self.clone()))?;
+        if let ReflectBase::Owned(id) = &self.base.base_id
+            && self.reflect_path.is_empty()
+            && id.strong_count() == 0
+        {
+            let allocator = world.allocator();
+            let mut allocator = allocator.write();
+            let arc = allocator
+                .remove(id)
+                .ok_or_else(|| InteropError::garbage_collected_allocation(self.clone()))?;
 
-                let access_id = ReflectAccessId::for_allocation(id.clone());
-                if world.claim_write_access(access_id) {
-                    // Safety: we claim write access, nobody else is accessing this
-                    if unsafe { &*arc.get_ptr() }.try_as_reflect().is_some() {
-                        // Safety: the only accesses exist in this function
-                        unsafe { world.release_access(access_id) };
-                        return Ok(unsafe { arc.take() });
-                    } else {
-                        unsafe { world.release_access(access_id) };
-                    }
+            let access_id = ReflectAccessId::for_allocation(id.clone());
+            if world.claim_write_access(access_id) {
+                // Safety: we claim write access, nobody else is accessing this
+                if unsafe { &*arc.get_ptr() }.try_as_reflect().is_some() {
+                    // Safety: the only accesses exist in this function
+                    unsafe { world.release_access(access_id) };
+                    return Ok(unsafe { arc.take() });
+                } else {
+                    unsafe { world.release_access(access_id) };
                 }
-                allocator.insert(id.clone(), arc);
             }
+            allocator.insert(id.clone(), arc);
         }
 
         self.with_reflect(world.clone(), |r| {
