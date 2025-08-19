@@ -168,7 +168,7 @@ impl Preprocessor for LADPreprocessor {
 
         if !errors.is_empty() {
             // return on first error
-            for error in errors {
+            if let Some(error) = errors.into_iter().next() {
                 log::error!("{error}");
                 Err(error)?;
             }

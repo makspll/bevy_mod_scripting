@@ -1,7 +1,7 @@
 [package]
 name = "bevy_mod_scripting_rune"
 version = "0.9.0-alpha.2"
-edition = "2021"
+edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "Necessary functionality for Rune support with bevy_mod_scripting"
 repository = "https://github.com/makspll/bevy_mod_scripting"

@@ -4,12 +4,12 @@
 //! reflection gives us access to `dyn PartialReflect` objects via their type name,
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
-use super::{access_map::ReflectAccessId, WorldGuard};
+use super::{WorldGuard, access_map::ReflectAccessId};
 use crate::{
-    bindings::{with_access_read, with_access_write, ReflectAllocationId},
+    ReflectAllocator,
+    bindings::{ReflectAllocationId, with_access_read, with_access_write},
     error::InteropError,
     reflection_extensions::{PartialReflectExt, TypeIdExtensions},
-    ReflectAllocator,
 };
 use bevy::{
     ecs::{
@@ -315,12 +315,13 @@ impl ReflectReference {
             .get_type_data(self.base.type_id)
             .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
 
-        let ptr = self
-            .base
-            .base_id
-            .clone()
-            .into_ptr(world.as_unsafe_world_cell()?)
-            .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
+        let ptr = unsafe {
+            self.base
+                .base_id
+                .clone()
+                .into_ptr(world.as_unsafe_world_cell()?)
+        }
+        .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
 
         // (Ptr) Safety: we use the same type_id to both
         // 1) retrieve the ptr
@@ -369,12 +370,13 @@ impl ReflectReference {
             .get_type_data(self.base.type_id)
             .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
 
-        let ptr = self
-            .base
-            .base_id
-            .clone()
-            .into_ptr_mut(world.as_unsafe_world_cell()?)
-            .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
+        let ptr = unsafe {
+            self.base
+                .base_id
+                .clone()
+                .into_ptr_mut(world.as_unsafe_world_cell()?)
+        }
+        .ok_or_else(|| InteropError::unregistered_base(self.base.clone()))?;
 
         // (Ptr) Safety: we use the same type_id to both
         // 1) retrieve the ptr
@@ -503,11 +505,11 @@ impl ReflectBase {
         match self {
             ReflectBase::Component(entity, component_id) => {
                 // Safety: the caller ensures invariants hold
-                world.get_entity(entity).ok()?.get_by_id(component_id)
+                unsafe { world.get_entity(entity).ok()?.get_by_id(component_id) }
             }
             ReflectBase::Resource(component_id) => {
                 // Safety: the caller ensures invariants hold
-                world.get_resource_by_id(component_id)
+                unsafe { world.get_resource_by_id(component_id) }
             }
             _ => None,
         }
@@ -522,15 +524,11 @@ impl ReflectBase {
         match self {
             ReflectBase::Component(entity, component_id) => {
                 // Safety: the caller ensures invariants hold
-                world
-                    .get_entity(entity)
-                    .ok()?
-                    .get_mut_by_id(component_id)
-                    .ok()
+                unsafe { world.get_entity(entity).ok()?.get_mut_by_id(component_id) }.ok()
             }
             ReflectBase::Resource(component_id) => {
                 // Safety: the caller ensures invariants hold
-                world.get_resource_mut_by_id(component_id)
+                unsafe { world.get_resource_mut_by_id(component_id) }
             }
             _ => None,
         }
@@ -645,7 +643,7 @@ mod test {
     use bevy::prelude::{AppTypeRegistry, World};
 
     use crate::bindings::{
-        function::script_function::AppScriptFunctionRegistry, AppReflectAllocator,
+        AppReflectAllocator, function::script_function::AppScriptFunctionRegistry,
     };
 
     use super::*;

@@ -14,10 +14,12 @@ fn add_executable_dir_to_path() {
     let mut paths = std::env::split_paths(&std::env::var("PATH").expect("failed to get PATH"))
         .collect::<Vec<_>>();
     paths.insert(0, dir.to_owned());
-    std::env::set_var(
-        "PATH",
-        std::env::join_paths(paths).expect("failed to join paths"),
-    );
+    unsafe {
+        std::env::set_var(
+            "PATH",
+            std::env::join_paths(paths).expect("failed to join paths"),
+        )
+    };
 }
 
 // use cargo manifest dir

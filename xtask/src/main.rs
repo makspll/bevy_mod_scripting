@@ -851,7 +851,7 @@ impl Xtasks {
         let mut flags = rustflags.split(' ').collect::<Vec<_>>();
         flags.push(flag);
         let flags = flags.join(" ");
-        std::env::set_var("RUSTFLAGS", flags);
+        unsafe { std::env::set_var("RUSTFLAGS", flags) };
     }
 
     fn run_system_command<I: IntoIterator<Item = impl AsRef<OsStr>>>(
@@ -1222,7 +1222,9 @@ impl Xtasks {
 
     fn check(app_settings: GlobalArgs, ide_mode: bool, kind: CheckKind) -> Result<()> {
         if ide_mode && kind == CheckKind::All {
-            bail!("Ide mode should not be used with 'all' check kind, each workspace needs to have each own individual check, for toolchains to be properly supported");
+            bail!(
+                "Ide mode should not be used with 'all' check kind, each workspace needs to have each own individual check, for toolchains to be properly supported"
+            );
         }
 
         match kind {
@@ -1341,11 +1343,11 @@ impl Xtasks {
         let mut features = Features::default();
 
         if profile {
-            std::env::set_var("ENABLE_PROFILING", "1");
+            unsafe { std::env::set_var("ENABLE_PROFILING", "1") };
             // features.push(Feature::BevyTracy);
             features.0.insert(Feature::ProfileWithTracy);
         } else {
-            std::env::set_var("RUST_LOG", "bevy_mod_scripting=error");
+            unsafe { std::env::set_var("RUST_LOG", "bevy_mod_scripting=error") };
         }
 
         let args = if let Some(name) = name {
@@ -1424,7 +1426,7 @@ impl Xtasks {
             // .args(["--build-time"])
             .args(["--threshold-measure", "latency"])
             .args(["--threshold-test", "t_test"])
-            .args(["--threshold-max-sample-size", "64"])
+            .args(["--threshold-max-sample-size", "10"])
             .args(["--threshold-upper-boundary", "0.99"])
             .args(["--thresholds-reset"]);
 
@@ -1615,7 +1617,7 @@ impl Xtasks {
         let coverage_dir = std::path::PathBuf::from(target_dir).join("coverage");
         let coverage_file = coverage_dir.join("cargo-test-%p-%m.profraw");
 
-        std::env::set_var("LLVM_PROFILE_FILE", coverage_file);
+        unsafe { std::env::set_var("LLVM_PROFILE_FILE", coverage_file) };
     }
 
     fn test(app_settings: GlobalArgs, package: Option<String>, name: Option<String>) -> Result<()> {
@@ -1812,7 +1814,9 @@ impl Xtasks {
         // install alsa et al
         if cfg!(target_os = "linux") {
             let sudo = if !is_root::is_root() { "sudo" } else { "" };
-            let install_cmd = format!("{sudo} apt-get update && {sudo} apt-get install --no-install-recommends -y libasound2-dev libudev-dev");
+            let install_cmd = format!(
+                "{sudo} apt-get update && {sudo} apt-get install --no-install-recommends -y libasound2-dev libudev-dev"
+            );
             Self::run_system_command(
                 &app_settings,
                 "sh",
@@ -2010,8 +2014,8 @@ fn pop_cargo_env() -> Result<()> {
     for (key, value) in env.iter() {
         if key.starts_with("CARGO_") && !exclude_list.contains(&(key.as_str())) {
             let new_key = format!("MAIN_{key}");
-            std::env::set_var(new_key, value);
-            std::env::remove_var(key);
+            unsafe { std::env::set_var(new_key, value) };
+            unsafe { std::env::remove_var(key) };
         }
     }
 
@@ -2021,7 +2025,7 @@ fn pop_cargo_env() -> Result<()> {
         if exclude_list.contains(var) {
             continue;
         }
-        std::env::remove_var(var);
+        unsafe { std::env::remove_var(var) };
     }
 
     Ok(())

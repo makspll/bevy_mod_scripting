@@ -1,15 +1,16 @@
 //! everything to do with dynamically added script systems
 
 use super::{
+    AppReflectAllocator, AppScriptComponentRegistry, ReflectBaseType, ReflectReference,
+    ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration, WorldAccessGuard,
+    WorldGuard,
     access_map::ReflectAccessId,
     function::{from::Val, into::IntoScript, script_function::AppScriptFunctionRegistry},
     schedule::AppScheduleRegistry,
     script_value::ScriptValue,
-    AppReflectAllocator, AppScriptComponentRegistry, ReflectBaseType, ReflectReference,
-    ScriptQueryBuilder, ScriptQueryResult, ScriptResourceRegistration, WorldAccessGuard,
-    WorldGuard,
 };
 use crate::{
+    IntoScriptPluginParams,
     bindings::pretty_print::DisplayWithWorld,
     context::ContextLoadingSettings,
     error::{InteropError, ScriptError},
@@ -18,7 +19,6 @@ use crate::{
     handler::ScriptingHandler,
     runtime::RuntimeContainer,
     script::{ScriptAttachment, ScriptContext},
-    IntoScriptPluginParams,
 };
 use bevy::{
     ecs::{
@@ -29,7 +29,7 @@ use bevy::{
         reflect::AppTypeRegistry,
         schedule::SystemSet,
         system::{IntoSystem, System, SystemParamValidationError},
-        world::{unsafe_world_cell::UnsafeWorldCell, World},
+        world::{World, unsafe_world_cell::UnsafeWorldCell},
     },
     platform::collections::HashSet,
     prelude::IntoScheduleConfigs,
@@ -417,15 +417,17 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             let world = unsafe { world.world_mut() };
             WorldAccessGuard::new_exclusive(world)
         } else {
-            WorldAccessGuard::new_non_exclusive(
-                world,
-                state.subset.clone(),
-                state.type_registry.clone(),
-                state.allocator.clone(),
-                state.function_registry.clone(),
-                state.schedule_registry.clone(),
-                state.component_registry.clone(),
-            )
+            unsafe {
+                WorldAccessGuard::new_non_exclusive(
+                    world,
+                    state.subset.clone(),
+                    state.type_registry.clone(),
+                    state.allocator.clone(),
+                    state.function_registry.clone(),
+                    state.schedule_registry.clone(),
+                    state.component_registry.clone(),
+                )
+            }
         };
 
         // TODO: cache references which don't change once we have benchmarks
@@ -446,7 +448,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                 }
                 ScriptSystemParam::EntityQuery { query, components } => {
                     // TODO: is this the right way to use this world cell for queries?
-                    let entities = query.iter_unchecked(world).collect::<Vec<_>>();
+                    let entities = unsafe { query.iter_unchecked(world) }.collect::<Vec<_>>();
                     let results = entities
                         .into_iter()
                         .map(|entity| {
