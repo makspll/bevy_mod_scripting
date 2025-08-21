@@ -52,8 +52,9 @@ fn main() {
             );
 
             info!(
-                "Computing all transitive dependencies for enabled top-level features: {}",
-                args.features.join(",")
+                "Computing all transitive dependencies for enabled top-level features: {}. using default features: {}",
+                args.features.join(","),
+                !args.no_default_features
             );
 
             let dependencies = feature_graph

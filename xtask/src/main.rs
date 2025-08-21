@@ -129,6 +129,7 @@ impl Default for Features {
         // should be kept up to date with the default feature + lua54 on top of anything that is handy to run locally every time
         Features::new(vec![
             Feature::Lua54,
+            Feature::Rhai,
             Feature::CoreFunctions,
             Feature::BevyEcsBindings,
             Feature::BevyInputBindings,
@@ -997,9 +998,11 @@ impl Xtasks {
             clippy_args.push("--message-format=json");
         }
 
+        clippy_args.extend(["--all-targets", "--examples"]);
+
         let keep_going = std::env::var(XTASK_KEEP_GOING).is_ok();
         if !keep_going {
-            clippy_args.extend(vec!["--all-targets", "--", "-D", "warnings"]);
+            clippy_args.extend(vec!["--", "-D", "warnings"]);
         }
 
         Self::run_workspace_command(
