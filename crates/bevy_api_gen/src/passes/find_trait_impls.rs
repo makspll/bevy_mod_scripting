@@ -113,7 +113,7 @@ fn type_impl_of_trait(
             let ty = tcx.type_of(reflect_ty_did).instantiate_identity();
             let infcx = tcx.infer_ctxt().build(TypingMode::non_body_analysis());
             let result = impl_matches(&infcx, ty, impl_did);
-            log::trace!("Result: {:#?}", result);
+            log::trace!("Result: {result:#?}");
             if result {
                 trace!(
                     "Type: `{}` implements trait: `{}`",

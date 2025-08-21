@@ -87,7 +87,7 @@ pub(crate) fn cache_traits(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
         .next()
         .is_none();
 
-    log::trace!("has_std: {}", has_std);
+    log::trace!("has_std: {has_std}");
 
     // if has_std && !ctxt.cached_traits.has_all_std_source_traits() {
     //     log::debug!(

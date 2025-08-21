@@ -96,7 +96,7 @@ impl MetaLoader {
     pub fn iter_meta(&self) -> impl Iterator<Item = Meta> + '_ {
         self.meta_dirs.iter().flat_map(|dir| {
             dir.read_dir()
-                .unwrap_or_else(|_| panic!("Could not read meta directory: {}", dir))
+                .unwrap_or_else(|_| panic!("Could not read meta directory: {dir}"))
                 .filter_map(|entry| {
                     let entry = entry.unwrap();
                     if entry.path().extension().is_some_and(|ext| ext == "json") {
@@ -149,13 +149,11 @@ impl MetaLoader {
 
         if meta.is_none() {
             log::trace!(
-                "Could not find meta file for crate: `{}`, is_workspace_and_included: '{}'",
-                crate_name,
-                needs_meta
+                "Could not find meta file for crate: `{crate_name}`, is_workspace_and_included: '{needs_meta}'"
             )
         }
         if meta.is_none() && needs_meta {
-            panic!("Could not find meta for workspace crate: {}", crate_name);
+            panic!("Could not find meta for workspace crate: {crate_name}");
         };
 
         meta
@@ -164,17 +162,13 @@ impl MetaLoader {
     fn meta_for_in_dir(&self, crate_name: &str, dir: &Utf8PathBuf) -> Option<Meta> {
         let cache = self.cache.borrow();
         if cache.contains_key(crate_name) {
-            trace!("Loading meta from cache for: {}", crate_name);
+            trace!("Loading meta from cache for: {crate_name}");
             cache.get(crate_name).cloned()
         } else {
             drop(cache);
             let mut cache = self.cache.borrow_mut();
             let dir = dir.join(Self::crate_name_to_meta_filename(crate_name));
-            trace!(
-                "Attempting to load meta from filesystem for crate: {}, at: {}",
-                crate_name,
-                dir
-            );
+            trace!("Attempting to load meta from filesystem for crate: {crate_name}, at: {dir}");
             let meta = Self::opt_load_meta(dir)?;
             cache.insert(crate_name.to_owned(), meta.clone());
             Some(meta)
@@ -183,7 +177,7 @@ impl MetaLoader {
 
     fn opt_load_meta(path: Utf8PathBuf) -> Option<Meta> {
         if !path.exists() {
-            trace!("Meta not found at: {}", path);
+            trace!("Meta not found at: {path}");
             return None;
         }
         let file = File::open(path).unwrap();
@@ -208,6 +202,6 @@ impl MetaLoader {
     }
 
     fn crate_name_to_meta_filename(crate_name: &str) -> String {
-        format!("{}.json", crate_name)
+        format!("{crate_name}.json")
     }
 }

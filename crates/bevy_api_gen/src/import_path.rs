@@ -17,8 +17,8 @@ pub(crate) enum ImportPathElement {
 impl std::fmt::Debug for ImportPathElement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ImportPathElement::Rename(did, name) => write!(f, "{:?} as {}", did, name),
-            ImportPathElement::Item(did) => write!(f, "{:?}", did),
+            ImportPathElement::Rename(did, name) => write!(f, "{did:?} as {name}"),
+            ImportPathElement::Item(did) => write!(f, "{did:?}"),
         }
     }
 }
@@ -53,7 +53,7 @@ impl<'tcx> ImportPathFinder<'tcx> {
     }
 
     fn crawl_module(&mut self, did: DefId, frontier: &[ImportPathElement]) {
-        trace!("Crawling module {:?}", did);
+        trace!("Crawling module {did:?}");
 
         let mut new_frontier = frontier.to_vec();
         new_frontier.push(ImportPathElement::Item(did));
@@ -70,7 +70,7 @@ impl<'tcx> ImportPathFinder<'tcx> {
             let rename = child.ident.to_string();
 
             if !self.include_private_paths && !child.vis.is_public() {
-                trace!("Skipping private child {:?}", rename);
+                trace!("Skipping private child {rename:?}");
                 continue;
             }
 
@@ -94,7 +94,7 @@ impl<'tcx> ImportPathFinder<'tcx> {
                     let mut new_frontier = new_frontier.clone();
                     new_frontier.push(ImportPathElement::Rename(did, rename));
 
-                    trace!("saving import path for {:?}: {:?}", did, new_frontier);
+                    trace!("saving import path for {did:?}: {new_frontier:?}");
                     self.cache.entry(did).or_default().push(new_frontier);
                 }
                 _ => continue,

@@ -1,9 +1,8 @@
 use indexmap::IndexMap;
 use log::{info, trace};
-use rustc_ast::Attribute;
 use rustc_hir::{
-    def_id::{DefId, LOCAL_CRATE},
     Safety,
+    def_id::{DefId, LOCAL_CRATE},
 };
 use rustc_infer::infer::TyCtxtInferExt;
 use rustc_middle::ty::{
@@ -29,42 +28,89 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
 
         match adt_def.adt_kind() {
             AdtKind::Enum => {
-                let strats = adt_def.variants().iter().flat_map(|variant|  {
-                    if has_reflect_ignore_attr(ctxt.tcx.get_attrs_unchecked(variant.def_id)) {
-                        // TODO: is this the right approach? do we need to still include those variants? or do we just provide dummies
-                        // or can we just skip those ?
-                        info!("ignoring enum variant: {}::{} due to 'reflect(ignore)' attribute", ctxt.tcx.item_name(def_id), variant.name);
-                        todo!();
-                    }
-                    let param_env = TypingEnv::non_body_analysis(ctxt.tcx, variant.def_id);
-                    process_fields(ctxt.tcx, &ctxt.meta_loader, &ctxt.reflect_types, &ctxt.cached_traits, variant.fields.iter(), param_env)
-                }).collect::<Vec<_>>();
+                let strats = adt_def
+                    .variants()
+                    .iter()
+                    .flat_map(|variant| {
+                        if has_reflect_ignore_attr(ctxt.tcx.get_attrs_unchecked(variant.def_id)) {
+                            // TODO: is this the right approach? do we need to still include those variants? or do we just provide dummies
+                            // or can we just skip those ?
+                            info!(
+                                "ignoring enum variant: {}::{} due to 'reflect(ignore)' attribute",
+                                ctxt.tcx.item_name(def_id),
+                                variant.name
+                            );
+                            todo!();
+                        }
+                        let param_env = TypingEnv::non_body_analysis(ctxt.tcx, variant.def_id);
+                        process_fields(
+                            ctxt.tcx,
+                            &ctxt.meta_loader,
+                            &ctxt.reflect_types,
+                            &ctxt.cached_traits,
+                            variant.fields.iter(),
+                            param_env,
+                        )
+                    })
+                    .collect::<Vec<_>>();
 
                 strats.iter().for_each(|(f_did, strat)| match strat {
-                    ReflectionStrategy::Reflection => report_field_not_supported(ctxt.tcx, *f_did, def_id, None, "type is neither a proxy nor a type expressible as lua primitive"),
-                    ReflectionStrategy::Filtered => report_field_not_supported(ctxt.tcx, *f_did, def_id, None, "field has a 'reflect(ignore)' attribute"),
+                    ReflectionStrategy::Reflection => report_field_not_supported(
+                        ctxt.tcx,
+                        *f_did,
+                        def_id,
+                        None,
+                        "type is neither a proxy nor a type expressible as lua primitive",
+                    ),
+                    ReflectionStrategy::Filtered => report_field_not_supported(
+                        ctxt.tcx,
+                        *f_did,
+                        def_id,
+                        None,
+                        "field has a 'reflect(ignore)' attribute",
+                    ),
                     _ => {}
                 });
 
                 let ty_ctxt = ctxt.reflect_types.get_mut(&def_id).unwrap();
                 ty_ctxt.variant_data = Some(adt_def);
                 ty_ctxt.set_field_reflection_strategies(strats.into_iter());
-
-            },
+            }
             AdtKind::Struct => {
                 let param_env = TypingEnv::non_body_analysis(ctxt.tcx, def_id);
-                let fields = process_fields(ctxt.tcx, &ctxt.meta_loader, &ctxt.reflect_types,&ctxt.cached_traits, adt_def.all_fields(), param_env);
+                let fields = process_fields(
+                    ctxt.tcx,
+                    &ctxt.meta_loader,
+                    &ctxt.reflect_types,
+                    &ctxt.cached_traits,
+                    adt_def.all_fields(),
+                    param_env,
+                );
                 fields.iter().for_each(|(f_did, strat)| match strat {
-                    ReflectionStrategy::Reflection => report_field_not_supported(ctxt.tcx, *f_did, def_id, None, "type is neither a proxy nor a type expressible as lua primitive"),
-                    ReflectionStrategy::Filtered => report_field_not_supported(ctxt.tcx, *f_did, def_id, None, "field has a 'reflect(ignore)' attribute"),
+                    ReflectionStrategy::Reflection => report_field_not_supported(
+                        ctxt.tcx,
+                        *f_did,
+                        def_id,
+                        None,
+                        "type is neither a proxy nor a type expressible as lua primitive",
+                    ),
+                    ReflectionStrategy::Filtered => report_field_not_supported(
+                        ctxt.tcx,
+                        *f_did,
+                        def_id,
+                        None,
+                        "field has a 'reflect(ignore)' attribute",
+                    ),
                     _ => {}
                 });
                 let ty_ctxt = ctxt.reflect_types.get_mut(&def_id).unwrap();
                 assert!(ty_ctxt.variant_data.is_none(), "variant data already set!");
                 ty_ctxt.variant_data = Some(adt_def);
                 ty_ctxt.set_field_reflection_strategies(fields.into_iter());
-            },
-            t => panic!("Unexpected item type, all `Reflect` implementing items should be enums or structs. : {:?}", t)
+            }
+            t => panic!(
+                "Unexpected item type, all `Reflect` implementing items should be enums or structs. : {t:?}"
+            ),
         };
 
         // borrow checker fucky wucky pt2
@@ -102,9 +148,14 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                 .associated_items(impl_did)
                 .in_definition_order()
                 .filter_map(|assoc_item| {
-                    if assoc_item.kind != AssocKind::Fn {
+                    if !matches!(assoc_item.kind, AssocKind::Fn { .. }) {
                         return None;
                     }
+
+                    let (fn_name, has_self) = match assoc_item.kind {
+                        AssocKind::Fn { has_self, name } => (name, has_self),
+                        _ => return None,
+                    };
 
                     let trait_did = ctxt
                         .tcx
@@ -114,8 +165,7 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                         .map(|td| ctxt.tcx.item_name(td).to_ident_string())
                         .unwrap_or_else(|| "None".to_string());
 
-                    let fn_name = assoc_item.name.to_ident_string();
-                    let has_self = assoc_item.fn_has_self_parameter;
+                    let fn_name = fn_name.to_ident_string();
                     let fn_did = assoc_item.def_id;
 
                     trace!(
@@ -134,23 +184,23 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                     if !function_generics.is_empty() {
                         log::debug!(
                             "Skipping function: `{}` on type: `{}` as it has generics: {:?}",
-                            assoc_item.name,
+                            fn_name,
                             ctxt.tcx.item_name(def_id),
                             function_generics
                         );
                         return None;
                     }
 
-                    if let Some(unstability) = ctxt.tcx.lookup_stability(fn_did) {
-                        if unstability.is_unstable() {
-                            log::debug!(
-                                "Skipping unstable function: `{}` on type: `{}` feature: {:?}",
-                                ctxt.tcx.item_name(fn_did),
-                                ctxt.tcx.item_name(def_id),
-                                unstability.feature.as_str()
-                            );
-                            return None;
-                        }
+                    if let Some(unstability) = ctxt.tcx.lookup_stability(fn_did)
+                        && unstability.is_unstable()
+                    {
+                        log::debug!(
+                            "Skipping unstable function: `{}` on type: `{}` feature: {:?}",
+                            ctxt.tcx.item_name(fn_did),
+                            ctxt.tcx.item_name(def_id),
+                            unstability.feature.as_str()
+                        );
+                        return None;
                     };
 
                     let is_unsafe = sig.safety == Safety::Unsafe;
@@ -164,7 +214,7 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                         return None;
                     }
 
-                    let arg_names = ctxt.tcx.fn_arg_names(fn_did);
+                    let arg_names = ctxt.tcx.fn_arg_idents(fn_did);
 
                     let mut reflection_strategies = Vec::with_capacity(sig.inputs().len());
                     for (idx, arg_ty) in sig.inputs().iter().enumerate() {
@@ -188,7 +238,10 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                                 fn_did,
                                 def_id,
                                 *arg_ty,
-                                &format!("argument \"{}\" not supported", arg_names[idx]),
+                                &format!(
+                                    "argument \"{:?}\" at idx {idx} not supported",
+                                    arg_names[idx]
+                                ),
                             );
                             return None;
                         }
@@ -324,7 +377,7 @@ fn process_fields<'tcx, 'f, I: Iterator<Item = &'f FieldDef>>(
 }
 
 /// Checks if the given attributes contain among them a reflect ignore attribute
-fn has_reflect_ignore_attr(attrs: &[Attribute]) -> bool {
+fn has_reflect_ignore_attr(attrs: &[rustc_hir::Attribute]) -> bool {
     attrs.iter().any(|a| {
         a.path_matches(&[Symbol::intern("reflect")])
             && a.value_str()
@@ -340,7 +393,7 @@ fn type_is_supported_as_proxy_arg<'tcx>(
     meta_loader: &MetaLoader,
     ty: Ty,
 ) -> bool {
-    log::trace!("Checking type is supported as proxy arg: '{}'", ty);
+    log::trace!("Checking type is supported as proxy arg: '{ty}'");
     type_is_adt_and_reflectable(tcx, reflect_types, meta_loader, ty.peel_refs())
 }
 
@@ -351,7 +404,7 @@ fn type_is_supported_as_proxy_return_val<'tcx>(
     meta_loader: &MetaLoader,
     ty: Ty,
 ) -> bool {
-    log::trace!("Checking type is supported as proxy return val: '{}'", ty);
+    log::trace!("Checking type is supported as proxy return val: '{ty}'");
     type_is_adt_and_reflectable(tcx, reflect_types, meta_loader, ty)
 }
 
@@ -420,11 +473,13 @@ fn type_is_supported_as_non_proxy_return_val<'tcx>(
     cached_traits: &CachedTraits,
     ty: Ty<'tcx>,
 ) -> bool {
-    trace!("Checkign type is supported as non proxy return val: '{ty:?}' with param_env: '{param_env:?}'");
-    if let TyKind::Ref(region, _, _) = ty.kind() {
-        if region.get_name().is_none_or(|rn| rn.as_str() != "'static") {
-            return false;
-        }
+    trace!(
+        "Checkign type is supported as non proxy return val: '{ty:?}' with param_env: '{param_env:?}'"
+    );
+    if let TyKind::Ref(region, _, _) = ty.kind()
+        && region.get_name().is_none_or(|rn| rn.as_str() != "'static")
+    {
+        return false;
     }
 
     impls_trait(tcx, param_env, ty, cached_traits.bms_into_script.unwrap())

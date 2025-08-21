@@ -99,7 +99,7 @@ fn main() {
         }
         bevy_api_gen::Command::ListTemplates => {
             for template in TemplateKind::VARIANTS {
-                println!("{}", template);
+                println!("{template}");
             }
             return;
         }
@@ -109,7 +109,7 @@ fn main() {
             api_name,
         } => {
             let tera = configure_tera("no_crate", &templates);
-            info!("Collecting from: {}", output);
+            info!("Collecting from: {output}");
             if !output.is_dir() {
                 panic!("Output is not a directory");
             }
@@ -197,7 +197,7 @@ fn main() {
     // disable incremental compilation
     unsafe { env::set_var("CARGO_INCREMENTAL", "0") };
 
-    rustc_plugin::cli_main(BevyAnalyzer);
+    driver::cli_main(BevyAnalyzer);
 
     // just making sure the temp dir lives until everything is done
     drop(temp_dir);
@@ -292,7 +292,7 @@ fn build_bootstrap(
             }
         }
         Err(e) => {
-            panic!("Failed to wait on cargo build process: {}", e);
+            panic!("Failed to wait on cargo build process: {e}");
         }
     }
 
@@ -307,12 +307,11 @@ fn process_artifact(
     let file_name = artifact.file_name().unwrap_or_default();
     let lib_name = file_name.split('-').next().unwrap().strip_prefix("lib");
 
-    if let Some(lib_name) = lib_name {
-        if BOOTSTRAP_DEPS.contains(&lib_name)
-            && artifact.extension().is_some_and(|ext| ext == "rlib")
-        {
-            bootstrap_rlibs.insert(lib_name.to_owned(), artifact);
-        }
+    if let Some(lib_name) = lib_name
+        && BOOTSTRAP_DEPS.contains(&lib_name)
+        && artifact.extension().is_some_and(|ext| ext == "rlib")
+    {
+        bootstrap_rlibs.insert(lib_name.to_owned(), artifact);
     }
 }
 

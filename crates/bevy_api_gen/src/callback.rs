@@ -2,7 +2,9 @@ use log::{info, trace};
 use rustc_hir::def_id::LOCAL_CRATE;
 use tera::Context;
 
-use crate::{Args, TemplateKind, WorkspaceMeta, ALL_PASSES};
+use crate::{
+    ALL_PASSES, Args, TemplateKind, WorkspaceMeta, modifying_file_loader::ModifyingFileLoader,
+};
 
 pub(crate) struct BevyAnalyzerCallbacks {
     args: Args,
@@ -59,7 +61,7 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
         // tera environment for import processor
         let tera = crate::configure_tera(tcx.crate_name(LOCAL_CRATE).as_str(), &templates_dir);
 
-        info!("Using meta directories: {:?}", meta_dirs);
+        info!("Using meta directories: {meta_dirs:?}");
         let mut ctxt = crate::BevyCtxt::new(
             tcx,
             &meta_dirs,
@@ -88,5 +90,9 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
         }
 
         rustc_driver::Compilation::Continue
+    }
+
+    fn config(&mut self, config: &mut rustc_interface::interface::Config) {
+        config.file_loader = Some(Box::new(ModifyingFileLoader));
     }
 }

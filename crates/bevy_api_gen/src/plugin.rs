@@ -1,13 +1,16 @@
 use std::env;
 
+use cargo_metadata::camino::Utf8Path;
 use clap::Parser;
 use log::debug;
-use rustc_plugin::{CrateFilter, RustcPlugin, RustcPluginArgs, Utf8Path};
 
-use crate::{modifying_file_loader::ModifyingFileLoader, BevyAnalyzerCallbacks, WorkspaceMeta};
+use crate::{
+    BevyAnalyzerCallbacks, WorkspaceMeta,
+    driver::{CrateFilter, RustcPluginArgs},
+};
 
 pub struct BevyAnalyzer;
-impl RustcPlugin for BevyAnalyzer {
+impl crate::driver::RustcPlugin for BevyAnalyzer {
     type Args = crate::Args;
 
     fn version(&self) -> std::borrow::Cow<'static, str> {
@@ -18,8 +21,8 @@ impl RustcPlugin for BevyAnalyzer {
         "bevy-api-gen-driver".into()
     }
 
-    fn args(&self, target_dir: &Utf8Path) -> rustc_plugin::RustcPluginArgs<Self::Args> {
-        debug!("Target dir: {}", target_dir);
+    fn args(&self, target_dir: &Utf8Path) -> RustcPluginArgs<crate::Args> {
+        debug!("Target dir: {target_dir}");
 
         RustcPluginArgs {
             args: crate::Args::parse_from(std::env::args().skip(1)),
@@ -27,11 +30,7 @@ impl RustcPlugin for BevyAnalyzer {
         }
     }
 
-    fn run(
-        self,
-        compiler_args: Vec<String>,
-        plugin_args: Self::Args,
-    ) -> rustc_interface::interface::Result<()> {
+    fn run(self, compiler_args: Vec<String>, plugin_args: Self::Args) {
         log::set_max_level(plugin_args.verbose.get_log_level().to_level_filter());
 
         if let Some(includes) = WorkspaceMeta::from_env().include_crates {
@@ -43,22 +42,19 @@ impl RustcPlugin for BevyAnalyzer {
 
             if !includes.contains(crate_name) {
                 log::info!(
-                    "Not running plugin on: '{}', due to feature combination, still compiling.",
-                    crate_name
+                    "Not running plugin on: '{crate_name}', due to feature combination, still compiling."
                 );
 
                 struct DefaultCallbacks;
                 impl rustc_driver::Callbacks for DefaultCallbacks {}
-                rustc_driver::RunCompiler::new(&compiler_args, &mut DefaultCallbacks).run();
-                return Ok(());
+                rustc_driver_impl::run_compiler(&compiler_args, &mut DefaultCallbacks);
+                return;
             }
         }
         let mut callbacks = BevyAnalyzerCallbacks::new(plugin_args);
-        let mut compiler = rustc_driver::RunCompiler::new(&compiler_args, &mut callbacks);
-        compiler.set_file_loader(Some(Box::new(ModifyingFileLoader)));
-        compiler.run();
+
+        rustc_driver_impl::run_compiler(&compiler_args, &mut callbacks);
         log::trace!("Finished compiling with plugin");
-        Ok(())
     }
 
     fn modify_cargo(&self, cmd: &mut std::process::Command, args: &Self::Args) {
