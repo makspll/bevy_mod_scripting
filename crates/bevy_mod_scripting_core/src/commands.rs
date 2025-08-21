@@ -262,7 +262,6 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         if is_reload {
             phrase = "reloading";
             success = "reloaded";
-
             script_state = Self::before_reload(
                 attachment.clone(),
                 guard.clone(),

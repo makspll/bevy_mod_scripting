@@ -219,7 +219,7 @@ fn load_rhai_content_into_context(
     pre_handling_initializers
         .iter()
         .try_for_each(|init| init(context_key, context))?;
-    runtime.eval_ast_with_scope(&mut context.scope, &context.ast)?;
+    runtime.eval_ast_with_scope::<()>(&mut context.scope, &context.ast)?;
 
     context.ast.clear_statements();
     Ok(())
