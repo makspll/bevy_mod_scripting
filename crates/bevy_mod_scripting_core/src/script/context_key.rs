@@ -1,7 +1,9 @@
+use std::fmt;
+
+use bevy::prelude::Entity;
+
 use super::*;
 use crate::ScriptAsset;
-use bevy::prelude::Entity;
-use std::fmt;
 
 /// Specifies a unique attachment of a script. These attachments are mapped to [`ContextKey`]'s depending on the context policy used.
 #[derive(Debug, Hash, Clone, PartialEq, Eq, Reflect)]

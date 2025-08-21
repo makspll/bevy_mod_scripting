@@ -1,15 +1,7 @@
 //! Systems and resources for handling script assets and events
 
-use std::borrow::Cow;
+use std::{borrow::Cow, collections::VecDeque};
 
-use crate::{
-    IntoScriptPluginParams, LanguageExtensions, ScriptComponent, ScriptingSystemSet, StaticScripts,
-    commands::{CreateOrUpdateScript, DeleteScript},
-    context::ContextLoadingSettings,
-    error::ScriptError,
-    event::ScriptEvent,
-    script::{ContextKey, DisplayProxy, ScriptAttachment},
-};
 use bevy::{
     app::{App, Last},
     asset::{Asset, AssetEvent, AssetLoader, Assets, LoadState},
@@ -21,7 +13,15 @@ use bevy::{
     reflect::Reflect,
 };
 use serde::{Deserialize, Serialize};
-use std::collections::VecDeque;
+
+use crate::{
+    IntoScriptPluginParams, LanguageExtensions, ScriptComponent, ScriptingSystemSet, StaticScripts,
+    commands::{CreateOrUpdateScript, DeleteScript},
+    context::ContextLoadingSettings,
+    error::ScriptError,
+    event::ScriptEvent,
+    script::{ContextKey, DisplayProxy, ScriptAttachment},
+};
 
 /// Represents a scripting language. Languages which compile into another language should use the target language as their language.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Serialize, Deserialize)]

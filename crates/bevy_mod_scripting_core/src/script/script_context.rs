@@ -1,7 +1,9 @@
+use std::{hash::Hash, sync::Arc};
+
+use parking_lot::Mutex;
+
 use super::*;
 use crate::IntoScriptPluginParams;
-use parking_lot::Mutex;
-use std::{hash::Hash, sync::Arc};
 
 /// Determines how contexts are grouped by manipulating the context key.
 pub trait ContextKeySelector: Send + Sync + std::fmt::Debug + 'static {

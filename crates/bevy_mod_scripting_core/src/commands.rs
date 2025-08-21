@@ -1,5 +1,14 @@
 //! Commands for creating, updating and deleting scripts
 
+use std::marker::PhantomData;
+
+use bevy::{
+    asset::{Assets, Handle},
+    ecs::event::Events,
+    log::{debug, warn},
+    prelude::Command,
+};
+
 use crate::{
     IntoScriptPluginParams, ScriptContext,
     asset::ScriptAsset,
@@ -14,13 +23,6 @@ use crate::{
     handler::{handle_script_errors, send_callback_response},
     script::{DisplayProxy, ScriptAttachment, StaticScripts},
 };
-use bevy::{
-    asset::{Assets, Handle},
-    ecs::event::Events,
-    log::{debug, warn},
-    prelude::Command,
-};
-use std::marker::PhantomData;
 
 /// Detaches a script, invoking the `on_script_unloaded` callback if it exists, and removes the script from the static scripts collection.
 pub struct DeleteScript<P: IntoScriptPluginParams> {

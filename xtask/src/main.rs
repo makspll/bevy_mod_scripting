@@ -1,9 +1,3 @@
-use anyhow::{Context, *};
-use clap::Parser;
-use itertools::Itertools;
-use json_comments::StripComments;
-use log::*;
-use serde::{Deserialize, Serialize};
 use std::{
     collections::{HashMap, HashSet},
     ffi::{OsStr, OsString},
@@ -12,6 +6,13 @@ use std::{
     process::{Command, Output},
     str::FromStr,
 };
+
+use anyhow::{Context, *};
+use clap::Parser;
+use itertools::Itertools;
+use json_comments::StripComments;
+use log::*;
+use serde::{Deserialize, Serialize};
 use strum::{IntoEnumIterator, VariantNames};
 
 #[derive(

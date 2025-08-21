@@ -1,14 +1,16 @@
-use crate::{
-    argument_visitor::MarkdownArgumentVisitor,
-    markdown::{IntoMarkdown, Markdown, MarkdownBuilder, TableBuilder, markdown_substring},
-    markdown_vec,
-};
+use std::{borrow::Cow, collections::HashSet, path::PathBuf};
+
 use ladfile::{
     ArgumentVisitor, LadArgument, LadBMSPrimitiveKind, LadFile, LadFunction, LadInstance, LadType,
     LadTypeId, LadTypeKind, LadTypeLayout,
 };
 use mdbook::book::{Chapter, SectionNumber};
-use std::{borrow::Cow, collections::HashSet, path::PathBuf};
+
+use crate::{
+    argument_visitor::MarkdownArgumentVisitor,
+    markdown::{IntoMarkdown, Markdown, MarkdownBuilder, TableBuilder, markdown_substring},
+    markdown_vec,
+};
 
 fn print_type(ladfile: &LadFile, type_: &LadTypeId) -> String {
     let mut visitor = MarkdownArgumentVisitor::new(ladfile);

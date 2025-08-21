@@ -2,6 +2,9 @@
 
 use std::sync::Arc;
 
+use bevy::{asset::Handle, ecs::entity::Entity, prelude::Event, reflect::Reflect};
+use parking_lot::Mutex;
+
 use crate::{
     IntoScriptPluginParams,
     asset::Language,
@@ -9,8 +12,6 @@ use crate::{
     error::ScriptError,
     script::{ScriptAttachment, ScriptContext, ScriptId},
 };
-use bevy::{asset::Handle, ecs::entity::Entity, prelude::Event, reflect::Reflect};
-use parking_lot::Mutex;
 
 /// A script event
 #[derive(Event, Debug, Clone, PartialEq, Eq)]
@@ -415,13 +416,12 @@ mod test {
     use parking_lot::Mutex;
     use test_utils::make_test_plugin;
 
+    use super::FORBIDDEN_KEYWORDS;
     use crate::{
         bindings::ScriptValue,
         event::Recipients,
         script::{ContextPolicy, ScriptAttachment, ScriptContext},
     };
-
-    use super::FORBIDDEN_KEYWORDS;
 
     #[test]
     fn test_invalid_strings() {

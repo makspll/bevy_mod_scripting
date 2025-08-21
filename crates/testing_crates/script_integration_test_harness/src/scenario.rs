@@ -1,38 +1,38 @@
-use crate::{install_test_plugin, parse::*};
+use std::{
+    borrow::Cow,
+    collections::{HashMap, VecDeque},
+    path::{Path, PathBuf},
+    time::Instant,
+};
+
 use anyhow::{Context, Error, anyhow};
-use bevy::ecs::entity::Entity;
-use bevy::ecs::system::Command;
-use bevy::prelude::IntoSystem;
 use bevy::{
     app::App,
     asset::{AssetEvent, Handle, LoadState},
     ecs::{
+        entity::Entity,
         event::{Event, EventCursor, Events},
         schedule::ScheduleLabel,
+        system::Command,
         world::World,
     },
+    prelude::IntoSystem,
 };
-use bevy_mod_scripting_core::asset::Language;
-use bevy_mod_scripting_core::bindings::{DisplayWithWorld, ScriptValue, WorldGuard};
-use bevy_mod_scripting_core::commands::{AddStaticScript, RemoveStaticScript};
-use bevy_mod_scripting_core::event::ScriptEvent;
-use bevy_mod_scripting_core::script::ContextPolicy;
-use bevy_mod_scripting_core::script::ScriptContext;
-use bevy_mod_scripting_core::{ConfigureScriptPlugin, LanguageExtensions};
 use bevy_mod_scripting_core::{
-    asset::ScriptAsset,
-    event::{CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent},
+    ConfigureScriptPlugin, LanguageExtensions,
+    asset::{Language, ScriptAsset},
+    bindings::{DisplayWithWorld, ScriptValue, WorldGuard},
+    commands::{AddStaticScript, RemoveStaticScript},
+    event::{
+        CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent,
+        ScriptEvent,
+    },
     handler::event_handler,
-    script::{ScriptAttachment, ScriptComponent},
-};
-use std::borrow::Cow;
-use std::collections::VecDeque;
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-    time::Instant,
+    script::{ContextPolicy, ScriptAttachment, ScriptComponent, ScriptContext},
 };
 use test_utils::test_data::setup_integration_test;
+
+use crate::{install_test_plugin, parse::*};
 
 const TIMEOUT_SECONDS: u64 = 10;
 pub const SCENARIO_SELF_SCRIPT_NAME: &str = "@this_script";

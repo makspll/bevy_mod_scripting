@@ -224,6 +224,8 @@ pub fn driver_main<T: RustcPlugin>(plugin: T) {
                 serde_json::from_str(&env::var(PLUGIN_ARGS).unwrap()).unwrap();
             plugin.run(args, plugin_args);
         } else {
+            // ignore all lints that could break the comp in crates that we don't care about
+            args.extend([String::from("--cap-lints"), String::from("warn")]);
             log::debug!(
                 "Running normal Rust. Relevant variables:\
 normal_rustc={normal_rustc}, \

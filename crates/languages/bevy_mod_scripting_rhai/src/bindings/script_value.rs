@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use bevy_mod_scripting_core::{
     asset::Language,
     bindings::{
@@ -7,7 +9,6 @@ use bevy_mod_scripting_core::{
     error::InteropError,
 };
 use rhai::{Dynamic, EvalAltResult, FnPtr, Map, NativeCallContext};
-use std::str::FromStr;
 
 use super::reference::RhaiReflectReference;
 

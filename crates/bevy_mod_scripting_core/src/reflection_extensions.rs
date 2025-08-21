@@ -1,13 +1,15 @@
 //! Various utility functions for working with reflection types.
 
-use crate::{
-    bindings::{ReflectReference, WorldGuard},
-    error::InteropError,
-};
-use bevy::reflect::{PartialReflect, Reflect, ReflectFromReflect, ReflectMut, TypeInfo};
 use std::{
     any::{Any, TypeId},
     cmp::max,
+};
+
+use bevy::reflect::{PartialReflect, Reflect, ReflectFromReflect, ReflectMut, TypeInfo};
+
+use crate::{
+    bindings::{ReflectReference, WorldGuard},
+    error::InteropError,
 };
 
 /// Extension trait for [`PartialReflect`] providing additional functionality for working with specific types.

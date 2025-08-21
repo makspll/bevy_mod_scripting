@@ -2,32 +2,34 @@
 //!
 //! These are designed to be used to pipe inputs into other systems which require them, while handling any configuration erorrs nicely.
 #![allow(deprecated)]
-use crate::bindings::pretty_print::DisplayWithWorld;
-use crate::handler::ScriptingHandler;
-use crate::{
-    IntoScriptPluginParams,
-    bindings::{
-        WorldAccessGuard, WorldGuard, access_map::ReflectAccessId, script_value::ScriptValue,
-    },
-    context::ContextLoadingSettings,
-    error::{InteropError, ScriptError},
-    event::{CallbackLabel, IntoCallbackLabel},
-    runtime::RuntimeContainer,
-    script::{ScriptAttachment, ScriptContext, StaticScripts},
+use std::{
+    ops::{Deref, DerefMut},
+    sync::Arc,
 };
-use bevy::ecs::resource::Resource;
+
 use bevy::ecs::{
     component::ComponentId,
     query::{Access, AccessConflicts},
+    resource::Resource,
     storage::SparseSetIndex,
     system::{SystemParam, SystemParamValidationError},
     world::World,
 };
 use fixedbitset::FixedBitSet;
 use parking_lot::Mutex;
-use std::{
-    ops::{Deref, DerefMut},
-    sync::Arc,
+
+use crate::{
+    IntoScriptPluginParams,
+    bindings::{
+        WorldAccessGuard, WorldGuard, access_map::ReflectAccessId, pretty_print::DisplayWithWorld,
+        script_value::ScriptValue,
+    },
+    context::ContextLoadingSettings,
+    error::{InteropError, ScriptError},
+    event::{CallbackLabel, IntoCallbackLabel},
+    handler::ScriptingHandler,
+    runtime::RuntimeContainer,
+    script::{ScriptAttachment, ScriptContext, StaticScripts},
 };
 
 /// Executes `system_state.get_mut` followed by `system_state.apply` after running the given closure, makes sure state is correctly handled in the context of an exclusive system.

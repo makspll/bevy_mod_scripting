@@ -1,18 +1,16 @@
 //! Script related types, functions and components
 
-use crate::asset::ScriptAsset;
-use crate::event::ScriptEvent;
-use bevy::ecs::component::HookContext;
-use bevy::ecs::entity::Entity;
-use bevy::ecs::resource::Resource;
-use bevy::ecs::world::DeferredWorld;
-use bevy::platform::collections::HashSet;
-use bevy::prelude::ReflectComponent;
+use std::{collections::HashMap, fmt, ops::Deref};
+
 use bevy::{
     asset::{Asset, AssetId, Handle},
+    ecs::{component::HookContext, entity::Entity, resource::Resource, world::DeferredWorld},
+    platform::collections::HashSet,
+    prelude::ReflectComponent,
     reflect::Reflect,
 };
-use std::{collections::HashMap, fmt, ops::Deref};
+
+use crate::{asset::ScriptAsset, event::ScriptEvent};
 
 mod context_key;
 mod script_context;

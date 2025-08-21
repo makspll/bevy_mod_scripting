@@ -1,4 +1,8 @@
-use super::script_value::{FromDynamic, FunctionWithReceiver, IntoDynamic, RHAI_CALLER_CONTEXT};
+use std::{
+    any::TypeId,
+    ops::{Deref, DerefMut},
+};
+
 use bevy_mod_scripting_core::{
     bindings::{
         ReflectReference, ThreadWorldContainer, WorldContainer,
@@ -9,11 +13,9 @@ use bevy_mod_scripting_core::{
     reflection_extensions::TypeIdExtensions,
 };
 use rhai::{CustomType, Dynamic, EvalAltResult};
-use std::{
-    any::TypeId,
-    ops::{Deref, DerefMut},
-};
 use strum::VariantNames;
+
+use super::script_value::{FromDynamic, FunctionWithReceiver, IntoDynamic, RHAI_CALLER_CONTEXT};
 
 #[derive(Debug, strum::EnumString, strum::VariantNames, Clone)]
 /// A list of reserved keywords in Rhai

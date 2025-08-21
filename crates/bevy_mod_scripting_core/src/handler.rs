@@ -1,4 +1,14 @@
 //! Contains the logic for handling script callback events
+use bevy::{
+    ecs::{
+        event::EventCursor,
+        system::{Local, SystemState},
+        world::{Mut, World},
+    },
+    log::error,
+    prelude::Events,
+};
+
 use crate::{
     IntoScriptPluginParams, Language,
     bindings::{
@@ -13,15 +23,6 @@ use crate::{
     },
     extractors::{HandlerContext, WithWorldGuard},
     script::ScriptAttachment,
-};
-use bevy::{
-    ecs::{
-        event::EventCursor,
-        system::{Local, SystemState},
-        world::{Mut, World},
-    },
-    log::error,
-    prelude::Events,
 };
 
 /// A function that handles a callback event
