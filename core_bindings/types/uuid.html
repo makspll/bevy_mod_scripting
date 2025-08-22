@@ -190,27 +190,27 @@
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
-<tr><td><a href="./uuid/as_u64_pair.html">as_u64_pair</a></td><td>Returns two 64bit values containing the value.  The bytes in the UUID will be split into two `u64`....</td></tr>
-<tr><td><a href="./uuid/max.html">max</a></td><td>The 'max UUID' (all ones).  The max UUID is a special form of UUID that is specified to have all  1...</td></tr>
+<tr><td><a href="./uuid/get_node_id.html">get_node_id</a></td><td>If the UUID is the correct version (v1, or v6) this will return the  node value as a 6-byte array. ...</td></tr>
 <tr><td><a href="./uuid/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
 <tr><td><a href="./uuid/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./uuid/into_bytes.html">into_bytes</a></td><td>Consumes self and returns the underlying byte value of the UUID.  # Examples  ```  # use uuid::Uuid;  let bytes = [      0xa1, 0xa2, 0xa3, 0xa4,      0xb1, 0xb2,      0xc1, 0xc2,      0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8,  ];  let uuid = Uuid::from_bytes(bytes);  assert_eq!(bytes, uuid.into_bytes());  ```</td></tr>
-<tr><td><a href="./uuid/get_version_num.html">get_version_num</a></td><td>Returns the version number of the UUID.  This represents the algorithm used to generate the value. ...</td></tr>
-<tr><td><a href="./uuid/from_bytes_le.html">from_bytes_le</a></td><td>Creates a UUID using the supplied bytes in little endian order.  The individual fields encoded in t...</td></tr>
-<tr><td><a href="./uuid/from_bytes.html">from_bytes</a></td><td>Creates a UUID using the supplied bytes.  # Examples  Basic usage:  ```  # fn main() -&gt; Result&lt;(), uuid::Error&gt; {  # use uuid::Uuid;  let bytes = [      0xa1, 0xa2, 0xa3, 0xa4,      0xb1, 0xb2,      0xc1, 0xc2,      0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8,  ];  let uuid = Uuid::from_bytes(bytes);  assert_eq!(      uuid.hyphenated().to_string(),      "a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8"  );  # Ok(())  # }  ```</td></tr>
-<tr><td><a href="./uuid/to_bytes_le.html">to_bytes_le</a></td><td>Returns the bytes of the UUID in little-endian order.  The bytes will be flipped to convert into li...</td></tr>
-<tr><td><a href="./uuid/is_max.html">is_max</a></td><td>Tests if the UUID is max (all ones).</td></tr>
-<tr><td><a href="./uuid/from_u128_le.html">from_u128_le</a></td><td>Creates a UUID from a 128bit value in little-endian order.  The entire value will be flipped to con...</td></tr>
-<tr><td><a href="./uuid/new_v4.html">new_v4</a></td><td>Creates a random UUID.  This uses the [`getrandom`] crate to utilise the operating system's RNG  as the source of random numbers. If you'd like to use a custom  generator, don't use this method: generate random bytes using your  custom generator and pass them to the  [`uuid::Builder::from_random_bytes`]...</td></tr>
-<tr><td><a href="./uuid/from_u128.html">from_u128</a></td><td>Creates a UUID from a 128bit value.  # Examples  Basic usage:  ```  # use uuid::Uuid;  let v = 0xa1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8u128;  let uuid = Uuid::from_u128(v);  assert_eq!(      "a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8",      uuid.hyphenated().to_string(),  );  ```</td></tr>
-<tr><td><a href="./uuid/to_u128_le.html">to_u128_le</a></td><td>Returns a 128bit little-endian value containing the value.  The bytes in the `u128` will be flipped...</td></tr>
-<tr><td><a href="./uuid/as_u128.html">as_u128</a></td><td>Returns a 128bit value containing the value.  The bytes in the UUID will be packed directly into a `u128`...</td></tr>
-<tr><td><a href="./uuid/is_nil.html">is_nil</a></td><td>Tests if the UUID is nil (all zeros).</td></tr>
-<tr><td><a href="./uuid/from_u64_pair.html">from_u64_pair</a></td><td>Creates a UUID from two 64bit values.  # Examples  Basic usage:  ```  # use uuid::Uuid;  let hi = 0xa1a2a3a4b1b2c1c2u64;  let lo = 0xd1d2d3d4d5d6d7d8u64;  let uuid = Uuid::from_u64_pair(hi, lo);  assert_eq!(      "a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8",      uuid.hyphenated().to_string(),  );  `...</td></tr>
-<tr><td><a href="./uuid/assert_receiver_is_total_eq.html">assert_receiver_is_total_eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./uuid/nil.html">nil</a></td><td>The 'nil UUID' (all zeros).  The nil UUID is a special form of UUID that is specified to have all  ...</td></tr>
-<tr><td><a href="./uuid/get_node_id.html">get_node_id</a></td><td>If the UUID is the correct version (v1, or v6) this will return the  node value as a 6-byte array. ...</td></tr>
 <tr><td><a href="./uuid/encode_buffer.html">encode_buffer</a></td><td>A buffer that can be used for `encode_...` calls, that is  guaranteed to be long enough for any of the format adapters.  # Examples  ```  # use uuid::Uuid;  let uuid = Uuid::nil();  assert_...</td></tr>
+<tr><td><a href="./uuid/from_bytes.html">from_bytes</a></td><td>Creates a UUID using the supplied bytes.  # Examples  Basic usage:  ```  # fn main() -&gt; Result&lt;(), uuid::Error&gt; {  # use uuid::Uuid;  let bytes = [      0xa1, 0xa2, 0xa3, 0xa4,      0xb1, 0xb2,      0xc1, 0xc2,      0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8,  ];  let uuid = Uuid::from_bytes(bytes);  assert_eq!(      uuid.hyphenated().to_string(),      "a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8"  );  # Ok(())  # }  ```</td></tr>
+<tr><td><a href="./uuid/as_u64_pair.html">as_u64_pair</a></td><td>Returns two 64bit values containing the value.  The bytes in the UUID will be split into two `u64`....</td></tr>
+<tr><td><a href="./uuid/from_u128_le.html">from_u128_le</a></td><td>Creates a UUID from a 128bit value in little-endian order.  The entire value will be flipped to con...</td></tr>
+<tr><td><a href="./uuid/from_bytes_le.html">from_bytes_le</a></td><td>Creates a UUID using the supplied bytes in little endian order.  The individual fields encoded in t...</td></tr>
+<tr><td><a href="./uuid/as_u128.html">as_u128</a></td><td>Returns a 128bit value containing the value.  The bytes in the UUID will be packed directly into a `u128`...</td></tr>
+<tr><td><a href="./uuid/from_u128.html">from_u128</a></td><td>Creates a UUID from a 128bit value.  # Examples  Basic usage:  ```  # use uuid::Uuid;  let v = 0xa1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8u128;  let uuid = Uuid::from_u128(v);  assert_eq!(      "a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8",      uuid.hyphenated().to_string(),  );  ```</td></tr>
+<tr><td><a href="./uuid/assert_receiver_is_total_eq.html">assert_receiver_is_total_eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./uuid/is_nil.html">is_nil</a></td><td>Tests if the UUID is nil (all zeros).</td></tr>
+<tr><td><a href="./uuid/new_v4.html">new_v4</a></td><td>Creates a random UUID.  This uses the [`getrandom`] crate to utilise the operating system's RNG  as the source of random numbers. If you'd like to use a custom  generator, don't use this method: generate random bytes using your  custom generator and pass them to the  [`uuid::Builder::from_random_bytes`]...</td></tr>
+<tr><td><a href="./uuid/to_u128_le.html">to_u128_le</a></td><td>Returns a 128bit little-endian value containing the value.  The bytes in the `u128` will be flipped...</td></tr>
+<tr><td><a href="./uuid/get_version_num.html">get_version_num</a></td><td>Returns the version number of the UUID.  This represents the algorithm used to generate the value. ...</td></tr>
+<tr><td><a href="./uuid/into_bytes.html">into_bytes</a></td><td>Consumes self and returns the underlying byte value of the UUID.  # Examples  ```  # use uuid::Uuid;  let bytes = [      0xa1, 0xa2, 0xa3, 0xa4,      0xb1, 0xb2,      0xc1, 0xc2,      0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8,  ];  let uuid = Uuid::from_bytes(bytes);  assert_eq!(bytes, uuid.into_bytes());  ```</td></tr>
+<tr><td><a href="./uuid/from_u64_pair.html">from_u64_pair</a></td><td>Creates a UUID from two 64bit values.  # Examples  Basic usage:  ```  # use uuid::Uuid;  let hi = 0xa1a2a3a4b1b2c1c2u64;  let lo = 0xd1d2d3d4d5d6d7d8u64;  let uuid = Uuid::from_u64_pair(hi, lo);  assert_eq!(      "a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8",      uuid.hyphenated().to_string(),  );  `...</td></tr>
+<tr><td><a href="./uuid/is_max.html">is_max</a></td><td>Tests if the UUID is max (all ones).</td></tr>
+<tr><td><a href="./uuid/nil.html">nil</a></td><td>The 'nil UUID' (all zeros).  The nil UUID is a special form of UUID that is specified to have all  ...</td></tr>
+<tr><td><a href="./uuid/max.html">max</a></td><td>The 'max UUID' (all ones).  The max UUID is a special form of UUID that is specified to have all  1...</td></tr>
+<tr><td><a href="./uuid/to_bytes_le.html">to_bytes_le</a></td><td>Returns the bytes of the UUID in little-endian order.  The bytes will be flipped to convert into li...</td></tr>
 </tbody></table>
 </div>
                     </main>
@@ -221,7 +221,7 @@
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/uuid/as_u64_pair.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/uuid/get_node_id.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -235,7 +235,7 @@
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/uuid/as_u64_pair.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/uuid/get_node_id.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

@@ -196,67 +196,67 @@
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
-<tr><td><a href="./quat/is_near_identity.html">is_near_identity</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./quat/from_affine3.html">from_affine3</a></td><td>Creates a quaternion from a 3x3 rotation matrix inside a 3D affine transform.  Note if the input af...</td></tr>
-<tr><td><a href="./quat/xyz.html">xyz</a></td><td>Returns the vector part of the quaternion.</td></tr>
-<tr><td><a href="./quat/from_mat4.html">from_mat4</a></td><td>Creates a quaternion from the upper 3x3 rotation matrix inside a homogeneous 4x4 matrix.  Note if t...</td></tr>
-<tr><td><a href="./quat/from_rotation_arc.html">from_rotation_arc</a></td><td>Gets the minimal rotation for transforming `from` to `to`.  The rotation is in the  plane spanned b...</td></tr>
-<tr><td><a href="./quat/from_xyzw.html">from_xyzw</a></td><td>Creates a new rotation quaternion.  This should generally not be called manually unless you know wh...</td></tr>
-<tr><td><a href="./quat/mul_vec3a.html">mul_vec3a</a></td><td>Multiplies a quaternion and a 3D vector, returning the rotated vector.</td></tr>
-<tr><td><a href="./quat/mul-3.html">mul-3</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./quat/length_recip.html">length_recip</a></td><td>Computes `1.0 / length()`.  For valid results, `self` must _not_ be of length zero.</td></tr>
-<tr><td><a href="./quat/from_rotation_y.html">from_rotation_y</a></td><td>Creates a quaternion from the `angle` (in radians) around the y axis.</td></tr>
-<tr><td><a href="./quat/is_normalized.html">is_normalized</a></td><td>Returns whether `self` of length `1.0` or not.  Uses a precision threshold of `1e-6`.</td></tr>
-<tr><td><a href="./quat/is_finite.html">is_finite</a></td><td>Returns `true` if, and only if, all elements are finite.  If any element is either `NaN`, positive ...</td></tr>
-<tr><td><a href="./quat/from_mat3a.html">from_mat3a</a></td><td>Creates a quaternion from a 3x3 SIMD aligned rotation matrix.  Note if the input matrix contain sca...</td></tr>
-<tr><td><a href="./quat/div.html">div</a></td><td>Divides a quaternion by a scalar value.  The quotient is not guaranteed to be normalized.</td></tr>
-<tr><td><a href="./quat/mul.html">mul</a></td><td>Multiplies two quaternions. If they each represent a rotation, the result will  represent the combi...</td></tr>
-<tr><td><a href="./quat/mul-2.html">mul-2</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./quat/from_rotation_z.html">from_rotation_z</a></td><td>Creates a quaternion from the `angle` (in radians) around the z axis.</td></tr>
-<tr><td><a href="./quat/from_rotation_x.html">from_rotation_x</a></td><td>Creates a quaternion from the `angle` (in radians) around the x axis.</td></tr>
-<tr><td><a href="./quat/conjugate.html">conjugate</a></td><td>Returns the quaternion conjugate of `self`. For a unit quaternion the  conjugate is also the invers...</td></tr>
-<tr><td><a href="./quat/is_nan.html">is_nan</a></td><td>Returns `true` if any elements are `NAN`.</td></tr>
-<tr><td><a href="./quat/inverse.html">inverse</a></td><td>Returns the inverse of a normalized quaternion.  Typically quaternion inverse returns the conjugate...</td></tr>
-<tr><td><a href="./quat/neg.html">neg</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./quat/mul-1.html">mul-1</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./quat/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./quat/length.html">length</a></td><td>Computes the length of `self`.</td></tr>
-<tr><td><a href="./quat/as_dquat.html">as_dquat</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./quat/from_vec4.html">from_vec4</a></td><td>Creates a new rotation quaternion from a 4D vector.  # Preconditions  This function does not check ...</td></tr>
-<tr><td><a href="./quat/from_array.html">from_array</a></td><td>Creates a rotation quaternion from an array.  # Preconditions  This function does not check if the ...</td></tr>
-<tr><td><a href="./quat/to_array.html">to_array</a></td><td>`[x, y, z, w]`</td></tr>
-<tr><td><a href="./quat/length_squared.html">length_squared</a></td><td>Computes the squared length of `self`.  This is generally faster than `length()` as it avoids a squ...</td></tr>
-<tr><td><a href="./quat/mul_quat.html">mul_quat</a></td><td>Multiplies two quaternions. If they each represent a rotation, the result will  represent the combi...</td></tr>
-<tr><td><a href="./quat/sub.html">sub</a></td><td>Subtracts the `rhs` quaternion from `self`.  The difference is not guaranteed to be normalized.</td></tr>
-<tr><td><a href="./quat/from_rotation_arc_2d.html">from_rotation_arc_2d</a></td><td>Gets the minimal rotation for transforming `from` to `to`.  The resulting rotation is  around the z...</td></tr>
-<tr><td><a href="./quat/slerp.html">slerp</a></td><td>Performs a spherical linear interpolation between `self` and `end`  based on the value `s`.  When `s`...</td></tr>
 <tr><td><a href="./quat/rotate_towards.html">rotate_towards</a></td><td>Rotates towards `rhs` up to `max_angle` (in radians).  When `max_angle` is `0.0`, the result will b...</td></tr>
+<tr><td><a href="./quat/length.html">length</a></td><td>Computes the length of `self`.</td></tr>
+<tr><td><a href="./quat/length_recip.html">length_recip</a></td><td>Computes `1.0 / length()`.  For valid results, `self` must _not_ be of length zero.</td></tr>
+<tr><td><a href="./quat/is_nan.html">is_nan</a></td><td>Returns `true` if any elements are `NAN`.</td></tr>
+<tr><td><a href="./quat/mul-1.html">mul-1</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./quat/from_array.html">from_array</a></td><td>Creates a rotation quaternion from an array.  # Preconditions  This function does not check if the ...</td></tr>
 <tr><td><a href="./quat/to_euler.html">to_euler</a></td><td>Returns the rotation angles for the given euler rotation sequence.</td></tr>
-<tr><td><a href="./quat/from_rotation_arc_colinear.html">from_rotation_arc_colinear</a></td><td>Gets the minimal rotation for transforming `from` to either `to` or `-to`.  This means  that the re...</td></tr>
-<tr><td><a href="./quat/from_mat3.html">from_mat3</a></td><td>Creates a quaternion from a 3x3 rotation matrix.  Note if the input matrix contain scales, shears, ...</td></tr>
-<tr><td><a href="./quat/from_axis_angle.html">from_axis_angle</a></td><td>Create a quaternion for a normalized rotation `axis` and `angle` (in radians).  The axis must be a ...</td></tr>
-<tr><td><a href="./quat/lerp.html">lerp</a></td><td>Performs a linear interpolation between `self` and `rhs` based on  the value `s`.  When `s` is `0.0...</td></tr>
-<tr><td><a href="./quat/to_scaled_axis.html">to_scaled_axis</a></td><td>Returns the rotation axis scaled by the rotation in radians.</td></tr>
-<tr><td><a href="./quat/add.html">add</a></td><td>Adds two quaternions.  The sum is not guaranteed to be normalized.  Note that addition is not the s...</td></tr>
-<tr><td><a href="./quat/from_euler.html">from_euler</a></td><td>Creates a quaternion from the given Euler rotation sequence and the angles (in radians).</td></tr>
-<tr><td><a href="./quat/normalize.html">normalize</a></td><td>Returns `self` normalized to length 1.0.  For valid results, `self` must _not_ be of length zero.  ...</td></tr>
+<tr><td><a href="./quat/from_mat3a.html">from_mat3a</a></td><td>Creates a quaternion from a 3x3 SIMD aligned rotation matrix.  Note if the input matrix contain sca...</td></tr>
+<tr><td><a href="./quat/inverse.html">inverse</a></td><td>Returns the inverse of a normalized quaternion.  Typically quaternion inverse returns the conjugate...</td></tr>
+<tr><td><a href="./quat/length_squared.html">length_squared</a></td><td>Computes the squared length of `self`.  This is generally faster than `length()` as it avoids a squ...</td></tr>
+<tr><td><a href="./quat/is_normalized.html">is_normalized</a></td><td>Returns whether `self` of length `1.0` or not.  Uses a precision threshold of `1e-6`.</td></tr>
+<tr><td><a href="./quat/from_affine3.html">from_affine3</a></td><td>Creates a quaternion from a 3x3 rotation matrix inside a 3D affine transform.  Note if the input af...</td></tr>
 <tr><td><a href="./quat/abs_diff_eq.html">abs_diff_eq</a></td><td>Returns true if the absolute difference of all elements between `self` and `rhs`  is less than or e...</td></tr>
-<tr><td><a href="./quat/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./quat/dot.html">dot</a></td><td>Computes the dot product of `self` and `rhs`. The dot product is  equal to the cosine of the angle ...</td></tr>
-<tr><td><a href="./quat/angle_between.html">angle_between</a></td><td>Returns the angle (in radians) for the minimal rotation  for transforming this quaternion into anot...</td></tr>
-<tr><td><a href="./quat/mul_vec3.html">mul_vec3</a></td><td>Multiplies a quaternion and a 3D vector, returning the rotated vector.  # Panics  Will panic if `self`...</td></tr>
+<tr><td><a href="./quat/from_rotation_z.html">from_rotation_z</a></td><td>Creates a quaternion from the `angle` (in radians) around the z axis.</td></tr>
+<tr><td><a href="./quat/add.html">add</a></td><td>Adds two quaternions.  The sum is not guaranteed to be normalized.  Note that addition is not the s...</td></tr>
+<tr><td><a href="./quat/from_rotation_x.html">from_rotation_x</a></td><td>Creates a quaternion from the `angle` (in radians) around the x axis.</td></tr>
+<tr><td><a href="./quat/lerp.html">lerp</a></td><td>Performs a linear interpolation between `self` and `rhs` based on  the value `s`.  When `s` is `0.0...</td></tr>
+<tr><td><a href="./quat/from_vec4.html">from_vec4</a></td><td>Creates a new rotation quaternion from a 4D vector.  # Preconditions  This function does not check ...</td></tr>
+<tr><td><a href="./quat/is_near_identity.html">is_near_identity</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./quat/normalize.html">normalize</a></td><td>Returns `self` normalized to length 1.0.  For valid results, `self` must _not_ be of length zero.  ...</td></tr>
+<tr><td><a href="./quat/from_rotation_arc.html">from_rotation_arc</a></td><td>Gets the minimal rotation for transforming `from` to `to`.  The rotation is in the  plane spanned b...</td></tr>
+<tr><td><a href="./quat/xyz.html">xyz</a></td><td>Returns the vector part of the quaternion.</td></tr>
+<tr><td><a href="./quat/mul_vec3a.html">mul_vec3a</a></td><td>Multiplies a quaternion and a 3D vector, returning the rotated vector.</td></tr>
+<tr><td><a href="./quat/from_euler.html">from_euler</a></td><td>Creates a quaternion from the given Euler rotation sequence and the angles (in radians).</td></tr>
+<tr><td><a href="./quat/to_scaled_axis.html">to_scaled_axis</a></td><td>Returns the rotation axis scaled by the rotation in radians.</td></tr>
+<tr><td><a href="./quat/from_rotation_arc_colinear.html">from_rotation_arc_colinear</a></td><td>Gets the minimal rotation for transforming `from` to either `to` or `-to`.  This means  that the re...</td></tr>
+<tr><td><a href="./quat/neg.html">neg</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./quat/sub.html">sub</a></td><td>Subtracts the `rhs` quaternion from `self`.  The difference is not guaranteed to be normalized.</td></tr>
 <tr><td><a href="./quat/from_scaled_axis.html">from_scaled_axis</a></td><td>Create a quaternion that rotates `v.length()` radians around `v.normalize()`.  `from_scaled_axis(Vec3::ZERO)`...</td></tr>
+<tr><td><a href="./quat/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./quat/mul.html">mul</a></td><td>Multiplies two quaternions. If they each represent a rotation, the result will  represent the combi...</td></tr>
+<tr><td><a href="./quat/from_rotation_y.html">from_rotation_y</a></td><td>Creates a quaternion from the `angle` (in radians) around the y axis.</td></tr>
+<tr><td><a href="./quat/div.html">div</a></td><td>Divides a quaternion by a scalar value.  The quotient is not guaranteed to be normalized.</td></tr>
+<tr><td><a href="./quat/mul-3.html">mul-3</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./quat/slerp.html">slerp</a></td><td>Performs a spherical linear interpolation between `self` and `end`  based on the value `s`.  When `s`...</td></tr>
+<tr><td><a href="./quat/from_mat3.html">from_mat3</a></td><td>Creates a quaternion from a 3x3 rotation matrix.  Note if the input matrix contain scales, shears, ...</td></tr>
+<tr><td><a href="./quat/conjugate.html">conjugate</a></td><td>Returns the quaternion conjugate of `self`. For a unit quaternion the  conjugate is also the invers...</td></tr>
+<tr><td><a href="./quat/mul_quat.html">mul_quat</a></td><td>Multiplies two quaternions. If they each represent a rotation, the result will  represent the combi...</td></tr>
+<tr><td><a href="./quat/as_dquat.html">as_dquat</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./quat/from_rotation_arc_2d.html">from_rotation_arc_2d</a></td><td>Gets the minimal rotation for transforming `from` to `to`.  The resulting rotation is  around the z...</td></tr>
+<tr><td><a href="./quat/from_axis_angle.html">from_axis_angle</a></td><td>Create a quaternion for a normalized rotation `axis` and `angle` (in radians).  The axis must be a ...</td></tr>
+<tr><td><a href="./quat/dot.html">dot</a></td><td>Computes the dot product of `self` and `rhs`. The dot product is  equal to the cosine of the angle ...</td></tr>
+<tr><td><a href="./quat/mul_vec3.html">mul_vec3</a></td><td>Multiplies a quaternion and a 3D vector, returning the rotated vector.  # Panics  Will panic if `self`...</td></tr>
+<tr><td><a href="./quat/is_finite.html">is_finite</a></td><td>Returns `true` if, and only if, all elements are finite.  If any element is either `NaN`, positive ...</td></tr>
+<tr><td><a href="./quat/from_xyzw.html">from_xyzw</a></td><td>Creates a new rotation quaternion.  This should generally not be called manually unless you know wh...</td></tr>
+<tr><td><a href="./quat/angle_between.html">angle_between</a></td><td>Returns the angle (in radians) for the minimal rotation  for transforming this quaternion into anot...</td></tr>
+<tr><td><a href="./quat/mul-2.html">mul-2</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./quat/to_array.html">to_array</a></td><td>`[x, y, z, w]`</td></tr>
+<tr><td><a href="./quat/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./quat/from_mat4.html">from_mat4</a></td><td>Creates a quaternion from the upper 3x3 rotation matrix inside a homogeneous 4x4 matrix.  Note if t...</td></tr>
 </tbody></table>
 </div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/mat4/project_point3.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/mat4/perspective_infinite_rh.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/quat/is_near_identity.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/quat/rotate_towards.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -266,11 +266,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/mat4/project_point3.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/mat4/perspective_infinite_rh.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/quat/is_near_identity.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/quat/rotate_towards.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

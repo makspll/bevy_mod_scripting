@@ -194,46 +194,46 @@
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
 <div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
-<tr><td><a href="./daffine3/from_rotation_y.html">from_rotation_y</a></td><td>Creates an affine transform containing a 3D rotation around the y axis of  `angle` (in radians).</td></tr>
-<tr><td><a href="./daffine3/from_cols.html">from_cols</a></td><td>Creates an affine transform from three column vectors.</td></tr>
-<tr><td><a href="./daffine3/abs_diff_eq.html">abs_diff_eq</a></td><td>Returns true if the absolute difference of all elements between `self` and `rhs`  is less than or e...</td></tr>
-<tr><td><a href="./daffine3/look_at_rh.html">look_at_rh</a></td><td>Creates a right-handed view transform using a camera position, an up direction, and a focal  point....</td></tr>
-<tr><td><a href="./daffine3/mul-1.html">mul-1</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./daffine3/from_quat.html">from_quat</a></td><td>Creates an affine transform from the given `rotation` quaternion.</td></tr>
-<tr><td><a href="./daffine3/from_rotation_x.html">from_rotation_x</a></td><td>Creates an affine transform containing a 3D rotation around the x axis of  `angle` (in radians).</td></tr>
-<tr><td><a href="./daffine3/from_mat4.html">from_mat4</a></td><td>The given `DMat4` must be an affine transform,  i.e. contain no perspective transform.</td></tr>
-<tr><td><a href="./daffine3/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./daffine3/from_rotation_translation.html">from_rotation_translation</a></td><td>Creates an affine transform from the given 3D `rotation` and `translation`.  Equivalent to `DAffine3::from_translation(translation) * DAffine3::from_quat(rotation)`</td></tr>
-<tr><td><a href="./daffine3/inverse.html">inverse</a></td><td>Return the inverse of this transform.  Note that if the transform is not invertible the result will...</td></tr>
-<tr><td><a href="./daffine3/is_finite.html">is_finite</a></td><td>Returns `true` if, and only if, all elements are finite.  If any element is either `NaN`, positive ...</td></tr>
-<tr><td><a href="./daffine3/look_at_lh.html">look_at_lh</a></td><td>Creates a left-handed view transform using a camera position, an up direction, and a focal  point. ...</td></tr>
-<tr><td><a href="./daffine3/transform_point3.html">transform_point3</a></td><td>Transforms the given 3D points, applying shear, scale, rotation and translation.</td></tr>
-<tr><td><a href="./daffine3/from_scale_rotation_translation.html">from_scale_rotation_translation</a></td><td>Creates an affine transform from the given 3D `scale`, `rotation` and  `translation`.  Equivalent t...</td></tr>
-<tr><td><a href="./daffine3/from_rotation_z.html">from_rotation_z</a></td><td>Creates an affine transform containing a 3D rotation around the z axis of  `angle` (in radians).</td></tr>
-<tr><td><a href="./daffine3/mul.html">mul</a></td><td>No Documentation 🚧</td></tr>
-<tr><td><a href="./daffine3/from_scale.html">from_scale</a></td><td>Creates an affine transform that changes scale.  Note that if any scale is zero the transform will ...</td></tr>
-<tr><td><a href="./daffine3/to_cols_array.html">to_cols_array</a></td><td>Creates a `[f64; 12]` array storing data in column major order.</td></tr>
 <tr><td><a href="./daffine3/to_cols_array_2d.html">to_cols_array_2d</a></td><td>Creates a `[[f64; 3]; 4]` 3D array storing data in  column major order.  If you require data in row...</td></tr>
-<tr><td><a href="./daffine3/transform_vector3.html">transform_vector3</a></td><td>Transforms the given 3D vector, applying shear, scale and rotation (but NOT  translation).  To also...</td></tr>
-<tr><td><a href="./daffine3/from_translation.html">from_translation</a></td><td>Creates an affine transformation from the given 3D `translation`.</td></tr>
-<tr><td><a href="./daffine3/look_to_lh.html">look_to_lh</a></td><td>Creates a left-handed view transform using a camera position, an up direction, and a facing  direct...</td></tr>
-<tr><td><a href="./daffine3/from_axis_angle.html">from_axis_angle</a></td><td>Creates an affine transform containing a 3D rotation around a normalized  rotation `axis` of `angle...</td></tr>
-<tr><td><a href="./daffine3/from_mat3_translation.html">from_mat3_translation</a></td><td>Creates an affine transform from a 3x3 matrix (expressing scale, shear and rotation)  and a transla...</td></tr>
-<tr><td><a href="./daffine3/is_nan.html">is_nan</a></td><td>Returns `true` if any elements are `NaN`.</td></tr>
 <tr><td><a href="./daffine3/from_mat3.html">from_mat3</a></td><td>Creates an affine transform from a 3x3 matrix (expressing scale, shear and  rotation)</td></tr>
-<tr><td><a href="./daffine3/look_to_rh.html">look_to_rh</a></td><td>Creates a right-handed view transform using a camera position, an up direction, and a facing  direc...</td></tr>
+<tr><td><a href="./daffine3/from_quat.html">from_quat</a></td><td>Creates an affine transform from the given `rotation` quaternion.</td></tr>
 <tr><td><a href="./daffine3/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./daffine3/from_cols.html">from_cols</a></td><td>Creates an affine transform from three column vectors.</td></tr>
+<tr><td><a href="./daffine3/from_axis_angle.html">from_axis_angle</a></td><td>Creates an affine transform containing a 3D rotation around a normalized  rotation `axis` of `angle...</td></tr>
+<tr><td><a href="./daffine3/to_cols_array.html">to_cols_array</a></td><td>Creates a `[f64; 12]` array storing data in column major order.</td></tr>
+<tr><td><a href="./daffine3/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./daffine3/look_to_lh.html">look_to_lh</a></td><td>Creates a left-handed view transform using a camera position, an up direction, and a facing  direct...</td></tr>
+<tr><td><a href="./daffine3/inverse.html">inverse</a></td><td>Return the inverse of this transform.  Note that if the transform is not invertible the result will...</td></tr>
+<tr><td><a href="./daffine3/mul-1.html">mul-1</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./daffine3/from_scale_rotation_translation.html">from_scale_rotation_translation</a></td><td>Creates an affine transform from the given 3D `scale`, `rotation` and  `translation`.  Equivalent t...</td></tr>
+<tr><td><a href="./daffine3/abs_diff_eq.html">abs_diff_eq</a></td><td>Returns true if the absolute difference of all elements between `self` and `rhs`  is less than or e...</td></tr>
+<tr><td><a href="./daffine3/look_at_lh.html">look_at_lh</a></td><td>Creates a left-handed view transform using a camera position, an up direction, and a focal  point. ...</td></tr>
+<tr><td><a href="./daffine3/from_rotation_z.html">from_rotation_z</a></td><td>Creates an affine transform containing a 3D rotation around the z axis of  `angle` (in radians).</td></tr>
+<tr><td><a href="./daffine3/is_nan.html">is_nan</a></td><td>Returns `true` if any elements are `NaN`.</td></tr>
+<tr><td><a href="./daffine3/from_rotation_x.html">from_rotation_x</a></td><td>Creates an affine transform containing a 3D rotation around the x axis of  `angle` (in radians).</td></tr>
+<tr><td><a href="./daffine3/mul.html">mul</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./daffine3/from_rotation_translation.html">from_rotation_translation</a></td><td>Creates an affine transform from the given 3D `rotation` and `translation`.  Equivalent to `DAffine3::from_translation(translation) * DAffine3::from_quat(rotation)`</td></tr>
+<tr><td><a href="./daffine3/transform_point3.html">transform_point3</a></td><td>Transforms the given 3D points, applying shear, scale, rotation and translation.</td></tr>
+<tr><td><a href="./daffine3/look_to_rh.html">look_to_rh</a></td><td>Creates a right-handed view transform using a camera position, an up direction, and a facing  direc...</td></tr>
+<tr><td><a href="./daffine3/from_rotation_y.html">from_rotation_y</a></td><td>Creates an affine transform containing a 3D rotation around the y axis of  `angle` (in radians).</td></tr>
+<tr><td><a href="./daffine3/from_mat4.html">from_mat4</a></td><td>The given `DMat4` must be an affine transform,  i.e. contain no perspective transform.</td></tr>
+<tr><td><a href="./daffine3/transform_vector3.html">transform_vector3</a></td><td>Transforms the given 3D vector, applying shear, scale and rotation (but NOT  translation).  To also...</td></tr>
+<tr><td><a href="./daffine3/from_scale.html">from_scale</a></td><td>Creates an affine transform that changes scale.  Note that if any scale is zero the transform will ...</td></tr>
+<tr><td><a href="./daffine3/is_finite.html">is_finite</a></td><td>Returns `true` if, and only if, all elements are finite.  If any element is either `NaN`, positive ...</td></tr>
+<tr><td><a href="./daffine3/from_mat3_translation.html">from_mat3_translation</a></td><td>Creates an affine transform from a 3x3 matrix (expressing scale, shear and rotation)  and a transla...</td></tr>
+<tr><td><a href="./daffine3/from_translation.html">from_translation</a></td><td>Creates an affine transformation from the given 3D `translation`.</td></tr>
+<tr><td><a href="./daffine3/look_at_rh.html">look_at_rh</a></td><td>Creates a right-handed view transform using a camera position, an up direction, and a focal  point....</td></tr>
 </tbody></table>
 </div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/daffine2/mul.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/daffine2/to_cols_array_2d.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/daffine3/from_rotation_y.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/daffine3/to_cols_array_2d.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -243,11 +243,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/daffine2/mul.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/daffine2/to_cols_array_2d.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/daffine3/from_rotation_y.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/daffine3/to_cols_array_2d.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
