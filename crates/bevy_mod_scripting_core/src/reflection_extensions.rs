@@ -1,13 +1,15 @@
 //! Various utility functions for working with reflection types.
 
-use crate::{
-    bindings::{ReflectReference, WorldGuard},
-    error::InteropError,
-};
-use bevy::reflect::{PartialReflect, Reflect, ReflectFromReflect, ReflectMut, TypeInfo};
 use std::{
     any::{Any, TypeId},
     cmp::max,
+};
+
+use bevy::reflect::{PartialReflect, Reflect, ReflectFromReflect, ReflectMut, TypeInfo};
+
+use crate::{
+    bindings::{ReflectReference, WorldGuard},
+    error::InteropError,
 };
 
 /// Extension trait for [`PartialReflect`] providing additional functionality for working with specific types.
@@ -138,13 +140,13 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
     }
 
     fn as_option(&self) -> Result<Option<&dyn PartialReflect>, InteropError> {
-        if let bevy::reflect::ReflectRef::Enum(e) = self.reflect_ref() {
-            if e.is_type(Some("core"), "Option") {
-                if let Some(field) = e.field_at(0) {
-                    return Ok(Some(field));
-                } else {
-                    return Ok(None);
-                }
+        if let bevy::reflect::ReflectRef::Enum(e) = self.reflect_ref()
+            && e.is_type(Some("core"), "Option")
+        {
+            if let Some(field) = e.field_at(0) {
+                return Ok(Some(field));
+            } else {
+                return Ok(None);
             }
         }
 

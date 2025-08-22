@@ -1,6 +1,16 @@
 //! Commands for creating, updating and deleting scripts
 
+use std::marker::PhantomData;
+
+use bevy::{
+    asset::{Assets, Handle},
+    ecs::event::Events,
+    log::{debug, warn},
+    prelude::Command,
+};
+
 use crate::{
+    IntoScriptPluginParams, ScriptContext,
     asset::ScriptAsset,
     bindings::{ScriptValue, WorldGuard},
     context::ScriptingLoader,
@@ -9,18 +19,10 @@ use crate::{
         CallbackLabel, IntoCallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded,
         ScriptCallbackResponseEvent, ScriptEvent,
     },
-    extractors::{with_handler_system_state, HandlerContext},
+    extractors::{HandlerContext, with_handler_system_state},
     handler::{handle_script_errors, send_callback_response},
     script::{DisplayProxy, ScriptAttachment, StaticScripts},
-    IntoScriptPluginParams, ScriptContext,
 };
-use bevy::{
-    asset::{Assets, Handle},
-    ecs::event::Events,
-    log::{debug, warn},
-    prelude::Command,
-};
-use std::marker::PhantomData;
 
 /// Detaches a script, invoking the `on_script_unloaded` callback if it exists, and removes the script from the static scripts collection.
 pub struct DeleteScript<P: IntoScriptPluginParams> {
@@ -260,7 +262,6 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         if is_reload {
             phrase = "reloading";
             success = "reloaded";
-
             script_state = Self::before_reload(
                 attachment.clone(),
                 guard.clone(),
@@ -293,14 +294,13 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
 
         match result_context_to_insert {
             Ok(maybe_context) => {
-                if let Some(context) = maybe_context {
-                    if handler_ctxt
+                if let Some(context) = maybe_context
+                    && handler_ctxt
                         .script_context
                         .insert(&attachment, context)
                         .is_err()
-                    {
-                        warn!("Unable to insert script context for {}.", attachment);
-                    }
+                {
+                    warn!("Unable to insert script context for {}.", attachment);
                 }
 
                 // mark as resident in the context
@@ -334,11 +334,12 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
             Err(err) => {
                 handle_script_errors(
                     guard,
-                    vec![err
-                        .clone()
-                        .with_script(script_id.display())
-                        .with_context(P::LANGUAGE)
-                        .with_context(phrase)]
+                    vec![
+                        err.clone()
+                            .with_script(script_id.display())
+                            .with_context(P::LANGUAGE)
+                            .with_context(phrase),
+                    ]
                     .into_iter(),
                 );
                 Err(err)

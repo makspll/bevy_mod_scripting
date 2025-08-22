@@ -9,8 +9,5 @@
     "rust-analyzer.check.overrideCommand": [
         "{{ dir }}/check.sh"
     ],
-    "rust-analyzer.cargo.buildScripts.invocationStrategy": "per_workspace",
-    "rust-analyzer.cargo.buildScripts.overrideCommand": [
-        "{{ dir }}/build_scripts.sh"
-    ]
+    "rust-analyzer.cargo.buildScripts.invocationStrategy": "per_workspace"
 }

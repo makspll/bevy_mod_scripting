@@ -4,8 +4,7 @@ use std::path::PathBuf;
 
 use libtest_mimic::{Arguments, Failed, Trial};
 use script_integration_test_harness::{execute_integration_test, scenario::Scenario};
-
-use test_utils::{discover_all_tests, Test};
+use test_utils::{Test, discover_all_tests};
 
 trait TestExecutor {
     fn execute(self) -> Result<(), Failed>;

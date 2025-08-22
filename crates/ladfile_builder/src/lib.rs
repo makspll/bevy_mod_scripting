@@ -1,26 +1,6 @@
 //! Parsing definitions for the LAD (Language Agnostic Decleration) file format.
 pub mod plugin;
 
-use bevy::{ecs::world::World, log, platform::collections::HashSet};
-use bevy_mod_scripting_core::{
-    bindings::{
-        function::{
-            namespace::Namespace,
-            script_function::{
-                DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext,
-            },
-        },
-        MarkAsCore, MarkAsGenerated, MarkAsSignificant, ReflectReference,
-    },
-    docgen::{
-        info::FunctionInfo,
-        typed_through::{ThroughTypeInfo, TypedWrapperKind, UntypedWrapperKind},
-        TypedThrough,
-    },
-    match_by_type,
-};
-use bevy_reflect::{NamedField, TypeInfo, TypeRegistry, Typed, UnnamedField};
-use ladfile::*;
 use std::{
     any::TypeId,
     borrow::Cow,
@@ -29,6 +9,27 @@ use std::{
     ffi::OsString,
     path::PathBuf,
 };
+
+use bevy::{ecs::world::World, log, platform::collections::HashSet};
+use bevy_mod_scripting_core::{
+    bindings::{
+        MarkAsCore, MarkAsGenerated, MarkAsSignificant, ReflectReference,
+        function::{
+            namespace::Namespace,
+            script_function::{
+                DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext,
+            },
+        },
+    },
+    docgen::{
+        TypedThrough,
+        info::FunctionInfo,
+        typed_through::{ThroughTypeInfo, TypedWrapperKind, UntypedWrapperKind},
+    },
+    match_by_type,
+};
+use bevy_reflect::{NamedField, TypeInfo, TypeRegistry, Typed, UnnamedField};
+use ladfile::*;
 
 /// We can assume that the types here will be either primitives
 /// or reflect types, as the rest will be covered by typed wrappers
@@ -855,11 +856,11 @@ mod test {
 
     use bevy_mod_scripting_core::{
         bindings::{
+            Union, Val,
             function::{
                 from::Ref,
                 namespace::{GlobalNamespace, IntoNamespace},
             },
-            Union, Val,
         },
         docgen::info::GetFunctionInfo,
     };

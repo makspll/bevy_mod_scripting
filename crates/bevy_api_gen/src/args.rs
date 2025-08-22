@@ -249,10 +249,10 @@ impl WorkspaceMeta {
     }
 
     pub fn set_env(&self) {
-        std::env::set_var(Self::CRATES_ENV_NAME, self.crates.join(","));
-        std::env::set_var(Self::PLUGIN_DIR_NAME, &self.plugin_target_dir);
+        unsafe { std::env::set_var(Self::CRATES_ENV_NAME, self.crates.join(",")) };
+        unsafe { std::env::set_var(Self::PLUGIN_DIR_NAME, &self.plugin_target_dir) };
         if let Some(include_crates) = &self.include_crates {
-            std::env::set_var(Self::INCLUDE_CRATES_ENV_NAME, include_crates.join(","));
+            unsafe { std::env::set_var(Self::INCLUDE_CRATES_ENV_NAME, include_crates.join(",")) };
         }
     }
 }

@@ -2,7 +2,7 @@ use std::{collections::HashMap, str::FromStr};
 
 use clap::ValueEnum;
 use convert_case::{Case, Casing};
-use include_dir::{include_dir, Dir};
+use include_dir::{Dir, include_dir};
 use serde::{Deserialize, Serialize};
 use strum::*;
 use tera::{Tera, Value};
@@ -193,7 +193,7 @@ pub(crate) fn configure_tera_env(tera: &mut Tera, crate_name: &str) {
             let file = syn::parse_file(&str)
                 .map_err(|e| tera::Error::msg(e.to_string()))
                 .inspect_err(|_| {
-                    log::error!("prettyplease error on input: ```\n{}\n```", str);
+                    log::error!("prettyplease error on input: ```\n{str}\n```");
                 })?;
 
             let out = prettyplease::unparse(&file);
@@ -359,5 +359,5 @@ fn expect_str(value: &Value) -> tera::Result<&str> {
 
 fn expect_arg<'a>(args: &'a HashMap<String, Value>, key: &str) -> tera::Result<&'a Value> {
     args.get(key)
-        .ok_or_else(|| tera::Error::msg(format!("Missing argument {}", key)))
+        .ok_or_else(|| tera::Error::msg(format!("Missing argument {key}")))
 }

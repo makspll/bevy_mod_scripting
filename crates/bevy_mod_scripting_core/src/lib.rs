@@ -2,28 +2,29 @@
 //!
 //! Contains language agnostic systems and types for handling scripting in bevy.
 
-use crate::{
-    bindings::MarkAsCore,
-    context::{ContextLoadFn, ContextReloadFn},
-    event::ScriptErrorEvent,
-};
 use asset::{
-    configure_asset_systems, configure_asset_systems_for_plugin, Language, ScriptAsset,
-    ScriptAssetLoader,
+    Language, ScriptAsset, ScriptAssetLoader, configure_asset_systems,
+    configure_asset_systems_for_plugin,
 };
 use bevy::{platform::collections::HashMap, prelude::*};
 use bindings::{
-    function::script_function::AppScriptFunctionRegistry, garbage_collector,
-    schedule::AppScheduleRegistry, script_value::ScriptValue, AppReflectAllocator,
-    DynamicScriptComponentPlugin, ReflectAllocator, ReflectReference, ScriptTypeRegistration,
+    AppReflectAllocator, DynamicScriptComponentPlugin, ReflectAllocator, ReflectReference,
+    ScriptTypeRegistration, function::script_function::AppScriptFunctionRegistry,
+    garbage_collector, schedule::AppScheduleRegistry, script_value::ScriptValue,
 };
 use commands::{AddStaticScript, RemoveStaticScript};
 use context::{Context, ContextInitializer, ContextLoadingSettings, ContextPreHandlingInitializer};
 use error::ScriptError;
 use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent, ScriptEvent};
 use handler::HandlerFn;
-use runtime::{initialize_runtime, Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings};
+use runtime::{Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings, initialize_runtime};
 use script::{ContextPolicy, ScriptComponent, ScriptContext, StaticScripts};
+
+use crate::{
+    bindings::MarkAsCore,
+    context::{ContextLoadFn, ContextReloadFn},
+    event::ScriptErrorEvent,
+};
 
 pub mod asset;
 pub mod bindings;

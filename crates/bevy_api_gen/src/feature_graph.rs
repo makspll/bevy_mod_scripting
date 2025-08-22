@@ -241,18 +241,18 @@ impl FeatureGraph {
                         } else {
                             let parts = effect.split('/').collect::<Vec<_>>();
                             if parts.len() > 2 {
-                                panic!("Invalid feature effect: {}", effect);
+                                panic!("Invalid feature effect: {effect}");
                             } else if parts.len() == 1 {
-                                return FeatureEffect::EnableFeature(parts[0].to_owned());
+                                FeatureEffect::EnableFeature(parts[0].to_owned())
                             } else {
-                                return FeatureEffect::EnableDepFeature {
+                                FeatureEffect::EnableDepFeature {
                                     feature: parts[1].to_owned(),
                                     dependency: parts[0]
                                         .strip_suffix('?')
                                         .unwrap_or(parts[0])
                                         .to_owned(),
                                     enable_optional: !parts[0].ends_with('?'),
-                                };
+                                }
                             }
                         }
                     })

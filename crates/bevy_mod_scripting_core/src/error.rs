@@ -1,17 +1,14 @@
 //! Errors that can occur when interacting with the scripting system
 
-use crate::script::DisplayProxy;
-use crate::{
-    bindings::{
-        access_map::{DisplayCodeLocation, ReflectAccessId},
-        function::namespace::Namespace,
-        pretty_print::DisplayWithWorld,
-        script_value::ScriptValue,
-        ReflectBaseType, ReflectReference,
-    },
-    script::ContextKey,
-    ScriptAsset,
+use std::{
+    any::TypeId,
+    borrow::Cow,
+    fmt::{Debug, Display},
+    ops::Deref,
+    str::Utf8Error,
+    sync::Arc,
 };
+
 use bevy::{
     asset::{AssetPath, Handle},
     ecs::{
@@ -21,13 +18,17 @@ use bevy::{
     prelude::Entity,
     reflect::{PartialReflect, Reflect},
 };
-use std::{
-    any::TypeId,
-    borrow::Cow,
-    fmt::{Debug, Display},
-    ops::Deref,
-    str::Utf8Error,
-    sync::Arc,
+
+use crate::{
+    ScriptAsset,
+    bindings::{
+        ReflectBaseType, ReflectReference,
+        access_map::{DisplayCodeLocation, ReflectAccessId},
+        function::namespace::Namespace,
+        pretty_print::DisplayWithWorld,
+        script_value::ScriptValue,
+    },
+    script::{ContextKey, DisplayProxy},
 };
 
 /// An error with an optional script Context
@@ -1623,11 +1624,10 @@ impl Default for InteropErrorInner {
 mod test {
     use bevy::prelude::{AppTypeRegistry, World};
 
-    use crate::bindings::{
-        function::script_function::AppScriptFunctionRegistry, AppReflectAllocator, WorldGuard,
-    };
-
     use super::*;
+    use crate::bindings::{
+        AppReflectAllocator, WorldGuard, function::script_function::AppScriptFunctionRegistry,
+    };
 
     #[test]
     fn test_error_display() {

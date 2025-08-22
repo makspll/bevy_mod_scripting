@@ -23,7 +23,7 @@ pub mod rhai {
 
 use bevy::app::plugin_group;
 use bevy_mod_scripting_core::{
-    bindings::CoreScriptGlobalsPlugin, BMSScriptingInfrastructurePlugin,
+    BMSScriptingInfrastructurePlugin, bindings::CoreScriptGlobalsPlugin,
 };
 pub use bevy_mod_scripting_derive::*;
 pub use bevy_mod_scripting_functions::*;

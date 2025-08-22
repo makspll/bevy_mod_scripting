@@ -1,14 +1,16 @@
-use super::reference::LuaReflectReference;
+use std::{
+    collections::{HashMap, VecDeque},
+    ops::{Deref, DerefMut},
+};
+
 use bevy_mod_scripting_core::{
     asset::Language,
     bindings::{function::script_function::FunctionCallContext, script_value::ScriptValue},
     error::InteropError,
 };
 use mlua::{FromLua, IntoLua, Value, Variadic};
-use std::{
-    collections::{HashMap, VecDeque},
-    ops::{Deref, DerefMut},
-};
+
+use super::reference::LuaReflectReference;
 
 #[derive(Debug, Clone)]
 /// A wrapper around a [`ScriptValue`] that implements [`FromLua`] and [`IntoLua`]
@@ -112,7 +114,7 @@ impl FromLua for LuaScriptValue {
                     from: value.type_name(),
                     to: "ScriptValue".to_owned(),
                     message: Some("unsupported value type".to_owned()),
-                })
+                });
             }
         }
         .into())

@@ -404,11 +404,7 @@ impl MarkdownBuilder {
 
     fn separator(&self) -> &'static str {
         if self.inline {
-            if self.tight_inline {
-                ""
-            } else {
-                " "
-            }
+            if self.tight_inline { "" } else { " " }
         } else {
             "\n\n"
         }

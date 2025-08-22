@@ -1,14 +1,16 @@
-use super::script_value::{LuaScriptValue, LUA_CALLER_CONTEXT};
+use std::any::TypeId;
+
 use bevy_mod_scripting_core::{
     bindings::{
-        pretty_print::DisplayWithWorld, script_value::ScriptValue, ReflectReference,
-        ThreadWorldContainer, WorldContainer,
+        ReflectReference, ThreadWorldContainer, WorldContainer, pretty_print::DisplayWithWorld,
+        script_value::ScriptValue,
     },
     error::InteropError,
     reflection_extensions::TypeIdExtensions,
 };
 use mlua::{MetaMethod, UserData, UserDataMethods};
-use std::any::TypeId;
+
+use super::script_value::{LUA_CALLER_CONTEXT, LuaScriptValue};
 
 /// Lua UserData wrapper for [`bevy_mod_scripting_core::bindings::ReflectReference`].
 /// Acts as a lua reflection interface. Any value which is registered in the type registry can be interacted with using this type.

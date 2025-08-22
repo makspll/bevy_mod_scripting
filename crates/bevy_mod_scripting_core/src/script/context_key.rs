@@ -1,7 +1,9 @@
+use std::fmt;
+
+use bevy::prelude::Entity;
+
 use super::*;
 use crate::ScriptAsset;
-use bevy::prelude::Entity;
-use std::fmt;
 
 /// Specifies a unique attachment of a script. These attachments are mapped to [`ContextKey`]'s depending on the context policy used.
 #[derive(Debug, Hash, Clone, PartialEq, Eq, Reflect)]
@@ -137,11 +139,12 @@ impl ContextKey {
     /// If a script handle is present and is strong, convert it to a weak
     /// handle.
     pub fn into_weak(mut self) -> Self {
-        if let Some(script) = &self.script {
-            if script.is_strong() {
-                self.script = Some(script.clone_weak());
-            }
+        if let Some(script) = &self.script
+            && script.is_strong()
+        {
+            self.script = Some(script.clone_weak());
         }
+
         self
     }
 }

@@ -4,8 +4,9 @@
 //! - Centralization, we want to centralize as much of the "documentation" logic in the building of this format. For example, instead of letting each backend parse argument docstrings from the function docstring, we can do this here, and let the backends concentrate on pure generation.
 //! - Rust centric, the format describes bindings from the Rust side, so we generate rust centric declarations. These can then freely be converted into whatever representaion necessary.
 
-use indexmap::IndexMap;
 use std::borrow::Cow;
+
+use indexmap::IndexMap;
 
 /// The current version of the LAD_VERSION format supported by this library.
 /// Earlier versions are not guaranteed to be supported.

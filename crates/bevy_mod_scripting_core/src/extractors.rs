@@ -2,32 +2,34 @@
 //!
 //! These are designed to be used to pipe inputs into other systems which require them, while handling any configuration erorrs nicely.
 #![allow(deprecated)]
-use crate::bindings::pretty_print::DisplayWithWorld;
-use crate::handler::ScriptingHandler;
-use crate::{
-    bindings::{
-        access_map::ReflectAccessId, script_value::ScriptValue, WorldAccessGuard, WorldGuard,
-    },
-    context::ContextLoadingSettings,
-    error::{InteropError, ScriptError},
-    event::{CallbackLabel, IntoCallbackLabel},
-    runtime::RuntimeContainer,
-    script::{ScriptAttachment, ScriptContext, StaticScripts},
-    IntoScriptPluginParams,
+use std::{
+    ops::{Deref, DerefMut},
+    sync::Arc,
 };
-use bevy::ecs::resource::Resource;
+
 use bevy::ecs::{
     component::ComponentId,
     query::{Access, AccessConflicts},
+    resource::Resource,
     storage::SparseSetIndex,
     system::{SystemParam, SystemParamValidationError},
     world::World,
 };
 use fixedbitset::FixedBitSet;
 use parking_lot::Mutex;
-use std::{
-    ops::{Deref, DerefMut},
-    sync::Arc,
+
+use crate::{
+    IntoScriptPluginParams,
+    bindings::{
+        WorldAccessGuard, WorldGuard, access_map::ReflectAccessId, pretty_print::DisplayWithWorld,
+        script_value::ScriptValue,
+    },
+    context::ContextLoadingSettings,
+    error::{InteropError, ScriptError},
+    event::{CallbackLabel, IntoCallbackLabel},
+    handler::ScriptingHandler,
+    runtime::RuntimeContainer,
+    script::{ScriptAttachment, ScriptContext, StaticScripts},
 };
 
 /// Executes `system_state.get_mut` followed by `system_state.apply` after running the given closure, makes sure state is correctly handled in the context of an exclusive system.
@@ -102,7 +104,7 @@ unsafe impl<T: Resource + Default> SystemParam for ResScope<'_, T> {
         _change_tick: bevy::ecs::component::Tick,
     ) -> Self::Item<'world, 'state> {
         state.1 = true;
-        if let Some(mut r) = world.get_resource_mut::<T>() {
+        if let Some(mut r) = unsafe { world.get_resource_mut::<T>() } {
             std::mem::swap(&mut state.0, &mut r);
         }
         ResScope(&mut state.0)
@@ -309,7 +311,7 @@ unsafe impl<T: SystemParam> SystemParam for WithWorldGuard<'_, '_, T> {
         change_tick: bevy::ecs::component::Tick,
     ) -> Self::Item<'world, 'state> {
         // create a guard which can only access the resources/components specified by the system.
-        let guard = WorldAccessGuard::new_exclusive(world.world_mut());
+        let guard = WorldAccessGuard::new_exclusive(unsafe { world.world_mut() });
 
         #[allow(
             clippy::panic,
@@ -318,16 +320,22 @@ unsafe impl<T: SystemParam> SystemParam for WithWorldGuard<'_, '_, T> {
         for (raid, is_write) in &state.1 {
             if *is_write {
                 if !guard.claim_write_access(*raid) {
-                    panic!("System tried to access set of system params which break rust aliasing rules. Aliasing access: {}", (*raid).display_with_world(guard.clone()));
+                    panic!(
+                        "System tried to access set of system params which break rust aliasing rules. Aliasing access: {}",
+                        (*raid).display_with_world(guard.clone())
+                    );
                 }
             } else if !guard.claim_read_access(*raid) {
-                panic!("System tried to access set of system params which break rust aliasing rules. Aliasing access: {}", (*raid).display_with_world(guard.clone()));
+                panic!(
+                    "System tried to access set of system params which break rust aliasing rules. Aliasing access: {}",
+                    (*raid).display_with_world(guard.clone())
+                );
             }
         }
 
         WithWorldGuard {
             world_guard: guard,
-            param: T::get_param(&mut state.0, system_meta, world, change_tick),
+            param: unsafe { T::get_param(&mut state.0, system_meta, world, change_tick) },
         }
     }
 
@@ -336,7 +344,7 @@ unsafe impl<T: SystemParam> SystemParam for WithWorldGuard<'_, '_, T> {
         archetype: &bevy::ecs::archetype::Archetype,
         system_meta: &mut bevy::ecs::system::SystemMeta,
     ) {
-        T::new_archetype(&mut state.0, archetype, system_meta)
+        unsafe { T::new_archetype(&mut state.0, archetype, system_meta) }
     }
 
     fn apply(
@@ -360,7 +368,7 @@ unsafe impl<T: SystemParam> SystemParam for WithWorldGuard<'_, '_, T> {
         system_meta: &bevy::ecs::system::SystemMeta,
         world: bevy::ecs::world::unsafe_world_cell::UnsafeWorldCell,
     ) -> Result<(), SystemParamValidationError> {
-        T::validate_param(&state.0, system_meta, world)
+        unsafe { T::validate_param(&state.0, system_meta, world) }
     }
 }
 
@@ -433,14 +441,18 @@ mod test {
         let system_fn = |mut guard: WithWorldGuard<(ResMut<Res>, Query<&'static Comp>)>| {
             let (guard, (_res, _entity)) = guard.get_mut();
             assert_eq!(guard.list_accesses().len(), 2, "Expected 2 accesses");
-            assert!(!guard.claim_read_access(
-                ReflectAccessId::for_resource::<Res>(&guard.as_unsafe_world_cell().unwrap())
-                    .unwrap()
-            ));
-            assert!(!guard.claim_write_access(
-                ReflectAccessId::for_resource::<Res>(&guard.as_unsafe_world_cell().unwrap())
-                    .unwrap()
-            ));
+            assert!(
+                !guard.claim_read_access(
+                    ReflectAccessId::for_resource::<Res>(&guard.as_unsafe_world_cell().unwrap())
+                        .unwrap()
+                )
+            );
+            assert!(
+                !guard.claim_write_access(
+                    ReflectAccessId::for_resource::<Res>(&guard.as_unsafe_world_cell().unwrap())
+                        .unwrap()
+                )
+            );
         };
 
         let mut app = bevy::app::App::new();

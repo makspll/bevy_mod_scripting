@@ -1,7 +1,6 @@
 use std::{borrow::Cow, convert::identity};
 
 use log::{trace, warn};
-use rustc_ast::Attribute;
 use rustc_hir::def_id::{DefId, LOCAL_CRATE};
 use rustc_middle::ty::{
     AdtDef, FieldDef, GenericArg, GenericParamDefKind, TraitRef, Ty, TyKind, TypingEnv,
@@ -127,7 +126,7 @@ pub(crate) fn process_functions(ctxt: &BevyCtxt, fns: &[FunctionContext]) -> Vec
             let fn_sig = ctxt.tcx.fn_sig(fn_ctxt.def_id).skip_binder().skip_binder();
             let args = ctxt
                 .tcx
-                .fn_arg_names(fn_ctxt.def_id)
+                .fn_arg_idents(fn_ctxt.def_id)
                 .iter()
                 .zip(fn_sig.inputs())
                 .enumerate()
@@ -137,7 +136,7 @@ pub(crate) fn process_functions(ctxt: &BevyCtxt, fns: &[FunctionContext]) -> Vec
                         *ty,
                     );
                     Arg {
-                        ident: ident.to_string(),
+                        ident: ident.map(|s| s.to_string()).unwrap_or(format!("arg_{idx}")),
                         ty: ty_to_string(ctxt, normalized_ty, false),
                         proxy_ty: ty_to_string(ctxt, normalized_ty, true),
                         reflection_strategy: fn_ctxt.reflection_strategies[idx],
@@ -176,7 +175,7 @@ pub(crate) fn process_functions(ctxt: &BevyCtxt, fns: &[FunctionContext]) -> Vec
 }
 
 /// extracts and normalizes docstrings in a given list of attributes
-pub(crate) fn docstrings(attrs: &[Attribute]) -> Vec<String> {
+pub(crate) fn docstrings(attrs: &[rustc_hir::Attribute]) -> Vec<String> {
     attrs
         .iter()
         .filter_map(|attr| attr.doc_str())
@@ -414,7 +413,8 @@ impl<'a> TyPrinter<'a> {
             _ => {
                 warn!(
                     "Type outside the scope of the TyPrinter being printed: pretty=`{}` kind=`{:?}`",
-                    ty, ty.kind()
+                    ty,
+                    ty.kind()
                 );
                 self.buffer.push_str(&ty.to_string())
             }

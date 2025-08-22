@@ -1,7 +1,7 @@
 [package]
 name = "bevy_mod_scripting_functions"
 version = "0.15.1"
-edition = "2021"
+edition = "2024"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 license = "MIT OR Apache-2.0"
 description = "Necessary functionality for Lua support with bevy_mod_scripting"

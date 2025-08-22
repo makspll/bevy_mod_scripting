@@ -2,7 +2,7 @@
 use std::{
     collections::HashMap,
     env,
-    fs::{create_dir_all, File},
+    fs::{File, create_dir_all},
     io::{BufRead, Write},
     path::{Path, PathBuf},
     process::{Command, Stdio},
@@ -22,7 +22,7 @@ fn main() {
     let args = Args::parse_from(env::args().skip(1));
 
     if env::var("RUST_LOG").is_err() {
-        env::set_var("RUST_LOG", args.verbose.get_rustlog_value());
+        unsafe { env::set_var("RUST_LOG", args.verbose.get_rustlog_value()) };
     }
     env_logger::init();
 
@@ -52,8 +52,9 @@ fn main() {
             );
 
             info!(
-                "Computing all transitive dependencies for enabled top-level features: {}",
-                args.features.join(",")
+                "Computing all transitive dependencies for enabled top-level features: {}. using default features: {}",
+                args.features.join(","),
+                !args.no_default_features
             );
 
             let dependencies = feature_graph
@@ -99,7 +100,7 @@ fn main() {
         }
         bevy_api_gen::Command::ListTemplates => {
             for template in TemplateKind::VARIANTS {
-                println!("{}", template);
+                println!("{template}");
             }
             return;
         }
@@ -109,7 +110,7 @@ fn main() {
             api_name,
         } => {
             let tera = configure_tera("no_crate", &templates);
-            info!("Collecting from: {}", output);
+            info!("Collecting from: {output}");
             if !output.is_dir() {
                 panic!("Output is not a directory");
             }
@@ -175,15 +176,17 @@ fn main() {
             .join(" ");
 
         debug!("bootstrap paths: {bootstrap_rlibs:?}");
-        env::set_var(
-            "RUSTFLAGS",
-            format!(
-                "{} {} -L dependency={}",
-                env::var("RUSTFLAGS").unwrap_or("".to_owned()),
-                extern_args,
-                bootstrap_rlibs.iter().next().unwrap().1.parent().unwrap()
-            ),
-        );
+        unsafe {
+            env::set_var(
+                "RUSTFLAGS",
+                format!(
+                    "{} {} -L dependency={}",
+                    env::var("RUSTFLAGS").unwrap_or("".to_owned()),
+                    extern_args,
+                    bootstrap_rlibs.iter().next().unwrap().1.parent().unwrap()
+                ),
+            )
+        };
     } else {
         panic!("Could not find 'libmlua' artifact among bootstrap crate artifacts, stopping.");
     }
@@ -193,9 +196,9 @@ fn main() {
     debug!("RUSTFLAGS={}", env::var("RUSTFLAGS").unwrap_or_default());
 
     // disable incremental compilation
-    env::set_var("CARGO_INCREMENTAL", "0");
+    unsafe { env::set_var("CARGO_INCREMENTAL", "0") };
 
-    rustc_plugin::cli_main(BevyAnalyzer);
+    driver::cli_main(BevyAnalyzer);
 
     // just making sure the temp dir lives until everything is done
     drop(temp_dir);
@@ -290,7 +293,7 @@ fn build_bootstrap(
             }
         }
         Err(e) => {
-            panic!("Failed to wait on cargo build process: {}", e);
+            panic!("Failed to wait on cargo build process: {e}");
         }
     }
 
@@ -305,12 +308,11 @@ fn process_artifact(
     let file_name = artifact.file_name().unwrap_or_default();
     let lib_name = file_name.split('-').next().unwrap().strip_prefix("lib");
 
-    if let Some(lib_name) = lib_name {
-        if BOOTSTRAP_DEPS.contains(&lib_name)
-            && artifact.extension().is_some_and(|ext| ext == "rlib")
-        {
-            bootstrap_rlibs.insert(lib_name.to_owned(), artifact);
-        }
+    if let Some(lib_name) = lib_name
+        && BOOTSTRAP_DEPS.contains(&lib_name)
+        && artifact.extension().is_some_and(|ext| ext == "rlib")
+    {
+        bootstrap_rlibs.insert(lib_name.to_owned(), artifact);
     }
 }
 

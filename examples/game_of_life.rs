@@ -14,8 +14,9 @@ use bevy::{
     },
     window::{PrimaryWindow, WindowResized},
 };
-use bevy_console::{make_layer, AddConsoleCommand, ConsoleCommand, ConsoleOpen, ConsolePlugin};
+use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsoleOpen, ConsolePlugin, make_layer};
 use bevy_mod_scripting::{core::bindings::AllocatorDiagnosticPlugin, prelude::*};
+use bevy_mod_scripting_core::{commands::RemoveStaticScript, script::StaticScripts};
 use clap::Parser;
 
 // CONSOLE SETUP
@@ -41,8 +42,7 @@ fn run_script_cmd(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     script_comps: Query<(Entity, &ScriptComponent)>,
-    mut static_lua_scripts: Local<Vec<ScriptId>>,
-    mut static_rhai_scripts: Local<Vec<ScriptId>>,
+    static_scripts: Res<StaticScripts>,
 ) {
     if let Some(Ok(command)) = log.take() {
         match command {
@@ -53,58 +53,27 @@ fn run_script_cmd(
                 // create an entity with the script component
                 bevy::log::info!("Using game of life script game_of_life.{}", language);
 
-                let script_path = format!("scripts/game_of_life.{}", language);
+                let script_path = format!("scripts/game_of_life.{language}");
                 if !use_static_script {
                     bevy::log::info!("Spawning an entity with ScriptComponent");
                     commands.spawn(ScriptComponent::new(vec![asset_server.load(script_path)]));
                 } else {
                     bevy::log::info!("Using static script instead of spawning an entity");
                     let handle = asset_server.load(script_path);
-                    if language == "lua" {
-                        static_lua_scripts.push(handle.id());
-                    } else {
-                        static_rhai_scripts.push(handle.id());
-                    }
                     commands.queue(AddStaticScript::new(handle))
                 }
             }
             GameOfLifeCommand::Stop => {
                 // we can simply drop the handle, or manually delete, I'll just drop the handle
-                bevy::log::info!("Stopping game of life by dropping the handles to all scripts");
-                for (id, script_component) in &script_comps {
-                    for script in &script_component.0 {
-                        match script
-                            .path()
-                            .and_then(|p| p.get_full_extension())
-                            .unwrap_or_default()
-                            .as_str()
-                        {
-                            "lua" => {
-                                commands
-                                    .entity(id)
-                                    .queue(DeleteScript::<LuaScriptingPlugin>::new(script.id()));
-                            }
-                            "rhai" => {
-                                #[cfg(feature = "rhai")]
-                                commands
-                                    .entity(id)
-                                    .queue(DeleteScript::<RhaiScriptingPlugin>::new(script.id()));
-                            }
-                            ext => {
-                                warn!("Can't delete script with extension {ext:?}.");
-                            }
-                        }
-                    }
+                bevy::log::info!(
+                    "Stopping game of life by detaching each script and static script"
+                );
+                for (id, _) in &script_comps {
                     commands.entity(id).despawn();
                 }
 
-                for script in static_lua_scripts.drain(..) {
-                    commands.queue(DeleteScript::<LuaScriptingPlugin>::new(script));
-                }
-
-                #[cfg(feature = "rhai")]
-                for script in static_rhai_scripts.drain(..) {
-                    commands.queue(DeleteScript::<RhaiScriptingPlugin>::new(script));
+                for script in static_scripts.values() {
+                    commands.queue(RemoveStaticScript::new(script.clone()));
                 }
             }
         }

@@ -1,10 +1,11 @@
 #![allow(missing_docs)]
+use std::{env, fs::File, io, process::exit};
+
 use clap::{Arg, Command};
 use env_logger::Builder;
 use log::LevelFilter;
 use mdbook::preprocess::{CmdPreprocessor, Preprocessor};
 use mdbook_lad_preprocessor::LADPreprocessor;
-use std::{env, fs::File, io, process::exit};
 
 // use mdbook_lad_preprocessor::LADPreprocessor;
 

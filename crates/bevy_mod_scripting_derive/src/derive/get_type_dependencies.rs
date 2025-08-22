@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
-use quote::{quote_spanned, ToTokens};
-use syn::{parse_quote, parse_quote_spanned, DeriveInput, WhereClause};
+use quote::{ToTokens, quote_spanned};
+use syn::{DeriveInput, WhereClause, parse_quote, parse_quote_spanned};
 
 /// Generate a GetTypeDependencies impl like below:
 /// For type:

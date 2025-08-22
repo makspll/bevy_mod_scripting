@@ -1,7 +1,7 @@
 [package]
 name = "ladfile_builder"
 version = "0.5.1"
-edition = "2021"
+edition = "2024"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 license = "MIT OR Apache-2.0"
 description = "Language Agnostic Declaration (LAD) file format for the bevy_mod_scripting crate"

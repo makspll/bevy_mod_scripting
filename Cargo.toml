@@ -2,7 +2,7 @@
 name = "bevy_mod_scripting"
 version = "0.15.1"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
-edition = "2021"
+edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "Multi language scripting in Bevy"
 repository = "https://github.com/makspll/bevy_mod_scripting"
@@ -156,12 +156,7 @@ debug = true
 [[example]]
 name = "game_of_life"
 path = "examples/game_of_life.rs"
-required-features = [
-    "lua54",
-    "rhai",
-    "bevy/file_watcher",
-    "bevy/multi_threaded",
-]
+required-features = ["lua54", "rhai"]
 
 [[example]]
 name = "docgen"

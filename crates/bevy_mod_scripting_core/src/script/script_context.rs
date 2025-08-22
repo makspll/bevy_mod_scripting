@@ -1,7 +1,9 @@
+use std::{hash::Hash, sync::Arc};
+
+use parking_lot::Mutex;
+
 use super::*;
 use crate::IntoScriptPluginParams;
-use parking_lot::Mutex;
-use std::{hash::Hash, sync::Arc};
 
 /// Determines how contexts are grouped by manipulating the context key.
 pub trait ContextKeySelector: Send + Sync + std::fmt::Debug + 'static {
@@ -377,9 +379,11 @@ mod tests {
         assert!(script_context.get(&context_key).is_some());
 
         // insert another into the same context
-        assert!(script_context
-            .insert_resident(context_key2.clone())
-            .unwrap());
+        assert!(
+            script_context
+                .insert_resident(context_key2.clone())
+                .unwrap()
+        );
 
         assert!(script_context.contains(&context_key2));
         let mut residents = script_context.residents(&context_key2).collect::<Vec<_>>();
