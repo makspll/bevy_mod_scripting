@@ -19,11 +19,11 @@ include = [
 members = []
 
 [[bin]]
-name = "cargo-bevy-api-gen"
+name = "cargo-bms-codegen"
 path = "src/bin/main.rs"
 
 [[bin]]
-name = "bevy-api-gen-driver"
+name = "bms-codegen-driver"
 path = "src/bin/driver.rs"
 
 [profile.ephemeral-build]

@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
     about,
     long_about,
     disable_help_flag = true,
-    bin_name = "cargo bevy-api-gen",
+    bin_name = "cargo bms-codegen",
     arg_required_else_help = true
 )]
 /// A Cargo plugin which can generate reflection powered wrappers for Bevy types,
