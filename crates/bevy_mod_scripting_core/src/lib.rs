@@ -2,11 +2,26 @@
 //!
 //! Contains language agnostic systems and types for handling scripting in bevy.
 
+use crate::{
+    bindings::MarkAsCore,
+    context::{ContextLoadFn, ContextReloadFn},
+    event::ScriptErrorEvent,
+};
 use asset::{
     Language, ScriptAsset, ScriptAssetLoader, configure_asset_systems,
     configure_asset_systems_for_plugin,
 };
-use bevy::{platform::collections::HashMap, prelude::*};
+use bevy_app::{App, Plugin, PostStartup, PostUpdate};
+use bevy_asset::{AssetApp, Handle};
+use bevy_ecs::{
+    reflect::{AppTypeRegistry, ReflectComponent},
+    resource::Resource,
+    schedule::SystemSet,
+    system::{Command, In},
+};
+use bevy_ecs::{schedule::IntoScheduleConfigs, system::IntoSystem};
+use bevy_log::error;
+use bevy_platform::collections::HashMap;
 use bindings::{
     AppReflectAllocator, DynamicScriptComponentPlugin, ReflectAllocator, ReflectReference,
     ScriptTypeRegistration, function::script_function::AppScriptFunctionRegistry,
@@ -19,12 +34,7 @@ use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent, ScriptEvent};
 use handler::HandlerFn;
 use runtime::{Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings, initialize_runtime};
 use script::{ContextPolicy, ScriptComponent, ScriptContext, StaticScripts};
-
-use crate::{
-    bindings::MarkAsCore,
-    context::{ContextLoadFn, ContextReloadFn},
-    event::ScriptErrorEvent,
-};
+use std::ops::{Deref, DerefMut};
 
 pub mod asset;
 pub mod bindings;
@@ -137,7 +147,7 @@ impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P> {
 
 #[profiling::all_functions]
 impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
-    fn build(&self, app: &mut bevy::prelude::App) {
+    fn build(&self, app: &mut App) {
         app.insert_resource(self.runtime_settings.clone())
             .insert_resource::<RuntimeContainer<P>>(RuntimeContainer {
                 runtime: P::build_runtime(),
@@ -399,8 +409,22 @@ pub trait ConfigureScriptAssetSettings {
 /// Collect the language extensions supported during initialization.
 ///
 /// NOTE: This resource is removed after plugin setup.
-#[derive(Debug, Resource, Deref, DerefMut)]
+#[derive(Debug, Resource)]
 pub struct LanguageExtensions(HashMap<&'static str, Language>);
+
+impl Deref for LanguageExtensions {
+    type Target = HashMap<&'static str, Language>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for LanguageExtensions {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
 
 impl Default for LanguageExtensions {
     fn default() -> Self {
@@ -436,6 +460,10 @@ impl ConfigureScriptAssetSettings for App {
 
 #[cfg(test)]
 mod test {
+    use bevy_asset::{AssetPlugin, AssetServer};
+    use bevy_ecs::prelude::*;
+    use bevy_reflect::Reflect;
+
     use super::*;
 
     #[tokio::test]

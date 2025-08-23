@@ -12,8 +12,8 @@ macro_rules! make_test_plugin {
             }
         }
 
-        impl bevy::app::Plugin for TestPlugin {
-            fn build(&self, app: &mut bevy::app::App) {
+        impl Plugin for TestPlugin {
+            fn build(&self, app: &mut App) {
                 self.0.build(app);
             }
         }
@@ -63,12 +63,8 @@ macro_rules! make_test_plugin {
 
         #[derive(Default, std::fmt::Debug)]
         struct TestRuntime {
-            pub invocations: parking_lot::Mutex<
-                Vec<(
-                    Option<bevy::prelude::Entity>,
-                    Option<$ident::script::ScriptId>,
-                )>,
-            >,
+            pub invocations:
+                parking_lot::Mutex<Vec<(Option<Entity>, Option<$ident::script::ScriptId>)>>,
         }
 
         #[derive(Default, std::fmt::Debug, Clone)]

@@ -16,11 +16,14 @@ name = "bevy_mod_scripting_rhai"
 path = "src/lib.rs"
 
 [dependencies]
-bevy = { workspace = true, default-features = false }
-rhai = { version = "1.21" }
+bevy_ecs = { workspace = true, default-features = false, features = [] }
+bevy_asset = { workspace = true, default-features = false, features = [] }
+bevy_app = { workspace = true, default-features = false, features = [] }
+bevy_log = { workspace = true, default-features = false, features = [] }
+rhai = { workspace = true }
 bevy_mod_scripting_core = { workspace = true, features = ["rhai_impls"] }
-strum = { version = "0.26", features = ["derive"] }
-parking_lot = "0.12.1"
+strum = { workspace = true }
+parking_lot = { workspace = true }
 
 [lints]
 workspace = true

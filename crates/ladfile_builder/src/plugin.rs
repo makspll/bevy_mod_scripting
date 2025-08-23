@@ -2,10 +2,11 @@
 
 use std::path::PathBuf;
 
-use bevy::{
-    app::{App, Plugin, Startup},
-    ecs::{prelude::Resource, reflect::AppTypeRegistry, system::Res, world::World},
+use ::{
+    bevy_app::{App, Plugin, Startup},
+    bevy_ecs::{prelude::Resource, reflect::AppTypeRegistry, system::Res, world::World},
 };
+use bevy_log::{error, info};
 use bevy_mod_scripting_core::bindings::{
     IntoNamespace,
     function::{namespace::Namespace, script_function::AppScriptFunctionRegistry},
@@ -151,7 +152,7 @@ pub fn generate_lad_file(
     let file = match ladfile::serialize_lad_file(&file, settings.pretty) {
         Ok(file) => file,
         Err(e) => {
-            bevy::log::error!("Error serializing LAD file: {}", e);
+            error!("Error serializing LAD file: {}", e);
             return;
         }
     };
@@ -159,10 +160,10 @@ pub fn generate_lad_file(
     // save
     match std::fs::write(&path, file) {
         Ok(_) => {
-            bevy::log::info!("Successfully generated LAD file at {:?}", path);
+            info!("Successfully generated LAD file at {:?}", path);
         }
         Err(e) => {
-            bevy::log::error!("Error saving LAD file to {:?}: {}", path, e);
+            error!("Error saving LAD file to {:?}: {}", path, e);
         }
     }
 }

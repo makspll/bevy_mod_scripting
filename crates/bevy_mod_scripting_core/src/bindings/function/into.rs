@@ -1,13 +1,13 @@
 //! Implementations of the [`IntoScript`] trait for various types.
 
-use bevy::reflect::Reflect;
-use std::{borrow::Cow, collections::HashMap, ffi::OsString, path::PathBuf};
-
 use super::{DynamicScriptFunction, DynamicScriptFunctionMut, Union, Val};
 use crate::{
     bindings::{ReflectReference, ScriptValue, WorldGuard},
     error::InteropError,
 };
+use bevy_platform::collections::HashMap;
+use bevy_reflect::Reflect;
+use std::{borrow::Cow, ffi::OsString, path::PathBuf};
 
 /// Converts a value into a [`ScriptValue`].
 pub trait IntoScript {
@@ -170,6 +170,17 @@ impl<T1: IntoScript, T2: IntoScript> IntoScript for Union<T1, T2> {
 
 #[profiling::all_functions]
 impl<V: IntoScript> IntoScript for HashMap<String, V> {
+    fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
+        let mut map = HashMap::new();
+        for (key, value) in self {
+            map.insert(key, value.into_script(world.clone())?);
+        }
+        Ok(ScriptValue::Map(map))
+    }
+}
+
+#[profiling::all_functions]
+impl<V: IntoScript> IntoScript for std::collections::HashMap<String, V> {
     fn into_script(self, world: WorldGuard) -> Result<ScriptValue, InteropError> {
         let mut map = HashMap::new();
         for (key, value) in self {

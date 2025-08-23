@@ -12,9 +12,9 @@ categories = ["game-development"]
 readme = "readme.md"
 
 [dependencies]
-syn = { version = "2", features = ["full"] }
-proc-macro2 = "1"
-quote = "1"
+syn = { workspace = true, features = ["full"] }
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
 
 [lib]
 proc-macro = true

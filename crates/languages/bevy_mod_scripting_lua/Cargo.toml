@@ -37,9 +37,13 @@ name = "bevy_mod_scripting_lua"
 path = "src/lib.rs"
 
 [dependencies]
-bevy = { workspace = true, default-features = false }
+bevy_app = { workspace = true, default-features = false, features = [] }
+bevy_ecs = { workspace = true, default-features = false, features = [] }
+bevy_asset = { workspace = true, default-features = false, features = [] }
+bevy_log = { workspace = true, default-features = false, features = [] }
+bevy_platform = { workspace = true, default-features = false, features = [] }
 bevy_mod_scripting_core = { workspace = true, features = ["mlua_impls"] }
-mlua = { version = "0.10", features = ["vendored", "send", "macros"] }
+mlua = { workspace = true, features = ["vendored", "send", "macros"] }
 profiling = { workspace = true }
 
 [lints]

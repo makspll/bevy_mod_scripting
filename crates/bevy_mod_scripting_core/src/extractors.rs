@@ -7,13 +7,14 @@ use std::{
     sync::Arc,
 };
 
-use bevy::ecs::{
-    component::ComponentId,
+use bevy_ecs::{
+    archetype::Archetype,
+    component::{ComponentId, Tick},
     query::{Access, AccessConflicts},
     resource::Resource,
     storage::SparseSetIndex,
-    system::{SystemParam, SystemParamValidationError},
-    world::World,
+    system::{SystemMeta, SystemParam, SystemParamValidationError},
+    world::{DeferredWorld, World, unsafe_world_cell::UnsafeWorldCell},
 };
 use fixedbitset::FixedBitSet;
 use parking_lot::Mutex;
@@ -89,19 +90,16 @@ unsafe impl<T: Resource + Default> SystemParam for ResScope<'_, T> {
 
     type Item<'world, 'state> = ResScope<'state, T>;
 
-    fn init_state(
-        _world: &mut World,
-        system_meta: &mut bevy::ecs::system::SystemMeta,
-    ) -> Self::State {
+    fn init_state(_world: &mut World, system_meta: &mut SystemMeta) -> Self::State {
         system_meta.set_has_deferred();
         (T::default(), false)
     }
 
     unsafe fn get_param<'world, 'state>(
         state: &'state mut Self::State,
-        _system_meta: &bevy::ecs::system::SystemMeta,
-        world: bevy::ecs::world::unsafe_world_cell::UnsafeWorldCell<'world>,
-        _change_tick: bevy::ecs::component::Tick,
+        _system_meta: &SystemMeta,
+        world: UnsafeWorldCell<'world>,
+        _change_tick: Tick,
     ) -> Self::Item<'world, 'state> {
         state.1 = true;
         if let Some(mut r) = unsafe { world.get_resource_mut::<T>() } {
@@ -110,11 +108,7 @@ unsafe impl<T: Resource + Default> SystemParam for ResScope<'_, T> {
         ResScope(&mut state.0)
     }
 
-    fn apply(
-        state: &mut Self::State,
-        _system_meta: &bevy::ecs::system::SystemMeta,
-        world: &mut bevy::ecs::world::World,
-    ) {
+    fn apply(state: &mut Self::State, _system_meta: &SystemMeta, world: &mut World) {
         if state.1 {
             world.insert_resource(std::mem::take(&mut state.0));
             state.1 = false;
@@ -275,10 +269,7 @@ unsafe impl<T: SystemParam> SystemParam for WithWorldGuard<'_, '_, T> {
 
     type Item<'world, 'state> = WithWorldGuard<'world, 'state, T>;
 
-    fn init_state(
-        world: &mut bevy::ecs::world::World,
-        system_meta: &mut bevy::ecs::system::SystemMeta,
-    ) -> Self::State {
+    fn init_state(world: &mut World, system_meta: &mut SystemMeta) -> Self::State {
         // verify there are no accesses previously
         let other_accessed_components =
             system_meta.component_access_set().combined_access().clone();
@@ -306,9 +297,9 @@ unsafe impl<T: SystemParam> SystemParam for WithWorldGuard<'_, '_, T> {
 
     unsafe fn get_param<'world, 'state>(
         state: &'state mut Self::State,
-        system_meta: &bevy::ecs::system::SystemMeta,
-        world: bevy::ecs::world::unsafe_world_cell::UnsafeWorldCell<'world>,
-        change_tick: bevy::ecs::component::Tick,
+        system_meta: &SystemMeta,
+        world: UnsafeWorldCell<'world>,
+        change_tick: Tick,
     ) -> Self::Item<'world, 'state> {
         // create a guard which can only access the resources/components specified by the system.
         let guard = WorldAccessGuard::new_exclusive(unsafe { world.world_mut() });
@@ -341,32 +332,24 @@ unsafe impl<T: SystemParam> SystemParam for WithWorldGuard<'_, '_, T> {
 
     unsafe fn new_archetype(
         state: &mut Self::State,
-        archetype: &bevy::ecs::archetype::Archetype,
-        system_meta: &mut bevy::ecs::system::SystemMeta,
+        archetype: &Archetype,
+        system_meta: &mut SystemMeta,
     ) {
         unsafe { T::new_archetype(&mut state.0, archetype, system_meta) }
     }
 
-    fn apply(
-        state: &mut Self::State,
-        system_meta: &bevy::ecs::system::SystemMeta,
-        world: &mut World,
-    ) {
+    fn apply(state: &mut Self::State, system_meta: &SystemMeta, world: &mut World) {
         T::apply(&mut state.0, system_meta, world)
     }
 
-    fn queue(
-        state: &mut Self::State,
-        system_meta: &bevy::ecs::system::SystemMeta,
-        world: bevy::ecs::world::DeferredWorld,
-    ) {
+    fn queue(state: &mut Self::State, system_meta: &SystemMeta, world: DeferredWorld) {
         T::queue(&mut state.0, system_meta, world)
     }
 
     unsafe fn validate_param(
         state: &Self::State,
-        system_meta: &bevy::ecs::system::SystemMeta,
-        world: bevy::ecs::world::unsafe_world_cell::UnsafeWorldCell,
+        system_meta: &SystemMeta,
+        world: UnsafeWorldCell,
     ) -> Result<(), SystemParamValidationError> {
         unsafe { T::validate_param(&state.0, system_meta, world) }
     }
@@ -414,15 +397,15 @@ pub(crate) fn get_all_access_ids(access: &Access<ComponentId>) -> Vec<(ReflectAc
 
 #[cfg(test)]
 mod test {
-    use bevy::{
-        app::{App, Update},
-        ecs::{
+    use ::{
+        bevy_app::{App, Plugin, Update},
+        bevy_ecs::{
             component::Component,
+            entity::Entity,
             event::{Event, EventReader},
             system::{Query, ResMut, SystemState},
             world::FromWorld,
         },
-        prelude::Resource,
     };
     use test_utils::make_test_plugin;
 
@@ -455,7 +438,7 @@ mod test {
             );
         };
 
-        let mut app = bevy::app::App::new();
+        let mut app = App::new();
         app.add_systems(Update, system_fn);
         app.insert_resource(Res);
         app.world_mut().spawn(Comp);
@@ -472,7 +455,7 @@ mod test {
     pub fn check_with_world_panics_when_used_with_resource_top_level() {
         let system_fn = |_res: ResMut<Res>, mut _guard: WithWorldGuard<Query<&'static Comp>>| {};
 
-        let mut app = bevy::app::App::new();
+        let mut app = App::new();
         app.add_systems(Update, system_fn);
         app.insert_resource(Res);
         app.world_mut().spawn(Comp);
@@ -492,7 +475,7 @@ mod test {
         let system_fn =
             |_res: EventReader<TestEvent>, mut _guard: WithWorldGuard<Query<&'static Comp>>| {};
 
-        let mut app = bevy::app::App::new();
+        let mut app = App::new();
         app.add_systems(Update, system_fn);
         app.insert_resource(Res);
         app.world_mut().spawn(Comp);

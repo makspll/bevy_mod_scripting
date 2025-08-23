@@ -1,14 +1,13 @@
 //! A map of access claims used to safely and dynamically access the world.
 
-use std::hash::{BuildHasherDefault, Hasher};
+use bevy_platform::collections::{HashMap, HashSet};
 
-use bevy::{
-    ecs::{component::ComponentId, world::unsafe_world_cell::UnsafeWorldCell},
-	platform::collections::{HashMap, HashSet},
-    prelude::Resource,
-};
+use ::bevy_ecs::{component::ComponentId, world::unsafe_world_cell::UnsafeWorldCell};
+use bevy_ecs::{component::Component, resource::Resource};
+use bevy_log::error;
 use parking_lot::Mutex;
 use smallvec::SmallVec;
+use std::hash::{BuildHasherDefault, Hasher};
 
 use crate::error::InteropError;
 
@@ -160,9 +159,7 @@ impl ReflectAccessId {
     }
 
     /// Creates a new access id for a component
-    pub fn for_component<C: bevy::ecs::component::Component>(
-        cell: &UnsafeWorldCell,
-    ) -> Result<Self, InteropError> {
+    pub fn for_component<C: Component>(cell: &UnsafeWorldCell) -> Result<Self, InteropError> {
         let component_id = cell.components().component_id::<C>().ok_or_else(|| {
             InteropError::unregistered_component_or_resource_type(std::any::type_name::<C>())
         })?;
@@ -414,7 +411,7 @@ impl DynamicSystemMeta for AccessMap {
 
         let key = key.as_index();
         if key == GLOBAL_KEY {
-            bevy::log::error!("Trying to claim read access to global key, this is not allowed");
+            error!("Trying to claim read access to global key, this is not allowed");
             return false;
         }
 
@@ -440,7 +437,7 @@ impl DynamicSystemMeta for AccessMap {
 
         let key = key.as_index();
         if key == GLOBAL_KEY {
-            bevy::log::error!("Trying to claim write access to global key, this is not allowed");
+            error!("Trying to claim write access to global key, this is not allowed");
             return false;
         }
 
@@ -1157,9 +1154,11 @@ mod test {
         let access_map = AccessMap::default();
 
         assert!(access_map.claim_global_access());
-        assert!(access_map
-            .access_location(ReflectAccessId::for_global())
-            .is_some());
+        assert!(
+            access_map
+                .access_location(ReflectAccessId::for_global())
+                .is_some()
+        );
         access_map.release_global_access();
 
         // Claim a read access
@@ -1182,9 +1181,11 @@ mod test {
         };
 
         assert!(subset_access_map.claim_global_access());
-        assert!(subset_access_map
-            .access_location(ReflectAccessId::for_global())
-            .is_some());
+        assert!(
+            subset_access_map
+                .access_location(ReflectAccessId::for_global())
+                .is_some()
+        );
         subset_access_map.release_global_access();
 
         // Claim a read access

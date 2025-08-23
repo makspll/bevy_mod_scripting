@@ -1,9 +1,11 @@
 //! Lua integration for the bevy_mod_scripting system.
-use bevy::{
-    app::Plugin,
-    asset::Handle,
-    ecs::{entity::Entity, world::World},
+use ::{
+    bevy_app::Plugin,
+    bevy_asset::Handle,
+    bevy_ecs::{entity::Entity, world::World},
 };
+use bevy_app::App;
+use bevy_log::trace;
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
     asset::{Language, ScriptAsset},
@@ -159,11 +161,11 @@ impl Default for LuaScriptingPlugin {
 }
 
 impl Plugin for LuaScriptingPlugin {
-    fn build(&self, app: &mut bevy::prelude::App) {
+    fn build(&self, app: &mut App) {
         self.scripting_plugin.build(app);
     }
 
-    fn finish(&self, app: &mut bevy::app::App) {
+    fn finish(&self, app: &mut App) {
         self.scripting_plugin.finish(app);
     }
 }
@@ -254,7 +256,7 @@ pub fn lua_handler(
         Ok(handler) => handler,
         // not subscribed to this event type
         Err(_) => {
-            bevy::log::trace!(
+            trace!(
                 "Context {} is not subscribed to callback {}",
                 context_key,
                 callback_label.as_ref()
@@ -275,10 +277,7 @@ pub fn lua_handler(
 
 #[cfg(test)]
 mod test {
-    use bevy::{
-        asset::{AssetId, AssetIndex},
-        prelude::Handle,
-    };
+    use ::bevy_asset::{AssetId, AssetIndex, Handle};
     use mlua::Value;
 
     use super::*;

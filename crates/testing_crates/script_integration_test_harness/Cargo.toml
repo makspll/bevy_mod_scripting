@@ -20,14 +20,14 @@ bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_functions = { workspace = true, features = [
     "core_functions",
 ] }
-regex = { version = "1.11" }
-pretty_assertions = "1.*"
-bevy_mod_scripting_lua = { path = "../../languages/bevy_mod_scripting_lua", optional = true }
-bevy_mod_scripting_rhai = { path = "../../languages/bevy_mod_scripting_rhai", optional = true }
-criterion = "0.5"
-rand = "0.9"
-rand_chacha = "0.9"
-uuid = "1.11"
-anyhow = "1.0"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+regex = { workspace = true }
+pretty_assertions = { workspace = true }
+bevy_mod_scripting_lua = { workspace = true, optional = true }
+bevy_mod_scripting_rhai = { workspace = true, optional = true }
+criterion = { workspace = true }
+rand = { workspace = true }
+rand_chacha = { workspace = true }
+uuid = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }

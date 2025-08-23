@@ -1,6 +1,6 @@
 use std::fmt;
 
-use bevy::prelude::Entity;
+use bevy_ecs::entity::Entity;
 
 use super::*;
 use crate::ScriptAsset;

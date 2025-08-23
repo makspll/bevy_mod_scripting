@@ -3,14 +3,16 @@
 use crate::reflection_extensions::{FakeType, TypeIdExtensions};
 
 use crate::bindings::{
-    access_map::ReflectAccessId, script_value::ScriptValue, ReflectAllocationId, ReflectBase,
-    ReflectBaseType, ReflectReference, WorldGuard,
+    ReflectAllocationId, ReflectBase, ReflectBaseType, ReflectReference, WorldGuard,
+    access_map::ReflectAccessId, script_value::ScriptValue,
 };
-use bevy::{
-    ecs::component::ComponentId,
-    prelude::World,
-    reflect::{PartialReflect, ReflectRef},
+use ::{
+    bevy_ecs::component::ComponentId,
+    bevy_reflect::{PartialReflect, ReflectRef},
 };
+use bevy_ecs::world::World;
+use bevy_platform::collections::HashMap;
+use bevy_reflect::VariantType;
 use itertools::Itertools;
 use std::{
     any::{Any, TypeId},
@@ -237,7 +239,7 @@ impl ReflectReferencePrinter {
 
     fn pretty_print_value_inner(&self, v: &dyn PartialReflect, output: &mut String) {
         match v.reflect_ref() {
-            bevy::reflect::ReflectRef::Struct(s) => {
+            ReflectRef::Struct(s) => {
                 let field_names = s
                     .get_represented_struct_info()
                     .map(|info| info.field_names())
@@ -301,7 +303,7 @@ impl ReflectReferencePrinter {
             ReflectRef::Enum(e) => {
                 output.push_str(&e.variant_path());
                 let bracket_type = match e.variant_type() {
-                    bevy::reflect::VariantType::Tuple => BracketType::Round,
+                    VariantType::Tuple => BracketType::Round,
                     _ => BracketType::Curly,
                 };
                 let key_vals = e.iter_fields().map(|v| {
@@ -603,63 +605,74 @@ impl DisplayWithWorld for String {
         self.to_string()
     }
 }
-#[profiling::all_functions]
-impl<K: DisplayWithWorld + 'static, V: DisplayWithWorld + 'static> DisplayWithWorld
-    for std::collections::HashMap<K, V>
-{
-    fn display_with_world(&self, world: WorldGuard) -> String {
-        let mut string = String::new();
-        BracketType::Curly.surrounded(&mut string, |string| {
-            for (i, (k, v)) in self.iter().enumerate() {
-                string.push_str(&k.display_with_world(world.clone()));
-                string.push_str(": ");
-                string.push_str(&v.display_with_world(world.clone()));
-                if i != self.len() - 1 {
-                    string.push_str(", ");
-                }
-            }
-        });
-        string
-    }
 
-    fn display_value_with_world(&self, world: WorldGuard) -> String {
-        let mut string = String::new();
-        BracketType::Curly.surrounded(&mut string, |string| {
-            for (i, (k, v)) in self.iter().enumerate() {
-                string.push_str(&k.display_value_with_world(world.clone()));
-                string.push_str(": ");
-                string.push_str(&v.display_value_with_world(world.clone()));
-                if i != self.len() - 1 {
-                    string.push_str(", ");
-                }
+/// Implements DisplayWithWorld for a HashMap-like type that has key-value pairs
+/// and supports iter() and len() methods.
+macro_rules! impl_display_with_world_for_map {
+    ($map_type:path) => {
+        #[profiling::all_functions]
+        impl<K: DisplayWithWorld + 'static, V: DisplayWithWorld + 'static> DisplayWithWorld
+            for $map_type
+        {
+            fn display_with_world(&self, world: WorldGuard) -> String {
+                let mut string = String::new();
+                BracketType::Curly.surrounded(&mut string, |string| {
+                    for (i, (k, v)) in self.iter().enumerate() {
+                        string.push_str(&k.display_with_world(world.clone()));
+                        string.push_str(": ");
+                        string.push_str(&v.display_with_world(world.clone()));
+                        if i != self.len() - 1 {
+                            string.push_str(", ");
+                        }
+                    }
+                });
+                string
             }
-        });
-        string
-    }
 
-    fn display_without_world(&self) -> String {
-        let mut string = String::new();
-        BracketType::Curly.surrounded(&mut string, |string| {
-            for (i, (k, v)) in self.iter().enumerate() {
-                string.push_str(&k.display_without_world());
-                string.push_str(": ");
-                string.push_str(&v.display_without_world());
-                if i != self.len() - 1 {
-                    string.push_str(", ");
-                }
+            fn display_value_with_world(&self, world: WorldGuard) -> String {
+                let mut string = String::new();
+                BracketType::Curly.surrounded(&mut string, |string| {
+                    for (i, (k, v)) in self.iter().enumerate() {
+                        string.push_str(&k.display_value_with_world(world.clone()));
+                        string.push_str(": ");
+                        string.push_str(&v.display_value_with_world(world.clone()));
+                        if i != self.len() - 1 {
+                            string.push_str(", ");
+                        }
+                    }
+                });
+                string
             }
-        });
-        string
-    }
+
+            fn display_without_world(&self) -> String {
+                let mut string = String::new();
+                BracketType::Curly.surrounded(&mut string, |string| {
+                    for (i, (k, v)) in self.iter().enumerate() {
+                        string.push_str(&k.display_without_world());
+                        string.push_str(": ");
+                        string.push_str(&v.display_without_world());
+                        if i != self.len() - 1 {
+                            string.push_str(", ");
+                        }
+                    }
+                });
+                string
+            }
+        }
+    };
 }
+
+impl_display_with_world_for_map!(HashMap<K, V>);
+impl_display_with_world_for_map!(std::collections::HashMap<K, V>);
 
 #[cfg(test)]
 mod test {
-    use bevy::{prelude::AppTypeRegistry, reflect::Reflect};
+    use bevy_ecs::reflect::AppTypeRegistry;
+    use bevy_reflect::Reflect;
 
     use crate::bindings::{
-        function::script_function::AppScriptFunctionRegistry, AppReflectAllocator,
-        ReflectAllocationId,
+        AppReflectAllocator, ReflectAllocationId,
+        function::script_function::AppScriptFunctionRegistry,
     };
 
     use super::*;
@@ -772,7 +785,7 @@ mod test {
         let mut world = setup_world();
         let world = WorldGuard::new_exclusive(&mut world);
 
-        let mut map = std::collections::HashMap::new();
+        let mut map = HashMap::new();
         map.insert("hello".to_owned(), ScriptValue::Bool(true));
 
         assert_eq!(map.display_with_world(world.clone()), "{hello: true}");

@@ -6,7 +6,7 @@ use crate::{
     error::InteropError,
     reflection_extensions::TypeInfoExtensions,
 };
-use bevy::reflect::{
+use bevy_reflect::{
     DynamicEnum, DynamicList, DynamicMap, DynamicTuple, DynamicVariant, Map, PartialReflect,
 };
 use std::{any::TypeId, ffi::OsString, path::PathBuf};

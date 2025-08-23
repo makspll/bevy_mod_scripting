@@ -18,12 +18,12 @@ pub struct BevyTransformScriptingPlugin;
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl bevy::transform::components::GlobalTransform {
+impl ::bevy_transform::components::GlobalTransform {
     ///  Returns the 3d affine transformation matrix as an [`Affine3A`].
     fn affine(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::math::Affine3A> {
-        let output: Val<bevy::math::Affine3A> = bevy::transform::components::GlobalTransform::affine(
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+    ) -> Val<::bevy_math::Affine3A> {
+        let output: Val<::bevy_math::Affine3A> = ::bevy_transform::components::GlobalTransform::affine(
                 &_self,
             )
             .into();
@@ -31,18 +31,18 @@ impl bevy::transform::components::GlobalTransform {
     }
     /// Return the local back vector (Z).
     fn back(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::math::Dir3> {
-        let output: Val<bevy::math::Dir3> = bevy::transform::components::GlobalTransform::back(
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+    ) -> Val<::bevy_math::Dir3> {
+        let output: Val<::bevy_math::Dir3> = ::bevy_transform::components::GlobalTransform::back(
                 &_self,
             )
             .into();
         output
     }
     fn clone(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::transform::components::GlobalTransform> {
-        let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::GlobalTransform as ::core::clone::Clone>::clone(
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+    ) -> Val<::bevy_transform::components::GlobalTransform> {
+        let output: Val<::bevy_transform::components::GlobalTransform> = <::bevy_transform::components::GlobalTransform as ::core::clone::Clone>::clone(
                 &_self,
             )
             .into();
@@ -50,9 +50,9 @@ impl bevy::transform::components::GlobalTransform {
     }
     ///  Returns the 3d affine transformation matrix as a [`Mat4`].
     fn compute_matrix(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::math::Mat4> {
-        let output: Val<bevy::math::Mat4> = bevy::transform::components::GlobalTransform::compute_matrix(
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+    ) -> Val<::bevy_math::Mat4> {
+        let output: Val<::bevy_math::Mat4> = ::bevy_transform::components::GlobalTransform::compute_matrix(
                 &_self,
             )
             .into();
@@ -62,9 +62,9 @@ impl bevy::transform::components::GlobalTransform {
     ///  The transform is expected to be non-degenerate and without shearing, or the output
     ///  will be invalid.
     fn compute_transform(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::transform::components::Transform> {
-        let output: Val<bevy::transform::components::Transform> = bevy::transform::components::GlobalTransform::compute_transform(
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+    ) -> Val<::bevy_transform::components::Transform> {
+        let output: Val<::bevy_transform::components::Transform> = ::bevy_transform::components::GlobalTransform::compute_transform(
                 &_self,
             )
             .into();
@@ -72,65 +72,65 @@ impl bevy::transform::components::GlobalTransform {
     }
     /// Return the local down vector (-Y).
     fn down(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::math::Dir3> {
-        let output: Val<bevy::math::Dir3> = bevy::transform::components::GlobalTransform::down(
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+    ) -> Val<::bevy_math::Dir3> {
+        let output: Val<::bevy_math::Dir3> = ::bevy_transform::components::GlobalTransform::down(
                 &_self,
             )
             .into();
         output
     }
     fn eq(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-        other: Ref<bevy::transform::components::GlobalTransform>,
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+        other: Ref<::bevy_transform::components::GlobalTransform>,
     ) -> bool {
-        let output: bool = <bevy::transform::components::GlobalTransform as ::core::cmp::PartialEq<
-            bevy::transform::components::GlobalTransform,
+        let output: bool = <::bevy_transform::components::GlobalTransform as ::core::cmp::PartialEq<
+            ::bevy_transform::components::GlobalTransform,
         >>::eq(&_self, &other)
             .into();
         output
     }
     /// Return the local forward vector (-Z).
     fn forward(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::math::Dir3> {
-        let output: Val<bevy::math::Dir3> = bevy::transform::components::GlobalTransform::forward(
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+    ) -> Val<::bevy_math::Dir3> {
+        let output: Val<::bevy_math::Dir3> = ::bevy_transform::components::GlobalTransform::forward(
                 &_self,
             )
             .into();
         output
     }
     fn from_isometry(
-        iso: Val<bevy::math::Isometry3d>,
-    ) -> Val<bevy::transform::components::GlobalTransform> {
-        let output: Val<bevy::transform::components::GlobalTransform> = bevy::transform::components::GlobalTransform::from_isometry(
+        iso: Val<::bevy_math::Isometry3d>,
+    ) -> Val<::bevy_transform::components::GlobalTransform> {
+        let output: Val<::bevy_transform::components::GlobalTransform> = ::bevy_transform::components::GlobalTransform::from_isometry(
                 iso.into_inner(),
             )
             .into();
         output
     }
     fn from_rotation(
-        rotation: Val<bevy::math::Quat>,
-    ) -> Val<bevy::transform::components::GlobalTransform> {
-        let output: Val<bevy::transform::components::GlobalTransform> = bevy::transform::components::GlobalTransform::from_rotation(
+        rotation: Val<::bevy_math::Quat>,
+    ) -> Val<::bevy_transform::components::GlobalTransform> {
+        let output: Val<::bevy_transform::components::GlobalTransform> = ::bevy_transform::components::GlobalTransform::from_rotation(
                 rotation.into_inner(),
             )
             .into();
         output
     }
     fn from_scale(
-        scale: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::transform::components::GlobalTransform> {
-        let output: Val<bevy::transform::components::GlobalTransform> = bevy::transform::components::GlobalTransform::from_scale(
+        scale: Val<::bevy_math::Vec3>,
+    ) -> Val<::bevy_transform::components::GlobalTransform> {
+        let output: Val<::bevy_transform::components::GlobalTransform> = ::bevy_transform::components::GlobalTransform::from_scale(
                 scale.into_inner(),
             )
             .into();
         output
     }
     fn from_translation(
-        translation: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::transform::components::GlobalTransform> {
-        let output: Val<bevy::transform::components::GlobalTransform> = bevy::transform::components::GlobalTransform::from_translation(
+        translation: Val<::bevy_math::Vec3>,
+    ) -> Val<::bevy_transform::components::GlobalTransform> {
+        let output: Val<::bevy_transform::components::GlobalTransform> = ::bevy_transform::components::GlobalTransform::from_translation(
                 translation.into_inner(),
             )
             .into();
@@ -140,8 +140,8 @@ impl bevy::transform::components::GlobalTransform {
         x: f32,
         y: f32,
         z: f32,
-    ) -> Val<bevy::transform::components::GlobalTransform> {
-        let output: Val<bevy::transform::components::GlobalTransform> = bevy::transform::components::GlobalTransform::from_xyz(
+    ) -> Val<::bevy_transform::components::GlobalTransform> {
+        let output: Val<::bevy_transform::components::GlobalTransform> = ::bevy_transform::components::GlobalTransform::from_xyz(
                 x,
                 y,
                 z,
@@ -151,40 +151,40 @@ impl bevy::transform::components::GlobalTransform {
     }
     /// Return the local left vector (-X).
     fn left(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::math::Dir3> {
-        let output: Val<bevy::math::Dir3> = bevy::transform::components::GlobalTransform::left(
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+    ) -> Val<::bevy_math::Dir3> {
+        let output: Val<::bevy_math::Dir3> = ::bevy_transform::components::GlobalTransform::left(
                 &_self,
             )
             .into();
         output
     }
     fn mul(
-        _self: Val<bevy::transform::components::GlobalTransform>,
-        value: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::transform::components::GlobalTransform as ::core::ops::Mul<
-            bevy::math::Vec3,
+        _self: Val<::bevy_transform::components::GlobalTransform>,
+        value: Val<::bevy_math::Vec3>,
+    ) -> Val<::bevy_math::Vec3> {
+        let output: Val<::bevy_math::Vec3> = <::bevy_transform::components::GlobalTransform as ::core::ops::Mul<
+            ::bevy_math::Vec3,
         >>::mul(_self.into_inner(), value.into_inner())
             .into();
         output
     }
     fn mul(
-        _self: Val<bevy::transform::components::GlobalTransform>,
-        global_transform: Val<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::transform::components::GlobalTransform> {
-        let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::GlobalTransform as ::core::ops::Mul<
-            bevy::transform::components::GlobalTransform,
+        _self: Val<::bevy_transform::components::GlobalTransform>,
+        global_transform: Val<::bevy_transform::components::GlobalTransform>,
+    ) -> Val<::bevy_transform::components::GlobalTransform> {
+        let output: Val<::bevy_transform::components::GlobalTransform> = <::bevy_transform::components::GlobalTransform as ::core::ops::Mul<
+            ::bevy_transform::components::GlobalTransform,
         >>::mul(_self.into_inner(), global_transform.into_inner())
             .into();
         output
     }
     fn mul(
-        _self: Val<bevy::transform::components::GlobalTransform>,
-        transform: Val<bevy::transform::components::Transform>,
-    ) -> Val<bevy::transform::components::GlobalTransform> {
-        let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::GlobalTransform as ::core::ops::Mul<
-            bevy::transform::components::Transform,
+        _self: Val<::bevy_transform::components::GlobalTransform>,
+        transform: Val<::bevy_transform::components::Transform>,
+    ) -> Val<::bevy_transform::components::GlobalTransform> {
+        let output: Val<::bevy_transform::components::GlobalTransform> = <::bevy_transform::components::GlobalTransform as ::core::ops::Mul<
+            ::bevy_transform::components::Transform,
         >>::mul(_self.into_inner(), transform.into_inner())
             .into();
         output
@@ -192,10 +192,10 @@ impl bevy::transform::components::GlobalTransform {
     ///  Multiplies `self` with `transform` component by component, returning the
     ///  resulting [`GlobalTransform`]
     fn mul_transform(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-        transform: Val<bevy::transform::components::Transform>,
-    ) -> Val<bevy::transform::components::GlobalTransform> {
-        let output: Val<bevy::transform::components::GlobalTransform> = bevy::transform::components::GlobalTransform::mul_transform(
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+        transform: Val<::bevy_transform::components::Transform>,
+    ) -> Val<::bevy_transform::components::GlobalTransform> {
+        let output: Val<::bevy_transform::components::GlobalTransform> = ::bevy_transform::components::GlobalTransform::mul_transform(
                 &_self,
                 transform.into_inner(),
             )
@@ -204,10 +204,10 @@ impl bevy::transform::components::GlobalTransform {
     }
     ///  Get an upper bound of the radius from the given `extents`.
     fn radius_vec3a(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-        extents: Val<bevy::math::Vec3A>,
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+        extents: Val<::bevy_math::Vec3A>,
     ) -> f32 {
-        let output: f32 = bevy::transform::components::GlobalTransform::radius_vec3a(
+        let output: f32 = ::bevy_transform::components::GlobalTransform::radius_vec3a(
                 &_self,
                 extents.into_inner(),
             )
@@ -244,10 +244,10 @@ impl bevy::transform::components::GlobalTransform {
     ///  The transform is expected to be non-degenerate and without shearing, or the output
     ///  will be invalid.
     fn reparented_to(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-        parent: Ref<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::transform::components::Transform> {
-        let output: Val<bevy::transform::components::Transform> = bevy::transform::components::GlobalTransform::reparented_to(
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+        parent: Ref<::bevy_transform::components::GlobalTransform>,
+    ) -> Val<::bevy_transform::components::Transform> {
+        let output: Val<::bevy_transform::components::Transform> = ::bevy_transform::components::GlobalTransform::reparented_to(
                 &_self,
                 &parent,
             )
@@ -256,9 +256,9 @@ impl bevy::transform::components::GlobalTransform {
     }
     /// Return the local right vector (X).
     fn right(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::math::Dir3> {
-        let output: Val<bevy::math::Dir3> = bevy::transform::components::GlobalTransform::right(
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+    ) -> Val<::bevy_math::Dir3> {
+        let output: Val<::bevy_math::Dir3> = ::bevy_transform::components::GlobalTransform::right(
                 &_self,
             )
             .into();
@@ -270,9 +270,9 @@ impl bevy::transform::components::GlobalTransform {
     ///  This is calculated using `to_scale_rotation_translation`, meaning that you
     ///  should probably use it directly if you also need translation or scale.
     fn rotation(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::math::Quat> {
-        let output: Val<bevy::math::Quat> = bevy::transform::components::GlobalTransform::rotation(
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+    ) -> Val<::bevy_math::Quat> {
+        let output: Val<::bevy_math::Quat> = ::bevy_transform::components::GlobalTransform::rotation(
                 &_self,
             )
             .into();
@@ -283,9 +283,9 @@ impl bevy::transform::components::GlobalTransform {
     ///  Some of the computations overlap with `to_scale_rotation_translation`, which means you should use
     ///  it instead if you also need rotation.
     fn scale(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = bevy::transform::components::GlobalTransform::scale(
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+    ) -> Val<::bevy_math::Vec3> {
+        let output: Val<::bevy_math::Vec3> = ::bevy_transform::components::GlobalTransform::scale(
                 &_self,
             )
             .into();
@@ -297,9 +297,9 @@ impl bevy::transform::components::GlobalTransform {
     ///  will be invalid.
     ///  [isometry]: Isometry3d
     fn to_isometry(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::math::Isometry3d> {
-        let output: Val<bevy::math::Isometry3d> = bevy::transform::components::GlobalTransform::to_isometry(
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+    ) -> Val<::bevy_math::Isometry3d> {
+        let output: Val<::bevy_math::Isometry3d> = ::bevy_transform::components::GlobalTransform::to_isometry(
                 &_self,
             )
             .into();
@@ -335,10 +335,10 @@ impl bevy::transform::components::GlobalTransform {
     ///  assert_eq!(roundtripped_local_direction, local_direction);
     ///  ```
     fn transform_point(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-        point: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = bevy::transform::components::GlobalTransform::transform_point(
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+        point: Val<::bevy_math::Vec3>,
+    ) -> Val<::bevy_math::Vec3> {
+        let output: Val<::bevy_math::Vec3> = ::bevy_transform::components::GlobalTransform::transform_point(
                 &_self,
                 point.into_inner(),
             )
@@ -347,9 +347,9 @@ impl bevy::transform::components::GlobalTransform {
     }
     ///  Get the translation as a [`Vec3`].
     fn translation(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = bevy::transform::components::GlobalTransform::translation(
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+    ) -> Val<::bevy_math::Vec3> {
+        let output: Val<::bevy_math::Vec3> = ::bevy_transform::components::GlobalTransform::translation(
                 &_self,
             )
             .into();
@@ -357,9 +357,9 @@ impl bevy::transform::components::GlobalTransform {
     }
     ///  Get the translation as a [`Vec3A`].
     fn translation_vec3a(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> = bevy::transform::components::GlobalTransform::translation_vec3a(
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+    ) -> Val<::bevy_math::Vec3A> {
+        let output: Val<::bevy_math::Vec3A> = ::bevy_transform::components::GlobalTransform::translation_vec3a(
                 &_self,
             )
             .into();
@@ -367,9 +367,9 @@ impl bevy::transform::components::GlobalTransform {
     }
     /// Return the local up vector (Y).
     fn up(
-        _self: Ref<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::math::Dir3> {
-        let output: Val<bevy::math::Dir3> = bevy::transform::components::GlobalTransform::up(
+        _self: Ref<::bevy_transform::components::GlobalTransform>,
+    ) -> Val<::bevy_math::Dir3> {
+        let output: Val<::bevy_math::Dir3> = ::bevy_transform::components::GlobalTransform::up(
                 &_self,
             )
             .into();
@@ -382,21 +382,21 @@ impl bevy::transform::components::GlobalTransform {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl bevy::transform::components::Transform {
+impl ::bevy_transform::components::Transform {
     ///  Equivalent to [`local_z()`][Transform::local_z]
     fn back(
-        _self: Ref<bevy::transform::components::Transform>,
-    ) -> Val<bevy::math::Dir3> {
-        let output: Val<bevy::math::Dir3> = bevy::transform::components::Transform::back(
+        _self: Ref<::bevy_transform::components::Transform>,
+    ) -> Val<::bevy_math::Dir3> {
+        let output: Val<::bevy_math::Dir3> = ::bevy_transform::components::Transform::back(
                 &_self,
             )
             .into();
         output
     }
     fn clone(
-        _self: Ref<bevy::transform::components::Transform>,
-    ) -> Val<bevy::transform::components::Transform> {
-        let output: Val<bevy::transform::components::Transform> = <bevy::transform::components::Transform as ::core::clone::Clone>::clone(
+        _self: Ref<::bevy_transform::components::Transform>,
+    ) -> Val<::bevy_transform::components::Transform> {
+        let output: Val<::bevy_transform::components::Transform> = <::bevy_transform::components::Transform as ::core::clone::Clone>::clone(
                 &_self,
             )
             .into();
@@ -405,9 +405,9 @@ impl bevy::transform::components::Transform {
     ///  Returns the 3d affine transformation matrix from this transforms translation,
     ///  rotation, and scale.
     fn compute_affine(
-        _self: Ref<bevy::transform::components::Transform>,
-    ) -> Val<bevy::math::Affine3A> {
-        let output: Val<bevy::math::Affine3A> = bevy::transform::components::Transform::compute_affine(
+        _self: Ref<::bevy_transform::components::Transform>,
+    ) -> Val<::bevy_math::Affine3A> {
+        let output: Val<::bevy_math::Affine3A> = ::bevy_transform::components::Transform::compute_affine(
                 &_self,
             )
             .into();
@@ -416,9 +416,9 @@ impl bevy::transform::components::Transform {
     ///  Returns the 3d affine transformation matrix from this transforms translation,
     ///  rotation, and scale.
     fn compute_matrix(
-        _self: Ref<bevy::transform::components::Transform>,
-    ) -> Val<bevy::math::Mat4> {
-        let output: Val<bevy::math::Mat4> = bevy::transform::components::Transform::compute_matrix(
+        _self: Ref<::bevy_transform::components::Transform>,
+    ) -> Val<::bevy_math::Mat4> {
+        let output: Val<::bevy_math::Mat4> = ::bevy_transform::components::Transform::compute_matrix(
                 &_self,
             )
             .into();
@@ -426,29 +426,29 @@ impl bevy::transform::components::Transform {
     }
     ///  Equivalent to [`-local_y()`][Transform::local_y]
     fn down(
-        _self: Ref<bevy::transform::components::Transform>,
-    ) -> Val<bevy::math::Dir3> {
-        let output: Val<bevy::math::Dir3> = bevy::transform::components::Transform::down(
+        _self: Ref<::bevy_transform::components::Transform>,
+    ) -> Val<::bevy_math::Dir3> {
+        let output: Val<::bevy_math::Dir3> = ::bevy_transform::components::Transform::down(
                 &_self,
             )
             .into();
         output
     }
     fn eq(
-        _self: Ref<bevy::transform::components::Transform>,
-        other: Ref<bevy::transform::components::Transform>,
+        _self: Ref<::bevy_transform::components::Transform>,
+        other: Ref<::bevy_transform::components::Transform>,
     ) -> bool {
-        let output: bool = <bevy::transform::components::Transform as ::core::cmp::PartialEq<
-            bevy::transform::components::Transform,
+        let output: bool = <::bevy_transform::components::Transform as ::core::cmp::PartialEq<
+            ::bevy_transform::components::Transform,
         >>::eq(&_self, &other)
             .into();
         output
     }
     ///  Equivalent to [`-local_z()`][Transform::local_z]
     fn forward(
-        _self: Ref<bevy::transform::components::Transform>,
-    ) -> Val<bevy::math::Dir3> {
-        let output: Val<bevy::math::Dir3> = bevy::transform::components::Transform::forward(
+        _self: Ref<::bevy_transform::components::Transform>,
+    ) -> Val<::bevy_math::Dir3> {
+        let output: Val<::bevy_math::Dir3> = ::bevy_transform::components::Transform::forward(
                 &_self,
             )
             .into();
@@ -457,9 +457,9 @@ impl bevy::transform::components::Transform {
     ///  Creates a new [`Transform`] that is equivalent to the given [isometry].
     ///  [isometry]: Isometry3d
     fn from_isometry(
-        iso: Val<bevy::math::Isometry3d>,
-    ) -> Val<bevy::transform::components::Transform> {
-        let output: Val<bevy::transform::components::Transform> = bevy::transform::components::Transform::from_isometry(
+        iso: Val<::bevy_math::Isometry3d>,
+    ) -> Val<::bevy_transform::components::Transform> {
+        let output: Val<::bevy_transform::components::Transform> = ::bevy_transform::components::Transform::from_isometry(
                 iso.into_inner(),
             )
             .into();
@@ -468,9 +468,9 @@ impl bevy::transform::components::Transform {
     ///  Extracts the translation, rotation, and scale from `matrix`. It must be a 3d affine
     ///  transformation matrix.
     fn from_matrix(
-        world_from_local: Val<bevy::math::Mat4>,
-    ) -> Val<bevy::transform::components::Transform> {
-        let output: Val<bevy::transform::components::Transform> = bevy::transform::components::Transform::from_matrix(
+        world_from_local: Val<::bevy_math::Mat4>,
+    ) -> Val<::bevy_transform::components::Transform> {
+        let output: Val<::bevy_transform::components::Transform> = ::bevy_transform::components::Transform::from_matrix(
                 world_from_local.into_inner(),
             )
             .into();
@@ -479,9 +479,9 @@ impl bevy::transform::components::Transform {
     ///  Creates a new [`Transform`], with `rotation`. Translation will be 0 and scale 1 on
     ///  all axes.
     fn from_rotation(
-        rotation: Val<bevy::math::Quat>,
-    ) -> Val<bevy::transform::components::Transform> {
-        let output: Val<bevy::transform::components::Transform> = bevy::transform::components::Transform::from_rotation(
+        rotation: Val<::bevy_math::Quat>,
+    ) -> Val<::bevy_transform::components::Transform> {
+        let output: Val<::bevy_transform::components::Transform> = ::bevy_transform::components::Transform::from_rotation(
                 rotation.into_inner(),
             )
             .into();
@@ -490,9 +490,9 @@ impl bevy::transform::components::Transform {
     ///  Creates a new [`Transform`], with `scale`. Translation will be 0 and rotation 0 on
     ///  all axes.
     fn from_scale(
-        scale: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::transform::components::Transform> {
-        let output: Val<bevy::transform::components::Transform> = bevy::transform::components::Transform::from_scale(
+        scale: Val<::bevy_math::Vec3>,
+    ) -> Val<::bevy_transform::components::Transform> {
+        let output: Val<::bevy_transform::components::Transform> = ::bevy_transform::components::Transform::from_scale(
                 scale.into_inner(),
             )
             .into();
@@ -501,9 +501,9 @@ impl bevy::transform::components::Transform {
     ///  Creates a new [`Transform`], with `translation`. Rotation will be 0 and scale 1 on
     ///  all axes.
     fn from_translation(
-        translation: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::transform::components::Transform> {
-        let output: Val<bevy::transform::components::Transform> = bevy::transform::components::Transform::from_translation(
+        translation: Val<::bevy_math::Vec3>,
+    ) -> Val<::bevy_transform::components::Transform> {
+        let output: Val<::bevy_transform::components::Transform> = ::bevy_transform::components::Transform::from_translation(
                 translation.into_inner(),
             )
             .into();
@@ -512,8 +512,8 @@ impl bevy::transform::components::Transform {
     ///  Creates a new [`Transform`] at the position `(x, y, z)`. In 2d, the `z` component
     ///  is used for z-ordering elements: higher `z`-value will be in front of lower
     ///  `z`-value.
-    fn from_xyz(x: f32, y: f32, z: f32) -> Val<bevy::transform::components::Transform> {
-        let output: Val<bevy::transform::components::Transform> = bevy::transform::components::Transform::from_xyz(
+    fn from_xyz(x: f32, y: f32, z: f32) -> Val<::bevy_transform::components::Transform> {
+        let output: Val<::bevy_transform::components::Transform> = ::bevy_transform::components::Transform::from_xyz(
                 x,
                 y,
                 z,
@@ -524,16 +524,16 @@ impl bevy::transform::components::Transform {
     ///  Returns `true` if, and only if, translation, rotation and scale all are
     ///  finite. If any of them contains a `NaN`, positive or negative infinity,
     ///  this will return `false`.
-    fn is_finite(_self: Ref<bevy::transform::components::Transform>) -> bool {
-        let output: bool = bevy::transform::components::Transform::is_finite(&_self)
+    fn is_finite(_self: Ref<::bevy_transform::components::Transform>) -> bool {
+        let output: bool = ::bevy_transform::components::Transform::is_finite(&_self)
             .into();
         output
     }
     ///  Equivalent to [`-local_x()`][Transform::local_x()]
     fn left(
-        _self: Ref<bevy::transform::components::Transform>,
-    ) -> Val<bevy::math::Dir3> {
-        let output: Val<bevy::math::Dir3> = bevy::transform::components::Transform::left(
+        _self: Ref<::bevy_transform::components::Transform>,
+    ) -> Val<::bevy_math::Dir3> {
+        let output: Val<::bevy_math::Dir3> = ::bevy_transform::components::Transform::left(
                 &_self,
             )
             .into();
@@ -541,9 +541,9 @@ impl bevy::transform::components::Transform {
     }
     ///  Get the unit vector in the local `X` direction.
     fn local_x(
-        _self: Ref<bevy::transform::components::Transform>,
-    ) -> Val<bevy::math::Dir3> {
-        let output: Val<bevy::math::Dir3> = bevy::transform::components::Transform::local_x(
+        _self: Ref<::bevy_transform::components::Transform>,
+    ) -> Val<::bevy_math::Dir3> {
+        let output: Val<::bevy_math::Dir3> = ::bevy_transform::components::Transform::local_x(
                 &_self,
             )
             .into();
@@ -551,9 +551,9 @@ impl bevy::transform::components::Transform {
     }
     ///  Get the unit vector in the local `Y` direction.
     fn local_y(
-        _self: Ref<bevy::transform::components::Transform>,
-    ) -> Val<bevy::math::Dir3> {
-        let output: Val<bevy::math::Dir3> = bevy::transform::components::Transform::local_y(
+        _self: Ref<::bevy_transform::components::Transform>,
+    ) -> Val<::bevy_math::Dir3> {
+        let output: Val<::bevy_math::Dir3> = ::bevy_transform::components::Transform::local_y(
                 &_self,
             )
             .into();
@@ -561,40 +561,40 @@ impl bevy::transform::components::Transform {
     }
     ///  Get the unit vector in the local `Z` direction.
     fn local_z(
-        _self: Ref<bevy::transform::components::Transform>,
-    ) -> Val<bevy::math::Dir3> {
-        let output: Val<bevy::math::Dir3> = bevy::transform::components::Transform::local_z(
+        _self: Ref<::bevy_transform::components::Transform>,
+    ) -> Val<::bevy_math::Dir3> {
+        let output: Val<::bevy_math::Dir3> = ::bevy_transform::components::Transform::local_z(
                 &_self,
             )
             .into();
         output
     }
     fn mul(
-        _self: Val<bevy::transform::components::Transform>,
-        value: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = <bevy::transform::components::Transform as ::core::ops::Mul<
-            bevy::math::Vec3,
+        _self: Val<::bevy_transform::components::Transform>,
+        value: Val<::bevy_math::Vec3>,
+    ) -> Val<::bevy_math::Vec3> {
+        let output: Val<::bevy_math::Vec3> = <::bevy_transform::components::Transform as ::core::ops::Mul<
+            ::bevy_math::Vec3,
         >>::mul(_self.into_inner(), value.into_inner())
             .into();
         output
     }
     fn mul(
-        _self: Val<bevy::transform::components::Transform>,
-        global_transform: Val<bevy::transform::components::GlobalTransform>,
-    ) -> Val<bevy::transform::components::GlobalTransform> {
-        let output: Val<bevy::transform::components::GlobalTransform> = <bevy::transform::components::Transform as ::core::ops::Mul<
-            bevy::transform::components::GlobalTransform,
+        _self: Val<::bevy_transform::components::Transform>,
+        global_transform: Val<::bevy_transform::components::GlobalTransform>,
+    ) -> Val<::bevy_transform::components::GlobalTransform> {
+        let output: Val<::bevy_transform::components::GlobalTransform> = <::bevy_transform::components::Transform as ::core::ops::Mul<
+            ::bevy_transform::components::GlobalTransform,
         >>::mul(_self.into_inner(), global_transform.into_inner())
             .into();
         output
     }
     fn mul(
-        _self: Val<bevy::transform::components::Transform>,
-        transform: Val<bevy::transform::components::Transform>,
-    ) -> Val<bevy::transform::components::Transform> {
-        let output: Val<bevy::transform::components::Transform> = <bevy::transform::components::Transform as ::core::ops::Mul<
-            bevy::transform::components::Transform,
+        _self: Val<::bevy_transform::components::Transform>,
+        transform: Val<::bevy_transform::components::Transform>,
+    ) -> Val<::bevy_transform::components::Transform> {
+        let output: Val<::bevy_transform::components::Transform> = <::bevy_transform::components::Transform as ::core::ops::Mul<
+            ::bevy_transform::components::Transform,
         >>::mul(_self.into_inner(), transform.into_inner())
             .into();
         output
@@ -602,10 +602,10 @@ impl bevy::transform::components::Transform {
     ///  Multiplies `self` with `transform` component by component, returning the
     ///  resulting [`Transform`]
     fn mul_transform(
-        _self: Ref<bevy::transform::components::Transform>,
-        transform: Val<bevy::transform::components::Transform>,
-    ) -> Val<bevy::transform::components::Transform> {
-        let output: Val<bevy::transform::components::Transform> = bevy::transform::components::Transform::mul_transform(
+        _self: Ref<::bevy_transform::components::Transform>,
+        transform: Val<::bevy_transform::components::Transform>,
+    ) -> Val<::bevy_transform::components::Transform> {
+        let output: Val<::bevy_transform::components::Transform> = ::bevy_transform::components::Transform::mul_transform(
                 &_self,
                 transform.into_inner(),
             )
@@ -614,9 +614,9 @@ impl bevy::transform::components::Transform {
     }
     ///  Equivalent to [`local_x()`][Transform::local_x()]
     fn right(
-        _self: Ref<bevy::transform::components::Transform>,
-    ) -> Val<bevy::math::Dir3> {
-        let output: Val<bevy::math::Dir3> = bevy::transform::components::Transform::right(
+        _self: Ref<::bevy_transform::components::Transform>,
+    ) -> Val<::bevy_math::Dir3> {
+        let output: Val<::bevy_math::Dir3> = ::bevy_transform::components::Transform::right(
                 &_self,
             )
             .into();
@@ -628,10 +628,10 @@ impl bevy::transform::components::Transform {
     ///  - [`3d_rotation`]
     ///  [`3d_rotation`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/3d_rotation.rs
     fn rotate(
-        mut _self: Mut<bevy::transform::components::Transform>,
-        rotation: Val<bevy::math::Quat>,
+        mut _self: Mut<::bevy_transform::components::Transform>,
+        rotation: Val<::bevy_math::Quat>,
     ) -> () {
-        let output: () = bevy::transform::components::Transform::rotate(
+        let output: () = ::bevy_transform::components::Transform::rotate(
                 &mut _self,
                 rotation.into_inner(),
             )
@@ -641,11 +641,11 @@ impl bevy::transform::components::Transform {
     ///  Rotates this [`Transform`] around a `point` in space.
     ///  If this [`Transform`] has a parent, the `point` is relative to the [`Transform`] of the parent.
     fn rotate_around(
-        mut _self: Mut<bevy::transform::components::Transform>,
-        point: Val<bevy::math::Vec3>,
-        rotation: Val<bevy::math::Quat>,
+        mut _self: Mut<::bevy_transform::components::Transform>,
+        point: Val<::bevy_math::Vec3>,
+        rotation: Val<::bevy_math::Quat>,
     ) -> () {
-        let output: () = bevy::transform::components::Transform::rotate_around(
+        let output: () = ::bevy_transform::components::Transform::rotate_around(
                 &mut _self,
                 point.into_inner(),
                 rotation.into_inner(),
@@ -661,11 +661,11 @@ impl bevy::transform::components::Transform {
     ///  result in a denormalized rotation. In this case, it is recommended to normalize the [`Transform::rotation`] after
     ///  each call to this method.
     fn rotate_axis(
-        mut _self: Mut<bevy::transform::components::Transform>,
-        axis: Val<bevy::math::Dir3>,
+        mut _self: Mut<::bevy_transform::components::Transform>,
+        axis: Val<::bevy_math::Dir3>,
         angle: f32,
     ) -> () {
-        let output: () = bevy::transform::components::Transform::rotate_axis(
+        let output: () = ::bevy_transform::components::Transform::rotate_axis(
                 &mut _self,
                 axis.into_inner(),
                 angle,
@@ -676,10 +676,10 @@ impl bevy::transform::components::Transform {
     ///  Rotates this [`Transform`] by the given `rotation`.
     ///  The `rotation` is relative to this [`Transform`]'s current rotation.
     fn rotate_local(
-        mut _self: Mut<bevy::transform::components::Transform>,
-        rotation: Val<bevy::math::Quat>,
+        mut _self: Mut<::bevy_transform::components::Transform>,
+        rotation: Val<::bevy_math::Quat>,
     ) -> () {
-        let output: () = bevy::transform::components::Transform::rotate_local(
+        let output: () = ::bevy_transform::components::Transform::rotate_local(
                 &mut _self,
                 rotation.into_inner(),
             )
@@ -693,11 +693,11 @@ impl bevy::transform::components::Transform {
     ///  result in a denormalized rotation. In this case, it is recommended to normalize the [`Transform::rotation`] after
     ///  each call to this method.
     fn rotate_local_axis(
-        mut _self: Mut<bevy::transform::components::Transform>,
-        axis: Val<bevy::math::Dir3>,
+        mut _self: Mut<::bevy_transform::components::Transform>,
+        axis: Val<::bevy_math::Dir3>,
         angle: f32,
     ) -> () {
-        let output: () = bevy::transform::components::Transform::rotate_local_axis(
+        let output: () = ::bevy_transform::components::Transform::rotate_local_axis(
                 &mut _self,
                 axis.into_inner(),
                 angle,
@@ -707,10 +707,10 @@ impl bevy::transform::components::Transform {
     }
     ///  Rotates this [`Transform`] around its local `X` axis by `angle` (in radians).
     fn rotate_local_x(
-        mut _self: Mut<bevy::transform::components::Transform>,
+        mut _self: Mut<::bevy_transform::components::Transform>,
         angle: f32,
     ) -> () {
-        let output: () = bevy::transform::components::Transform::rotate_local_x(
+        let output: () = ::bevy_transform::components::Transform::rotate_local_x(
                 &mut _self,
                 angle,
             )
@@ -719,10 +719,10 @@ impl bevy::transform::components::Transform {
     }
     ///  Rotates this [`Transform`] around its local `Y` axis by `angle` (in radians).
     fn rotate_local_y(
-        mut _self: Mut<bevy::transform::components::Transform>,
+        mut _self: Mut<::bevy_transform::components::Transform>,
         angle: f32,
     ) -> () {
-        let output: () = bevy::transform::components::Transform::rotate_local_y(
+        let output: () = ::bevy_transform::components::Transform::rotate_local_y(
                 &mut _self,
                 angle,
             )
@@ -731,10 +731,10 @@ impl bevy::transform::components::Transform {
     }
     ///  Rotates this [`Transform`] around its local `Z` axis by `angle` (in radians).
     fn rotate_local_z(
-        mut _self: Mut<bevy::transform::components::Transform>,
+        mut _self: Mut<::bevy_transform::components::Transform>,
         angle: f32,
     ) -> () {
-        let output: () = bevy::transform::components::Transform::rotate_local_z(
+        let output: () = ::bevy_transform::components::Transform::rotate_local_z(
                 &mut _self,
                 angle,
             )
@@ -744,10 +744,10 @@ impl bevy::transform::components::Transform {
     ///  Rotates this [`Transform`] around the `X` axis by `angle` (in radians).
     ///  If this [`Transform`] has a parent, the axis is relative to the rotation of the parent.
     fn rotate_x(
-        mut _self: Mut<bevy::transform::components::Transform>,
+        mut _self: Mut<::bevy_transform::components::Transform>,
         angle: f32,
     ) -> () {
-        let output: () = bevy::transform::components::Transform::rotate_x(
+        let output: () = ::bevy_transform::components::Transform::rotate_x(
                 &mut _self,
                 angle,
             )
@@ -757,10 +757,10 @@ impl bevy::transform::components::Transform {
     ///  Rotates this [`Transform`] around the `Y` axis by `angle` (in radians).
     ///  If this [`Transform`] has a parent, the axis is relative to the rotation of the parent.
     fn rotate_y(
-        mut _self: Mut<bevy::transform::components::Transform>,
+        mut _self: Mut<::bevy_transform::components::Transform>,
         angle: f32,
     ) -> () {
-        let output: () = bevy::transform::components::Transform::rotate_y(
+        let output: () = ::bevy_transform::components::Transform::rotate_y(
                 &mut _self,
                 angle,
             )
@@ -770,10 +770,10 @@ impl bevy::transform::components::Transform {
     ///  Rotates this [`Transform`] around the `Z` axis by `angle` (in radians).
     ///  If this [`Transform`] has a parent, the axis is relative to the rotation of the parent.
     fn rotate_z(
-        mut _self: Mut<bevy::transform::components::Transform>,
+        mut _self: Mut<::bevy_transform::components::Transform>,
         angle: f32,
     ) -> () {
-        let output: () = bevy::transform::components::Transform::rotate_z(
+        let output: () = ::bevy_transform::components::Transform::rotate_z(
                 &mut _self,
                 angle,
             )
@@ -783,9 +783,9 @@ impl bevy::transform::components::Transform {
     ///  Get the [isometry] defined by this transform's rotation and translation, ignoring scale.
     ///  [isometry]: Isometry3d
     fn to_isometry(
-        _self: Ref<bevy::transform::components::Transform>,
-    ) -> Val<bevy::math::Isometry3d> {
-        let output: Val<bevy::math::Isometry3d> = bevy::transform::components::Transform::to_isometry(
+        _self: Ref<::bevy_transform::components::Transform>,
+    ) -> Val<::bevy_math::Isometry3d> {
+        let output: Val<::bevy_math::Isometry3d> = ::bevy_transform::components::Transform::to_isometry(
                 &_self,
             )
             .into();
@@ -800,10 +800,10 @@ impl bevy::transform::components::Transform {
     ///  If you always want to transform a point in local space to worldspace, or if you need
     ///  the inverse transformations, see [`GlobalTransform::transform_point()`].
     fn transform_point(
-        _self: Ref<bevy::transform::components::Transform>,
-        point: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::math::Vec3> {
-        let output: Val<bevy::math::Vec3> = bevy::transform::components::Transform::transform_point(
+        _self: Ref<::bevy_transform::components::Transform>,
+        point: Val<::bevy_math::Vec3>,
+    ) -> Val<::bevy_math::Vec3> {
+        let output: Val<::bevy_math::Vec3> = ::bevy_transform::components::Transform::transform_point(
                 &_self,
                 point.into_inner(),
             )
@@ -813,11 +813,11 @@ impl bevy::transform::components::Transform {
     ///  Translates this [`Transform`] around a `point` in space.
     ///  If this [`Transform`] has a parent, the `point` is relative to the [`Transform`] of the parent.
     fn translate_around(
-        mut _self: Mut<bevy::transform::components::Transform>,
-        point: Val<bevy::math::Vec3>,
-        rotation: Val<bevy::math::Quat>,
+        mut _self: Mut<::bevy_transform::components::Transform>,
+        point: Val<::bevy_math::Vec3>,
+        rotation: Val<::bevy_math::Quat>,
     ) -> () {
-        let output: () = bevy::transform::components::Transform::translate_around(
+        let output: () = ::bevy_transform::components::Transform::translate_around(
                 &mut _self,
                 point.into_inner(),
                 rotation.into_inner(),
@@ -826,8 +826,10 @@ impl bevy::transform::components::Transform {
         output
     }
     ///  Equivalent to [`local_y()`][Transform::local_y]
-    fn up(_self: Ref<bevy::transform::components::Transform>) -> Val<bevy::math::Dir3> {
-        let output: Val<bevy::math::Dir3> = bevy::transform::components::Transform::up(
+    fn up(
+        _self: Ref<::bevy_transform::components::Transform>,
+    ) -> Val<::bevy_math::Dir3> {
+        let output: Val<::bevy_math::Dir3> = ::bevy_transform::components::Transform::up(
                 &_self,
             )
             .into();
@@ -835,10 +837,10 @@ impl bevy::transform::components::Transform {
     }
     ///  Returns this [`Transform`] with a new rotation.
     fn with_rotation(
-        _self: Val<bevy::transform::components::Transform>,
-        rotation: Val<bevy::math::Quat>,
-    ) -> Val<bevy::transform::components::Transform> {
-        let output: Val<bevy::transform::components::Transform> = bevy::transform::components::Transform::with_rotation(
+        _self: Val<::bevy_transform::components::Transform>,
+        rotation: Val<::bevy_math::Quat>,
+    ) -> Val<::bevy_transform::components::Transform> {
+        let output: Val<::bevy_transform::components::Transform> = ::bevy_transform::components::Transform::with_rotation(
                 _self.into_inner(),
                 rotation.into_inner(),
             )
@@ -847,10 +849,10 @@ impl bevy::transform::components::Transform {
     }
     ///  Returns this [`Transform`] with a new scale.
     fn with_scale(
-        _self: Val<bevy::transform::components::Transform>,
-        scale: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::transform::components::Transform> {
-        let output: Val<bevy::transform::components::Transform> = bevy::transform::components::Transform::with_scale(
+        _self: Val<::bevy_transform::components::Transform>,
+        scale: Val<::bevy_math::Vec3>,
+    ) -> Val<::bevy_transform::components::Transform> {
+        let output: Val<::bevy_transform::components::Transform> = ::bevy_transform::components::Transform::with_scale(
                 _self.into_inner(),
                 scale.into_inner(),
             )
@@ -859,10 +861,10 @@ impl bevy::transform::components::Transform {
     }
     ///  Returns this [`Transform`] with a new translation.
     fn with_translation(
-        _self: Val<bevy::transform::components::Transform>,
-        translation: Val<bevy::math::Vec3>,
-    ) -> Val<bevy::transform::components::Transform> {
-        let output: Val<bevy::transform::components::Transform> = bevy::transform::components::Transform::with_translation(
+        _self: Val<::bevy_transform::components::Transform>,
+        translation: Val<::bevy_math::Vec3>,
+    ) -> Val<::bevy_transform::components::Transform> {
+        let output: Val<::bevy_transform::components::Transform> = ::bevy_transform::components::Transform::with_translation(
                 _self.into_inner(),
                 translation.into_inner(),
             )
@@ -876,22 +878,22 @@ impl bevy::transform::components::Transform {
     bms_core_path = "bevy_mod_scripting_core",
     generated
 )]
-impl bevy::transform::components::TransformTreeChanged {
+impl ::bevy_transform::components::TransformTreeChanged {
     fn clone(
-        _self: Ref<bevy::transform::components::TransformTreeChanged>,
-    ) -> Val<bevy::transform::components::TransformTreeChanged> {
-        let output: Val<bevy::transform::components::TransformTreeChanged> = <bevy::transform::components::TransformTreeChanged as ::core::clone::Clone>::clone(
+        _self: Ref<::bevy_transform::components::TransformTreeChanged>,
+    ) -> Val<::bevy_transform::components::TransformTreeChanged> {
+        let output: Val<::bevy_transform::components::TransformTreeChanged> = <::bevy_transform::components::TransformTreeChanged as ::core::clone::Clone>::clone(
                 &_self,
             )
             .into();
         output
     }
     fn eq(
-        _self: Ref<bevy::transform::components::TransformTreeChanged>,
-        other: Ref<bevy::transform::components::TransformTreeChanged>,
+        _self: Ref<::bevy_transform::components::TransformTreeChanged>,
+        other: Ref<::bevy_transform::components::TransformTreeChanged>,
     ) -> bool {
-        let output: bool = <bevy::transform::components::TransformTreeChanged as ::core::cmp::PartialEq<
-            bevy::transform::components::TransformTreeChanged,
+        let output: bool = <::bevy_transform::components::TransformTreeChanged as ::core::cmp::PartialEq<
+            ::bevy_transform::components::TransformTreeChanged,
         >>::eq(&_self, &other)
             .into();
         output

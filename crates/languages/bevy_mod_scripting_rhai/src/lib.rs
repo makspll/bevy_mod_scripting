@@ -2,11 +2,13 @@
 
 use std::ops::Deref;
 
-use bevy::{
-    app::Plugin,
-    asset::Handle,
-    ecs::{entity::Entity, world::World},
+use ::{
+    bevy_app::Plugin,
+    bevy_asset::Handle,
+    bevy_ecs::{entity::Entity, world::World},
 };
+use bevy_app::App;
+use bevy_log::trace;
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
     asset::{Language, ScriptAsset},
@@ -188,11 +190,11 @@ impl Default for RhaiScriptingPlugin {
 }
 
 impl Plugin for RhaiScriptingPlugin {
-    fn build(&self, app: &mut bevy::prelude::App) {
+    fn build(&self, app: &mut App) {
         self.scripting_plugin.build(app);
     }
 
-    fn finish(&self, app: &mut bevy::app::App) {
+    fn finish(&self, app: &mut App) {
         self.scripting_plugin.finish(app);
     }
 }
@@ -289,11 +291,9 @@ pub fn rhai_callback_handler(
         .map(|v| v.into_dynamic())
         .collect::<Result<Vec<_>, _>>()?;
 
-    bevy::log::trace!(
+    trace!(
         "Calling callback {} in context {} with args: {:?}",
-        callback,
-        context_key,
-        args
+        callback, context_key, args
     );
     let runtime = runtime.read();
 
@@ -307,10 +307,9 @@ pub fn rhai_callback_handler(
         Ok(v) => Ok(ScriptValue::from_dynamic(v)?),
         Err(e) => {
             if let EvalAltResult::ErrorFunctionNotFound(_, _) = e.unwrap_inner() {
-                bevy::log::trace!(
+                trace!(
                     "Context {} is not subscribed to callback {} with the provided arguments.",
-                    context_key,
-                    callback
+                    context_key, callback
                 );
                 Ok(ScriptValue::Unit)
             } else {

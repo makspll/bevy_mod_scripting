@@ -5,7 +5,7 @@ use crate::{
     error::InteropError,
     reflection_extensions::TypeIdExtensions,
 };
-use bevy::reflect::{ParsedPath, PartialReflect};
+use bevy_reflect::{ParsedPath, PartialReflect};
 
 /// A list of magic methods, these only have one replacable implementation, and apply to all `ReflectReferences`.
 /// It's up to the language implementer to call these in the right order (after any type specific overrides).
