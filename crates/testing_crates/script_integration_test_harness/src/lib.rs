@@ -271,6 +271,11 @@ where
 
     install_test_plugin(&mut app, true);
     app.add_plugins(plugin);
+
+    // finalize
+    app.cleanup();
+    app.finish();
+
     let script_path = script_path.into();
     let script_handle = app.world().resource::<AssetServer>().load(script_path);
     let script_id = script_handle.id();
@@ -278,10 +283,6 @@ where
         .world_mut()
         .spawn(ScriptComponent(vec![script_handle.clone()]))
         .id();
-
-    // finalize
-    app.cleanup();
-    app.finish();
 
     let timer = Instant::now();
 
