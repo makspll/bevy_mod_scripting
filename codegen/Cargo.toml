@@ -15,6 +15,9 @@ include = [
     "rust-toolchain.toml",
 ]
 
+[workspace]
+members = []
+
 [[bin]]
 name = "cargo-bevy-api-gen"
 path = "src/bin/main.rs"

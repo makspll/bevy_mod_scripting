@@ -837,7 +837,7 @@ impl Xtasks {
 
     fn codegen_crate_dir(app_settings: &GlobalArgs) -> Result<std::path::PathBuf> {
         let workspace_dir = Self::workspace_dir(app_settings)?;
-        Ok(workspace_dir.join("crates").join("bevy_api_gen"))
+        Ok(workspace_dir.join("codegen"))
     }
 
     fn relative_workspace_dir<P: AsRef<Path>>(

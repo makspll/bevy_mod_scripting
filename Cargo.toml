@@ -123,7 +123,7 @@ members = [
     "crates/bevy_system_reflection",
 ]
 resolver = "2"
-exclude = ["codegen/Cargo.toml", "crates/macro_tests", "xtask"]
+exclude = ["codegen", "crates/macro_tests", "xtask"]
 
 [profile.dev]
 debug = 1
