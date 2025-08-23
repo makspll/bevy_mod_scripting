@@ -2,7 +2,8 @@
 
 use std::sync::Arc;
 
-use bevy::{asset::Handle, ecs::entity::Entity, prelude::Event, reflect::Reflect};
+use ::{bevy_asset::Handle, bevy_ecs::entity::Entity, bevy_reflect::Reflect};
+use bevy_ecs::event::Event;
 use parking_lot::Mutex;
 
 use crate::{
@@ -409,9 +410,10 @@ static FORBIDDEN_KEYWORDS: [&str; 82] = [
 mod test {
     use std::sync::Arc;
 
-    use bevy::{
-        asset::{AssetId, AssetIndex, Handle},
-        ecs::entity::Entity,
+    use ::{
+        bevy_app::{App, Plugin},
+        bevy_asset::{AssetId, AssetIndex, Handle},
+        bevy_ecs::entity::Entity,
     };
     use parking_lot::Mutex;
     use test_utils::make_test_plugin;

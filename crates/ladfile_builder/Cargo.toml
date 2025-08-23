@@ -13,15 +13,17 @@ include = ["readme.md", "/src", "/test_assets"]
 readme = "readme.md"
 
 [dependencies]
+bevy_app = { workspace = true, default-features = false, features = [] }
+bevy_ecs = { workspace = true, default-features = false, features = [] }
+bevy_platform = { workspace = true, default-features = false, features = [] }
+bevy_log = { workspace = true, default-features = false, features = [] }
 bevy_mod_scripting_core = { workspace = true }
-# I don't think bevy has a top level feature for this :C
-bevy = { workspace = true }
-bevy_reflect = { version = "0.16.0", features = ["documentation"] }
-ladfile = { version = "0.5.0", path = "../ladfile" }
-regex = "1.11"
+bevy_reflect = { workspace = true, features = ["documentation"] }
+ladfile = { workspace = true }
+regex = { workspace = true }
 
 [dev-dependencies]
-pretty_assertions = "1.4"
+pretty_assertions = { workspace = true }
 
 [lints]
 workspace = true

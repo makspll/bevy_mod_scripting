@@ -3,21 +3,22 @@
 
 use std::{ffi::OsString, path::PathBuf};
 
-use bevy::reflect::{TypeInfo, Typed};
+use bevy_platform::collections::HashMap;
+use bevy_reflect::{TypeInfo, Typed};
 
 use crate::{
-	bindings::{
-		function::{
-			from::{Mut, Ref, Union, Val},
-			script_function::{
-				DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext,
-			},
-		},
-		script_value::ScriptValue,
-		ReflectReference,
-	},
-	error::InteropError,
-	reflection_extensions::TypeInfoExtensions,
+    bindings::{
+        ReflectReference,
+        function::{
+            from::{Mut, Ref, Union, Val},
+            script_function::{
+                DynamicScriptFunction, DynamicScriptFunctionMut, FunctionCallContext,
+            },
+        },
+        script_value::ScriptValue,
+    },
+    error::InteropError,
+    reflection_extensions::TypeInfoExtensions,
 };
 
 /// All Through types follow one rule:
@@ -186,6 +187,15 @@ impl<T: TypedThrough> TypedThrough for Vec<T> {
     }
 }
 
+impl<K: TypedThrough, V: TypedThrough> TypedThrough for HashMap<K, V> {
+    fn through_type_info() -> ThroughTypeInfo {
+        ThroughTypeInfo::TypedWrapper(TypedWrapperKind::HashMap(
+            Box::new(K::through_type_info()),
+            Box::new(V::through_type_info()),
+        ))
+    }
+}
+
 impl<K: TypedThrough, V: TypedThrough> TypedThrough for std::collections::HashMap<K, V> {
     fn through_type_info() -> ThroughTypeInfo {
         ThroughTypeInfo::TypedWrapper(TypedWrapperKind::HashMap(
@@ -220,7 +230,7 @@ macro_rules! impl_through_typed {
         $(
             impl $crate::docgen::typed_through::TypedThrough for $ty {
                 fn through_type_info() -> $crate::docgen::typed_through::ThroughTypeInfo {
-                    $crate::docgen::typed_through::ThroughTypeInfo::TypeInfo(<$ty as bevy::reflect::Typed>::type_info())
+                    $crate::docgen::typed_through::ThroughTypeInfo::TypeInfo(<$ty as bevy_reflect::Typed>::type_info())
                 }
             }
         )*
@@ -269,9 +279,9 @@ variadics_please::all_tuples!(impl_through_typed_tuple, 0, 13, T);
 
 #[cfg(test)]
 mod test {
-	use super::*;
+    use super::*;
 
-	fn assert_type_info_is_through<T: Typed + TypedThrough>() {
+    fn assert_type_info_is_through<T: Typed + TypedThrough>() {
         let type_info = T::type_info();
         let through_type_info = T::through_type_info();
 
@@ -355,7 +365,7 @@ mod test {
         ));
 
         assert!(matches!(
-            std::collections::HashMap::<i32, f32>::through_type_info(),
+            HashMap::<i32, f32>::through_type_info(),
             ThroughTypeInfo::TypedWrapper(TypedWrapperKind::HashMap(..))
         ));
 
@@ -388,7 +398,7 @@ mod test {
         ));
 
         assert!(matches!(
-            into_through_type_info(std::collections::HashMap::<i32, f32>::type_info()),
+            into_through_type_info(HashMap::<i32, f32>::type_info()),
             ThroughTypeInfo::TypedWrapper(TypedWrapperKind::HashMap(..))
         ));
 

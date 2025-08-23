@@ -1,22 +1,23 @@
 //! Dynamic scheduling from scripts
 
-use super::{script_system::ScriptSystemBuilder, WorldAccessGuard};
-use crate::{error::InteropError, IntoScriptPluginParams};
-use bevy::{
-	app::{
-		First, FixedFirst, FixedLast, FixedMain, FixedPostUpdate, FixedPreUpdate, FixedUpdate,
-		Last, PostStartup, PostUpdate, PreStartup, PreUpdate, RunFixedMainLoop, Startup, Update,
-	},
-	ecs::{
-		schedule::{Schedule, ScheduleLabel, Schedules},
-		world::World,
-	},
-	prelude::Resource,
+use super::{WorldAccessGuard, script_system::ScriptSystemBuilder};
+use crate::{IntoScriptPluginParams, error::InteropError};
+use ::{
+    bevy_app::{
+        First, FixedFirst, FixedLast, FixedMain, FixedPostUpdate, FixedPreUpdate, FixedUpdate,
+        Last, PostStartup, PostUpdate, PreStartup, PreUpdate, RunFixedMainLoop, Startup, Update,
+    },
+    bevy_ecs::{
+        schedule::{Schedule, ScheduleLabel, Schedules},
+        world::World,
+    },
 };
+use bevy_ecs::resource::Resource;
+use bevy_log::debug;
+use bevy_platform::collections::HashMap;
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 use parking_lot::RwLock;
-use std::{any::TypeId, collections::HashMap, sync::Arc};
-
+use std::{any::TypeId, sync::Arc};
 #[derive(Default, Clone, Resource)]
 /// A Send + Sync registry of bevy schedules.
 pub struct AppScheduleRegistry(Arc<RwLock<ScheduleRegistry>>);
@@ -173,7 +174,7 @@ impl WorldAccessGuard<'_> {
         schedule: &ReflectSchedule,
         builder: ScriptSystemBuilder,
     ) -> Result<ReflectSystem, InteropError> {
-        bevy::log::debug!(
+        debug!(
             "Adding script system '{}' for script '{}' to schedule '{}'",
             builder.name,
             builder.attachment,
@@ -191,18 +192,19 @@ impl WorldAccessGuard<'_> {
     reason = "tests are there but not working currently"
 )]
 mod tests {
-	use bevy::{
-		app::Update,
-		ecs::{
-			schedule::{NodeId, Schedules},
-			system::IntoSystem,
-		},
-	};
-	use test_utils::make_test_plugin;
+    use ::{
+        bevy_app::{App, Plugin, Update},
+        bevy_ecs::{
+            entity::Entity,
+            schedule::{NodeId, Schedules},
+            system::IntoSystem,
+        },
+    };
+    use test_utils::make_test_plugin;
 
-	use super::*;
+    use super::*;
 
-	#[test]
+    #[test]
     fn test_schedule_registry() {
         let mut registry = ScheduleRegistry::default();
         registry.register(Update);
@@ -230,7 +232,10 @@ mod tests {
         let system = ReflectSystem::from_system(&system, NodeId::Set(0));
 
         assert_eq!(system.identifier(), "test_system_generic");
-        assert_eq!(system.path(), "bevy_mod_scripting_core::bindings::schedule::tests::test_system_generic<alloc::string::String>");
+        assert_eq!(
+            system.path(),
+            "bevy_mod_scripting_core::bindings::schedule::tests::test_system_generic<alloc::string::String>"
+        );
 
         let system = IntoSystem::into_system(test_system);
         let system = ReflectSystem::from_system(&system, NodeId::Set(0));
@@ -279,7 +284,7 @@ mod tests {
     /// * `expected_nodes` - A slice of node names expected to be present.
     /// * `expected_edges` - A slice of tuples representing expected edges (from, to).
     pub fn verify_schedule_graph<T>(
-        app: &mut bevy::prelude::App,
+        app: &mut App,
         schedule_label: T,
         expected_nodes: &[&str],
         expected_edges: &[(&str, &str)],

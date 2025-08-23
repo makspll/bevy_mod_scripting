@@ -2,9 +2,12 @@
 
 use std::{ffi::OsString, path::PathBuf};
 
+use bevy_platform::collections::HashMap;
+
 use crate::{
     bindings::{ReflectReference, ScriptValue},
-    docgen::TypedThrough, error::InteropError,
+    docgen::TypedThrough,
+    error::InteropError,
 };
 
 use super::{
@@ -88,6 +91,7 @@ impl<T> ArgMeta for Option<T> {
 impl<T> ArgMeta for Vec<T> {}
 impl<T, const N: usize> ArgMeta for [T; N] {}
 
+impl<K, V> ArgMeta for HashMap<K, V> {}
 impl<K, V> ArgMeta for std::collections::HashMap<K, V> {}
 
 impl_arg_info!(DynamicScriptFunction, DynamicScriptFunctionMut);

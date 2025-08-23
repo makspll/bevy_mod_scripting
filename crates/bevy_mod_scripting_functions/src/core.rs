@@ -1,8 +1,11 @@
 //! Contains functions defined by the [`bevy_mod_scripting_core`] crate
 
-use std::{collections::HashMap, ops::Deref};
+use bevy_platform::collections::HashMap;
+use std::ops::Deref;
 
-use bevy::prelude::*;
+use bevy_app::App;
+use bevy_asset::{AssetServer, Handle};
+use bevy_ecs::{entity::Entity, prelude::AppTypeRegistry, schedule::Schedules, world::World};
 use bevy_mod_scripting_core::{
     asset::ScriptAsset,
     bindings::{
@@ -16,6 +19,7 @@ use bevy_mod_scripting_core::{
     *,
 };
 use bevy_mod_scripting_derive::script_bindings;
+use bevy_reflect::PartialReflect;
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 use bindings::{
     ReflectReference, ScriptComponentRegistration, ScriptQueryBuilder, ScriptQueryResult,
@@ -1357,6 +1361,7 @@ pub fn register_core_functions(app: &mut App) {
         register_script_system_builder_functions(world);
 
         register_script_attachment_functions(world);
+
         register_script_handle_functions(world);
 
         register_global_namespace_functions(world);

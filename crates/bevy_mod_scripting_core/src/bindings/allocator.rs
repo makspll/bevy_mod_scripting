@@ -1,14 +1,13 @@
 //! An allocator used to control the lifetime of allocations
 
-use bevy::prelude::Resource;
-use bevy::{
-    app::{App, Plugin, PostUpdate},
-    diagnostic::{Diagnostic, DiagnosticPath, Diagnostics, RegisterDiagnostic},
-    ecs::system::Res,
-    platform::collections::HashMap,
-    prelude::ResMut,
-    reflect::PartialReflect,
+use ::{
+    bevy_app::{App, Plugin, PostUpdate},
+    bevy_diagnostic::{Diagnostic, DiagnosticPath, Diagnostics, RegisterDiagnostic},
+    bevy_ecs::system::Res,
+    bevy_reflect::PartialReflect,
 };
+use bevy_ecs::{resource::Resource, system::ResMut};
+use bevy_platform::collections::HashMap;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::{
     cell::UnsafeCell,

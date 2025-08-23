@@ -346,7 +346,8 @@ impl<P: IntoScriptPluginParams> Default for ScriptContext<P> {
 
 #[cfg(test)]
 mod tests {
-    use bevy::asset::AssetIndex;
+    use bevy_app::{App, Plugin};
+    use bevy_asset::AssetIndex;
     use test_utils::make_test_plugin;
 
     use super::*;

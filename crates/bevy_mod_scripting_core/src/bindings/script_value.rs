@@ -1,8 +1,8 @@
 //! This module contains the `ScriptValue` enum which is used to pass values between scripting languages and Rust.
 
-use std::{borrow::Cow, collections::HashMap};
-
-use bevy::reflect::{OffsetAccess, ParsedPath, Reflect};
+use bevy_platform::collections::HashMap;
+use bevy_reflect::{Access, OffsetAccess, ParsedPath, Reflect};
+use std::borrow::Cow;
 
 use crate::error::InteropError;
 
@@ -170,7 +170,7 @@ impl TryFrom<ScriptValue> for ParsedPath {
     fn try_from(value: ScriptValue) -> Result<Self, Self::Error> {
         Ok(match value {
             ScriptValue::Integer(i) => ParsedPath::from(vec![OffsetAccess {
-                access: bevy::reflect::Access::ListIndex(i as usize),
+                access: Access::ListIndex(i as usize),
                 offset: Some(1),
             }]),
             ScriptValue::Float(_) => {
@@ -185,7 +185,7 @@ impl TryFrom<ScriptValue> for ParsedPath {
                     && let Ok(index) = tuple_struct_index.parse::<usize>()
                 {
                     let parsed_path = ParsedPath::from(vec![OffsetAccess {
-                        access: bevy::reflect::Access::TupleIndex(index),
+                        access: Access::TupleIndex(index),
                         offset: Some(1),
                     }]);
                     return Ok(parsed_path);
@@ -217,21 +217,21 @@ mod test {
     fn test_script_value_to_parsed_path() {
         let value = ScriptValue::String("test".into());
         let parsed_path = ParsedPath::from(vec![OffsetAccess {
-            access: bevy::reflect::Access::Field("test".to_owned().into()),
+            access: Access::Field("test".to_owned().into()),
             offset: Some(4),
         }]);
         assert_eq!(parsed_path, ParsedPath::try_from(value).unwrap());
 
         let value = ScriptValue::String("_0".into());
         let parsed_path = ParsedPath::from(vec![OffsetAccess {
-            access: bevy::reflect::Access::TupleIndex(0),
+            access: Access::TupleIndex(0),
             offset: Some(1),
         }]);
         assert_eq!(parsed_path, ParsedPath::try_from(value).unwrap());
 
         let value = ScriptValue::Integer(0);
         let parsed_path = ParsedPath::from(vec![OffsetAccess {
-            access: bevy::reflect::Access::ListIndex(0),
+            access: Access::ListIndex(0),
             offset: Some(1),
         }]);
         assert_eq!(parsed_path, ParsedPath::try_from(value).unwrap());

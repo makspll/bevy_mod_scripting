@@ -1,16 +1,17 @@
 //! A visualiser for bevy system schedules, as well as utilities for querying them via reflection
 use std::{any::TypeId, borrow::Cow, ops::Deref};
 
-use bevy::{
-    ecs::{
+use ::{
+    bevy_ecs::{
         schedule::{
             InternedScheduleLabel, InternedSystemSet, NodeId, Schedule, ScheduleLabel, SystemSet,
         },
         system::{System, SystemInput},
     },
-    platform::collections::{HashMap, HashSet},
-    reflect::Reflect,
+    bevy_platform::collections::{HashMap, HashSet},
+    bevy_reflect::Reflect,
 };
+use bevy_log::warn;
 use dot_writer::{Attributes, DotWriter};
 
 #[derive(Reflect, Debug, Clone)]
@@ -281,7 +282,7 @@ pub fn schedule_to_reflect_graph(schedule: &Schedule) -> ReflectSystemGraph {
             continue;
         }
 
-        bevy::log::warn!("Found uncovered node {node_id:?}");
+        warn!("Found uncovered node {node_id:?}");
     }
 
     let dependencies = dependency
@@ -469,7 +470,10 @@ pub struct Edge {
 
 #[cfg(test)]
 mod test {
-    use bevy::{app::Update, ecs::world::World, prelude::IntoScheduleConfigs};
+    use ::{
+        bevy_app::Update,
+        bevy_ecs::{schedule::IntoScheduleConfigs, world::World},
+    };
 
     use super::*;
 

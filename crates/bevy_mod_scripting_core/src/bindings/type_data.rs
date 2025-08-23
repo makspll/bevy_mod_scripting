@@ -1,6 +1,6 @@
 //! Contains various `Reflect` type data we use in BMS.
 
-use bevy::reflect::FromType;
+use bevy_reflect::FromType;
 
 /// A marker type to indicate that a type is generated.
 ///

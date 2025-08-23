@@ -4,10 +4,8 @@ use crate::{
     bindings::function::script_function::{AppScriptFunctionRegistry, ScriptFunction},
     docgen::info::GetFunctionInfo,
 };
-use bevy::{
-    prelude::{AppTypeRegistry, World},
-    reflect::{GetTypeRegistration, Reflect},
-};
+use ::bevy_reflect::{GetTypeRegistration, Reflect};
+use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 use std::{any::TypeId, borrow::Cow, marker::PhantomData};
 
 use super::type_dependencies::GetFunctionTypeDependencies;

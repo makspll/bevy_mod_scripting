@@ -9,14 +9,15 @@ use std::{
     sync::Arc,
 };
 
-use bevy::{
-    asset::{AssetPath, Handle},
-    ecs::{
+use bevy_ecs::entity::Entity;
+
+use ::{
+    bevy_asset::{AssetPath, Handle},
+    bevy_ecs::{
         component::ComponentId,
         schedule::{ScheduleBuildError, ScheduleNotInitialized},
     },
-    prelude::Entity,
-    reflect::{PartialReflect, Reflect},
+    bevy_reflect::{PartialReflect, Reflect},
 };
 
 use crate::{
@@ -1622,7 +1623,8 @@ impl Default for InteropErrorInner {
 
 #[cfg(test)]
 mod test {
-    use bevy::prelude::{AppTypeRegistry, World};
+
+    use bevy_ecs::{reflect::AppTypeRegistry, world::World};
 
     use super::*;
     use crate::bindings::{

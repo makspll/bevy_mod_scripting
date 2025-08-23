@@ -1,21 +1,22 @@
 //! Core globals exposed by the BMS framework
 
-use std::{cell::RefCell, collections::HashMap, sync::Arc};
-
-use bevy::{
-    app::Plugin,
-    asset::Handle,
-    ecs::{entity::Entity, reflect::AppTypeRegistry, world::World},
-    reflect::TypeRegistration,
+use ::{
+    bevy_app::Plugin,
+    bevy_asset::Handle,
+    bevy_ecs::{entity::Entity, reflect::AppTypeRegistry, world::World},
+    bevy_reflect::TypeRegistration,
 };
+use bevy_app::App;
 use bevy_mod_scripting_derive::script_globals;
+use bevy_platform::collections::HashMap;
+use std::{cell::RefCell, sync::Arc};
 
 use crate::{
     asset::ScriptAsset,
     bindings::{
-        function::from::{Union, Val},
         ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration,
         WorldGuard,
+        function::from::{Union, Val},
     },
     docgen::into_through_type_info,
     error::InteropError,
@@ -51,10 +52,10 @@ thread_local! {
 }
 
 impl Plugin for CoreScriptGlobalsPlugin {
-    fn build(&self, app: &mut bevy::app::App) {
+    fn build(&self, app: &mut App) {
         app.init_resource::<AppScriptGlobalsRegistry>();
     }
-    fn finish(&self, app: &mut bevy::app::App) {
+    fn finish(&self, app: &mut App) {
         // profiling::function_scope!("app finish");
 
         if self.register_static_references {
@@ -68,10 +69,7 @@ impl Plugin for CoreScriptGlobalsPlugin {
 }
 
 #[profiling::function]
-fn register_static_core_globals(
-    world: &mut bevy::ecs::world::World,
-    filter: fn(&TypeRegistration) -> bool,
-) {
+fn register_static_core_globals(world: &mut World, filter: fn(&TypeRegistration) -> bool) {
     let global_registry = world
         .get_resource_or_init::<AppScriptGlobalsRegistry>()
         .clone();
@@ -144,7 +142,7 @@ impl CoreGlobals {
 #[cfg(test)]
 mod test {
     use super::*;
-    use bevy::{app::App, reflect::Reflect};
+    use ::{bevy_app::App, bevy_reflect::Reflect};
 
     #[test]
     fn test_register_globals() {

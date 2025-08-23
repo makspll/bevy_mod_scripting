@@ -1,5 +1,5 @@
 use std::{
-    collections::{HashMap, VecDeque},
+    collections::VecDeque,
     ops::{Deref, DerefMut},
 };
 
@@ -8,6 +8,7 @@ use bevy_mod_scripting_core::{
     bindings::{function::script_function::FunctionCallContext, script_value::ScriptValue},
     error::InteropError,
 };
+use bevy_platform::collections::HashMap;
 use mlua::{FromLua, IntoLua, Value, Variadic};
 
 use super::reference::LuaReflectReference;
@@ -162,7 +163,7 @@ impl IntoLua for LuaScriptValue {
                 Value::Table(table)
             }
             ScriptValue::Map(map) => {
-                let hashmap: HashMap<String, Value> = map
+                let hashmap: std::collections::HashMap<String, Value> = map
                     .into_iter()
                     .map(|(k, v)| Ok((k, LuaScriptValue::from(v).into_lua(lua)?)))
                     .collect::<Result<_, mlua::Error>>()?;

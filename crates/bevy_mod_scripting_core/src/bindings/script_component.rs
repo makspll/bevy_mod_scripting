@@ -2,16 +2,17 @@
 
 use super::{ScriptComponentRegistration, ScriptTypeRegistration, ScriptValue, WorldAccessGuard};
 use crate::error::InteropError;
-use bevy::{
-	app::{App, Plugin},
-	ecs::component::{Component, ComponentDescriptor, StorageType, ComponentCloneBehavior, Mutable},
-	platform::collections::HashMap,
-	prelude::Resource,
-	reflect::{prelude::ReflectDefault, GetTypeRegistration, Reflect},
+use ::{
+    bevy_app::{App, Plugin},
+    bevy_ecs::component::{
+        Component, ComponentCloneBehavior, ComponentDescriptor, Mutable, StorageType,
+    },
+    bevy_reflect::{GetTypeRegistration, Reflect, prelude::ReflectDefault},
 };
+use bevy_ecs::resource::Resource;
+use bevy_platform::collections::HashMap;
 use parking_lot::RwLock;
 use std::{alloc::Layout, mem::needs_drop, sync::Arc};
-
 /// A dynamic script component
 #[derive(Reflect, Clone, Default)]
 #[reflect(Default)]
@@ -136,10 +137,11 @@ impl Plugin for DynamicScriptComponentPlugin {
 
 #[cfg(test)]
 mod test {
-	use super::*;
-	use bevy::ecs::world::World;
+    use bevy_ecs::world::World;
 
-	#[test]
+    use super::*;
+
+    #[test]
     fn test_script_component() {
         let mut world = World::new();
         let registration = {

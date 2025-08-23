@@ -1,7 +1,8 @@
 extern crate bevy_mod_scripting;
 extern crate script_integration_test_harness;
 extern crate test_utils;
-use std::{collections::HashMap, path::PathBuf, sync::LazyLock, time::Duration};
+use bevy_platform::collections::HashMap;
+use std::{path::PathBuf, sync::LazyLock, time::Duration};
 
 use bevy::{
     log::{
