@@ -317,7 +317,7 @@ fn process_artifact(
 }
 
 /// finds best location for bootstrapping crate
-/// this will be the nearest target/bevy_api_gen_bootstrap directory
+/// this will be the nearest target/bms_codegen_bootstrap directory
 fn find_bootstrap_dir() -> PathBuf {
     let mut path = env::current_dir().unwrap();
     loop {
@@ -331,7 +331,7 @@ fn find_bootstrap_dir() -> PathBuf {
     }
 
     path.push("target");
-    path.push("bevy_api_gen_bootstrap");
+    path.push("bms_codegen_bootstrap");
 
     // create all the directories
     create_dir_all(&path).unwrap();
