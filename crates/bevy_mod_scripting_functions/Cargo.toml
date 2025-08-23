@@ -25,9 +25,9 @@ rhai_bindings = ["bevy_mod_scripting_rhai"]
 
 
 [dependencies]
-bevy_ecs = { workspace = true }
+bevy_ecs = { workspace = true, features = ["std", "bevy_reflect"] }
 bevy_app = { workspace = true }
-bevy_asset = { workspace = true, features = ["std", "bevy_reflect"] }
+bevy_asset = { workspace = true }
 bevy_platform = { workspace = true, features = ["std"] }
 bevy_input = { workspace = true, optional = true, features = [
     "std",
