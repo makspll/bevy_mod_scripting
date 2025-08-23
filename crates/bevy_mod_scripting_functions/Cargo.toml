@@ -14,7 +14,7 @@ readme = "readme.md"
 [features]
 bevy_ecs = []
 bevy_input = ["dep:bevy_input"]
-bevy_math = ["dep:bevy_math"]
+bevy_math = ["dep:bevy_math", "dep:glam"]
 bevy_reflect = ["dep:bevy_reflect", "dep:glam", "dep:uuid", "dep:smol_str"]
 bevy_time = ["dep:bevy_time"]
 bevy_transform = ["dep:bevy_transform"]
