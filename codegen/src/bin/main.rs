@@ -8,7 +8,7 @@ use std::{
     process::{Command, Stdio},
 };
 
-use bevy_api_gen::*;
+use bevy_mod_scripting_codegen::*;
 use cargo_metadata::camino::{Utf8Path, Utf8PathBuf};
 use clap::Parser;
 use log::{debug, error, info};
@@ -87,7 +87,7 @@ fn main() {
     workspace_meta.set_env();
 
     match args.cmd {
-        bevy_api_gen::Command::Print { template } => {
+        bevy_mod_scripting_codegen::Command::Print { template } => {
             println!(
                 "{}",
                 TEMPLATE_DIR
@@ -98,13 +98,13 @@ fn main() {
             );
             return;
         }
-        bevy_api_gen::Command::ListTemplates => {
+        bevy_mod_scripting_codegen::Command::ListTemplates => {
             for template in TemplateKind::VARIANTS {
                 println!("{template}");
             }
             return;
         }
-        bevy_api_gen::Command::Collect {
+        bevy_mod_scripting_codegen::Command::Collect {
             output,
             templates,
             api_name,
