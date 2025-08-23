@@ -458,4 +458,3 @@ pub(crate) fn configure_asset_systems_for_plugin<P: IntoScriptPluginParams>(app:
 //     //     );
 //     // }
 // }
-
