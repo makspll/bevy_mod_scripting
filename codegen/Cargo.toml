@@ -1,5 +1,5 @@
 [package]
-name = "bevy_api_gen"
+name = "bevy_mod_scripting_codegen"
 version = "0.6.0"
 edition = "2024"
 description = "Code generator tool for bevy"
@@ -15,12 +15,15 @@ include = [
     "rust-toolchain.toml",
 ]
 
+[workspace]
+members = []
+
 [[bin]]
-name = "cargo-bevy-api-gen"
+name = "cargo-bms-codegen"
 path = "src/bin/main.rs"
 
 [[bin]]
-name = "bevy-api-gen-driver"
+name = "bms-codegen-driver"
 path = "src/bin/driver.rs"
 
 [profile.ephemeral-build]

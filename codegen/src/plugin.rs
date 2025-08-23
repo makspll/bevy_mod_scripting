@@ -18,7 +18,7 @@ impl crate::driver::RustcPlugin for BevyAnalyzer {
     }
 
     fn driver_name(&self) -> std::borrow::Cow<'static, str> {
-        "bevy-api-gen-driver".into()
+        "bms-codegen-driver".into()
     }
 
     fn args(&self, target_dir: &Utf8Path) -> RustcPluginArgs<crate::Args> {

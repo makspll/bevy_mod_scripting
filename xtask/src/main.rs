@@ -344,8 +344,11 @@ impl App {
                     arg.arg("--dont-update-ide");
                 }
             }
-            Xtasks::Build => {
+            Xtasks::Build { timings } => {
                 cmd.arg("build");
+                if timings {
+                    cmd.arg("--timings");
+                }
             }
             Xtasks::Check { ide_mode, kind } => {
                 cmd.arg("check");
@@ -625,7 +628,15 @@ enum Xtasks {
         dont_update_ide: bool,
     },
     /// Build the main workspace only
-    Build,
+    Build {
+        /// Emit cargo build timings
+        #[clap(
+            long,
+            default_value = "false",
+            help = "Emit cargo build timings via --timinigs"
+        )]
+        timings: bool,
+    },
     /// Build the main workspace, apply all prefferred lints
     Check {
         #[clap(
@@ -749,7 +760,7 @@ impl Xtasks {
         }
 
         match self {
-            Xtasks::Build => Self::build(app_settings),
+            Xtasks::Build { timings } => Self::build(timings, app_settings),
             Xtasks::Check { ide_mode, kind } => Self::check(app_settings, ide_mode, kind),
             Xtasks::Docs { open, no_rust_docs } => Self::docs(app_settings, open, no_rust_docs),
             Xtasks::Test { name, package } => Self::test(app_settings, package, name),
@@ -770,7 +781,7 @@ impl Xtasks {
                 for os in <CiOs as strum::VariantArray>::VARIANTS {
                     for row in output.iter() {
                         let step_should_run_on_main_os =
-                            matches!(row.subcmd, Xtasks::Build | Xtasks::Docs { .. });
+                            matches!(row.subcmd, Xtasks::Build { .. } | Xtasks::Docs { .. });
                         let is_coverage_step = row.global_args.coverage;
 
                         if !os.is_main_os() && step_should_run_on_main_os {
@@ -837,7 +848,7 @@ impl Xtasks {
 
     fn codegen_crate_dir(app_settings: &GlobalArgs) -> Result<std::path::PathBuf> {
         let workspace_dir = Self::workspace_dir(app_settings)?;
-        Ok(workspace_dir.join("crates").join("bevy_api_gen"))
+        Ok(workspace_dir.join("codegen"))
     }
 
     fn relative_workspace_dir<P: AsRef<Path>>(
@@ -915,7 +926,7 @@ impl Xtasks {
 
         args.push(command.to_owned());
 
-        if command != "fmt" && command != "bevy-api-gen" && command != "install" {
+        if command != "fmt" && command != "bms-codegen" && command != "install" {
             // fmt doesn't care about features, workspaces or profiles
             if command != "run" {
                 args.push("--workspace".to_owned());
@@ -978,13 +989,18 @@ impl Xtasks {
         }
     }
 
-    fn build(app_settings: GlobalArgs) -> Result<()> {
+    fn build(timings: bool, app_settings: GlobalArgs) -> Result<()> {
         // build workspace using the given features
+        let mut args = vec!["--all-targets", "--examples"];
+        if timings {
+            args.push("--timings");
+        }
+
         Self::run_workspace_command(
             &app_settings,
             "build",
             "Failed to build workspace",
-            vec!["--all-targets"],
+            args,
             None,
             false,
         )?;
@@ -1184,8 +1200,8 @@ impl Xtasks {
 
         Self::run_workspace_command(
             &bevy_repo_app_settings,
-            "bevy-api-gen",
-            "Failed to run bevy-api-gen generate",
+            "bms-codegen",
+            "Failed to run bms-codegen generate",
             vec![
                 "generate",
                 "--bms-core-path",
@@ -1205,8 +1221,8 @@ impl Xtasks {
         // collect
         Self::run_workspace_command(
             &bevy_repo_app_settings,
-            "bevy-api-gen",
-            "Failed to run bevy-api-gen generate",
+            "bms-codegen",
+            "Failed to run bms-codegen generate",
             vec![
                 "collect",
                 "--bms-core-path",
@@ -1755,7 +1771,7 @@ impl Xtasks {
             // replace args with powerset
             output.push(App {
                 global_args: default_args.clone().with_features(feature_set.clone()),
-                subcmd: Xtasks::Build,
+                subcmd: Xtasks::Build { timings: false },
             })
         }
 
