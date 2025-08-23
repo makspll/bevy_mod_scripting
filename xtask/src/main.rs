@@ -1947,6 +1947,16 @@ impl Xtasks {
             false,
         )?;
 
+        // install cargo expand
+        Self::run_system_command(
+            &app_settings,
+            "cargo",
+            "Failed to install cargo expand",
+            vec!["install", "cargo-expand"],
+            None,
+            false,
+        )?;
+
         // install nightly toolchaing for bevy api gen
         let toolchain = Self::read_rust_toolchain(&Self::codegen_crate_dir(&app_settings)?);
         Self::run_system_command(
