@@ -2030,7 +2030,7 @@ impl Xtasks {
 fn pop_cargo_env() -> Result<()> {
     let env = std::env::vars().collect::<Vec<_>>();
     // RUSTUP TOOLCHAIN exclude is a temporary fix, it might make deving the api codegen crate not work
-    let exclude_list = [];
+    let exclude_list = ["CARGO_HOME"];
 
     for (key, value) in env.iter() {
         if key.starts_with("CARGO_") && !exclude_list.contains(&(key.as_str())) {
