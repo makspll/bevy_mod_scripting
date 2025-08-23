@@ -7,15 +7,15 @@
       },
       "is_static": true
     },
-    "FunctionInfo": {
-      "type_kind": {
-        "val": "bevy_mod_scripting_core::docgen::info::FunctionInfo"
-      },
-      "is_static": true
-    },
     "AlignItems": {
       "type_kind": {
         "val": "bevy_ui::ui_node::AlignItems"
+      },
+      "is_static": true
+    },
+    "FunctionInfo": {
+      "type_kind": {
+        "val": "bevy_mod_scripting_core::docgen::info::FunctionInfo"
       },
       "is_static": true
     },
@@ -55,15 +55,15 @@
       },
       "is_static": true
     },
-    "GamepadRumbleRequest": {
-      "type_kind": {
-        "val": "bevy_input::gamepad::GamepadRumbleRequest"
-      },
-      "is_static": true
-    },
     "ConeMeshBuilder": {
       "type_kind": {
         "val": "bevy_mesh::primitives::dim3::cone::ConeMeshBuilder"
+      },
+      "is_static": true
+    },
+    "GamepadRumbleRequest": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::GamepadRumbleRequest"
       },
       "is_static": true
     },
@@ -79,9 +79,9 @@
       },
       "is_static": true
     },
-    "SmolStr": {
+    "PointerId": {
       "type_kind": {
-        "val": "smol_str::SmolStr"
+        "val": "bevy_picking::pointer::PointerId"
       },
       "is_static": true
     },
@@ -91,9 +91,9 @@
       },
       "is_static": true
     },
-    "PointerId": {
+    "SmolStr": {
       "type_kind": {
-        "val": "bevy_picking::pointer::PointerId"
+        "val": "smol_str::SmolStr"
       },
       "is_static": true
     },
@@ -103,9 +103,9 @@
       },
       "is_static": true
     },
-    "GizmoLineStyle": {
+    "ChromaticAberration": {
       "type_kind": {
-        "val": "bevy_gizmos::config::GizmoLineStyle"
+        "val": "bevy_core_pipeline::post_process::ChromaticAberration"
       },
       "is_static": true
     },
@@ -127,15 +127,15 @@
       },
       "is_static": true
     },
-    "ChromaticAberration": {
-      "type_kind": {
-        "val": "bevy_core_pipeline::post_process::ChromaticAberration"
-      },
-      "is_static": true
-    },
     "DynamicComponent": {
       "type_kind": {
         "val": "bevy_mod_scripting_core::bindings::script_component::DynamicComponent"
+      },
+      "is_static": true
+    },
+    "GizmoLineStyle": {
+      "type_kind": {
+        "val": "bevy_gizmos::config::GizmoLineStyle"
       },
       "is_static": true
     },
@@ -163,6 +163,12 @@
       },
       "is_static": true
     },
+    "BloomCompositeMode": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::bloom::settings::BloomCompositeMode"
+      },
+      "is_static": true
+    },
     "CameraRenderGraph": {
       "type_kind": {
         "val": "bevy_render::camera::camera::CameraRenderGraph"
@@ -175,27 +181,21 @@
       },
       "is_static": true
     },
-    "BloomCompositeMode": {
-      "type_kind": {
-        "val": "bevy_core_pipeline::bloom::settings::BloomCompositeMode"
-      },
-      "is_static": true
-    },
     "FileDragAndDrop": {
       "type_kind": {
         "val": "bevy_window::event::FileDragAndDrop"
       },
       "is_static": true
     },
-    "Mat3": {
-      "type_kind": {
-        "val": "glam::Mat3"
-      },
-      "is_static": true
-    },
     "ThreadedAnimationGraphs": {
       "type_kind": {
         "val": "bevy_animation::graph::ThreadedAnimationGraphs"
+      },
+      "is_static": true
+    },
+    "Mat3": {
+      "type_kind": {
+        "val": "glam::Mat3"
       },
       "is_static": true
     },
@@ -235,9 +235,9 @@
       },
       "is_static": true
     },
-    "GltfExtras": {
+    "ImageNode": {
       "type_kind": {
-        "val": "bevy_gltf::assets::GltfExtras"
+        "val": "bevy_ui::widget::image::ImageNode"
       },
       "is_static": true
     },
@@ -247,9 +247,9 @@
       },
       "is_static": true
     },
-    "ImageNode": {
+    "SystemIdMarker": {
       "type_kind": {
-        "val": "bevy_ui::widget::image::ImageNode"
+        "val": "bevy_ecs::system::system_registry::SystemIdMarker"
       },
       "is_static": true
     },
@@ -259,15 +259,15 @@
       },
       "is_static": true
     },
-    "SystemIdMarker": {
-      "type_kind": {
-        "val": "bevy_ecs::system::system_registry::SystemIdMarker"
-      },
-      "is_static": true
-    },
     "AccumulatedMouseMotion": {
       "type_kind": {
         "val": "bevy_input::mouse::AccumulatedMouseMotion"
+      },
+      "is_static": true
+    },
+    "GltfExtras": {
+      "type_kind": {
+        "val": "bevy_gltf::assets::GltfExtras"
       },
       "is_static": true
     },
@@ -301,6 +301,12 @@
       },
       "is_static": true
     },
+    "ThreadedAnimationGraph": {
+      "type_kind": {
+        "val": "bevy_animation::graph::ThreadedAnimationGraph"
+      },
+      "is_static": true
+    },
     "TimedAnimationEvent": {
       "type_kind": {
         "val": "bevy_animation::TimedAnimationEvent"
@@ -313,15 +319,15 @@
       },
       "is_static": true
     },
-    "ThreadedAnimationGraph": {
-      "type_kind": {
-        "val": "bevy_animation::graph::ThreadedAnimationGraph"
-      },
-      "is_static": true
-    },
     "Namespace": {
       "type_kind": {
         "val": "bevy_mod_scripting_core::bindings::function::namespace::Namespace"
+      },
+      "is_static": true
+    },
+    "ZIndex": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::ZIndex"
       },
       "is_static": true
     },
@@ -337,21 +343,15 @@
       },
       "is_static": true
     },
-    "RayId": {
-      "type_kind": {
-        "val": "bevy_picking::backend::ray::RayId"
-      },
-      "is_static": true
-    },
     "Entity": {
       "type_kind": {
         "val": "bevy_ecs::entity::Entity"
       },
       "is_static": true
     },
-    "ZIndex": {
+    "RayId": {
       "type_kind": {
-        "val": "bevy_ui::ui_node::ZIndex"
+        "val": "bevy_picking::backend::ray::RayId"
       },
       "is_static": true
     },
@@ -535,9 +535,9 @@
       },
       "is_static": true
     },
-    "DeferredPrepass": {
+    "Line2d": {
       "type_kind": {
-        "val": "bevy_core_pipeline::prepass::DeferredPrepass"
+        "val": "bevy_math::primitives::dim2::Line2d"
       },
       "is_static": true
     },
@@ -583,15 +583,15 @@
       },
       "is_static": true
     },
-    "Line2d": {
-      "type_kind": {
-        "val": "bevy_math::primitives::dim2::Line2d"
-      },
-      "is_static": true
-    },
     "TextEntity": {
       "type_kind": {
         "val": "bevy_text::text::TextEntity"
+      },
+      "is_static": true
+    },
+    "DeferredPrepass": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::prepass::DeferredPrepass"
       },
       "is_static": true
     },
@@ -679,15 +679,15 @@
       },
       "is_static": true
     },
-    "BoxShadow": {
-      "type_kind": {
-        "val": "bevy_ui::ui_node::BoxShadow"
-      },
-      "is_static": true
-    },
     "Triangle2dMeshBuilder": {
       "type_kind": {
         "val": "bevy_mesh::primitives::dim2::Triangle2dMeshBuilder"
+      },
+      "is_static": true
+    },
+    "GizmoConfig": {
+      "type_kind": {
+        "val": "bevy_gizmos::config::GizmoConfig"
       },
       "is_static": true
     },
@@ -697,9 +697,9 @@
       },
       "is_static": true
     },
-    "GizmoConfig": {
+    "BoxShadow": {
       "type_kind": {
-        "val": "bevy_gizmos::config::GizmoConfig"
+        "val": "bevy_ui::ui_node::BoxShadow"
       },
       "is_static": true
     },
@@ -733,9 +733,9 @@
       },
       "is_static": true
     },
-    "Image": {
+    "GlyphAtlasLocation": {
       "type_kind": {
-        "val": "bevy_image::image::Image"
+        "val": "bevy_text::glyph::GlyphAtlasLocation"
       },
       "is_static": true
     },
@@ -745,9 +745,9 @@
       },
       "is_static": true
     },
-    "GlyphAtlasLocation": {
+    "Image": {
       "type_kind": {
-        "val": "bevy_text::glyph::GlyphAtlasLocation"
+        "val": "bevy_image::image::Image"
       },
       "is_static": true
     },
@@ -811,9 +811,9 @@
       },
       "is_static": true
     },
-    "BorderRect": {
+    "DepthOfField": {
       "type_kind": {
-        "val": "bevy_sprite::texture_slice::border_rect::BorderRect"
+        "val": "bevy_core_pipeline::dof::DepthOfField"
       },
       "is_static": true
     },
@@ -823,15 +823,15 @@
       },
       "is_static": true
     },
-    "AnimationGraph": {
+    "BorderRect": {
       "type_kind": {
-        "val": "bevy_animation::graph::AnimationGraph"
+        "val": "bevy_sprite::texture_slice::border_rect::BorderRect"
       },
       "is_static": true
     },
-    "DepthOfField": {
+    "AnimationGraph": {
       "type_kind": {
-        "val": "bevy_core_pipeline::dof::DepthOfField"
+        "val": "bevy_animation::graph::AnimationGraph"
       },
       "is_static": true
     },
@@ -919,15 +919,15 @@
       },
       "is_static": true
     },
-    "AtomicUsize": {
-      "type_kind": {
-        "val": "core::sync::atomic::AtomicUsize"
-      },
-      "is_static": true
-    },
     "VolumetricFog": {
       "type_kind": {
         "val": "bevy_pbr::volumetric_fog::VolumetricFog"
+      },
+      "is_static": true
+    },
+    "AtomicUsize": {
+      "type_kind": {
+        "val": "core::sync::atomic::AtomicUsize"
       },
       "is_static": true
     },
@@ -973,15 +973,15 @@
       },
       "is_static": true
     },
-    "Xyza": {
-      "type_kind": {
-        "val": "bevy_color::xyza::Xyza"
-      },
-      "is_static": true
-    },
     "EntityHashSet": {
       "type_kind": {
         "val": "bevy_ecs::entity::hash_set::EntityHashSet"
+      },
+      "is_static": true
+    },
+    "Xyza": {
+      "type_kind": {
+        "val": "bevy_color::xyza::Xyza"
       },
       "is_static": true
     },
@@ -997,15 +997,15 @@
       },
       "is_static": true
     },
-    "CircularMeshUvMode": {
-      "type_kind": {
-        "val": "bevy_mesh::primitives::dim2::CircularMeshUvMode"
-      },
-      "is_static": true
-    },
     "OnAdd": {
       "type_kind": {
         "val": "bevy_ecs::world::component_constants::OnAdd"
+      },
+      "is_static": true
+    },
+    "CircularMeshUvMode": {
+      "type_kind": {
+        "val": "bevy_mesh::primitives::dim2::CircularMeshUvMode"
       },
       "is_static": true
     },
@@ -1087,15 +1087,15 @@
       },
       "is_static": true
     },
-    "AnimationEvent": {
-      "type_kind": {
-        "val": "bevy_animation::AnimationEvent"
-      },
-      "is_static": true
-    },
     "AtomicU32": {
       "type_kind": {
         "val": "core::sync::atomic::AtomicU32"
+      },
+      "is_static": true
+    },
+    "AnimationEvent": {
+      "type_kind": {
+        "val": "bevy_animation::AnimationEvent"
       },
       "is_static": true
     },
@@ -1195,9 +1195,9 @@
       },
       "is_static": true
     },
-    "Outline": {
+    "VideoModeSelection": {
       "type_kind": {
-        "val": "bevy_ui::ui_node::Outline"
+        "val": "bevy_window::window::VideoModeSelection"
       },
       "is_static": true
     },
@@ -1207,33 +1207,9 @@
       },
       "is_static": true
     },
-    "VideoModeSelection": {
+    "Outline": {
       "type_kind": {
-        "val": "bevy_window::window::VideoModeSelection"
-      },
-      "is_static": true
-    },
-    "PointerLocation": {
-      "type_kind": {
-        "val": "bevy_picking::pointer::PointerLocation"
-      },
-      "is_static": true
-    },
-    "ChildOf": {
-      "type_kind": {
-        "val": "bevy_ecs::hierarchy::ChildOf"
-      },
-      "is_static": true
-    },
-    "GamepadRumbleIntensity": {
-      "type_kind": {
-        "val": "bevy_input::gamepad::GamepadRumbleIntensity"
-      },
-      "is_static": true
-    },
-    "U16Vec2": {
-      "type_kind": {
-        "val": "glam::U16Vec2"
+        "val": "bevy_ui::ui_node::Outline"
       },
       "is_static": true
     },
@@ -1243,9 +1219,33 @@
       },
       "is_static": true
     },
+    "ChildOf": {
+      "type_kind": {
+        "val": "bevy_ecs::hierarchy::ChildOf"
+      },
+      "is_static": true
+    },
     "CylinderAnchor": {
       "type_kind": {
         "val": "bevy_mesh::primitives::dim3::cylinder::CylinderAnchor"
+      },
+      "is_static": true
+    },
+    "U16Vec2": {
+      "type_kind": {
+        "val": "glam::U16Vec2"
+      },
+      "is_static": true
+    },
+    "GamepadRumbleIntensity": {
+      "type_kind": {
+        "val": "bevy_input::gamepad::GamepadRumbleIntensity"
+      },
+      "is_static": true
+    },
+    "PointerLocation": {
+      "type_kind": {
+        "val": "bevy_picking::pointer::PointerLocation"
       },
       "is_static": true
     },
@@ -1354,15 +1354,15 @@
       },
       "is_static": true
     },
-    "URect": {
-      "type_kind": {
-        "val": "bevy_math::rects::urect::URect"
-      },
-      "is_static": true
-    },
     "RectangleMeshBuilder": {
       "type_kind": {
         "val": "bevy_mesh::primitives::dim2::RectangleMeshBuilder"
+      },
+      "is_static": true
+    },
+    "URect": {
+      "type_kind": {
+        "val": "bevy_math::rects::urect::URect"
       },
       "is_static": true
     },
@@ -1396,9 +1396,9 @@
       },
       "is_static": true
     },
-    "AnimationTargetId": {
+    "Children": {
       "type_kind": {
-        "val": "bevy_animation::AnimationTargetId"
+        "val": "bevy_ecs::hierarchy::Children"
       },
       "is_static": true
     },
@@ -1420,9 +1420,9 @@
       },
       "is_static": true
     },
-    "Children": {
+    "AnimationTargetId": {
       "type_kind": {
-        "val": "bevy_ecs::hierarchy::Children"
+        "val": "bevy_animation::AnimationTargetId"
       },
       "is_static": true
     },
@@ -1510,6 +1510,12 @@
       },
       "is_static": true
     },
+    "PointerPress": {
+      "type_kind": {
+        "val": "bevy_picking::pointer::PointerPress"
+      },
+      "is_static": true
+    },
     "AabbCast3d": {
       "type_kind": {
         "val": "bevy_math::bounding::raycast3d::AabbCast3d"
@@ -1519,12 +1525,6 @@
     "I8Vec4": {
       "type_kind": {
         "val": "glam::I8Vec4"
-      },
-      "is_static": true
-    },
-    "PointerPress": {
-      "type_kind": {
-        "val": "bevy_picking::pointer::PointerPress"
       },
       "is_static": true
     },
@@ -1738,15 +1738,15 @@
       },
       "is_static": true
     },
-    "DynamicScriptFunctionMut": {
-      "type_kind": {
-        "val": "DynamicFunctionMut"
-      },
-      "is_static": true
-    },
     "RepeatedGridTrack": {
       "type_kind": {
         "val": "bevy_ui::ui_node::RepeatedGridTrack"
+      },
+      "is_static": true
+    },
+    "DynamicScriptFunctionMut": {
+      "type_kind": {
+        "val": "DynamicFunctionMut"
       },
       "is_static": true
     },
@@ -1768,15 +1768,15 @@
       },
       "is_static": true
     },
-    "GltfMaterialExtras": {
-      "type_kind": {
-        "val": "bevy_gltf::assets::GltfMaterialExtras"
-      },
-      "is_static": true
-    },
     "PointLight": {
       "type_kind": {
         "val": "bevy_pbr::light::point_light::PointLight"
+      },
+      "is_static": true
+    },
+    "GltfMaterialExtras": {
+      "type_kind": {
+        "val": "bevy_gltf::assets::GltfMaterialExtras"
       },
       "is_static": true
     },
@@ -1816,15 +1816,15 @@
       },
       "is_static": true
     },
-    "OpaqueRendererMethod": {
-      "type_kind": {
-        "val": "bevy_pbr::material::OpaqueRendererMethod"
-      },
-      "is_static": true
-    },
     "ShaderStorageBuffer": {
       "type_kind": {
         "val": "bevy_render::storage::ShaderStorageBuffer"
+      },
+      "is_static": true
+    },
+    "OpaqueRendererMethod": {
+      "type_kind": {
+        "val": "bevy_pbr::material::OpaqueRendererMethod"
       },
       "is_static": true
     },
@@ -1876,9 +1876,9 @@
       },
       "is_static": true
     },
-    "CircularSectorMeshBuilder": {
+    "PointerInputPlugin": {
       "type_kind": {
-        "val": "bevy_mesh::primitives::dim2::CircularSectorMeshBuilder"
+        "val": "bevy_picking::input::PointerInputPlugin"
       },
       "is_static": true
     },
@@ -1900,9 +1900,9 @@
       },
       "is_static": true
     },
-    "Plane3d": {
+    "CircularSectorMeshBuilder": {
       "type_kind": {
-        "val": "bevy_math::primitives::dim3::Plane3d"
+        "val": "bevy_mesh::primitives::dim2::CircularSectorMeshBuilder"
       },
       "is_static": true
     },
@@ -1918,9 +1918,9 @@
       },
       "is_static": true
     },
-    "PointerInputPlugin": {
+    "Plane3d": {
       "type_kind": {
-        "val": "bevy_picking::input::PointerInputPlugin"
+        "val": "bevy_math::primitives::dim3::Plane3d"
       },
       "is_static": true
     },
@@ -1996,9 +1996,9 @@
       },
       "is_static": true
     },
-    "Hsla": {
+    "UiRect": {
       "type_kind": {
-        "val": "bevy_color::hsla::Hsla"
+        "val": "bevy_ui::geometry::UiRect"
       },
       "is_static": true
     },
@@ -2008,9 +2008,9 @@
       },
       "is_static": true
     },
-    "UiRect": {
+    "Hsla": {
       "type_kind": {
-        "val": "bevy_ui::geometry::UiRect"
+        "val": "bevy_color::hsla::Hsla"
       },
       "is_static": true
     },
@@ -2068,12 +2068,6 @@
       },
       "is_static": true
     },
-    "AlphaMode2d": {
-      "type_kind": {
-        "val": "bevy_sprite::mesh2d::material::AlphaMode2d"
-      },
-      "is_static": true
-    },
     "NativeKey": {
       "type_kind": {
         "val": "bevy_input::keyboard::NativeKey"
@@ -2083,6 +2077,12 @@
     "SocketAddr": {
       "type_kind": {
         "val": "core::net::SocketAddr"
+      },
+      "is_static": true
+    },
+    "AlphaMode2d": {
+      "type_kind": {
+        "val": "bevy_sprite::mesh2d::material::AlphaMode2d"
       },
       "is_static": true
     },
@@ -2110,15 +2110,15 @@
       },
       "is_static": true
     },
-    "AnimationPlayer": {
-      "type_kind": {
-        "val": "bevy_animation::AnimationPlayer"
-      },
-      "is_static": true
-    },
     "Viewport": {
       "type_kind": {
         "val": "bevy_render::camera::camera::Viewport"
+      },
+      "is_static": true
+    },
+    "AnimationPlayer": {
+      "type_kind": {
+        "val": "bevy_animation::AnimationPlayer"
       },
       "is_static": true
     },
@@ -2128,9 +2128,9 @@
       },
       "is_static": true
     },
-    "Oklaba": {
+    "WindowFocused": {
       "type_kind": {
-        "val": "bevy_color::oklaba::Oklaba"
+        "val": "bevy_window::event::WindowFocused"
       },
       "is_static": true
     },
@@ -2140,9 +2140,9 @@
       },
       "is_static": true
     },
-    "WindowFocused": {
+    "Cuboid": {
       "type_kind": {
-        "val": "bevy_window::event::WindowFocused"
+        "val": "bevy_math::primitives::dim3::Cuboid"
       },
       "is_static": true
     },
@@ -2170,12 +2170,6 @@
       },
       "is_static": true
     },
-    "ScreenshotCaptured": {
-      "type_kind": {
-        "val": "bevy_render::view::window::screenshot::ScreenshotCaptured"
-      },
-      "is_static": true
-    },
     "WindowOccluded": {
       "type_kind": {
         "val": "bevy_window::event::WindowOccluded"
@@ -2188,21 +2182,27 @@
       },
       "is_static": true
     },
-    "Cuboid": {
+    "Oklaba": {
       "type_kind": {
-        "val": "bevy_math::primitives::dim3::Cuboid"
+        "val": "bevy_color::oklaba::Oklaba"
       },
       "is_static": true
     },
-    "PointLightShadowMap": {
+    "ScreenshotCaptured": {
       "type_kind": {
-        "val": "bevy_pbr::light::PointLightShadowMap"
+        "val": "bevy_render::view::window::screenshot::ScreenshotCaptured"
       },
       "is_static": true
     },
     "Volume": {
       "type_kind": {
         "val": "bevy_audio::volume::Volume"
+      },
+      "is_static": true
+    },
+    "PointLightShadowMap": {
+      "type_kind": {
+        "val": "bevy_pbr::light::PointLightShadowMap"
       },
       "is_static": true
     },
@@ -2236,15 +2236,15 @@
       },
       "is_static": true
     },
-    "Cone": {
+    "CircularSegmentMeshBuilder": {
       "type_kind": {
-        "val": "bevy_math::primitives::dim3::Cone"
+        "val": "bevy_mesh::primitives::dim2::CircularSegmentMeshBuilder"
       },
       "is_static": true
     },
-    "SpotLight": {
+    "Cone": {
       "type_kind": {
-        "val": "bevy_pbr::light::spot_light::SpotLight"
+        "val": "bevy_math::primitives::dim3::Cone"
       },
       "is_static": true
     },
@@ -2266,9 +2266,9 @@
       },
       "is_static": true
     },
-    "CircularSegmentMeshBuilder": {
+    "SpotLight": {
       "type_kind": {
-        "val": "bevy_mesh::primitives::dim2::CircularSegmentMeshBuilder"
+        "val": "bevy_pbr::light::spot_light::SpotLight"
       },
       "is_static": true
     },
@@ -2338,9 +2338,9 @@
       },
       "is_static": true
     },
-    "PerspectiveProjection": {
+    "ResolvedBorderRadius": {
       "type_kind": {
-        "val": "bevy_render::camera::projection::PerspectiveProjection"
+        "val": "bevy_ui::ui_node::ResolvedBorderRadius"
       },
       "is_static": true
     },
@@ -2356,9 +2356,9 @@
       },
       "is_static": true
     },
-    "ResolvedBorderRadius": {
+    "PerspectiveProjection": {
       "type_kind": {
-        "val": "bevy_ui::ui_node::ResolvedBorderRadius"
+        "val": "bevy_render::camera::projection::PerspectiveProjection"
       },
       "is_static": true
     },
@@ -2380,15 +2380,15 @@
       },
       "is_static": true
     },
-    "CubemapFrusta": {
+    "CameraMainTextureUsages": {
       "type_kind": {
-        "val": "bevy_render::primitives::CubemapFrusta"
+        "val": "bevy_render::camera::camera::CameraMainTextureUsages"
       },
       "is_static": true
     },
-    "SphereKind": {
+    "CubemapFrusta": {
       "type_kind": {
-        "val": "bevy_mesh::primitives::dim3::sphere::SphereKind"
+        "val": "bevy_render::primitives::CubemapFrusta"
       },
       "is_static": true
     },
@@ -2398,15 +2398,15 @@
       },
       "is_static": true
     },
-    "CameraMainTextureUsages": {
+    "SphereKind": {
       "type_kind": {
-        "val": "bevy_render::camera::camera::CameraMainTextureUsages"
+        "val": "bevy_mesh::primitives::dim3::sphere::SphereKind"
       },
       "is_static": true
     },
     "ScalingMode": {
       "type_kind": {
-        "val": "bevy_sprite::sprite::ScalingMode"
+        "val": "bevy_render::camera::projection::ScalingMode"
       },
       "is_static": true
     },
@@ -2452,15 +2452,15 @@
       },
       "is_static": true
     },
-    "WindowMoved": {
-      "type_kind": {
-        "val": "bevy_window::event::WindowMoved"
-      },
-      "is_static": true
-    },
     "Hsva": {
       "type_kind": {
         "val": "bevy_color::hsva::Hsva"
+      },
+      "is_static": true
+    },
+    "WindowMoved": {
+      "type_kind": {
+        "val": "bevy_window::event::WindowMoved"
       },
       "is_static": true
     },
@@ -2536,15 +2536,15 @@
       },
       "is_static": true
     },
-    "VisibleEntities": {
-      "type_kind": {
-        "val": "bevy_render::view::visibility::VisibleEntities"
-      },
-      "is_static": true
-    },
     "SpatialListener": {
       "type_kind": {
         "val": "bevy_audio::audio::SpatialListener"
+      },
+      "is_static": true
+    },
+    "VisibleEntities": {
+      "type_kind": {
+        "val": "bevy_render::view::visibility::VisibleEntities"
       },
       "is_static": true
     },
@@ -2578,15 +2578,15 @@
       },
       "is_static": true
     },
-    "Node": {
-      "type_kind": {
-        "val": "bevy_ui::ui_node::Node"
-      },
-      "is_static": true
-    },
     "ScriptResourceRegistration": {
       "type_kind": {
         "val": "bevy_mod_scripting_core::bindings::query::ScriptResourceRegistration"
+      },
+      "is_static": true
+    },
+    "Node": {
+      "type_kind": {
+        "val": "bevy_ui::ui_node::Node"
       },
       "is_static": true
     },
@@ -2704,15 +2704,15 @@
       },
       "is_static": true
     },
-    "Srgba": {
-      "type_kind": {
-        "val": "bevy_color::srgba::Srgba"
-      },
-      "is_static": true
-    },
     "TextureSlicer": {
       "type_kind": {
         "val": "bevy_sprite::texture_slice::slicer::TextureSlicer"
+      },
+      "is_static": true
+    },
+    "Srgba": {
+      "type_kind": {
+        "val": "bevy_color::srgba::Srgba"
       },
       "is_static": true
     },
@@ -2722,15 +2722,15 @@
       },
       "is_static": true
     },
-    "Camera2d": {
-      "type_kind": {
-        "val": "bevy_core_pipeline::core_2d::camera_2d::Camera2d"
-      },
-      "is_static": true
-    },
     "Visibility": {
       "type_kind": {
         "val": "bevy_render::view::visibility::Visibility"
+      },
+      "is_static": true
+    },
+    "Camera2d": {
+      "type_kind": {
+        "val": "bevy_core_pipeline::core_2d::camera_2d::Camera2d"
       },
       "is_static": true
     },
@@ -2806,21 +2806,21 @@
       },
       "is_static": true
     },
+    "Isometry3d": {
+      "type_kind": {
+        "val": "bevy_math::isometry::Isometry3d"
+      },
+      "is_static": true
+    },
     "Pickable": {
       "type_kind": {
         "val": "bevy_picking::Pickable"
       },
       "is_static": true
     },
-    "FunctionCallContext": {
+    "LightGizmoColor": {
       "type_kind": {
-        "val": "FunctionCallContext"
-      },
-      "is_static": true
-    },
-    "Isometry3d": {
-      "type_kind": {
-        "val": "bevy_math::isometry::Isometry3d"
+        "val": "bevy_gizmos::light::LightGizmoColor"
       },
       "is_static": true
     },
@@ -2836,9 +2836,9 @@
       },
       "is_static": true
     },
-    "FunctionArgInfo": {
+    "FunctionCallContext": {
       "type_kind": {
-        "val": "bevy_mod_scripting_core::docgen::info::FunctionArgInfo"
+        "val": "FunctionCallContext"
       },
       "is_static": true
     },
@@ -2854,9 +2854,9 @@
       },
       "is_static": true
     },
-    "LightGizmoColor": {
+    "FunctionArgInfo": {
       "type_kind": {
-        "val": "bevy_gizmos::light::LightGizmoColor"
+        "val": "bevy_mod_scripting_core::docgen::info::FunctionArgInfo"
       },
       "is_static": true
     },
@@ -2926,6 +2926,12 @@
       },
       "is_static": true
     },
+    "CascadesVisibleEntities": {
+      "type_kind": {
+        "val": "bevy_pbr::components::CascadesVisibleEntities"
+      },
+      "is_static": true
+    },
     "ScriptQueryResult": {
       "type_kind": {
         "val": "bevy_mod_scripting_core::bindings::query::ScriptQueryResult"
@@ -2935,12 +2941,6 @@
     "ColorGrading": {
       "type_kind": {
         "val": "bevy_render::view::ColorGrading"
-      },
-      "is_static": true
-    },
-    "GltfMeshExtras": {
-      "type_kind": {
-        "val": "bevy_gltf::assets::GltfMeshExtras"
       },
       "is_static": true
     },
@@ -2956,9 +2956,9 @@
       },
       "is_static": true
     },
-    "CascadesVisibleEntities": {
+    "GltfMeshExtras": {
       "type_kind": {
-        "val": "bevy_pbr::components::CascadesVisibleEntities"
+        "val": "bevy_gltf::assets::GltfMeshExtras"
       },
       "is_static": true
     },
@@ -2986,15 +2986,15 @@
       },
       "is_static": true
     },
-    "DAffine2": {
-      "type_kind": {
-        "val": "glam::DAffine2"
-      },
-      "is_static": true
-    },
     "AnnulusMeshBuilder": {
       "type_kind": {
         "val": "bevy_mesh::primitives::dim2::AnnulusMeshBuilder"
+      },
+      "is_static": true
+    },
+    "DAffine2": {
+      "type_kind": {
+        "val": "glam::DAffine2"
       },
       "is_static": true
     },
@@ -3094,15 +3094,15 @@
       },
       "is_static": true
     },
-    "PositionedGlyph": {
-      "type_kind": {
-        "val": "bevy_text::glyph::PositionedGlyph"
-      },
-      "is_static": true
-    },
     "MouseScrollUnit": {
       "type_kind": {
         "val": "bevy_input::mouse::MouseScrollUnit"
+      },
+      "is_static": true
+    },
+    "PositionedGlyph": {
+      "type_kind": {
+        "val": "bevy_text::glyph::PositionedGlyph"
       },
       "is_static": true
     },
@@ -3124,9 +3124,9 @@
       },
       "is_static": true
     },
-    "EaseFunction": {
+    "DefaultOpaqueRendererMethod": {
       "type_kind": {
-        "val": "bevy_math::curve::easing::EaseFunction"
+        "val": "bevy_pbr::material::DefaultOpaqueRendererMethod"
       },
       "is_static": true
     },
@@ -3136,9 +3136,9 @@
       },
       "is_static": true
     },
-    "DefaultOpaqueRendererMethod": {
+    "EaseFunction": {
       "type_kind": {
-        "val": "bevy_pbr::material::DefaultOpaqueRendererMethod"
+        "val": "bevy_math::curve::easing::EaseFunction"
       },
       "is_static": true
     },
@@ -3148,15 +3148,15 @@
       },
       "is_static": true
     },
-    "ConeAnchor": {
-      "type_kind": {
-        "val": "bevy_mesh::primitives::dim3::cone::ConeAnchor"
-      },
-      "is_static": true
-    },
     "Triangle2d": {
       "type_kind": {
         "val": "bevy_math::primitives::dim2::Triangle2d"
+      },
+      "is_static": true
+    },
+    "ConeAnchor": {
+      "type_kind": {
+        "val": "bevy_mesh::primitives::dim3::cone::ConeAnchor"
       },
       "is_static": true
     },
@@ -3220,15 +3220,15 @@
       },
       "is_static": true
     },
-    "Tick": {
-      "type_kind": {
-        "val": "bevy_ecs::component::Tick"
-      },
-      "is_static": true
-    },
     "ColorMaterial": {
       "type_kind": {
         "val": "bevy_sprite::mesh2d::color_material::ColorMaterial"
+      },
+      "is_static": true
+    },
+    "Tick": {
+      "type_kind": {
+        "val": "bevy_ecs::component::Tick"
       },
       "is_static": true
     },
@@ -3274,15 +3274,15 @@
       },
       "is_static": true
     },
-    "ClusterConfig": {
-      "type_kind": {
-        "val": "bevy_pbr::cluster::ClusterConfig"
-      },
-      "is_static": true
-    },
     "DoubleTapGesture": {
       "type_kind": {
         "val": "bevy_input::gestures::DoubleTapGesture"
+      },
+      "is_static": true
+    },
+    "ClusterConfig": {
+      "type_kind": {
+        "val": "bevy_pbr::cluster::ClusterConfig"
       },
       "is_static": true
     },
@@ -3322,15 +3322,15 @@
       },
       "is_static": true
     },
-    "PresentMode": {
-      "type_kind": {
-        "val": "bevy_window::window::PresentMode"
-      },
-      "is_static": true
-    },
     "NotShadowReceiver": {
       "type_kind": {
         "val": "bevy_pbr::light::NotShadowReceiver"
+      },
+      "is_static": true
+    },
+    "PresentMode": {
+      "type_kind": {
+        "val": "bevy_window::window::PresentMode"
       },
       "is_static": true
     },
@@ -3466,18 +3466,18 @@
       "path": "bevy_mod_scripting_core::bindings::reference::ReflectReference",
       "documentation": " A reference to an arbitrary reflected instance.\n\n The reference can point to either the ECS, or to the allocator.\n\n References are composed of two parts:\n - The base kind, which specifies where the reference points to\n - The path, which specifies how to access the value from the base.\n\n Bindings defined on this type, apply to ALL references.",
       "associated_functions": [
-        "ReflectReference::remove",
+        "ReflectReference::push",
         "ReflectReference::len",
-        "ReflectReference::map_get",
-        "ReflectReference::display_value",
-        "ReflectReference::variant_name",
         "ReflectReference::display_ref",
+        "ReflectReference::pop",
+        "ReflectReference::variant_name",
         "ReflectReference::iter",
+        "ReflectReference::functions",
         "ReflectReference::insert",
         "ReflectReference::clear",
-        "ReflectReference::pop",
-        "ReflectReference::push",
-        "ReflectReference::functions"
+        "ReflectReference::remove",
+        "ReflectReference::map_get",
+        "ReflectReference::display_value"
       ],
       "layout": null,
       "generated": false,
@@ -3519,10 +3519,10 @@
       "path": "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder",
       "documentation": " The query builder is used to build ECS queries which retrieve spefific components filtered by specific conditions.\n\n For example:\n ```rust,ignore\n builder.component(componentA)\n     .component(componentB)\n     .with(componentC)\n     .without(componentD)  \n ```\n\n Will retrieve entities which:\n - Have componentA\n - Have componentB\n - Have componentC\n - Do not have componentD\n\n As well as references to components:\n - componentA\n - componentB",
       "associated_functions": [
-        "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder::component",
         "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder::build",
-        "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder::with",
-        "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder::without"
+        "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder::without",
+        "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder::component",
+        "bevy_mod_scripting_core::bindings::query::ScriptQueryBuilder::with"
       ],
       "layout": null,
       "generated": false,
@@ -3573,8 +3573,8 @@
       "path": "bevy_mod_scripting_core::bindings::query::ScriptTypeRegistration",
       "documentation": " A reference to a type which is not a `Resource` or `Component`.\n\n In general think of this as a handle to a type.",
       "associated_functions": [
-        "bevy_mod_scripting_core::bindings::query::ScriptTypeRegistration::short_name",
-        "bevy_mod_scripting_core::bindings::query::ScriptTypeRegistration::type_name"
+        "bevy_mod_scripting_core::bindings::query::ScriptTypeRegistration::type_name",
+        "bevy_mod_scripting_core::bindings::query::ScriptTypeRegistration::short_name"
       ],
       "layout": null,
       "generated": false,
@@ -3588,9 +3588,9 @@
       "associated_functions": [
         "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::query",
         "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::before",
-        "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::resource",
+        "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::after",
         "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::exclusive",
-        "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::after"
+        "bevy_mod_scripting_core::bindings::script_system::ScriptSystemBuilder::resource"
       ],
       "layout": null,
       "generated": false,
@@ -3602,8 +3602,8 @@
       "path": "bevy_mod_scripting_core::script::context_key::ScriptAttachment",
       "documentation": " Specifies a unique attachment of a script. These attachments are mapped to [`ContextKey`]'s depending on the context policy used.",
       "associated_functions": [
-        "bevy_mod_scripting_core::script::context_key::ScriptAttachment::new_entity_script",
-        "bevy_mod_scripting_core::script::context_key::ScriptAttachment::new_static_script"
+        "bevy_mod_scripting_core::script::context_key::ScriptAttachment::new_static_script",
+        "bevy_mod_scripting_core::script::context_key::ScriptAttachment::new_entity_script"
       ],
       "layout": [
         {
@@ -3638,8 +3638,8 @@
       "documentation": " A reflectable schedule.",
       "associated_functions": [
         "bevy_system_reflection::ReflectSchedule::systems",
-        "bevy_system_reflection::ReflectSchedule::get_system_by_name",
-        "bevy_system_reflection::ReflectSchedule::render_dot"
+        "bevy_system_reflection::ReflectSchedule::render_dot",
+        "bevy_system_reflection::ReflectSchedule::get_system_by_name"
       ],
       "layout": {
         "kind": "Struct",
@@ -26029,7 +26029,7 @@
       "path": "smallvec::SmallVec<[bevy_text::text::TextEntity; 1]>",
       "generics": [
         {
-          "type_id": "TypeId(0x47ddaf3df6009e0538eb76ffb572550f)",
+          "type_id": "TypeId(0xb53f7280657c32087143c49127ae065f)",
           "name": "T"
         }
       ],
@@ -26043,7 +26043,7 @@
       "path": "smallvec::SmallVec<[bevy_ui::ui_node::GridTrack; 1]>",
       "generics": [
         {
-          "type_id": "TypeId(0xc8dcee8ad63e55fb8aca4f310135a936)",
+          "type_id": "TypeId(0x7524bb95ca52eb905e1d511c283a38e4)",
           "name": "T"
         }
       ],
