@@ -873,7 +873,8 @@ impl Xtasks {
         context: &str,
         add_args: I,
         dir: Option<&Path>,
-    ) -> Result<()> {
+        capture_streams_in_output: bool,
+    ) -> Result<Output> {
         info!("Running system command: {command}");
 
         let working_dir = match dir {
@@ -882,18 +883,25 @@ impl Xtasks {
         };
 
         let mut cmd = Command::new(command);
-        cmd.args(add_args)
-            .stdout(std::process::Stdio::inherit())
-            .stderr(std::process::Stdio::inherit())
-            .current_dir(working_dir);
+        cmd.args(add_args).current_dir(working_dir);
+
+        if !capture_streams_in_output {
+            cmd.stdout(std::process::Stdio::inherit())
+                .stderr(std::process::Stdio::inherit());
+        }
 
         info!("Using command: {cmd:?}");
 
         let output = cmd.output();
-        info!("Command output: {output:?}");
+        if !capture_streams_in_output {
+            info!("Command status: {:?}", output.as_ref().map(|o| o.status));
+        } else {
+            info!("Command output: {output:?}");
+        }
+
         let output = output.with_context(|| context.to_owned())?;
         match output.status.code() {
-            Some(0) => Ok(()),
+            Some(0) => Ok(output),
             _ => bail!(
                 "{} failed with exit code: {}",
                 context,
@@ -1139,6 +1147,7 @@ impl Xtasks {
             "Failed to install bevy_api_gen",
             vec!["install", "--path", "."],
             None,
+            false,
         )?;
 
         let metadata = Self::main_workspace_cargo_metadata()?;
@@ -1168,6 +1177,7 @@ impl Xtasks {
                 ".",
             ],
             None,
+            false,
         );
 
         // fetch the tags
@@ -1177,6 +1187,7 @@ impl Xtasks {
             "Failed to fetch bevy tags",
             vec!["fetch", "--tags"],
             Some(&bevy_dir),
+            false,
         )?;
 
         // checkout the version tag
@@ -1186,6 +1197,7 @@ impl Xtasks {
             "Failed to checkout bevy tag",
             vec!["checkout", format!("v{bevy_version}").as_str()],
             Some(&bevy_dir),
+            false,
         )?;
 
         // run bevy_api_gen
@@ -1236,6 +1248,51 @@ impl Xtasks {
             Some(&bevy_dir),
             false,
         )?;
+
+        // now expand the macros and replace the files in place
+        // by running cargo expand --features crate_name and capturing the output
+        let functions_crate_dir = Self::relative_workspace_dir(
+            &main_workspace_app_settings,
+            "crates/bevy_mod_scripting_functions",
+        )?;
+
+        let expand_crates = std::fs::read_dir(&output_dir)?;
+        for entry in expand_crates {
+            let entry = entry?;
+            let path = entry.path();
+            if path.extension().and_then(|s| s.to_str()) != Some("rs") || path.ends_with("mod.rs") {
+                continue;
+            }
+
+            let without_extension = path.file_stem().unwrap().to_str().unwrap();
+            let args = vec![
+                String::from("expand"),
+                format!("bevy_bindings::{without_extension}"),
+                String::from("--features"),
+                String::from(without_extension),
+            ];
+            let expand_cmd = Self::run_system_command(
+                &main_workspace_app_settings,
+                "cargo",
+                "pre-expanding generated code",
+                args,
+                Some(&functions_crate_dir),
+                true,
+            )?;
+
+            let output = String::from_utf8(expand_cmd.stdout)?;
+            // remove the first mod <mod name> { .. } wrapper
+            let output = output
+                .lines()
+                .skip(1)
+                .take(output.lines().count() - 2)
+                .collect::<Vec<_>>()
+                .join("\n");
+
+            std::fs::write(&path, output)
+                .with_context(|| format!("writing expanded code to {path:?}"))?;
+            info!("Wrote expanded code to {path:?}");
+        }
 
         Ok(())
     }
@@ -1347,6 +1404,7 @@ impl Xtasks {
             "Failed to build or serve mdbook docs",
             args,
             Some(Path::new("docs")),
+            false,
         )?;
 
         Ok(())
@@ -1686,6 +1744,7 @@ impl Xtasks {
                     "target/coverage/html",
                 ],
                 None,
+                false,
             )?;
 
             Self::run_system_command(
@@ -1708,6 +1767,7 @@ impl Xtasks {
                     "target/coverage/lcov.info",
                 ],
                 None,
+                false,
             )?;
         }
         Ok(())
@@ -1843,6 +1903,7 @@ impl Xtasks {
                 "Failed to install Linux dependencies",
                 vec!["-c", install_cmd.as_str()],
                 None,
+                false,
             )?;
         }
 
@@ -1864,6 +1925,7 @@ impl Xtasks {
                 "bencher_cli",
             ],
             None,
+            false,
         )?;
         // install cargo mdbook
         Self::run_system_command(
@@ -1872,6 +1934,7 @@ impl Xtasks {
             "Failed to install mdbook",
             vec!["install", "mdbook"],
             None,
+            false,
         )?;
 
         // install grcov
@@ -1881,6 +1944,7 @@ impl Xtasks {
             "Failed to install grcov",
             vec!["install", "grcov"],
             None,
+            false,
         )?;
 
         // install nightly toolchaing for bevy api gen
@@ -1891,6 +1955,7 @@ impl Xtasks {
             "Failed to install nightly toolchain",
             vec!["toolchain", "install", toolchain.as_str()],
             None,
+            false,
         )?;
 
         let rustup_components_args = [
@@ -1910,6 +1975,7 @@ impl Xtasks {
             "Failed to install rust components",
             rustup_components_args,
             None,
+            false,
         )?;
 
         // add components on nightly toolchain
@@ -1921,6 +1987,7 @@ impl Xtasks {
                 .iter()
                 .chain(["--toolchain", toolchain.as_str()].iter()),
             Some(Path::new(".")),
+            false,
         )?;
 
         // create .vscode settings
@@ -2018,6 +2085,7 @@ impl Xtasks {
             "Failed to install binary",
             vec!["install", "--path", binary_path.to_str().unwrap()],
             None,
+            false,
         )?;
 
         Ok(())
