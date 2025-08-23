@@ -27,10 +27,17 @@ rhai_bindings = ["bevy_mod_scripting_rhai"]
 [dependencies]
 bevy_ecs = { workspace = true }
 bevy_app = { workspace = true }
-bevy_asset = { workspace = true }
-bevy_platform = { workspace = true }
-bevy_input = { workspace = true, optional = true }
-bevy_math = { workspace = true, features = ["curve"], optional = true }
+bevy_asset = { workspace = true, features = ["std", "bevy_reflect"] }
+bevy_platform = { workspace = true, features = ["std"] }
+bevy_input = { workspace = true, optional = true, features = [
+    "std",
+    "bevy_reflect",
+] }
+bevy_math = { workspace = true, features = [
+    "std",
+    "rand",
+    "curve",
+], optional = true }
 bevy_reflect = { workspace = true, features = [
     "smol_str",
     "glam",
@@ -40,8 +47,15 @@ bevy_reflect = { workspace = true, features = [
 ], optional = true }
 uuid = { workspace = true, optional = true }
 smol_str = { workspace = true, optional = true }
-bevy_time = { workspace = true, optional = true }
-bevy_transform = { workspace = true, optional = true }
+bevy_time = { workspace = true, optional = true, features = [
+    "std",
+    "bevy_reflect",
+] }
+bevy_transform = { workspace = true, optional = true, features = [
+    "bevy_reflect",
+    "std",
+    "bevy-support",
+] }
 glam = { workspace = true, optional = true, features = ["serde", "std"] }
 
 
