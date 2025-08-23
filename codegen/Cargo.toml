@@ -1,5 +1,5 @@
 [package]
-name = "bevy_api_gen"
+name = "bevy_mod_scripting_codegen"
 version = "0.6.0"
 edition = "2024"
 description = "Code generator tool for bevy"
