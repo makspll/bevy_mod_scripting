@@ -16,14 +16,9 @@ pub mod rhai {
     pub use bevy_mod_scripting_rhai::*;
 }
 
-// #[cfg(feature = "rune")]
-// pub mod rune {
-//     pub use bevy_mod_scripting_rune::*;
-// }
-
-use bevy::app::plugin_group;
+use bevy_app::plugin_group;
 use bevy_mod_scripting_core::{
-    BMSScriptingInfrastructurePlugin, bindings::CoreScriptGlobalsPlugin,
+    bindings::CoreScriptGlobalsPlugin, BMSScriptingInfrastructurePlugin,
 };
 pub use bevy_mod_scripting_derive::*;
 pub use bevy_mod_scripting_functions::*;

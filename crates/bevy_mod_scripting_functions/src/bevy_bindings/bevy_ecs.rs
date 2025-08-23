@@ -9,6 +9,7 @@ use bevy_mod_scripting_core::bindings::{
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_derive::script_bindings;
 use crate::*;
 pub struct BevyEcsScriptingPlugin;
@@ -656,8 +657,8 @@ impl ::bevy_ecs::system::SystemIdMarker {}
     generated
 )]
 impl ::bevy_ecs::world::OnDespawn {}
-impl ::bevy::app::Plugin for BevyEcsScriptingPlugin {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
+impl Plugin for BevyEcsScriptingPlugin {
+    fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
         register_entity_functions(&mut world);
         register_child_of_functions(&mut world);

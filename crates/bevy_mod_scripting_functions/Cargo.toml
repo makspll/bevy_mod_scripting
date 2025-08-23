@@ -12,7 +12,7 @@ categories = ["game-development"]
 readme = "readme.md"
 
 [features]
-bevy_ecs = ["dep:bevy_ecs"]
+bevy_ecs = []
 bevy_input = ["dep:bevy_input"]
 bevy_math = ["dep:bevy_math"]
 bevy_reflect = ["dep:bevy_reflect", "dep:glam", "dep:uuid", "dep:smol_str"]
@@ -25,17 +25,24 @@ rhai_bindings = ["bevy_mod_scripting_rhai"]
 
 
 [dependencies]
-# required since curve has no top level bevy features for these
-bevy_ecs = { workspace = true, optional = true }
+bevy_ecs = { workspace = true }
+bevy_app = { workspace = true }
+bevy_asset = { workspace = true }
+bevy_platform = { workspace = true }
 bevy_input = { workspace = true, optional = true }
 bevy_math = { workspace = true, features = ["curve"], optional = true }
-bevy_reflect = { workspace = true, features = ["smol_str"], optional = true }
+bevy_reflect = { workspace = true, features = [
+    "smol_str",
+    "glam",
+    "uuid",
+    "std",
+    "debug_stack",
+], optional = true }
 uuid = { workspace = true, optional = true }
 smol_str = { workspace = true, optional = true }
 bevy_time = { workspace = true, optional = true }
 bevy_transform = { workspace = true, optional = true }
-bevy_app = { workspace = true, optional = true }
-glam = { workspace = true, optional = true }
+glam = { workspace = true, optional = true, features = ["serde", "std"] }
 
 
 profiling = { workspace = true }

@@ -5,19 +5,22 @@ use std::{
     time::Instant,
 };
 
-use anyhow::{Context, Error, anyhow};
-use bevy::{
-    app::App,
-    asset::{AssetEvent, Handle, LoadState},
-    ecs::{
+use ::{
+    bevy_app::App,
+    bevy_asset::{AssetEvent, Handle, LoadState},
+    bevy_ecs::{
         entity::Entity,
         event::{Event, EventCursor, Events},
         schedule::ScheduleLabel,
         system::Command,
+        system::IntoSystem,
         world::World,
     },
-    prelude::IntoSystem,
 };
+use anyhow::{Context, Error, anyhow};
+use bevy_app::{DynEq, FixedUpdate, Last, PostUpdate, Startup, Update};
+use bevy_asset::{AssetServer, Assets};
+use bevy_log::info;
 use bevy_mod_scripting_core::{
     ConfigureScriptPlugin, LanguageExtensions,
     asset::{Language, ScriptAsset},
@@ -121,7 +124,7 @@ impl Scenario {
     pub fn execute(mut self, mut app: App) -> Result<(), Error> {
         let original_steps = self.steps.clone();
         for (i, step) in self.steps.into_iter().enumerate() {
-            bevy::log::info!(
+            info!(
                 "Executing step #{i}: {}",
                 step.to_flat_string().unwrap_or_default()
             );
@@ -141,7 +144,7 @@ impl Scenario {
 #[derive(Debug, Clone)]
 pub struct ScenarioContext {
     pub script_handles: HashMap<String, Handle<ScriptAsset>>,
-    pub entities: HashMap<String, bevy::ecs::entity::Entity>,
+    pub entities: HashMap<String, Entity>,
     pub scenario_time_started: Instant,
     pub this_script_asset_relative_path: PathBuf,
     pub event_log: InterestingEventWatcher,
@@ -160,7 +163,7 @@ pub struct InterestingEventWatcher {
 }
 
 impl InterestingEventWatcher {
-    pub fn log_events(&mut self, step_no: usize, world: &bevy::ecs::world::World) {
+    pub fn log_events(&mut self, step_no: usize, world: &World) {
         let asset_events = world.resource::<Events<AssetEvent<ScriptAsset>>>();
         let script_events = world.resource::<Events<ScriptEvent>>();
         let script_responses = world.resource::<Events<ScriptCallbackResponseEvent>>();
@@ -228,7 +231,7 @@ impl ScenarioContext {
             .ok_or_else(|| anyhow!("Script with name '{name}' not found in context. Did you miss a `LoadScriptAs` step?"))
     }
 
-    pub fn get_entity(&self, name: &str) -> Result<bevy::ecs::entity::Entity, Error> {
+    pub fn get_entity(&self, name: &str) -> Result<Entity, Error> {
         self
             .entities
             .get(name)
@@ -270,31 +273,31 @@ impl ScenarioSchedule {
 impl ScheduleLabel for ScenarioSchedule {
     fn dyn_clone(&self) -> Box<dyn ScheduleLabel> {
         match self {
-            ScenarioSchedule::Startup => bevy::app::Startup.dyn_clone(),
-            ScenarioSchedule::Update => bevy::app::Update.dyn_clone(),
-            ScenarioSchedule::FixedUpdate => bevy::app::FixedUpdate.dyn_clone(),
-            ScenarioSchedule::PostUpdate => bevy::app::PostUpdate.dyn_clone(),
-            ScenarioSchedule::Last => bevy::app::Last.dyn_clone(),
+            ScenarioSchedule::Startup => Startup.dyn_clone(),
+            ScenarioSchedule::Update => Update.dyn_clone(),
+            ScenarioSchedule::FixedUpdate => FixedUpdate.dyn_clone(),
+            ScenarioSchedule::PostUpdate => PostUpdate.dyn_clone(),
+            ScenarioSchedule::Last => Last.dyn_clone(),
         }
     }
 
-    fn as_dyn_eq(&self) -> &dyn bevy::ecs::label::DynEq {
+    fn as_dyn_eq(&self) -> &dyn DynEq {
         match self {
-            ScenarioSchedule::Startup => bevy::app::Startup.as_dyn_eq(),
-            ScenarioSchedule::Update => bevy::app::Update.as_dyn_eq(),
-            ScenarioSchedule::FixedUpdate => bevy::app::FixedUpdate.as_dyn_eq(),
-            ScenarioSchedule::PostUpdate => bevy::app::PostUpdate.as_dyn_eq(),
-            ScenarioSchedule::Last => bevy::app::Last.as_dyn_eq(),
+            ScenarioSchedule::Startup => Startup.as_dyn_eq(),
+            ScenarioSchedule::Update => Update.as_dyn_eq(),
+            ScenarioSchedule::FixedUpdate => FixedUpdate.as_dyn_eq(),
+            ScenarioSchedule::PostUpdate => PostUpdate.as_dyn_eq(),
+            ScenarioSchedule::Last => Last.as_dyn_eq(),
         }
     }
 
     fn dyn_hash(&self, state: &mut dyn ::core::hash::Hasher) {
         match self {
-            ScenarioSchedule::Startup => bevy::app::Startup.dyn_hash(state),
-            ScenarioSchedule::Update => bevy::app::Update.dyn_hash(state),
-            ScenarioSchedule::FixedUpdate => bevy::app::FixedUpdate.dyn_hash(state),
-            ScenarioSchedule::PostUpdate => bevy::app::PostUpdate.dyn_hash(state),
-            ScenarioSchedule::Last => bevy::app::Last.dyn_hash(state),
+            ScenarioSchedule::Startup => Startup.dyn_hash(state),
+            ScenarioSchedule::Update => Update.dyn_hash(state),
+            ScenarioSchedule::FixedUpdate => FixedUpdate.dyn_hash(state),
+            ScenarioSchedule::PostUpdate => PostUpdate.dyn_hash(state),
+            ScenarioSchedule::Last => Last.dyn_hash(state),
         }
     }
 }
@@ -428,7 +431,7 @@ impl ScenarioStep {
         loop {
             {
                 let world = app.world_mut();
-                let events = world.resource::<bevy::ecs::event::Events<T>>();
+                let events = world.resource::<Events<T>>();
 
                 let events = event_cursor
                     .read(events)
@@ -473,7 +476,7 @@ impl ScenarioStep {
                 };
 
                 context.current_script_language = Some(language);
-                bevy::log::info!(
+                info!(
                     "Set current script language to: {:?}",
                     context.current_script_language
                 );
@@ -481,7 +484,7 @@ impl ScenarioStep {
             ScenarioStep::FinalizeApp => {
                 app.finish();
                 app.cleanup();
-                bevy::log::info!("App finalized and cleaned up");
+                info!("App finalized and cleaned up");
             }
             ScenarioStep::InstallPlugin {
                 context_policy,
@@ -533,13 +536,13 @@ impl ScenarioStep {
                 } else {
                     path.clone()
                 };
-                let asset_server = app.world_mut().resource::<bevy::asset::AssetServer>();
+                let asset_server = app.world_mut().resource::<AssetServer>();
                 let script_handle = asset_server.load(context.scenario_path(&path));
                 context
                     .script_handles
                     .insert(as_name.to_string(), script_handle);
 
-                bevy::log::info!(
+                info!(
                     "Script '{}' marked for loading from path '{}'",
                     as_name,
                     path.display()
@@ -551,7 +554,7 @@ impl ScenarioStep {
                     app,
                     |e| e.is_added(script.id()),
                     |w| {
-                        let server = w.resource::<bevy::asset::AssetServer>();
+                        let server = w.resource::<AssetServer>();
                         if let LoadState::Failed(r) = server.load_state(script.id()) {
                             Some(r)
                         } else {
@@ -564,7 +567,7 @@ impl ScenarioStep {
                     return Err(anyhow!("Failed to load script: {e}"));
                 }
 
-                bevy::log::info!("Script '{}' loaded successfully", script.id());
+                info!("Script '{}' loaded successfully", script.id());
             }
             ScenarioStep::SetupHandler { schedule, label } => {
                 match label.to_string().as_str() {
@@ -601,7 +604,7 @@ impl ScenarioStep {
                     .id();
 
                 context.entities.insert(name.to_string(), entity);
-                bevy::log::info!("Spawned entity '{}' with script '{}'", entity, script.id());
+                info!("Spawned entity '{}' with script '{}'", entity, script.id());
             }
             ScenarioStep::EmitScriptCallbackEvent { event } => {
                 app.world_mut().send_event(event.clone());
@@ -627,7 +630,7 @@ impl ScenarioStep {
 
                     match &event.response {
                         Ok(val) => {
-                            bevy::log::info!(
+                            info!(
                                 "Callback '{}' for attachment: '{}' succeeded, with value: {:?}",
                                 label,
                                 script.to_string(),
@@ -687,12 +690,10 @@ impl ScenarioStep {
                             script.id()
                         )
                     })?;
-                bevy::log::info!("Dropped script asset '{}' from context", name);
+                info!("Dropped script asset '{}' from context", name);
             }
             ScenarioStep::ReloadScriptFrom { script, path } => {
-                let mut assets = app
-                    .world_mut()
-                    .resource_mut::<bevy::asset::Assets<ScriptAsset>>();
+                let mut assets = app.world_mut().resource_mut::<Assets<ScriptAsset>>();
 
                 let absolute_path = context.absolute_scenario_path(&path);
 
@@ -721,7 +722,7 @@ impl ScenarioStep {
                         next_event
                     ));
                 } else {
-                    bevy::log::info!("No callback responses emitted as expected");
+                    info!("No callback responses emitted as expected");
                 }
             }
             ScenarioStep::DespawnEntity { entity } => {
@@ -732,16 +733,16 @@ impl ScenarioStep {
                         entity
                     ));
                 } else {
-                    bevy::log::info!("Despawning entity with name '{}'", entity);
+                    info!("Despawning entity with name '{}'", entity);
                 }
             }
             ScenarioStep::AttachStaticScript { script } => {
                 AddStaticScript::new(script.clone()).apply(app.world_mut());
-                bevy::log::info!("Attached static script with handle: {}", script.id());
+                info!("Attached static script with handle: {}", script.id());
             }
             ScenarioStep::DetachStaticScript { script } => {
                 RemoveStaticScript::new(script.clone()).apply(app.world_mut());
-                bevy::log::info!("Detached static script with handle: {}", script.id());
+                info!("Detached static script with handle: {}", script.id());
             }
             ScenarioStep::AssertContextResidents {
                 script,
@@ -773,7 +774,7 @@ impl ScenarioStep {
                         residents
                     ));
                 } else {
-                    bevy::log::info!(
+                    info!(
                         "Script attachment: {} has {} residents as expected",
                         script.to_string(),
                         residents
@@ -782,7 +783,7 @@ impl ScenarioStep {
             }
             ScenarioStep::Comment { comment } => {
                 // Comments are ignored, do nothing, log it though for debugging
-                bevy::log::info!("Comment: {}", comment);
+                info!("Comment: {}", comment);
             }
         }
         Ok(())

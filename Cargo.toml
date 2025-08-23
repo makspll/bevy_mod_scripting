@@ -71,8 +71,7 @@ profile_with_tracy = ["bevy?/trace_tracy", "dep:bevy"]
 
 [dependencies]
 bevy = { workspace = true, optional = true }
-bevy_math = { workspace = true }
-bevy_reflect = { workspace = true }
+bevy_app = { workspace = true }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_lua = { workspace = true, optional = true }
 bevy_mod_scripting_rhai = { workspace = true, optional = true }
@@ -106,14 +105,16 @@ bevy_diagnostic = { version = "0.16.0", default-features = false }
 bevy_platform = { version = "0.16.0", default-features = false }
 bevy_time = { version = "0.16.0", default-features = false }
 bevy_input = { version = "0.16.0", default-features = false }
-glam = { version = "0.30.0", default-features = false }
+glam = { version = "0.29.3", default-features = false }
 uuid = { version = "1.11", default-features = false }
 smol_str = { version = "0.2.0", default-features = false }
 
 # other
 serde_json = { version = "1.0", default-features = false }
 indexmap = { version = "2.7", default-features = false }
-profiling = { version = "1.0", default-features = false }
+profiling = { version = "1.0", default-features = false, features = [
+    "procmacros",
+] }
 regex = { version = "1.11", default-features = false }
 serde = { version = "1.0", default-features = false }
 dot-writer = { version = "0.1.4", default-features = false }
@@ -149,8 +150,16 @@ rand = { version = "0.9", default-features = false }
 rand_chacha = { version = "0.9", default-features = false }
 
 [dev-dependencies]
+bevy = { workspace = true, features = [
+    "bevy_render",
+    "bevy_window",
+    "bevy_asset",
+    "bevy_core_pipeline",
+    "bevy_sprite",
+] }
+bevy_platform = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
-rand = { workspace = true }
+rand = { workspace = true, features = ["thread_rng"] }
 criterion = { workspace = true }
 ladfile_builder = { workspace = true }
 script_integration_test_harness = { workspace = true }

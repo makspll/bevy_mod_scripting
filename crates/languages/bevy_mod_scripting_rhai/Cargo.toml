@@ -20,7 +20,7 @@ bevy_ecs = { workspace = true, default-features = false, features = [] }
 bevy_asset = { workspace = true, default-features = false, features = [] }
 bevy_app = { workspace = true, default-features = false, features = [] }
 bevy_log = { workspace = true, default-features = false, features = [] }
-rhai = { workspace = true }
+rhai = { workspace = true, features = ["std"] }
 bevy_mod_scripting_core = { workspace = true, features = ["rhai_impls"] }
 strum = { workspace = true }
 parking_lot = { workspace = true }

@@ -9,6 +9,7 @@ use bevy_mod_scripting_core::bindings::{
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_derive::script_bindings;
 use crate::*;
 pub struct BevyReflectScriptingPlugin;
@@ -28089,8 +28090,8 @@ impl ::uuid::Uuid {
         output
     }
 }
-impl ::bevy::app::Plugin for BevyReflectScriptingPlugin {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
+impl Plugin for BevyReflectScriptingPlugin {
+    fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
         register_atomic_bool_functions(&mut world);
         register_atomic_i_16_functions(&mut world);

@@ -14,8 +14,12 @@ lua = [
 rhai = ["bevy_mod_scripting_rhai", "bevy_mod_scripting_functions/rhai_bindings"]
 
 [dependencies]
-bevy = { workspace = true }
+bevy_asset = { workspace = true }
+bevy_ecs = { workspace = true }
+bevy_app = { workspace = true }
 test_utils = { workspace = true }
+bevy_reflect = { workspace = true }
+bevy_log = { workspace = true }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_functions = { workspace = true, features = [
     "core_functions",

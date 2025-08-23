@@ -9,6 +9,7 @@ use bevy_mod_scripting_core::bindings::{
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_derive::script_bindings;
 use crate::*;
 pub struct BevyInputScriptingPlugin;
@@ -1567,8 +1568,8 @@ impl ::bevy_input::touch::ForceTouch {
         output
     }
 }
-impl ::bevy::app::Plugin for BevyInputScriptingPlugin {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
+impl Plugin for BevyInputScriptingPlugin {
+    fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
         register_gamepad_functions(&mut world);
         register_gamepad_axis_functions(&mut world);

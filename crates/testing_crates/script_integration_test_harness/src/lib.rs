@@ -7,18 +7,18 @@ use std::{
     time::{Duration, Instant},
 };
 
-use bevy::{
-    app::{App, Plugin, PostUpdate, Startup, Update},
-    asset::{AssetPath, AssetServer, Handle, LoadState},
-    ecs::{
+use ::{
+    bevy_app::{App, Plugin, PostUpdate, Startup, Update},
+    bevy_asset::{AssetPath, AssetServer, Handle, LoadState},
+    bevy_ecs::{
         component::Component, resource::Resource, schedule::IntoScheduleConfigs, system::Command,
         world::FromWorld,
     },
-    log::{
+    bevy_log::{
         Level,
         tracing::{self, event},
     },
-    reflect::Reflect,
+    bevy_reflect::Reflect,
 };
 use bevy_mod_scripting_core::{
     BMSScriptingInfrastructurePlugin, IntoScriptPluginParams,
@@ -44,7 +44,7 @@ fn dummy_startup_system<T>() {}
 fn dummy_before_post_update_system() {}
 fn dummy_post_update_system() {}
 
-pub fn install_test_plugin(app: &mut bevy::app::App, include_test_functions: bool) {
+pub fn install_test_plugin(app: &mut App, include_test_functions: bool) {
     app.add_plugins((
         ScriptFunctionsPlugin,
         CoreScriptGlobalsPlugin::default(),
@@ -205,9 +205,7 @@ pub fn run_lua_benchmark<M: criterion::measurement::Measurement>(
                     pre_bencher.call::<()>(()).unwrap();
                 }
                 c.iter(|| {
-                    use bevy::log::{Level, tracing};
-
-                    tracing::event!(Level::TRACE, "profiling_iter {}", label);
+                    event!(Level::TRACE, "profiling_iter {}", label);
                     bencher.call::<()>(()).unwrap();
                 })
             });
@@ -243,9 +241,7 @@ pub fn run_rhai_benchmark<M: criterion::measurement::Measurement>(
                 }
 
                 c.iter(|| {
-                    use bevy::log::{Level, tracing};
-
-                    tracing::event!(Level::TRACE, "profiling_iter {}", label);
+                    event!(Level::TRACE, "profiling_iter {}", label);
                     let _ = runtime
                         .call_fn::<Dynamic>(&mut ctxt.scope, &ctxt.ast, "bench", ARGS)
                         .unwrap();
@@ -443,7 +439,7 @@ pub fn perform_benchmark_with_generator<
                 )
             },
             |(i, w)| {
-                event!(bevy::log::Level::TRACE, "profiling_iter {}", label);
+                event!(Level::TRACE, "profiling_iter {}", label);
                 bench_fn(w, i)
             },
             batch_size,

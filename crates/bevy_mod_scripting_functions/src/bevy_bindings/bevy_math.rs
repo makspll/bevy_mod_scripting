@@ -9,6 +9,7 @@ use bevy_mod_scripting_core::bindings::{
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_derive::script_bindings;
 use crate::*;
 pub struct BevyMathScriptingPlugin;
@@ -5415,8 +5416,8 @@ impl ::bevy_math::curve::easing::JumpAt {
         output
     }
 }
-impl ::bevy::app::Plugin for BevyMathScriptingPlugin {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
+impl Plugin for BevyMathScriptingPlugin {
+    fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
         register_aspect_ratio_functions(&mut world);
         register_compass_octant_functions(&mut world);

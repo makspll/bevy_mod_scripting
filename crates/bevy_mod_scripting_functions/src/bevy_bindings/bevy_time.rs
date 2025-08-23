@@ -9,6 +9,7 @@ use bevy_mod_scripting_core::bindings::{
         namespace::NamespaceBuilder,
     },
 };
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_derive::script_bindings;
 use crate::*;
 pub struct BevyTimeScriptingPlugin;
@@ -635,8 +636,8 @@ impl ::bevy_time::Stopwatch {
         output
     }
 }
-impl ::bevy::app::Plugin for BevyTimeScriptingPlugin {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
+impl Plugin for BevyTimeScriptingPlugin {
+    fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
         register_fixed_functions(&mut world);
         register_real_functions(&mut world);
