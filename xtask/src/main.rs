@@ -915,7 +915,7 @@ impl Xtasks {
 
         args.push(command.to_owned());
 
-        if command != "fmt" && command != "bevy-api-gen" && command != "install" {
+        if command != "fmt" && command != "bms-codegen" && command != "install" {
             // fmt doesn't care about features, workspaces or profiles
             if command != "run" {
                 args.push("--workspace".to_owned());
@@ -1184,8 +1184,8 @@ impl Xtasks {
 
         Self::run_workspace_command(
             &bevy_repo_app_settings,
-            "bevy-api-gen",
-            "Failed to run bevy-api-gen generate",
+            "bms-codegen",
+            "Failed to run bms-codegen generate",
             vec![
                 "generate",
                 "--bms-core-path",
@@ -1205,8 +1205,8 @@ impl Xtasks {
         // collect
         Self::run_workspace_command(
             &bevy_repo_app_settings,
-            "bevy-api-gen",
-            "Failed to run bevy-api-gen generate",
+            "bms-codegen",
+            "Failed to run bms-codegen generate",
             vec![
                 "collect",
                 "--bms-core-path",
