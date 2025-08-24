@@ -1,9 +1,11 @@
 #![allow(missing_docs)]
 
-use bevy::prelude::*;
 pub mod bevy_bindings;
 pub mod core;
 pub use core::*;
+
+use bevy_app::{App, Plugin};
+use bevy_ecs::hierarchy::{ChildOf, Children};
 
 /// A plugin that registers the core scripting functions.
 #[derive(Default)]

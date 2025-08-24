@@ -1,6 +1,6 @@
 //! Traits and types for managing script contexts.
 
-use bevy::prelude::Resource;
+use bevy_ecs::resource::Resource;
 
 use crate::{
     IntoScriptPluginParams,

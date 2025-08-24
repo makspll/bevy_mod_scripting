@@ -3,11 +3,10 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use bevy::{
-    app::App,
-    ecs::component::ComponentId,
-    prelude::{Entity, World},
-    reflect::{Reflect, TypeRegistration},
+use ::{
+    bevy_app::App,
+    bevy_ecs::{component::ComponentId, entity::Entity, world::World},
+    bevy_reflect::{Reflect, TypeRegistration},
 };
 use bevy_mod_scripting_core::{
     asset::Language,

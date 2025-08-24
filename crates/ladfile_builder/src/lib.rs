@@ -5,12 +5,12 @@ use std::{
     any::TypeId,
     borrow::Cow,
     cmp::{max, min},
-    collections::HashMap,
     ffi::OsString,
     path::PathBuf,
 };
 
-use bevy::{ecs::world::World, log, platform::collections::HashSet};
+use bevy_ecs::world::World;
+use bevy_log::warn;
 use bevy_mod_scripting_core::{
     bindings::{
         MarkAsCore, MarkAsGenerated, MarkAsSignificant, ReflectReference,
@@ -28,6 +28,7 @@ use bevy_mod_scripting_core::{
     },
     match_by_type,
 };
+use bevy_platform::collections::{HashMap, HashSet};
 use bevy_reflect::{NamedField, TypeInfo, TypeRegistry, Typed, UnnamedField};
 use ladfile::*;
 
@@ -493,10 +494,9 @@ impl<'t> LadFileBuilder<'t> {
                     if let Some(t) = file.types.get_mut(type_id) {
                         t.associated_functions.push(function_id.clone());
                     } else {
-                        log::warn!(
+                        warn!(
                             "Function {} is on type {}, but the type is not registered in the LAD file.",
-                            function_id,
-                            type_id
+                            function_id, type_id
                         );
                     }
                 }

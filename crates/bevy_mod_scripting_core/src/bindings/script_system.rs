@@ -20,8 +20,8 @@ use crate::{
     runtime::RuntimeContainer,
     script::{ScriptAttachment, ScriptContext},
 };
-use bevy::{
-    ecs::{
+use ::{
+    bevy_ecs::{
         archetype::{ArchetypeComponentId, ArchetypeGeneration},
         component::{ComponentId, Tick},
         entity::Entity,
@@ -31,13 +31,21 @@ use bevy::{
         system::{IntoSystem, System, SystemParamValidationError},
         world::{World, unsafe_world_cell::UnsafeWorldCell},
     },
-    platform::collections::HashSet,
-    prelude::IntoScheduleConfigs,
-    reflect::{OffsetAccess, ParsedPath, Reflect},
+    bevy_reflect::{OffsetAccess, ParsedPath, Reflect},
 };
+use bevy_app::DynEq;
+use bevy_ecs::{
+    schedule::{InternedSystemSet, IntoScheduleConfigs},
+    system::SystemIn,
+    world::DeferredWorld,
+};
+use bevy_log::{error, info, warn_once};
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
 use parking_lot::Mutex;
-use std::{any::TypeId, borrow::Cow, hash::Hash, marker::PhantomData, ops::Deref, sync::Arc};
+use std::{
+    any::TypeId, borrow::Cow, collections::HashSet, hash::Hash, marker::PhantomData, ops::Deref,
+    sync::Arc,
+};
 #[derive(Clone, Hash, PartialEq, Eq)]
 /// a system set for script systems.
 pub struct ScriptSystemSet(Cow<'static, str>);
@@ -61,11 +69,11 @@ impl ScriptSystemSet {
 
 #[profiling::all_functions]
 impl SystemSet for ScriptSystemSet {
-    fn dyn_clone(&self) -> bevy::ecs::label::Box<dyn SystemSet> {
+    fn dyn_clone(&self) -> Box<dyn SystemSet> {
         Box::new(self.clone())
     }
 
-    fn as_dyn_eq(&self) -> &dyn bevy::ecs::label::DynEq {
+    fn as_dyn_eq(&self) -> &dyn DynEq {
         self
     }
 
@@ -172,11 +180,11 @@ impl ScriptSystemBuilder {
             {
                 for default_set in other.default_system_sets() {
                     if is_before {
-                        bevy::log::info!("before {default_set:?}");
+                        info!("before {default_set:?}");
                         system_config = system_config.before(*default_set);
                     } else {
-                        bevy::log::info!("before {default_set:?}");
-                        bevy::log::info!("after {default_set:?}");
+                        info!("before {default_set:?}");
+                        info!("after {default_set:?}");
                         system_config = system_config.after(*default_set);
                     }
                 }
@@ -372,13 +380,11 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         self.name.clone()
     }
 
-    fn component_access(&self) -> &bevy::ecs::query::Access<bevy::ecs::component::ComponentId> {
+    fn component_access(&self) -> &Access<ComponentId> {
         self.component_access_set.combined_access()
     }
 
-    fn archetype_component_access(
-        &self,
-    ) -> &bevy::ecs::query::Access<bevy::ecs::archetype::ArchetypeComponentId> {
+    fn archetype_component_access(&self) -> &Access<ArchetypeComponentId> {
         &self.archetype_component_access
     }
 
@@ -396,8 +402,8 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 
     unsafe fn run_unsafe(
         &mut self,
-        _input: bevy::ecs::system::SystemIn<'_, Self>,
-        world: bevy::ecs::world::unsafe_world_cell::UnsafeWorldCell,
+        _input: SystemIn<'_, Self>,
+        world: UnsafeWorldCell,
     ) -> Self::Out {
         let _change_tick = world.increment_change_tick();
 
@@ -495,7 +501,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             match result {
                 Ok(_) => {}
                 Err(err) => {
-                    bevy::log::error!(
+                    error!(
                         "Error in dynamic script system `{}`: {}",
                         self.name,
                         err.display_with_world(guard)
@@ -503,7 +509,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
                 }
             }
         } else {
-            bevy::log::warn_once!(
+            warn_once!(
                 "Dynamic script system `{}` could not find script for attachment: {}. It will not run until it's loaded.",
                 self.name,
                 self.target_attachment
@@ -511,7 +517,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         }
     }
 
-    fn initialize(&mut self, world: &mut bevy::ecs::world::World) {
+    fn initialize(&mut self, world: &mut World) {
         // we need to register all the:
         // - resources, simple just need the component ID's
         // - queries, more difficult the queries need to be built, and archetype access registered on top of component access
@@ -598,10 +604,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         })
     }
 
-    fn update_archetype_component_access(
-        &mut self,
-        world: bevy::ecs::world::unsafe_world_cell::UnsafeWorldCell,
-    ) {
+    fn update_archetype_component_access(&mut self, world: UnsafeWorldCell) {
         let archetypes = world.archetypes();
 
         let old_generation =
@@ -621,7 +624,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         }
     }
 
-    fn check_change_tick(&mut self, change_tick: bevy::ecs::component::Tick) {
+    fn check_change_tick(&mut self, change_tick: Tick) {
         let last_run = &mut self.last_run;
         let this_run = change_tick;
 
@@ -631,17 +634,17 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         }
     }
 
-    fn get_last_run(&self) -> bevy::ecs::component::Tick {
+    fn get_last_run(&self) -> Tick {
         self.last_run
     }
 
-    fn set_last_run(&mut self, last_run: bevy::ecs::component::Tick) {
+    fn set_last_run(&mut self, last_run: Tick) {
         self.last_run = last_run;
     }
 
     fn apply_deferred(&mut self, _world: &mut World) {}
 
-    fn queue_deferred(&mut self, _world: bevy::ecs::world::DeferredWorld) {}
+    fn queue_deferred(&mut self, _world: DeferredWorld) {}
 
     unsafe fn validate_param_unsafe(
         &mut self,
@@ -650,7 +653,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         Ok(())
     }
 
-    fn default_system_sets(&self) -> Vec<bevy::ecs::schedule::InternedSystemSet> {
+    fn default_system_sets(&self) -> Vec<InternedSystemSet> {
         vec![ScriptSystemSet::new(self.name.clone()).intern()]
     }
 
@@ -670,11 +673,14 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
 
 #[cfg(test)]
 mod test {
-    use bevy::{
-        app::{App, MainScheduleOrder, Update},
-        asset::{AssetId, AssetPlugin, Handle},
-        diagnostic::DiagnosticsPlugin,
-        ecs::schedule::{ScheduleLabel, Schedules},
+    use ::{
+        bevy_app::{App, MainScheduleOrder, Plugin, Update},
+        bevy_asset::{AssetId, AssetPlugin, Handle},
+        bevy_diagnostic::DiagnosticsPlugin,
+        bevy_ecs::{
+            entity::Entity,
+            schedule::{ScheduleLabel, Schedules},
+        },
     };
     use test_utils::make_test_plugin;
 

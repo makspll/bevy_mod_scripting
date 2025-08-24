@@ -37,7 +37,7 @@ pub fn script_globals(
     };
 
     let out = quote_spanned! {impl_span=>
-        #visibility fn #function_name(world: &mut bevy::ecs::world::World) {
+        #visibility fn #function_name(world: &mut World) {
 
             let registry = world.get_resource_or_init::<#bms_core_path::bindings::globals::AppScriptGlobalsRegistry>();
             let mut registry = registry.write();

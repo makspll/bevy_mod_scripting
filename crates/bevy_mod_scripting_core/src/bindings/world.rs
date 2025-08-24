@@ -6,6 +6,9 @@
 //! we need wrapper types which have owned and ref variants.
 
 use super::{
+    AppReflectAllocator, AppScriptComponentRegistry, ReflectBase, ReflectBaseType,
+    ReflectReference, ScriptComponentRegistration, ScriptResourceRegistration,
+    ScriptTypeRegistration, Union,
     access_map::{
         AccessCount, AccessMapKey, AnyAccessMap, DynamicSystemMeta, ReflectAccessId,
         ReflectAccessKind, SubsetAccessMap,
@@ -17,9 +20,7 @@ use super::{
     pretty_print::DisplayWithWorld,
     schedule::AppScheduleRegistry,
     script_value::ScriptValue,
-    with_global_access, AppReflectAllocator, AppScriptComponentRegistry, ReflectBase,
-    ReflectBaseType, ReflectReference, ScriptComponentRegistration, ScriptResourceRegistration,
-    ScriptTypeRegistration, Union,
+    with_global_access,
 };
 use crate::{
     asset::ScriptAsset,
@@ -32,33 +33,37 @@ use crate::{
     reflection_extensions::PartialReflectExt,
     script::{ScriptAttachment, ScriptComponent},
 };
-use bevy::ecs::{component::Mutable, system::Command};
-use bevy::prelude::{ChildOf, Children};
-use bevy::{
-    app::AppExit,
-    asset::{AssetServer, Handle, LoadState},
-    ecs::{
+use ::{
+    bevy_app::AppExit,
+    bevy_asset::{AssetServer, Handle, LoadState},
+    bevy_ecs::{
         component::{Component, ComponentId},
         entity::Entity,
         prelude::Resource,
         reflect::{AppTypeRegistry, ReflectFromWorld, ReflectResource},
         system::Commands,
-        world::{unsafe_world_cell::UnsafeWorldCell, CommandQueue, Mut, World},
+        world::{CommandQueue, Mut, World, unsafe_world_cell::UnsafeWorldCell},
     },
-    reflect::{
-        std_traits::ReflectDefault, DynamicEnum, DynamicStruct, DynamicTuple, DynamicTupleStruct,
-        DynamicVariant, ParsedPath, PartialReflect, TypeRegistryArc,
+    bevy_reflect::{
+        DynamicEnum, DynamicStruct, DynamicTuple, DynamicTupleStruct, DynamicVariant, ParsedPath,
+        PartialReflect, TypeRegistryArc, std_traits::ReflectDefault,
     },
 };
+use bevy_ecs::{
+    component::Mutable,
+    hierarchy::{ChildOf, Children},
+    system::Command,
+};
+use bevy_platform::collections::HashMap;
+use bevy_reflect::{TypeInfo, VariantInfo};
 use bevy_system_reflection::ReflectSchedule;
 use std::{
     any::TypeId,
     borrow::Cow,
     cell::RefCell,
-    collections::HashMap,
     fmt::Debug,
     rc::Rc,
-    sync::{atomic::AtomicBool, Arc},
+    sync::{Arc, atomic::AtomicBool},
 };
 
 /// Prefer to directly using [`WorldAccessGuard`]. If the underlying type changes, this alias will be updated.
@@ -697,7 +702,7 @@ impl WorldAccessGuard<'_> {
         // then build the corresponding dynamic structure, whatever it may be
 
         let dynamic: Box<dyn PartialReflect> = match type_info {
-            bevy::reflect::TypeInfo::Struct(struct_info) => {
+            TypeInfo::Struct(struct_info) => {
                 let fields_iter = struct_info
                     .field_names()
                     .iter()
@@ -719,7 +724,7 @@ impl WorldAccessGuard<'_> {
                 dynamic.set_represented_type(Some(type_info));
                 Box::new(dynamic)
             }
-            bevy::reflect::TypeInfo::TupleStruct(tuple_struct_info) => {
+            TypeInfo::TupleStruct(tuple_struct_info) => {
                 let fields_iter = (0..tuple_struct_info.field_len())
                     .map(|f| {
                         Ok(tuple_struct_info
@@ -738,7 +743,7 @@ impl WorldAccessGuard<'_> {
                 dynamic.set_represented_type(Some(type_info));
                 Box::new(dynamic)
             }
-            bevy::reflect::TypeInfo::Tuple(tuple_info) => {
+            TypeInfo::Tuple(tuple_info) => {
                 let fields_iter = (0..tuple_info.field_len())
                     .map(|f| {
                         Ok(tuple_info
@@ -757,7 +762,7 @@ impl WorldAccessGuard<'_> {
                 dynamic.set_represented_type(Some(type_info));
                 Box::new(dynamic)
             }
-            bevy::reflect::TypeInfo::Enum(enum_info) => {
+            TypeInfo::Enum(enum_info) => {
                 // extract variant from "variant"
                 let variant = payload.remove("variant").ok_or_else(|| {
                     InteropError::missing_data_in_constructor(
@@ -773,7 +778,7 @@ impl WorldAccessGuard<'_> {
                 })?;
 
                 let variant = match variant {
-                    bevy::reflect::VariantInfo::Struct(struct_variant_info) => {
+                    VariantInfo::Struct(struct_variant_info) => {
                         // same as above struct variant
                         let fields_iter = struct_variant_info
                             .field_names()
@@ -796,7 +801,7 @@ impl WorldAccessGuard<'_> {
                         let dynamic = self.construct_dynamic_struct(&mut payload, fields_iter)?;
                         DynamicVariant::Struct(dynamic)
                     }
-                    bevy::reflect::VariantInfo::Tuple(tuple_variant_info) => {
+                    VariantInfo::Tuple(tuple_variant_info) => {
                         // same as tuple variant
                         let fields_iter = (0..tuple_variant_info.field_len())
                             .map(|f| {
@@ -815,7 +820,7 @@ impl WorldAccessGuard<'_> {
                             self.construct_dynamic_tuple(&mut payload, fields_iter, one_indexed)?;
                         DynamicVariant::Tuple(dynamic)
                     }
-                    bevy::reflect::VariantInfo::Unit(_) => DynamicVariant::Unit,
+                    VariantInfo::Unit(_) => DynamicVariant::Unit,
                 };
                 let mut dynamic = DynamicEnum::new(variant_name, variant);
                 dynamic.set_represented_type(Some(type_info));
@@ -826,7 +831,7 @@ impl WorldAccessGuard<'_> {
                     Some(type_info.type_id()),
                     Some(Box::new(payload)),
                     "Type constructor not supported",
-                ))
+                ));
             }
         };
 
@@ -1311,8 +1316,8 @@ impl WorldContainer for ThreadWorldContainer {
 #[cfg(test)]
 mod test {
     use super::*;
-    use bevy::reflect::{GetTypeRegistration, ReflectFromReflect};
-    use test_utils::test_data::{setup_world, SimpleEnum, SimpleStruct, SimpleTupleStruct};
+    use bevy_reflect::{GetTypeRegistration, ReflectFromReflect};
+    use test_utils::test_data::{SimpleEnum, SimpleStruct, SimpleTupleStruct, setup_world};
 
     #[test]
     fn test_construct_struct() {

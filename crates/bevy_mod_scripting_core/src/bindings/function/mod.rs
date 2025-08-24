@@ -15,8 +15,10 @@ crate::private::export_all_in_modules! {
 #[cfg(test)]
 #[allow(dead_code)]
 mod test {
-    use bevy::reflect::{FromReflect, GetTypeRegistration, Reflect, Typed};
+    use bevy_ecs::world::World;
     use bevy_mod_scripting_derive::script_bindings;
+    use bevy_platform::collections::HashMap;
+    use bevy_reflect::{FromReflect, GetTypeRegistration, Reflect, Typed};
 
     use crate::bindings::{
         function::{
@@ -28,7 +30,7 @@ mod test {
     };
 
     use super::arg_meta::{ScriptArgument, ScriptReturn, TypedScriptArgument, TypedScriptReturn};
-
+    use bevy_ecs::prelude::AppTypeRegistry;
     #[test]
     fn test_macro_generates_correct_registrator_function() {
         #[derive(Reflect)]
@@ -40,7 +42,7 @@ mod test {
             fn test_fn(_self: Ref<TestStruct>, mut _arg1: usize) {}
         }
 
-        let mut test_world = bevy::ecs::world::World::default();
+        let mut test_world = World::default();
 
         register_test_fn(&mut test_world);
 
@@ -190,7 +192,7 @@ mod test {
             V::Underlying: FromReflect + Typed + GetTypeRegistration + Eq,
             for<'a> V::This<'a>: Into<V>,
         {
-            test_is_valid_arg_and_return::<std::collections::HashMap<String, V>>();
+            test_is_valid_arg_and_return::<HashMap<String, V>>();
         }
     }
 

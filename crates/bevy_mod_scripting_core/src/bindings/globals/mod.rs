@@ -1,15 +1,15 @@
 //! Contains abstractions for exposing "globals" to scripts, in a language-agnostic way.
 
 use super::{
+    WorldGuard,
     function::arg_meta::{ScriptReturn, TypedScriptReturn},
     script_value::ScriptValue,
-    WorldGuard,
 };
 use crate::{
-    docgen::{into_through_type_info, typed_through::ThroughTypeInfo, TypedThrough},
+    docgen::{TypedThrough, into_through_type_info, typed_through::ThroughTypeInfo},
     error::InteropError,
 };
-use bevy::{platform::collections::HashMap, prelude::Resource, reflect::Typed};
+use ::{bevy_ecs::resource::Resource, bevy_platform::collections::HashMap, bevy_reflect::Typed};
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::{any::TypeId, borrow::Cow, sync::Arc};
 
@@ -251,7 +251,7 @@ impl ScriptGlobalsRegistry {
 
 #[cfg(test)]
 mod test {
-    use bevy::ecs::world::World;
+    use bevy_ecs::world::World;
 
     use super::*;
 
@@ -294,9 +294,11 @@ mod test {
 
         let maker = |_: WorldGuard| Ok(ScriptValue::from(42));
 
-        assert!(registry
-            .register_documented(Cow::Borrowed("foo"), maker, Cow::Borrowed("This is a test"))
-            .is_none());
+        assert!(
+            registry
+                .register_documented(Cow::Borrowed("foo"), maker, Cow::Borrowed("This is a test"))
+                .is_none()
+        );
 
         let global = registry.get("foo").unwrap();
         assert_eq!(global.documentation.as_deref(), Some("This is a test"));

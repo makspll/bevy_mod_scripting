@@ -1,18 +1,18 @@
 //! Utilities for querying the world.
 
-use super::{with_global_access, DynamicComponent, ReflectReference, WorldAccessGuard, WorldGuard};
+use bevy_ecs::{ptr::OwningPtr, query::QueryBuilder, world::EntityRef};
+
+use super::{DynamicComponent, ReflectReference, WorldAccessGuard, WorldGuard, with_global_access};
 use crate::error::InteropError;
-use bevy::{
-    ecs::{
+use ::{
+    bevy_ecs::{
         component::ComponentId,
         entity::Entity,
         query::{QueryData, QueryState},
         reflect::ReflectComponent,
         world::World,
     },
-    prelude::{EntityRef, QueryBuilder},
-    ptr::OwningPtr,
-    reflect::{ParsedPath, Reflect, TypeRegistration},
+    bevy_reflect::{ParsedPath, Reflect, TypeRegistration},
 };
 use std::{any::TypeId, collections::VecDeque, ptr::NonNull, sync::Arc};
 

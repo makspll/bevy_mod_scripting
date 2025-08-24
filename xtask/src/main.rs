@@ -1263,20 +1263,21 @@ impl Xtasks {
             "crates/bevy_mod_scripting_functions",
         )?;
 
-        let expand_crates = std::fs::read_dir(&output_dir)?;
-        for entry in expand_crates {
-            let entry = entry?;
-            let path = entry.path();
-            if path.extension().and_then(|s| s.to_str()) != Some("rs") || path.ends_with("mod.rs") {
-                continue;
-            }
-
-            let without_extension = path.file_stem().unwrap().to_str().unwrap();
+        let expand_crates = (std::fs::read_dir(&output_dir)?).collect::<Result<Vec<_>, _>>()?;
+        let crate_names = expand_crates
+            .iter()
+            .filter(|s| {
+                s.path().is_file() && s.path().ends_with(".rs") && !s.path().ends_with("mod.rs")
+            })
+            .map(|s| s.path().file_stem().unwrap().to_str().unwrap().to_owned())
+            .collect::<Vec<_>>();
+        let features = crate_names.join(",");
+        for entry in crate_names {
             let args = vec![
                 String::from("expand"),
-                format!("bevy_bindings::{without_extension}"),
+                format!("bevy_bindings::{entry}"),
                 String::from("--features"),
-                String::from(without_extension),
+                features.clone(),
             ];
             let expand_cmd = Self::run_system_command(
                 &main_workspace_app_settings,
@@ -1295,7 +1296,7 @@ impl Xtasks {
                 .take(output.lines().count() - 2)
                 .collect::<Vec<_>>()
                 .join("\n");
-
+            let path = output_dir.join(format!("{entry}.rs"));
             std::fs::write(&path, output)
                 .with_context(|| format!("writing expanded code to {path:?}"))?;
             info!("Wrote expanded code to {path:?}");

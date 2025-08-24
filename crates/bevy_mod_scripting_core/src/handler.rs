@@ -1,12 +1,12 @@
 //! Contains the logic for handling script callback events
-use bevy::{
-    ecs::{
+use ::{
+    bevy_ecs::{
         event::EventCursor,
+        event::Events,
         system::{Local, SystemState},
         world::{Mut, World},
     },
-    log::error,
-    prelude::Events,
+    bevy_log::error,
 };
 
 use crate::{
@@ -184,7 +184,7 @@ pub fn send_callback_response(world: WorldGuard, response: ScriptCallbackRespons
     });
 
     if let Err(err) = err {
-        bevy::log::error!(
+        error!(
             "Failed to send script callback response: {}",
             err.display_with_world(world.clone())
         );
@@ -200,13 +200,13 @@ pub fn handle_script_errors<I: Iterator<Item = ScriptError> + Clone>(world: Worl
     });
 
     if let Err(err) = err {
-        bevy::log::error!(
+        error!(
             "Failed to send script error events: {}",
             err.display_with_world(world.clone())
         );
     }
 
     for error in errors {
-        bevy::log::error!("{}", error.display_with_world(world.clone()));
+        error!("{}", error.display_with_world(world.clone()));
     }
 }

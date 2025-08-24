@@ -52,8 +52,8 @@ impl {{item.import_path}} {
 }
 {% endfor %}
 
-impl ::bevy::app::Plugin for {{ "ScriptingPlugin" | prefix_cratename | convert_case(case="upper_camel")}} {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
+impl Plugin for {{ "ScriptingPlugin" | prefix_cratename | convert_case(case="upper_camel")}} {
+    fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
 
         {% for item in items %}

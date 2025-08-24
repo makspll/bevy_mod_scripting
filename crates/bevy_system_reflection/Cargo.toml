@@ -12,12 +12,17 @@ categories = ["game-development"]
 readme = "readme.md"
 
 [dependencies]
-bevy = { workspace = true, default-features = false, features = ["bevy_log"]}
-dot-writer = "0.1.4"
+bevy_ecs = { workspace = true, default-features = false, features = [] }
+bevy_reflect = { workspace = true, default-features = false, features = [] }
+bevy_platform = { workspace = true, default-features = false, features = [] }
+bevy_log = { workspace = true, default-features = false, features = [] }
+dot-writer = { workspace = true }
 
 
 [dev-dependencies]
-pretty_assertions = "1.4"
-manifest-dir-macros = "0.1.18"
+bevy_app = { workspace = true, default-features = false, features = [] }
+pretty_assertions = { workspace = true }
+manifest-dir-macros = { workspace = true }
+
 [lints]
 workspace = true

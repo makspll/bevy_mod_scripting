@@ -77,12 +77,12 @@ fn get_type_dependencies_from_input(derive_input: DeriveInput) -> TokenStream {
             });
 
             impl_where.predicates.push(
-                parse_quote_spanned!(param.ident.span()=> #param_name::Underlying: bevy::reflect::GetTypeRegistration),
+                parse_quote_spanned!(param.ident.span()=> #param_name::Underlying: GetTypeRegistration),
             );
         } else {
-            impl_where.predicates.push(
-                parse_quote_spanned!(param.ident.span()=> #param_name: bevy::reflect::GetTypeRegistration),
-            )
+            impl_where
+                .predicates
+                .push(parse_quote_spanned!(param.ident.span()=> #param_name: GetTypeRegistration))
         }
     }
 
@@ -92,7 +92,7 @@ fn get_type_dependencies_from_input(derive_input: DeriveInput) -> TokenStream {
         impl #impl_generics #bms_core::bindings::GetTypeDependencies for #name #type_generics #impl_where
         {
             type Underlying = #underlying;
-            fn register_type_dependencies(registry: &mut bevy::reflect::TypeRegistry) {
+            fn register_type_dependencies(registry: &mut TypeRegistry) {
                 #(#recursive_registrations)*
 
                 registry.register::<#underlying>();

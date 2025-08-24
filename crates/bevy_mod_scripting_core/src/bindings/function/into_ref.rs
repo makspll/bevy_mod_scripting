@@ -2,7 +2,7 @@
 
 use std::{borrow::Cow, ffi::OsString, path::PathBuf};
 
-use bevy::reflect::{Access, PartialReflect};
+use bevy_reflect::{Access, PartialReflect};
 
 use crate::{
     bindings::{function::into::IntoScript, ReflectReference, WorldGuard},

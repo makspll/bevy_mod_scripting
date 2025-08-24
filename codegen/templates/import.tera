@@ -1,7 +1,1 @@
-{%- if import is starting_with("bevy_") -%}
-bevy::{{- import | substring(start=5) -}}
-{%- elif import is starting_with("glam::") -%}
-bevy::math::{{- import | substring(start=6) -}}
-{%- else -%}
 ::{{import}}
-{%- endif -%}

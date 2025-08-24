@@ -1,19 +1,25 @@
 //! Script related types, functions and components
 
-use std::{collections::HashMap, fmt, ops::Deref};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt,
+    ops::Deref,
+};
 
-use bevy::{
-    asset::{Asset, AssetId, Handle},
-    ecs::{component::HookContext, entity::Entity, resource::Resource, world::DeferredWorld},
-    platform::collections::HashSet,
-    prelude::ReflectComponent,
-    reflect::Reflect,
+use ::{
+    bevy_asset::{Asset, AssetId, Handle},
+    bevy_ecs::{
+        component::HookContext, entity::Entity, prelude::ReflectComponent, resource::Resource,
+        world::DeferredWorld,
+    },
+    bevy_reflect::Reflect,
 };
 
 use crate::{asset::ScriptAsset, event::ScriptEvent};
 
 mod context_key;
 mod script_context;
+use bevy_ecs::component::Component;
 pub use context_key::*;
 pub use script_context::*;
 
@@ -64,7 +70,7 @@ impl<A: Asset> DisplayProxy for Handle<A> {
     }
 }
 
-#[derive(bevy::ecs::component::Component, Reflect, Clone, Default, Debug)]
+#[derive(Component, Reflect, Clone, Default, Debug)]
 #[reflect(Component)]
 #[component(on_remove=Self::on_remove, on_add=Self::on_add)]
 /// A component which identifies the scripts existing on an entity.
@@ -158,7 +164,7 @@ impl StaticScripts {
 
 #[cfg(test)]
 mod tests {
-    use bevy::ecs::{event::Events, world::World};
+    use bevy_ecs::{event::Events, world::World};
 
     use super::*;
 

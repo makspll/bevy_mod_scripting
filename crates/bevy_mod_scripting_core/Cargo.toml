@@ -25,29 +25,32 @@ mlua_impls = ["mlua"]
 rhai_impls = ["rhai"]
 
 [dependencies]
-mlua = { version = "0.10", default-features = false, optional = true }
-rhai = { version = "1.21", default-features = false, features = [
-    "sync",
-], optional = true }
-bevy = { workspace = true, default-features = false, features = [
-    "bevy_asset",
-    "std",
-] }
-parking_lot = "0.12.1"
-smallvec = "1.11"
-itertools = "0.14"
+mlua = { workspace = true, optional = true }
+rhai = { workspace = true, features = ["sync"], optional = true }
+
+bevy_reflect = { workspace = true, default-features = false, features = [] }
+bevy_ecs = { workspace = true, default-features = false, features = [] }
+bevy_app = { workspace = true, default-features = false, features = [] }
+bevy_log = { workspace = true, default-features = false, features = [] }
+bevy_asset = { workspace = true, default-features = false, features = [] }
+bevy_diagnostic = { workspace = true, default-features = false, features = [] }
+bevy_platform = { workspace = true, default-features = false, features = [] }
+
+parking_lot = { workspace = true }
+smallvec = { workspace = true }
+itertools = { workspace = true }
 profiling = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-fixedbitset = "0.5"
-bevy_system_reflection = { path = "../bevy_system_reflection", version = "0.2.0" }
-serde = { version = "1.0", features = ["derive"] }
-uuid = "1.11"
-variadics_please = "1.1.0"
+fixedbitset = { workspace = true }
+bevy_system_reflection = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+uuid = { workspace = true }
+variadics_please = { workspace = true }
 
 [dev-dependencies]
 test_utils = { workspace = true }
-tokio = { version = "1", features = ["rt", "macros"] }
-pretty_assertions = "1.4"
+tokio = { workspace = true, features = ["rt", "macros"] }
+pretty_assertions = { workspace = true, features = ["alloc"] }
 
 [lints]
 workspace = true
