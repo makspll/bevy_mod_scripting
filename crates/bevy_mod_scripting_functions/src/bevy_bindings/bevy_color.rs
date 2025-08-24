@@ -9,6 +9,8 @@ use bevy_mod_scripting_core::{
         function::{from::{Ref, Mut, Val}, namespace::{NamespaceBuilder}}
     }
 };
+use bevy_ecs::{prelude::*};
+
 
 use bevy_mod_scripting_derive::script_bindings;
 
@@ -30,19 +32,19 @@ pub struct BevyColorScriptingPlugin;
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::color::prelude::Color {
+impl ::bevy_color::prelude::Color {
 
 
     
-    fn clone (_self:Ref<bevy::color::prelude::Color>,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =<bevy::color::prelude::Color as ::core::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_color::prelude::Color>,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =<::bevy_color::prelude::Color as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::color::prelude::Color>,other:Ref<bevy::color::prelude::Color>,) -> bool {
-        let output: bool =<bevy::color::prelude::Color as ::core::cmp::PartialEq::<bevy::color::prelude::Color>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_color::prelude::Color>,other:Ref<::bevy_color::prelude::Color>,) -> bool {
+        let output: bool =<::bevy_color::prelude::Color as ::core::cmp::PartialEq::<::bevy_color::prelude::Color>>::eq(&_self,&other,).into();
         output
     }
 
@@ -58,8 +60,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `lightness` - Lightness channel. [0.0, 1.0]
     
-    fn hsl (hue:f32,saturation:f32,lightness:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::hsl(hue,saturation,lightness,).into();
+    fn hsl (hue:f32,saturation:f32,lightness:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::hsl(hue,saturation,lightness,).into();
         output
     }
 
@@ -77,8 +79,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn hsla (hue:f32,saturation:f32,lightness:f32,alpha:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::hsla(hue,saturation,lightness,alpha,).into();
+    fn hsla (hue:f32,saturation:f32,lightness:f32,alpha:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::hsla(hue,saturation,lightness,alpha,).into();
         output
     }
 
@@ -94,8 +96,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `value` - Value channel. [0.0, 1.0]
     
-    fn hsv (hue:f32,saturation:f32,value:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::hsv(hue,saturation,value,).into();
+    fn hsv (hue:f32,saturation:f32,value:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::hsv(hue,saturation,value,).into();
         output
     }
 
@@ -113,8 +115,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn hsva (hue:f32,saturation:f32,value:f32,alpha:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::hsva(hue,saturation,value,alpha,).into();
+    fn hsva (hue:f32,saturation:f32,value:f32,alpha:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::hsva(hue,saturation,value,alpha,).into();
         output
     }
 
@@ -130,8 +132,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `blackness` - Blackness channel. [0.0, 1.0]
     
-    fn hwb (hue:f32,whiteness:f32,blackness:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::hwb(hue,whiteness,blackness,).into();
+    fn hwb (hue:f32,whiteness:f32,blackness:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::hwb(hue,whiteness,blackness,).into();
         output
     }
 
@@ -149,8 +151,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn hwba (hue:f32,whiteness:f32,blackness:f32,alpha:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::hwba(hue,whiteness,blackness,alpha,).into();
+    fn hwba (hue:f32,whiteness:f32,blackness:f32,alpha:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::hwba(hue,whiteness,blackness,alpha,).into();
         output
     }
 
@@ -166,8 +168,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `b` - b axis. [-1.5, 1.5]
     
-    fn lab (lightness:f32,a:f32,b:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::lab(lightness,a,b,).into();
+    fn lab (lightness:f32,a:f32,b:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::lab(lightness,a,b,).into();
         output
     }
 
@@ -185,8 +187,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn laba (lightness:f32,a:f32,b:f32,alpha:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::laba(lightness,a,b,alpha,).into();
+    fn laba (lightness:f32,a:f32,b:f32,alpha:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::laba(lightness,a,b,alpha,).into();
         output
     }
 
@@ -202,8 +204,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `hue` - Hue channel. [0.0, 360.0]
     
-    fn lch (lightness:f32,chroma:f32,hue:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::lch(lightness,chroma,hue,).into();
+    fn lch (lightness:f32,chroma:f32,hue:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::lch(lightness,chroma,hue,).into();
         output
     }
 
@@ -221,8 +223,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn lcha (lightness:f32,chroma:f32,hue:f32,alpha:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::lcha(lightness,chroma,hue,alpha,).into();
+    fn lcha (lightness:f32,chroma:f32,hue:f32,alpha:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::lcha(lightness,chroma,hue,alpha,).into();
         output
     }
 
@@ -238,8 +240,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `blue` - Blue channel. [0.0, 1.0]
     
-    fn linear_rgb (red:f32,green:f32,blue:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::linear_rgb(red,green,blue,).into();
+    fn linear_rgb (red:f32,green:f32,blue:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::linear_rgb(red,green,blue,).into();
         output
     }
 
@@ -257,8 +259,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn linear_rgba (red:f32,green:f32,blue:f32,alpha:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::linear_rgba(red,green,blue,alpha,).into();
+    fn linear_rgba (red:f32,green:f32,blue:f32,alpha:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::linear_rgba(red,green,blue,alpha,).into();
         output
     }
 
@@ -274,8 +276,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `b` - Blue-yellow channel. [-1.0, 1.0]
     
-    fn oklab (lightness:f32,a:f32,b:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::oklab(lightness,a,b,).into();
+    fn oklab (lightness:f32,a:f32,b:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::oklab(lightness,a,b,).into();
         output
     }
 
@@ -293,8 +295,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn oklaba (lightness:f32,a:f32,b:f32,alpha:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::oklaba(lightness,a,b,alpha,).into();
+    fn oklaba (lightness:f32,a:f32,b:f32,alpha:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::oklaba(lightness,a,b,alpha,).into();
         output
     }
 
@@ -310,8 +312,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `hue` - Hue channel. [0.0, 360.0]
     
-    fn oklch (lightness:f32,chroma:f32,hue:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::oklch(lightness,chroma,hue,).into();
+    fn oklch (lightness:f32,chroma:f32,hue:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::oklch(lightness,chroma,hue,).into();
         output
     }
 
@@ -329,8 +331,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn oklcha (lightness:f32,chroma:f32,hue:f32,alpha:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::oklcha(lightness,chroma,hue,alpha,).into();
+    fn oklcha (lightness:f32,chroma:f32,hue:f32,alpha:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::oklcha(lightness,chroma,hue,alpha,).into();
         output
     }
 
@@ -346,8 +348,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `blue` - Blue channel. [0.0, 1.0]
     
-    fn srgb (red:f32,green:f32,blue:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::srgb(red,green,blue,).into();
+    fn srgb (red:f32,green:f32,blue:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::srgb(red,green,blue,).into();
         output
     }
 
@@ -359,8 +361,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `array` - Red, Green and Blue channels. Each channel is in the range [0.0, 1.0]
     
-    fn srgb_from_array (array:[f32;3],) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::srgb_from_array(array,).into();
+    fn srgb_from_array (array:[f32;3],) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::srgb_from_array(array,).into();
         output
     }
 
@@ -376,8 +378,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `blue` - Blue channel. [0, 255]
     
-    fn srgb_u8 (red:u8,green:u8,blue:u8,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::srgb_u8(red,green,blue,).into();
+    fn srgb_u8 (red:u8,green:u8,blue:u8,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::srgb_u8(red,green,blue,).into();
         output
     }
 
@@ -395,8 +397,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn srgba (red:f32,green:f32,blue:f32,alpha:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::srgba(red,green,blue,alpha,).into();
+    fn srgba (red:f32,green:f32,blue:f32,alpha:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::srgba(red,green,blue,alpha,).into();
         output
     }
 
@@ -414,8 +416,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `alpha` - Alpha channel. [0, 255]
     
-    fn srgba_u8 (red:u8,green:u8,blue:u8,alpha:u8,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::srgba_u8(red,green,blue,alpha,).into();
+    fn srgba_u8 (red:u8,green:u8,blue:u8,alpha:u8,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::srgba_u8(red,green,blue,alpha,).into();
         output
     }
 
@@ -423,8 +425,8 @@ impl bevy::color::prelude::Color {
     
     ///  Return the color as a linear RGBA color.
     
-    fn to_linear (_self:Ref<bevy::color::prelude::Color>,) -> Val<bevy::color::prelude::LinearRgba> {
-        let output: Val<bevy::color::prelude::LinearRgba> =bevy::color::prelude::Color::to_linear(&_self,).into();
+    fn to_linear (_self:Ref<::bevy_color::prelude::Color>,) -> Val<::bevy_color::prelude::LinearRgba> {
+        let output: Val<::bevy_color::prelude::LinearRgba> =::bevy_color::prelude::Color::to_linear(&_self,).into();
         output
     }
 
@@ -432,8 +434,8 @@ impl bevy::color::prelude::Color {
     
     ///  Return the color as an SRGBA color.
     
-    fn to_srgba (_self:Ref<bevy::color::prelude::Color>,) -> Val<bevy::color::prelude::Srgba> {
-        let output: Val<bevy::color::prelude::Srgba> =bevy::color::prelude::Color::to_srgba(&_self,).into();
+    fn to_srgba (_self:Ref<::bevy_color::prelude::Color>,) -> Val<::bevy_color::prelude::Srgba> {
+        let output: Val<::bevy_color::prelude::Srgba> =::bevy_color::prelude::Color::to_srgba(&_self,).into();
         output
     }
 
@@ -449,8 +451,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `z` - z-axis. [0.0, 1.0]
     
-    fn xyz (x:f32,y:f32,z:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::xyz(x,y,z,).into();
+    fn xyz (x:f32,y:f32,z:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::xyz(x,y,z,).into();
         output
     }
 
@@ -468,8 +470,8 @@ impl bevy::color::prelude::Color {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn xyza (x:f32,y:f32,z:f32,alpha:f32,) -> Val<bevy::color::prelude::Color> {
-        let output: Val<bevy::color::prelude::Color> =bevy::color::prelude::Color::xyza(x,y,z,alpha,).into();
+    fn xyza (x:f32,y:f32,z:f32,alpha:f32,) -> Val<::bevy_color::prelude::Color> {
+        let output: Val<::bevy_color::prelude::Color> =::bevy_color::prelude::Color::xyza(x,y,z,alpha,).into();
         output
     }
      
@@ -481,33 +483,33 @@ impl bevy::color::prelude::Color {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::color::prelude::Srgba {
+impl ::bevy_color::prelude::Srgba {
 
 
     
-    fn add (_self:Val<bevy::color::prelude::Srgba>,rhs:Val<bevy::color::prelude::Srgba>,) -> Val<bevy::color::prelude::Srgba> {
-        let output: Val<bevy::color::prelude::Srgba> =<bevy::color::prelude::Srgba as ::core::ops::Add::<bevy::color::prelude::Srgba>>::add(_self.into_inner(),rhs.into_inner(),).into();
+    fn add (_self:Val<::bevy_color::prelude::Srgba>,rhs:Val<::bevy_color::prelude::Srgba>,) -> Val<::bevy_color::prelude::Srgba> {
+        let output: Val<::bevy_color::prelude::Srgba> =<::bevy_color::prelude::Srgba as ::core::ops::Add::<::bevy_color::prelude::Srgba>>::add(_self.into_inner(),rhs.into_inner(),).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::color::prelude::Srgba>,) -> Val<bevy::color::prelude::Srgba> {
-        let output: Val<bevy::color::prelude::Srgba> =<bevy::color::prelude::Srgba as ::core::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_color::prelude::Srgba>,) -> Val<::bevy_color::prelude::Srgba> {
+        let output: Val<::bevy_color::prelude::Srgba> =<::bevy_color::prelude::Srgba as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn div (_self:Val<bevy::color::prelude::Srgba>,rhs:f32,) -> Val<bevy::color::prelude::Srgba> {
-        let output: Val<bevy::color::prelude::Srgba> =<bevy::color::prelude::Srgba as ::core::ops::Div::<f32>>::div(_self.into_inner(),rhs,).into();
+    fn div (_self:Val<::bevy_color::prelude::Srgba>,rhs:f32,) -> Val<::bevy_color::prelude::Srgba> {
+        let output: Val<::bevy_color::prelude::Srgba> =<::bevy_color::prelude::Srgba as ::core::ops::Div::<f32>>::div(_self.into_inner(),rhs,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::color::prelude::Srgba>,other:Ref<bevy::color::prelude::Srgba>,) -> bool {
-        let output: bool =<bevy::color::prelude::Srgba as ::core::cmp::PartialEq::<bevy::color::prelude::Srgba>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_color::prelude::Srgba>,other:Ref<::bevy_color::prelude::Srgba>,) -> bool {
+        let output: bool =<::bevy_color::prelude::Srgba as ::core::cmp::PartialEq::<::bevy_color::prelude::Srgba>>::eq(&_self,&other,).into();
         output
     }
 
@@ -516,7 +518,7 @@ impl bevy::color::prelude::Srgba {
     ///  Converts a non-linear sRGB value to a linear one via [gamma correction](https://en.wikipedia.org/wiki/Gamma_correction).
     
     fn gamma_function (value:f32,) -> f32 {
-        let output: f32 =bevy::color::prelude::Srgba::gamma_function(value,).into();
+        let output: f32 =::bevy_color::prelude::Srgba::gamma_function(value,).into();
         output
     }
 
@@ -525,21 +527,21 @@ impl bevy::color::prelude::Srgba {
     ///  Converts a linear sRGB value to a non-linear one via [gamma correction](https://en.wikipedia.org/wiki/Gamma_correction).
     
     fn gamma_function_inverse (value:f32,) -> f32 {
-        let output: f32 =bevy::color::prelude::Srgba::gamma_function_inverse(value,).into();
+        let output: f32 =::bevy_color::prelude::Srgba::gamma_function_inverse(value,).into();
         output
     }
 
 
     
-    fn mul (_self:Val<bevy::color::prelude::Srgba>,rhs:f32,) -> Val<bevy::color::prelude::Srgba> {
-        let output: Val<bevy::color::prelude::Srgba> =<bevy::color::prelude::Srgba as ::core::ops::Mul::<f32>>::mul(_self.into_inner(),rhs,).into();
+    fn mul (_self:Val<::bevy_color::prelude::Srgba>,rhs:f32,) -> Val<::bevy_color::prelude::Srgba> {
+        let output: Val<::bevy_color::prelude::Srgba> =<::bevy_color::prelude::Srgba as ::core::ops::Mul::<f32>>::mul(_self.into_inner(),rhs,).into();
         output
     }
 
 
     
-    fn neg (_self:Val<bevy::color::prelude::Srgba>,) -> Val<bevy::color::prelude::Srgba> {
-        let output: Val<bevy::color::prelude::Srgba> =<bevy::color::prelude::Srgba as ::core::ops::Neg>::neg(_self.into_inner(),).into();
+    fn neg (_self:Val<::bevy_color::prelude::Srgba>,) -> Val<::bevy_color::prelude::Srgba> {
+        let output: Val<::bevy_color::prelude::Srgba> =<::bevy_color::prelude::Srgba as ::core::ops::Neg>::neg(_self.into_inner(),).into();
         output
     }
 
@@ -557,8 +559,8 @@ impl bevy::color::prelude::Srgba {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn new (red:f32,green:f32,blue:f32,alpha:f32,) -> Val<bevy::color::prelude::Srgba> {
-        let output: Val<bevy::color::prelude::Srgba> =bevy::color::prelude::Srgba::new(red,green,blue,alpha,).into();
+    fn new (red:f32,green:f32,blue:f32,alpha:f32,) -> Val<::bevy_color::prelude::Srgba> {
+        let output: Val<::bevy_color::prelude::Srgba> =::bevy_color::prelude::Srgba::new(red,green,blue,alpha,).into();
         output
     }
 
@@ -574,8 +576,8 @@ impl bevy::color::prelude::Srgba {
     
     ///  * `blue` - Blue channel. [0.0, 1.0]
     
-    fn rgb (red:f32,green:f32,blue:f32,) -> Val<bevy::color::prelude::Srgba> {
-        let output: Val<bevy::color::prelude::Srgba> =bevy::color::prelude::Srgba::rgb(red,green,blue,).into();
+    fn rgb (red:f32,green:f32,blue:f32,) -> Val<::bevy_color::prelude::Srgba> {
+        let output: Val<::bevy_color::prelude::Srgba> =::bevy_color::prelude::Srgba::rgb(red,green,blue,).into();
         output
     }
 
@@ -593,8 +595,8 @@ impl bevy::color::prelude::Srgba {
     
     ///  See also [`Srgba::new`], [`Srgba::rgba_u8`], [`Srgba::hex`].
     
-    fn rgb_u8 (r:u8,g:u8,b:u8,) -> Val<bevy::color::prelude::Srgba> {
-        let output: Val<bevy::color::prelude::Srgba> =bevy::color::prelude::Srgba::rgb_u8(r,g,b,).into();
+    fn rgb_u8 (r:u8,g:u8,b:u8,) -> Val<::bevy_color::prelude::Srgba> {
+        let output: Val<::bevy_color::prelude::Srgba> =::bevy_color::prelude::Srgba::rgb_u8(r,g,b,).into();
         output
     }
 
@@ -614,15 +616,15 @@ impl bevy::color::prelude::Srgba {
     
     ///  See also [`Srgba::new`], [`Srgba::rgb_u8`], [`Srgba::hex`].
     
-    fn rgba_u8 (r:u8,g:u8,b:u8,a:u8,) -> Val<bevy::color::prelude::Srgba> {
-        let output: Val<bevy::color::prelude::Srgba> =bevy::color::prelude::Srgba::rgba_u8(r,g,b,a,).into();
+    fn rgba_u8 (r:u8,g:u8,b:u8,a:u8,) -> Val<::bevy_color::prelude::Srgba> {
+        let output: Val<::bevy_color::prelude::Srgba> =::bevy_color::prelude::Srgba::rgba_u8(r,g,b,a,).into();
         output
     }
 
 
     
-    fn sub (_self:Val<bevy::color::prelude::Srgba>,rhs:Val<bevy::color::prelude::Srgba>,) -> Val<bevy::color::prelude::Srgba> {
-        let output: Val<bevy::color::prelude::Srgba> =<bevy::color::prelude::Srgba as ::core::ops::Sub::<bevy::color::prelude::Srgba>>::sub(_self.into_inner(),rhs.into_inner(),).into();
+    fn sub (_self:Val<::bevy_color::prelude::Srgba>,rhs:Val<::bevy_color::prelude::Srgba>,) -> Val<::bevy_color::prelude::Srgba> {
+        let output: Val<::bevy_color::prelude::Srgba> =<::bevy_color::prelude::Srgba as ::core::ops::Sub::<::bevy_color::prelude::Srgba>>::sub(_self.into_inner(),rhs.into_inner(),).into();
         output
     }
 
@@ -630,8 +632,8 @@ impl bevy::color::prelude::Srgba {
     
     ///  Convert this color to CSS-style hexadecimal notation.
     
-    fn to_hex (_self:Ref<bevy::color::prelude::Srgba>,) -> ::std::string::String {
-        let output: ::std::string::String =bevy::color::prelude::Srgba::to_hex(&_self,).into();
+    fn to_hex (_self:Ref<::bevy_color::prelude::Srgba>,) -> ::std::string::String {
+        let output: ::std::string::String =::bevy_color::prelude::Srgba::to_hex(&_self,).into();
         output
     }
 
@@ -639,8 +641,8 @@ impl bevy::color::prelude::Srgba {
     
     ///  Return a copy of this color with the blue channel set to the given value.
     
-    fn with_blue (_self:Val<bevy::color::prelude::Srgba>,blue:f32,) -> Val<bevy::color::prelude::Srgba> {
-        let output: Val<bevy::color::prelude::Srgba> =bevy::color::prelude::Srgba::with_blue(_self.into_inner(),blue,).into();
+    fn with_blue (_self:Val<::bevy_color::prelude::Srgba>,blue:f32,) -> Val<::bevy_color::prelude::Srgba> {
+        let output: Val<::bevy_color::prelude::Srgba> =::bevy_color::prelude::Srgba::with_blue(_self.into_inner(),blue,).into();
         output
     }
 
@@ -648,8 +650,8 @@ impl bevy::color::prelude::Srgba {
     
     ///  Return a copy of this color with the green channel set to the given value.
     
-    fn with_green (_self:Val<bevy::color::prelude::Srgba>,green:f32,) -> Val<bevy::color::prelude::Srgba> {
-        let output: Val<bevy::color::prelude::Srgba> =bevy::color::prelude::Srgba::with_green(_self.into_inner(),green,).into();
+    fn with_green (_self:Val<::bevy_color::prelude::Srgba>,green:f32,) -> Val<::bevy_color::prelude::Srgba> {
+        let output: Val<::bevy_color::prelude::Srgba> =::bevy_color::prelude::Srgba::with_green(_self.into_inner(),green,).into();
         output
     }
 
@@ -657,8 +659,8 @@ impl bevy::color::prelude::Srgba {
     
     ///  Return a copy of this color with the red channel set to the given value.
     
-    fn with_red (_self:Val<bevy::color::prelude::Srgba>,red:f32,) -> Val<bevy::color::prelude::Srgba> {
-        let output: Val<bevy::color::prelude::Srgba> =bevy::color::prelude::Srgba::with_red(_self.into_inner(),red,).into();
+    fn with_red (_self:Val<::bevy_color::prelude::Srgba>,red:f32,) -> Val<::bevy_color::prelude::Srgba> {
+        let output: Val<::bevy_color::prelude::Srgba> =::bevy_color::prelude::Srgba::with_red(_self.into_inner(),red,).into();
         output
     }
      
@@ -670,12 +672,12 @@ impl bevy::color::prelude::Srgba {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::color::prelude::LinearRgba {
+impl ::bevy_color::prelude::LinearRgba {
 
 
     
-    fn add (_self:Val<bevy::color::prelude::LinearRgba>,rhs:Val<bevy::color::prelude::LinearRgba>,) -> Val<bevy::color::prelude::LinearRgba> {
-        let output: Val<bevy::color::prelude::LinearRgba> =<bevy::color::prelude::LinearRgba as ::core::ops::Add::<bevy::color::prelude::LinearRgba>>::add(_self.into_inner(),rhs.into_inner(),).into();
+    fn add (_self:Val<::bevy_color::prelude::LinearRgba>,rhs:Val<::bevy_color::prelude::LinearRgba>,) -> Val<::bevy_color::prelude::LinearRgba> {
+        let output: Val<::bevy_color::prelude::LinearRgba> =<::bevy_color::prelude::LinearRgba as ::core::ops::Add::<::bevy_color::prelude::LinearRgba>>::add(_self.into_inner(),rhs.into_inner(),).into();
         output
     }
 
@@ -687,43 +689,43 @@ impl bevy::color::prelude::LinearRgba {
     
     ///  `A` will be the most significant byte and `R` the least significant.
     
-    fn as_u32 (_self:Ref<bevy::color::prelude::LinearRgba>,) -> u32 {
-        let output: u32 =bevy::color::prelude::LinearRgba::as_u32(&_self,).into();
+    fn as_u32 (_self:Ref<::bevy_color::prelude::LinearRgba>,) -> u32 {
+        let output: u32 =::bevy_color::prelude::LinearRgba::as_u32(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::color::prelude::LinearRgba>,) -> Val<bevy::color::prelude::LinearRgba> {
-        let output: Val<bevy::color::prelude::LinearRgba> =<bevy::color::prelude::LinearRgba as ::core::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_color::prelude::LinearRgba>,) -> Val<::bevy_color::prelude::LinearRgba> {
+        let output: Val<::bevy_color::prelude::LinearRgba> =<::bevy_color::prelude::LinearRgba as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn div (_self:Val<bevy::color::prelude::LinearRgba>,rhs:f32,) -> Val<bevy::color::prelude::LinearRgba> {
-        let output: Val<bevy::color::prelude::LinearRgba> =<bevy::color::prelude::LinearRgba as ::core::ops::Div::<f32>>::div(_self.into_inner(),rhs,).into();
+    fn div (_self:Val<::bevy_color::prelude::LinearRgba>,rhs:f32,) -> Val<::bevy_color::prelude::LinearRgba> {
+        let output: Val<::bevy_color::prelude::LinearRgba> =<::bevy_color::prelude::LinearRgba as ::core::ops::Div::<f32>>::div(_self.into_inner(),rhs,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::color::prelude::LinearRgba>,other:Ref<bevy::color::prelude::LinearRgba>,) -> bool {
-        let output: bool =<bevy::color::prelude::LinearRgba as ::core::cmp::PartialEq::<bevy::color::prelude::LinearRgba>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_color::prelude::LinearRgba>,other:Ref<::bevy_color::prelude::LinearRgba>,) -> bool {
+        let output: bool =<::bevy_color::prelude::LinearRgba as ::core::cmp::PartialEq::<::bevy_color::prelude::LinearRgba>>::eq(&_self,&other,).into();
         output
     }
 
 
     
-    fn mul (_self:Val<bevy::color::prelude::LinearRgba>,rhs:f32,) -> Val<bevy::color::prelude::LinearRgba> {
-        let output: Val<bevy::color::prelude::LinearRgba> =<bevy::color::prelude::LinearRgba as ::core::ops::Mul::<f32>>::mul(_self.into_inner(),rhs,).into();
+    fn mul (_self:Val<::bevy_color::prelude::LinearRgba>,rhs:f32,) -> Val<::bevy_color::prelude::LinearRgba> {
+        let output: Val<::bevy_color::prelude::LinearRgba> =<::bevy_color::prelude::LinearRgba as ::core::ops::Mul::<f32>>::mul(_self.into_inner(),rhs,).into();
         output
     }
 
 
     
-    fn neg (_self:Val<bevy::color::prelude::LinearRgba>,) -> Val<bevy::color::prelude::LinearRgba> {
-        let output: Val<bevy::color::prelude::LinearRgba> =<bevy::color::prelude::LinearRgba as ::core::ops::Neg>::neg(_self.into_inner(),).into();
+    fn neg (_self:Val<::bevy_color::prelude::LinearRgba>,) -> Val<::bevy_color::prelude::LinearRgba> {
+        let output: Val<::bevy_color::prelude::LinearRgba> =<::bevy_color::prelude::LinearRgba as ::core::ops::Neg>::neg(_self.into_inner(),).into();
         output
     }
 
@@ -731,8 +733,8 @@ impl bevy::color::prelude::LinearRgba {
     
     ///  Construct a new [`LinearRgba`] color from components.
     
-    fn new (red:f32,green:f32,blue:f32,alpha:f32,) -> Val<bevy::color::prelude::LinearRgba> {
-        let output: Val<bevy::color::prelude::LinearRgba> =bevy::color::prelude::LinearRgba::new(red,green,blue,alpha,).into();
+    fn new (red:f32,green:f32,blue:f32,alpha:f32,) -> Val<::bevy_color::prelude::LinearRgba> {
+        let output: Val<::bevy_color::prelude::LinearRgba> =::bevy_color::prelude::LinearRgba::new(red,green,blue,alpha,).into();
         output
     }
 
@@ -748,15 +750,15 @@ impl bevy::color::prelude::LinearRgba {
     
     ///  * `blue` - Blue channel. [0.0, 1.0]
     
-    fn rgb (red:f32,green:f32,blue:f32,) -> Val<bevy::color::prelude::LinearRgba> {
-        let output: Val<bevy::color::prelude::LinearRgba> =bevy::color::prelude::LinearRgba::rgb(red,green,blue,).into();
+    fn rgb (red:f32,green:f32,blue:f32,) -> Val<::bevy_color::prelude::LinearRgba> {
+        let output: Val<::bevy_color::prelude::LinearRgba> =::bevy_color::prelude::LinearRgba::rgb(red,green,blue,).into();
         output
     }
 
 
     
-    fn sub (_self:Val<bevy::color::prelude::LinearRgba>,rhs:Val<bevy::color::prelude::LinearRgba>,) -> Val<bevy::color::prelude::LinearRgba> {
-        let output: Val<bevy::color::prelude::LinearRgba> =<bevy::color::prelude::LinearRgba as ::core::ops::Sub::<bevy::color::prelude::LinearRgba>>::sub(_self.into_inner(),rhs.into_inner(),).into();
+    fn sub (_self:Val<::bevy_color::prelude::LinearRgba>,rhs:Val<::bevy_color::prelude::LinearRgba>,) -> Val<::bevy_color::prelude::LinearRgba> {
+        let output: Val<::bevy_color::prelude::LinearRgba> =<::bevy_color::prelude::LinearRgba as ::core::ops::Sub::<::bevy_color::prelude::LinearRgba>>::sub(_self.into_inner(),rhs.into_inner(),).into();
         output
     }
 
@@ -764,8 +766,8 @@ impl bevy::color::prelude::LinearRgba {
     
     ///  Return a copy of this color with the blue channel set to the given value.
     
-    fn with_blue (_self:Val<bevy::color::prelude::LinearRgba>,blue:f32,) -> Val<bevy::color::prelude::LinearRgba> {
-        let output: Val<bevy::color::prelude::LinearRgba> =bevy::color::prelude::LinearRgba::with_blue(_self.into_inner(),blue,).into();
+    fn with_blue (_self:Val<::bevy_color::prelude::LinearRgba>,blue:f32,) -> Val<::bevy_color::prelude::LinearRgba> {
+        let output: Val<::bevy_color::prelude::LinearRgba> =::bevy_color::prelude::LinearRgba::with_blue(_self.into_inner(),blue,).into();
         output
     }
 
@@ -773,8 +775,8 @@ impl bevy::color::prelude::LinearRgba {
     
     ///  Return a copy of this color with the green channel set to the given value.
     
-    fn with_green (_self:Val<bevy::color::prelude::LinearRgba>,green:f32,) -> Val<bevy::color::prelude::LinearRgba> {
-        let output: Val<bevy::color::prelude::LinearRgba> =bevy::color::prelude::LinearRgba::with_green(_self.into_inner(),green,).into();
+    fn with_green (_self:Val<::bevy_color::prelude::LinearRgba>,green:f32,) -> Val<::bevy_color::prelude::LinearRgba> {
+        let output: Val<::bevy_color::prelude::LinearRgba> =::bevy_color::prelude::LinearRgba::with_green(_self.into_inner(),green,).into();
         output
     }
 
@@ -782,8 +784,8 @@ impl bevy::color::prelude::LinearRgba {
     
     ///  Return a copy of this color with the red channel set to the given value.
     
-    fn with_red (_self:Val<bevy::color::prelude::LinearRgba>,red:f32,) -> Val<bevy::color::prelude::LinearRgba> {
-        let output: Val<bevy::color::prelude::LinearRgba> =bevy::color::prelude::LinearRgba::with_red(_self.into_inner(),red,).into();
+    fn with_red (_self:Val<::bevy_color::prelude::LinearRgba>,red:f32,) -> Val<::bevy_color::prelude::LinearRgba> {
+        let output: Val<::bevy_color::prelude::LinearRgba> =::bevy_color::prelude::LinearRgba::with_red(_self.into_inner(),red,).into();
         output
     }
      
@@ -795,19 +797,19 @@ impl bevy::color::prelude::LinearRgba {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::color::prelude::Hsla {
+impl ::bevy_color::prelude::Hsla {
 
 
     
-    fn clone (_self:Ref<bevy::color::prelude::Hsla>,) -> Val<bevy::color::prelude::Hsla> {
-        let output: Val<bevy::color::prelude::Hsla> =<bevy::color::prelude::Hsla as ::core::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_color::prelude::Hsla>,) -> Val<::bevy_color::prelude::Hsla> {
+        let output: Val<::bevy_color::prelude::Hsla> =<::bevy_color::prelude::Hsla as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::color::prelude::Hsla>,other:Ref<bevy::color::prelude::Hsla>,) -> bool {
-        let output: bool =<bevy::color::prelude::Hsla as ::core::cmp::PartialEq::<bevy::color::prelude::Hsla>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_color::prelude::Hsla>,other:Ref<::bevy_color::prelude::Hsla>,) -> bool {
+        let output: bool =<::bevy_color::prelude::Hsla as ::core::cmp::PartialEq::<::bevy_color::prelude::Hsla>>::eq(&_self,&other,).into();
         output
     }
 
@@ -823,8 +825,8 @@ impl bevy::color::prelude::Hsla {
     
     ///  * `lightness` - Lightness channel. [0.0, 1.0]
     
-    fn hsl (hue:f32,saturation:f32,lightness:f32,) -> Val<bevy::color::prelude::Hsla> {
-        let output: Val<bevy::color::prelude::Hsla> =bevy::color::prelude::Hsla::hsl(hue,saturation,lightness,).into();
+    fn hsl (hue:f32,saturation:f32,lightness:f32,) -> Val<::bevy_color::prelude::Hsla> {
+        let output: Val<::bevy_color::prelude::Hsla> =::bevy_color::prelude::Hsla::hsl(hue,saturation,lightness,).into();
         output
     }
 
@@ -842,8 +844,8 @@ impl bevy::color::prelude::Hsla {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn new (hue:f32,saturation:f32,lightness:f32,alpha:f32,) -> Val<bevy::color::prelude::Hsla> {
-        let output: Val<bevy::color::prelude::Hsla> =bevy::color::prelude::Hsla::new(hue,saturation,lightness,alpha,).into();
+    fn new (hue:f32,saturation:f32,lightness:f32,alpha:f32,) -> Val<::bevy_color::prelude::Hsla> {
+        let output: Val<::bevy_color::prelude::Hsla> =::bevy_color::prelude::Hsla::new(hue,saturation,lightness,alpha,).into();
         output
     }
 
@@ -875,8 +877,8 @@ impl bevy::color::prelude::Hsla {
     
     ///  ```
     
-    fn sequential_dispersed (index:u32,) -> Val<bevy::color::prelude::Hsla> {
-        let output: Val<bevy::color::prelude::Hsla> =bevy::color::prelude::Hsla::sequential_dispersed(index,).into();
+    fn sequential_dispersed (index:u32,) -> Val<::bevy_color::prelude::Hsla> {
+        let output: Val<::bevy_color::prelude::Hsla> =::bevy_color::prelude::Hsla::sequential_dispersed(index,).into();
         output
     }
 
@@ -884,8 +886,8 @@ impl bevy::color::prelude::Hsla {
     
     ///  Return a copy of this color with the lightness channel set to the given value.
     
-    fn with_lightness (_self:Val<bevy::color::prelude::Hsla>,lightness:f32,) -> Val<bevy::color::prelude::Hsla> {
-        let output: Val<bevy::color::prelude::Hsla> =bevy::color::prelude::Hsla::with_lightness(_self.into_inner(),lightness,).into();
+    fn with_lightness (_self:Val<::bevy_color::prelude::Hsla>,lightness:f32,) -> Val<::bevy_color::prelude::Hsla> {
+        let output: Val<::bevy_color::prelude::Hsla> =::bevy_color::prelude::Hsla::with_lightness(_self.into_inner(),lightness,).into();
         output
     }
 
@@ -893,8 +895,8 @@ impl bevy::color::prelude::Hsla {
     
     ///  Return a copy of this color with the saturation channel set to the given value.
     
-    fn with_saturation (_self:Val<bevy::color::prelude::Hsla>,saturation:f32,) -> Val<bevy::color::prelude::Hsla> {
-        let output: Val<bevy::color::prelude::Hsla> =bevy::color::prelude::Hsla::with_saturation(_self.into_inner(),saturation,).into();
+    fn with_saturation (_self:Val<::bevy_color::prelude::Hsla>,saturation:f32,) -> Val<::bevy_color::prelude::Hsla> {
+        let output: Val<::bevy_color::prelude::Hsla> =::bevy_color::prelude::Hsla::with_saturation(_self.into_inner(),saturation,).into();
         output
     }
      
@@ -906,19 +908,19 @@ impl bevy::color::prelude::Hsla {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::color::prelude::Hsva {
+impl ::bevy_color::prelude::Hsva {
 
 
     
-    fn clone (_self:Ref<bevy::color::prelude::Hsva>,) -> Val<bevy::color::prelude::Hsva> {
-        let output: Val<bevy::color::prelude::Hsva> =<bevy::color::prelude::Hsva as ::core::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_color::prelude::Hsva>,) -> Val<::bevy_color::prelude::Hsva> {
+        let output: Val<::bevy_color::prelude::Hsva> =<::bevy_color::prelude::Hsva as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::color::prelude::Hsva>,other:Ref<bevy::color::prelude::Hsva>,) -> bool {
-        let output: bool =<bevy::color::prelude::Hsva as ::core::cmp::PartialEq::<bevy::color::prelude::Hsva>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_color::prelude::Hsva>,other:Ref<::bevy_color::prelude::Hsva>,) -> bool {
+        let output: bool =<::bevy_color::prelude::Hsva as ::core::cmp::PartialEq::<::bevy_color::prelude::Hsva>>::eq(&_self,&other,).into();
         output
     }
 
@@ -934,8 +936,8 @@ impl bevy::color::prelude::Hsva {
     
     ///  * `value` - Value channel. [0.0, 1.0]
     
-    fn hsv (hue:f32,saturation:f32,value:f32,) -> Val<bevy::color::prelude::Hsva> {
-        let output: Val<bevy::color::prelude::Hsva> =bevy::color::prelude::Hsva::hsv(hue,saturation,value,).into();
+    fn hsv (hue:f32,saturation:f32,value:f32,) -> Val<::bevy_color::prelude::Hsva> {
+        let output: Val<::bevy_color::prelude::Hsva> =::bevy_color::prelude::Hsva::hsv(hue,saturation,value,).into();
         output
     }
 
@@ -953,8 +955,8 @@ impl bevy::color::prelude::Hsva {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn new (hue:f32,saturation:f32,value:f32,alpha:f32,) -> Val<bevy::color::prelude::Hsva> {
-        let output: Val<bevy::color::prelude::Hsva> =bevy::color::prelude::Hsva::new(hue,saturation,value,alpha,).into();
+    fn new (hue:f32,saturation:f32,value:f32,alpha:f32,) -> Val<::bevy_color::prelude::Hsva> {
+        let output: Val<::bevy_color::prelude::Hsva> =::bevy_color::prelude::Hsva::new(hue,saturation,value,alpha,).into();
         output
     }
 
@@ -962,8 +964,8 @@ impl bevy::color::prelude::Hsva {
     
     ///  Return a copy of this color with the saturation channel set to the given value.
     
-    fn with_saturation (_self:Val<bevy::color::prelude::Hsva>,saturation:f32,) -> Val<bevy::color::prelude::Hsva> {
-        let output: Val<bevy::color::prelude::Hsva> =bevy::color::prelude::Hsva::with_saturation(_self.into_inner(),saturation,).into();
+    fn with_saturation (_self:Val<::bevy_color::prelude::Hsva>,saturation:f32,) -> Val<::bevy_color::prelude::Hsva> {
+        let output: Val<::bevy_color::prelude::Hsva> =::bevy_color::prelude::Hsva::with_saturation(_self.into_inner(),saturation,).into();
         output
     }
 
@@ -971,8 +973,8 @@ impl bevy::color::prelude::Hsva {
     
     ///  Return a copy of this color with the value channel set to the given value.
     
-    fn with_value (_self:Val<bevy::color::prelude::Hsva>,value:f32,) -> Val<bevy::color::prelude::Hsva> {
-        let output: Val<bevy::color::prelude::Hsva> =bevy::color::prelude::Hsva::with_value(_self.into_inner(),value,).into();
+    fn with_value (_self:Val<::bevy_color::prelude::Hsva>,value:f32,) -> Val<::bevy_color::prelude::Hsva> {
+        let output: Val<::bevy_color::prelude::Hsva> =::bevy_color::prelude::Hsva::with_value(_self.into_inner(),value,).into();
         output
     }
      
@@ -984,19 +986,19 @@ impl bevy::color::prelude::Hsva {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::color::prelude::Hwba {
+impl ::bevy_color::prelude::Hwba {
 
 
     
-    fn clone (_self:Ref<bevy::color::prelude::Hwba>,) -> Val<bevy::color::prelude::Hwba> {
-        let output: Val<bevy::color::prelude::Hwba> =<bevy::color::prelude::Hwba as ::core::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_color::prelude::Hwba>,) -> Val<::bevy_color::prelude::Hwba> {
+        let output: Val<::bevy_color::prelude::Hwba> =<::bevy_color::prelude::Hwba as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::color::prelude::Hwba>,other:Ref<bevy::color::prelude::Hwba>,) -> bool {
-        let output: bool =<bevy::color::prelude::Hwba as ::core::cmp::PartialEq::<bevy::color::prelude::Hwba>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_color::prelude::Hwba>,other:Ref<::bevy_color::prelude::Hwba>,) -> bool {
+        let output: bool =<::bevy_color::prelude::Hwba as ::core::cmp::PartialEq::<::bevy_color::prelude::Hwba>>::eq(&_self,&other,).into();
         output
     }
 
@@ -1012,8 +1014,8 @@ impl bevy::color::prelude::Hwba {
     
     ///  * `blackness` - Blackness channel. [0.0, 1.0]
     
-    fn hwb (hue:f32,whiteness:f32,blackness:f32,) -> Val<bevy::color::prelude::Hwba> {
-        let output: Val<bevy::color::prelude::Hwba> =bevy::color::prelude::Hwba::hwb(hue,whiteness,blackness,).into();
+    fn hwb (hue:f32,whiteness:f32,blackness:f32,) -> Val<::bevy_color::prelude::Hwba> {
+        let output: Val<::bevy_color::prelude::Hwba> =::bevy_color::prelude::Hwba::hwb(hue,whiteness,blackness,).into();
         output
     }
 
@@ -1031,8 +1033,8 @@ impl bevy::color::prelude::Hwba {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn new (hue:f32,whiteness:f32,blackness:f32,alpha:f32,) -> Val<bevy::color::prelude::Hwba> {
-        let output: Val<bevy::color::prelude::Hwba> =bevy::color::prelude::Hwba::new(hue,whiteness,blackness,alpha,).into();
+    fn new (hue:f32,whiteness:f32,blackness:f32,alpha:f32,) -> Val<::bevy_color::prelude::Hwba> {
+        let output: Val<::bevy_color::prelude::Hwba> =::bevy_color::prelude::Hwba::new(hue,whiteness,blackness,alpha,).into();
         output
     }
 
@@ -1040,8 +1042,8 @@ impl bevy::color::prelude::Hwba {
     
     ///  Return a copy of this color with the blackness channel set to the given value.
     
-    fn with_blackness (_self:Val<bevy::color::prelude::Hwba>,blackness:f32,) -> Val<bevy::color::prelude::Hwba> {
-        let output: Val<bevy::color::prelude::Hwba> =bevy::color::prelude::Hwba::with_blackness(_self.into_inner(),blackness,).into();
+    fn with_blackness (_self:Val<::bevy_color::prelude::Hwba>,blackness:f32,) -> Val<::bevy_color::prelude::Hwba> {
+        let output: Val<::bevy_color::prelude::Hwba> =::bevy_color::prelude::Hwba::with_blackness(_self.into_inner(),blackness,).into();
         output
     }
 
@@ -1049,8 +1051,8 @@ impl bevy::color::prelude::Hwba {
     
     ///  Return a copy of this color with the whiteness channel set to the given value.
     
-    fn with_whiteness (_self:Val<bevy::color::prelude::Hwba>,whiteness:f32,) -> Val<bevy::color::prelude::Hwba> {
-        let output: Val<bevy::color::prelude::Hwba> =bevy::color::prelude::Hwba::with_whiteness(_self.into_inner(),whiteness,).into();
+    fn with_whiteness (_self:Val<::bevy_color::prelude::Hwba>,whiteness:f32,) -> Val<::bevy_color::prelude::Hwba> {
+        let output: Val<::bevy_color::prelude::Hwba> =::bevy_color::prelude::Hwba::with_whiteness(_self.into_inner(),whiteness,).into();
         output
     }
      
@@ -1062,33 +1064,33 @@ impl bevy::color::prelude::Hwba {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::color::prelude::Laba {
+impl ::bevy_color::prelude::Laba {
 
 
     
-    fn add (_self:Val<bevy::color::prelude::Laba>,rhs:Val<bevy::color::prelude::Laba>,) -> Val<bevy::color::prelude::Laba> {
-        let output: Val<bevy::color::prelude::Laba> =<bevy::color::prelude::Laba as ::core::ops::Add::<bevy::color::prelude::Laba>>::add(_self.into_inner(),rhs.into_inner(),).into();
+    fn add (_self:Val<::bevy_color::prelude::Laba>,rhs:Val<::bevy_color::prelude::Laba>,) -> Val<::bevy_color::prelude::Laba> {
+        let output: Val<::bevy_color::prelude::Laba> =<::bevy_color::prelude::Laba as ::core::ops::Add::<::bevy_color::prelude::Laba>>::add(_self.into_inner(),rhs.into_inner(),).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::color::prelude::Laba>,) -> Val<bevy::color::prelude::Laba> {
-        let output: Val<bevy::color::prelude::Laba> =<bevy::color::prelude::Laba as ::core::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_color::prelude::Laba>,) -> Val<::bevy_color::prelude::Laba> {
+        let output: Val<::bevy_color::prelude::Laba> =<::bevy_color::prelude::Laba as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn div (_self:Val<bevy::color::prelude::Laba>,rhs:f32,) -> Val<bevy::color::prelude::Laba> {
-        let output: Val<bevy::color::prelude::Laba> =<bevy::color::prelude::Laba as ::core::ops::Div::<f32>>::div(_self.into_inner(),rhs,).into();
+    fn div (_self:Val<::bevy_color::prelude::Laba>,rhs:f32,) -> Val<::bevy_color::prelude::Laba> {
+        let output: Val<::bevy_color::prelude::Laba> =<::bevy_color::prelude::Laba as ::core::ops::Div::<f32>>::div(_self.into_inner(),rhs,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::color::prelude::Laba>,other:Ref<bevy::color::prelude::Laba>,) -> bool {
-        let output: bool =<bevy::color::prelude::Laba as ::core::cmp::PartialEq::<bevy::color::prelude::Laba>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_color::prelude::Laba>,other:Ref<::bevy_color::prelude::Laba>,) -> bool {
+        let output: bool =<::bevy_color::prelude::Laba as ::core::cmp::PartialEq::<::bevy_color::prelude::Laba>>::eq(&_self,&other,).into();
         output
     }
 
@@ -1104,22 +1106,22 @@ impl bevy::color::prelude::Laba {
     
     ///  * `b` - b axis. [-1.5, 1.5]
     
-    fn lab (lightness:f32,a:f32,b:f32,) -> Val<bevy::color::prelude::Laba> {
-        let output: Val<bevy::color::prelude::Laba> =bevy::color::prelude::Laba::lab(lightness,a,b,).into();
+    fn lab (lightness:f32,a:f32,b:f32,) -> Val<::bevy_color::prelude::Laba> {
+        let output: Val<::bevy_color::prelude::Laba> =::bevy_color::prelude::Laba::lab(lightness,a,b,).into();
         output
     }
 
 
     
-    fn mul (_self:Val<bevy::color::prelude::Laba>,rhs:f32,) -> Val<bevy::color::prelude::Laba> {
-        let output: Val<bevy::color::prelude::Laba> =<bevy::color::prelude::Laba as ::core::ops::Mul::<f32>>::mul(_self.into_inner(),rhs,).into();
+    fn mul (_self:Val<::bevy_color::prelude::Laba>,rhs:f32,) -> Val<::bevy_color::prelude::Laba> {
+        let output: Val<::bevy_color::prelude::Laba> =<::bevy_color::prelude::Laba as ::core::ops::Mul::<f32>>::mul(_self.into_inner(),rhs,).into();
         output
     }
 
 
     
-    fn neg (_self:Val<bevy::color::prelude::Laba>,) -> Val<bevy::color::prelude::Laba> {
-        let output: Val<bevy::color::prelude::Laba> =<bevy::color::prelude::Laba as ::core::ops::Neg>::neg(_self.into_inner(),).into();
+    fn neg (_self:Val<::bevy_color::prelude::Laba>,) -> Val<::bevy_color::prelude::Laba> {
+        let output: Val<::bevy_color::prelude::Laba> =<::bevy_color::prelude::Laba as ::core::ops::Neg>::neg(_self.into_inner(),).into();
         output
     }
 
@@ -1137,15 +1139,15 @@ impl bevy::color::prelude::Laba {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn new (lightness:f32,a:f32,b:f32,alpha:f32,) -> Val<bevy::color::prelude::Laba> {
-        let output: Val<bevy::color::prelude::Laba> =bevy::color::prelude::Laba::new(lightness,a,b,alpha,).into();
+    fn new (lightness:f32,a:f32,b:f32,alpha:f32,) -> Val<::bevy_color::prelude::Laba> {
+        let output: Val<::bevy_color::prelude::Laba> =::bevy_color::prelude::Laba::new(lightness,a,b,alpha,).into();
         output
     }
 
 
     
-    fn sub (_self:Val<bevy::color::prelude::Laba>,rhs:Val<bevy::color::prelude::Laba>,) -> Val<bevy::color::prelude::Laba> {
-        let output: Val<bevy::color::prelude::Laba> =<bevy::color::prelude::Laba as ::core::ops::Sub::<bevy::color::prelude::Laba>>::sub(_self.into_inner(),rhs.into_inner(),).into();
+    fn sub (_self:Val<::bevy_color::prelude::Laba>,rhs:Val<::bevy_color::prelude::Laba>,) -> Val<::bevy_color::prelude::Laba> {
+        let output: Val<::bevy_color::prelude::Laba> =<::bevy_color::prelude::Laba as ::core::ops::Sub::<::bevy_color::prelude::Laba>>::sub(_self.into_inner(),rhs.into_inner(),).into();
         output
     }
 
@@ -1153,8 +1155,8 @@ impl bevy::color::prelude::Laba {
     
     ///  Return a copy of this color with the lightness channel set to the given value.
     
-    fn with_lightness (_self:Val<bevy::color::prelude::Laba>,lightness:f32,) -> Val<bevy::color::prelude::Laba> {
-        let output: Val<bevy::color::prelude::Laba> =bevy::color::prelude::Laba::with_lightness(_self.into_inner(),lightness,).into();
+    fn with_lightness (_self:Val<::bevy_color::prelude::Laba>,lightness:f32,) -> Val<::bevy_color::prelude::Laba> {
+        let output: Val<::bevy_color::prelude::Laba> =::bevy_color::prelude::Laba::with_lightness(_self.into_inner(),lightness,).into();
         output
     }
      
@@ -1166,19 +1168,19 @@ impl bevy::color::prelude::Laba {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::color::prelude::Lcha {
+impl ::bevy_color::prelude::Lcha {
 
 
     
-    fn clone (_self:Ref<bevy::color::prelude::Lcha>,) -> Val<bevy::color::prelude::Lcha> {
-        let output: Val<bevy::color::prelude::Lcha> =<bevy::color::prelude::Lcha as ::core::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_color::prelude::Lcha>,) -> Val<::bevy_color::prelude::Lcha> {
+        let output: Val<::bevy_color::prelude::Lcha> =<::bevy_color::prelude::Lcha as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::color::prelude::Lcha>,other:Ref<bevy::color::prelude::Lcha>,) -> bool {
-        let output: bool =<bevy::color::prelude::Lcha as ::core::cmp::PartialEq::<bevy::color::prelude::Lcha>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_color::prelude::Lcha>,other:Ref<::bevy_color::prelude::Lcha>,) -> bool {
+        let output: bool =<::bevy_color::prelude::Lcha as ::core::cmp::PartialEq::<::bevy_color::prelude::Lcha>>::eq(&_self,&other,).into();
         output
     }
 
@@ -1194,8 +1196,8 @@ impl bevy::color::prelude::Lcha {
     
     ///  * `hue` - Hue channel. [0.0, 360.0]
     
-    fn lch (lightness:f32,chroma:f32,hue:f32,) -> Val<bevy::color::prelude::Lcha> {
-        let output: Val<bevy::color::prelude::Lcha> =bevy::color::prelude::Lcha::lch(lightness,chroma,hue,).into();
+    fn lch (lightness:f32,chroma:f32,hue:f32,) -> Val<::bevy_color::prelude::Lcha> {
+        let output: Val<::bevy_color::prelude::Lcha> =::bevy_color::prelude::Lcha::lch(lightness,chroma,hue,).into();
         output
     }
 
@@ -1213,8 +1215,8 @@ impl bevy::color::prelude::Lcha {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn new (lightness:f32,chroma:f32,hue:f32,alpha:f32,) -> Val<bevy::color::prelude::Lcha> {
-        let output: Val<bevy::color::prelude::Lcha> =bevy::color::prelude::Lcha::new(lightness,chroma,hue,alpha,).into();
+    fn new (lightness:f32,chroma:f32,hue:f32,alpha:f32,) -> Val<::bevy_color::prelude::Lcha> {
+        let output: Val<::bevy_color::prelude::Lcha> =::bevy_color::prelude::Lcha::new(lightness,chroma,hue,alpha,).into();
         output
     }
 
@@ -1246,8 +1248,8 @@ impl bevy::color::prelude::Lcha {
     
     ///  ```
     
-    fn sequential_dispersed (index:u32,) -> Val<bevy::color::prelude::Lcha> {
-        let output: Val<bevy::color::prelude::Lcha> =bevy::color::prelude::Lcha::sequential_dispersed(index,).into();
+    fn sequential_dispersed (index:u32,) -> Val<::bevy_color::prelude::Lcha> {
+        let output: Val<::bevy_color::prelude::Lcha> =::bevy_color::prelude::Lcha::sequential_dispersed(index,).into();
         output
     }
 
@@ -1255,8 +1257,8 @@ impl bevy::color::prelude::Lcha {
     
     ///  Return a copy of this color with the chroma channel set to the given value.
     
-    fn with_chroma (_self:Val<bevy::color::prelude::Lcha>,chroma:f32,) -> Val<bevy::color::prelude::Lcha> {
-        let output: Val<bevy::color::prelude::Lcha> =bevy::color::prelude::Lcha::with_chroma(_self.into_inner(),chroma,).into();
+    fn with_chroma (_self:Val<::bevy_color::prelude::Lcha>,chroma:f32,) -> Val<::bevy_color::prelude::Lcha> {
+        let output: Val<::bevy_color::prelude::Lcha> =::bevy_color::prelude::Lcha::with_chroma(_self.into_inner(),chroma,).into();
         output
     }
 
@@ -1264,8 +1266,8 @@ impl bevy::color::prelude::Lcha {
     
     ///  Return a copy of this color with the lightness channel set to the given value.
     
-    fn with_lightness (_self:Val<bevy::color::prelude::Lcha>,lightness:f32,) -> Val<bevy::color::prelude::Lcha> {
-        let output: Val<bevy::color::prelude::Lcha> =bevy::color::prelude::Lcha::with_lightness(_self.into_inner(),lightness,).into();
+    fn with_lightness (_self:Val<::bevy_color::prelude::Lcha>,lightness:f32,) -> Val<::bevy_color::prelude::Lcha> {
+        let output: Val<::bevy_color::prelude::Lcha> =::bevy_color::prelude::Lcha::with_lightness(_self.into_inner(),lightness,).into();
         output
     }
      
@@ -1277,33 +1279,33 @@ impl bevy::color::prelude::Lcha {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::color::prelude::Oklaba {
+impl ::bevy_color::prelude::Oklaba {
 
 
     
-    fn add (_self:Val<bevy::color::prelude::Oklaba>,rhs:Val<bevy::color::prelude::Oklaba>,) -> Val<bevy::color::prelude::Oklaba> {
-        let output: Val<bevy::color::prelude::Oklaba> =<bevy::color::prelude::Oklaba as ::core::ops::Add::<bevy::color::prelude::Oklaba>>::add(_self.into_inner(),rhs.into_inner(),).into();
+    fn add (_self:Val<::bevy_color::prelude::Oklaba>,rhs:Val<::bevy_color::prelude::Oklaba>,) -> Val<::bevy_color::prelude::Oklaba> {
+        let output: Val<::bevy_color::prelude::Oklaba> =<::bevy_color::prelude::Oklaba as ::core::ops::Add::<::bevy_color::prelude::Oklaba>>::add(_self.into_inner(),rhs.into_inner(),).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::color::prelude::Oklaba>,) -> Val<bevy::color::prelude::Oklaba> {
-        let output: Val<bevy::color::prelude::Oklaba> =<bevy::color::prelude::Oklaba as ::core::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_color::prelude::Oklaba>,) -> Val<::bevy_color::prelude::Oklaba> {
+        let output: Val<::bevy_color::prelude::Oklaba> =<::bevy_color::prelude::Oklaba as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn div (_self:Val<bevy::color::prelude::Oklaba>,rhs:f32,) -> Val<bevy::color::prelude::Oklaba> {
-        let output: Val<bevy::color::prelude::Oklaba> =<bevy::color::prelude::Oklaba as ::core::ops::Div::<f32>>::div(_self.into_inner(),rhs,).into();
+    fn div (_self:Val<::bevy_color::prelude::Oklaba>,rhs:f32,) -> Val<::bevy_color::prelude::Oklaba> {
+        let output: Val<::bevy_color::prelude::Oklaba> =<::bevy_color::prelude::Oklaba as ::core::ops::Div::<f32>>::div(_self.into_inner(),rhs,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::color::prelude::Oklaba>,other:Ref<bevy::color::prelude::Oklaba>,) -> bool {
-        let output: bool =<bevy::color::prelude::Oklaba as ::core::cmp::PartialEq::<bevy::color::prelude::Oklaba>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_color::prelude::Oklaba>,other:Ref<::bevy_color::prelude::Oklaba>,) -> bool {
+        let output: bool =<::bevy_color::prelude::Oklaba as ::core::cmp::PartialEq::<::bevy_color::prelude::Oklaba>>::eq(&_self,&other,).into();
         output
     }
 
@@ -1319,22 +1321,22 @@ impl bevy::color::prelude::Oklaba {
     
     ///  * `b` - Blue-yellow channel. [-1.0, 1.0]
     
-    fn lab (lightness:f32,a:f32,b:f32,) -> Val<bevy::color::prelude::Oklaba> {
-        let output: Val<bevy::color::prelude::Oklaba> =bevy::color::prelude::Oklaba::lab(lightness,a,b,).into();
+    fn lab (lightness:f32,a:f32,b:f32,) -> Val<::bevy_color::prelude::Oklaba> {
+        let output: Val<::bevy_color::prelude::Oklaba> =::bevy_color::prelude::Oklaba::lab(lightness,a,b,).into();
         output
     }
 
 
     
-    fn mul (_self:Val<bevy::color::prelude::Oklaba>,rhs:f32,) -> Val<bevy::color::prelude::Oklaba> {
-        let output: Val<bevy::color::prelude::Oklaba> =<bevy::color::prelude::Oklaba as ::core::ops::Mul::<f32>>::mul(_self.into_inner(),rhs,).into();
+    fn mul (_self:Val<::bevy_color::prelude::Oklaba>,rhs:f32,) -> Val<::bevy_color::prelude::Oklaba> {
+        let output: Val<::bevy_color::prelude::Oklaba> =<::bevy_color::prelude::Oklaba as ::core::ops::Mul::<f32>>::mul(_self.into_inner(),rhs,).into();
         output
     }
 
 
     
-    fn neg (_self:Val<bevy::color::prelude::Oklaba>,) -> Val<bevy::color::prelude::Oklaba> {
-        let output: Val<bevy::color::prelude::Oklaba> =<bevy::color::prelude::Oklaba as ::core::ops::Neg>::neg(_self.into_inner(),).into();
+    fn neg (_self:Val<::bevy_color::prelude::Oklaba>,) -> Val<::bevy_color::prelude::Oklaba> {
+        let output: Val<::bevy_color::prelude::Oklaba> =<::bevy_color::prelude::Oklaba as ::core::ops::Neg>::neg(_self.into_inner(),).into();
         output
     }
 
@@ -1352,15 +1354,15 @@ impl bevy::color::prelude::Oklaba {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn new (lightness:f32,a:f32,b:f32,alpha:f32,) -> Val<bevy::color::prelude::Oklaba> {
-        let output: Val<bevy::color::prelude::Oklaba> =bevy::color::prelude::Oklaba::new(lightness,a,b,alpha,).into();
+    fn new (lightness:f32,a:f32,b:f32,alpha:f32,) -> Val<::bevy_color::prelude::Oklaba> {
+        let output: Val<::bevy_color::prelude::Oklaba> =::bevy_color::prelude::Oklaba::new(lightness,a,b,alpha,).into();
         output
     }
 
 
     
-    fn sub (_self:Val<bevy::color::prelude::Oklaba>,rhs:Val<bevy::color::prelude::Oklaba>,) -> Val<bevy::color::prelude::Oklaba> {
-        let output: Val<bevy::color::prelude::Oklaba> =<bevy::color::prelude::Oklaba as ::core::ops::Sub::<bevy::color::prelude::Oklaba>>::sub(_self.into_inner(),rhs.into_inner(),).into();
+    fn sub (_self:Val<::bevy_color::prelude::Oklaba>,rhs:Val<::bevy_color::prelude::Oklaba>,) -> Val<::bevy_color::prelude::Oklaba> {
+        let output: Val<::bevy_color::prelude::Oklaba> =<::bevy_color::prelude::Oklaba as ::core::ops::Sub::<::bevy_color::prelude::Oklaba>>::sub(_self.into_inner(),rhs.into_inner(),).into();
         output
     }
 
@@ -1368,8 +1370,8 @@ impl bevy::color::prelude::Oklaba {
     
     ///  Return a copy of this color with the 'a' channel set to the given value.
     
-    fn with_a (_self:Val<bevy::color::prelude::Oklaba>,a:f32,) -> Val<bevy::color::prelude::Oklaba> {
-        let output: Val<bevy::color::prelude::Oklaba> =bevy::color::prelude::Oklaba::with_a(_self.into_inner(),a,).into();
+    fn with_a (_self:Val<::bevy_color::prelude::Oklaba>,a:f32,) -> Val<::bevy_color::prelude::Oklaba> {
+        let output: Val<::bevy_color::prelude::Oklaba> =::bevy_color::prelude::Oklaba::with_a(_self.into_inner(),a,).into();
         output
     }
 
@@ -1377,8 +1379,8 @@ impl bevy::color::prelude::Oklaba {
     
     ///  Return a copy of this color with the 'b' channel set to the given value.
     
-    fn with_b (_self:Val<bevy::color::prelude::Oklaba>,b:f32,) -> Val<bevy::color::prelude::Oklaba> {
-        let output: Val<bevy::color::prelude::Oklaba> =bevy::color::prelude::Oklaba::with_b(_self.into_inner(),b,).into();
+    fn with_b (_self:Val<::bevy_color::prelude::Oklaba>,b:f32,) -> Val<::bevy_color::prelude::Oklaba> {
+        let output: Val<::bevy_color::prelude::Oklaba> =::bevy_color::prelude::Oklaba::with_b(_self.into_inner(),b,).into();
         output
     }
 
@@ -1386,8 +1388,8 @@ impl bevy::color::prelude::Oklaba {
     
     ///  Return a copy of this color with the 'lightness' channel set to the given value.
     
-    fn with_lightness (_self:Val<bevy::color::prelude::Oklaba>,lightness:f32,) -> Val<bevy::color::prelude::Oklaba> {
-        let output: Val<bevy::color::prelude::Oklaba> =bevy::color::prelude::Oklaba::with_lightness(_self.into_inner(),lightness,).into();
+    fn with_lightness (_self:Val<::bevy_color::prelude::Oklaba>,lightness:f32,) -> Val<::bevy_color::prelude::Oklaba> {
+        let output: Val<::bevy_color::prelude::Oklaba> =::bevy_color::prelude::Oklaba::with_lightness(_self.into_inner(),lightness,).into();
         output
     }
      
@@ -1399,19 +1401,19 @@ impl bevy::color::prelude::Oklaba {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::color::prelude::Oklcha {
+impl ::bevy_color::prelude::Oklcha {
 
 
     
-    fn clone (_self:Ref<bevy::color::prelude::Oklcha>,) -> Val<bevy::color::prelude::Oklcha> {
-        let output: Val<bevy::color::prelude::Oklcha> =<bevy::color::prelude::Oklcha as ::core::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_color::prelude::Oklcha>,) -> Val<::bevy_color::prelude::Oklcha> {
+        let output: Val<::bevy_color::prelude::Oklcha> =<::bevy_color::prelude::Oklcha as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::color::prelude::Oklcha>,other:Ref<bevy::color::prelude::Oklcha>,) -> bool {
-        let output: bool =<bevy::color::prelude::Oklcha as ::core::cmp::PartialEq::<bevy::color::prelude::Oklcha>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_color::prelude::Oklcha>,other:Ref<::bevy_color::prelude::Oklcha>,) -> bool {
+        let output: bool =<::bevy_color::prelude::Oklcha as ::core::cmp::PartialEq::<::bevy_color::prelude::Oklcha>>::eq(&_self,&other,).into();
         output
     }
 
@@ -1429,8 +1431,8 @@ impl bevy::color::prelude::Oklcha {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn lch (lightness:f32,chroma:f32,hue:f32,) -> Val<bevy::color::prelude::Oklcha> {
-        let output: Val<bevy::color::prelude::Oklcha> =bevy::color::prelude::Oklcha::lch(lightness,chroma,hue,).into();
+    fn lch (lightness:f32,chroma:f32,hue:f32,) -> Val<::bevy_color::prelude::Oklcha> {
+        let output: Val<::bevy_color::prelude::Oklcha> =::bevy_color::prelude::Oklcha::lch(lightness,chroma,hue,).into();
         output
     }
 
@@ -1448,8 +1450,8 @@ impl bevy::color::prelude::Oklcha {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn new (lightness:f32,chroma:f32,hue:f32,alpha:f32,) -> Val<bevy::color::prelude::Oklcha> {
-        let output: Val<bevy::color::prelude::Oklcha> =bevy::color::prelude::Oklcha::new(lightness,chroma,hue,alpha,).into();
+    fn new (lightness:f32,chroma:f32,hue:f32,alpha:f32,) -> Val<::bevy_color::prelude::Oklcha> {
+        let output: Val<::bevy_color::prelude::Oklcha> =::bevy_color::prelude::Oklcha::new(lightness,chroma,hue,alpha,).into();
         output
     }
 
@@ -1481,8 +1483,8 @@ impl bevy::color::prelude::Oklcha {
     
     ///  ```
     
-    fn sequential_dispersed (index:u32,) -> Val<bevy::color::prelude::Oklcha> {
-        let output: Val<bevy::color::prelude::Oklcha> =bevy::color::prelude::Oklcha::sequential_dispersed(index,).into();
+    fn sequential_dispersed (index:u32,) -> Val<::bevy_color::prelude::Oklcha> {
+        let output: Val<::bevy_color::prelude::Oklcha> =::bevy_color::prelude::Oklcha::sequential_dispersed(index,).into();
         output
     }
 
@@ -1490,8 +1492,8 @@ impl bevy::color::prelude::Oklcha {
     
     ///  Return a copy of this color with the 'chroma' channel set to the given value.
     
-    fn with_chroma (_self:Val<bevy::color::prelude::Oklcha>,chroma:f32,) -> Val<bevy::color::prelude::Oklcha> {
-        let output: Val<bevy::color::prelude::Oklcha> =bevy::color::prelude::Oklcha::with_chroma(_self.into_inner(),chroma,).into();
+    fn with_chroma (_self:Val<::bevy_color::prelude::Oklcha>,chroma:f32,) -> Val<::bevy_color::prelude::Oklcha> {
+        let output: Val<::bevy_color::prelude::Oklcha> =::bevy_color::prelude::Oklcha::with_chroma(_self.into_inner(),chroma,).into();
         output
     }
 
@@ -1499,8 +1501,8 @@ impl bevy::color::prelude::Oklcha {
     
     ///  Return a copy of this color with the 'lightness' channel set to the given value.
     
-    fn with_lightness (_self:Val<bevy::color::prelude::Oklcha>,lightness:f32,) -> Val<bevy::color::prelude::Oklcha> {
-        let output: Val<bevy::color::prelude::Oklcha> =bevy::color::prelude::Oklcha::with_lightness(_self.into_inner(),lightness,).into();
+    fn with_lightness (_self:Val<::bevy_color::prelude::Oklcha>,lightness:f32,) -> Val<::bevy_color::prelude::Oklcha> {
+        let output: Val<::bevy_color::prelude::Oklcha> =::bevy_color::prelude::Oklcha::with_lightness(_self.into_inner(),lightness,).into();
         output
     }
      
@@ -1512,47 +1514,47 @@ impl bevy::color::prelude::Oklcha {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::color::prelude::Xyza {
+impl ::bevy_color::prelude::Xyza {
 
 
     
-    fn add (_self:Val<bevy::color::prelude::Xyza>,rhs:Val<bevy::color::prelude::Xyza>,) -> Val<bevy::color::prelude::Xyza> {
-        let output: Val<bevy::color::prelude::Xyza> =<bevy::color::prelude::Xyza as ::core::ops::Add::<bevy::color::prelude::Xyza>>::add(_self.into_inner(),rhs.into_inner(),).into();
+    fn add (_self:Val<::bevy_color::prelude::Xyza>,rhs:Val<::bevy_color::prelude::Xyza>,) -> Val<::bevy_color::prelude::Xyza> {
+        let output: Val<::bevy_color::prelude::Xyza> =<::bevy_color::prelude::Xyza as ::core::ops::Add::<::bevy_color::prelude::Xyza>>::add(_self.into_inner(),rhs.into_inner(),).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::color::prelude::Xyza>,) -> Val<bevy::color::prelude::Xyza> {
-        let output: Val<bevy::color::prelude::Xyza> =<bevy::color::prelude::Xyza as ::core::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_color::prelude::Xyza>,) -> Val<::bevy_color::prelude::Xyza> {
+        let output: Val<::bevy_color::prelude::Xyza> =<::bevy_color::prelude::Xyza as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn div (_self:Val<bevy::color::prelude::Xyza>,rhs:f32,) -> Val<bevy::color::prelude::Xyza> {
-        let output: Val<bevy::color::prelude::Xyza> =<bevy::color::prelude::Xyza as ::core::ops::Div::<f32>>::div(_self.into_inner(),rhs,).into();
+    fn div (_self:Val<::bevy_color::prelude::Xyza>,rhs:f32,) -> Val<::bevy_color::prelude::Xyza> {
+        let output: Val<::bevy_color::prelude::Xyza> =<::bevy_color::prelude::Xyza as ::core::ops::Div::<f32>>::div(_self.into_inner(),rhs,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::color::prelude::Xyza>,other:Ref<bevy::color::prelude::Xyza>,) -> bool {
-        let output: bool =<bevy::color::prelude::Xyza as ::core::cmp::PartialEq::<bevy::color::prelude::Xyza>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_color::prelude::Xyza>,other:Ref<::bevy_color::prelude::Xyza>,) -> bool {
+        let output: bool =<::bevy_color::prelude::Xyza as ::core::cmp::PartialEq::<::bevy_color::prelude::Xyza>>::eq(&_self,&other,).into();
         output
     }
 
 
     
-    fn mul (_self:Val<bevy::color::prelude::Xyza>,rhs:f32,) -> Val<bevy::color::prelude::Xyza> {
-        let output: Val<bevy::color::prelude::Xyza> =<bevy::color::prelude::Xyza as ::core::ops::Mul::<f32>>::mul(_self.into_inner(),rhs,).into();
+    fn mul (_self:Val<::bevy_color::prelude::Xyza>,rhs:f32,) -> Val<::bevy_color::prelude::Xyza> {
+        let output: Val<::bevy_color::prelude::Xyza> =<::bevy_color::prelude::Xyza as ::core::ops::Mul::<f32>>::mul(_self.into_inner(),rhs,).into();
         output
     }
 
 
     
-    fn neg (_self:Val<bevy::color::prelude::Xyza>,) -> Val<bevy::color::prelude::Xyza> {
-        let output: Val<bevy::color::prelude::Xyza> =<bevy::color::prelude::Xyza as ::core::ops::Neg>::neg(_self.into_inner(),).into();
+    fn neg (_self:Val<::bevy_color::prelude::Xyza>,) -> Val<::bevy_color::prelude::Xyza> {
+        let output: Val<::bevy_color::prelude::Xyza> =<::bevy_color::prelude::Xyza as ::core::ops::Neg>::neg(_self.into_inner(),).into();
         output
     }
 
@@ -1570,15 +1572,15 @@ impl bevy::color::prelude::Xyza {
     
     ///  * `alpha` - Alpha channel. [0.0, 1.0]
     
-    fn new (x:f32,y:f32,z:f32,alpha:f32,) -> Val<bevy::color::prelude::Xyza> {
-        let output: Val<bevy::color::prelude::Xyza> =bevy::color::prelude::Xyza::new(x,y,z,alpha,).into();
+    fn new (x:f32,y:f32,z:f32,alpha:f32,) -> Val<::bevy_color::prelude::Xyza> {
+        let output: Val<::bevy_color::prelude::Xyza> =::bevy_color::prelude::Xyza::new(x,y,z,alpha,).into();
         output
     }
 
 
     
-    fn sub (_self:Val<bevy::color::prelude::Xyza>,rhs:Val<bevy::color::prelude::Xyza>,) -> Val<bevy::color::prelude::Xyza> {
-        let output: Val<bevy::color::prelude::Xyza> =<bevy::color::prelude::Xyza as ::core::ops::Sub::<bevy::color::prelude::Xyza>>::sub(_self.into_inner(),rhs.into_inner(),).into();
+    fn sub (_self:Val<::bevy_color::prelude::Xyza>,rhs:Val<::bevy_color::prelude::Xyza>,) -> Val<::bevy_color::prelude::Xyza> {
+        let output: Val<::bevy_color::prelude::Xyza> =<::bevy_color::prelude::Xyza as ::core::ops::Sub::<::bevy_color::prelude::Xyza>>::sub(_self.into_inner(),rhs.into_inner(),).into();
         output
     }
 
@@ -1586,8 +1588,8 @@ impl bevy::color::prelude::Xyza {
     
     ///  Return a copy of this color with the 'x' channel set to the given value.
     
-    fn with_x (_self:Val<bevy::color::prelude::Xyza>,x:f32,) -> Val<bevy::color::prelude::Xyza> {
-        let output: Val<bevy::color::prelude::Xyza> =bevy::color::prelude::Xyza::with_x(_self.into_inner(),x,).into();
+    fn with_x (_self:Val<::bevy_color::prelude::Xyza>,x:f32,) -> Val<::bevy_color::prelude::Xyza> {
+        let output: Val<::bevy_color::prelude::Xyza> =::bevy_color::prelude::Xyza::with_x(_self.into_inner(),x,).into();
         output
     }
 
@@ -1595,8 +1597,8 @@ impl bevy::color::prelude::Xyza {
     
     ///  Return a copy of this color with the 'y' channel set to the given value.
     
-    fn with_y (_self:Val<bevy::color::prelude::Xyza>,y:f32,) -> Val<bevy::color::prelude::Xyza> {
-        let output: Val<bevy::color::prelude::Xyza> =bevy::color::prelude::Xyza::with_y(_self.into_inner(),y,).into();
+    fn with_y (_self:Val<::bevy_color::prelude::Xyza>,y:f32,) -> Val<::bevy_color::prelude::Xyza> {
+        let output: Val<::bevy_color::prelude::Xyza> =::bevy_color::prelude::Xyza::with_y(_self.into_inner(),y,).into();
         output
     }
 
@@ -1604,8 +1606,8 @@ impl bevy::color::prelude::Xyza {
     
     ///  Return a copy of this color with the 'z' channel set to the given value.
     
-    fn with_z (_self:Val<bevy::color::prelude::Xyza>,z:f32,) -> Val<bevy::color::prelude::Xyza> {
-        let output: Val<bevy::color::prelude::Xyza> =bevy::color::prelude::Xyza::with_z(_self.into_inner(),z,).into();
+    fn with_z (_self:Val<::bevy_color::prelude::Xyza>,z:f32,) -> Val<::bevy_color::prelude::Xyza> {
+        let output: Val<::bevy_color::prelude::Xyza> =::bevy_color::prelude::Xyza::with_z(_self.into_inner(),z,).into();
         output
     }
 
@@ -1621,16 +1623,16 @@ impl bevy::color::prelude::Xyza {
     
     ///  * `z` - z-axis. [0.0, 1.0]
     
-    fn xyz (x:f32,y:f32,z:f32,) -> Val<bevy::color::prelude::Xyza> {
-        let output: Val<bevy::color::prelude::Xyza> =bevy::color::prelude::Xyza::xyz(x,y,z,).into();
+    fn xyz (x:f32,y:f32,z:f32,) -> Val<::bevy_color::prelude::Xyza> {
+        let output: Val<::bevy_color::prelude::Xyza> =::bevy_color::prelude::Xyza::xyz(x,y,z,).into();
         output
     }
      
 }
 
 
-impl ::bevy::app::Plugin for BevyColorScriptingPlugin {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
+impl Plugin for BevyColorScriptingPlugin {
+    fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
 
         

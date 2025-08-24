@@ -9,6 +9,8 @@ use bevy_mod_scripting_core::{
         function::{from::{Ref, Mut, Val}, namespace::{NamespaceBuilder}}
     }
 };
+use bevy_ecs::{prelude::*};
+
 
 use bevy_mod_scripting_derive::script_bindings;
 
@@ -30,26 +32,26 @@ pub struct BevySceneScriptingPlugin;
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::scene::prelude::DynamicSceneRoot {
+impl ::bevy_scene::prelude::DynamicSceneRoot {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::scene::prelude::DynamicSceneRoot>,) -> () {
-        let output: () =<bevy::scene::prelude::DynamicSceneRoot as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_scene::prelude::DynamicSceneRoot>,) -> () {
+        let output: () =<::bevy_scene::prelude::DynamicSceneRoot as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::scene::prelude::DynamicSceneRoot>,) -> Val<bevy::scene::prelude::DynamicSceneRoot> {
-        let output: Val<bevy::scene::prelude::DynamicSceneRoot> =<bevy::scene::prelude::DynamicSceneRoot as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_scene::prelude::DynamicSceneRoot>,) -> Val<::bevy_scene::prelude::DynamicSceneRoot> {
+        let output: Val<::bevy_scene::prelude::DynamicSceneRoot> =<::bevy_scene::prelude::DynamicSceneRoot as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::scene::prelude::DynamicSceneRoot>,other:Ref<bevy::scene::prelude::DynamicSceneRoot>,) -> bool {
-        let output: bool =<bevy::scene::prelude::DynamicSceneRoot as ::std::cmp::PartialEq::<bevy::scene::prelude::DynamicSceneRoot>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_scene::prelude::DynamicSceneRoot>,other:Ref<::bevy_scene::prelude::DynamicSceneRoot>,) -> bool {
+        let output: bool =<::bevy_scene::prelude::DynamicSceneRoot as ::std::cmp::PartialEq::<::bevy_scene::prelude::DynamicSceneRoot>>::eq(&_self,&other,).into();
         output
     }
      
@@ -61,26 +63,26 @@ impl bevy::scene::prelude::DynamicSceneRoot {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::scene::prelude::SceneRoot {
+impl ::bevy_scene::prelude::SceneRoot {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::scene::prelude::SceneRoot>,) -> () {
-        let output: () =<bevy::scene::prelude::SceneRoot as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_scene::prelude::SceneRoot>,) -> () {
+        let output: () =<::bevy_scene::prelude::SceneRoot as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::scene::prelude::SceneRoot>,) -> Val<bevy::scene::prelude::SceneRoot> {
-        let output: Val<bevy::scene::prelude::SceneRoot> =<bevy::scene::prelude::SceneRoot as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_scene::prelude::SceneRoot>,) -> Val<::bevy_scene::prelude::SceneRoot> {
+        let output: Val<::bevy_scene::prelude::SceneRoot> =<::bevy_scene::prelude::SceneRoot as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::scene::prelude::SceneRoot>,other:Ref<bevy::scene::prelude::SceneRoot>,) -> bool {
-        let output: bool =<bevy::scene::prelude::SceneRoot as ::std::cmp::PartialEq::<bevy::scene::prelude::SceneRoot>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_scene::prelude::SceneRoot>,other:Ref<::bevy_scene::prelude::SceneRoot>,) -> bool {
+        let output: bool =<::bevy_scene::prelude::SceneRoot as ::std::cmp::PartialEq::<::bevy_scene::prelude::SceneRoot>>::eq(&_self,&other,).into();
         output
     }
      
@@ -92,26 +94,26 @@ impl bevy::scene::prelude::SceneRoot {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::scene::SceneInstanceReady {
+impl ::bevy_scene::SceneInstanceReady {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::scene::SceneInstanceReady>,) -> () {
-        let output: () =<bevy::scene::SceneInstanceReady as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_scene::SceneInstanceReady>,) -> () {
+        let output: () =<::bevy_scene::SceneInstanceReady as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::scene::SceneInstanceReady>,) -> Val<bevy::scene::SceneInstanceReady> {
-        let output: Val<bevy::scene::SceneInstanceReady> =<bevy::scene::SceneInstanceReady as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_scene::SceneInstanceReady>,) -> Val<::bevy_scene::SceneInstanceReady> {
+        let output: Val<::bevy_scene::SceneInstanceReady> =<::bevy_scene::SceneInstanceReady as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::scene::SceneInstanceReady>,other:Ref<bevy::scene::SceneInstanceReady>,) -> bool {
-        let output: bool =<bevy::scene::SceneInstanceReady as ::std::cmp::PartialEq::<bevy::scene::SceneInstanceReady>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_scene::SceneInstanceReady>,other:Ref<::bevy_scene::SceneInstanceReady>,) -> bool {
+        let output: bool =<::bevy_scene::SceneInstanceReady as ::std::cmp::PartialEq::<::bevy_scene::SceneInstanceReady>>::eq(&_self,&other,).into();
         output
     }
      
@@ -123,34 +125,34 @@ impl bevy::scene::SceneInstanceReady {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::scene::InstanceId {
+impl ::bevy_scene::InstanceId {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::scene::InstanceId>,) -> () {
-        let output: () =<bevy::scene::InstanceId as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_scene::InstanceId>,) -> () {
+        let output: () =<::bevy_scene::InstanceId as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::scene::InstanceId>,) -> Val<bevy::scene::InstanceId> {
-        let output: Val<bevy::scene::InstanceId> =<bevy::scene::InstanceId as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_scene::InstanceId>,) -> Val<::bevy_scene::InstanceId> {
+        let output: Val<::bevy_scene::InstanceId> =<::bevy_scene::InstanceId as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::scene::InstanceId>,other:Ref<bevy::scene::InstanceId>,) -> bool {
-        let output: bool =<bevy::scene::InstanceId as ::std::cmp::PartialEq::<bevy::scene::InstanceId>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_scene::InstanceId>,other:Ref<::bevy_scene::InstanceId>,) -> bool {
+        let output: bool =<::bevy_scene::InstanceId as ::std::cmp::PartialEq::<::bevy_scene::InstanceId>>::eq(&_self,&other,).into();
         output
     }
      
 }
 
 
-impl ::bevy::app::Plugin for BevySceneScriptingPlugin {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
+impl Plugin for BevySceneScriptingPlugin {
+    fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
 
         

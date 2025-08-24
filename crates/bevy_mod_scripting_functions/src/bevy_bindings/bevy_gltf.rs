@@ -9,6 +9,8 @@ use bevy_mod_scripting_core::{
         function::{from::{Ref, Mut, Val}, namespace::{NamespaceBuilder}}
     }
 };
+use bevy_ecs::{prelude::*};
+
 
 use bevy_mod_scripting_derive::script_bindings;
 
@@ -30,12 +32,12 @@ pub struct BevyGltfScriptingPlugin;
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::gltf::prelude::GltfExtras {
+impl ::bevy_gltf::prelude::GltfExtras {
 
 
     
-    fn clone (_self:Ref<bevy::gltf::prelude::GltfExtras>,) -> Val<bevy::gltf::prelude::GltfExtras> {
-        let output: Val<bevy::gltf::prelude::GltfExtras> =<bevy::gltf::prelude::GltfExtras as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_gltf::prelude::GltfExtras>,) -> Val<::bevy_gltf::prelude::GltfExtras> {
+        let output: Val<::bevy_gltf::prelude::GltfExtras> =<::bevy_gltf::prelude::GltfExtras as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -47,12 +49,12 @@ impl bevy::gltf::prelude::GltfExtras {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::gltf::GltfSceneExtras {
+impl ::bevy_gltf::GltfSceneExtras {
 
 
     
-    fn clone (_self:Ref<bevy::gltf::GltfSceneExtras>,) -> Val<bevy::gltf::GltfSceneExtras> {
-        let output: Val<bevy::gltf::GltfSceneExtras> =<bevy::gltf::GltfSceneExtras as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_gltf::GltfSceneExtras>,) -> Val<::bevy_gltf::GltfSceneExtras> {
+        let output: Val<::bevy_gltf::GltfSceneExtras> =<::bevy_gltf::GltfSceneExtras as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -64,12 +66,12 @@ impl bevy::gltf::GltfSceneExtras {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::gltf::GltfMeshExtras {
+impl ::bevy_gltf::GltfMeshExtras {
 
 
     
-    fn clone (_self:Ref<bevy::gltf::GltfMeshExtras>,) -> Val<bevy::gltf::GltfMeshExtras> {
-        let output: Val<bevy::gltf::GltfMeshExtras> =<bevy::gltf::GltfMeshExtras as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_gltf::GltfMeshExtras>,) -> Val<::bevy_gltf::GltfMeshExtras> {
+        let output: Val<::bevy_gltf::GltfMeshExtras> =<::bevy_gltf::GltfMeshExtras as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -81,12 +83,12 @@ impl bevy::gltf::GltfMeshExtras {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::gltf::GltfMaterialExtras {
+impl ::bevy_gltf::GltfMaterialExtras {
 
 
     
-    fn clone (_self:Ref<bevy::gltf::GltfMaterialExtras>,) -> Val<bevy::gltf::GltfMaterialExtras> {
-        let output: Val<bevy::gltf::GltfMaterialExtras> =<bevy::gltf::GltfMaterialExtras as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_gltf::GltfMaterialExtras>,) -> Val<::bevy_gltf::GltfMaterialExtras> {
+        let output: Val<::bevy_gltf::GltfMaterialExtras> =<::bevy_gltf::GltfMaterialExtras as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -98,20 +100,20 @@ impl bevy::gltf::GltfMaterialExtras {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::gltf::GltfMaterialName {
+impl ::bevy_gltf::GltfMaterialName {
 
 
     
-    fn clone (_self:Ref<bevy::gltf::GltfMaterialName>,) -> Val<bevy::gltf::GltfMaterialName> {
-        let output: Val<bevy::gltf::GltfMaterialName> =<bevy::gltf::GltfMaterialName as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_gltf::GltfMaterialName>,) -> Val<::bevy_gltf::GltfMaterialName> {
+        let output: Val<::bevy_gltf::GltfMaterialName> =<::bevy_gltf::GltfMaterialName as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
 }
 
 
-impl ::bevy::app::Plugin for BevyGltfScriptingPlugin {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
+impl Plugin for BevyGltfScriptingPlugin {
+    fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
 
         

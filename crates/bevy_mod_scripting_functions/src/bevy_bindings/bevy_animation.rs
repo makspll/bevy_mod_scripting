@@ -9,6 +9,8 @@ use bevy_mod_scripting_core::{
         function::{from::{Ref, Mut, Val}, namespace::{NamespaceBuilder}}
     }
 };
+use bevy_ecs::{prelude::*};
+
 
 use bevy_mod_scripting_derive::script_bindings;
 
@@ -30,12 +32,12 @@ pub struct BevyAnimationScriptingPlugin;
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::animation::graph::AnimationNodeType {
+impl ::bevy_animation::graph::AnimationNodeType {
 
 
     
-    fn clone (_self:Ref<bevy::animation::graph::AnimationNodeType>,) -> Val<bevy::animation::graph::AnimationNodeType> {
-        let output: Val<bevy::animation::graph::AnimationNodeType> =<bevy::animation::graph::AnimationNodeType as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_animation::graph::AnimationNodeType>,) -> Val<::bevy_animation::graph::AnimationNodeType> {
+        let output: Val<::bevy_animation::graph::AnimationNodeType> =<::bevy_animation::graph::AnimationNodeType as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -47,26 +49,26 @@ impl bevy::animation::graph::AnimationNodeType {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::animation::graph::AnimationGraphHandle {
+impl ::bevy_animation::graph::AnimationGraphHandle {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::animation::graph::AnimationGraphHandle>,) -> () {
-        let output: () =<bevy::animation::graph::AnimationGraphHandle as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_animation::graph::AnimationGraphHandle>,) -> () {
+        let output: () =<::bevy_animation::graph::AnimationGraphHandle as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::animation::graph::AnimationGraphHandle>,) -> Val<bevy::animation::graph::AnimationGraphHandle> {
-        let output: Val<bevy::animation::graph::AnimationGraphHandle> =<bevy::animation::graph::AnimationGraphHandle as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_animation::graph::AnimationGraphHandle>,) -> Val<::bevy_animation::graph::AnimationGraphHandle> {
+        let output: Val<::bevy_animation::graph::AnimationGraphHandle> =<::bevy_animation::graph::AnimationGraphHandle as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::animation::graph::AnimationGraphHandle>,other:Ref<bevy::animation::graph::AnimationGraphHandle>,) -> bool {
-        let output: bool =<bevy::animation::graph::AnimationGraphHandle as ::std::cmp::PartialEq::<bevy::animation::graph::AnimationGraphHandle>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_animation::graph::AnimationGraphHandle>,other:Ref<::bevy_animation::graph::AnimationGraphHandle>,) -> bool {
+        let output: bool =<::bevy_animation::graph::AnimationGraphHandle as ::std::cmp::PartialEq::<::bevy_animation::graph::AnimationGraphHandle>>::eq(&_self,&other,).into();
         output
     }
      
@@ -78,7 +80,7 @@ impl bevy::animation::graph::AnimationGraphHandle {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::animation::graph::ThreadedAnimationGraphs {
+impl ::bevy_animation::graph::ThreadedAnimationGraphs {
      
 }
 
@@ -88,12 +90,12 @@ impl bevy::animation::graph::ThreadedAnimationGraphs {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::animation::prelude::AnimationClip {
+impl ::bevy_animation::prelude::AnimationClip {
 
 
     
-    fn clone (_self:Ref<bevy::animation::prelude::AnimationClip>,) -> Val<bevy::animation::prelude::AnimationClip> {
-        let output: Val<bevy::animation::prelude::AnimationClip> =<bevy::animation::prelude::AnimationClip as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_animation::prelude::AnimationClip>,) -> Val<::bevy_animation::prelude::AnimationClip> {
+        let output: Val<::bevy_animation::prelude::AnimationClip> =<::bevy_animation::prelude::AnimationClip as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -101,8 +103,8 @@ impl bevy::animation::prelude::AnimationClip {
     
     ///  Duration of the clip, represented in seconds.
     
-    fn duration (_self:Ref<bevy::animation::prelude::AnimationClip>,) -> f32 {
-        let output: f32 =bevy::animation::prelude::AnimationClip::duration(&_self,).into();
+    fn duration (_self:Ref<::bevy_animation::prelude::AnimationClip>,) -> f32 {
+        let output: f32 =::bevy_animation::prelude::AnimationClip::duration(&_self,).into();
         output
     }
 
@@ -110,8 +112,8 @@ impl bevy::animation::prelude::AnimationClip {
     
     ///  Set the duration of the clip in seconds.
     
-    fn set_duration (mut _self:Mut<bevy::animation::prelude::AnimationClip>,duration_sec:f32,) -> () {
-        let output: () =bevy::animation::prelude::AnimationClip::set_duration(&mut _self,duration_sec,).into();
+    fn set_duration (mut _self:Mut<::bevy_animation::prelude::AnimationClip>,duration_sec:f32,) -> () {
+        let output: () =::bevy_animation::prelude::AnimationClip::set_duration(&mut _self,duration_sec,).into();
         output
     }
      
@@ -123,14 +125,14 @@ impl bevy::animation::prelude::AnimationClip {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::animation::prelude::AnimationPlayer {
+impl ::bevy_animation::prelude::AnimationPlayer {
 
 
     
     ///  Check if all playing animations have finished, according to the repetition behavior.
     
-    fn all_finished (_self:Ref<bevy::animation::prelude::AnimationPlayer>,) -> bool {
-        let output: bool =bevy::animation::prelude::AnimationPlayer::all_finished(&_self,).into();
+    fn all_finished (_self:Ref<::bevy_animation::prelude::AnimationPlayer>,) -> bool {
+        let output: bool =::bevy_animation::prelude::AnimationPlayer::all_finished(&_self,).into();
         output
     }
 
@@ -138,22 +140,22 @@ impl bevy::animation::prelude::AnimationPlayer {
     
     ///  Check if all playing animations are paused.
     
-    fn all_paused (_self:Ref<bevy::animation::prelude::AnimationPlayer>,) -> bool {
-        let output: bool =bevy::animation::prelude::AnimationPlayer::all_paused(&_self,).into();
+    fn all_paused (_self:Ref<::bevy_animation::prelude::AnimationPlayer>,) -> bool {
+        let output: bool =::bevy_animation::prelude::AnimationPlayer::all_paused(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::animation::prelude::AnimationPlayer>,) -> Val<bevy::animation::prelude::AnimationPlayer> {
-        let output: Val<bevy::animation::prelude::AnimationPlayer> =<bevy::animation::prelude::AnimationPlayer as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_animation::prelude::AnimationPlayer>,) -> Val<::bevy_animation::prelude::AnimationPlayer> {
+        let output: Val<::bevy_animation::prelude::AnimationPlayer> =<::bevy_animation::prelude::AnimationPlayer as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn clone_from (mut _self:Mut<bevy::animation::prelude::AnimationPlayer>,source:Ref<bevy::animation::prelude::AnimationPlayer>,) -> () {
-        let output: () =<bevy::animation::prelude::AnimationPlayer as ::std::clone::Clone>::clone_from(&mut _self,&source,).into();
+    fn clone_from (mut _self:Mut<::bevy_animation::prelude::AnimationPlayer>,source:Ref<::bevy_animation::prelude::AnimationPlayer>,) -> () {
+        let output: () =<::bevy_animation::prelude::AnimationPlayer as ::std::clone::Clone>::clone_from(&mut _self,&source,).into();
         output
     }
      
@@ -165,7 +167,7 @@ impl bevy::animation::prelude::AnimationPlayer {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::animation::graph::AnimationGraph {
+impl ::bevy_animation::graph::AnimationGraph {
 
 
     
@@ -177,15 +179,15 @@ impl bevy::animation::graph::AnimationGraph {
     
     ///  the specified groups.
     
-    fn add_target_to_mask_group (mut _self:Mut<bevy::animation::graph::AnimationGraph>,target:Val<bevy::animation::AnimationTargetId>,mask_group:u32,) -> () {
-        let output: () =bevy::animation::graph::AnimationGraph::add_target_to_mask_group(&mut _self,target.into_inner(),mask_group,).into();
+    fn add_target_to_mask_group (mut _self:Mut<::bevy_animation::graph::AnimationGraph>,target:Val<::bevy_animation::AnimationTargetId>,mask_group:u32,) -> () {
+        let output: () =::bevy_animation::graph::AnimationGraph::add_target_to_mask_group(&mut _self,target.into_inner(),mask_group,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::animation::graph::AnimationGraph>,) -> Val<bevy::animation::graph::AnimationGraph> {
-        let output: Val<bevy::animation::graph::AnimationGraph> =<bevy::animation::graph::AnimationGraph as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_animation::graph::AnimationGraph>,) -> Val<::bevy_animation::graph::AnimationGraph> {
+        let output: Val<::bevy_animation::graph::AnimationGraph> =<::bevy_animation::graph::AnimationGraph as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -193,8 +195,8 @@ impl bevy::animation::graph::AnimationGraph {
     
     ///  Creates a new animation graph with a root node and no other nodes.
     
-    fn new () -> Val<bevy::animation::graph::AnimationGraph> {
-        let output: Val<bevy::animation::graph::AnimationGraph> =bevy::animation::graph::AnimationGraph::new().into();
+    fn new () -> Val<::bevy_animation::graph::AnimationGraph> {
+        let output: Val<::bevy_animation::graph::AnimationGraph> =::bevy_animation::graph::AnimationGraph::new().into();
         output
     }
      
@@ -206,19 +208,19 @@ impl bevy::animation::graph::AnimationGraph {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::animation::transition::AnimationTransitions {
+impl ::bevy_animation::transition::AnimationTransitions {
 
 
     
-    fn clone (_self:Ref<bevy::animation::transition::AnimationTransitions>,) -> Val<bevy::animation::transition::AnimationTransitions> {
-        let output: Val<bevy::animation::transition::AnimationTransitions> =<bevy::animation::transition::AnimationTransitions as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_animation::transition::AnimationTransitions>,) -> Val<::bevy_animation::transition::AnimationTransitions> {
+        let output: Val<::bevy_animation::transition::AnimationTransitions> =<::bevy_animation::transition::AnimationTransitions as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn clone_from (mut _self:Mut<bevy::animation::transition::AnimationTransitions>,source:Ref<bevy::animation::transition::AnimationTransitions>,) -> () {
-        let output: () =<bevy::animation::transition::AnimationTransitions as ::std::clone::Clone>::clone_from(&mut _self,&source,).into();
+    fn clone_from (mut _self:Mut<::bevy_animation::transition::AnimationTransitions>,source:Ref<::bevy_animation::transition::AnimationTransitions>,) -> () {
+        let output: () =<::bevy_animation::transition::AnimationTransitions as ::std::clone::Clone>::clone_from(&mut _self,&source,).into();
         output
     }
 
@@ -228,8 +230,8 @@ impl bevy::animation::transition::AnimationTransitions {
     
     ///  an entity with an [`AnimationPlayer`].
     
-    fn new () -> Val<bevy::animation::transition::AnimationTransitions> {
-        let output: Val<bevy::animation::transition::AnimationTransitions> =bevy::animation::transition::AnimationTransitions::new().into();
+    fn new () -> Val<::bevy_animation::transition::AnimationTransitions> {
+        let output: Val<::bevy_animation::transition::AnimationTransitions> =::bevy_animation::transition::AnimationTransitions::new().into();
         output
     }
      
@@ -241,26 +243,26 @@ impl bevy::animation::transition::AnimationTransitions {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::animation::AnimationTargetId {
+impl ::bevy_animation::AnimationTargetId {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::animation::AnimationTargetId>,) -> () {
-        let output: () =<bevy::animation::AnimationTargetId as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_animation::AnimationTargetId>,) -> () {
+        let output: () =<::bevy_animation::AnimationTargetId as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::animation::AnimationTargetId>,) -> Val<bevy::animation::AnimationTargetId> {
-        let output: Val<bevy::animation::AnimationTargetId> =<bevy::animation::AnimationTargetId as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_animation::AnimationTargetId>,) -> Val<::bevy_animation::AnimationTargetId> {
+        let output: Val<::bevy_animation::AnimationTargetId> =<::bevy_animation::AnimationTargetId as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::animation::AnimationTargetId>,other:Ref<bevy::animation::AnimationTargetId>,) -> bool {
-        let output: bool =<bevy::animation::AnimationTargetId as ::std::cmp::PartialEq::<bevy::animation::AnimationTargetId>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_animation::AnimationTargetId>,other:Ref<::bevy_animation::AnimationTargetId>,) -> bool {
+        let output: bool =<::bevy_animation::AnimationTargetId as ::std::cmp::PartialEq::<::bevy_animation::AnimationTargetId>>::eq(&_self,&other,).into();
         output
     }
 
@@ -268,8 +270,8 @@ impl bevy::animation::AnimationTargetId {
     
     ///  Creates a new [`AnimationTargetId`] by hashing a single name.
     
-    fn from_name (name:Ref<bevy::ecs::name::Name>,) -> Val<bevy::animation::AnimationTargetId> {
-        let output: Val<bevy::animation::AnimationTargetId> =bevy::animation::AnimationTargetId::from_name(&name,).into();
+    fn from_name (name:Ref<::bevy_ecs::name::Name>,) -> Val<::bevy_animation::AnimationTargetId> {
+        let output: Val<::bevy_animation::AnimationTargetId> =::bevy_animation::AnimationTargetId::from_name(&name,).into();
         output
     }
      
@@ -281,12 +283,12 @@ impl bevy::animation::AnimationTargetId {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::animation::AnimationTarget {
+impl ::bevy_animation::AnimationTarget {
 
 
     
-    fn clone (_self:Ref<bevy::animation::AnimationTarget>,) -> Val<bevy::animation::AnimationTarget> {
-        let output: Val<bevy::animation::AnimationTarget> =<bevy::animation::AnimationTarget as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_animation::AnimationTarget>,) -> Val<::bevy_animation::AnimationTarget> {
+        let output: Val<::bevy_animation::AnimationTarget> =<::bevy_animation::AnimationTarget as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -298,26 +300,26 @@ impl bevy::animation::AnimationTarget {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::animation::RepeatAnimation {
+impl ::bevy_animation::RepeatAnimation {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::animation::RepeatAnimation>,) -> () {
-        let output: () =<bevy::animation::RepeatAnimation as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_animation::RepeatAnimation>,) -> () {
+        let output: () =<::bevy_animation::RepeatAnimation as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::animation::RepeatAnimation>,) -> Val<bevy::animation::RepeatAnimation> {
-        let output: Val<bevy::animation::RepeatAnimation> =<bevy::animation::RepeatAnimation as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_animation::RepeatAnimation>,) -> Val<::bevy_animation::RepeatAnimation> {
+        let output: Val<::bevy_animation::RepeatAnimation> =<::bevy_animation::RepeatAnimation as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::animation::RepeatAnimation>,other:Ref<bevy::animation::RepeatAnimation>,) -> bool {
-        let output: bool =<bevy::animation::RepeatAnimation as ::std::cmp::PartialEq::<bevy::animation::RepeatAnimation>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_animation::RepeatAnimation>,other:Ref<::bevy_animation::RepeatAnimation>,) -> bool {
+        let output: bool =<::bevy_animation::RepeatAnimation as ::std::cmp::PartialEq::<::bevy_animation::RepeatAnimation>>::eq(&_self,&other,).into();
         output
     }
      
@@ -329,12 +331,12 @@ impl bevy::animation::RepeatAnimation {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::animation::ActiveAnimation {
+impl ::bevy_animation::ActiveAnimation {
 
 
     
-    fn clone (_self:Ref<bevy::animation::ActiveAnimation>,) -> Val<bevy::animation::ActiveAnimation> {
-        let output: Val<bevy::animation::ActiveAnimation> =<bevy::animation::ActiveAnimation as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_animation::ActiveAnimation>,) -> Val<::bevy_animation::ActiveAnimation> {
+        let output: Val<::bevy_animation::ActiveAnimation> =<::bevy_animation::ActiveAnimation as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -342,8 +344,8 @@ impl bevy::animation::ActiveAnimation {
     
     ///  Returns the number of times this animation has completed.
     
-    fn completions (_self:Ref<bevy::animation::ActiveAnimation>,) -> u32 {
-        let output: u32 =bevy::animation::ActiveAnimation::completions(&_self,).into();
+    fn completions (_self:Ref<::bevy_animation::ActiveAnimation>,) -> u32 {
+        let output: u32 =::bevy_animation::ActiveAnimation::completions(&_self,).into();
         output
     }
 
@@ -351,8 +353,8 @@ impl bevy::animation::ActiveAnimation {
     
     ///  Returns the amount of time the animation has been playing.
     
-    fn elapsed (_self:Ref<bevy::animation::ActiveAnimation>,) -> f32 {
-        let output: f32 =bevy::animation::ActiveAnimation::elapsed(&_self,).into();
+    fn elapsed (_self:Ref<::bevy_animation::ActiveAnimation>,) -> f32 {
+        let output: f32 =::bevy_animation::ActiveAnimation::elapsed(&_self,).into();
         output
     }
 
@@ -362,8 +364,8 @@ impl bevy::animation::ActiveAnimation {
     
     ///  Note: An animation with `RepeatAnimation::Forever` will never finish.
     
-    fn is_finished (_self:Ref<bevy::animation::ActiveAnimation>,) -> bool {
-        let output: bool =bevy::animation::ActiveAnimation::is_finished(&_self,).into();
+    fn is_finished (_self:Ref<::bevy_animation::ActiveAnimation>,) -> bool {
+        let output: bool =::bevy_animation::ActiveAnimation::is_finished(&_self,).into();
         output
     }
 
@@ -373,8 +375,8 @@ impl bevy::animation::ActiveAnimation {
     
     ///  Note that paused animations are still [`ActiveAnimation`]s.
     
-    fn is_paused (_self:Ref<bevy::animation::ActiveAnimation>,) -> bool {
-        let output: bool =bevy::animation::ActiveAnimation::is_paused(&_self,).into();
+    fn is_paused (_self:Ref<::bevy_animation::ActiveAnimation>,) -> bool {
+        let output: bool =::bevy_animation::ActiveAnimation::is_paused(&_self,).into();
         output
     }
 
@@ -382,8 +384,8 @@ impl bevy::animation::ActiveAnimation {
     
     ///  Returns true if the animation is playing in reverse.
     
-    fn is_playback_reversed (_self:Ref<bevy::animation::ActiveAnimation>,) -> bool {
-        let output: bool =bevy::animation::ActiveAnimation::is_playback_reversed(&_self,).into();
+    fn is_playback_reversed (_self:Ref<::bevy_animation::ActiveAnimation>,) -> bool {
+        let output: bool =::bevy_animation::ActiveAnimation::is_playback_reversed(&_self,).into();
         output
     }
 
@@ -391,8 +393,8 @@ impl bevy::animation::ActiveAnimation {
     
     ///  Returns the repeat mode assigned to this active animation.
     
-    fn repeat_mode (_self:Ref<bevy::animation::ActiveAnimation>,) -> Val<bevy::animation::RepeatAnimation> {
-        let output: Val<bevy::animation::RepeatAnimation> =bevy::animation::ActiveAnimation::repeat_mode(&_self,).into();
+    fn repeat_mode (_self:Ref<::bevy_animation::ActiveAnimation>,) -> Val<::bevy_animation::RepeatAnimation> {
+        let output: Val<::bevy_animation::RepeatAnimation> =::bevy_animation::ActiveAnimation::repeat_mode(&_self,).into();
         output
     }
 
@@ -400,8 +402,8 @@ impl bevy::animation::ActiveAnimation {
     
     ///  Reset back to the initial state as if no time has elapsed.
     
-    fn replay (mut _self:Mut<bevy::animation::ActiveAnimation>,) -> () {
-        let output: () =bevy::animation::ActiveAnimation::replay(&mut _self,).into();
+    fn replay (mut _self:Mut<::bevy_animation::ActiveAnimation>,) -> () {
+        let output: () =::bevy_animation::ActiveAnimation::replay(&mut _self,).into();
         output
     }
 
@@ -411,8 +413,8 @@ impl bevy::animation::ActiveAnimation {
     
     ///  This is nonnegative and no more than the clip duration.
     
-    fn seek_time (_self:Ref<bevy::animation::ActiveAnimation>,) -> f32 {
-        let output: f32 =bevy::animation::ActiveAnimation::seek_time(&_self,).into();
+    fn seek_time (_self:Ref<::bevy_animation::ActiveAnimation>,) -> f32 {
+        let output: f32 =::bevy_animation::ActiveAnimation::seek_time(&_self,).into();
         output
     }
 
@@ -420,8 +422,8 @@ impl bevy::animation::ActiveAnimation {
     
     ///  Returns the speed of the animation playback.
     
-    fn speed (_self:Ref<bevy::animation::ActiveAnimation>,) -> f32 {
-        let output: f32 =bevy::animation::ActiveAnimation::speed(&_self,).into();
+    fn speed (_self:Ref<::bevy_animation::ActiveAnimation>,) -> f32 {
+        let output: f32 =::bevy_animation::ActiveAnimation::speed(&_self,).into();
         output
     }
 
@@ -429,8 +431,8 @@ impl bevy::animation::ActiveAnimation {
     
     ///  Returns the current weight of this animation.
     
-    fn weight (_self:Ref<bevy::animation::ActiveAnimation>,) -> f32 {
-        let output: f32 =bevy::animation::ActiveAnimation::weight(&_self,).into();
+    fn weight (_self:Ref<::bevy_animation::ActiveAnimation>,) -> f32 {
+        let output: f32 =::bevy_animation::ActiveAnimation::weight(&_self,).into();
         output
     }
      
@@ -442,12 +444,12 @@ impl bevy::animation::ActiveAnimation {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::animation::gltf_curves::WeightsCurve {
+impl ::bevy_animation::gltf_curves::WeightsCurve {
 
 
     
-    fn clone (_self:Ref<bevy::animation::gltf_curves::WeightsCurve>,) -> Val<bevy::animation::gltf_curves::WeightsCurve> {
-        let output: Val<bevy::animation::gltf_curves::WeightsCurve> =<bevy::animation::gltf_curves::WeightsCurve as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_animation::gltf_curves::WeightsCurve>,) -> Val<::bevy_animation::gltf_curves::WeightsCurve> {
+        let output: Val<::bevy_animation::gltf_curves::WeightsCurve> =<::bevy_animation::gltf_curves::WeightsCurve as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -459,12 +461,12 @@ impl bevy::animation::gltf_curves::WeightsCurve {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::animation::gltf_curves::CubicRotationCurve {
+impl ::bevy_animation::gltf_curves::CubicRotationCurve {
 
 
     
-    fn clone (_self:Ref<bevy::animation::gltf_curves::CubicRotationCurve>,) -> Val<bevy::animation::gltf_curves::CubicRotationCurve> {
-        let output: Val<bevy::animation::gltf_curves::CubicRotationCurve> =<bevy::animation::gltf_curves::CubicRotationCurve as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_animation::gltf_curves::CubicRotationCurve>,) -> Val<::bevy_animation::gltf_curves::CubicRotationCurve> {
+        let output: Val<::bevy_animation::gltf_curves::CubicRotationCurve> =<::bevy_animation::gltf_curves::CubicRotationCurve as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -476,12 +478,12 @@ impl bevy::animation::gltf_curves::CubicRotationCurve {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::animation::graph::AnimationGraphNode {
+impl ::bevy_animation::graph::AnimationGraphNode {
 
 
     
-    fn clone (_self:Ref<bevy::animation::graph::AnimationGraphNode>,) -> Val<bevy::animation::graph::AnimationGraphNode> {
-        let output: Val<bevy::animation::graph::AnimationGraphNode> =<bevy::animation::graph::AnimationGraphNode as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_animation::graph::AnimationGraphNode>,) -> Val<::bevy_animation::graph::AnimationGraphNode> {
+        let output: Val<::bevy_animation::graph::AnimationGraphNode> =<::bevy_animation::graph::AnimationGraphNode as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -493,7 +495,7 @@ impl bevy::animation::graph::AnimationGraphNode {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::animation::graph::ThreadedAnimationGraph {
+impl ::bevy_animation::graph::ThreadedAnimationGraph {
      
 }
 
@@ -503,20 +505,20 @@ impl bevy::animation::graph::ThreadedAnimationGraph {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::animation::transition::AnimationTransition {
+impl ::bevy_animation::transition::AnimationTransition {
 
 
     
-    fn clone (_self:Ref<bevy::animation::transition::AnimationTransition>,) -> Val<bevy::animation::transition::AnimationTransition> {
-        let output: Val<bevy::animation::transition::AnimationTransition> =<bevy::animation::transition::AnimationTransition as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_animation::transition::AnimationTransition>,) -> Val<::bevy_animation::transition::AnimationTransition> {
+        let output: Val<::bevy_animation::transition::AnimationTransition> =<::bevy_animation::transition::AnimationTransition as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
 }
 
 
-impl ::bevy::app::Plugin for BevyAnimationScriptingPlugin {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
+impl Plugin for BevyAnimationScriptingPlugin {
+    fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
 
         

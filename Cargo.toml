@@ -105,6 +105,24 @@ bevy_diagnostic = { version = "0.16.0", default-features = false }
 bevy_platform = { version = "0.16.0", default-features = false }
 bevy_time = { version = "0.16.0", default-features = false }
 bevy_input = { version = "0.16.0", default-features = false }
+bevy_a11y = { version = "0.16.0", default-features = false }
+bevy_animation = { version = "0.16.0", default-features = false }
+bevy_color = { version = "0.16.0", default-features = false }
+bevy_core_pipeline = { version = "0.16.0", default-features = false }
+bevy_gizmos = { version = "0.16.0", default-features = false }
+bevy_gltf = { version = "0.16.0", default-features = false }
+bevy_image = { version = "0.16.0", default-features = false }
+bevy_input_focus = { version = "0.16.0", default-features = false }
+bevy_mesh = { version = "0.16.0", default-features = false }
+bevy_pbr = { version = "0.16.0", default-features = false }
+bevy_picking = { version = "0.16.0", default-features = false }
+bevy_render = { version = "0.16.0", default-features = false }
+bevy_scene = { version = "0.16.0", default-features = false }
+bevy_sprite = { version = "0.16.0", default-features = false }
+bevy_text = { version = "0.16.0", default-features = false }
+bevy_window = { version = "0.16.0", default-features = false }
+bevy_winit = { version = "0.16.0", default-features = false }
+
 glam = { version = "0.29.3", default-features = false }
 uuid = { version = "1.11", default-features = false }
 smol_str = { version = "0.2.0", default-features = false }

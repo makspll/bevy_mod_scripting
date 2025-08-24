@@ -9,6 +9,8 @@ use bevy_mod_scripting_core::{
         function::{from::{Ref, Mut, Val}, namespace::{NamespaceBuilder}}
     }
 };
+use bevy_ecs::{prelude::*};
+
 
 use bevy_mod_scripting_derive::script_bindings;
 
@@ -30,12 +32,12 @@ pub struct BevyMeshScriptingPlugin;
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::Indices {
+impl ::bevy_mesh::Indices {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::Indices>,) -> Val<bevy::mesh::Indices> {
-        let output: Val<bevy::mesh::Indices> =<bevy::mesh::Indices as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::Indices>,) -> Val<::bevy_mesh::Indices> {
+        let output: Val<::bevy_mesh::Indices> =<::bevy_mesh::Indices as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -43,8 +45,8 @@ impl bevy::mesh::Indices {
     
     ///  Returns `true` if there are no indices.
     
-    fn is_empty (_self:Ref<bevy::mesh::Indices>,) -> bool {
-        let output: bool =bevy::mesh::Indices::is_empty(&_self,).into();
+    fn is_empty (_self:Ref<::bevy_mesh::Indices>,) -> bool {
+        let output: bool =::bevy_mesh::Indices::is_empty(&_self,).into();
         output
     }
 
@@ -52,8 +54,8 @@ impl bevy::mesh::Indices {
     
     ///  Returns the number of indices.
     
-    fn len (_self:Ref<bevy::mesh::Indices>,) -> usize {
-        let output: usize =bevy::mesh::Indices::len(&_self,).into();
+    fn len (_self:Ref<::bevy_mesh::Indices>,) -> usize {
+        let output: usize =::bevy_mesh::Indices::len(&_self,).into();
         output
     }
 
@@ -63,8 +65,8 @@ impl bevy::mesh::Indices {
     
     ///  the storage will be converted to `u32`.
     
-    fn push (mut _self:Mut<bevy::mesh::Indices>,index:u32,) -> () {
-        let output: () =bevy::mesh::Indices::push(&mut _self,index,).into();
+    fn push (mut _self:Mut<::bevy_mesh::Indices>,index:u32,) -> () {
+        let output: () =::bevy_mesh::Indices::push(&mut _self,index,).into();
         output
     }
      
@@ -76,12 +78,12 @@ impl bevy::mesh::Indices {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::Mesh {
+impl ::bevy_mesh::Mesh {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::Mesh>,) -> Val<bevy::mesh::Mesh> {
-        let output: Val<bevy::mesh::Mesh> =<bevy::mesh::Mesh as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::Mesh>,) -> Val<::bevy_mesh::Mesh> {
+        let output: Val<::bevy_mesh::Mesh> =<::bevy_mesh::Mesh as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -105,8 +107,8 @@ impl bevy::mesh::Mesh {
     
     ///  not conform to the limitations here!
     
-    fn compute_flat_normals (mut _self:Mut<bevy::mesh::Mesh>,) -> () {
-        let output: () =bevy::mesh::Mesh::compute_flat_normals(&mut _self,).into();
+    fn compute_flat_normals (mut _self:Mut<::bevy_mesh::Mesh>,) -> () {
+        let output: () =::bevy_mesh::Mesh::compute_flat_normals(&mut _self,).into();
         output
     }
 
@@ -130,8 +132,8 @@ impl bevy::mesh::Mesh {
     
     ///  not conform to the limitations here!
     
-    fn compute_normals (mut _self:Mut<bevy::mesh::Mesh>,) -> () {
-        let output: () =bevy::mesh::Mesh::compute_normals(&mut _self,).into();
+    fn compute_normals (mut _self:Mut<::bevy_mesh::Mesh>,) -> () {
+        let output: () =::bevy_mesh::Mesh::compute_normals(&mut _self,).into();
         output
     }
 
@@ -155,8 +157,8 @@ impl bevy::mesh::Mesh {
     
     ///  not conform to the limitations here!
     
-    fn compute_smooth_normals (mut _self:Mut<bevy::mesh::Mesh>,) -> () {
-        let output: () =bevy::mesh::Mesh::compute_smooth_normals(&mut _self,).into();
+    fn compute_smooth_normals (mut _self:Mut<::bevy_mesh::Mesh>,) -> () {
+        let output: () =::bevy_mesh::Mesh::compute_smooth_normals(&mut _self,).into();
         output
     }
 
@@ -166,8 +168,8 @@ impl bevy::mesh::Mesh {
     
     ///  If the attributes have different vertex counts, the smallest is returned.
     
-    fn count_vertices (_self:Ref<bevy::mesh::Mesh>,) -> usize {
-        let output: usize =bevy::mesh::Mesh::count_vertices(&_self,).into();
+    fn count_vertices (_self:Ref<::bevy_mesh::Mesh>,) -> usize {
+        let output: usize =::bevy_mesh::Mesh::count_vertices(&_self,).into();
         output
     }
 
@@ -187,8 +189,8 @@ impl bevy::mesh::Mesh {
     
     ///  Prefer pre-allocating and using [`Mesh::write_packed_vertex_buffer_data`] when possible.
     
-    fn create_packed_vertex_buffer_data (_self:Ref<bevy::mesh::Mesh>,) -> ::std::vec::Vec<u8, ::std::alloc::Global> {
-        let output: ::std::vec::Vec<u8, ::std::alloc::Global> =bevy::mesh::Mesh::create_packed_vertex_buffer_data(&_self,).into();
+    fn create_packed_vertex_buffer_data (_self:Ref<::bevy_mesh::Mesh>,) -> ::std::vec::Vec<u8, ::std::alloc::Global> {
+        let output: ::std::vec::Vec<u8, ::std::alloc::Global> =::bevy_mesh::Mesh::create_packed_vertex_buffer_data(&_self,).into();
         output
     }
 
@@ -200,8 +202,8 @@ impl bevy::mesh::Mesh {
     
     ///  Does nothing if no [Indices] are set.
     
-    fn duplicate_vertices (mut _self:Mut<bevy::mesh::Mesh>,) -> () {
-        let output: () =bevy::mesh::Mesh::duplicate_vertices(&mut _self,).into();
+    fn duplicate_vertices (mut _self:Mut<::bevy_mesh::Mesh>,) -> () {
+        let output: () =::bevy_mesh::Mesh::duplicate_vertices(&mut _self,).into();
         output
     }
 
@@ -209,8 +211,8 @@ impl bevy::mesh::Mesh {
     
     ///  Returns the size required for the vertex buffer in bytes.
     
-    fn get_vertex_buffer_size (_self:Ref<bevy::mesh::Mesh>,) -> usize {
-        let output: usize =bevy::mesh::Mesh::get_vertex_buffer_size(&_self,).into();
+    fn get_vertex_buffer_size (_self:Ref<::bevy_mesh::Mesh>,) -> usize {
+        let output: usize =::bevy_mesh::Mesh::get_vertex_buffer_size(&_self,).into();
         output
     }
 
@@ -218,8 +220,8 @@ impl bevy::mesh::Mesh {
     
     ///  Returns the size of a vertex in bytes.
     
-    fn get_vertex_size (_self:Ref<bevy::mesh::Mesh>,) -> u64 {
-        let output: u64 =bevy::mesh::Mesh::get_vertex_size(&_self,).into();
+    fn get_vertex_size (_self:Ref<::bevy_mesh::Mesh>,) -> u64 {
+        let output: u64 =::bevy_mesh::Mesh::get_vertex_size(&_self,).into();
         output
     }
 
@@ -227,8 +229,8 @@ impl bevy::mesh::Mesh {
     
     ///  Whether this mesh has morph targets.
     
-    fn has_morph_targets (_self:Ref<bevy::mesh::Mesh>,) -> bool {
-        let output: bool =bevy::mesh::Mesh::has_morph_targets(&_self,).into();
+    fn has_morph_targets (_self:Ref<::bevy_mesh::Mesh>,) -> bool {
+        let output: bool =::bevy_mesh::Mesh::has_morph_targets(&_self,).into();
         output
     }
 
@@ -240,8 +242,8 @@ impl bevy::mesh::Mesh {
     
     ///  that use triangles.
     
-    fn insert_indices (mut _self:Mut<bevy::mesh::Mesh>,indices:Val<bevy::mesh::Indices>,) -> () {
-        let output: () =bevy::mesh::Mesh::insert_indices(&mut _self,indices.into_inner(),).into();
+    fn insert_indices (mut _self:Mut<::bevy_mesh::Mesh>,indices:Val<::bevy_mesh::Indices>,) -> () {
+        let output: () =::bevy_mesh::Mesh::insert_indices(&mut _self,indices.into_inner(),).into();
         output
     }
 
@@ -249,8 +251,8 @@ impl bevy::mesh::Mesh {
     
     ///  Normalize joint weights so they sum to 1.
     
-    fn normalize_joint_weights (mut _self:Mut<bevy::mesh::Mesh>,) -> () {
-        let output: () =bevy::mesh::Mesh::normalize_joint_weights(&mut _self,).into();
+    fn normalize_joint_weights (mut _self:Mut<::bevy_mesh::Mesh>,) -> () {
+        let output: () =::bevy_mesh::Mesh::normalize_joint_weights(&mut _self,).into();
         output
     }
 
@@ -260,8 +262,8 @@ impl bevy::mesh::Mesh {
     
     ///  `Aabb` of entities with modified mesh are not updated automatically.
     
-    fn rotate_by (mut _self:Mut<bevy::mesh::Mesh>,rotation:Val<bevy::math::Quat>,) -> () {
-        let output: () =bevy::mesh::Mesh::rotate_by(&mut _self,rotation.into_inner(),).into();
+    fn rotate_by (mut _self:Mut<::bevy_mesh::Mesh>,rotation:Val<::bevy_math::Quat>,) -> () {
+        let output: () =::bevy_mesh::Mesh::rotate_by(&mut _self,rotation.into_inner(),).into();
         output
     }
 
@@ -271,8 +273,8 @@ impl bevy::mesh::Mesh {
     
     ///  `Aabb` of entities with modified mesh are not updated automatically.
     
-    fn rotated_by (_self:Val<bevy::mesh::Mesh>,rotation:Val<bevy::math::Quat>,) -> Val<bevy::mesh::Mesh> {
-        let output: Val<bevy::mesh::Mesh> =bevy::mesh::Mesh::rotated_by(_self.into_inner(),rotation.into_inner(),).into();
+    fn rotated_by (_self:Val<::bevy_mesh::Mesh>,rotation:Val<::bevy_math::Quat>,) -> Val<::bevy_mesh::Mesh> {
+        let output: Val<::bevy_mesh::Mesh> =::bevy_mesh::Mesh::rotated_by(_self.into_inner(),rotation.into_inner(),).into();
         output
     }
 
@@ -282,8 +284,8 @@ impl bevy::mesh::Mesh {
     
     ///  `Aabb` of entities with modified mesh are not updated automatically.
     
-    fn scale_by (mut _self:Mut<bevy::mesh::Mesh>,scale:Val<bevy::math::Vec3>,) -> () {
-        let output: () =bevy::mesh::Mesh::scale_by(&mut _self,scale.into_inner(),).into();
+    fn scale_by (mut _self:Mut<::bevy_mesh::Mesh>,scale:Val<::bevy_math::Vec3>,) -> () {
+        let output: () =::bevy_mesh::Mesh::scale_by(&mut _self,scale.into_inner(),).into();
         output
     }
 
@@ -293,8 +295,8 @@ impl bevy::mesh::Mesh {
     
     ///  `Aabb` of entities with modified mesh are not updated automatically.
     
-    fn scaled_by (_self:Val<bevy::mesh::Mesh>,scale:Val<bevy::math::Vec3>,) -> Val<bevy::mesh::Mesh> {
-        let output: Val<bevy::mesh::Mesh> =bevy::mesh::Mesh::scaled_by(_self.into_inner(),scale.into_inner(),).into();
+    fn scaled_by (_self:Val<::bevy_mesh::Mesh>,scale:Val<::bevy_math::Vec3>,) -> Val<::bevy_mesh::Mesh> {
+        let output: Val<::bevy_mesh::Mesh> =::bevy_mesh::Mesh::scaled_by(_self.into_inner(),scale.into_inner(),).into();
         output
     }
 
@@ -302,8 +304,8 @@ impl bevy::mesh::Mesh {
     
     ///  Sets the names of each morph target. This should correspond to the order of the morph targets in `set_morph_targets`.
     
-    fn set_morph_target_names (mut _self:Mut<bevy::mesh::Mesh>,names:::std::vec::Vec<::std::string::String, ::std::alloc::Global>,) -> () {
-        let output: () =bevy::mesh::Mesh::set_morph_target_names(&mut _self,names,).into();
+    fn set_morph_target_names (mut _self:Mut<::bevy_mesh::Mesh>,names:::std::vec::Vec<::std::string::String, ::std::alloc::Global>,) -> () {
+        let output: () =::bevy_mesh::Mesh::set_morph_target_names(&mut _self,names,).into();
         output
     }
 
@@ -313,8 +315,8 @@ impl bevy::mesh::Mesh {
     
     ///  `Aabb` of entities with modified mesh are not updated automatically.
     
-    fn transform_by (mut _self:Mut<bevy::mesh::Mesh>,transform:Val<bevy::transform::components::Transform>,) -> () {
-        let output: () =bevy::mesh::Mesh::transform_by(&mut _self,transform.into_inner(),).into();
+    fn transform_by (mut _self:Mut<::bevy_mesh::Mesh>,transform:Val<::bevy_transform::components::Transform>,) -> () {
+        let output: () =::bevy_mesh::Mesh::transform_by(&mut _self,transform.into_inner(),).into();
         output
     }
 
@@ -324,8 +326,8 @@ impl bevy::mesh::Mesh {
     
     ///  `Aabb` of entities with modified mesh are not updated automatically.
     
-    fn transformed_by (_self:Val<bevy::mesh::Mesh>,transform:Val<bevy::transform::components::Transform>,) -> Val<bevy::mesh::Mesh> {
-        let output: Val<bevy::mesh::Mesh> =bevy::mesh::Mesh::transformed_by(_self.into_inner(),transform.into_inner(),).into();
+    fn transformed_by (_self:Val<::bevy_mesh::Mesh>,transform:Val<::bevy_transform::components::Transform>,) -> Val<::bevy_mesh::Mesh> {
+        let output: Val<::bevy_mesh::Mesh> =::bevy_mesh::Mesh::transformed_by(_self.into_inner(),transform.into_inner(),).into();
         output
     }
 
@@ -335,8 +337,8 @@ impl bevy::mesh::Mesh {
     
     ///  `Aabb` of entities with modified mesh are not updated automatically.
     
-    fn translate_by (mut _self:Mut<bevy::mesh::Mesh>,translation:Val<bevy::math::Vec3>,) -> () {
-        let output: () =bevy::mesh::Mesh::translate_by(&mut _self,translation.into_inner(),).into();
+    fn translate_by (mut _self:Mut<::bevy_mesh::Mesh>,translation:Val<::bevy_math::Vec3>,) -> () {
+        let output: () =::bevy_mesh::Mesh::translate_by(&mut _self,translation.into_inner(),).into();
         output
     }
 
@@ -346,8 +348,8 @@ impl bevy::mesh::Mesh {
     
     ///  `Aabb` of entities with modified mesh are not updated automatically.
     
-    fn translated_by (_self:Val<bevy::mesh::Mesh>,translation:Val<bevy::math::Vec3>,) -> Val<bevy::mesh::Mesh> {
-        let output: Val<bevy::mesh::Mesh> =bevy::mesh::Mesh::translated_by(_self.into_inner(),translation.into_inner(),).into();
+    fn translated_by (_self:Val<::bevy_mesh::Mesh>,translation:Val<::bevy_math::Vec3>,) -> Val<::bevy_mesh::Mesh> {
+        let output: Val<::bevy_mesh::Mesh> =::bevy_mesh::Mesh::translated_by(_self.into_inner(),translation.into_inner(),).into();
         output
     }
 
@@ -365,8 +367,8 @@ impl bevy::mesh::Mesh {
     
     ///  Panics if the mesh has indices defined
     
-    fn with_computed_flat_normals (_self:Val<bevy::mesh::Mesh>,) -> Val<bevy::mesh::Mesh> {
-        let output: Val<bevy::mesh::Mesh> =bevy::mesh::Mesh::with_computed_flat_normals(_self.into_inner(),).into();
+    fn with_computed_flat_normals (_self:Val<::bevy_mesh::Mesh>,) -> Val<::bevy_mesh::Mesh> {
+        let output: Val<::bevy_mesh::Mesh> =::bevy_mesh::Mesh::with_computed_flat_normals(_self.into_inner(),).into();
         output
     }
 
@@ -386,8 +388,8 @@ impl bevy::mesh::Mesh {
     
     ///  Panics if the mesh has any other topology than [`PrimitiveTopology::TriangleList`].
     
-    fn with_computed_normals (_self:Val<bevy::mesh::Mesh>,) -> Val<bevy::mesh::Mesh> {
-        let output: Val<bevy::mesh::Mesh> =bevy::mesh::Mesh::with_computed_normals(_self.into_inner(),).into();
+    fn with_computed_normals (_self:Val<::bevy_mesh::Mesh>,) -> Val<::bevy_mesh::Mesh> {
+        let output: Val<::bevy_mesh::Mesh> =::bevy_mesh::Mesh::with_computed_normals(_self.into_inner(),).into();
         output
     }
 
@@ -405,8 +407,8 @@ impl bevy::mesh::Mesh {
     
     ///  Panics if the mesh does not have indices defined.
     
-    fn with_computed_smooth_normals (_self:Val<bevy::mesh::Mesh>,) -> Val<bevy::mesh::Mesh> {
-        let output: Val<bevy::mesh::Mesh> =bevy::mesh::Mesh::with_computed_smooth_normals(_self.into_inner(),).into();
+    fn with_computed_smooth_normals (_self:Val<::bevy_mesh::Mesh>,) -> Val<::bevy_mesh::Mesh> {
+        let output: Val<::bevy_mesh::Mesh> =::bevy_mesh::Mesh::with_computed_smooth_normals(_self.into_inner(),).into();
         output
     }
 
@@ -420,8 +422,8 @@ impl bevy::mesh::Mesh {
     
     ///  (Alternatively, you can use [`Mesh::duplicate_vertices`] to mutate an existing mesh in-place)
     
-    fn with_duplicated_vertices (_self:Val<bevy::mesh::Mesh>,) -> Val<bevy::mesh::Mesh> {
-        let output: Val<bevy::mesh::Mesh> =bevy::mesh::Mesh::with_duplicated_vertices(_self.into_inner(),).into();
+    fn with_duplicated_vertices (_self:Val<::bevy_mesh::Mesh>,) -> Val<::bevy_mesh::Mesh> {
+        let output: Val<::bevy_mesh::Mesh> =::bevy_mesh::Mesh::with_duplicated_vertices(_self.into_inner(),).into();
         output
     }
 
@@ -435,8 +437,8 @@ impl bevy::mesh::Mesh {
     
     ///  (Alternatively, you can use [`Mesh::insert_indices`] to mutate an existing mesh in-place)
     
-    fn with_inserted_indices (_self:Val<bevy::mesh::Mesh>,indices:Val<bevy::mesh::Indices>,) -> Val<bevy::mesh::Mesh> {
-        let output: Val<bevy::mesh::Mesh> =bevy::mesh::Mesh::with_inserted_indices(_self.into_inner(),indices.into_inner(),).into();
+    fn with_inserted_indices (_self:Val<::bevy_mesh::Mesh>,indices:Val<::bevy_mesh::Indices>,) -> Val<::bevy_mesh::Mesh> {
+        let output: Val<::bevy_mesh::Mesh> =::bevy_mesh::Mesh::with_inserted_indices(_self.into_inner(),indices.into_inner(),).into();
         output
     }
 
@@ -448,8 +450,8 @@ impl bevy::mesh::Mesh {
     
     ///  (Alternatively, you can use [`Mesh::set_morph_target_names`] to mutate an existing mesh in-place)
     
-    fn with_morph_target_names (_self:Val<bevy::mesh::Mesh>,names:::std::vec::Vec<::std::string::String, ::std::alloc::Global>,) -> Val<bevy::mesh::Mesh> {
-        let output: Val<bevy::mesh::Mesh> =bevy::mesh::Mesh::with_morph_target_names(_self.into_inner(),names,).into();
+    fn with_morph_target_names (_self:Val<::bevy_mesh::Mesh>,names:::std::vec::Vec<::std::string::String, ::std::alloc::Global>,) -> Val<::bevy_mesh::Mesh> {
+        let output: Val<::bevy_mesh::Mesh> =::bevy_mesh::Mesh::with_morph_target_names(_self.into_inner(),names,).into();
         output
     }
 
@@ -459,8 +461,8 @@ impl bevy::mesh::Mesh {
     
     ///  (Alternatively, you can use [`Mesh::remove_indices`] to mutate an existing mesh in-place)
     
-    fn with_removed_indices (_self:Val<bevy::mesh::Mesh>,) -> Val<bevy::mesh::Mesh> {
-        let output: Val<bevy::mesh::Mesh> =bevy::mesh::Mesh::with_removed_indices(_self.into_inner(),).into();
+    fn with_removed_indices (_self:Val<::bevy_mesh::Mesh>,) -> Val<::bevy_mesh::Mesh> {
+        let output: Val<::bevy_mesh::Mesh> =::bevy_mesh::Mesh::with_removed_indices(_self.into_inner(),).into();
         output
     }
      
@@ -472,12 +474,12 @@ impl bevy::mesh::Mesh {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::morph::MorphWeights {
+impl ::bevy_mesh::morph::MorphWeights {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::morph::MorphWeights>,) -> Val<bevy::mesh::morph::MorphWeights> {
-        let output: Val<bevy::mesh::morph::MorphWeights> =<bevy::mesh::morph::MorphWeights as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::morph::MorphWeights>,) -> Val<::bevy_mesh::morph::MorphWeights> {
+        let output: Val<::bevy_mesh::morph::MorphWeights> =<::bevy_mesh::morph::MorphWeights as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -489,19 +491,19 @@ impl bevy::mesh::morph::MorphWeights {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::morph::MeshMorphWeights {
+impl ::bevy_mesh::morph::MeshMorphWeights {
 
 
     
-    fn clear_weights (mut _self:Mut<bevy::mesh::morph::MeshMorphWeights>,) -> () {
-        let output: () =bevy::mesh::morph::MeshMorphWeights::clear_weights(&mut _self,).into();
+    fn clear_weights (mut _self:Mut<::bevy_mesh::morph::MeshMorphWeights>,) -> () {
+        let output: () =::bevy_mesh::morph::MeshMorphWeights::clear_weights(&mut _self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::mesh::morph::MeshMorphWeights>,) -> Val<bevy::mesh::morph::MeshMorphWeights> {
-        let output: Val<bevy::mesh::morph::MeshMorphWeights> =<bevy::mesh::morph::MeshMorphWeights as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::morph::MeshMorphWeights>,) -> Val<::bevy_mesh::morph::MeshMorphWeights> {
+        let output: Val<::bevy_mesh::morph::MeshMorphWeights> =<::bevy_mesh::morph::MeshMorphWeights as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -513,12 +515,12 @@ impl bevy::mesh::morph::MeshMorphWeights {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::CircleMeshBuilder {
+impl ::bevy_mesh::primitives::CircleMeshBuilder {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::CircleMeshBuilder>,) -> Val<bevy::mesh::primitives::CircleMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::CircleMeshBuilder> =<bevy::mesh::primitives::CircleMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::CircleMeshBuilder>,) -> Val<::bevy_mesh::primitives::CircleMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::CircleMeshBuilder> =<::bevy_mesh::primitives::CircleMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -526,8 +528,8 @@ impl bevy::mesh::primitives::CircleMeshBuilder {
     
     ///  Creates a new [`CircleMeshBuilder`] from a given radius and vertex count.
     
-    fn new (radius:f32,resolution:u32,) -> Val<bevy::mesh::primitives::CircleMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::CircleMeshBuilder> =bevy::mesh::primitives::CircleMeshBuilder::new(radius,resolution,).into();
+    fn new (radius:f32,resolution:u32,) -> Val<::bevy_mesh::primitives::CircleMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::CircleMeshBuilder> =::bevy_mesh::primitives::CircleMeshBuilder::new(radius,resolution,).into();
         output
     }
 
@@ -535,8 +537,8 @@ impl bevy::mesh::primitives::CircleMeshBuilder {
     
     ///  Sets the number of vertices used for the circle mesh.
     
-    fn resolution (_self:Val<bevy::mesh::primitives::CircleMeshBuilder>,resolution:u32,) -> Val<bevy::mesh::primitives::CircleMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::CircleMeshBuilder> =bevy::mesh::primitives::CircleMeshBuilder::resolution(_self.into_inner(),resolution,).into();
+    fn resolution (_self:Val<::bevy_mesh::primitives::CircleMeshBuilder>,resolution:u32,) -> Val<::bevy_mesh::primitives::CircleMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::CircleMeshBuilder> =::bevy_mesh::primitives::CircleMeshBuilder::resolution(_self.into_inner(),resolution,).into();
         output
     }
      
@@ -548,19 +550,19 @@ impl bevy::mesh::primitives::CircleMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::CircularMeshUvMode {
+impl ::bevy_mesh::primitives::CircularMeshUvMode {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::CircularMeshUvMode>,) -> Val<bevy::mesh::primitives::CircularMeshUvMode> {
-        let output: Val<bevy::mesh::primitives::CircularMeshUvMode> =<bevy::mesh::primitives::CircularMeshUvMode as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::CircularMeshUvMode>,) -> Val<::bevy_mesh::primitives::CircularMeshUvMode> {
+        let output: Val<::bevy_mesh::primitives::CircularMeshUvMode> =<::bevy_mesh::primitives::CircularMeshUvMode as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::mesh::primitives::CircularMeshUvMode>,other:Ref<bevy::mesh::primitives::CircularMeshUvMode>,) -> bool {
-        let output: bool =<bevy::mesh::primitives::CircularMeshUvMode as ::std::cmp::PartialEq::<bevy::mesh::primitives::CircularMeshUvMode>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_mesh::primitives::CircularMeshUvMode>,other:Ref<::bevy_mesh::primitives::CircularMeshUvMode>,) -> bool {
+        let output: bool =<::bevy_mesh::primitives::CircularMeshUvMode as ::std::cmp::PartialEq::<::bevy_mesh::primitives::CircularMeshUvMode>>::eq(&_self,&other,).into();
         output
     }
      
@@ -572,12 +574,12 @@ impl bevy::mesh::primitives::CircularMeshUvMode {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::CircularSectorMeshBuilder {
+impl ::bevy_mesh::primitives::CircularSectorMeshBuilder {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::CircularSectorMeshBuilder>,) -> Val<bevy::mesh::primitives::CircularSectorMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::CircularSectorMeshBuilder> =<bevy::mesh::primitives::CircularSectorMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::CircularSectorMeshBuilder>,) -> Val<::bevy_mesh::primitives::CircularSectorMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::CircularSectorMeshBuilder> =<::bevy_mesh::primitives::CircularSectorMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -585,8 +587,8 @@ impl bevy::mesh::primitives::CircularSectorMeshBuilder {
     
     ///  Creates a new [`CircularSectorMeshBuilder`] from a given sector
     
-    fn new (sector:Val<bevy::math::primitives::CircularSector>,) -> Val<bevy::mesh::primitives::CircularSectorMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::CircularSectorMeshBuilder> =bevy::mesh::primitives::CircularSectorMeshBuilder::new(sector.into_inner(),).into();
+    fn new (sector:Val<::bevy_math::primitives::CircularSector>,) -> Val<::bevy_mesh::primitives::CircularSectorMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::CircularSectorMeshBuilder> =::bevy_mesh::primitives::CircularSectorMeshBuilder::new(sector.into_inner(),).into();
         output
     }
 
@@ -594,8 +596,8 @@ impl bevy::mesh::primitives::CircularSectorMeshBuilder {
     
     ///  Sets the number of vertices used for the sector mesh.
     
-    fn resolution (_self:Val<bevy::mesh::primitives::CircularSectorMeshBuilder>,resolution:u32,) -> Val<bevy::mesh::primitives::CircularSectorMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::CircularSectorMeshBuilder> =bevy::mesh::primitives::CircularSectorMeshBuilder::resolution(_self.into_inner(),resolution,).into();
+    fn resolution (_self:Val<::bevy_mesh::primitives::CircularSectorMeshBuilder>,resolution:u32,) -> Val<::bevy_mesh::primitives::CircularSectorMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::CircularSectorMeshBuilder> =::bevy_mesh::primitives::CircularSectorMeshBuilder::resolution(_self.into_inner(),resolution,).into();
         output
     }
 
@@ -603,8 +605,8 @@ impl bevy::mesh::primitives::CircularSectorMeshBuilder {
     
     ///  Sets the uv mode used for the sector mesh
     
-    fn uv_mode (_self:Val<bevy::mesh::primitives::CircularSectorMeshBuilder>,uv_mode:Val<bevy::mesh::primitives::CircularMeshUvMode>,) -> Val<bevy::mesh::primitives::CircularSectorMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::CircularSectorMeshBuilder> =bevy::mesh::primitives::CircularSectorMeshBuilder::uv_mode(_self.into_inner(),uv_mode.into_inner(),).into();
+    fn uv_mode (_self:Val<::bevy_mesh::primitives::CircularSectorMeshBuilder>,uv_mode:Val<::bevy_mesh::primitives::CircularMeshUvMode>,) -> Val<::bevy_mesh::primitives::CircularSectorMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::CircularSectorMeshBuilder> =::bevy_mesh::primitives::CircularSectorMeshBuilder::uv_mode(_self.into_inner(),uv_mode.into_inner(),).into();
         output
     }
      
@@ -616,12 +618,12 @@ impl bevy::mesh::primitives::CircularSectorMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::CircularSegmentMeshBuilder {
+impl ::bevy_mesh::primitives::CircularSegmentMeshBuilder {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::CircularSegmentMeshBuilder>,) -> Val<bevy::mesh::primitives::CircularSegmentMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::CircularSegmentMeshBuilder> =<bevy::mesh::primitives::CircularSegmentMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::CircularSegmentMeshBuilder>,) -> Val<::bevy_mesh::primitives::CircularSegmentMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::CircularSegmentMeshBuilder> =<::bevy_mesh::primitives::CircularSegmentMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -629,8 +631,8 @@ impl bevy::mesh::primitives::CircularSegmentMeshBuilder {
     
     ///  Creates a new [`CircularSegmentMeshBuilder`] from a given segment
     
-    fn new (segment:Val<bevy::math::primitives::CircularSegment>,) -> Val<bevy::mesh::primitives::CircularSegmentMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::CircularSegmentMeshBuilder> =bevy::mesh::primitives::CircularSegmentMeshBuilder::new(segment.into_inner(),).into();
+    fn new (segment:Val<::bevy_math::primitives::CircularSegment>,) -> Val<::bevy_mesh::primitives::CircularSegmentMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::CircularSegmentMeshBuilder> =::bevy_mesh::primitives::CircularSegmentMeshBuilder::new(segment.into_inner(),).into();
         output
     }
 
@@ -638,8 +640,8 @@ impl bevy::mesh::primitives::CircularSegmentMeshBuilder {
     
     ///  Sets the number of vertices used for the segment mesh.
     
-    fn resolution (_self:Val<bevy::mesh::primitives::CircularSegmentMeshBuilder>,resolution:u32,) -> Val<bevy::mesh::primitives::CircularSegmentMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::CircularSegmentMeshBuilder> =bevy::mesh::primitives::CircularSegmentMeshBuilder::resolution(_self.into_inner(),resolution,).into();
+    fn resolution (_self:Val<::bevy_mesh::primitives::CircularSegmentMeshBuilder>,resolution:u32,) -> Val<::bevy_mesh::primitives::CircularSegmentMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::CircularSegmentMeshBuilder> =::bevy_mesh::primitives::CircularSegmentMeshBuilder::resolution(_self.into_inner(),resolution,).into();
         output
     }
 
@@ -647,8 +649,8 @@ impl bevy::mesh::primitives::CircularSegmentMeshBuilder {
     
     ///  Sets the uv mode used for the segment mesh
     
-    fn uv_mode (_self:Val<bevy::mesh::primitives::CircularSegmentMeshBuilder>,uv_mode:Val<bevy::mesh::primitives::CircularMeshUvMode>,) -> Val<bevy::mesh::primitives::CircularSegmentMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::CircularSegmentMeshBuilder> =bevy::mesh::primitives::CircularSegmentMeshBuilder::uv_mode(_self.into_inner(),uv_mode.into_inner(),).into();
+    fn uv_mode (_self:Val<::bevy_mesh::primitives::CircularSegmentMeshBuilder>,uv_mode:Val<::bevy_mesh::primitives::CircularMeshUvMode>,) -> Val<::bevy_mesh::primitives::CircularSegmentMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::CircularSegmentMeshBuilder> =::bevy_mesh::primitives::CircularSegmentMeshBuilder::uv_mode(_self.into_inner(),uv_mode.into_inner(),).into();
         output
     }
      
@@ -660,12 +662,12 @@ impl bevy::mesh::primitives::CircularSegmentMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::RegularPolygonMeshBuilder {
+impl ::bevy_mesh::primitives::RegularPolygonMeshBuilder {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::RegularPolygonMeshBuilder>,) -> Val<bevy::mesh::primitives::RegularPolygonMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::RegularPolygonMeshBuilder> =<bevy::mesh::primitives::RegularPolygonMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::RegularPolygonMeshBuilder>,) -> Val<::bevy_mesh::primitives::RegularPolygonMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::RegularPolygonMeshBuilder> =<::bevy_mesh::primitives::RegularPolygonMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -679,8 +681,8 @@ impl bevy::mesh::primitives::RegularPolygonMeshBuilder {
     
     ///  Panics in debug mode if `circumradius` is negative, or if `sides` is less than 3.
     
-    fn new (circumradius:f32,sides:u32,) -> Val<bevy::mesh::primitives::RegularPolygonMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::RegularPolygonMeshBuilder> =bevy::mesh::primitives::RegularPolygonMeshBuilder::new(circumradius,sides,).into();
+    fn new (circumradius:f32,sides:u32,) -> Val<::bevy_mesh::primitives::RegularPolygonMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::RegularPolygonMeshBuilder> =::bevy_mesh::primitives::RegularPolygonMeshBuilder::new(circumradius,sides,).into();
         output
     }
      
@@ -692,12 +694,12 @@ impl bevy::mesh::primitives::RegularPolygonMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::EllipseMeshBuilder {
+impl ::bevy_mesh::primitives::EllipseMeshBuilder {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::EllipseMeshBuilder>,) -> Val<bevy::mesh::primitives::EllipseMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::EllipseMeshBuilder> =<bevy::mesh::primitives::EllipseMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::EllipseMeshBuilder>,) -> Val<::bevy_mesh::primitives::EllipseMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::EllipseMeshBuilder> =<::bevy_mesh::primitives::EllipseMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -705,8 +707,8 @@ impl bevy::mesh::primitives::EllipseMeshBuilder {
     
     ///  Creates a new [`EllipseMeshBuilder`] from a given half width and half height and a vertex count.
     
-    fn new (half_width:f32,half_height:f32,resolution:u32,) -> Val<bevy::mesh::primitives::EllipseMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::EllipseMeshBuilder> =bevy::mesh::primitives::EllipseMeshBuilder::new(half_width,half_height,resolution,).into();
+    fn new (half_width:f32,half_height:f32,resolution:u32,) -> Val<::bevy_mesh::primitives::EllipseMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::EllipseMeshBuilder> =::bevy_mesh::primitives::EllipseMeshBuilder::new(half_width,half_height,resolution,).into();
         output
     }
 
@@ -714,8 +716,8 @@ impl bevy::mesh::primitives::EllipseMeshBuilder {
     
     ///  Sets the number of vertices used for the ellipse mesh.
     
-    fn resolution (_self:Val<bevy::mesh::primitives::EllipseMeshBuilder>,resolution:u32,) -> Val<bevy::mesh::primitives::EllipseMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::EllipseMeshBuilder> =bevy::mesh::primitives::EllipseMeshBuilder::resolution(_self.into_inner(),resolution,).into();
+    fn resolution (_self:Val<::bevy_mesh::primitives::EllipseMeshBuilder>,resolution:u32,) -> Val<::bevy_mesh::primitives::EllipseMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::EllipseMeshBuilder> =::bevy_mesh::primitives::EllipseMeshBuilder::resolution(_self.into_inner(),resolution,).into();
         output
     }
      
@@ -727,12 +729,12 @@ impl bevy::mesh::primitives::EllipseMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::AnnulusMeshBuilder {
+impl ::bevy_mesh::primitives::AnnulusMeshBuilder {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::AnnulusMeshBuilder>,) -> Val<bevy::mesh::primitives::AnnulusMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::AnnulusMeshBuilder> =<bevy::mesh::primitives::AnnulusMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::AnnulusMeshBuilder>,) -> Val<::bevy_mesh::primitives::AnnulusMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::AnnulusMeshBuilder> =<::bevy_mesh::primitives::AnnulusMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -740,8 +742,8 @@ impl bevy::mesh::primitives::AnnulusMeshBuilder {
     
     ///  Create an [`AnnulusMeshBuilder`] with the given inner radius, outer radius, and angular vertex count.
     
-    fn new (inner_radius:f32,outer_radius:f32,resolution:u32,) -> Val<bevy::mesh::primitives::AnnulusMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::AnnulusMeshBuilder> =bevy::mesh::primitives::AnnulusMeshBuilder::new(inner_radius,outer_radius,resolution,).into();
+    fn new (inner_radius:f32,outer_radius:f32,resolution:u32,) -> Val<::bevy_mesh::primitives::AnnulusMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::AnnulusMeshBuilder> =::bevy_mesh::primitives::AnnulusMeshBuilder::new(inner_radius,outer_radius,resolution,).into();
         output
     }
 
@@ -749,8 +751,8 @@ impl bevy::mesh::primitives::AnnulusMeshBuilder {
     
     ///  Sets the number of vertices used in constructing the concentric circles of the annulus mesh.
     
-    fn resolution (_self:Val<bevy::mesh::primitives::AnnulusMeshBuilder>,resolution:u32,) -> Val<bevy::mesh::primitives::AnnulusMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::AnnulusMeshBuilder> =bevy::mesh::primitives::AnnulusMeshBuilder::resolution(_self.into_inner(),resolution,).into();
+    fn resolution (_self:Val<::bevy_mesh::primitives::AnnulusMeshBuilder>,resolution:u32,) -> Val<::bevy_mesh::primitives::AnnulusMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::AnnulusMeshBuilder> =::bevy_mesh::primitives::AnnulusMeshBuilder::resolution(_self.into_inner(),resolution,).into();
         output
     }
      
@@ -762,12 +764,12 @@ impl bevy::mesh::primitives::AnnulusMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::RhombusMeshBuilder {
+impl ::bevy_mesh::primitives::RhombusMeshBuilder {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::RhombusMeshBuilder>,) -> Val<bevy::mesh::primitives::RhombusMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::RhombusMeshBuilder> =<bevy::mesh::primitives::RhombusMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::RhombusMeshBuilder>,) -> Val<::bevy_mesh::primitives::RhombusMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::RhombusMeshBuilder> =<::bevy_mesh::primitives::RhombusMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -779,8 +781,8 @@ impl bevy::mesh::primitives::RhombusMeshBuilder {
     
     ///  Panics in debug mode if `horizontal_diagonal` or `vertical_diagonal` is negative.
     
-    fn new (horizontal_diagonal:f32,vertical_diagonal:f32,) -> Val<bevy::mesh::primitives::RhombusMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::RhombusMeshBuilder> =bevy::mesh::primitives::RhombusMeshBuilder::new(horizontal_diagonal,vertical_diagonal,).into();
+    fn new (horizontal_diagonal:f32,vertical_diagonal:f32,) -> Val<::bevy_mesh::primitives::RhombusMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::RhombusMeshBuilder> =::bevy_mesh::primitives::RhombusMeshBuilder::new(horizontal_diagonal,vertical_diagonal,).into();
         output
     }
      
@@ -792,12 +794,12 @@ impl bevy::mesh::primitives::RhombusMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::Triangle2dMeshBuilder {
+impl ::bevy_mesh::primitives::Triangle2dMeshBuilder {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::Triangle2dMeshBuilder>,) -> Val<bevy::mesh::primitives::Triangle2dMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::Triangle2dMeshBuilder> =<bevy::mesh::primitives::Triangle2dMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::Triangle2dMeshBuilder>,) -> Val<::bevy_mesh::primitives::Triangle2dMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::Triangle2dMeshBuilder> =<::bevy_mesh::primitives::Triangle2dMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -805,8 +807,8 @@ impl bevy::mesh::primitives::Triangle2dMeshBuilder {
     
     ///  Creates a new [`Triangle2dMeshBuilder`] from the points `a`, `b`, and `c`.
     
-    fn new (a:Val<bevy::math::Vec2>,b:Val<bevy::math::Vec2>,c:Val<bevy::math::Vec2>,) -> Val<bevy::mesh::primitives::Triangle2dMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::Triangle2dMeshBuilder> =bevy::mesh::primitives::Triangle2dMeshBuilder::new(a.into_inner(),b.into_inner(),c.into_inner(),).into();
+    fn new (a:Val<::bevy_math::Vec2>,b:Val<::bevy_math::Vec2>,c:Val<::bevy_math::Vec2>,) -> Val<::bevy_mesh::primitives::Triangle2dMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::Triangle2dMeshBuilder> =::bevy_mesh::primitives::Triangle2dMeshBuilder::new(a.into_inner(),b.into_inner(),c.into_inner(),).into();
         output
     }
      
@@ -818,12 +820,12 @@ impl bevy::mesh::primitives::Triangle2dMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::RectangleMeshBuilder {
+impl ::bevy_mesh::primitives::RectangleMeshBuilder {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::RectangleMeshBuilder>,) -> Val<bevy::mesh::primitives::RectangleMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::RectangleMeshBuilder> =<bevy::mesh::primitives::RectangleMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::RectangleMeshBuilder>,) -> Val<::bevy_mesh::primitives::RectangleMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::RectangleMeshBuilder> =<::bevy_mesh::primitives::RectangleMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -835,8 +837,8 @@ impl bevy::mesh::primitives::RectangleMeshBuilder {
     
     ///  Panics in debug mode if `width` or `height` is negative.
     
-    fn new (width:f32,height:f32,) -> Val<bevy::mesh::primitives::RectangleMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::RectangleMeshBuilder> =bevy::mesh::primitives::RectangleMeshBuilder::new(width,height,).into();
+    fn new (width:f32,height:f32,) -> Val<::bevy_mesh::primitives::RectangleMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::RectangleMeshBuilder> =::bevy_mesh::primitives::RectangleMeshBuilder::new(width,height,).into();
         output
     }
      
@@ -848,12 +850,12 @@ impl bevy::mesh::primitives::RectangleMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::Capsule2dMeshBuilder {
+impl ::bevy_mesh::primitives::Capsule2dMeshBuilder {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::Capsule2dMeshBuilder>,) -> Val<bevy::mesh::primitives::Capsule2dMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::Capsule2dMeshBuilder> =<bevy::mesh::primitives::Capsule2dMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::Capsule2dMeshBuilder>,) -> Val<::bevy_mesh::primitives::Capsule2dMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::Capsule2dMeshBuilder> =<::bevy_mesh::primitives::Capsule2dMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -863,8 +865,8 @@ impl bevy::mesh::primitives::Capsule2dMeshBuilder {
     
     ///  used for one hemicircle. The total number of vertices for the capsule mesh will be two times the resolution.
     
-    fn new (radius:f32,length:f32,resolution:u32,) -> Val<bevy::mesh::primitives::Capsule2dMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::Capsule2dMeshBuilder> =bevy::mesh::primitives::Capsule2dMeshBuilder::new(radius,length,resolution,).into();
+    fn new (radius:f32,length:f32,resolution:u32,) -> Val<::bevy_mesh::primitives::Capsule2dMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::Capsule2dMeshBuilder> =::bevy_mesh::primitives::Capsule2dMeshBuilder::new(radius,length,resolution,).into();
         output
     }
 
@@ -874,8 +876,8 @@ impl bevy::mesh::primitives::Capsule2dMeshBuilder {
     
     ///  The total number of vertices for the capsule mesh will be two times the resolution.
     
-    fn resolution (_self:Val<bevy::mesh::primitives::Capsule2dMeshBuilder>,resolution:u32,) -> Val<bevy::mesh::primitives::Capsule2dMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::Capsule2dMeshBuilder> =bevy::mesh::primitives::Capsule2dMeshBuilder::resolution(_self.into_inner(),resolution,).into();
+    fn resolution (_self:Val<::bevy_mesh::primitives::Capsule2dMeshBuilder>,resolution:u32,) -> Val<::bevy_mesh::primitives::Capsule2dMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::Capsule2dMeshBuilder> =::bevy_mesh::primitives::Capsule2dMeshBuilder::resolution(_self.into_inner(),resolution,).into();
         output
     }
      
@@ -887,12 +889,12 @@ impl bevy::mesh::primitives::Capsule2dMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::CapsuleUvProfile {
+impl ::bevy_mesh::primitives::CapsuleUvProfile {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::CapsuleUvProfile>,) -> Val<bevy::mesh::primitives::CapsuleUvProfile> {
-        let output: Val<bevy::mesh::primitives::CapsuleUvProfile> =<bevy::mesh::primitives::CapsuleUvProfile as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::CapsuleUvProfile>,) -> Val<::bevy_mesh::primitives::CapsuleUvProfile> {
+        let output: Val<::bevy_mesh::primitives::CapsuleUvProfile> =<::bevy_mesh::primitives::CapsuleUvProfile as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -904,12 +906,12 @@ impl bevy::mesh::primitives::CapsuleUvProfile {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::Capsule3dMeshBuilder {
+impl ::bevy_mesh::primitives::Capsule3dMeshBuilder {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::Capsule3dMeshBuilder>,) -> Val<bevy::mesh::primitives::Capsule3dMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::Capsule3dMeshBuilder> =<bevy::mesh::primitives::Capsule3dMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::Capsule3dMeshBuilder>,) -> Val<::bevy_mesh::primitives::Capsule3dMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::Capsule3dMeshBuilder> =<::bevy_mesh::primitives::Capsule3dMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -917,8 +919,8 @@ impl bevy::mesh::primitives::Capsule3dMeshBuilder {
     
     ///  Sets the number of horizontal lines subdividing the hemispheres of the capsule.
     
-    fn latitudes (_self:Val<bevy::mesh::primitives::Capsule3dMeshBuilder>,latitudes:u32,) -> Val<bevy::mesh::primitives::Capsule3dMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::Capsule3dMeshBuilder> =bevy::mesh::primitives::Capsule3dMeshBuilder::latitudes(_self.into_inner(),latitudes,).into();
+    fn latitudes (_self:Val<::bevy_mesh::primitives::Capsule3dMeshBuilder>,latitudes:u32,) -> Val<::bevy_mesh::primitives::Capsule3dMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::Capsule3dMeshBuilder> =::bevy_mesh::primitives::Capsule3dMeshBuilder::latitudes(_self.into_inner(),latitudes,).into();
         output
     }
 
@@ -926,8 +928,8 @@ impl bevy::mesh::primitives::Capsule3dMeshBuilder {
     
     ///  Sets the number of vertical lines subdividing the hemispheres of the capsule.
     
-    fn longitudes (_self:Val<bevy::mesh::primitives::Capsule3dMeshBuilder>,longitudes:u32,) -> Val<bevy::mesh::primitives::Capsule3dMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::Capsule3dMeshBuilder> =bevy::mesh::primitives::Capsule3dMeshBuilder::longitudes(_self.into_inner(),longitudes,).into();
+    fn longitudes (_self:Val<::bevy_mesh::primitives::Capsule3dMeshBuilder>,longitudes:u32,) -> Val<::bevy_mesh::primitives::Capsule3dMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::Capsule3dMeshBuilder> =::bevy_mesh::primitives::Capsule3dMeshBuilder::longitudes(_self.into_inner(),longitudes,).into();
         output
     }
 
@@ -939,8 +941,8 @@ impl bevy::mesh::primitives::Capsule3dMeshBuilder {
     
     ///  `radius` will be added to both ends to get the real height of the mesh.
     
-    fn new (radius:f32,height:f32,longitudes:u32,latitudes:u32,) -> Val<bevy::mesh::primitives::Capsule3dMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::Capsule3dMeshBuilder> =bevy::mesh::primitives::Capsule3dMeshBuilder::new(radius,height,longitudes,latitudes,).into();
+    fn new (radius:f32,height:f32,longitudes:u32,latitudes:u32,) -> Val<::bevy_mesh::primitives::Capsule3dMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::Capsule3dMeshBuilder> =::bevy_mesh::primitives::Capsule3dMeshBuilder::new(radius,height,longitudes,latitudes,).into();
         output
     }
 
@@ -948,8 +950,8 @@ impl bevy::mesh::primitives::Capsule3dMeshBuilder {
     
     ///  Sets the number of horizontal lines subdividing the cylindrical part of the capsule.
     
-    fn rings (_self:Val<bevy::mesh::primitives::Capsule3dMeshBuilder>,rings:u32,) -> Val<bevy::mesh::primitives::Capsule3dMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::Capsule3dMeshBuilder> =bevy::mesh::primitives::Capsule3dMeshBuilder::rings(_self.into_inner(),rings,).into();
+    fn rings (_self:Val<::bevy_mesh::primitives::Capsule3dMeshBuilder>,rings:u32,) -> Val<::bevy_mesh::primitives::Capsule3dMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::Capsule3dMeshBuilder> =::bevy_mesh::primitives::Capsule3dMeshBuilder::rings(_self.into_inner(),rings,).into();
         output
     }
 
@@ -957,8 +959,8 @@ impl bevy::mesh::primitives::Capsule3dMeshBuilder {
     
     ///  Sets the manner in which UV coordinates are distributed vertically.
     
-    fn uv_profile (_self:Val<bevy::mesh::primitives::Capsule3dMeshBuilder>,uv_profile:Val<bevy::mesh::primitives::CapsuleUvProfile>,) -> Val<bevy::mesh::primitives::Capsule3dMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::Capsule3dMeshBuilder> =bevy::mesh::primitives::Capsule3dMeshBuilder::uv_profile(_self.into_inner(),uv_profile.into_inner(),).into();
+    fn uv_profile (_self:Val<::bevy_mesh::primitives::Capsule3dMeshBuilder>,uv_profile:Val<::bevy_mesh::primitives::CapsuleUvProfile>,) -> Val<::bevy_mesh::primitives::Capsule3dMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::Capsule3dMeshBuilder> =::bevy_mesh::primitives::Capsule3dMeshBuilder::uv_profile(_self.into_inner(),uv_profile.into_inner(),).into();
         output
     }
      
@@ -970,12 +972,12 @@ impl bevy::mesh::primitives::Capsule3dMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::ConeAnchor {
+impl ::bevy_mesh::primitives::ConeAnchor {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::ConeAnchor>,) -> Val<bevy::mesh::primitives::ConeAnchor> {
-        let output: Val<bevy::mesh::primitives::ConeAnchor> =<bevy::mesh::primitives::ConeAnchor as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::ConeAnchor>,) -> Val<::bevy_mesh::primitives::ConeAnchor> {
+        let output: Val<::bevy_mesh::primitives::ConeAnchor> =<::bevy_mesh::primitives::ConeAnchor as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -987,21 +989,21 @@ impl bevy::mesh::primitives::ConeAnchor {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::ConeMeshBuilder {
+impl ::bevy_mesh::primitives::ConeMeshBuilder {
 
 
     
     ///  Sets a custom anchor point for the mesh
     
-    fn anchor (_self:Val<bevy::mesh::primitives::ConeMeshBuilder>,anchor:Val<bevy::mesh::primitives::ConeAnchor>,) -> Val<bevy::mesh::primitives::ConeMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::ConeMeshBuilder> =bevy::mesh::primitives::ConeMeshBuilder::anchor(_self.into_inner(),anchor.into_inner(),).into();
+    fn anchor (_self:Val<::bevy_mesh::primitives::ConeMeshBuilder>,anchor:Val<::bevy_mesh::primitives::ConeAnchor>,) -> Val<::bevy_mesh::primitives::ConeMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::ConeMeshBuilder> =::bevy_mesh::primitives::ConeMeshBuilder::anchor(_self.into_inner(),anchor.into_inner(),).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::ConeMeshBuilder>,) -> Val<bevy::mesh::primitives::ConeMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::ConeMeshBuilder> =<bevy::mesh::primitives::ConeMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::ConeMeshBuilder>,) -> Val<::bevy_mesh::primitives::ConeMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::ConeMeshBuilder> =<::bevy_mesh::primitives::ConeMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -1011,8 +1013,8 @@ impl bevy::mesh::primitives::ConeMeshBuilder {
     
     ///  and number of vertices used for the base of the cone.
     
-    fn new (radius:f32,height:f32,resolution:u32,) -> Val<bevy::mesh::primitives::ConeMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::ConeMeshBuilder> =bevy::mesh::primitives::ConeMeshBuilder::new(radius,height,resolution,).into();
+    fn new (radius:f32,height:f32,resolution:u32,) -> Val<::bevy_mesh::primitives::ConeMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::ConeMeshBuilder> =::bevy_mesh::primitives::ConeMeshBuilder::new(radius,height,resolution,).into();
         output
     }
 
@@ -1020,8 +1022,8 @@ impl bevy::mesh::primitives::ConeMeshBuilder {
     
     ///  Sets the number of vertices used for the base of the cone.
     
-    fn resolution (_self:Val<bevy::mesh::primitives::ConeMeshBuilder>,resolution:u32,) -> Val<bevy::mesh::primitives::ConeMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::ConeMeshBuilder> =bevy::mesh::primitives::ConeMeshBuilder::resolution(_self.into_inner(),resolution,).into();
+    fn resolution (_self:Val<::bevy_mesh::primitives::ConeMeshBuilder>,resolution:u32,) -> Val<::bevy_mesh::primitives::ConeMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::ConeMeshBuilder> =::bevy_mesh::primitives::ConeMeshBuilder::resolution(_self.into_inner(),resolution,).into();
         output
     }
      
@@ -1033,12 +1035,12 @@ impl bevy::mesh::primitives::ConeMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::ConicalFrustumMeshBuilder {
+impl ::bevy_mesh::primitives::ConicalFrustumMeshBuilder {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::ConicalFrustumMeshBuilder>,) -> Val<bevy::mesh::primitives::ConicalFrustumMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::ConicalFrustumMeshBuilder> =<bevy::mesh::primitives::ConicalFrustumMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::ConicalFrustumMeshBuilder>,) -> Val<::bevy_mesh::primitives::ConicalFrustumMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::ConicalFrustumMeshBuilder> =<::bevy_mesh::primitives::ConicalFrustumMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -1048,8 +1050,8 @@ impl bevy::mesh::primitives::ConicalFrustumMeshBuilder {
     
     ///  and a resolution used for the top and bottom.
     
-    fn new (radius_top:f32,radius_bottom:f32,height:f32,resolution:u32,) -> Val<bevy::mesh::primitives::ConicalFrustumMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::ConicalFrustumMeshBuilder> =bevy::mesh::primitives::ConicalFrustumMeshBuilder::new(radius_top,radius_bottom,height,resolution,).into();
+    fn new (radius_top:f32,radius_bottom:f32,height:f32,resolution:u32,) -> Val<::bevy_mesh::primitives::ConicalFrustumMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::ConicalFrustumMeshBuilder> =::bevy_mesh::primitives::ConicalFrustumMeshBuilder::new(radius_top,radius_bottom,height,resolution,).into();
         output
     }
 
@@ -1057,8 +1059,8 @@ impl bevy::mesh::primitives::ConicalFrustumMeshBuilder {
     
     ///  Sets the number of vertices used for the top and bottom of the conical frustum.
     
-    fn resolution (_self:Val<bevy::mesh::primitives::ConicalFrustumMeshBuilder>,resolution:u32,) -> Val<bevy::mesh::primitives::ConicalFrustumMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::ConicalFrustumMeshBuilder> =bevy::mesh::primitives::ConicalFrustumMeshBuilder::resolution(_self.into_inner(),resolution,).into();
+    fn resolution (_self:Val<::bevy_mesh::primitives::ConicalFrustumMeshBuilder>,resolution:u32,) -> Val<::bevy_mesh::primitives::ConicalFrustumMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::ConicalFrustumMeshBuilder> =::bevy_mesh::primitives::ConicalFrustumMeshBuilder::resolution(_self.into_inner(),resolution,).into();
         output
     }
 
@@ -1066,8 +1068,8 @@ impl bevy::mesh::primitives::ConicalFrustumMeshBuilder {
     
     ///  Sets the number of horizontal lines subdividing the lateral surface of the conical frustum.
     
-    fn segments (_self:Val<bevy::mesh::primitives::ConicalFrustumMeshBuilder>,segments:u32,) -> Val<bevy::mesh::primitives::ConicalFrustumMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::ConicalFrustumMeshBuilder> =bevy::mesh::primitives::ConicalFrustumMeshBuilder::segments(_self.into_inner(),segments,).into();
+    fn segments (_self:Val<::bevy_mesh::primitives::ConicalFrustumMeshBuilder>,segments:u32,) -> Val<::bevy_mesh::primitives::ConicalFrustumMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::ConicalFrustumMeshBuilder> =::bevy_mesh::primitives::ConicalFrustumMeshBuilder::segments(_self.into_inner(),segments,).into();
         output
     }
      
@@ -1079,12 +1081,12 @@ impl bevy::mesh::primitives::ConicalFrustumMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::CuboidMeshBuilder {
+impl ::bevy_mesh::primitives::CuboidMeshBuilder {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::CuboidMeshBuilder>,) -> Val<bevy::mesh::primitives::CuboidMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::CuboidMeshBuilder> =<bevy::mesh::primitives::CuboidMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::CuboidMeshBuilder>,) -> Val<::bevy_mesh::primitives::CuboidMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::CuboidMeshBuilder> =<::bevy_mesh::primitives::CuboidMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -1096,12 +1098,12 @@ impl bevy::mesh::primitives::CuboidMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::CylinderAnchor {
+impl ::bevy_mesh::primitives::CylinderAnchor {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::CylinderAnchor>,) -> Val<bevy::mesh::primitives::CylinderAnchor> {
-        let output: Val<bevy::mesh::primitives::CylinderAnchor> =<bevy::mesh::primitives::CylinderAnchor as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::CylinderAnchor>,) -> Val<::bevy_mesh::primitives::CylinderAnchor> {
+        let output: Val<::bevy_mesh::primitives::CylinderAnchor> =<::bevy_mesh::primitives::CylinderAnchor as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -1113,21 +1115,21 @@ impl bevy::mesh::primitives::CylinderAnchor {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::CylinderMeshBuilder {
+impl ::bevy_mesh::primitives::CylinderMeshBuilder {
 
 
     
     ///  Sets a custom anchor point for the mesh
     
-    fn anchor (_self:Val<bevy::mesh::primitives::CylinderMeshBuilder>,anchor:Val<bevy::mesh::primitives::CylinderAnchor>,) -> Val<bevy::mesh::primitives::CylinderMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::CylinderMeshBuilder> =bevy::mesh::primitives::CylinderMeshBuilder::anchor(_self.into_inner(),anchor.into_inner(),).into();
+    fn anchor (_self:Val<::bevy_mesh::primitives::CylinderMeshBuilder>,anchor:Val<::bevy_mesh::primitives::CylinderAnchor>,) -> Val<::bevy_mesh::primitives::CylinderMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::CylinderMeshBuilder> =::bevy_mesh::primitives::CylinderMeshBuilder::anchor(_self.into_inner(),anchor.into_inner(),).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::CylinderMeshBuilder>,) -> Val<bevy::mesh::primitives::CylinderMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::CylinderMeshBuilder> =<bevy::mesh::primitives::CylinderMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::CylinderMeshBuilder>,) -> Val<::bevy_mesh::primitives::CylinderMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::CylinderMeshBuilder> =<::bevy_mesh::primitives::CylinderMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -1137,8 +1139,8 @@ impl bevy::mesh::primitives::CylinderMeshBuilder {
     
     ///  and a resolution used for the top and bottom.
     
-    fn new (radius:f32,height:f32,resolution:u32,) -> Val<bevy::mesh::primitives::CylinderMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::CylinderMeshBuilder> =bevy::mesh::primitives::CylinderMeshBuilder::new(radius,height,resolution,).into();
+    fn new (radius:f32,height:f32,resolution:u32,) -> Val<::bevy_mesh::primitives::CylinderMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::CylinderMeshBuilder> =::bevy_mesh::primitives::CylinderMeshBuilder::new(radius,height,resolution,).into();
         output
     }
 
@@ -1146,8 +1148,8 @@ impl bevy::mesh::primitives::CylinderMeshBuilder {
     
     ///  Sets the number of vertices used for the top and bottom of the cylinder.
     
-    fn resolution (_self:Val<bevy::mesh::primitives::CylinderMeshBuilder>,resolution:u32,) -> Val<bevy::mesh::primitives::CylinderMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::CylinderMeshBuilder> =bevy::mesh::primitives::CylinderMeshBuilder::resolution(_self.into_inner(),resolution,).into();
+    fn resolution (_self:Val<::bevy_mesh::primitives::CylinderMeshBuilder>,resolution:u32,) -> Val<::bevy_mesh::primitives::CylinderMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::CylinderMeshBuilder> =::bevy_mesh::primitives::CylinderMeshBuilder::resolution(_self.into_inner(),resolution,).into();
         output
     }
 
@@ -1157,8 +1159,8 @@ impl bevy::mesh::primitives::CylinderMeshBuilder {
     
     ///  Must be greater than `0` for geometry to be generated.
     
-    fn segments (_self:Val<bevy::mesh::primitives::CylinderMeshBuilder>,segments:u32,) -> Val<bevy::mesh::primitives::CylinderMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::CylinderMeshBuilder> =bevy::mesh::primitives::CylinderMeshBuilder::segments(_self.into_inner(),segments,).into();
+    fn segments (_self:Val<::bevy_mesh::primitives::CylinderMeshBuilder>,segments:u32,) -> Val<::bevy_mesh::primitives::CylinderMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::CylinderMeshBuilder> =::bevy_mesh::primitives::CylinderMeshBuilder::segments(_self.into_inner(),segments,).into();
         output
     }
 
@@ -1166,8 +1168,8 @@ impl bevy::mesh::primitives::CylinderMeshBuilder {
     
     ///  Ignore the cylinder caps, making the mesh a shallow tube instead
     
-    fn without_caps (_self:Val<bevy::mesh::primitives::CylinderMeshBuilder>,) -> Val<bevy::mesh::primitives::CylinderMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::CylinderMeshBuilder> =bevy::mesh::primitives::CylinderMeshBuilder::without_caps(_self.into_inner(),).into();
+    fn without_caps (_self:Val<::bevy_mesh::primitives::CylinderMeshBuilder>,) -> Val<::bevy_mesh::primitives::CylinderMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::CylinderMeshBuilder> =::bevy_mesh::primitives::CylinderMeshBuilder::without_caps(_self.into_inner(),).into();
         output
     }
      
@@ -1179,12 +1181,12 @@ impl bevy::mesh::primitives::CylinderMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::PlaneMeshBuilder {
+impl ::bevy_mesh::primitives::PlaneMeshBuilder {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::PlaneMeshBuilder>,) -> Val<bevy::mesh::primitives::PlaneMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::PlaneMeshBuilder> =<bevy::mesh::primitives::PlaneMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::PlaneMeshBuilder>,) -> Val<::bevy_mesh::primitives::PlaneMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::PlaneMeshBuilder> =<::bevy_mesh::primitives::PlaneMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -1194,8 +1196,8 @@ impl bevy::mesh::primitives::PlaneMeshBuilder {
     
     ///  and the resulting [`PlaneMeshBuilder`] being a square.
     
-    fn from_length (length:f32,) -> Val<bevy::mesh::primitives::PlaneMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::PlaneMeshBuilder> =bevy::mesh::primitives::PlaneMeshBuilder::from_length(length,).into();
+    fn from_length (length:f32,) -> Val<::bevy_mesh::primitives::PlaneMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::PlaneMeshBuilder> =::bevy_mesh::primitives::PlaneMeshBuilder::from_length(length,).into();
         output
     }
 
@@ -1203,8 +1205,8 @@ impl bevy::mesh::primitives::PlaneMeshBuilder {
     
     ///  Creates a new [`PlaneMeshBuilder`] from the given size, with the normal pointing upwards.
     
-    fn from_size (size:Val<bevy::math::Vec2>,) -> Val<bevy::mesh::primitives::PlaneMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::PlaneMeshBuilder> =bevy::mesh::primitives::PlaneMeshBuilder::from_size(size.into_inner(),).into();
+    fn from_size (size:Val<::bevy_math::Vec2>,) -> Val<::bevy_mesh::primitives::PlaneMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::PlaneMeshBuilder> =::bevy_mesh::primitives::PlaneMeshBuilder::from_size(size.into_inner(),).into();
         output
     }
 
@@ -1212,8 +1214,8 @@ impl bevy::mesh::primitives::PlaneMeshBuilder {
     
     ///  Creates a new [`PlaneMeshBuilder`] from a given normal and size.
     
-    fn new (normal:Val<bevy::math::Dir3>,size:Val<bevy::math::Vec2>,) -> Val<bevy::mesh::primitives::PlaneMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::PlaneMeshBuilder> =bevy::mesh::primitives::PlaneMeshBuilder::new(normal.into_inner(),size.into_inner(),).into();
+    fn new (normal:Val<::bevy_math::Dir3>,size:Val<::bevy_math::Vec2>,) -> Val<::bevy_mesh::primitives::PlaneMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::PlaneMeshBuilder> =::bevy_mesh::primitives::PlaneMeshBuilder::new(normal.into_inner(),size.into_inner(),).into();
         output
     }
 
@@ -1221,8 +1223,8 @@ impl bevy::mesh::primitives::PlaneMeshBuilder {
     
     ///  Sets the normal of the plane, aka the direction the plane is facing.
     
-    fn normal (_self:Val<bevy::mesh::primitives::PlaneMeshBuilder>,normal:Val<bevy::math::Dir3>,) -> Val<bevy::mesh::primitives::PlaneMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::PlaneMeshBuilder> =bevy::mesh::primitives::PlaneMeshBuilder::normal(_self.into_inner(),normal.into_inner(),).into();
+    fn normal (_self:Val<::bevy_mesh::primitives::PlaneMeshBuilder>,normal:Val<::bevy_math::Dir3>,) -> Val<::bevy_mesh::primitives::PlaneMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::PlaneMeshBuilder> =::bevy_mesh::primitives::PlaneMeshBuilder::normal(_self.into_inner(),normal.into_inner(),).into();
         output
     }
 
@@ -1230,8 +1232,8 @@ impl bevy::mesh::primitives::PlaneMeshBuilder {
     
     ///  Sets the size of the plane mesh.
     
-    fn size (_self:Val<bevy::mesh::primitives::PlaneMeshBuilder>,width:f32,height:f32,) -> Val<bevy::mesh::primitives::PlaneMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::PlaneMeshBuilder> =bevy::mesh::primitives::PlaneMeshBuilder::size(_self.into_inner(),width,height,).into();
+    fn size (_self:Val<::bevy_mesh::primitives::PlaneMeshBuilder>,width:f32,height:f32,) -> Val<::bevy_mesh::primitives::PlaneMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::PlaneMeshBuilder> =::bevy_mesh::primitives::PlaneMeshBuilder::size(_self.into_inner(),width,height,).into();
         output
     }
 
@@ -1249,8 +1251,8 @@ impl bevy::mesh::primitives::PlaneMeshBuilder {
     
     ///      equal sections along each axis, resulting in a plane with 9 quads / 18 triangles.
     
-    fn subdivisions (_self:Val<bevy::mesh::primitives::PlaneMeshBuilder>,subdivisions:u32,) -> Val<bevy::mesh::primitives::PlaneMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::PlaneMeshBuilder> =bevy::mesh::primitives::PlaneMeshBuilder::subdivisions(_self.into_inner(),subdivisions,).into();
+    fn subdivisions (_self:Val<::bevy_mesh::primitives::PlaneMeshBuilder>,subdivisions:u32,) -> Val<::bevy_mesh::primitives::PlaneMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::PlaneMeshBuilder> =::bevy_mesh::primitives::PlaneMeshBuilder::subdivisions(_self.into_inner(),subdivisions,).into();
         output
     }
      
@@ -1262,12 +1264,12 @@ impl bevy::mesh::primitives::PlaneMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::SphereKind {
+impl ::bevy_mesh::primitives::SphereKind {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::SphereKind>,) -> Val<bevy::mesh::primitives::SphereKind> {
-        let output: Val<bevy::mesh::primitives::SphereKind> =<bevy::mesh::primitives::SphereKind as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::SphereKind>,) -> Val<::bevy_mesh::primitives::SphereKind> {
+        let output: Val<::bevy_mesh::primitives::SphereKind> =<::bevy_mesh::primitives::SphereKind as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -1279,12 +1281,12 @@ impl bevy::mesh::primitives::SphereKind {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::SphereMeshBuilder {
+impl ::bevy_mesh::primitives::SphereMeshBuilder {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::SphereMeshBuilder>,) -> Val<bevy::mesh::primitives::SphereMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::SphereMeshBuilder> =<bevy::mesh::primitives::SphereMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::SphereMeshBuilder>,) -> Val<::bevy_mesh::primitives::SphereMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::SphereMeshBuilder> =<::bevy_mesh::primitives::SphereMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -1292,8 +1294,8 @@ impl bevy::mesh::primitives::SphereMeshBuilder {
     
     ///  Sets the [`SphereKind`] that will be used for building the mesh.
     
-    fn kind (_self:Val<bevy::mesh::primitives::SphereMeshBuilder>,kind:Val<bevy::mesh::primitives::SphereKind>,) -> Val<bevy::mesh::primitives::SphereMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::SphereMeshBuilder> =bevy::mesh::primitives::SphereMeshBuilder::kind(_self.into_inner(),kind.into_inner(),).into();
+    fn kind (_self:Val<::bevy_mesh::primitives::SphereMeshBuilder>,kind:Val<::bevy_mesh::primitives::SphereKind>,) -> Val<::bevy_mesh::primitives::SphereMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::SphereMeshBuilder> =::bevy_mesh::primitives::SphereMeshBuilder::kind(_self.into_inner(),kind.into_inner(),).into();
         output
     }
 
@@ -1301,8 +1303,8 @@ impl bevy::mesh::primitives::SphereMeshBuilder {
     
     ///  Creates a new [`SphereMeshBuilder`] from a radius and [`SphereKind`].
     
-    fn new (radius:f32,kind:Val<bevy::mesh::primitives::SphereKind>,) -> Val<bevy::mesh::primitives::SphereMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::SphereMeshBuilder> =bevy::mesh::primitives::SphereMeshBuilder::new(radius,kind.into_inner(),).into();
+    fn new (radius:f32,kind:Val<::bevy_mesh::primitives::SphereKind>,) -> Val<::bevy_mesh::primitives::SphereMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::SphereMeshBuilder> =::bevy_mesh::primitives::SphereMeshBuilder::new(radius,kind.into_inner(),).into();
         output
     }
 
@@ -1314,8 +1316,8 @@ impl bevy::mesh::primitives::SphereMeshBuilder {
     
     ///  A good default is `32` sectors and `18` stacks.
     
-    fn uv (_self:Ref<bevy::mesh::primitives::SphereMeshBuilder>,sectors:u32,stacks:u32,) -> Val<bevy::mesh::Mesh> {
-        let output: Val<bevy::mesh::Mesh> =bevy::mesh::primitives::SphereMeshBuilder::uv(&_self,sectors,stacks,).into();
+    fn uv (_self:Ref<::bevy_mesh::primitives::SphereMeshBuilder>,sectors:u32,stacks:u32,) -> Val<::bevy_mesh::Mesh> {
+        let output: Val<::bevy_mesh::Mesh> =::bevy_mesh::primitives::SphereMeshBuilder::uv(&_self,sectors,stacks,).into();
         output
     }
      
@@ -1327,12 +1329,12 @@ impl bevy::mesh::primitives::SphereMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::TetrahedronMeshBuilder {
+impl ::bevy_mesh::primitives::TetrahedronMeshBuilder {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::TetrahedronMeshBuilder>,) -> Val<bevy::mesh::primitives::TetrahedronMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::TetrahedronMeshBuilder> =<bevy::mesh::primitives::TetrahedronMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::TetrahedronMeshBuilder>,) -> Val<::bevy_mesh::primitives::TetrahedronMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::TetrahedronMeshBuilder> =<::bevy_mesh::primitives::TetrahedronMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -1344,12 +1346,12 @@ impl bevy::mesh::primitives::TetrahedronMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::TorusMeshBuilder {
+impl ::bevy_mesh::primitives::TorusMeshBuilder {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::TorusMeshBuilder>,) -> Val<bevy::mesh::primitives::TorusMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::TorusMeshBuilder> =<bevy::mesh::primitives::TorusMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::TorusMeshBuilder>,) -> Val<::bevy_mesh::primitives::TorusMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::TorusMeshBuilder> =<::bevy_mesh::primitives::TorusMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -1361,8 +1363,8 @@ impl bevy::mesh::primitives::TorusMeshBuilder {
     
     ///  while a resolution of `32` resembles a circular ring.
     
-    fn major_resolution (_self:Val<bevy::mesh::primitives::TorusMeshBuilder>,resolution:usize,) -> Val<bevy::mesh::primitives::TorusMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::TorusMeshBuilder> =bevy::mesh::primitives::TorusMeshBuilder::major_resolution(_self.into_inner(),resolution,).into();
+    fn major_resolution (_self:Val<::bevy_mesh::primitives::TorusMeshBuilder>,resolution:usize,) -> Val<::bevy_mesh::primitives::TorusMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::TorusMeshBuilder> =::bevy_mesh::primitives::TorusMeshBuilder::major_resolution(_self.into_inner(),resolution,).into();
         output
     }
 
@@ -1372,8 +1374,8 @@ impl bevy::mesh::primitives::TorusMeshBuilder {
     
     ///  in the ring or tube of the torus.
     
-    fn minor_resolution (_self:Val<bevy::mesh::primitives::TorusMeshBuilder>,resolution:usize,) -> Val<bevy::mesh::primitives::TorusMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::TorusMeshBuilder> =bevy::mesh::primitives::TorusMeshBuilder::minor_resolution(_self.into_inner(),resolution,).into();
+    fn minor_resolution (_self:Val<::bevy_mesh::primitives::TorusMeshBuilder>,resolution:usize,) -> Val<::bevy_mesh::primitives::TorusMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::TorusMeshBuilder> =::bevy_mesh::primitives::TorusMeshBuilder::minor_resolution(_self.into_inner(),resolution,).into();
         output
     }
 
@@ -1385,8 +1387,8 @@ impl bevy::mesh::primitives::TorusMeshBuilder {
     
     ///  is the radius of the entire object.
     
-    fn new (inner_radius:f32,outer_radius:f32,) -> Val<bevy::mesh::primitives::TorusMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::TorusMeshBuilder> =bevy::mesh::primitives::TorusMeshBuilder::new(inner_radius,outer_radius,).into();
+    fn new (inner_radius:f32,outer_radius:f32,) -> Val<::bevy_mesh::primitives::TorusMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::TorusMeshBuilder> =::bevy_mesh::primitives::TorusMeshBuilder::new(inner_radius,outer_radius,).into();
         output
     }
      
@@ -1398,12 +1400,12 @@ impl bevy::mesh::primitives::TorusMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::primitives::Triangle3dMeshBuilder {
+impl ::bevy_mesh::primitives::Triangle3dMeshBuilder {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::primitives::Triangle3dMeshBuilder>,) -> Val<bevy::mesh::primitives::Triangle3dMeshBuilder> {
-        let output: Val<bevy::mesh::primitives::Triangle3dMeshBuilder> =<bevy::mesh::primitives::Triangle3dMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::primitives::Triangle3dMeshBuilder>,) -> Val<::bevy_mesh::primitives::Triangle3dMeshBuilder> {
+        let output: Val<::bevy_mesh::primitives::Triangle3dMeshBuilder> =<::bevy_mesh::primitives::Triangle3dMeshBuilder as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -1415,20 +1417,20 @@ impl bevy::mesh::primitives::Triangle3dMeshBuilder {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::mesh::skinning::SkinnedMesh {
+impl ::bevy_mesh::skinning::SkinnedMesh {
 
 
     
-    fn clone (_self:Ref<bevy::mesh::skinning::SkinnedMesh>,) -> Val<bevy::mesh::skinning::SkinnedMesh> {
-        let output: Val<bevy::mesh::skinning::SkinnedMesh> =<bevy::mesh::skinning::SkinnedMesh as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_mesh::skinning::SkinnedMesh>,) -> Val<::bevy_mesh::skinning::SkinnedMesh> {
+        let output: Val<::bevy_mesh::skinning::SkinnedMesh> =<::bevy_mesh::skinning::SkinnedMesh as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
 }
 
 
-impl ::bevy::app::Plugin for BevyMeshScriptingPlugin {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
+impl Plugin for BevyMeshScriptingPlugin {
+    fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
 
         

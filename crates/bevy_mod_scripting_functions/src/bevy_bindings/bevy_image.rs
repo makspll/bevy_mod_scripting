@@ -9,6 +9,8 @@ use bevy_mod_scripting_core::{
         function::{from::{Ref, Mut, Val}, namespace::{NamespaceBuilder}}
     }
 };
+use bevy_ecs::{prelude::*};
+
 
 use bevy_mod_scripting_derive::script_bindings;
 
@@ -30,26 +32,26 @@ pub struct BevyImageScriptingPlugin;
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::image::prelude::TextureAtlas {
+impl ::bevy_image::prelude::TextureAtlas {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::image::prelude::TextureAtlas>,) -> () {
-        let output: () =<bevy::image::prelude::TextureAtlas as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_image::prelude::TextureAtlas>,) -> () {
+        let output: () =<::bevy_image::prelude::TextureAtlas as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::image::prelude::TextureAtlas>,) -> Val<bevy::image::prelude::TextureAtlas> {
-        let output: Val<bevy::image::prelude::TextureAtlas> =<bevy::image::prelude::TextureAtlas as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_image::prelude::TextureAtlas>,) -> Val<::bevy_image::prelude::TextureAtlas> {
+        let output: Val<::bevy_image::prelude::TextureAtlas> =<::bevy_image::prelude::TextureAtlas as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::image::prelude::TextureAtlas>,other:Ref<bevy::image::prelude::TextureAtlas>,) -> bool {
-        let output: bool =<bevy::image::prelude::TextureAtlas as ::std::cmp::PartialEq::<bevy::image::prelude::TextureAtlas>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_image::prelude::TextureAtlas>,other:Ref<::bevy_image::prelude::TextureAtlas>,) -> bool {
+        let output: bool =<::bevy_image::prelude::TextureAtlas as ::std::cmp::PartialEq::<::bevy_image::prelude::TextureAtlas>>::eq(&_self,&other,).into();
         output
     }
      
@@ -61,7 +63,7 @@ impl bevy::image::prelude::TextureAtlas {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::image::prelude::TextureAtlasLayout {
+impl ::bevy_image::prelude::TextureAtlasLayout {
 
 
     
@@ -75,36 +77,36 @@ impl bevy::image::prelude::TextureAtlasLayout {
     
     ///  [`TextureAtlas`]: crate::TextureAtlas
     
-    fn add_texture (mut _self:Mut<bevy::image::prelude::TextureAtlasLayout>,rect:Val<bevy::math::URect>,) -> usize {
-        let output: usize =bevy::image::prelude::TextureAtlasLayout::add_texture(&mut _self,rect.into_inner(),).into();
+    fn add_texture (mut _self:Mut<::bevy_image::prelude::TextureAtlasLayout>,rect:Val<::bevy_math::URect>,) -> usize {
+        let output: usize =::bevy_image::prelude::TextureAtlasLayout::add_texture(&mut _self,rect.into_inner(),).into();
         output
     }
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::image::prelude::TextureAtlasLayout>,) -> () {
-        let output: () =<bevy::image::prelude::TextureAtlasLayout as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_image::prelude::TextureAtlasLayout>,) -> () {
+        let output: () =<::bevy_image::prelude::TextureAtlasLayout as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::image::prelude::TextureAtlasLayout>,) -> Val<bevy::image::prelude::TextureAtlasLayout> {
-        let output: Val<bevy::image::prelude::TextureAtlasLayout> =<bevy::image::prelude::TextureAtlasLayout as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_image::prelude::TextureAtlasLayout>,) -> Val<::bevy_image::prelude::TextureAtlasLayout> {
+        let output: Val<::bevy_image::prelude::TextureAtlasLayout> =<::bevy_image::prelude::TextureAtlasLayout as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::image::prelude::TextureAtlasLayout>,other:Ref<bevy::image::prelude::TextureAtlasLayout>,) -> bool {
-        let output: bool =<bevy::image::prelude::TextureAtlasLayout as ::std::cmp::PartialEq::<bevy::image::prelude::TextureAtlasLayout>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_image::prelude::TextureAtlasLayout>,other:Ref<::bevy_image::prelude::TextureAtlasLayout>,) -> bool {
+        let output: bool =<::bevy_image::prelude::TextureAtlasLayout as ::std::cmp::PartialEq::<::bevy_image::prelude::TextureAtlasLayout>>::eq(&_self,&other,).into();
         output
     }
 
 
     
-    fn is_empty (_self:Ref<bevy::image::prelude::TextureAtlasLayout>,) -> bool {
-        let output: bool =bevy::image::prelude::TextureAtlasLayout::is_empty(&_self,).into();
+    fn is_empty (_self:Ref<::bevy_image::prelude::TextureAtlasLayout>,) -> bool {
+        let output: bool =::bevy_image::prelude::TextureAtlasLayout::is_empty(&_self,).into();
         output
     }
 
@@ -112,8 +114,8 @@ impl bevy::image::prelude::TextureAtlasLayout {
     
     ///  The number of textures in the [`TextureAtlasLayout`]
     
-    fn len (_self:Ref<bevy::image::prelude::TextureAtlasLayout>,) -> usize {
-        let output: usize =bevy::image::prelude::TextureAtlasLayout::len(&_self,).into();
+    fn len (_self:Ref<::bevy_image::prelude::TextureAtlasLayout>,) -> usize {
+        let output: usize =::bevy_image::prelude::TextureAtlasLayout::len(&_self,).into();
         output
     }
 
@@ -121,8 +123,8 @@ impl bevy::image::prelude::TextureAtlasLayout {
     
     ///  Create a new empty layout with custom `dimensions`
     
-    fn new_empty (dimensions:Val<bevy::math::UVec2>,) -> Val<bevy::image::prelude::TextureAtlasLayout> {
-        let output: Val<bevy::image::prelude::TextureAtlasLayout> =bevy::image::prelude::TextureAtlasLayout::new_empty(dimensions.into_inner(),).into();
+    fn new_empty (dimensions:Val<::bevy_math::UVec2>,) -> Val<::bevy_image::prelude::TextureAtlasLayout> {
+        let output: Val<::bevy_image::prelude::TextureAtlasLayout> =::bevy_image::prelude::TextureAtlasLayout::new_empty(dimensions.into_inner(),).into();
         output
     }
      
@@ -134,21 +136,21 @@ impl bevy::image::prelude::TextureAtlasLayout {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::image::prelude::Image {
+impl ::bevy_image::prelude::Image {
 
 
     
     ///  Returns the aspect ratio (width / height) of a 2D image.
     
-    fn aspect_ratio (_self:Ref<bevy::image::prelude::Image>,) -> Val<bevy::math::AspectRatio> {
-        let output: Val<bevy::math::AspectRatio> =bevy::image::prelude::Image::aspect_ratio(&_self,).into();
+    fn aspect_ratio (_self:Ref<::bevy_image::prelude::Image>,) -> Val<::bevy_math::AspectRatio> {
+        let output: Val<::bevy_math::AspectRatio> =::bevy_image::prelude::Image::aspect_ratio(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::image::prelude::Image>,) -> Val<bevy::image::prelude::Image> {
-        let output: Val<bevy::image::prelude::Image> =<bevy::image::prelude::Image as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_image::prelude::Image>,) -> Val<::bevy_image::prelude::Image> {
+        let output: Val<::bevy_image::prelude::Image> =<::bevy_image::prelude::Image as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -156,8 +158,8 @@ impl bevy::image::prelude::Image {
     
     ///  Creates a new uninitialized 1x1x1 image
     
-    fn default_uninit () -> Val<bevy::image::prelude::Image> {
-        let output: Val<bevy::image::prelude::Image> =bevy::image::prelude::Image::default_uninit().into();
+    fn default_uninit () -> Val<::bevy_image::prelude::Image> {
+        let output: Val<::bevy_image::prelude::Image> =::bevy_image::prelude::Image::default_uninit().into();
         output
     }
 
@@ -165,8 +167,8 @@ impl bevy::image::prelude::Image {
     
     ///  Returns the height of a 2D image.
     
-    fn height (_self:Ref<bevy::image::prelude::Image>,) -> u32 {
-        let output: u32 =bevy::image::prelude::Image::height(&_self,).into();
+    fn height (_self:Ref<::bevy_image::prelude::Image>,) -> u32 {
+        let output: u32 =::bevy_image::prelude::Image::height(&_self,).into();
         output
     }
 
@@ -174,8 +176,8 @@ impl bevy::image::prelude::Image {
     
     ///  Whether the texture format is compressed or uncompressed
     
-    fn is_compressed (_self:Ref<bevy::image::prelude::Image>,) -> bool {
-        let output: bool =bevy::image::prelude::Image::is_compressed(&_self,).into();
+    fn is_compressed (_self:Ref<::bevy_image::prelude::Image>,) -> bool {
+        let output: bool =::bevy_image::prelude::Image::is_compressed(&_self,).into();
         output
     }
 
@@ -187,8 +189,8 @@ impl bevy::image::prelude::Image {
     
     ///  For 2D textures, Z is the layer number. For 1D textures, Y and Z are ignored.
     
-    fn pixel_data_offset (_self:Ref<bevy::image::prelude::Image>,coords:Val<bevy::math::UVec3>,) -> ::std::option::Option<usize> {
-        let output: ::std::option::Option<usize> =bevy::image::prelude::Image::pixel_data_offset(&_self,coords.into_inner(),).into();
+    fn pixel_data_offset (_self:Ref<::bevy_image::prelude::Image>,coords:Val<::bevy_math::UVec3>,) -> ::std::option::Option<usize> {
+        let output: ::std::option::Option<usize> =::bevy_image::prelude::Image::pixel_data_offset(&_self,coords.into_inner(),).into();
         output
     }
 
@@ -206,8 +208,8 @@ impl bevy::image::prelude::Image {
     
     ///  the `layers`.
     
-    fn reinterpret_stacked_2d_as_array (mut _self:Mut<bevy::image::prelude::Image>,layers:u32,) -> () {
-        let output: () =bevy::image::prelude::Image::reinterpret_stacked_2d_as_array(&mut _self,layers,).into();
+    fn reinterpret_stacked_2d_as_array (mut _self:Mut<::bevy_image::prelude::Image>,layers:u32,) -> () {
+        let output: () =::bevy_image::prelude::Image::reinterpret_stacked_2d_as_array(&mut _self,layers,).into();
         output
     }
 
@@ -215,8 +217,8 @@ impl bevy::image::prelude::Image {
     
     ///  Returns the size of a 2D image.
     
-    fn size (_self:Ref<bevy::image::prelude::Image>,) -> Val<bevy::math::UVec2> {
-        let output: Val<bevy::math::UVec2> =bevy::image::prelude::Image::size(&_self,).into();
+    fn size (_self:Ref<::bevy_image::prelude::Image>,) -> Val<::bevy_math::UVec2> {
+        let output: Val<::bevy_math::UVec2> =::bevy_image::prelude::Image::size(&_self,).into();
         output
     }
 
@@ -224,8 +226,8 @@ impl bevy::image::prelude::Image {
     
     ///  Returns the size of a 2D image as f32.
     
-    fn size_f32 (_self:Ref<bevy::image::prelude::Image>,) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> =bevy::image::prelude::Image::size_f32(&_self,).into();
+    fn size_f32 (_self:Ref<::bevy_image::prelude::Image>,) -> Val<::bevy_math::Vec2> {
+        let output: Val<::bevy_math::Vec2> =::bevy_image::prelude::Image::size_f32(&_self,).into();
         output
     }
 
@@ -235,8 +237,8 @@ impl bevy::image::prelude::Image {
     
     ///  Contrast to [`Image::default`], which is opaque.
     
-    fn transparent () -> Val<bevy::image::prelude::Image> {
-        let output: Val<bevy::image::prelude::Image> =bevy::image::prelude::Image::transparent().into();
+    fn transparent () -> Val<::bevy_image::prelude::Image> {
+        let output: Val<::bevy_image::prelude::Image> =::bevy_image::prelude::Image::transparent().into();
         output
     }
 
@@ -244,16 +246,16 @@ impl bevy::image::prelude::Image {
     
     ///  Returns the width of a 2D image.
     
-    fn width (_self:Ref<bevy::image::prelude::Image>,) -> u32 {
-        let output: u32 =bevy::image::prelude::Image::width(&_self,).into();
+    fn width (_self:Ref<::bevy_image::prelude::Image>,) -> u32 {
+        let output: u32 =::bevy_image::prelude::Image::width(&_self,).into();
         output
     }
      
 }
 
 
-impl ::bevy::app::Plugin for BevyImageScriptingPlugin {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
+impl Plugin for BevyImageScriptingPlugin {
+    fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
 
         

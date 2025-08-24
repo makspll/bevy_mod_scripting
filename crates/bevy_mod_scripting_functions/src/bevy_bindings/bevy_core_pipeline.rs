@@ -9,6 +9,8 @@ use bevy_mod_scripting_core::{
         function::{from::{Ref, Mut, Val}, namespace::{NamespaceBuilder}}
     }
 };
+use bevy_ecs::{prelude::*};
+
 
 use bevy_mod_scripting_derive::script_bindings;
 
@@ -30,12 +32,12 @@ pub struct BevyCorePipelineScriptingPlugin;
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::Skybox {
+impl ::bevy_core_pipeline::Skybox {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::Skybox>,) -> Val<bevy::core_pipeline::Skybox> {
-        let output: Val<bevy::core_pipeline::Skybox> =<bevy::core_pipeline::Skybox as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::Skybox>,) -> Val<::bevy_core_pipeline::Skybox> {
+        let output: Val<::bevy_core_pipeline::Skybox> =<::bevy_core_pipeline::Skybox as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -47,12 +49,12 @@ impl bevy::core_pipeline::Skybox {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::core_2d::Camera2d {
+impl ::bevy_core_pipeline::core_2d::Camera2d {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::core_2d::Camera2d>,) -> Val<bevy::core_pipeline::core_2d::Camera2d> {
-        let output: Val<bevy::core_pipeline::core_2d::Camera2d> =<bevy::core_pipeline::core_2d::Camera2d as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::core_2d::Camera2d>,) -> Val<::bevy_core_pipeline::core_2d::Camera2d> {
+        let output: Val<::bevy_core_pipeline::core_2d::Camera2d> =<::bevy_core_pipeline::core_2d::Camera2d as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -64,12 +66,12 @@ impl bevy::core_pipeline::core_2d::Camera2d {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::core_3d::Camera3d {
+impl ::bevy_core_pipeline::core_3d::Camera3d {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::core_3d::Camera3d>,) -> Val<bevy::core_pipeline::core_3d::Camera3d> {
-        let output: Val<bevy::core_pipeline::core_3d::Camera3d> =<bevy::core_pipeline::core_3d::Camera3d as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::core_3d::Camera3d>,) -> Val<::bevy_core_pipeline::core_3d::Camera3d> {
+        let output: Val<::bevy_core_pipeline::core_3d::Camera3d> =<::bevy_core_pipeline::core_3d::Camera3d as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -81,7 +83,7 @@ impl bevy::core_pipeline::core_3d::Camera3d {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::prepass::DeferredPrepass {
+impl ::bevy_core_pipeline::prepass::DeferredPrepass {
      
 }
 
@@ -91,12 +93,12 @@ impl bevy::core_pipeline::prepass::DeferredPrepass {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::prepass::DepthPrepass {
+impl ::bevy_core_pipeline::prepass::DepthPrepass {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::prepass::DepthPrepass>,) -> Val<bevy::core_pipeline::prepass::DepthPrepass> {
-        let output: Val<bevy::core_pipeline::prepass::DepthPrepass> =<bevy::core_pipeline::prepass::DepthPrepass as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::prepass::DepthPrepass>,) -> Val<::bevy_core_pipeline::prepass::DepthPrepass> {
+        let output: Val<::bevy_core_pipeline::prepass::DepthPrepass> =<::bevy_core_pipeline::prepass::DepthPrepass as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -108,12 +110,12 @@ impl bevy::core_pipeline::prepass::DepthPrepass {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::prepass::MotionVectorPrepass {
+impl ::bevy_core_pipeline::prepass::MotionVectorPrepass {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::prepass::MotionVectorPrepass>,) -> Val<bevy::core_pipeline::prepass::MotionVectorPrepass> {
-        let output: Val<bevy::core_pipeline::prepass::MotionVectorPrepass> =<bevy::core_pipeline::prepass::MotionVectorPrepass as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::prepass::MotionVectorPrepass>,) -> Val<::bevy_core_pipeline::prepass::MotionVectorPrepass> {
+        let output: Val<::bevy_core_pipeline::prepass::MotionVectorPrepass> =<::bevy_core_pipeline::prepass::MotionVectorPrepass as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -125,12 +127,12 @@ impl bevy::core_pipeline::prepass::MotionVectorPrepass {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::prepass::NormalPrepass {
+impl ::bevy_core_pipeline::prepass::NormalPrepass {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::prepass::NormalPrepass>,) -> Val<bevy::core_pipeline::prepass::NormalPrepass> {
-        let output: Val<bevy::core_pipeline::prepass::NormalPrepass> =<bevy::core_pipeline::prepass::NormalPrepass as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::prepass::NormalPrepass>,) -> Val<::bevy_core_pipeline::prepass::NormalPrepass> {
+        let output: Val<::bevy_core_pipeline::prepass::NormalPrepass> =<::bevy_core_pipeline::prepass::NormalPrepass as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -142,12 +144,12 @@ impl bevy::core_pipeline::prepass::NormalPrepass {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::auto_exposure::AutoExposureCompensationCurve {
+impl ::bevy_core_pipeline::auto_exposure::AutoExposureCompensationCurve {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::auto_exposure::AutoExposureCompensationCurve>,) -> Val<bevy::core_pipeline::auto_exposure::AutoExposureCompensationCurve> {
-        let output: Val<bevy::core_pipeline::auto_exposure::AutoExposureCompensationCurve> =<bevy::core_pipeline::auto_exposure::AutoExposureCompensationCurve as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::auto_exposure::AutoExposureCompensationCurve>,) -> Val<::bevy_core_pipeline::auto_exposure::AutoExposureCompensationCurve> {
+        let output: Val<::bevy_core_pipeline::auto_exposure::AutoExposureCompensationCurve> =<::bevy_core_pipeline::auto_exposure::AutoExposureCompensationCurve as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -159,12 +161,12 @@ impl bevy::core_pipeline::auto_exposure::AutoExposureCompensationCurve {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::auto_exposure::AutoExposure {
+impl ::bevy_core_pipeline::auto_exposure::AutoExposure {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::auto_exposure::AutoExposure>,) -> Val<bevy::core_pipeline::auto_exposure::AutoExposure> {
-        let output: Val<bevy::core_pipeline::auto_exposure::AutoExposure> =<bevy::core_pipeline::auto_exposure::AutoExposure as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::auto_exposure::AutoExposure>,) -> Val<::bevy_core_pipeline::auto_exposure::AutoExposure> {
+        let output: Val<::bevy_core_pipeline::auto_exposure::AutoExposure> =<::bevy_core_pipeline::auto_exposure::AutoExposure as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -176,33 +178,33 @@ impl bevy::core_pipeline::auto_exposure::AutoExposure {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::tonemapping::Tonemapping {
+impl ::bevy_core_pipeline::tonemapping::Tonemapping {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::core_pipeline::tonemapping::Tonemapping>,) -> () {
-        let output: () =<bevy::core_pipeline::tonemapping::Tonemapping as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_core_pipeline::tonemapping::Tonemapping>,) -> () {
+        let output: () =<::bevy_core_pipeline::tonemapping::Tonemapping as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::tonemapping::Tonemapping>,) -> Val<bevy::core_pipeline::tonemapping::Tonemapping> {
-        let output: Val<bevy::core_pipeline::tonemapping::Tonemapping> =<bevy::core_pipeline::tonemapping::Tonemapping as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::tonemapping::Tonemapping>,) -> Val<::bevy_core_pipeline::tonemapping::Tonemapping> {
+        let output: Val<::bevy_core_pipeline::tonemapping::Tonemapping> =<::bevy_core_pipeline::tonemapping::Tonemapping as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::core_pipeline::tonemapping::Tonemapping>,other:Ref<bevy::core_pipeline::tonemapping::Tonemapping>,) -> bool {
-        let output: bool =<bevy::core_pipeline::tonemapping::Tonemapping as ::std::cmp::PartialEq::<bevy::core_pipeline::tonemapping::Tonemapping>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_core_pipeline::tonemapping::Tonemapping>,other:Ref<::bevy_core_pipeline::tonemapping::Tonemapping>,) -> bool {
+        let output: bool =<::bevy_core_pipeline::tonemapping::Tonemapping as ::std::cmp::PartialEq::<::bevy_core_pipeline::tonemapping::Tonemapping>>::eq(&_self,&other,).into();
         output
     }
 
 
     
-    fn is_enabled (_self:Ref<bevy::core_pipeline::tonemapping::Tonemapping>,) -> bool {
-        let output: bool =bevy::core_pipeline::tonemapping::Tonemapping::is_enabled(&_self,).into();
+    fn is_enabled (_self:Ref<::bevy_core_pipeline::tonemapping::Tonemapping>,) -> bool {
+        let output: bool =::bevy_core_pipeline::tonemapping::Tonemapping::is_enabled(&_self,).into();
         output
     }
      
@@ -214,12 +216,12 @@ impl bevy::core_pipeline::tonemapping::Tonemapping {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::bloom::Bloom {
+impl ::bevy_core_pipeline::bloom::Bloom {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::bloom::Bloom>,) -> Val<bevy::core_pipeline::bloom::Bloom> {
-        let output: Val<bevy::core_pipeline::bloom::Bloom> =<bevy::core_pipeline::bloom::Bloom as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::bloom::Bloom>,) -> Val<::bevy_core_pipeline::bloom::Bloom> {
+        let output: Val<::bevy_core_pipeline::bloom::Bloom> =<::bevy_core_pipeline::bloom::Bloom as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -231,26 +233,26 @@ impl bevy::core_pipeline::bloom::Bloom {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::bloom::BloomCompositeMode {
+impl ::bevy_core_pipeline::bloom::BloomCompositeMode {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::core_pipeline::bloom::BloomCompositeMode>,) -> () {
-        let output: () =<bevy::core_pipeline::bloom::BloomCompositeMode as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_core_pipeline::bloom::BloomCompositeMode>,) -> () {
+        let output: () =<::bevy_core_pipeline::bloom::BloomCompositeMode as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::bloom::BloomCompositeMode>,) -> Val<bevy::core_pipeline::bloom::BloomCompositeMode> {
-        let output: Val<bevy::core_pipeline::bloom::BloomCompositeMode> =<bevy::core_pipeline::bloom::BloomCompositeMode as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::bloom::BloomCompositeMode>,) -> Val<::bevy_core_pipeline::bloom::BloomCompositeMode> {
+        let output: Val<::bevy_core_pipeline::bloom::BloomCompositeMode> =<::bevy_core_pipeline::bloom::BloomCompositeMode as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::core_pipeline::bloom::BloomCompositeMode>,other:Ref<bevy::core_pipeline::bloom::BloomCompositeMode>,) -> bool {
-        let output: bool =<bevy::core_pipeline::bloom::BloomCompositeMode as ::std::cmp::PartialEq::<bevy::core_pipeline::bloom::BloomCompositeMode>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_core_pipeline::bloom::BloomCompositeMode>,other:Ref<::bevy_core_pipeline::bloom::BloomCompositeMode>,) -> bool {
+        let output: bool =<::bevy_core_pipeline::bloom::BloomCompositeMode as ::std::cmp::PartialEq::<::bevy_core_pipeline::bloom::BloomCompositeMode>>::eq(&_self,&other,).into();
         output
     }
      
@@ -262,12 +264,12 @@ impl bevy::core_pipeline::bloom::BloomCompositeMode {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::bloom::BloomPrefilter {
+impl ::bevy_core_pipeline::bloom::BloomPrefilter {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::bloom::BloomPrefilter>,) -> Val<bevy::core_pipeline::bloom::BloomPrefilter> {
-        let output: Val<bevy::core_pipeline::bloom::BloomPrefilter> =<bevy::core_pipeline::bloom::BloomPrefilter as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::bloom::BloomPrefilter>,) -> Val<::bevy_core_pipeline::bloom::BloomPrefilter> {
+        let output: Val<::bevy_core_pipeline::bloom::BloomPrefilter> =<::bevy_core_pipeline::bloom::BloomPrefilter as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -279,12 +281,12 @@ impl bevy::core_pipeline::bloom::BloomPrefilter {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpening {
+impl ::bevy_core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpening {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpening>,) -> Val<bevy::core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpening> {
-        let output: Val<bevy::core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpening> =<bevy::core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpening as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpening>,) -> Val<::bevy_core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpening> {
+        let output: Val<::bevy_core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpening> =<::bevy_core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpening as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -296,12 +298,12 @@ impl bevy::core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpeni
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::contrast_adaptive_sharpening::DenoiseCas {
+impl ::bevy_core_pipeline::contrast_adaptive_sharpening::DenoiseCas {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::contrast_adaptive_sharpening::DenoiseCas>,) -> Val<bevy::core_pipeline::contrast_adaptive_sharpening::DenoiseCas> {
-        let output: Val<bevy::core_pipeline::contrast_adaptive_sharpening::DenoiseCas> =<bevy::core_pipeline::contrast_adaptive_sharpening::DenoiseCas as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::contrast_adaptive_sharpening::DenoiseCas>,) -> Val<::bevy_core_pipeline::contrast_adaptive_sharpening::DenoiseCas> {
+        let output: Val<::bevy_core_pipeline::contrast_adaptive_sharpening::DenoiseCas> =<::bevy_core_pipeline::contrast_adaptive_sharpening::DenoiseCas as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -313,12 +315,12 @@ impl bevy::core_pipeline::contrast_adaptive_sharpening::DenoiseCas {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::fxaa::Fxaa {
+impl ::bevy_core_pipeline::fxaa::Fxaa {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::fxaa::Fxaa>,) -> Val<bevy::core_pipeline::fxaa::Fxaa> {
-        let output: Val<bevy::core_pipeline::fxaa::Fxaa> =<bevy::core_pipeline::fxaa::Fxaa as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::fxaa::Fxaa>,) -> Val<::bevy_core_pipeline::fxaa::Fxaa> {
+        let output: Val<::bevy_core_pipeline::fxaa::Fxaa> =<::bevy_core_pipeline::fxaa::Fxaa as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -330,12 +332,12 @@ impl bevy::core_pipeline::fxaa::Fxaa {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::smaa::Smaa {
+impl ::bevy_core_pipeline::smaa::Smaa {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::smaa::Smaa>,) -> Val<bevy::core_pipeline::smaa::Smaa> {
-        let output: Val<bevy::core_pipeline::smaa::Smaa> =<bevy::core_pipeline::smaa::Smaa as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::smaa::Smaa>,) -> Val<::bevy_core_pipeline::smaa::Smaa> {
+        let output: Val<::bevy_core_pipeline::smaa::Smaa> =<::bevy_core_pipeline::smaa::Smaa as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -347,26 +349,26 @@ impl bevy::core_pipeline::smaa::Smaa {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::tonemapping::DebandDither {
+impl ::bevy_core_pipeline::tonemapping::DebandDither {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::core_pipeline::tonemapping::DebandDither>,) -> () {
-        let output: () =<bevy::core_pipeline::tonemapping::DebandDither as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_core_pipeline::tonemapping::DebandDither>,) -> () {
+        let output: () =<::bevy_core_pipeline::tonemapping::DebandDither as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::tonemapping::DebandDither>,) -> Val<bevy::core_pipeline::tonemapping::DebandDither> {
-        let output: Val<bevy::core_pipeline::tonemapping::DebandDither> =<bevy::core_pipeline::tonemapping::DebandDither as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::tonemapping::DebandDither>,) -> Val<::bevy_core_pipeline::tonemapping::DebandDither> {
+        let output: Val<::bevy_core_pipeline::tonemapping::DebandDither> =<::bevy_core_pipeline::tonemapping::DebandDither as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::core_pipeline::tonemapping::DebandDither>,other:Ref<bevy::core_pipeline::tonemapping::DebandDither>,) -> bool {
-        let output: bool =<bevy::core_pipeline::tonemapping::DebandDither as ::std::cmp::PartialEq::<bevy::core_pipeline::tonemapping::DebandDither>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_core_pipeline::tonemapping::DebandDither>,other:Ref<::bevy_core_pipeline::tonemapping::DebandDither>,) -> bool {
+        let output: bool =<::bevy_core_pipeline::tonemapping::DebandDither as ::std::cmp::PartialEq::<::bevy_core_pipeline::tonemapping::DebandDither>>::eq(&_self,&other,).into();
         output
     }
      
@@ -378,12 +380,12 @@ impl bevy::core_pipeline::tonemapping::DebandDither {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::motion_blur::MotionBlur {
+impl ::bevy_core_pipeline::motion_blur::MotionBlur {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::motion_blur::MotionBlur>,) -> Val<bevy::core_pipeline::motion_blur::MotionBlur> {
-        let output: Val<bevy::core_pipeline::motion_blur::MotionBlur> =<bevy::core_pipeline::motion_blur::MotionBlur as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::motion_blur::MotionBlur>,) -> Val<::bevy_core_pipeline::motion_blur::MotionBlur> {
+        let output: Val<::bevy_core_pipeline::motion_blur::MotionBlur> =<::bevy_core_pipeline::motion_blur::MotionBlur as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -395,12 +397,12 @@ impl bevy::core_pipeline::motion_blur::MotionBlur {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::dof::DepthOfField {
+impl ::bevy_core_pipeline::dof::DepthOfField {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::dof::DepthOfField>,) -> Val<bevy::core_pipeline::dof::DepthOfField> {
-        let output: Val<bevy::core_pipeline::dof::DepthOfField> =<bevy::core_pipeline::dof::DepthOfField as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::dof::DepthOfField>,) -> Val<::bevy_core_pipeline::dof::DepthOfField> {
+        let output: Val<::bevy_core_pipeline::dof::DepthOfField> =<::bevy_core_pipeline::dof::DepthOfField as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -412,19 +414,19 @@ impl bevy::core_pipeline::dof::DepthOfField {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::core_3d::ScreenSpaceTransmissionQuality {
+impl ::bevy_core_pipeline::core_3d::ScreenSpaceTransmissionQuality {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::core_3d::ScreenSpaceTransmissionQuality>,) -> Val<bevy::core_pipeline::core_3d::ScreenSpaceTransmissionQuality> {
-        let output: Val<bevy::core_pipeline::core_3d::ScreenSpaceTransmissionQuality> =<bevy::core_pipeline::core_3d::ScreenSpaceTransmissionQuality as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::core_3d::ScreenSpaceTransmissionQuality>,) -> Val<::bevy_core_pipeline::core_3d::ScreenSpaceTransmissionQuality> {
+        let output: Val<::bevy_core_pipeline::core_3d::ScreenSpaceTransmissionQuality> =<::bevy_core_pipeline::core_3d::ScreenSpaceTransmissionQuality as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::core_pipeline::core_3d::ScreenSpaceTransmissionQuality>,other:Ref<bevy::core_pipeline::core_3d::ScreenSpaceTransmissionQuality>,) -> bool {
-        let output: bool =<bevy::core_pipeline::core_3d::ScreenSpaceTransmissionQuality as ::std::cmp::PartialEq::<bevy::core_pipeline::core_3d::ScreenSpaceTransmissionQuality>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_core_pipeline::core_3d::ScreenSpaceTransmissionQuality>,other:Ref<::bevy_core_pipeline::core_3d::ScreenSpaceTransmissionQuality>,) -> bool {
+        let output: bool =<::bevy_core_pipeline::core_3d::ScreenSpaceTransmissionQuality as ::std::cmp::PartialEq::<::bevy_core_pipeline::core_3d::ScreenSpaceTransmissionQuality>>::eq(&_self,&other,).into();
         output
     }
      
@@ -436,12 +438,12 @@ impl bevy::core_pipeline::core_3d::ScreenSpaceTransmissionQuality {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::core_3d::Camera3dDepthLoadOp {
+impl ::bevy_core_pipeline::core_3d::Camera3dDepthLoadOp {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::core_3d::Camera3dDepthLoadOp>,) -> Val<bevy::core_pipeline::core_3d::Camera3dDepthLoadOp> {
-        let output: Val<bevy::core_pipeline::core_3d::Camera3dDepthLoadOp> =<bevy::core_pipeline::core_3d::Camera3dDepthLoadOp as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::core_3d::Camera3dDepthLoadOp>,) -> Val<::bevy_core_pipeline::core_3d::Camera3dDepthLoadOp> {
+        let output: Val<::bevy_core_pipeline::core_3d::Camera3dDepthLoadOp> =<::bevy_core_pipeline::core_3d::Camera3dDepthLoadOp as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -453,12 +455,12 @@ impl bevy::core_pipeline::core_3d::Camera3dDepthLoadOp {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::core_3d::Camera3dDepthTextureUsage {
+impl ::bevy_core_pipeline::core_3d::Camera3dDepthTextureUsage {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::core_3d::Camera3dDepthTextureUsage>,) -> Val<bevy::core_pipeline::core_3d::Camera3dDepthTextureUsage> {
-        let output: Val<bevy::core_pipeline::core_3d::Camera3dDepthTextureUsage> =<bevy::core_pipeline::core_3d::Camera3dDepthTextureUsage as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::core_3d::Camera3dDepthTextureUsage>,) -> Val<::bevy_core_pipeline::core_3d::Camera3dDepthTextureUsage> {
+        let output: Val<::bevy_core_pipeline::core_3d::Camera3dDepthTextureUsage> =<::bevy_core_pipeline::core_3d::Camera3dDepthTextureUsage as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -470,19 +472,19 @@ impl bevy::core_pipeline::core_3d::Camera3dDepthTextureUsage {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::dof::DepthOfFieldMode {
+impl ::bevy_core_pipeline::dof::DepthOfFieldMode {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::dof::DepthOfFieldMode>,) -> Val<bevy::core_pipeline::dof::DepthOfFieldMode> {
-        let output: Val<bevy::core_pipeline::dof::DepthOfFieldMode> =<bevy::core_pipeline::dof::DepthOfFieldMode as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::dof::DepthOfFieldMode>,) -> Val<::bevy_core_pipeline::dof::DepthOfFieldMode> {
+        let output: Val<::bevy_core_pipeline::dof::DepthOfFieldMode> =<::bevy_core_pipeline::dof::DepthOfFieldMode as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::core_pipeline::dof::DepthOfFieldMode>,other:Ref<bevy::core_pipeline::dof::DepthOfFieldMode>,) -> bool {
-        let output: bool =<bevy::core_pipeline::dof::DepthOfFieldMode as ::std::cmp::PartialEq::<bevy::core_pipeline::dof::DepthOfFieldMode>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_core_pipeline::dof::DepthOfFieldMode>,other:Ref<::bevy_core_pipeline::dof::DepthOfFieldMode>,) -> bool {
+        let output: bool =<::bevy_core_pipeline::dof::DepthOfFieldMode as ::std::cmp::PartialEq::<::bevy_core_pipeline::dof::DepthOfFieldMode>>::eq(&_self,&other,).into();
         output
     }
      
@@ -494,12 +496,12 @@ impl bevy::core_pipeline::dof::DepthOfFieldMode {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::experimental::taa::TemporalAntiAliasing {
+impl ::bevy_core_pipeline::experimental::taa::TemporalAntiAliasing {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::experimental::taa::TemporalAntiAliasing>,) -> Val<bevy::core_pipeline::experimental::taa::TemporalAntiAliasing> {
-        let output: Val<bevy::core_pipeline::experimental::taa::TemporalAntiAliasing> =<bevy::core_pipeline::experimental::taa::TemporalAntiAliasing as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::experimental::taa::TemporalAntiAliasing>,) -> Val<::bevy_core_pipeline::experimental::taa::TemporalAntiAliasing> {
+        let output: Val<::bevy_core_pipeline::experimental::taa::TemporalAntiAliasing> =<::bevy_core_pipeline::experimental::taa::TemporalAntiAliasing as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -511,26 +513,26 @@ impl bevy::core_pipeline::experimental::taa::TemporalAntiAliasing {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::fxaa::Sensitivity {
+impl ::bevy_core_pipeline::fxaa::Sensitivity {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::core_pipeline::fxaa::Sensitivity>,) -> () {
-        let output: () =<bevy::core_pipeline::fxaa::Sensitivity as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_core_pipeline::fxaa::Sensitivity>,) -> () {
+        let output: () =<::bevy_core_pipeline::fxaa::Sensitivity as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::fxaa::Sensitivity>,) -> Val<bevy::core_pipeline::fxaa::Sensitivity> {
-        let output: Val<bevy::core_pipeline::fxaa::Sensitivity> =<bevy::core_pipeline::fxaa::Sensitivity as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::fxaa::Sensitivity>,) -> Val<::bevy_core_pipeline::fxaa::Sensitivity> {
+        let output: Val<::bevy_core_pipeline::fxaa::Sensitivity> =<::bevy_core_pipeline::fxaa::Sensitivity as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::core_pipeline::fxaa::Sensitivity>,other:Ref<bevy::core_pipeline::fxaa::Sensitivity>,) -> bool {
-        let output: bool =<bevy::core_pipeline::fxaa::Sensitivity as ::std::cmp::PartialEq::<bevy::core_pipeline::fxaa::Sensitivity>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_core_pipeline::fxaa::Sensitivity>,other:Ref<::bevy_core_pipeline::fxaa::Sensitivity>,) -> bool {
+        let output: bool =<::bevy_core_pipeline::fxaa::Sensitivity as ::std::cmp::PartialEq::<::bevy_core_pipeline::fxaa::Sensitivity>>::eq(&_self,&other,).into();
         output
     }
      
@@ -542,12 +544,12 @@ impl bevy::core_pipeline::fxaa::Sensitivity {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::oit::OrderIndependentTransparencySettings {
+impl ::bevy_core_pipeline::oit::OrderIndependentTransparencySettings {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::oit::OrderIndependentTransparencySettings>,) -> Val<bevy::core_pipeline::oit::OrderIndependentTransparencySettings> {
-        let output: Val<bevy::core_pipeline::oit::OrderIndependentTransparencySettings> =<bevy::core_pipeline::oit::OrderIndependentTransparencySettings as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::oit::OrderIndependentTransparencySettings>,) -> Val<::bevy_core_pipeline::oit::OrderIndependentTransparencySettings> {
+        let output: Val<::bevy_core_pipeline::oit::OrderIndependentTransparencySettings> =<::bevy_core_pipeline::oit::OrderIndependentTransparencySettings as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -559,12 +561,12 @@ impl bevy::core_pipeline::oit::OrderIndependentTransparencySettings {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::post_process::ChromaticAberration {
+impl ::bevy_core_pipeline::post_process::ChromaticAberration {
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::post_process::ChromaticAberration>,) -> Val<bevy::core_pipeline::post_process::ChromaticAberration> {
-        let output: Val<bevy::core_pipeline::post_process::ChromaticAberration> =<bevy::core_pipeline::post_process::ChromaticAberration as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::post_process::ChromaticAberration>,) -> Val<::bevy_core_pipeline::post_process::ChromaticAberration> {
+        let output: Val<::bevy_core_pipeline::post_process::ChromaticAberration> =<::bevy_core_pipeline::post_process::ChromaticAberration as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -576,34 +578,34 @@ impl bevy::core_pipeline::post_process::ChromaticAberration {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::core_pipeline::smaa::SmaaPreset {
+impl ::bevy_core_pipeline::smaa::SmaaPreset {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::core_pipeline::smaa::SmaaPreset>,) -> () {
-        let output: () =<bevy::core_pipeline::smaa::SmaaPreset as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_core_pipeline::smaa::SmaaPreset>,) -> () {
+        let output: () =<::bevy_core_pipeline::smaa::SmaaPreset as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::core_pipeline::smaa::SmaaPreset>,) -> Val<bevy::core_pipeline::smaa::SmaaPreset> {
-        let output: Val<bevy::core_pipeline::smaa::SmaaPreset> =<bevy::core_pipeline::smaa::SmaaPreset as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_core_pipeline::smaa::SmaaPreset>,) -> Val<::bevy_core_pipeline::smaa::SmaaPreset> {
+        let output: Val<::bevy_core_pipeline::smaa::SmaaPreset> =<::bevy_core_pipeline::smaa::SmaaPreset as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::core_pipeline::smaa::SmaaPreset>,other:Ref<bevy::core_pipeline::smaa::SmaaPreset>,) -> bool {
-        let output: bool =<bevy::core_pipeline::smaa::SmaaPreset as ::std::cmp::PartialEq::<bevy::core_pipeline::smaa::SmaaPreset>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_core_pipeline::smaa::SmaaPreset>,other:Ref<::bevy_core_pipeline::smaa::SmaaPreset>,) -> bool {
+        let output: bool =<::bevy_core_pipeline::smaa::SmaaPreset as ::std::cmp::PartialEq::<::bevy_core_pipeline::smaa::SmaaPreset>>::eq(&_self,&other,).into();
         output
     }
      
 }
 
 
-impl ::bevy::app::Plugin for BevyCorePipelineScriptingPlugin {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
+impl Plugin for BevyCorePipelineScriptingPlugin {
+    fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
 
         

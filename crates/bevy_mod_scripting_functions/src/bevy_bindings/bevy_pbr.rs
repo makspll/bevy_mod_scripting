@@ -9,6 +9,8 @@ use bevy_mod_scripting_core::{
         function::{from::{Ref, Mut, Val}, namespace::{NamespaceBuilder}}
     }
 };
+use bevy_ecs::{prelude::*};
+
 
 use bevy_mod_scripting_derive::script_bindings;
 
@@ -30,12 +32,12 @@ pub struct BevyPbrScriptingPlugin;
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::FogVolume {
+impl ::bevy_pbr::FogVolume {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::FogVolume>,) -> Val<bevy::pbr::FogVolume> {
-        let output: Val<bevy::pbr::FogVolume> =<bevy::pbr::FogVolume as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::FogVolume>,) -> Val<::bevy_pbr::FogVolume> {
+        let output: Val<::bevy_pbr::FogVolume> =<::bevy_pbr::FogVolume as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -47,12 +49,12 @@ impl bevy::pbr::FogVolume {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::VolumetricFog {
+impl ::bevy_pbr::VolumetricFog {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::VolumetricFog>,) -> Val<bevy::pbr::VolumetricFog> {
-        let output: Val<bevy::pbr::VolumetricFog> =<bevy::pbr::VolumetricFog as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::VolumetricFog>,) -> Val<::bevy_pbr::VolumetricFog> {
+        let output: Val<::bevy_pbr::VolumetricFog> =<::bevy_pbr::VolumetricFog as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -64,12 +66,12 @@ impl bevy::pbr::VolumetricFog {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::VolumetricLight {
+impl ::bevy_pbr::VolumetricLight {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::VolumetricLight>,) -> Val<bevy::pbr::VolumetricLight> {
-        let output: Val<bevy::pbr::VolumetricLight> =<bevy::pbr::VolumetricLight as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::VolumetricLight>,) -> Val<::bevy_pbr::VolumetricLight> {
+        let output: Val<::bevy_pbr::VolumetricLight> =<::bevy_pbr::VolumetricLight as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -81,12 +83,12 @@ impl bevy::pbr::VolumetricLight {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::prelude::DistanceFog {
+impl ::bevy_pbr::prelude::DistanceFog {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::prelude::DistanceFog>,) -> Val<bevy::pbr::prelude::DistanceFog> {
-        let output: Val<bevy::pbr::prelude::DistanceFog> =<bevy::pbr::prelude::DistanceFog as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::prelude::DistanceFog>,) -> Val<::bevy_pbr::prelude::DistanceFog> {
+        let output: Val<::bevy_pbr::prelude::DistanceFog> =<::bevy_pbr::prelude::DistanceFog as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -98,12 +100,12 @@ impl bevy::pbr::prelude::DistanceFog {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::prelude::FogFalloff {
+impl ::bevy_pbr::prelude::FogFalloff {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::prelude::FogFalloff>,) -> Val<bevy::pbr::prelude::FogFalloff> {
-        let output: Val<bevy::pbr::prelude::FogFalloff> =<bevy::pbr::prelude::FogFalloff as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::prelude::FogFalloff>,) -> Val<::bevy_pbr::prelude::FogFalloff> {
+        let output: Val<::bevy_pbr::prelude::FogFalloff> =<::bevy_pbr::prelude::FogFalloff as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -113,8 +115,8 @@ impl bevy::pbr::prelude::FogFalloff {
     
     ///  using the revised Koschmieder contrast threshold, [`FogFalloff::REVISED_KOSCHMIEDER_CONTRAST_THRESHOLD`].
     
-    fn from_visibility (visibility:f32,) -> Val<bevy::pbr::prelude::FogFalloff> {
-        let output: Val<bevy::pbr::prelude::FogFalloff> =bevy::pbr::prelude::FogFalloff::from_visibility(visibility,).into();
+    fn from_visibility (visibility:f32,) -> Val<::bevy_pbr::prelude::FogFalloff> {
+        let output: Val<::bevy_pbr::prelude::FogFalloff> =::bevy_pbr::prelude::FogFalloff::from_visibility(visibility,).into();
         output
     }
 
@@ -126,8 +128,8 @@ impl bevy::pbr::prelude::FogFalloff {
     
     ///  [`FogFalloff::REVISED_KOSCHMIEDER_CONTRAST_THRESHOLD`].
     
-    fn from_visibility_color (visibility:f32,extinction_inscattering_color:Val<bevy::color::Color>,) -> Val<bevy::pbr::prelude::FogFalloff> {
-        let output: Val<bevy::pbr::prelude::FogFalloff> =bevy::pbr::prelude::FogFalloff::from_visibility_color(visibility,extinction_inscattering_color.into_inner(),).into();
+    fn from_visibility_color (visibility:f32,extinction_inscattering_color:Val<::bevy_color::Color>,) -> Val<::bevy_pbr::prelude::FogFalloff> {
+        let output: Val<::bevy_pbr::prelude::FogFalloff> =::bevy_pbr::prelude::FogFalloff::from_visibility_color(visibility,extinction_inscattering_color.into_inner(),).into();
         output
     }
 
@@ -147,8 +149,8 @@ impl bevy::pbr::prelude::FogFalloff {
     
     ///  - Using an `inscattering_color` of [`Color::BLACK`] or [`Color::NONE`] disables the inscattering effect.
     
-    fn from_visibility_colors (visibility:f32,extinction_color:Val<bevy::color::Color>,inscattering_color:Val<bevy::color::Color>,) -> Val<bevy::pbr::prelude::FogFalloff> {
-        let output: Val<bevy::pbr::prelude::FogFalloff> =bevy::pbr::prelude::FogFalloff::from_visibility_colors(visibility,extinction_color.into_inner(),inscattering_color.into_inner(),).into();
+    fn from_visibility_colors (visibility:f32,extinction_color:Val<::bevy_color::Color>,inscattering_color:Val<::bevy_color::Color>,) -> Val<::bevy_pbr::prelude::FogFalloff> {
+        let output: Val<::bevy_pbr::prelude::FogFalloff> =::bevy_pbr::prelude::FogFalloff::from_visibility_colors(visibility,extinction_color.into_inner(),inscattering_color.into_inner(),).into();
         output
     }
 
@@ -158,8 +160,8 @@ impl bevy::pbr::prelude::FogFalloff {
     
     ///  and a given contrast threshold in the range of `0.0` to `1.0`.
     
-    fn from_visibility_contrast (visibility:f32,contrast_threshold:f32,) -> Val<bevy::pbr::prelude::FogFalloff> {
-        let output: Val<bevy::pbr::prelude::FogFalloff> =bevy::pbr::prelude::FogFalloff::from_visibility_contrast(visibility,contrast_threshold,).into();
+    fn from_visibility_contrast (visibility:f32,contrast_threshold:f32,) -> Val<::bevy_pbr::prelude::FogFalloff> {
+        let output: Val<::bevy_pbr::prelude::FogFalloff> =::bevy_pbr::prelude::FogFalloff::from_visibility_contrast(visibility,contrast_threshold,).into();
         output
     }
 
@@ -169,8 +171,8 @@ impl bevy::pbr::prelude::FogFalloff {
     
     ///  a contrast threshold in the range of `0.0` to `1.0`, and a shared color for both extinction and inscattering.
     
-    fn from_visibility_contrast_color (visibility:f32,contrast_threshold:f32,extinction_inscattering_color:Val<bevy::color::Color>,) -> Val<bevy::pbr::prelude::FogFalloff> {
-        let output: Val<bevy::pbr::prelude::FogFalloff> =bevy::pbr::prelude::FogFalloff::from_visibility_contrast_color(visibility,contrast_threshold,extinction_inscattering_color.into_inner(),).into();
+    fn from_visibility_contrast_color (visibility:f32,contrast_threshold:f32,extinction_inscattering_color:Val<::bevy_color::Color>,) -> Val<::bevy_pbr::prelude::FogFalloff> {
+        let output: Val<::bevy_pbr::prelude::FogFalloff> =::bevy_pbr::prelude::FogFalloff::from_visibility_contrast_color(visibility,contrast_threshold,extinction_inscattering_color.into_inner(),).into();
         output
     }
 
@@ -188,8 +190,8 @@ impl bevy::pbr::prelude::FogFalloff {
     
     ///  - Using an `inscattering_color` of [`Color::BLACK`] or [`Color::NONE`] disables the inscattering effect.
     
-    fn from_visibility_contrast_colors (visibility:f32,contrast_threshold:f32,extinction_color:Val<bevy::color::Color>,inscattering_color:Val<bevy::color::Color>,) -> Val<bevy::pbr::prelude::FogFalloff> {
-        let output: Val<bevy::pbr::prelude::FogFalloff> =bevy::pbr::prelude::FogFalloff::from_visibility_contrast_colors(visibility,contrast_threshold,extinction_color.into_inner(),inscattering_color.into_inner(),).into();
+    fn from_visibility_contrast_colors (visibility:f32,contrast_threshold:f32,extinction_color:Val<::bevy_color::Color>,inscattering_color:Val<::bevy_color::Color>,) -> Val<::bevy_pbr::prelude::FogFalloff> {
+        let output: Val<::bevy_pbr::prelude::FogFalloff> =::bevy_pbr::prelude::FogFalloff::from_visibility_contrast_colors(visibility,contrast_threshold,extinction_color.into_inner(),inscattering_color.into_inner(),).into();
         output
     }
 
@@ -199,8 +201,8 @@ impl bevy::pbr::prelude::FogFalloff {
     
     ///  and a given contrast threshold in the range of `0.0` to `1.0`.
     
-    fn from_visibility_contrast_squared (visibility:f32,contrast_threshold:f32,) -> Val<bevy::pbr::prelude::FogFalloff> {
-        let output: Val<bevy::pbr::prelude::FogFalloff> =bevy::pbr::prelude::FogFalloff::from_visibility_contrast_squared(visibility,contrast_threshold,).into();
+    fn from_visibility_contrast_squared (visibility:f32,contrast_threshold:f32,) -> Val<::bevy_pbr::prelude::FogFalloff> {
+        let output: Val<::bevy_pbr::prelude::FogFalloff> =::bevy_pbr::prelude::FogFalloff::from_visibility_contrast_squared(visibility,contrast_threshold,).into();
         output
     }
 
@@ -210,8 +212,8 @@ impl bevy::pbr::prelude::FogFalloff {
     
     ///  using the revised Koschmieder contrast threshold, [`FogFalloff::REVISED_KOSCHMIEDER_CONTRAST_THRESHOLD`].
     
-    fn from_visibility_squared (visibility:f32,) -> Val<bevy::pbr::prelude::FogFalloff> {
-        let output: Val<bevy::pbr::prelude::FogFalloff> =bevy::pbr::prelude::FogFalloff::from_visibility_squared(visibility,).into();
+    fn from_visibility_squared (visibility:f32,) -> Val<::bevy_pbr::prelude::FogFalloff> {
+        let output: Val<::bevy_pbr::prelude::FogFalloff> =::bevy_pbr::prelude::FogFalloff::from_visibility_squared(visibility,).into();
         output
     }
 
@@ -256,7 +258,7 @@ impl bevy::pbr::prelude::FogFalloff {
     ///  - <https://www.biral.com/wp-content/uploads/2015/02/Introduction_to_visibility-v2-2.pdf>
     
     fn koschmieder (v:f32,c_t:f32,) -> f32 {
-        let output: f32 =bevy::pbr::prelude::FogFalloff::koschmieder(v,c_t,).into();
+        let output: f32 =::bevy_pbr::prelude::FogFalloff::koschmieder(v,c_t,).into();
         output
     }
      
@@ -268,12 +270,12 @@ impl bevy::pbr::prelude::FogFalloff {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::prelude::AmbientLight {
+impl ::bevy_pbr::prelude::AmbientLight {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::prelude::AmbientLight>,) -> Val<bevy::pbr::prelude::AmbientLight> {
-        let output: Val<bevy::pbr::prelude::AmbientLight> =<bevy::pbr::prelude::AmbientLight as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::prelude::AmbientLight>,) -> Val<::bevy_pbr::prelude::AmbientLight> {
+        let output: Val<::bevy_pbr::prelude::AmbientLight> =<::bevy_pbr::prelude::AmbientLight as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -285,12 +287,12 @@ impl bevy::pbr::prelude::AmbientLight {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::prelude::DirectionalLight {
+impl ::bevy_pbr::prelude::DirectionalLight {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::prelude::DirectionalLight>,) -> Val<bevy::pbr::prelude::DirectionalLight> {
-        let output: Val<bevy::pbr::prelude::DirectionalLight> =<bevy::pbr::prelude::DirectionalLight as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::prelude::DirectionalLight>,) -> Val<::bevy_pbr::prelude::DirectionalLight> {
+        let output: Val<::bevy_pbr::prelude::DirectionalLight> =<::bevy_pbr::prelude::DirectionalLight as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -302,12 +304,12 @@ impl bevy::pbr::prelude::DirectionalLight {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::prelude::PointLight {
+impl ::bevy_pbr::prelude::PointLight {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::prelude::PointLight>,) -> Val<bevy::pbr::prelude::PointLight> {
-        let output: Val<bevy::pbr::prelude::PointLight> =<bevy::pbr::prelude::PointLight as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::prelude::PointLight>,) -> Val<::bevy_pbr::prelude::PointLight> {
+        let output: Val<::bevy_pbr::prelude::PointLight> =<::bevy_pbr::prelude::PointLight as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -319,12 +321,12 @@ impl bevy::pbr::prelude::PointLight {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::prelude::SpotLight {
+impl ::bevy_pbr::prelude::SpotLight {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::prelude::SpotLight>,) -> Val<bevy::pbr::prelude::SpotLight> {
-        let output: Val<bevy::pbr::prelude::SpotLight> =<bevy::pbr::prelude::SpotLight as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::prelude::SpotLight>,) -> Val<::bevy_pbr::prelude::SpotLight> {
+        let output: Val<::bevy_pbr::prelude::SpotLight> =<::bevy_pbr::prelude::SpotLight as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -336,12 +338,12 @@ impl bevy::pbr::prelude::SpotLight {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::prelude::EnvironmentMapLight {
+impl ::bevy_pbr::prelude::EnvironmentMapLight {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::prelude::EnvironmentMapLight>,) -> Val<bevy::pbr::prelude::EnvironmentMapLight> {
-        let output: Val<bevy::pbr::prelude::EnvironmentMapLight> =<bevy::pbr::prelude::EnvironmentMapLight as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::prelude::EnvironmentMapLight>,) -> Val<::bevy_pbr::prelude::EnvironmentMapLight> {
+        let output: Val<::bevy_pbr::prelude::EnvironmentMapLight> =<::bevy_pbr::prelude::EnvironmentMapLight as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -353,12 +355,12 @@ impl bevy::pbr::prelude::EnvironmentMapLight {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::prelude::LightProbe {
+impl ::bevy_pbr::prelude::LightProbe {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::prelude::LightProbe>,) -> Val<bevy::pbr::prelude::LightProbe> {
-        let output: Val<bevy::pbr::prelude::LightProbe> =<bevy::pbr::prelude::LightProbe as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::prelude::LightProbe>,) -> Val<::bevy_pbr::prelude::LightProbe> {
+        let output: Val<::bevy_pbr::prelude::LightProbe> =<::bevy_pbr::prelude::LightProbe as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -366,8 +368,8 @@ impl bevy::pbr::prelude::LightProbe {
     
     ///  Creates a new light probe component.
     
-    fn new () -> Val<bevy::pbr::prelude::LightProbe> {
-        let output: Val<bevy::pbr::prelude::LightProbe> =bevy::pbr::prelude::LightProbe::new().into();
+    fn new () -> Val<::bevy_pbr::prelude::LightProbe> {
+        let output: Val<::bevy_pbr::prelude::LightProbe> =::bevy_pbr::prelude::LightProbe::new().into();
         output
     }
      
@@ -379,26 +381,26 @@ impl bevy::pbr::prelude::LightProbe {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::prelude::ParallaxMappingMethod {
+impl ::bevy_pbr::prelude::ParallaxMappingMethod {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::pbr::prelude::ParallaxMappingMethod>,) -> () {
-        let output: () =<bevy::pbr::prelude::ParallaxMappingMethod as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_pbr::prelude::ParallaxMappingMethod>,) -> () {
+        let output: () =<::bevy_pbr::prelude::ParallaxMappingMethod as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::pbr::prelude::ParallaxMappingMethod>,) -> Val<bevy::pbr::prelude::ParallaxMappingMethod> {
-        let output: Val<bevy::pbr::prelude::ParallaxMappingMethod> =<bevy::pbr::prelude::ParallaxMappingMethod as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::prelude::ParallaxMappingMethod>,) -> Val<::bevy_pbr::prelude::ParallaxMappingMethod> {
+        let output: Val<::bevy_pbr::prelude::ParallaxMappingMethod> =<::bevy_pbr::prelude::ParallaxMappingMethod as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::pbr::prelude::ParallaxMappingMethod>,other:Ref<bevy::pbr::prelude::ParallaxMappingMethod>,) -> bool {
-        let output: bool =<bevy::pbr::prelude::ParallaxMappingMethod as ::std::cmp::PartialEq::<bevy::pbr::prelude::ParallaxMappingMethod>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_pbr::prelude::ParallaxMappingMethod>,other:Ref<::bevy_pbr::prelude::ParallaxMappingMethod>,) -> bool {
+        let output: bool =<::bevy_pbr::prelude::ParallaxMappingMethod as ::std::cmp::PartialEq::<::bevy_pbr::prelude::ParallaxMappingMethod>>::eq(&_self,&other,).into();
         output
     }
      
@@ -410,12 +412,12 @@ impl bevy::pbr::prelude::ParallaxMappingMethod {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::prelude::StandardMaterial {
+impl ::bevy_pbr::prelude::StandardMaterial {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::prelude::StandardMaterial>,) -> Val<bevy::pbr::prelude::StandardMaterial> {
-        let output: Val<bevy::pbr::prelude::StandardMaterial> =<bevy::pbr::prelude::StandardMaterial as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::prelude::StandardMaterial>,) -> Val<::bevy_pbr::prelude::StandardMaterial> {
+        let output: Val<::bevy_pbr::prelude::StandardMaterial> =<::bevy_pbr::prelude::StandardMaterial as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -423,8 +425,8 @@ impl bevy::pbr::prelude::StandardMaterial {
     
     ///  Flip the texture coordinates of the material.
     
-    fn flip (mut _self:Mut<bevy::pbr::prelude::StandardMaterial>,horizontal:bool,vertical:bool,) -> () {
-        let output: () =bevy::pbr::prelude::StandardMaterial::flip(&mut _self,horizontal,vertical,).into();
+    fn flip (mut _self:Mut<::bevy_pbr::prelude::StandardMaterial>,horizontal:bool,vertical:bool,) -> () {
+        let output: () =::bevy_pbr::prelude::StandardMaterial::flip(&mut _self,horizontal,vertical,).into();
         output
     }
 
@@ -432,8 +434,8 @@ impl bevy::pbr::prelude::StandardMaterial {
     
     ///  Consumes the material and returns a material with flipped texture coordinates
     
-    fn flipped (_self:Val<bevy::pbr::prelude::StandardMaterial>,horizontal:bool,vertical:bool,) -> Val<bevy::pbr::prelude::StandardMaterial> {
-        let output: Val<bevy::pbr::prelude::StandardMaterial> =bevy::pbr::prelude::StandardMaterial::flipped(_self.into_inner(),horizontal,vertical,).into();
+    fn flipped (_self:Val<::bevy_pbr::prelude::StandardMaterial>,horizontal:bool,vertical:bool,) -> Val<::bevy_pbr::prelude::StandardMaterial> {
+        let output: Val<::bevy_pbr::prelude::StandardMaterial> =::bevy_pbr::prelude::StandardMaterial::flipped(_self.into_inner(),horizontal,vertical,).into();
         output
     }
      
@@ -445,19 +447,19 @@ impl bevy::pbr::prelude::StandardMaterial {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::ScreenSpaceAmbientOcclusion {
+impl ::bevy_pbr::ScreenSpaceAmbientOcclusion {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::ScreenSpaceAmbientOcclusion>,) -> Val<bevy::pbr::ScreenSpaceAmbientOcclusion> {
-        let output: Val<bevy::pbr::ScreenSpaceAmbientOcclusion> =<bevy::pbr::ScreenSpaceAmbientOcclusion as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::ScreenSpaceAmbientOcclusion>,) -> Val<::bevy_pbr::ScreenSpaceAmbientOcclusion> {
+        let output: Val<::bevy_pbr::ScreenSpaceAmbientOcclusion> =<::bevy_pbr::ScreenSpaceAmbientOcclusion as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::pbr::ScreenSpaceAmbientOcclusion>,other:Ref<bevy::pbr::ScreenSpaceAmbientOcclusion>,) -> bool {
-        let output: bool =<bevy::pbr::ScreenSpaceAmbientOcclusion as ::std::cmp::PartialEq::<bevy::pbr::ScreenSpaceAmbientOcclusion>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_pbr::ScreenSpaceAmbientOcclusion>,other:Ref<::bevy_pbr::ScreenSpaceAmbientOcclusion>,) -> bool {
+        let output: bool =<::bevy_pbr::ScreenSpaceAmbientOcclusion as ::std::cmp::PartialEq::<::bevy_pbr::ScreenSpaceAmbientOcclusion>>::eq(&_self,&other,).into();
         output
     }
      
@@ -469,12 +471,12 @@ impl bevy::pbr::ScreenSpaceAmbientOcclusion {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::ScreenSpaceReflections {
+impl ::bevy_pbr::ScreenSpaceReflections {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::ScreenSpaceReflections>,) -> Val<bevy::pbr::ScreenSpaceReflections> {
-        let output: Val<bevy::pbr::ScreenSpaceReflections> =<bevy::pbr::ScreenSpaceReflections as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::ScreenSpaceReflections>,) -> Val<::bevy_pbr::ScreenSpaceReflections> {
+        let output: Val<::bevy_pbr::ScreenSpaceReflections> =<::bevy_pbr::ScreenSpaceReflections as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -486,12 +488,12 @@ impl bevy::pbr::ScreenSpaceReflections {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::CascadeShadowConfig {
+impl ::bevy_pbr::CascadeShadowConfig {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::CascadeShadowConfig>,) -> Val<bevy::pbr::CascadeShadowConfig> {
-        let output: Val<bevy::pbr::CascadeShadowConfig> =<bevy::pbr::CascadeShadowConfig as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::CascadeShadowConfig>,) -> Val<::bevy_pbr::CascadeShadowConfig> {
+        let output: Val<::bevy_pbr::CascadeShadowConfig> =<::bevy_pbr::CascadeShadowConfig as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -503,12 +505,12 @@ impl bevy::pbr::CascadeShadowConfig {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::Cascades {
+impl ::bevy_pbr::Cascades {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::Cascades>,) -> Val<bevy::pbr::Cascades> {
-        let output: Val<bevy::pbr::Cascades> =<bevy::pbr::Cascades as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::Cascades>,) -> Val<::bevy_pbr::Cascades> {
+        let output: Val<::bevy_pbr::Cascades> =<::bevy_pbr::Cascades as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -520,12 +522,12 @@ impl bevy::pbr::Cascades {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::CascadesVisibleEntities {
+impl ::bevy_pbr::CascadesVisibleEntities {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::CascadesVisibleEntities>,) -> Val<bevy::pbr::CascadesVisibleEntities> {
-        let output: Val<bevy::pbr::CascadesVisibleEntities> =<bevy::pbr::CascadesVisibleEntities as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::CascadesVisibleEntities>,) -> Val<::bevy_pbr::CascadesVisibleEntities> {
+        let output: Val<::bevy_pbr::CascadesVisibleEntities> =<::bevy_pbr::CascadesVisibleEntities as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -537,12 +539,12 @@ impl bevy::pbr::CascadesVisibleEntities {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::VisibleMeshEntities {
+impl ::bevy_pbr::VisibleMeshEntities {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::VisibleMeshEntities>,) -> Val<bevy::pbr::VisibleMeshEntities> {
-        let output: Val<bevy::pbr::VisibleMeshEntities> =<bevy::pbr::VisibleMeshEntities as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::VisibleMeshEntities>,) -> Val<::bevy_pbr::VisibleMeshEntities> {
+        let output: Val<::bevy_pbr::VisibleMeshEntities> =<::bevy_pbr::VisibleMeshEntities as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -554,12 +556,12 @@ impl bevy::pbr::VisibleMeshEntities {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::ClusterConfig {
+impl ::bevy_pbr::ClusterConfig {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::ClusterConfig>,) -> Val<bevy::pbr::ClusterConfig> {
-        let output: Val<bevy::pbr::ClusterConfig> =<bevy::pbr::ClusterConfig as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::ClusterConfig>,) -> Val<::bevy_pbr::ClusterConfig> {
+        let output: Val<::bevy_pbr::ClusterConfig> =<::bevy_pbr::ClusterConfig as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -571,12 +573,12 @@ impl bevy::pbr::ClusterConfig {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::CubemapVisibleEntities {
+impl ::bevy_pbr::CubemapVisibleEntities {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::CubemapVisibleEntities>,) -> Val<bevy::pbr::CubemapVisibleEntities> {
-        let output: Val<bevy::pbr::CubemapVisibleEntities> =<bevy::pbr::CubemapVisibleEntities as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::CubemapVisibleEntities>,) -> Val<::bevy_pbr::CubemapVisibleEntities> {
+        let output: Val<::bevy_pbr::CubemapVisibleEntities> =<::bevy_pbr::CubemapVisibleEntities as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -588,12 +590,12 @@ impl bevy::pbr::CubemapVisibleEntities {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::DirectionalLightShadowMap {
+impl ::bevy_pbr::DirectionalLightShadowMap {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::DirectionalLightShadowMap>,) -> Val<bevy::pbr::DirectionalLightShadowMap> {
-        let output: Val<bevy::pbr::DirectionalLightShadowMap> =<bevy::pbr::DirectionalLightShadowMap as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::DirectionalLightShadowMap>,) -> Val<::bevy_pbr::DirectionalLightShadowMap> {
+        let output: Val<::bevy_pbr::DirectionalLightShadowMap> =<::bevy_pbr::DirectionalLightShadowMap as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -605,7 +607,7 @@ impl bevy::pbr::DirectionalLightShadowMap {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::NotShadowCaster {
+impl ::bevy_pbr::NotShadowCaster {
      
 }
 
@@ -615,7 +617,7 @@ impl bevy::pbr::NotShadowCaster {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::NotShadowReceiver {
+impl ::bevy_pbr::NotShadowReceiver {
      
 }
 
@@ -625,12 +627,12 @@ impl bevy::pbr::NotShadowReceiver {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::PointLightShadowMap {
+impl ::bevy_pbr::PointLightShadowMap {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::PointLightShadowMap>,) -> Val<bevy::pbr::PointLightShadowMap> {
-        let output: Val<bevy::pbr::PointLightShadowMap> =<bevy::pbr::PointLightShadowMap as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::PointLightShadowMap>,) -> Val<::bevy_pbr::PointLightShadowMap> {
+        let output: Val<::bevy_pbr::PointLightShadowMap> =<::bevy_pbr::PointLightShadowMap as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -642,26 +644,26 @@ impl bevy::pbr::PointLightShadowMap {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::ShadowFilteringMethod {
+impl ::bevy_pbr::ShadowFilteringMethod {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::pbr::ShadowFilteringMethod>,) -> () {
-        let output: () =<bevy::pbr::ShadowFilteringMethod as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_pbr::ShadowFilteringMethod>,) -> () {
+        let output: () =<::bevy_pbr::ShadowFilteringMethod as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::pbr::ShadowFilteringMethod>,) -> Val<bevy::pbr::ShadowFilteringMethod> {
-        let output: Val<bevy::pbr::ShadowFilteringMethod> =<bevy::pbr::ShadowFilteringMethod as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::ShadowFilteringMethod>,) -> Val<::bevy_pbr::ShadowFilteringMethod> {
+        let output: Val<::bevy_pbr::ShadowFilteringMethod> =<::bevy_pbr::ShadowFilteringMethod as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::pbr::ShadowFilteringMethod>,other:Ref<bevy::pbr::ShadowFilteringMethod>,) -> bool {
-        let output: bool =<bevy::pbr::ShadowFilteringMethod as ::std::cmp::PartialEq::<bevy::pbr::ShadowFilteringMethod>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_pbr::ShadowFilteringMethod>,other:Ref<::bevy_pbr::ShadowFilteringMethod>,) -> bool {
+        let output: bool =<::bevy_pbr::ShadowFilteringMethod as ::std::cmp::PartialEq::<::bevy_pbr::ShadowFilteringMethod>>::eq(&_self,&other,).into();
         output
     }
      
@@ -673,40 +675,40 @@ impl bevy::pbr::ShadowFilteringMethod {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::DefaultOpaqueRendererMethod {
+impl ::bevy_pbr::DefaultOpaqueRendererMethod {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::DefaultOpaqueRendererMethod>,) -> Val<bevy::pbr::DefaultOpaqueRendererMethod> {
-        let output: Val<bevy::pbr::DefaultOpaqueRendererMethod> =<bevy::pbr::DefaultOpaqueRendererMethod as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::DefaultOpaqueRendererMethod>,) -> Val<::bevy_pbr::DefaultOpaqueRendererMethod> {
+        let output: Val<::bevy_pbr::DefaultOpaqueRendererMethod> =<::bevy_pbr::DefaultOpaqueRendererMethod as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn deferred () -> Val<bevy::pbr::DefaultOpaqueRendererMethod> {
-        let output: Val<bevy::pbr::DefaultOpaqueRendererMethod> =bevy::pbr::DefaultOpaqueRendererMethod::deferred().into();
+    fn deferred () -> Val<::bevy_pbr::DefaultOpaqueRendererMethod> {
+        let output: Val<::bevy_pbr::DefaultOpaqueRendererMethod> =::bevy_pbr::DefaultOpaqueRendererMethod::deferred().into();
         output
     }
 
 
     
-    fn forward () -> Val<bevy::pbr::DefaultOpaqueRendererMethod> {
-        let output: Val<bevy::pbr::DefaultOpaqueRendererMethod> =bevy::pbr::DefaultOpaqueRendererMethod::forward().into();
+    fn forward () -> Val<::bevy_pbr::DefaultOpaqueRendererMethod> {
+        let output: Val<::bevy_pbr::DefaultOpaqueRendererMethod> =::bevy_pbr::DefaultOpaqueRendererMethod::forward().into();
         output
     }
 
 
     
-    fn set_to_deferred (mut _self:Mut<bevy::pbr::DefaultOpaqueRendererMethod>,) -> () {
-        let output: () =bevy::pbr::DefaultOpaqueRendererMethod::set_to_deferred(&mut _self,).into();
+    fn set_to_deferred (mut _self:Mut<::bevy_pbr::DefaultOpaqueRendererMethod>,) -> () {
+        let output: () =::bevy_pbr::DefaultOpaqueRendererMethod::set_to_deferred(&mut _self,).into();
         output
     }
 
 
     
-    fn set_to_forward (mut _self:Mut<bevy::pbr::DefaultOpaqueRendererMethod>,) -> () {
-        let output: () =bevy::pbr::DefaultOpaqueRendererMethod::set_to_forward(&mut _self,).into();
+    fn set_to_forward (mut _self:Mut<::bevy_pbr::DefaultOpaqueRendererMethod>,) -> () {
+        let output: () =::bevy_pbr::DefaultOpaqueRendererMethod::set_to_forward(&mut _self,).into();
         output
     }
      
@@ -718,12 +720,12 @@ impl bevy::pbr::DefaultOpaqueRendererMethod {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::wireframe::WireframeMaterial {
+impl ::bevy_pbr::wireframe::WireframeMaterial {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::wireframe::WireframeMaterial>,) -> Val<bevy::pbr::wireframe::WireframeMaterial> {
-        let output: Val<bevy::pbr::wireframe::WireframeMaterial> =<bevy::pbr::wireframe::WireframeMaterial as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::wireframe::WireframeMaterial>,) -> Val<::bevy_pbr::wireframe::WireframeMaterial> {
+        let output: Val<::bevy_pbr::wireframe::WireframeMaterial> =<::bevy_pbr::wireframe::WireframeMaterial as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -735,26 +737,26 @@ impl bevy::pbr::wireframe::WireframeMaterial {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::wireframe::NoWireframe {
+impl ::bevy_pbr::wireframe::NoWireframe {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::pbr::wireframe::NoWireframe>,) -> () {
-        let output: () =<bevy::pbr::wireframe::NoWireframe as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_pbr::wireframe::NoWireframe>,) -> () {
+        let output: () =<::bevy_pbr::wireframe::NoWireframe as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::pbr::wireframe::NoWireframe>,) -> Val<bevy::pbr::wireframe::NoWireframe> {
-        let output: Val<bevy::pbr::wireframe::NoWireframe> =<bevy::pbr::wireframe::NoWireframe as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::wireframe::NoWireframe>,) -> Val<::bevy_pbr::wireframe::NoWireframe> {
+        let output: Val<::bevy_pbr::wireframe::NoWireframe> =<::bevy_pbr::wireframe::NoWireframe as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::pbr::wireframe::NoWireframe>,other:Ref<bevy::pbr::wireframe::NoWireframe>,) -> bool {
-        let output: bool =<bevy::pbr::wireframe::NoWireframe as ::std::cmp::PartialEq::<bevy::pbr::wireframe::NoWireframe>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_pbr::wireframe::NoWireframe>,other:Ref<::bevy_pbr::wireframe::NoWireframe>,) -> bool {
+        let output: bool =<::bevy_pbr::wireframe::NoWireframe as ::std::cmp::PartialEq::<::bevy_pbr::wireframe::NoWireframe>>::eq(&_self,&other,).into();
         output
     }
      
@@ -766,12 +768,12 @@ impl bevy::pbr::wireframe::NoWireframe {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::wireframe::WireframeConfig {
+impl ::bevy_pbr::wireframe::WireframeConfig {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::wireframe::WireframeConfig>,) -> Val<bevy::pbr::wireframe::WireframeConfig> {
-        let output: Val<bevy::pbr::wireframe::WireframeConfig> =<bevy::pbr::wireframe::WireframeConfig as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::wireframe::WireframeConfig>,) -> Val<::bevy_pbr::wireframe::WireframeConfig> {
+        let output: Val<::bevy_pbr::wireframe::WireframeConfig> =<::bevy_pbr::wireframe::WireframeConfig as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -783,12 +785,12 @@ impl bevy::pbr::wireframe::WireframeConfig {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::wireframe::WireframeColor {
+impl ::bevy_pbr::wireframe::WireframeColor {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::wireframe::WireframeColor>,) -> Val<bevy::pbr::wireframe::WireframeColor> {
-        let output: Val<bevy::pbr::wireframe::WireframeColor> =<bevy::pbr::wireframe::WireframeColor as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::wireframe::WireframeColor>,) -> Val<::bevy_pbr::wireframe::WireframeColor> {
+        let output: Val<::bevy_pbr::wireframe::WireframeColor> =<::bevy_pbr::wireframe::WireframeColor as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -800,26 +802,26 @@ impl bevy::pbr::wireframe::WireframeColor {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::wireframe::Wireframe {
+impl ::bevy_pbr::wireframe::Wireframe {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::pbr::wireframe::Wireframe>,) -> () {
-        let output: () =<bevy::pbr::wireframe::Wireframe as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_pbr::wireframe::Wireframe>,) -> () {
+        let output: () =<::bevy_pbr::wireframe::Wireframe as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::pbr::wireframe::Wireframe>,) -> Val<bevy::pbr::wireframe::Wireframe> {
-        let output: Val<bevy::pbr::wireframe::Wireframe> =<bevy::pbr::wireframe::Wireframe as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::wireframe::Wireframe>,) -> Val<::bevy_pbr::wireframe::Wireframe> {
+        let output: Val<::bevy_pbr::wireframe::Wireframe> =<::bevy_pbr::wireframe::Wireframe as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::pbr::wireframe::Wireframe>,other:Ref<bevy::pbr::wireframe::Wireframe>,) -> bool {
-        let output: bool =<bevy::pbr::wireframe::Wireframe as ::std::cmp::PartialEq::<bevy::pbr::wireframe::Wireframe>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_pbr::wireframe::Wireframe>,other:Ref<::bevy_pbr::wireframe::Wireframe>,) -> bool {
+        let output: bool =<::bevy_pbr::wireframe::Wireframe as ::std::cmp::PartialEq::<::bevy_pbr::wireframe::Wireframe>>::eq(&_self,&other,).into();
         output
     }
      
@@ -831,26 +833,26 @@ impl bevy::pbr::wireframe::Wireframe {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::wireframe::Mesh3dWireframe {
+impl ::bevy_pbr::wireframe::Mesh3dWireframe {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::pbr::wireframe::Mesh3dWireframe>,) -> () {
-        let output: () =<bevy::pbr::wireframe::Mesh3dWireframe as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_pbr::wireframe::Mesh3dWireframe>,) -> () {
+        let output: () =<::bevy_pbr::wireframe::Mesh3dWireframe as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::pbr::wireframe::Mesh3dWireframe>,) -> Val<bevy::pbr::wireframe::Mesh3dWireframe> {
-        let output: Val<bevy::pbr::wireframe::Mesh3dWireframe> =<bevy::pbr::wireframe::Mesh3dWireframe as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::wireframe::Mesh3dWireframe>,) -> Val<::bevy_pbr::wireframe::Mesh3dWireframe> {
+        let output: Val<::bevy_pbr::wireframe::Mesh3dWireframe> =<::bevy_pbr::wireframe::Mesh3dWireframe as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::pbr::wireframe::Mesh3dWireframe>,other:Ref<bevy::pbr::wireframe::Mesh3dWireframe>,) -> bool {
-        let output: bool =<bevy::pbr::wireframe::Mesh3dWireframe as ::std::cmp::PartialEq::<bevy::pbr::wireframe::Mesh3dWireframe>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_pbr::wireframe::Mesh3dWireframe>,other:Ref<::bevy_pbr::wireframe::Mesh3dWireframe>,) -> bool {
+        let output: bool =<::bevy_pbr::wireframe::Mesh3dWireframe as ::std::cmp::PartialEq::<::bevy_pbr::wireframe::Mesh3dWireframe>>::eq(&_self,&other,).into();
         output
     }
      
@@ -862,19 +864,19 @@ impl bevy::pbr::wireframe::Mesh3dWireframe {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::Atmosphere {
+impl ::bevy_pbr::Atmosphere {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::Atmosphere>,) -> Val<bevy::pbr::Atmosphere> {
-        let output: Val<bevy::pbr::Atmosphere> =<bevy::pbr::Atmosphere as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::Atmosphere>,) -> Val<::bevy_pbr::Atmosphere> {
+        let output: Val<::bevy_pbr::Atmosphere> =<::bevy_pbr::Atmosphere as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn with_density_multiplier (_self:Val<bevy::pbr::Atmosphere>,mult:f32,) -> Val<bevy::pbr::Atmosphere> {
-        let output: Val<bevy::pbr::Atmosphere> =bevy::pbr::Atmosphere::with_density_multiplier(_self.into_inner(),mult,).into();
+    fn with_density_multiplier (_self:Val<::bevy_pbr::Atmosphere>,mult:f32,) -> Val<::bevy_pbr::Atmosphere> {
+        let output: Val<::bevy_pbr::Atmosphere> =::bevy_pbr::Atmosphere::with_density_multiplier(_self.into_inner(),mult,).into();
         output
     }
      
@@ -886,12 +888,12 @@ impl bevy::pbr::Atmosphere {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::AtmosphereSettings {
+impl ::bevy_pbr::AtmosphereSettings {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::AtmosphereSettings>,) -> Val<bevy::pbr::AtmosphereSettings> {
-        let output: Val<bevy::pbr::AtmosphereSettings> =<bevy::pbr::AtmosphereSettings as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::AtmosphereSettings>,) -> Val<::bevy_pbr::AtmosphereSettings> {
+        let output: Val<::bevy_pbr::AtmosphereSettings> =<::bevy_pbr::AtmosphereSettings as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -903,12 +905,12 @@ impl bevy::pbr::AtmosphereSettings {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::ClusterFarZMode {
+impl ::bevy_pbr::ClusterFarZMode {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::ClusterFarZMode>,) -> Val<bevy::pbr::ClusterFarZMode> {
-        let output: Val<bevy::pbr::ClusterFarZMode> =<bevy::pbr::ClusterFarZMode as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::ClusterFarZMode>,) -> Val<::bevy_pbr::ClusterFarZMode> {
+        let output: Val<::bevy_pbr::ClusterFarZMode> =<::bevy_pbr::ClusterFarZMode as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -920,12 +922,12 @@ impl bevy::pbr::ClusterFarZMode {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::ClusterZConfig {
+impl ::bevy_pbr::ClusterZConfig {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::ClusterZConfig>,) -> Val<bevy::pbr::ClusterZConfig> {
-        let output: Val<bevy::pbr::ClusterZConfig> =<bevy::pbr::ClusterZConfig as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::ClusterZConfig>,) -> Val<::bevy_pbr::ClusterZConfig> {
+        let output: Val<::bevy_pbr::ClusterZConfig> =<::bevy_pbr::ClusterZConfig as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -937,12 +939,12 @@ impl bevy::pbr::ClusterZConfig {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::decal::clustered::ClusteredDecal {
+impl ::bevy_pbr::decal::clustered::ClusteredDecal {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::decal::clustered::ClusteredDecal>,) -> Val<bevy::pbr::decal::clustered::ClusteredDecal> {
-        let output: Val<bevy::pbr::decal::clustered::ClusteredDecal> =<bevy::pbr::decal::clustered::ClusteredDecal as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::decal::clustered::ClusteredDecal>,) -> Val<::bevy_pbr::decal::clustered::ClusteredDecal> {
+        let output: Val<::bevy_pbr::decal::clustered::ClusteredDecal> =<::bevy_pbr::decal::clustered::ClusteredDecal as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -954,12 +956,12 @@ impl bevy::pbr::decal::clustered::ClusteredDecal {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::irradiance_volume::IrradianceVolume {
+impl ::bevy_pbr::irradiance_volume::IrradianceVolume {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::irradiance_volume::IrradianceVolume>,) -> Val<bevy::pbr::irradiance_volume::IrradianceVolume> {
-        let output: Val<bevy::pbr::irradiance_volume::IrradianceVolume> =<bevy::pbr::irradiance_volume::IrradianceVolume as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::irradiance_volume::IrradianceVolume>,) -> Val<::bevy_pbr::irradiance_volume::IrradianceVolume> {
+        let output: Val<::bevy_pbr::irradiance_volume::IrradianceVolume> =<::bevy_pbr::irradiance_volume::IrradianceVolume as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -971,12 +973,12 @@ impl bevy::pbr::irradiance_volume::IrradianceVolume {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::RenderVisibleMeshEntities {
+impl ::bevy_pbr::RenderVisibleMeshEntities {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::RenderVisibleMeshEntities>,) -> Val<bevy::pbr::RenderVisibleMeshEntities> {
-        let output: Val<bevy::pbr::RenderVisibleMeshEntities> =<bevy::pbr::RenderVisibleMeshEntities as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::RenderVisibleMeshEntities>,) -> Val<::bevy_pbr::RenderVisibleMeshEntities> {
+        let output: Val<::bevy_pbr::RenderVisibleMeshEntities> =<::bevy_pbr::RenderVisibleMeshEntities as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -988,12 +990,12 @@ impl bevy::pbr::RenderVisibleMeshEntities {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::RenderCubemapVisibleEntities {
+impl ::bevy_pbr::RenderCubemapVisibleEntities {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::RenderCubemapVisibleEntities>,) -> Val<bevy::pbr::RenderCubemapVisibleEntities> {
-        let output: Val<bevy::pbr::RenderCubemapVisibleEntities> =<bevy::pbr::RenderCubemapVisibleEntities as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::RenderCubemapVisibleEntities>,) -> Val<::bevy_pbr::RenderCubemapVisibleEntities> {
+        let output: Val<::bevy_pbr::RenderCubemapVisibleEntities> =<::bevy_pbr::RenderCubemapVisibleEntities as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -1005,12 +1007,12 @@ impl bevy::pbr::RenderCubemapVisibleEntities {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::RenderCascadesVisibleEntities {
+impl ::bevy_pbr::RenderCascadesVisibleEntities {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::RenderCascadesVisibleEntities>,) -> Val<bevy::pbr::RenderCascadesVisibleEntities> {
-        let output: Val<bevy::pbr::RenderCascadesVisibleEntities> =<bevy::pbr::RenderCascadesVisibleEntities as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::RenderCascadesVisibleEntities>,) -> Val<::bevy_pbr::RenderCascadesVisibleEntities> {
+        let output: Val<::bevy_pbr::RenderCascadesVisibleEntities> =<::bevy_pbr::RenderCascadesVisibleEntities as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -1022,7 +1024,7 @@ impl bevy::pbr::RenderCascadesVisibleEntities {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::decal::ForwardDecal {
+impl ::bevy_pbr::decal::ForwardDecal {
      
 }
 
@@ -1032,19 +1034,19 @@ impl bevy::pbr::decal::ForwardDecal {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::OpaqueRendererMethod {
+impl ::bevy_pbr::OpaqueRendererMethod {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::OpaqueRendererMethod>,) -> Val<bevy::pbr::OpaqueRendererMethod> {
-        let output: Val<bevy::pbr::OpaqueRendererMethod> =<bevy::pbr::OpaqueRendererMethod as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::OpaqueRendererMethod>,) -> Val<::bevy_pbr::OpaqueRendererMethod> {
+        let output: Val<::bevy_pbr::OpaqueRendererMethod> =<::bevy_pbr::OpaqueRendererMethod as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::pbr::OpaqueRendererMethod>,other:Ref<bevy::pbr::OpaqueRendererMethod>,) -> bool {
-        let output: bool =<bevy::pbr::OpaqueRendererMethod as ::std::cmp::PartialEq::<bevy::pbr::OpaqueRendererMethod>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_pbr::OpaqueRendererMethod>,other:Ref<::bevy_pbr::OpaqueRendererMethod>,) -> bool {
+        let output: bool =<::bevy_pbr::OpaqueRendererMethod as ::std::cmp::PartialEq::<::bevy_pbr::OpaqueRendererMethod>>::eq(&_self,&other,).into();
         output
     }
      
@@ -1056,12 +1058,12 @@ impl bevy::pbr::OpaqueRendererMethod {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::Cascade {
+impl ::bevy_pbr::Cascade {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::Cascade>,) -> Val<bevy::pbr::Cascade> {
-        let output: Val<bevy::pbr::Cascade> =<bevy::pbr::Cascade as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::Cascade>,) -> Val<::bevy_pbr::Cascade> {
+        let output: Val<::bevy_pbr::Cascade> =<::bevy_pbr::Cascade as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -1073,7 +1075,7 @@ impl bevy::pbr::Cascade {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::TransmittedShadowReceiver {
+impl ::bevy_pbr::TransmittedShadowReceiver {
      
 }
 
@@ -1083,12 +1085,12 @@ impl bevy::pbr::TransmittedShadowReceiver {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::Lightmap {
+impl ::bevy_pbr::Lightmap {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::Lightmap>,) -> Val<bevy::pbr::Lightmap> {
-        let output: Val<bevy::pbr::Lightmap> =<bevy::pbr::Lightmap as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::Lightmap>,) -> Val<::bevy_pbr::Lightmap> {
+        let output: Val<::bevy_pbr::Lightmap> =<::bevy_pbr::Lightmap as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -1100,12 +1102,12 @@ impl bevy::pbr::Lightmap {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::MaterialBindingId {
+impl ::bevy_pbr::MaterialBindingId {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::MaterialBindingId>,) -> Val<bevy::pbr::MaterialBindingId> {
-        let output: Val<bevy::pbr::MaterialBindingId> =<bevy::pbr::MaterialBindingId as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::MaterialBindingId>,) -> Val<::bevy_pbr::MaterialBindingId> {
+        let output: Val<::bevy_pbr::MaterialBindingId> =<::bevy_pbr::MaterialBindingId as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -1117,19 +1119,19 @@ impl bevy::pbr::MaterialBindingId {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::MaterialBindGroupSlot {
+impl ::bevy_pbr::MaterialBindGroupSlot {
 
 
     
-    fn clone (_self:Ref<bevy::pbr::MaterialBindGroupSlot>,) -> Val<bevy::pbr::MaterialBindGroupSlot> {
-        let output: Val<bevy::pbr::MaterialBindGroupSlot> =<bevy::pbr::MaterialBindGroupSlot as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::MaterialBindGroupSlot>,) -> Val<::bevy_pbr::MaterialBindGroupSlot> {
+        let output: Val<::bevy_pbr::MaterialBindGroupSlot> =<::bevy_pbr::MaterialBindGroupSlot as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::pbr::MaterialBindGroupSlot>,other:Ref<bevy::pbr::MaterialBindGroupSlot>,) -> bool {
-        let output: bool =<bevy::pbr::MaterialBindGroupSlot as ::std::cmp::PartialEq::<bevy::pbr::MaterialBindGroupSlot>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_pbr::MaterialBindGroupSlot>,other:Ref<::bevy_pbr::MaterialBindGroupSlot>,) -> bool {
+        let output: bool =<::bevy_pbr::MaterialBindGroupSlot as ::std::cmp::PartialEq::<::bevy_pbr::MaterialBindGroupSlot>>::eq(&_self,&other,).into();
         output
     }
      
@@ -1141,26 +1143,26 @@ impl bevy::pbr::MaterialBindGroupSlot {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::MaterialBindGroupIndex {
+impl ::bevy_pbr::MaterialBindGroupIndex {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::pbr::MaterialBindGroupIndex>,) -> () {
-        let output: () =<bevy::pbr::MaterialBindGroupIndex as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_pbr::MaterialBindGroupIndex>,) -> () {
+        let output: () =<::bevy_pbr::MaterialBindGroupIndex as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::pbr::MaterialBindGroupIndex>,) -> Val<bevy::pbr::MaterialBindGroupIndex> {
-        let output: Val<bevy::pbr::MaterialBindGroupIndex> =<bevy::pbr::MaterialBindGroupIndex as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::MaterialBindGroupIndex>,) -> Val<::bevy_pbr::MaterialBindGroupIndex> {
+        let output: Val<::bevy_pbr::MaterialBindGroupIndex> =<::bevy_pbr::MaterialBindGroupIndex as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::pbr::MaterialBindGroupIndex>,other:Ref<bevy::pbr::MaterialBindGroupIndex>,) -> bool {
-        let output: bool =<bevy::pbr::MaterialBindGroupIndex as ::std::cmp::PartialEq::<bevy::pbr::MaterialBindGroupIndex>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_pbr::MaterialBindGroupIndex>,other:Ref<::bevy_pbr::MaterialBindGroupIndex>,) -> bool {
+        let output: bool =<::bevy_pbr::MaterialBindGroupIndex as ::std::cmp::PartialEq::<::bevy_pbr::MaterialBindGroupIndex>>::eq(&_self,&other,).into();
         output
     }
      
@@ -1172,26 +1174,26 @@ impl bevy::pbr::MaterialBindGroupIndex {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::UvChannel {
+impl ::bevy_pbr::UvChannel {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::pbr::UvChannel>,) -> () {
-        let output: () =<bevy::pbr::UvChannel as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_pbr::UvChannel>,) -> () {
+        let output: () =<::bevy_pbr::UvChannel as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::pbr::UvChannel>,) -> Val<bevy::pbr::UvChannel> {
-        let output: Val<bevy::pbr::UvChannel> =<bevy::pbr::UvChannel as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::UvChannel>,) -> Val<::bevy_pbr::UvChannel> {
+        let output: Val<::bevy_pbr::UvChannel> =<::bevy_pbr::UvChannel as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::pbr::UvChannel>,other:Ref<bevy::pbr::UvChannel>,) -> bool {
-        let output: bool =<bevy::pbr::UvChannel as ::std::cmp::PartialEq::<bevy::pbr::UvChannel>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_pbr::UvChannel>,other:Ref<::bevy_pbr::UvChannel>,) -> bool {
+        let output: bool =<::bevy_pbr::UvChannel as ::std::cmp::PartialEq::<::bevy_pbr::UvChannel>>::eq(&_self,&other,).into();
         output
     }
      
@@ -1203,34 +1205,34 @@ impl bevy::pbr::UvChannel {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::pbr::ScreenSpaceAmbientOcclusionQualityLevel {
+impl ::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::pbr::ScreenSpaceAmbientOcclusionQualityLevel>,) -> () {
-        let output: () =<bevy::pbr::ScreenSpaceAmbientOcclusionQualityLevel as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel>,) -> () {
+        let output: () =<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::pbr::ScreenSpaceAmbientOcclusionQualityLevel>,) -> Val<bevy::pbr::ScreenSpaceAmbientOcclusionQualityLevel> {
-        let output: Val<bevy::pbr::ScreenSpaceAmbientOcclusionQualityLevel> =<bevy::pbr::ScreenSpaceAmbientOcclusionQualityLevel as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel>,) -> Val<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel> {
+        let output: Val<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel> =<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::pbr::ScreenSpaceAmbientOcclusionQualityLevel>,other:Ref<bevy::pbr::ScreenSpaceAmbientOcclusionQualityLevel>,) -> bool {
-        let output: bool =<bevy::pbr::ScreenSpaceAmbientOcclusionQualityLevel as ::std::cmp::PartialEq::<bevy::pbr::ScreenSpaceAmbientOcclusionQualityLevel>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel>,other:Ref<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel>,) -> bool {
+        let output: bool =<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel as ::std::cmp::PartialEq::<::bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel>>::eq(&_self,&other,).into();
         output
     }
      
 }
 
 
-impl ::bevy::app::Plugin for BevyPbrScriptingPlugin {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
+impl Plugin for BevyPbrScriptingPlugin {
+    fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
 
         

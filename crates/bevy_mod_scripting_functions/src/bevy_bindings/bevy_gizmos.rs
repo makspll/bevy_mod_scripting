@@ -9,6 +9,8 @@ use bevy_mod_scripting_core::{
         function::{from::{Ref, Mut, Val}, namespace::{NamespaceBuilder}}
     }
 };
+use bevy_ecs::{prelude::*};
+
 
 use bevy_mod_scripting_derive::script_bindings;
 
@@ -30,12 +32,12 @@ pub struct BevyGizmosScriptingPlugin;
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::gizmos::aabb::AabbGizmoConfigGroup {
+impl ::bevy_gizmos::aabb::AabbGizmoConfigGroup {
 
 
     
-    fn clone (_self:Ref<bevy::gizmos::aabb::AabbGizmoConfigGroup>,) -> Val<bevy::gizmos::aabb::AabbGizmoConfigGroup> {
-        let output: Val<bevy::gizmos::aabb::AabbGizmoConfigGroup> =<bevy::gizmos::aabb::AabbGizmoConfigGroup as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_gizmos::aabb::AabbGizmoConfigGroup>,) -> Val<::bevy_gizmos::aabb::AabbGizmoConfigGroup> {
+        let output: Val<::bevy_gizmos::aabb::AabbGizmoConfigGroup> =<::bevy_gizmos::aabb::AabbGizmoConfigGroup as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -47,7 +49,7 @@ impl bevy::gizmos::aabb::AabbGizmoConfigGroup {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::gizmos::aabb::ShowAabbGizmo {
+impl ::bevy_gizmos::aabb::ShowAabbGizmo {
      
 }
 
@@ -57,7 +59,7 @@ impl bevy::gizmos::aabb::ShowAabbGizmo {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::gizmos::config::DefaultGizmoConfigGroup {
+impl ::bevy_gizmos::config::DefaultGizmoConfigGroup {
      
 }
 
@@ -67,12 +69,12 @@ impl bevy::gizmos::config::DefaultGizmoConfigGroup {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::gizmos::config::GizmoConfig {
+impl ::bevy_gizmos::config::GizmoConfig {
 
 
     
-    fn clone (_self:Ref<bevy::gizmos::config::GizmoConfig>,) -> Val<bevy::gizmos::config::GizmoConfig> {
-        let output: Val<bevy::gizmos::config::GizmoConfig> =<bevy::gizmos::config::GizmoConfig as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_gizmos::config::GizmoConfig>,) -> Val<::bevy_gizmos::config::GizmoConfig> {
+        let output: Val<::bevy_gizmos::config::GizmoConfig> =<::bevy_gizmos::config::GizmoConfig as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -84,7 +86,7 @@ impl bevy::gizmos::config::GizmoConfig {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::gizmos::config::GizmoConfigStore {
+impl ::bevy_gizmos::config::GizmoConfigStore {
      
 }
 
@@ -94,12 +96,12 @@ impl bevy::gizmos::config::GizmoConfigStore {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::gizmos::config::GizmoLineConfig {
+impl ::bevy_gizmos::config::GizmoLineConfig {
 
 
     
-    fn clone (_self:Ref<bevy::gizmos::config::GizmoLineConfig>,) -> Val<bevy::gizmos::config::GizmoLineConfig> {
-        let output: Val<bevy::gizmos::config::GizmoLineConfig> =<bevy::gizmos::config::GizmoLineConfig as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_gizmos::config::GizmoLineConfig>,) -> Val<::bevy_gizmos::config::GizmoLineConfig> {
+        let output: Val<::bevy_gizmos::config::GizmoLineConfig> =<::bevy_gizmos::config::GizmoLineConfig as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -111,26 +113,26 @@ impl bevy::gizmos::config::GizmoLineConfig {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::gizmos::config::GizmoLineJoint {
+impl ::bevy_gizmos::config::GizmoLineJoint {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::gizmos::config::GizmoLineJoint>,) -> () {
-        let output: () =<bevy::gizmos::config::GizmoLineJoint as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_gizmos::config::GizmoLineJoint>,) -> () {
+        let output: () =<::bevy_gizmos::config::GizmoLineJoint as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::gizmos::config::GizmoLineJoint>,) -> Val<bevy::gizmos::config::GizmoLineJoint> {
-        let output: Val<bevy::gizmos::config::GizmoLineJoint> =<bevy::gizmos::config::GizmoLineJoint as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_gizmos::config::GizmoLineJoint>,) -> Val<::bevy_gizmos::config::GizmoLineJoint> {
+        let output: Val<::bevy_gizmos::config::GizmoLineJoint> =<::bevy_gizmos::config::GizmoLineJoint as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::gizmos::config::GizmoLineJoint>,other:Ref<bevy::gizmos::config::GizmoLineJoint>,) -> bool {
-        let output: bool =<bevy::gizmos::config::GizmoLineJoint as ::std::cmp::PartialEq::<bevy::gizmos::config::GizmoLineJoint>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_gizmos::config::GizmoLineJoint>,other:Ref<::bevy_gizmos::config::GizmoLineJoint>,) -> bool {
+        let output: bool =<::bevy_gizmos::config::GizmoLineJoint as ::std::cmp::PartialEq::<::bevy_gizmos::config::GizmoLineJoint>>::eq(&_self,&other,).into();
         output
     }
      
@@ -142,19 +144,19 @@ impl bevy::gizmos::config::GizmoLineJoint {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::gizmos::config::GizmoLineStyle {
+impl ::bevy_gizmos::config::GizmoLineStyle {
 
 
     
-    fn clone (_self:Ref<bevy::gizmos::config::GizmoLineStyle>,) -> Val<bevy::gizmos::config::GizmoLineStyle> {
-        let output: Val<bevy::gizmos::config::GizmoLineStyle> =<bevy::gizmos::config::GizmoLineStyle as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_gizmos::config::GizmoLineStyle>,) -> Val<::bevy_gizmos::config::GizmoLineStyle> {
+        let output: Val<::bevy_gizmos::config::GizmoLineStyle> =<::bevy_gizmos::config::GizmoLineStyle as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::gizmos::config::GizmoLineStyle>,other:Ref<bevy::gizmos::config::GizmoLineStyle>,) -> bool {
-        let output: bool =<bevy::gizmos::config::GizmoLineStyle as ::std::cmp::PartialEq::<bevy::gizmos::config::GizmoLineStyle>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_gizmos::config::GizmoLineStyle>,other:Ref<::bevy_gizmos::config::GizmoLineStyle>,) -> bool {
+        let output: bool =<::bevy_gizmos::config::GizmoLineStyle as ::std::cmp::PartialEq::<::bevy_gizmos::config::GizmoLineStyle>>::eq(&_self,&other,).into();
         output
     }
      
@@ -166,12 +168,12 @@ impl bevy::gizmos::config::GizmoLineStyle {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::gizmos::retained::Gizmo {
+impl ::bevy_gizmos::retained::Gizmo {
 
 
     
-    fn clone (_self:Ref<bevy::gizmos::retained::Gizmo>,) -> Val<bevy::gizmos::retained::Gizmo> {
-        let output: Val<bevy::gizmos::retained::Gizmo> =<bevy::gizmos::retained::Gizmo as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_gizmos::retained::Gizmo>,) -> Val<::bevy_gizmos::retained::Gizmo> {
+        let output: Val<::bevy_gizmos::retained::Gizmo> =<::bevy_gizmos::retained::Gizmo as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -183,12 +185,12 @@ impl bevy::gizmos::retained::Gizmo {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::gizmos::light::LightGizmoColor {
+impl ::bevy_gizmos::light::LightGizmoColor {
 
 
     
-    fn clone (_self:Ref<bevy::gizmos::light::LightGizmoColor>,) -> Val<bevy::gizmos::light::LightGizmoColor> {
-        let output: Val<bevy::gizmos::light::LightGizmoColor> =<bevy::gizmos::light::LightGizmoColor as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_gizmos::light::LightGizmoColor>,) -> Val<::bevy_gizmos::light::LightGizmoColor> {
+        let output: Val<::bevy_gizmos::light::LightGizmoColor> =<::bevy_gizmos::light::LightGizmoColor as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -200,12 +202,12 @@ impl bevy::gizmos::light::LightGizmoColor {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::gizmos::light::LightGizmoConfigGroup {
+impl ::bevy_gizmos::light::LightGizmoConfigGroup {
 
 
     
-    fn clone (_self:Ref<bevy::gizmos::light::LightGizmoConfigGroup>,) -> Val<bevy::gizmos::light::LightGizmoConfigGroup> {
-        let output: Val<bevy::gizmos::light::LightGizmoConfigGroup> =<bevy::gizmos::light::LightGizmoConfigGroup as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_gizmos::light::LightGizmoConfigGroup>,) -> Val<::bevy_gizmos::light::LightGizmoConfigGroup> {
+        let output: Val<::bevy_gizmos::light::LightGizmoConfigGroup> =<::bevy_gizmos::light::LightGizmoConfigGroup as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -217,7 +219,7 @@ impl bevy::gizmos::light::LightGizmoConfigGroup {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::gizmos::light::ShowLightGizmo {
+impl ::bevy_gizmos::light::ShowLightGizmo {
      
 }
 
@@ -227,20 +229,20 @@ impl bevy::gizmos::light::ShowLightGizmo {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::gizmos::config::ErasedGizmoConfigGroup {
+impl ::bevy_gizmos::config::ErasedGizmoConfigGroup {
 
 
     
-    fn clone (_self:Ref<bevy::gizmos::config::ErasedGizmoConfigGroup>,) -> Val<bevy::gizmos::config::ErasedGizmoConfigGroup> {
-        let output: Val<bevy::gizmos::config::ErasedGizmoConfigGroup> =<bevy::gizmos::config::ErasedGizmoConfigGroup as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_gizmos::config::ErasedGizmoConfigGroup>,) -> Val<::bevy_gizmos::config::ErasedGizmoConfigGroup> {
+        let output: Val<::bevy_gizmos::config::ErasedGizmoConfigGroup> =<::bevy_gizmos::config::ErasedGizmoConfigGroup as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
 }
 
 
-impl ::bevy::app::Plugin for BevyGizmosScriptingPlugin {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
+impl Plugin for BevyGizmosScriptingPlugin {
+    fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
 
         

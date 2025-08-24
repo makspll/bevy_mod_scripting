@@ -9,6 +9,8 @@ use bevy_mod_scripting_core::{
         function::{from::{Ref, Mut, Val}, namespace::{NamespaceBuilder}}
     }
 };
+use bevy_ecs::{prelude::*};
+
 
 use bevy_mod_scripting_derive::script_bindings;
 
@@ -30,26 +32,26 @@ pub struct BevyWinitScriptingPlugin;
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::winit::cursor::CustomCursor {
+impl ::bevy_winit::cursor::CustomCursor {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::winit::cursor::CustomCursor>,) -> () {
-        let output: () =<bevy::winit::cursor::CustomCursor as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_winit::cursor::CustomCursor>,) -> () {
+        let output: () =<::bevy_winit::cursor::CustomCursor as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::winit::cursor::CustomCursor>,) -> Val<bevy::winit::cursor::CustomCursor> {
-        let output: Val<bevy::winit::cursor::CustomCursor> =<bevy::winit::cursor::CustomCursor as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_winit::cursor::CustomCursor>,) -> Val<::bevy_winit::cursor::CustomCursor> {
+        let output: Val<::bevy_winit::cursor::CustomCursor> =<::bevy_winit::cursor::CustomCursor as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::winit::cursor::CustomCursor>,other:Ref<bevy::winit::cursor::CustomCursor>,) -> bool {
-        let output: bool =<bevy::winit::cursor::CustomCursor as ::std::cmp::PartialEq::<bevy::winit::cursor::CustomCursor>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_winit::cursor::CustomCursor>,other:Ref<::bevy_winit::cursor::CustomCursor>,) -> bool {
+        let output: bool =<::bevy_winit::cursor::CustomCursor as ::std::cmp::PartialEq::<::bevy_winit::cursor::CustomCursor>>::eq(&_self,&other,).into();
         output
     }
      
@@ -61,12 +63,12 @@ impl bevy::winit::cursor::CustomCursor {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::winit::WakeUp {
+impl ::bevy_winit::WakeUp {
 
 
     
-    fn clone (_self:Ref<bevy::winit::WakeUp>,) -> Val<bevy::winit::WakeUp> {
-        let output: Val<bevy::winit::WakeUp> =<bevy::winit::WakeUp as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_winit::WakeUp>,) -> Val<::bevy_winit::WakeUp> {
+        let output: Val<::bevy_winit::WakeUp> =<::bevy_winit::WakeUp as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -78,26 +80,26 @@ impl bevy::winit::WakeUp {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::winit::cursor::CursorIcon {
+impl ::bevy_winit::cursor::CursorIcon {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::winit::cursor::CursorIcon>,) -> () {
-        let output: () =<bevy::winit::cursor::CursorIcon as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_winit::cursor::CursorIcon>,) -> () {
+        let output: () =<::bevy_winit::cursor::CursorIcon as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::winit::cursor::CursorIcon>,) -> Val<bevy::winit::cursor::CursorIcon> {
-        let output: Val<bevy::winit::cursor::CursorIcon> =<bevy::winit::cursor::CursorIcon as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_winit::cursor::CursorIcon>,) -> Val<::bevy_winit::cursor::CursorIcon> {
+        let output: Val<::bevy_winit::cursor::CursorIcon> =<::bevy_winit::cursor::CursorIcon as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::winit::cursor::CursorIcon>,other:Ref<bevy::winit::cursor::CursorIcon>,) -> bool {
-        let output: bool =<bevy::winit::cursor::CursorIcon as ::std::cmp::PartialEq::<bevy::winit::cursor::CursorIcon>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_winit::cursor::CursorIcon>,other:Ref<::bevy_winit::cursor::CursorIcon>,) -> bool {
+        let output: bool =<::bevy_winit::cursor::CursorIcon as ::std::cmp::PartialEq::<::bevy_winit::cursor::CursorIcon>>::eq(&_self,&other,).into();
         output
     }
      
@@ -109,34 +111,34 @@ impl bevy::winit::cursor::CursorIcon {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::winit::cursor::CustomCursorImage {
+impl ::bevy_winit::cursor::CustomCursorImage {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::winit::cursor::CustomCursorImage>,) -> () {
-        let output: () =<bevy::winit::cursor::CustomCursorImage as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_winit::cursor::CustomCursorImage>,) -> () {
+        let output: () =<::bevy_winit::cursor::CustomCursorImage as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::winit::cursor::CustomCursorImage>,) -> Val<bevy::winit::cursor::CustomCursorImage> {
-        let output: Val<bevy::winit::cursor::CustomCursorImage> =<bevy::winit::cursor::CustomCursorImage as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_winit::cursor::CustomCursorImage>,) -> Val<::bevy_winit::cursor::CustomCursorImage> {
+        let output: Val<::bevy_winit::cursor::CustomCursorImage> =<::bevy_winit::cursor::CustomCursorImage as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::winit::cursor::CustomCursorImage>,other:Ref<bevy::winit::cursor::CustomCursorImage>,) -> bool {
-        let output: bool =<bevy::winit::cursor::CustomCursorImage as ::std::cmp::PartialEq::<bevy::winit::cursor::CustomCursorImage>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_winit::cursor::CustomCursorImage>,other:Ref<::bevy_winit::cursor::CustomCursorImage>,) -> bool {
+        let output: bool =<::bevy_winit::cursor::CustomCursorImage as ::std::cmp::PartialEq::<::bevy_winit::cursor::CustomCursorImage>>::eq(&_self,&other,).into();
         output
     }
      
 }
 
 
-impl ::bevy::app::Plugin for BevyWinitScriptingPlugin {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
+impl Plugin for BevyWinitScriptingPlugin {
+    fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
 
         

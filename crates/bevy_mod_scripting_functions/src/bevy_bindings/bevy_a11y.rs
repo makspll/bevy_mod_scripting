@@ -9,6 +9,8 @@ use bevy_mod_scripting_core::{
         function::{from::{Ref, Mut, Val}, namespace::{NamespaceBuilder}}
     }
 };
+use bevy_ecs::{prelude::*};
+
 
 use bevy_mod_scripting_derive::script_bindings;
 
@@ -30,12 +32,12 @@ pub struct BevyA11YScriptingPlugin;
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::a11y::AccessibilityRequested {
+impl ::bevy_a11y::AccessibilityRequested {
 
 
     
-    fn clone (_self:Ref<bevy::a11y::AccessibilityRequested>,) -> Val<bevy::a11y::AccessibilityRequested> {
-        let output: Val<bevy::a11y::AccessibilityRequested> =<bevy::a11y::AccessibilityRequested as ::core::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_a11y::AccessibilityRequested>,) -> Val<::bevy_a11y::AccessibilityRequested> {
+        let output: Val<::bevy_a11y::AccessibilityRequested> =<::bevy_a11y::AccessibilityRequested as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -45,8 +47,8 @@ impl bevy::a11y::AccessibilityRequested {
     
     ///  updates should be sent.
     
-    fn get (_self:Ref<bevy::a11y::AccessibilityRequested>,) -> bool {
-        let output: bool =bevy::a11y::AccessibilityRequested::get(&_self,).into();
+    fn get (_self:Ref<::bevy_a11y::AccessibilityRequested>,) -> bool {
+        let output: bool =::bevy_a11y::AccessibilityRequested::get(&_self,).into();
         output
     }
 
@@ -54,8 +56,8 @@ impl bevy::a11y::AccessibilityRequested {
     
     ///  Sets whether accessibility updates were requested by an access technology.
     
-    fn set (_self:Ref<bevy::a11y::AccessibilityRequested>,value:bool,) -> () {
-        let output: () =bevy::a11y::AccessibilityRequested::set(&_self,value,).into();
+    fn set (_self:Ref<::bevy_a11y::AccessibilityRequested>,value:bool,) -> () {
+        let output: () =::bevy_a11y::AccessibilityRequested::set(&_self,value,).into();
         output
     }
      
@@ -67,12 +69,12 @@ impl bevy::a11y::AccessibilityRequested {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::a11y::ManageAccessibilityUpdates {
+impl ::bevy_a11y::ManageAccessibilityUpdates {
 
 
     
-    fn clone (_self:Ref<bevy::a11y::ManageAccessibilityUpdates>,) -> Val<bevy::a11y::ManageAccessibilityUpdates> {
-        let output: Val<bevy::a11y::ManageAccessibilityUpdates> =<bevy::a11y::ManageAccessibilityUpdates as ::core::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_a11y::ManageAccessibilityUpdates>,) -> Val<::bevy_a11y::ManageAccessibilityUpdates> {
+        let output: Val<::bevy_a11y::ManageAccessibilityUpdates> =<::bevy_a11y::ManageAccessibilityUpdates as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -80,8 +82,8 @@ impl bevy::a11y::ManageAccessibilityUpdates {
     
     ///  Returns `true` if the ECS should update the accessibility tree.
     
-    fn get (_self:Ref<bevy::a11y::ManageAccessibilityUpdates>,) -> bool {
-        let output: bool =bevy::a11y::ManageAccessibilityUpdates::get(&_self,).into();
+    fn get (_self:Ref<::bevy_a11y::ManageAccessibilityUpdates>,) -> bool {
+        let output: bool =::bevy_a11y::ManageAccessibilityUpdates::get(&_self,).into();
         output
     }
 
@@ -89,8 +91,8 @@ impl bevy::a11y::ManageAccessibilityUpdates {
     
     ///  Sets whether the ECS should update the accessibility tree.
     
-    fn set (mut _self:Mut<bevy::a11y::ManageAccessibilityUpdates>,value:bool,) -> () {
-        let output: () =bevy::a11y::ManageAccessibilityUpdates::set(&mut _self,value,).into();
+    fn set (mut _self:Mut<::bevy_a11y::ManageAccessibilityUpdates>,value:bool,) -> () {
+        let output: () =::bevy_a11y::ManageAccessibilityUpdates::set(&mut _self,value,).into();
         output
     }
      
@@ -102,34 +104,34 @@ impl bevy::a11y::ManageAccessibilityUpdates {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::a11y::AccessibilitySystem {
+impl ::bevy_a11y::AccessibilitySystem {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::a11y::AccessibilitySystem>,) -> () {
-        let output: () =<bevy::a11y::AccessibilitySystem as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_a11y::AccessibilitySystem>,) -> () {
+        let output: () =<::bevy_a11y::AccessibilitySystem as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::a11y::AccessibilitySystem>,) -> Val<bevy::a11y::AccessibilitySystem> {
-        let output: Val<bevy::a11y::AccessibilitySystem> =<bevy::a11y::AccessibilitySystem as ::core::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_a11y::AccessibilitySystem>,) -> Val<::bevy_a11y::AccessibilitySystem> {
+        let output: Val<::bevy_a11y::AccessibilitySystem> =<::bevy_a11y::AccessibilitySystem as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::a11y::AccessibilitySystem>,other:Ref<bevy::a11y::AccessibilitySystem>,) -> bool {
-        let output: bool =<bevy::a11y::AccessibilitySystem as ::core::cmp::PartialEq::<bevy::a11y::AccessibilitySystem>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_a11y::AccessibilitySystem>,other:Ref<::bevy_a11y::AccessibilitySystem>,) -> bool {
+        let output: bool =<::bevy_a11y::AccessibilitySystem as ::core::cmp::PartialEq::<::bevy_a11y::AccessibilitySystem>>::eq(&_self,&other,).into();
         output
     }
      
 }
 
 
-impl ::bevy::app::Plugin for BevyA11YScriptingPlugin {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
+impl Plugin for BevyA11YScriptingPlugin {
+    fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
 
         

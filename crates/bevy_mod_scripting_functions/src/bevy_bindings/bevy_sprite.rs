@@ -9,6 +9,8 @@ use bevy_mod_scripting_core::{
         function::{from::{Ref, Mut, Val}, namespace::{NamespaceBuilder}}
     }
 };
+use bevy_ecs::{prelude::*};
+
 
 use bevy_mod_scripting_derive::script_bindings;
 
@@ -30,12 +32,12 @@ pub struct BevySpriteScriptingPlugin;
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::sprite::prelude::SpritePickingCamera {
+impl ::bevy_sprite::prelude::SpritePickingCamera {
 
 
     
-    fn clone (_self:Ref<bevy::sprite::prelude::SpritePickingCamera>,) -> Val<bevy::sprite::prelude::SpritePickingCamera> {
-        let output: Val<bevy::sprite::prelude::SpritePickingCamera> =<bevy::sprite::prelude::SpritePickingCamera as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_sprite::prelude::SpritePickingCamera>,) -> Val<::bevy_sprite::prelude::SpritePickingCamera> {
+        let output: Val<::bevy_sprite::prelude::SpritePickingCamera> =<::bevy_sprite::prelude::SpritePickingCamera as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -47,12 +49,12 @@ impl bevy::sprite::prelude::SpritePickingCamera {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::sprite::prelude::SpritePickingMode {
+impl ::bevy_sprite::prelude::SpritePickingMode {
 
 
     
-    fn clone (_self:Ref<bevy::sprite::prelude::SpritePickingMode>,) -> Val<bevy::sprite::prelude::SpritePickingMode> {
-        let output: Val<bevy::sprite::prelude::SpritePickingMode> =<bevy::sprite::prelude::SpritePickingMode as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_sprite::prelude::SpritePickingMode>,) -> Val<::bevy_sprite::prelude::SpritePickingMode> {
+        let output: Val<::bevy_sprite::prelude::SpritePickingMode> =<::bevy_sprite::prelude::SpritePickingMode as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -64,7 +66,7 @@ impl bevy::sprite::prelude::SpritePickingMode {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::sprite::prelude::SpritePickingSettings {
+impl ::bevy_sprite::prelude::SpritePickingSettings {
      
 }
 
@@ -74,12 +76,12 @@ impl bevy::sprite::prelude::SpritePickingSettings {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::sprite::prelude::Sprite {
+impl ::bevy_sprite::prelude::Sprite {
 
 
     
-    fn clone (_self:Ref<bevy::sprite::prelude::Sprite>,) -> Val<bevy::sprite::prelude::Sprite> {
-        let output: Val<bevy::sprite::prelude::Sprite> =<bevy::sprite::prelude::Sprite as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_sprite::prelude::Sprite>,) -> Val<::bevy_sprite::prelude::Sprite> {
+        let output: Val<::bevy_sprite::prelude::Sprite> =<::bevy_sprite::prelude::Sprite as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -87,8 +89,8 @@ impl bevy::sprite::prelude::Sprite {
     
     ///  Create a Sprite with a custom size
     
-    fn sized (custom_size:Val<bevy::math::Vec2>,) -> Val<bevy::sprite::prelude::Sprite> {
-        let output: Val<bevy::sprite::prelude::Sprite> =bevy::sprite::prelude::Sprite::sized(custom_size.into_inner(),).into();
+    fn sized (custom_size:Val<::bevy_math::Vec2>,) -> Val<::bevy_sprite::prelude::Sprite> {
+        let output: Val<::bevy_sprite::prelude::Sprite> =::bevy_sprite::prelude::Sprite::sized(custom_size.into_inner(),).into();
         output
     }
      
@@ -100,19 +102,19 @@ impl bevy::sprite::prelude::Sprite {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::sprite::prelude::SpriteImageMode {
+impl ::bevy_sprite::prelude::SpriteImageMode {
 
 
     
-    fn clone (_self:Ref<bevy::sprite::prelude::SpriteImageMode>,) -> Val<bevy::sprite::prelude::SpriteImageMode> {
-        let output: Val<bevy::sprite::prelude::SpriteImageMode> =<bevy::sprite::prelude::SpriteImageMode as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_sprite::prelude::SpriteImageMode>,) -> Val<::bevy_sprite::prelude::SpriteImageMode> {
+        let output: Val<::bevy_sprite::prelude::SpriteImageMode> =<::bevy_sprite::prelude::SpriteImageMode as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::sprite::prelude::SpriteImageMode>,other:Ref<bevy::sprite::prelude::SpriteImageMode>,) -> bool {
-        let output: bool =<bevy::sprite::prelude::SpriteImageMode as ::std::cmp::PartialEq::<bevy::sprite::prelude::SpriteImageMode>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_sprite::prelude::SpriteImageMode>,other:Ref<::bevy_sprite::prelude::SpriteImageMode>,) -> bool {
+        let output: bool =<::bevy_sprite::prelude::SpriteImageMode as ::std::cmp::PartialEq::<::bevy_sprite::prelude::SpriteImageMode>>::eq(&_self,&other,).into();
         output
     }
 
@@ -120,8 +122,8 @@ impl bevy::sprite::prelude::SpriteImageMode {
     
     ///  Returns true if this mode uses slices internally ([`SpriteImageMode::Sliced`] or [`SpriteImageMode::Tiled`])
     
-    fn uses_slices (_self:Ref<bevy::sprite::prelude::SpriteImageMode>,) -> bool {
-        let output: bool =bevy::sprite::prelude::SpriteImageMode::uses_slices(&_self,).into();
+    fn uses_slices (_self:Ref<::bevy_sprite::prelude::SpriteImageMode>,) -> bool {
+        let output: bool =::bevy_sprite::prelude::SpriteImageMode::uses_slices(&_self,).into();
         output
     }
      
@@ -133,14 +135,14 @@ impl bevy::sprite::prelude::SpriteImageMode {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::sprite::prelude::BorderRect {
+impl ::bevy_sprite::prelude::BorderRect {
 
 
     
     ///  Creates a border with the same `extent` along each edge
     
-    fn all (extent:f32,) -> Val<bevy::sprite::prelude::BorderRect> {
-        let output: Val<bevy::sprite::prelude::BorderRect> =bevy::sprite::prelude::BorderRect::all(extent,).into();
+    fn all (extent:f32,) -> Val<::bevy_sprite::prelude::BorderRect> {
+        let output: Val<::bevy_sprite::prelude::BorderRect> =::bevy_sprite::prelude::BorderRect::all(extent,).into();
         output
     }
 
@@ -148,22 +150,22 @@ impl bevy::sprite::prelude::BorderRect {
     
     ///  Creates a new border with the `left` and `right` extents equal to `horizontal`, and `top` and `bottom` extents equal to `vertical`.
     
-    fn axes (horizontal:f32,vertical:f32,) -> Val<bevy::sprite::prelude::BorderRect> {
-        let output: Val<bevy::sprite::prelude::BorderRect> =bevy::sprite::prelude::BorderRect::axes(horizontal,vertical,).into();
+    fn axes (horizontal:f32,vertical:f32,) -> Val<::bevy_sprite::prelude::BorderRect> {
+        let output: Val<::bevy_sprite::prelude::BorderRect> =::bevy_sprite::prelude::BorderRect::axes(horizontal,vertical,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::sprite::prelude::BorderRect>,) -> Val<bevy::sprite::prelude::BorderRect> {
-        let output: Val<bevy::sprite::prelude::BorderRect> =<bevy::sprite::prelude::BorderRect as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_sprite::prelude::BorderRect>,) -> Val<::bevy_sprite::prelude::BorderRect> {
+        let output: Val<::bevy_sprite::prelude::BorderRect> =<::bevy_sprite::prelude::BorderRect as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::sprite::prelude::BorderRect>,other:Ref<bevy::sprite::prelude::BorderRect>,) -> bool {
-        let output: bool =<bevy::sprite::prelude::BorderRect as ::std::cmp::PartialEq::<bevy::sprite::prelude::BorderRect>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_sprite::prelude::BorderRect>,other:Ref<::bevy_sprite::prelude::BorderRect>,) -> bool {
+        let output: bool =<::bevy_sprite::prelude::BorderRect as ::std::cmp::PartialEq::<::bevy_sprite::prelude::BorderRect>>::eq(&_self,&other,).into();
         output
     }
      
@@ -175,19 +177,19 @@ impl bevy::sprite::prelude::BorderRect {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::sprite::prelude::SliceScaleMode {
+impl ::bevy_sprite::prelude::SliceScaleMode {
 
 
     
-    fn clone (_self:Ref<bevy::sprite::prelude::SliceScaleMode>,) -> Val<bevy::sprite::prelude::SliceScaleMode> {
-        let output: Val<bevy::sprite::prelude::SliceScaleMode> =<bevy::sprite::prelude::SliceScaleMode as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_sprite::prelude::SliceScaleMode>,) -> Val<::bevy_sprite::prelude::SliceScaleMode> {
+        let output: Val<::bevy_sprite::prelude::SliceScaleMode> =<::bevy_sprite::prelude::SliceScaleMode as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::sprite::prelude::SliceScaleMode>,other:Ref<bevy::sprite::prelude::SliceScaleMode>,) -> bool {
-        let output: bool =<bevy::sprite::prelude::SliceScaleMode as ::std::cmp::PartialEq::<bevy::sprite::prelude::SliceScaleMode>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_sprite::prelude::SliceScaleMode>,other:Ref<::bevy_sprite::prelude::SliceScaleMode>,) -> bool {
+        let output: bool =<::bevy_sprite::prelude::SliceScaleMode as ::std::cmp::PartialEq::<::bevy_sprite::prelude::SliceScaleMode>>::eq(&_self,&other,).into();
         output
     }
      
@@ -199,19 +201,19 @@ impl bevy::sprite::prelude::SliceScaleMode {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::sprite::prelude::TextureSlicer {
+impl ::bevy_sprite::prelude::TextureSlicer {
 
 
     
-    fn clone (_self:Ref<bevy::sprite::prelude::TextureSlicer>,) -> Val<bevy::sprite::prelude::TextureSlicer> {
-        let output: Val<bevy::sprite::prelude::TextureSlicer> =<bevy::sprite::prelude::TextureSlicer as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_sprite::prelude::TextureSlicer>,) -> Val<::bevy_sprite::prelude::TextureSlicer> {
+        let output: Val<::bevy_sprite::prelude::TextureSlicer> =<::bevy_sprite::prelude::TextureSlicer as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::sprite::prelude::TextureSlicer>,other:Ref<bevy::sprite::prelude::TextureSlicer>,) -> bool {
-        let output: bool =<bevy::sprite::prelude::TextureSlicer as ::std::cmp::PartialEq::<bevy::sprite::prelude::TextureSlicer>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_sprite::prelude::TextureSlicer>,other:Ref<::bevy_sprite::prelude::TextureSlicer>,) -> bool {
+        let output: bool =<::bevy_sprite::prelude::TextureSlicer as ::std::cmp::PartialEq::<::bevy_sprite::prelude::TextureSlicer>>::eq(&_self,&other,).into();
         output
     }
      
@@ -223,12 +225,12 @@ impl bevy::sprite::prelude::TextureSlicer {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::sprite::prelude::ColorMaterial {
+impl ::bevy_sprite::prelude::ColorMaterial {
 
 
     
-    fn clone (_self:Ref<bevy::sprite::prelude::ColorMaterial>,) -> Val<bevy::sprite::prelude::ColorMaterial> {
-        let output: Val<bevy::sprite::prelude::ColorMaterial> =<bevy::sprite::prelude::ColorMaterial as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_sprite::prelude::ColorMaterial>,) -> Val<::bevy_sprite::prelude::ColorMaterial> {
+        let output: Val<::bevy_sprite::prelude::ColorMaterial> =<::bevy_sprite::prelude::ColorMaterial as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -240,19 +242,19 @@ impl bevy::sprite::prelude::ColorMaterial {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::sprite::prelude::ScalingMode {
+impl ::bevy_sprite::prelude::ScalingMode {
 
 
     
-    fn clone (_self:Ref<bevy::sprite::prelude::ScalingMode>,) -> Val<bevy::sprite::prelude::ScalingMode> {
-        let output: Val<bevy::sprite::prelude::ScalingMode> =<bevy::sprite::prelude::ScalingMode as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_sprite::prelude::ScalingMode>,) -> Val<::bevy_sprite::prelude::ScalingMode> {
+        let output: Val<::bevy_sprite::prelude::ScalingMode> =<::bevy_sprite::prelude::ScalingMode as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::sprite::prelude::ScalingMode>,other:Ref<bevy::sprite::prelude::ScalingMode>,) -> bool {
-        let output: bool =<bevy::sprite::prelude::ScalingMode as ::std::cmp::PartialEq::<bevy::sprite::prelude::ScalingMode>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_sprite::prelude::ScalingMode>,other:Ref<::bevy_sprite::prelude::ScalingMode>,) -> bool {
+        let output: bool =<::bevy_sprite::prelude::ScalingMode as ::std::cmp::PartialEq::<::bevy_sprite::prelude::ScalingMode>>::eq(&_self,&other,).into();
         output
     }
      
@@ -264,26 +266,26 @@ impl bevy::sprite::prelude::ScalingMode {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::sprite::Anchor {
+impl ::bevy_sprite::Anchor {
 
 
     
-    fn as_vec (_self:Ref<bevy::sprite::Anchor>,) -> Val<bevy::math::Vec2> {
-        let output: Val<bevy::math::Vec2> =bevy::sprite::Anchor::as_vec(&_self,).into();
+    fn as_vec (_self:Ref<::bevy_sprite::Anchor>,) -> Val<::bevy_math::Vec2> {
+        let output: Val<::bevy_math::Vec2> =::bevy_sprite::Anchor::as_vec(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::sprite::Anchor>,) -> Val<bevy::sprite::Anchor> {
-        let output: Val<bevy::sprite::Anchor> =<bevy::sprite::Anchor as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_sprite::Anchor>,) -> Val<::bevy_sprite::Anchor> {
+        let output: Val<::bevy_sprite::Anchor> =<::bevy_sprite::Anchor as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::sprite::Anchor>,other:Ref<bevy::sprite::Anchor>,) -> bool {
-        let output: bool =<bevy::sprite::Anchor as ::std::cmp::PartialEq::<bevy::sprite::Anchor>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_sprite::Anchor>,other:Ref<::bevy_sprite::Anchor>,) -> bool {
+        let output: bool =<::bevy_sprite::Anchor as ::std::cmp::PartialEq::<::bevy_sprite::Anchor>>::eq(&_self,&other,).into();
         output
     }
      
@@ -295,19 +297,19 @@ impl bevy::sprite::Anchor {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::sprite::AlphaMode2d {
+impl ::bevy_sprite::AlphaMode2d {
 
 
     
-    fn clone (_self:Ref<bevy::sprite::AlphaMode2d>,) -> Val<bevy::sprite::AlphaMode2d> {
-        let output: Val<bevy::sprite::AlphaMode2d> =<bevy::sprite::AlphaMode2d as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_sprite::AlphaMode2d>,) -> Val<::bevy_sprite::AlphaMode2d> {
+        let output: Val<::bevy_sprite::AlphaMode2d> =<::bevy_sprite::AlphaMode2d as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::sprite::AlphaMode2d>,other:Ref<bevy::sprite::AlphaMode2d>,) -> bool {
-        let output: bool =<bevy::sprite::AlphaMode2d as ::std::cmp::PartialEq::<bevy::sprite::AlphaMode2d>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_sprite::AlphaMode2d>,other:Ref<::bevy_sprite::AlphaMode2d>,) -> bool {
+        let output: bool =<::bevy_sprite::AlphaMode2d as ::std::cmp::PartialEq::<::bevy_sprite::AlphaMode2d>>::eq(&_self,&other,).into();
         output
     }
      
@@ -319,12 +321,12 @@ impl bevy::sprite::AlphaMode2d {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::sprite::Wireframe2dMaterial {
+impl ::bevy_sprite::Wireframe2dMaterial {
 
 
     
-    fn clone (_self:Ref<bevy::sprite::Wireframe2dMaterial>,) -> Val<bevy::sprite::Wireframe2dMaterial> {
-        let output: Val<bevy::sprite::Wireframe2dMaterial> =<bevy::sprite::Wireframe2dMaterial as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_sprite::Wireframe2dMaterial>,) -> Val<::bevy_sprite::Wireframe2dMaterial> {
+        let output: Val<::bevy_sprite::Wireframe2dMaterial> =<::bevy_sprite::Wireframe2dMaterial as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -336,26 +338,26 @@ impl bevy::sprite::Wireframe2dMaterial {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::sprite::NoWireframe2d {
+impl ::bevy_sprite::NoWireframe2d {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::sprite::NoWireframe2d>,) -> () {
-        let output: () =<bevy::sprite::NoWireframe2d as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_sprite::NoWireframe2d>,) -> () {
+        let output: () =<::bevy_sprite::NoWireframe2d as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::sprite::NoWireframe2d>,) -> Val<bevy::sprite::NoWireframe2d> {
-        let output: Val<bevy::sprite::NoWireframe2d> =<bevy::sprite::NoWireframe2d as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_sprite::NoWireframe2d>,) -> Val<::bevy_sprite::NoWireframe2d> {
+        let output: Val<::bevy_sprite::NoWireframe2d> =<::bevy_sprite::NoWireframe2d as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::sprite::NoWireframe2d>,other:Ref<bevy::sprite::NoWireframe2d>,) -> bool {
-        let output: bool =<bevy::sprite::NoWireframe2d as ::std::cmp::PartialEq::<bevy::sprite::NoWireframe2d>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_sprite::NoWireframe2d>,other:Ref<::bevy_sprite::NoWireframe2d>,) -> bool {
+        let output: bool =<::bevy_sprite::NoWireframe2d as ::std::cmp::PartialEq::<::bevy_sprite::NoWireframe2d>>::eq(&_self,&other,).into();
         output
     }
      
@@ -367,12 +369,12 @@ impl bevy::sprite::NoWireframe2d {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::sprite::Wireframe2dConfig {
+impl ::bevy_sprite::Wireframe2dConfig {
 
 
     
-    fn clone (_self:Ref<bevy::sprite::Wireframe2dConfig>,) -> Val<bevy::sprite::Wireframe2dConfig> {
-        let output: Val<bevy::sprite::Wireframe2dConfig> =<bevy::sprite::Wireframe2dConfig as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_sprite::Wireframe2dConfig>,) -> Val<::bevy_sprite::Wireframe2dConfig> {
+        let output: Val<::bevy_sprite::Wireframe2dConfig> =<::bevy_sprite::Wireframe2dConfig as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -384,12 +386,12 @@ impl bevy::sprite::Wireframe2dConfig {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::sprite::Wireframe2dColor {
+impl ::bevy_sprite::Wireframe2dColor {
 
 
     
-    fn clone (_self:Ref<bevy::sprite::Wireframe2dColor>,) -> Val<bevy::sprite::Wireframe2dColor> {
-        let output: Val<bevy::sprite::Wireframe2dColor> =<bevy::sprite::Wireframe2dColor as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_sprite::Wireframe2dColor>,) -> Val<::bevy_sprite::Wireframe2dColor> {
+        let output: Val<::bevy_sprite::Wireframe2dColor> =<::bevy_sprite::Wireframe2dColor as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -401,26 +403,26 @@ impl bevy::sprite::Wireframe2dColor {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::sprite::Wireframe2d {
+impl ::bevy_sprite::Wireframe2d {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::sprite::Wireframe2d>,) -> () {
-        let output: () =<bevy::sprite::Wireframe2d as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_sprite::Wireframe2d>,) -> () {
+        let output: () =<::bevy_sprite::Wireframe2d as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::sprite::Wireframe2d>,) -> Val<bevy::sprite::Wireframe2d> {
-        let output: Val<bevy::sprite::Wireframe2d> =<bevy::sprite::Wireframe2d as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_sprite::Wireframe2d>,) -> Val<::bevy_sprite::Wireframe2d> {
+        let output: Val<::bevy_sprite::Wireframe2d> =<::bevy_sprite::Wireframe2d as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::sprite::Wireframe2d>,other:Ref<bevy::sprite::Wireframe2d>,) -> bool {
-        let output: bool =<bevy::sprite::Wireframe2d as ::std::cmp::PartialEq::<bevy::sprite::Wireframe2d>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_sprite::Wireframe2d>,other:Ref<::bevy_sprite::Wireframe2d>,) -> bool {
+        let output: bool =<::bevy_sprite::Wireframe2d as ::std::cmp::PartialEq::<::bevy_sprite::Wireframe2d>>::eq(&_self,&other,).into();
         output
     }
      
@@ -432,34 +434,34 @@ impl bevy::sprite::Wireframe2d {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::sprite::Mesh2dWireframe {
+impl ::bevy_sprite::Mesh2dWireframe {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::sprite::Mesh2dWireframe>,) -> () {
-        let output: () =<bevy::sprite::Mesh2dWireframe as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_sprite::Mesh2dWireframe>,) -> () {
+        let output: () =<::bevy_sprite::Mesh2dWireframe as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::sprite::Mesh2dWireframe>,) -> Val<bevy::sprite::Mesh2dWireframe> {
-        let output: Val<bevy::sprite::Mesh2dWireframe> =<bevy::sprite::Mesh2dWireframe as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_sprite::Mesh2dWireframe>,) -> Val<::bevy_sprite::Mesh2dWireframe> {
+        let output: Val<::bevy_sprite::Mesh2dWireframe> =<::bevy_sprite::Mesh2dWireframe as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::sprite::Mesh2dWireframe>,other:Ref<bevy::sprite::Mesh2dWireframe>,) -> bool {
-        let output: bool =<bevy::sprite::Mesh2dWireframe as ::std::cmp::PartialEq::<bevy::sprite::Mesh2dWireframe>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_sprite::Mesh2dWireframe>,other:Ref<::bevy_sprite::Mesh2dWireframe>,) -> bool {
+        let output: bool =<::bevy_sprite::Mesh2dWireframe as ::std::cmp::PartialEq::<::bevy_sprite::Mesh2dWireframe>>::eq(&_self,&other,).into();
         output
     }
      
 }
 
 
-impl ::bevy::app::Plugin for BevySpriteScriptingPlugin {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
+impl Plugin for BevySpriteScriptingPlugin {
+    fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
 
         

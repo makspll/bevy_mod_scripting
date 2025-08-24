@@ -9,6 +9,8 @@ use bevy_mod_scripting_core::{
         function::{from::{Ref, Mut, Val}, namespace::{NamespaceBuilder}}
     }
 };
+use bevy_ecs::{prelude::*};
+
 
 use bevy_mod_scripting_derive::script_bindings;
 
@@ -30,19 +32,19 @@ pub struct BevyRenderScriptingPlugin;
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::alpha::AlphaMode {
+impl ::bevy_render::alpha::AlphaMode {
 
 
     
-    fn clone (_self:Ref<bevy::render::alpha::AlphaMode>,) -> Val<bevy::render::alpha::AlphaMode> {
-        let output: Val<bevy::render::alpha::AlphaMode> =<bevy::render::alpha::AlphaMode as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::alpha::AlphaMode>,) -> Val<::bevy_render::alpha::AlphaMode> {
+        let output: Val<::bevy_render::alpha::AlphaMode> =<::bevy_render::alpha::AlphaMode as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::render::alpha::AlphaMode>,other:Ref<bevy::render::alpha::AlphaMode>,) -> bool {
-        let output: bool =<bevy::render::alpha::AlphaMode as ::std::cmp::PartialEq::<bevy::render::alpha::AlphaMode>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_render::alpha::AlphaMode>,other:Ref<::bevy_render::alpha::AlphaMode>,) -> bool {
+        let output: bool =<::bevy_render::alpha::AlphaMode as ::std::cmp::PartialEq::<::bevy_render::alpha::AlphaMode>>::eq(&_self,&other,).into();
         output
     }
      
@@ -54,21 +56,21 @@ impl bevy::render::alpha::AlphaMode {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::camera::Camera {
+impl ::bevy_render::camera::Camera {
 
 
     
     ///  The projection matrix computed using this camera's [`CameraProjection`].
     
-    fn clip_from_view (_self:Ref<bevy::render::camera::Camera>,) -> Val<bevy::math::Mat4> {
-        let output: Val<bevy::math::Mat4> =bevy::render::camera::Camera::clip_from_view(&_self,).into();
+    fn clip_from_view (_self:Ref<::bevy_render::camera::Camera>,) -> Val<::bevy_math::Mat4> {
+        let output: Val<::bevy_math::Mat4> =::bevy_render::camera::Camera::clip_from_view(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::render::camera::Camera>,) -> Val<bevy::render::camera::Camera> {
-        let output: Val<bevy::render::camera::Camera> =<bevy::render::camera::Camera as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::camera::Camera>,) -> Val<::bevy_render::camera::Camera> {
+        let output: Val<::bevy_render::camera::Camera> =<::bevy_render::camera::Camera as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -80,8 +82,8 @@ impl bevy::render::camera::Camera {
     
     ///  Note: Depth values in front of the camera will be negative as -z is forward
     
-    fn depth_ndc_to_view_z (_self:Ref<bevy::render::camera::Camera>,ndc_depth:f32,) -> f32 {
-        let output: f32 =bevy::render::camera::Camera::depth_ndc_to_view_z(&_self,ndc_depth,).into();
+    fn depth_ndc_to_view_z (_self:Ref<::bevy_render::camera::Camera>,ndc_depth:f32,) -> f32 {
+        let output: f32 =::bevy_render::camera::Camera::depth_ndc_to_view_z(&_self,ndc_depth,).into();
         output
     }
 
@@ -93,15 +95,15 @@ impl bevy::render::camera::Camera {
     
     ///  Note: Depth values in front of the camera will be negative as -z is forward
     
-    fn depth_ndc_to_view_z_2d (_self:Ref<bevy::render::camera::Camera>,ndc_depth:f32,) -> f32 {
-        let output: f32 =bevy::render::camera::Camera::depth_ndc_to_view_z_2d(&_self,ndc_depth,).into();
+    fn depth_ndc_to_view_z_2d (_self:Ref<::bevy_render::camera::Camera>,ndc_depth:f32,) -> f32 {
+        let output: f32 =::bevy_render::camera::Camera::depth_ndc_to_view_z_2d(&_self,ndc_depth,).into();
         output
     }
 
 
     
-    fn target_scaling_factor (_self:Ref<bevy::render::camera::Camera>,) -> ::std::option::Option<f32> {
-        let output: ::std::option::Option<f32> =bevy::render::camera::Camera::target_scaling_factor(&_self,).into();
+    fn target_scaling_factor (_self:Ref<::bevy_render::camera::Camera>,) -> ::std::option::Option<f32> {
+        let output: ::std::option::Option<f32> =::bevy_render::camera::Camera::target_scaling_factor(&_self,).into();
         output
     }
      
@@ -113,12 +115,12 @@ impl bevy::render::camera::Camera {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::camera::ClearColor {
+impl ::bevy_render::camera::ClearColor {
 
 
     
-    fn clone (_self:Ref<bevy::render::camera::ClearColor>,) -> Val<bevy::render::camera::ClearColor> {
-        let output: Val<bevy::render::camera::ClearColor> =<bevy::render::camera::ClearColor as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::camera::ClearColor>,) -> Val<::bevy_render::camera::ClearColor> {
+        let output: Val<::bevy_render::camera::ClearColor> =<::bevy_render::camera::ClearColor as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -130,12 +132,12 @@ impl bevy::render::camera::ClearColor {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::camera::ClearColorConfig {
+impl ::bevy_render::camera::ClearColorConfig {
 
 
     
-    fn clone (_self:Ref<bevy::render::camera::ClearColorConfig>,) -> Val<bevy::render::camera::ClearColorConfig> {
-        let output: Val<bevy::render::camera::ClearColorConfig> =<bevy::render::camera::ClearColorConfig as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::camera::ClearColorConfig>,) -> Val<::bevy_render::camera::ClearColorConfig> {
+        let output: Val<::bevy_render::camera::ClearColorConfig> =<::bevy_render::camera::ClearColorConfig as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -147,12 +149,12 @@ impl bevy::render::camera::ClearColorConfig {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::camera::OrthographicProjection {
+impl ::bevy_render::camera::OrthographicProjection {
 
 
     
-    fn clone (_self:Ref<bevy::render::camera::OrthographicProjection>,) -> Val<bevy::render::camera::OrthographicProjection> {
-        let output: Val<bevy::render::camera::OrthographicProjection> =<bevy::render::camera::OrthographicProjection as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::camera::OrthographicProjection>,) -> Val<::bevy_render::camera::OrthographicProjection> {
+        let output: Val<::bevy_render::camera::OrthographicProjection> =<::bevy_render::camera::OrthographicProjection as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -164,8 +166,8 @@ impl bevy::render::camera::OrthographicProjection {
     
     ///  render the scene when using positive z coordinates to order foreground elements.
     
-    fn default_2d () -> Val<bevy::render::camera::OrthographicProjection> {
-        let output: Val<bevy::render::camera::OrthographicProjection> =bevy::render::camera::OrthographicProjection::default_2d().into();
+    fn default_2d () -> Val<::bevy_render::camera::OrthographicProjection> {
+        let output: Val<::bevy_render::camera::OrthographicProjection> =::bevy_render::camera::OrthographicProjection::default_2d().into();
         output
     }
 
@@ -177,8 +179,8 @@ impl bevy::render::camera::OrthographicProjection {
     
     ///  objects that are behind it.
     
-    fn default_3d () -> Val<bevy::render::camera::OrthographicProjection> {
-        let output: Val<bevy::render::camera::OrthographicProjection> =bevy::render::camera::OrthographicProjection::default_3d().into();
+    fn default_3d () -> Val<::bevy_render::camera::OrthographicProjection> {
+        let output: Val<::bevy_render::camera::OrthographicProjection> =::bevy_render::camera::OrthographicProjection::default_3d().into();
         output
     }
      
@@ -190,12 +192,12 @@ impl bevy::render::camera::OrthographicProjection {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::camera::PerspectiveProjection {
+impl ::bevy_render::camera::PerspectiveProjection {
 
 
     
-    fn clone (_self:Ref<bevy::render::camera::PerspectiveProjection>,) -> Val<bevy::render::camera::PerspectiveProjection> {
-        let output: Val<bevy::render::camera::PerspectiveProjection> =<bevy::render::camera::PerspectiveProjection as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::camera::PerspectiveProjection>,) -> Val<::bevy_render::camera::PerspectiveProjection> {
+        let output: Val<::bevy_render::camera::PerspectiveProjection> =<::bevy_render::camera::PerspectiveProjection as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -207,12 +209,12 @@ impl bevy::render::camera::PerspectiveProjection {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::camera::Projection {
+impl ::bevy_render::camera::Projection {
 
 
     
-    fn clone (_self:Ref<bevy::render::camera::Projection>,) -> Val<bevy::render::camera::Projection> {
-        let output: Val<bevy::render::camera::Projection> =<bevy::render::camera::Projection as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::camera::Projection>,) -> Val<::bevy_render::camera::Projection> {
+        let output: Val<::bevy_render::camera::Projection> =<::bevy_render::camera::Projection as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -224,26 +226,26 @@ impl bevy::render::camera::Projection {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::mesh::Mesh2d {
+impl ::bevy_render::mesh::Mesh2d {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::render::mesh::Mesh2d>,) -> () {
-        let output: () =<bevy::render::mesh::Mesh2d as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_render::mesh::Mesh2d>,) -> () {
+        let output: () =<::bevy_render::mesh::Mesh2d as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::render::mesh::Mesh2d>,) -> Val<bevy::render::mesh::Mesh2d> {
-        let output: Val<bevy::render::mesh::Mesh2d> =<bevy::render::mesh::Mesh2d as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::mesh::Mesh2d>,) -> Val<::bevy_render::mesh::Mesh2d> {
+        let output: Val<::bevy_render::mesh::Mesh2d> =<::bevy_render::mesh::Mesh2d as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::render::mesh::Mesh2d>,other:Ref<bevy::render::mesh::Mesh2d>,) -> bool {
-        let output: bool =<bevy::render::mesh::Mesh2d as ::std::cmp::PartialEq::<bevy::render::mesh::Mesh2d>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_render::mesh::Mesh2d>,other:Ref<::bevy_render::mesh::Mesh2d>,) -> bool {
+        let output: bool =<::bevy_render::mesh::Mesh2d as ::std::cmp::PartialEq::<::bevy_render::mesh::Mesh2d>>::eq(&_self,&other,).into();
         output
     }
      
@@ -255,26 +257,26 @@ impl bevy::render::mesh::Mesh2d {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::mesh::Mesh3d {
+impl ::bevy_render::mesh::Mesh3d {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::render::mesh::Mesh3d>,) -> () {
-        let output: () =<bevy::render::mesh::Mesh3d as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_render::mesh::Mesh3d>,) -> () {
+        let output: () =<::bevy_render::mesh::Mesh3d as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::render::mesh::Mesh3d>,) -> Val<bevy::render::mesh::Mesh3d> {
-        let output: Val<bevy::render::mesh::Mesh3d> =<bevy::render::mesh::Mesh3d as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::mesh::Mesh3d>,) -> Val<::bevy_render::mesh::Mesh3d> {
+        let output: Val<::bevy_render::mesh::Mesh3d> =<::bevy_render::mesh::Mesh3d as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::render::mesh::Mesh3d>,other:Ref<bevy::render::mesh::Mesh3d>,) -> bool {
-        let output: bool =<bevy::render::mesh::Mesh3d as ::std::cmp::PartialEq::<bevy::render::mesh::Mesh3d>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_render::mesh::Mesh3d>,other:Ref<::bevy_render::mesh::Mesh3d>,) -> bool {
+        let output: bool =<::bevy_render::mesh::Mesh3d as ::std::cmp::PartialEq::<::bevy_render::mesh::Mesh3d>>::eq(&_self,&other,).into();
         output
     }
      
@@ -286,26 +288,26 @@ impl bevy::render::mesh::Mesh3d {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::view::visibility::InheritedVisibility {
+impl ::bevy_render::view::visibility::InheritedVisibility {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::render::view::visibility::InheritedVisibility>,) -> () {
-        let output: () =<bevy::render::view::visibility::InheritedVisibility as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_render::view::visibility::InheritedVisibility>,) -> () {
+        let output: () =<::bevy_render::view::visibility::InheritedVisibility as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::render::view::visibility::InheritedVisibility>,) -> Val<bevy::render::view::visibility::InheritedVisibility> {
-        let output: Val<bevy::render::view::visibility::InheritedVisibility> =<bevy::render::view::visibility::InheritedVisibility as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::view::visibility::InheritedVisibility>,) -> Val<::bevy_render::view::visibility::InheritedVisibility> {
+        let output: Val<::bevy_render::view::visibility::InheritedVisibility> =<::bevy_render::view::visibility::InheritedVisibility as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::render::view::visibility::InheritedVisibility>,other:Ref<bevy::render::view::visibility::InheritedVisibility>,) -> bool {
-        let output: bool =<bevy::render::view::visibility::InheritedVisibility as ::std::cmp::PartialEq::<bevy::render::view::visibility::InheritedVisibility>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_render::view::visibility::InheritedVisibility>,other:Ref<::bevy_render::view::visibility::InheritedVisibility>,) -> bool {
+        let output: bool =<::bevy_render::view::visibility::InheritedVisibility as ::std::cmp::PartialEq::<::bevy_render::view::visibility::InheritedVisibility>>::eq(&_self,&other,).into();
         output
     }
 
@@ -315,8 +317,8 @@ impl bevy::render::view::visibility::InheritedVisibility {
     
     ///  Otherwise, returns `false`.
     
-    fn get (_self:Val<bevy::render::view::visibility::InheritedVisibility>,) -> bool {
-        let output: bool =bevy::render::view::visibility::InheritedVisibility::get(_self.into_inner(),).into();
+    fn get (_self:Val<::bevy_render::view::visibility::InheritedVisibility>,) -> bool {
+        let output: bool =::bevy_render::view::visibility::InheritedVisibility::get(_self.into_inner(),).into();
         output
     }
      
@@ -328,40 +330,40 @@ impl bevy::render::view::visibility::InheritedVisibility {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::view::Msaa {
+impl ::bevy_render::view::Msaa {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::render::view::Msaa>,) -> () {
-        let output: () =<bevy::render::view::Msaa as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_render::view::Msaa>,) -> () {
+        let output: () =<::bevy_render::view::Msaa as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::render::view::Msaa>,) -> Val<bevy::render::view::Msaa> {
-        let output: Val<bevy::render::view::Msaa> =<bevy::render::view::Msaa as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::view::Msaa>,) -> Val<::bevy_render::view::Msaa> {
+        let output: Val<::bevy_render::view::Msaa> =<::bevy_render::view::Msaa as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::render::view::Msaa>,other:Ref<bevy::render::view::Msaa>,) -> bool {
-        let output: bool =<bevy::render::view::Msaa as ::std::cmp::PartialEq::<bevy::render::view::Msaa>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_render::view::Msaa>,other:Ref<::bevy_render::view::Msaa>,) -> bool {
+        let output: bool =<::bevy_render::view::Msaa as ::std::cmp::PartialEq::<::bevy_render::view::Msaa>>::eq(&_self,&other,).into();
         output
     }
 
 
     
-    fn from_samples (samples:u32,) -> Val<bevy::render::view::Msaa> {
-        let output: Val<bevy::render::view::Msaa> =bevy::render::view::Msaa::from_samples(samples,).into();
+    fn from_samples (samples:u32,) -> Val<::bevy_render::view::Msaa> {
+        let output: Val<::bevy_render::view::Msaa> =::bevy_render::view::Msaa::from_samples(samples,).into();
         output
     }
 
 
     
-    fn samples (_self:Ref<bevy::render::view::Msaa>,) -> u32 {
-        let output: u32 =bevy::render::view::Msaa::samples(&_self,).into();
+    fn samples (_self:Ref<::bevy_render::view::Msaa>,) -> u32 {
+        let output: u32 =::bevy_render::view::Msaa::samples(&_self,).into();
         output
     }
      
@@ -373,26 +375,26 @@ impl bevy::render::view::Msaa {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::view::visibility::ViewVisibility {
+impl ::bevy_render::view::visibility::ViewVisibility {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::render::view::visibility::ViewVisibility>,) -> () {
-        let output: () =<bevy::render::view::visibility::ViewVisibility as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_render::view::visibility::ViewVisibility>,) -> () {
+        let output: () =<::bevy_render::view::visibility::ViewVisibility as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::render::view::visibility::ViewVisibility>,) -> Val<bevy::render::view::visibility::ViewVisibility> {
-        let output: Val<bevy::render::view::visibility::ViewVisibility> =<bevy::render::view::visibility::ViewVisibility as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::view::visibility::ViewVisibility>,) -> Val<::bevy_render::view::visibility::ViewVisibility> {
+        let output: Val<::bevy_render::view::visibility::ViewVisibility> =<::bevy_render::view::visibility::ViewVisibility as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::render::view::visibility::ViewVisibility>,other:Ref<bevy::render::view::visibility::ViewVisibility>,) -> bool {
-        let output: bool =<bevy::render::view::visibility::ViewVisibility as ::std::cmp::PartialEq::<bevy::render::view::visibility::ViewVisibility>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_render::view::visibility::ViewVisibility>,other:Ref<::bevy_render::view::visibility::ViewVisibility>,) -> bool {
+        let output: bool =<::bevy_render::view::visibility::ViewVisibility as ::std::cmp::PartialEq::<::bevy_render::view::visibility::ViewVisibility>>::eq(&_self,&other,).into();
         output
     }
 
@@ -402,8 +404,8 @@ impl bevy::render::view::visibility::ViewVisibility {
     
     ///  Otherwise, returns `false`.
     
-    fn get (_self:Val<bevy::render::view::visibility::ViewVisibility>,) -> bool {
-        let output: bool =bevy::render::view::visibility::ViewVisibility::get(_self.into_inner(),).into();
+    fn get (_self:Val<::bevy_render::view::visibility::ViewVisibility>,) -> bool {
+        let output: bool =::bevy_render::view::visibility::ViewVisibility::get(_self.into_inner(),).into();
         output
     }
 
@@ -427,8 +429,8 @@ impl bevy::render::view::visibility::ViewVisibility {
     
     ///  [`CheckVisibility`]: VisibilitySystems::CheckVisibility
     
-    fn set (mut _self:Mut<bevy::render::view::visibility::ViewVisibility>,) -> () {
-        let output: () =bevy::render::view::visibility::ViewVisibility::set(&mut _self,).into();
+    fn set (mut _self:Mut<::bevy_render::view::visibility::ViewVisibility>,) -> () {
+        let output: () =::bevy_render::view::visibility::ViewVisibility::set(&mut _self,).into();
         output
     }
      
@@ -440,26 +442,26 @@ impl bevy::render::view::visibility::ViewVisibility {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::view::visibility::Visibility {
+impl ::bevy_render::view::visibility::Visibility {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::render::view::visibility::Visibility>,) -> () {
-        let output: () =<bevy::render::view::visibility::Visibility as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_render::view::visibility::Visibility>,) -> () {
+        let output: () =<::bevy_render::view::visibility::Visibility as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::render::view::visibility::Visibility>,) -> Val<bevy::render::view::visibility::Visibility> {
-        let output: Val<bevy::render::view::visibility::Visibility> =<bevy::render::view::visibility::Visibility as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::view::visibility::Visibility>,) -> Val<::bevy_render::view::visibility::Visibility> {
+        let output: Val<::bevy_render::view::visibility::Visibility> =<::bevy_render::view::visibility::Visibility as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::render::view::visibility::Visibility>,other:Ref<bevy::render::view::visibility::Visibility>,) -> bool {
-        let output: bool =<bevy::render::view::visibility::Visibility as ::std::cmp::PartialEq::<bevy::render::view::visibility::Visibility>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_render::view::visibility::Visibility>,other:Ref<::bevy_render::view::visibility::Visibility>,) -> bool {
+        let output: bool =<::bevy_render::view::visibility::Visibility as ::std::cmp::PartialEq::<::bevy_render::view::visibility::Visibility>>::eq(&_self,&other,).into();
         output
     }
 
@@ -469,8 +471,8 @@ impl bevy::render::view::visibility::Visibility {
     
     ///  If the value is `Visibility::Visible`, it remains unaffected.
     
-    fn toggle_inherited_hidden (mut _self:Mut<bevy::render::view::visibility::Visibility>,) -> () {
-        let output: () =bevy::render::view::visibility::Visibility::toggle_inherited_hidden(&mut _self,).into();
+    fn toggle_inherited_hidden (mut _self:Mut<::bevy_render::view::visibility::Visibility>,) -> () {
+        let output: () =::bevy_render::view::visibility::Visibility::toggle_inherited_hidden(&mut _self,).into();
         output
     }
 
@@ -480,8 +482,8 @@ impl bevy::render::view::visibility::Visibility {
     
     ///  If the value is `Visibility::Hidden`, it remains unaffected.
     
-    fn toggle_inherited_visible (mut _self:Mut<bevy::render::view::visibility::Visibility>,) -> () {
-        let output: () =bevy::render::view::visibility::Visibility::toggle_inherited_visible(&mut _self,).into();
+    fn toggle_inherited_visible (mut _self:Mut<::bevy_render::view::visibility::Visibility>,) -> () {
+        let output: () =::bevy_render::view::visibility::Visibility::toggle_inherited_visible(&mut _self,).into();
         output
     }
 
@@ -491,8 +493,8 @@ impl bevy::render::view::visibility::Visibility {
     
     ///  If the value is `Visibility::Inherited`, it remains unaffected.
     
-    fn toggle_visible_hidden (mut _self:Mut<bevy::render::view::visibility::Visibility>,) -> () {
-        let output: () =bevy::render::view::visibility::Visibility::toggle_visible_hidden(&mut _self,).into();
+    fn toggle_visible_hidden (mut _self:Mut<::bevy_render::view::visibility::Visibility>,) -> () {
+        let output: () =::bevy_render::view::visibility::Visibility::toggle_visible_hidden(&mut _self,).into();
         output
     }
      
@@ -504,12 +506,12 @@ impl bevy::render::view::visibility::Visibility {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::sync_world::SyncToRenderWorld {
+impl ::bevy_render::sync_world::SyncToRenderWorld {
 
 
     
-    fn clone (_self:Ref<bevy::render::sync_world::SyncToRenderWorld>,) -> Val<bevy::render::sync_world::SyncToRenderWorld> {
-        let output: Val<bevy::render::sync_world::SyncToRenderWorld> =<bevy::render::sync_world::SyncToRenderWorld as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::sync_world::SyncToRenderWorld>,) -> Val<::bevy_render::sync_world::SyncToRenderWorld> {
+        let output: Val<::bevy_render::sync_world::SyncToRenderWorld> =<::bevy_render::sync_world::SyncToRenderWorld as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -521,40 +523,40 @@ impl bevy::render::sync_world::SyncToRenderWorld {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::primitives::Aabb {
+impl ::bevy_render::primitives::Aabb {
 
 
     
-    fn clone (_self:Ref<bevy::render::primitives::Aabb>,) -> Val<bevy::render::primitives::Aabb> {
-        let output: Val<bevy::render::primitives::Aabb> =<bevy::render::primitives::Aabb as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::primitives::Aabb>,) -> Val<::bevy_render::primitives::Aabb> {
+        let output: Val<::bevy_render::primitives::Aabb> =<::bevy_render::primitives::Aabb as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::render::primitives::Aabb>,other:Ref<bevy::render::primitives::Aabb>,) -> bool {
-        let output: bool =<bevy::render::primitives::Aabb as ::std::cmp::PartialEq::<bevy::render::primitives::Aabb>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_render::primitives::Aabb>,other:Ref<::bevy_render::primitives::Aabb>,) -> bool {
+        let output: bool =<::bevy_render::primitives::Aabb as ::std::cmp::PartialEq::<::bevy_render::primitives::Aabb>>::eq(&_self,&other,).into();
         output
     }
 
 
     
-    fn from_min_max (minimum:Val<bevy::math::Vec3>,maximum:Val<bevy::math::Vec3>,) -> Val<bevy::render::primitives::Aabb> {
-        let output: Val<bevy::render::primitives::Aabb> =bevy::render::primitives::Aabb::from_min_max(minimum.into_inner(),maximum.into_inner(),).into();
+    fn from_min_max (minimum:Val<::bevy_math::Vec3>,maximum:Val<::bevy_math::Vec3>,) -> Val<::bevy_render::primitives::Aabb> {
+        let output: Val<::bevy_render::primitives::Aabb> =::bevy_render::primitives::Aabb::from_min_max(minimum.into_inner(),maximum.into_inner(),).into();
         output
     }
 
 
     
-    fn max (_self:Ref<bevy::render::primitives::Aabb>,) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> =bevy::render::primitives::Aabb::max(&_self,).into();
+    fn max (_self:Ref<::bevy_render::primitives::Aabb>,) -> Val<::bevy_math::Vec3A> {
+        let output: Val<::bevy_math::Vec3A> =::bevy_render::primitives::Aabb::max(&_self,).into();
         output
     }
 
 
     
-    fn min (_self:Ref<bevy::render::primitives::Aabb>,) -> Val<bevy::math::Vec3A> {
-        let output: Val<bevy::math::Vec3A> =bevy::render::primitives::Aabb::min(&_self,).into();
+    fn min (_self:Ref<::bevy_render::primitives::Aabb>,) -> Val<::bevy_math::Vec3A> {
+        let output: Val<::bevy_math::Vec3A> =::bevy_render::primitives::Aabb::min(&_self,).into();
         output
     }
 
@@ -562,8 +564,8 @@ impl bevy::render::primitives::Aabb {
     
     ///  Calculate the relative radius of the AABB with respect to a plane
     
-    fn relative_radius (_self:Ref<bevy::render::primitives::Aabb>,p_normal:Ref<bevy::math::Vec3A>,world_from_local:Ref<bevy::math::Mat3A>,) -> f32 {
-        let output: f32 =bevy::render::primitives::Aabb::relative_radius(&_self,&p_normal,&world_from_local,).into();
+    fn relative_radius (_self:Ref<::bevy_render::primitives::Aabb>,p_normal:Ref<::bevy_math::Vec3A>,world_from_local:Ref<::bevy_math::Mat3A>,) -> f32 {
+        let output: f32 =::bevy_render::primitives::Aabb::relative_radius(&_self,&p_normal,&world_from_local,).into();
         output
     }
      
@@ -575,12 +577,12 @@ impl bevy::render::primitives::Aabb {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::primitives::CascadesFrusta {
+impl ::bevy_render::primitives::CascadesFrusta {
 
 
     
-    fn clone (_self:Ref<bevy::render::primitives::CascadesFrusta>,) -> Val<bevy::render::primitives::CascadesFrusta> {
-        let output: Val<bevy::render::primitives::CascadesFrusta> =<bevy::render::primitives::CascadesFrusta as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::primitives::CascadesFrusta>,) -> Val<::bevy_render::primitives::CascadesFrusta> {
+        let output: Val<::bevy_render::primitives::CascadesFrusta> =<::bevy_render::primitives::CascadesFrusta as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -592,12 +594,12 @@ impl bevy::render::primitives::CascadesFrusta {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::primitives::CubemapFrusta {
+impl ::bevy_render::primitives::CubemapFrusta {
 
 
     
-    fn clone (_self:Ref<bevy::render::primitives::CubemapFrusta>,) -> Val<bevy::render::primitives::CubemapFrusta> {
-        let output: Val<bevy::render::primitives::CubemapFrusta> =<bevy::render::primitives::CubemapFrusta as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::primitives::CubemapFrusta>,) -> Val<::bevy_render::primitives::CubemapFrusta> {
+        let output: Val<::bevy_render::primitives::CubemapFrusta> =<::bevy_render::primitives::CubemapFrusta as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -609,12 +611,12 @@ impl bevy::render::primitives::CubemapFrusta {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::primitives::Frustum {
+impl ::bevy_render::primitives::Frustum {
 
 
     
-    fn clone (_self:Ref<bevy::render::primitives::Frustum>,) -> Val<bevy::render::primitives::Frustum> {
-        let output: Val<bevy::render::primitives::Frustum> =<bevy::render::primitives::Frustum as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::primitives::Frustum>,) -> Val<::bevy_render::primitives::Frustum> {
+        let output: Val<::bevy_render::primitives::Frustum> =<::bevy_render::primitives::Frustum as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -624,8 +626,8 @@ impl bevy::render::primitives::Frustum {
     
     ///  Referenced from: [Frustum Culling](https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling)
     
-    fn contains_aabb (_self:Ref<bevy::render::primitives::Frustum>,aabb:Ref<bevy::render::primitives::Aabb>,world_from_local:Ref<bevy::math::Affine3A>,) -> bool {
-        let output: bool =bevy::render::primitives::Frustum::contains_aabb(&_self,&aabb,&world_from_local,).into();
+    fn contains_aabb (_self:Ref<::bevy_render::primitives::Frustum>,aabb:Ref<::bevy_render::primitives::Aabb>,world_from_local:Ref<::bevy_math::Affine3A>,) -> bool {
+        let output: bool =::bevy_render::primitives::Frustum::contains_aabb(&_self,&aabb,&world_from_local,).into();
         output
     }
 
@@ -633,8 +635,8 @@ impl bevy::render::primitives::Frustum {
     
     ///  Returns a frustum derived from `clip_from_world`.
     
-    fn from_clip_from_world (clip_from_world:Ref<bevy::math::Mat4>,) -> Val<bevy::render::primitives::Frustum> {
-        let output: Val<bevy::render::primitives::Frustum> =bevy::render::primitives::Frustum::from_clip_from_world(&clip_from_world,).into();
+    fn from_clip_from_world (clip_from_world:Ref<::bevy_math::Mat4>,) -> Val<::bevy_render::primitives::Frustum> {
+        let output: Val<::bevy_render::primitives::Frustum> =::bevy_render::primitives::Frustum::from_clip_from_world(&clip_from_world,).into();
         output
     }
 
@@ -644,8 +646,8 @@ impl bevy::render::primitives::Frustum {
     
     ///  but with a custom far plane.
     
-    fn from_clip_from_world_custom_far (clip_from_world:Ref<bevy::math::Mat4>,view_translation:Ref<bevy::math::Vec3>,view_backward:Ref<bevy::math::Vec3>,far:f32,) -> Val<bevy::render::primitives::Frustum> {
-        let output: Val<bevy::render::primitives::Frustum> =bevy::render::primitives::Frustum::from_clip_from_world_custom_far(&clip_from_world,&view_translation,&view_backward,far,).into();
+    fn from_clip_from_world_custom_far (clip_from_world:Ref<::bevy_math::Mat4>,view_translation:Ref<::bevy_math::Vec3>,view_backward:Ref<::bevy_math::Vec3>,far:f32,) -> Val<::bevy_render::primitives::Frustum> {
+        let output: Val<::bevy_render::primitives::Frustum> =::bevy_render::primitives::Frustum::from_clip_from_world_custom_far(&clip_from_world,&view_translation,&view_backward,far,).into();
         output
     }
 
@@ -653,8 +655,8 @@ impl bevy::render::primitives::Frustum {
     
     ///  Checks if an Oriented Bounding Box (obb) intersects the frustum.
     
-    fn intersects_obb (_self:Ref<bevy::render::primitives::Frustum>,aabb:Ref<bevy::render::primitives::Aabb>,world_from_local:Ref<bevy::math::Affine3A>,intersect_near:bool,intersect_far:bool,) -> bool {
-        let output: bool =bevy::render::primitives::Frustum::intersects_obb(&_self,&aabb,&world_from_local,intersect_near,intersect_far,).into();
+    fn intersects_obb (_self:Ref<::bevy_render::primitives::Frustum>,aabb:Ref<::bevy_render::primitives::Aabb>,world_from_local:Ref<::bevy_math::Affine3A>,intersect_near:bool,intersect_far:bool,) -> bool {
+        let output: bool =::bevy_render::primitives::Frustum::intersects_obb(&_self,&aabb,&world_from_local,intersect_near,intersect_far,).into();
         output
     }
      
@@ -666,12 +668,12 @@ impl bevy::render::primitives::Frustum {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::experimental::occlusion_culling::OcclusionCulling {
+impl ::bevy_render::experimental::occlusion_culling::OcclusionCulling {
 
 
     
-    fn clone (_self:Ref<bevy::render::experimental::occlusion_culling::OcclusionCulling>,) -> Val<bevy::render::experimental::occlusion_culling::OcclusionCulling> {
-        let output: Val<bevy::render::experimental::occlusion_culling::OcclusionCulling> =<bevy::render::experimental::occlusion_culling::OcclusionCulling as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::experimental::occlusion_culling::OcclusionCulling>,) -> Val<::bevy_render::experimental::occlusion_culling::OcclusionCulling> {
+        let output: Val<::bevy_render::experimental::occlusion_culling::OcclusionCulling> =<::bevy_render::experimental::occlusion_culling::OcclusionCulling as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -683,12 +685,12 @@ impl bevy::render::experimental::occlusion_culling::OcclusionCulling {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::camera::CameraRenderGraph {
+impl ::bevy_render::camera::CameraRenderGraph {
 
 
     
-    fn clone (_self:Ref<bevy::render::camera::CameraRenderGraph>,) -> Val<bevy::render::camera::CameraRenderGraph> {
-        let output: Val<bevy::render::camera::CameraRenderGraph> =<bevy::render::camera::CameraRenderGraph as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::camera::CameraRenderGraph>,) -> Val<::bevy_render::camera::CameraRenderGraph> {
+        let output: Val<::bevy_render::camera::CameraRenderGraph> =<::bevy_render::camera::CameraRenderGraph as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -700,12 +702,12 @@ impl bevy::render::camera::CameraRenderGraph {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::camera::CameraMainTextureUsages {
+impl ::bevy_render::camera::CameraMainTextureUsages {
 
 
     
-    fn clone (_self:Ref<bevy::render::camera::CameraMainTextureUsages>,) -> Val<bevy::render::camera::CameraMainTextureUsages> {
-        let output: Val<bevy::render::camera::CameraMainTextureUsages> =<bevy::render::camera::CameraMainTextureUsages as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::camera::CameraMainTextureUsages>,) -> Val<::bevy_render::camera::CameraMainTextureUsages> {
+        let output: Val<::bevy_render::camera::CameraMainTextureUsages> =<::bevy_render::camera::CameraMainTextureUsages as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -717,12 +719,12 @@ impl bevy::render::camera::CameraMainTextureUsages {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::camera::Exposure {
+impl ::bevy_render::camera::Exposure {
 
 
     
-    fn clone (_self:Ref<bevy::render::camera::Exposure>,) -> Val<bevy::render::camera::Exposure> {
-        let output: Val<bevy::render::camera::Exposure> =<bevy::render::camera::Exposure as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::camera::Exposure>,) -> Val<::bevy_render::camera::Exposure> {
+        let output: Val<::bevy_render::camera::Exposure> =<::bevy_render::camera::Exposure as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -732,8 +734,8 @@ impl bevy::render::camera::Exposure {
     
     ///  <https://google.github.io/filament/Filament.md.html#imagingpipeline/physicallybasedcamera/exposure>
     
-    fn exposure (_self:Ref<bevy::render::camera::Exposure>,) -> f32 {
-        let output: f32 =bevy::render::camera::Exposure::exposure(&_self,).into();
+    fn exposure (_self:Ref<::bevy_render::camera::Exposure>,) -> f32 {
+        let output: f32 =::bevy_render::camera::Exposure::exposure(&_self,).into();
         output
     }
      
@@ -745,19 +747,19 @@ impl bevy::render::camera::Exposure {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::camera::TemporalJitter {
+impl ::bevy_render::camera::TemporalJitter {
 
 
     
-    fn clone (_self:Ref<bevy::render::camera::TemporalJitter>,) -> Val<bevy::render::camera::TemporalJitter> {
-        let output: Val<bevy::render::camera::TemporalJitter> =<bevy::render::camera::TemporalJitter as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::camera::TemporalJitter>,) -> Val<::bevy_render::camera::TemporalJitter> {
+        let output: Val<::bevy_render::camera::TemporalJitter> =<::bevy_render::camera::TemporalJitter as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn jitter_projection (_self:Ref<bevy::render::camera::TemporalJitter>,mut clip_from_view:Mut<bevy::math::Mat4>,view_size:Val<bevy::math::Vec2>,) -> () {
-        let output: () =bevy::render::camera::TemporalJitter::jitter_projection(&_self,&mut clip_from_view,view_size.into_inner(),).into();
+    fn jitter_projection (_self:Ref<::bevy_render::camera::TemporalJitter>,mut clip_from_view:Mut<::bevy_math::Mat4>,view_size:Val<::bevy_math::Vec2>,) -> () {
+        let output: () =::bevy_render::camera::TemporalJitter::jitter_projection(&_self,&mut clip_from_view,view_size.into_inner(),).into();
         output
     }
      
@@ -769,7 +771,7 @@ impl bevy::render::camera::TemporalJitter {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::camera::MipBias {
+impl ::bevy_render::camera::MipBias {
      
 }
 
@@ -779,26 +781,26 @@ impl bevy::render::camera::MipBias {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::camera::ManualTextureViewHandle {
+impl ::bevy_render::camera::ManualTextureViewHandle {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::render::camera::ManualTextureViewHandle>,) -> () {
-        let output: () =<bevy::render::camera::ManualTextureViewHandle as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_render::camera::ManualTextureViewHandle>,) -> () {
+        let output: () =<::bevy_render::camera::ManualTextureViewHandle as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::render::camera::ManualTextureViewHandle>,) -> Val<bevy::render::camera::ManualTextureViewHandle> {
-        let output: Val<bevy::render::camera::ManualTextureViewHandle> =<bevy::render::camera::ManualTextureViewHandle as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::camera::ManualTextureViewHandle>,) -> Val<::bevy_render::camera::ManualTextureViewHandle> {
+        let output: Val<::bevy_render::camera::ManualTextureViewHandle> =<::bevy_render::camera::ManualTextureViewHandle as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::render::camera::ManualTextureViewHandle>,other:Ref<bevy::render::camera::ManualTextureViewHandle>,) -> bool {
-        let output: bool =<bevy::render::camera::ManualTextureViewHandle as ::std::cmp::PartialEq::<bevy::render::camera::ManualTextureViewHandle>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_render::camera::ManualTextureViewHandle>,other:Ref<::bevy_render::camera::ManualTextureViewHandle>,) -> bool {
+        let output: bool =<::bevy_render::camera::ManualTextureViewHandle as ::std::cmp::PartialEq::<::bevy_render::camera::ManualTextureViewHandle>>::eq(&_self,&other,).into();
         output
     }
      
@@ -810,12 +812,12 @@ impl bevy::render::camera::ManualTextureViewHandle {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::view::ColorGrading {
+impl ::bevy_render::view::ColorGrading {
 
 
     
-    fn clone (_self:Ref<bevy::render::view::ColorGrading>,) -> Val<bevy::render::view::ColorGrading> {
-        let output: Val<bevy::render::view::ColorGrading> =<bevy::render::view::ColorGrading as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::view::ColorGrading>,) -> Val<::bevy_render::view::ColorGrading> {
+        let output: Val<::bevy_render::view::ColorGrading> =<::bevy_render::view::ColorGrading as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -825,8 +827,8 @@ impl bevy::render::view::ColorGrading {
     
     ///  highlights all have the same set of color grading values.
     
-    fn with_identical_sections (global:Val<bevy::render::view::ColorGradingGlobal>,section:Val<bevy::render::view::ColorGradingSection>,) -> Val<bevy::render::view::ColorGrading> {
-        let output: Val<bevy::render::view::ColorGrading> =bevy::render::view::ColorGrading::with_identical_sections(global.into_inner(),section.into_inner(),).into();
+    fn with_identical_sections (global:Val<::bevy_render::view::ColorGradingGlobal>,section:Val<::bevy_render::view::ColorGradingSection>,) -> Val<::bevy_render::view::ColorGrading> {
+        let output: Val<::bevy_render::view::ColorGrading> =::bevy_render::view::ColorGrading::with_identical_sections(global.into_inner(),section.into_inner(),).into();
         output
     }
      
@@ -838,26 +840,26 @@ impl bevy::render::view::ColorGrading {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::view::visibility::RenderLayers {
+impl ::bevy_render::view::visibility::RenderLayers {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::render::view::visibility::RenderLayers>,) -> () {
-        let output: () =<bevy::render::view::visibility::RenderLayers as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_render::view::visibility::RenderLayers>,) -> () {
+        let output: () =<::bevy_render::view::visibility::RenderLayers as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::render::view::visibility::RenderLayers>,) -> Val<bevy::render::view::visibility::RenderLayers> {
-        let output: Val<bevy::render::view::visibility::RenderLayers> =<bevy::render::view::visibility::RenderLayers as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::view::visibility::RenderLayers>,) -> Val<::bevy_render::view::visibility::RenderLayers> {
+        let output: Val<::bevy_render::view::visibility::RenderLayers> =<::bevy_render::view::visibility::RenderLayers as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::render::view::visibility::RenderLayers>,other:Ref<bevy::render::view::visibility::RenderLayers>,) -> bool {
-        let output: bool =<bevy::render::view::visibility::RenderLayers as ::std::cmp::PartialEq::<bevy::render::view::visibility::RenderLayers>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_render::view::visibility::RenderLayers>,other:Ref<::bevy_render::view::visibility::RenderLayers>,) -> bool {
+        let output: bool =<::bevy_render::view::visibility::RenderLayers as ::std::cmp::PartialEq::<::bevy_render::view::visibility::RenderLayers>>::eq(&_self,&other,).into();
         output
     }
 
@@ -867,8 +869,8 @@ impl bevy::render::view::visibility::RenderLayers {
     
     ///  This corresponds to the `self & other` operation.
     
-    fn intersection (_self:Ref<bevy::render::view::visibility::RenderLayers>,other:Ref<bevy::render::view::visibility::RenderLayers>,) -> Val<bevy::render::view::visibility::RenderLayers> {
-        let output: Val<bevy::render::view::visibility::RenderLayers> =bevy::render::view::visibility::RenderLayers::intersection(&_self,&other,).into();
+    fn intersection (_self:Ref<::bevy_render::view::visibility::RenderLayers>,other:Ref<::bevy_render::view::visibility::RenderLayers>,) -> Val<::bevy_render::view::visibility::RenderLayers> {
+        let output: Val<::bevy_render::view::visibility::RenderLayers> =::bevy_render::view::visibility::RenderLayers::intersection(&_self,&other,).into();
         output
     }
 
@@ -882,8 +884,8 @@ impl bevy::render::view::visibility::RenderLayers {
     
     ///  `RenderLayers`, even another with no layers.
     
-    fn intersects (_self:Ref<bevy::render::view::visibility::RenderLayers>,other:Ref<bevy::render::view::visibility::RenderLayers>,) -> bool {
-        let output: bool =bevy::render::view::visibility::RenderLayers::intersects(&_self,&other,).into();
+    fn intersects (_self:Ref<::bevy_render::view::visibility::RenderLayers>,other:Ref<::bevy_render::view::visibility::RenderLayers>,) -> bool {
+        let output: bool =::bevy_render::view::visibility::RenderLayers::intersects(&_self,&other,).into();
         output
     }
 
@@ -897,8 +899,8 @@ impl bevy::render::view::visibility::RenderLayers {
     
     ///  or [`from_layers`](RenderLayers::from_layers).
     
-    fn layer (n:usize,) -> Val<bevy::render::view::visibility::RenderLayers> {
-        let output: Val<bevy::render::view::visibility::RenderLayers> =bevy::render::view::visibility::RenderLayers::layer(n,).into();
+    fn layer (n:usize,) -> Val<::bevy_render::view::visibility::RenderLayers> {
+        let output: Val<::bevy_render::view::visibility::RenderLayers> =::bevy_render::view::visibility::RenderLayers::layer(n,).into();
         output
     }
 
@@ -908,8 +910,8 @@ impl bevy::render::view::visibility::RenderLayers {
     
     ///  This is distinct from [`RenderLayers::default`], which belongs to the first layer.
     
-    fn none () -> Val<bevy::render::view::visibility::RenderLayers> {
-        let output: Val<bevy::render::view::visibility::RenderLayers> =bevy::render::view::visibility::RenderLayers::none().into();
+    fn none () -> Val<::bevy_render::view::visibility::RenderLayers> {
+        let output: Val<::bevy_render::view::visibility::RenderLayers> =::bevy_render::view::visibility::RenderLayers::none().into();
         output
     }
 
@@ -919,8 +921,8 @@ impl bevy::render::view::visibility::RenderLayers {
     
     ///  This corresponds to the "exclusive or" (XOR) operation: `self ^ other`.
     
-    fn symmetric_difference (_self:Ref<bevy::render::view::visibility::RenderLayers>,other:Ref<bevy::render::view::visibility::RenderLayers>,) -> Val<bevy::render::view::visibility::RenderLayers> {
-        let output: Val<bevy::render::view::visibility::RenderLayers> =bevy::render::view::visibility::RenderLayers::symmetric_difference(&_self,&other,).into();
+    fn symmetric_difference (_self:Ref<::bevy_render::view::visibility::RenderLayers>,other:Ref<::bevy_render::view::visibility::RenderLayers>,) -> Val<::bevy_render::view::visibility::RenderLayers> {
+        let output: Val<::bevy_render::view::visibility::RenderLayers> =::bevy_render::view::visibility::RenderLayers::symmetric_difference(&_self,&other,).into();
         output
     }
 
@@ -930,8 +932,8 @@ impl bevy::render::view::visibility::RenderLayers {
     
     ///  This corresponds to the `self | other` operation.
     
-    fn union (_self:Ref<bevy::render::view::visibility::RenderLayers>,other:Ref<bevy::render::view::visibility::RenderLayers>,) -> Val<bevy::render::view::visibility::RenderLayers> {
-        let output: Val<bevy::render::view::visibility::RenderLayers> =bevy::render::view::visibility::RenderLayers::union(&_self,&other,).into();
+    fn union (_self:Ref<::bevy_render::view::visibility::RenderLayers>,other:Ref<::bevy_render::view::visibility::RenderLayers>,) -> Val<::bevy_render::view::visibility::RenderLayers> {
+        let output: Val<::bevy_render::view::visibility::RenderLayers> =::bevy_render::view::visibility::RenderLayers::union(&_self,&other,).into();
         output
     }
 
@@ -943,8 +945,8 @@ impl bevy::render::view::visibility::RenderLayers {
     
     ///  to multiple rendering layers.
     
-    fn with (_self:Val<bevy::render::view::visibility::RenderLayers>,layer:usize,) -> Val<bevy::render::view::visibility::RenderLayers> {
-        let output: Val<bevy::render::view::visibility::RenderLayers> =bevy::render::view::visibility::RenderLayers::with(_self.into_inner(),layer,).into();
+    fn with (_self:Val<::bevy_render::view::visibility::RenderLayers>,layer:usize,) -> Val<::bevy_render::view::visibility::RenderLayers> {
+        let output: Val<::bevy_render::view::visibility::RenderLayers> =::bevy_render::view::visibility::RenderLayers::with(_self.into_inner(),layer,).into();
         output
     }
 
@@ -952,8 +954,8 @@ impl bevy::render::view::visibility::RenderLayers {
     
     ///  Removes the given rendering layer.
     
-    fn without (_self:Val<bevy::render::view::visibility::RenderLayers>,layer:usize,) -> Val<bevy::render::view::visibility::RenderLayers> {
-        let output: Val<bevy::render::view::visibility::RenderLayers> =bevy::render::view::visibility::RenderLayers::without(_self.into_inner(),layer,).into();
+    fn without (_self:Val<::bevy_render::view::visibility::RenderLayers>,layer:usize,) -> Val<::bevy_render::view::visibility::RenderLayers> {
+        let output: Val<::bevy_render::view::visibility::RenderLayers> =::bevy_render::view::visibility::RenderLayers::without(_self.into_inner(),layer,).into();
         output
     }
      
@@ -965,12 +967,12 @@ impl bevy::render::view::visibility::RenderLayers {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::view::visibility::RenderVisibleEntities {
+impl ::bevy_render::view::visibility::RenderVisibleEntities {
 
 
     
-    fn clone (_self:Ref<bevy::render::view::visibility::RenderVisibleEntities>,) -> Val<bevy::render::view::visibility::RenderVisibleEntities> {
-        let output: Val<bevy::render::view::visibility::RenderVisibleEntities> =<bevy::render::view::visibility::RenderVisibleEntities as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::view::visibility::RenderVisibleEntities>,) -> Val<::bevy_render::view::visibility::RenderVisibleEntities> {
+        let output: Val<::bevy_render::view::visibility::RenderVisibleEntities> =<::bevy_render::view::visibility::RenderVisibleEntities as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -982,47 +984,47 @@ impl bevy::render::view::visibility::RenderVisibleEntities {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::view::visibility::VisibleEntities {
+impl ::bevy_render::view::visibility::VisibleEntities {
 
 
     
-    fn clear (mut _self:Mut<bevy::render::view::visibility::VisibleEntities>,type_id:Val<::std::any::TypeId>,) -> () {
-        let output: () =bevy::render::view::visibility::VisibleEntities::clear(&mut _self,type_id.into_inner(),).into();
+    fn clear (mut _self:Mut<::bevy_render::view::visibility::VisibleEntities>,type_id:Val<::std::any::TypeId>,) -> () {
+        let output: () =::bevy_render::view::visibility::VisibleEntities::clear(&mut _self,type_id.into_inner(),).into();
         output
     }
 
 
     
-    fn clear_all (mut _self:Mut<bevy::render::view::visibility::VisibleEntities>,) -> () {
-        let output: () =bevy::render::view::visibility::VisibleEntities::clear_all(&mut _self,).into();
+    fn clear_all (mut _self:Mut<::bevy_render::view::visibility::VisibleEntities>,) -> () {
+        let output: () =::bevy_render::view::visibility::VisibleEntities::clear_all(&mut _self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::render::view::visibility::VisibleEntities>,) -> Val<bevy::render::view::visibility::VisibleEntities> {
-        let output: Val<bevy::render::view::visibility::VisibleEntities> =<bevy::render::view::visibility::VisibleEntities as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::view::visibility::VisibleEntities>,) -> Val<::bevy_render::view::visibility::VisibleEntities> {
+        let output: Val<::bevy_render::view::visibility::VisibleEntities> =<::bevy_render::view::visibility::VisibleEntities as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn is_empty (_self:Ref<bevy::render::view::visibility::VisibleEntities>,type_id:Val<::std::any::TypeId>,) -> bool {
-        let output: bool =bevy::render::view::visibility::VisibleEntities::is_empty(&_self,type_id.into_inner(),).into();
+    fn is_empty (_self:Ref<::bevy_render::view::visibility::VisibleEntities>,type_id:Val<::std::any::TypeId>,) -> bool {
+        let output: bool =::bevy_render::view::visibility::VisibleEntities::is_empty(&_self,type_id.into_inner(),).into();
         output
     }
 
 
     
-    fn len (_self:Ref<bevy::render::view::visibility::VisibleEntities>,type_id:Val<::std::any::TypeId>,) -> usize {
-        let output: usize =bevy::render::view::visibility::VisibleEntities::len(&_self,type_id.into_inner(),).into();
+    fn len (_self:Ref<::bevy_render::view::visibility::VisibleEntities>,type_id:Val<::std::any::TypeId>,) -> usize {
+        let output: usize =::bevy_render::view::visibility::VisibleEntities::len(&_self,type_id.into_inner(),).into();
         output
     }
 
 
     
-    fn push (mut _self:Mut<bevy::render::view::visibility::VisibleEntities>,entity:Val<bevy::ecs::entity::Entity>,type_id:Val<::std::any::TypeId>,) -> () {
-        let output: () =bevy::render::view::visibility::VisibleEntities::push(&mut _self,entity.into_inner(),type_id.into_inner(),).into();
+    fn push (mut _self:Mut<::bevy_render::view::visibility::VisibleEntities>,entity:Val<::bevy_ecs::entity::Entity>,type_id:Val<::std::any::TypeId>,) -> () {
+        let output: () =::bevy_render::view::visibility::VisibleEntities::push(&mut _self,entity.into_inner(),type_id.into_inner(),).into();
         output
     }
      
@@ -1034,7 +1036,7 @@ impl bevy::render::view::visibility::VisibleEntities {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::camera::Viewport {
+impl ::bevy_render::camera::Viewport {
 
 
     
@@ -1050,15 +1052,15 @@ impl bevy::render::camera::Viewport {
     
     ///  both be set to zero in that dimension.
     
-    fn clamp_to_size (mut _self:Mut<bevy::render::camera::Viewport>,size:Val<bevy::math::UVec2>,) -> () {
-        let output: () =bevy::render::camera::Viewport::clamp_to_size(&mut _self,size.into_inner(),).into();
+    fn clamp_to_size (mut _self:Mut<::bevy_render::camera::Viewport>,size:Val<::bevy_math::UVec2>,) -> () {
+        let output: () =::bevy_render::camera::Viewport::clamp_to_size(&mut _self,size.into_inner(),).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::render::camera::Viewport>,) -> Val<bevy::render::camera::Viewport> {
-        let output: Val<bevy::render::camera::Viewport> =<bevy::render::camera::Viewport as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::camera::Viewport>,) -> Val<::bevy_render::camera::Viewport> {
+        let output: Val<::bevy_render::camera::Viewport> =<::bevy_render::camera::Viewport as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -1070,19 +1072,19 @@ impl bevy::render::camera::Viewport {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::camera::SubCameraView {
+impl ::bevy_render::camera::SubCameraView {
 
 
     
-    fn clone (_self:Ref<bevy::render::camera::SubCameraView>,) -> Val<bevy::render::camera::SubCameraView> {
-        let output: Val<bevy::render::camera::SubCameraView> =<bevy::render::camera::SubCameraView as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::camera::SubCameraView>,) -> Val<::bevy_render::camera::SubCameraView> {
+        let output: Val<::bevy_render::camera::SubCameraView> =<::bevy_render::camera::SubCameraView as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::render::camera::SubCameraView>,other:Ref<bevy::render::camera::SubCameraView>,) -> bool {
-        let output: bool =<bevy::render::camera::SubCameraView as ::std::cmp::PartialEq::<bevy::render::camera::SubCameraView>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_render::camera::SubCameraView>,other:Ref<::bevy_render::camera::SubCameraView>,) -> bool {
+        let output: bool =<::bevy_render::camera::SubCameraView as ::std::cmp::PartialEq::<::bevy_render::camera::SubCameraView>>::eq(&_self,&other,).into();
         output
     }
      
@@ -1094,12 +1096,12 @@ impl bevy::render::camera::SubCameraView {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::camera::RenderTarget {
+impl ::bevy_render::camera::RenderTarget {
 
 
     
-    fn clone (_self:Ref<bevy::render::camera::RenderTarget>,) -> Val<bevy::render::camera::RenderTarget> {
-        let output: Val<bevy::render::camera::RenderTarget> =<bevy::render::camera::RenderTarget as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::camera::RenderTarget>,) -> Val<::bevy_render::camera::RenderTarget> {
+        let output: Val<::bevy_render::camera::RenderTarget> =<::bevy_render::camera::RenderTarget as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -1111,26 +1113,26 @@ impl bevy::render::camera::RenderTarget {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::camera::ImageRenderTarget {
+impl ::bevy_render::camera::ImageRenderTarget {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::render::camera::ImageRenderTarget>,) -> () {
-        let output: () =<bevy::render::camera::ImageRenderTarget as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_render::camera::ImageRenderTarget>,) -> () {
+        let output: () =<::bevy_render::camera::ImageRenderTarget as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::render::camera::ImageRenderTarget>,) -> Val<bevy::render::camera::ImageRenderTarget> {
-        let output: Val<bevy::render::camera::ImageRenderTarget> =<bevy::render::camera::ImageRenderTarget as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::camera::ImageRenderTarget>,) -> Val<::bevy_render::camera::ImageRenderTarget> {
+        let output: Val<::bevy_render::camera::ImageRenderTarget> =<::bevy_render::camera::ImageRenderTarget as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::render::camera::ImageRenderTarget>,other:Ref<bevy::render::camera::ImageRenderTarget>,) -> bool {
-        let output: bool =<bevy::render::camera::ImageRenderTarget as ::std::cmp::PartialEq::<bevy::render::camera::ImageRenderTarget>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_render::camera::ImageRenderTarget>,other:Ref<::bevy_render::camera::ImageRenderTarget>,) -> bool {
+        let output: bool =<::bevy_render::camera::ImageRenderTarget as ::std::cmp::PartialEq::<::bevy_render::camera::ImageRenderTarget>>::eq(&_self,&other,).into();
         output
     }
      
@@ -1142,26 +1144,26 @@ impl bevy::render::camera::ImageRenderTarget {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::camera::NormalizedRenderTarget {
+impl ::bevy_render::camera::NormalizedRenderTarget {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::render::camera::NormalizedRenderTarget>,) -> () {
-        let output: () =<bevy::render::camera::NormalizedRenderTarget as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_render::camera::NormalizedRenderTarget>,) -> () {
+        let output: () =<::bevy_render::camera::NormalizedRenderTarget as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::render::camera::NormalizedRenderTarget>,) -> Val<bevy::render::camera::NormalizedRenderTarget> {
-        let output: Val<bevy::render::camera::NormalizedRenderTarget> =<bevy::render::camera::NormalizedRenderTarget as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::camera::NormalizedRenderTarget>,) -> Val<::bevy_render::camera::NormalizedRenderTarget> {
+        let output: Val<::bevy_render::camera::NormalizedRenderTarget> =<::bevy_render::camera::NormalizedRenderTarget as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::render::camera::NormalizedRenderTarget>,other:Ref<bevy::render::camera::NormalizedRenderTarget>,) -> bool {
-        let output: bool =<bevy::render::camera::NormalizedRenderTarget as ::std::cmp::PartialEq::<bevy::render::camera::NormalizedRenderTarget>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_render::camera::NormalizedRenderTarget>,other:Ref<::bevy_render::camera::NormalizedRenderTarget>,) -> bool {
+        let output: bool =<::bevy_render::camera::NormalizedRenderTarget as ::std::cmp::PartialEq::<::bevy_render::camera::NormalizedRenderTarget>>::eq(&_self,&other,).into();
         output
     }
      
@@ -1173,12 +1175,12 @@ impl bevy::render::camera::NormalizedRenderTarget {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::camera::CustomProjection {
+impl ::bevy_render::camera::CustomProjection {
 
 
     
-    fn clone (_self:Ref<bevy::render::camera::CustomProjection>,) -> Val<bevy::render::camera::CustomProjection> {
-        let output: Val<bevy::render::camera::CustomProjection> =<bevy::render::camera::CustomProjection as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::camera::CustomProjection>,) -> Val<::bevy_render::camera::CustomProjection> {
+        let output: Val<::bevy_render::camera::CustomProjection> =<::bevy_render::camera::CustomProjection as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -1190,12 +1192,12 @@ impl bevy::render::camera::CustomProjection {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::camera::ScalingMode {
+impl ::bevy_render::camera::ScalingMode {
 
 
     
-    fn clone (_self:Ref<bevy::render::camera::ScalingMode>,) -> Val<bevy::render::camera::ScalingMode> {
-        let output: Val<bevy::render::camera::ScalingMode> =<bevy::render::camera::ScalingMode as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::camera::ScalingMode>,) -> Val<::bevy_render::camera::ScalingMode> {
+        let output: Val<::bevy_render::camera::ScalingMode> =<::bevy_render::camera::ScalingMode as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -1207,12 +1209,12 @@ impl bevy::render::camera::ScalingMode {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::globals::GlobalsUniform {
+impl ::bevy_render::globals::GlobalsUniform {
 
 
     
-    fn clone (_self:Ref<bevy::render::globals::GlobalsUniform>,) -> Val<bevy::render::globals::GlobalsUniform> {
-        let output: Val<bevy::render::globals::GlobalsUniform> =<bevy::render::globals::GlobalsUniform as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::globals::GlobalsUniform>,) -> Val<::bevy_render::globals::GlobalsUniform> {
+        let output: Val<::bevy_render::globals::GlobalsUniform> =<::bevy_render::globals::GlobalsUniform as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -1224,12 +1226,12 @@ impl bevy::render::globals::GlobalsUniform {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::storage::ShaderStorageBuffer {
+impl ::bevy_render::storage::ShaderStorageBuffer {
 
 
     
-    fn clone (_self:Ref<bevy::render::storage::ShaderStorageBuffer>,) -> Val<bevy::render::storage::ShaderStorageBuffer> {
-        let output: Val<bevy::render::storage::ShaderStorageBuffer> =<bevy::render::storage::ShaderStorageBuffer as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::storage::ShaderStorageBuffer>,) -> Val<::bevy_render::storage::ShaderStorageBuffer> {
+        let output: Val<::bevy_render::storage::ShaderStorageBuffer> =<::bevy_render::storage::ShaderStorageBuffer as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
@@ -1237,8 +1239,8 @@ impl bevy::render::storage::ShaderStorageBuffer {
     
     ///  Creates a new storage buffer with the given size and asset usage.
     
-    fn with_size (size:usize,asset_usage:Val<bevy::render::render_asset::RenderAssetUsages>,) -> Val<bevy::render::storage::ShaderStorageBuffer> {
-        let output: Val<bevy::render::storage::ShaderStorageBuffer> =bevy::render::storage::ShaderStorageBuffer::with_size(size,asset_usage.into_inner(),).into();
+    fn with_size (size:usize,asset_usage:Val<::bevy_render::render_asset::RenderAssetUsages>,) -> Val<::bevy_render::storage::ShaderStorageBuffer> {
+        let output: Val<::bevy_render::storage::ShaderStorageBuffer> =::bevy_render::storage::ShaderStorageBuffer::with_size(size,asset_usage.into_inner(),).into();
         output
     }
      
@@ -1250,7 +1252,7 @@ impl bevy::render::storage::ShaderStorageBuffer {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::gpu_readback::ReadbackComplete {
+impl ::bevy_render::gpu_readback::ReadbackComplete {
      
 }
 
@@ -1260,26 +1262,26 @@ impl bevy::render::gpu_readback::ReadbackComplete {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::mesh::MeshTag {
+impl ::bevy_render::mesh::MeshTag {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<bevy::render::mesh::MeshTag>,) -> () {
-        let output: () =<bevy::render::mesh::MeshTag as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
+    fn assert_receiver_is_total_eq (_self:Ref<::bevy_render::mesh::MeshTag>,) -> () {
+        let output: () =<::bevy_render::mesh::MeshTag as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::render::mesh::MeshTag>,) -> Val<bevy::render::mesh::MeshTag> {
-        let output: Val<bevy::render::mesh::MeshTag> =<bevy::render::mesh::MeshTag as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::mesh::MeshTag>,) -> Val<::bevy_render::mesh::MeshTag> {
+        let output: Val<::bevy_render::mesh::MeshTag> =<::bevy_render::mesh::MeshTag as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::render::mesh::MeshTag>,other:Ref<bevy::render::mesh::MeshTag>,) -> bool {
-        let output: bool =<bevy::render::mesh::MeshTag as ::std::cmp::PartialEq::<bevy::render::mesh::MeshTag>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_render::mesh::MeshTag>,other:Ref<::bevy_render::mesh::MeshTag>,) -> bool {
+        let output: bool =<::bevy_render::mesh::MeshTag as ::std::cmp::PartialEq::<::bevy_render::mesh::MeshTag>>::eq(&_self,&other,).into();
         output
     }
      
@@ -1291,12 +1293,12 @@ impl bevy::render::mesh::MeshTag {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::view::visibility::VisibilityClass {
+impl ::bevy_render::view::visibility::VisibilityClass {
 
 
     
-    fn clone (_self:Ref<bevy::render::view::visibility::VisibilityClass>,) -> Val<bevy::render::view::visibility::VisibilityClass> {
-        let output: Val<bevy::render::view::visibility::VisibilityClass> =<bevy::render::view::visibility::VisibilityClass as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::view::visibility::VisibilityClass>,) -> Val<::bevy_render::view::visibility::VisibilityClass> {
+        let output: Val<::bevy_render::view::visibility::VisibilityClass> =<::bevy_render::view::visibility::VisibilityClass as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -1308,12 +1310,12 @@ impl bevy::render::view::visibility::VisibilityClass {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::sync_world::TemporaryRenderEntity {
+impl ::bevy_render::sync_world::TemporaryRenderEntity {
 
 
     
-    fn clone (_self:Ref<bevy::render::sync_world::TemporaryRenderEntity>,) -> Val<bevy::render::sync_world::TemporaryRenderEntity> {
-        let output: Val<bevy::render::sync_world::TemporaryRenderEntity> =<bevy::render::sync_world::TemporaryRenderEntity as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::sync_world::TemporaryRenderEntity>,) -> Val<::bevy_render::sync_world::TemporaryRenderEntity> {
+        let output: Val<::bevy_render::sync_world::TemporaryRenderEntity> =<::bevy_render::sync_world::TemporaryRenderEntity as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -1325,7 +1327,7 @@ impl bevy::render::sync_world::TemporaryRenderEntity {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::view::visibility::NoFrustumCulling {
+impl ::bevy_render::view::visibility::NoFrustumCulling {
      
 }
 
@@ -1335,12 +1337,12 @@ impl bevy::render::view::visibility::NoFrustumCulling {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::view::ColorGradingGlobal {
+impl ::bevy_render::view::ColorGradingGlobal {
 
 
     
-    fn clone (_self:Ref<bevy::render::view::ColorGradingGlobal>,) -> Val<bevy::render::view::ColorGradingGlobal> {
-        let output: Val<bevy::render::view::ColorGradingGlobal> =<bevy::render::view::ColorGradingGlobal as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::view::ColorGradingGlobal>,) -> Val<::bevy_render::view::ColorGradingGlobal> {
+        let output: Val<::bevy_render::view::ColorGradingGlobal> =<::bevy_render::view::ColorGradingGlobal as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
      
@@ -1352,19 +1354,19 @@ impl bevy::render::view::ColorGradingGlobal {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::view::ColorGradingSection {
+impl ::bevy_render::view::ColorGradingSection {
 
 
     
-    fn clone (_self:Ref<bevy::render::view::ColorGradingSection>,) -> Val<bevy::render::view::ColorGradingSection> {
-        let output: Val<bevy::render::view::ColorGradingSection> =<bevy::render::view::ColorGradingSection as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::view::ColorGradingSection>,) -> Val<::bevy_render::view::ColorGradingSection> {
+        let output: Val<::bevy_render::view::ColorGradingSection> =<::bevy_render::view::ColorGradingSection as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::render::view::ColorGradingSection>,other:Ref<bevy::render::view::ColorGradingSection>,) -> bool {
-        let output: bool =<bevy::render::view::ColorGradingSection as ::std::cmp::PartialEq::<bevy::render::view::ColorGradingSection>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_render::view::ColorGradingSection>,other:Ref<::bevy_render::view::ColorGradingSection>,) -> bool {
+        let output: bool =<::bevy_render::view::ColorGradingSection as ::std::cmp::PartialEq::<::bevy_render::view::ColorGradingSection>>::eq(&_self,&other,).into();
         output
     }
      
@@ -1376,7 +1378,7 @@ impl bevy::render::view::ColorGradingSection {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::view::visibility::VisibilityRange {
+impl ::bevy_render::view::visibility::VisibilityRange {
 
 
     
@@ -1390,22 +1392,22 @@ impl bevy::render::view::visibility::VisibilityRange {
     
     ///  The `start` value must be less than or equal to the `end` value.
     
-    fn abrupt (start:f32,end:f32,) -> Val<bevy::render::view::visibility::VisibilityRange> {
-        let output: Val<bevy::render::view::visibility::VisibilityRange> =bevy::render::view::visibility::VisibilityRange::abrupt(start,end,).into();
+    fn abrupt (start:f32,end:f32,) -> Val<::bevy_render::view::visibility::VisibilityRange> {
+        let output: Val<::bevy_render::view::visibility::VisibilityRange> =::bevy_render::view::visibility::VisibilityRange::abrupt(start,end,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<bevy::render::view::visibility::VisibilityRange>,) -> Val<bevy::render::view::visibility::VisibilityRange> {
-        let output: Val<bevy::render::view::visibility::VisibilityRange> =<bevy::render::view::visibility::VisibilityRange as ::std::clone::Clone>::clone(&_self,).into();
+    fn clone (_self:Ref<::bevy_render::view::visibility::VisibilityRange>,) -> Val<::bevy_render::view::visibility::VisibilityRange> {
+        let output: Val<::bevy_render::view::visibility::VisibilityRange> =<::bevy_render::view::visibility::VisibilityRange as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<bevy::render::view::visibility::VisibilityRange>,other:Ref<bevy::render::view::visibility::VisibilityRange>,) -> bool {
-        let output: bool =<bevy::render::view::visibility::VisibilityRange as ::std::cmp::PartialEq::<bevy::render::view::visibility::VisibilityRange>>::eq(&_self,&other,).into();
+    fn eq (_self:Ref<::bevy_render::view::visibility::VisibilityRange>,other:Ref<::bevy_render::view::visibility::VisibilityRange>,) -> bool {
+        let output: bool =<::bevy_render::view::visibility::VisibilityRange as ::std::cmp::PartialEq::<::bevy_render::view::visibility::VisibilityRange>>::eq(&_self,&other,).into();
         output
     }
 
@@ -1415,8 +1417,8 @@ impl bevy::render::view::visibility::VisibilityRange {
     
     ///  abrupt: that is, there is no crossfading.
     
-    fn is_abrupt (_self:Ref<bevy::render::view::visibility::VisibilityRange>,) -> bool {
-        let output: bool =bevy::render::view::visibility::VisibilityRange::is_abrupt(&_self,).into();
+    fn is_abrupt (_self:Ref<::bevy_render::view::visibility::VisibilityRange>,) -> bool {
+        let output: bool =::bevy_render::view::visibility::VisibilityRange::is_abrupt(&_self,).into();
         output
     }
 
@@ -1428,8 +1430,8 @@ impl bevy::render::view::visibility::VisibilityRange {
     
     ///  This is equivalent to `!VisibilityRange::is_visible_at_all()`.
     
-    fn is_culled (_self:Ref<bevy::render::view::visibility::VisibilityRange>,camera_distance:f32,) -> bool {
-        let output: bool =bevy::render::view::visibility::VisibilityRange::is_culled(&_self,camera_distance,).into();
+    fn is_culled (_self:Ref<::bevy_render::view::visibility::VisibilityRange>,camera_distance:f32,) -> bool {
+        let output: bool =::bevy_render::view::visibility::VisibilityRange::is_culled(&_self,camera_distance,).into();
         output
     }
 
@@ -1443,8 +1445,8 @@ impl bevy::render::view::visibility::VisibilityRange {
     
     ///  considered visible according to this check.
     
-    fn is_visible_at_all (_self:Ref<bevy::render::view::visibility::VisibilityRange>,camera_distance:f32,) -> bool {
-        let output: bool =bevy::render::view::visibility::VisibilityRange::is_visible_at_all(&_self,camera_distance,).into();
+    fn is_visible_at_all (_self:Ref<::bevy_render::view::visibility::VisibilityRange>,camera_distance:f32,) -> bool {
+        let output: bool =::bevy_render::view::visibility::VisibilityRange::is_visible_at_all(&_self,camera_distance,).into();
         output
     }
      
@@ -1456,7 +1458,7 @@ impl bevy::render::view::visibility::VisibilityRange {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::view::window::screenshot::ScreenshotCaptured {
+impl ::bevy_render::view::window::screenshot::ScreenshotCaptured {
      
 }
 
@@ -1466,14 +1468,14 @@ impl bevy::render::view::window::screenshot::ScreenshotCaptured {
     bms_core_path="bevy_mod_scripting_core",
     generated
 )]
-impl bevy::render::view::window::screenshot::Screenshot {
+impl ::bevy_render::view::window::screenshot::Screenshot {
 
 
     
     ///  Capture a screenshot of the primary window, if one exists.
     
-    fn primary_window () -> Val<bevy::render::view::window::screenshot::Screenshot> {
-        let output: Val<bevy::render::view::window::screenshot::Screenshot> =bevy::render::view::window::screenshot::Screenshot::primary_window().into();
+    fn primary_window () -> Val<::bevy_render::view::window::screenshot::Screenshot> {
+        let output: Val<::bevy_render::view::window::screenshot::Screenshot> =::bevy_render::view::window::screenshot::Screenshot::primary_window().into();
         output
     }
 
@@ -1481,8 +1483,8 @@ impl bevy::render::view::window::screenshot::Screenshot {
     
     ///  Capture a screenshot of the provided manual texture view.
     
-    fn texture_view (texture_view:Val<bevy::render::camera::ManualTextureViewHandle>,) -> Val<bevy::render::view::window::screenshot::Screenshot> {
-        let output: Val<bevy::render::view::window::screenshot::Screenshot> =bevy::render::view::window::screenshot::Screenshot::texture_view(texture_view.into_inner(),).into();
+    fn texture_view (texture_view:Val<::bevy_render::camera::ManualTextureViewHandle>,) -> Val<::bevy_render::view::window::screenshot::Screenshot> {
+        let output: Val<::bevy_render::view::window::screenshot::Screenshot> =::bevy_render::view::window::screenshot::Screenshot::texture_view(texture_view.into_inner(),).into();
         output
     }
 
@@ -1490,16 +1492,16 @@ impl bevy::render::view::window::screenshot::Screenshot {
     
     ///  Capture a screenshot of the provided window entity.
     
-    fn window (window:Val<bevy::ecs::entity::Entity>,) -> Val<bevy::render::view::window::screenshot::Screenshot> {
-        let output: Val<bevy::render::view::window::screenshot::Screenshot> =bevy::render::view::window::screenshot::Screenshot::window(window.into_inner(),).into();
+    fn window (window:Val<::bevy_ecs::entity::Entity>,) -> Val<::bevy_render::view::window::screenshot::Screenshot> {
+        let output: Val<::bevy_render::view::window::screenshot::Screenshot> =::bevy_render::view::window::screenshot::Screenshot::window(window.into_inner(),).into();
         output
     }
      
 }
 
 
-impl ::bevy::app::Plugin for BevyRenderScriptingPlugin {
-    fn build(&self, app: &mut ::bevy::prelude::App) {
+impl Plugin for BevyRenderScriptingPlugin {
+    fn build(&self, app: &mut App) {
         let mut world = app.world_mut();
 
         
