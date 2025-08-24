@@ -96,10 +96,10 @@ bevy_sprite = { version = "0.16.0", default-features = false, optional = true, f
     "bevy_sprite_picking_backend",
 ] }
 bevy_text = { version = "0.16.0", default-features = false, optional = true }
-bevy_window = { version = "0.16.0", default-features = false, optional = true, features = [
+bevy_window = { version = "0.16.0", default-features = false, optional = true }
+bevy_winit = { version = "0.16.0", default-features = false, optional = true, features = [
     "custom_cursor",
 ] }
-bevy_winit = { version = "0.16.0", default-features = false, optional = true }
 
 profiling = { workspace = true }
 
