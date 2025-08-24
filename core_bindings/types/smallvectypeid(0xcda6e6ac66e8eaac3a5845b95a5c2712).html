@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Handle&lt;AnimationClip&gt; - Bevy Scripting</title>
+        <title>SmallVec&lt;TypeId(0xcda6e6ac66e8eaac3a5845b95a5c2712)&gt; - Bevy Scripting</title>
 
 
         <!-- Custom HTML head -->
@@ -147,7 +147,7 @@
                         <a href="https://github.com/makspll/bevy_mod_scripting" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/core_bindings/types/handleanimationclip.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                        <a href="https://github.com/makspll/bevy_mod_scripting/edit/main/docs/src/core_bindings/types/smallvectypeid(0xcda6e6ac66e8eaac3a5845b95a5c2712).md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -181,28 +181,11 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="handleanimationclip"><a class="header" href="#handleanimationclip"><code>Handle&lt;AnimationClip&gt;</code></a></h1>
-<h3 id="strong"><a class="header" href="#strong">Strong</a></h3>
-<ol>
-<li>bevy_platform::sync::Arc&lt;bevy_asset::handle::StrongHandle&gt;</li>
-</ol>
-<h3 id="weak"><a class="header" href="#weak">Weak</a></h3>
-<ol>
-<li>bevy_asset::id::AssetId&lt;bevy_animation::AnimationClip&gt;</li>
-</ol>
+                        <h1 id="smallvectypeid0xcda6e6ac66e8eaac3a5845b95a5c2712"><a class="header" href="#smallvectypeid0xcda6e6ac66e8eaac3a5845b95a5c2712"><code>SmallVec&lt;TypeId(0xcda6e6ac66e8eaac3a5845b95a5c2712)&gt;</code></a></h1>
+<p>Opaque Type. 🔒</p>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <blockquote>
-<p>A handle to a specific [<code>Asset</code>] of type <code>A</code>. Handles act as abstract "references" to
-assets, whose data are stored in the <a href="crate::prelude::Assets"><code>Assets&lt;A&gt;</code></a> resource,
-avoiding the need to store multiple copies of the same data.</p>
-<p>If a [<code>Handle</code>] is [<code>Handle::Strong</code>], the [<code>Asset</code>] will be kept
-alive until the [<code>Handle</code>] is dropped. If a [<code>Handle</code>] is [<code>Handle::Weak</code>], it does not necessarily reference a live [<code>Asset</code>],
-nor will it keep assets alive.</p>
-<p>Modifying a <em>handle</em> will change which existing asset is referenced, but modifying the <em>asset</em>
-(by mutating the <a href="crate::prelude::Assets"><code>Assets</code></a> resource) will change the asset for all handles referencing it.</p>
-<p>[<code>Handle</code>] can be cloned. If a [<code>Handle::Strong</code>] is cloned, the referenced [<code>Asset</code>] will not be freed until <em>all</em> instances
-of the [<code>Handle</code>] are dropped.</p>
-<p>[<code>Handle::Strong</code>], via [<code>StrongHandle</code>] also provides access to useful [<code>Asset</code>] metadata, such as the [<code>AssetPath</code>] (if it exists).</p>
+<p>No Documentation 🚧</p>
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
@@ -211,11 +194,11 @@ of the [<code>Handle</code>] are dropped.</p>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/handle().html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/optionusize.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/handleanimationgraph.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/smallvectypeid(0x1100952031e6e64f284e9a3b522b9e0d).html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -225,11 +208,11 @@ of the [<code>Handle</code>] are dropped.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/handle().html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/optionusize.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/handleanimationgraph.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/smallvectypeid(0x1100952031e6e64f284e9a3b522b9e0d).html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
