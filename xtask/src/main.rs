@@ -598,10 +598,17 @@ struct CodegenTemplateArgs {
 }
 
 fn fetch_default_bevy_features() -> String {
+    let try_dirs = vec![".", "../"];
     let path = "codegen_bevy_features.txt";
-    std::fs::read_to_string(path)
-        .with_context(|| format!("Failed to read default bevy features from {path}"))
-        .unwrap()
+    for dir in &try_dirs {
+        let full_path = Path::new(dir).join(path);
+        if full_path.exists() {
+            return std::fs::read_to_string(&full_path)
+                .with_context(|| format!("Failed to read default bevy features from {full_path:?}"))
+                .unwrap();
+        }
+    }
+    panic!("Failed to find {path} in any of the tried directories: {try_dirs:?}");
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, clap::Subcommand, strum::AsRefStr)]
@@ -1055,7 +1062,7 @@ impl Xtasks {
         Ok(())
     }
 
-    fn check_codegen_crate(app_settings: GlobalArgs, ide_mode: bool) -> Result<()> {
+    fn check_codegen_workspace(app_settings: GlobalArgs, ide_mode: bool) -> Result<()> {
         let toolchain = Self::read_rust_toolchain(&Self::codegen_crate_dir(&app_settings)?);
 
         // set the working directory to the codegen crate
@@ -1307,7 +1314,7 @@ impl Xtasks {
         match kind {
             CheckKind::All => {
                 let err_main = Self::check_main_workspace(app_settings.clone(), ide_mode);
-                let err_codegen = Self::check_codegen_crate(app_settings.clone(), ide_mode);
+                let err_codegen = Self::check_codegen_workspace(app_settings.clone(), ide_mode);
 
                 err_main?;
                 err_codegen?;
@@ -1316,7 +1323,7 @@ impl Xtasks {
                 Self::check_main_workspace(app_settings, ide_mode)?;
             }
             CheckKind::Codegen => {
-                Self::check_codegen_crate(app_settings, ide_mode)?;
+                Self::check_codegen_workspace(app_settings, ide_mode)?;
             }
         }
         Ok(())

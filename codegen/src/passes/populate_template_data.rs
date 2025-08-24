@@ -1,4 +1,4 @@
-use std::{borrow::Cow, convert::identity};
+use std::{borrow::Cow, convert::identity, panic};
 
 use log::{trace, warn};
 use rustc_hir::def_id::{DefId, LOCAL_CRATE};
@@ -426,6 +426,9 @@ impl<'a> TyPrinter<'a> {
     /// But only for ADT's, other types are printed as normal
     fn print_proxied_ty(&mut self, ty: Ty<'_>, proxy_type: ProxyType) {
         match ty.kind() {
+            TyKind::Ref(_, ty, _) => {
+                panic!("Nested references should not be proxied, got: `{ty}`");
+            }
             TyKind::Adt(adt_ty, args) => {
                 if (self.is_proxied_check)(ty) {
                     self.print_literal_surround_content(

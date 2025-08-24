@@ -48,7 +48,12 @@ pub struct Args {
     pub no_default_features: bool,
 
     /// If provided will use the workspace root to calculate effective dependencies and only generate code for currently active features
-    #[arg(global = true, long, default_value = "bevy")]
+    #[arg(
+        global = true,
+        long,
+        default_value = "bevy",
+        help = "Deprecated: root is now automatically detected from cargo metadata"
+    )]
     pub workspace_root: Option<String>,
 
     /// additional template context in the form of json, provided to the templates under an 'args' key
@@ -96,12 +101,18 @@ impl Verbosity {
         }
     }
 
-    pub fn get_rustlog_value(&self) -> &str {
+    pub fn get_rustlog_value(&self) -> String {
+        let make_string = |level| {
+            format!(
+                "bms-codegen-driver={level},cargo-bms-codegen={level},bevy_mod_scripting_codegen={level},warning"
+            )
+        };
+
         match self.get_log_level_int() {
-            0 => "info",
-            1 => "debug",
-            x if x >= 2 => "trace",
-            _ => "error",
+            0 => make_string("info"),
+            1 => make_string("debug"),
+            x if x >= 2 => make_string("trace"),
+            _ => make_string("error"),
         }
     }
 }

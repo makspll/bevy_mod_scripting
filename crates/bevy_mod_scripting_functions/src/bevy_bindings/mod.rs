@@ -2,15 +2,74 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 #![cfg_attr(rustfmt, rustfmt_skip)]
-#[cfg(feature = "bevy_ecs")]
-pub mod bevy_ecs;
-#[cfg(feature = "bevy_input")]
-pub mod bevy_input;
-#[cfg(feature = "bevy_math")]
-pub mod bevy_math;
-#[cfg(feature = "bevy_reflect")]
-pub mod bevy_reflect;
-#[cfg(feature = "bevy_time")]
-pub mod bevy_time;
-#[cfg(feature = "bevy_transform")]
-pub mod bevy_transform;
+    #[cfg(feature="bevy_a11y")]
+    pub mod bevy_a11y;
+
+    #[cfg(feature="bevy_animation")]
+    pub mod bevy_animation;
+
+    #[cfg(feature="bevy_asset")]
+    pub mod bevy_asset;
+
+    #[cfg(feature="bevy_color")]
+    pub mod bevy_color;
+
+    #[cfg(feature="bevy_core_pipeline")]
+    pub mod bevy_core_pipeline;
+
+    #[cfg(feature="bevy_ecs")]
+    pub mod bevy_ecs;
+
+    #[cfg(feature="bevy_gizmos")]
+    pub mod bevy_gizmos;
+
+    #[cfg(feature="bevy_gltf")]
+    pub mod bevy_gltf;
+
+    #[cfg(feature="bevy_image")]
+    pub mod bevy_image;
+
+    #[cfg(feature="bevy_input")]
+    pub mod bevy_input;
+
+    #[cfg(feature="bevy_input_focus")]
+    pub mod bevy_input_focus;
+
+    #[cfg(feature="bevy_math")]
+    pub mod bevy_math;
+
+    #[cfg(feature="bevy_mesh")]
+    pub mod bevy_mesh;
+
+    #[cfg(feature="bevy_pbr")]
+    pub mod bevy_pbr;
+
+    #[cfg(feature="bevy_picking")]
+    pub mod bevy_picking;
+
+    #[cfg(feature="bevy_reflect")]
+    pub mod bevy_reflect;
+
+    #[cfg(feature="bevy_render")]
+    pub mod bevy_render;
+
+    #[cfg(feature="bevy_scene")]
+    pub mod bevy_scene;
+
+    #[cfg(feature="bevy_sprite")]
+    pub mod bevy_sprite;
+
+    #[cfg(feature="bevy_text")]
+    pub mod bevy_text;
+
+    #[cfg(feature="bevy_time")]
+    pub mod bevy_time;
+
+    #[cfg(feature="bevy_transform")]
+    pub mod bevy_transform;
+
+    #[cfg(feature="bevy_window")]
+    pub mod bevy_window;
+
+    #[cfg(feature="bevy_winit")]
+    pub mod bevy_winit;

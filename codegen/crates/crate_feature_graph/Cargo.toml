@@ -1,0 +1,21 @@
+[package]
+name = "crate_feature_graph"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+path = "src/lib.rs"
+
+[features]
+dot_parser = ["petgraph/dot_parser"]
+
+[dependencies]
+petgraph = { workspace = true }
+cargo_metadata = { workspace = true }
+itertools = { workspace = true }
+log = { workspace = true }
+clap = { workspace = true, features = ["derive"] }
+[dev-dependencies]
+petgraph = { workspace = true, features = ["dot_parser"] }
+pretty_assertions = { workspace = true }
+env_logger = { workspace = true }

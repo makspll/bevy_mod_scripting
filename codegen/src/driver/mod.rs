@@ -13,11 +13,11 @@ use std::{
 pub use plugin::*;
 use rustc_session::{EarlyDiagCtxt, config::ErrorOutputType};
 
-pub const RUN_ON_ALL_CRATES: &str = "RUSTC_PLUGIN_ALL_TARGETS";
+pub const CRATES_TO_RUN_PLUGIN_ON_ENV: &str = "CRATES_TO_RUN_PLUGIN_ON";
 pub const CARGO_VERBOSE: &str = "CARGO_VERBOSE";
 
 /// The top-level function that should be called in your user-facing binary.
-pub fn cli_main<T: RustcPlugin>(plugin: T) {
+pub fn cli_main<T: RustcPlugin>(plugin: T, include_crates: Vec<String>) {
     if env::args().any(|arg| arg == "-V") {
         println!("{}", plugin.version());
         return;
@@ -34,6 +34,7 @@ pub fn cli_main<T: RustcPlugin>(plugin: T) {
     let args = plugin.args(&target_dir);
 
     let mut cmd = Command::new("cargo");
+    cmd.env("CARGO_TERM_COLOR", "always");
     cmd.stdout(Stdio::inherit()).stderr(Stdio::inherit());
 
     let mut path = env::current_exe()
@@ -54,17 +55,7 @@ pub fn cli_main<T: RustcPlugin>(plugin: T) {
         cmd.arg("-q");
     }
 
-    match args.filter {
-        CrateFilter::AllCrates | CrateFilter::OnlyWorkspace => {
-            cmd.arg("--all");
-            match args.filter {
-                CrateFilter::AllCrates => {
-                    cmd.env(RUN_ON_ALL_CRATES, "");
-                }
-                CrateFilter::OnlyWorkspace => {}
-            }
-        }
-    }
+    cmd.env(CRATES_TO_RUN_PLUGIN_ON_ENV, include_crates.join(","));
 
     let args_str = serde_json::to_string(&args.args).unwrap();
     log::debug!("{PLUGIN_ARGS}={args_str}");
@@ -213,13 +204,20 @@ pub fn driver_main<T: RustcPlugin>(plugin: T) {
         // 1. Either we're supposed to run on all crates, or CARGO_PRIMARY_PACKAGE is set.
         // 2. --print is NOT passed, since Cargo does that to get info about rustc.
         let primary_package = env::var("CARGO_PRIMARY_PACKAGE").is_ok();
-        let run_on_all_crates = env::var(RUN_ON_ALL_CRATES).is_ok();
+        let crate_being_built = arg_value(&args, "--crate-name", |_| true)
+            .as_ref()
+            .map(|s| s.to_string())
+            .unwrap_or_default();
+        let is_target_crate = env::var(CRATES_TO_RUN_PLUGIN_ON_ENV)
+            .is_ok_and(|crates| crates.split(',').any(|c| c == crate_being_built));
         let normal_rustc = arg_value(&args, "--print", |_| true).is_some();
 
-        let run_plugin = !normal_rustc && (run_on_all_crates || primary_package);
+        let run_plugin = !normal_rustc && is_target_crate;
 
         if run_plugin {
-            log::debug!("Running plugin...");
+            // TODO: this is dangerous
+            args.extend([String::from("--cap-lints"), String::from("warn")]);
+            log::debug!("Running plugin on crate: {crate_being_built}");
             let plugin_args: T::Args =
                 serde_json::from_str(&env::var(PLUGIN_ARGS).unwrap()).unwrap();
             plugin.run(args, plugin_args);
@@ -229,7 +227,7 @@ pub fn driver_main<T: RustcPlugin>(plugin: T) {
             log::debug!(
                 "Running normal Rust. Relevant variables:\
 normal_rustc={normal_rustc}, \
-run_on_all_crates={run_on_all_crates}, \
+is_target_crate={is_target_crate}, \
 primary_package={primary_package}"
             );
             rustc_driver_impl::run_compiler(&args, &mut DefaultCallbacks);
