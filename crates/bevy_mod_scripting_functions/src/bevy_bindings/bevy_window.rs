@@ -36,21 +36,21 @@ impl ::bevy_window::prelude::CursorEntered {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::prelude::CursorEntered>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::prelude::CursorEntered>,) -> () {
         let output: () =<::bevy_window::prelude::CursorEntered as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::prelude::CursorEntered>,) -> Val<::bevy_window::prelude::CursorEntered> {
+    fn clone (_self: Ref<::bevy_window::prelude::CursorEntered>,) -> Val<::bevy_window::prelude::CursorEntered> {
         let output: Val<::bevy_window::prelude::CursorEntered> =<::bevy_window::prelude::CursorEntered as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::prelude::CursorEntered>,other:Ref<::bevy_window::prelude::CursorEntered>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::prelude::CursorEntered>,other: Ref<::bevy_window::prelude::CursorEntered>,) -> bool {
         let output: bool =<::bevy_window::prelude::CursorEntered as ::core::cmp::PartialEq::<::bevy_window::prelude::CursorEntered>>::eq(&_self,&other,).into();
         output
     }
@@ -67,21 +67,21 @@ impl ::bevy_window::prelude::CursorLeft {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::prelude::CursorLeft>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::prelude::CursorLeft>,) -> () {
         let output: () =<::bevy_window::prelude::CursorLeft as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::prelude::CursorLeft>,) -> Val<::bevy_window::prelude::CursorLeft> {
+    fn clone (_self: Ref<::bevy_window::prelude::CursorLeft>,) -> Val<::bevy_window::prelude::CursorLeft> {
         let output: Val<::bevy_window::prelude::CursorLeft> =<::bevy_window::prelude::CursorLeft as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::prelude::CursorLeft>,other:Ref<::bevy_window::prelude::CursorLeft>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::prelude::CursorLeft>,other: Ref<::bevy_window::prelude::CursorLeft>,) -> bool {
         let output: bool =<::bevy_window::prelude::CursorLeft as ::core::cmp::PartialEq::<::bevy_window::prelude::CursorLeft>>::eq(&_self,&other,).into();
         output
     }
@@ -98,14 +98,14 @@ impl ::bevy_window::prelude::CursorMoved {
 
 
     
-    fn clone (_self:Ref<::bevy_window::prelude::CursorMoved>,) -> Val<::bevy_window::prelude::CursorMoved> {
+    fn clone (_self: Ref<::bevy_window::prelude::CursorMoved>,) -> Val<::bevy_window::prelude::CursorMoved> {
         let output: Val<::bevy_window::prelude::CursorMoved> =<::bevy_window::prelude::CursorMoved as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::prelude::CursorMoved>,other:Ref<::bevy_window::prelude::CursorMoved>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::prelude::CursorMoved>,other: Ref<::bevy_window::prelude::CursorMoved>,) -> bool {
         let output: bool =<::bevy_window::prelude::CursorMoved as ::core::cmp::PartialEq::<::bevy_window::prelude::CursorMoved>>::eq(&_self,&other,).into();
         output
     }
@@ -122,21 +122,21 @@ impl ::bevy_window::prelude::FileDragAndDrop {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::prelude::FileDragAndDrop>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::prelude::FileDragAndDrop>,) -> () {
         let output: () =<::bevy_window::prelude::FileDragAndDrop as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::prelude::FileDragAndDrop>,) -> Val<::bevy_window::prelude::FileDragAndDrop> {
+    fn clone (_self: Ref<::bevy_window::prelude::FileDragAndDrop>,) -> Val<::bevy_window::prelude::FileDragAndDrop> {
         let output: Val<::bevy_window::prelude::FileDragAndDrop> =<::bevy_window::prelude::FileDragAndDrop as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::prelude::FileDragAndDrop>,other:Ref<::bevy_window::prelude::FileDragAndDrop>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::prelude::FileDragAndDrop>,other: Ref<::bevy_window::prelude::FileDragAndDrop>,) -> bool {
         let output: bool =<::bevy_window::prelude::FileDragAndDrop as ::core::cmp::PartialEq::<::bevy_window::prelude::FileDragAndDrop>>::eq(&_self,&other,).into();
         output
     }
@@ -153,21 +153,21 @@ impl ::bevy_window::prelude::Ime {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::prelude::Ime>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::prelude::Ime>,) -> () {
         let output: () =<::bevy_window::prelude::Ime as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::prelude::Ime>,) -> Val<::bevy_window::prelude::Ime> {
+    fn clone (_self: Ref<::bevy_window::prelude::Ime>,) -> Val<::bevy_window::prelude::Ime> {
         let output: Val<::bevy_window::prelude::Ime> =<::bevy_window::prelude::Ime as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::prelude::Ime>,other:Ref<::bevy_window::prelude::Ime>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::prelude::Ime>,other: Ref<::bevy_window::prelude::Ime>,) -> bool {
         let output: bool =<::bevy_window::prelude::Ime as ::core::cmp::PartialEq::<::bevy_window::prelude::Ime>>::eq(&_self,&other,).into();
         output
     }
@@ -184,21 +184,21 @@ impl ::bevy_window::prelude::MonitorSelection {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::prelude::MonitorSelection>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::prelude::MonitorSelection>,) -> () {
         let output: () =<::bevy_window::prelude::MonitorSelection as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::prelude::MonitorSelection>,) -> Val<::bevy_window::prelude::MonitorSelection> {
+    fn clone (_self: Ref<::bevy_window::prelude::MonitorSelection>,) -> Val<::bevy_window::prelude::MonitorSelection> {
         let output: Val<::bevy_window::prelude::MonitorSelection> =<::bevy_window::prelude::MonitorSelection as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::prelude::MonitorSelection>,other:Ref<::bevy_window::prelude::MonitorSelection>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::prelude::MonitorSelection>,other: Ref<::bevy_window::prelude::MonitorSelection>,) -> bool {
         let output: bool =<::bevy_window::prelude::MonitorSelection as ::core::cmp::PartialEq::<::bevy_window::prelude::MonitorSelection>>::eq(&_self,&other,).into();
         output
     }
@@ -215,21 +215,21 @@ impl ::bevy_window::prelude::VideoModeSelection {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::prelude::VideoModeSelection>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::prelude::VideoModeSelection>,) -> () {
         let output: () =<::bevy_window::prelude::VideoModeSelection as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::prelude::VideoModeSelection>,) -> Val<::bevy_window::prelude::VideoModeSelection> {
+    fn clone (_self: Ref<::bevy_window::prelude::VideoModeSelection>,) -> Val<::bevy_window::prelude::VideoModeSelection> {
         let output: Val<::bevy_window::prelude::VideoModeSelection> =<::bevy_window::prelude::VideoModeSelection as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::prelude::VideoModeSelection>,other:Ref<::bevy_window::prelude::VideoModeSelection>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::prelude::VideoModeSelection>,other: Ref<::bevy_window::prelude::VideoModeSelection>,) -> bool {
         let output: bool =<::bevy_window::prelude::VideoModeSelection as ::core::cmp::PartialEq::<::bevy_window::prelude::VideoModeSelection>>::eq(&_self,&other,).into();
         output
     }
@@ -246,7 +246,7 @@ impl ::bevy_window::prelude::Window {
 
 
     
-    fn clone (_self:Ref<::bevy_window::prelude::Window>,) -> Val<::bevy_window::prelude::Window> {
+    fn clone (_self: Ref<::bevy_window::prelude::Window>,) -> Val<::bevy_window::prelude::Window> {
         let output: Val<::bevy_window::prelude::Window> =<::bevy_window::prelude::Window as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -257,7 +257,7 @@ impl ::bevy_window::prelude::Window {
     
     ///  See [`WindowResolution`] for an explanation about logical/physical sizes.
     
-    fn height (_self:Ref<::bevy_window::prelude::Window>,) -> f32 {
+    fn height (_self: Ref<::bevy_window::prelude::Window>,) -> f32 {
         let output: f32 =::bevy_window::prelude::Window::height(&_self,).into();
         output
     }
@@ -268,7 +268,7 @@ impl ::bevy_window::prelude::Window {
     
     ///  See [`WindowResolution`] for an explanation about logical/physical sizes.
     
-    fn physical_height (_self:Ref<::bevy_window::prelude::Window>,) -> u32 {
+    fn physical_height (_self: Ref<::bevy_window::prelude::Window>,) -> u32 {
         let output: u32 =::bevy_window::prelude::Window::physical_height(&_self,).into();
         output
     }
@@ -279,7 +279,7 @@ impl ::bevy_window::prelude::Window {
     
     ///  See [`WindowResolution`] for an explanation about logical/physical sizes.
     
-    fn physical_size (_self:Ref<::bevy_window::prelude::Window>,) -> Val<::bevy_math::UVec2> {
+    fn physical_size (_self: Ref<::bevy_window::prelude::Window>,) -> Val<::bevy_math::UVec2> {
         let output: Val<::bevy_math::UVec2> =::bevy_window::prelude::Window::physical_size(&_self,).into();
         output
     }
@@ -290,7 +290,7 @@ impl ::bevy_window::prelude::Window {
     
     ///  See [`WindowResolution`] for an explanation about logical/physical sizes.
     
-    fn physical_width (_self:Ref<::bevy_window::prelude::Window>,) -> u32 {
+    fn physical_width (_self: Ref<::bevy_window::prelude::Window>,) -> u32 {
         let output: u32 =::bevy_window::prelude::Window::physical_width(&_self,).into();
         output
     }
@@ -301,7 +301,7 @@ impl ::bevy_window::prelude::Window {
     
     ///  Ratio of physical size to logical size, see [`WindowResolution`].
     
-    fn scale_factor (_self:Ref<::bevy_window::prelude::Window>,) -> f32 {
+    fn scale_factor (_self: Ref<::bevy_window::prelude::Window>,) -> f32 {
         let output: f32 =::bevy_window::prelude::Window::scale_factor(&_self,).into();
         output
     }
@@ -312,7 +312,7 @@ impl ::bevy_window::prelude::Window {
     
     ///  Setting to false will attempt to un-maximize the window.
     
-    fn set_maximized (mut _self:Mut<::bevy_window::prelude::Window>,maximized:bool,) -> () {
+    fn set_maximized (mut _self: Mut<::bevy_window::prelude::Window>,maximized: bool,) -> () {
         let output: () =::bevy_window::prelude::Window::set_maximized(&mut _self,maximized,).into();
         output
     }
@@ -323,7 +323,7 @@ impl ::bevy_window::prelude::Window {
     
     ///  Setting to false will attempt to un-minimize the window.
     
-    fn set_minimized (mut _self:Mut<::bevy_window::prelude::Window>,minimized:bool,) -> () {
+    fn set_minimized (mut _self: Mut<::bevy_window::prelude::Window>,minimized: bool,) -> () {
         let output: () =::bevy_window::prelude::Window::set_minimized(&mut _self,minimized,).into();
         output
     }
@@ -334,7 +334,7 @@ impl ::bevy_window::prelude::Window {
     
     ///  See [`WindowResolution`] for an explanation about logical/physical sizes.
     
-    fn size (_self:Ref<::bevy_window::prelude::Window>,) -> Val<::bevy_math::Vec2> {
+    fn size (_self: Ref<::bevy_window::prelude::Window>,) -> Val<::bevy_math::Vec2> {
         let output: Val<::bevy_math::Vec2> =::bevy_window::prelude::Window::size(&_self,).into();
         output
     }
@@ -347,7 +347,7 @@ impl ::bevy_window::prelude::Window {
     
     ///  pressed immediately before this function was called.
     
-    fn start_drag_move (mut _self:Mut<::bevy_window::prelude::Window>,) -> () {
+    fn start_drag_move (mut _self: Mut<::bevy_window::prelude::Window>,) -> () {
         let output: () =::bevy_window::prelude::Window::start_drag_move(&mut _self,).into();
         output
     }
@@ -360,7 +360,7 @@ impl ::bevy_window::prelude::Window {
     
     ///  pressed immediately before this function was called.
     
-    fn start_drag_resize (mut _self:Mut<::bevy_window::prelude::Window>,direction:Val<::bevy_math::CompassOctant>,) -> () {
+    fn start_drag_resize (mut _self: Mut<::bevy_window::prelude::Window>,direction: Val<::bevy_math::CompassOctant>,) -> () {
         let output: () =::bevy_window::prelude::Window::start_drag_resize(&mut _self,direction.into_inner(),).into();
         output
     }
@@ -371,7 +371,7 @@ impl ::bevy_window::prelude::Window {
     
     ///  See [`WindowResolution`] for an explanation about logical/physical sizes.
     
-    fn width (_self:Ref<::bevy_window::prelude::Window>,) -> f32 {
+    fn width (_self: Ref<::bevy_window::prelude::Window>,) -> f32 {
         let output: f32 =::bevy_window::prelude::Window::width(&_self,).into();
         output
     }
@@ -388,21 +388,21 @@ impl ::bevy_window::prelude::WindowMoved {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::prelude::WindowMoved>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::prelude::WindowMoved>,) -> () {
         let output: () =<::bevy_window::prelude::WindowMoved as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::prelude::WindowMoved>,) -> Val<::bevy_window::prelude::WindowMoved> {
+    fn clone (_self: Ref<::bevy_window::prelude::WindowMoved>,) -> Val<::bevy_window::prelude::WindowMoved> {
         let output: Val<::bevy_window::prelude::WindowMoved> =<::bevy_window::prelude::WindowMoved as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::prelude::WindowMoved>,other:Ref<::bevy_window::prelude::WindowMoved>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::prelude::WindowMoved>,other: Ref<::bevy_window::prelude::WindowMoved>,) -> bool {
         let output: bool =<::bevy_window::prelude::WindowMoved as ::core::cmp::PartialEq::<::bevy_window::prelude::WindowMoved>>::eq(&_self,&other,).into();
         output
     }
@@ -421,21 +421,21 @@ impl ::bevy_window::prelude::WindowPosition {
     
     ///  Set the window to a specific monitor.
     
-    fn center (mut _self:Mut<::bevy_window::prelude::WindowPosition>,monitor:Val<::bevy_window::prelude::MonitorSelection>,) -> () {
+    fn center (mut _self: Mut<::bevy_window::prelude::WindowPosition>,monitor: Val<::bevy_window::prelude::MonitorSelection>,) -> () {
         let output: () =::bevy_window::prelude::WindowPosition::center(&mut _self,monitor.into_inner(),).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::prelude::WindowPosition>,) -> Val<::bevy_window::prelude::WindowPosition> {
+    fn clone (_self: Ref<::bevy_window::prelude::WindowPosition>,) -> Val<::bevy_window::prelude::WindowPosition> {
         let output: Val<::bevy_window::prelude::WindowPosition> =<::bevy_window::prelude::WindowPosition as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::prelude::WindowPosition>,other:Ref<::bevy_window::prelude::WindowPosition>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::prelude::WindowPosition>,other: Ref<::bevy_window::prelude::WindowPosition>,) -> bool {
         let output: bool =<::bevy_window::prelude::WindowPosition as ::core::cmp::PartialEq::<::bevy_window::prelude::WindowPosition>>::eq(&_self,&other,).into();
         output
     }
@@ -444,7 +444,7 @@ impl ::bevy_window::prelude::WindowPosition {
     
     ///  Creates a new [`WindowPosition`] at a position.
     
-    fn new (position:Val<::bevy_math::IVec2>,) -> Val<::bevy_window::prelude::WindowPosition> {
+    fn new (position: Val<::bevy_math::IVec2>,) -> Val<::bevy_window::prelude::WindowPosition> {
         let output: Val<::bevy_window::prelude::WindowPosition> =::bevy_window::prelude::WindowPosition::new(position.into_inner(),).into();
         output
     }
@@ -453,7 +453,7 @@ impl ::bevy_window::prelude::WindowPosition {
     
     ///  Set the position to a specific point.
     
-    fn set (mut _self:Mut<::bevy_window::prelude::WindowPosition>,position:Val<::bevy_math::IVec2>,) -> () {
+    fn set (mut _self: Mut<::bevy_window::prelude::WindowPosition>,position: Val<::bevy_math::IVec2>,) -> () {
         let output: () =::bevy_window::prelude::WindowPosition::set(&mut _self,position.into_inner(),).into();
         output
     }
@@ -474,21 +474,21 @@ impl ::bevy_window::prelude::WindowResizeConstraints {
     
     ///  Will output warnings if it isn't.
     
-    fn check_constraints (_self:Ref<::bevy_window::prelude::WindowResizeConstraints>,) -> Val<::bevy_window::prelude::WindowResizeConstraints> {
+    fn check_constraints (_self: Ref<::bevy_window::prelude::WindowResizeConstraints>,) -> Val<::bevy_window::prelude::WindowResizeConstraints> {
         let output: Val<::bevy_window::prelude::WindowResizeConstraints> =::bevy_window::prelude::WindowResizeConstraints::check_constraints(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::prelude::WindowResizeConstraints>,) -> Val<::bevy_window::prelude::WindowResizeConstraints> {
+    fn clone (_self: Ref<::bevy_window::prelude::WindowResizeConstraints>,) -> Val<::bevy_window::prelude::WindowResizeConstraints> {
         let output: Val<::bevy_window::prelude::WindowResizeConstraints> =<::bevy_window::prelude::WindowResizeConstraints as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::prelude::WindowResizeConstraints>,other:Ref<::bevy_window::prelude::WindowResizeConstraints>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::prelude::WindowResizeConstraints>,other: Ref<::bevy_window::prelude::WindowResizeConstraints>,) -> bool {
         let output: bool =<::bevy_window::prelude::WindowResizeConstraints as ::core::cmp::PartialEq::<::bevy_window::prelude::WindowResizeConstraints>>::eq(&_self,&other,).into();
         output
     }
@@ -505,14 +505,14 @@ impl ::bevy_window::WindowEvent {
 
 
     
-    fn clone (_self:Ref<::bevy_window::WindowEvent>,) -> Val<::bevy_window::WindowEvent> {
+    fn clone (_self: Ref<::bevy_window::WindowEvent>,) -> Val<::bevy_window::WindowEvent> {
         let output: Val<::bevy_window::WindowEvent> =<::bevy_window::WindowEvent as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::WindowEvent>,other:Ref<::bevy_window::WindowEvent>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::WindowEvent>,other: Ref<::bevy_window::WindowEvent>,) -> bool {
         let output: bool =<::bevy_window::WindowEvent as ::core::cmp::PartialEq::<::bevy_window::WindowEvent>>::eq(&_self,&other,).into();
         output
     }
@@ -529,14 +529,14 @@ impl ::bevy_window::WindowResized {
 
 
     
-    fn clone (_self:Ref<::bevy_window::WindowResized>,) -> Val<::bevy_window::WindowResized> {
+    fn clone (_self: Ref<::bevy_window::WindowResized>,) -> Val<::bevy_window::WindowResized> {
         let output: Val<::bevy_window::WindowResized> =<::bevy_window::WindowResized as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::WindowResized>,other:Ref<::bevy_window::WindowResized>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::WindowResized>,other: Ref<::bevy_window::WindowResized>,) -> bool {
         let output: bool =<::bevy_window::WindowResized as ::core::cmp::PartialEq::<::bevy_window::WindowResized>>::eq(&_self,&other,).into();
         output
     }
@@ -553,21 +553,21 @@ impl ::bevy_window::WindowCreated {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::WindowCreated>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::WindowCreated>,) -> () {
         let output: () =<::bevy_window::WindowCreated as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::WindowCreated>,) -> Val<::bevy_window::WindowCreated> {
+    fn clone (_self: Ref<::bevy_window::WindowCreated>,) -> Val<::bevy_window::WindowCreated> {
         let output: Val<::bevy_window::WindowCreated> =<::bevy_window::WindowCreated as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::WindowCreated>,other:Ref<::bevy_window::WindowCreated>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::WindowCreated>,other: Ref<::bevy_window::WindowCreated>,) -> bool {
         let output: bool =<::bevy_window::WindowCreated as ::core::cmp::PartialEq::<::bevy_window::WindowCreated>>::eq(&_self,&other,).into();
         output
     }
@@ -584,21 +584,21 @@ impl ::bevy_window::WindowClosing {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::WindowClosing>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::WindowClosing>,) -> () {
         let output: () =<::bevy_window::WindowClosing as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::WindowClosing>,) -> Val<::bevy_window::WindowClosing> {
+    fn clone (_self: Ref<::bevy_window::WindowClosing>,) -> Val<::bevy_window::WindowClosing> {
         let output: Val<::bevy_window::WindowClosing> =<::bevy_window::WindowClosing as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::WindowClosing>,other:Ref<::bevy_window::WindowClosing>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::WindowClosing>,other: Ref<::bevy_window::WindowClosing>,) -> bool {
         let output: bool =<::bevy_window::WindowClosing as ::core::cmp::PartialEq::<::bevy_window::WindowClosing>>::eq(&_self,&other,).into();
         output
     }
@@ -615,21 +615,21 @@ impl ::bevy_window::WindowClosed {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::WindowClosed>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::WindowClosed>,) -> () {
         let output: () =<::bevy_window::WindowClosed as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::WindowClosed>,) -> Val<::bevy_window::WindowClosed> {
+    fn clone (_self: Ref<::bevy_window::WindowClosed>,) -> Val<::bevy_window::WindowClosed> {
         let output: Val<::bevy_window::WindowClosed> =<::bevy_window::WindowClosed as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::WindowClosed>,other:Ref<::bevy_window::WindowClosed>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::WindowClosed>,other: Ref<::bevy_window::WindowClosed>,) -> bool {
         let output: bool =<::bevy_window::WindowClosed as ::core::cmp::PartialEq::<::bevy_window::WindowClosed>>::eq(&_self,&other,).into();
         output
     }
@@ -646,21 +646,21 @@ impl ::bevy_window::WindowCloseRequested {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::WindowCloseRequested>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::WindowCloseRequested>,) -> () {
         let output: () =<::bevy_window::WindowCloseRequested as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::WindowCloseRequested>,) -> Val<::bevy_window::WindowCloseRequested> {
+    fn clone (_self: Ref<::bevy_window::WindowCloseRequested>,) -> Val<::bevy_window::WindowCloseRequested> {
         let output: Val<::bevy_window::WindowCloseRequested> =<::bevy_window::WindowCloseRequested as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::WindowCloseRequested>,other:Ref<::bevy_window::WindowCloseRequested>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::WindowCloseRequested>,other: Ref<::bevy_window::WindowCloseRequested>,) -> bool {
         let output: bool =<::bevy_window::WindowCloseRequested as ::core::cmp::PartialEq::<::bevy_window::WindowCloseRequested>>::eq(&_self,&other,).into();
         output
     }
@@ -677,21 +677,21 @@ impl ::bevy_window::WindowDestroyed {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::WindowDestroyed>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::WindowDestroyed>,) -> () {
         let output: () =<::bevy_window::WindowDestroyed as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::WindowDestroyed>,) -> Val<::bevy_window::WindowDestroyed> {
+    fn clone (_self: Ref<::bevy_window::WindowDestroyed>,) -> Val<::bevy_window::WindowDestroyed> {
         let output: Val<::bevy_window::WindowDestroyed> =<::bevy_window::WindowDestroyed as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::WindowDestroyed>,other:Ref<::bevy_window::WindowDestroyed>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::WindowDestroyed>,other: Ref<::bevy_window::WindowDestroyed>,) -> bool {
         let output: bool =<::bevy_window::WindowDestroyed as ::core::cmp::PartialEq::<::bevy_window::WindowDestroyed>>::eq(&_self,&other,).into();
         output
     }
@@ -708,21 +708,21 @@ impl ::bevy_window::RequestRedraw {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::RequestRedraw>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::RequestRedraw>,) -> () {
         let output: () =<::bevy_window::RequestRedraw as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::RequestRedraw>,) -> Val<::bevy_window::RequestRedraw> {
+    fn clone (_self: Ref<::bevy_window::RequestRedraw>,) -> Val<::bevy_window::RequestRedraw> {
         let output: Val<::bevy_window::RequestRedraw> =<::bevy_window::RequestRedraw as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::RequestRedraw>,other:Ref<::bevy_window::RequestRedraw>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::RequestRedraw>,other: Ref<::bevy_window::RequestRedraw>,) -> bool {
         let output: bool =<::bevy_window::RequestRedraw as ::core::cmp::PartialEq::<::bevy_window::RequestRedraw>>::eq(&_self,&other,).into();
         output
     }
@@ -739,21 +739,21 @@ impl ::bevy_window::WindowFocused {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::WindowFocused>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::WindowFocused>,) -> () {
         let output: () =<::bevy_window::WindowFocused as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::WindowFocused>,) -> Val<::bevy_window::WindowFocused> {
+    fn clone (_self: Ref<::bevy_window::WindowFocused>,) -> Val<::bevy_window::WindowFocused> {
         let output: Val<::bevy_window::WindowFocused> =<::bevy_window::WindowFocused as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::WindowFocused>,other:Ref<::bevy_window::WindowFocused>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::WindowFocused>,other: Ref<::bevy_window::WindowFocused>,) -> bool {
         let output: bool =<::bevy_window::WindowFocused as ::core::cmp::PartialEq::<::bevy_window::WindowFocused>>::eq(&_self,&other,).into();
         output
     }
@@ -770,21 +770,21 @@ impl ::bevy_window::WindowOccluded {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::WindowOccluded>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::WindowOccluded>,) -> () {
         let output: () =<::bevy_window::WindowOccluded as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::WindowOccluded>,) -> Val<::bevy_window::WindowOccluded> {
+    fn clone (_self: Ref<::bevy_window::WindowOccluded>,) -> Val<::bevy_window::WindowOccluded> {
         let output: Val<::bevy_window::WindowOccluded> =<::bevy_window::WindowOccluded as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::WindowOccluded>,other:Ref<::bevy_window::WindowOccluded>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::WindowOccluded>,other: Ref<::bevy_window::WindowOccluded>,) -> bool {
         let output: bool =<::bevy_window::WindowOccluded as ::core::cmp::PartialEq::<::bevy_window::WindowOccluded>>::eq(&_self,&other,).into();
         output
     }
@@ -801,14 +801,14 @@ impl ::bevy_window::WindowScaleFactorChanged {
 
 
     
-    fn clone (_self:Ref<::bevy_window::WindowScaleFactorChanged>,) -> Val<::bevy_window::WindowScaleFactorChanged> {
+    fn clone (_self: Ref<::bevy_window::WindowScaleFactorChanged>,) -> Val<::bevy_window::WindowScaleFactorChanged> {
         let output: Val<::bevy_window::WindowScaleFactorChanged> =<::bevy_window::WindowScaleFactorChanged as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::WindowScaleFactorChanged>,other:Ref<::bevy_window::WindowScaleFactorChanged>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::WindowScaleFactorChanged>,other: Ref<::bevy_window::WindowScaleFactorChanged>,) -> bool {
         let output: bool =<::bevy_window::WindowScaleFactorChanged as ::core::cmp::PartialEq::<::bevy_window::WindowScaleFactorChanged>>::eq(&_self,&other,).into();
         output
     }
@@ -825,14 +825,14 @@ impl ::bevy_window::WindowBackendScaleFactorChanged {
 
 
     
-    fn clone (_self:Ref<::bevy_window::WindowBackendScaleFactorChanged>,) -> Val<::bevy_window::WindowBackendScaleFactorChanged> {
+    fn clone (_self: Ref<::bevy_window::WindowBackendScaleFactorChanged>,) -> Val<::bevy_window::WindowBackendScaleFactorChanged> {
         let output: Val<::bevy_window::WindowBackendScaleFactorChanged> =<::bevy_window::WindowBackendScaleFactorChanged as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::WindowBackendScaleFactorChanged>,other:Ref<::bevy_window::WindowBackendScaleFactorChanged>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::WindowBackendScaleFactorChanged>,other: Ref<::bevy_window::WindowBackendScaleFactorChanged>,) -> bool {
         let output: bool =<::bevy_window::WindowBackendScaleFactorChanged as ::core::cmp::PartialEq::<::bevy_window::WindowBackendScaleFactorChanged>>::eq(&_self,&other,).into();
         output
     }
@@ -849,21 +849,21 @@ impl ::bevy_window::WindowThemeChanged {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::WindowThemeChanged>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::WindowThemeChanged>,) -> () {
         let output: () =<::bevy_window::WindowThemeChanged as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::WindowThemeChanged>,) -> Val<::bevy_window::WindowThemeChanged> {
+    fn clone (_self: Ref<::bevy_window::WindowThemeChanged>,) -> Val<::bevy_window::WindowThemeChanged> {
         let output: Val<::bevy_window::WindowThemeChanged> =<::bevy_window::WindowThemeChanged as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::WindowThemeChanged>,other:Ref<::bevy_window::WindowThemeChanged>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::WindowThemeChanged>,other: Ref<::bevy_window::WindowThemeChanged>,) -> bool {
         let output: bool =<::bevy_window::WindowThemeChanged as ::core::cmp::PartialEq::<::bevy_window::WindowThemeChanged>>::eq(&_self,&other,).into();
         output
     }
@@ -880,21 +880,21 @@ impl ::bevy_window::AppLifecycle {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::AppLifecycle>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::AppLifecycle>,) -> () {
         let output: () =<::bevy_window::AppLifecycle as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::AppLifecycle>,) -> Val<::bevy_window::AppLifecycle> {
+    fn clone (_self: Ref<::bevy_window::AppLifecycle>,) -> Val<::bevy_window::AppLifecycle> {
         let output: Val<::bevy_window::AppLifecycle> =<::bevy_window::AppLifecycle as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::AppLifecycle>,other:Ref<::bevy_window::AppLifecycle>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::AppLifecycle>,other: Ref<::bevy_window::AppLifecycle>,) -> bool {
         let output: bool =<::bevy_window::AppLifecycle as ::core::cmp::PartialEq::<::bevy_window::AppLifecycle>>::eq(&_self,&other,).into();
         output
     }
@@ -903,7 +903,7 @@ impl ::bevy_window::AppLifecycle {
     
     ///  Return `true` if the app can be updated.
     
-    fn is_active (_self:Ref<::bevy_window::AppLifecycle>,) -> bool {
+    fn is_active (_self: Ref<::bevy_window::AppLifecycle>,) -> bool {
         let output: bool =::bevy_window::AppLifecycle::is_active(&_self,).into();
         output
     }
@@ -920,21 +920,21 @@ impl ::bevy_window::PrimaryWindow {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::PrimaryWindow>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::PrimaryWindow>,) -> () {
         let output: () =<::bevy_window::PrimaryWindow as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::PrimaryWindow>,) -> Val<::bevy_window::PrimaryWindow> {
+    fn clone (_self: Ref<::bevy_window::PrimaryWindow>,) -> Val<::bevy_window::PrimaryWindow> {
         let output: Val<::bevy_window::PrimaryWindow> =<::bevy_window::PrimaryWindow as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::PrimaryWindow>,other:Ref<::bevy_window::PrimaryWindow>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::PrimaryWindow>,other: Ref<::bevy_window::PrimaryWindow>,) -> bool {
         let output: bool =<::bevy_window::PrimaryWindow as ::core::cmp::PartialEq::<::bevy_window::PrimaryWindow>>::eq(&_self,&other,).into();
         output
     }
@@ -951,7 +951,7 @@ impl ::bevy_window::Monitor {
 
 
     
-    fn clone (_self:Ref<::bevy_window::Monitor>,) -> Val<::bevy_window::Monitor> {
+    fn clone (_self: Ref<::bevy_window::Monitor>,) -> Val<::bevy_window::Monitor> {
         let output: Val<::bevy_window::Monitor> =<::bevy_window::Monitor as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -960,7 +960,7 @@ impl ::bevy_window::Monitor {
     
     ///  Returns the physical size of the monitor in pixels
     
-    fn physical_size (_self:Ref<::bevy_window::Monitor>,) -> Val<::bevy_math::UVec2> {
+    fn physical_size (_self: Ref<::bevy_window::Monitor>,) -> Val<::bevy_math::UVec2> {
         let output: Val<::bevy_math::UVec2> =::bevy_window::Monitor::physical_size(&_self,).into();
         output
     }
@@ -977,21 +977,21 @@ impl ::bevy_window::WindowTheme {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::WindowTheme>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::WindowTheme>,) -> () {
         let output: () =<::bevy_window::WindowTheme as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::WindowTheme>,) -> Val<::bevy_window::WindowTheme> {
+    fn clone (_self: Ref<::bevy_window::WindowTheme>,) -> Val<::bevy_window::WindowTheme> {
         let output: Val<::bevy_window::WindowTheme> =<::bevy_window::WindowTheme as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::WindowTheme>,other:Ref<::bevy_window::WindowTheme>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::WindowTheme>,other: Ref<::bevy_window::WindowTheme>,) -> bool {
         let output: bool =<::bevy_window::WindowTheme as ::core::cmp::PartialEq::<::bevy_window::WindowTheme>>::eq(&_self,&other,).into();
         output
     }
@@ -1008,21 +1008,21 @@ impl ::bevy_window::VideoMode {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::VideoMode>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::VideoMode>,) -> () {
         let output: () =<::bevy_window::VideoMode as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::VideoMode>,) -> Val<::bevy_window::VideoMode> {
+    fn clone (_self: Ref<::bevy_window::VideoMode>,) -> Val<::bevy_window::VideoMode> {
         let output: Val<::bevy_window::VideoMode> =<::bevy_window::VideoMode as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::VideoMode>,other:Ref<::bevy_window::VideoMode>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::VideoMode>,other: Ref<::bevy_window::VideoMode>,) -> bool {
         let output: bool =<::bevy_window::VideoMode as ::core::cmp::PartialEq::<::bevy_window::VideoMode>>::eq(&_self,&other,).into();
         output
     }
@@ -1039,7 +1039,7 @@ impl ::bevy_window::PrimaryMonitor {
 
 
     
-    fn clone (_self:Ref<::bevy_window::PrimaryMonitor>,) -> Val<::bevy_window::PrimaryMonitor> {
+    fn clone (_self: Ref<::bevy_window::PrimaryMonitor>,) -> Val<::bevy_window::PrimaryMonitor> {
         let output: Val<::bevy_window::PrimaryMonitor> =<::bevy_window::PrimaryMonitor as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -1056,21 +1056,21 @@ impl ::bevy_window::SystemCursorIcon {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::SystemCursorIcon>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::SystemCursorIcon>,) -> () {
         let output: () =<::bevy_window::SystemCursorIcon as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::SystemCursorIcon>,) -> Val<::bevy_window::SystemCursorIcon> {
+    fn clone (_self: Ref<::bevy_window::SystemCursorIcon>,) -> Val<::bevy_window::SystemCursorIcon> {
         let output: Val<::bevy_window::SystemCursorIcon> =<::bevy_window::SystemCursorIcon as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::SystemCursorIcon>,other:Ref<::bevy_window::SystemCursorIcon>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::SystemCursorIcon>,other: Ref<::bevy_window::SystemCursorIcon>,) -> bool {
         let output: bool =<::bevy_window::SystemCursorIcon as ::core::cmp::PartialEq::<::bevy_window::SystemCursorIcon>>::eq(&_self,&other,).into();
         output
     }
@@ -1087,7 +1087,7 @@ impl ::bevy_window::WindowRef {
 
 
     
-    fn clone (_self:Ref<::bevy_window::WindowRef>,) -> Val<::bevy_window::WindowRef> {
+    fn clone (_self: Ref<::bevy_window::WindowRef>,) -> Val<::bevy_window::WindowRef> {
         let output: Val<::bevy_window::WindowRef> =<::bevy_window::WindowRef as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -1104,21 +1104,21 @@ impl ::bevy_window::NormalizedWindowRef {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::NormalizedWindowRef>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::NormalizedWindowRef>,) -> () {
         let output: () =<::bevy_window::NormalizedWindowRef as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::NormalizedWindowRef>,) -> Val<::bevy_window::NormalizedWindowRef> {
+    fn clone (_self: Ref<::bevy_window::NormalizedWindowRef>,) -> Val<::bevy_window::NormalizedWindowRef> {
         let output: Val<::bevy_window::NormalizedWindowRef> =<::bevy_window::NormalizedWindowRef as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::NormalizedWindowRef>,other:Ref<::bevy_window::NormalizedWindowRef>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::NormalizedWindowRef>,other: Ref<::bevy_window::NormalizedWindowRef>,) -> bool {
         let output: bool =<::bevy_window::NormalizedWindowRef as ::core::cmp::PartialEq::<::bevy_window::NormalizedWindowRef>>::eq(&_self,&other,).into();
         output
     }
@@ -1135,7 +1135,7 @@ impl ::bevy_window::CursorOptions {
 
 
     
-    fn clone (_self:Ref<::bevy_window::CursorOptions>,) -> Val<::bevy_window::CursorOptions> {
+    fn clone (_self: Ref<::bevy_window::CursorOptions>,) -> Val<::bevy_window::CursorOptions> {
         let output: Val<::bevy_window::CursorOptions> =<::bevy_window::CursorOptions as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -1152,21 +1152,21 @@ impl ::bevy_window::PresentMode {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::PresentMode>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::PresentMode>,) -> () {
         let output: () =<::bevy_window::PresentMode as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::PresentMode>,) -> Val<::bevy_window::PresentMode> {
+    fn clone (_self: Ref<::bevy_window::PresentMode>,) -> Val<::bevy_window::PresentMode> {
         let output: Val<::bevy_window::PresentMode> =<::bevy_window::PresentMode as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::PresentMode>,other:Ref<::bevy_window::PresentMode>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::PresentMode>,other: Ref<::bevy_window::PresentMode>,) -> bool {
         let output: bool =<::bevy_window::PresentMode as ::core::cmp::PartialEq::<::bevy_window::PresentMode>>::eq(&_self,&other,).into();
         output
     }
@@ -1183,21 +1183,21 @@ impl ::bevy_window::WindowMode {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::WindowMode>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::WindowMode>,) -> () {
         let output: () =<::bevy_window::WindowMode as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::WindowMode>,) -> Val<::bevy_window::WindowMode> {
+    fn clone (_self: Ref<::bevy_window::WindowMode>,) -> Val<::bevy_window::WindowMode> {
         let output: Val<::bevy_window::WindowMode> =<::bevy_window::WindowMode as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::WindowMode>,other:Ref<::bevy_window::WindowMode>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::WindowMode>,other: Ref<::bevy_window::WindowMode>,) -> bool {
         let output: bool =<::bevy_window::WindowMode as ::core::cmp::PartialEq::<::bevy_window::WindowMode>>::eq(&_self,&other,).into();
         output
     }
@@ -1218,21 +1218,21 @@ impl ::bevy_window::WindowResolution {
     
     ///  This value is unaffected by [`WindowResolution::scale_factor_override`].
     
-    fn base_scale_factor (_self:Ref<::bevy_window::WindowResolution>,) -> f32 {
+    fn base_scale_factor (_self: Ref<::bevy_window::WindowResolution>,) -> f32 {
         let output: f32 =::bevy_window::WindowResolution::base_scale_factor(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::WindowResolution>,) -> Val<::bevy_window::WindowResolution> {
+    fn clone (_self: Ref<::bevy_window::WindowResolution>,) -> Val<::bevy_window::WindowResolution> {
         let output: Val<::bevy_window::WindowResolution> =<::bevy_window::WindowResolution as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::WindowResolution>,other:Ref<::bevy_window::WindowResolution>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::WindowResolution>,other: Ref<::bevy_window::WindowResolution>,) -> bool {
         let output: bool =<::bevy_window::WindowResolution as ::core::cmp::PartialEq::<::bevy_window::WindowResolution>>::eq(&_self,&other,).into();
         output
     }
@@ -1241,7 +1241,7 @@ impl ::bevy_window::WindowResolution {
     
     ///  The window's client area height in logical pixels.
     
-    fn height (_self:Ref<::bevy_window::WindowResolution>,) -> f32 {
+    fn height (_self: Ref<::bevy_window::WindowResolution>,) -> f32 {
         let output: f32 =::bevy_window::WindowResolution::height(&_self,).into();
         output
     }
@@ -1250,7 +1250,7 @@ impl ::bevy_window::WindowResolution {
     
     ///  Creates a new [`WindowResolution`].
     
-    fn new (physical_width:f32,physical_height:f32,) -> Val<::bevy_window::WindowResolution> {
+    fn new (physical_width: f32,physical_height: f32,) -> Val<::bevy_window::WindowResolution> {
         let output: Val<::bevy_window::WindowResolution> =::bevy_window::WindowResolution::new(physical_width,physical_height,).into();
         output
     }
@@ -1259,7 +1259,7 @@ impl ::bevy_window::WindowResolution {
     
     ///  The window's client area height in physical pixels.
     
-    fn physical_height (_self:Ref<::bevy_window::WindowResolution>,) -> u32 {
+    fn physical_height (_self: Ref<::bevy_window::WindowResolution>,) -> u32 {
         let output: u32 =::bevy_window::WindowResolution::physical_height(&_self,).into();
         output
     }
@@ -1268,7 +1268,7 @@ impl ::bevy_window::WindowResolution {
     
     ///  The window's client size in physical pixels
     
-    fn physical_size (_self:Ref<::bevy_window::WindowResolution>,) -> Val<::bevy_math::UVec2> {
+    fn physical_size (_self: Ref<::bevy_window::WindowResolution>,) -> Val<::bevy_math::UVec2> {
         let output: Val<::bevy_math::UVec2> =::bevy_window::WindowResolution::physical_size(&_self,).into();
         output
     }
@@ -1277,7 +1277,7 @@ impl ::bevy_window::WindowResolution {
     
     ///  The window's client area width in physical pixels.
     
-    fn physical_width (_self:Ref<::bevy_window::WindowResolution>,) -> u32 {
+    fn physical_width (_self: Ref<::bevy_window::WindowResolution>,) -> u32 {
         let output: u32 =::bevy_window::WindowResolution::physical_width(&_self,).into();
         output
     }
@@ -1288,7 +1288,7 @@ impl ::bevy_window::WindowResolution {
     
     ///  `physical_pixels = logical_pixels * scale_factor`
     
-    fn scale_factor (_self:Ref<::bevy_window::WindowResolution>,) -> f32 {
+    fn scale_factor (_self: Ref<::bevy_window::WindowResolution>,) -> f32 {
         let output: f32 =::bevy_window::WindowResolution::scale_factor(&_self,).into();
         output
     }
@@ -1299,7 +1299,7 @@ impl ::bevy_window::WindowResolution {
     
     ///  This value may be different from the scale factor reported by the window backend.
     
-    fn scale_factor_override (_self:Ref<::bevy_window::WindowResolution>,) -> ::core::option::Option<f32> {
+    fn scale_factor_override (_self: Ref<::bevy_window::WindowResolution>,) -> ::core::option::Option<f32> {
         let output: ::core::option::Option<f32> =::bevy_window::WindowResolution::scale_factor_override(&_self,).into();
         output
     }
@@ -1308,7 +1308,7 @@ impl ::bevy_window::WindowResolution {
     
     ///  Set the window's logical resolution.
     
-    fn set (mut _self:Mut<::bevy_window::WindowResolution>,width:f32,height:f32,) -> () {
+    fn set (mut _self: Mut<::bevy_window::WindowResolution>,width: f32,height: f32,) -> () {
         let output: () =::bevy_window::WindowResolution::set(&mut _self,width,height,).into();
         output
     }
@@ -1321,7 +1321,7 @@ impl ::bevy_window::WindowResolution {
     
     ///  prefer to use [`WindowResolution::set`].
     
-    fn set_physical_resolution (mut _self:Mut<::bevy_window::WindowResolution>,width:u32,height:u32,) -> () {
+    fn set_physical_resolution (mut _self: Mut<::bevy_window::WindowResolution>,width: u32,height: u32,) -> () {
         let output: () =::bevy_window::WindowResolution::set_physical_resolution(&mut _self,width,height,).into();
         output
     }
@@ -1330,7 +1330,7 @@ impl ::bevy_window::WindowResolution {
     
     ///  Set the window's scale factor, this may get overridden by the backend.
     
-    fn set_scale_factor (mut _self:Mut<::bevy_window::WindowResolution>,scale_factor:f32,) -> () {
+    fn set_scale_factor (mut _self: Mut<::bevy_window::WindowResolution>,scale_factor: f32,) -> () {
         let output: () =::bevy_window::WindowResolution::set_scale_factor(&mut _self,scale_factor,).into();
         output
     }
@@ -1345,7 +1345,7 @@ impl ::bevy_window::WindowResolution {
     
     ///  event after its creation.
     
-    fn set_scale_factor_and_apply_to_physical_size (mut _self:Mut<::bevy_window::WindowResolution>,scale_factor:f32,) -> () {
+    fn set_scale_factor_and_apply_to_physical_size (mut _self: Mut<::bevy_window::WindowResolution>,scale_factor: f32,) -> () {
         let output: () =::bevy_window::WindowResolution::set_scale_factor_and_apply_to_physical_size(&mut _self,scale_factor,).into();
         output
     }
@@ -1358,7 +1358,7 @@ impl ::bevy_window::WindowResolution {
     
     ///  size is not within the limits.
     
-    fn set_scale_factor_override (mut _self:Mut<::bevy_window::WindowResolution>,scale_factor_override:::core::option::Option<f32>,) -> () {
+    fn set_scale_factor_override (mut _self: Mut<::bevy_window::WindowResolution>,scale_factor_override: ::core::option::Option<f32>,) -> () {
         let output: () =::bevy_window::WindowResolution::set_scale_factor_override(&mut _self,scale_factor_override,).into();
         output
     }
@@ -1367,7 +1367,7 @@ impl ::bevy_window::WindowResolution {
     
     ///  The window's client size in logical pixels
     
-    fn size (_self:Ref<::bevy_window::WindowResolution>,) -> Val<::bevy_math::Vec2> {
+    fn size (_self: Ref<::bevy_window::WindowResolution>,) -> Val<::bevy_math::Vec2> {
         let output: Val<::bevy_math::Vec2> =::bevy_window::WindowResolution::size(&_self,).into();
         output
     }
@@ -1376,7 +1376,7 @@ impl ::bevy_window::WindowResolution {
     
     ///  The window's client area width in logical pixels.
     
-    fn width (_self:Ref<::bevy_window::WindowResolution>,) -> f32 {
+    fn width (_self: Ref<::bevy_window::WindowResolution>,) -> f32 {
         let output: f32 =::bevy_window::WindowResolution::width(&_self,).into();
         output
     }
@@ -1385,7 +1385,7 @@ impl ::bevy_window::WindowResolution {
     
     ///  Builder method for adding a scale factor override to the resolution.
     
-    fn with_scale_factor_override (_self:Val<::bevy_window::WindowResolution>,scale_factor_override:f32,) -> Val<::bevy_window::WindowResolution> {
+    fn with_scale_factor_override (_self: Val<::bevy_window::WindowResolution>,scale_factor_override: f32,) -> Val<::bevy_window::WindowResolution> {
         let output: Val<::bevy_window::WindowResolution> =::bevy_window::WindowResolution::with_scale_factor_override(_self.into_inner(),scale_factor_override,).into();
         output
     }
@@ -1402,21 +1402,21 @@ impl ::bevy_window::CompositeAlphaMode {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::CompositeAlphaMode>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::CompositeAlphaMode>,) -> () {
         let output: () =<::bevy_window::CompositeAlphaMode as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::CompositeAlphaMode>,) -> Val<::bevy_window::CompositeAlphaMode> {
+    fn clone (_self: Ref<::bevy_window::CompositeAlphaMode>,) -> Val<::bevy_window::CompositeAlphaMode> {
         let output: Val<::bevy_window::CompositeAlphaMode> =<::bevy_window::CompositeAlphaMode as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::CompositeAlphaMode>,other:Ref<::bevy_window::CompositeAlphaMode>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::CompositeAlphaMode>,other: Ref<::bevy_window::CompositeAlphaMode>,) -> bool {
         let output: bool =<::bevy_window::CompositeAlphaMode as ::core::cmp::PartialEq::<::bevy_window::CompositeAlphaMode>>::eq(&_self,&other,).into();
         output
     }
@@ -1433,14 +1433,14 @@ impl ::bevy_window::EnabledButtons {
 
 
     
-    fn clone (_self:Ref<::bevy_window::EnabledButtons>,) -> Val<::bevy_window::EnabledButtons> {
+    fn clone (_self: Ref<::bevy_window::EnabledButtons>,) -> Val<::bevy_window::EnabledButtons> {
         let output: Val<::bevy_window::EnabledButtons> =<::bevy_window::EnabledButtons as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::EnabledButtons>,other:Ref<::bevy_window::EnabledButtons>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::EnabledButtons>,other: Ref<::bevy_window::EnabledButtons>,) -> bool {
         let output: bool =<::bevy_window::EnabledButtons as ::core::cmp::PartialEq::<::bevy_window::EnabledButtons>>::eq(&_self,&other,).into();
         output
     }
@@ -1457,21 +1457,21 @@ impl ::bevy_window::WindowLevel {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::WindowLevel>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::WindowLevel>,) -> () {
         let output: () =<::bevy_window::WindowLevel as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::WindowLevel>,) -> Val<::bevy_window::WindowLevel> {
+    fn clone (_self: Ref<::bevy_window::WindowLevel>,) -> Val<::bevy_window::WindowLevel> {
         let output: Val<::bevy_window::WindowLevel> =<::bevy_window::WindowLevel as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::WindowLevel>,other:Ref<::bevy_window::WindowLevel>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::WindowLevel>,other: Ref<::bevy_window::WindowLevel>,) -> bool {
         let output: bool =<::bevy_window::WindowLevel as ::core::cmp::PartialEq::<::bevy_window::WindowLevel>>::eq(&_self,&other,).into();
         output
     }
@@ -1488,14 +1488,14 @@ impl ::bevy_window::InternalWindowState {
 
 
     
-    fn clone (_self:Ref<::bevy_window::InternalWindowState>,) -> Val<::bevy_window::InternalWindowState> {
+    fn clone (_self: Ref<::bevy_window::InternalWindowState>,) -> Val<::bevy_window::InternalWindowState> {
         let output: Val<::bevy_window::InternalWindowState> =<::bevy_window::InternalWindowState as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::InternalWindowState>,other:Ref<::bevy_window::InternalWindowState>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::InternalWindowState>,other: Ref<::bevy_window::InternalWindowState>,) -> bool {
         let output: bool =<::bevy_window::InternalWindowState as ::core::cmp::PartialEq::<::bevy_window::InternalWindowState>>::eq(&_self,&other,).into();
         output
     }
@@ -1504,7 +1504,7 @@ impl ::bevy_window::InternalWindowState {
     
     ///  Consumes the current maximize request, if it exists. This should only be called by window backends.
     
-    fn take_maximize_request (mut _self:Mut<::bevy_window::InternalWindowState>,) -> ::core::option::Option<bool> {
+    fn take_maximize_request (mut _self: Mut<::bevy_window::InternalWindowState>,) -> ::core::option::Option<bool> {
         let output: ::core::option::Option<bool> =::bevy_window::InternalWindowState::take_maximize_request(&mut _self,).into();
         output
     }
@@ -1513,7 +1513,7 @@ impl ::bevy_window::InternalWindowState {
     
     ///  Consumes the current minimize request, if it exists. This should only be called by window backends.
     
-    fn take_minimize_request (mut _self:Mut<::bevy_window::InternalWindowState>,) -> ::core::option::Option<bool> {
+    fn take_minimize_request (mut _self: Mut<::bevy_window::InternalWindowState>,) -> ::core::option::Option<bool> {
         let output: ::core::option::Option<bool> =::bevy_window::InternalWindowState::take_minimize_request(&mut _self,).into();
         output
     }
@@ -1522,7 +1522,7 @@ impl ::bevy_window::InternalWindowState {
     
     ///  Consumes the current move request, if it exists. This should only be called by window backends.
     
-    fn take_move_request (mut _self:Mut<::bevy_window::InternalWindowState>,) -> bool {
+    fn take_move_request (mut _self: Mut<::bevy_window::InternalWindowState>,) -> bool {
         let output: bool =::bevy_window::InternalWindowState::take_move_request(&mut _self,).into();
         output
     }
@@ -1539,21 +1539,21 @@ impl ::bevy_window::CursorGrabMode {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_window::CursorGrabMode>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_window::CursorGrabMode>,) -> () {
         let output: () =<::bevy_window::CursorGrabMode as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_window::CursorGrabMode>,) -> Val<::bevy_window::CursorGrabMode> {
+    fn clone (_self: Ref<::bevy_window::CursorGrabMode>,) -> Val<::bevy_window::CursorGrabMode> {
         let output: Val<::bevy_window::CursorGrabMode> =<::bevy_window::CursorGrabMode as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_window::CursorGrabMode>,other:Ref<::bevy_window::CursorGrabMode>,) -> bool {
+    fn eq (_self: Ref<::bevy_window::CursorGrabMode>,other: Ref<::bevy_window::CursorGrabMode>,) -> bool {
         let output: bool =<::bevy_window::CursorGrabMode as ::core::cmp::PartialEq::<::bevy_window::CursorGrabMode>>::eq(&_self,&other,).into();
         output
     }

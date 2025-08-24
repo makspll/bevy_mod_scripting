@@ -36,21 +36,21 @@ impl ::bevy_asset::AssetIndex {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_asset::AssetIndex>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_asset::AssetIndex>,) -> () {
         let output: () =<::bevy_asset::AssetIndex as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_asset::AssetIndex>,) -> Val<::bevy_asset::AssetIndex> {
+    fn clone (_self: Ref<::bevy_asset::AssetIndex>,) -> Val<::bevy_asset::AssetIndex> {
         let output: Val<::bevy_asset::AssetIndex> =<::bevy_asset::AssetIndex as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_asset::AssetIndex>,other:Ref<::bevy_asset::AssetIndex>,) -> bool {
+    fn eq (_self: Ref<::bevy_asset::AssetIndex>,other: Ref<::bevy_asset::AssetIndex>,) -> bool {
         let output: bool =<::bevy_asset::AssetIndex as ::core::cmp::PartialEq::<::bevy_asset::AssetIndex>>::eq(&_self,&other,).into();
         output
     }
@@ -61,7 +61,7 @@ impl ::bevy_asset::AssetIndex {
     
     ///  derived from [`AssetIndex::to_bits`], as there are no guarantees for what will happen with such inputs.
     
-    fn from_bits (bits:u64,) -> Val<::bevy_asset::AssetIndex> {
+    fn from_bits (bits: u64,) -> Val<::bevy_asset::AssetIndex> {
         let output: Val<::bevy_asset::AssetIndex> =::bevy_asset::AssetIndex::from_bits(bits,).into();
         output
     }
@@ -72,7 +72,7 @@ impl ::bevy_asset::AssetIndex {
     
     ///  The result of this function should not be relied upon for anything except putting it back into [`AssetIndex::from_bits`] to recover the index.
     
-    fn to_bits (_self:Val<::bevy_asset::AssetIndex>,) -> u64 {
+    fn to_bits (_self: Val<::bevy_asset::AssetIndex>,) -> u64 {
         let output: u64 =::bevy_asset::AssetIndex::to_bits(_self.into_inner(),).into();
         output
     }
@@ -98,7 +98,7 @@ impl ::bevy_asset::RenderAssetUsages {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_asset::RenderAssetUsages>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_asset::RenderAssetUsages>,) -> () {
         let output: () =<::bevy_asset::RenderAssetUsages as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
@@ -109,14 +109,14 @@ impl ::bevy_asset::RenderAssetUsages {
     
     ///  The returned value is exactly the bits set in this flags value.
     
-    fn bits (_self:Ref<::bevy_asset::RenderAssetUsages>,) -> u8 {
+    fn bits (_self: Ref<::bevy_asset::RenderAssetUsages>,) -> u8 {
         let output: u8 =::bevy_asset::RenderAssetUsages::bits(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_asset::RenderAssetUsages>,) -> Val<::bevy_asset::RenderAssetUsages> {
+    fn clone (_self: Ref<::bevy_asset::RenderAssetUsages>,) -> Val<::bevy_asset::RenderAssetUsages> {
         let output: Val<::bevy_asset::RenderAssetUsages> =<::bevy_asset::RenderAssetUsages as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -125,7 +125,7 @@ impl ::bevy_asset::RenderAssetUsages {
     
     ///  The bitwise negation (`!`) of the bits in a flags value, truncating the result.
     
-    fn complement (_self:Val<::bevy_asset::RenderAssetUsages>,) -> Val<::bevy_asset::RenderAssetUsages> {
+    fn complement (_self: Val<::bevy_asset::RenderAssetUsages>,) -> Val<::bevy_asset::RenderAssetUsages> {
         let output: Val<::bevy_asset::RenderAssetUsages> =::bevy_asset::RenderAssetUsages::complement(_self.into_inner(),).into();
         output
     }
@@ -134,7 +134,7 @@ impl ::bevy_asset::RenderAssetUsages {
     
     ///  Whether all set bits in a source flags value are also set in a target flags value.
     
-    fn contains (_self:Ref<::bevy_asset::RenderAssetUsages>,other:Val<::bevy_asset::RenderAssetUsages>,) -> bool {
+    fn contains (_self: Ref<::bevy_asset::RenderAssetUsages>,other: Val<::bevy_asset::RenderAssetUsages>,) -> bool {
         let output: bool =::bevy_asset::RenderAssetUsages::contains(&_self,other.into_inner(),).into();
         output
     }
@@ -149,7 +149,7 @@ impl ::bevy_asset::RenderAssetUsages {
     
     ///  `difference` won't truncate `other`, but the `!` operator will.
     
-    fn difference (_self:Val<::bevy_asset::RenderAssetUsages>,other:Val<::bevy_asset::RenderAssetUsages>,) -> Val<::bevy_asset::RenderAssetUsages> {
+    fn difference (_self: Val<::bevy_asset::RenderAssetUsages>,other: Val<::bevy_asset::RenderAssetUsages>,) -> Val<::bevy_asset::RenderAssetUsages> {
         let output: Val<::bevy_asset::RenderAssetUsages> =::bevy_asset::RenderAssetUsages::difference(_self.into_inner(),other.into_inner(),).into();
         output
     }
@@ -165,7 +165,7 @@ impl ::bevy_asset::RenderAssetUsages {
 
 
     
-    fn eq (_self:Ref<::bevy_asset::RenderAssetUsages>,other:Ref<::bevy_asset::RenderAssetUsages>,) -> bool {
+    fn eq (_self: Ref<::bevy_asset::RenderAssetUsages>,other: Ref<::bevy_asset::RenderAssetUsages>,) -> bool {
         let output: bool =<::bevy_asset::RenderAssetUsages as ::core::cmp::PartialEq::<::bevy_asset::RenderAssetUsages>>::eq(&_self,&other,).into();
         output
     }
@@ -174,7 +174,7 @@ impl ::bevy_asset::RenderAssetUsages {
     
     ///  Convert from a bits value exactly.
     
-    fn from_bits_retain (bits:u8,) -> Val<::bevy_asset::RenderAssetUsages> {
+    fn from_bits_retain (bits: u8,) -> Val<::bevy_asset::RenderAssetUsages> {
         let output: Val<::bevy_asset::RenderAssetUsages> =::bevy_asset::RenderAssetUsages::from_bits_retain(bits,).into();
         output
     }
@@ -183,7 +183,7 @@ impl ::bevy_asset::RenderAssetUsages {
     
     ///  Convert from a bits value, unsetting any unknown bits.
     
-    fn from_bits_truncate (bits:u8,) -> Val<::bevy_asset::RenderAssetUsages> {
+    fn from_bits_truncate (bits: u8,) -> Val<::bevy_asset::RenderAssetUsages> {
         let output: Val<::bevy_asset::RenderAssetUsages> =::bevy_asset::RenderAssetUsages::from_bits_truncate(bits,).into();
         output
     }
@@ -192,7 +192,7 @@ impl ::bevy_asset::RenderAssetUsages {
     
     ///  The bitwise or (`|`) of the bits in two flags values.
     
-    fn insert (mut _self:Mut<::bevy_asset::RenderAssetUsages>,other:Val<::bevy_asset::RenderAssetUsages>,) -> () {
+    fn insert (mut _self: Mut<::bevy_asset::RenderAssetUsages>,other: Val<::bevy_asset::RenderAssetUsages>,) -> () {
         let output: () =::bevy_asset::RenderAssetUsages::insert(&mut _self,other.into_inner(),).into();
         output
     }
@@ -201,7 +201,7 @@ impl ::bevy_asset::RenderAssetUsages {
     
     ///  The bitwise and (`&`) of the bits in two flags values.
     
-    fn intersection (_self:Val<::bevy_asset::RenderAssetUsages>,other:Val<::bevy_asset::RenderAssetUsages>,) -> Val<::bevy_asset::RenderAssetUsages> {
+    fn intersection (_self: Val<::bevy_asset::RenderAssetUsages>,other: Val<::bevy_asset::RenderAssetUsages>,) -> Val<::bevy_asset::RenderAssetUsages> {
         let output: Val<::bevy_asset::RenderAssetUsages> =::bevy_asset::RenderAssetUsages::intersection(_self.into_inner(),other.into_inner(),).into();
         output
     }
@@ -210,7 +210,7 @@ impl ::bevy_asset::RenderAssetUsages {
     
     ///  Whether any set bits in a source flags value are also set in a target flags value.
     
-    fn intersects (_self:Ref<::bevy_asset::RenderAssetUsages>,other:Val<::bevy_asset::RenderAssetUsages>,) -> bool {
+    fn intersects (_self: Ref<::bevy_asset::RenderAssetUsages>,other: Val<::bevy_asset::RenderAssetUsages>,) -> bool {
         let output: bool =::bevy_asset::RenderAssetUsages::intersects(&_self,other.into_inner(),).into();
         output
     }
@@ -219,7 +219,7 @@ impl ::bevy_asset::RenderAssetUsages {
     
     ///  Whether all known bits in this flags value are set.
     
-    fn is_all (_self:Ref<::bevy_asset::RenderAssetUsages>,) -> bool {
+    fn is_all (_self: Ref<::bevy_asset::RenderAssetUsages>,) -> bool {
         let output: bool =::bevy_asset::RenderAssetUsages::is_all(&_self,).into();
         output
     }
@@ -228,7 +228,7 @@ impl ::bevy_asset::RenderAssetUsages {
     
     ///  Whether all bits in this flags value are unset.
     
-    fn is_empty (_self:Ref<::bevy_asset::RenderAssetUsages>,) -> bool {
+    fn is_empty (_self: Ref<::bevy_asset::RenderAssetUsages>,) -> bool {
         let output: bool =::bevy_asset::RenderAssetUsages::is_empty(&_self,).into();
         output
     }
@@ -243,7 +243,7 @@ impl ::bevy_asset::RenderAssetUsages {
     
     ///  `remove` won't truncate `other`, but the `!` operator will.
     
-    fn remove (mut _self:Mut<::bevy_asset::RenderAssetUsages>,other:Val<::bevy_asset::RenderAssetUsages>,) -> () {
+    fn remove (mut _self: Mut<::bevy_asset::RenderAssetUsages>,other: Val<::bevy_asset::RenderAssetUsages>,) -> () {
         let output: () =::bevy_asset::RenderAssetUsages::remove(&mut _self,other.into_inner(),).into();
         output
     }
@@ -252,7 +252,7 @@ impl ::bevy_asset::RenderAssetUsages {
     
     ///  Call `insert` when `value` is `true` or `remove` when `value` is `false`.
     
-    fn set (mut _self:Mut<::bevy_asset::RenderAssetUsages>,other:Val<::bevy_asset::RenderAssetUsages>,value:bool,) -> () {
+    fn set (mut _self: Mut<::bevy_asset::RenderAssetUsages>,other: Val<::bevy_asset::RenderAssetUsages>,value: bool,) -> () {
         let output: () =::bevy_asset::RenderAssetUsages::set(&mut _self,other.into_inner(),value,).into();
         output
     }
@@ -265,7 +265,7 @@ impl ::bevy_asset::RenderAssetUsages {
     
     ///  `difference` won't truncate `other`, but the `!` operator will.
     
-    fn sub (_self:Val<::bevy_asset::RenderAssetUsages>,other:Val<::bevy_asset::RenderAssetUsages>,) -> Val<::bevy_asset::RenderAssetUsages> {
+    fn sub (_self: Val<::bevy_asset::RenderAssetUsages>,other: Val<::bevy_asset::RenderAssetUsages>,) -> Val<::bevy_asset::RenderAssetUsages> {
         let output: Val<::bevy_asset::RenderAssetUsages> =<::bevy_asset::RenderAssetUsages as ::core::ops::Sub::<::bevy_asset::RenderAssetUsages>>::sub(_self.into_inner(),other.into_inner(),).into();
         output
     }
@@ -274,7 +274,7 @@ impl ::bevy_asset::RenderAssetUsages {
     
     ///  The bitwise exclusive-or (`^`) of the bits in two flags values.
     
-    fn symmetric_difference (_self:Val<::bevy_asset::RenderAssetUsages>,other:Val<::bevy_asset::RenderAssetUsages>,) -> Val<::bevy_asset::RenderAssetUsages> {
+    fn symmetric_difference (_self: Val<::bevy_asset::RenderAssetUsages>,other: Val<::bevy_asset::RenderAssetUsages>,) -> Val<::bevy_asset::RenderAssetUsages> {
         let output: Val<::bevy_asset::RenderAssetUsages> =::bevy_asset::RenderAssetUsages::symmetric_difference(_self.into_inner(),other.into_inner(),).into();
         output
     }
@@ -283,7 +283,7 @@ impl ::bevy_asset::RenderAssetUsages {
     
     ///  The bitwise exclusive-or (`^`) of the bits in two flags values.
     
-    fn toggle (mut _self:Mut<::bevy_asset::RenderAssetUsages>,other:Val<::bevy_asset::RenderAssetUsages>,) -> () {
+    fn toggle (mut _self: Mut<::bevy_asset::RenderAssetUsages>,other: Val<::bevy_asset::RenderAssetUsages>,) -> () {
         let output: () =::bevy_asset::RenderAssetUsages::toggle(&mut _self,other.into_inner(),).into();
         output
     }
@@ -292,7 +292,7 @@ impl ::bevy_asset::RenderAssetUsages {
     
     ///  The bitwise or (`|`) of the bits in two flags values.
     
-    fn union (_self:Val<::bevy_asset::RenderAssetUsages>,other:Val<::bevy_asset::RenderAssetUsages>,) -> Val<::bevy_asset::RenderAssetUsages> {
+    fn union (_self: Val<::bevy_asset::RenderAssetUsages>,other: Val<::bevy_asset::RenderAssetUsages>,) -> Val<::bevy_asset::RenderAssetUsages> {
         let output: Val<::bevy_asset::RenderAssetUsages> =::bevy_asset::RenderAssetUsages::union(_self.into_inner(),other.into_inner(),).into();
         output
     }

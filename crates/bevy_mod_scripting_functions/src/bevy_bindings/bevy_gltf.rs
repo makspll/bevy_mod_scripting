@@ -36,7 +36,7 @@ impl ::bevy_gltf::prelude::GltfExtras {
 
 
     
-    fn clone (_self:Ref<::bevy_gltf::prelude::GltfExtras>,) -> Val<::bevy_gltf::prelude::GltfExtras> {
+    fn clone (_self: Ref<::bevy_gltf::prelude::GltfExtras>,) -> Val<::bevy_gltf::prelude::GltfExtras> {
         let output: Val<::bevy_gltf::prelude::GltfExtras> =<::bevy_gltf::prelude::GltfExtras as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -53,7 +53,7 @@ impl ::bevy_gltf::GltfSceneExtras {
 
 
     
-    fn clone (_self:Ref<::bevy_gltf::GltfSceneExtras>,) -> Val<::bevy_gltf::GltfSceneExtras> {
+    fn clone (_self: Ref<::bevy_gltf::GltfSceneExtras>,) -> Val<::bevy_gltf::GltfSceneExtras> {
         let output: Val<::bevy_gltf::GltfSceneExtras> =<::bevy_gltf::GltfSceneExtras as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -70,7 +70,7 @@ impl ::bevy_gltf::GltfMeshExtras {
 
 
     
-    fn clone (_self:Ref<::bevy_gltf::GltfMeshExtras>,) -> Val<::bevy_gltf::GltfMeshExtras> {
+    fn clone (_self: Ref<::bevy_gltf::GltfMeshExtras>,) -> Val<::bevy_gltf::GltfMeshExtras> {
         let output: Val<::bevy_gltf::GltfMeshExtras> =<::bevy_gltf::GltfMeshExtras as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -87,7 +87,7 @@ impl ::bevy_gltf::GltfMaterialExtras {
 
 
     
-    fn clone (_self:Ref<::bevy_gltf::GltfMaterialExtras>,) -> Val<::bevy_gltf::GltfMaterialExtras> {
+    fn clone (_self: Ref<::bevy_gltf::GltfMaterialExtras>,) -> Val<::bevy_gltf::GltfMaterialExtras> {
         let output: Val<::bevy_gltf::GltfMaterialExtras> =<::bevy_gltf::GltfMaterialExtras as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -104,7 +104,7 @@ impl ::bevy_gltf::GltfMaterialName {
 
 
     
-    fn clone (_self:Ref<::bevy_gltf::GltfMaterialName>,) -> Val<::bevy_gltf::GltfMaterialName> {
+    fn clone (_self: Ref<::bevy_gltf::GltfMaterialName>,) -> Val<::bevy_gltf::GltfMaterialName> {
         let output: Val<::bevy_gltf::GltfMaterialName> =<::bevy_gltf::GltfMaterialName as ::std::clone::Clone>::clone(&_self,).into();
         output
     }

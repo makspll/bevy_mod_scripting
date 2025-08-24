@@ -952,7 +952,7 @@ impl Xtasks {
         info!("Using command: {cmd:?}");
 
         let output = cmd.output();
-        if !capture_streams_in_output {
+        if capture_streams_in_output {
             info!("Command status: {:?}", output.as_ref().map(|o| o.status));
         } else {
             info!("Command output: {output:?}");
@@ -1319,11 +1319,15 @@ impl Xtasks {
         let crate_names = expand_crates
             .iter()
             .filter(|s| {
-                s.path().is_file() && s.path().ends_with(".rs") && !s.path().ends_with("mod.rs")
+                s.path().is_file()
+                    && s.path().file_name().is_some_and(|name| {
+                        name != "mod.rs" && name.to_string_lossy().ends_with(".rs")
+                    })
             })
             .map(|s| s.path().file_stem().unwrap().to_str().unwrap().to_owned())
             .collect::<Vec<_>>();
         let features = crate_names.join(",");
+
         for entry in crate_names {
             let args = vec![
                 String::from("expand"),

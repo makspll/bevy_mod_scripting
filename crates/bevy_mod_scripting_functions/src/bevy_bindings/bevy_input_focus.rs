@@ -38,14 +38,14 @@ impl ::bevy_input_focus::InputFocus {
     
     ///  Clears input focus.
     
-    fn clear (mut _self:Mut<::bevy_input_focus::InputFocus>,) -> () {
+    fn clear (mut _self: Mut<::bevy_input_focus::InputFocus>,) -> () {
         let output: () =::bevy_input_focus::InputFocus::clear(&mut _self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_input_focus::InputFocus>,) -> Val<::bevy_input_focus::InputFocus> {
+    fn clone (_self: Ref<::bevy_input_focus::InputFocus>,) -> Val<::bevy_input_focus::InputFocus> {
         let output: Val<::bevy_input_focus::InputFocus> =<::bevy_input_focus::InputFocus as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -56,7 +56,7 @@ impl ::bevy_input_focus::InputFocus {
     
     ///  This is mostly useful for tests.
     
-    fn from_entity (entity:Val<::bevy_ecs::entity::Entity>,) -> Val<::bevy_input_focus::InputFocus> {
+    fn from_entity (entity: Val<::bevy_ecs::entity::Entity>,) -> Val<::bevy_input_focus::InputFocus> {
         let output: Val<::bevy_input_focus::InputFocus> =::bevy_input_focus::InputFocus::from_entity(entity.into_inner(),).into();
         output
     }
@@ -65,7 +65,7 @@ impl ::bevy_input_focus::InputFocus {
     
     ///  Set the entity with input focus.
     
-    fn set (mut _self:Mut<::bevy_input_focus::InputFocus>,entity:Val<::bevy_ecs::entity::Entity>,) -> () {
+    fn set (mut _self: Mut<::bevy_input_focus::InputFocus>,entity: Val<::bevy_ecs::entity::Entity>,) -> () {
         let output: () =::bevy_input_focus::InputFocus::set(&mut _self,entity.into_inner(),).into();
         output
     }
@@ -82,7 +82,7 @@ impl ::bevy_input_focus::InputFocusVisible {
 
 
     
-    fn clone (_self:Ref<::bevy_input_focus::InputFocusVisible>,) -> Val<::bevy_input_focus::InputFocusVisible> {
+    fn clone (_self: Ref<::bevy_input_focus::InputFocusVisible>,) -> Val<::bevy_input_focus::InputFocusVisible> {
         let output: Val<::bevy_input_focus::InputFocusVisible> =<::bevy_input_focus::InputFocusVisible as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -99,7 +99,7 @@ impl ::bevy_input_focus::AutoFocus {
 
 
     
-    fn clone (_self:Ref<::bevy_input_focus::AutoFocus>,) -> Val<::bevy_input_focus::AutoFocus> {
+    fn clone (_self: Ref<::bevy_input_focus::AutoFocus>,) -> Val<::bevy_input_focus::AutoFocus> {
         let output: Val<::bevy_input_focus::AutoFocus> =<::bevy_input_focus::AutoFocus as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -124,7 +124,7 @@ impl ::bevy_input_focus::directional_navigation::DirectionalNavigationMap {
     
     ///  If you want to add a symmetrical edge, use [`add_symmetrical_edge`](Self::add_symmetrical_edge) instead.
     
-    fn add_edge (mut _self:Mut<::bevy_input_focus::directional_navigation::DirectionalNavigationMap>,a:Val<::bevy_ecs::entity::Entity>,b:Val<::bevy_ecs::entity::Entity>,direction:Val<::bevy_math::CompassOctant>,) -> () {
+    fn add_edge (mut _self: Mut<::bevy_input_focus::directional_navigation::DirectionalNavigationMap>,a: Val<::bevy_ecs::entity::Entity>,b: Val<::bevy_ecs::entity::Entity>,direction: Val<::bevy_math::CompassOctant>,) -> () {
         let output: () =::bevy_input_focus::directional_navigation::DirectionalNavigationMap::add_edge(&mut _self,a.into_inner(),b.into_inner(),direction.into_inner(),).into();
         output
     }
@@ -137,7 +137,7 @@ impl ::bevy_input_focus::directional_navigation::DirectionalNavigationMap {
     
     ///  Any existing connections between the two entities will be overwritten.
     
-    fn add_symmetrical_edge (mut _self:Mut<::bevy_input_focus::directional_navigation::DirectionalNavigationMap>,a:Val<::bevy_ecs::entity::Entity>,b:Val<::bevy_ecs::entity::Entity>,direction:Val<::bevy_math::CompassOctant>,) -> () {
+    fn add_symmetrical_edge (mut _self: Mut<::bevy_input_focus::directional_navigation::DirectionalNavigationMap>,a: Val<::bevy_ecs::entity::Entity>,b: Val<::bevy_ecs::entity::Entity>,direction: Val<::bevy_math::CompassOctant>,) -> () {
         let output: () =::bevy_input_focus::directional_navigation::DirectionalNavigationMap::add_symmetrical_edge(&mut _self,a.into_inner(),b.into_inner(),direction.into_inner(),).into();
         output
     }
@@ -146,21 +146,21 @@ impl ::bevy_input_focus::directional_navigation::DirectionalNavigationMap {
     
     ///  Completely clears the navigation map, removing all entities and connections.
     
-    fn clear (mut _self:Mut<::bevy_input_focus::directional_navigation::DirectionalNavigationMap>,) -> () {
+    fn clear (mut _self: Mut<::bevy_input_focus::directional_navigation::DirectionalNavigationMap>,) -> () {
         let output: () =::bevy_input_focus::directional_navigation::DirectionalNavigationMap::clear(&mut _self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_input_focus::directional_navigation::DirectionalNavigationMap>,) -> Val<::bevy_input_focus::directional_navigation::DirectionalNavigationMap> {
+    fn clone (_self: Ref<::bevy_input_focus::directional_navigation::DirectionalNavigationMap>,) -> Val<::bevy_input_focus::directional_navigation::DirectionalNavigationMap> {
         let output: Val<::bevy_input_focus::directional_navigation::DirectionalNavigationMap> =<::bevy_input_focus::directional_navigation::DirectionalNavigationMap as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_input_focus::directional_navigation::DirectionalNavigationMap>,other:Ref<::bevy_input_focus::directional_navigation::DirectionalNavigationMap>,) -> bool {
+    fn eq (_self: Ref<::bevy_input_focus::directional_navigation::DirectionalNavigationMap>,other: Ref<::bevy_input_focus::directional_navigation::DirectionalNavigationMap>,) -> bool {
         let output: bool =<::bevy_input_focus::directional_navigation::DirectionalNavigationMap as ::core::cmp::PartialEq::<::bevy_input_focus::directional_navigation::DirectionalNavigationMap>>::eq(&_self,&other,).into();
         output
     }
@@ -177,7 +177,7 @@ impl ::bevy_input_focus::directional_navigation::DirectionalNavigationMap {
     
     ///  If you are removing multiple entities, consider using [`remove_multiple`](Self::remove_multiple) instead.
     
-    fn remove (mut _self:Mut<::bevy_input_focus::directional_navigation::DirectionalNavigationMap>,entity:Val<::bevy_ecs::entity::Entity>,) -> () {
+    fn remove (mut _self: Mut<::bevy_input_focus::directional_navigation::DirectionalNavigationMap>,entity: Val<::bevy_ecs::entity::Entity>,) -> () {
         let output: () =::bevy_input_focus::directional_navigation::DirectionalNavigationMap::remove(&mut _self,entity.into_inner(),).into();
         output
     }
@@ -194,7 +194,7 @@ impl ::bevy_input_focus::directional_navigation::DirectionalNavigationMap {
     
     ///  An [`EntityHashSet`] must be provided as it is noticeably faster than the standard hasher or a [`Vec`](`alloc::vec::Vec`).
     
-    fn remove_multiple (mut _self:Mut<::bevy_input_focus::directional_navigation::DirectionalNavigationMap>,entities:Val<::bevy_ecs::entity::EntityHashSet>,) -> () {
+    fn remove_multiple (mut _self: Mut<::bevy_input_focus::directional_navigation::DirectionalNavigationMap>,entities: Val<::bevy_ecs::entity::EntityHashSet>,) -> () {
         let output: () =::bevy_input_focus::directional_navigation::DirectionalNavigationMap::remove_multiple(&mut _self,entities.into_inner(),).into();
         output
     }
@@ -211,14 +211,14 @@ impl ::bevy_input_focus::directional_navigation::NavNeighbors {
 
 
     
-    fn clone (_self:Ref<::bevy_input_focus::directional_navigation::NavNeighbors>,) -> Val<::bevy_input_focus::directional_navigation::NavNeighbors> {
+    fn clone (_self: Ref<::bevy_input_focus::directional_navigation::NavNeighbors>,) -> Val<::bevy_input_focus::directional_navigation::NavNeighbors> {
         let output: Val<::bevy_input_focus::directional_navigation::NavNeighbors> =<::bevy_input_focus::directional_navigation::NavNeighbors as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_input_focus::directional_navigation::NavNeighbors>,other:Ref<::bevy_input_focus::directional_navigation::NavNeighbors>,) -> bool {
+    fn eq (_self: Ref<::bevy_input_focus::directional_navigation::NavNeighbors>,other: Ref<::bevy_input_focus::directional_navigation::NavNeighbors>,) -> bool {
         let output: bool =<::bevy_input_focus::directional_navigation::NavNeighbors as ::core::cmp::PartialEq::<::bevy_input_focus::directional_navigation::NavNeighbors>>::eq(&_self,&other,).into();
         output
     }
@@ -227,7 +227,7 @@ impl ::bevy_input_focus::directional_navigation::NavNeighbors {
     
     ///  Set the neighbor for a given [`CompassOctant`].
     
-    fn set (mut _self:Mut<::bevy_input_focus::directional_navigation::NavNeighbors>,octant:Val<::bevy_math::CompassOctant>,entity:Val<::bevy_ecs::entity::Entity>,) -> () {
+    fn set (mut _self: Mut<::bevy_input_focus::directional_navigation::NavNeighbors>,octant: Val<::bevy_math::CompassOctant>,entity: Val<::bevy_ecs::entity::Entity>,) -> () {
         let output: () =::bevy_input_focus::directional_navigation::NavNeighbors::set(&mut _self,octant.into_inner(),entity.into_inner(),).into();
         output
     }
@@ -244,21 +244,21 @@ impl ::bevy_input_focus::tab_navigation::TabIndex {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_input_focus::tab_navigation::TabIndex>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_input_focus::tab_navigation::TabIndex>,) -> () {
         let output: () =<::bevy_input_focus::tab_navigation::TabIndex as ::core::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_input_focus::tab_navigation::TabIndex>,) -> Val<::bevy_input_focus::tab_navigation::TabIndex> {
+    fn clone (_self: Ref<::bevy_input_focus::tab_navigation::TabIndex>,) -> Val<::bevy_input_focus::tab_navigation::TabIndex> {
         let output: Val<::bevy_input_focus::tab_navigation::TabIndex> =<::bevy_input_focus::tab_navigation::TabIndex as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_input_focus::tab_navigation::TabIndex>,other:Ref<::bevy_input_focus::tab_navigation::TabIndex>,) -> bool {
+    fn eq (_self: Ref<::bevy_input_focus::tab_navigation::TabIndex>,other: Ref<::bevy_input_focus::tab_navigation::TabIndex>,) -> bool {
         let output: bool =<::bevy_input_focus::tab_navigation::TabIndex as ::core::cmp::PartialEq::<::bevy_input_focus::tab_navigation::TabIndex>>::eq(&_self,&other,).into();
         output
     }
@@ -275,7 +275,7 @@ impl ::bevy_input_focus::tab_navigation::TabGroup {
 
 
     
-    fn clone (_self:Ref<::bevy_input_focus::tab_navigation::TabGroup>,) -> Val<::bevy_input_focus::tab_navigation::TabGroup> {
+    fn clone (_self: Ref<::bevy_input_focus::tab_navigation::TabGroup>,) -> Val<::bevy_input_focus::tab_navigation::TabGroup> {
         let output: Val<::bevy_input_focus::tab_navigation::TabGroup> =<::bevy_input_focus::tab_navigation::TabGroup as ::core::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -293,7 +293,7 @@ impl ::bevy_input_focus::tab_navigation::TabGroup {
     
     ///  Create a new tab group with the given order.
     
-    fn new (order:i32,) -> Val<::bevy_input_focus::tab_navigation::TabGroup> {
+    fn new (order: i32,) -> Val<::bevy_input_focus::tab_navigation::TabGroup> {
         let output: Val<::bevy_input_focus::tab_navigation::TabGroup> =::bevy_input_focus::tab_navigation::TabGroup::new(order,).into();
         output
     }

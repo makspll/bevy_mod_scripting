@@ -36,7 +36,7 @@ impl ::bevy_picking::mesh_picking::ray_cast::RayCastBackfaces {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::mesh_picking::ray_cast::RayCastBackfaces>,) -> Val<::bevy_picking::mesh_picking::ray_cast::RayCastBackfaces> {
+    fn clone (_self: Ref<::bevy_picking::mesh_picking::ray_cast::RayCastBackfaces>,) -> Val<::bevy_picking::mesh_picking::ray_cast::RayCastBackfaces> {
         let output: Val<::bevy_picking::mesh_picking::ray_cast::RayCastBackfaces> =<::bevy_picking::mesh_picking::ray_cast::RayCastBackfaces as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -53,7 +53,7 @@ impl ::bevy_picking::mesh_picking::ray_cast::RayCastVisibility {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::mesh_picking::ray_cast::RayCastVisibility>,) -> Val<::bevy_picking::mesh_picking::ray_cast::RayCastVisibility> {
+    fn clone (_self: Ref<::bevy_picking::mesh_picking::ray_cast::RayCastVisibility>,) -> Val<::bevy_picking::mesh_picking::ray_cast::RayCastVisibility> {
         let output: Val<::bevy_picking::mesh_picking::ray_cast::RayCastVisibility> =<::bevy_picking::mesh_picking::ray_cast::RayCastVisibility as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -70,7 +70,7 @@ impl ::bevy_picking::mesh_picking::MeshPickingCamera {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::mesh_picking::MeshPickingCamera>,) -> Val<::bevy_picking::mesh_picking::MeshPickingCamera> {
+    fn clone (_self: Ref<::bevy_picking::mesh_picking::MeshPickingCamera>,) -> Val<::bevy_picking::mesh_picking::MeshPickingCamera> {
         let output: Val<::bevy_picking::mesh_picking::MeshPickingCamera> =<::bevy_picking::mesh_picking::MeshPickingCamera as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -97,7 +97,7 @@ impl ::bevy_picking::input::prelude::PointerInputPlugin {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::input::prelude::PointerInputPlugin>,) -> Val<::bevy_picking::input::prelude::PointerInputPlugin> {
+    fn clone (_self: Ref<::bevy_picking::input::prelude::PointerInputPlugin>,) -> Val<::bevy_picking::input::prelude::PointerInputPlugin> {
         let output: Val<::bevy_picking::input::prelude::PointerInputPlugin> =<::bevy_picking::input::prelude::PointerInputPlugin as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -114,21 +114,21 @@ impl ::bevy_picking::pointer::PointerButton {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_picking::pointer::PointerButton>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_picking::pointer::PointerButton>,) -> () {
         let output: () =<::bevy_picking::pointer::PointerButton as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_picking::pointer::PointerButton>,) -> Val<::bevy_picking::pointer::PointerButton> {
+    fn clone (_self: Ref<::bevy_picking::pointer::PointerButton>,) -> Val<::bevy_picking::pointer::PointerButton> {
         let output: Val<::bevy_picking::pointer::PointerButton> =<::bevy_picking::pointer::PointerButton as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::pointer::PointerButton>,other:Ref<::bevy_picking::pointer::PointerButton>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::pointer::PointerButton>,other: Ref<::bevy_picking::pointer::PointerButton>,) -> bool {
         let output: bool =<::bevy_picking::pointer::PointerButton as ::std::cmp::PartialEq::<::bevy_picking::pointer::PointerButton>>::eq(&_self,&other,).into();
         output
     }
@@ -145,21 +145,21 @@ impl ::bevy_picking::backend::prelude::Pickable {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_picking::backend::prelude::Pickable>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_picking::backend::prelude::Pickable>,) -> () {
         let output: () =<::bevy_picking::backend::prelude::Pickable as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_picking::backend::prelude::Pickable>,) -> Val<::bevy_picking::backend::prelude::Pickable> {
+    fn clone (_self: Ref<::bevy_picking::backend::prelude::Pickable>,) -> Val<::bevy_picking::backend::prelude::Pickable> {
         let output: Val<::bevy_picking::backend::prelude::Pickable> =<::bevy_picking::backend::prelude::Pickable as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::backend::prelude::Pickable>,other:Ref<::bevy_picking::backend::prelude::Pickable>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::backend::prelude::Pickable>,other: Ref<::bevy_picking::backend::prelude::Pickable>,) -> bool {
         let output: bool =<::bevy_picking::backend::prelude::Pickable as ::std::cmp::PartialEq::<::bevy_picking::backend::prelude::Pickable>>::eq(&_self,&other,).into();
         output
     }
@@ -176,7 +176,7 @@ impl ::bevy_picking::prelude::PickingPlugin {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::prelude::PickingPlugin>,) -> Val<::bevy_picking::prelude::PickingPlugin> {
+    fn clone (_self: Ref<::bevy_picking::prelude::PickingPlugin>,) -> Val<::bevy_picking::prelude::PickingPlugin> {
         let output: Val<::bevy_picking::prelude::PickingPlugin> =<::bevy_picking::prelude::PickingPlugin as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -195,7 +195,7 @@ impl ::bevy_picking::pointer::PointerInput {
     
     ///  Returns true if the `target_button` of this pointer was just pressed.
     
-    fn button_just_pressed (_self:Ref<::bevy_picking::pointer::PointerInput>,target_button:Val<::bevy_picking::pointer::PointerButton>,) -> bool {
+    fn button_just_pressed (_self: Ref<::bevy_picking::pointer::PointerInput>,target_button: Val<::bevy_picking::pointer::PointerButton>,) -> bool {
         let output: bool =::bevy_picking::pointer::PointerInput::button_just_pressed(&_self,target_button.into_inner(),).into();
         output
     }
@@ -204,14 +204,14 @@ impl ::bevy_picking::pointer::PointerInput {
     
     ///  Returns true if the `target_button` of this pointer was just released.
     
-    fn button_just_released (_self:Ref<::bevy_picking::pointer::PointerInput>,target_button:Val<::bevy_picking::pointer::PointerButton>,) -> bool {
+    fn button_just_released (_self: Ref<::bevy_picking::pointer::PointerInput>,target_button: Val<::bevy_picking::pointer::PointerButton>,) -> bool {
         let output: bool =::bevy_picking::pointer::PointerInput::button_just_released(&_self,target_button.into_inner(),).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_picking::pointer::PointerInput>,) -> Val<::bevy_picking::pointer::PointerInput> {
+    fn clone (_self: Ref<::bevy_picking::pointer::PointerInput>,) -> Val<::bevy_picking::pointer::PointerInput> {
         let output: Val<::bevy_picking::pointer::PointerInput> =<::bevy_picking::pointer::PointerInput as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -222,7 +222,7 @@ impl ::bevy_picking::pointer::PointerInput {
     
     ///  Note that `location` refers to the position of the pointer *after* the event occurred.
     
-    fn new (pointer_id:Val<::bevy_picking::backend::prelude::PointerId>,location:Val<::bevy_picking::pointer::Location>,action:Val<::bevy_picking::pointer::PointerAction>,) -> Val<::bevy_picking::pointer::PointerInput> {
+    fn new (pointer_id: Val<::bevy_picking::backend::prelude::PointerId>,location: Val<::bevy_picking::pointer::Location>,action: Val<::bevy_picking::pointer::PointerAction>,) -> Val<::bevy_picking::pointer::PointerInput> {
         let output: Val<::bevy_picking::pointer::PointerInput> =::bevy_picking::pointer::PointerInput::new(pointer_id.into_inner(),location.into_inner(),action.into_inner(),).into();
         output
     }
@@ -239,7 +239,7 @@ impl ::bevy_picking::backend::prelude::PointerHits {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::backend::prelude::PointerHits>,) -> Val<::bevy_picking::backend::prelude::PointerHits> {
+    fn clone (_self: Ref<::bevy_picking::backend::prelude::PointerHits>,) -> Val<::bevy_picking::backend::prelude::PointerHits> {
         let output: Val<::bevy_picking::backend::prelude::PointerHits> =<::bevy_picking::backend::prelude::PointerHits as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -256,21 +256,21 @@ impl ::bevy_picking::hover::PickingInteraction {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_picking::hover::PickingInteraction>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_picking::hover::PickingInteraction>,) -> () {
         let output: () =<::bevy_picking::hover::PickingInteraction as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_picking::hover::PickingInteraction>,) -> Val<::bevy_picking::hover::PickingInteraction> {
+    fn clone (_self: Ref<::bevy_picking::hover::PickingInteraction>,) -> Val<::bevy_picking::hover::PickingInteraction> {
         let output: Val<::bevy_picking::hover::PickingInteraction> =<::bevy_picking::hover::PickingInteraction as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::hover::PickingInteraction>,other:Ref<::bevy_picking::hover::PickingInteraction>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::hover::PickingInteraction>,other: Ref<::bevy_picking::hover::PickingInteraction>,) -> bool {
         let output: bool =<::bevy_picking::hover::PickingInteraction as ::std::cmp::PartialEq::<::bevy_picking::hover::PickingInteraction>>::eq(&_self,&other,).into();
         output
     }
@@ -287,21 +287,21 @@ impl ::bevy_picking::backend::prelude::PointerId {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_picking::backend::prelude::PointerId>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_picking::backend::prelude::PointerId>,) -> () {
         let output: () =<::bevy_picking::backend::prelude::PointerId as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_picking::backend::prelude::PointerId>,) -> Val<::bevy_picking::backend::prelude::PointerId> {
+    fn clone (_self: Ref<::bevy_picking::backend::prelude::PointerId>,) -> Val<::bevy_picking::backend::prelude::PointerId> {
         let output: Val<::bevy_picking::backend::prelude::PointerId> =<::bevy_picking::backend::prelude::PointerId as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::backend::prelude::PointerId>,other:Ref<::bevy_picking::backend::prelude::PointerId>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::backend::prelude::PointerId>,other: Ref<::bevy_picking::backend::prelude::PointerId>,) -> bool {
         let output: bool =<::bevy_picking::backend::prelude::PointerId as ::std::cmp::PartialEq::<::bevy_picking::backend::prelude::PointerId>>::eq(&_self,&other,).into();
         output
     }
@@ -310,7 +310,7 @@ impl ::bevy_picking::backend::prelude::PointerId {
     
     ///  Returns the touch id if the pointer is a touch input.
     
-    fn get_touch_id (_self:Ref<::bevy_picking::backend::prelude::PointerId>,) -> ::std::option::Option<u64> {
+    fn get_touch_id (_self: Ref<::bevy_picking::backend::prelude::PointerId>,) -> ::std::option::Option<u64> {
         let output: ::std::option::Option<u64> =::bevy_picking::backend::prelude::PointerId::get_touch_id(&_self,).into();
         output
     }
@@ -319,7 +319,7 @@ impl ::bevy_picking::backend::prelude::PointerId {
     
     ///  Returns true if the pointer is a custom input.
     
-    fn is_custom (_self:Ref<::bevy_picking::backend::prelude::PointerId>,) -> bool {
+    fn is_custom (_self: Ref<::bevy_picking::backend::prelude::PointerId>,) -> bool {
         let output: bool =::bevy_picking::backend::prelude::PointerId::is_custom(&_self,).into();
         output
     }
@@ -328,7 +328,7 @@ impl ::bevy_picking::backend::prelude::PointerId {
     
     ///  Returns true if the pointer is the mouse.
     
-    fn is_mouse (_self:Ref<::bevy_picking::backend::prelude::PointerId>,) -> bool {
+    fn is_mouse (_self: Ref<::bevy_picking::backend::prelude::PointerId>,) -> bool {
         let output: bool =::bevy_picking::backend::prelude::PointerId::is_mouse(&_self,).into();
         output
     }
@@ -337,7 +337,7 @@ impl ::bevy_picking::backend::prelude::PointerId {
     
     ///  Returns true if the pointer is a touch input.
     
-    fn is_touch (_self:Ref<::bevy_picking::backend::prelude::PointerId>,) -> bool {
+    fn is_touch (_self: Ref<::bevy_picking::backend::prelude::PointerId>,) -> bool {
         let output: bool =::bevy_picking::backend::prelude::PointerId::is_touch(&_self,).into();
         output
     }
@@ -354,14 +354,14 @@ impl ::bevy_picking::backend::prelude::PointerLocation {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::backend::prelude::PointerLocation>,) -> Val<::bevy_picking::backend::prelude::PointerLocation> {
+    fn clone (_self: Ref<::bevy_picking::backend::prelude::PointerLocation>,) -> Val<::bevy_picking::backend::prelude::PointerLocation> {
         let output: Val<::bevy_picking::backend::prelude::PointerLocation> =<::bevy_picking::backend::prelude::PointerLocation as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::backend::prelude::PointerLocation>,other:Ref<::bevy_picking::backend::prelude::PointerLocation>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::backend::prelude::PointerLocation>,other: Ref<::bevy_picking::backend::prelude::PointerLocation>,) -> bool {
         let output: bool =<::bevy_picking::backend::prelude::PointerLocation as ::std::cmp::PartialEq::<::bevy_picking::backend::prelude::PointerLocation>>::eq(&_self,&other,).into();
         output
     }
@@ -370,7 +370,7 @@ impl ::bevy_picking::backend::prelude::PointerLocation {
     
     /// Returns a [`PointerLocation`] associated with the given location
     
-    fn new (location:Val<::bevy_picking::pointer::Location>,) -> Val<::bevy_picking::backend::prelude::PointerLocation> {
+    fn new (location: Val<::bevy_picking::pointer::Location>,) -> Val<::bevy_picking::backend::prelude::PointerLocation> {
         let output: Val<::bevy_picking::backend::prelude::PointerLocation> =::bevy_picking::backend::prelude::PointerLocation::new(location.into_inner(),).into();
         output
     }
@@ -387,21 +387,21 @@ impl ::bevy_picking::pointer::PointerPress {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_picking::pointer::PointerPress>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_picking::pointer::PointerPress>,) -> () {
         let output: () =<::bevy_picking::pointer::PointerPress as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_picking::pointer::PointerPress>,) -> Val<::bevy_picking::pointer::PointerPress> {
+    fn clone (_self: Ref<::bevy_picking::pointer::PointerPress>,) -> Val<::bevy_picking::pointer::PointerPress> {
         let output: Val<::bevy_picking::pointer::PointerPress> =<::bevy_picking::pointer::PointerPress as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::pointer::PointerPress>,other:Ref<::bevy_picking::pointer::PointerPress>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::pointer::PointerPress>,other: Ref<::bevy_picking::pointer::PointerPress>,) -> bool {
         let output: bool =<::bevy_picking::pointer::PointerPress as ::std::cmp::PartialEq::<::bevy_picking::pointer::PointerPress>>::eq(&_self,&other,).into();
         output
     }
@@ -410,7 +410,7 @@ impl ::bevy_picking::pointer::PointerPress {
     
     ///  Returns true if any pointer button is pressed.
     
-    fn is_any_pressed (_self:Ref<::bevy_picking::pointer::PointerPress>,) -> bool {
+    fn is_any_pressed (_self: Ref<::bevy_picking::pointer::PointerPress>,) -> bool {
         let output: bool =::bevy_picking::pointer::PointerPress::is_any_pressed(&_self,).into();
         output
     }
@@ -419,7 +419,7 @@ impl ::bevy_picking::pointer::PointerPress {
     
     ///  Returns true if the middle (tertiary) pointer button is pressed.
     
-    fn is_middle_pressed (_self:Ref<::bevy_picking::pointer::PointerPress>,) -> bool {
+    fn is_middle_pressed (_self: Ref<::bevy_picking::pointer::PointerPress>,) -> bool {
         let output: bool =::bevy_picking::pointer::PointerPress::is_middle_pressed(&_self,).into();
         output
     }
@@ -428,7 +428,7 @@ impl ::bevy_picking::pointer::PointerPress {
     
     ///  Returns true if the primary pointer button is pressed.
     
-    fn is_primary_pressed (_self:Ref<::bevy_picking::pointer::PointerPress>,) -> bool {
+    fn is_primary_pressed (_self: Ref<::bevy_picking::pointer::PointerPress>,) -> bool {
         let output: bool =::bevy_picking::pointer::PointerPress::is_primary_pressed(&_self,).into();
         output
     }
@@ -437,7 +437,7 @@ impl ::bevy_picking::pointer::PointerPress {
     
     ///  Returns true if the secondary pointer button is pressed.
     
-    fn is_secondary_pressed (_self:Ref<::bevy_picking::pointer::PointerPress>,) -> bool {
+    fn is_secondary_pressed (_self: Ref<::bevy_picking::pointer::PointerPress>,) -> bool {
         let output: bool =::bevy_picking::pointer::PointerPress::is_secondary_pressed(&_self,).into();
         output
     }
@@ -454,7 +454,7 @@ impl ::bevy_picking::pointer::PointerInteraction {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::pointer::PointerInteraction>,) -> Val<::bevy_picking::pointer::PointerInteraction> {
+    fn clone (_self: Ref<::bevy_picking::pointer::PointerInteraction>,) -> Val<::bevy_picking::pointer::PointerInteraction> {
         let output: Val<::bevy_picking::pointer::PointerInteraction> =<::bevy_picking::pointer::PointerInteraction as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -471,21 +471,21 @@ impl ::bevy_picking::backend::ray::RayId {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_picking::backend::ray::RayId>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_picking::backend::ray::RayId>,) -> () {
         let output: () =<::bevy_picking::backend::ray::RayId as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_picking::backend::ray::RayId>,) -> Val<::bevy_picking::backend::ray::RayId> {
+    fn clone (_self: Ref<::bevy_picking::backend::ray::RayId>,) -> Val<::bevy_picking::backend::ray::RayId> {
         let output: Val<::bevy_picking::backend::ray::RayId> =<::bevy_picking::backend::ray::RayId as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::backend::ray::RayId>,other:Ref<::bevy_picking::backend::ray::RayId>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::backend::ray::RayId>,other: Ref<::bevy_picking::backend::ray::RayId>,) -> bool {
         let output: bool =<::bevy_picking::backend::ray::RayId as ::std::cmp::PartialEq::<::bevy_picking::backend::ray::RayId>>::eq(&_self,&other,).into();
         output
     }
@@ -494,7 +494,7 @@ impl ::bevy_picking::backend::ray::RayId {
     
     ///  Construct a [`RayId`].
     
-    fn new (camera:Val<::bevy_ecs::entity::Entity>,pointer:Val<::bevy_picking::backend::prelude::PointerId>,) -> Val<::bevy_picking::backend::ray::RayId> {
+    fn new (camera: Val<::bevy_ecs::entity::Entity>,pointer: Val<::bevy_picking::backend::prelude::PointerId>,) -> Val<::bevy_picking::backend::ray::RayId> {
         let output: Val<::bevy_picking::backend::ray::RayId> =::bevy_picking::backend::ray::RayId::new(camera.into_inner(),pointer.into_inner(),).into();
         output
     }
@@ -511,14 +511,14 @@ impl ::bevy_picking::events::Cancel {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::events::Cancel>,) -> Val<::bevy_picking::events::Cancel> {
+    fn clone (_self: Ref<::bevy_picking::events::Cancel>,) -> Val<::bevy_picking::events::Cancel> {
         let output: Val<::bevy_picking::events::Cancel> =<::bevy_picking::events::Cancel as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::events::Cancel>,other:Ref<::bevy_picking::events::Cancel>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::events::Cancel>,other: Ref<::bevy_picking::events::Cancel>,) -> bool {
         let output: bool =<::bevy_picking::events::Cancel as ::std::cmp::PartialEq::<::bevy_picking::events::Cancel>>::eq(&_self,&other,).into();
         output
     }
@@ -535,14 +535,14 @@ impl ::bevy_picking::events::Click {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::events::Click>,) -> Val<::bevy_picking::events::Click> {
+    fn clone (_self: Ref<::bevy_picking::events::Click>,) -> Val<::bevy_picking::events::Click> {
         let output: Val<::bevy_picking::events::Click> =<::bevy_picking::events::Click as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::events::Click>,other:Ref<::bevy_picking::events::Click>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::events::Click>,other: Ref<::bevy_picking::events::Click>,) -> bool {
         let output: bool =<::bevy_picking::events::Click as ::std::cmp::PartialEq::<::bevy_picking::events::Click>>::eq(&_self,&other,).into();
         output
     }
@@ -559,14 +559,14 @@ impl ::bevy_picking::events::Pressed {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::events::Pressed>,) -> Val<::bevy_picking::events::Pressed> {
+    fn clone (_self: Ref<::bevy_picking::events::Pressed>,) -> Val<::bevy_picking::events::Pressed> {
         let output: Val<::bevy_picking::events::Pressed> =<::bevy_picking::events::Pressed as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::events::Pressed>,other:Ref<::bevy_picking::events::Pressed>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::events::Pressed>,other: Ref<::bevy_picking::events::Pressed>,) -> bool {
         let output: bool =<::bevy_picking::events::Pressed as ::std::cmp::PartialEq::<::bevy_picking::events::Pressed>>::eq(&_self,&other,).into();
         output
     }
@@ -583,14 +583,14 @@ impl ::bevy_picking::events::DragDrop {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::events::DragDrop>,) -> Val<::bevy_picking::events::DragDrop> {
+    fn clone (_self: Ref<::bevy_picking::events::DragDrop>,) -> Val<::bevy_picking::events::DragDrop> {
         let output: Val<::bevy_picking::events::DragDrop> =<::bevy_picking::events::DragDrop as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::events::DragDrop>,other:Ref<::bevy_picking::events::DragDrop>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::events::DragDrop>,other: Ref<::bevy_picking::events::DragDrop>,) -> bool {
         let output: bool =<::bevy_picking::events::DragDrop as ::std::cmp::PartialEq::<::bevy_picking::events::DragDrop>>::eq(&_self,&other,).into();
         output
     }
@@ -607,14 +607,14 @@ impl ::bevy_picking::events::DragEnd {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::events::DragEnd>,) -> Val<::bevy_picking::events::DragEnd> {
+    fn clone (_self: Ref<::bevy_picking::events::DragEnd>,) -> Val<::bevy_picking::events::DragEnd> {
         let output: Val<::bevy_picking::events::DragEnd> =<::bevy_picking::events::DragEnd as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::events::DragEnd>,other:Ref<::bevy_picking::events::DragEnd>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::events::DragEnd>,other: Ref<::bevy_picking::events::DragEnd>,) -> bool {
         let output: bool =<::bevy_picking::events::DragEnd as ::std::cmp::PartialEq::<::bevy_picking::events::DragEnd>>::eq(&_self,&other,).into();
         output
     }
@@ -631,14 +631,14 @@ impl ::bevy_picking::events::DragEnter {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::events::DragEnter>,) -> Val<::bevy_picking::events::DragEnter> {
+    fn clone (_self: Ref<::bevy_picking::events::DragEnter>,) -> Val<::bevy_picking::events::DragEnter> {
         let output: Val<::bevy_picking::events::DragEnter> =<::bevy_picking::events::DragEnter as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::events::DragEnter>,other:Ref<::bevy_picking::events::DragEnter>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::events::DragEnter>,other: Ref<::bevy_picking::events::DragEnter>,) -> bool {
         let output: bool =<::bevy_picking::events::DragEnter as ::std::cmp::PartialEq::<::bevy_picking::events::DragEnter>>::eq(&_self,&other,).into();
         output
     }
@@ -655,14 +655,14 @@ impl ::bevy_picking::events::Drag {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::events::Drag>,) -> Val<::bevy_picking::events::Drag> {
+    fn clone (_self: Ref<::bevy_picking::events::Drag>,) -> Val<::bevy_picking::events::Drag> {
         let output: Val<::bevy_picking::events::Drag> =<::bevy_picking::events::Drag as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::events::Drag>,other:Ref<::bevy_picking::events::Drag>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::events::Drag>,other: Ref<::bevy_picking::events::Drag>,) -> bool {
         let output: bool =<::bevy_picking::events::Drag as ::std::cmp::PartialEq::<::bevy_picking::events::Drag>>::eq(&_self,&other,).into();
         output
     }
@@ -679,14 +679,14 @@ impl ::bevy_picking::events::DragLeave {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::events::DragLeave>,) -> Val<::bevy_picking::events::DragLeave> {
+    fn clone (_self: Ref<::bevy_picking::events::DragLeave>,) -> Val<::bevy_picking::events::DragLeave> {
         let output: Val<::bevy_picking::events::DragLeave> =<::bevy_picking::events::DragLeave as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::events::DragLeave>,other:Ref<::bevy_picking::events::DragLeave>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::events::DragLeave>,other: Ref<::bevy_picking::events::DragLeave>,) -> bool {
         let output: bool =<::bevy_picking::events::DragLeave as ::std::cmp::PartialEq::<::bevy_picking::events::DragLeave>>::eq(&_self,&other,).into();
         output
     }
@@ -703,14 +703,14 @@ impl ::bevy_picking::events::DragOver {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::events::DragOver>,) -> Val<::bevy_picking::events::DragOver> {
+    fn clone (_self: Ref<::bevy_picking::events::DragOver>,) -> Val<::bevy_picking::events::DragOver> {
         let output: Val<::bevy_picking::events::DragOver> =<::bevy_picking::events::DragOver as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::events::DragOver>,other:Ref<::bevy_picking::events::DragOver>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::events::DragOver>,other: Ref<::bevy_picking::events::DragOver>,) -> bool {
         let output: bool =<::bevy_picking::events::DragOver as ::std::cmp::PartialEq::<::bevy_picking::events::DragOver>>::eq(&_self,&other,).into();
         output
     }
@@ -727,14 +727,14 @@ impl ::bevy_picking::events::DragStart {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::events::DragStart>,) -> Val<::bevy_picking::events::DragStart> {
+    fn clone (_self: Ref<::bevy_picking::events::DragStart>,) -> Val<::bevy_picking::events::DragStart> {
         let output: Val<::bevy_picking::events::DragStart> =<::bevy_picking::events::DragStart as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::events::DragStart>,other:Ref<::bevy_picking::events::DragStart>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::events::DragStart>,other: Ref<::bevy_picking::events::DragStart>,) -> bool {
         let output: bool =<::bevy_picking::events::DragStart as ::std::cmp::PartialEq::<::bevy_picking::events::DragStart>>::eq(&_self,&other,).into();
         output
     }
@@ -751,14 +751,14 @@ impl ::bevy_picking::events::Move {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::events::Move>,) -> Val<::bevy_picking::events::Move> {
+    fn clone (_self: Ref<::bevy_picking::events::Move>,) -> Val<::bevy_picking::events::Move> {
         let output: Val<::bevy_picking::events::Move> =<::bevy_picking::events::Move as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::events::Move>,other:Ref<::bevy_picking::events::Move>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::events::Move>,other: Ref<::bevy_picking::events::Move>,) -> bool {
         let output: bool =<::bevy_picking::events::Move as ::std::cmp::PartialEq::<::bevy_picking::events::Move>>::eq(&_self,&other,).into();
         output
     }
@@ -775,14 +775,14 @@ impl ::bevy_picking::events::Out {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::events::Out>,) -> Val<::bevy_picking::events::Out> {
+    fn clone (_self: Ref<::bevy_picking::events::Out>,) -> Val<::bevy_picking::events::Out> {
         let output: Val<::bevy_picking::events::Out> =<::bevy_picking::events::Out as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::events::Out>,other:Ref<::bevy_picking::events::Out>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::events::Out>,other: Ref<::bevy_picking::events::Out>,) -> bool {
         let output: bool =<::bevy_picking::events::Out as ::std::cmp::PartialEq::<::bevy_picking::events::Out>>::eq(&_self,&other,).into();
         output
     }
@@ -799,14 +799,14 @@ impl ::bevy_picking::events::Over {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::events::Over>,) -> Val<::bevy_picking::events::Over> {
+    fn clone (_self: Ref<::bevy_picking::events::Over>,) -> Val<::bevy_picking::events::Over> {
         let output: Val<::bevy_picking::events::Over> =<::bevy_picking::events::Over as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::events::Over>,other:Ref<::bevy_picking::events::Over>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::events::Over>,other: Ref<::bevy_picking::events::Over>,) -> bool {
         let output: bool =<::bevy_picking::events::Over as ::std::cmp::PartialEq::<::bevy_picking::events::Over>>::eq(&_self,&other,).into();
         output
     }
@@ -823,14 +823,14 @@ impl ::bevy_picking::events::Released {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::events::Released>,) -> Val<::bevy_picking::events::Released> {
+    fn clone (_self: Ref<::bevy_picking::events::Released>,) -> Val<::bevy_picking::events::Released> {
         let output: Val<::bevy_picking::events::Released> =<::bevy_picking::events::Released as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::events::Released>,other:Ref<::bevy_picking::events::Released>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::events::Released>,other: Ref<::bevy_picking::events::Released>,) -> bool {
         let output: bool =<::bevy_picking::events::Released as ::std::cmp::PartialEq::<::bevy_picking::events::Released>>::eq(&_self,&other,).into();
         output
     }
@@ -847,14 +847,14 @@ impl ::bevy_picking::events::Scroll {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::events::Scroll>,) -> Val<::bevy_picking::events::Scroll> {
+    fn clone (_self: Ref<::bevy_picking::events::Scroll>,) -> Val<::bevy_picking::events::Scroll> {
         let output: Val<::bevy_picking::events::Scroll> =<::bevy_picking::events::Scroll as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::events::Scroll>,other:Ref<::bevy_picking::events::Scroll>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::events::Scroll>,other: Ref<::bevy_picking::events::Scroll>,) -> bool {
         let output: bool =<::bevy_picking::events::Scroll as ::std::cmp::PartialEq::<::bevy_picking::events::Scroll>>::eq(&_self,&other,).into();
         output
     }
@@ -871,14 +871,14 @@ impl ::bevy_picking::backend::prelude::HitData {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::backend::prelude::HitData>,) -> Val<::bevy_picking::backend::prelude::HitData> {
+    fn clone (_self: Ref<::bevy_picking::backend::prelude::HitData>,) -> Val<::bevy_picking::backend::prelude::HitData> {
         let output: Val<::bevy_picking::backend::prelude::HitData> =<::bevy_picking::backend::prelude::HitData as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::backend::prelude::HitData>,other:Ref<::bevy_picking::backend::prelude::HitData>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::backend::prelude::HitData>,other: Ref<::bevy_picking::backend::prelude::HitData>,) -> bool {
         let output: bool =<::bevy_picking::backend::prelude::HitData as ::std::cmp::PartialEq::<::bevy_picking::backend::prelude::HitData>>::eq(&_self,&other,).into();
         output
     }
@@ -895,14 +895,14 @@ impl ::bevy_picking::pointer::Location {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::pointer::Location>,) -> Val<::bevy_picking::pointer::Location> {
+    fn clone (_self: Ref<::bevy_picking::pointer::Location>,) -> Val<::bevy_picking::pointer::Location> {
         let output: Val<::bevy_picking::pointer::Location> =<::bevy_picking::pointer::Location as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::pointer::Location>,other:Ref<::bevy_picking::pointer::Location>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::pointer::Location>,other: Ref<::bevy_picking::pointer::Location>,) -> bool {
         let output: bool =<::bevy_picking::pointer::Location as ::std::cmp::PartialEq::<::bevy_picking::pointer::Location>>::eq(&_self,&other,).into();
         output
     }
@@ -919,7 +919,7 @@ impl ::bevy_picking::pointer::PointerAction {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::pointer::PointerAction>,) -> Val<::bevy_picking::pointer::PointerAction> {
+    fn clone (_self: Ref<::bevy_picking::pointer::PointerAction>,) -> Val<::bevy_picking::pointer::PointerAction> {
         let output: Val<::bevy_picking::pointer::PointerAction> =<::bevy_picking::pointer::PointerAction as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -936,14 +936,14 @@ impl ::bevy_picking::events::DragEntry {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::events::DragEntry>,) -> Val<::bevy_picking::events::DragEntry> {
+    fn clone (_self: Ref<::bevy_picking::events::DragEntry>,) -> Val<::bevy_picking::events::DragEntry> {
         let output: Val<::bevy_picking::events::DragEntry> =<::bevy_picking::events::DragEntry as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::events::DragEntry>,other:Ref<::bevy_picking::events::DragEntry>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::events::DragEntry>,other: Ref<::bevy_picking::events::DragEntry>,) -> bool {
         let output: bool =<::bevy_picking::events::DragEntry as ::std::cmp::PartialEq::<::bevy_picking::events::DragEntry>>::eq(&_self,&other,).into();
         output
     }
@@ -960,7 +960,7 @@ impl ::bevy_picking::mesh_picking::ray_cast::SimplifiedMesh {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::mesh_picking::ray_cast::SimplifiedMesh>,) -> Val<::bevy_picking::mesh_picking::ray_cast::SimplifiedMesh> {
+    fn clone (_self: Ref<::bevy_picking::mesh_picking::ray_cast::SimplifiedMesh>,) -> Val<::bevy_picking::mesh_picking::ray_cast::SimplifiedMesh> {
         let output: Val<::bevy_picking::mesh_picking::ray_cast::SimplifiedMesh> =<::bevy_picking::mesh_picking::ray_cast::SimplifiedMesh as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -977,7 +977,7 @@ impl ::bevy_picking::mesh_picking::ray_cast::RayMeshHit {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::mesh_picking::ray_cast::RayMeshHit>,) -> Val<::bevy_picking::mesh_picking::ray_cast::RayMeshHit> {
+    fn clone (_self: Ref<::bevy_picking::mesh_picking::ray_cast::RayMeshHit>,) -> Val<::bevy_picking::mesh_picking::ray_cast::RayMeshHit> {
         let output: Val<::bevy_picking::mesh_picking::ray_cast::RayMeshHit> =<::bevy_picking::mesh_picking::ray_cast::RayMeshHit as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -994,7 +994,7 @@ impl ::bevy_picking::mesh_picking::ray_cast::Backfaces {
 
 
     
-    fn clone (_self:Ref<::bevy_picking::mesh_picking::ray_cast::Backfaces>,) -> Val<::bevy_picking::mesh_picking::ray_cast::Backfaces> {
+    fn clone (_self: Ref<::bevy_picking::mesh_picking::ray_cast::Backfaces>,) -> Val<::bevy_picking::mesh_picking::ray_cast::Backfaces> {
         let output: Val<::bevy_picking::mesh_picking::ray_cast::Backfaces> =<::bevy_picking::mesh_picking::ray_cast::Backfaces as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -1011,21 +1011,21 @@ impl ::bevy_picking::pointer::PressDirection {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_picking::pointer::PressDirection>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_picking::pointer::PressDirection>,) -> () {
         let output: () =<::bevy_picking::pointer::PressDirection as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_picking::pointer::PressDirection>,) -> Val<::bevy_picking::pointer::PressDirection> {
+    fn clone (_self: Ref<::bevy_picking::pointer::PressDirection>,) -> Val<::bevy_picking::pointer::PressDirection> {
         let output: Val<::bevy_picking::pointer::PressDirection> =<::bevy_picking::pointer::PressDirection as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_picking::pointer::PressDirection>,other:Ref<::bevy_picking::pointer::PressDirection>,) -> bool {
+    fn eq (_self: Ref<::bevy_picking::pointer::PressDirection>,other: Ref<::bevy_picking::pointer::PressDirection>,) -> bool {
         let output: bool =<::bevy_picking::pointer::PressDirection as ::std::cmp::PartialEq::<::bevy_picking::pointer::PressDirection>>::eq(&_self,&other,).into();
         output
     }

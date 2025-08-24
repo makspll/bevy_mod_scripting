@@ -63,6 +63,17 @@ pub struct Args {
     /// The path to the bevy_mod_scripting_core crate, used to bootstrap necessary traits
     #[arg(global = true, long, default_value = ".")]
     pub bms_core_path: Utf8PathBuf,
+
+    /// Crates to exclude from code generation
+    #[arg(
+        global = true,
+        short,
+        long,
+        default_value = "bevy_winit",
+        use_value_delimiter = true,
+        value_delimiter = ','
+    )]
+    pub exclude_crates: Option<Vec<String>>,
 }
 
 #[derive(clap::Args, Debug, Clone, Default, Serialize, Deserialize)]

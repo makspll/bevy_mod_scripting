@@ -36,21 +36,21 @@ impl ::bevy_text::prelude::JustifyText {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_text::prelude::JustifyText>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_text::prelude::JustifyText>,) -> () {
         let output: () =<::bevy_text::prelude::JustifyText as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_text::prelude::JustifyText>,) -> Val<::bevy_text::prelude::JustifyText> {
+    fn clone (_self: Ref<::bevy_text::prelude::JustifyText>,) -> Val<::bevy_text::prelude::JustifyText> {
         let output: Val<::bevy_text::prelude::JustifyText> =<::bevy_text::prelude::JustifyText as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_text::prelude::JustifyText>,other:Ref<::bevy_text::prelude::JustifyText>,) -> bool {
+    fn eq (_self: Ref<::bevy_text::prelude::JustifyText>,other: Ref<::bevy_text::prelude::JustifyText>,) -> bool {
         let output: bool =<::bevy_text::prelude::JustifyText as ::std::cmp::PartialEq::<::bevy_text::prelude::JustifyText>>::eq(&_self,&other,).into();
         output
     }
@@ -67,21 +67,21 @@ impl ::bevy_text::prelude::LineBreak {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_text::prelude::LineBreak>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_text::prelude::LineBreak>,) -> () {
         let output: () =<::bevy_text::prelude::LineBreak as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_text::prelude::LineBreak>,) -> Val<::bevy_text::prelude::LineBreak> {
+    fn clone (_self: Ref<::bevy_text::prelude::LineBreak>,) -> Val<::bevy_text::prelude::LineBreak> {
         let output: Val<::bevy_text::prelude::LineBreak> =<::bevy_text::prelude::LineBreak as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_text::prelude::LineBreak>,other:Ref<::bevy_text::prelude::LineBreak>,) -> bool {
+    fn eq (_self: Ref<::bevy_text::prelude::LineBreak>,other: Ref<::bevy_text::prelude::LineBreak>,) -> bool {
         let output: bool =<::bevy_text::prelude::LineBreak as ::std::cmp::PartialEq::<::bevy_text::prelude::LineBreak>>::eq(&_self,&other,).into();
         output
     }
@@ -98,7 +98,7 @@ impl ::bevy_text::prelude::Text2d {
 
 
     
-    fn clone (_self:Ref<::bevy_text::prelude::Text2d>,) -> Val<::bevy_text::prelude::Text2d> {
+    fn clone (_self: Ref<::bevy_text::prelude::Text2d>,) -> Val<::bevy_text::prelude::Text2d> {
         let output: Val<::bevy_text::prelude::Text2d> =<::bevy_text::prelude::Text2d as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -115,14 +115,14 @@ impl ::bevy_text::prelude::TextColor {
 
 
     
-    fn clone (_self:Ref<::bevy_text::prelude::TextColor>,) -> Val<::bevy_text::prelude::TextColor> {
+    fn clone (_self: Ref<::bevy_text::prelude::TextColor>,) -> Val<::bevy_text::prelude::TextColor> {
         let output: Val<::bevy_text::prelude::TextColor> =<::bevy_text::prelude::TextColor as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_text::prelude::TextColor>,other:Ref<::bevy_text::prelude::TextColor>,) -> bool {
+    fn eq (_self: Ref<::bevy_text::prelude::TextColor>,other: Ref<::bevy_text::prelude::TextColor>,) -> bool {
         let output: bool =<::bevy_text::prelude::TextColor as ::std::cmp::PartialEq::<::bevy_text::prelude::TextColor>>::eq(&_self,&other,).into();
         output
     }
@@ -139,7 +139,7 @@ impl ::bevy_text::prelude::TextFont {
 
 
     
-    fn clone (_self:Ref<::bevy_text::prelude::TextFont>,) -> Val<::bevy_text::prelude::TextFont> {
+    fn clone (_self: Ref<::bevy_text::prelude::TextFont>,) -> Val<::bevy_text::prelude::TextFont> {
         let output: Val<::bevy_text::prelude::TextFont> =<::bevy_text::prelude::TextFont as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -148,7 +148,7 @@ impl ::bevy_text::prelude::TextFont {
     
     ///  Returns a new [`TextFont`] with the specified font size.
     
-    fn from_font_size (font_size:f32,) -> Val<::bevy_text::prelude::TextFont> {
+    fn from_font_size (font_size: f32,) -> Val<::bevy_text::prelude::TextFont> {
         let output: Val<::bevy_text::prelude::TextFont> =::bevy_text::prelude::TextFont::from_font_size(font_size,).into();
         output
     }
@@ -157,7 +157,7 @@ impl ::bevy_text::prelude::TextFont {
     
     ///  Returns this [`TextFont`] with the specified font size.
     
-    fn with_font_size (_self:Val<::bevy_text::prelude::TextFont>,font_size:f32,) -> Val<::bevy_text::prelude::TextFont> {
+    fn with_font_size (_self: Val<::bevy_text::prelude::TextFont>,font_size: f32,) -> Val<::bevy_text::prelude::TextFont> {
         let output: Val<::bevy_text::prelude::TextFont> =::bevy_text::prelude::TextFont::with_font_size(_self.into_inner(),font_size,).into();
         output
     }
@@ -166,7 +166,7 @@ impl ::bevy_text::prelude::TextFont {
     
     ///  Returns this [`TextFont`] with the specified [`FontSmoothing`].
     
-    fn with_font_smoothing (_self:Val<::bevy_text::prelude::TextFont>,font_smoothing:Val<::bevy_text::FontSmoothing>,) -> Val<::bevy_text::prelude::TextFont> {
+    fn with_font_smoothing (_self: Val<::bevy_text::prelude::TextFont>,font_smoothing: Val<::bevy_text::FontSmoothing>,) -> Val<::bevy_text::prelude::TextFont> {
         let output: Val<::bevy_text::prelude::TextFont> =::bevy_text::prelude::TextFont::with_font_smoothing(_self.into_inner(),font_smoothing.into_inner(),).into();
         output
     }
@@ -175,7 +175,7 @@ impl ::bevy_text::prelude::TextFont {
     
     ///  Returns this [`TextFont`] with the specified [`LineHeight`].
     
-    fn with_line_height (_self:Val<::bevy_text::prelude::TextFont>,line_height:Val<::bevy_text::LineHeight>,) -> Val<::bevy_text::prelude::TextFont> {
+    fn with_line_height (_self: Val<::bevy_text::prelude::TextFont>,line_height: Val<::bevy_text::LineHeight>,) -> Val<::bevy_text::prelude::TextFont> {
         let output: Val<::bevy_text::prelude::TextFont> =::bevy_text::prelude::TextFont::with_line_height(_self.into_inner(),line_height.into_inner(),).into();
         output
     }
@@ -192,7 +192,7 @@ impl ::bevy_text::prelude::TextLayout {
 
 
     
-    fn clone (_self:Ref<::bevy_text::prelude::TextLayout>,) -> Val<::bevy_text::prelude::TextLayout> {
+    fn clone (_self: Ref<::bevy_text::prelude::TextLayout>,) -> Val<::bevy_text::prelude::TextLayout> {
         let output: Val<::bevy_text::prelude::TextLayout> =<::bevy_text::prelude::TextLayout as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -201,7 +201,7 @@ impl ::bevy_text::prelude::TextLayout {
     
     ///  Makes a new [`TextLayout`].
     
-    fn new (justify:Val<::bevy_text::prelude::JustifyText>,linebreak:Val<::bevy_text::prelude::LineBreak>,) -> Val<::bevy_text::prelude::TextLayout> {
+    fn new (justify: Val<::bevy_text::prelude::JustifyText>,linebreak: Val<::bevy_text::prelude::LineBreak>,) -> Val<::bevy_text::prelude::TextLayout> {
         let output: Val<::bevy_text::prelude::TextLayout> =::bevy_text::prelude::TextLayout::new(justify.into_inner(),linebreak.into_inner(),).into();
         output
     }
@@ -210,7 +210,7 @@ impl ::bevy_text::prelude::TextLayout {
     
     ///  Makes a new [`TextLayout`] with the specified [`JustifyText`].
     
-    fn new_with_justify (justify:Val<::bevy_text::prelude::JustifyText>,) -> Val<::bevy_text::prelude::TextLayout> {
+    fn new_with_justify (justify: Val<::bevy_text::prelude::JustifyText>,) -> Val<::bevy_text::prelude::TextLayout> {
         let output: Val<::bevy_text::prelude::TextLayout> =::bevy_text::prelude::TextLayout::new_with_justify(justify.into_inner(),).into();
         output
     }
@@ -219,7 +219,7 @@ impl ::bevy_text::prelude::TextLayout {
     
     ///  Makes a new [`TextLayout`] with the specified [`LineBreak`].
     
-    fn new_with_linebreak (linebreak:Val<::bevy_text::prelude::LineBreak>,) -> Val<::bevy_text::prelude::TextLayout> {
+    fn new_with_linebreak (linebreak: Val<::bevy_text::prelude::LineBreak>,) -> Val<::bevy_text::prelude::TextLayout> {
         let output: Val<::bevy_text::prelude::TextLayout> =::bevy_text::prelude::TextLayout::new_with_linebreak(linebreak.into_inner(),).into();
         output
     }
@@ -239,7 +239,7 @@ impl ::bevy_text::prelude::TextLayout {
     
     ///  Returns this [`TextLayout`] with the specified [`JustifyText`].
     
-    fn with_justify (_self:Val<::bevy_text::prelude::TextLayout>,justify:Val<::bevy_text::prelude::JustifyText>,) -> Val<::bevy_text::prelude::TextLayout> {
+    fn with_justify (_self: Val<::bevy_text::prelude::TextLayout>,justify: Val<::bevy_text::prelude::JustifyText>,) -> Val<::bevy_text::prelude::TextLayout> {
         let output: Val<::bevy_text::prelude::TextLayout> =::bevy_text::prelude::TextLayout::with_justify(_self.into_inner(),justify.into_inner(),).into();
         output
     }
@@ -248,7 +248,7 @@ impl ::bevy_text::prelude::TextLayout {
     
     ///  Returns this [`TextLayout`] with the specified [`LineBreak`].
     
-    fn with_linebreak (_self:Val<::bevy_text::prelude::TextLayout>,linebreak:Val<::bevy_text::prelude::LineBreak>,) -> Val<::bevy_text::prelude::TextLayout> {
+    fn with_linebreak (_self: Val<::bevy_text::prelude::TextLayout>,linebreak: Val<::bevy_text::prelude::LineBreak>,) -> Val<::bevy_text::prelude::TextLayout> {
         let output: Val<::bevy_text::prelude::TextLayout> =::bevy_text::prelude::TextLayout::with_linebreak(_self.into_inner(),linebreak.into_inner(),).into();
         output
     }
@@ -259,7 +259,7 @@ impl ::bevy_text::prelude::TextLayout {
     
     ///  Hard wrapping, where text contains an explicit linebreak such as the escape sequence `\n`, will still occur.
     
-    fn with_no_wrap (_self:Val<::bevy_text::prelude::TextLayout>,) -> Val<::bevy_text::prelude::TextLayout> {
+    fn with_no_wrap (_self: Val<::bevy_text::prelude::TextLayout>,) -> Val<::bevy_text::prelude::TextLayout> {
         let output: Val<::bevy_text::prelude::TextLayout> =::bevy_text::prelude::TextLayout::with_no_wrap(_self.into_inner(),).into();
         output
     }
@@ -276,7 +276,7 @@ impl ::bevy_text::prelude::TextSpan {
 
 
     
-    fn clone (_self:Ref<::bevy_text::prelude::TextSpan>,) -> Val<::bevy_text::prelude::TextSpan> {
+    fn clone (_self: Ref<::bevy_text::prelude::TextSpan>,) -> Val<::bevy_text::prelude::TextSpan> {
         let output: Val<::bevy_text::prelude::TextSpan> =<::bevy_text::prelude::TextSpan as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -293,7 +293,7 @@ impl ::bevy_text::LineHeight {
 
 
     
-    fn clone (_self:Ref<::bevy_text::LineHeight>,) -> Val<::bevy_text::LineHeight> {
+    fn clone (_self: Ref<::bevy_text::LineHeight>,) -> Val<::bevy_text::LineHeight> {
         let output: Val<::bevy_text::LineHeight> =<::bevy_text::LineHeight as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -310,7 +310,7 @@ impl ::bevy_text::TextBounds {
 
 
     
-    fn clone (_self:Ref<::bevy_text::TextBounds>,) -> Val<::bevy_text::TextBounds> {
+    fn clone (_self: Ref<::bevy_text::TextBounds>,) -> Val<::bevy_text::TextBounds> {
         let output: Val<::bevy_text::TextBounds> =<::bevy_text::TextBounds as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -319,7 +319,7 @@ impl ::bevy_text::TextBounds {
     
     ///  Creates a new `TextBounds`, bounded with the specified width and height values.
     
-    fn new (width:f32,height:f32,) -> Val<::bevy_text::TextBounds> {
+    fn new (width: f32,height: f32,) -> Val<::bevy_text::TextBounds> {
         let output: Val<::bevy_text::TextBounds> =::bevy_text::TextBounds::new(width,height,).into();
         output
     }
@@ -328,7 +328,7 @@ impl ::bevy_text::TextBounds {
     
     ///  Creates a new `TextBounds`, bounded with the specified width value and unbounded on height.
     
-    fn new_horizontal (width:f32,) -> Val<::bevy_text::TextBounds> {
+    fn new_horizontal (width: f32,) -> Val<::bevy_text::TextBounds> {
         let output: Val<::bevy_text::TextBounds> =::bevy_text::TextBounds::new_horizontal(width,).into();
         output
     }
@@ -337,7 +337,7 @@ impl ::bevy_text::TextBounds {
     
     ///  Creates a new `TextBounds`, bounded with the specified height value and unbounded on width.
     
-    fn new_vertical (height:f32,) -> Val<::bevy_text::TextBounds> {
+    fn new_vertical (height: f32,) -> Val<::bevy_text::TextBounds> {
         let output: Val<::bevy_text::TextBounds> =::bevy_text::TextBounds::new_vertical(height,).into();
         output
     }
@@ -354,7 +354,7 @@ impl ::bevy_text::ComputedTextBlock {
 
 
     
-    fn clone (_self:Ref<::bevy_text::ComputedTextBlock>,) -> Val<::bevy_text::ComputedTextBlock> {
+    fn clone (_self: Ref<::bevy_text::ComputedTextBlock>,) -> Val<::bevy_text::ComputedTextBlock> {
         let output: Val<::bevy_text::ComputedTextBlock> =<::bevy_text::ComputedTextBlock as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -367,7 +367,7 @@ impl ::bevy_text::ComputedTextBlock {
     
     ///  by [`TextPipeline`](crate::TextPipeline) methods.
     
-    fn needs_rerender (_self:Ref<::bevy_text::ComputedTextBlock>,) -> bool {
+    fn needs_rerender (_self: Ref<::bevy_text::ComputedTextBlock>,) -> bool {
         let output: bool =::bevy_text::ComputedTextBlock::needs_rerender(&_self,).into();
         output
     }
@@ -384,7 +384,7 @@ impl ::bevy_text::TextEntity {
 
 
     
-    fn clone (_self:Ref<::bevy_text::TextEntity>,) -> Val<::bevy_text::TextEntity> {
+    fn clone (_self: Ref<::bevy_text::TextEntity>,) -> Val<::bevy_text::TextEntity> {
         let output: Val<::bevy_text::TextEntity> =<::bevy_text::TextEntity as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -401,21 +401,21 @@ impl ::bevy_text::FontSmoothing {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_text::FontSmoothing>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_text::FontSmoothing>,) -> () {
         let output: () =<::bevy_text::FontSmoothing as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_text::FontSmoothing>,) -> Val<::bevy_text::FontSmoothing> {
+    fn clone (_self: Ref<::bevy_text::FontSmoothing>,) -> Val<::bevy_text::FontSmoothing> {
         let output: Val<::bevy_text::FontSmoothing> =<::bevy_text::FontSmoothing as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_text::FontSmoothing>,other:Ref<::bevy_text::FontSmoothing>,) -> bool {
+    fn eq (_self: Ref<::bevy_text::FontSmoothing>,other: Ref<::bevy_text::FontSmoothing>,) -> bool {
         let output: bool =<::bevy_text::FontSmoothing as ::std::cmp::PartialEq::<::bevy_text::FontSmoothing>>::eq(&_self,&other,).into();
         output
     }
@@ -432,7 +432,7 @@ impl ::bevy_text::GlyphAtlasLocation {
 
 
     
-    fn clone (_self:Ref<::bevy_text::GlyphAtlasLocation>,) -> Val<::bevy_text::GlyphAtlasLocation> {
+    fn clone (_self: Ref<::bevy_text::GlyphAtlasLocation>,) -> Val<::bevy_text::GlyphAtlasLocation> {
         let output: Val<::bevy_text::GlyphAtlasLocation> =<::bevy_text::GlyphAtlasLocation as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -449,7 +449,7 @@ impl ::bevy_text::GlyphAtlasInfo {
 
 
     
-    fn clone (_self:Ref<::bevy_text::GlyphAtlasInfo>,) -> Val<::bevy_text::GlyphAtlasInfo> {
+    fn clone (_self: Ref<::bevy_text::GlyphAtlasInfo>,) -> Val<::bevy_text::GlyphAtlasInfo> {
         let output: Val<::bevy_text::GlyphAtlasInfo> =<::bevy_text::GlyphAtlasInfo as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -466,7 +466,7 @@ impl ::bevy_text::PositionedGlyph {
 
 
     
-    fn clone (_self:Ref<::bevy_text::PositionedGlyph>,) -> Val<::bevy_text::PositionedGlyph> {
+    fn clone (_self: Ref<::bevy_text::PositionedGlyph>,) -> Val<::bevy_text::PositionedGlyph> {
         let output: Val<::bevy_text::PositionedGlyph> =<::bevy_text::PositionedGlyph as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -483,7 +483,7 @@ impl ::bevy_text::TextLayoutInfo {
 
 
     
-    fn clone (_self:Ref<::bevy_text::TextLayoutInfo>,) -> Val<::bevy_text::TextLayoutInfo> {
+    fn clone (_self: Ref<::bevy_text::TextLayoutInfo>,) -> Val<::bevy_text::TextLayoutInfo> {
         let output: Val<::bevy_text::TextLayoutInfo> =<::bevy_text::TextLayoutInfo as ::std::clone::Clone>::clone(&_self,).into();
         output
     }

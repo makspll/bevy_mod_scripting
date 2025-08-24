@@ -36,7 +36,7 @@ impl ::bevy_gizmos::aabb::AabbGizmoConfigGroup {
 
 
     
-    fn clone (_self:Ref<::bevy_gizmos::aabb::AabbGizmoConfigGroup>,) -> Val<::bevy_gizmos::aabb::AabbGizmoConfigGroup> {
+    fn clone (_self: Ref<::bevy_gizmos::aabb::AabbGizmoConfigGroup>,) -> Val<::bevy_gizmos::aabb::AabbGizmoConfigGroup> {
         let output: Val<::bevy_gizmos::aabb::AabbGizmoConfigGroup> =<::bevy_gizmos::aabb::AabbGizmoConfigGroup as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -73,7 +73,7 @@ impl ::bevy_gizmos::config::GizmoConfig {
 
 
     
-    fn clone (_self:Ref<::bevy_gizmos::config::GizmoConfig>,) -> Val<::bevy_gizmos::config::GizmoConfig> {
+    fn clone (_self: Ref<::bevy_gizmos::config::GizmoConfig>,) -> Val<::bevy_gizmos::config::GizmoConfig> {
         let output: Val<::bevy_gizmos::config::GizmoConfig> =<::bevy_gizmos::config::GizmoConfig as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -100,7 +100,7 @@ impl ::bevy_gizmos::config::GizmoLineConfig {
 
 
     
-    fn clone (_self:Ref<::bevy_gizmos::config::GizmoLineConfig>,) -> Val<::bevy_gizmos::config::GizmoLineConfig> {
+    fn clone (_self: Ref<::bevy_gizmos::config::GizmoLineConfig>,) -> Val<::bevy_gizmos::config::GizmoLineConfig> {
         let output: Val<::bevy_gizmos::config::GizmoLineConfig> =<::bevy_gizmos::config::GizmoLineConfig as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -117,21 +117,21 @@ impl ::bevy_gizmos::config::GizmoLineJoint {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_gizmos::config::GizmoLineJoint>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_gizmos::config::GizmoLineJoint>,) -> () {
         let output: () =<::bevy_gizmos::config::GizmoLineJoint as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_gizmos::config::GizmoLineJoint>,) -> Val<::bevy_gizmos::config::GizmoLineJoint> {
+    fn clone (_self: Ref<::bevy_gizmos::config::GizmoLineJoint>,) -> Val<::bevy_gizmos::config::GizmoLineJoint> {
         let output: Val<::bevy_gizmos::config::GizmoLineJoint> =<::bevy_gizmos::config::GizmoLineJoint as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_gizmos::config::GizmoLineJoint>,other:Ref<::bevy_gizmos::config::GizmoLineJoint>,) -> bool {
+    fn eq (_self: Ref<::bevy_gizmos::config::GizmoLineJoint>,other: Ref<::bevy_gizmos::config::GizmoLineJoint>,) -> bool {
         let output: bool =<::bevy_gizmos::config::GizmoLineJoint as ::std::cmp::PartialEq::<::bevy_gizmos::config::GizmoLineJoint>>::eq(&_self,&other,).into();
         output
     }
@@ -148,14 +148,14 @@ impl ::bevy_gizmos::config::GizmoLineStyle {
 
 
     
-    fn clone (_self:Ref<::bevy_gizmos::config::GizmoLineStyle>,) -> Val<::bevy_gizmos::config::GizmoLineStyle> {
+    fn clone (_self: Ref<::bevy_gizmos::config::GizmoLineStyle>,) -> Val<::bevy_gizmos::config::GizmoLineStyle> {
         let output: Val<::bevy_gizmos::config::GizmoLineStyle> =<::bevy_gizmos::config::GizmoLineStyle as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_gizmos::config::GizmoLineStyle>,other:Ref<::bevy_gizmos::config::GizmoLineStyle>,) -> bool {
+    fn eq (_self: Ref<::bevy_gizmos::config::GizmoLineStyle>,other: Ref<::bevy_gizmos::config::GizmoLineStyle>,) -> bool {
         let output: bool =<::bevy_gizmos::config::GizmoLineStyle as ::std::cmp::PartialEq::<::bevy_gizmos::config::GizmoLineStyle>>::eq(&_self,&other,).into();
         output
     }
@@ -172,7 +172,7 @@ impl ::bevy_gizmos::retained::Gizmo {
 
 
     
-    fn clone (_self:Ref<::bevy_gizmos::retained::Gizmo>,) -> Val<::bevy_gizmos::retained::Gizmo> {
+    fn clone (_self: Ref<::bevy_gizmos::retained::Gizmo>,) -> Val<::bevy_gizmos::retained::Gizmo> {
         let output: Val<::bevy_gizmos::retained::Gizmo> =<::bevy_gizmos::retained::Gizmo as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -189,7 +189,7 @@ impl ::bevy_gizmos::light::LightGizmoColor {
 
 
     
-    fn clone (_self:Ref<::bevy_gizmos::light::LightGizmoColor>,) -> Val<::bevy_gizmos::light::LightGizmoColor> {
+    fn clone (_self: Ref<::bevy_gizmos::light::LightGizmoColor>,) -> Val<::bevy_gizmos::light::LightGizmoColor> {
         let output: Val<::bevy_gizmos::light::LightGizmoColor> =<::bevy_gizmos::light::LightGizmoColor as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -206,7 +206,7 @@ impl ::bevy_gizmos::light::LightGizmoConfigGroup {
 
 
     
-    fn clone (_self:Ref<::bevy_gizmos::light::LightGizmoConfigGroup>,) -> Val<::bevy_gizmos::light::LightGizmoConfigGroup> {
+    fn clone (_self: Ref<::bevy_gizmos::light::LightGizmoConfigGroup>,) -> Val<::bevy_gizmos::light::LightGizmoConfigGroup> {
         let output: Val<::bevy_gizmos::light::LightGizmoConfigGroup> =<::bevy_gizmos::light::LightGizmoConfigGroup as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
@@ -233,7 +233,7 @@ impl ::bevy_gizmos::config::ErasedGizmoConfigGroup {
 
 
     
-    fn clone (_self:Ref<::bevy_gizmos::config::ErasedGizmoConfigGroup>,) -> Val<::bevy_gizmos::config::ErasedGizmoConfigGroup> {
+    fn clone (_self: Ref<::bevy_gizmos::config::ErasedGizmoConfigGroup>,) -> Val<::bevy_gizmos::config::ErasedGizmoConfigGroup> {
         let output: Val<::bevy_gizmos::config::ErasedGizmoConfigGroup> =<::bevy_gizmos::config::ErasedGizmoConfigGroup as ::std::clone::Clone>::clone(&_self,).into();
         output
     }

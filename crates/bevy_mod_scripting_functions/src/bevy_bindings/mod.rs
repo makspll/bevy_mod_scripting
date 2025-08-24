@@ -70,6 +70,3 @@
 
     #[cfg(feature="bevy_window")]
     pub mod bevy_window;
-
-    #[cfg(feature="bevy_winit")]
-    pub mod bevy_winit;

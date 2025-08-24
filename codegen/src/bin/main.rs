@@ -66,7 +66,7 @@ fn main() {
             ),
         )]));
 
-        let dependencies = graph
+        let mut dependencies = graph
             .workspace
             .workspace_crates
             .iter()
@@ -76,6 +76,11 @@ fn main() {
 
         // log all dependencies
         debug!("Enabled dependencies: {}", dependencies.join(","));
+
+        if let Some(excluded_crates) = &args.exclude_crates {
+            dependencies.retain(|c| !excluded_crates.contains(c));
+            info!("Excluding crates: {excluded_crates:?}");
+        }
 
         Some(dependencies)
     } else {

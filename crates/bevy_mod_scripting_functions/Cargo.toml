@@ -35,7 +35,6 @@ bevy_text = ["dep:bevy_text"]
 bevy_time = ["dep:bevy_time"]
 bevy_transform = ["dep:bevy_transform"]
 bevy_window = ["dep:bevy_window"]
-bevy_winit = ["dep:bevy_winit"]
 
 core_functions = []
 lua_bindings = ["bevy_mod_scripting_lua"]
@@ -81,6 +80,7 @@ bevy_color = { version = "0.16.0", default-features = false, optional = true }
 bevy_core_pipeline = { version = "0.16.0", default-features = false, optional = true }
 bevy_gizmos = { version = "0.16.0", default-features = false, optional = true, features = [
     "bevy_render",
+    "bevy_pbr",
 ] }
 bevy_gltf = { version = "0.16.0", default-features = false, optional = true }
 bevy_image = { version = "0.16.0", default-features = false, optional = true }
@@ -97,9 +97,6 @@ bevy_sprite = { version = "0.16.0", default-features = false, optional = true, f
 ] }
 bevy_text = { version = "0.16.0", default-features = false, optional = true }
 bevy_window = { version = "0.16.0", default-features = false, optional = true }
-bevy_winit = { version = "0.16.0", default-features = false, optional = true, features = [
-    "custom_cursor",
-] }
 
 profiling = { workspace = true }
 

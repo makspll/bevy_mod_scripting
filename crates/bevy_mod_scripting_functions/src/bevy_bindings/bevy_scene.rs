@@ -36,21 +36,21 @@ impl ::bevy_scene::prelude::DynamicSceneRoot {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_scene::prelude::DynamicSceneRoot>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_scene::prelude::DynamicSceneRoot>,) -> () {
         let output: () =<::bevy_scene::prelude::DynamicSceneRoot as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_scene::prelude::DynamicSceneRoot>,) -> Val<::bevy_scene::prelude::DynamicSceneRoot> {
+    fn clone (_self: Ref<::bevy_scene::prelude::DynamicSceneRoot>,) -> Val<::bevy_scene::prelude::DynamicSceneRoot> {
         let output: Val<::bevy_scene::prelude::DynamicSceneRoot> =<::bevy_scene::prelude::DynamicSceneRoot as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_scene::prelude::DynamicSceneRoot>,other:Ref<::bevy_scene::prelude::DynamicSceneRoot>,) -> bool {
+    fn eq (_self: Ref<::bevy_scene::prelude::DynamicSceneRoot>,other: Ref<::bevy_scene::prelude::DynamicSceneRoot>,) -> bool {
         let output: bool =<::bevy_scene::prelude::DynamicSceneRoot as ::std::cmp::PartialEq::<::bevy_scene::prelude::DynamicSceneRoot>>::eq(&_self,&other,).into();
         output
     }
@@ -67,21 +67,21 @@ impl ::bevy_scene::prelude::SceneRoot {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_scene::prelude::SceneRoot>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_scene::prelude::SceneRoot>,) -> () {
         let output: () =<::bevy_scene::prelude::SceneRoot as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_scene::prelude::SceneRoot>,) -> Val<::bevy_scene::prelude::SceneRoot> {
+    fn clone (_self: Ref<::bevy_scene::prelude::SceneRoot>,) -> Val<::bevy_scene::prelude::SceneRoot> {
         let output: Val<::bevy_scene::prelude::SceneRoot> =<::bevy_scene::prelude::SceneRoot as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_scene::prelude::SceneRoot>,other:Ref<::bevy_scene::prelude::SceneRoot>,) -> bool {
+    fn eq (_self: Ref<::bevy_scene::prelude::SceneRoot>,other: Ref<::bevy_scene::prelude::SceneRoot>,) -> bool {
         let output: bool =<::bevy_scene::prelude::SceneRoot as ::std::cmp::PartialEq::<::bevy_scene::prelude::SceneRoot>>::eq(&_self,&other,).into();
         output
     }
@@ -98,21 +98,21 @@ impl ::bevy_scene::SceneInstanceReady {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_scene::SceneInstanceReady>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_scene::SceneInstanceReady>,) -> () {
         let output: () =<::bevy_scene::SceneInstanceReady as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_scene::SceneInstanceReady>,) -> Val<::bevy_scene::SceneInstanceReady> {
+    fn clone (_self: Ref<::bevy_scene::SceneInstanceReady>,) -> Val<::bevy_scene::SceneInstanceReady> {
         let output: Val<::bevy_scene::SceneInstanceReady> =<::bevy_scene::SceneInstanceReady as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_scene::SceneInstanceReady>,other:Ref<::bevy_scene::SceneInstanceReady>,) -> bool {
+    fn eq (_self: Ref<::bevy_scene::SceneInstanceReady>,other: Ref<::bevy_scene::SceneInstanceReady>,) -> bool {
         let output: bool =<::bevy_scene::SceneInstanceReady as ::std::cmp::PartialEq::<::bevy_scene::SceneInstanceReady>>::eq(&_self,&other,).into();
         output
     }
@@ -129,21 +129,21 @@ impl ::bevy_scene::InstanceId {
 
 
     
-    fn assert_receiver_is_total_eq (_self:Ref<::bevy_scene::InstanceId>,) -> () {
+    fn assert_receiver_is_total_eq (_self: Ref<::bevy_scene::InstanceId>,) -> () {
         let output: () =<::bevy_scene::InstanceId as ::std::cmp::Eq>::assert_receiver_is_total_eq(&_self,).into();
         output
     }
 
 
     
-    fn clone (_self:Ref<::bevy_scene::InstanceId>,) -> Val<::bevy_scene::InstanceId> {
+    fn clone (_self: Ref<::bevy_scene::InstanceId>,) -> Val<::bevy_scene::InstanceId> {
         let output: Val<::bevy_scene::InstanceId> =<::bevy_scene::InstanceId as ::std::clone::Clone>::clone(&_self,).into();
         output
     }
 
 
     
-    fn eq (_self:Ref<::bevy_scene::InstanceId>,other:Ref<::bevy_scene::InstanceId>,) -> bool {
+    fn eq (_self: Ref<::bevy_scene::InstanceId>,other: Ref<::bevy_scene::InstanceId>,) -> bool {
         let output: bool =<::bevy_scene::InstanceId as ::std::cmp::PartialEq::<::bevy_scene::InstanceId>>::eq(&_self,&other,).into();
         output
     }
