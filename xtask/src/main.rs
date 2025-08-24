@@ -57,7 +57,6 @@ enum Feature {
     BevySpriteBindings,
     BevyTextBindings,
     BevyWindowBindings,
-    BevyWinitBindings,
 
     // Lua
     Lua51,
@@ -150,8 +149,7 @@ impl IntoFeatureGroup for Feature {
             | Feature::BevySceneBindings
             | Feature::BevySpriteBindings
             | Feature::BevyTextBindings
-            | Feature::BevyWindowBindings
-            | Feature::BevyWinitBindings => FeatureGroup::BMSFeatureNotInPowerset,
+            | Feature::BevyWindowBindings => FeatureGroup::BMSFeatureNotInPowerset,
             Feature::CoreFunctions | Feature::ProfileWithTracy => FeatureGroup::BMSFeature, // don't use wildcard here, we want to be explicit
         }
     }
