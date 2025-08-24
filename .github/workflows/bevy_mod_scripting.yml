@@ -132,6 +132,7 @@ jobs:
           echo "Clippy version: $(cargo clippy --version)"
           echo "Active toolchain: $(rustup show active-toolchain)"
         continue-on-error: true
+
       - name: Rust Cache
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') }}
         uses: Swatinem/rust-cache@v2.7.7
