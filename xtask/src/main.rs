@@ -40,6 +40,24 @@ enum Feature {
     BevyReflectBindings,
     BevyTimeBindings,
     BevyTransformBindings,
+    BevyColorBindings,
+    BevyCorePipelineBindings,
+    BevyA11yBindings,
+    BevyAnimationBindings,
+    BevyAssetBindings,
+    BevyGizmosBindings,
+    BevyGltfBindings,
+    BevyImageBindings,
+    BevyInputFocusBindings,
+    BevyMeshBindings,
+    BevyPbrBindings,
+    BevyPickingBindings,
+    BevyRenderBindings,
+    BevySceneBindings,
+    BevySpriteBindings,
+    BevyTextBindings,
+    BevyWindowBindings,
+    BevyWinitBindings,
 
     // Lua
     Lua51,
@@ -115,7 +133,25 @@ impl IntoFeatureGroup for Feature {
             | Feature::BevyMathBindings
             | Feature::BevyReflectBindings
             | Feature::BevyTimeBindings
-            | Feature::BevyTransformBindings => FeatureGroup::BMSFeatureNotInPowerset,
+            | Feature::BevyTransformBindings
+            | Feature::BevyColorBindings
+            | Feature::BevyCorePipelineBindings
+            | Feature::BevyA11yBindings
+            | Feature::BevyAnimationBindings
+            | Feature::BevyAssetBindings
+            | Feature::BevyGizmosBindings
+            | Feature::BevyGltfBindings
+            | Feature::BevyImageBindings
+            | Feature::BevyInputFocusBindings
+            | Feature::BevyMeshBindings
+            | Feature::BevyPbrBindings
+            | Feature::BevyPickingBindings
+            | Feature::BevyRenderBindings
+            | Feature::BevySceneBindings
+            | Feature::BevySpriteBindings
+            | Feature::BevyTextBindings
+            | Feature::BevyWindowBindings
+            | Feature::BevyWinitBindings => FeatureGroup::BMSFeatureNotInPowerset,
             Feature::CoreFunctions | Feature::ProfileWithTracy => FeatureGroup::BMSFeature, // don't use wildcard here, we want to be explicit
         }
     }
@@ -137,6 +173,8 @@ impl Default for Features {
             Feature::BevyReflectBindings,
             Feature::BevyTimeBindings,
             Feature::BevyTransformBindings,
+            Feature::BevyColorBindings,
+            Feature::BevyCorePipelineBindings,
         ])
     }
 }
@@ -169,10 +207,20 @@ impl Features {
             .map(|f| format!("-{f}"))
             .collect::<Vec<_>>();
 
+        let excluded_non_powerset_features = self
+            .0
+            .iter()
+            .filter(|f| matches!(f.to_feature_group(), FeatureGroup::BMSFeatureNotInPowerset))
+            .map(|f| f.to_string())
+            .collect::<Vec<_>>();
+
         let mut features = self
             .0
             .into_iter()
-            .filter(|f| !default_features.contains(f))
+            .filter(|f| {
+                !default_features.contains(f)
+                    && !excluded_non_powerset_features.contains(&f.to_string())
+            })
             .map(|f| f.to_string())
             .collect::<Vec<_>>();
 
@@ -180,6 +228,10 @@ impl Features {
         excluded_default_features
             .into_iter()
             .chain(features)
+            .chain(std::iter::once(format!(
+                "+{} bindings",
+                excluded_non_powerset_features.len()
+            )))
             .collect::<Vec<_>>()
             .join(",")
     }
