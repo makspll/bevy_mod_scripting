@@ -186,3 +186,18 @@ jobs:
             PRNUMBER=$(cat pr_number.txt)
             gh pr merge $PRNUMBER --squash
           fi
+
+  rollup-check:
+    name: Required Checks Successful
+    needs: [check]
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    steps:
+      - name: Check if all jobs succeeded
+        run: |
+          if [[ "${{ needs.check.result }}" != "success" ]]; then
+            echo "One or more checks failed. See detailed job results above."
+            exit 1
+          else
+            echo "All checks passed successfully!"
+          fi
