@@ -9,12 +9,7 @@ use bevy_mod_scripting_core::{
     }
 };
 use bevy_ecs::{prelude::*};
+use bevy_app::{App, Plugin};
 
 
 use bevy_mod_scripting_derive::script_bindings;
-
-{% if args.self_is_bms_lua %}
-use crate::*;
-{% else %}
-use bevy_mod_scripting_lua::*;
-{% endif %}

@@ -1,0 +1,41 @@
+[package]
+name = "{{ crate_name }}_bms_bindings"
+version = "{{ crate_version }}"
+edition = "2024"
+authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
+license = "MIT OR Apache-2.0"
+description = "Automatically generated bindings for {{ crate_name }} crate"
+repository = "https://github.com/makspll/bevy_mod_scripting"
+homepage = "https://github.com/makspll/bevy_mod_scripting"
+keywords = ["bevy", "gamedev", "scripting", "rhai"]
+categories = ["game-development"]
+readme = "readme.md"
+
+
+[dependencies]
+{% if include_bevy_ecs_dep -%}
+bevy_ecs = { workspace = true, features = ["std", "bevy_reflect"] }
+{%- endif %}
+{% if include_bevy_app_dep -%}
+bevy_app = { workspace = true, features = ["std"] }
+{%- endif %}
+bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_derive = { workspace = true }
+{{ crate_name }} = { version = "{{ generated_from_version }}", features = [
+{%- for feature in features -%}
+"{{ feature }}"{%- if not loop.last -%}, {% endif -%}
+{%- endfor -%}
+]
+{%- if enable_default_feature -%}, default-features = true {%- else -%}, default-features = false {%- endif -%}
+}
+
+{% for dep_name, dep in dependencies %}
+{{ dep_name }} = { version = "{{ dep.version }}", features = [
+{%- for feature in dep.features -%}
+"{{ feature }}"{%- if not loop.last -%}, {% endif -%}
+{%- endfor -%}
+]
+{%- if dep.enable_default_feature -%}, default-features = true {%- else -%}, default-features = false {%- endif -%}
+}
+{% endfor %}
+

@@ -26,6 +26,7 @@ jobs:
     - name: Generate Bindings
       run: |
         cargo xtask codegen
+        cargo fmt
     - name: Check for changes and create diff
       id: check_changes
       run: |

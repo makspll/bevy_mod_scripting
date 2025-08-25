@@ -1,0 +1,61 @@
+[package]
+name = "bevy_core_pipeline_bms_bindings"
+version = "0.15.1"
+edition = "2024"
+authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
+license = "MIT OR Apache-2.0"
+description = "Automatically generated bindings for bevy_core_pipeline crate"
+repository = "https://github.com/makspll/bevy_mod_scripting"
+homepage = "https://github.com/makspll/bevy_mod_scripting"
+keywords = ["bevy", "gamedev", "scripting", "rhai"]
+categories = ["game-development"]
+readme = "readme.md"
+
+
+[dependencies]
+
+
+bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_derive = { workspace = true }
+bevy_core_pipeline = { version = "0.16.1", features = ["smaa_luts", "tonemapping_luts", "webgl"], default-features = true}
+
+
+bevy_app = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_asset = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_color = { version = "^0.16.2", features = [], default-features = true}
+
+bevy_derive = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_diagnostic = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_ecs = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_image = { version = "^0.16.1", features = ["ktx2", "zstd", "ktx2", "zstd"], default-features = false}
+
+bevy_math = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_reflect = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_render = { version = "^0.16.1", features = ["ktx2", "ktx2"], default-features = false}
+
+bevy_transform = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_utils = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_window = { version = "^0.16.1", features = [], default-features = true}
+
+bitflags = { version = "^2.3", features = [], default-features = true}
+
+bytemuck = { version = "^1", features = [], default-features = true}
+
+nonmax = { version = "^0.5", features = [], default-features = true}
+
+radsort = { version = "^0.1", features = [], default-features = true}
+
+serde = { version = "^1", features = [], default-features = true}
+
+smallvec = { version = "^1", features = [], default-features = true}
+
+

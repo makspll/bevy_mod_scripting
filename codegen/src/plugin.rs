@@ -31,26 +31,6 @@ impl crate::driver::RustcPlugin for BevyAnalyzer {
     }
 
     fn run(self, compiler_args: Vec<String>, plugin_args: Self::Args) {
-        log::set_max_level(plugin_args.verbose.get_log_level().to_level_filter());
-
-        if let Some(includes) = WorkspaceMeta::from_env().include_crates {
-            let crate_name = compiler_args
-                .iter()
-                .zip(compiler_args.iter().skip(1))
-                .find_map(|(f, v)| if f == "--crate-name" { Some(v) } else { None })
-                .unwrap();
-
-            if !includes.contains(crate_name) {
-                log::info!(
-                    "Not running plugin on: '{crate_name}', due to feature combination, still compiling."
-                );
-
-                struct DefaultCallbacks;
-                impl rustc_driver::Callbacks for DefaultCallbacks {}
-                rustc_driver_impl::run_compiler(&compiler_args, &mut DefaultCallbacks);
-                return;
-            }
-        }
         let mut callbacks = BevyAnalyzerCallbacks::new(plugin_args);
 
         rustc_driver_impl::run_compiler(&compiler_args, &mut callbacks);

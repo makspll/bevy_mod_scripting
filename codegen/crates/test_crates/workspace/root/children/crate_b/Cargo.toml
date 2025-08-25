@@ -1,0 +1,14 @@
+[package]
+name = "crate_b"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+default = ["crate_b_default"]
+crate_b_default = []
+
+[lib]
+path = "../lib.rs"
+
+[dependencies]
+once_cell = "1.17"

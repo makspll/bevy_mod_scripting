@@ -38,18 +38,50 @@ use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
 
 #[allow(unused_variables, reason = "feature flags")]
 pub fn register_bevy_bindings(app: &mut App) {
+    #[cfg(feature = "bevy_a11y")]
+    app.add_plugins(bevy_a11y_bms_bindings::BevyA11YScriptingPlugin);
+    #[cfg(feature = "bevy_animation")]
+    app.add_plugins(bevy_animation_bms_bindings::BevyAnimationScriptingPlugin);
+    #[cfg(feature = "bevy_asset")]
+    app.add_plugins(bevy_asset_bms_bindings::BevyAssetScriptingPlugin);
+    #[cfg(feature = "bevy_color")]
+    app.add_plugins(bevy_color_bms_bindings::BevyColorScriptingPlugin);
+    #[cfg(feature = "bevy_core_pipeline")]
+    app.add_plugins(bevy_core_pipeline_bms_bindings::BevyCorePipelineScriptingPlugin);
     #[cfg(feature = "bevy_ecs")]
-    app.add_plugins(crate::bevy_bindings::bevy_ecs::BevyEcsScriptingPlugin);
+    app.add_plugins(bevy_ecs_bms_bindings::BevyEcsScriptingPlugin);
+    #[cfg(feature = "bevy_gizmos")]
+    app.add_plugins(bevy_gizmos_bms_bindings::BevyGizmosScriptingPlugin);
+    #[cfg(feature = "bevy_gltf")]
+    app.add_plugins(bevy_gltf_bms_bindings::BevyGltfScriptingPlugin);
+    #[cfg(feature = "bevy_image")]
+    app.add_plugins(bevy_image_bms_bindings::BevyImageScriptingPlugin);
     #[cfg(feature = "bevy_input")]
-    app.add_plugins(crate::bevy_bindings::bevy_input::BevyInputScriptingPlugin);
+    app.add_plugins(bevy_input_bms_bindings::BevyInputScriptingPlugin);
+    #[cfg(feature = "bevy_input_focus")]
+    app.add_plugins(bevy_input_focus_bms_bindings::BevyInputFocusScriptingPlugin);
     #[cfg(feature = "bevy_math")]
-    app.add_plugins(crate::bevy_bindings::bevy_math::BevyMathScriptingPlugin);
+    app.add_plugins(bevy_math_bms_bindings::BevyMathScriptingPlugin);
+    #[cfg(feature = "bevy_mesh")]
+    app.add_plugins(bevy_mesh_bms_bindings::BevyMeshScriptingPlugin);
+    #[cfg(feature = "bevy_pbr")]
+    app.add_plugins(bevy_pbr_bms_bindings::BevyPbrScriptingPlugin);
+    #[cfg(feature = "bevy_picking")]
+    app.add_plugins(bevy_picking_bms_bindings::BevyPickingScriptingPlugin);
     #[cfg(feature = "bevy_reflect")]
-    app.add_plugins(crate::bevy_bindings::bevy_reflect::BevyReflectScriptingPlugin);
+    app.add_plugins(bevy_reflect_bms_bindings::BevyReflectScriptingPlugin);
+    #[cfg(feature = "bevy_render")]
+    app.add_plugins(bevy_render_bms_bindings::BevyRenderScriptingPlugin);
+    #[cfg(feature = "bevy_scene")]
+    app.add_plugins(bevy_scene_bms_bindings::BevySceneScriptingPlugin);
+    #[cfg(feature = "bevy_sprite")]
+    app.add_plugins(bevy_sprite_bms_bindings::BevySpriteScriptingPlugin);
+    #[cfg(feature = "bevy_text")]
+    app.add_plugins(bevy_text_bms_bindings::BevyTextScriptingPlugin);
     #[cfg(feature = "bevy_time")]
-    app.add_plugins(crate::bevy_bindings::bevy_time::BevyTimeScriptingPlugin);
+    app.add_plugins(bevy_time_bms_bindings::BevyTimeScriptingPlugin);
     #[cfg(feature = "bevy_transform")]
-    app.add_plugins(crate::bevy_bindings::bevy_transform::BevyTransformScriptingPlugin);
+    app.add_plugins(bevy_transform_bms_bindings::BevyTransformScriptingPlugin);
 }
 
 #[script_bindings(

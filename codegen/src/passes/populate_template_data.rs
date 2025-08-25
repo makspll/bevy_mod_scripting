@@ -1,4 +1,4 @@
-use std::{borrow::Cow, convert::identity};
+use std::{borrow::Cow, convert::identity, panic};
 
 use log::{trace, warn};
 use rustc_hir::def_id::{DefId, LOCAL_CRATE};
@@ -230,7 +230,6 @@ fn ty_to_string<'tcx>(ctxt: &BevyCtxt<'tcx>, ty: Ty<'tcx>, proxy_types: bool) ->
 /// TODO: this doesn't explicitly print out associated types, because I don't think it's necessary yet and annoying to do (idk how to do it)
 fn trait_ref_to_string<'tcx>(ctxt: &BevyCtxt<'tcx>, trait_ref: TraitRef<'tcx>) -> String {
     let generics_def = ctxt.tcx.generics_of(trait_ref.def_id);
-
     let generic_args = trait_ref
         .args
         .iter()
@@ -340,7 +339,12 @@ impl<'a> TyPrinter<'a> {
         let did = ty.did();
         let import_path = (self.path_finder)(did);
         self.buffer.push_str(&import_path);
-        self.print_args(args);
+        // filter out std::alloc::Global, as these are unstable to directly reference
+        // idk how to do this more generally
+        self.print_args(args.filter(|a| {
+            a.as_type()
+                .is_none_or(|t| t.to_string() != "std::alloc::Global")
+        }));
     }
 
     fn print_ty(&mut self, ty: Ty<'_>) {
@@ -426,6 +430,9 @@ impl<'a> TyPrinter<'a> {
     /// But only for ADT's, other types are printed as normal
     fn print_proxied_ty(&mut self, ty: Ty<'_>, proxy_type: ProxyType) {
         match ty.kind() {
+            TyKind::Ref(_, ty, _) => {
+                panic!("Nested references should not be proxied, got: `{ty}`");
+            }
             TyKind::Adt(adt_ty, args) => {
                 if (self.is_proxied_check)(ty) {
                     self.print_literal_surround_content(

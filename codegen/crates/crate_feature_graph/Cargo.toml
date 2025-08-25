@@ -1,0 +1,35 @@
+[package]
+name = "crate_feature_graph"
+version = "0.1.0"
+edition = "2024"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+include = ["src/**", "bin/**", "Cargo.toml", "README.md", "example.png"]
+description = "A tool to visualize the flow of features throughout your crate graph."
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "crate_feature_graph"
+path = "bin/main.rs"
+
+[features]
+dot_parser = ["petgraph/dot_parser"]
+serde = ["dep:serde", "dep:serde_json"]
+
+[dependencies]
+petgraph = { workspace = true }
+cargo_metadata = { workspace = true }
+itertools = { workspace = true }
+log = { workspace = true }
+clap = { workspace = true, features = ["derive"] }
+serde = { workspace = true, features = ["derive"], optional = true }
+serde_json = { workspace = true, optional = true }
+pretty_env_logger = { workspace = true }
+indexmap = { workspace = true, features = ["serde"] }
+
+[dev-dependencies]
+petgraph = { workspace = true, features = ["dot_parser"] }
+pretty_assertions = { workspace = true }
+env_logger = { workspace = true }

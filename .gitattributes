@@ -1,2 +1,2 @@
-crates/bevy_mod_scripting_functions/src/bevy_bindings/*.rs linguist-generated
-crates/bevy_mod_scripting_functions/src/bevy_gindings/*.rs -diff -merge
+crates/bindings/**/* linguist-generated
+crates/bindings/**/* -diff -merge

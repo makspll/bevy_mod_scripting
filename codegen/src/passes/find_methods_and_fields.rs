@@ -394,7 +394,16 @@ fn type_is_supported_as_proxy_arg<'tcx>(
     ty: Ty,
 ) -> bool {
     log::trace!("Checking type is supported as proxy arg: '{ty}'");
-    type_is_adt_and_reflectable(tcx, reflect_types, meta_loader, ty.peel_refs())
+
+    // nested references are not allowed for now
+    type_is_adt_and_reflectable(tcx, reflect_types, meta_loader, peel_refs_up_to_once(ty))
+}
+
+fn peel_refs_up_to_once(ty: Ty) -> Ty {
+    if let TyKind::Ref(_, inner, _) = ty.kind() {
+        return *inner;
+    }
+    ty
 }
 
 /// Returns true if this type can be used in return position by checking if it's a top level proxy arg without references
@@ -416,6 +425,7 @@ fn type_is_adt_and_reflectable<'tcx>(
     ty: Ty,
 ) -> bool {
     ty.ty_adt_def().is_some_and(|adt_def| {
+
         let did = adt_def.did();
 
         // even though our meta might already be written at this point, we use this as a quick out

@@ -46,14 +46,7 @@ By default all of the useful features are enabled, but you may disable them if y
 | Feature | Description |
 | ---- | ---- | 
 | core_functions | If enabled, will enable all core functions, i.e. bevy integrations which let you interact with Bevy via reflection |
-| bevy_core_bindings | Enables bindings for the `bevy_core` module |
-| bevy_ecs_bindings | Enables bindings for the `bevy_ecs` module |
-| bevy_hierarchy_bindings | Enables bindings for the `bevy_hierarchy` module |
-| bevy_input_bindings | Enables bindings for the `bevy_input` module |
-| bevy_math_bindings | Enables bindings for the `bevy_math` module |
-| bevy_reflect_bindings | Enables bindings for the `bevy_reflect` module |
-| bevy_time_bindings | Enables bindings for the `bevy_time` module |
-| bevy_transform_bindings | Enables bindings for the `bevy_transform` module |
+| bevy_<bevy_crate>_bindings | enables bindings for the specified bevy crate, e.g. `bevy_ecs`, `bevy_transform`, `bevy_pbr` etc. for a full list of available modules check out [The Cargo manifest](https://github.com/makspll/bevy_mod_scripting/blob/432b91b1022a133b34d1b4a7eb382268f34b76ea/crates/bevy_mod_scripting_functions/Cargo.toml#L14) | 
 | mlua_async | Enables `mlua/async`|
 | mlua_serialize | Enables `mlua/serialize` |
 | mlua_macros | Enables `mlua/macros` |
