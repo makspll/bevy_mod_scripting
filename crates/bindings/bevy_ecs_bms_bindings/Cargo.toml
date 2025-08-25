@@ -9,7 +9,7 @@ repository = "https://github.com/makspll/bevy_mod_scripting"
 homepage = "https://github.com/makspll/bevy_mod_scripting"
 keywords = ["bevy", "gamedev", "scripting", "rhai"]
 categories = ["game-development"]
-readme = "readme.md"
+readme = "README.md"
 
 
 [dependencies]
@@ -17,41 +17,67 @@ readme = "readme.md"
 bevy_app = { workspace = true, features = ["std"] }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_ecs = { version = "0.16.1", features = ["std", "async_executor", "multi_threaded", "bevy_reflect", "backtrace", "serialize"], default-features = true}
+bevy_ecs = { version = "0.16.1", features = [
+    "std",
+    "async_executor",
+    "multi_threaded",
+    "bevy_reflect",
+    "backtrace",
+    "serialize",
+], default-features = true }
 
 
-arrayvec = { version = "^0.7.4", features = ["std"], default-features = false}
+arrayvec = { version = "^0.7.4", features = ["std"], default-features = false }
 
-bevy_ecs_macros = { version = "^0.16.1", features = [], default-features = true}
+bevy_ecs_macros = { version = "^0.16.1", features = [
+], default-features = true }
 
-bevy_platform = { version = "^0.16.1", features = ["std", "serialize"], default-features = false}
+bevy_platform = { version = "^0.16.1", features = [
+    "std",
+    "serialize",
+], default-features = false }
 
-bevy_ptr = { version = "^0.16.1", features = [], default-features = true}
+bevy_ptr = { version = "^0.16.1", features = [], default-features = true }
 
-bevy_reflect = { version = "^0.16.1", features = ["std"], default-features = false}
+bevy_reflect = { version = "^0.16.1", features = [
+    "std",
+], default-features = false }
 
-bevy_tasks = { version = "^0.16.1", features = ["std", "async_executor", "multi_threaded"], default-features = false}
+bevy_tasks = { version = "^0.16.1", features = [
+    "std",
+    "async_executor",
+    "multi_threaded",
+], default-features = false }
 
-bevy_utils = { version = "^0.16.1", features = ["std", "serde"], default-features = false}
+bevy_utils = { version = "^0.16.1", features = [
+    "std",
+    "serde",
+], default-features = false }
 
-bitflags = { version = "^2.3", features = ["std"], default-features = false}
+bitflags = { version = "^2.3", features = ["std"], default-features = false }
 
-bumpalo = { version = "^3", features = [], default-features = true}
+bumpalo = { version = "^3", features = [], default-features = true }
 
-concurrent-queue = { version = "^2.5.0", features = ["std", "std"], default-features = false}
+concurrent-queue = { version = "^2.5.0", features = [
+    "std",
+    "std",
+], default-features = false }
 
-disqualified = { version = "^1.0", features = ["alloc"], default-features = false}
+disqualified = { version = "^1.0", features = [
+    "alloc",
+], default-features = false }
 
-fixedbitset = { version = "^0.5", features = ["std"], default-features = false}
+fixedbitset = { version = "^0.5", features = ["std"], default-features = false }
 
-indexmap = { version = "^2.5.0", features = ["std", "serde"], default-features = false}
+indexmap = { version = "^2.5.0", features = [
+    "std",
+    "serde",
+], default-features = false }
 
-log = { version = "^0.4", features = ["std"], default-features = false}
+log = { version = "^0.4", features = ["std"], default-features = false }
 
-nonmax = { version = "^0.5", features = ["std"], default-features = false}
+nonmax = { version = "^0.5", features = ["std"], default-features = false }
 
-serde = { version = "^1", features = ["std"], default-features = false}
+serde = { version = "^1", features = ["std"], default-features = false }
 
-smallvec = { version = "^1", features = [], default-features = true}
-
-
+smallvec = { version = "^1", features = [], default-features = true }
