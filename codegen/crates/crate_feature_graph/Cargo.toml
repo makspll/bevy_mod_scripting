@@ -5,6 +5,7 @@ edition = "2024"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
 include = ["src/**", "bin/**", "Cargo.toml", "README.md", "example.png"]
+description = "A tool to visualize the flow of features throughout your crate graph."
 
 [lib]
 path = "src/lib.rs"
