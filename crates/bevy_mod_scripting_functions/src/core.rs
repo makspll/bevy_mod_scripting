@@ -39,7 +39,7 @@ use reflection_extensions::{PartialReflectExt, TypeIdExtensions};
 #[allow(unused_variables, reason = "feature flags")]
 pub fn register_bevy_bindings(app: &mut App) {
     #[cfg(feature = "bevy_a11y")]
-    app.add_plugins(bevy_a11y_bms_bindings::BevyA11yScriptingPlugin);
+    app.add_plugins(bevy_a11y_bms_bindings::BevyA11YScriptingPlugin);
     #[cfg(feature = "bevy_animation")]
     app.add_plugins(bevy_animation_bms_bindings::BevyAnimationScriptingPlugin);
     #[cfg(feature = "bevy_asset")]
