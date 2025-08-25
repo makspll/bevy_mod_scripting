@@ -1,15 +1,5 @@
 [package]
-name = "bevy_gltf_bms_bindings"
-version = "0.15.1"
-edition = "2024"
-authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
-license = "MIT OR Apache-2.0"
-description = "Automatically generated bindings for bevy_gltf crate"
-repository = "https://github.com/makspll/bevy_mod_scripting"
-homepage = "https://github.com/makspll/bevy_mod_scripting"
-keywords = ["bevy", "gamedev", "scripting", "rhai"]
-categories = ["game-development"]
-readme = "readme.md"
+readme = "README.md""
 
 
 [dependencies]
@@ -67,3 +57,13 @@ serde_json = { version = "^1.0.140", features = [], default-features = true}
 smallvec = { version = "^1.11", features = [], default-features = true}
 
 
+name = "bevy_gltf_bms_bindings"
+version = "0.15.1"
+edition = "2024"
+authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
+license = "MIT OR Apache-2.0"
+description = "Automatically generated bindings for bevy_gltf crate"
+repository = "https://github.com/makspll/bevy_mod_scripting"
+homepage = "https://github.com/makspll/bevy_mod_scripting"
+keywords = ["bevy", "gamedev", "scripting", "rhai"]
+categories = ["game-development"]
