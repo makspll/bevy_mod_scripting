@@ -1,6 +1,5 @@
-use std::collections::HashMap;
-
 use anyhow::Context;
+use indexmap::IndexMap;
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
@@ -10,7 +9,7 @@ pub struct BindingCrate {
     pub features: Vec<String>,
     pub generated_from_version: String,
     pub enable_default_feature: bool,
-    pub dependencies: HashMap<String, crate::Dependency>,
+    pub dependencies: IndexMap<String, crate::Dependency>,
     pub include_bevy_ecs_dep: bool,
     pub include_bevy_app_dep: bool,
 }
@@ -24,7 +23,7 @@ impl BindingCrate {
         crate_version: &str,
         mut features: Vec<String>,
         generated_from_version: String,
-        mut dependencies: HashMap<String, crate::Dependency>,
+        mut dependencies: IndexMap<String, crate::Dependency>,
     ) -> Self {
         let enable_default_feature = features.contains(&"default".to_string());
         features.retain(|f| f != "default");

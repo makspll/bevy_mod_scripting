@@ -1,10 +1,10 @@
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
 #[derive(Debug, serde::Deserialize)]
 pub struct Meta {
     pub features: Vec<String>,
     pub version: String,
-    pub dependencies: HashMap<String, Dependency>,
+    pub dependencies: IndexMap<String, Dependency>,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]

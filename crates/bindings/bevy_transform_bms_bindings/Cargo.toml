@@ -17,7 +17,7 @@ readme = "readme.md"
 
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_transform = { version = "0.16.1", features = ["async_executor", "bevy-support", "std", "bevy_log", "bevy_reflect", "alloc"], default-features = true}
+bevy_transform = { version = "0.16.1", features = ["async_executor", "std", "bevy-support", "alloc", "bevy_log", "bevy_reflect"], default-features = true}
 
 
 bevy_app = { version = "^0.16.1", features = ["std", "bevy_reflect"], default-features = false}

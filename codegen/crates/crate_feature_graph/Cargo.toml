@@ -26,6 +26,7 @@ clap = { workspace = true, features = ["derive"] }
 serde = { workspace = true, features = ["derive"], optional = true }
 serde_json = { workspace = true, optional = true }
 pretty_env_logger = { workspace = true }
+indexmap = { workspace = true, features = ["serde"] }
 
 [dev-dependencies]
 petgraph = { workspace = true, features = ["dot_parser"] }

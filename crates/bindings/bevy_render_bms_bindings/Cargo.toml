@@ -17,7 +17,7 @@ readme = "readme.md"
 
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_render = { version = "0.16.1", features = ["multi_threaded"], default-features = true}
+bevy_render = { version = "0.16.1", features = ["ktx2", "multi_threaded", "webgl", "hdr"], default-features = true}
 
 
 async-channel = { version = "^2.3.0", features = [], default-features = true}
@@ -36,7 +36,7 @@ bevy_ecs = { version = "^0.16.1", features = [], default-features = true}
 
 bevy_encase_derive = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_image = { version = "^0.16.1", features = [], default-features = true}
+bevy_image = { version = "^0.16.1", features = ["ktx2", "hdr"], default-features = false}
 
 bevy_math = { version = "^0.16.1", features = [], default-features = true}
 
@@ -72,6 +72,8 @@ indexmap = { version = "^2", features = [], default-features = true}
 
 js-sys = { version = "^0.3", features = [], default-features = true}
 
+ktx2 = { version = "^0.3.0", features = [], default-features = true}
+
 naga = { version = "^24", features = [], default-features = true}
 
 naga_oil = { version = "^0.17", features = [], default-features = true}
@@ -91,5 +93,7 @@ variadics_please = { version = "^1.1", features = [], default-features = true}
 wasm-bindgen = { version = "^0.2", features = [], default-features = true}
 
 web-sys = { version = "^0.3.67", features = [], default-features = true}
+
+wgpu = { version = "^24", features = ["webgl"], default-features = false}
 
 

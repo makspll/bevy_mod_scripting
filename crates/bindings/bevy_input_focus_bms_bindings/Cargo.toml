@@ -22,7 +22,7 @@ bevy_input_focus = { version = "0.16.1", features = ["bevy_reflect", "std"], def
 
 bevy_app = { version = "^0.16.1", features = ["bevy_reflect", "std"], default-features = false}
 
-bevy_ecs = { version = "^0.16.1", features = ["bevy_reflect", "async_executor", "std"], default-features = false}
+bevy_ecs = { version = "^0.16.1", features = ["async_executor", "bevy_reflect", "std"], default-features = false}
 
 bevy_input = { version = "^0.16.1", features = ["bevy_reflect", "std"], default-features = false}
 

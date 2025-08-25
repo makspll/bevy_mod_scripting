@@ -46,6 +46,8 @@ bevy_utils = { version = "^0.16.1", features = [], default-features = true}
 
 bevy_window = { version = "^0.16.1", features = [], default-features = true}
 
+crossbeam-channel = { version = "^0.5", features = [], default-features = true}
+
 uuid = { version = "^1.13.1", features = [], default-features = true}
 
 

@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet, VecDeque};
 
+use indexmap::{IndexMap, IndexSet};
 use log::error;
 use petgraph::Directed;
 
@@ -405,6 +406,27 @@ impl WorkspaceGraph {
         self.calculate_enabled_features_and_dependencies(features_map, false);
     }
 
+    pub fn stable_sort(&mut self) {
+        // sort everything
+        self.workspace.other_crates.sort();
+        self.workspace.workspace_crates.sort();
+        for krate in self.workspace.all_crates_mut() {
+            krate.features.sort();
+            krate.dependencies.sort_by(|a, b| a.name.cmp(&b.name));
+            krate
+                .optional_dependencies
+                .sort_by(|a, b| a.name.cmp(&b.name));
+            if let Some(f) = krate.active_features.as_mut() {
+                f.sort()
+            }
+            if let Some(m) = krate.active_dependency_features.as_mut() {
+                for v in m.values_mut() {
+                    v.sort();
+                }
+            }
+        }
+    }
+
     /// Calculate the enabled features and dependencies for the workspace
     /// The set of enabled feature/crate pairs is treated as the set of explicitly enabled crates
     /// For a workspace this should be the workspace root with the desired features enabled..
@@ -434,7 +456,7 @@ impl WorkspaceGraph {
             match enabled_crates.remove(&krate) {
                 Some((features, enable_default)) => {
                     // a top level enabled crate, process only explicitly enabled features, we know nothing else will be there to enable more
-                    let features = HashSet::from_iter(features.iter().cloned());
+                    let features = IndexSet::from_iter(features.iter().cloned());
                     if enable_default
                         && let Some(c) = self.workspace.find_crate_mut(&krate, || format!(
                             "package from workspace manifest: `{krate}` was not found in the parsed workspace list. This might lead to missing default features."))
@@ -477,7 +499,7 @@ impl WorkspaceGraph {
                                     .filter_map(|f| f.effects().find_map(|e| e.enables_feature_in_crate(&krate).cloned())))
                             })
                             .flatten()
-                            .collect::<HashSet<_>>();
+                            .collect::<IndexSet<_>>();
 
                     log::trace!(
                         "Crate `{krate}` is being enabled with parent features: {parent_features:?}"
@@ -586,7 +608,7 @@ impl WorkspaceGraph {
                         map.insert(dependency, features);
                     }
                     None => {
-                        let mut map = HashMap::new();
+                        let mut map = IndexMap::new();
                         map.insert(dependency, features);
                         krate.active_dependency_features = Some(map);
                     }
@@ -600,7 +622,7 @@ impl WorkspaceGraph {
     fn process_crate(
         &mut self,
         krate: &CrateName,
-        enable_features: HashSet<FeatureName>,
+        enable_features: IndexSet<FeatureName>,
         trace_features: bool,
     ) {
         // find all conditional features in this crate, only consider the crates in the open set.

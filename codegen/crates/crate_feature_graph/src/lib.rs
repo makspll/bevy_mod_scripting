@@ -6,11 +6,9 @@ pub use graph::*;
 
 #[cfg(test)]
 mod test {
-    use std::{
-        collections::{HashMap, HashSet},
-        path::PathBuf,
-    };
+    use std::{collections::HashMap, hash::RandomState, path::PathBuf};
 
+    use indexmap::IndexSet;
     use petgraph::dot::Dot;
 
     use super::*;
@@ -102,7 +100,7 @@ mod test {
         // assert features
         pretty_assertions::assert_eq!(
             root_crate.active_features.as_ref().unwrap(),
-            &HashSet::from_iter([
+            &IndexSet::<_, RandomState>::from_iter([
                 FeatureName::new("default"),
                 FeatureName::new("enable_crate_a"),
             ])
@@ -111,7 +109,7 @@ mod test {
 
         pretty_assertions::assert_eq!(
             crate_a.active_features.as_ref().unwrap(),
-            &HashSet::from_iter([
+            &IndexSet::<_, RandomState>::from_iter([
                 FeatureName::new("crate_a_default"),
                 FeatureName::new("default"),
             ])

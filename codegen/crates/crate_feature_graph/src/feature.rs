@@ -1,6 +1,6 @@
 use std::{
     borrow::{Borrow, Cow},
-    collections::{HashMap, HashSet, VecDeque},
+    collections::VecDeque,
     fmt::Display,
 };
 
@@ -8,10 +8,11 @@ use cargo_metadata::{
     Metadata, Package,
     semver::{Version, VersionReq},
 };
+use indexmap::{IndexMap, IndexSet};
 use itertools::{Either, Itertools};
 use log::error;
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CrateName(pub(crate) String);
 
@@ -34,7 +35,7 @@ impl Display for CrateName {
 }
 
 /// A feature name
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct FeatureName(Cow<'static, str>);
 
@@ -56,7 +57,7 @@ impl Display for FeatureName {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum FeatureEffect {
     /// I.e. `foo=["feature"]` is represented as `EnableFeature("feature")`
@@ -91,7 +92,7 @@ impl FeatureEffect {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Feature {
     pub name: FeatureName,
@@ -198,14 +199,26 @@ impl DependencyKind {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CrateDependency {
     pub name: CrateName,
     pub version: VersionReq,
 }
 
-#[derive(Clone, Debug)]
+impl PartialOrd for CrateDependency {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for CrateDependency {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.name.cmp(&other.name)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Crate {
     pub name: CrateName,
@@ -214,9 +227,21 @@ pub struct Crate {
     pub optional_dependencies: Vec<CrateDependency>,
     pub version: Version,
     pub in_workspace: Option<bool>,
-    pub active_features: Option<HashSet<FeatureName>>,
-    pub active_dependency_features: Option<HashMap<CrateName, Vec<FeatureName>>>,
+    pub active_features: Option<IndexSet<FeatureName>>,
+    pub active_dependency_features: Option<IndexMap<CrateName, Vec<FeatureName>>>,
     pub is_enabled: Option<bool>,
+}
+
+impl PartialOrd for Crate {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Crate {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.name.cmp(&other.name)
+    }
 }
 
 struct DependencyIter<'a> {
@@ -282,10 +307,10 @@ impl Crate {
     /// if `enable_default` is true, the "default" feature is considered enabled initially if it exists.
     pub fn compute_active_features(
         &mut self,
-        enabled_features: &HashSet<FeatureName>,
+        enabled_features: &IndexSet<FeatureName>,
         keep_trails: bool,
     ) {
-        let mut all_features = HashSet::default();
+        let mut all_features = IndexSet::default();
         let mut to_process = enabled_features
             .clone()
             .into_iter()
@@ -536,7 +561,7 @@ impl From<&Metadata> for Workspace {
             .workspace_packages()
             .iter()
             .map(CrateName::from)
-            .collect::<HashSet<_>>();
+            .collect::<IndexSet<_>>();
 
         let (mut workspace_crates, mut other_crates): (Vec<_>, Vec<_>) = meta
             .packages
@@ -638,7 +663,7 @@ mod tests {
             active_dependency_features: None,
         };
 
-        krate.compute_active_features(&HashSet::from([FeatureName("default".into())]), true);
+        krate.compute_active_features(&IndexSet::from([FeatureName("default".into())]), true);
 
         let active_features = krate.active_features.unwrap();
         assert!(active_features.contains(&FeatureName("default".into())));
