@@ -1,18 +1,15 @@
-
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 
-
-
+use bevy_app::{App, Plugin};
+use bevy_ecs::prelude::*;
 use bevy_mod_scripting_core::bindings::{
     ReflectReference,
     function::{
-        from::{Ref, Mut, Val},
+        from::{Mut, Ref, Val},
         namespace::NamespaceBuilder,
     },
 };
-use bevy_ecs::prelude::*;
-use bevy_app::{App, Plugin};
 use bevy_mod_scripting_derive::script_bindings;
 pub struct BevyEcsScriptingPlugin;
 pub(crate) fn register_entity_functions(world: &mut World) {
@@ -325,40 +322,38 @@ pub(crate) fn register_name_functions(world: &mut World) {
     bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::name::Name,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_ecs::name::Name>| {
-                let output: Val<::bevy_ecs::name::Name> = {
-                    {
-                        let output: Val<::bevy_ecs::name::Name> = <::bevy_ecs::name::Name as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        )
-        .register_documented(
-            "eq",
-            |_self: Ref<::bevy_ecs::name::Name>, other: Ref<::bevy_ecs::name::Name>| {
-                let output: bool = {
-                    {
-                        let output: bool = <::bevy_ecs::name::Name as ::core::cmp::PartialEq<
-                            ::bevy_ecs::name::Name,
-                        >>::eq(&_self, &other)
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self", "other"],
-        );
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_ecs::name::Name>| {
+            let output: Val<::bevy_ecs::name::Name> = {
+                {
+                    let output: Val<::bevy_ecs::name::Name> =
+                        <::bevy_ecs::name::Name as ::core::clone::Clone>::clone(&_self).into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    )
+    .register_documented(
+        "eq",
+        |_self: Ref<::bevy_ecs::name::Name>, other: Ref<::bevy_ecs::name::Name>| {
+            let output: bool = {
+                {
+                    let output: bool = <::bevy_ecs::name::Name as ::core::cmp::PartialEq<
+                        ::bevy_ecs::name::Name,
+                    >>::eq(&_self, &other)
+                    .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self", "other"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1072,23 +1067,22 @@ pub(crate) fn register_entity_hash_functions(world: &mut World) {
     bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::entity::EntityHash,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_ecs::entity::EntityHash>| {
-                let output: Val<::bevy_ecs::entity::EntityHash> = {
-                    {
-                        let output: Val<::bevy_ecs::entity::EntityHash> = <::bevy_ecs::entity::EntityHash as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_ecs::entity::EntityHash>| {
+            let output: Val<::bevy_ecs::entity::EntityHash> = {
+                {
+                    let output: Val<::bevy_ecs::entity::EntityHash> =
+                        <::bevy_ecs::entity::EntityHash as ::core::clone::Clone>::clone(&_self)
                             .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
@@ -1101,23 +1095,24 @@ pub(crate) fn register_disabled_functions(world: &mut World) {
     bevy_mod_scripting_core::bindings::function::namespace::NamespaceBuilder::<
         ::bevy_ecs::entity_disabling::Disabled,
     >::new(world)
-        .register_documented(
-            "clone",
-            |_self: Ref<::bevy_ecs::entity_disabling::Disabled>| {
-                let output: Val<::bevy_ecs::entity_disabling::Disabled> = {
-                    {
-                        let output: Val<::bevy_ecs::entity_disabling::Disabled> = <::bevy_ecs::entity_disabling::Disabled as ::core::clone::Clone>::clone(
-                                &_self,
-                            )
-                            .into();
-                        output
-                    }
-                };
-                output
-            },
-            "",
-            &["_self"],
-        );
+    .register_documented(
+        "clone",
+        |_self: Ref<::bevy_ecs::entity_disabling::Disabled>| {
+            let output: Val<::bevy_ecs::entity_disabling::Disabled> = {
+                {
+                    let output: Val<::bevy_ecs::entity_disabling::Disabled> =
+                        <::bevy_ecs::entity_disabling::Disabled as ::core::clone::Clone>::clone(
+                            &_self,
+                        )
+                        .into();
+                    output
+                }
+            };
+            output
+        },
+        "",
+        &["_self"],
+    );
     let registry = world.get_resource_or_init::<AppTypeRegistry>();
     let mut registry = registry.write();
     registry
