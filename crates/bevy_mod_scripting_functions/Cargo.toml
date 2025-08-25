@@ -14,7 +14,7 @@ readme = "readme.md"
 [features]
 bevy_a11y = ["bevy_a11y_bms_bindings"]
 bevy_animation = ["bevy_animation_bms_bindings"]
-bevy_asset = []
+bevy_asset = ["bevy_asset_bms_bindings"]
 bevy_color = ["bevy_color_bms_bindings"]
 bevy_core_pipeline = ["bevy_core_pipeline_bms_bindings"]
 bevy_ecs = ["bevy_ecs_bms_bindings"]
@@ -35,6 +35,7 @@ bevy_text = ["bevy_text_bms_bindings"]
 bevy_time = ["bevy_time_bms_bindings"]
 bevy_transform = ["bevy_transform_bms_bindings"]
 
+
 core_functions = []
 lua_bindings = ["bevy_mod_scripting_lua"]
 rhai_bindings = ["bevy_mod_scripting_rhai"]
@@ -45,7 +46,7 @@ profiling = { workspace = true }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
 bevy_mod_scripting_lua = { path = "../languages/bevy_mod_scripting_lua", optional = true, version = "0.15.1" }
-bevy_mod_scripting_rhai = { path = "../languages/bevy_mod_scripting_rhai", optional = true, version = "0.15.1" }
+bevy_mod_scripting_rhai = { path = "../languages/bevybevy_text_bms_bindings_mod_scripting_rhai", optional = true, version = "0.15.1" }
 bevy_system_reflection = { path = "../bevy_system_reflection", version = "0.2.0" }
 
 bevy_ecs = { workspace = true, features = ["std", "bevy_reflect"] }
