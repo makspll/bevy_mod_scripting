@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_rhai-v0.15.1...bevy_mod_scripting_rhai-v0.16.0) - 2025-08-25
+
+### Refactored
+
+- [**breaking**] refactor dependencies, point at bevy subcrates directly ([#463](https://github.com/makspll/bevy_mod_scripting/pull/463))
+- inline `CallbackBuilder<P>` into `IntoScriptPluginParams` at compile time ([#456](https://github.com/makspll/bevy_mod_scripting/pull/456))
+- inline `CallbackSettings<P>` into `IntoScriptPluginParam` at compile time ([#455](https://github.com/makspll/bevy_mod_scripting/pull/455))
+
 ## [0.15.0](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting_rhai-v0.14.0...bevy_mod_scripting_rhai-v0.15.0) - 2025-08-14
 
 ### Added
