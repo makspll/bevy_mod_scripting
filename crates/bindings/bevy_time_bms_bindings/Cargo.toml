@@ -17,12 +17,12 @@ readme = "readme.md"
 
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_time = { version = "0.16.1", features = ["bevy_reflect", "std"], default-features = true}
+bevy_time = { version = "0.16.1", features = ["std", "bevy_reflect"], default-features = true}
 
 
-bevy_app = { version = "^0.16.1", features = ["bevy_reflect", "std"], default-features = true}
+bevy_app = { version = "^0.16.1", features = ["std", "bevy_reflect"], default-features = true}
 
-bevy_ecs = { version = "^0.16.1", features = ["bevy_reflect", "std"], default-features = false}
+bevy_ecs = { version = "^0.16.1", features = ["std", "bevy_reflect"], default-features = false}
 
 bevy_platform = { version = "^0.16.1", features = ["std"], default-features = false}
 

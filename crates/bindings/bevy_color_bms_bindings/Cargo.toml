@@ -17,7 +17,7 @@ bevy_ecs = { workspace = true, features = ["std", "bevy_reflect"] }
 bevy_app = { workspace = true, features = ["std"] }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_color = { version = "0.16.2", features = ["alloc", "encase", "wgpu-types", "bevy_reflect", "std"], default-features = true}
+bevy_color = { version = "0.16.2", features = ["wgpu-types", "alloc", "std", "bevy_reflect", "encase"], default-features = true}
 
 
 bevy_math = { version = "^0.16.1", features = ["alloc", "std"], default-features = false}

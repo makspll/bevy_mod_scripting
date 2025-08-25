@@ -17,7 +17,7 @@ readme = "readme.md"
 
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_input = { version = "0.16.1", features = ["smol_str", "std", "bevy_reflect"], default-features = true}
+bevy_input = { version = "0.16.1", features = ["std", "bevy_reflect", "smol_str"], default-features = true}
 
 
 bevy_app = { version = "^0.16.1", features = ["std", "bevy_reflect"], default-features = false}
@@ -28,7 +28,7 @@ bevy_math = { version = "^0.16.1", features = ["std", "bevy_reflect"], default-f
 
 bevy_platform = { version = "^0.16.1", features = ["std"], default-features = false}
 
-bevy_reflect = { version = "^0.16.1", features = ["smol_str", "std"], default-features = false}
+bevy_reflect = { version = "^0.16.1", features = ["std", "smol_str"], default-features = false}
 
 bevy_utils = { version = "^0.16.1", features = ["std"], default-features = false}
 

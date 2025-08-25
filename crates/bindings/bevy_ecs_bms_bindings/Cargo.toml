@@ -17,14 +17,14 @@ readme = "readme.md"
 bevy_app = { workspace = true, features = ["std"] }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_ecs = { version = "0.16.1", features = ["serialize", "std", "bevy_reflect", "backtrace", "async_executor", "multi_threaded"], default-features = true}
+bevy_ecs = { version = "0.16.1", features = ["std", "async_executor", "multi_threaded", "bevy_reflect", "backtrace", "serialize"], default-features = true}
 
 
 arrayvec = { version = "^0.7.4", features = ["std"], default-features = false}
 
 bevy_ecs_macros = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_platform = { version = "^0.16.1", features = ["serialize", "std"], default-features = false}
+bevy_platform = { version = "^0.16.1", features = ["std", "serialize"], default-features = false}
 
 bevy_ptr = { version = "^0.16.1", features = [], default-features = true}
 
@@ -32,7 +32,7 @@ bevy_reflect = { version = "^0.16.1", features = ["std"], default-features = fal
 
 bevy_tasks = { version = "^0.16.1", features = ["std", "async_executor", "multi_threaded"], default-features = false}
 
-bevy_utils = { version = "^0.16.1", features = ["serde", "std"], default-features = false}
+bevy_utils = { version = "^0.16.1", features = ["std", "serde"], default-features = false}
 
 bitflags = { version = "^2.3", features = ["std"], default-features = false}
 
@@ -44,7 +44,7 @@ disqualified = { version = "^1.0", features = ["alloc"], default-features = fals
 
 fixedbitset = { version = "^0.5", features = ["std"], default-features = false}
 
-indexmap = { version = "^2.5.0", features = ["serde", "std"], default-features = false}
+indexmap = { version = "^2.5.0", features = ["std", "serde"], default-features = false}
 
 log = { version = "^0.4", features = ["std"], default-features = false}
 
