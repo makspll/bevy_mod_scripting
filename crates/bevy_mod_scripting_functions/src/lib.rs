@@ -1,6 +1,5 @@
 #![allow(missing_docs)]
 
-pub mod bevy_bindings;
 pub mod core;
 pub use core::*;
 

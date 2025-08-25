@@ -1,0 +1,47 @@
+[package]
+name = "bevy_reflect_bms_bindings"
+version = "0.15.1"
+edition = "2024"
+authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
+license = "MIT OR Apache-2.0"
+description = "Automatically generated bindings for bevy_reflect crate"
+repository = "https://github.com/makspll/bevy_mod_scripting"
+homepage = "https://github.com/makspll/bevy_mod_scripting"
+keywords = ["bevy", "gamedev", "scripting", "rhai"]
+categories = ["game-development"]
+readme = "readme.md"
+
+
+[dependencies]
+bevy_ecs = { workspace = true, features = ["std", "bevy_reflect"] }
+bevy_app = { workspace = true, features = ["std"] }
+bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_derive = { workspace = true }
+bevy_reflect = { version = "0.16.1", features = ["glam", "uuid", "smol_str", "std", "smallvec", "debug", "debug_stack"], default-features = true}
+
+
+assert_type_match = { version = "^0.1.1", features = [], default-features = true}
+
+bevy_platform = { version = "^0.16.1", features = ["std"], default-features = false}
+
+bevy_ptr = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_reflect_derive = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_utils = { version = "^0.16.1", features = ["std"], default-features = false}
+
+downcast-rs = { version = "^2", features = ["std"], default-features = false}
+
+erased-serde = { version = "^0.4", features = ["std"], default-features = false}
+
+glam = { version = "^0.29.3", features = ["std"], default-features = false}
+
+serde = { version = "^1", features = ["std"], default-features = false}
+
+smol_str = { version = "^0.2.0", features = ["std"], default-features = false}
+
+uuid = { version = "^1.13.1", features = ["std"], default-features = false}
+
+variadics_please = { version = "^1.1", features = [], default-features = true}
+
+

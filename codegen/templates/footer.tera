@@ -25,7 +25,7 @@ impl {{item.import_path}} {
             {%- if arg.proxy_ty is matching("Mut.*")-%}
             mut {% endif -%}
             {{- arg.ident | to_arg_pattern() -}}
-        : {{- arg.proxy_ty -}},
+        : {{ arg.proxy_ty -}},
         {%- endfor -%}
     ) -> {{ function.output.proxy_ty }} {
         let output: {{ function.output.proxy_ty }} =

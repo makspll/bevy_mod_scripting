@@ -14,6 +14,7 @@ use json_comments::StripComments;
 use log::*;
 use serde::{Deserialize, Serialize};
 use strum::{IntoEnumIterator, VariantNames};
+use xtask::{BindingCrate, Meta};
 
 #[derive(
     Clone,
@@ -40,6 +41,22 @@ enum Feature {
     BevyReflectBindings,
     BevyTimeBindings,
     BevyTransformBindings,
+    BevyColorBindings,
+    BevyCorePipelineBindings,
+    BevyA11yBindings,
+    BevyAnimationBindings,
+    BevyAssetBindings,
+    BevyGizmosBindings,
+    BevyGltfBindings,
+    BevyImageBindings,
+    BevyInputFocusBindings,
+    BevyMeshBindings,
+    BevyPbrBindings,
+    BevyPickingBindings,
+    BevyRenderBindings,
+    BevySceneBindings,
+    BevySpriteBindings,
+    BevyTextBindings,
 
     // Lua
     Lua51,
@@ -115,7 +132,23 @@ impl IntoFeatureGroup for Feature {
             | Feature::BevyMathBindings
             | Feature::BevyReflectBindings
             | Feature::BevyTimeBindings
-            | Feature::BevyTransformBindings => FeatureGroup::BMSFeatureNotInPowerset,
+            | Feature::BevyTransformBindings
+            | Feature::BevyColorBindings
+            | Feature::BevyCorePipelineBindings
+            | Feature::BevyA11yBindings
+            | Feature::BevyAnimationBindings
+            | Feature::BevyAssetBindings
+            | Feature::BevyGizmosBindings
+            | Feature::BevyGltfBindings
+            | Feature::BevyImageBindings
+            | Feature::BevyInputFocusBindings
+            | Feature::BevyMeshBindings
+            | Feature::BevyPbrBindings
+            | Feature::BevyPickingBindings
+            | Feature::BevyRenderBindings
+            | Feature::BevySceneBindings
+            | Feature::BevySpriteBindings
+            | Feature::BevyTextBindings => FeatureGroup::BMSFeatureNotInPowerset,
             Feature::CoreFunctions | Feature::ProfileWithTracy => FeatureGroup::BMSFeature, // don't use wildcard here, we want to be explicit
         }
     }
@@ -137,6 +170,8 @@ impl Default for Features {
             Feature::BevyReflectBindings,
             Feature::BevyTimeBindings,
             Feature::BevyTransformBindings,
+            Feature::BevyColorBindings,
+            Feature::BevyCorePipelineBindings,
         ])
     }
 }
@@ -169,10 +204,20 @@ impl Features {
             .map(|f| format!("-{f}"))
             .collect::<Vec<_>>();
 
+        let excluded_non_powerset_features = self
+            .0
+            .iter()
+            .filter(|f| matches!(f.to_feature_group(), FeatureGroup::BMSFeatureNotInPowerset))
+            .map(|f| f.to_string())
+            .collect::<Vec<_>>();
+
         let mut features = self
             .0
             .into_iter()
-            .filter(|f| !default_features.contains(f))
+            .filter(|f| {
+                !default_features.contains(f)
+                    && !excluded_non_powerset_features.contains(&f.to_string())
+            })
             .map(|f| f.to_string())
             .collect::<Vec<_>>();
 
@@ -180,6 +225,10 @@ impl Features {
         excluded_default_features
             .into_iter()
             .chain(features)
+            .chain(std::iter::once(format!(
+                "+{} bindings",
+                excluded_non_powerset_features.len()
+            )))
             .collect::<Vec<_>>()
             .join(",")
     }
@@ -598,10 +647,17 @@ struct CodegenTemplateArgs {
 }
 
 fn fetch_default_bevy_features() -> String {
+    let try_dirs = vec![".", "../"];
     let path = "codegen_bevy_features.txt";
-    std::fs::read_to_string(path)
-        .with_context(|| format!("Failed to read default bevy features from {path}"))
-        .unwrap()
+    for dir in &try_dirs {
+        let full_path = Path::new(dir).join(path);
+        if full_path.exists() {
+            return std::fs::read_to_string(&full_path)
+                .with_context(|| format!("Failed to read default bevy features from {full_path:?}"))
+                .unwrap();
+        }
+    }
+    panic!("Failed to find {path} in any of the tried directories: {try_dirs:?}");
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, clap::Subcommand, strum::AsRefStr)]
@@ -683,10 +739,7 @@ enum Xtasks {
     /// Run code generation
     Codegen {
         /// output the generated code to the given directory
-        #[clap(
-            long,
-            default_value = "./crates/bevy_mod_scripting_functions/src/bevy_bindings/"
-        )]
+        #[clap(long, default_value = "./target/bindings_crates/")]
         output_dir: PathBuf,
 
         #[clap(
@@ -893,7 +946,7 @@ impl Xtasks {
         info!("Using command: {cmd:?}");
 
         let output = cmd.output();
-        if !capture_streams_in_output {
+        if capture_streams_in_output {
             info!("Command status: {:?}", output.as_ref().map(|o| o.status));
         } else {
             info!("Command output: {output:?}");
@@ -1055,7 +1108,7 @@ impl Xtasks {
         Ok(())
     }
 
-    fn check_codegen_crate(app_settings: GlobalArgs, ide_mode: bool) -> Result<()> {
+    fn check_codegen_workspace(app_settings: GlobalArgs, ide_mode: bool) -> Result<()> {
         let toolchain = Self::read_rust_toolchain(&Self::codegen_crate_dir(&app_settings)?);
 
         // set the working directory to the codegen crate
@@ -1128,6 +1181,12 @@ impl Xtasks {
         info!("Clearing bevy target dir: {bevy_target_dir:?}");
         if bevy_target_dir.exists() {
             std::fs::remove_dir_all(&bevy_target_dir)?;
+        }
+
+        info!("Cleaning output dir: {output_dir:?}");
+        // safety measure
+        if output_dir.exists() && output_dir.to_string_lossy().contains("target") {
+            std::fs::remove_dir_all(&output_dir)?;
         }
 
         let api_gen_dir = Self::codegen_crate_dir(&main_workspace_app_settings)?;
@@ -1251,47 +1310,90 @@ impl Xtasks {
 
         // now expand the macros and replace the files in place
         // by running cargo expand --features crate_name and capturing the output
-        let functions_crate_dir = Self::relative_workspace_dir(
-            &main_workspace_app_settings,
-            "crates/bevy_mod_scripting_functions",
-        )?;
 
-        let expand_crates = (std::fs::read_dir(&output_dir)?).collect::<Result<Vec<_>, _>>()?;
-        let crate_names = expand_crates
+        let generated_crates = (std::fs::read_dir(&output_dir)?).collect::<Result<Vec<_>, _>>()?;
+        let crate_names = generated_crates
             .iter()
             .filter(|s| {
-                s.path().is_file() && s.path().ends_with(".rs") && !s.path().ends_with("mod.rs")
+                s.path().is_file()
+                    && s.path().file_name().is_some_and(|name| {
+                        name != "mod.rs" && name.to_string_lossy().ends_with(".rs")
+                    })
             })
-            .map(|s| s.path().file_stem().unwrap().to_str().unwrap().to_owned())
-            .collect::<Vec<_>>();
-        let features = crate_names.join(",");
+            .map(|s| s.path().file_stem().unwrap().to_str().unwrap().to_owned());
+
         for entry in crate_names {
-            let args = vec![
-                String::from("expand"),
-                format!("bevy_bindings::{entry}"),
-                String::from("--features"),
-                features.clone(),
-            ];
+            // finally, generate the bindings crate code and move the code in there
+
+            // get the version from the bevy workspace manifest
+            let manifest = Self::main_workspace_cargo_metadata()?;
+            let version = manifest
+                .packages
+                .iter()
+                .find_map(|p| {
+                    if p.name.to_string() == "bevy_mod_scripting" {
+                        Some(p.version.to_string())
+                    } else {
+                        None
+                    }
+                })
+                .expect("Could not find bevy_mod_scripting package in metadata");
+
+            // find features in the corresponding meta file <crate>.json under "features" key
+            let meta_path = output_dir.join(format!("{entry}.json"));
+            let meta: Meta = serde_json::from_reader(
+                std::fs::File::open(&meta_path)
+                    .with_context(|| format!("opening meta file {meta_path:?}"))?,
+            )?;
+
+            let krate = BindingCrate::new(
+                &entry,
+                &version,
+                meta.features,
+                meta.version,
+                meta.dependencies,
+            );
+            let path = Self::relative_workspace_dir(
+                &main_workspace_app_settings,
+                format!("crates/bindings/{entry}_bms_bindings/"),
+            )?;
+            krate.generate_in_dir(&path)?;
+            info!("Wrote bindings crate to {path:?}");
+
+            // copy the generated file to the bindings crate src/lib.rs
+            let dest_path = path.join("src/lib.rs");
+            // make dirs
+            std::fs::create_dir_all(dest_path.parent().unwrap()).with_context(|| {
+                format!(
+                    "creating parent directory for bindings crate lib.rs: {:?}",
+                    dest_path.parent().unwrap()
+                )
+            })?;
+            std::fs::copy(output_dir.join(format!("{entry}.rs")), &dest_path).with_context(
+                || format!("copying generated binding file to bindings crate: {dest_path:?}"),
+            )?;
+
+            // finally expand the macros inside
+
+            let args = vec![String::from("expand")];
             let expand_cmd = Self::run_system_command(
                 &main_workspace_app_settings,
                 "cargo",
                 "pre-expanding generated code",
                 args,
-                Some(&functions_crate_dir),
+                Some(&path),
                 true,
             )?;
 
             let output = String::from_utf8(expand_cmd.stdout)?;
-            // remove the first mod <mod name> { .. } wrapper
-            let output = output
-                .lines()
-                .skip(1)
-                .take(output.lines().count() - 2)
-                .collect::<Vec<_>>()
-                .join("\n");
-            let path = output_dir.join(format!("{entry}.rs"));
-            std::fs::write(&path, output)
-                .with_context(|| format!("writing expanded code to {path:?}"))?;
+
+            let output = output.replacen("#![feature(prelude_import)]", "", 1);
+            let output = output.replacen("#[prelude_import]", "", 1);
+            let output = output.replacen("use std::prelude::rust_2024::*;", "", 1);
+            let output = output.replacen("#[macro_use]\nextern crate std;", "", 1);
+
+            std::fs::write(&dest_path, output)
+                .with_context(|| format!("writing expanded code to {dest_path:?}"))?;
             info!("Wrote expanded code to {path:?}");
         }
 
@@ -1308,7 +1410,7 @@ impl Xtasks {
         match kind {
             CheckKind::All => {
                 let err_main = Self::check_main_workspace(app_settings.clone(), ide_mode);
-                let err_codegen = Self::check_codegen_crate(app_settings.clone(), ide_mode);
+                let err_codegen = Self::check_codegen_workspace(app_settings.clone(), ide_mode);
 
                 err_main?;
                 err_codegen?;
@@ -1317,7 +1419,7 @@ impl Xtasks {
                 Self::check_main_workspace(app_settings, ide_mode)?;
             }
             CheckKind::Codegen => {
-                Self::check_codegen_crate(app_settings, ide_mode)?;
+                Self::check_codegen_workspace(app_settings, ide_mode)?;
             }
         }
         Ok(())

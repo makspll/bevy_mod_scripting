@@ -44,6 +44,7 @@ jobs:
           base: main
           filters: |
             src:
+              - 'bindings/**'
               - 'src/**'
               - 'crates/**'
               - 'examples/**'
@@ -132,6 +133,7 @@ jobs:
           echo "Clippy version: $(cargo clippy --version)"
           echo "Active toolchain: $(rustup show active-toolchain)"
         continue-on-error: true
+
       - name: Rust Cache
         if: ${{ needs.check-needs-run.outputs.any-changes == 'true' && (matrix.run_args.run_on_forks || needs.check-is-fork.outputs.is_fork != 'true') }}
         uses: Swatinem/rust-cache@v2.7.7
@@ -185,4 +187,19 @@ jobs:
             sed -n 's/.*pull\/\([0-9]*\).*/\1/p' pr.txt > pr_number.txt
             PRNUMBER=$(cat pr_number.txt)
             gh pr merge $PRNUMBER --squash
+          fi
+
+  rollup-check:
+    name: Required Checks Successful
+    needs: [check]
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    steps:
+      - name: Check if all jobs succeeded
+        run: |
+          if [[ "${{ needs.check.result }}" != "success" ]]; then
+            echo "One or more checks failed. See detailed job results above."
+            exit 1
+          else
+            echo "All checks passed successfully!"
           fi

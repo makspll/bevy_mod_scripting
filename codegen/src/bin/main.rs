@@ -8,9 +8,10 @@ use std::{
     process::{Command, Stdio},
 };
 
-use bevy_mod_scripting_codegen::*;
+use bevy_mod_scripting_codegen::{driver::*, *};
 use cargo_metadata::camino::{Utf8Path, Utf8PathBuf};
 use clap::Parser;
+use crate_feature_graph::{Workspace, WorkspaceGraph};
 use log::{debug, error, info};
 use strum::VariantNames;
 use tera::Context;
@@ -24,7 +25,7 @@ fn main() {
     if env::var("RUST_LOG").is_err() {
         unsafe { env::set_var("RUST_LOG", args.verbose.get_rustlog_value()) };
     }
-    env_logger::init();
+    pretty_env_logger::init();
 
     info!("Using RUST_LOG: {:?}", env::var("RUST_LOG"));
 
@@ -42,33 +43,44 @@ fn main() {
         .collect::<Vec<_>>();
 
     info!("Computing active features");
-    let include_crates = match (&args.workspace_root, args.cmd.is_generate()) {
-        (Some(root), true) => {
-            let feature_graph = FeatureGraph::from_metadata(&metadata, root);
-            info!(
-                "Using workspace root: {}, found {} crates",
-                feature_graph.workspace_root,
-                feature_graph.crates.len()
-            );
+    let include_crates = if args.cmd.is_generate() {
+        let workspace = Workspace::from(&metadata);
+        let mut graph = WorkspaceGraph::from(workspace);
+        info!("Using workspace graph: \n{}", graph.to_dot());
 
-            info!(
-                "Computing all transitive dependencies for enabled top-level features: {}. using default features: {}",
-                args.features.join(","),
-                !args.no_default_features
-            );
+        info!(
+            "Computing all transitive dependencies for enabled top-level features: {}. using default features: {}",
+            args.features.join(","),
+            !args.no_default_features
+        );
 
-            let dependencies = feature_graph
-                .dependencies_for_features(args.features.as_ref(), !args.no_default_features)
-                .into_iter()
-                .map(|s| s.to_owned())
-                .collect::<Vec<String>>();
+        graph.calculate_enabled_features_and_dependencies_parse(args.features, None);
 
-            // log all dependencies
-            debug!("Enabled dependencies: {}", dependencies.join(","));
+        let mut dependencies = graph
+            .workspace
+            .workspace_crates
+            .iter()
+            .filter(|krate| krate.is_enabled.unwrap_or(false))
+            .map(|krate| krate.name.to_string())
+            .collect::<Vec<_>>();
 
-            Some(dependencies)
+        // log all dependencies
+        debug!("Enabled dependencies: {}", dependencies.join(","));
+
+        if let Some(excluded_crates) = &args.exclude_crates {
+            dependencies.retain(|c| !excluded_crates.contains(c));
+            info!("Excluding crates: {excluded_crates:?}");
         }
-        _ => None,
+
+        let graph_path =
+            PathBuf::from(fetch_target_directory(&metadata).join("workspace_graph.dot"));
+        graph.serialize(&graph_path).unwrap();
+        info!("Serialized workspace graph to: {}", graph_path.display());
+        unsafe { std::env::set_var(WORKSPACE_GRAPH_FILE_ENV, graph_path) };
+
+        Some(dependencies)
+    } else {
+        None
     };
 
     let plugin_subdir = format!("plugin-{}", env!("RUSTC_CHANNEL"));
@@ -198,7 +210,11 @@ fn main() {
     // disable incremental compilation
     unsafe { env::set_var("CARGO_INCREMENTAL", "0") };
 
-    driver::cli_main(BevyAnalyzer);
+    driver::cli_main(
+        BevyAnalyzer,
+        workspace_meta.include_crates.unwrap_or_default(),
+        &metadata,
+    );
 
     // just making sure the temp dir lives until everything is done
     drop(temp_dir);

@@ -30,12 +30,16 @@ pub(crate) fn codegen(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
     // generate crate artifact
     let mut file = File::create(output.join(format!("{}.rs", template_data.crate_name))).unwrap();
 
-    tera.render_to(
+    match tera.render_to(
         &TemplateKind::CrateArtifact.to_string(),
         &context,
         &mut file,
-    )
-    .expect("Failed to render crate artifact");
+    ) {
+        Ok(_) => {}
+        Err(e) => {
+            panic!("Error during template rendering: {e:?}");
+        }
+    }
 
     file.flush().unwrap();
     log::trace!("Written files");

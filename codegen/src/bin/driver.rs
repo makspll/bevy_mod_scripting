@@ -1,9 +1,14 @@
 #![feature(rustc_private)]
 use bevy_mod_scripting_codegen::{driver::driver_main, *};
+// use rustc_log::LoggerConfig;
+
+extern crate rustc_log;
 
 fn main() {
-    // initially set it to high so no logs are missed, but later when we parse the args we will set it to the correct level
-    unsafe { std::env::set_var("RUST_LOG", "trace") };
-    env_logger::init();
+    pretty_env_logger::formatted_builder()
+        .parse_write_style("always")
+        .parse_filters(&std::env::var("RUST_LOG").unwrap_or_else(|_| "warn".into()))
+        .init();
+
     driver_main(BevyAnalyzer);
 }

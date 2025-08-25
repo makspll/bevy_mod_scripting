@@ -32,6 +32,19 @@ pub struct Meta {
         deserialize_with = "deserialize_timestamp"
     )]
     pub(crate) timestamp: NaiveDateTime,
+    /// the set of features that this crate was generated with
+    pub(crate) features: Vec<String>,
+    /// The version of the crate, if available
+    pub(crate) version: String,
+
+    /// a map of crate names to the features that crate was compiled with
+    pub(crate) dependencies: HashMap<String, Dependency>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub(crate) struct Dependency {
+    pub version: String,
+    pub features: Vec<String>,
 }
 
 fn serialize_timestamp<S: Serializer>(

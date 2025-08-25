@@ -2,10 +2,8 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 #![cfg_attr(rustfmt, rustfmt_skip)]
-{% filter prettyplease %}
 {%- for crate in crates %}
     #[cfg(feature="{{crate.name}}")]
     pub mod {{ crate.name }};
 {% endfor -%}
 
-{% endfilter %}

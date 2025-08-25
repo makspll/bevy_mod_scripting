@@ -1,0 +1,19 @@
+[package]
+name = "root"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+enable_crate_a = ["dep:crate_a"]
+enable_crate_b = ["dep:crate_b"]
+
+[dependencies]
+cfg-if = "1.0"
+crate_a = { path = "children/crate_a", optional = true, default-features = true }
+crate_b = { path = "children/crate_b", optional = true, default-features = true }
+
+[lib]
+path = "crate_a/lib.rs"
+
+[workspace]
+members = ["children/crate_a", "children/crate_b"]

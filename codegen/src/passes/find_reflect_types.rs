@@ -1,7 +1,7 @@
 use log::{debug, info};
 use rustc_hir::def_id::LOCAL_CRATE;
 
-use crate::{Args, BevyCtxt, ReflectType, DEF_PATHS_REFLECT};
+use crate::{Args, BevyCtxt, DEF_PATHS_REFLECT, ReflectType};
 
 /// Finds all reflect types which we can wrap in the crate as well as sorts the final list.
 pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {

@@ -1,1 +1,1 @@
-bevy_asset,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded,std,async_executor
+default,bevy_asset,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded,std,async_executor,bevy_reflect/glam,bevy_reflect/uuid,bevy_reflect/smol_str,bevy_sprite/bevy_sprite_picking_backend

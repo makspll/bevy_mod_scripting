@@ -1,9 +1,13 @@
+use std::path::PathBuf;
+
+use crate_feature_graph::WorkspaceGraph;
 use log::{info, trace};
 use rustc_hir::def_id::LOCAL_CRATE;
 use tera::Context;
 
 use crate::{
-    ALL_PASSES, Args, TemplateKind, WorkspaceMeta, modifying_file_loader::ModifyingFileLoader,
+    ALL_PASSES, Args, TemplateKind, WorkspaceMeta, driver::WORKSPACE_GRAPH_FILE_ENV,
+    modifying_file_loader::ModifyingFileLoader,
 };
 
 pub(crate) struct BevyAnalyzerCallbacks {
@@ -73,6 +77,10 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
                 tera.render(&TemplateKind::ImportProcessor.to_string(), &ctxt)
                     .unwrap()
             })),
+            WorkspaceGraph::deserialize(&PathBuf::from(
+                std::env::var(WORKSPACE_GRAPH_FILE_ENV).unwrap(),
+            ))
+            .unwrap(),
         );
 
         trace!("Running all passes");
