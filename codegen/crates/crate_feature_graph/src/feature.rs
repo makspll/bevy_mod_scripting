@@ -64,7 +64,7 @@ pub enum FeatureEffect {
     /// I.e. `foo=["dep:optional"]` is represented as `EnableOptionalDependency("optional")`
     EnableOptionalDependency(CrateName),
     /// I.e. `foo=["optional(?)/feature"]` is represented as `EnableFeatureInDependency("feature", "optional")`
-    /// this effect by itself does not enable the dependency, only the feature in it
+    /// this effect by itself does not enable the dependency, only the feature in it unless `enables_optionals` is true
     EnableFeatureInDependency(FeatureName, CrateName, bool),
 }
 
@@ -263,6 +263,21 @@ impl Crate {
         }
     }
 
+    /// Checks if a dependency of this crate is enabled via one of its active features
+    /// The active features must be computed first
+    pub fn optional_dependency_is_enabled(&self, dep: &CrateName) -> bool {
+        self.optional_dependencies.iter().any(|d| {
+            &d.name == dep
+                && self.active_features.as_ref().is_some_and(|f| {
+                    f.iter().any(|f| {
+                        self.features.iter().any(|feat| {
+                            feat.name == *f && feat.effects().any(|e| e.enables_crate(dep))
+                        })
+                    })
+                })
+        })
+    }
+
     /// processes the feature set, given the initially enabled features, and returns the full set of enabled features.
     /// if `enable_default` is true, the "default" feature is considered enabled initially if it exists.
     pub fn compute_active_features(
@@ -324,14 +339,28 @@ impl Crate {
                 // for default do still include the feature even if it doesn't exist
                 all_features.insert(next);
             } else {
-                error!(
-                    "Crate `{}` does not have feature `{}`. Are you using the right features?",
-                    self.name, next
-                );
+                // error!(
+                //     "Crate `{}` does not have feature `{}`. Are you using the right features?",
+                //     self.name, next
+                // );
+                // too noisy for now, figure out what's going on TODO
             }
         }
 
-        self.active_features = Some(all_features);
+        if let Some(active_features) = &self.active_features {
+            // merge, features are always additive in a workspace
+            if self.in_workspace.is_some_and(|a| a) {
+                log::trace!(
+                    "Merging active features for crate `{}`, as new path is being computed: {:?} + {:?}",
+                    self.name,
+                    active_features,
+                    all_features
+                );
+            }
+            self.active_features = Some(active_features.union(&all_features).cloned().collect());
+        } else {
+            self.active_features = Some(all_features);
+        }
     }
 }
 impl From<Package> for Crate {
@@ -525,31 +554,6 @@ impl From<&Metadata> for Workspace {
                     Either::Right(p)
                 }
             });
-
-        let existing_package_names = workspace_crates
-            .iter()
-            .map(|c| c.name.clone())
-            .collect::<HashSet<_>>();
-
-        // also process dependency crates that are not part of the workspace
-        for dep in meta.packages.iter() {
-            for dependency in dep.dependencies.iter() {
-                let dep_name = CrateName::new(&dependency.name);
-                if !existing_package_names.contains(&dep_name) {
-                    other_crates.push(Crate {
-                        name: dep_name,
-                        features: vec![],
-                        dependencies: vec![],
-                        optional_dependencies: vec![],
-                        version: Version::new(0, 0, 0),
-                        in_workspace: Some(false),
-                        active_features: None,
-                        active_dependency_features: None,
-                        is_enabled: None,
-                    });
-                }
-            }
-        }
 
         for krate in workspace_crates.iter_mut() {
             krate.in_workspace = Some(true);

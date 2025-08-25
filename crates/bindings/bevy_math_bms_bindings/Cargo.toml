@@ -17,7 +17,7 @@ bevy_ecs = { workspace = true, features = ["std", "bevy_reflect"] }
 bevy_app = { workspace = true, features = ["std"] }
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_math = { version = "0.16.1", features = ["bevy_reflect", "alloc", "rand", "curve", "std"], default-features = true}
+bevy_math = { version = "0.16.1", features = ["alloc", "rand", "curve", "bevy_reflect", "std"], default-features = true}
 
 
 bevy_reflect = { version = "^0.16.1", features = ["std"], default-features = false}
@@ -27,6 +27,10 @@ derive_more = { version = "^1", features = ["std"], default-features = false}
 glam = { version = "^0.29.3", features = ["rand", "std"], default-features = false}
 
 itertools = { version = "^0.14.0", features = ["use_alloc", "use_std"], default-features = false}
+
+rand = { version = "^0.8", features = ["alloc", "std"], default-features = false}
+
+rand_distr = { version = "^0.4.3", features = ["alloc", "std"], default-features = false}
 
 smallvec = { version = "^1.11", features = [], default-features = true}
 

@@ -17,7 +17,7 @@ readme = "readme.md"
 
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_gizmos = { version = "0.16.1", features = ["bevy_render", "bevy_pbr", "bevy_core_pipeline", "bevy_sprite", "webgl"], default-features = false}
+bevy_gizmos = { version = "0.16.1", features = ["bevy_pbr", "webgl", "bevy_core_pipeline", "bevy_sprite", "bevy_render"], default-features = false}
 
 
 bevy_app = { version = "^0.16.1", features = [], default-features = true}

@@ -17,7 +17,7 @@ bevy_animation = ["bevy_animation_bms_bindings"]
 bevy_asset = []
 bevy_color = ["bevy_color_bms_bindings"]
 bevy_core_pipeline = ["bevy_core_pipeline_bms_bindings"]
-bevy_ecs = []
+bevy_ecs = ["bevy_ecs_bms_bindings"]
 bevy_gizmos = ["bevy_gizmos_bms_bindings"]
 bevy_gltf = ["bevy_gltf_bms_bindings"]
 bevy_image = ["bevy_image_bms_bindings"]
@@ -52,6 +52,7 @@ bevy_ecs = { workspace = true, features = ["std", "bevy_reflect"] }
 bevy_app = { workspace = true }
 bevy_asset = { workspace = true }
 bevy_platform = { workspace = true, features = ["std"] }
+bevy_reflect = { workspace = true, features = [] }
 
 bevy_a11y_bms_bindings = { path = "../bindings/bevy_a11y_bms_bindings", version = "0.15.1", optional = true }
 bevy_animation_bms_bindings = { path = "../bindings/bevy_animation_bms_bindings", version = "0.15.1", optional = true }

@@ -17,7 +17,7 @@ bevy_ecs = { workspace = true, features = ["std", "bevy_reflect"] }
 
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_image = { version = "0.16.1", features = ["ktx2", "bevy_reflect", "png", "hdr", "ruzstd", "zstd"], default-features = true}
+bevy_image = { version = "0.16.1", features = ["bevy_reflect"], default-features = true}
 
 
 bevy_app = { version = "^0.16.1", features = [], default-features = true}
@@ -41,8 +41,6 @@ futures-lite = { version = "^2.0.1", features = [], default-features = true}
 guillotiere = { version = "^0.6.0", features = [], default-features = true}
 
 half = { version = "^2.4.1", features = [], default-features = true}
-
-image = { version = "^0.25.2", features = ["png", "hdr"], default-features = false}
 
 rectangle-pack = { version = "^0.4", features = [], default-features = true}
 

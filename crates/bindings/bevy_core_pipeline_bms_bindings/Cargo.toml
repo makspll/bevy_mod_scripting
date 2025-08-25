@@ -17,7 +17,7 @@ readme = "readme.md"
 
 bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
-bevy_core_pipeline = { version = "0.16.1", features = ["webgl", "tonemapping_luts", "smaa_luts"], default-features = true}
+bevy_core_pipeline = { version = "0.16.1", features = [], default-features = true}
 
 
 bevy_app = { version = "^0.16.1", features = [], default-features = true}
@@ -32,13 +32,13 @@ bevy_diagnostic = { version = "^0.16.1", features = [], default-features = true}
 
 bevy_ecs = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_image = { version = "^0.16.1", features = ["ktx2", "zstd", "ktx2", "zstd"], default-features = false}
+bevy_image = { version = "^0.16.1", features = [], default-features = true}
 
 bevy_math = { version = "^0.16.1", features = [], default-features = true}
 
 bevy_reflect = { version = "^0.16.1", features = [], default-features = true}
 
-bevy_render = { version = "^0.16.1", features = ["ktx2", "ktx2"], default-features = false}
+bevy_render = { version = "^0.16.1", features = [], default-features = true}
 
 bevy_transform = { version = "^0.16.1", features = [], default-features = true}
 

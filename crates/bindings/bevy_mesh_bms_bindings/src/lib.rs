@@ -175,9 +175,9 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
         .register_documented(
             "create_packed_vertex_buffer_data",
             |_self: Ref<::bevy_mesh::Mesh>| {
-                let output: ::std::vec::Vec<u8, ::std::alloc::Global> = {
+                let output: ::std::vec::Vec<u8> = {
                     {
-                        let output: ::std::vec::Vec<u8, ::std::alloc::Global> = ::bevy_mesh::Mesh::create_packed_vertex_buffer_data(
+                        let output: ::std::vec::Vec<u8> = ::bevy_mesh::Mesh::create_packed_vertex_buffer_data(
                                 &_self,
                             )
                             .into();
@@ -364,7 +364,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
             "set_morph_target_names",
             |
                 mut _self: Mut<::bevy_mesh::Mesh>,
-                names: ::std::vec::Vec<::std::string::String, ::std::alloc::Global>|
+                names: ::std::vec::Vec<::std::string::String>|
             {
                 let output: () = {
                     {
@@ -549,7 +549,7 @@ pub(crate) fn register_mesh_functions(world: &mut World) {
             "with_morph_target_names",
             |
                 _self: Val<::bevy_mesh::Mesh>,
-                names: ::std::vec::Vec<::std::string::String, ::std::alloc::Global>|
+                names: ::std::vec::Vec<::std::string::String>|
             {
                 let output: Val<::bevy_mesh::Mesh> = {
                     {

@@ -11,7 +11,7 @@ use std::{
 use bevy_mod_scripting_codegen::{driver::*, *};
 use cargo_metadata::camino::{Utf8Path, Utf8PathBuf};
 use clap::Parser;
-use crate_feature_graph::{FeatureName, Workspace, WorkspaceGraph};
+use crate_feature_graph::{Workspace, WorkspaceGraph};
 use log::{debug, error, info};
 use strum::VariantNames;
 use tera::Context;
@@ -54,17 +54,7 @@ fn main() {
             !args.no_default_features
         );
 
-        graph.calculate_enabled_features_and_dependencies(&HashMap::from_iter([(
-            graph.workspace.root.as_ref().cloned().unwrap(),
-            (
-                args.features
-                    .iter()
-                    .cloned()
-                    .map(FeatureName::new)
-                    .collect(),
-                !args.no_default_features,
-            ),
-        )]));
+        graph.calculate_enabled_features_and_dependencies_parse(args.features, None);
 
         let mut dependencies = graph
             .workspace

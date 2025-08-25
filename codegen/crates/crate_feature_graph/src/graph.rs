@@ -28,6 +28,8 @@ trait GraphExtensions<N, E, Directed> {
         find: F,
         log_if_missing: L,
     ) -> Option<petgraph::graph::NodeIndex>;
+
+    fn find_node_by_opt<F: Fn(&N) -> bool>(&self, find: F) -> Option<petgraph::graph::NodeIndex>;
 }
 impl<N: PartialEq, E, Directed> GraphExtensions<N, E, Directed> for petgraph::Graph<N, E, Directed>
 where
@@ -45,6 +47,10 @@ where
                 None
             }
         }
+    }
+
+    fn find_node_by_opt<F: Fn(&N) -> bool>(&self, find: F) -> Option<petgraph::graph::NodeIndex> {
+        self.node_indices().find(|i| find(&self[*i]))
     }
 }
 #[derive(Default)]
@@ -86,7 +92,7 @@ impl WorkspaceGraph {
             dependency_conditions_graph: petgraph::Graph::new(),
         };
 
-        desered.calculate_enabled_features_and_dependencies(&desered.input.clone());
+        desered.calculate_enabled_features_and_dependencies(desered.input.clone(), false);
 
         Ok(desered)
     }
@@ -110,6 +116,295 @@ impl WorkspaceGraph {
         )
     }
 
+    #[cfg(feature = "dot_parser")]
+    /// Generates a dot file visualising how the feature flags flow through the workspace
+    /// showing the feature effects between dependencies, and showing which are enabled using green and gray colours
+    pub fn visualise_feature_flow(&self, only_show_crates: Vec<String>) -> std::io::Result<String> {
+        use petgraph::visit::EdgeRef;
+
+        let mut visualiser_graph = petgraph::Graph::<String, String, Directed>::new();
+
+        let mut already_added_crates = HashSet::<CrateName>::new();
+        let mut already_added_edges = HashSet::<String>::new();
+        // the nodes are crates as well as dependencies
+        for krate in self.workspace.all_crates() {
+            let krate_with_attrs = if krate.is_enabled.unwrap_or(false) {
+                format!("{} (enabled)", krate.name)
+            } else {
+                format!("{} (disabled)", krate.name)
+            };
+            if already_added_crates.insert(krate.name.clone()) {
+                visualiser_graph.add_node(krate_with_attrs);
+            }
+        }
+
+        for dependency in self.workspace.all_crates().flat_map(|c| c.dependencies()) {
+            let krate = dependency.crate_name();
+            if already_added_crates.insert(krate.clone()) {
+                visualiser_graph.add_node(krate.to_string());
+            }
+        }
+
+        // now add edges, we connect each feature effect to the neighbours
+        for krate in self.workspace.all_crates() {
+            let from_node =
+                match visualiser_graph.find_node_by_opt(|n| n.contains(&krate.name.to_string())) {
+                    Some(n) => n,
+                    None => continue,
+                };
+
+            for feature in &krate.features {
+                let is_active = krate
+                    .active_features
+                    .as_ref()
+                    .is_some_and(|f| f.contains(&feature.name));
+
+                // to make the graph less cluttered
+                if !is_active {
+                    continue;
+                }
+
+                for effect in feature.effects() {
+                    use crate::FeatureEffect;
+                    let effect_descriptor = match effect {
+                        FeatureEffect::EnableFeature(feature_name) => {
+                            format!("enables feature `{feature_name}`")
+                        }
+                        FeatureEffect::EnableOptionalDependency(crate_name) => {
+                            format!("enables optional dependency `{crate_name}`")
+                        }
+                        FeatureEffect::EnableFeatureInDependency(
+                            feature_name,
+                            crate_name,
+                            enables_optionals,
+                        ) => {
+                            let connector = if *enables_optionals {
+                                "and"
+                            } else {
+                                "if enabled"
+                            };
+                            format!(
+                                "enables feature `{feature_name}` {connector} dependency `{crate_name}`"
+                            )
+                        }
+                    };
+                    let label = if is_active {
+                        format!("{effect_descriptor} (enabled)")
+                    } else {
+                        format!("{effect_descriptor} (disabled)")
+                    };
+                    let (from, to) = match effect {
+                        FeatureEffect::EnableFeature(_) => {
+                            continue; // this makes the graph too cluttered
+                            // (from_node, from_node)
+                        }
+                        FeatureEffect::EnableOptionalDependency(crate_name) => {
+                            let to_node = match visualiser_graph
+                                .find_node_by_opt(|n| n.contains(&crate_name.to_string()))
+                            {
+                                Some(n) => n,
+                                None => continue,
+                            };
+                            (from_node, to_node)
+                        }
+                        FeatureEffect::EnableFeatureInDependency(_, crate_name, _) => {
+                            let to_node = match visualiser_graph
+                                .find_node_by_opt(|n| n == &crate_name.to_string())
+                            {
+                                Some(n) => n,
+                                None => continue,
+                            };
+                            (from_node, to_node)
+                        }
+                    };
+                    if already_added_edges.insert(label.clone()) {
+                        visualiser_graph.add_edge(from, to, label);
+                    }
+                }
+            }
+        }
+
+        // finally filter out nodes we don't want to show but connect edges
+        if !only_show_crates.is_empty() {
+            log::info!("Filtering to only show crates: {only_show_crates:?}");
+            let only_show_crates: HashSet<_> = only_show_crates
+                .into_iter()
+                .map(|s| s.to_string())
+                .collect();
+            let to_remove: Vec<_> = already_added_crates
+                .into_iter()
+                .filter(|c| !only_show_crates.contains(&c.to_string()))
+                .collect();
+
+            log::info!(
+                "Removing and interconnecting {} nodes, out of {}",
+                to_remove.len(),
+                visualiser_graph.node_count()
+            );
+
+            for n in to_remove {
+                log::info!("Removing node {n}");
+                let node_index =
+                    match visualiser_graph.find_node_by_opt(|node| node.contains(&n.to_string())) {
+                        Some(n) => n,
+                        None => continue,
+                    };
+
+                // outgoing and incoming edges need to be reconnected to all neighbours correctly
+                let outgoing_edges = visualiser_graph
+                    .edges_directed(node_index, petgraph::Direction::Outgoing)
+                    .map(|e| (e.target(), e.weight().clone()))
+                    .collect::<Vec<_>>();
+                let incoming_edges = visualiser_graph
+                    .edges_directed(node_index, petgraph::Direction::Incoming)
+                    .map(|e| (e.source(), e.weight().clone()))
+                    .collect::<Vec<_>>();
+
+                for (source, incoming) in &incoming_edges {
+                    for (target, outgoing) in &outgoing_edges {
+                        if source != target {
+                            // compute the edge label, we concatenate with a comma if the edge already
+                            // got merged earlier, we want to extract the "middle" edges, which contain crate
+                            // tracing
+                            let mut new_label = format!("{incoming},{outgoing}");
+                            let parts = new_label.split(',').collect::<Vec<&str>>();
+                            if parts.len() > 2 {
+                                // collapse the middle parts into a "number"
+                                new_label = parts.first().unwrap().to_string()
+                                    + &format!("-> {} crates ->", parts.len() - 2)
+                                    + parts.last().unwrap();
+                            }
+                            visualiser_graph.add_edge(*source, *target, new_label);
+                        }
+                    }
+                }
+
+                // remove the node and edges
+
+                visualiser_graph.retain_edges(|a, e| {
+                    let (source, target) = a.edge_endpoints(e).unwrap();
+                    source != node_index && target != node_index
+                });
+                visualiser_graph.remove_node(node_index);
+            }
+        }
+
+        // visualise
+        let dot = petgraph::dot::Dot::with_attr_getters(
+            &visualiser_graph,
+            &[],
+            &|_, e| {
+                // if contains (enabled) make green, else gray
+                if e.weight().contains("(enabled)") {
+                    "color=green"
+                } else {
+                    "color=gray"
+                }
+                .to_string()
+            },
+            &|_, (_, node)| {
+                let color = if node.contains("(enabled)") {
+                    "color=green"
+                } else {
+                    "color=gray"
+                }
+                .to_string();
+
+                // active features
+                let matching_crate = self
+                    .workspace
+                    .find_crate_opt(&CrateName(node.split(' ').next().unwrap_or("").into()));
+
+                let (active_features, active_dependencies) = match matching_crate {
+                    Some(krate) => (
+                        krate
+                            .active_features
+                            .as_ref()
+                            .map(|f| f.iter().map(|f| f.to_string()).collect())
+                            .unwrap_or_default(),
+                        krate
+                            .active_dependency_features
+                            .as_ref()
+                            .map(|m| {
+                                m.iter()
+                                    .map(|(k, v)| {
+                                        (
+                                            k.to_string(),
+                                            v.iter().map(|f| f.to_string()).collect::<Vec<_>>(),
+                                        )
+                                    })
+                                    .collect()
+                            })
+                            .unwrap_or_default(),
+                    ),
+                    None => (vec![], HashMap::new()),
+                };
+                let tooltip = format!(
+                    "Active features: [\\n{}\\n]\\n\\nActive dependency features: [\\n{}\\n]",
+                    active_features.join("\\n"),
+                    active_dependencies
+                        .iter()
+                        .map(|(k, v)| format!("{}: [{}]", k, v.join(", ")))
+                        .collect::<Vec<_>>()
+                        .join("\\n")
+                );
+
+                format!("{color}, tooltip=\"{tooltip}\"")
+            },
+        )
+        .to_string();
+        Ok(dot)
+    }
+
+    /// Equivalent to [`crate::calculate_enabled_features_and_dependencies_parse`] but
+    /// additionally parses features as if coming from the command line,
+    ///
+    /// the normal syntax applies with the small exception that "default", features get converted to  "enable-default-features"
+    pub fn calculate_enabled_features_and_dependencies_parse(
+        &mut self,
+        features: Vec<String>,
+        root: Option<CrateName>,
+    ) {
+        // parse both the crate if the feature contains a slash
+        // and the feature name
+        // extract "default" features from the list and convert to bool instantiations
+        let mut features_map = HashMap::<CrateName, (Vec<FeatureName>, bool)>::new();
+
+        for feature in features {
+            let parts: Vec<&str> = feature.split('/').collect();
+            let len_parts = parts.len();
+            let mut parts = parts.into_iter();
+            let crate_name = if len_parts > 1
+                && let Some(part) = parts.next()
+            {
+                CrateName(part.to_string())
+            } else {
+                root.as_ref().cloned().unwrap_or_else(|| {
+                    self.workspace
+                        .root
+                        .as_ref()
+                        .expect("Workspace must contain a root crate")
+                        .clone()
+                })
+            };
+
+            let feature = parts
+                .next()
+                .map(|s| s.to_string())
+                .expect("malformed feature");
+
+            let feature_entry = features_map.entry(crate_name).or_default();
+            if feature == "default" {
+                feature_entry.1 = true;
+            } else {
+                feature_entry.0.push(FeatureName::new(feature.clone()));
+            }
+        }
+
+        log::info!("Parsed features map: {features_map:?}");
+        self.calculate_enabled_features_and_dependencies(features_map, false);
+    }
+
     /// Calculate the enabled features and dependencies for the workspace
     /// The set of enabled feature/crate pairs is treated as the set of explicitly enabled crates
     /// For a workspace this should be the workspace root with the desired features enabled..
@@ -119,7 +414,8 @@ impl WorkspaceGraph {
     /// The result will be written into the workspace crates
     pub fn calculate_enabled_features_and_dependencies(
         &mut self,
-        enabled_crates: &HashMap<CrateName, (Vec<FeatureName>, bool)>,
+        mut enabled_crates: HashMap<CrateName, (Vec<FeatureName>, bool)>,
+        trace_features: bool,
     ) {
         self.input = enabled_crates.clone();
         // now we process crates, one at a time
@@ -129,13 +425,17 @@ impl WorkspaceGraph {
 
         open_set.extend(enabled_crates.keys().cloned());
 
+        log::info!("Starting feature calculation with open set: {open_set:?}");
+
         while let Some(krate) = open_set.pop_front() {
             log::trace!("Processing crate `{krate}`");
-            match enabled_crates.get(&krate) {
+            // remove so if we reprocess it later, from a subsequent dependency, we can still
+            // compute the full feature set
+            match enabled_crates.remove(&krate) {
                 Some((features, enable_default)) => {
                     // a top level enabled crate, process only explicitly enabled features, we know nothing else will be there to enable more
                     let features = HashSet::from_iter(features.iter().cloned());
-                    if *enable_default
+                    if enable_default
                         && let Some(c) = self.workspace.find_crate_mut(&krate, || format!(
                             "package from workspace manifest: `{krate}` was not found in the parsed workspace list. This might lead to missing default features."))
                     {
@@ -145,7 +445,7 @@ impl WorkspaceGraph {
                     log::trace!(
                         "Crate `{krate}` is explicitly enabled with features: {features:?}, default: {enable_default}"
                     );
-                    self.process_crate(&krate, features);
+                    self.process_crate(&krate, features, trace_features);
                 }
                 None => {
                     let dependents = self.dependency_conditions_graph
@@ -182,7 +482,7 @@ impl WorkspaceGraph {
                     log::trace!(
                         "Crate `{krate}` is being enabled with parent features: {parent_features:?}"
                     );
-                    self.process_crate(&krate, parent_features);
+                    self.process_crate(&krate, parent_features, trace_features);
                 }
             };
 
@@ -239,15 +539,12 @@ impl WorkspaceGraph {
             .all_crates()
             .filter(|c| c.is_enabled.unwrap_or(false))
         {
-            let all_active_dependencies =
+            let all_active_dependencies = krate.dependencies.iter().chain(
                 krate
-                    .dependencies
+                    .optional_dependencies
                     .iter()
-                    .chain(krate.optional_dependencies.iter().filter(|d| {
-                        self.workspace
-                            .find_crate_opt(&d.name)
-                            .is_some_and(|c| c.is_enabled.unwrap_or(false))
-                    }));
+                    .filter(|d| krate.optional_dependency_is_enabled(&d.name)),
+            );
             // we can compute from the dependencies we have enabled on this crate
             for dependency in all_active_dependencies {
                 for feature in krate.active_features.as_ref().unwrap() {
@@ -300,7 +597,12 @@ impl WorkspaceGraph {
 
     /// process the open set and enable features and dependencies based on
     /// the current state of the workspace as well as any explicitly enabled features
-    fn process_crate(&mut self, krate: &CrateName, enable_features: HashSet<FeatureName>) {
+    fn process_crate(
+        &mut self,
+        krate: &CrateName,
+        enable_features: HashSet<FeatureName>,
+        trace_features: bool,
+    ) {
         // find all conditional features in this crate, only consider the crates in the open set.
         // for example, if we start with the root workspace crate, we will eventually process the workspace
         // if we however start with a dependency crate, we will only process the features in that crate and down
@@ -316,7 +618,7 @@ impl WorkspaceGraph {
         };
 
         krate.is_enabled = Some(true);
-        krate.compute_active_features(&enable_features, false);
+        krate.compute_active_features(&enable_features, trace_features);
     }
 }
 

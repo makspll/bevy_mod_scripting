@@ -40,10 +40,13 @@ mod test {
         // now calculate the graph
         let mut graph = WorkspaceGraph::from(workspace);
         // enable the crate_a chain of features, expect that default feature
-        graph.calculate_enabled_features_and_dependencies(&HashMap::from_iter([(
-            CrateName("root".into()),
-            (vec![FeatureName::new("enable_crate_a")], true),
-        )]));
+        graph.calculate_enabled_features_and_dependencies(
+            HashMap::from_iter([(
+                CrateName("root".into()),
+                (vec![FeatureName::new("enable_crate_a")], true),
+            )]),
+            false,
+        );
 
         let conditional_graph = format!(
             "{:?}",
