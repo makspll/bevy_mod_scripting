@@ -8,7 +8,7 @@ use std::{
     process::{Command, Stdio},
 };
 
-use bevy_mod_scripting_codegen::*;
+use bevy_mod_scripting_codegen::{driver::*, *};
 use cargo_metadata::camino::{Utf8Path, Utf8PathBuf};
 use clap::Parser;
 use crate_feature_graph::{FeatureName, Workspace, WorkspaceGraph};
@@ -81,6 +81,12 @@ fn main() {
             dependencies.retain(|c| !excluded_crates.contains(c));
             info!("Excluding crates: {excluded_crates:?}");
         }
+
+        let graph_path =
+            PathBuf::from(fetch_target_directory(&metadata).join("workspace_graph.dot"));
+        graph.serialize(&graph_path).unwrap();
+        info!("Serialized workspace graph to: {}", graph_path.display());
+        unsafe { std::env::set_var(WORKSPACE_GRAPH_FILE_ENV, graph_path) };
 
         Some(dependencies)
     } else {
@@ -217,6 +223,7 @@ fn main() {
     driver::cli_main(
         BevyAnalyzer,
         workspace_meta.include_crates.unwrap_or_default(),
+        &metadata,
     );
 
     // just making sure the temp dir lives until everything is done

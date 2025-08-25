@@ -1,0 +1,51 @@
+[package]
+name = "bevy_picking_bms_bindings"
+version = "0.15.1"
+edition = "2024"
+authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
+license = "MIT OR Apache-2.0"
+description = "Automatically generated bindings for bevy_picking crate"
+repository = "https://github.com/makspll/bevy_mod_scripting"
+homepage = "https://github.com/makspll/bevy_mod_scripting"
+keywords = ["bevy", "gamedev", "scripting", "rhai"]
+categories = ["game-development"]
+readme = "readme.md"
+
+
+[dependencies]
+
+
+bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_derive = { workspace = true }
+bevy_picking = { version = "0.16.1", features = ["bevy_mesh_picking_backend"], default-features = true}
+
+
+bevy_app = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_asset = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_derive = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_ecs = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_input = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_math = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_mesh = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_reflect = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_render = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_time = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_transform = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_utils = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_window = { version = "^0.16.1", features = [], default-features = true}
+
+uuid = { version = "^1.13.1", features = [], default-features = true}
+
+

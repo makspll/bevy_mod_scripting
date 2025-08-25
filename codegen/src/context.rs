@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use cargo_metadata::camino::Utf8PathBuf;
+use crate_feature_graph::WorkspaceGraph;
 use indexmap::IndexMap;
 use log::debug;
 use rustc_hir::def_id::DefId;
@@ -15,6 +16,7 @@ pub(crate) struct BevyCtxt<'tcx> {
     pub(crate) reflect_types: IndexMap<DefId, ReflectType<'tcx>>,
     pub(crate) cached_traits: CachedTraits,
     pub(crate) path_finder: ImportPathFinder<'tcx>,
+    pub(crate) workspace: WorkspaceGraph,
 
     /// the template context used for generating code
     pub(crate) template_context: Option<TemplateContext>,
@@ -28,6 +30,7 @@ impl<'tcx> BevyCtxt<'tcx> {
         workspace_meta: crate::WorkspaceMeta,
         include_private_paths: bool,
         import_path_processor: Option<Box<dyn Fn(&str) -> String>>,
+        workspace: WorkspaceGraph,
     ) -> Self {
         Self {
             tcx,
@@ -36,6 +39,7 @@ impl<'tcx> BevyCtxt<'tcx> {
             meta_loader: MetaLoader::new(meta_dirs.to_vec(), workspace_meta),
             template_context: Default::default(),
             path_finder: ImportPathFinder::new(tcx, include_private_paths, import_path_processor),
+            workspace,
         }
     }
 
@@ -45,6 +49,7 @@ impl<'tcx> BevyCtxt<'tcx> {
         debug!("Clearing all context");
         *self = Self::new(
             self.tcx,
+            Default::default(),
             Default::default(),
             Default::default(),
             Default::default(),

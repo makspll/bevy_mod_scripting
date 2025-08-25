@@ -10,26 +10,27 @@ use std::{
     process::{Command, Stdio, exit},
 };
 
+use cargo_metadata::{Metadata, camino::Utf8PathBuf};
 pub use plugin::*;
 use rustc_session::{EarlyDiagCtxt, config::ErrorOutputType};
 
 pub const CRATES_TO_RUN_PLUGIN_ON_ENV: &str = "CRATES_TO_RUN_PLUGIN_ON";
 pub const CARGO_VERBOSE: &str = "CARGO_VERBOSE";
+pub const WORKSPACE_GRAPH_FILE_ENV: &str = "WORKSPACE_GRAPH_FILE";
+
+pub fn fetch_target_directory(metadata: &Metadata) -> Utf8PathBuf {
+    let plugin_subdir = format!("plugin-{}", env!("RUSTC_CHANNEL"));
+    metadata.target_directory.join(plugin_subdir)
+}
 
 /// The top-level function that should be called in your user-facing binary.
-pub fn cli_main<T: RustcPlugin>(plugin: T, include_crates: Vec<String>) {
+pub fn cli_main<T: RustcPlugin>(plugin: T, include_crates: Vec<String>, metadata: &Metadata) {
     if env::args().any(|arg| arg == "-V") {
         println!("{}", plugin.version());
         return;
     }
 
-    let metadata = cargo_metadata::MetadataCommand::new()
-        .no_deps()
-        .other_options(["--all-features".to_string(), "--offline".to_string()])
-        .exec()
-        .unwrap();
-    let plugin_subdir = format!("plugin-{}", env!("RUSTC_CHANNEL"));
-    let target_dir = metadata.target_directory.join(plugin_subdir);
+    let target_dir = fetch_target_directory(metadata);
 
     let args = plugin.args(&target_dir);
 

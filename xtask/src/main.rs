@@ -14,6 +14,7 @@ use json_comments::StripComments;
 use log::*;
 use serde::{Deserialize, Serialize};
 use strum::{IntoEnumIterator, VariantNames};
+use xtask::{BindingCrate, Meta};
 
 #[derive(
     Clone,
@@ -56,7 +57,6 @@ enum Feature {
     BevySceneBindings,
     BevySpriteBindings,
     BevyTextBindings,
-    BevyWindowBindings,
 
     // Lua
     Lua51,
@@ -148,8 +148,7 @@ impl IntoFeatureGroup for Feature {
             | Feature::BevyRenderBindings
             | Feature::BevySceneBindings
             | Feature::BevySpriteBindings
-            | Feature::BevyTextBindings
-            | Feature::BevyWindowBindings => FeatureGroup::BMSFeatureNotInPowerset,
+            | Feature::BevyTextBindings => FeatureGroup::BMSFeatureNotInPowerset,
             Feature::CoreFunctions | Feature::ProfileWithTracy => FeatureGroup::BMSFeature, // don't use wildcard here, we want to be explicit
         }
     }
@@ -740,10 +739,7 @@ enum Xtasks {
     /// Run code generation
     Codegen {
         /// output the generated code to the given directory
-        #[clap(
-            long,
-            default_value = "./crates/bevy_mod_scripting_functions/src/bevy_bindings/"
-        )]
+        #[clap(long, default_value = "./target/bindings_crates/")]
         output_dir: PathBuf,
 
         #[clap(
@@ -1187,6 +1183,12 @@ impl Xtasks {
             std::fs::remove_dir_all(&bevy_target_dir)?;
         }
 
+        info!("Cleaning output dir: {output_dir:?}");
+        // safety measure
+        if output_dir.exists() && output_dir.to_string_lossy().contains("target") {
+            std::fs::remove_dir_all(&output_dir)?;
+        }
+
         let api_gen_dir = Self::codegen_crate_dir(&main_workspace_app_settings)?;
         let codegen_app_settings = main_workspace_app_settings
             .clone()
@@ -1308,13 +1310,9 @@ impl Xtasks {
 
         // now expand the macros and replace the files in place
         // by running cargo expand --features crate_name and capturing the output
-        let functions_crate_dir = Self::relative_workspace_dir(
-            &main_workspace_app_settings,
-            "crates/bevy_mod_scripting_functions",
-        )?;
 
-        let expand_crates = (std::fs::read_dir(&output_dir)?).collect::<Result<Vec<_>, _>>()?;
-        let crate_names = expand_crates
+        let generated_crates = (std::fs::read_dir(&output_dir)?).collect::<Result<Vec<_>, _>>()?;
+        let crate_names = generated_crates
             .iter()
             .filter(|s| {
                 s.path().is_file()
@@ -1322,37 +1320,80 @@ impl Xtasks {
                         name != "mod.rs" && name.to_string_lossy().ends_with(".rs")
                     })
             })
-            .map(|s| s.path().file_stem().unwrap().to_str().unwrap().to_owned())
-            .collect::<Vec<_>>();
-        let features = crate_names.join(",");
+            .map(|s| s.path().file_stem().unwrap().to_str().unwrap().to_owned());
 
         for entry in crate_names {
-            let args = vec![
-                String::from("expand"),
-                format!("bevy_bindings::{entry}"),
-                String::from("--features"),
-                features.clone(),
-            ];
+            // finally, generate the bindings crate code and move the code in there
+
+            // get the version from the bevy workspace manifest
+            let manifest = Self::main_workspace_cargo_metadata()?;
+            let version = manifest
+                .packages
+                .iter()
+                .find_map(|p| {
+                    if p.name.to_string() == "bevy_mod_scripting" {
+                        Some(p.version.to_string())
+                    } else {
+                        None
+                    }
+                })
+                .expect("Could not find bevy_mod_scripting package in metadata");
+
+            // find features in the corresponding meta file <crate>.json under "features" key
+            let meta_path = output_dir.join(format!("{entry}.json"));
+            let meta: Meta = serde_json::from_reader(
+                std::fs::File::open(&meta_path)
+                    .with_context(|| format!("opening meta file {meta_path:?}"))?,
+            )?;
+
+            let krate = BindingCrate::new(
+                &entry,
+                &version,
+                meta.features,
+                meta.version,
+                meta.dependencies,
+            );
+            let path = Self::relative_workspace_dir(
+                &main_workspace_app_settings,
+                format!("crates/bindings/{entry}_bms_bindings/"),
+            )?;
+            krate.generate_in_dir(&path)?;
+            info!("Wrote bindings crate to {path:?}");
+
+            // copy the generated file to the bindings crate src/lib.rs
+            let dest_path = path.join("src/lib.rs");
+            // make dirs
+            std::fs::create_dir_all(dest_path.parent().unwrap()).with_context(|| {
+                format!(
+                    "creating parent directory for bindings crate lib.rs: {:?}",
+                    dest_path.parent().unwrap()
+                )
+            })?;
+            std::fs::copy(output_dir.join(format!("{entry}.rs")), &dest_path).with_context(
+                || format!("copying generated binding file to bindings crate: {dest_path:?}"),
+            )?;
+
+            // finally expand the macros inside
+
+            let args = vec![String::from("expand")];
             let expand_cmd = Self::run_system_command(
                 &main_workspace_app_settings,
                 "cargo",
                 "pre-expanding generated code",
                 args,
-                Some(&functions_crate_dir),
+                Some(&path),
                 true,
             )?;
 
             let output = String::from_utf8(expand_cmd.stdout)?;
-            // remove the first mod <mod name> { .. } wrapper
-            let output = output
-                .lines()
-                .skip(1)
-                .take(output.lines().count() - 2)
-                .collect::<Vec<_>>()
-                .join("\n");
-            let path = output_dir.join(format!("{entry}.rs"));
-            std::fs::write(&path, output)
-                .with_context(|| format!("writing expanded code to {path:?}"))?;
+
+            let output = output.replacen("#![feature(prelude_import)]", "", 1);
+            let output = output.replacen("#[prelude_import]", "", 1);
+            let output = output.replacen("use std::prelude::rust_2024::*;", "", 1);
+            let output = output.replacen("#[macro_use]\nextern crate std;", "", 1);
+
+            std::fs::write(&dest_path, output)
+                .with_context(|| format!("writing expanded code to {dest_path:?}"))?;
             info!("Wrote expanded code to {path:?}");
         }
 

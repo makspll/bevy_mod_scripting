@@ -64,7 +64,7 @@ chrono = "0.4"
 pretty_assertions = "1.3"
 
 [dependencies]
-crate_feature_graph = { workspace = true, features = ["dot_parser"] }
+crate_feature_graph = { workspace = true, features = ["dot_parser", "serde"] }
 clap = { workspace = true }
 tera = { workspace = true }
 strum = { workspace = true }

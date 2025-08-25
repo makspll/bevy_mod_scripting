@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet, VecDeque};
 use log::error;
 use petgraph::Directed;
 
-use crate::{CrateName, Dependency, Feature, FeatureName, Workspace};
+use crate::{CrateName, DependencyKind, Feature, FeatureName, Workspace};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DependsOn {
@@ -47,12 +47,50 @@ where
         }
     }
 }
+#[derive(Default)]
 pub struct WorkspaceGraph {
     pub dependency_conditions_graph: petgraph::Graph<CrateName, EnablesDependencyIf, Directed>,
     pub workspace: Workspace,
+    pub input: HashMap<CrateName, (Vec<FeatureName>, bool)>,
 }
 
 impl WorkspaceGraph {
+    #[cfg(feature = "serde")]
+    /// Serializes the graph to a file
+    pub fn serialize(self, path: &std::path::Path) -> std::io::Result<()> {
+        // make dirs
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)?
+        }
+        let serialized =
+            serde_json::to_string_pretty(&self.workspace).map_err(std::io::Error::other)?;
+        let input = serde_json::to_string_pretty(&self.input).map_err(std::io::Error::other)?;
+
+        let concatenated = serialized + "\n\n" + &input;
+
+        std::fs::write(path, concatenated)
+    }
+
+    #[cfg(feature = "serde")]
+    /// Deserializes the graph from a file, the graph will be reconstructed
+    pub fn deserialize(path: &std::path::Path) -> std::io::Result<Self> {
+        let data = std::fs::read_to_string(path)?;
+        let parts: Vec<&str> = data.split("\n\n").collect();
+        let workspace: Workspace = serde_json::from_str(parts[0]).map_err(std::io::Error::other)?;
+        let input: HashMap<CrateName, (Vec<FeatureName>, bool)> =
+            serde_json::from_str(parts[1]).map_err(std::io::Error::other)?;
+
+        let mut desered = Self {
+            input,
+            workspace,
+            dependency_conditions_graph: petgraph::Graph::new(),
+        };
+
+        desered.calculate_enabled_features_and_dependencies(&desered.input.clone());
+
+        Ok(desered)
+    }
+
     /// Get all crates in the workspace which are enabled
     /// Should be called after `calculate_enabled_features_and_dependencies` or will return an empty list
     pub fn all_enabled_workspace_crates(&self) -> Vec<&CrateName> {
@@ -83,6 +121,7 @@ impl WorkspaceGraph {
         &mut self,
         enabled_crates: &HashMap<CrateName, (Vec<FeatureName>, bool)>,
     ) {
+        self.input = enabled_crates.clone();
         // now we process crates, one at a time
         // first process the explicitly enabled crates with features
         // we keep processing crates untill no features can be enabled
@@ -193,10 +232,68 @@ impl WorkspaceGraph {
             }
         }
 
+        // then compute the active dependency features for each crate
+        let mut active_dependency_features = HashMap::<_, Vec<_>>::new();
+        for krate in self
+            .workspace
+            .all_crates()
+            .filter(|c| c.is_enabled.unwrap_or(false))
+        {
+            let all_active_dependencies =
+                krate
+                    .dependencies
+                    .iter()
+                    .chain(krate.optional_dependencies.iter().filter(|d| {
+                        self.workspace
+                            .find_crate_opt(&d.name)
+                            .is_some_and(|c| c.is_enabled.unwrap_or(false))
+                    }));
+            // we can compute from the dependencies we have enabled on this crate
+            for dependency in all_active_dependencies {
+                for feature in krate.active_features.as_ref().unwrap() {
+                    let feature = match krate.features.iter().find(|f| &f.name == feature) {
+                        Some(f) => f,
+                        None => {
+                            error!(
+                                "Active feature computed `{}` not found in crate `{}`",
+                                feature, krate.name
+                            );
+                            continue;
+                        }
+                    };
+                    for effect in feature.effects() {
+                        if let Some(feature) = effect.enables_feature_in_crate(&dependency.name) {
+                            active_dependency_features
+                                .entry((krate.name.clone(), dependency.name.clone()))
+                                .or_default()
+                                .push(feature.clone());
+                        }
+                    }
+                }
+            }
+        }
         // finally remove all enable_default_for_ features not to pollute the output
+        // and insert the previously computed active dependency features
         for krate in self.workspace.all_crates_mut() {
             if let Some(features) = krate.active_features.as_mut() {
                 features.retain(|f| !f.feature_name().starts_with("enable_default_for_"));
+            }
+        }
+
+        for ((in_crate, dependency), features) in active_dependency_features {
+            if let Some(krate) = self.workspace.find_crate_mut(&in_crate, || format!(
+                "package from workspace manifest: `{in_crate}` was not found in the parsed workspace list. While setting active dependency features."
+            )) {
+                match krate.active_dependency_features.as_mut() {
+                    Some(map) => {
+                        map.insert(dependency, features);
+                    }
+                    None => {
+                        let mut map = HashMap::new();
+                        map.insert(dependency, features);
+                        krate.active_dependency_features = Some(map);
+                    }
+                }
             }
         }
     }
@@ -240,8 +337,8 @@ impl From<Workspace> for WorkspaceGraph {
         for krate in workspace.all_crates() {
             for dependency in krate.dependencies() {
                 let to_name = match &dependency {
-                    Dependency::Optional(name) => name,
-                    Dependency::NonOptional(name) => name,
+                    DependencyKind::Optional(name) => name,
+                    DependencyKind::NonOptional(name) => name,
                 };
 
                 let _ = (|| {
@@ -293,6 +390,7 @@ impl From<Workspace> for WorkspaceGraph {
         WorkspaceGraph {
             dependency_conditions_graph,
             workspace,
+            input: HashMap::new(),
         }
     }
 }

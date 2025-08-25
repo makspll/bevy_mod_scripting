@@ -69,7 +69,7 @@ pub struct Args {
         global = true,
         short,
         long,
-        default_value = "bevy_winit",
+        default_value = "bevy_winit,bevy_window",
         use_value_delimiter = true,
         value_delimiter = ','
     )]

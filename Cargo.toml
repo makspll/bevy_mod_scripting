@@ -73,7 +73,6 @@ bevy_sprite_bindings = ["bevy_mod_scripting_functions/bevy_sprite"]
 bevy_text_bindings = ["bevy_mod_scripting_functions/bevy_text"]
 bevy_time_bindings = ["bevy_mod_scripting_functions/bevy_time"]
 bevy_transform_bindings = ["bevy_mod_scripting_functions/bevy_transform"]
-bevy_window_bindings = ["bevy_mod_scripting_functions/bevy_window"]
 
 # optional
 unsafe_lua_modules = ["bevy_mod_scripting_lua?/unsafe_lua_modules"]
@@ -240,6 +239,7 @@ members = [
     "crates/lad_backends/mdbook_lad_preprocessor",
     "crates/ladfile_builder",
     "crates/bevy_system_reflection",
+    "crates/bindings/*",
 ]
 resolver = "2"
 exclude = ["codegen", "crates/macro_tests", "xtask"]

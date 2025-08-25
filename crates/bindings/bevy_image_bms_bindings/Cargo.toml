@@ -1,0 +1,51 @@
+[package]
+name = "bevy_image_bms_bindings"
+version = "0.15.1"
+edition = "2024"
+authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
+license = "MIT OR Apache-2.0"
+description = "Automatically generated bindings for bevy_image crate"
+repository = "https://github.com/makspll/bevy_mod_scripting"
+homepage = "https://github.com/makspll/bevy_mod_scripting"
+keywords = ["bevy", "gamedev", "scripting", "rhai"]
+categories = ["game-development"]
+readme = "readme.md"
+
+
+[dependencies]
+bevy_ecs = { workspace = true, features = ["std", "bevy_reflect"] }
+
+bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_derive = { workspace = true }
+bevy_image = { version = "0.16.1", features = ["ktx2", "bevy_reflect", "png", "hdr", "ruzstd", "zstd"], default-features = true}
+
+
+bevy_app = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_asset = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_color = { version = "^0.16.2", features = [], default-features = true}
+
+bevy_math = { version = "^0.16.1", features = ["bevy_reflect"], default-features = false}
+
+bevy_reflect = { version = "^0.16.1", features = [], default-features = true}
+
+bevy_utils = { version = "^0.16.1", features = [], default-features = true}
+
+bitflags = { version = "^2.3", features = [], default-features = true}
+
+bytemuck = { version = "^1.5", features = [], default-features = true}
+
+futures-lite = { version = "^2.0.1", features = [], default-features = true}
+
+guillotiere = { version = "^0.6.0", features = [], default-features = true}
+
+half = { version = "^2.4.1", features = [], default-features = true}
+
+image = { version = "^0.25.2", features = ["png", "hdr"], default-features = false}
+
+rectangle-pack = { version = "^0.4", features = [], default-features = true}
+
+serde = { version = "^1", features = [], default-features = true}
+
+

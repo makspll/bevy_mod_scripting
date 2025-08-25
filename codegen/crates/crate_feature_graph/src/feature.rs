@@ -1,19 +1,29 @@
 use std::{
     borrow::{Borrow, Cow},
-    collections::{HashSet, VecDeque},
+    collections::{HashMap, HashSet, VecDeque},
     fmt::Display,
 };
 
-use cargo_metadata::{Metadata, Package, semver::Version};
+use cargo_metadata::{
+    Metadata, Package,
+    semver::{Version, VersionReq},
+};
 use itertools::{Either, Itertools};
 use log::error;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CrateName(pub(crate) String);
 
 impl<'a, T: Borrow<Package>> From<&'a T> for CrateName {
     fn from(pkg: &'a T) -> Self {
         CrateName(pkg.borrow().name.clone())
+    }
+}
+
+impl CrateName {
+    pub fn new(name: impl Into<String>) -> Self {
+        Self(name.into())
     }
 }
 
@@ -25,6 +35,7 @@ impl Display for CrateName {
 
 /// A feature name
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct FeatureName(Cow<'static, str>);
 
 impl FeatureName {
@@ -46,6 +57,7 @@ impl Display for FeatureName {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum FeatureEffect {
     /// I.e. `foo=["feature"]` is represented as `EnableFeature("feature")`
     EnableFeature(FeatureName),
@@ -80,6 +92,7 @@ impl FeatureEffect {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Feature {
     pub name: FeatureName,
     pub effects: Vec<FeatureEffect>,
@@ -167,33 +180,42 @@ impl Feature {
 
 /// Describes a dependency relationship
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub enum Dependency {
+pub enum DependencyKind {
     Optional(CrateName),
     NonOptional(CrateName),
 }
 
-impl Dependency {
+impl DependencyKind {
     pub fn crate_name(&self) -> &CrateName {
         match self {
-            Dependency::Optional(name) => name,
-            Dependency::NonOptional(name) => name,
+            DependencyKind::Optional(name) => name,
+            DependencyKind::NonOptional(name) => name,
         }
     }
 
     pub fn is_optional(&self) -> bool {
-        matches!(self, Dependency::Optional(_))
+        matches!(self, DependencyKind::Optional(_))
     }
 }
 
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct CrateDependency {
+    pub name: CrateName,
+    pub version: VersionReq,
+}
+
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Crate {
     pub name: CrateName,
     pub features: Vec<Feature>,
-    pub dependencies: Vec<CrateName>,
-    pub optional_dependencies: Vec<CrateName>,
+    pub dependencies: Vec<CrateDependency>,
+    pub optional_dependencies: Vec<CrateDependency>,
     pub version: Version,
     pub in_workspace: Option<bool>,
     pub active_features: Option<HashSet<FeatureName>>,
+    pub active_dependency_features: Option<HashMap<CrateName, Vec<FeatureName>>>,
     pub is_enabled: Option<bool>,
 }
 
@@ -203,27 +225,27 @@ struct DependencyIter<'a> {
 }
 
 impl<'a> Iterator for DependencyIter<'a> {
-    type Item = Dependency;
+    type Item = DependencyKind;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.index < self.krate.dependencies.len() {
             let dep = &self.krate.dependencies[self.index];
             self.index += 1;
-            Some(Dependency::NonOptional(dep.clone()))
+            Some(DependencyKind::NonOptional(dep.name.clone()))
         } else if self.index
             < self.krate.dependencies.len() + self.krate.optional_dependencies.len()
         {
             let opt_dep =
                 &self.krate.optional_dependencies[self.index - self.krate.dependencies.len()];
             self.index += 1;
-            Some(Dependency::Optional(opt_dep.clone()))
+            Some(DependencyKind::Optional(opt_dep.name.clone()))
         } else {
             None
         }
     }
 }
 impl Crate {
-    pub fn dependencies(&self) -> impl Iterator<Item = Dependency> {
+    pub fn dependencies(&self) -> impl Iterator<Item = DependencyKind> {
         DependencyIter {
             krate: self,
             index: 0,
@@ -318,12 +340,19 @@ impl From<Package> for Crate {
             .dependencies
             .iter()
             .filter(|d| d.kind == cargo_metadata::DependencyKind::Normal) // dev dependencies can introduce weird cycles, and we don't care about them anyway
-            .map(|f| (f.name.clone(), f.optional, f.uses_default_features))
-            .partition_map(|(name, opt, enable_default)| {
+            .map(|f| {
+                (
+                    f.name.clone(),
+                    f.optional,
+                    f.uses_default_features,
+                    f.req.clone(),
+                )
+            })
+            .partition_map(|(name, opt, enable_default, req)| {
                 if opt {
-                    Either::Left((CrateName(name), enable_default))
+                    Either::Left((CrateName(name), enable_default, req))
                 } else {
-                    Either::Right((CrateName(name), enable_default))
+                    Either::Right((CrateName(name), enable_default, req))
                 }
             });
 
@@ -334,7 +363,8 @@ impl From<Package> for Crate {
             .collect::<Vec<_>>();
 
         // for each dependency that enables default features, we add a feature named after the dependency that enables the "default" feature
-        for (dep_name, enable_default) in dependencies.iter().chain(optional_dependencies.iter()) {
+        for (dep_name, enable_default, _) in dependencies.iter().chain(optional_dependencies.iter())
+        {
             if *enable_default {
                 features.push(Feature::new_enabling_default_for(dep_name.clone()));
             }
@@ -343,17 +373,31 @@ impl From<Package> for Crate {
         Self {
             name: CrateName(meta.name.clone()),
             features,
-            dependencies: dependencies.into_iter().map(|(n, _)| n).collect(),
-            optional_dependencies: optional_dependencies.into_iter().map(|(n, _)| n).collect(),
+            dependencies: dependencies
+                .into_iter()
+                .map(|(n, _, req)| CrateDependency {
+                    name: n,
+                    version: req,
+                })
+                .collect(),
+            optional_dependencies: optional_dependencies
+                .into_iter()
+                .map(|(n, _, req)| CrateDependency {
+                    name: n,
+                    version: req,
+                })
+                .collect(),
             version: meta.version,
             in_workspace: Some(true),
             active_features: None,
+            active_dependency_features: None,
             is_enabled: None,
         }
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Workspace {
     pub workspace_crates: Vec<Crate>,
     pub other_crates: Vec<Crate>,
@@ -482,6 +526,31 @@ impl From<&Metadata> for Workspace {
                 }
             });
 
+        let existing_package_names = workspace_crates
+            .iter()
+            .map(|c| c.name.clone())
+            .collect::<HashSet<_>>();
+
+        // also process dependency crates that are not part of the workspace
+        for dep in meta.packages.iter() {
+            for dependency in dep.dependencies.iter() {
+                let dep_name = CrateName::new(&dependency.name);
+                if !existing_package_names.contains(&dep_name) {
+                    other_crates.push(Crate {
+                        name: dep_name,
+                        features: vec![],
+                        dependencies: vec![],
+                        optional_dependencies: vec![],
+                        version: Version::new(0, 0, 0),
+                        in_workspace: Some(false),
+                        active_features: None,
+                        active_dependency_features: None,
+                        is_enabled: None,
+                    });
+                }
+            }
+        }
+
         for krate in workspace_crates.iter_mut() {
             krate.in_workspace = Some(true);
         }
@@ -562,6 +631,7 @@ mod tests {
             in_workspace: Some(true),
             active_features: None,
             is_enabled: None,
+            active_dependency_features: None,
         };
 
         krate.compute_active_features(&HashSet::from([FeatureName("default".into())]), true);
@@ -599,6 +669,7 @@ mod tests {
                     in_workspace: Some(true),
                     active_features: None,
                     is_enabled: None,
+                    active_dependency_features: None,
                 },
                 Crate {
                     name: CrateName("crate_b".into()),
@@ -609,6 +680,7 @@ mod tests {
                     in_workspace: Some(true),
                     active_features: None,
                     is_enabled: None,
+                    active_dependency_features: None,
                 },
             ],
             other_crates: vec![Crate {
@@ -620,6 +692,7 @@ mod tests {
                 in_workspace: Some(false),
                 active_features: None,
                 is_enabled: None,
+                active_dependency_features: None,
             }],
             root: None,
         };
