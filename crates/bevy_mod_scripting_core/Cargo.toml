@@ -35,7 +35,6 @@ bevy_log = { workspace = true, default-features = false, features = [] }
 bevy_asset = { workspace = true, default-features = false, features = [] }
 bevy_diagnostic = { workspace = true, default-features = false, features = [] }
 bevy_platform = { workspace = true, default-features = false, features = [] }
-bevy_tasks = { workspace = true, default-features = false, features = [] }
 
 parking_lot = { workspace = true }
 smallvec = { workspace = true }

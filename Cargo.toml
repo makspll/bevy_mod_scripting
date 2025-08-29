@@ -116,7 +116,6 @@ bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", v
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.15.1" }
 bevy = { version = "0.16.0", default-features = false }
 bevy_math = { version = "0.16.0", default-features = false, features = ["std"] }
-bevy_tasks = { version = "0.16.0", default-features = false }
 bevy_transform = { version = "0.16.0", default-features = false }
 bevy_reflect = { version = "0.16.0", default-features = false }
 bevy_ecs = { version = "0.16.0", default-features = false }
