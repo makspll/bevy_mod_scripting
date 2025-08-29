@@ -421,6 +421,7 @@ mod test {
     use super::FORBIDDEN_KEYWORDS;
     use crate::{
         bindings::ScriptValue,
+        config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
         event::Recipients,
         script::{ContextPolicy, ScriptAttachment, ScriptContext},
     };

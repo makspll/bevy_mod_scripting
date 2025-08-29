@@ -1,5 +1,5 @@
 //! Contains the logic for handling script callback events
-use ::{
+use {
     bevy_ecs::{
         event::EventCursor,
         event::Events,
@@ -46,7 +46,6 @@ pub trait ScriptingHandler<P: IntoScriptPluginParams> {
         context_key: &ScriptAttachment,
         callback: &CallbackLabel,
         script_ctxt: &mut P::C,
-        pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
         runtime: &P::R,
         world: WorldGuard,
     ) -> Result<ScriptValue, ScriptError>;
@@ -59,18 +58,18 @@ impl<P: IntoScriptPluginParams> ScriptingHandler<P> for P {
         context_key: &ScriptAttachment,
         callback: &CallbackLabel,
         script_ctxt: &mut P::C,
-        pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
         runtime: &P::R,
         world: WorldGuard,
     ) -> Result<ScriptValue, ScriptError> {
         WorldGuard::with_existing_static_guard(world.clone(), |world| {
+            let world_id = world.id();
             ThreadWorldContainer.set_world(world)?;
             Self::handler()(
                 args,
                 context_key,
                 callback,
                 script_ctxt,
-                pre_handling_initializers,
+                P::readonly_configuration(world_id).pre_handling_callbacks,
                 runtime,
             )
         })

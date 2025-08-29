@@ -2,16 +2,12 @@
 //!
 //! These are designed to be used to pipe inputs into other systems which require them, while handling any configuration erorrs nicely.
 #![allow(deprecated)]
-use std::{
-    ops::{Deref, DerefMut},
-    sync::Arc,
-};
+use std::sync::Arc;
 
 use bevy_ecs::{
     archetype::Archetype,
     component::{ComponentId, Tick},
     query::{Access, AccessConflicts},
-    resource::Resource,
     storage::SparseSetIndex,
     system::{SystemMeta, SystemParam, SystemParamValidationError},
     world::{DeferredWorld, World, unsafe_world_cell::UnsafeWorldCell},
@@ -25,7 +21,6 @@ use crate::{
         WorldAccessGuard, WorldGuard, access_map::ReflectAccessId, pretty_print::DisplayWithWorld,
         script_value::ScriptValue,
     },
-    context::ContextLoadingSettings,
     error::{InteropError, ScriptError},
     event::{CallbackLabel, IntoCallbackLabel},
     handler::ScriptingHandler,
@@ -51,75 +46,8 @@ pub fn with_handler_system_state<
     o
 }
 
-/// Semantics of [`bevy::ecs::change_detection::Res`] but doesn't claim read or
-/// write on the world by removing the resource from it ahead of time.
-///
-/// Similar to using [`World::resource_scope`].
-///
-/// This is useful for interacting with scripts, since [`WithWorldGuard`] will
-/// ensure scripts cannot gain exclusive access to the world if *any* reads or
-/// writes are claimed on the world. Removing the resource from the world lets
-/// you access it in the context of running scripts without blocking exclusive
-/// world access.
-///
-/// # Safety
-///
-/// - Because the resource is removed during the `get_param` call, if there is a
-///   conflicting resource access, this will be unsafe
-///
-/// - You must ensure you're only using this in combination with system
-///   parameters which will not read or write to this resource in `get_param`
-pub(crate) struct ResScope<'state, T: Resource + Default>(pub &'state mut T);
-
-impl<T: Resource + Default> Deref for ResScope<'_, T> {
-    type Target = T;
-
-    fn deref(&self) -> &Self::Target {
-        self.0
-    }
-}
-
-impl<T: Resource + Default> DerefMut for ResScope<'_, T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        self.0
-    }
-}
-
-unsafe impl<T: Resource + Default> SystemParam for ResScope<'_, T> {
-    type State = (T, bool);
-
-    type Item<'world, 'state> = ResScope<'state, T>;
-
-    fn init_state(_world: &mut World, system_meta: &mut SystemMeta) -> Self::State {
-        system_meta.set_has_deferred();
-        (T::default(), false)
-    }
-
-    unsafe fn get_param<'world, 'state>(
-        state: &'state mut Self::State,
-        _system_meta: &SystemMeta,
-        world: UnsafeWorldCell<'world>,
-        _change_tick: Tick,
-    ) -> Self::Item<'world, 'state> {
-        state.1 = true;
-        if let Some(mut r) = unsafe { world.get_resource_mut::<T>() } {
-            std::mem::swap(&mut state.0, &mut r);
-        }
-        ResScope(&mut state.0)
-    }
-
-    fn apply(state: &mut Self::State, _system_meta: &SystemMeta, world: &mut World) {
-        if state.1 {
-            world.insert_resource(std::mem::take(&mut state.0));
-            state.1 = false;
-        }
-    }
-}
-
 /// Context for systems which handle events for scripts
 pub struct HandlerContext<P: IntoScriptPluginParams> {
-    /// Settings for loading contexts
-    pub(crate) context_loading_settings: ContextLoadingSettings<P>,
     /// The runtime container
     pub(crate) runtime_container: RuntimeContainer<P>,
     /// List of static scripts
@@ -133,7 +61,6 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
     /// Every call to this function must be paired with a call to [`Self::release`].
     pub fn yoink(world: &mut World) -> Self {
         Self {
-            context_loading_settings: world.remove_resource().unwrap_or_default(),
             runtime_container: world.remove_resource().unwrap_or_default(),
             static_scripts: world.remove_resource().unwrap_or_default(),
             script_context: world.remove_resource().unwrap_or_default(),
@@ -144,7 +71,6 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
     /// Only call this if you have previously yoinked the handler context from the world.
     pub fn release(self, world: &mut World) {
         // insert the handler context back into the world
-        world.insert_resource(self.context_loading_settings);
         world.insert_resource(self.runtime_container);
         world.insert_resource(self.static_scripts);
         world.insert_resource(self.script_context);
@@ -154,23 +80,8 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
     ///
     /// Useful if you are needing multiple resources from the handler context.
     /// Otherwise the borrow checker will prevent you from borrowing the handler context mutably multiple times.
-    pub fn destructure(
-        &mut self,
-    ) -> (
-        &mut ContextLoadingSettings<P>,
-        &mut RuntimeContainer<P>,
-        &mut StaticScripts,
-    ) {
-        (
-            &mut self.context_loading_settings,
-            &mut self.runtime_container,
-            &mut self.static_scripts,
-        )
-    }
-
-    /// Get the context loading settings
-    pub fn context_loading_settings(&mut self) -> &mut ContextLoadingSettings<P> {
-        &mut self.context_loading_settings
+    pub fn destructure(&mut self) -> (&mut RuntimeContainer<P>, &mut StaticScripts) {
+        (&mut self.runtime_container, &mut self.static_scripts)
     }
 
     /// Get the runtime container
@@ -211,22 +122,11 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
         };
 
         // call the script
-        let pre_handling_initializers = &self
-            .context_loading_settings
-            .context_pre_handling_initializers;
         let runtime = &self.runtime_container.runtime;
 
         let mut context = context.lock();
 
-        P::handle(
-            payload,
-            context_key,
-            label,
-            &mut context,
-            pre_handling_initializers,
-            runtime,
-            guard,
-        )
+        P::handle(payload, context_key, label, &mut context, runtime, guard)
     }
 
     /// Invoke a callback in a script immediately.
@@ -397,17 +297,19 @@ pub(crate) fn get_all_access_ids(access: &Access<ComponentId>) -> Vec<(ReflectAc
 
 #[cfg(test)]
 mod test {
-    use ::{
+    use crate::config::{GetPluginThreadConfig, ScriptingPluginConfiguration};
+    use bevy_ecs::resource::Resource;
+    use test_utils::make_test_plugin;
+
+    use {
         bevy_app::{App, Plugin, Update},
         bevy_ecs::{
             component::Component,
             entity::Entity,
             event::{Event, EventReader},
-            system::{Query, ResMut, SystemState},
-            world::FromWorld,
+            system::{Query, ResMut},
         },
     };
-    use test_utils::make_test_plugin;
 
     use super::*;
 
@@ -483,30 +385,5 @@ mod test {
         app.cleanup();
         app.finish();
         app.update();
-    }
-
-    #[test]
-    pub fn resscope_reinserts_resource() {
-        // apply deffered system should be inserted after the system automatically
-        let mut app = App::new();
-
-        app.insert_resource(Res);
-        app.add_systems(Update, |_: ResScope<Res>| {});
-
-        app.update();
-
-        // check the resources are re-inserted
-        assert!(app.world().contains_resource::<Res>());
-    }
-
-    #[test]
-    pub fn rescope_does_not_remove_until_system_call() {
-        let mut world = World::new();
-        world.insert_resource(Res);
-
-        // this will call init, and that should't remove the resource
-        assert!(world.contains_resource::<Res>());
-        SystemState::<ResScope<Res>>::from_world(&mut world);
-        assert!(world.contains_resource::<Res>());
     }
 }

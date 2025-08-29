@@ -4,6 +4,7 @@
 
 use crate::{
     bindings::MarkAsCore,
+    config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
     context::{ContextLoadFn, ContextReloadFn},
     event::ScriptErrorEvent,
 };
@@ -28,7 +29,7 @@ use bindings::{
     garbage_collector, schedule::AppScheduleRegistry, script_value::ScriptValue,
 };
 use commands::{AddStaticScript, RemoveStaticScript};
-use context::{Context, ContextInitializer, ContextLoadingSettings, ContextPreHandlingInitializer};
+use context::{Context, ContextInitializer, ContextPreHandlingInitializer};
 use error::ScriptError;
 use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent, ScriptEvent};
 use handler::HandlerFn;
@@ -39,6 +40,7 @@ use std::ops::{Deref, DerefMut};
 pub mod asset;
 pub mod bindings;
 pub mod commands;
+pub mod config;
 pub mod context;
 pub mod docgen;
 pub mod error;
@@ -72,7 +74,7 @@ pub enum ScriptingSystemSet {
 /// When implementing a new scripting plugin, also ensure the following implementations exist:
 /// - [`Plugin`] for the plugin, both [`Plugin::build`] and [`Plugin::finish`] methods need to be dispatched to the underlying [`ScriptingPlugin`] struct
 /// - [`AsMut<ScriptingPlugin<Self>`] for the plugin struct
-pub trait IntoScriptPluginParams: 'static {
+pub trait IntoScriptPluginParams: 'static + GetPluginThreadConfig<Self> {
     /// The language of the scripts
     const LANGUAGE: Language;
     /// The context type used for the scripts
@@ -151,12 +153,16 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
         app.insert_resource(self.runtime_settings.clone())
             .insert_resource::<RuntimeContainer<P>>(RuntimeContainer {
                 runtime: P::build_runtime(),
-            })
-            .insert_resource::<ContextLoadingSettings<P>>(ContextLoadingSettings {
-                context_initializers: self.context_initializers.clone(),
-                context_pre_handling_initializers: self.context_pre_handling_initializers.clone(),
-                emit_responses: self.emit_responses,
             });
+
+        // initialize thread local configs
+        let config = ScriptingPluginConfiguration::<P> {
+            pre_handling_callbacks: Vec::leak(self.context_pre_handling_initializers.clone()),
+            context_initialization_callbacks: Vec::leak(self.context_initializers.clone()),
+            emit_responses: self.emit_responses,
+        };
+
+        P::set_thread_config(app.world().id(), config);
 
         app.insert_resource(ScriptContext::<P>::new(self.context_policy.clone()));
 

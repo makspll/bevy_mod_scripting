@@ -18,13 +18,13 @@ use bevy_ecs::{
     event::{EventReader, EventWriter},
     schedule::IntoScheduleConfigs,
     system::{Commands, Local, Query, Res},
+    world::WorldId,
 };
 use serde::{Deserialize, Serialize};
 
 use crate::{
     IntoScriptPluginParams, LanguageExtensions, ScriptComponent, ScriptingSystemSet, StaticScripts,
     commands::{CreateOrUpdateScript, DeleteScript},
-    context::ContextLoadingSettings,
     error::ScriptError,
     event::ScriptEvent,
     script::{ContextKey, DisplayProxy, ScriptAttachment},
@@ -220,7 +220,7 @@ fn handle_script_events<P: IntoScriptPluginParams>(
     asset_server: Res<AssetServer>,
     mut script_queue: Local<ScriptQueue>,
     mut commands: Commands,
-    context_loading_settings: Res<ContextLoadingSettings<P>>,
+    world_id: WorldId,
 ) {
     for event in events.read() {
         trace!("{}: Received script event: {:?}", P::LANGUAGE, event);
@@ -242,7 +242,7 @@ fn handle_script_events<P: IntoScriptPluginParams>(
                                     entity,
                                     handle.clone(),
                                 ))
-                                .with_responses(context_loading_settings.emit_responses),
+                                .with_responses(P::readonly_configuration(world_id).emit_responses),
                             );
                         }
                     }
@@ -252,7 +252,7 @@ fn handle_script_events<P: IntoScriptPluginParams>(
                             CreateOrUpdateScript::<P>::new(ScriptAttachment::StaticScript(
                                 handle.clone(),
                             ))
-                            .with_responses(context_loading_settings.emit_responses),
+                            .with_responses(P::readonly_configuration(world_id).emit_responses),
                         );
                     }
                 }
@@ -260,7 +260,7 @@ fn handle_script_events<P: IntoScriptPluginParams>(
             ScriptEvent::Detached { key } => {
                 commands.queue(
                     DeleteScript::<P>::new(key.clone())
-                        .with_responses(context_loading_settings.emit_responses),
+                        .with_responses(P::readonly_configuration(world_id).emit_responses),
                 );
             }
             ScriptEvent::Attached { key } => {
@@ -322,7 +322,7 @@ fn handle_script_events<P: IntoScriptPluginParams>(
             if language == P::LANGUAGE {
                 commands.queue(
                     CreateOrUpdateScript::<P>::new(context_key)
-                        .with_responses(context_loading_settings.emit_responses),
+                        .with_responses(P::readonly_configuration(world_id).emit_responses),
                 );
             }
         }

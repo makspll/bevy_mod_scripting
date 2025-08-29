@@ -12,7 +12,6 @@ use super::{
 use crate::{
     IntoScriptPluginParams,
     bindings::pretty_print::DisplayWithWorld,
-    context::ContextLoadingSettings,
     error::{InteropError, ScriptError},
     event::CallbackLabel,
     extractors::get_all_access_ids,
@@ -161,12 +160,6 @@ impl ScriptSystemBuilder {
             let after_systems = self.after.clone();
             let system_name = self.name.to_string();
 
-            // let system: DynamicScriptSystem<P> =
-            //     IntoSystem::<(), (), (IsDynamicScriptSystem<P>, ())>::into_system(self);
-
-            // dummy node id for now
-            // let mut reflect_system = ReflectSystem::from_system(&system, NodeId::System(0));
-
             // this is quite important, by default systems are placed in a set defined by their TYPE, i.e. in this case
             // all script systems would be the same
 
@@ -208,7 +201,6 @@ impl ScriptSystemBuilder {
 
 struct DynamicHandlerContext<'w, P: IntoScriptPluginParams> {
     script_context: &'w ScriptContext<P>,
-    context_loading_settings: &'w ContextLoadingSettings<P>,
     runtime_container: &'w RuntimeContainer<P>,
 }
 
@@ -220,17 +212,17 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
     )]
     pub fn init_param(world: &mut World, system: &mut FilteredAccessSet<ComponentId>) {
         let mut access = FilteredAccess::<ComponentId>::matches_nothing();
-        // let scripts_res_id = world
-        //     .query::<&Script<P>>();
-        let context_loading_settings_res_id = world
-            .resource_id::<ContextLoadingSettings<P>>()
-            .expect("ContextLoadingSettings resource not found");
+
         let runtime_container_res_id = world
             .resource_id::<RuntimeContainer<P>>()
             .expect("RuntimeContainer resource not found");
 
-        access.add_resource_read(context_loading_settings_res_id);
+        let script_context_res_id = world
+            .resource_id::<ScriptContext<P>>()
+            .expect("Scripts resource not found");
+
         access.add_resource_read(runtime_container_res_id);
+        access.add_resource_read(script_context_res_id);
 
         system.add(access);
     }
@@ -243,9 +235,6 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
         unsafe {
             Self {
                 script_context: system.get_resource().expect("Scripts resource not found"),
-                context_loading_settings: system
-                    .get_resource()
-                    .expect("ContextLoadingSettings resource not found"),
                 runtime_container: system
                     .get_resource()
                     .expect("RuntimeContainer resource not found"),
@@ -268,22 +257,11 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
         };
 
         // call the script
-        let pre_handling_initializers = &self
-            .context_loading_settings
-            .context_pre_handling_initializers;
         let runtime = &self.runtime_container.runtime;
 
         let mut context = context.lock();
 
-        P::handle(
-            payload,
-            context_key,
-            label,
-            &mut context,
-            pre_handling_initializers,
-            runtime,
-            guard,
-        )
+        P::handle(payload, context_key, label, &mut context, runtime, guard)
     }
 }
 
@@ -684,7 +662,10 @@ mod test {
     };
     use test_utils::make_test_plugin;
 
-    use crate::BMSScriptingInfrastructurePlugin;
+    use crate::{
+        BMSScriptingInfrastructurePlugin,
+        config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
+    };
 
     use super::*;
 

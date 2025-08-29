@@ -16,9 +16,11 @@ use bevy_mod_scripting_core::{
         ThreadWorldContainer, WorldContainer, function::namespace::Namespace,
         globals::AppScriptGlobalsRegistry, script_value::ScriptValue,
     },
+    config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
     context::{ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
     event::CallbackLabel,
+    make_plugin_config_static,
     reflection_extensions::PartialReflectExt,
     runtime::RuntimeSettings,
     script::{ContextPolicy, DisplayProxy, ScriptAttachment},
@@ -29,6 +31,7 @@ use bindings::{
 };
 use parking_lot::RwLock;
 pub use rhai;
+
 use rhai::{AST, CallFnOptions, Dynamic, Engine, EvalAltResult, Scope};
 /// Bindings for rhai.
 pub mod bindings;
@@ -43,6 +46,8 @@ pub struct RhaiScriptContext {
     /// The scope of the script
     pub scope: Scope<'static>,
 }
+
+make_plugin_config_static!(RhaiScriptingPlugin);
 
 impl IntoScriptPluginParams for RhaiScriptingPlugin {
     type C = RhaiScriptContext;

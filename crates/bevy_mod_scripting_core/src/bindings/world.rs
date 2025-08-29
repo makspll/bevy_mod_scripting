@@ -53,6 +53,7 @@ use bevy_ecs::{
     component::Mutable,
     hierarchy::{ChildOf, Children},
     system::Command,
+    world::WorldId,
 };
 use bevy_platform::collections::HashMap;
 use bevy_reflect::{TypeInfo, VariantInfo};
@@ -80,6 +81,13 @@ pub struct WorldAccessGuard<'w> {
     /// stored separate from the contents of the guard
     invalid: Rc<AtomicBool>,
 }
+impl WorldAccessGuard<'_> {
+    /// Returns the id of the world this guard provides access to
+    pub fn id(&self) -> WorldId {
+        self.inner.cell.id()
+    }
+}
+
 /// Used to decrease the stack size of [`WorldAccessGuard`]
 pub(crate) struct WorldAccessGuardInner<'w> {
     /// Safety: cannot be used unless the scope depth is less than the max valid scope
@@ -114,6 +122,11 @@ impl WorldAccessGuard<'static> {
 }
 #[profiling::all_functions]
 impl<'w> WorldAccessGuard<'w> {
+    /// Returns the id of the world this guard provides access to
+    fn world_id(&self) -> WorldId {
+        self.inner.cell.id()
+    }
+
     /// creates a new guard derived from this one, which if invalidated, will not invalidate the original
     fn scope(&self) -> Self {
         let mut new_guard = self.clone();
