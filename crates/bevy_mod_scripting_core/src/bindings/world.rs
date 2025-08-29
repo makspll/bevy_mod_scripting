@@ -122,11 +122,6 @@ impl WorldAccessGuard<'static> {
 }
 #[profiling::all_functions]
 impl<'w> WorldAccessGuard<'w> {
-    /// Returns the id of the world this guard provides access to
-    fn world_id(&self) -> WorldId {
-        self.inner.cell.id()
-    }
-
     /// creates a new guard derived from this one, which if invalidated, will not invalidate the original
     fn scope(&self) -> Self {
         let mut new_guard = self.clone();
