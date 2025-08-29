@@ -51,14 +51,11 @@ pub trait GetPluginThreadConfig<P: IntoScriptPluginParams + ?Sized> {
 /// A macro to implement `WithReadonlyConfiguration` for a given plugin type using thread-local storage.
 macro_rules! make_plugin_config_static {
     ($ty:ty) => {
-        // thread_local! {
         static CONFIG: std::sync::RwLock<
             bevy_platform::prelude::Vec<
-                // bevy_ecs::world::WorldId,
                 Option<ScriptingPluginConfiguration<$ty>>,
             >,
         > = std::sync::RwLock::new(bevy_platform::prelude::Vec::new());
-        // }
         impl GetPluginThreadConfig<$ty> for $ty {
             fn readonly_configuration(
                 world: bevy_ecs::world::WorldId,
