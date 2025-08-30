@@ -8,6 +8,7 @@ use ::{
     bevy_ecs::{entity::Entity, world::World},
 };
 use bevy_app::App;
+use bevy_ecs::world::WorldId;
 use bevy_log::trace;
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
@@ -17,7 +18,6 @@ use bevy_mod_scripting_core::{
         globals::AppScriptGlobalsRegistry, script_value::ScriptValue,
     },
     config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
-    context::{ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
     event::CallbackLabel,
     make_plugin_config_static,
@@ -206,11 +206,12 @@ fn load_rhai_content_into_context(
     context: &mut RhaiScriptContext,
     context_key: &ScriptAttachment,
     content: &[u8],
-    initializers: &[ContextInitializer<RhaiScriptingPlugin>],
-    pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
-    runtime: &RhaiRuntime,
+    world_id: WorldId,
 ) -> Result<(), ScriptError> {
-    let runtime = runtime.read();
+    let config = RhaiScriptingPlugin::readonly_configuration(world_id);
+    let initializers = config.context_initialization_callbacks;
+    let pre_handling_initializers = config.pre_handling_callbacks;
+    let runtime = config.runtime.read();
 
     context.ast = runtime.compile(std::str::from_utf8(content)?)?;
     context
@@ -233,23 +234,14 @@ fn load_rhai_content_into_context(
 pub fn rhai_context_load(
     context_key: &ScriptAttachment,
     content: &[u8],
-    initializers: &[ContextInitializer<RhaiScriptingPlugin>],
-    pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
-    runtime: &RhaiRuntime,
+    world_id: WorldId,
 ) -> Result<RhaiScriptContext, ScriptError> {
     let mut context = RhaiScriptContext {
         // Using an empty AST as a placeholder.
         ast: AST::empty(),
         scope: Scope::new(),
     };
-    load_rhai_content_into_context(
-        &mut context,
-        context_key,
-        content,
-        initializers,
-        pre_handling_initializers,
-        runtime,
-    )?;
+    load_rhai_content_into_context(&mut context, context_key, content, world_id)?;
     Ok(context)
 }
 
@@ -258,18 +250,9 @@ pub fn rhai_context_reload(
     context_key: &ScriptAttachment,
     content: &[u8],
     context: &mut RhaiScriptContext,
-    initializers: &[ContextInitializer<RhaiScriptingPlugin>],
-    pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
-    runtime: &RhaiRuntime,
+    world_id: WorldId,
 ) -> Result<(), ScriptError> {
-    load_rhai_content_into_context(
-        context,
-        context_key,
-        content,
-        initializers,
-        pre_handling_initializers,
-        runtime,
-    )
+    load_rhai_content_into_context(context, context_key, content, world_id)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -279,9 +262,11 @@ pub fn rhai_callback_handler(
     context_key: &ScriptAttachment,
     callback: &CallbackLabel,
     context: &mut RhaiScriptContext,
-    pre_handling_initializers: &[ContextPreHandlingInitializer<RhaiScriptingPlugin>],
-    runtime: &RhaiRuntime,
+    world_id: WorldId,
 ) -> Result<ScriptValue, ScriptError> {
+    let config = RhaiScriptingPlugin::readonly_configuration(world_id);
+    let pre_handling_initializers = config.pre_handling_callbacks;
+
     pre_handling_initializers
         .iter()
         .try_for_each(|init| init(context_key, context))?;
@@ -297,7 +282,7 @@ pub fn rhai_callback_handler(
         "Calling callback {} in context {} with args: {:?}",
         callback, context_key, args
     );
-    let runtime = runtime.read();
+    let runtime = config.runtime.read();
 
     match runtime.call_fn_with_options::<Dynamic>(
         options,

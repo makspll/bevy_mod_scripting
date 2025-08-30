@@ -5,6 +5,7 @@ use ::{
     bevy_ecs::{entity::Entity, world::World},
 };
 use bevy_app::App;
+use bevy_ecs::world::WorldId;
 use bevy_log::trace;
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
@@ -14,7 +15,6 @@ use bevy_mod_scripting_core::{
         globals::AppScriptGlobalsRegistry, script_value::ScriptValue,
     },
     config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
-    context::{ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
     event::CallbackLabel,
     make_plugin_config_static,
@@ -177,9 +177,11 @@ fn load_lua_content_into_context(
     context: &mut Lua,
     context_key: &ScriptAttachment,
     content: &[u8],
-    initializers: &[ContextInitializer<LuaScriptingPlugin>],
-    pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
+    world_id: WorldId,
 ) -> Result<(), ScriptError> {
+    let config = LuaScriptingPlugin::readonly_configuration(world_id);
+    let initializers = config.context_initialization_callbacks;
+    let pre_handling_initializers = config.pre_handling_callbacks;
     initializers
         .iter()
         .try_for_each(|init| init(context_key, context))?;
@@ -201,22 +203,14 @@ fn load_lua_content_into_context(
 pub fn lua_context_load(
     context_key: &ScriptAttachment,
     content: &[u8],
-    initializers: &[ContextInitializer<LuaScriptingPlugin>],
-    pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
-    _: &(),
+    world_id: WorldId,
 ) -> Result<Lua, ScriptError> {
     #[cfg(feature = "unsafe_lua_modules")]
     let mut context = unsafe { Lua::unsafe_new() };
     #[cfg(not(feature = "unsafe_lua_modules"))]
     let mut context = Lua::new();
 
-    load_lua_content_into_context(
-        &mut context,
-        context_key,
-        content,
-        initializers,
-        pre_handling_initializers,
-    )?;
+    load_lua_content_into_context(&mut context, context_key, content, world_id)?;
     Ok(context)
 }
 
@@ -226,17 +220,9 @@ pub fn lua_context_reload(
     context_key: &ScriptAttachment,
     content: &[u8],
     old_ctxt: &mut Lua,
-    initializers: &[ContextInitializer<LuaScriptingPlugin>],
-    pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
-    _: &(),
+    world_id: WorldId,
 ) -> Result<(), ScriptError> {
-    load_lua_content_into_context(
-        old_ctxt,
-        context_key,
-        content,
-        initializers,
-        pre_handling_initializers,
-    )?;
+    load_lua_content_into_context(old_ctxt, context_key, content, world_id)?;
     Ok(())
 }
 
@@ -248,10 +234,12 @@ pub fn lua_handler(
     context_key: &ScriptAttachment,
     callback_label: &CallbackLabel,
     context: &mut Lua,
-    pre_handling_initializers: &[ContextPreHandlingInitializer<LuaScriptingPlugin>],
-    _: &(),
+    world_id: WorldId,
 ) -> Result<ScriptValue, bevy_mod_scripting_core::error::ScriptError> {
-    pre_handling_initializers
+    let config = LuaScriptingPlugin::readonly_configuration(world_id);
+
+    config
+        .pre_handling_callbacks
         .iter()
         .try_for_each(|init| init(context_key, context))?;
 
@@ -288,8 +276,6 @@ mod test {
     #[test]
     fn test_reload_doesnt_overwrite_old_context() {
         let lua = Lua::new();
-        let initializers = vec![];
-        let pre_handling_initializers = vec![];
         let mut old_ctxt = lua.clone();
         let handle = Handle::Weak(AssetId::from(AssetIndex::from_bits(0)));
         let context_key = ScriptAttachment::EntityScript(Entity::from_raw(1), handle);
@@ -300,9 +286,7 @@ mod test {
 
             end"
             .as_bytes(),
-            &initializers,
-            &pre_handling_initializers,
-            &(),
+            WorldId::new().unwrap(),
         )
         .unwrap();
 
@@ -313,9 +297,7 @@ mod test {
             end"
             .as_bytes(),
             &mut old_ctxt,
-            &initializers,
-            &pre_handling_initializers,
-            &(),
+            WorldId::new().unwrap(),
         )
         .unwrap();
 

@@ -1,5 +1,7 @@
 //! Traits and types for managing script contexts.
 
+use bevy_ecs::world::WorldId;
+
 use crate::{
     IntoScriptPluginParams,
     bindings::{ThreadWorldContainer, WorldContainer, WorldGuard},
@@ -26,9 +28,7 @@ pub type ContextPreHandlingInitializer<P> =
 pub type ContextLoadFn<P> = fn(
     attachment: &ScriptAttachment,
     content: &[u8],
-    context_initializers: &[ContextInitializer<P>],
-    pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
-    runtime: &<P as IntoScriptPluginParams>::R,
+    world_id: WorldId,
 ) -> Result<<P as IntoScriptPluginParams>::C, ScriptError>;
 
 /// A strategy for reloading contexts
@@ -36,9 +36,7 @@ pub type ContextReloadFn<P> = fn(
     attachment: &ScriptAttachment,
     content: &[u8],
     previous_context: &mut <P as IntoScriptPluginParams>::C,
-    context_initializers: &[ContextInitializer<P>],
-    pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
-    runtime: &<P as IntoScriptPluginParams>::R,
+    world_id: WorldId,
 ) -> Result<(), ScriptError>;
 
 /// A utility trait for types implementing `IntoScriptPluginParams`.
@@ -70,13 +68,7 @@ impl<P: IntoScriptPluginParams> ScriptingLoader<P> for P {
         WorldGuard::with_existing_static_guard(world.clone(), |world| {
             let world_id = world.id();
             ThreadWorldContainer.set_world(world)?;
-            Self::context_loader()(
-                attachment,
-                content,
-                P::readonly_configuration(world_id).context_initialization_callbacks,
-                P::readonly_configuration(world_id).pre_handling_callbacks,
-                P::readonly_configuration(world_id).runtime,
-            )
+            Self::context_loader()(attachment, content, world_id)
         })
     }
 
@@ -89,14 +81,7 @@ impl<P: IntoScriptPluginParams> ScriptingLoader<P> for P {
         WorldGuard::with_existing_static_guard(world, |world| {
             let world_id = world.id();
             ThreadWorldContainer.set_world(world)?;
-            Self::context_reloader()(
-                attachment,
-                content,
-                previous_context,
-                P::readonly_configuration(world_id).context_initialization_callbacks,
-                P::readonly_configuration(world_id).pre_handling_callbacks,
-                P::readonly_configuration(world_id).runtime,
-            )
+            Self::context_reloader()(attachment, content, previous_context, world_id)
         })
     }
 }

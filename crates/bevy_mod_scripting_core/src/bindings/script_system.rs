@@ -247,11 +247,10 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
         };
 
         // call the script
-        let runtime = P::readonly_configuration(guard.id()).runtime;
 
         let mut context = context.lock();
 
-        P::handle(payload, context_key, label, &mut context, runtime, guard)
+        P::handle(payload, context_key, label, &mut context, guard)
     }
 }
 
