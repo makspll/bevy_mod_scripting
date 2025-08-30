@@ -56,7 +56,20 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
         // we demote to weak from here on out, so as not to hold the asset hostage
         self.context_key = self.context_key.into_weak();
 
-        // first apply unload callback
+        // first check the script exists, if it does not it could have been deleted by another command
+        {
+            let script_contexts = world.get_resource_or_init::<ScriptContext<P>>();
+            if !script_contexts.contains(&self.context_key) {
+                debug!(
+                    "{}: No context found for {}, not deleting.",
+                    P::LANGUAGE,
+                    self.context_key
+                );
+                return;
+            }
+        }
+
+        // apply unload callback
         Command::apply(
             RunScriptCallback::<P>::new(
                 self.context_key.clone(),
