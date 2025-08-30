@@ -279,14 +279,23 @@ mod test {
         let mut old_ctxt = lua.clone();
         let handle = Handle::Weak(AssetId::from(AssetIndex::from_bits(0)));
         let context_key = ScriptAttachment::EntityScript(Entity::from_raw(1), handle);
-
+        let world_id = WorldId::new().unwrap();
+        LuaScriptingPlugin::set_world_local_config(
+            world_id,
+            ScriptingPluginConfiguration {
+                pre_handling_callbacks: &[],
+                context_initialization_callbacks: &[],
+                emit_responses: false,
+                runtime: &(),
+            },
+        );
         lua_context_load(
             &context_key,
             "function hello_world_from_first_load()
 
             end"
             .as_bytes(),
-            WorldId::new().unwrap(),
+            world_id,
         )
         .unwrap();
 
@@ -297,7 +306,7 @@ mod test {
             end"
             .as_bytes(),
             &mut old_ctxt,
-            WorldId::new().unwrap(),
+            world_id,
         )
         .unwrap();
 

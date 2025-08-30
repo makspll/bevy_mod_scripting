@@ -165,7 +165,7 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
             runtime: Box::leak(Box::new(runtime)),
         };
 
-        P::set_thread_config(app.world().id(), config);
+        P::set_world_local_config(app.world().id(), config);
 
         app.insert_resource(ScriptContext::<P>::new(self.context_policy.clone()));
 

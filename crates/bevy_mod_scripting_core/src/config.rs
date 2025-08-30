@@ -46,7 +46,7 @@ pub trait GetPluginThreadConfig<P: IntoScriptPluginParams + ?Sized> {
     fn readonly_configuration(world: WorldId) -> ScriptingPluginConfiguration<P>;
 
     /// Set the configuration or overwrites it if already set.
-    fn set_thread_config(world: WorldId, config: ScriptingPluginConfiguration<P>);
+    fn set_world_local_config(world: WorldId, config: ScriptingPluginConfiguration<P>);
 }
 
 #[macro_export]
@@ -76,7 +76,7 @@ macro_rules! make_plugin_config_static {
                     )
             }
 
-            fn set_thread_config(
+            fn set_world_local_config(
                 world: bevy_ecs::world::WorldId,
                 config: ScriptingPluginConfiguration<$ty>,
             ) {
