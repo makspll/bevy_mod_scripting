@@ -211,6 +211,7 @@ bevy = { workspace = true, features = [
     "bevy_asset",
     "bevy_core_pipeline",
     "bevy_sprite",
+    "x11",
 ] }
 bevy_platform = { workspace = true }
 clap = { workspace = true, features = ["derive"] }

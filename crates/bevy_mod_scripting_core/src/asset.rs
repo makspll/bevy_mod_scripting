@@ -12,7 +12,7 @@ use ::{
     // },
     bevy_reflect::Reflect,
 };
-use bevy_asset::AssetServer;
+use bevy_asset::{AssetServer, Handle};
 use bevy_ecs::{
     entity::Entity,
     event::{EventReader, EventWriter},
@@ -23,11 +23,11 @@ use bevy_ecs::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    IntoScriptPluginParams, LanguageExtensions, ScriptComponent, ScriptingSystemSet, StaticScripts,
+    IntoScriptPluginParams, LanguageExtensions, ScriptComponent, ScriptingSystemSet,
     commands::{CreateOrUpdateScript, DeleteScript},
     error::ScriptError,
     event::ScriptEvent,
-    script::{ContextKey, DisplayProxy, ScriptAttachment},
+    script::{ContextKey, DisplayProxy, ScriptAttachment, ScriptContext},
 };
 
 /// Represents a scripting language. Languages which compile into another language should use the target language as their language.
@@ -215,10 +215,10 @@ fn sync_assets(
 fn handle_script_events<P: IntoScriptPluginParams>(
     mut events: EventReader<ScriptEvent>,
     script_assets: Res<Assets<ScriptAsset>>,
-    static_scripts: Res<StaticScripts>,
     scripts: Query<(Entity, &ScriptComponent)>,
     asset_server: Res<AssetServer>,
     mut script_queue: Local<ScriptQueue>,
+    script_contexts: Res<ScriptContext<P>>,
     mut commands: Commands,
     world_id: WorldId,
 ) {
@@ -233,6 +233,7 @@ fn handle_script_events<P: IntoScriptPluginParams>(
                     // We need to reload the script for any context it's
                     // associated with. That could be static scripts, script
                     // components.
+
                     for (entity, script_component) in &scripts {
                         if let Some(handle) =
                             script_component.0.iter().find(|handle| handle.id() == *id)
@@ -247,13 +248,17 @@ fn handle_script_events<P: IntoScriptPluginParams>(
                         }
                     }
 
-                    if let Some(handle) = static_scripts.scripts.iter().find(|s| s.id() == *id) {
-                        commands.queue(
-                            CreateOrUpdateScript::<P>::new(ScriptAttachment::StaticScript(
-                                handle.clone(),
-                            ))
-                            .with_responses(P::readonly_configuration(world_id).emit_responses),
-                        );
+                    let handle = Handle::Weak(*id);
+                    let attachment = ScriptAttachment::StaticScript(handle.clone());
+                    for (resident, _) in script_contexts
+                        .residents(&attachment)
+                        .filter(|(r, _)| r.script() == handle && r.is_static())
+                    {
+                        // if the script does not have any associated entity it's static.
+                        commands
+                            .queue(CreateOrUpdateScript::<P>::new(resident).with_responses(
+                                P::readonly_configuration(world_id).emit_responses,
+                            ));
                     }
                 }
             }

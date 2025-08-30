@@ -28,10 +28,7 @@ impl TestExecutor for Test {
 
         // do this in a separate thread to isolate the thread locals
 
-        match execute_integration_test(scenario) {
-            Ok(_) => Ok(()),
-            Err(e) => Err(Failed::from(format!("{e:?}"))), // print whole error from anyhow including source and backtrace
-        }
+        Ok(execute_integration_test(scenario)?)
     }
 
     fn name(&self) -> String {

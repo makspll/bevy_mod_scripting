@@ -33,7 +33,7 @@ use context::{Context, ContextInitializer, ContextPreHandlingInitializer};
 use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent, ScriptEvent};
 use handler::HandlerFn;
 use runtime::{Runtime, RuntimeInitializer};
-use script::{ContextPolicy, ScriptComponent, ScriptContext, StaticScripts};
+use script::{ContextPolicy, ScriptComponent, ScriptContext};
 use std::ops::{Deref, DerefMut};
 
 pub mod asset;
@@ -165,7 +165,7 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
             runtime: Box::leak(Box::new(runtime)),
         };
 
-        P::set_thread_config(app.world().id(), config);
+        P::set_world_local_config(app.world().id(), config);
 
         app.insert_resource(ScriptContext::<P>::new(self.context_policy.clone()));
 
@@ -294,7 +294,6 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
             .add_event::<ScriptCallbackEvent>()
             .add_event::<ScriptCallbackResponseEvent>()
             .init_resource::<AppReflectAllocator>()
-            .init_resource::<StaticScripts>()
             .init_asset::<ScriptAsset>()
             .init_resource::<AppScriptFunctionRegistry>()
             .insert_resource(AppScheduleRegistry::new());
