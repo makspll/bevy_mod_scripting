@@ -19,7 +19,6 @@ use bevy_mod_scripting_core::{
     event::CallbackLabel,
     make_plugin_config_static,
     reflection_extensions::PartialReflectExt,
-    runtime::RuntimeSettings,
     script::{ContextPolicy, ScriptAttachment},
 };
 use bindings::{
@@ -71,7 +70,7 @@ impl Default for LuaScriptingPlugin {
     fn default() -> Self {
         LuaScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
-                runtime_settings: RuntimeSettings::default(),
+                runtime_initializers: Vec::default(),
                 context_initializers: vec![
                     |_script_id, context| {
                         // set the world global

@@ -24,7 +24,6 @@ use crate::{
     error::{InteropError, ScriptError},
     event::{CallbackLabel, IntoCallbackLabel},
     handler::ScriptingHandler,
-    runtime::RuntimeContainer,
     script::{ScriptAttachment, ScriptContext, StaticScripts},
 };
 
@@ -48,8 +47,6 @@ pub fn with_handler_system_state<
 
 /// Context for systems which handle events for scripts
 pub struct HandlerContext<P: IntoScriptPluginParams> {
-    /// The runtime container
-    pub(crate) runtime_container: RuntimeContainer<P>,
     /// List of static scripts
     pub(crate) static_scripts: StaticScripts,
     /// Script context
@@ -61,7 +58,6 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
     /// Every call to this function must be paired with a call to [`Self::release`].
     pub fn yoink(world: &mut World) -> Self {
         Self {
-            runtime_container: world.remove_resource().unwrap_or_default(),
             static_scripts: world.remove_resource().unwrap_or_default(),
             script_context: world.remove_resource().unwrap_or_default(),
         }
@@ -71,22 +67,8 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
     /// Only call this if you have previously yoinked the handler context from the world.
     pub fn release(self, world: &mut World) {
         // insert the handler context back into the world
-        world.insert_resource(self.runtime_container);
         world.insert_resource(self.static_scripts);
         world.insert_resource(self.script_context);
-    }
-
-    /// Splits the handler context into its individual components.
-    ///
-    /// Useful if you are needing multiple resources from the handler context.
-    /// Otherwise the borrow checker will prevent you from borrowing the handler context mutably multiple times.
-    pub fn destructure(&mut self) -> (&mut RuntimeContainer<P>, &mut StaticScripts) {
-        (&mut self.runtime_container, &mut self.static_scripts)
-    }
-
-    /// Get the runtime container
-    pub fn runtime_container(&mut self) -> &mut RuntimeContainer<P> {
-        &mut self.runtime_container
     }
 
     /// Get the static scripts
@@ -122,7 +104,7 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
         };
 
         // call the script
-        let runtime = &self.runtime_container.runtime;
+        let runtime = P::readonly_configuration(guard.id()).runtime;
 
         let mut context = context.lock();
 

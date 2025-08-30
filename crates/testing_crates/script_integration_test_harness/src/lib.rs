@@ -314,7 +314,7 @@ where
     let ctxt_arc = context.script_context().get(&context_key).unwrap();
     let mut ctxt_locked = ctxt_arc.lock();
 
-    let runtime = &context.runtime_container().runtime;
+    let runtime = P::readonly_configuration(guard.id()).runtime;
 
     let _ = WorldAccessGuard::with_existing_static_guard(guard, |guard| {
         // Ensure the world is available via ThreadWorldContainer

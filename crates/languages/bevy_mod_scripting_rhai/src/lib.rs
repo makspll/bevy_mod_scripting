@@ -22,7 +22,6 @@ use bevy_mod_scripting_core::{
     event::CallbackLabel,
     make_plugin_config_static,
     reflection_extensions::PartialReflectExt,
-    runtime::RuntimeSettings,
     script::{ContextPolicy, DisplayProxy, ScriptAttachment},
 };
 use bindings::{
@@ -88,16 +87,14 @@ impl Default for RhaiScriptingPlugin {
     fn default() -> Self {
         RhaiScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
-                runtime_settings: RuntimeSettings {
-                    initializers: vec![|runtime| {
-                        let mut engine = runtime.write();
-                        engine.set_max_expr_depths(999, 999);
-                        engine.build_type::<RhaiReflectReference>();
-                        engine.build_type::<RhaiStaticReflectReference>();
-                        engine.register_iterator_result::<RhaiReflectReference, _>();
-                        Ok(())
-                    }],
-                },
+                runtime_initializers: vec![|runtime| {
+                    let mut engine = runtime.write();
+                    engine.set_max_expr_depths(999, 999);
+                    engine.build_type::<RhaiReflectReference>();
+                    engine.build_type::<RhaiStaticReflectReference>();
+                    engine.register_iterator_result::<RhaiReflectReference, _>();
+                    Ok(())
+                }],
                 context_initializers: vec![
                     |_, context| {
                         context.scope.set_or_push(
