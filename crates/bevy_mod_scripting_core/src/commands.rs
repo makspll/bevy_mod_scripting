@@ -14,7 +14,7 @@ use crate::{
     },
     extractors::{HandlerContext, with_handler_system_state},
     handler::{handle_script_errors, send_callback_response},
-    script::{DisplayProxy, ScriptAttachment, StaticScripts},
+    script::{DisplayProxy, ScriptAttachment},
 };
 use bevy_ecs::{system::Command, world::World};
 use bevy_log::{error, info, trace};
@@ -66,23 +66,6 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
             ),
             world,
         );
-        match &self.context_key {
-            ScriptAttachment::EntityScript(_, _) => {
-                // nothing special needs to be done, just the context removal
-            }
-            ScriptAttachment::StaticScript(script) => {
-                // remove the static script
-                let mut scripts = world.get_resource_or_init::<StaticScripts>();
-                if scripts.remove(script.id()) {
-                    debug!("Deleted static script {}", script.display());
-                } else {
-                    warn!(
-                        "Attempted to delete static script {}, but it was not found",
-                        script.display()
-                    );
-                }
-            }
-        }
 
         let mut script_contexts = world.get_resource_or_init::<ScriptContext<P>>();
         let residents_count = script_contexts.residents_len(&self.context_key);
@@ -225,10 +208,6 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     ) -> Result<(), ScriptError> {
         // we demote to weak from here on out, so as not to hold the asset hostage
         let attachment = attachment.clone().into_weak();
-        if let ScriptAttachment::StaticScript(id) = &attachment {
-            // add to static scripts
-            handler_ctxt.static_scripts.insert(id.clone());
-        }
 
         let script_id = attachment.script();
 

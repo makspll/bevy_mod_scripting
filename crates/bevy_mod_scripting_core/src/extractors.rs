@@ -24,7 +24,7 @@ use crate::{
     error::{InteropError, ScriptError},
     event::{CallbackLabel, IntoCallbackLabel},
     handler::ScriptingHandler,
-    script::{ScriptAttachment, ScriptContext, StaticScripts},
+    script::{ScriptAttachment, ScriptContext},
 };
 
 /// Executes `system_state.get_mut` followed by `system_state.apply` after running the given closure, makes sure state is correctly handled in the context of an exclusive system.
@@ -47,8 +47,6 @@ pub fn with_handler_system_state<
 
 /// Context for systems which handle events for scripts
 pub struct HandlerContext<P: IntoScriptPluginParams> {
-    /// List of static scripts
-    pub(crate) static_scripts: StaticScripts,
     /// Script context
     pub(crate) script_context: ScriptContext<P>,
 }
@@ -58,7 +56,6 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
     /// Every call to this function must be paired with a call to [`Self::release`].
     pub fn yoink(world: &mut World) -> Self {
         Self {
-            static_scripts: world.remove_resource().unwrap_or_default(),
             script_context: world.remove_resource().unwrap_or_default(),
         }
     }
@@ -67,13 +64,7 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
     /// Only call this if you have previously yoinked the handler context from the world.
     pub fn release(self, world: &mut World) {
         // insert the handler context back into the world
-        world.insert_resource(self.static_scripts);
         world.insert_resource(self.script_context);
-    }
-
-    /// Get the static scripts
-    pub fn static_scripts(&mut self) -> &mut StaticScripts {
-        &mut self.static_scripts
     }
 
     /// Get the static scripts

@@ -16,7 +16,7 @@ use bevy::{
 };
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsoleOpen, ConsolePlugin, make_layer};
 use bevy_mod_scripting::{core::bindings::AllocatorDiagnosticPlugin, prelude::*};
-use bevy_mod_scripting_core::{commands::RemoveStaticScript, script::StaticScripts};
+use bevy_mod_scripting_core::commands::RemoveStaticScript;
 use clap::Parser;
 
 // CONSOLE SETUP
@@ -42,7 +42,7 @@ fn run_script_cmd(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     script_comps: Query<(Entity, &ScriptComponent)>,
-    static_scripts: Res<StaticScripts>,
+    mut static_scripts: Local<Vec<Handle<ScriptAsset>>>,
 ) {
     if let Some(Ok(command)) = log.take() {
         match command {
@@ -60,6 +60,7 @@ fn run_script_cmd(
                 } else {
                     bevy::log::info!("Using static script instead of spawning an entity");
                     let handle = asset_server.load(script_path);
+                    static_scripts.push(handle.clone());
                     commands.queue(AddStaticScript::new(handle))
                 }
             }
@@ -72,7 +73,7 @@ fn run_script_cmd(
                     commands.entity(id).despawn();
                 }
 
-                for script in static_scripts.values() {
+                for script in static_scripts.iter() {
                     commands.queue(RemoveStaticScript::new(script.clone()));
                 }
             }

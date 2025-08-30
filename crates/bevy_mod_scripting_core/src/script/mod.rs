@@ -125,87 +125,11 @@ impl ScriptComponent {
     }
 }
 
-/// A collection of scripts, not associated with any entity.
-///
-/// Useful for `global` or `static` scripts which operate over a larger scope than a single entity.
-#[derive(Default, Resource)]
-pub struct StaticScripts {
-    pub(crate) scripts: HashSet<Handle<ScriptAsset>>,
-}
-
-#[profiling::all_functions]
-impl StaticScripts {
-    /// Inserts a static script into the collection
-    pub fn insert<S: Into<Handle<ScriptAsset>>>(&mut self, script: S) {
-        self.scripts.insert(script.into());
-    }
-
-    /// Removes a static script from the collection, returning `true` if the script was in the collection, `false` otherwise
-    pub fn remove(&mut self, script_id: impl Into<ScriptId>) -> bool {
-        let script_id = script_id.into();
-        self.scripts
-            .extract_if(|handle| handle.id() == script_id)
-            .next()
-            .is_some()
-    }
-
-    /// Checks if a static script is in the collection
-    /// Returns `true` if the script is in the collection, `false` otherwise
-    pub fn contains(&self, script_id: impl Into<ScriptId>) -> bool {
-        let script_id = script_id.into();
-        self.scripts.iter().any(|handle| handle.id() == script_id)
-    }
-
-    /// Returns an iterator over the static scripts
-    pub fn values(&self) -> impl Iterator<Item = &Handle<ScriptAsset>> {
-        self.scripts.iter()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use bevy_ecs::{event::Events, world::World};
 
     use super::*;
-
-    #[test]
-    fn static_scripts_insert() {
-        let mut static_scripts = StaticScripts::default();
-        let script1 = Handle::default();
-        static_scripts.insert(script1.clone());
-        assert_eq!(static_scripts.scripts.len(), 1);
-        assert!(static_scripts.scripts.contains(&script1));
-    }
-
-    #[test]
-    fn static_scripts_remove() {
-        let mut static_scripts = StaticScripts::default();
-        let script1 = Handle::default();
-        static_scripts.insert(script1.clone());
-        assert_eq!(static_scripts.scripts.len(), 1);
-        assert!(static_scripts.scripts.contains(&script1));
-        assert!(static_scripts.remove(&script1));
-        assert_eq!(static_scripts.scripts.len(), 0);
-        assert!(!static_scripts.scripts.contains(&script1));
-    }
-
-    fn scriptid_from_u128(uuid: u128) -> ScriptId {
-        ScriptId::from(uuid::Builder::from_random_bytes(uuid.to_le_bytes()).into_uuid())
-    }
-
-    fn handle_from_u128(uuid: u128) -> Handle<ScriptAsset> {
-        Handle::Weak(scriptid_from_u128(uuid))
-    }
-
-    #[test]
-    fn static_scripts_contains() {
-        let mut static_scripts = StaticScripts::default();
-        let script1 = handle_from_u128(0);
-        let script2 = handle_from_u128(1);
-        static_scripts.insert(script1.clone());
-        assert!(static_scripts.contains(&script1));
-        assert!(!static_scripts.contains(&script2));
-    }
 
     #[test]
     fn test_component_add() {
