@@ -60,6 +60,16 @@ impl ScriptAttachment {
             }
         }
     }
+
+    /// Returns true if the attachment is a static script.
+    pub fn is_static(&self) -> bool {
+        matches!(self, ScriptAttachment::StaticScript(_))
+    }
+
+    /// Returns true if the attachment is an entity script.
+    pub fn is_entity_script(&self) -> bool {
+        matches!(self, ScriptAttachment::EntityScript(_, _))
+    }
 }
 
 impl From<ScriptAttachment> for ContextKey {

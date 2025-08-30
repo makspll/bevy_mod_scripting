@@ -116,10 +116,8 @@ fn game_of_life_app(app: &mut App) -> &mut App {
                 send_on_update.after(update_rendered_state),
                 (
                     event_handler::<OnUpdate, LuaScriptingPlugin>,
-                    #[cfg(feature = "rhai")]
                     event_handler::<OnUpdate, RhaiScriptingPlugin>,
                     event_handler::<OnClick, LuaScriptingPlugin>,
-                    #[cfg(feature = "rhai")]
                     event_handler::<OnClick, RhaiScriptingPlugin>,
                 )
                     .after(send_on_update),

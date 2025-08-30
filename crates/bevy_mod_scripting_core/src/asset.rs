@@ -27,7 +27,7 @@ use crate::{
     commands::{CreateOrUpdateScript, DeleteScript},
     error::ScriptError,
     event::ScriptEvent,
-    script::{ContextKey, DisplayProxy, ScriptAttachment},
+    script::{ContextKey, DisplayProxy, ScriptAttachment, ScriptContext},
 };
 
 /// Represents a scripting language. Languages which compile into another language should use the target language as their language.
@@ -218,6 +218,7 @@ fn handle_script_events<P: IntoScriptPluginParams>(
     scripts: Query<(Entity, &ScriptComponent)>,
     asset_server: Res<AssetServer>,
     mut script_queue: Local<ScriptQueue>,
+    script_contexts: Res<ScriptContext<P>>,
     mut commands: Commands,
     world_id: WorldId,
 ) {
@@ -233,8 +234,6 @@ fn handle_script_events<P: IntoScriptPluginParams>(
                     // associated with. That could be static scripts, script
                     // components.
 
-                    let mut found_entity = false;
-
                     for (entity, script_component) in &scripts {
                         if let Some(handle) =
                             script_component.0.iter().find(|handle| handle.id() == *id)
@@ -246,17 +245,20 @@ fn handle_script_events<P: IntoScriptPluginParams>(
                                 ))
                                 .with_responses(P::readonly_configuration(world_id).emit_responses),
                             );
-                            found_entity = true;
                         }
                     }
 
-                    if !found_entity {
-                        let handle = Handle::Weak(*id);
+                    let handle = Handle::Weak(*id);
+                    let attachment = ScriptAttachment::StaticScript(handle.clone());
+                    for (resident, _) in script_contexts
+                        .residents(&attachment)
+                        .filter(|(r, _)| r.script() == handle && r.is_static())
+                    {
                         // if the script does not have any associated entity it's static.
-                        commands.queue(
-                            CreateOrUpdateScript::<P>::new(ScriptAttachment::StaticScript(handle))
-                                .with_responses(P::readonly_configuration(world_id).emit_responses),
-                        );
+                        commands
+                            .queue(CreateOrUpdateScript::<P>::new(resident).with_responses(
+                                P::readonly_configuration(world_id).emit_responses,
+                            ));
                     }
                 }
             }
