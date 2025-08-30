@@ -16,13 +16,13 @@ use crate::{
     handler::{handle_script_errors, send_callback_response},
     script::{DisplayProxy, ScriptAttachment, StaticScripts},
 };
-use ::{
+use bevy_ecs::{system::Command, world::World};
+use bevy_log::{error, info, trace};
+use {
     bevy_asset::{Assets, Handle},
     bevy_ecs::event::Events,
     bevy_log::{debug, warn},
 };
-use bevy_ecs::{system::Command, world::World};
-use bevy_log::{error, info, trace};
 
 /// Detaches a script, invoking the `on_script_unloaded` callback if it exists, and removes the script from the static scripts collection.
 pub struct DeleteScript<P: IntoScriptPluginParams> {
@@ -157,10 +157,6 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
             attachment,
             content,
             context,
-            &handler_ctxt.context_loading_settings.context_initializers,
-            &handler_ctxt
-                .context_loading_settings
-                .context_pre_handling_initializers,
             guard.clone(),
             &handler_ctxt.runtime_container.runtime,
         )
@@ -176,10 +172,6 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         let context = P::load(
             attachment,
             content,
-            &handler_ctxt.context_loading_settings.context_initializers,
-            &handler_ctxt
-                .context_loading_settings
-                .context_pre_handling_initializers,
             guard.clone(),
             &handler_ctxt.runtime_container.runtime,
         )?;

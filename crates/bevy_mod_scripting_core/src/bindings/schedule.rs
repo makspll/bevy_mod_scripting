@@ -192,6 +192,7 @@ impl WorldAccessGuard<'_> {
     reason = "tests are there but not working currently"
 )]
 mod tests {
+    use crate::config::{GetPluginThreadConfig, ScriptingPluginConfiguration};
     use ::{
         bevy_app::{App, Plugin, Update},
         bevy_ecs::{
@@ -199,7 +200,9 @@ mod tests {
             schedule::{NodeId, Schedules},
             system::IntoSystem,
         },
+        std::{cell::OnceCell, rc::Rc},
     };
+
     use test_utils::make_test_plugin;
 
     use super::*;

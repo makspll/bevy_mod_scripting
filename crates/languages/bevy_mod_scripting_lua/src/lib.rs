@@ -13,9 +13,11 @@ use bevy_mod_scripting_core::{
         ThreadWorldContainer, WorldContainer, function::namespace::Namespace,
         globals::AppScriptGlobalsRegistry, script_value::ScriptValue,
     },
+    config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
     context::{ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
     event::CallbackLabel,
+    make_plugin_config_static,
     reflection_extensions::PartialReflectExt,
     runtime::RuntimeSettings,
     script::{ContextPolicy, ScriptAttachment},
@@ -29,6 +31,8 @@ use mlua::{Function, IntoLua, Lua, MultiValue};
 
 /// Bindings for lua.
 pub mod bindings;
+
+make_plugin_config_static!(LuaScriptingPlugin);
 
 impl IntoScriptPluginParams for LuaScriptingPlugin {
     type C = Lua;

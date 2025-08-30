@@ -26,9 +26,12 @@ impl TestExecutor for Test {
         let scenario = Scenario::from_scenario_file(&script_asset_path, &scenario_path)
             .map_err(|e| format!("{e:?}"))?; // print whole error from anyhow including source and backtrace
 
-        execute_integration_test(scenario)?;
+        // do this in a separate thread to isolate the thread locals
 
-        Ok(())
+        match execute_integration_test(scenario) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(Failed::from(format!("{e:?}"))), // print whole error from anyhow including source and backtrace
+        }
     }
 
     fn name(&self) -> String {
@@ -48,8 +51,9 @@ impl TestExecutor for Test {
 // or filter using the prefix "lua test -"
 fn main() {
     // Parse command line arguments
-    let args = Arguments::from_args();
+    let mut args = Arguments::from_args();
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    args.test_threads = Some(1); // force single-threaded to avoid issues with thread-local storage
 
     let tests = discover_all_tests(manifest_dir, |p| p.script_asset_path.starts_with("tests"))
         .into_iter()
