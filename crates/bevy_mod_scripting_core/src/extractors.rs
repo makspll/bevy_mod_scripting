@@ -103,12 +103,9 @@ impl<P: IntoScriptPluginParams> HandlerContext<P> {
             return Err(InteropError::missing_context(context_key.clone()).into());
         };
 
-        // call the script
-        let runtime = P::readonly_configuration(guard.id()).runtime;
-
         let mut context = context.lock();
 
-        P::handle(payload, context_key, label, &mut context, runtime, guard)
+        P::handle(payload, context_key, label, &mut context, guard)
     }
 
     /// Invoke a callback in a script immediately.

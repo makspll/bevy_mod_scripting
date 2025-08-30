@@ -1,4 +1,6 @@
 //! Contains the logic for handling script callback events
+use bevy_ecs::world::WorldId;
+
 use {
     bevy_ecs::{
         event::EventCursor,
@@ -15,7 +17,6 @@ use crate::{
         ThreadWorldContainer, WorldAccessGuard, WorldContainer, WorldGuard,
         pretty_print::DisplayWithWorld, script_value::ScriptValue,
     },
-    context::ContextPreHandlingInitializer,
     error::ScriptError,
     event::{
         CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent,
@@ -31,8 +32,7 @@ pub type HandlerFn<P> = fn(
     context_key: &ScriptAttachment,
     callback: &CallbackLabel,
     context: &mut <P as IntoScriptPluginParams>::C,
-    pre_handling_initializers: &[ContextPreHandlingInitializer<P>],
-    runtime: &<P as IntoScriptPluginParams>::R,
+    world_id: WorldId,
 ) -> Result<ScriptValue, ScriptError>;
 
 /// A utility trait, implemented for all types implementing `IntoScriptPluginParams`.
@@ -46,7 +46,6 @@ pub trait ScriptingHandler<P: IntoScriptPluginParams> {
         context_key: &ScriptAttachment,
         callback: &CallbackLabel,
         script_ctxt: &mut P::C,
-        runtime: &P::R,
         world: WorldGuard,
     ) -> Result<ScriptValue, ScriptError>;
 }
@@ -58,20 +57,12 @@ impl<P: IntoScriptPluginParams> ScriptingHandler<P> for P {
         context_key: &ScriptAttachment,
         callback: &CallbackLabel,
         script_ctxt: &mut P::C,
-        runtime: &P::R,
         world: WorldGuard,
     ) -> Result<ScriptValue, ScriptError> {
         WorldGuard::with_existing_static_guard(world.clone(), |world| {
             let world_id = world.id();
             ThreadWorldContainer.set_world(world)?;
-            Self::handler()(
-                args,
-                context_key,
-                callback,
-                script_ctxt,
-                P::readonly_configuration(world_id).pre_handling_callbacks,
-                runtime,
-            )
+            Self::handler()(args, context_key, callback, script_ctxt, world_id)
         })
     }
 }

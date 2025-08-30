@@ -33,7 +33,9 @@ macro_rules! make_test_plugin {
             }
 
             fn handler() -> $ident::HandlerFn<Self> {
-                (|args, context_key, callback, script_ctxt, pre_handling_initializers, runtime| {
+                (|args, context_key, callback, script_ctxt, world_id| {
+                    let config = TestPlugin::readonly_configuration(world_id);
+                    let runtime = config.runtime;
                     runtime
                         .invocations
                         .lock()
@@ -43,7 +45,7 @@ macro_rules! make_test_plugin {
             }
 
             fn context_loader() -> $ident::ContextLoadFn<Self> {
-                (|attachment, content, context_initializers, pre_handling_initializers, runtime| {
+                (|attachment, content, world_id| {
                     Ok(TestContext {
                         invocations: vec![],
                     })
@@ -51,12 +53,7 @@ macro_rules! make_test_plugin {
             }
 
             fn context_reloader() -> $ident::ContextReloadFn<Self> {
-                (|attachment,
-                  content,
-                  previous_context,
-                  context_initializers,
-                  pre_handling_initializers,
-                  runtime| {
+                (|attachment, content, previous_context, world_id| {
                     previous_context.invocations.clear();
                     Ok(())
                 })
