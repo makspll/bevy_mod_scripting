@@ -149,32 +149,19 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         content: &[u8],
         context: &mut P::C,
         guard: WorldGuard,
-        handler_ctxt: &HandlerContext<P>,
     ) -> Result<(), ScriptError> {
         debug!("{}: reloading context {}", P::LANGUAGE, attachment);
         // reload context
-        P::reload(
-            attachment,
-            content,
-            context,
-            guard.clone(),
-            &handler_ctxt.runtime_container.runtime,
-        )
+        P::reload(attachment, content, context, guard.clone())
     }
 
     fn load_context(
         attachment: &ScriptAttachment,
         content: &[u8],
         guard: WorldGuard,
-        handler_ctxt: &HandlerContext<P>,
     ) -> Result<P::C, ScriptError> {
         debug!("{}: loading context {}", P::LANGUAGE, attachment);
-        let context = P::load(
-            attachment,
-            content,
-            guard.clone(),
-            &handler_ctxt.runtime_container.runtime,
-        )?;
+        let context = P::load(attachment, content, guard.clone())?;
         Ok(context)
     }
 
@@ -272,16 +259,10 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
             Some(context) => {
                 let mut context = context.lock();
 
-                Self::reload_context(
-                    &attachment,
-                    content,
-                    &mut context,
-                    guard.clone(),
-                    handler_ctxt,
-                )
-                .map(|_| None)
+                Self::reload_context(&attachment, content, &mut context, guard.clone())
+                    .map(|_| None)
             }
-            None => Self::load_context(&attachment, content, guard.clone(), handler_ctxt).map(Some),
+            None => Self::load_context(&attachment, content, guard.clone()).map(Some),
         };
 
         match result_context_to_insert {

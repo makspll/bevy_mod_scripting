@@ -16,7 +16,6 @@ use crate::{
     event::CallbackLabel,
     extractors::get_all_access_ids,
     handler::ScriptingHandler,
-    runtime::RuntimeContainer,
     script::{ScriptAttachment, ScriptContext},
 };
 use ::{
@@ -201,7 +200,6 @@ impl ScriptSystemBuilder {
 
 struct DynamicHandlerContext<'w, P: IntoScriptPluginParams> {
     script_context: &'w ScriptContext<P>,
-    runtime_container: &'w RuntimeContainer<P>,
 }
 
 #[profiling::all_functions]
@@ -213,15 +211,10 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
     pub fn init_param(world: &mut World, system: &mut FilteredAccessSet<ComponentId>) {
         let mut access = FilteredAccess::<ComponentId>::matches_nothing();
 
-        let runtime_container_res_id = world
-            .resource_id::<RuntimeContainer<P>>()
-            .expect("RuntimeContainer resource not found");
-
         let script_context_res_id = world
             .resource_id::<ScriptContext<P>>()
             .expect("Scripts resource not found");
 
-        access.add_resource_read(runtime_container_res_id);
         access.add_resource_read(script_context_res_id);
 
         system.add(access);
@@ -235,9 +228,6 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
         unsafe {
             Self {
                 script_context: system.get_resource().expect("Scripts resource not found"),
-                runtime_container: system
-                    .get_resource()
-                    .expect("RuntimeContainer resource not found"),
             }
         }
     }
@@ -257,7 +247,7 @@ impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
         };
 
         // call the script
-        let runtime = &self.runtime_container.runtime;
+        let runtime = P::readonly_configuration(guard.id()).runtime;
 
         let mut context = context.lock();
 

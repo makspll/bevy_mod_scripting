@@ -50,7 +50,6 @@ pub trait ScriptingLoader<P: IntoScriptPluginParams> {
         attachment: &ScriptAttachment,
         content: &[u8],
         world: WorldGuard,
-        runtime: &P::R,
     ) -> Result<P::C, ScriptError>;
 
     /// Reloads a script context using the provided reloader function
@@ -59,7 +58,6 @@ pub trait ScriptingLoader<P: IntoScriptPluginParams> {
         content: &[u8],
         previous_context: &mut P::C,
         world: WorldGuard,
-        runtime: &P::R,
     ) -> Result<(), ScriptError>;
 }
 
@@ -68,7 +66,6 @@ impl<P: IntoScriptPluginParams> ScriptingLoader<P> for P {
         attachment: &ScriptAttachment,
         content: &[u8],
         world: WorldGuard,
-        runtime: &P::R,
     ) -> Result<P::C, ScriptError> {
         WorldGuard::with_existing_static_guard(world.clone(), |world| {
             let world_id = world.id();
@@ -78,7 +75,7 @@ impl<P: IntoScriptPluginParams> ScriptingLoader<P> for P {
                 content,
                 P::readonly_configuration(world_id).context_initialization_callbacks,
                 P::readonly_configuration(world_id).pre_handling_callbacks,
-                runtime,
+                P::readonly_configuration(world_id).runtime,
             )
         })
     }
@@ -88,7 +85,6 @@ impl<P: IntoScriptPluginParams> ScriptingLoader<P> for P {
         content: &[u8],
         previous_context: &mut P::C,
         world: WorldGuard,
-        runtime: &P::R,
     ) -> Result<(), ScriptError> {
         WorldGuard::with_existing_static_guard(world, |world| {
             let world_id = world.id();
@@ -99,7 +95,7 @@ impl<P: IntoScriptPluginParams> ScriptingLoader<P> for P {
                 previous_context,
                 P::readonly_configuration(world_id).context_initialization_callbacks,
                 P::readonly_configuration(world_id).pre_handling_callbacks,
-                runtime,
+                P::readonly_configuration(world_id).runtime,
             )
         })
     }

@@ -14,7 +14,7 @@ use crate::{
 /// Configs contained here should be
 ///
 /// *global meaning stored in thread-locals, i.e. not annoyingly global, but pretty global.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct ScriptingPluginConfiguration<P: IntoScriptPluginParams + ?Sized> {
     /// callbacks executed before a handler callback is executed every time
     pub pre_handling_callbacks: &'static [ContextPreHandlingInitializer<P>],
@@ -22,6 +22,8 @@ pub struct ScriptingPluginConfiguration<P: IntoScriptPluginParams + ?Sized> {
     pub context_initialization_callbacks: &'static [ContextInitializer<P>],
     /// Whether to emit responses from the core callbacks like `on_script_loaded`.
     pub emit_responses: bool,
+    /// The configured runtime for the plugin
+    pub runtime: &'static P::R,
 }
 
 impl<P: IntoScriptPluginParams + ?Sized> Clone for ScriptingPluginConfiguration<P> {

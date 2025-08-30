@@ -12,15 +12,15 @@ use asset::{
     Language, ScriptAsset, ScriptAssetLoader, configure_asset_systems,
     configure_asset_systems_for_plugin,
 };
-use bevy_app::{App, Plugin, PostStartup, PostUpdate};
+use bevy_app::{App, Plugin, PostUpdate};
 use bevy_asset::{AssetApp, Handle};
+use bevy_ecs::schedule::IntoScheduleConfigs;
 use bevy_ecs::{
     reflect::{AppTypeRegistry, ReflectComponent},
     resource::Resource,
     schedule::SystemSet,
-    system::{Command, In},
+    system::Command,
 };
-use bevy_ecs::{schedule::IntoScheduleConfigs, system::IntoSystem};
 use bevy_log::error;
 use bevy_platform::collections::HashMap;
 use bindings::{
@@ -30,10 +30,9 @@ use bindings::{
 };
 use commands::{AddStaticScript, RemoveStaticScript};
 use context::{Context, ContextInitializer, ContextPreHandlingInitializer};
-use error::ScriptError;
 use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent, ScriptEvent};
 use handler::HandlerFn;
-use runtime::{Runtime, RuntimeContainer, RuntimeInitializer, RuntimeSettings, initialize_runtime};
+use runtime::{Runtime, RuntimeInitializer};
 use script::{ContextPolicy, ScriptComponent, ScriptContext, StaticScripts};
 use std::ops::{Deref, DerefMut};
 
@@ -97,8 +96,8 @@ pub trait IntoScriptPluginParams: 'static + GetPluginThreadConfig<Self> {
 
 /// Bevy plugin enabling scripting within the bevy mod scripting framework
 pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
-    /// Settings for the runtime
-    pub runtime_settings: RuntimeSettings<P>,
+    /// Functions configuring the runtime after it is created
+    pub runtime_initializers: Vec<RuntimeInitializer<P>>,
 
     /// The strategy used to assign contexts to scripts
     pub context_policy: ContextPolicy,
@@ -137,7 +136,7 @@ where
 impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P> {
     fn default() -> Self {
         Self {
-            runtime_settings: Default::default(),
+            runtime_initializers: Default::default(),
             context_policy: ContextPolicy::default(),
             language: Default::default(),
             context_initializers: Default::default(),
@@ -150,16 +149,20 @@ impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P> {
 #[profiling::all_functions]
 impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
     fn build(&self, app: &mut App) {
-        app.insert_resource(self.runtime_settings.clone())
-            .insert_resource::<RuntimeContainer<P>>(RuntimeContainer {
-                runtime: P::build_runtime(),
-            });
-
         // initialize thread local configs
+
+        let runtime = P::build_runtime();
+        for initializer in &self.runtime_initializers {
+            if let Err(e) = initializer(&runtime) {
+                error!("Error initializing runtime: {:?}. Continuing.", e);
+            }
+        }
+
         let config = ScriptingPluginConfiguration::<P> {
             pre_handling_callbacks: Vec::leak(self.context_pre_handling_initializers.clone()),
             context_initialization_callbacks: Vec::leak(self.context_initializers.clone()),
             emit_responses: self.emit_responses,
+            runtime: Box::leak(Box::new(runtime)),
         };
 
         P::set_thread_config(app.world().id(), config);
@@ -196,7 +199,7 @@ impl<P: IntoScriptPluginParams> ScriptingPlugin<P> {
     ///
     /// Initializers will be run after the runtime is created, but before any contexts are loaded.
     pub fn add_runtime_initializer(&mut self, initializer: RuntimeInitializer<P>) -> &mut Self {
-        self.runtime_settings.initializers.push(initializer);
+        self.runtime_initializers.push(initializer);
         self
     }
 }
@@ -325,16 +328,6 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
 
 /// Systems registered per-language
 fn register_script_plugin_systems<P: IntoScriptPluginParams>(app: &mut App) {
-    app.add_systems(
-        PostStartup,
-        (initialize_runtime::<P>.pipe(|e: In<Result<(), ScriptError>>| {
-            if let Err(e) = e.0 {
-                error!("Error initializing runtime: {:?}", e);
-            }
-        }))
-        .in_set(ScriptingSystemSet::RuntimeInitialization),
-    );
-
     app.add_plugins(configure_asset_systems_for_plugin::<P>);
 }
 
@@ -344,32 +337,6 @@ fn register_types(app: &mut App) {
     app.register_type::<ScriptTypeRegistration>();
     app.register_type::<ReflectReference>();
     app.register_type::<ScriptComponent>();
-}
-
-/// Trait for adding a runtime initializer to an app
-pub trait AddRuntimeInitializer {
-    /// Adds a runtime initializer to the app
-    fn add_runtime_initializer<P: IntoScriptPluginParams>(
-        &mut self,
-        initializer: RuntimeInitializer<P>,
-    ) -> &mut Self;
-}
-
-impl AddRuntimeInitializer for App {
-    fn add_runtime_initializer<P: IntoScriptPluginParams>(
-        &mut self,
-        initializer: RuntimeInitializer<P>,
-    ) -> &mut Self {
-        if !self.world_mut().contains_resource::<RuntimeSettings<P>>() {
-            self.world_mut().init_resource::<RuntimeSettings<P>>();
-        }
-        self.world_mut()
-            .resource_mut::<RuntimeSettings<P>>()
-            .as_mut()
-            .initializers
-            .push(initializer);
-        self
-    }
 }
 
 /// Trait for adding static scripts to an app
