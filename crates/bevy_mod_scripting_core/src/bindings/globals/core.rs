@@ -7,12 +7,12 @@ use ::{
     bevy_reflect::TypeRegistration,
 };
 use bevy_app::App;
+use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_mod_scripting_derive::script_globals;
 use bevy_platform::collections::HashMap;
 use std::{cell::RefCell, sync::Arc};
 
 use crate::{
-    asset::ScriptAsset,
     bindings::{
         ScriptComponentRegistration, ScriptResourceRegistration, ScriptTypeRegistration,
         WorldGuard,

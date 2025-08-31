@@ -8,8 +8,8 @@ use ::{
     bevy_ecs::{component::ComponentId, entity::Entity, world::World},
     bevy_reflect::{Reflect, TypeRegistration},
 };
+use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_core::{
-    asset::Language,
     bindings::{
         DynamicScriptFunction, ReflectReference, ScriptComponentRegistration,
         ScriptResourceRegistration, ScriptTypeRegistration, ScriptValue,

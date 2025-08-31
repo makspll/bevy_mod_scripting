@@ -98,6 +98,7 @@ bevy_mod_scripting_lua = { workspace = true, optional = true }
 bevy_mod_scripting_rhai = { workspace = true, optional = true }
 bevy_mod_scripting_functions = { workspace = true }
 bevy_mod_scripting_derive = { workspace = true }
+bevy_mod_scripting_asset = { workspace = true }
 
 [workspace.dependencies]
 # local crates
@@ -110,6 +111,8 @@ ladfile = { path = "crates/ladfile", version = "0.5.0" }
 ladfile_builder = { path = "crates/ladfile_builder", version = "0.5.1" }
 bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", version = "0.15.1", default-features = false }
 bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.15.1", default-features = false }
+bevy_mod_scripting_asset = { path = "crates/bevy_mod_scripting_asset", version = "0.15.1", default-features = false }
+
 # bevy
 
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.15.1" }
@@ -241,6 +244,7 @@ members = [
     "crates/ladfile_builder",
     "crates/bevy_system_reflection",
     "crates/bindings/*",
+    "crates/bevy_mod_scripting_asset",
 ]
 resolver = "2"
 exclude = ["codegen", "crates/macro_tests", "xtask"]

@@ -23,6 +23,7 @@ bevy_log = { workspace = true, default-features = false, features = [] }
 bevy_platform = { workspace = true, default-features = false, features = [] }
 rhai = { workspace = true, features = ["std"] }
 bevy_mod_scripting_core = { workspace = true, features = ["rhai_impls"] }
+bevy_mod_scripting_asset = { workspace = true }
 strum = { workspace = true, features = ["derive"] }
 parking_lot = { workspace = true }
 

@@ -2,7 +2,6 @@
 
 use super::MagicFunctions;
 use super::{from::FromScript, into::IntoScript, namespace::Namespace};
-use crate::asset::Language;
 use crate::bindings::function::arg_meta::ArgMeta;
 use crate::docgen::info::{FunctionInfo, GetFunctionInfo};
 use crate::{
@@ -11,6 +10,7 @@ use crate::{
     error::InteropError,
 };
 use bevy_ecs::prelude::Resource;
+use bevy_mod_scripting_asset::Language;
 use bevy_platform::collections::HashMap;
 use bevy_reflect::Reflect;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};

@@ -1,5 +1,6 @@
 //! Contains functions defined by the [`bevy_mod_scripting_core`] crate
 
+use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_platform::collections::HashMap;
 use std::ops::Deref;
 
@@ -7,7 +8,6 @@ use bevy_app::App;
 use bevy_asset::{AssetServer, Handle};
 use bevy_ecs::{entity::Entity, prelude::AppTypeRegistry, schedule::Schedules, world::World};
 use bevy_mod_scripting_core::{
-    asset::ScriptAsset,
     bindings::{
         function::{
             from::Union, namespace::GlobalNamespace, script_function::DynamicScriptFunctionMut,
@@ -458,17 +458,18 @@ impl World {
         let _world = ctxt.world()?;
         let _system = match ctxt.language() {
             #[cfg(feature = "lua_bindings")]
-            asset::Language::Lua => _world
+            bevy_mod_scripting_asset::Language::Lua => _world
                 .add_system::<bevy_mod_scripting_lua::LuaScriptingPlugin>(
-                    &schedule,
-                    builder.into_inner(),
-                )?,
+                &schedule,
+                builder.into_inner(),
+            )?,
             #[cfg(feature = "rhai_bindings")]
-            asset::Language::Rhai => _world
-                .add_system::<bevy_mod_scripting_rhai::RhaiScriptingPlugin>(
+            bevy_mod_scripting_asset::Language::Rhai => {
+                _world.add_system::<bevy_mod_scripting_rhai::RhaiScriptingPlugin>(
                     &schedule,
                     builder.into_inner(),
-                )?,
+                )?
+            }
             _ => {
                 return Err(InteropError::unsupported_operation(
                     None,

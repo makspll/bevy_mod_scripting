@@ -15,11 +15,12 @@ use ::{
     bevy_reflect::Reflect,
 };
 
-use crate::{asset::ScriptAsset, event::ScriptEvent};
+use crate::event::ScriptEvent;
 
 mod context_key;
 mod script_context;
 use bevy_ecs::component::Component;
+use bevy_mod_scripting_asset::ScriptAsset;
 pub use context_key::*;
 pub use script_context::*;
 

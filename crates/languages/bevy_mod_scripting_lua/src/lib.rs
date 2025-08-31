@@ -9,9 +9,9 @@ use ::{
 use bevy_app::App;
 use bevy_ecs::world::WorldId;
 use bevy_log::trace;
+use bevy_mod_scripting_asset::{Language, ScriptAsset};
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
-    asset::{Language, ScriptAsset},
     bindings::{
         ThreadWorldContainer, WorldContainer, function::namespace::Namespace,
         globals::AppScriptGlobalsRegistry, script_value::ScriptValue,
@@ -96,6 +96,7 @@ impl Default for LuaScriptingPlugin {
         LuaScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
                 runtime_initializers: Vec::default(),
+                supported_extensions: vec!["lua", "luau"],
                 context_initializers: vec![
                     |_script_id, context| {
                         // set the world global
@@ -294,6 +295,7 @@ pub fn lua_handler(
 #[cfg(test)]
 mod test {
     use ::bevy_asset::{AssetId, AssetIndex, Handle};
+    use bevy_mod_scripting_asset::LanguageExtensions;
     use mlua::Value;
 
     use super::*;
@@ -312,6 +314,7 @@ mod test {
                 context_initialization_callbacks: &[],
                 emit_responses: false,
                 runtime: &(),
+                language_extensions: Box::leak(Box::new(LanguageExtensions::default())),
             },
         );
         lua_context_load(

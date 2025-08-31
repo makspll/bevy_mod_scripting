@@ -23,7 +23,6 @@ use super::{
     with_global_access,
 };
 use crate::{
-    asset::ScriptAsset,
     bindings::{
         function::{from::FromScript, from_ref::FromScriptRef},
         with_access_read, with_access_write,
@@ -55,6 +54,7 @@ use bevy_ecs::{
     system::Command,
     world::WorldId,
 };
+use bevy_mod_scripting_asset::ScriptAsset;
 use bevy_platform::collections::HashMap;
 use bevy_reflect::{TypeInfo, VariantInfo};
 use bevy_system_reflection::ReflectSchedule;
