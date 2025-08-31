@@ -1,16 +1,7 @@
 //! Contains the logic for handling script callback events
 use bevy_ecs::world::WorldId;
 
-use {
-    bevy_ecs::{
-        event::EventCursor,
-        event::Events,
-        system::{Local, SystemState},
-        world::{Mut, World},
-    },
-    bevy_log::error,
-};
-
+use crate::extractors::CallContext;
 use crate::{
     IntoScriptPluginParams, Language,
     bindings::{
@@ -22,8 +13,17 @@ use crate::{
         CallbackLabel, IntoCallbackLabel, ScriptCallbackEvent, ScriptCallbackResponseEvent,
         ScriptErrorEvent,
     },
-    extractors::{HandlerContext, WithWorldGuard},
-    script::ScriptAttachment,
+    extractors::WithWorldGuard,
+    script::{ScriptAttachment, ScriptContext},
+};
+use {
+    bevy_ecs::{
+        event::EventCursor,
+        event::Events,
+        system::{Local, SystemState},
+        world::{Mut, World},
+    },
+    bevy_log::error,
 };
 
 /// A function that handles a callback event
@@ -77,12 +77,15 @@ pub fn event_handler<L: IntoCallbackLabel, P: IntoScriptPluginParams>(
 ) {
     // we wrap the inner event handler, so that we can guarantee that the handler context is released statically
     {
-        let handler_ctxt = HandlerContext::<P>::yoink(world);
+        let script_context = world.get_resource_or_init::<ScriptContext<P>>().clone();
         let (event_cursor, mut guard) = state.get_mut(world);
         let (guard, _) = guard.get_mut();
-        let handler_ctxt =
-            event_handler_inner::<P>(L::into_callback_label(), event_cursor, handler_ctxt, guard);
-        handler_ctxt.release(world);
+        event_handler_inner::<P>(
+            L::into_callback_label(),
+            event_cursor,
+            script_context,
+            guard,
+        );
     }
 }
 
@@ -96,11 +99,10 @@ type EventHandlerSystemState<'w, 's> = SystemState<(
 pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
     callback_label: CallbackLabel,
     mut event_cursor: Local<EventCursor<ScriptCallbackEvent>>,
-    handler_ctxt: HandlerContext<P>,
+    script_context: ScriptContext<P>,
     guard: WorldAccessGuard,
-) -> HandlerContext<P> {
+) {
     let mut errors = Vec::default();
-    // let events = guard.with_resour events.read().cloned().collect::<Vec<_>>();
     let events = guard.with_resource(|events: &Events<ScriptCallbackEvent>| {
         event_cursor
             .read(events)
@@ -116,25 +118,24 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
                 "Failed to read script callback events: {}",
                 err.display_with_world(guard)
             );
-            return handler_ctxt;
+            return;
         }
     };
 
     for event in events.into_iter().filter(|e| {
         e.label == callback_label && e.language.as_ref().is_none_or(|l| l == &P::LANGUAGE)
     }) {
-        let recipients = event
-            .recipients
-            .get_recipients(&handler_ctxt.script_context);
+        let recipients = event.recipients.get_recipients(script_context.clone());
 
         for (attachment, ctxt) in recipients {
-            let call_result = handler_ctxt.call_dynamic_label(
-                &callback_label,
+            let mut ctxt = ctxt.lock();
+            let call_result = ctxt.call_context_dynamic(
                 &attachment,
-                Some(ctxt),
+                &callback_label,
                 event.args.clone(),
                 guard.clone(),
             );
+            drop(ctxt);
 
             if event.trigger_response {
                 send_callback_response(
@@ -151,7 +152,6 @@ pub(crate) fn event_handler_inner<P: IntoScriptPluginParams>(
         }
     }
     handle_script_errors(guard, errors.into_iter());
-    return handler_ctxt;
 }
 
 fn collect_errors(

@@ -20,6 +20,7 @@ use bevy_mod_scripting_core::{
     config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
     error::ScriptError,
     event::CallbackLabel,
+    extractors::GetPluginFor,
     make_plugin_config_static,
     reflection_extensions::PartialReflectExt,
     script::{ContextPolicy, DisplayProxy, ScriptAttachment},
@@ -44,6 +45,10 @@ pub struct RhaiScriptContext {
     pub ast: AST,
     /// The scope of the script
     pub scope: Scope<'static>,
+}
+
+impl GetPluginFor for RhaiScriptContext {
+    type P = RhaiScriptingPlugin;
 }
 
 make_plugin_config_static!(RhaiScriptingPlugin);

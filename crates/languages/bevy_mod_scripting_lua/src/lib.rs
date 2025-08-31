@@ -1,4 +1,6 @@
 //! Lua integration for the bevy_mod_scripting system.
+use std::ops::{Deref, DerefMut};
+
 use ::{
     bevy_app::Plugin,
     bevy_asset::Handle,
@@ -17,6 +19,7 @@ use bevy_mod_scripting_core::{
     config::{GetPluginThreadConfig, ScriptingPluginConfiguration},
     error::ScriptError,
     event::CallbackLabel,
+    extractors::GetPluginFor,
     make_plugin_config_static,
     reflection_extensions::PartialReflectExt,
     script::{ContextPolicy, ScriptAttachment},
@@ -33,8 +36,30 @@ pub mod bindings;
 
 make_plugin_config_static!(LuaScriptingPlugin);
 
+/// A newtype around a lua context.
+#[derive(Debug, Clone)]
+pub struct LuaContext(Lua);
+
+impl Deref for LuaContext {
+    type Target = Lua;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for LuaContext {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl GetPluginFor for LuaContext {
+    type P = LuaScriptingPlugin;
+}
+
 impl IntoScriptPluginParams for LuaScriptingPlugin {
-    type C = Lua;
+    type C = LuaContext;
     type R = ();
     const LANGUAGE: Language = Language::Lua;
 
@@ -174,7 +199,7 @@ impl Plugin for LuaScriptingPlugin {
 }
 
 fn load_lua_content_into_context(
-    context: &mut Lua,
+    context: &mut LuaContext,
     context_key: &ScriptAttachment,
     content: &[u8],
     world_id: WorldId,
@@ -204,11 +229,11 @@ pub fn lua_context_load(
     context_key: &ScriptAttachment,
     content: &[u8],
     world_id: WorldId,
-) -> Result<Lua, ScriptError> {
+) -> Result<LuaContext, ScriptError> {
     #[cfg(feature = "unsafe_lua_modules")]
-    let mut context = unsafe { Lua::unsafe_new() };
+    let mut context = LuaContext(unsafe { Lua::unsafe_new() });
     #[cfg(not(feature = "unsafe_lua_modules"))]
-    let mut context = Lua::new();
+    let mut context = LuaContext(Lua::new());
 
     load_lua_content_into_context(&mut context, context_key, content, world_id)?;
     Ok(context)
@@ -219,7 +244,7 @@ pub fn lua_context_load(
 pub fn lua_context_reload(
     context_key: &ScriptAttachment,
     content: &[u8],
-    old_ctxt: &mut Lua,
+    old_ctxt: &mut LuaContext,
     world_id: WorldId,
 ) -> Result<(), ScriptError> {
     load_lua_content_into_context(old_ctxt, context_key, content, world_id)?;
@@ -233,7 +258,7 @@ pub fn lua_handler(
     args: Vec<ScriptValue>,
     context_key: &ScriptAttachment,
     callback_label: &CallbackLabel,
-    context: &mut Lua,
+    context: &mut LuaContext,
     world_id: WorldId,
 ) -> Result<ScriptValue, bevy_mod_scripting_core::error::ScriptError> {
     let config = LuaScriptingPlugin::readonly_configuration(world_id);
@@ -276,7 +301,7 @@ mod test {
     #[test]
     fn test_reload_doesnt_overwrite_old_context() {
         let lua = Lua::new();
-        let mut old_ctxt = lua.clone();
+        let mut old_ctxt = LuaContext(lua.clone());
         let handle = Handle::Weak(AssetId::from(AssetIndex::from_bits(0)));
         let context_key = ScriptAttachment::EntityScript(Entity::from_raw(1), handle);
         let world_id = WorldId::new().unwrap();

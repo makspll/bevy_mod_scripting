@@ -6,6 +6,7 @@ use crate::{
     IntoScriptPluginParams,
     bindings::{ThreadWorldContainer, WorldContainer, WorldGuard},
     error::ScriptError,
+    extractors::GetPluginFor,
     script::ScriptAttachment,
 };
 
@@ -13,8 +14,8 @@ use crate::{
 ///
 /// Contexts are not required to be `Sync` as they are internally stored behind a `Mutex` but they must satisfy `Send` so they can be
 /// freely sent between threads.
-pub trait Context: 'static + Send {}
-impl<T: 'static + Send> Context for T {}
+pub trait Context: 'static + Send + GetPluginFor {}
+impl<T: 'static + Send + GetPluginFor> Context for T {}
 
 /// Initializer run once after creating a context but before executing it for the first time as well as after re-loading the script
 pub type ContextInitializer<P> =

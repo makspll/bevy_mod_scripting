@@ -250,6 +250,7 @@ fn handle_script_events<P: IntoScriptPluginParams>(
 
                     let handle = Handle::Weak(*id);
                     let attachment = ScriptAttachment::StaticScript(handle.clone());
+                    let script_contexts = script_contexts.read();
                     for (resident, _) in script_contexts
                         .residents(&attachment)
                         .filter(|(r, _)| r.script() == handle && r.is_static())
