@@ -8,21 +8,17 @@ use crate::{
     context::{ContextLoadFn, ContextReloadFn},
     event::ScriptErrorEvent,
 };
-use asset::{
-    Language, ScriptAsset, ScriptAssetLoader, configure_asset_systems,
-    configure_asset_systems_for_plugin,
-};
+use asset::{configure_asset_systems, configure_asset_systems_for_plugin};
 use bevy_app::{App, Plugin, PostUpdate};
 use bevy_asset::{AssetApp, Handle};
 use bevy_ecs::schedule::IntoScheduleConfigs;
 use bevy_ecs::{
     reflect::{AppTypeRegistry, ReflectComponent},
-    resource::Resource,
     schedule::SystemSet,
     system::Command,
 };
 use bevy_log::error;
-use bevy_platform::collections::HashMap;
+use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset, ScriptAssetLoader};
 use bindings::{
     AppReflectAllocator, DynamicScriptComponentPlugin, ReflectAllocator, ReflectReference,
     ScriptTypeRegistration, function::script_function::AppScriptFunctionRegistry,
@@ -34,7 +30,6 @@ use event::{ScriptCallbackEvent, ScriptCallbackResponseEvent, ScriptEvent};
 use handler::HandlerFn;
 use runtime::{Runtime, RuntimeInitializer};
 use script::{ContextPolicy, ScriptComponent, ScriptContext};
-use std::ops::{Deref, DerefMut};
 
 pub mod asset;
 pub mod bindings;
@@ -105,6 +100,9 @@ pub struct ScriptingPlugin<P: IntoScriptPluginParams> {
     /// The language this plugin declares
     pub language: Language,
 
+    /// Declares the file extensions this plugin supports
+    pub supported_extensions: Vec<&'static str>,
+
     /// initializers for the contexts, run when loading the script
     pub context_initializers: Vec<ContextInitializer<P>>,
 
@@ -139,6 +137,7 @@ impl<P: IntoScriptPluginParams> Default for ScriptingPlugin<P> {
             runtime_initializers: Default::default(),
             context_policy: ContextPolicy::default(),
             language: Default::default(),
+            supported_extensions: Default::default(),
             context_initializers: Default::default(),
             context_pre_handling_initializers: Default::default(),
             emit_responses: false,
@@ -163,11 +162,17 @@ impl<P: IntoScriptPluginParams> Plugin for ScriptingPlugin<P> {
             context_initialization_callbacks: Vec::leak(self.context_initializers.clone()),
             emit_responses: self.emit_responses,
             runtime: Box::leak(Box::new(runtime)),
+            language_extensions: Box::leak(Box::new(LanguageExtensions::new(
+                self.supported_extensions
+                    .iter()
+                    .map(|&ext| (ext, P::LANGUAGE.clone())),
+            ))),
         };
 
         P::set_world_local_config(app.world().id(), config);
 
         app.insert_resource(ScriptContext::<P>::new(self.context_policy.clone()));
+        app.register_asset_loader(ScriptAssetLoader::new(config.language_extensions));
 
         register_script_plugin_systems::<P>(app);
 
@@ -233,6 +238,12 @@ pub trait ConfigureScriptPlugin {
     /// You won't be able to react to these events until after contexts are fully loaded,
     /// but they might be useful for other purposes, such as debugging or logging.
     fn emit_core_callback_responses(self, emit_responses: bool) -> Self;
+
+    /// Adds a supported file extension for the plugin's language.
+    fn add_supported_extension(self, extension: &'static str) -> Self;
+
+    /// removes a supported file extension for the plugin's language.
+    fn remove_supported_extension(self, extension: &'static str) -> Self;
 }
 
 impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugin for P {
@@ -264,6 +275,18 @@ impl<P: IntoScriptPluginParams + AsMut<ScriptingPlugin<P>>> ConfigureScriptPlugi
 
     fn emit_core_callback_responses(mut self, emit_responses: bool) -> Self {
         self.as_mut().emit_responses = emit_responses;
+        self
+    }
+
+    fn add_supported_extension(mut self, extension: &'static str) -> Self {
+        self.as_mut().supported_extensions.push(extension);
+        self
+    }
+
+    fn remove_supported_extension(mut self, extension: &'static str) -> Self {
+        self.as_mut()
+            .supported_extensions
+            .retain(|&ext| ext != extension);
         self
     }
 }
@@ -313,12 +336,6 @@ impl Plugin for BMSScriptingInfrastructurePlugin {
     }
 
     fn finish(&self, app: &mut App) {
-        // Read extensions.
-        let language_extensions = app
-            .world_mut()
-            .remove_resource::<LanguageExtensions>()
-            .unwrap_or_default();
-        app.register_asset_loader(ScriptAssetLoader::new(language_extensions));
         // Pre-register component IDs.
         pre_register_components(app);
         DynamicScriptComponentPlugin.finish(app);
@@ -363,103 +380,13 @@ impl ManageStaticScripts for App {
     }
 }
 
-/// Trait for adding a supported extension to the script asset settings.
-///
-/// This is only valid in the plugin building phase, as the asset loader will be created in the `finalize` phase.
-/// Any changes to the asset settings after that will not be reflected in the asset loader.
-pub trait ConfigureScriptAssetSettings {
-    /// Adds a supported extension to the asset settings
-    ///
-    /// This is only valid to call in the plugin building phase, as the asset loader will be created in the `finalize` phase.
-    fn add_supported_script_extensions(
-        &mut self,
-        extensions: &[&'static str],
-        language: Language,
-    ) -> &mut Self;
-}
-
-/// Collect the language extensions supported during initialization.
-///
-/// NOTE: This resource is removed after plugin setup.
-#[derive(Debug, Resource)]
-pub struct LanguageExtensions(HashMap<&'static str, Language>);
-
-impl Deref for LanguageExtensions {
-    type Target = HashMap<&'static str, Language>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for LanguageExtensions {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl Default for LanguageExtensions {
-    fn default() -> Self {
-        LanguageExtensions(
-            [
-                ("lua", Language::Lua),
-                ("luau", Language::Lua),
-                ("rhai", Language::Rhai),
-                ("rn", Language::Rune),
-            ]
-            .into_iter()
-            .collect(),
-        )
-    }
-}
-
-impl ConfigureScriptAssetSettings for App {
-    fn add_supported_script_extensions(
-        &mut self,
-        extensions: &[&'static str],
-        language: Language,
-    ) -> &mut Self {
-        let mut language_extensions = self
-            .world_mut()
-            .get_resource_or_init::<LanguageExtensions>();
-
-        for extension in extensions {
-            language_extensions.insert(extension, language.clone());
-        }
-        self
-    }
-}
-
 #[cfg(test)]
 mod test {
-    use bevy_asset::{AssetPlugin, AssetServer};
+    use bevy_asset::AssetPlugin;
     use bevy_ecs::prelude::*;
     use bevy_reflect::Reflect;
 
     use super::*;
-
-    #[tokio::test]
-    async fn test_asset_extensions_correctly_accumulate() {
-        let mut app = App::new();
-        app.add_plugins(AssetPlugin::default());
-
-        BMSScriptingInfrastructurePlugin.finish(&mut app);
-
-        let asset_loader = app
-            .world()
-            .get_resource::<AssetServer>()
-            .expect("Asset loader not found");
-
-        asset_loader
-            .get_asset_loader_with_extension("lua")
-            .await
-            .expect("Lua loader not found");
-
-        asset_loader
-            .get_asset_loader_with_extension("rhai")
-            .await
-            .expect("Rhai loader not found");
-    }
 
     #[test]
     fn test_reflect_component_is_preregistered_in_app_finalize() {

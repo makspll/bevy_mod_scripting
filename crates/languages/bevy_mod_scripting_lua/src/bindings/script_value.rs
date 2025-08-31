@@ -3,8 +3,8 @@ use std::{
     ops::{Deref, DerefMut},
 };
 
+use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_core::{
-    asset::Language,
     bindings::{function::script_function::FunctionCallContext, script_value::ScriptValue},
     error::InteropError,
 };

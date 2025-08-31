@@ -4,6 +4,10 @@ pub mod core {
     pub use bevy_mod_scripting_core::*;
 }
 
+pub mod asset {
+    pub use bevy_mod_scripting_asset::*;
+}
+
 pub mod prelude;
 
 #[cfg(feature = "lua")]

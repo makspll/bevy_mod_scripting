@@ -10,9 +10,9 @@ use ::{
 use bevy_app::App;
 use bevy_ecs::world::WorldId;
 use bevy_log::trace;
+use bevy_mod_scripting_asset::{Language, ScriptAsset};
 use bevy_mod_scripting_core::{
     IntoScriptPluginParams, ScriptingPlugin,
-    asset::{Language, ScriptAsset},
     bindings::{
         ThreadWorldContainer, WorldContainer, function::namespace::Namespace,
         globals::AppScriptGlobalsRegistry, script_value::ScriptValue,
@@ -92,6 +92,7 @@ impl Default for RhaiScriptingPlugin {
     fn default() -> Self {
         RhaiScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
+                supported_extensions: vec!["rhai"],
                 runtime_initializers: vec![|runtime| {
                     let mut engine = runtime.write();
                     engine.set_max_expr_depths(999, 999);

@@ -21,9 +21,9 @@ use anyhow::{Context, Error, anyhow};
 use bevy_app::{DynEq, FixedUpdate, Last, PostUpdate, Startup, Update};
 use bevy_asset::{AssetServer, Assets};
 use bevy_log::info;
+use bevy_mod_scripting_asset::{Language, LanguageExtensions, ScriptAsset};
 use bevy_mod_scripting_core::{
-    ConfigureScriptPlugin, LanguageExtensions,
-    asset::{Language, ScriptAsset},
+    ConfigureScriptPlugin,
     bindings::{DisplayWithWorld, ScriptValue, WorldGuard},
     commands::{AddStaticScript, RemoveStaticScript},
     event::{

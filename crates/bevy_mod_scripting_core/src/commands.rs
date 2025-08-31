@@ -4,7 +4,6 @@ use std::{marker::PhantomData, sync::Arc};
 
 use crate::{
     IntoScriptPluginParams, ScriptContext,
-    asset::ScriptAsset,
     bindings::{ScriptValue, WorldGuard},
     context::ScriptingLoader,
     error::{InteropError, ScriptError},
@@ -18,6 +17,7 @@ use crate::{
 };
 use bevy_ecs::{system::Command, world::World};
 use bevy_log::{error, info, trace};
+use bevy_mod_scripting_asset::ScriptAsset;
 use parking_lot::Mutex;
 use {
     bevy_asset::{Assets, Handle},

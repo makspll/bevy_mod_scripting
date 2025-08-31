@@ -1,6 +1,5 @@
 pub use bevy_mod_scripting_core::{
-    ConfigureScriptAssetSettings, ConfigureScriptPlugin, IntoScriptPluginParams,
-    asset::{Language, ScriptAsset},
+    ConfigureScriptPlugin, IntoScriptPluginParams,
     bindings::{
         CoreScriptGlobalsPlugin,
         function::namespace::{GlobalNamespace, NamespaceBuilder},
@@ -12,6 +11,9 @@ pub use bevy_mod_scripting_core::{
     handler::event_handler,
     script::{ScriptComponent, ScriptId},
 };
+
+pub use bevy_mod_scripting_asset::*;
+
 #[cfg(feature = "lua")]
 pub use bevy_mod_scripting_lua::LuaScriptingPlugin;
 #[cfg(feature = "rhai")]

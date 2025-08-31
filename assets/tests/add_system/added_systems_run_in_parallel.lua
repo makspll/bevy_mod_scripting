@@ -25,7 +25,7 @@ digraph {
   node_0 [label="bevy_asset::assets::Assets<bevy_asset::folder::LoadedFolder>::asset_events"];
   node_1 [label="bevy_asset::assets::Assets<bevy_asset::assets::LoadedUntypedAsset>::asset_events"];
   node_2 [label="bevy_asset::assets::Assets<()>::asset_events"];
-  node_3 [label="bevy_asset::assets::Assets<bevy_mod_scripting_core::asset::ScriptAsset>::asset_events"];
+  node_3 [label="bevy_asset::assets::Assets<bevy_mod_scripting_asset::script_asset::ScriptAsset>::asset_events"];
   node_4 [label="bevy_mod_scripting_core::bindings::allocator::garbage_collector"];
   node_5 [label="script_integration_test_harness::dummy_before_post_update_system"];
   node_6 [label="script_integration_test_harness::dummy_post_update_system"];

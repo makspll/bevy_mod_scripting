@@ -4,11 +4,11 @@ use std::sync::Arc;
 
 use ::{bevy_asset::Handle, bevy_ecs::entity::Entity, bevy_reflect::Reflect};
 use bevy_ecs::event::Event;
+use bevy_mod_scripting_asset::Language;
 use parking_lot::Mutex;
 
 use crate::{
     IntoScriptPluginParams,
-    asset::Language,
     bindings::script_value::ScriptValue,
     error::ScriptError,
     script::{ScriptAttachment, ScriptContext, ScriptId},

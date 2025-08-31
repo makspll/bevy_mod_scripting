@@ -24,6 +24,8 @@ pub struct ScriptingPluginConfiguration<P: IntoScriptPluginParams + ?Sized> {
     pub emit_responses: bool,
     /// The configured runtime for the plugin
     pub runtime: &'static P::R,
+    /// The language extensions this plugin supports
+    pub language_extensions: &'static crate::LanguageExtensions,
 }
 
 impl<P: IntoScriptPluginParams + ?Sized> Clone for ScriptingPluginConfiguration<P> {

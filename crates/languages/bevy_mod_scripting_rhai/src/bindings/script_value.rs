@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
+use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_core::{
-    asset::Language,
     bindings::{
         function::script_function::{DynamicScriptFunction, FunctionCallContext},
         script_value::ScriptValue,

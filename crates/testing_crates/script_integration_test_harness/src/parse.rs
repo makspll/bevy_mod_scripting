@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
 use anyhow::Error;
+use bevy_mod_scripting_asset::Language;
 use bevy_mod_scripting_core::{
-    asset::Language,
     bindings::ScriptValue,
     callback_labels,
     event::{

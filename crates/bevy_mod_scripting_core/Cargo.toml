@@ -25,6 +25,11 @@ mlua_impls = ["mlua"]
 rhai_impls = ["rhai"]
 
 [dependencies]
+bevy_mod_scripting_derive = { workspace = true }
+bevy_mod_scripting_asset = { workspace = true }
+bevy_system_reflection = { workspace = true }
+
+
 mlua = { workspace = true, optional = true }
 rhai = { workspace = true, features = ["sync"], optional = true }
 
@@ -40,16 +45,13 @@ parking_lot = { workspace = true }
 smallvec = { workspace = true }
 itertools = { workspace = true }
 profiling = { workspace = true }
-bevy_mod_scripting_derive = { workspace = true }
 fixedbitset = { workspace = true }
-bevy_system_reflection = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 uuid = { workspace = true }
 variadics_please = { workspace = true }
 
 [dev-dependencies]
 test_utils = { workspace = true }
-tokio = { workspace = true, features = ["rt", "macros"] }
 pretty_assertions = { workspace = true, features = ["alloc"] }
 
 [lints]
