@@ -198,16 +198,25 @@ Further information on this color model can be found on <a href="https://en.wiki
 </blockquote>
 <h2 id="associated-functions"><a class="header" href="#associated-functions">Associated Functions</a></h2>
 <p>For function details and documentation, click on the function link.</p>
-
+<div class="table-wrapper"><table><thead><tr><th>Function</th><th>Summary</th></tr></thead><tbody>
+<tr><td><a href="./hsla/new.html">new</a></td><td>Construct a new [`Hsla`] color from components.</td></tr>
+<tr><td><a href="./hsla/clone.html">clone</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./hsla/with_saturation.html">with_saturation</a></td><td>Return a copy of this color with the saturation channel set to the given value.</td></tr>
+<tr><td><a href="./hsla/sequential_dispersed.html">sequential_dispersed</a></td><td>Generate a deterministic but [quasi-randomly distributed](https://en.wikipedia.org/wiki/Low-discrepancy_sequence)  color from a provided `index`.  This can be helpful for generating debug colors.  # Examples  ```rust  # use bevy_color::Hsla;  // Unique color for an entity  # let entity_index = 123;  // let entity_index = entity.index();  let color = Hsla::sequential_dispersed(entity_index);  // Palette with 5 distinct hues  let palette = (0..5).map(Hsla::sequential_dispersed).collect::&lt;Vec&lt;_&gt;&gt;();  ```</td></tr>
+<tr><td><a href="./hsla/eq.html">eq</a></td><td>No Documentation 🚧</td></tr>
+<tr><td><a href="./hsla/hsl.html">hsl</a></td><td>Construct a new [`Hsla`] color from (h, s, l) components, with the default alpha (1.0).</td></tr>
+<tr><td><a href="./hsla/with_lightness.html">with_lightness</a></td><td>Return a copy of this color with the lightness channel set to the given value.</td></tr>
+</tbody></table>
+</div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../core_bindings/types/color.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../core_bindings/types/color/srgb_from_array.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../../core_bindings/types/hsva.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../core_bindings/types/hsla/new.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -217,11 +226,11 @@ Further information on this color model can be found on <a href="https://en.wiki
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../core_bindings/types/color.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../core_bindings/types/color/srgb_from_array.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../../core_bindings/types/hsva.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../core_bindings/types/hsla/new.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

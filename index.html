@@ -210,14 +210,7 @@
 <p>By default all of the useful features are enabled, but you may disable them if you wish if you are only needing BMS for script lifecycle management, and want to populate the bindings yourself.</p>
 <div class="table-wrapper"><table><thead><tr><th>Feature</th><th>Description</th></tr></thead><tbody>
 <tr><td>core_functions</td><td>If enabled, will enable all core functions, i.e. bevy integrations which let you interact with Bevy via reflection</td></tr>
-<tr><td>bevy_core_bindings</td><td>Enables bindings for the <code>bevy_core</code> module</td></tr>
-<tr><td>bevy_ecs_bindings</td><td>Enables bindings for the <code>bevy_ecs</code> module</td></tr>
-<tr><td>bevy_hierarchy_bindings</td><td>Enables bindings for the <code>bevy_hierarchy</code> module</td></tr>
-<tr><td>bevy_input_bindings</td><td>Enables bindings for the <code>bevy_input</code> module</td></tr>
-<tr><td>bevy_math_bindings</td><td>Enables bindings for the <code>bevy_math</code> module</td></tr>
-<tr><td>bevy_reflect_bindings</td><td>Enables bindings for the <code>bevy_reflect</code> module</td></tr>
-<tr><td>bevy_time_bindings</td><td>Enables bindings for the <code>bevy_time</code> module</td></tr>
-<tr><td>bevy_transform_bindings</td><td>Enables bindings for the <code>bevy_transform</code> module</td></tr>
+<tr><td>bevy_&lt;bevy_crate&gt;_bindings</td><td>enables bindings for the specified bevy crate, e.g. <code>bevy_ecs</code>, <code>bevy_transform</code>, <code>bevy_pbr</code> etc. for a full list of available modules check out <a href="https://github.com/makspll/bevy_mod_scripting/blob/432b91b1022a133b34d1b4a7eb382268f34b76ea/crates/bevy_mod_scripting_functions/Cargo.toml#L14">The Cargo manifest</a></td></tr>
 <tr><td>mlua_async</td><td>Enables <code>mlua/async</code></td></tr>
 <tr><td>mlua_serialize</td><td>Enables <code>mlua/serialize</code></td></tr>
 <tr><td>mlua_macros</td><td>Enables <code>mlua/macros</code></td></tr>
