@@ -28,8 +28,7 @@ use bevy_mod_scripting_core::{
     },
     commands::CreateOrUpdateScript,
     error::ScriptError,
-    extractors::HandlerContext,
-    script::{DisplayProxy, ScriptAttachment, ScriptComponent, ScriptId},
+    script::{DisplayProxy, ScriptAttachment, ScriptComponent, ScriptContext, ScriptId},
 };
 use bevy_mod_scripting_functions::ScriptFunctionsPlugin;
 use criterion::{BatchSize, measurement::Measurement};
@@ -69,7 +68,7 @@ pub fn make_test_lua_plugin() -> bevy_mod_scripting_lua::LuaScriptingPlugin {
     use bevy_mod_scripting_lua::{LuaScriptingPlugin, mlua};
 
     LuaScriptingPlugin::default().add_context_initializer(
-        |_, ctxt: &mut bevy_mod_scripting_lua::mlua::Lua| {
+        |_, ctxt: &mut bevy_mod_scripting_lua::LuaContext| {
             let globals = ctxt.globals();
             globals.set(
                 "assert_throws",
@@ -306,12 +305,17 @@ where
 
     app.update();
 
-    let mut context = HandlerContext::<P>::yoink(app.world_mut());
+    let script_contexts = app
+        .world_mut()
+        .get_resource_or_init::<ScriptContext<P>>()
+        .clone();
     let guard = WorldGuard::new_exclusive(app.world_mut());
 
     let context_key = ScriptAttachment::EntityScript(entity, Handle::Weak(script_id));
 
-    let ctxt_arc = context.script_context().get(&context_key).unwrap();
+    let script_contexts = script_contexts.read();
+    let ctxt_arc = script_contexts.get_context(&context_key).unwrap();
+    drop(script_contexts);
     let mut ctxt_locked = ctxt_arc.lock();
 
     let runtime = P::readonly_configuration(guard.id()).runtime;
@@ -324,7 +328,6 @@ where
         // Pass the locked context to the closure for benchmarking its Lua (or generic) part
         bench_fn(&mut ctxt_locked, runtime, label, criterion)
     });
-    context.release(app.world_mut());
     Ok(())
 }
 

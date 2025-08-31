@@ -753,10 +753,12 @@ impl ScenarioStep {
                     #[cfg(feature = "lua")]
                     Some(Language::Lua) => world
                         .resource::<ScriptContext<bevy_mod_scripting_lua::LuaScriptingPlugin>>()
+                        .read()
                         .residents_len(&script),
                     #[cfg(feature = "rhai")]
                     Some(Language::Rhai) => world
                         .resource::<ScriptContext<bevy_mod_scripting_rhai::RhaiScriptingPlugin>>()
+                        .read()
                         .residents_len(&script),
                     _ => {
                         return Err(anyhow!(

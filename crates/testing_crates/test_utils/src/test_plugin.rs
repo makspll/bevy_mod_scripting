@@ -20,6 +20,10 @@ macro_rules! make_test_plugin {
 
         $ident::make_plugin_config_static!(TestPlugin);
 
+        impl $ident::extractors::GetPluginFor for TestContext {
+            type P = TestPlugin;
+        }
+
         impl $ident::IntoScriptPluginParams for TestPlugin {
             type C = TestContext;
             type R = TestRuntime;

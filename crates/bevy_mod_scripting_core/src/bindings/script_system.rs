@@ -7,15 +7,14 @@ use super::{
     access_map::ReflectAccessId,
     function::{from::Val, into::IntoScript, script_function::AppScriptFunctionRegistry},
     schedule::AppScheduleRegistry,
-    script_value::ScriptValue,
 };
+use crate::extractors::CallContext;
 use crate::{
     IntoScriptPluginParams,
     bindings::pretty_print::DisplayWithWorld,
-    error::{InteropError, ScriptError},
+    error::InteropError,
     event::CallbackLabel,
     extractors::get_all_access_ids,
-    handler::ScriptingHandler,
     script::{ScriptAttachment, ScriptContext},
 };
 use ::{
@@ -39,10 +38,8 @@ use bevy_ecs::{
 };
 use bevy_log::{error, info, warn_once};
 use bevy_system_reflection::{ReflectSchedule, ReflectSystem};
-use parking_lot::Mutex;
 use std::{
     any::TypeId, borrow::Cow, collections::HashSet, hash::Hash, marker::PhantomData, ops::Deref,
-    sync::Arc,
 };
 #[derive(Clone, Hash, PartialEq, Eq)]
 /// a system set for script systems.
@@ -198,64 +195,8 @@ impl ScriptSystemBuilder {
     }
 }
 
-struct DynamicHandlerContext<'w, P: IntoScriptPluginParams> {
-    script_context: &'w ScriptContext<P>,
-}
-
-#[profiling::all_functions]
-impl<'w, P: IntoScriptPluginParams> DynamicHandlerContext<'w, P> {
-    #[allow(
-        clippy::expect_used,
-        reason = "cannot avoid panicking inside init_param due to Bevy API structure"
-    )]
-    pub fn init_param(world: &mut World, system: &mut FilteredAccessSet<ComponentId>) {
-        let mut access = FilteredAccess::<ComponentId>::matches_nothing();
-
-        let script_context_res_id = world
-            .resource_id::<ScriptContext<P>>()
-            .expect("Scripts resource not found");
-
-        access.add_resource_read(script_context_res_id);
-
-        system.add(access);
-    }
-
-    #[allow(
-        clippy::expect_used,
-        reason = "cannot avoid panicking inside get_param due to Bevy API structure"
-    )]
-    pub fn get_param(system: &UnsafeWorldCell<'w>) -> Self {
-        unsafe {
-            Self {
-                script_context: system.get_resource().expect("Scripts resource not found"),
-            }
-        }
-    }
-
-    /// Call a dynamic label on a script
-    pub fn call_dynamic_label(
-        &self,
-        label: &CallbackLabel,
-        context_key: &ScriptAttachment,
-        context: Option<Arc<Mutex<P::C>>>,
-        payload: Vec<ScriptValue>,
-        guard: WorldGuard<'_>,
-    ) -> Result<ScriptValue, ScriptError> {
-        // find script
-        let Some(context) = context.or_else(|| self.script_context.get(context_key)) else {
-            return Err(InteropError::missing_context(context_key.clone()).into());
-        };
-
-        // call the script
-
-        let mut context = context.lock();
-
-        P::handle(payload, context_key, label, &mut context, guard)
-    }
-}
-
 /// TODO: inline world guard into the system state, we should be able to re-use it
-struct ScriptSystemState {
+struct ScriptSystemState<P: IntoScriptPluginParams> {
     type_registry: AppTypeRegistry,
     function_registry: AppScriptFunctionRegistry,
     schedule_registry: AppScheduleRegistry,
@@ -264,6 +205,7 @@ struct ScriptSystemState {
     subset: HashSet<ReflectAccessId>,
     callback_label: CallbackLabel,
     system_params: Vec<ScriptSystemParam>,
+    script_contexts: ScriptContext<P>,
 }
 
 /// Equivalent of [`SystemParam`] but for dynamic systems, these are the kinds of things
@@ -308,7 +250,7 @@ pub struct DynamicScriptSystem<P: IntoScriptPluginParams> {
     target_attachment: ScriptAttachment,
     archetype_generation: ArchetypeGeneration,
     system_param_descriptors: Vec<ScriptSystemParamDescriptor>,
-    state: Option<ScriptSystemState>,
+    state: Option<ScriptSystemState<P>>,
     _marker: std::marker::PhantomData<fn() -> P>,
 }
 
@@ -453,16 +395,17 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
         // targetted scripts. Let's start with just calling the one targetted
         // script.
 
-        let handler_ctxt = DynamicHandlerContext::<P>::get_param(&world);
+        let script_context = &state.script_contexts.read();
 
-        if let Some(context) = handler_ctxt.script_context.get(&self.target_attachment) {
-            let result = handler_ctxt.call_dynamic_label(
-                &state.callback_label,
+        if let Some(context) = script_context.get_context(&self.target_attachment) {
+            let mut context = context.lock();
+            let result = context.call_context_dynamic(
                 &self.target_attachment,
-                Some(context),
+                &state.callback_label,
                 payload,
                 guard.clone(),
             );
+            drop(context);
             // TODO: Emit error events via commands, maybe accumulate in state
             // instead and use apply.
             match result {
@@ -552,9 +495,6 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             }
         }
 
-        // TODO: access to internal resources, i.e. handler state
-        DynamicHandlerContext::<P>::init_param(world, &mut self.component_access_set);
-
         self.state = Some(ScriptSystemState {
             type_registry: world.get_resource_or_init::<AppTypeRegistry>().clone(),
             function_registry: world
@@ -568,6 +508,7 @@ impl<P: IntoScriptPluginParams> System for DynamicScriptSystem<P> {
             subset,
             callback_label: self.name.to_string().into(),
             system_params,
+            script_contexts: world.get_resource_or_init::<ScriptContext<P>>().clone(),
         })
     }
 

@@ -1,6 +1,6 @@
 //! Commands for creating, updating and deleting scripts
 
-use std::marker::PhantomData;
+use std::{marker::PhantomData, sync::Arc};
 
 use crate::{
     IntoScriptPluginParams, ScriptContext,
@@ -12,16 +12,17 @@ use crate::{
         CallbackLabel, IntoCallbackLabel, OnScriptLoaded, OnScriptReloaded, OnScriptUnloaded,
         ScriptCallbackResponseEvent, ScriptEvent,
     },
-    extractors::{HandlerContext, with_handler_system_state},
+    extractors::CallContext,
     handler::{handle_script_errors, send_callback_response},
     script::{DisplayProxy, ScriptAttachment},
 };
 use bevy_ecs::{system::Command, world::World};
 use bevy_log::{error, info, trace};
+use parking_lot::Mutex;
 use {
     bevy_asset::{Assets, Handle},
     bevy_ecs::event::Events,
-    bevy_log::{debug, warn},
+    bevy_log::debug,
 };
 
 /// Detaches a script, invoking the `on_script_unloaded` callback if it exists, and removes the script from the static scripts collection.
@@ -55,10 +56,11 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
     fn apply(mut self, world: &mut World) {
         // we demote to weak from here on out, so as not to hold the asset hostage
         self.context_key = self.context_key.into_weak();
+        let script_contexts = world.get_resource_or_init::<ScriptContext<P>>().clone();
 
         // first check the script exists, if it does not it could have been deleted by another command
         {
-            let script_contexts = world.get_resource_or_init::<ScriptContext<P>>();
+            let script_contexts = script_contexts.read();
             if !script_contexts.contains(&self.context_key) {
                 debug!(
                     "{}: No context found for {}, not deleting.",
@@ -80,7 +82,7 @@ impl<P: IntoScriptPluginParams> Command for DeleteScript<P> {
             world,
         );
 
-        let mut script_contexts = world.get_resource_or_init::<ScriptContext<P>>();
+        let mut script_contexts = script_contexts.write();
         let residents_count = script_contexts.residents_len(&self.context_key);
         let delete_context = residents_count == 1;
         let script_id = self.context_key.script();
@@ -164,7 +166,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
     fn before_reload(
         attachment: ScriptAttachment,
         world: WorldGuard,
-        handler_ctxt: &HandlerContext<P>,
+        ctxt: Arc<Mutex<P::C>>,
         emit_responses: bool,
     ) -> Option<ScriptValue> {
         // if something goes wrong, the error will be handled in the command
@@ -177,14 +179,14 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         )
         .with_context(P::LANGUAGE)
         .with_context("saving reload state")
-        .run_with_handler(world, handler_ctxt)
+        .run_with_context(world, ctxt)
         .ok()
     }
 
     fn after_load(
         attachment: ScriptAttachment,
         world: WorldGuard,
-        handler_ctxt: &HandlerContext<P>,
+        script_context: Arc<Mutex<P::C>>,
         script_state: Option<ScriptValue>,
         emit_responses: bool,
         is_reload: bool,
@@ -197,7 +199,7 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
         )
         .with_context(P::LANGUAGE)
         .with_context("on loaded callback")
-        .run_with_handler(world.clone(), handler_ctxt);
+        .run_with_context(world.clone(), script_context.clone());
 
         if is_reload {
             let _ = RunScriptCallback::<P>::new(
@@ -208,108 +210,164 @@ impl<P: IntoScriptPluginParams> CreateOrUpdateScript<P> {
             )
             .with_context(P::LANGUAGE)
             .with_context("on reloaded callback")
-            .run_with_handler(world, handler_ctxt);
+            .run_with_context(world, script_context);
         }
+    }
+
+    /// when a brand new script is created with no prior context
+    pub(crate) fn create_new_script_and_context(
+        attachment: &ScriptAttachment,
+        content: &[u8],
+        guard: WorldGuard,
+        script_context: ScriptContext<P>,
+        emit_responses: bool,
+    ) -> Result<(), ScriptError> {
+        let ctxt = Self::load_context(attachment, content, guard.clone())?;
+
+        let ctxt = Arc::new(Mutex::new(ctxt));
+        let mut script_context = script_context.write();
+
+        script_context
+            .insert_arc(attachment, ctxt.clone())
+            .map_err(|_| {
+                ScriptError::new(String::from("No context policy applied"))
+                    .with_context("creating new script and context")
+            })?;
+
+        Self::after_load(
+            attachment.clone(),
+            guard,
+            ctxt,
+            None, // no prior script state
+            emit_responses,
+            false, // first ever load
+        );
+
+        Ok(())
+    }
+
+    /// when a script is created in an existing context, e.g. when using shared contexts
+    /// and we load a script into that context the first time (although not a reload from it's POV)
+    pub(crate) fn create_script_in_existing_context(
+        attachment: &ScriptAttachment,
+        content: &[u8],
+        guard: WorldGuard,
+        context: Arc<Mutex<P::C>>,
+        script_context: ScriptContext<P>,
+        emit_responses: bool,
+    ) -> Result<(), ScriptError> {
+        let mut context_guard = context.lock();
+        Self::reload_context(attachment, content, &mut context_guard, guard.clone())?;
+        drop(context_guard);
+
+        let mut script_context = script_context.write();
+
+        script_context.insert_resident(attachment.clone()).map_err(|err| {
+            ScriptError::new(InteropError::invariant(format!(
+                "expected context to be present, could not mark attachment as resident in context, {err:?}"
+            )))
+        })?;
+
+        Self::after_load(
+            attachment.clone(),
+            guard,
+            context.clone(),
+            None, // no prior script state
+            emit_responses,
+            false, // first ever load
+        );
+        Ok(())
+    }
+
+    /// Reloads a script in an already existing context
+    pub(crate) fn reload_script_in_context(
+        attachment: &ScriptAttachment,
+        content: &[u8],
+        guard: WorldGuard,
+        context: Arc<Mutex<P::C>>,
+        emit_responses: bool,
+    ) -> Result<(), ScriptError> {
+        let script_state = Self::before_reload(
+            attachment.clone(),
+            guard.clone(),
+            context.clone(),
+            emit_responses,
+        );
+
+        let mut context_guard = context.lock();
+        Self::reload_context(attachment, content, &mut context_guard, guard.clone())?;
+        drop(context_guard);
+
+        Self::after_load(
+            attachment.clone(),
+            guard,
+            context.clone(),
+            script_state,
+            emit_responses,
+            true, // this is definitely a reload
+        );
+
+        Ok(())
     }
 
     pub(crate) fn create_or_update_script(
         attachment: &ScriptAttachment,
         content: &[u8],
         guard: WorldGuard,
-        handler_ctxt: &mut HandlerContext<P>,
+        script_context: ScriptContext<P>,
         emit_responses: bool,
     ) -> Result<(), ScriptError> {
-        // we demote to weak from here on out, so as not to hold the asset hostage
-        let attachment = attachment.clone().into_weak();
+        // determine if
+        // - context exists
+        // - script is RESIDENT in context
 
-        let script_id = attachment.script();
+        let script_context_guard = script_context.read();
+        let (context, is_resident) = script_context_guard.get_context_and_residency(attachment);
+        drop(script_context_guard);
 
-        let phrase;
-        let success;
-        let mut script_state = None;
-        // what callbacks we invoke depends whether or not this attachment
-        // was already present in the context or not
-        let is_reload = handler_ctxt.script_context.contains(&attachment);
-        if is_reload {
-            phrase = "reloading";
-            success = "reloaded";
-            script_state = Self::before_reload(
-                attachment.clone(),
-                guard.clone(),
-                handler_ctxt,
-                emit_responses,
-            );
-        } else {
-            phrase = "loading";
-            success = "loaded";
-        };
-
-        // whether or not we actually load vs reload the context (i.e. scrap the old one and create a new one)
-        // depends on whether the context is already present in the script context
-        let context = handler_ctxt.script_context.get(&attachment);
-        let result_context_to_insert = match context {
-            Some(context) => {
-                let mut context = context.lock();
-
-                Self::reload_context(&attachment, content, &mut context, guard.clone())
-                    .map(|_| None)
-            }
-            None => Self::load_context(&attachment, content, guard.clone()).map(Some),
-        };
-
-        match result_context_to_insert {
-            Ok(maybe_context) => {
-                if let Some(context) = maybe_context
-                    && handler_ctxt
-                        .script_context
-                        .insert(&attachment, context)
-                        .is_err()
-                {
-                    warn!("Unable to insert script context for {}.", attachment);
-                }
-
-                // mark as resident in the context
-                handler_ctxt
-                    .script_context
-                    .insert_resident(attachment.clone())
-                    .map_err(|err| {
-                        ScriptError::new(InteropError::invariant(format!(
-                            "expected context to be present, could not mark attachment as resident in context, {err:?}"
-                        )))
-                    })?;
-
-                debug!(
-                    "{}: script {} successfully {}",
-                    P::LANGUAGE,
+        let res = match (context, is_resident) {
+            (None, _) => {
+                // no context exists, create new context and script
+                Self::create_new_script_and_context(
                     attachment,
-                    success,
-                );
-
-                Self::after_load(
-                    attachment,
+                    content,
                     guard,
-                    handler_ctxt,
-                    script_state,
+                    script_context,
                     emit_responses,
-                    is_reload,
-                );
-
-                Ok(())
+                )
+                .map_err(|err| {
+                    err.with_context(format!("creating new context for script {attachment}"))
+                })
             }
-            Err(err) => {
-                handle_script_errors(
+            (Some(context), false) => {
+                // context exists, but script is not resident in it, add script to existing context
+                Self::create_script_in_existing_context(
+                    attachment,
+                    content,
                     guard,
-                    vec![
-                        err.clone()
-                            .with_script(script_id.display())
-                            .with_context(P::LANGUAGE)
-                            .with_context(phrase),
-                    ]
-                    .into_iter(),
-                );
-                Err(err)
+                    context,
+                    script_context,
+                    emit_responses,
+                )
+                .map_err(|err| {
+                    err.with_context(format!("creating script {attachment} in existing context"))
+                })
             }
-        }
+            (Some(context), true) => {
+                // context exists, and script is resident in it, reload script in existing context
+                Self::reload_script_in_context(attachment, content, guard, context, emit_responses)
+                    .map_err(|err| {
+                        err.with_context(format!(
+                            "reloading script {attachment} in existing context"
+                        ))
+                    })
+            }
+        };
+
+        res.map_err(|err| {
+            err.with_script(attachment.script().display())
+                .with_context(P::LANGUAGE)
+        })
     }
 }
 
@@ -334,16 +392,19 @@ impl<P: IntoScriptPluginParams> Command for CreateOrUpdateScript<P> {
                 }
             },
         };
+        let script_context = world.get_resource_or_init::<ScriptContext<P>>().clone();
+        let guard = WorldGuard::new_exclusive(world);
+        let res = Self::create_or_update_script(
+            &self.attachment,
+            &content,
+            guard,
+            script_context,
+            self.emit_responses,
+        );
 
-        with_handler_system_state(world, |guard, handler_ctxt: &mut HandlerContext<P>| {
-            let _ = Self::create_or_update_script(
-                &self.attachment,
-                &content,
-                guard.clone(),
-                handler_ctxt,
-                self.emit_responses,
-            );
-        });
+        if let Err(err) = res {
+            handle_script_errors(WorldGuard::new_exclusive(world), vec![err].into_iter());
+        }
     }
 }
 
@@ -387,16 +448,18 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
         self
     }
 
-    /// Equivalent to [`Self::run`], but usable in the case where you already have a [`HandlerContext`].
-    pub fn run_with_handler(
+    /// Run the command on the given context.
+    ///
+    /// Assumes this context matches the attachment for the command.
+    pub fn run_with_context(
         self,
         guard: WorldGuard,
-        handler_ctxt: &HandlerContext<P>,
+        ctxt: Arc<Mutex<P::C>>,
     ) -> Result<ScriptValue, ScriptError> {
-        let result = handler_ctxt.call_dynamic_label(
-            &self.callback,
+        let mut ctxt_guard = ctxt.lock();
+        let result = ctxt_guard.call_context_dynamic(
             &self.attachment,
-            None,
+            &self.callback,
             self.args,
             guard.clone(),
         );
@@ -433,13 +496,35 @@ impl<P: IntoScriptPluginParams> RunScriptCallback<P> {
         result
     }
 
+    /// Equivalent to [`Self::run`], but usable in the case where you already have a [`HandlerContext`].
+    pub fn run_with_contexts(
+        self,
+        guard: WorldGuard,
+        script_contexts: ScriptContext<P>,
+    ) -> Result<ScriptValue, ScriptError> {
+        let script_contexts = script_contexts.read();
+        let ctxt = script_contexts.get_context(&self.attachment);
+        let ctxt = match ctxt {
+            Some(ctxt) => ctxt,
+            None => {
+                let err = ScriptError::new(InteropError::missing_context(self.attachment.clone()))
+                    .with_script(self.attachment.script().display())
+                    .with_context(P::LANGUAGE);
+                handle_script_errors(guard, vec![err.clone()].into_iter());
+                return Err(err);
+            }
+        };
+
+        self.run_with_context(guard, ctxt.clone())
+    }
+
     /// Equivalent to running the command, but also returns the result of the callback.
     ///
     /// The returned error will already be handled and logged.
     pub fn run(self, world: &mut World) -> Result<ScriptValue, ScriptError> {
-        with_handler_system_state(world, |guard, handler_ctxt: &mut HandlerContext<P>| {
-            self.run_with_handler(guard, handler_ctxt)
-        })
+        let script_contexts = world.get_resource_or_init::<ScriptContext<P>>().clone();
+        let guard = WorldGuard::new_exclusive(world);
+        self.run_with_contexts(guard, script_contexts)
     }
 }
 

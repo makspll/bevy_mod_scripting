@@ -1,8 +1,6 @@
 //! Systems which are used to extract the various resources and components used by BMS.
 //!
 //! These are designed to be used to pipe inputs into other systems which require them, while handling any configuration erorrs nicely.
-#![allow(deprecated)]
-use std::sync::Arc;
 
 use bevy_ecs::{
     archetype::Archetype,
@@ -13,7 +11,6 @@ use bevy_ecs::{
     world::{DeferredWorld, World, unsafe_world_cell::UnsafeWorldCell},
 };
 use fixedbitset::FixedBitSet;
-use parking_lot::Mutex;
 
 use crate::{
     IntoScriptPluginParams,
@@ -21,98 +18,54 @@ use crate::{
         WorldAccessGuard, WorldGuard, access_map::ReflectAccessId, pretty_print::DisplayWithWorld,
         script_value::ScriptValue,
     },
-    error::{InteropError, ScriptError},
+    context::Context,
+    error::ScriptError,
     event::{CallbackLabel, IntoCallbackLabel},
     handler::ScriptingHandler,
-    script::{ScriptAttachment, ScriptContext},
+    script::ScriptAttachment,
 };
 
-/// Executes `system_state.get_mut` followed by `system_state.apply` after running the given closure, makes sure state is correctly handled in the context of an exclusive system.
-/// Using system state with a handler ctxt without applying the state after will leave the world in an inconsistent state.
-pub fn with_handler_system_state<
-    P: IntoScriptPluginParams,
-    F: FnOnce(WorldGuard, &mut HandlerContext<P>) -> O,
-    O,
->(
-    world: &mut World,
-    f: F,
-) -> O {
-    let mut handler_ctxt = HandlerContext::<P>::yoink(world);
-    let guard = WorldGuard::new_exclusive(world);
-    let o = f(guard, &mut handler_ctxt);
-    handler_ctxt.release(world);
-
-    o
+/// A reverse mapping from plugin context types to their plugin types.
+/// Useful in implementing generic traits on context types.
+pub trait GetPluginFor {
+    /// The plugin type associated with this context type
+    type P: IntoScriptPluginParams<C = Self>;
 }
 
-/// Context for systems which handle events for scripts
-pub struct HandlerContext<P: IntoScriptPluginParams> {
-    /// Script context
-    pub(crate) script_context: ScriptContext<P>,
-}
-
-impl<P: IntoScriptPluginParams> HandlerContext<P> {
-    /// Yoink the handler context from the world, this will remove the matching resource from the world.
-    /// Every call to this function must be paired with a call to [`Self::release`].
-    pub fn yoink(world: &mut World) -> Self {
-        Self {
-            script_context: world.remove_resource().unwrap_or_default(),
-        }
-    }
-
-    /// Releases the current handler context back into the world, restoring the resources it contains.
-    /// Only call this if you have previously yoinked the handler context from the world.
-    pub fn release(self, world: &mut World) {
-        // insert the handler context back into the world
-        world.insert_resource(self.script_context);
-    }
-
-    /// Get the static scripts
-    pub fn script_context(&mut self) -> &mut ScriptContext<P> {
-        &mut self.script_context
-    }
-
-    /// checks if the script is loaded such that it can be executed.
-    ///
-    /// since the mapping between scripts and contexts is not one-to-one, will map the context key using the
-    /// context policy to find the script context, if one is found then the script is loaded.
-    pub fn is_script_fully_loaded(&self, key: &ScriptAttachment) -> bool {
-        self.script_context.contains(key)
-    }
-
-    /// Equivalent to [`Self::call`] but with a dynamically passed in label
-    pub fn call_dynamic_label(
-        &self,
+/// A utility trait extending arbitrary script contexts with the ability to call callbacks on themselves using their
+/// plugin handler function.
+pub trait CallContext {
+    /// Invoke a callback on this context
+    fn call_context_dynamic(
+        &mut self,
+        context_key: &ScriptAttachment,
         label: &CallbackLabel,
-        context_key: &ScriptAttachment,
-        context: Option<Arc<Mutex<P::C>>>,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
-    ) -> Result<ScriptValue, ScriptError> {
-        // find script
-        let Some(context) = context.or_else(|| self.script_context.get(context_key)) else {
-            return Err(InteropError::missing_context(context_key.clone()).into());
-        };
+    ) -> Result<ScriptValue, ScriptError>;
 
-        let mut context = context.lock();
-
-        P::handle(payload, context_key, label, &mut context, guard)
-    }
-
-    /// Invoke a callback in a script immediately.
-    ///
-    /// This will return [`crate::error::InteropErrorInner::MissingScript`] or [`crate::error::InteropErrorInner::MissingContext`] errors while the script is loading.
-    /// Run [`Self::is_script_fully_loaded`] before calling the script to ensure the script and context were loaded ahead of time.
-    pub fn call<C: IntoCallbackLabel>(
-        &self,
+    /// Invoke a callback on this context
+    fn call_context<C: IntoCallbackLabel>(
+        &mut self,
         context_key: &ScriptAttachment,
         payload: Vec<ScriptValue>,
         guard: WorldGuard<'_>,
     ) -> Result<ScriptValue, ScriptError> {
-        self.call_dynamic_label(&C::into_callback_label(), context_key, None, payload, guard)
+        self.call_context_dynamic(context_key, &C::into_callback_label(), payload, guard)
     }
 }
 
+impl<C: Context> CallContext for C {
+    fn call_context_dynamic(
+        &mut self,
+        context_key: &ScriptAttachment,
+        label: &CallbackLabel,
+        payload: Vec<ScriptValue>,
+        guard: WorldGuard<'_>,
+    ) -> Result<ScriptValue, ScriptError> {
+        C::P::handle(payload, context_key, label, self, guard)
+    }
+}
 /// A wrapper around a world which pre-populates access, to safely co-exist with other system params,
 /// acts exactly like `&mut World` so this should be your only top-level system param
 ///

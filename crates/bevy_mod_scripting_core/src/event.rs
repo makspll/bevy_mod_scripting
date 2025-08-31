@@ -206,15 +206,16 @@ impl Recipients {
     /// Retrieves all the recipients of the event based on existing scripts
     pub fn get_recipients<P: IntoScriptPluginParams>(
         &self,
-        script_context: &ScriptContext<P>,
+        script_context: ScriptContext<P>,
     ) -> Vec<(ScriptAttachment, Arc<Mutex<P::C>>)> {
+        let script_context = script_context.read();
         match self {
             Recipients::AllScripts => script_context.all_residents().collect(),
             Recipients::AllContexts => script_context.first_resident_from_each_context().collect(),
             Recipients::ScriptEntity(script, entity) => {
                 let attachment = ScriptAttachment::EntityScript(*entity, Handle::Weak(*script));
                 script_context
-                    .get(&attachment)
+                    .get_context(&attachment)
                     .into_iter()
                     .map(|entry| (attachment.clone(), entry))
                     .collect()
@@ -222,7 +223,7 @@ impl Recipients {
             Recipients::StaticScript(script) => {
                 let attachment = ScriptAttachment::StaticScript(Handle::Weak(*script));
                 script_context
-                    .get(&attachment)
+                    .get_context(&attachment)
                     .into_iter()
                     .map(|entry| (attachment.clone(), entry))
                     .collect()
@@ -484,7 +485,8 @@ mod test {
     /// - StaticScriptB (AssetId::from_bits(5))
     fn make_test_contexts() -> ScriptContext<TestPlugin> {
         let policy = ContextPolicy::per_entity();
-        let mut script_context = ScriptContext::<TestPlugin>::new(policy);
+        let script_context = ScriptContext::<TestPlugin>::new(policy);
+        let mut script_context_guard = script_context.write();
         let context_a = TestContext {
             invocations: vec![ScriptValue::String("a".to_string().into())],
         };
@@ -506,41 +508,42 @@ mod test {
         let static_script_a = Handle::Weak(AssetId::from(AssetIndex::from_bits(4)));
         let static_script_b = Handle::Weak(AssetId::from(AssetIndex::from_bits(5)));
 
-        script_context
+        script_context_guard
             .insert(
                 &ScriptAttachment::EntityScript(Entity::from_raw(0), entity_script_a),
                 context_a,
             )
             .unwrap();
 
-        script_context
+        script_context_guard
             .insert_resident(ScriptAttachment::EntityScript(
                 Entity::from_raw(0),
                 entity_script_b,
             ))
             .unwrap();
 
-        script_context
+        script_context_guard
             .insert(
                 &ScriptAttachment::EntityScript(Entity::from_raw(1), entity_script_c),
                 context_b,
             )
             .unwrap();
-        script_context
+        script_context_guard
             .insert_resident(ScriptAttachment::EntityScript(
                 Entity::from_raw(1),
                 entity_script_d,
             ))
             .unwrap();
 
-        script_context
+        script_context_guard
             .insert(&ScriptAttachment::StaticScript(static_script_a), context_c)
             .unwrap();
 
-        script_context
+        script_context_guard
             .insert(&ScriptAttachment::StaticScript(static_script_b), context_d)
             .unwrap();
 
+        drop(script_context_guard);
         script_context
     }
 
@@ -575,7 +578,7 @@ mod test {
     #[test]
     fn test_all_scripts_recipients() {
         let script_context = make_test_contexts();
-        let recipients = Recipients::AllScripts.get_recipients(&script_context);
+        let recipients = Recipients::AllScripts.get_recipients(script_context);
         assert_eq!(recipients.len(), 6);
         let mut id_context_pairs = recipients_to_asset_ids(&recipients);
 
@@ -597,7 +600,7 @@ mod test {
     #[test]
     fn test_all_contexts_recipients() {
         let script_context = make_test_contexts();
-        let recipients = Recipients::AllContexts.get_recipients(&script_context);
+        let recipients = Recipients::AllContexts.get_recipients(script_context);
         assert_eq!(recipients.len(), 4);
         let mut id_context_pairs = recipients_to_asset_ids(&recipients);
         id_context_pairs.sort_by_key(|(id, _)| *id);
@@ -623,7 +626,7 @@ mod test {
         let script_context = make_test_contexts();
         let recipients =
             Recipients::ScriptEntity(AssetId::from(AssetIndex::from_bits(0)), Entity::from_raw(0))
-                .get_recipients(&script_context);
+                .get_recipients(script_context);
 
         assert_eq!(recipients.len(), 1);
         let id_context_pairs = recipients_to_asset_ids(&recipients);
@@ -634,7 +637,7 @@ mod test {
     fn test_static_script_recipients() {
         let script_context = make_test_contexts();
         let recipients = Recipients::StaticScript(AssetId::from(AssetIndex::from_bits(4)))
-            .get_recipients(&script_context);
+            .get_recipients(script_context);
 
         assert_eq!(recipients.len(), 1);
         let id_context_pairs = recipients_to_asset_ids(&recipients);
